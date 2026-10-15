@@ -224,30 +224,15 @@ browser. Exact Chrome/profile/clipboard/download/print/native claims require
 that browser and profile; use native app/OS control when necessary. Old plugin
 names in preserved recipes describe these capabilities, not installed tools.
 Never invent a callable API or substitute a clean profile for a named one.
-Type key by key whenever the claim depends on what typing triggers, such as
-Markdown autoformat, a hotkey, a mark toggle or a `/` or `@` menu. Direct text
-insertion skips those handlers. The key-by-key operation is
-`pressSequentially` in Codex's browser, `type` in Claude in Chrome, and `key`
-with one space-separated token per character in Claude Code's built-in
-browser, such as `# space h i`. That browser's `type` inserts the whole string
-as one `insertText`.
-Send a shifted character as itself (`*`, `A`, `?`). For `shift+8` the built-in
-browser inserts nothing and Claude in Chrome inserts `8`. Claude in Chrome
-takes keys only after one real click into the page. Confirm the active mark
-before typing, then read back both the inserted text and its rendered marks
-after the update.
-
-Both Claude browsers throttle a page nobody is looking at. A hidden built-in
-pane runs one or two animation frames a second while `visibilityState` still
-says `visible`, and a Claude in Chrome tab that reports `hidden` runs none.
-Before a claim that depends on frames or observers, such as virtualization,
-scroll anchoring, a floating toolbar's position, drag autoscroll or
-type-to-paint, count `requestAnimationFrame` callbacks over one second in the
-page. Below 30, ask the owner to show the pane (Cmd+Shift+B) or bring Chrome
-to the front, or leave that claim to a Playwright spec, whose Chromium runs
-without background throttling. The built-in browser has no native clipboard,
-and Cmd+C and Cmd+V fire no `copy` or `paste` event there. Drive a native copy
-or paste in Claude in Chrome, or through the `'native'` clipboard spec below.
+Type into an editor key by key whenever the claim depends on what typing
+triggers, such as Markdown autoformat, a hotkey, a mark toggle or a `/` or `@`
+menu, with the key-by-key operation `.agents/pstack/rules/browser.md` names
+for each browser. Confirm the active mark before typing, then read back both
+the inserted text and its rendered marks after the update. Before a claim that
+depends on frames, such as virtualization, scroll anchoring, a floating
+toolbar's position, drag autoscroll or type-to-paint, run that file's frame
+check. A native copy or paste goes to Claude in Chrome or to the `'native'`
+clipboard spec below.
 
 Existing repository Playwright specs are executable proof owners. Run them
 through their package runner. Do not build a parallel Puppeteer, raw CDP or

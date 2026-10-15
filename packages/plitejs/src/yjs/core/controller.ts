@@ -5,6 +5,7 @@ import {
   filterDocumentChangeRoots,
   getInternalDocumentChangeRecords,
   getInternalDocumentChangeRootKeys as getDocumentChangeRootKeys,
+  valueRootIndex,
   valueRootNodes,
 } from '../../core/change/document-change';
 import type { NodeList } from '../../core/change/document-index';
@@ -12,6 +13,8 @@ import {
   getEditorCommitAdmissionRepair,
   getEditorCommitValue,
 } from '../../core/commit';
+import { getEditorSchema } from '../../core/editor-runtime';
+import { holdsImportedRoot } from '../../core/editor-schema';
 import { isMissingReference } from '../../core/missing-reference';
 import {
   getCompiledEditorSchema,
@@ -33,12 +36,13 @@ import {
   type RecordOps,
   recordOpsFromJson,
 } from '../../core/record-store';
-import { canonicalizeTopLevelNode } from '../../core/representation';
+import { fitImportedBlock } from '../../core/representation';
 import {
   areEditorSchemaIdentitiesEqual,
   getCompiledPropertyMergeStrategy,
 } from '../../core/schema-compiler';
 import { createEditorEffect } from '../../core/transaction-values';
+import { countCoreWork } from '../../core/work';
 import type {
   Descendant,
   EditorCommit,
@@ -75,7 +79,6 @@ import {
   mergeYjsEventBatches,
   YjsEventChangeBridge,
   type YjsEventImportFallback,
-  type YjsEventNormalization,
 } from './event-change-bridge';
 import { DEFAULT_YJS_ROOT_NAME } from './keys';
 import { isRecord } from './record';
@@ -154,7 +157,6 @@ type YjsRootBinding = {
   readonly bridge: YjsEventChangeBridge;
   readonly emptyValue: readonly Descendant[];
   readonly root: Y.XmlElement;
-  synchronizedChildren: NodeList<Descendant>;
 };
 
 type YjsRemoteInput = Readonly<{
@@ -317,16 +319,13 @@ export class YjsController<
     };
     this.bindings.set(
       MAIN_ROOT_KEY,
-      this.createRootBinding(MAIN_ROOT_KEY, this.root, Object.freeze([]))
+      this.createRootBinding(MAIN_ROOT_KEY, this.root)
     );
     for (const [root, yRoot] of this.roots) {
       if (!(yRoot instanceof Y.XmlElement)) {
         throw new Error(`Yjs named root "${root}" must be a Y.XmlElement.`);
       }
-      this.bindings.set(
-        root,
-        this.createRootBinding(root, yRoot, Object.freeze([]))
-      );
+      this.bindings.set(root, this.createRootBinding(root, yRoot));
     }
     this.bindRecordSets();
     this.awarenessAdapter = this.awareness
@@ -404,26 +403,23 @@ export class YjsController<
     };
   }
 
-  private createRootBinding(
-    root: string,
-    yRoot: Y.XmlElement,
-    synchronizedChildren: NodeList<Descendant>
-  ): YjsRootBinding {
+  private createRootBinding(root: string, yRoot: Y.XmlElement): YjsRootBinding {
     const bridge = new YjsEventChangeBridge(
       yRoot,
       root,
-      synchronizedChildren,
+      Object.freeze([]),
       this.isSetValued,
-      this.editor.read.schema.hasContentRoots()
-        ? (node) => canonicalizeTopLevelNode(this.editor, node, root)
-        : (node) => this.editorAdapter.canonicalizeNode(root, node)
+      {
+        block: (node) => fitImportedBlock(this.editor, node, root),
+        holds: (after, windows) =>
+          holdsImportedRoot(getEditorSchema(this.editor), root, after, windows),
+      }
     );
 
     return {
       bridge,
       emptyValue: this.emptyValueFor(root),
       root: yRoot,
-      synchronizedChildren,
     };
   }
 
@@ -552,8 +548,7 @@ export class YjsController<
     if (this.initialized) return;
 
     for (const [root, binding] of this.bindings) {
-      binding.synchronizedChildren = this.editorAdapter.readChildren(root);
-      binding.bridge.reset(binding.synchronizedChildren);
+      binding.bridge.reset(this.editorAdapter.readChildren(root));
     }
 
     this.schemaMetadata.observe(this.schemaObserver);
@@ -778,14 +773,13 @@ export class YjsController<
           const children = expected.slice();
 
           this.roots.set(root, yRoot);
-          binding = this.createRootBinding(root, yRoot, Object.freeze([]));
+          binding = this.createRootBinding(root, yRoot);
           this.bindings.set(root, binding);
           replaceYjsChildren(binding.root, children, this.isSetValued, {
             ancestors: [],
             path: [],
             root,
           });
-          binding.synchronizedChildren = expected;
           binding.bridge.reset(expected);
           this.traceEntries.push({
             changedChildren: children.length,
@@ -809,6 +803,10 @@ export class YjsController<
               );
         const incremental = !this.editor.read.schema.hasContentRoots()
           ? binding.bridge.lower(rootChange, expected, {
+              indexes: () => ({
+                after: valueRootIndex(after, root),
+                before: valueRootIndex(before, root),
+              }),
               structureChanged,
             })
           : null;
@@ -831,12 +829,13 @@ export class YjsController<
                   emptyValue: binding.emptyValue,
                   expected: expected.slice(),
                   isSetValued: this.isSetValued,
-                  knownYjsValue: binding.synchronizedChildren.slice(),
+                  knownYjsValue: binding.bridge.synchronized.slice(),
                   root,
                   yRoot: binding.root,
                 });
 
         if (incremental?.kind === 'fallback') {
+          countCoreWork('fallbacks');
           fallbacks.add(root);
         }
 
@@ -873,9 +872,8 @@ export class YjsController<
 
       if (!binding) continue;
 
-      binding.synchronizedChildren = childrenOf(after, root);
       if (fallbacks.has(root)) {
-        binding.bridge.reset(binding.synchronizedChildren);
+        binding.bridge.reset(childrenOf(after, root));
       }
     }
     this.awarenessAdapter?.publishMappedRoots(changedRoots, {
@@ -1050,7 +1048,6 @@ export class YjsController<
       }
     }, this.canonicalizeOrigin);
     for (const { binding, children } of repaired) {
-      binding.synchronizedChildren = children;
       binding.bridge.reset(children);
     }
     if (roots.size > 0) {
@@ -1154,7 +1151,7 @@ export class YjsController<
       });
     } else if (rootChanged) {
       if (events === null) {
-        this.importFromYjs('remote-reconcile', remote);
+        this.importFromYjs(MAIN_ROOT_KEY, 'remote-reconcile', remote);
       } else {
         this.importYjsEvents(events, remote);
       }
@@ -1392,7 +1389,9 @@ export class YjsController<
     this.traceEntries.push({ mode: 'seed' });
   }
 
+  /** Reconciles the whole of `root` with its Yjs root. */
   private importFromYjs(
+    root: string,
     mode: YjsTraceEntry['mode'],
     remote: YjsRemoteInput,
     trace: {
@@ -1400,23 +1399,26 @@ export class YjsController<
       importKind?: YjsTraceEntry['importKind'];
     } = {}
   ): void {
-    this.doc.transact(() => {
-      removeRedundantEmptyYjsTextNodes(this.root);
-    }, this.canonicalizeOrigin);
+    countCoreWork('reconciles');
+    if (trace.fallback) countCoreWork('fallbacks');
 
-    const binding = this.bindings.get(MAIN_ROOT_KEY);
+    const binding = this.bindings.get(root);
 
     if (!binding) {
-      throw new Error('Yjs primary root binding is unavailable.');
+      throw new Error(`Yjs root binding "${root}" is unavailable.`);
     }
 
-    const before = this.editorAdapter.readChildren(MAIN_ROOT_KEY);
+    this.doc.transact(() => {
+      removeRedundantEmptyYjsTextNodes(binding.root);
+    }, this.canonicalizeOrigin);
+
+    const before = this.editorAdapter.readChildren(root);
     const children = this.editorAdapter.canonicalize(
-      MAIN_ROOT_KEY,
+      root,
       this.readYjsRootValue(binding)
     );
     const change = createRootDocumentChange(
-      MAIN_ROOT_KEY,
+      root,
       before,
       children,
       this.isSetValued
@@ -1427,15 +1429,15 @@ export class YjsController<
       ...(trace.fallback ? { fallback: trace.fallback } : {}),
       importKind: trace.importKind ?? 'snapshot-change',
       mode,
+      ...(root === MAIN_ROOT_KEY ? {} : { root }),
     });
     this.editorAdapter.applyRemote({
       ...remote,
       change,
       selection: this.currentSelection(),
     });
-    binding.synchronizedChildren = children;
     binding.bridge.reset(children);
-    const changedRoots = new Set([MAIN_ROOT_KEY]);
+    const changedRoots = new Set([root]);
 
     this.awarenessAdapter?.publishMappedRoots(changedRoots, {
       fallbackRoots: changedRoots,
@@ -1553,7 +1555,7 @@ export class YjsController<
       let binding = this.bindings.get(root);
 
       if (!binding || binding.root !== yRoot) {
-        binding = this.createRootBinding(root, yRoot, Object.freeze([]));
+        binding = this.createRootBinding(root, yRoot);
         this.bindings.set(root, binding);
       }
       roots[root] = this.readYjsRootValue(binding);
@@ -1601,9 +1603,7 @@ export class YjsController<
       throw new Error('Yjs primary root binding is unavailable.');
     }
     if (changed?.main ?? true) {
-      primary.synchronizedChildren =
-        this.editorAdapter.readChildren(MAIN_ROOT_KEY);
-      primary.bridge.reset(primary.synchronizedChildren);
+      primary.bridge.reset(this.editorAdapter.readChildren(MAIN_ROOT_KEY));
     }
 
     const namedRoots = changed?.named ?? new Set(this.roots.keys());
@@ -1621,11 +1621,10 @@ export class YjsController<
       let binding = this.bindings.get(root);
 
       if (!binding || binding.root !== yRoot) {
-        binding = this.createRootBinding(root, yRoot, Object.freeze([]));
+        binding = this.createRootBinding(root, yRoot);
         this.bindings.set(root, binding);
       }
-      binding.synchronizedChildren = this.editorAdapter.readChildren(root);
-      binding.bridge.reset(binding.synchronizedChildren);
+      binding.bridge.reset(this.editorAdapter.readChildren(root));
     }
 
     if (!changed) {
@@ -1647,19 +1646,13 @@ export class YjsController<
     if (!binding) {
       throw new Error(`Yjs root binding "${root}" is unavailable.`);
     }
-    let normalization: YjsEventNormalization = {
-      changedNodes: new Set(),
-      removedNodes: new Set(),
-    };
-
-    this.doc.transact(() => {
-      normalization = binding.bridge.normalize(events);
-    }, this.canonicalizeOrigin);
-
-    const result = binding.bridge.translate(events, normalization);
+    const result = this.doc.transact(
+      () => binding.bridge.prepareRemote(events),
+      this.canonicalizeOrigin
+    );
 
     if (result.kind === 'fallback') {
-      this.importFromYjs('remote-reconcile', remote, {
+      this.importFromYjs(root, 'remote-reconcile', remote, {
         fallback: result.fallback,
         importKind: 'full-diff-fallback',
       });
@@ -1680,8 +1673,7 @@ export class YjsController<
       change: result.import.change,
       selection: this.currentSelection(),
     });
-    binding.synchronizedChildren = result.import.children;
-    result.import.accept(result.import.children);
+    result.import.accept(valueRootIndex(this.editorAdapter.readValue(), root));
     this.awarenessAdapter?.publishMappedRoots(new Set([root]));
   }
 }

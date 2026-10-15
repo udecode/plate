@@ -1,15 +1,17 @@
 'use client';
 
 import type { DialogProps } from '@radix-ui/react-dialog';
+import { usePathname } from 'next/navigation';
 import * as React from 'react';
 
 import { CommandMenuDialog } from '@/components/command-menu-dialog';
 import { Button } from '@/components/ui/button';
 import {
-  preloadSidebarNav,
-  useLazySidebarNav,
-} from '@/hooks/use-lazy-sidebar-nav';
+  preloadDocsSidebar,
+  useLazyDocsSidebar,
+} from '@/hooks/use-lazy-docs-sidebar';
 import { useLocale } from '@/hooks/useLocale';
+import { isMainDocsHref, selectDocsSidebar } from '@/lib/docs-sidebar';
 import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
 import type { MainNavItem } from '@/types/nav';
@@ -36,7 +38,9 @@ export function CommandMenu({
   const [open, setOpen] = React.useState(false);
   const isHydrated = useMounted();
   const openRef = React.useRef(open);
-  const { sidebarNav } = useLazySidebarNav(locale, open);
+  const pathname = usePathname() ?? '';
+  const sidebar = useLazyDocsSidebar(locale, open);
+  const sidebarNav = selectDocsSidebar(sidebar, pathname).sections;
 
   React.useEffect(() => {
     openRef.current = open;
@@ -50,7 +54,7 @@ export function CommandMenu({
         return;
       }
 
-      preloadSidebarNav(locale);
+      preloadDocsSidebar(locale);
     },
     [locale]
   );
@@ -109,6 +113,7 @@ export function CommandMenu({
 
       {open ? (
         <CommandMenuDialog
+          isPlateDocsHref={(href) => isMainDocsHref(sidebar, href)}
           navItems={navItems}
           open={open}
           sidebarNav={sidebarNav}

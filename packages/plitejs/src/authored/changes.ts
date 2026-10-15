@@ -18,7 +18,8 @@ type Node = Readonly<Record<string, unknown>> & {
   text?: string;
 };
 
-type Occurrence = Readonly<{
+/** @internal */
+export type Occurrence = Readonly<{
   /**
    * The first and last unit of content under the node, counted in its root.
    * A non-empty text is a unit, and so is an element without one, such as a
@@ -97,7 +98,8 @@ const isInside = (ancestor: Path, path: Path) =>
 // Content also touches across an inline edge, such as text that runs out of a
 // link, when one end's text sits in the other's parent. It never touches
 // across a block edge.
-const touches = (left: Occurrence, right: Occurrence) => {
+/** @internal */
+export const touches = (left: Occurrence, right: Occurrence) => {
   if (left.root !== right.root) return false;
   if (
     left.path.join(',') === right.path.join(',') ||
@@ -152,137 +154,186 @@ const hash = (input: string) => {
 
   return value;
 };
-const HASHES = new WeakMap<object, number>();
-const hashFrozen = (key: object, input: () => string) => {
-  let value = HASHES.get(key);
+const MARKS = new WeakMap<object, number>();
+const SUBTREES = new WeakMap<object, number>();
+
+const markHash = (mark: AuthoredMark) => {
+  let value = MARKS.get(mark);
 
   if (value === undefined) {
-    value = hash(input());
-    HASHES.set(key, value);
+    value = hash(JSON.stringify(mark));
+    MARKS.set(mark, value);
   }
 
   return value;
 };
 
-const ownContent = (node: Node) =>
-  typeof node.text === 'string'
-    ? node.text
-    : typeof node.type === 'string'
-      ? node.type
-      : '';
+const subtreeHash = (node: Node): number => {
+  let value = SUBTREES.get(node);
 
+  if (value === undefined) {
+    const { children, ...own } = node;
+
+    value = hash(JSON.stringify(own));
+    for (const child of children ?? []) value = mix(value, subtreeHash(child));
+    SUBTREES.set(node, value);
+  }
+
+  return value;
+};
+
+// Paths count from each occurrence's top-level block, so a block moving
+// above the change keeps its revision, and content changing under its nodes
+// changes it.
 const revisionOf = (list: readonly Occurrence[]) => {
   let value = FNV_OFFSET;
 
   for (const { mark, node, path, root } of list) {
     value = mix(value, hash(root));
-    value = mix(value, path.length);
-    for (const index of path) value = mix(value, index);
-    value = mix(
-      value,
-      hashFrozen(mark, () => JSON.stringify(mark))
-    );
-    value = mix(
-      value,
-      hashFrozen(node, () => ownContent(node))
-    );
+    value = mix(value, path.length - 1);
+    for (let depth = 1; depth < path.length; depth++) {
+      value = mix(value, path[depth]);
+    }
+    value = mix(value, markHash(mark));
+    value = mix(value, subtreeHash(node));
   }
 
   return value;
 };
 
+/**
+ * The change one id's occurrences make; `list` holds them in document order.
+ *
+ * @internal
+ */
+export const changeOf = (
+  id: string,
+  list: readonly Occurrence[]
+): AuthoredChange => {
+  const kinds = new Set(list.map(({ mark }) => KINDS[mark.kind]));
+  const ranges: Range[] = [];
+  const covered = covering(list);
+
+  covered.forEach((occurrence, index) => {
+    const range = rangeOf(occurrence);
+    const previous = covered[index - 1];
+    const last = ranges.at(-1);
+
+    if (
+      previous &&
+      last &&
+      isText(previous.node) &&
+      isText(occurrence.node) &&
+      touches(previous, occurrence)
+    ) {
+      ranges[ranges.length - 1] = { anchor: last.anchor, focus: range.focus };
+    } else {
+      ranges.push(range);
+    }
+  });
+
+  return Object.freeze({
+    authorId: list[0].mark.author,
+    createdAt: Math.min(...list.map(({ mark }) => mark.at)),
+    id,
+    kind: kinds.size === 1 ? [...kinds][0] : 'mixed',
+    ranges: Object.freeze(ranges),
+    revision: revisionOf(list),
+  });
+};
+
+/** @internal */
+export const orderChanges = (changes: Iterable<AuthoredChange>) =>
+  [...changes].sort(
+    (left, right) =>
+      left.createdAt - right.createdAt ||
+      (left.id < right.id ? -1 : left.id > right.id ? 1 : 0)
+  );
+
+/** @internal */
+export type BlockOccurrence = Omit<Occurrence, 'root'>;
+
+/** @internal */
+export const blockOccurrencesOf = (
+  block: Node,
+  read: (node: Node) => readonly AuthoredMark[]
+) => {
+  const occurrences = new Map<string, BlockOccurrence[]>();
+  let units = 0;
+  const walk = (node: Node, path: Path) => {
+    const placed = read(node).map((mark) => {
+      const occurrence = { first: units, last: units, mark, node, path };
+      const list = occurrences.get(mark.change) ?? [];
+
+      list.push(occurrence);
+      occurrences.set(mark.change, list);
+
+      return occurrence;
+    });
+    const start = units;
+
+    if (node.children) {
+      node.children.forEach((child, index) => walk(child, [...path, index]));
+      if (units === start) units += 1;
+    } else if (node.text) {
+      units += 1;
+    }
+    for (const occurrence of placed) occurrence.last = units - 1;
+  };
+
+  walk(block, []);
+
+  return { occurrences, units };
+};
+
+/** @internal */
+export const placeOccurrence = (
+  { first, last, mark, node, path }: BlockOccurrence,
+  root: string,
+  rank: number,
+  before: number
+): Occurrence => ({
+  first: first + before,
+  last: last + before,
+  mark,
+  node,
+  path: [rank, ...path],
+  root,
+});
+
 export const indexAuthoredChanges = (
   value: JsonEditorValue
 ): AuthoredChangeIndex => {
   const facts = factsOf(value);
+  const read = (node: Node) => marksOf(node, facts);
   const occurrences = new Map<string, Occurrence[]>();
-  const walk = (
-    nodes: readonly Node[],
-    parent: Path,
-    root: string,
-    leaves: { count: number }
-  ) => {
-    nodes.forEach((node, index) => {
-      const path = [...parent, index];
-      const placed = marksOf(node, facts).map((mark) => {
-        const occurrence = {
-          first: leaves.count,
-          last: leaves.count,
-          mark,
-          node,
-          path,
-          root,
-        };
-        const list = occurrences.get(mark.change) ?? [];
 
-        list.push(occurrence);
-        occurrences.set(mark.change, list);
-        return occurrence;
-      });
+  for (const [root, children] of [
+    ['main', value.children] as const,
+    ...Object.entries(value.roots ?? {}),
+  ]) {
+    let before = 0;
 
-      const start = leaves.count;
+    children.forEach((block, rank) => {
+      const local = blockOccurrencesOf(block, read);
 
-      if (node.children) {
-        walk(node.children, path, root, leaves);
-        if (leaves.count === start) leaves.count += 1;
-      } else if (node.text) {
-        leaves.count += 1;
+      for (const [id, list] of local.occurrences) {
+        const placed = occurrences.get(id) ?? [];
+
+        for (const occurrence of list) {
+          placed.push(placeOccurrence(occurrence, root, rank, before));
+        }
+        occurrences.set(id, placed);
       }
-      for (const occurrence of placed) occurrence.last = leaves.count - 1;
+      before += local.units;
     });
-  };
-
-  walk(value.children, [], 'main', { count: 0 });
-  for (const [root, children] of Object.entries(value.roots ?? {})) {
-    walk(children, [], root, { count: 0 });
   }
 
-  const changes = new Map<string, AuthoredChange>();
+  const changes = new Map(
+    [...occurrences].map(([id, list]) => [id, changeOf(id, list)] as const)
+  );
 
-  for (const [id, list] of occurrences) {
-    const kinds = new Set(list.map(({ mark }) => KINDS[mark.kind]));
-    const ranges: Range[] = [];
-    const covered = covering(list);
-
-    covered.forEach((occurrence, index) => {
-      const range = rangeOf(occurrence);
-      const previous = covered[index - 1];
-      const last = ranges.at(-1);
-
-      if (
-        previous &&
-        last &&
-        isText(previous.node) &&
-        isText(occurrence.node) &&
-        touches(previous, occurrence)
-      ) {
-        ranges[ranges.length - 1] = { anchor: last.anchor, focus: range.focus };
-      } else {
-        ranges.push(range);
-      }
-    });
-    changes.set(
-      id,
-      Object.freeze({
-        authorId: list[0].mark.author,
-        createdAt: Math.min(...list.map(({ mark }) => mark.at)),
-        id,
-        kind: kinds.size === 1 ? [...kinds][0] : 'mixed',
-        ranges: Object.freeze(ranges),
-        revision: revisionOf(list),
-      })
-    );
-  }
-
-  return {
-    changes,
-    occurrences,
-    ordered: [...changes.values()].sort(
-      (left, right) =>
-        left.createdAt - right.createdAt ||
-        (left.id < right.id ? -1 : left.id > right.id ? 1 : 0)
-    ),
-  };
+  return { changes, occurrences, ordered: orderChanges(changes.values()) };
 };
 
 const unmarked = (node: Node): Node => {
@@ -299,8 +350,13 @@ const sliceOf = (nodes: readonly Node[]): ContentSlice => ({
   openStart: 0,
 });
 
+export type AuthoredChangeLookup = Readonly<{
+  changes: Pick<ReadonlyMap<string, AuthoredChange>, 'get'>;
+  occurrences: Pick<ReadonlyMap<string, readonly Occurrence[]>, 'get'>;
+}>;
+
 export const readAuthoredDetails = (
-  index: AuthoredChangeIndex,
+  index: AuthoredChangeLookup,
   id: string
 ): AuthoredChangeDetails | null => {
   const change = index.changes.get(id);
@@ -397,18 +453,16 @@ export const readAuthoredDetails = (
   return Object.freeze({ change, parts: Object.freeze(parts) });
 };
 
-const GROUPS = new WeakMap<
-  AuthoredChangeIndex,
-  readonly AuthoredChangeGroup[]
->();
-
-/** Adjacent pending changes by one author, ranked by creation. */
+/**
+ * The kernel's cards: adjacent pending changes by one author, each card's
+ * changes in document order and the cards in the order the document shows
+ * them. The review ledger's card sequence must give the same cards.
+ *
+ * @internal
+ */
 export const groupAuthoredChanges = (
   index: AuthoredChangeIndex
-): readonly AuthoredChangeGroup[] => {
-  const cached = GROUPS.get(index);
-  if (cached) return cached;
-
+): ReadonlyArray<readonly AuthoredChange[]> => {
   const groups: Array<{ changes: AuthoredChange[]; last: Occurrence }> = [];
   const placed = [...index.changes.values()].flatMap((change) => {
     const list = index.occurrences.get(change.id) ?? [];
@@ -435,26 +489,7 @@ export const groupAuthoredChanges = (
     }
   }
 
-  const ranked = Object.freeze(
-    groups
-      .map(({ changes }) => ({
-        authorId: changes[0].authorId,
-        changes: Object.freeze(changes),
-        createdAt: Math.min(...changes.map((change) => change.createdAt)),
-        id: changes[0].id,
-      }))
-      .sort(
-        (left, right) =>
-          left.createdAt - right.createdAt ||
-          (left.id < right.id ? -1 : left.id > right.id ? 1 : 0)
-      )
-      .map(({ createdAt: _createdAt, ...group }, rank) =>
-        Object.freeze({ ...group, rank })
-      )
-  );
-
-  GROUPS.set(index, ranked);
-  return ranked;
+  return groups.map(({ changes }) => changes);
 };
 
 const compareOccurrences = (left: Occurrence, right: Occurrence) => {

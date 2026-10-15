@@ -1,4 +1,4 @@
-import type { AnyEditor, RootKey } from '../interfaces/editor';
+import type { AnyEditor, ContentSlice, RootKey } from '../interfaces/editor';
 import { ElementApi, type Element } from '../interfaces/element';
 import { NodeApi, type Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
@@ -117,6 +117,363 @@ export const textTokens = (fragment: readonly Descendant[]) => {
   visit(fragment, true, true);
 
   return tokens.join('\u0000');
+};
+
+export const stable = (value: unknown): string =>
+  JSON.stringify(value, (_key, item: unknown) =>
+    item && typeof item === 'object' && !Array.isArray(item)
+      ? Object.fromEntries(
+          Object.entries(item).sort(([left], [right]) =>
+            left.localeCompare(right)
+          )
+        )
+      : item
+  );
+
+type LandedKind = (element: Element) => 'block' | 'inline' | 'void';
+
+type FollowsDrop = (
+  element: Element,
+  ancestors: readonly Element[]
+) => (key: string) => boolean;
+
+type PayloadItem =
+  | string
+  | Readonly<{ ancestors: readonly Element[]; element: Element }>;
+
+export type MovedPayload = Readonly<{
+  carried: number;
+  followsDrop: FollowsDrop;
+  head: Element | null;
+  items: readonly PayloadItem[];
+  kind: LandedKind;
+  replaced: Element | null;
+}>;
+
+const headChain = (nodes: readonly Descendant[], kind: LandedKind) => {
+  const chain: Element[] = [];
+  let node = nodes[0];
+
+  while (node && ElementApi.isElement(node) && kind(node) === 'block') {
+    chain.push(node);
+    node = node.children[0];
+  }
+
+  return chain;
+};
+
+const openEdge = (
+  slice: ContentSlice,
+  side: 'end' | 'start',
+  kind: LandedKind
+) => {
+  const open = side === 'start' ? slice.openStart : slice.openEnd;
+  let nodes = slice.content;
+  let block: Element | null = null;
+  let inlines = 0;
+
+  for (let depth = 0; depth < open; depth++) {
+    const node = side === 'start' ? nodes[0] : nodes.at(-1);
+
+    if (!node || !ElementApi.isElement(node)) break;
+    if (kind(node) === 'inline') inlines += 1;
+    else if (kind(node) === 'block' && inlines === 0) block = node;
+    else break;
+    nodes = node.children;
+  }
+
+  return {
+    empty:
+      !!block &&
+      block.children.every(
+        (child) => NodeApi.isText(child) && child.text === ''
+      ),
+    inlines,
+  };
+};
+
+const outsideInlines = (
+  children: readonly Descendant[],
+  point: Point,
+  side: 'after' | 'before',
+  isInline: (element: Element) => boolean,
+  skipOuter: number
+): Point => {
+  let nodes = children;
+  let outer = 0;
+
+  for (const [depth, index] of point.path.entries()) {
+    const node = nodes[index];
+
+    if (!node || !ElementApi.isElement(node)) return point;
+    if (isInline(node) && outer === skipOuter) {
+      const at = side === 'after' ? index + 1 : index - 1;
+      const text = nodes[at];
+
+      return text && NodeApi.isText(text)
+        ? {
+            ...point,
+            offset: side === 'after' ? 0 : text.text.length,
+            path: [...point.path.slice(0, depth), at],
+          }
+        : point;
+    }
+    if (isInline(node)) outer += 1;
+    nodes = node.children;
+  }
+
+  return point;
+};
+
+type DraftPositions = Readonly<{ from: number; to: number }>;
+
+/**
+ * The range runs from the first to the last content the landing inserted
+ * (`span`), since anchors at a text's edge miss a slice that lands as leaves
+ * of its own. Each end reads outward, so an inline void at the edge stays in,
+ * unless that leaves the block the content's edge lies in. An empty open head
+ * merges into the text block that holds the drop point, and an empty open end
+ * becomes the one that holds the drop point's following text, so such an edge
+ * reaches from the insertion's `tokenSpan` into that block, outside the inline
+ * elements the drop point splits beyond those the slice is open into; between
+ * blocks, into the blocks the fit inserted.
+ */
+export const landedRange = ({
+  children,
+  fallback,
+  isInline,
+  kind,
+  span,
+  tokenSpan,
+  written,
+}: Readonly<{
+  children: readonly Descendant[];
+  fallback: Readonly<{ end: Point; start: Point }>;
+  isInline: (element: Element) => boolean;
+  kind: LandedKind;
+  span: DraftPositions | null;
+  tokenSpan: DraftPositions | null;
+  written: ContentSlice;
+}>): Range => {
+  const index = DocumentIndex.fromValue(children);
+  const blockKeyOf = (path: readonly number[]) => {
+    let nodes = children;
+    let block = '';
+
+    for (const [depth, at] of path.entries()) {
+      const node = nodes[at];
+
+      if (!node || !ElementApi.isElement(node)) break;
+      if (!isInline(node)) block = path.slice(0, depth + 1).join('/');
+      nodes = node.children;
+    }
+
+    return block;
+  };
+  const pointAt = (position: number, assoc: -1 | 1, otherwise: Point) => {
+    const found = index.pointAt(position, assoc);
+
+    return found
+      ? { ...otherwise, offset: found.offset, path: [...found.path] }
+      : otherwise;
+  };
+  const contentEdge = (position: number, outward: -1 | 1, otherwise: Point) => {
+    const out = pointAt(position, outward, otherwise);
+    const into = pointAt(position, outward === 1 ? -1 : 1, otherwise);
+
+    return blockKeyOf(out.path) === blockKeyOf(into.path) ? out : into;
+  };
+  const textBlockAt = (position: number) => {
+    const context = index.openContextAt(position);
+
+    for (let at = context.length - 1; at >= 0; at--) {
+      const { path } = context[at];
+      const node = nodeAt(children, [...path]);
+
+      if (node && ElementApi.isElement(node) && !isInline(node)) {
+        return node.children.every(
+          (child) => NodeApi.isText(child) || isInline(child)
+        )
+          ? ([node, [...path]] as const)
+          : null;
+      }
+    }
+
+    return null;
+  };
+  const insertionEdge = (
+    position: number,
+    toward: -1 | 1,
+    carried: number,
+    otherwise: Point
+  ) => {
+    const block = textBlockAt(position);
+
+    if (!block) return pointAt(position, toward === 1 ? -1 : 1, otherwise);
+
+    const [element, path] = block;
+    const read = pointAt(position, toward, otherwise);
+    const at = toward === -1 ? 0 : element.children.length - 1;
+    const text = element.children[at];
+
+    return outsideInlines(
+      children,
+      blockKeyOf(read.path) === path.join('/') || !NodeApi.isText(text)
+        ? read
+        : {
+            ...otherwise,
+            offset: toward === -1 ? 0 : text.text.length,
+            path: [...path, at],
+          },
+      toward === -1 ? 'after' : 'before',
+      isInline,
+      carried
+    );
+  };
+  const edge = (side: 'end' | 'start') => {
+    const toward = side === 'start' ? -1 : 1;
+    const open = openEdge(written, side, kind);
+
+    if (span && !open.empty) {
+      return contentEdge(
+        side === 'start' ? span.from : span.to,
+        toward,
+        fallback[side]
+      );
+    }
+
+    return tokenSpan
+      ? insertionEdge(
+          side === 'start' ? tokenSpan.from : tokenSpan.to,
+          toward,
+          open.inlines,
+          fallback[side]
+        )
+      : fallback[side];
+  };
+
+  return selectionRange(edge('start'), edge('end'));
+};
+
+const openPrefix = (slice: ContentSlice, chain: readonly Element[]) => {
+  let nodes = slice.content;
+  let count = 0;
+
+  while (
+    count < slice.openStart &&
+    count < chain.length &&
+    nodes[0] === chain[count]
+  ) {
+    nodes = chain[count].children;
+    count += 1;
+  }
+
+  return count;
+};
+
+const payloadItems = (
+  nodes: readonly Descendant[],
+  exempt: ReadonlySet<Element>
+) => {
+  const items: PayloadItem[] = [];
+  const visit = (
+    list: readonly Descendant[],
+    ancestors: readonly Element[]
+  ) => {
+    for (const node of list) {
+      if (NodeApi.isText(node)) {
+        if (node.text !== '') items.push(stable(node));
+        continue;
+      }
+
+      const shown = !exempt.has(node);
+
+      if (shown) items.push({ ancestors, element: node });
+      visit(node.children, [node, ...ancestors]);
+      if (shown) items.push('</>');
+    }
+  };
+
+  visit(nodes, []);
+
+  return items;
+};
+
+const shellOf = (element: Element, skip: (key: string) => boolean) => {
+  const { children: _children, ...props } = element;
+
+  return stable(
+    Object.fromEntries(Object.entries(props).filter(([key]) => !skip(key)))
+  );
+};
+
+export const carryMove = ({
+  followsDrop,
+  kind,
+  moved,
+  replaced,
+  written,
+}: Readonly<{
+  followsDrop: FollowsDrop;
+  kind: LandedKind;
+  moved: ContentSlice;
+  replaced: Element | null;
+  written: ContentSlice;
+}>): MovedPayload | null => {
+  const movedChain = headChain(moved.content, kind);
+  const writtenChain = headChain(written.content, kind);
+  const peeled = movedChain.length - writtenChain.length;
+  const uncarried = peeled + openPrefix(written, writtenChain);
+  const addsShell = uncarried < 0;
+  const losesShell = uncarried > openPrefix(moved, movedChain);
+
+  if (addsShell || losesShell) return null;
+
+  return {
+    carried: movedChain.length - uncarried,
+    followsDrop,
+    head: movedChain[uncarried] ?? null,
+    items: payloadItems(moved.content, new Set(movedChain.slice(0, uncarried))),
+    kind,
+    replaced,
+  };
+};
+
+export const landsMoved = (
+  landed: readonly Descendant[],
+  { carried, followsDrop, head, items, kind, replaced }: MovedPayload
+) => {
+  const landedChain = headChain(landed, kind);
+  const atDrop = landedChain.length - carried;
+
+  if (atDrop < 0) return false;
+
+  const landedHead = landedChain[atDrop] ?? null;
+  const found = payloadItems(landed, new Set(landedChain.slice(0, atDrop)));
+
+  return (
+    found.length === items.length &&
+    found.every((item, index) => {
+      const expected = items[index];
+
+      if (typeof item === 'string' || typeof expected === 'string') {
+        return item === expected;
+      }
+
+      const skip = followsDrop(item.element, item.ancestors);
+      const fromReplacedBlock = (key: string) =>
+        item.element === landedHead &&
+        !!replaced &&
+        !!head &&
+        !(key in head) &&
+        stable(item.element[key]) === stable(replaced[key]);
+
+      return (
+        shellOf(item.element, (key) => skip(key) || fromReplacedBlock(key)) ===
+        shellOf(expected.element, skip)
+      );
+    })
+  );
 };
 
 export const selectionRange = (from: Point, to: Point): Range => ({

@@ -2,7 +2,7 @@ import { Suspense, type CSSProperties } from 'react';
 
 import { DocsNav } from '@/components/docs-nav';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { getSidebarNavFromPageTree } from '@/lib/docs-page-tree';
+import { getDocsSidebar } from '@/lib/docs-page-tree';
 
 // Reuse the same layout as (app)/docs
 export default function CNDocsLayout({
@@ -11,7 +11,7 @@ export default function CNDocsLayout({
   children: React.ReactNode;
 }) {
   // CN docs fall back to English MDX; DocsNav localizes labels and hrefs.
-  const sidebarNav = getSidebarNavFromPageTree();
+  const sidebar = getDocsSidebar();
 
   return (
     <div className="container-wrapper flex flex-1 flex-col px-2">
@@ -24,7 +24,7 @@ export default function CNDocsLayout({
         }
       >
         <Suspense fallback={null}>
-          <DocsNav sidebarNav={sidebarNav} />
+          <DocsNav sidebar={sidebar} />
         </Suspense>
 
         <div className="h-full w-full">{children}</div>

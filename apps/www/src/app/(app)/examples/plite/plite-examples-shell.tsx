@@ -17,7 +17,7 @@ import {
 } from './plite-example-registry';
 
 const PLITE_DOCS_HREF = {
-  pathname: '/docs',
+  pathname: '/docs/plite',
 } satisfies LinkProps<string>['href'];
 const PLITE_EXAMPLES_HREF = {
   pathname: '/examples/plite',

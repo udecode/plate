@@ -30,6 +30,7 @@ export interface AudioElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "audio";
   readonly authored?: readonly (unknown)[];
+  readonly indent?: number;
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
   readonly url: string;
   readonly width?: number | string;
@@ -55,6 +56,7 @@ export interface CalloutElement extends Element {
   readonly authored?: readonly (unknown)[];
   readonly backgroundColor?: string;
   readonly icon: string;
+  readonly indent?: number;
   readonly variant?: string;
 }
 
@@ -84,6 +86,7 @@ export interface ColumnGroupElement extends Element {
   readonly children: readonly (ColumnElement)[];
   readonly type: "columnGroup";
   readonly authored?: readonly (unknown)[];
+  readonly indent?: number;
 }
 
 export interface DateElement extends Element {
@@ -111,6 +114,7 @@ export interface EquationElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "equation";
   readonly authored?: readonly (unknown)[];
+  readonly indent?: number;
   readonly latex: string;
 }
 
@@ -118,6 +122,7 @@ export interface FileElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "file";
   readonly authored?: readonly (unknown)[];
+  readonly indent?: number;
   readonly name?: string;
   readonly url: string;
   readonly width?: number | string;
@@ -158,6 +163,7 @@ export interface HorizontalRuleElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "horizontalRule";
   readonly authored?: readonly (unknown)[];
+  readonly indent?: number;
 }
 
 export interface ImageElement extends Element {
@@ -200,6 +206,7 @@ export interface MediaEmbedElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "mediaEmbed";
   readonly authored?: readonly (unknown)[];
+  readonly indent?: number;
   readonly provider?: string;
   readonly sourceUrl?: string;
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
@@ -235,6 +242,7 @@ export interface DetailsSummaryElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "summary";
   readonly authored?: readonly (unknown)[];
+  readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
 }
 
 export interface TableElement extends Element {
@@ -267,12 +275,14 @@ export interface TocElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "toc";
   readonly authored?: readonly (unknown)[];
+  readonly indent?: number;
 }
 
 export interface UploadElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "upload";
   readonly authored?: readonly (unknown)[];
+  readonly indent?: number;
   readonly kind: "audio" | "file" | "image" | "video";
 }
 
@@ -280,6 +290,7 @@ export interface VideoElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "video";
   readonly authored?: readonly (unknown)[];
+  readonly indent?: number;
   readonly provider?: string;
   readonly sourceUrl?: string;
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
@@ -342,12 +353,14 @@ export type Mutations = Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly url: string;
       readonly width?: number | string;
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly url: string;
       readonly width?: number | string;
@@ -386,12 +399,14 @@ export type Mutations = Readonly<{
       readonly authored?: readonly (unknown)[];
       readonly backgroundColor?: string;
       readonly icon?: string;
+      readonly indent?: number;
       readonly variant?: string;
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
       readonly backgroundColor?: string;
       readonly icon: string;
+      readonly indent?: number;
       readonly variant?: string;
     }>;
     readonly toggle: true;
@@ -441,9 +456,11 @@ export type Mutations = Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
     }>;
     readonly type: "columnGroup";
   }>;
@@ -489,10 +506,12 @@ export type Mutations = Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
       readonly latex?: string;
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
       readonly latex: string;
     }>;
     readonly type: "equation";
@@ -501,12 +520,14 @@ export type Mutations = Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
       readonly name?: string;
       readonly url: string;
       readonly width?: number | string;
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
       readonly name?: string;
       readonly url: string;
       readonly width?: number | string;
@@ -573,9 +594,11 @@ export type Mutations = Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
     }>;
     readonly type: "horizontalRule";
   }>;
@@ -649,6 +672,7 @@ export type Mutations = Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
       readonly provider?: string;
       readonly sourceUrl?: string;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
@@ -657,6 +681,7 @@ export type Mutations = Readonly<{
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
       readonly provider?: string;
       readonly sourceUrl?: string;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
@@ -714,9 +739,11 @@ export type Mutations = Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
     }>;
     readonly type: "summary";
   }>;
@@ -770,9 +797,11 @@ export type Mutations = Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
     }>;
     readonly type: "toc";
   }>;
@@ -780,10 +809,12 @@ export type Mutations = Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
       readonly kind: "audio" | "file" | "image" | "video";
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
       readonly kind: "audio" | "file" | "image" | "video";
     }>;
     readonly type: "upload";
@@ -792,6 +823,7 @@ export type Mutations = Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
       readonly provider?: string;
       readonly sourceUrl?: string;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
@@ -800,6 +832,7 @@ export type Mutations = Readonly<{
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
+      readonly indent?: number;
       readonly provider?: string;
       readonly sourceUrl?: string;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";

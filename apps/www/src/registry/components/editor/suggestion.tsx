@@ -1,11 +1,15 @@
 'use client';
 
 import { AuthoredPlugin } from 'platejs/authored';
-import { type EditableSiblingProps, useEditor } from 'platejs/react';
+import {
+  type EditableSiblingProps,
+  useEditor,
+  useEditorSelector,
+} from 'platejs/react';
+import { suggestionColorOf } from 'platejs/suggestion';
 import {
   SuggestionPlugin,
   useActiveSuggestion,
-  useSuggestionGroups,
 } from 'platejs/suggestion/react';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -84,8 +88,15 @@ const colorDeclarations = ({
 
 function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
   const scopeId = React.useId();
-  const groups = useSuggestionGroups();
   const { activeId } = useActiveSuggestion();
+  // The active change's card, read again after each review commit, so the
+  // active rule follows the card through a merge or a new oldest change.
+  const activeCard = useEditorSelector(
+    (editor) =>
+      activeId
+        ? (editor.plugin(AuthoredPlugin).read.groupOf(activeId)?.id ?? null)
+        : null
+  );
 
   React.useLayoutEffect(() => {
     const root = editableRef.current;
@@ -101,19 +112,23 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
   }, [editableRef, scopeId]);
 
   const scope = `[data-editor-suggestion-scope="${escapeCssString(scopeId)}"]`;
-  const selector = (changeId: string) =>
-    `${scope} [data-editor-authored-change~="${escapeCssString(changeId)}"]`;
-  const rules = groups.map((group) => {
-    const selectors = group.changes.map((change) => selector(change.id));
-    const color = SUGGESTION_COLORS[group.rank % SUGGESTION_COLORS.length];
-    const active = group.changes.some((change) => change.id === activeId)
-      ? `${selectors.join(',')}{--suggestion-bg:${
-          color.hover
-        };--suggestion-fg:${color.active};}`
-      : '';
+  // The active rule follows the color rules, so it wins on a highlight that
+  // also paints another card, and it shows the active card's own colors.
+  const rules = SUGGESTION_COLORS.map(
+    (color, slot) =>
+      `${scope} [data-editor-authored-color="${slot}"]{${colorDeclarations(color)}}`
+  );
 
-    return `${selectors.join(',')}{${colorDeclarations(color)}}${active}`;
-  });
+  if (activeCard) {
+    const color =
+      SUGGESTION_COLORS[suggestionColorOf(activeCard, SUGGESTION_COLORS.length)];
+
+    rules.push(
+      `${scope} [data-editor-authored-groups~="${escapeCssString(
+        activeCard
+      )}"]{${colorDeclarations(color)}--suggestion-bg:${color.hover};--suggestion-fg:${color.active};}`
+    );
+  }
 
   return (
     <style

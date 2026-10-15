@@ -180,9 +180,13 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   hook or `createEditor` exported from a client entrypoint, in the forms its
   tests run.
 - Each editor constructor, `createEditor` and `useEditor`, takes a closed
-  option set. An unknown option written in the call fails to compile and names
-  the key, though the options type is inferred. At runtime the constructor
-  throws a `TypeError` that names the first string key outside the set, own or
+  option set. An unknown option written in the call's options literal fails to
+  compile and names the key, even when TypeScript infers the options type. A
+  computed key typed `string` with no known key beside it, a key named after an
+  `Object` member such as `toString`, an explicit options type that admits the
+  key, and options held in a variable, built by a spread or typed by a type
+  parameter meet only the runtime check. At runtime the constructor throws a
+  `TypeError` that names the first string key outside the set, own or
   inherited, without reading a value. `useEditor` checks on every render.
 - A DOM-scope hook accepts only the DOM capabilities it reads, and an
   identity-only registry uses object keys. Neither requires an erased mutable
@@ -543,12 +547,16 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   only consumer is that handler is deleted rather than published for the handler
   to call. Semantic commands derive ordinary values through the existing read
   owner before adding a generic dependency or cache graph.
-- A paste's landing composes through `editorReads.slice.landing`. The default
-  replacement command resolves the target, limits the slice to `maxLength` once
-  and runs the read once on the command's current draft after handlers
-  delegate. A terminal handler bypasses it. Raw transaction replacement and
-  detached fitting do not run command policy. One-shot view slice and fragment
-  replacement keep semantic command dispatch.
+- A paste's or text drop's landing composes through `editorReads.slice.landing`,
+  whose input names its `intent`, `copy` or `move`. The default
+  replacement command resolves one site after it places the caret: the root,
+  the placed range or the selected blocks, and a budget that credits only the
+  text the write replaces. It limits the slice to that budget, runs the read
+  once after handlers delegate on the command's current draft in the site's
+  root, and cuts the read's output to the same budget. A terminal handler
+  bypasses it. Raw transaction replacement and detached fitting do not run
+  command policy. One-shot view slice and fragment replacement keep semantic
+  command dispatch.
 - Plite owns whole-block replacement of an empty target. A landing read can
   propose blocks for an `empty` target and never names another block. Plite
   honors the proposal only on its own resolution and refuses one the budget
@@ -556,8 +564,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   type change allows for another text type, and none as an object or void.
   Plite admits the whole sequence at the parent, fits it at the block's bounds
   and discards the block's key. Otherwise it fits the landing slice under the
-  same budget. Slice and fragment replacement take a location, and a selected
-  node is replaced through the current selection.
+  same budget. Slice and fragment replacement take a location. A paste over
+  selected blocks replaces them whole through the current selection and credits
+  all their text, and a selection that holds an inline node pastes at that
+  node's range.
 - Command `handle` interceptors are conditional fallbacks: returning `false`
   continues to the next handler or descriptor default. Command `around`
   interceptors own the invocation unless they explicitly call `next()` or
@@ -602,16 +612,26 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
 - Fitted placements and prepared keys stay private to transaction specs, and
   retained root provenance survives history and rebase.
 - `editor.api.transfer` is the one move and copy action for drags, custom
-  drivers and keyboard moves. A move inside one document commits its whole
-  landed content or nothing: a guard after corrections refuses a landing that
-  differs from the payload. Independent editors, read-only views and document
-  views copy, and a copy follows paste, landing what fits and reporting the
-  loss.
+  drivers and keyboard moves. A text move lands through the paste landing with
+  intent `move`. A move inside one document commits its whole landed content or
+  nothing: a guard after corrections refuses a landing that changes the
+  payload's text or marks, or the type or properties of a block it carries,
+  other than element properties declared `landing: 'rebase'` or `'adopt'`. The
+  guard skips only the block the moved text joins at the drop point and the
+  blocks that contain it, and checks every other block the move carries, an
+  empty last block included. A closed block, such as a title, joins nothing,
+  and in an empty block the moved block may take the empty block's
+  properties. The schema contract and fingerprint carry `landing` only where a
+  property declares one of them. Independent editors, read-only views and
+  document views copy, and a copy follows paste, landing what fits and
+  reporting the loss.
 - A block lands wherever the compiled schema places it, at any depth. Placement
   checks the target's children as they will be after the transfer, for the nodes
   that actually land. A feature narrows it with a `transferVeto`, and a landing
-  read only redirects an edge. Without a compiled content program, nested edges
-  refuse. Hover and drop resolve the same edge. A redirected edge maps to
+  read only redirects an edge. A block copy's `transfer.adopt` read sets only
+  `adopt` properties, once, on the final edge. Placement and vetoes judge the
+  patched copy at hover and at drop alike. Without a compiled content program,
+  nested edges refuse. Hover and drop resolve the same edge. A redirected edge maps to
   itself, and every feature veto runs on the final edge, so no feature skips
   another feature's veto.
 - A block's side is a landing only when a feature describes what to build there.

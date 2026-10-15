@@ -24,6 +24,7 @@ import type { EditorJsonValue } from '../interfaces/json';
 import type {
   PropertyValueDescriptor,
   SchemaPropertyHandle,
+  SchemaPropertyLandingPolicy,
   SchemaTarget,
 } from '../interfaces/schema';
 import { failInvariant } from '../internal/fail-invariant';
@@ -234,6 +235,12 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       path: Path,
       root?: RootKey
     ) => Readonly<Record<string, unknown>>;
+    elementPropertyLanding: (
+      element: Element,
+      key: string,
+      ancestors: readonly Element[],
+      root: RootKey
+    ) => SchemaPropertyLandingPolicy;
     fit: (slice: ContentSlice, options: InternalSliceFitOptions) => boolean;
     fitContent: (
       slice: ContentSlice,
@@ -688,6 +695,76 @@ export const canPlaceBlocksAtPath = (
   options: Readonly<{ removing?: readonly number[]; root?: RootKey }> = {}
 ) => getInternalEditorSchemaFromApi(schemaApi).canPlaceAtPath(at, fit, options);
 
+/** A changed span of a root's children, in the before and the after root. */
+export type ImportedRootWindow = Readonly<{
+  afterFrom: number;
+  afterTo: number;
+  beforeFrom: number;
+  beforeTo: number;
+}>;
+
+/**
+ * Whether a root that changed only inside `windows`, ordered by position,
+ * still holds its content. It checks each child inside a window at its final
+ * index, each retained child that ends in or leaves the root's prefix, and the
+ * final count. Any other retained child keeps a remainder slot, which does not
+ * depend on its index.
+ *
+ * @internal
+ */
+export const holdsImportedRoot = (
+  schema: InternalEditorSchemaApi,
+  root: RootKey,
+  after: Readonly<{ at: (index: number) => Descendant; length: number }>,
+  windows: readonly ImportedRootWindow[]
+): boolean => {
+  const content = schema.getRootContent(root);
+
+  if (!content) return true;
+  if (
+    after.length < content.min ||
+    (content.max !== null && after.length > content.max)
+  ) {
+    return false;
+  }
+
+  const indexes = new Set<number>();
+  let next = 0;
+  let shift = 0;
+
+  for (const window of windows) {
+    for (let index = window.afterFrom; index < window.afterTo; index++) {
+      indexes.add(index);
+    }
+  }
+  for (let index = 0; index < (content.prefix?.length ?? 0); index++) {
+    indexes.add(index);
+    while ((windows[next]?.beforeTo ?? Number.POSITIVE_INFINITY) <= index) {
+      const passed = getDefined(windows[next]);
+
+      shift +=
+        passed.afterTo -
+        passed.afterFrom -
+        (passed.beforeTo - passed.beforeFrom);
+      next += 1;
+    }
+    if ((windows[next]?.beforeFrom ?? Number.POSITIVE_INFINITY) > index) {
+      indexes.add(index + shift);
+    }
+  }
+
+  for (const index of indexes) {
+    if (
+      index < after.length &&
+      !schema.canContainAt(null, after.at(index), index, root)
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export const createEditorSchema = <V extends Value = Value>(
   getEditor: () => Editor<V>,
   getRegistry: () => PluginRegistry<any> = () => getPluginRegistry(getEditor()),
@@ -807,7 +884,10 @@ export const createEditorSchema = <V extends Value = Value>(
     const value: EditorSchemaProperty = Object.freeze({
       id: property.id,
       key: property.key,
-      lifecycle: property.lifecycle,
+      lifecycle: Object.freeze({
+        ...property.lifecycle,
+        landing: property.lifecycle.landing ?? 'preserve',
+      }),
       merge: property.merge,
       placement: property.placement,
       role: property.role,
@@ -2745,6 +2825,23 @@ export const createEditorSchema = <V extends Value = Value>(
     );
   };
 
+  const elementPropertyLanding: InternalEditorSchemaApi['elementPropertyLanding'] =
+    (element, key, ancestors, root) => {
+      const schema = getDeclarativeSchema();
+
+      return schema
+        ? (resolveCompiledSchemaProperty(
+            schema,
+            'element',
+            key,
+            toCompiledTargetContext(getElementType(element) ?? '', {
+              ancestors,
+              root,
+            })
+          )?.lifecycle.landing ?? 'preserve')
+        : 'preserve';
+    };
+
   const elementPropertiesForTypeChangeAt = (
     element: Element,
     to: Element,
@@ -4570,6 +4667,7 @@ export const createEditorSchema = <V extends Value = Value>(
     copyNodeAt,
     elementPropertiesForSplitAt,
     elementPropertiesForTypeChangeAt,
+    elementPropertyLanding,
     assertContentSliceForSchema,
     assertDocument,
     assertFragment,

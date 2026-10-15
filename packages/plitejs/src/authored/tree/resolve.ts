@@ -3,6 +3,7 @@ import type { JsonRecord } from '../../core/change/json';
 import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
 import { deriveValue } from '../../core/record-store';
+import type { RootPart } from '../../core/representation';
 import { survivalUnder } from '../../core/survival';
 import { getDefined } from '../../internal/get-defined';
 import { createDependencies, type Dependencies } from '../facts/dependencies';
@@ -52,8 +53,11 @@ export type AuthoredResolveSchema = Readonly<{
     children: readonly JsonNode[],
     site: readonly JsonRecord[],
     root: string,
-    vacated: (slot: number, candidate: JsonNode) => boolean
+    vacated: (slot: number, candidate: JsonNode) => boolean,
+    part?: RootPart
   ) => Completion<JsonNode>;
+  /** Whether `node` can stand in prefix slot `slot` of `root`. */
+  fitsPrefix?: (node: JsonNode, slot: number, root: string) => boolean;
   content: (
     type: string | null,
     root: string
@@ -198,6 +202,12 @@ export type AuthoredResolveOptions = Readonly<{
   dependencies?: Dependencies;
   facts?: ReviewFacts;
   holdsRejectedDeletions?: boolean;
+  /**
+   * The part of a root the children resolve as. A part with fewer nodes than
+   * its minimum completes even when no decision changed it, because blocks
+   * the rest of the root dropped leave the root short.
+   */
+  part?: RootPart;
 }>;
 
 const propsOf = (node: Node) => {
@@ -206,9 +216,17 @@ const propsOf = (node: Node) => {
   return props;
 };
 
-const removes = (mark: AuthoredMark, result: 'accept' | 'keep' | 'reject') =>
+type Result = 'accept' | 'keep' | 'reject' | undefined;
+
+/** @internal */
+export const removes = (mark: AuthoredMark, result: Result) =>
   (mark.kind === 'insert' && result === 'reject') ||
   (mark.kind === 'delete' && result === 'accept');
+
+/** @internal */
+export const mergesUp = (mark: AuthoredMark, result: Result) =>
+  (mark.kind === 'join' && result === 'accept') ||
+  (mark.kind === 'split' && result === 'reject');
 
 /** The pending join a block's claim says the block goes with. */
 export const followsOf = (mark: AuthoredMark) =>
@@ -363,6 +381,7 @@ export const resolveAuthoredChildren = (
     facts = NO_FACTS,
     dependencies = createDependencies(facts),
     holdsRejectedDeletions = false,
+    part,
   }: AuthoredResolveOptions = {}
 ): AuthoredResolution => {
   const pending = (node: unknown) =>
@@ -435,7 +454,8 @@ export const resolveAuthoredChildren = (
           nodes as readonly JsonNode[],
           site,
           root,
-          vacated
+          vacated,
+          part
         ) as Completion<Node>)
       : {
           built: [],
@@ -521,12 +541,7 @@ export const resolveAuthoredChildren = (
     for (const mark of pending(node)) {
       const result = resultOf(mark);
 
-      if (
-        (mark.kind === 'join' && result === 'accept') ||
-        (mark.kind === 'split' && result === 'reject')
-      ) {
-        join = true;
-      }
+      if (mergesUp(mark, result)) join = true;
       if (
         (mark.kind === 'unwrap' && result === 'accept') ||
         (mark.kind === 'wrap' && result === 'reject')
@@ -584,14 +599,9 @@ export const resolveAuthoredChildren = (
     )
   );
   const joinOf = (node: Node) => {
-    const marks = pending(node).filter((mark) => {
-      const result = resultOf(mark);
-
-      return (
-        (mark.kind === 'join' && result === 'accept') ||
-        (mark.kind === 'split' && result === 'reject')
-      );
-    });
+    const marks = pending(node).filter((mark) =>
+      mergesUp(mark, resultOf(mark))
+    );
 
     return {
       at: Math.min(...marks.map((mark) => mark.at)),
@@ -1291,7 +1301,7 @@ export const resolveAuthoredChildren = (
     top.list,
     [],
     children,
-    top.changed,
+    top.changed || top.list.length < (part?.min ?? 0),
     top.dirty
   );
   // Indexed from the final tree, so a node a later merge replaced is not

@@ -189,7 +189,7 @@ editor.api.transfer.move({ announce: 'Moved down', to: 'next' });
 
 传入另一个编辑器作为 `from`，即可从该编辑器移动或复制。在相互独立的编辑器之间，移动总是复制。
 
-复制到某个 `point` 的文本会像粘贴一样落在该处。[`editorReads.slice.landing`](/docs/clipboard) 决定落地内容，因此复制的列表项采用落点所在列表项的层级。复制到区块边缘的区块保持各自的层级。
+移动或复制到某个 `point` 的文本会像粘贴一样落在该处。[`editorReads.slice.landing`](/docs/clipboard) 决定落地内容，因此列表项采用落点所在列表项的层级。若落地会改变被移动内容的文本或标记，或改变其携带的区块的类型或属性（声明了 `landing: 'rebase'` 或 `'adopt'` 的元素属性除外），移动以 `lossy` 拒绝。移动不检查被移动文本在落点处并入的区块及其外层区块，但会检查它携带的其他所有区块，包括空的最后一个区块。封闭区块（例如标题）不会并入任何区块。移动落在空区块中时，被移动的区块可以继承被替换区块的属性。复制到区块边缘的区块保持各自的层级，并采用 [`editorReads.transfer.adopt`](#塑造区块副本) 给出的属性，例如旁边的列表。
 
 `to` 也接受区块的一侧 `{ key, side: 'start' | 'end' }`。当某个功能（例如分栏插件）构建侧边放置时，区块会落到它旁边。侧边只接受同一文档内的移动；复制会以 `policy` 拒绝。像手柄菜单一样，在提供操作之前先检查：
 
@@ -219,6 +219,46 @@ export const PinnedPlugin = definePlugin('pinned', {
 输入还包含源视图（`from`）、`intent`（`move` 或 `copy`）、`payload` 以及文档之间的 `relation`。第二个参数是目标视图。
 
 若要移动边缘，例如越过列表项的嵌套项，用读取中间件包裹 `editorReads.transfer.landing` 并返回另一个边缘，或返回 `next()` 保持原边缘。被移动的边缘必须映射到它自身；随后由 schema 和否决检查最终边缘。
+
+### 塑造区块副本
+
+区块副本可以通过 `editorReads.transfer.adopt` 从落点获取属性，正如 List 让复制的列表项加入旁边的列表或获得新的列表。该读取在最终边缘上、`editorReads.transfer.landing` 之后运行一次，返回补丁。每个补丁给出 `payload.nodes` 内的路径以及要在该处设置的属性，`undefined` 表示移除该属性。它的输入与否决的输入字段相同，`payload` 总是区块载荷。它设置的每个属性都要以 `landing: 'adopt'` 声明，并用 `.extend()` 扩展插件，让读取中间件看到该声明：
+
+```tsx
+import { editorReads, PLUGINS, property, schema, target } from 'platejs';
+import { definePlugin } from 'platejs/react';
+
+export const GroupPlugin = definePlugin('group', {
+  schema: ({ targetElementTypes }) => ({
+    properties: {
+      group: schema.elementProperty(property.string(), {
+        landing: 'adopt',
+        target: target.types(targetElementTypes),
+      }),
+    },
+  }),
+  targetPlugins: [PLUGINS.paragraph],
+}).extend(() => ({
+  readMiddleware: ({ around }) => [
+    around(editorReads.transfer.adopt, ({ input, next }) => {
+      const [node] = input.target;
+
+      if (typeof node.group !== 'string') return next();
+
+      return [
+        ...next(),
+        ...input.payload.nodes.flatMap((copied, index) =>
+          'type' in copied && copied.type === node.type
+            ? [{ at: [index], properties: { group: node.group } }]
+            : []
+        ),
+      ];
+    }),
+  ],
+}));
+```
+
+若补丁设置的属性未被该节点类型以 `landing: 'adopt'` 声明，或作用于 `type`、内容根，或位于 payload 之外，整个副本会以 `policy` 拒绝，因此示例只修补复制的段落。schema 和否决判断打过补丁的副本。放置指示器也会运行该读取，每个候选边缘一次，因此它只绘制放置会接受的边缘。移动从不运行它。
 
 ### 在区块旁构建
 

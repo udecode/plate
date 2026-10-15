@@ -8,7 +8,11 @@ import * as Y from 'yjs';
 
 import { failInvariant } from '../../src/internal/fail-invariant';
 import { setYjsAttribute } from '../../src/yjs/core/attributes';
-import { createYjsNode, getYjsNode } from '../../src/yjs/core/document';
+import {
+  createYjsNode,
+  getYjsNode,
+  readPliteValueFromYjs,
+} from '../../src/yjs/core/document';
 import {
   type CapturedYjsEventBatch,
   YjsEventChangeBridge,
@@ -379,12 +383,8 @@ const propertyContexts = [
       batch.events[0].target === affectedNode,
       'Property-context events must target the edited node'
     );
-    const normalization = {
-      changedNodes: new Set<never>(),
-      removedNodes: new Set<never>(),
-    };
     unrelatedReads = 0;
-    const result = bridge.translate(batch, normalization);
+    const result = bridge.prepareRemote(batch);
     const observedReads = unrelatedReads;
     assert.equal(result.kind, 'change');
     if (result.kind !== 'change') {
@@ -392,7 +392,7 @@ const propertyContexts = [
     }
     assert.deepEqual(
       result.import.change.apply({ children: before }).children,
-      result.import.children
+      readPliteValueFromYjs(root)
     );
     const ordinary = Object.freeze(
       before.map((node) => Object.freeze({ ...node }))
@@ -401,7 +401,7 @@ const propertyContexts = [
     const samples: number[] = [];
     for (let sample = 0; sample <= sampleCount; sample++) {
       const started = performance.now();
-      assert.equal(timedBridge.translate(batch, normalization).kind, 'change');
+      assert.equal(timedBridge.prepareRemote(batch).kind, 'change');
       const elapsed = performance.now() - started;
       if (sample > 0) samples.push(elapsed);
     }

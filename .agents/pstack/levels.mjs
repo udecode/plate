@@ -4,7 +4,8 @@
 // Codex lead, and a panel, architect or arena round with a seat missing or on
 // a lower effort. The configured seats come from the runtime's models sheet;
 // a `<seat> @<effort>` that a project rule outside the pstack block names
-// replaces that seat's effort, the highest one when it names several.
+// replaces that seat's effort, the highest one when it names several. The
+// `maxEffort` in `.agents/pstack.json` caps every target.
 // Installed by sync-pstack.
 // Usage: node .agents/pstack/levels.mjs [--lead '<model> @<effort>'] [--seats '<seat list>'] <decision log>...
 //        (--lead judges against that level instead of this session's;
@@ -13,9 +14,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { currentLead } from './lead.mjs';
+import { capEffort, currentLead, EFFORTS, maxEffort } from './lead.mjs';
 
-const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
 const rank = (effort) => EFFORTS.indexOf(effort);
 const MODEL = /^(?:codex:[\w.-]+|claude-[\w.-]+|gpt-[\w.-]+|opus|sonnet|haiku|fable)$/u;
 const family = (model) => (/^(?:claude-|opus|sonnet|haiku|fable)/u.test(model) ? 'claude' : 'codex');
@@ -54,7 +54,7 @@ function parseLead(label) {
   return { model, effort: effort ?? null };
 }
 
-function targets(sheet, agents, defaultEffort, override) {
+function targets(sheet, agents, defaultEffort, override, max) {
   const raises = (agents ?? '')
     .replace(BLOCK, '')
     .match(/`[^`]+`/gu)
@@ -65,10 +65,11 @@ function targets(sheet, agents, defaultEffort, override) {
     if (named.length === 0) return seat;
     return { ...seat, effort: named.reduce((top, raise) => (rank(raise.effort) > rank(top) ? raise.effort : top), named[0].effort) };
   };
+  const capped = (seat) => ({ ...seat, effort: capEffort(seat.effort, max) });
   return (role) => {
-    if (override) return seatList(override).map((seat) => ({ ...seat, effort: seat.effort ?? defaultEffort }));
+    if (override) return seatList(override).map((seat) => capped({ ...seat, effort: seat.effort ?? defaultEffort }));
     const line = sheet?.match(new RegExp(`^${role}:\\s*(.+)$`, 'mu'))?.[1];
-    return line ? seatList(line).map((seat) => raised({ ...seat, effort: seat.effort ?? defaultEffort })) : null;
+    return line ? seatList(line).map((seat) => capped(raised({ ...seat, effort: seat.effort ?? defaultEffort }))) : null;
   };
 }
 
@@ -139,8 +140,15 @@ function main(argv) {
   if (!logs.length) return [usage, 1];
   const missing = logs.find((log) => !existsSync(log));
   if (missing) return [`${missing} does not exist`, 1];
-  const run = flags.lead ? parseLead(flags.lead) : currentLead('levels.mjs');
-  if (!run?.effort) return ['No single recent Claude Code or Codex transcript holds this command, so the current level is unknown; pass --lead.', 1];
+  const found = flags.lead ? parseLead(flags.lead) : currentLead('levels.mjs');
+  if (!found?.effort) return ['No single recent Claude Code or Codex transcript holds this command, so the current level is unknown; pass --lead.', 1];
+  let max;
+  try {
+    max = maxEffort();
+  } catch (error) {
+    return [error.message, 1];
+  }
+  const run = { ...found, effort: capEffort(found.effort, max) };
   const home = process.env.HOME ?? homedir();
   const sheetPath =
     family(run.model) === 'claude' ? join(home, '.claude/pstack-models.md') : join(process.env.CODEX_HOME ?? join(home, '.codex'), 'pstack-models.md');
@@ -148,9 +156,9 @@ function main(argv) {
   const sheetEffort = sheet?.match(/^default effort:\s*(\w+)/mu)?.[1];
   const defaultEffort = !sheetEffort || sheetEffort === 'session' ? run.effort : sheetEffort;
   const agents = existsSync('AGENTS.md') ? readFileSync('AGENTS.md', 'utf8') : null;
-  const seatsFor = targets(sheet, agents, defaultEffort, flags.seats);
+  const seatsFor = targets(sheet, agents, defaultEffort, flags.seats, max);
   const panel = seatsFor(ROUNDS.panel.role);
-  const out = [`target: lead ${run.model} @${run.effort}${panel ? `; seats ${panel.map(seatLabel).join(', ')}` : ''}`];
+  const out = [`target: lead ${run.model} @${run.effort}${panel ? `; seats ${panel.map(seatLabel).join(', ')}` : ''}${max ? `; maxEffort ${max}` : ''}`];
   let below = 0;
   let total = 0;
   try {

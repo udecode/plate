@@ -1,3 +1,4 @@
+import { definePlugin } from '..';
 import { authoredDocumentCapabilityPoint } from '../core/authored-document-capability';
 import {
   getAuthoredUpdateView,
@@ -19,7 +20,7 @@ import {
   rootIndexOf,
   rootNodesOf,
 } from '../core/change/document-index';
-import { deepFreeze, jsonEqual } from '../core/change/json';
+import { jsonEqual } from '../core/change/json';
 import { copyFields, setLazyRoot } from '../core/change/lazy-root';
 import type { RootChange } from '../core/change/root-change';
 import type { JsonEditorValue, JsonNode } from '../core/change/tokens';
@@ -27,7 +28,7 @@ import {
   type EditorFrameRecording,
   registerEditorCommandDocument,
 } from '../core/command-document';
-import { createEditorCommit, getEditorCommitValue } from '../core/commit';
+import { prepareCommandFrame } from '../core/command-frame';
 import { registerEditorContent } from '../core/content';
 import { documentAdmissionPoint } from '../core/document-admission';
 import {
@@ -40,7 +41,6 @@ import {
   getEditorSchema,
 } from '../core/editor-runtime';
 import type { InternalEditorSchemaApi } from '../core/editor-schema';
-import { definePlugin } from '../core/plugin';
 import {
   getCompiledEditorSchema,
   getPluginContributions,
@@ -48,9 +48,6 @@ import {
 import {
   getActiveEditorUpdateId,
   getActiveEditorUpdateTags,
-  getEditorProjectionSnapshotIndex,
-  hasEditorProjectionSnapshotIndex,
-  inheritEditorProjectionIndexes,
   notifyEditorViewState,
   subscribeEditorViewState,
   withEditorDocumentProjection,
@@ -73,14 +70,14 @@ import { EditorSchemaValidationError } from '../core/schema-validation';
 import { txOnly, type TxOnlyMethod, txStored } from '../core/tx-only';
 import type {
   AnyEditor as Editor,
-  EditorCommit,
   EditorDocumentValue,
-  EditorSnapshot,
+  NodeKey,
   Plugin,
   PluginDependencyReferenceFor,
   Selection,
 } from '../interfaces/editor';
 import type { Element } from '../interfaces/element';
+import type { Location } from '../interfaces/location';
 import type { Descendant } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { type Point, PointApi } from '../interfaces/point';
@@ -88,9 +85,8 @@ import { type Range, RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
 import {
-  type AuthoredChangeIndex,
-  groupAuthoredChanges,
   indexAuthoredChanges,
+  type Occurrence,
   readAuthoredDetails,
 } from './changes';
 import {
@@ -116,12 +112,9 @@ import {
   type VerdictRecord,
   withStore,
 } from './facts/records';
-import {
-  type AuthoredLocationMap,
-  authoredLocationMap,
-  projectAuthoredDocument,
-  projectionRefusal,
-} from './format';
+import { projectAuthoredDocument, projectionRefusal } from './format';
+import { createReviewLedger, getReviewLedger } from './ledger/ledger';
+import { countLedgerWork } from './ledger/work';
 import {
   type AuthoredRefusal,
   constructsValues,
@@ -130,11 +123,10 @@ import {
   unrepresentable,
 } from './refusal';
 import { authoredResolveSchemaOf } from './resolve-schema';
-import { createReviewLedger } from './ledger/ledger';
 import {
   acceptedChange,
   characterAlignedChange,
-  structuralAcceptedChange,
+  decidedContentChange,
 } from './tree/alignment';
 import { relinkCuts } from './tree/cuts';
 import { acceptedValues, type FormatTag } from './tree/layers';
@@ -172,11 +164,17 @@ import type {
 type AuthoredRead = {
   view: () => AuthoredView;
   change: (id: string) => AuthoredChange | null;
+  /**
+   * Pending changes in document order, a page at a time. The cursor names the
+   * next change and falls back to the last one read, and reads as stale when
+   * both have left.
+   */
   changes: (query?: AuthoredQuery) => AuthoredPage;
-  changesAt: (range: Range) => readonly AuthoredChange[];
   details: (id: string) => AuthoredChangeDetails | null;
-  /** Pending changes as cards show them, each with its palette rank. */
-  groups: () => readonly AuthoredChangeGroup[];
+  /** The cards touching a place of the stored document, in document order. */
+  groups: (query: Readonly<{ at: Location | NodeKey }>) => readonly AuthoredChangeGroup[];
+  /** The card holding a pending change. */
+  groupOf: (changeId: string) => AuthoredChangeGroup | null;
   preview: (
     decisions: AuthoredDecision | readonly AuthoredDecision[]
   ) => AuthoredResult;
@@ -390,18 +388,20 @@ const mapSelection = (
 };
 
 // Tests that count work turn the check off with PLITE_LAW_CHECK=0, because its
-// projection reads every mark again.
-const checksFramedLaw = () => {
+// projection reads every mark again. PLITE_LAW_CHECK=content checks the
+// content and not the selection.
+const framedLawCheck = () => {
   const env = (
     globalThis as { process?: { env?: Record<string, string | undefined> } }
   ).process?.env;
 
-  return env?.NODE_ENV === 'test' && env.PLITE_LAW_CHECK !== '0';
+  return env?.NODE_ENV === 'test' ? env.PLITE_LAW_CHECK : '0';
 };
 
 const assertFramedLaw = (
   input: EditorFrameRecording,
-  schema: AuthoredResolveSchema
+  schema: AuthoredResolveSchema,
+  selection: boolean
 ) => {
   const { frame, root, stored } = input;
   const written = contentOf(stored.value as JsonEditorValue);
@@ -417,7 +417,11 @@ const assertFramedLaw = (
       )}`
     );
   }
-  if (frame.selection?.kind !== 'text' || stored.selection?.kind !== 'text') {
+  if (
+    !selection ||
+    frame.selection?.kind !== 'text' ||
+    stored.selection?.kind !== 'text'
+  ) {
     return;
   }
 
@@ -459,47 +463,6 @@ const assertFramedLaw = (
   }
 };
 
-// Every read of one stored document shares its index and projections. A
-// read builds a new document envelope each time, so they key on its root
-// arrays, which stay the same until the document changes.
-const DOCUMENT_KEYS = new WeakMap<
-  object,
-  Readonly<{
-    key: object;
-    records: object;
-    roots: ReadonlyArray<[string, unknown]>;
-  }>
->();
-const INDEXES = new WeakMap<object, AuthoredChangeIndex>();
-const PROJECTIONS = new WeakMap<
-  object,
-  Partial<Record<'accepted' | 'proposed', JsonEditorValue>>
->();
-
-const documentKeyOf = (value: JsonEditorValue) => {
-  const roots = Object.entries(value.roots ?? {});
-  const records = getValueRecords(value);
-  const main = rootNodesOf(value, 'children');
-  const cached = DOCUMENT_KEYS.get(main);
-
-  if (
-    cached &&
-    cached.records === records &&
-    cached.roots.length === roots.length &&
-    cached.roots.every(
-      ([root, children], index) =>
-        roots[index][0] === root && roots[index][1] === children
-    )
-  ) {
-    return cached.key;
-  }
-
-  const key = {};
-
-  DOCUMENT_KEYS.set(main, { key, records, roots });
-  return key;
-};
-
 // Owners reading their stored document, which their own preview would
 // otherwise project the review marks out of.
 const STORED_READS = new WeakSet<Editor>();
@@ -516,79 +479,105 @@ const storedValue = (editor: Editor) => {
   }
 };
 
-const changeIndexOf = (value: JsonEditorValue) => {
-  const key = documentKeyOf(value);
-  let index = INDEXES.get(key);
+// A cursor is the query it pages, the next change and the last one read.
+const readCursor = (cursor: string): readonly [string, string, string] => {
+  let parsed: unknown;
 
-  if (!index) {
-    index = indexAuthoredChanges(value);
-    INDEXES.set(key, index);
+  try {
+    parsed = JSON.parse(cursor);
+  } catch {
+    parsed = null;
+  }
+  if (
+    !Array.isArray(parsed) ||
+    parsed.length !== 3 ||
+    parsed.some((part) => typeof part !== 'string')
+  ) {
+    throw new Error('Stale authored page cursor.');
   }
 
-  return index;
+  return parsed as [string, string, string];
 };
 
-const projectionOf = (
+const storedRead = <T>(editor: Editor, read: (owner: Editor) => T): T => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (STORED_READS.has(owner)) return read(owner);
+  STORED_READS.add(owner);
+  try {
+    return read(owner);
+  } finally {
+    STORED_READS.delete(owner);
+  }
+};
+
+// The pending changes touching a place of the stored document, in document
+// order: a node holds the changes with an occurrence inside it, and a point or
+// a range the changes with a range that intersects it.
+const placeIds = (
   editor: Editor,
-  value: JsonEditorValue,
-  projection: 'accepted' | 'proposed'
-) => {
-  const key = documentKeyOf(value);
-  const cached = PROJECTIONS.get(key) ?? {};
-  const projected =
-    cached[projection] ??
-    deepFreeze(
-      projectAuthoredValue(value, projection, authoredResolveSchemaOf(editor))
-        .value
+  book: ReturnType<typeof changesOf>,
+  at: Location | NodeKey
+): string[] => {
+  if (typeof at === 'string' || PathApi.isPath(at)) {
+    const path =
+      typeof at === 'string'
+        ? storedRead(editor, (owner) => owner.read.nodes.path(at))
+        : at;
+
+    if (!path) return [];
+
+    const first = getDefined(path[0]);
+
+    return book.inOrder(
+      [...book.idsIn('main', first, first + 1)].filter((id) =>
+        book
+          .occurrences(id)
+          .some(
+            (occurrence) =>
+              occurrence.root === 'main' &&
+              (PathApi.equals(occurrence.path, path) ||
+                PathApi.isAncestor(path, occurrence.path))
+          )
+      )
     );
+  }
 
-  cached[projection] = projected;
-  PROJECTIONS.set(key, cached);
+  const range = RangeApi.isRange(at) ? at : { anchor: at, focus: at };
+  const [start, end] = RangeApi.edges(range);
 
-  return projected;
+  return book.inOrder(
+    [
+      ...book.idsIn(
+        start.root ?? 'main',
+        getDefined(start.path[0]),
+        getDefined(end.path[0]) + 1
+      ),
+    ].filter((id) =>
+      getDefined(book.change(id)).ranges.some(
+        (candidate) => RangeApi.intersection(candidate, range) !== null
+      )
+    )
+  );
 };
+
+const changesOf = (editor: Editor, value: JsonEditorValue) =>
+  getDefined(getReviewLedger(getEditorRuntimeOwner(editor))).changes(value);
 
 type Outcome = 'accept' | 'reject';
 
-/**
- * The change from a stored document to `decided`, the same document with each
- * pending change taken by `outcomeOf`. Accepting maps a position through the
- * merges, so a caret after a letter typed at a pending join stays after it,
- * and every kept letter keeps its place for anchors and the selection.
- */
 const decidedChange = (
   value: JsonEditorValue,
   decided: JsonEditorValue,
-  outcomeOf: (mark: AuthoredMark) => Outcome | undefined
-) => {
-  const facts = factsOf(value);
-  const stored = contentOf(value);
-  const target = contentOf(decided);
-  const content =
-    structuralAcceptedChange(stored, target) ??
-    characterAlignedChange(stored, target, {
-      joins: (node) =>
-        marksOf(node, facts).some(
-          (mark) =>
-            (mark.kind === 'join' && outcomeOf(mark) === 'accept') ||
-            (mark.kind === 'split' && outcomeOf(mark) === 'reject')
-        ),
-      removes: (node) =>
-        marksOf(node, facts).some(
-          (mark) =>
-            (mark.kind === 'insert' && outcomeOf(mark) === 'reject') ||
-            (mark.kind === 'delete' && outcomeOf(mark) === 'accept')
-        ),
-    }) ??
-    DocumentChange.between(stored, target, {
-      isSetValued: isAuthoredSetValued,
-    });
-
-  return withDocumentChangeRecords(
-    content,
+  actions: ReadonlyMap<string, Outcome>
+) =>
+  withDocumentChangeRecords(
+    decidedContentChange(contentOf(value), contentOf(decided), {
+      facts: factsOf(value),
+      outcomes: actions,
+    }),
     recordOpsBetween(getValueRecords(value), getValueRecords(decided))
   );
-};
 
 /** `value` without its records, which a decision only adds to. */
 const contentOf = (value: JsonEditorValue): JsonEditorValue => {
@@ -965,156 +954,14 @@ const acceptOwn = (
       };
 };
 
-const incarnationsOf = (index: AuthoredChangeIndex, id: string) =>
-  new Map(
-    (index.occurrences.get(id) ?? []).map(({ mark }) => [
-      incarnationOf(mark),
-      mark,
-    ])
-  ).values();
+const incarnationsOf = (occurrences: readonly Occurrence[]) =>
+  new Map(occurrences.map(({ mark }) => [incarnationOf(mark), mark])).values();
 
 const withVerdicts = (
   value: JsonEditorValue,
   verdicts: readonly VerdictRecord[]
 ): JsonEditorValue =>
   verdicts.length === 0 ? value : deriveValue(value, {}, putVerdicts(verdicts));
-
-const PREVIEW_MAPS = new WeakMap<object, Map<string, AuthoredLocationMap>>();
-
-const previewMapOf = (
-  editor: Editor,
-  value: JsonEditorValue,
-  preview: 'accepted' | 'proposed',
-  root: string
-) => {
-  const key = documentKeyOf(value);
-  const maps = PREVIEW_MAPS.get(key) ?? new Map<string, AuthoredLocationMap>();
-  let map = maps.get(`${preview}:${root}`);
-
-  if (!map) {
-    const projected = projectionOf(editor, value, preview);
-    const outcome: Outcome = preview === 'proposed' ? 'accept' : 'reject';
-
-    map = authoredLocationMap(
-      value,
-      projected,
-      decidedChange(value, projected, () => outcome),
-      root
-    );
-    maps.set(`${preview}:${root}`, map);
-    PREVIEW_MAPS.set(key, maps);
-  }
-
-  return map;
-};
-
-const projectionSnapshot = (
-  owner: Editor,
-  value: EditorDocumentValue,
-  version: number
-): EditorSnapshot => {
-  let index: EditorSnapshot['index'] | undefined;
-
-  return Object.freeze({
-    children: value.children,
-    selection: null,
-    version,
-    get index() {
-      return (index ??= getEditorProjectionSnapshotIndex(
-        owner,
-        value.children
-      ));
-    },
-  });
-};
-
-const PREVIEW_COMMITS = new WeakMap<
-  EditorCommit,
-  Partial<Record<'accepted' | 'proposed', EditorCommit>>
->();
-
-const carryProjection = (
-  owner: Editor,
-  before: JsonEditorValue,
-  stored: JsonEditorValue,
-  preview: 'accepted' | 'proposed'
-) => {
-  const key = documentKeyOf(stored);
-  const changes = DocumentChange.between(
-    before,
-    projectionOf(owner, stored, preview)
-  );
-  const after = changes.empty ? before : changes.apply(before);
-
-  PROJECTIONS.set(key, { ...PROJECTIONS.get(key), [preview]: after });
-  if (!changes.empty) {
-    inheritEditorProjectionIndexes(
-      owner,
-      before as EditorDocumentValue,
-      after as EditorDocumentValue,
-      changes
-    );
-  }
-
-  return { after, changes };
-};
-
-const previewCommit = (
-  owner: Editor,
-  commit: EditorCommit,
-  preview: 'accepted' | 'proposed'
-) => {
-  const cached = PREVIEW_COMMITS.get(commit) ?? {};
-
-  if (cached[preview]) return cached[preview];
-
-  const before = projectionOf(
-    owner,
-    getEditorCommitValue(commit, 'before'),
-    preview
-  );
-  const { after, changes } = carryProjection(
-    owner,
-    before,
-    getEditorCommitValue(commit),
-    preview
-  );
-
-  const projected = createEditorCommit(
-    {
-      after: projectionSnapshot(
-        owner,
-        after as EditorDocumentValue,
-        commit.version
-      ),
-      afterValue: after,
-      annotations: commit.annotations,
-      before: projectionSnapshot(
-        owner,
-        before as EditorDocumentValue,
-        commit.previousVersion
-      ),
-      beforeValue: before,
-      changes,
-      dirtyStateKeys: commit.dirtyStateKeys,
-      editor: owner,
-      effects: commit.effects,
-      replace: commit.changed.hasAny('replace'),
-      selectionAfter: null,
-      selectionAfterRoot: 'main',
-      selectionBefore: null,
-      selectionBeforeRoot: 'main',
-      selectionChanged: false,
-      tags: commit.tags,
-    },
-    { previousVersion: commit.previousVersion, version: commit.version }
-  );
-
-  cached[preview] = projected;
-  PREVIEW_COMMITS.set(commit, cached);
-
-  return projected;
-};
 
 /**
  * The `authored` plugin with deterministic ids, clock and starting intent,
@@ -1174,12 +1021,36 @@ export const createAuthoredPlugin = (
         change: DocumentChange;
         result: AuthoredResult;
       }> => {
-    const index = changeIndexOf(value);
+    const book = changesOf(editor, value);
     const actions = new Map<string, 'accept' | 'reject'>();
     let conflicting = false;
 
+    const stale = new Set<string>();
+
     for (const decision of [decisions].flat()) {
-      for (const { id } of decision.changes) {
+      for (const read of 'groups' in decision
+        ? decision.groups
+        : decision.changes) {
+        const current =
+          'groups' in decision ? book.groupOf(read.id) : book.change(read.id);
+
+        if (current?.id !== read.id || current.revision !== read.revision) {
+          stale.add(read.id);
+        }
+      }
+    }
+    if (stale.size > 0) {
+      return { result: { ids: [...stale], status: 'stale' } };
+    }
+    for (const decision of [decisions].flat()) {
+      const decided =
+        'groups' in decision
+          ? decision.groups.flatMap((group) =>
+              book.members(group.id).map((entry) => entry.id)
+            )
+          : decision.changes.map((change) => change.id);
+
+      for (const id of decided) {
         conflicting ||=
           (actions.get(id) ?? decision.action) !== decision.action;
         actions.set(id, decision.action);
@@ -1189,22 +1060,6 @@ export const createAuthoredPlugin = (
     const ids = [...actions.keys()];
 
     if (conflicting) return { result: { ids, status: 'invalid' } };
-
-    const stale = [decisions]
-      .flat()
-      .flatMap((decision) => decision.changes)
-      .filter(
-        (change) => index.changes.get(change.id)?.revision !== change.revision
-      );
-
-    if (stale.length > 0) {
-      return {
-        result: {
-          ids: [...new Set(stale.map((change) => change.id))],
-          status: 'stale',
-        },
-      };
-    }
 
     let resolution: ReturnType<typeof resolveAuthoredValue>;
 
@@ -1233,7 +1088,7 @@ export const createAuthoredPlugin = (
     // gets its own key and an undo drops only this one.
     const decision = createIncarnationId();
     const verdicts = [...actions].flatMap(([id, verdict]) =>
-      [...incarnationsOf(index, id)].map(
+      [...incarnationsOf(book.occurrences(id))].map(
         ({ at, change, inc }): VerdictRecord => ({
           decision,
           member: inc === undefined ? { at, change } : { at, change, inc },
@@ -1245,14 +1100,14 @@ export const createAuthoredPlugin = (
     // A change whose inserted text the decision removes, such as text typed
     // inside a rejected insertion, goes only when it is decided too. An empty
     // block completion built holds nothing to lose.
-    const remaining = changeIndexOf(decidedValue).changes;
-    const taken = [...index.changes.keys()].filter(
+    const remaining = indexAuthoredChanges(decidedValue).changes;
+    const taken = [...book.idsFrom(null, false)].filter(
       (id) =>
         !actions.has(id) &&
         !remaining.has(id) &&
-        index.occurrences
-          .get(id)
-          ?.some(
+        book
+          .occurrences(id)
+          .some(
             ({ mark, node }) =>
               mark.kind === 'insert' &&
               typeof node.text === 'string' &&
@@ -1272,9 +1127,7 @@ export const createAuthoredPlugin = (
       throw error;
     }
 
-    const change = decidedChange(value, decidedValue, (mark) =>
-      actions.get(mark.change)
-    );
+    const change = decidedChange(value, decidedValue, actions);
 
     return change.empty
       ? { result: { ids: [], status: 'unchanged' } }
@@ -1346,30 +1199,38 @@ export const createAuthoredPlugin = (
           listener(refusal as AuthoredRefusal)
         ),
       subscribeChanges: (listener: (changeIds: readonly string[]) => void) => {
-        let previous = changeIndexOf(storedValue(editor));
+        const book = changesOf(editor, storedValue(editor));
+        const known = new Map(book.allRevisions());
+        let seen = book.version;
 
         return getEditorRuntime(editor).subscribe(() => {
-          const next = changeIndexOf(storedValue(editor));
+          changesOf(editor, storedValue(editor));
+          if (book.version === seen) return;
 
-          if (next === previous) return;
+          const since = book.changedSince(seen);
 
-          const changed = [
-            ...new Set([...previous.changes.keys(), ...next.changes.keys()]),
-          ].filter(
-            (id) =>
-              previous.changes.get(id)?.revision !==
-              next.changes.get(id)?.revision
-          );
+          if (!since) countLedgerWork('changeScans');
 
-          previous = next;
+          const changed = (
+            since ?? [
+              ...new Set([...known.keys(), ...book.allRevisions().keys()]),
+            ]
+          ).filter((id) => known.get(id) !== book.revision(id));
+
+          seen = book.version;
+          for (const id of changed) {
+            const revision = book.revision(id);
+
+            if (revision === undefined) known.delete(id);
+            else known.set(id, revision);
+          }
           if (changed.length > 0) listener(changed);
         });
       },
     }),
     read: ({ editor }) => ({
       view: () => viewOf(editor),
-      change: (id: string) =>
-        changeIndexOf(storedValue(editor)).changes.get(id) ?? null,
+      change: (id: string) => changesOf(editor, storedValue(editor)).change(id),
       changes: (query: AuthoredQuery = {}): AuthoredPage => {
         const limit = query.limit ?? 50;
 
@@ -1377,40 +1238,85 @@ export const createAuthoredPlugin = (
           throw new Error('Authored page limit must be between 1 and 200.');
         }
 
-        const matching = changeIndexOf(storedValue(editor)).ordered.filter(
-          (change) =>
+        const book = changesOf(editor, storedValue(editor));
+        const { cursor: _cursor, limit: _limit, ...rest } = query;
+        const fingerprint = JSON.stringify(rest);
+        const at = query.at === undefined ? null : placeIds(editor, book, query.at);
+        const matches = (id: string) => {
+          const change = getDefined(book.change(id));
+
+          return (
             (query.authorId === undefined ||
               change.authorId === query.authorId) &&
             (query.from === undefined || change.createdAt >= query.from) &&
             (query.to === undefined || change.createdAt <= query.to)
-        );
-        const start = query.cursor
-          ? matching.findIndex((change) => change.id === query.cursor) + 1
-          : 0;
+          );
+        };
+        let start: string | null = null;
+        let after = false;
 
-        if (query.cursor && start === 0) {
-          throw new Error('Stale authored page cursor.');
+        if (query.cursor !== undefined) {
+          const [text, next, last] = readCursor(query.cursor);
+
+          if (text !== fingerprint) throw new Error('Stale authored page cursor.');
+          if (book.has(next) && (!at || at.includes(next))) {
+            start = next;
+          } else if (book.has(last) && (!at || at.includes(last))) {
+            start = last;
+            after = true;
+          } else {
+            throw new Error('Stale authored page cursor.');
+          }
         }
 
-        const items = matching.slice(start, start + limit);
+        const ids = at
+          ? at.slice(start === null ? 0 : at.indexOf(start) + (after ? 1 : 0))
+          : book.idsFrom(start, after, query.group ?? null);
+        const items: AuthoredChange[] = [];
+        let next: string | null = null;
+
+        for (const id of ids) {
+          if (!matches(id)) continue;
+          if (items.length === limit) {
+            next = id;
+            break;
+          }
+          items.push(getDefined(book.change(id)));
+        }
 
         return Object.freeze({
           cursor:
-            start + limit < matching.length ? (items.at(-1)?.id ?? null) : null,
+            next === null
+              ? null
+              : JSON.stringify([fingerprint, next, getDefined(items.at(-1)).id]),
           items: Object.freeze(items),
         });
       },
-      changesAt: (range: Range) =>
-        Object.freeze(
-          changeIndexOf(storedValue(editor)).ordered.filter((change) =>
-            change.ranges.some(
-              (candidate) => RangeApi.intersection(candidate, range) !== null
-            )
-          )
-        ),
-      details: (id: string) =>
-        readAuthoredDetails(changeIndexOf(storedValue(editor)), id),
-      groups: () => groupAuthoredChanges(changeIndexOf(storedValue(editor))),
+      details: (id: string) => {
+        const book = changesOf(editor, storedValue(editor));
+
+        return readAuthoredDetails(
+          {
+            changes: { get: (change) => book.change(change) ?? undefined },
+            occurrences: { get: (change) => book.occurrences(change) },
+          },
+          id
+        );
+      },
+      groupOf: (changeId: string) =>
+        changesOf(editor, storedValue(editor)).groupOf(changeId),
+      groups: ({ at }: Readonly<{ at: Location | NodeKey }>) => {
+        const book = changesOf(editor, storedValue(editor));
+        const cards = new Map<string, AuthoredChangeGroup>();
+
+        for (const id of placeIds(editor, book, at)) {
+          const card = getDefined(book.groupOf(id));
+
+          if (!cards.has(card.id)) cards.set(card.id, card);
+        }
+
+        return Object.freeze([...cards.values()]);
+      },
       preview: (decisions: AuthoredDecision | readonly AuthoredDecision[]) =>
         decideOn(editor, storedValue(editor), decisions).result,
       reviewOf: (node: unknown): AuthoredReview => {
@@ -1490,7 +1396,7 @@ export const createAuthoredPlugin = (
         return changeId;
       }),
     }),
-    activate: ({ beforePublish, editor, onCleanup }) => {
+    activate: ({ afterPublish, beforePublish, editor, onCleanup }) => {
       const owner = getEditorRuntimeOwner(editor);
       const state: AuthoredState = {
         forced: new WeakMap(),
@@ -1506,34 +1412,22 @@ export const createAuthoredPlugin = (
       }
       STATES.set(owner, state);
       onCleanup(() => STATES.delete(owner));
-      const carryReadPreviewKeys = (commit: EditorCommit) => {
-        if (
-          rootNodesOf(commit.before, 'children') ===
-          rootNodesOf(commit.after, 'children')
-        ) {
-          return;
-        }
+      const ledger = createReviewLedger(
+        owner,
+        () => authoredResolveSchemaOf(editor),
+        state.marks
+      );
 
-        const projected = PROJECTIONS.get(
-          documentKeyOf(getEditorCommitValue(commit, 'before'))
-        );
-
-        for (const preview of ['accepted', 'proposed'] as const) {
-          const before = projected?.[preview];
-
+      onCleanup(
+        getEditorRuntime(owner).subscribeCommit((commit) => {
           if (
-            before &&
-            hasEditorProjectionSnapshotIndex(
-              owner,
-              (before as EditorDocumentValue).children
-            )
+            rootNodesOf(commit.before, 'children') !==
+            rootNodesOf(commit.after, 'children')
           ) {
-            previewCommit(owner, commit, preview);
+            ledger.carry(commit);
           }
-        }
-      };
-
-      onCleanup(getEditorRuntime(owner).subscribeCommit(carryReadPreviewKeys));
+        })
+      );
 
       onCleanup(
         registerAuthoredRuntime(owner, {
@@ -1542,8 +1436,7 @@ export const createAuthoredPlugin = (
 
             if (!('preview' in current)) return value;
 
-            const map = previewMapOf(
-              owner,
+            const map = ledger.locationMap(
               storedValue(owner),
               current.preview,
               root
@@ -1567,8 +1460,7 @@ export const createAuthoredPlugin = (
             return 'preview' in current && !STORED_READS.has(owner)
               ? withEditorDocumentProjection(
                   owner,
-                  projectionOf(
-                    owner,
+                  ledger.preview(
                     storedValue(owner),
                     current.preview
                   ) as EditorDocumentValue,
@@ -1585,17 +1477,12 @@ export const createAuthoredPlugin = (
             const current = viewOf(view);
 
             return 'preview' in current
-              ? previewCommit(owner, commit, current.preview)
+              ? ledger.previewCommit(commit, current.preview)
               : commit;
           },
         })
       );
 
-      const ledger = createReviewLedger(
-        owner,
-        () => authoredResolveSchemaOf(editor),
-        state.marks
-      );
       const passesThrough = () => {
         const update = getActiveEditorUpdateId(editor);
 
@@ -1603,12 +1490,11 @@ export const createAuthoredPlugin = (
       };
 
       beforePublish(() => {
-        ledger.prepare(editor.read.value() as JsonEditorValue);
+        ledger.prepare(editor.read.value());
       });
+      afterPublish(() => prepareCommandFrame(editor));
       onCleanup(
-        registerEditorDraftGuard(editor, (value) =>
-          ledger.check(value as JsonEditorValue)
-        )
+        registerEditorDraftGuard(editor, (value) => ledger.check(value))
       );
       // A node's own marks decide, so live text inside a struck block reads.
       onCleanup(
@@ -1617,9 +1503,17 @@ export const createAuthoredPlugin = (
       // Commands decide on the document with every pending change accepted.
       onCleanup(
         registerEditorCommandDocument(editor, {
-          checkRecorded: (input) => {
-            if (checksFramedLaw()) {
-              assertFramedLaw(input, authoredResolveSchemaOf(editor));
+          recorded: (input) => {
+            ledger.recorded(input);
+
+            const check = framedLawCheck();
+
+            if (check !== '0') {
+              assertFramedLaw(
+                input,
+                authoredResolveSchemaOf(editor),
+                check !== 'content'
+              );
             }
           },
           project: (value) => {
@@ -1632,7 +1526,7 @@ export const createAuthoredPlugin = (
               return null;
             }
 
-            return ledger.frame(value as JsonEditorValue);
+            return ledger.frame(value);
           },
         })
       );

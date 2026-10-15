@@ -53,6 +53,7 @@ import {
 import { getReplaceableEmptyBlock } from '../is-empty-element';
 import { profileCoreDuration } from '../profiling';
 import { toPublicRoot } from '../public-root';
+import { recordStoreFromJson, showValueRecords } from '../record-store';
 import {
   bindCanonicalFitPreparation,
   constructCanonicalDocumentChange,
@@ -63,6 +64,7 @@ import {
   type CanonicalFitPreparation,
 } from '../representation';
 import {
+  resolveCompiledSchemaProperty,
   resolveCompiledSchemaWrapperPlan,
   type CompiledEditorSchema,
   type CompiledSchemaContentProgram,
@@ -70,7 +72,6 @@ import {
 } from '../schema-compiler';
 import { EditorSchemaValidationError } from '../schema-validation';
 import { mapSelectionWithContext } from '../selection-protocol';
-import { recordStoreFromJson, showValueRecords } from '../record-store';
 import { assertEditorJsonValue, snapshotEditorJsonValue } from '../value-codec';
 import {
   type EditorSchemaFitReport,
@@ -1020,7 +1021,26 @@ export const compileSliceFitter = <V extends Value>(
     if (!element?.content) return null;
     const parentContent = element.content;
     const root = options.root ?? 'main';
+    const rootContext = {
+      ancestors: [],
+      root: root === 'main' ? null : root,
+      type: parentType,
+    };
+    // The detached parent sits at a root, so it keeps the properties its type
+    // takes there, a required one included, and drops any that target other
+    // ancestors.
     const structuralParent: Element = {
+      ...Object.fromEntries(
+        Object.entries(options.parent).filter(
+          ([key]) =>
+            resolveCompiledSchemaProperty(
+              innerSchema10,
+              'element',
+              key,
+              rootContext
+            ) !== null
+        )
+      ),
       children: options.parent.children,
       type: parentType,
       ...(element.contentRoots.size > 0 &&
@@ -2969,7 +2989,7 @@ export const compileSliceFitter = <V extends Value>(
         ? innerSchema12.elements.byType.get(parentType)?.content
         : targetRootProgram;
 
-      if (!program) return false;
+      if (!program) return !parent && content.every(rootCanContain);
 
       return acceptsReplacement(
         innerSchema12,

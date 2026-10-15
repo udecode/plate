@@ -52,6 +52,7 @@ import {
 } from './listFamily.internal';
 import { flattenHtmlListItem, isHtmlList } from './listHtml.internal';
 import {
+  adoptListBlocks,
   createListId,
   findContinuedItem,
   getListRunSiblings,
@@ -301,6 +302,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           validationVersion: 1,
         }),
         {
+          landing: 'adopt',
           split: 'drop',
           target: target.types(targetElementTypes),
           typeChange: 'preserve-if-allowed',
@@ -312,23 +314,27 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           validationVersion: 1,
         }),
         {
+          landing: 'adopt',
           split: 'drop',
           target: target.types(targetElementTypes),
           typeChange: 'preserve-if-allowed',
         }
       ),
       listId: schema.elementProperty(property.string(), {
+        landing: 'adopt',
         target: target.types(targetElementTypes),
         typeChange: 'preserve-if-allowed',
       }),
       listLevels: schema.elementProperty(
         property.json({ validate: isListLevels, validationVersion: 1 }),
         {
+          landing: 'adopt',
           target: target.types(targetElementTypes),
           typeChange: 'preserve-if-allowed',
         }
       ),
       listStyle: schema.elementProperty(property.string(), {
+        landing: 'adopt',
         target: target.types(targetElementTypes),
         typeChange: 'preserve-if-allowed',
       }),
@@ -1339,6 +1345,11 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
         landListPaste(state, input, next(), {
           headingType: getHeadingType(editor),
           paragraphType: editor.plugin(BaseParagraphPlugin).schema.type,
+        })
+      ),
+      around(editorReads.transfer.adopt, ({ editor, input, next, state }) =>
+        adoptListBlocks(state, input, next(), {
+          headingType: getHeadingType(editor),
         })
       ),
       around(editorReads.transfer.source, ({ next, state }) => {

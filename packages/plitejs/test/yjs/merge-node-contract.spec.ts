@@ -5,12 +5,14 @@ import type { Descendant } from '../../src/index';
 import {
   assertCanonicalYjsTrace,
   assertPeerTexts,
+  clearYjsTrace,
   connectYjsPeerAndSync,
   createSeededYjsHistoryPeers,
   createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
+  getYjsTrace,
   type Peer,
   paragraph,
   redoHistoryPeerAndSync,
@@ -125,6 +127,38 @@ describe('plitejs/yjs merge_node collaboration contract', () => {
     syncConnectedPeers(peers);
 
     assertPeerTexts(peers, ['abcdZ']);
+  });
+
+  it('keeps two peers typing into the second half of a joined text in one block', () => {
+    const peers = createPeers(['a', 'b']);
+    const [a, b] = peers;
+
+    mergeSecondParagraph(a);
+    syncConnectedPeers(peers);
+
+    for (let round = 1; round <= 3; round++) {
+      for (const peer of peers) clearYjsTrace(peer);
+      a.editor.update.text.insert('x', {
+        at: { path: [0, 0], offset: 'alphab'.length },
+      });
+      b.editor.update.text.insert('y', {
+        at: {
+          path: [0, 0],
+          offset: `alphab${'x'.repeat(round - 1)}eta`.length + round - 1,
+        },
+      });
+      syncConnectedPeers(peers);
+
+      assertPeerTexts(peers, [
+        `alphab${'x'.repeat(round)}eta${'y'.repeat(round)}`,
+      ]);
+      for (const peer of peers) {
+        assert.deepEqual(
+          getYjsTrace(peer).flatMap((entry) => entry.fallback ?? []),
+          []
+        );
+      }
+    }
   });
 
   it('merges adjacent text leaves through a canonical change', () => {

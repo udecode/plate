@@ -1,3 +1,4 @@
+import type { NodeList } from '../../core/change/document-index';
 import type { JsonNode } from '../../core/change/tokens';
 import { survivalUnder } from '../../core/survival';
 import { getDefined } from '../../internal/get-defined';
@@ -35,7 +36,7 @@ type JoinTarget = { blocks: Node[]; entry: number | null; keeps: boolean };
  * the root), or null when Editing has already removed the element.
  */
 export const proposedHost = (
-  children: readonly Node[],
+  children: NodeList,
   path: readonly number[]
 ): readonly number[] | null => {
   const { survives } = proposedSurvival;
@@ -43,7 +44,7 @@ export const proposedHost = (
   let level = children;
 
   for (const index of path) {
-    const node = level[index];
+    const node = level.at(index);
 
     if (!node || !survives(node)) return null;
     chain.push(node);
@@ -59,9 +60,9 @@ export const proposedHost = (
   return path.slice(0, depth);
 };
 
-const childrenAt = (children: readonly Node[], path: readonly number[]) =>
-  path.reduce<readonly Node[]>(
-    (level, index) => level[index]?.children ?? [],
+const childrenAt = (children: NodeList, path: readonly number[]) =>
+  path.reduce<NodeList>(
+    (level, index) => level.at(index)?.children ?? [],
     children
   );
 
@@ -80,7 +81,7 @@ const childrenAt = (children: readonly Node[], path: readonly number[]) =>
  * can replace one of them.
  */
 export const proposedChildren = (
-  children: readonly Node[],
+  children: NodeList,
   hostPath: readonly number[],
   limit = Number.POSITIVE_INFINITY
 ): ProposedChild[] => {
@@ -113,8 +114,10 @@ export const proposedChildren = (
   const known = () =>
     out.length > limit &&
     (!target || target.keeps || target.entry === null || target.entry >= limit);
-  const read = (level: readonly Node[], base: readonly number[]) => {
-    for (const [index, child] of level.entries()) {
+  const read = (level: NodeList, base: readonly number[]) => {
+    for (let index = 0; index < level.length; index += 1) {
+      const child = getDefined(level.at(index));
+
       if (known()) return;
       if (!survives(child)) continue;
 
@@ -179,7 +182,7 @@ export const proposedChildren = (
         index < siblings.length;
         index += 1
       ) {
-        const found = firstBlockIn(getDefined(siblings[index]), false);
+        const found = firstBlockIn(getDefined(siblings.at(index)), false);
 
         if (found) {
           return !found.enclosed && hasJoinMark(found.node)
@@ -212,9 +215,11 @@ export const proposedChildren = (
       blocks.push(joining.node);
     }
   };
-  const host = childrenAt(children, hostPath.slice(0, -1))[
-    hostPath.at(-1) ?? -1
-  ];
+  const last = hostPath.at(-1);
+  const host =
+    last === undefined
+      ? undefined
+      : childrenAt(children, hostPath.slice(0, -1)).at(last);
 
   read(childrenAt(children, hostPath), hostPath);
   dropJoinedBack();

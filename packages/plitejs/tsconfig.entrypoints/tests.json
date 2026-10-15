@@ -16,6 +16,7 @@
     "../test/document-change-relocation.slow.ts",
     "../test/history/history-soak-contract.slow.ts",
     "../test/index.slow.ts",
+    "../test/yjs/authored-key-work.slow.ts",
     "../test/yjs/collaborative-history-contract.slow.ts",
     "../test/yjs/lift-nodes-contract.slow.ts",
     "../test/yjs/remote-import-contract.slow.ts",

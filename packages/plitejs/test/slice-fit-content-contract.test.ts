@@ -175,6 +175,38 @@ describe('detached slice content fitting', () => {
     );
   });
 
+  it('fits content under a parent whose type requires a property', () => {
+    const heading = (text: string) => ({
+      children: [{ text }],
+      level: 1,
+      type: 'heading',
+    });
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:detached-required-parent', {
+          elements: {
+            heading: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+              properties: { level: property.number({ required: true }) },
+            },
+          },
+          id: 'detached-required-parent',
+          root: schema.content.type('heading'),
+          unknown: 'reject',
+          version: 1,
+        }),
+      ],
+      initialValue: [heading('old')],
+    });
+
+    assert.deepEqual(
+      editor.read.slice.fitContent(ContentSlice.closed([{ text: 'new' }]), {
+        parent: heading('old'),
+      }),
+      [{ text: 'new' }]
+    );
+  });
+
   it('fits open cell content and supplies required defaults', () => {
     const editor = createSchemaEditor();
     const parent = cell([paragraph('old')]);

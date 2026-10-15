@@ -26,7 +26,6 @@ import {
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
-import { getPlateLLMPromptUrl } from '@/lib/llm';
 import { cn } from '@/lib/utils';
 
 import { Icons } from './icons';
@@ -41,11 +40,20 @@ const getGitHubSourceUrl = (sourcePath: string | undefined) =>
         .join('/')}`
     : undefined;
 
-const getGitHubDiscussionUrl = (url: string) =>
+const getGitHubDiscussionUrl = ({ product, url }: DocsCopyPageItemContext) =>
   `https://github.com/udecode/plate/discussions/new?${new URLSearchParams({
-    body: `I have a question about the Plate documentation at ${url}.`,
+    body: `I have a question about the ${product} documentation at ${url}.`,
     category: 'q-a',
     title: '',
+  })}`;
+
+const getLLMPromptUrl = (
+  baseUrl: string,
+  { product, url }: DocsCopyPageItemContext
+) =>
+  `${baseUrl}?${new URLSearchParams({
+    q: `I'm looking at this ${product} documentation: ${getMarkdownUrl(url)}.
+Help me understand how to use it. Be ready to explain concepts, give examples, or help debug based on it.`,
   })}`;
 
 const menuItems = [
@@ -63,27 +71,21 @@ const menuItems = [
     label: 'View Source',
   },
   {
-    getHref: ({ url }: DocsCopyPageItemContext) =>
-      getPlateLLMPromptUrl({
-        baseUrl: 'https://chatgpt.com',
-        docUrl: getMarkdownUrl(url),
-      }),
+    getHref: (context: DocsCopyPageItemContext) =>
+      getLLMPromptUrl('https://chatgpt.com', context),
     icon: Bot,
     key: 'chatgpt',
     label: 'Ask in ChatGPT',
   },
   {
-    getHref: ({ url }: DocsCopyPageItemContext) =>
-      getPlateLLMPromptUrl({
-        baseUrl: 'https://claude.ai/new',
-        docUrl: getMarkdownUrl(url),
-      }),
+    getHref: (context: DocsCopyPageItemContext) =>
+      getLLMPromptUrl('https://claude.ai/new', context),
     icon: Sparkles,
     key: 'claude',
     label: 'Ask in Claude',
   },
   {
-    getHref: ({ url }: DocsCopyPageItemContext) => getGitHubDiscussionUrl(url),
+    getHref: getGitHubDiscussionUrl,
     icon: Icons.gitHub,
     key: 'github',
     label: 'Ask in GitHub',
@@ -91,6 +93,7 @@ const menuItems = [
 ] as const;
 
 type DocsCopyPageItemContext = {
+  product: string;
   sourcePath?: string;
   url: string;
 };
@@ -146,15 +149,17 @@ function DocsCopyPageTrigger({
 
 export function DocsCopyPage({
   page,
+  product,
   sourcePath,
   url,
 }: {
   page: string;
+  product: string;
   sourcePath?: string;
   url: string;
 }) {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
-  const context = { sourcePath, url };
+  const context = { product, sourcePath, url };
   const visibleMenuItems = menuItems.filter((item) => item.getHref(context));
 
   return (

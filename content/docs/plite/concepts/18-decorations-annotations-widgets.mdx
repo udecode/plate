@@ -1,0 +1,164 @@
+---
+title: "Decorations, annotations, and widgets"
+description: "Choose the owner for transient text paint, durable ranges, and anchored UI."
+---
+
+Decorations paint text, annotations give ranges durable identity, and app widgets
+place UI against nodes, selections, or annotations. Keep these owners separate
+so a paint update does not force an editor-wide React render.
+
+## Choose the owner
+
+| Need | API | Owner |
+| --- | --- | --- |
+| Paint a transient range | `DecorationSource` and `<EditorRoot decorations>` | `plitejs/react` |
+| Track a durable range id | `useAnnotationStore`, `useAnnotation`, and `useAnnotations` | `plitejs/react` |
+| Place UI against a node, selection, or annotation | App UI; `useSelectionGeometry` for selection geometry | App and `plitejs/react` |
+| Add text paint from a Plate feature | `plugin.decorate` | `platejs/react` |
+
+Document content stays in Plite nodes, roots, and document state. Decorations,
+annotation metadata, and widget geometry are view data.
+
+## Decorations
+
+A decoration source reads one editor entry at a time and returns keyed ranges
+with render-safe attributes. Plite maps those ranges to text node keys, merges
+overlapping sources, and renders the attributes as nested `span` elements.
+
+```tsx
+import { NodeApi } from "plitejs";
+import {
+  Editable,
+  EditorRoot,
+  type DecorationSource,
+  useEditor,
+} from "plitejs/react";
+import { useMemo } from "react";
+
+const Editor = ({ query }: { query: string }) => {
+  const editor = useEditor({ initialValue });
+  const searchDecorations = useMemo(
+    () =>
+      ({
+        id: "search",
+        read: ({ entry: [node, path] }) => {
+          if (!query || !NodeApi.isText(node)) return [];
+
+          const start = node.text.toLowerCase().indexOf(query.toLowerCase());
+
+          return start === -1
+            ? []
+            : [
+                {
+                  attributes: {
+                    className: "search-match",
+                    "data-search-match": true,
+                  },
+                  key: `search:${path.join(".")}:${start}`,
+                  range: {
+                    anchor: { path, offset: start },
+                    focus: { path, offset: start + query.length },
+                  },
+                },
+              ];
+        },
+      }) satisfies DecorationSource<typeof editor>,
+    [editor, query]
+  );
+
+  return (
+    <EditorRoot decorations={[searchDecorations]} editor={editor}>
+      <Editable />
+    </EditorRoot>
+  );
+};
+```
+
+`attributes` accepts `className`, `style`, `aria-*`, and `data-*`. Keep each
+`key` stable and unique within its source. Rendering is automatic; `Editable`
+does not need a decoration callback.
+
+## External refresh
+
+Use `observe` when a non-React store can report affected input node keys. Plite
+subscribes once when it mounts the source and runs the returned cleanup when the
+source leaves the provider.
+
+```tsx
+const diagnosticDecorations = {
+  id: "diagnostics",
+  observe: ({ refresh }) =>
+    diagnostics.subscribe(({ nodeKeys }) => refresh({ nodeKeys })),
+  read: ({ entry }) => diagnostics.readDecorations(entry),
+} satisfies DecorationSource<typeof editor>;
+```
+
+Use `{ nodeKeys: "all" }` only when the external owner cannot identify changed
+inputs. Document edits already refresh affected entries. Selection-only commits
+do not rerun decoration sources.
+
+## Annotations
+
+Annotations attach stable ids and app data to anchors. The store resolves each
+anchor against editor commits and exposes targeted subscriptions for sidebars,
+widgets, and other UI.
+
+```tsx
+import { useAnnotationStore } from "plitejs/react";
+
+const annotations = comments.map((comment) => ({
+  anchor: comment.anchor,
+  data: comment,
+  id: comment.id,
+}));
+
+const annotationStore = useAnnotationStore(editor, annotations);
+
+return (
+  <EditorRoot decorations={[commentDecorations]} editor={editor}>
+    <Editable />
+    <CommentsSidebar store={annotationStore} />
+  </EditorRoot>
+);
+```
+
+Pass the annotation store explicitly to reader hooks and app components.
+Inline annotation paint is a separate decoration source owned by the
+feature that knows its visual states. This keeps comment data, text paint, and
+editor rendering independently replaceable.
+
+Use `annotationStore.refresh({ ids })` when an external channel names changed
+annotations. `useAnnotation(annotationStore, id)` subscribes to one id;
+`useAnnotations(annotationStore)` is the deliberate aggregate reader.
+
+## Widgets
+
+App widgets render UI anchored to a node, selection, or annotation. Use
+`useSelectionGeometry({ editableRef })` inside `<EditorRoot>` for selection
+geometry in one mounted editable. Attach that ref to the target `<Editable>`.
+
+```tsx
+import { useSelectionGeometry } from "plitejs/react";
+import { useRef } from "react";
+
+const editableRef = useRef<HTMLDivElement>(null);
+const geometry = useSelectionGeometry({ editableRef });
+```
+
+For annotation-anchored UI, read the resolved range with
+`useAnnotation(annotationStore, id)` and let app UI measure and position the
+widget in the intended mounted view.
+
+## Performance rules
+
+| Rule | Why |
+| --- | --- |
+| Keep source objects stable | A changed `read` function recompiles that source. |
+| Refresh exact node keys | Unaffected inputs are not reread. |
+| Use targeted annotation hooks | One changed item wakes only its consumers. |
+| Keep decoration attributes small | They are compared and rendered on text segments. |
+| Prove visible behavior in a browser | Selection, focus, and follow-up typing are DOM behavior. |
+
+Use [Improving Performance](../walkthroughs/09-performance) for large-document
+measurement and [Annotations](../libraries/plite-react/annotations) for the
+annotation store API.

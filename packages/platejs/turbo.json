@@ -1813,7 +1813,6 @@
         "typecheck:partition:compiler",
         "typecheck:partition:core",
         "typecheck:partition:details",
-        "typecheck:partition:docx-export",
         "typecheck:partition:html",
         "typecheck:partition:layout",
         "typecheck:partition:markdown",

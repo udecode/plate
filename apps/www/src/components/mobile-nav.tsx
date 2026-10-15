@@ -2,15 +2,16 @@
 
 import type { Route } from 'next';
 import Link, { type LinkProps } from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
-  preloadSidebarNav,
-  useLazySidebarNav,
-} from '@/hooks/use-lazy-sidebar-nav';
+  preloadDocsSidebar,
+  useLazyDocsSidebar,
+} from '@/hooks/use-lazy-docs-sidebar';
 import { useLocale } from '@/hooks/useLocale';
+import { selectDocsSidebar } from '@/lib/docs-sidebar';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 import type { SidebarNavItem } from '@/types/nav';
@@ -33,12 +34,6 @@ const i18n = {
 
 function getNavTitle(item: SidebarNavItem, locale: string) {
   return locale === 'cn' ? item.titleCn || item.title : item.title;
-}
-
-function getNavHref(item: SidebarNavItem, locale: string): Route | undefined {
-  if (!item.href) return undefined;
-
-  return hrefWithLocale(item.href, locale);
 }
 
 function isExternalHref(href: string) {
@@ -72,27 +67,25 @@ function NavLabel({ label }: { label: SidebarNavItem['label'] }) {
 export function MobileNav({
   className,
   items,
-  tree,
 }: {
   items: SidebarNavItem[];
   className?: string;
-  tree?: SidebarNavItem[];
 }) {
   const [open, setOpen] = React.useState(false);
   const locale = useLocale();
   const content = i18n[locale];
-  const { sidebarNav } = useLazySidebarNav(locale, open && !tree);
-  const navTree = tree ?? sidebarNav;
+  const pathname = usePathname() ?? '';
+  const sidebar = useLazyDocsSidebar(locale, open);
+  const { nested, sections: navTree } = selectDocsSidebar(sidebar, pathname);
 
   const renderNavLink = (
     item: SidebarNavItem,
     key: React.Key,
-    innerClassName?: string
+    { className: innerClassName }: { className?: string } = {}
   ) => {
-    const href = getNavHref(item, locale);
+    if (item.disabled || !item.href) return null;
 
-    if (item.disabled || !href) return null;
-
+    const href = hrefWithLocale(item.href, locale);
     const external = item.external || isExternalHref(href);
 
     return (
@@ -121,10 +114,10 @@ export function MobileNav({
             className
           )}
           onFocus={() => {
-            preloadSidebarNav(locale);
+            preloadDocsSidebar(locale);
           }}
           onPointerEnter={() => {
-            preloadSidebarNav(locale);
+            preloadDocsSidebar(locale);
           }}
         >
           <div className="relative flex h-8 w-4 items-center justify-center">
@@ -169,6 +162,20 @@ export function MobileNav({
             </div>
           </div>
           <div className="flex flex-col gap-8">
+            {nested ? (
+              <div className="flex flex-col gap-3">
+                <MobileLink
+                  className="text-muted-foreground"
+                  onOpenChange={setOpen}
+                  href={hrefWithLocale(nested.back.href, locale)}
+                >
+                  {locale === 'cn'
+                    ? `← ${nested.back.title} 文档`
+                    : `← ${nested.back.title} docs`}
+                </MobileLink>
+                <div className="text-lg font-semibold">{nested.title}</div>
+              </div>
+            ) : null}
             {navTree.map((section, sectionIndex) => (
               <div key={sectionIndex} className="flex flex-col gap-4">
                 <div className="text-sm font-medium text-muted-foreground">
@@ -205,7 +212,10 @@ export function MobileNav({
                               renderNavLink(
                                 nestedItem,
                                 nestedItem.href ?? nestedItem.title ?? 'item',
-                                'font-normal text-lg text-muted-foreground'
+                                {
+                                  className:
+                                    'font-normal text-lg text-muted-foreground',
+                                }
                               )
                             )}
                           </div>

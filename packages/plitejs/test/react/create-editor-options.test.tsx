@@ -16,9 +16,9 @@ describe('editor constructors given an option they do not know', () => {
     [
       'plitejs createEditor',
       () =>
+        // @ts-expect-error -- the document goes in initialValue
         createHeadlessEditor({
           plugins: [history()],
-          // @ts-expect-error -- the document goes in initialValue
           value: initialValue,
         }),
     ],
@@ -79,6 +79,12 @@ describe('editor constructors given an option they do not know', () => {
       message: unknownValueMessage,
       reads: 0,
     });
+  });
+
+  it('refuses an own one named after a key every object inherits', () => {
+    expect(() =>
+      createHeadlessEditor({ initialValue, toString: () => 'options' })
+    ).toThrow('Unknown editor option "toString".');
   });
 
   it('refuses one inherited from a parent that has no prototype', () => {

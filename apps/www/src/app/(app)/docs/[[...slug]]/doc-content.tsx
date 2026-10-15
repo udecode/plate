@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { toLinkHref } from '@/lib/withLocale';
 
 export type DocContentDoc = {
-  copyMarkdown?: string;
+  copyPage?: { markdown: string; product: string };
   description?: string;
   docs?: Array<{ route?: string; title?: string }>;
   links?: {
@@ -126,10 +126,11 @@ export function DocContent({
                     isWideContent && 'pt-1.5'
                   )}
                 >
-                  {doc?.slug && doc?.copyMarkdown && (
+                  {doc?.slug && doc?.copyPage && (
                     <div className="hidden sm:block">
                       <DocsCopyPage
-                        page={doc.copyMarkdown}
+                        page={doc.copyPage.markdown}
+                        product={doc.copyPage.product}
                         sourcePath={doc.sourcePath}
                         url={`https://platejs.org${doc.slug}`}
                       />

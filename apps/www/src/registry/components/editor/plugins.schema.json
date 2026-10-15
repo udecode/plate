@@ -618,6 +618,7 @@
           "materializedPropertyIds": [],
           "propertyIds": [
             "element:authored@0b98e5d9806e5194",
+            "element:indent@61aa182cc298c12d",
             "element:textAlign@187ef459f9d44620",
             "element:url@b09f563d04864a0d",
             "element:width@d289fcde94c1475e"
@@ -632,6 +633,7 @@
         ],
         "propertyIds": [
           "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d",
           "element:textAlign@187ef459f9d44620",
           "element:url@b09f563d04864a0d",
           "element:width@d289fcde94c1475e"
@@ -690,7 +692,7 @@
           "propertyIds": [
             "element:authored@0b98e5d9806e5194",
             "element:checked@27c77ba8343da0d2",
-            "element:indent@08439eef12bbfdcb",
+            "element:indent@61aa182cc298c12d",
             "element:listId@726fcc47c9df78c2",
             "element:listLevels@16e96e9ea7ed708c",
             "element:listRestart@35fa065cd84f9a60",
@@ -708,7 +710,7 @@
         "propertyIds": [
           "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
-          "element:indent@08439eef12bbfdcb",
+          "element:indent@61aa182cc298c12d",
           "element:listId@726fcc47c9df78c2",
           "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
@@ -732,7 +734,8 @@
           "readOnly": false,
           "selectable": true,
           "void": false,
-          "voidKind": null
+          "voidKind": null,
+          "ownsExit": true
         },
         "content": {
           "allowedElementTypes": [
@@ -759,6 +762,7 @@
             "element:authored@0b98e5d9806e5194",
             "element:backgroundColor@abc86032ce5e8381",
             "element:icon@b610536939eb3f13",
+            "element:indent@61aa182cc298c12d",
             "element:variant@7ed3805aa01a6807"
           ]
         },
@@ -773,6 +777,7 @@
           "element:authored@0b98e5d9806e5194",
           "element:backgroundColor@abc86032ce5e8381",
           "element:icon@b610536939eb3f13",
+          "element:indent@61aa182cc298c12d",
           "element:variant@7ed3805aa01a6807"
         ],
         "slice": {
@@ -791,7 +796,8 @@
           "readOnly": false,
           "selectable": true,
           "void": false,
-          "voidKind": null
+          "voidKind": null,
+          "ownsExit": true
         },
         "content": {
           "allowedElementTypes": [],
@@ -809,7 +815,7 @@
           "propertyIds": [
             "element:authored@0b98e5d9806e5194",
             "element:checked@27c77ba8343da0d2",
-            "element:indent@08439eef12bbfdcb",
+            "element:indent@61aa182cc298c12d",
             "element:language@f075c3fe4239c09c",
             "element:listId@726fcc47c9df78c2",
             "element:listLevels@16e96e9ea7ed708c",
@@ -829,7 +835,7 @@
         "propertyIds": [
           "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
-          "element:indent@08439eef12bbfdcb",
+          "element:indent@61aa182cc298c12d",
           "element:language@f075c3fe4239c09c",
           "element:listId@726fcc47c9df78c2",
           "element:listLevels@16e96e9ea7ed708c",
@@ -940,7 +946,8 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:authored@0b98e5d9806e5194"
+            "element:authored@0b98e5d9806e5194",
+            "element:indent@61aa182cc298c12d"
           ]
         },
         "groups": [
@@ -950,7 +957,8 @@
           "element"
         ],
         "propertyIds": [
-          "element:authored@0b98e5d9806e5194"
+          "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d"
         ],
         "slice": {
           "preserveContext": false,
@@ -1052,7 +1060,7 @@
           "propertyIds": [
             "element:authored@0b98e5d9806e5194",
             "element:checked@27c77ba8343da0d2",
-            "element:indent@08439eef12bbfdcb",
+            "element:indent@61aa182cc298c12d",
             "element:listId@726fcc47c9df78c2",
             "element:listLevels@16e96e9ea7ed708c",
             "element:listRestart@35fa065cd84f9a60",
@@ -1070,7 +1078,7 @@
         "propertyIds": [
           "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
-          "element:indent@08439eef12bbfdcb",
+          "element:indent@61aa182cc298c12d",
           "element:listId@726fcc47c9df78c2",
           "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
@@ -1113,6 +1121,7 @@
           ],
           "propertyIds": [
             "element:authored@0b98e5d9806e5194",
+            "element:indent@61aa182cc298c12d",
             "element:latex@6c61d1f3c8305dce"
           ]
         },
@@ -1124,6 +1133,7 @@
         ],
         "propertyIds": [
           "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d",
           "element:latex@6c61d1f3c8305dce"
         ],
         "slice": {
@@ -1165,6 +1175,7 @@
           "materializedPropertyIds": [],
           "propertyIds": [
             "element:authored@0b98e5d9806e5194",
+            "element:indent@61aa182cc298c12d",
             "element:name@1069a658ff703b9d",
             "element:url@88fa4e556f36a1b7",
             "element:width@b3737226e8fe3a6e"
@@ -1179,6 +1190,7 @@
         ],
         "propertyIds": [
           "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d",
           "element:name@1069a658ff703b9d",
           "element:url@88fa4e556f36a1b7",
           "element:width@b3737226e8fe3a6e"
@@ -1334,7 +1346,7 @@
           "propertyIds": [
             "element:authored@0b98e5d9806e5194",
             "element:checked@27c77ba8343da0d2",
-            "element:indent@08439eef12bbfdcb",
+            "element:indent@61aa182cc298c12d",
             "element:level@94a59f5f3986e008",
             "element:lineHeight@6366f6699ad903fe",
             "element:listId@726fcc47c9df78c2",
@@ -1356,7 +1368,7 @@
         "propertyIds": [
           "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
-          "element:indent@08439eef12bbfdcb",
+          "element:indent@61aa182cc298c12d",
           "element:level@94a59f5f3986e008",
           "element:lineHeight@6366f6699ad903fe",
           "element:listId@726fcc47c9df78c2",
@@ -1399,7 +1411,8 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:authored@0b98e5d9806e5194"
+            "element:authored@0b98e5d9806e5194",
+            "element:indent@61aa182cc298c12d"
           ]
         },
         "groups": [
@@ -1409,7 +1422,8 @@
           "element"
         ],
         "propertyIds": [
-          "element:authored@0b98e5d9806e5194"
+          "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d"
         ],
         "slice": {
           "preserveContext": false,
@@ -1452,7 +1466,7 @@
             "element:alt@92916bfcb7519666",
             "element:authored@0b98e5d9806e5194",
             "element:checked@27c77ba8343da0d2",
-            "element:indent@08439eef12bbfdcb",
+            "element:indent@61aa182cc298c12d",
             "element:listId@726fcc47c9df78c2",
             "element:listLevels@16e96e9ea7ed708c",
             "element:listRestart@35fa065cd84f9a60",
@@ -1478,7 +1492,7 @@
           "element:alt@92916bfcb7519666",
           "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
-          "element:indent@08439eef12bbfdcb",
+          "element:indent@61aa182cc298c12d",
           "element:listId@726fcc47c9df78c2",
           "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
@@ -1625,6 +1639,7 @@
           "materializedPropertyIds": [],
           "propertyIds": [
             "element:authored@0b98e5d9806e5194",
+            "element:indent@61aa182cc298c12d",
             "element:provider@84a11c95e1d74472",
             "element:sourceUrl@2bfb15bcfacea42d",
             "element:textAlign@187ef459f9d44620",
@@ -1641,6 +1656,7 @@
         ],
         "propertyIds": [
           "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d",
           "element:provider@84a11c95e1d74472",
           "element:sourceUrl@2bfb15bcfacea42d",
           "element:textAlign@187ef459f9d44620",
@@ -1734,7 +1750,7 @@
           "propertyIds": [
             "element:authored@0b98e5d9806e5194",
             "element:checked@27c77ba8343da0d2",
-            "element:indent@08439eef12bbfdcb",
+            "element:indent@61aa182cc298c12d",
             "element:lineHeight@6366f6699ad903fe",
             "element:listId@726fcc47c9df78c2",
             "element:listLevels@16e96e9ea7ed708c",
@@ -1755,7 +1771,7 @@
         "propertyIds": [
           "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
-          "element:indent@08439eef12bbfdcb",
+          "element:indent@61aa182cc298c12d",
           "element:lineHeight@6366f6699ad903fe",
           "element:listId@726fcc47c9df78c2",
           "element:listLevels@16e96e9ea7ed708c",
@@ -1803,7 +1819,8 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:authored@0b98e5d9806e5194"
+            "element:authored@0b98e5d9806e5194",
+            "element:level@28880d0fd4b855aa"
           ]
         },
         "groups": [
@@ -1813,7 +1830,8 @@
           "textBlock"
         ],
         "propertyIds": [
-          "element:authored@0b98e5d9806e5194"
+          "element:authored@0b98e5d9806e5194",
+          "element:level@28880d0fd4b855aa"
         ],
         "slice": {
           "preserveContext": false,
@@ -2021,7 +2039,8 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:authored@0b98e5d9806e5194"
+            "element:authored@0b98e5d9806e5194",
+            "element:indent@61aa182cc298c12d"
           ]
         },
         "groups": [
@@ -2031,7 +2050,8 @@
           "element"
         ],
         "propertyIds": [
-          "element:authored@0b98e5d9806e5194"
+          "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d"
         ],
         "slice": {
           "preserveContext": false,
@@ -2066,6 +2086,7 @@
           "materializedPropertyIds": [],
           "propertyIds": [
             "element:authored@0b98e5d9806e5194",
+            "element:indent@61aa182cc298c12d",
             "element:kind@e3c848dee20896b9"
           ]
         },
@@ -2077,6 +2098,7 @@
         ],
         "propertyIds": [
           "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d",
           "element:kind@e3c848dee20896b9"
         ],
         "slice": {
@@ -2118,6 +2140,7 @@
           "materializedPropertyIds": [],
           "propertyIds": [
             "element:authored@0b98e5d9806e5194",
+            "element:indent@61aa182cc298c12d",
             "element:provider@82a92be778594f8a",
             "element:sourceUrl@edd27c91da0ff1df",
             "element:textAlign@187ef459f9d44620",
@@ -2134,6 +2157,7 @@
         ],
         "propertyIds": [
           "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d",
           "element:provider@82a92be778594f8a",
           "element:sourceUrl@edd27c91da0ff1df",
           "element:textAlign@187ef459f9d44620",
@@ -3733,10 +3757,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:564940fb2bfc1706",
+  "fingerprint": "fnv1a64:a0e99ead9554e659",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:564940fb2bfc1706",
+    "fingerprint": "fnv1a64:a0e99ead9554e659",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -4076,11 +4100,12 @@
           "validationVersion": 1
         },
         "exclusiveGroupIds": [],
-        "id": "element:indent@08439eef12bbfdcb",
+        "id": "element:indent@61aa182cc298c12d",
         "key": "indent",
         "lifecycle": {
           "copy": "preserve",
           "inclusive": null,
+          "landing": "rebase",
           "split": "preserve",
           "typeChange": "preserve-if-allowed"
         },
@@ -4091,12 +4116,22 @@
         "target": {
           "kind": "types",
           "types": [
+            "audio",
             "blockquote",
+            "callout",
             "codeBlock",
+            "columnGroup",
             "details",
+            "equation",
+            "file",
             "heading",
+            "horizontalRule",
             "image",
-            "paragraph"
+            "mediaEmbed",
+            "paragraph",
+            "toc",
+            "upload",
+            "video"
           ]
         }
       },
@@ -4232,6 +4267,31 @@
         "descriptor": {
           "kind": "json",
           "omitDefault": false,
+          "required": false,
+          "validationVersion": 1
+        },
+        "exclusiveGroupIds": [],
+        "id": "element:level@28880d0fd4b855aa",
+        "key": "level",
+        "lifecycle": {
+          "copy": "preserve",
+          "inclusive": null,
+          "split": "preserve",
+          "typeChange": "drop"
+        },
+        "merge": "replace",
+        "owner": "detailsSummary",
+        "placement": "element",
+        "role": "content",
+        "target": {
+          "kind": "type",
+          "type": "summary"
+        }
+      },
+      {
+        "descriptor": {
+          "kind": "json",
+          "omitDefault": false,
           "required": true,
           "validationVersion": 1
         },
@@ -4293,6 +4353,7 @@
         "lifecycle": {
           "copy": "preserve",
           "inclusive": null,
+          "landing": "adopt",
           "split": "preserve",
           "typeChange": "preserve-if-allowed"
         },
@@ -4325,6 +4386,7 @@
         "lifecycle": {
           "copy": "preserve",
           "inclusive": null,
+          "landing": "adopt",
           "split": "preserve",
           "typeChange": "preserve-if-allowed"
         },
@@ -4357,6 +4419,7 @@
         "lifecycle": {
           "copy": "preserve",
           "inclusive": null,
+          "landing": "adopt",
           "split": "drop",
           "typeChange": "preserve-if-allowed"
         },
@@ -4389,6 +4452,7 @@
         "lifecycle": {
           "copy": "preserve",
           "inclusive": null,
+          "landing": "adopt",
           "split": "drop",
           "typeChange": "preserve-if-allowed"
         },
@@ -4420,6 +4484,7 @@
         "lifecycle": {
           "copy": "preserve",
           "inclusive": null,
+          "landing": "adopt",
           "split": "preserve",
           "typeChange": "preserve-if-allowed"
         },
@@ -5568,7 +5633,7 @@
         []
       ],
       [
-        "element:indent@08439eef12bbfdcb",
+        "element:indent@61aa182cc298c12d",
         []
       ],
       [
@@ -5589,6 +5654,10 @@
       ],
       [
         "element:latex@6c61d1f3c8305dce",
+        []
+      ],
+      [
+        "element:level@28880d0fd4b855aa",
         []
       ],
       [
@@ -5801,6 +5870,7 @@
         "audio",
         [
           "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d",
           "element:textAlign@187ef459f9d44620",
           "element:url@b09f563d04864a0d",
           "element:width@d289fcde94c1475e"
@@ -5811,7 +5881,7 @@
         [
           "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
-          "element:indent@08439eef12bbfdcb",
+          "element:indent@61aa182cc298c12d",
           "element:listId@726fcc47c9df78c2",
           "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
@@ -5826,6 +5896,7 @@
           "element:authored@0b98e5d9806e5194",
           "element:backgroundColor@abc86032ce5e8381",
           "element:icon@b610536939eb3f13",
+          "element:indent@61aa182cc298c12d",
           "element:variant@7ed3805aa01a6807"
         ]
       ],
@@ -5834,7 +5905,7 @@
         [
           "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
-          "element:indent@08439eef12bbfdcb",
+          "element:indent@61aa182cc298c12d",
           "element:language@f075c3fe4239c09c",
           "element:listId@726fcc47c9df78c2",
           "element:listLevels@16e96e9ea7ed708c",
@@ -5854,7 +5925,8 @@
       [
         "columnGroup",
         [
-          "element:authored@0b98e5d9806e5194"
+          "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d"
         ]
       ],
       [
@@ -5869,7 +5941,7 @@
         [
           "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
-          "element:indent@08439eef12bbfdcb",
+          "element:indent@61aa182cc298c12d",
           "element:listId@726fcc47c9df78c2",
           "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
@@ -5882,6 +5954,7 @@
         "equation",
         [
           "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d",
           "element:latex@6c61d1f3c8305dce"
         ]
       ],
@@ -5889,6 +5962,7 @@
         "file",
         [
           "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d",
           "element:name@1069a658ff703b9d",
           "element:url@88fa4e556f36a1b7",
           "element:width@b3737226e8fe3a6e"
@@ -5913,7 +5987,7 @@
         [
           "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
-          "element:indent@08439eef12bbfdcb",
+          "element:indent@61aa182cc298c12d",
           "element:level@94a59f5f3986e008",
           "element:lineHeight@6366f6699ad903fe",
           "element:listId@726fcc47c9df78c2",
@@ -5928,7 +6002,8 @@
       [
         "horizontalRule",
         [
-          "element:authored@0b98e5d9806e5194"
+          "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d"
         ]
       ],
       [
@@ -5937,7 +6012,7 @@
           "element:alt@92916bfcb7519666",
           "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
-          "element:indent@08439eef12bbfdcb",
+          "element:indent@61aa182cc298c12d",
           "element:listId@726fcc47c9df78c2",
           "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
@@ -5971,6 +6046,7 @@
         "mediaEmbed",
         [
           "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d",
           "element:provider@84a11c95e1d74472",
           "element:sourceUrl@2bfb15bcfacea42d",
           "element:textAlign@187ef459f9d44620",
@@ -5991,7 +6067,7 @@
         [
           "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
-          "element:indent@08439eef12bbfdcb",
+          "element:indent@61aa182cc298c12d",
           "element:lineHeight@6366f6699ad903fe",
           "element:listId@726fcc47c9df78c2",
           "element:listLevels@16e96e9ea7ed708c",
@@ -6005,7 +6081,8 @@
       [
         "summary",
         [
-          "element:authored@0b98e5d9806e5194"
+          "element:authored@0b98e5d9806e5194",
+          "element:level@28880d0fd4b855aa"
         ]
       ],
       [
@@ -6037,13 +6114,15 @@
       [
         "toc",
         [
-          "element:authored@0b98e5d9806e5194"
+          "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d"
         ]
       ],
       [
         "upload",
         [
           "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d",
           "element:kind@e3c848dee20896b9"
         ]
       ],
@@ -6051,6 +6130,7 @@
         "video",
         [
           "element:authored@0b98e5d9806e5194",
+          "element:indent@61aa182cc298c12d",
           "element:provider@82a92be778594f8a",
           "element:sourceUrl@edd27c91da0ff1df",
           "element:textAlign@187ef459f9d44620",
@@ -6160,10 +6240,11 @@
         }
       ],
       [
-        "element:indent@08439eef12bbfdcb",
+        "element:indent@61aa182cc298c12d",
         {
           "copy": "preserve",
           "inclusive": null,
+          "landing": "rebase",
           "split": "preserve",
           "typeChange": "preserve-if-allowed"
         }
@@ -6214,6 +6295,15 @@
         }
       ],
       [
+        "element:level@28880d0fd4b855aa",
+        {
+          "copy": "preserve",
+          "inclusive": null,
+          "split": "preserve",
+          "typeChange": "drop"
+        }
+      ],
+      [
         "element:level@94a59f5f3986e008",
         {
           "copy": "preserve",
@@ -6236,6 +6326,7 @@
         {
           "copy": "preserve",
           "inclusive": null,
+          "landing": "adopt",
           "split": "preserve",
           "typeChange": "preserve-if-allowed"
         }
@@ -6245,6 +6336,7 @@
         {
           "copy": "preserve",
           "inclusive": null,
+          "landing": "adopt",
           "split": "preserve",
           "typeChange": "preserve-if-allowed"
         }
@@ -6254,6 +6346,7 @@
         {
           "copy": "preserve",
           "inclusive": null,
+          "landing": "adopt",
           "split": "drop",
           "typeChange": "preserve-if-allowed"
         }
@@ -6263,6 +6356,7 @@
         {
           "copy": "preserve",
           "inclusive": null,
+          "landing": "adopt",
           "split": "drop",
           "typeChange": "preserve-if-allowed"
         }
@@ -6272,6 +6366,7 @@
         {
           "copy": "preserve",
           "inclusive": null,
+          "landing": "adopt",
           "split": "preserve",
           "typeChange": "preserve-if-allowed"
         }
@@ -6740,7 +6835,7 @@
           [
             "indent",
             [
-              "element:indent@08439eef12bbfdcb"
+              "element:indent@61aa182cc298c12d"
             ]
           ],
           [
@@ -6771,6 +6866,7 @@
           [
             "level",
             [
+              "element:level@28880d0fd4b855aa",
               "element:level@94a59f5f3986e008"
             ]
           ],
@@ -7059,7 +7155,7 @@
         "replace"
       ],
       [
-        "element:indent@08439eef12bbfdcb",
+        "element:indent@61aa182cc298c12d",
         "replace"
       ],
       [
@@ -7080,6 +7176,10 @@
       ],
       [
         "element:latex@6c61d1f3c8305dce",
+        "replace"
+      ],
+      [
+        "element:level@28880d0fd4b855aa",
         "replace"
       ],
       [
@@ -7858,12 +7958,13 @@
       "element:header@e1fcb0f762cb1e47",
       "element:height@4222b97bc19b7723",
       "element:icon@b610536939eb3f13",
-      "element:indent@08439eef12bbfdcb",
+      "element:indent@61aa182cc298c12d",
       "element:kind@e3c848dee20896b9",
       "element:label@1a006ba1885943ec",
       "element:language@f075c3fe4239c09c",
       "element:latex@551cf2c0f2fc3a2d",
       "element:latex@6c61d1f3c8305dce",
+      "element:level@28880d0fd4b855aa",
       "element:level@94a59f5f3986e008",
       "element:lineHeight@6366f6699ad903fe",
       "element:listId@726fcc47c9df78c2",

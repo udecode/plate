@@ -1,7 +1,18 @@
 import * as React from 'react';
 
-import { AuthoredPlugin, type AuthoredChange } from '../../../authored';
-import { RangeApi, TextApi, type EditorCommit, type Path } from '../../../core';
+import {
+  AuthoredPlugin,
+  type AuthoredChange,
+  type AuthoredChangeGroup,
+} from '../../../authored';
+import {
+  RangeApi,
+  TextApi,
+  type EditorCommit,
+  type Location,
+  type NodeKey,
+  type Path,
+} from '../../../core';
 import { useEditorViewState } from '../../plite-react';
 import { useEditor, useEditorSelector } from '../../stores';
 import { useSuggestionViewStore, viewKey } from './suggestion-view.internal';
@@ -42,6 +53,17 @@ export const useActiveSuggestion = () => {
   );
 };
 
+const sameGroups = (
+  left: readonly AuthoredChangeGroup[] | null,
+  right: readonly AuthoredChangeGroup[]
+) =>
+  left !== null &&
+  left.length === right.length &&
+  left.every(
+    (group, index) =>
+      group.id === right[index]?.id && group.revision === right[index]?.revision
+  );
+
 /** Read pending authored changes intersecting one node path. */
 export const useSuggestionChanges = (path: Path) => {
   const editor = useEditor();
@@ -59,7 +81,7 @@ export const useSuggestionChanges = (path: Path) => {
       const last = entries.at(-1);
       if (!first || !last) return [];
       const root = current.read.view.root();
-      return current.plugin(AuthoredPlugin).read.changesAt({
+      const at = {
         anchor: {
           offset: 0,
           path: first[1],
@@ -70,20 +92,32 @@ export const useSuggestionChanges = (path: Path) => {
           path: last[1],
           ...(root ? { root } : {}),
         },
-      });
+      };
+      const changes: AuthoredChange[] = [];
+
+      for (let cursor: string | undefined; ; ) {
+        const page = current
+          .plugin(AuthoredPlugin)
+          .read.changes({ at, cursor, limit: 200 });
+
+        changes.push(...page.items);
+        if (!page.cursor) return changes;
+        cursor = page.cursor;
+      }
     },
     { equalityFn: sameChanges, shouldUpdate: authoredChanged }
   );
 };
 
 /**
- * Read pending changes as review cards show them: adjacent changes by one
- * author form a group, ranked by creation for palette slots.
+ * Read the review cards touching one place: adjacent pending changes by one
+ * author form a card, named by its oldest change.
  */
-export const useSuggestionGroups = () =>
-  useEditorSelector((editor) => editor.plugin(AuthoredPlugin).read.groups(), {
-    shouldUpdate: authoredChanged,
-  });
+export const useSuggestionGroups = (at: Location | NodeKey) =>
+  useEditorSelector(
+    (editor) => editor.plugin(AuthoredPlugin).read.groups({ at }),
+    { equalityFn: sameGroups, shouldUpdate: authoredChanged }
+  );
 
 /** Read whether the exact mounted editor view is editing or suggesting. */
 export const useSuggestionMode = () => {

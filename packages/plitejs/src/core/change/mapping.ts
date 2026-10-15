@@ -2,9 +2,9 @@ import {
   type DocumentChange,
   getInternalDocumentChangeEntries,
   getInternalDocumentRootChange,
-  valueRoot,
+  valueRootIndex,
 } from './document-change';
-import { DocumentIndex } from './document-index';
+import type { DocumentIndex } from './document-index';
 import { jsonEqual, type JsonRecord } from './json';
 import type { RootChange } from './root-change';
 import {
@@ -29,11 +29,9 @@ export type DocumentChangeRelocation = Readonly<{
 export const getExactDocumentChangeRelocation = (
   change: DocumentChange,
   root: string,
-  before: readonly JsonNode[]
+  before: DocumentIndex
 ): DocumentChangeRelocation | null => {
-  const exact = getInternalDocumentRootChange(change, root)?.movedNode(
-    DocumentIndex.fromValue(before)
-  );
+  const exact = getInternalDocumentRootChange(change, root)?.movedNode(before);
 
   return exact
     ? Object.freeze({
@@ -58,7 +56,7 @@ export const getExactDocumentChangeRelocations = (
       const exact = getExactDocumentChangeRelocation(
         change,
         root,
-        valueRoot(before, root)
+        valueRootIndex(before, root)
       );
 
       return exact ? [exact] : [];
@@ -379,15 +377,13 @@ export const getRootChangeRelocations = (
  */
 export const getDocumentChangeRelocations = (
   change: DocumentChange,
-  before: JsonEditorValue
-): readonly DocumentChangeRelocation[] =>
-  Object.freeze(
-    [...getInternalDocumentChangeEntries(change)].flatMap(
-      ([root, rootChange]) =>
-        deriveRootRelocations(
-          root,
-          rootChange,
-          DocumentIndex.fromValue(valueRoot(before, root))
-        )
-    )
+  root: string,
+  before: DocumentIndex,
+  after: DocumentIndex
+): readonly DocumentChangeRelocation[] => {
+  const rootChange = getInternalDocumentRootChange(change, root);
+
+  return Object.freeze(
+    rootChange ? deriveRootRelocations(root, rootChange, before, after) : []
   );
+};

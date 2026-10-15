@@ -27,17 +27,11 @@ export type UseEditorOptions<
  * editor must be created outside React ownership.
  */
 export function useEditor<
-  const TOptions extends Omit<
-    UseEditorOptions<any, readonly unknown[]>,
-    'lifecycleErrorSink'
-  > & {
+  const TOptions extends UseEditorOptions<any, readonly unknown[]> & {
     plugins: readonly unknown[];
   },
 >(
-  options: CheckedEditorOptions<
-    TOptions,
-    UseEditorOptions<any, readonly unknown[]>
-  >,
+  options: CheckedEditorOptions<TOptions, UseEditorOptions>,
   deps?: DependencyList
 ): Editor<EditorValueFromOptions<TOptions>, PluginsFromOptions<TOptions>>;
 

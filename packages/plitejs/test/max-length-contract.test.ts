@@ -5,18 +5,61 @@ import {
   ContentSlice,
   createEditor,
   createEditorView,
+  defineEditorSchema,
   DocumentChange,
   editorCommands,
   type Element,
+  schema,
   SelectionApi,
 } from 'plitejs';
 import { history } from 'plitejs/history';
 
 import { dispatchCommand } from '../src/core/command-registry';
+import { registerEditorContent } from '../src/core/content';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
+});
+
+const hidden = (text: string): Element => ({
+  type: 'paragraph',
+  hidden: true,
+  children: [{ hidden: true, text }],
+});
+
+const isHidden = (node: unknown) =>
+  typeof node === 'object' && node !== null && 'hidden' in node;
+
+const imageWithText = (text: string): Element => ({
+  type: 'image',
+  children: [{ text }],
+});
+
+const VoidSchema = defineEditorSchema('schema:max-length-void', {
+  elements: {
+    image: { void: 'block' },
+    paragraph: { content: schema.content.text({ default: 'text', min: 1 }) },
+  },
+  root: schema.content.types(['paragraph', 'image'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+});
+
+const emptyBox = (): Element => ({ type: 'box', children: [] });
+
+const BoxSchema = defineEditorSchema('schema:max-length-box', {
+  elements: {
+    box: { content: schema.content.type('paragraph', { min: 0 }) },
+    paragraph: { content: schema.content.text({ default: 'text', min: 1 }) },
+  },
+  root: schema.content.types(['paragraph', 'box'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
 });
 
 const createLimitedEditor = (maxLength?: number) =>
@@ -411,6 +454,287 @@ describe('maxLength editor option', () => {
       paragraph('12'),
       paragraph('3'),
       paragraph('cc'),
+    ]);
+  });
+
+  it('lands a cut paste over selected blocks with a caret inside it', () => {
+    const results = [[[0]], [[0], [2]]].map((paths) => {
+      const editor = createEditor({
+        initialSelection: SelectionApi.nodes(paths as [number[]]),
+        initialValue: [paragraph('aa'), paragraph('b'), paragraph('cc')],
+        maxLength: 5,
+        plugins: [history()],
+      });
+      const replaced = editor.update.slice.replace(
+        ContentSlice.closed([paragraph('123456')])
+      );
+      const landed = [
+        replaced,
+        editor.read.children(),
+        editor.read.selection(),
+      ];
+
+      editor.api.history.undo();
+
+      return [...landed, editor.read.children()];
+    });
+    const caretAt = (offset: number) => ({
+      anchor: { offset, path: [0, 0] },
+      focus: { offset, path: [0, 0] },
+    });
+
+    assert.deepEqual(results, [
+      [
+        true,
+        [paragraph('12'), paragraph('b'), paragraph('cc')],
+        caretAt(2),
+        [paragraph('aa'), paragraph('b'), paragraph('cc')],
+      ],
+      [
+        true,
+        [paragraph('1234'), paragraph('b')],
+        caretAt(4),
+        [paragraph('aa'), paragraph('b'), paragraph('cc')],
+      ],
+    ]);
+  });
+
+  it('credits every selected block when an open paste fills the first one', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0], [2]]),
+      initialValue: [paragraph('aa'), paragraph('b'), paragraph('cc')],
+      maxLength: 5,
+    });
+
+    assert.equal(
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [paragraph('12'), paragraph('3456')],
+          openEnd: 1,
+          openStart: 1,
+        })
+      ),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      paragraph('12'),
+      paragraph('34'),
+      paragraph('b'),
+    ]);
+  });
+
+  it('limits a paste over selected blocks by the root that holds them', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('mmmmmm')],
+        roots: { notes: [paragraph('aa'), paragraph('b')] },
+      },
+      maxLength: 7,
+    });
+
+    editor.update.selection.set(SelectionApi.nodes([[0]], { root: 'notes' }));
+
+    assert.equal(
+      editor.update.slice.replace(ContentSlice.closed([paragraph('123456')])),
+      true
+    );
+    assert.deepEqual(editor.read.root('notes'), [
+      paragraph('123456'),
+      paragraph('b'),
+    ]);
+    assert.deepEqual(editor.read.children(), [paragraph('mmmmmm')]);
+  });
+
+  it('replaces a hidden first selected block whole with an open paste', () => {
+    const results = [
+      [[0], [2]],
+      [[0], [1]],
+    ].map((paths) => {
+      const editor = createEditor({
+        initialSelection: SelectionApi.nodes(paths as [number[]]),
+        initialValue: [hidden('aaa'), paragraph('b'), paragraph('c')],
+        maxLength: 6,
+      });
+
+      registerEditorContent(editor, (_editor, node) => !isHidden(node));
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [paragraph('12'), paragraph('345')],
+          openEnd: 1,
+          openStart: 1,
+        })
+      );
+
+      return editor.read.children();
+    });
+
+    assert.deepEqual(results, [
+      [paragraph('12'), paragraph('345'), paragraph('b')],
+      [paragraph('12'), paragraph('345'), paragraph('c')],
+    ]);
+  });
+
+  it('cuts a paste over a selected container by every block it replaces', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: [
+        { type: 'quote', children: [hidden('aaa'), paragraph('b')] },
+        paragraph('c'),
+      ],
+      maxLength: 5,
+    });
+
+    registerEditorContent(editor, (_editor, node) => !isHidden(node));
+    editor.update.slice.replace(
+      ContentSlice.fromJSON({
+        content: [paragraph('12'), paragraph('345')],
+        openEnd: 1,
+        openStart: 1,
+      })
+    );
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('12'),
+      paragraph('34'),
+      paragraph('c'),
+    ]);
+  });
+
+  it('refuses a paste the limit cuts to nothing over selected blocks', () => {
+    const before = [paragraph(''), paragraph(''), paragraph('xx')];
+    const results = [[[0]], [[0], [1]]].map((paths) => {
+      const editor = createEditor({
+        initialSelection: SelectionApi.nodes(paths as [number[]]),
+        initialValue: before,
+        maxLength: 2,
+      });
+
+      return [
+        editor.update.slice.replace(ContentSlice.closed([paragraph('12')])),
+        editor.read.children(),
+      ];
+    });
+
+    assert.deepEqual(results, [
+      [false, before],
+      [false, before],
+    ]);
+  });
+
+  it('credits every selected block a paste replaces whole', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: [hidden('aaa'), paragraph('b'), paragraph('c')],
+      maxLength: 5,
+    });
+
+    registerEditorContent(editor, (_editor, node) => !isHidden(node));
+    editor.update.slice.replace(ContentSlice.closed([paragraph('123')]));
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('123'),
+      paragraph('b'),
+      paragraph('c'),
+    ]);
+  });
+
+  it('credits a selected void a paste replaces only with the text the length counts', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: [imageWithText('aaa'), paragraph('bb')],
+      maxLength: 5,
+      plugins: [VoidSchema],
+    });
+
+    editor.update.slice.replace(ContentSlice.closed([paragraph('123456789')]));
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('123'),
+      paragraph('bb'),
+    ]);
+  });
+
+  it('credits a selected void typing replaces only with the text the length counts', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: [imageWithText('aaa'), paragraph('bb')],
+      maxLength: 5,
+      plugins: [VoidSchema],
+    });
+
+    editor.update.text.insert('123456789');
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('123'),
+      paragraph('bb'),
+    ]);
+  });
+
+  it('replaces a selected empty container a paste replaces under maxLength', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[1]]),
+      initialValue: [paragraph('aa'), emptyBox(), paragraph('bb')],
+      maxLength: 5,
+      plugins: [BoxSchema],
+    });
+
+    editor.update.slice.replace(ContentSlice.closed([paragraph('1234')]));
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('aa'),
+      paragraph('1'),
+      paragraph('bb'),
+    ]);
+  });
+
+  it('replaces a selected empty container typing replaces under maxLength', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[1]]),
+      initialValue: [paragraph('aa'), emptyBox(), paragraph('bb')],
+      maxLength: 5,
+      plugins: [BoxSchema],
+    });
+
+    editor.update.text.insert('1234');
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('aa'),
+      paragraph('1'),
+      paragraph('bb'),
+    ]);
+  });
+
+  it('credits the text a range paste replaces after leaving hidden text', () => {
+    const results = (['command', 'transaction'] as const).map((entry) => {
+      const editor = createEditor({
+        initialValue: [hidden('aa'), paragraph('bb')],
+        maxLength: 4,
+      });
+      const at = {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 1, path: [1, 0] },
+      };
+      const slice = ContentSlice.fromJSON({
+        content: [paragraph('123')],
+        openEnd: 1,
+        openStart: 1,
+      });
+
+      registerEditorContent(editor, (_editor, node) => !isHidden(node));
+      if (entry === 'command') {
+        editor.update.slice.replace(slice, { at });
+      } else {
+        editor.update((tx) => {
+          tx.slice.replace(slice, { at });
+        });
+      }
+
+      return editor.read.children();
+    });
+
+    assert.deepEqual(results, [
+      [hidden('aa'), paragraph('1b')],
+      [hidden('aa'), paragraph('1b')],
     ]);
   });
 

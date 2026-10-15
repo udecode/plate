@@ -6,6 +6,7 @@ import fc from 'fast-check';
 import {
   ContentSlice,
   createEditor,
+  createEditorView,
   defineEditorSchema,
   definePlugin,
   editorCommands,
@@ -23,9 +24,17 @@ import {
 import { history } from 'plitejs/history';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
-import { getReviewLedger } from '../src/authored/ledger/ledger';
+import {
+  groupAuthoredChanges,
+  indexAuthoredChanges,
+} from '../src/authored/changes';
 import { compactClaims, expandContexts } from '../src/authored/facts/compact';
+import { factsOf } from '../src/authored/facts/facts';
+import { authoredLocationMap } from '../src/authored/format';
+import { getReviewLedger } from '../src/authored/ledger/ledger';
+import { readLedgerWork } from '../src/authored/ledger/work';
 import { authoredResolveSchemaOf } from '../src/authored/resolve-schema';
+import { decidedAlignment } from '../src/authored/tree/alignment';
 import {
   type AuthoredMarkKind,
   authoredMarksSchema,
@@ -40,7 +49,10 @@ import {
 } from '../src/core/change/document-change';
 import { DocumentIndex } from '../src/core/change/document-index';
 import type { JsonEditorValue } from '../src/core/change/tokens';
-import { projectionMapOf } from '../src/core/command-document';
+import {
+  type CommandProjectionMap,
+  projectionMapOf,
+} from '../src/core/command-document';
 import {
   EditorRefusalError,
   subscribeEditorRefusals,
@@ -81,17 +93,20 @@ type Edit = Readonly<{
   intent: 'edit' | 'propose';
 }>;
 
-const Quotes = defineEditorSchema('recording-laws', {
-  elements: {
-    link: { content: schema.content.text({ min: 1 }), inline: true },
-    paragraph: schema.element.textBlock(),
-    quote: { content: schema.content.type('paragraph', { min: 1 }) },
-  },
-  id: 'recording-laws',
-  root: schema.content.any(
+const quoteElements = {
+  link: { content: schema.content.text({ min: 1 }), inline: true },
+  paragraph: schema.element.textBlock(),
+  quote: { content: schema.content.type('paragraph', { min: 1 }) },
+} as const;
+const quoteRoot = (min: number) =>
+  schema.content.any(
     [schema.content.type('paragraph'), schema.content.type('quote')],
-    { default: { type: 'paragraph' }, min: 1 }
-  ),
+    { default: { type: 'paragraph' }, min }
+  );
+const Quotes = defineEditorSchema('recording-laws', {
+  elements: quoteElements,
+  id: 'recording-laws',
+  root: quoteRoot(1),
   unknown: 'reject',
   version: 1,
 });
@@ -110,17 +125,17 @@ const isRefusal = (error: unknown) =>
   error instanceof EditorRefusalError;
 
 const editorFor = (
-  initialValue: readonly Node[],
+  initialValue: readonly Node[] | Readonly<{ children: readonly Node[] }>,
   author: string,
   intent: 'edit' | 'propose' | 'plain',
   changeId: string | (() => string),
-  withSchema = true,
+  withSchema: boolean | typeof Quotes = true,
   withHistory = false
 ) =>
   throwingRefusals(
     createEditor({
       plugins: [
-        ...(withSchema ? [Quotes] : []),
+        ...(withSchema === true ? [Quotes] : withSchema ? [withSchema] : []),
         ...(withHistory ? [history()] : []),
         transfer(),
         // Plain editing reads review marks as ordinary properties, so a
@@ -143,8 +158,14 @@ const editorFor = (
 
 const texts = (children: readonly Node[]) =>
   [...NodeApi.texts({ children } as never)] as Array<[Node, number[]]>;
+// The children of the root an editor edits, a root view's own included.
+const rootChildren = (editor: Editor) =>
+  valueRoot(
+    expandContexts(editor.read.value() as unknown as JsonEditorValue),
+    (editor as { root?: string }).root ?? 'main'
+  ) as readonly Node[];
 const locate = (editor: Editor, letter: string) => {
-  for (const [node, path] of texts(expandedChildren(editor))) {
+  for (const [node, path] of texts(rootChildren(editor))) {
     const offset = (node.text ?? '').indexOf(letter);
 
     if (offset !== -1) return { offset, path };
@@ -243,8 +264,7 @@ const run = (editor: Editor, command: Command, typed: string): boolean => {
       // at the root, so only quotes are unwrapped.
       if (
         command.kind === 'unwrap' &&
-        (expandedChildren(editor) as readonly Node[])[block[0]]?.type !==
-          'quote'
+        rootChildren(editor)[getDefined(block[0])]?.type !== 'quote'
       ) {
         return false;
       }
@@ -301,7 +321,7 @@ const run = (editor: Editor, command: Command, typed: string): boolean => {
       return true;
     }
     case 'replaceChildren': {
-      const children = expandedChildren(editor) as readonly Node[];
+      const children = rootChildren(editor);
       const shift = command.shift % children.length;
 
       if (shift === 0) return false;
@@ -1522,8 +1542,26 @@ type LedgerStep =
       intent: 'edit' | 'propose';
       kind: 'command';
     }>
+  // A command the authored plugin frames, as a key runs, and whose write
+  // the review ledger takes as its next projection.
+  | Readonly<{
+      intent: 'edit' | 'propose';
+      kind: 'framed';
+      step: CommandStep;
+    }>
   | Readonly<{ kind: 'redo' | 'undo' }>
   | Readonly<{ action: 'accept' | 'reject'; kind: 'decide' }>;
+
+// Commands settle only over a history whose writes the recorder settles: no
+// content moved, and no pending unwrap from Suggesting.
+const settles = ({
+  command,
+  intent,
+}: Readonly<{ command: Command; intent: 'edit' | 'propose' }>) =>
+  (command.kind !== 'unwrap' || intent !== 'propose') &&
+  command.kind !== 'moveNode' &&
+  command.kind !== 'transferNode' &&
+  command.kind !== 'transferText';
 
 const ledgerStepArbitrary: fc.Arbitrary<LedgerStep> = fc.oneof(
   {
@@ -1533,6 +1571,14 @@ const ledgerStepArbitrary: fc.Arbitrary<LedgerStep> = fc.oneof(
       kind: fc.constant('command' as const),
     }),
     weight: 5,
+  },
+  {
+    arbitrary: fc.record({
+      intent: fc.constantFrom('edit' as const, 'propose' as const),
+      kind: fc.constant('framed' as const),
+      step: stepArbitrary,
+    }),
+    weight: 4,
   },
   {
     arbitrary: fc.record({
@@ -1557,69 +1603,430 @@ const filler = (count: number, prefix: string): Node[] =>
     type: 'paragraph',
   }));
 
+type LedgerValue = Readonly<{
+  children: readonly Node[];
+  roots: Readonly<Record<string, readonly Node[]>>;
+}>;
+
+/** A root the ledger law edits: its schema, its start and the root its commands edit. */
+type LedgerRoot = Readonly<{
+  /** Cases the law always runs before its random ones, by what each covers. */
+  examples?: Readonly<
+    Record<
+      string,
+      [readonly Node[], readonly Edit[], number, readonly LedgerStep[]]
+    >
+  >;
+  /** The most filler lines the start adds. */
+  padding: number;
+  plugin: typeof Quotes;
+  root?: string;
+  start: (
+    blocks: readonly Node[],
+    padding: number
+  ) => readonly Node[] | LedgerValue;
+}>;
+
+const MAIN_ROOT: LedgerRoot = {
+  examples: {
+    'a line split off a joined line, moved above its join with a line between':
+      [
+        [
+          { children: [{ text: 'ab' }], type: 'paragraph' },
+          { children: [{ text: 'cd' }], type: 'paragraph' },
+          {
+            children: [
+              { children: [{ text: 'ef' }], type: 'paragraph' },
+              { children: [{ text: 'gh' }], type: 'paragraph' },
+            ],
+            type: 'quote',
+          },
+        ],
+        [
+          {
+            author: 'alice',
+            command: { at: 'g', direction: 'backward', kind: 'delete' },
+            intent: 'propose',
+          },
+          {
+            author: 'alice',
+            command: { at: 'g', kind: 'paste', side: 0 },
+            intent: 'edit',
+          },
+        ],
+        0,
+        [
+          {
+            command: { at: 'g', edge: 'after', kind: 'moveNode', to: 'a' },
+            intent: 'edit',
+            kind: 'command',
+          },
+        ],
+      ],
+  },
+  padding: 40,
+  plugin: Quotes,
+  start: (blocks, padding) => [
+    ...filler(padding >> 1, '0'),
+    ...blocks,
+    ...filler(padding, '1'),
+  ],
+};
+
+const OTHER_ROOTS: Readonly<Record<string, LedgerRoot>> = {
+  // The first paragraph becomes the title, so commands edit it.
+  titled: {
+    examples: {
+      'an inserted line left first fits no title, so the root completes nothing':
+        [
+          [
+            { children: [{ text: 'ab' }], type: 'paragraph' },
+            { children: [{ text: 'cd' }], type: 'paragraph' },
+            { children: [{ text: 'ef' }], type: 'paragraph' },
+            {
+              children: [{ children: [{ text: 'gh' }], type: 'paragraph' }],
+              type: 'quote',
+            },
+          ],
+          [
+            {
+              author: 'alice',
+              command: { from: 'a', kind: 'deleteRange', to: 'g' },
+              intent: 'propose',
+            },
+          ],
+          0,
+          [{ action: 'accept', kind: 'decide' }],
+        ],
+    },
+    padding: 2,
+    plugin: defineEditorSchema('recording-laws-titled', {
+      elements: { ...quoteElements, title: schema.element.textBlock() },
+      id: 'recording-laws-titled',
+      root: schema.content.prefix([{ element: 'title' }], quoteRoot(1)),
+      unknown: 'reject',
+      version: 1,
+    }) as never,
+    start: ([first, ...rest], padding) => {
+      const [title, body] =
+        first?.type === 'paragraph'
+          ? [{ ...first, type: 'title' }, rest]
+          : [
+              { children: [{ text: 'T' }], type: 'title' },
+              first ? [first, ...rest] : rest,
+            ];
+
+      // The root holds at least one line after its title.
+      return [
+        title,
+        ...body,
+        ...filler(Math.max(padding, 1 - body.length), '1'),
+      ];
+    },
+  },
+  'two-block': {
+    examples: {
+      'the last line, which no decision touches, fills the minimum alone': [
+        [
+          {
+            children: [
+              { children: [{ text: 'ab' }], type: 'paragraph' },
+              { children: [{ text: 'cd' }], type: 'paragraph' },
+            ],
+            type: 'quote',
+          },
+          { children: [{ text: 'ef' }], type: 'paragraph' },
+          { children: [{ text: 'gh' }], type: 'paragraph' },
+          { children: [{ text: 'ij' }], type: 'paragraph' },
+        ],
+        [
+          {
+            author: 'alice',
+            command: { from: 'a', kind: 'deleteRange', to: 'h' },
+            intent: 'propose',
+          },
+        ],
+        0,
+        [{ kind: 'undo' }],
+      ],
+    },
+    padding: 2,
+    plugin: defineEditorSchema('recording-laws-two-block', {
+      elements: quoteElements,
+      id: 'recording-laws-two-block',
+      root: quoteRoot(2),
+      unknown: 'reject',
+      version: 1,
+    }) as never,
+    start: (blocks, padding) => [
+      ...blocks,
+      ...filler(Math.max(padding, 2 - blocks.length), '1'),
+    ],
+  },
+  named: {
+    padding: 2,
+    plugin: defineEditorSchema('recording-laws-named', {
+      elements: quoteElements,
+      id: 'recording-laws-named',
+      root: quoteRoot(1),
+      roots: { notes: quoteRoot(1) },
+      unknown: 'reject',
+      version: 1,
+    }) as never,
+    root: 'notes',
+    start: (blocks, padding) => ({
+      children: filler(1, '0'),
+      roots: { notes: [...blocks, ...filler(padding, '1')] },
+    }),
+  },
+};
+
+// Runs the other roots' law must resolve as a head and to fill a minimum.
+const HEAD_RUNS = 20;
+const FILLED_RUNS = 25;
+
 /**
  * The ledger's frame of the stored document holds what the kernel's
  * projection holds, and its map answers as its composed change does.
  */
+const withoutRecords = ({
+  records: _records,
+  ...content
+}: JsonEditorValue): JsonEditorValue => content;
+
+// Every node path of one root, and every point strictly inside a text, where
+// a letter sits on each side, in document order.
+const locationsOf = (nodes: readonly Node[]) => {
+  const letters: Array<{ offset: number; path: number[] }> = [];
+  const paths: number[][] = [];
+  const walk = (children: readonly Node[], at: number[]) => {
+    children.forEach((child, index) => {
+      const path = [...at, index];
+
+      paths.push(path);
+      if (typeof child.text === 'string') {
+        for (let offset = 1; offset < child.text.length; offset += 1) {
+          letters.push({ offset, path });
+        }
+      } else {
+        walk(child.children as Node[], path);
+      }
+    });
+  };
+
+  walk(nodes, []);
+
+  return { letters, paths };
+};
+
+const COMPARED = { diffed: 0, letters: 0 };
+
+const LAST_FRAMES = new WeakMap<
+  Editor,
+  Readonly<{
+    length: number;
+    map: CommandProjectionMap;
+    reference: CommandProjectionMap;
+  }>
+>();
+
+// Whether a stored position lies inside content `change` keeps.
+const keptBy = (change: ReturnType<typeof getInternalDocumentRootChange>) => {
+  if (!change) return () => true;
+
+  const kept = new Set<number>();
+  let at = 0;
+
+  for (let index = 0; index < change.sections.length; index += 2) {
+    const length = getDefined(change.sections[index]);
+
+    if (getDefined(change.sections[index + 1]) < 0) {
+      for (let position = at + 1; position < at + length; position += 1) {
+        kept.add(position);
+      }
+    }
+    at += length;
+  }
+
+  return (position: number) => kept.has(position);
+};
+
+/**
+ * The ledger shows each mode's preview as the kernel does, its maps follow
+ * the change it composes, and every letter a decision keeps lands where that
+ * decision puts it. A decision aligns the whole root and pairs the tokens
+ * between two kept letters across blocks, where the ledger aligns run by
+ * run, so only the letters compare.
+ */
 const assertLedger = (editor: Editor, label: string) => {
   const ledger = getDefined(getReviewLedger(editor as never));
   const stored = editor.read.value() as unknown as JsonEditorValue;
-  const kernel = projectAuthoredValue(
-    stored,
-    'proposed',
-    authoredResolveSchemaOf(editor as never)
-  ).value;
+  const resolveSchema = authoredResolveSchemaOf(editor as never);
   const frame = ledger.frame(stored);
+  const last = LAST_FRAMES.get(editor);
 
-  for (const root of ['main', ...Object.keys(stored.roots ?? {})]) {
-    assert.deepEqual(
-      valueRoot((frame?.value ?? stored) as JsonEditorValue, root),
-      valueRoot(kernel, root),
-      `${label}: the ledger projects ${root} as the kernel does`
-    );
-  }
-  if (!frame) return;
-
-  const change = frame.map.change();
-  const reference = projectionMapOf(change);
-
-  for (const root of frame.map.roots) {
-    const before = DocumentIndex.fromValue(valueRoot(stored, root));
-    const after = getDefined(frame.indexes.get(root));
-
-    assert.deepEqual(
-      getDefined(getInternalDocumentRootChange(change, root)).apply(before)
-        .value,
-      after.value,
-      `${label}: the composed change gives the projection of ${root}`
-    );
-    for (let position = 0; position <= before.length; position += 1) {
-      for (const association of ['backward', 'forward'] as const) {
-        assert.equal(
-          frame.map.toProjected(root, position, association),
-          reference.toProjected(root, position, association),
-          `${label}: ${root} maps stored ${position} ${association}`
-        );
-      }
+  for (let position = 0; position <= (last?.length ?? -1); position += 1) {
+    for (const association of ['backward', 'forward'] as const) {
       assert.equal(
-        frame.map.hides(root, position),
-        reference.hides(root, position),
-        `${label}: ${root} hides stored ${position}`
+        last?.map.toProjected('main', position, association),
+        last?.reference.toProjected('main', position, association),
+        `${label}: the last frame still maps its stored ${position} ${association}`
       );
     }
-    for (let position = 0; position <= after.length; position += 1) {
-      for (const assoc of [-1, 1] as const) {
+  }
+  if (frame) {
+    LAST_FRAMES.set(editor, {
+      length: DocumentIndex.fromValue(valueRoot(stored, 'main')).length,
+      map: frame.map,
+      reference: projectionMapOf(frame.map.change()),
+    });
+  } else {
+    LAST_FRAMES.delete(editor);
+  }
+  const book = ledger.changes(stored);
+  const indexed = indexAuthoredChanges(stored);
+
+  const cards = groupAuthoredChanges(indexed);
+
+  assert.deepEqual(
+    [...book.idsFrom(null, false)],
+    cards.flatMap((card) => card.map((change) => change.id)),
+    `${label}: the book orders the changes as the kernel's cards do`
+  );
+  for (const [id, change] of indexed.changes) {
+    assert.deepEqual(
+      [book.change(id), book.occurrences(id)],
+      [change, indexed.occurrences.get(id)],
+      `${label}: the book reads ${id} as the kernel does`
+    );
+  }
+  for (const card of cards) {
+    const oldest = card.reduce((left, right) =>
+      right.createdAt < left.createdAt ||
+      (right.createdAt === left.createdAt && right.id < left.id)
+        ? right
+        : left
+    );
+
+    for (const change of card) {
+      const { revision: _revision, ...summary } = getDefined(
+        book.groupOf(change.id)
+      );
+
+      assert.deepEqual(
+        summary,
+        {
+          authorId: change.authorId,
+          changeCount: card.length,
+          createdAt: oldest.createdAt,
+          id: oldest.id,
+        },
+        `${label}: the book puts ${change.id} in the kernel's card`
+      );
+    }
+  }
+
+  for (const mode of ['accepted', 'proposed'] as const) {
+    const projected = projectAuthoredValue(stored, mode, resolveSchema).value;
+    const preview = ledger.preview(stored, mode);
+    const map = ledger.projectionMap(stored, mode);
+    const change = map.change();
+    const reference = projectionMapOf(change);
+    const alignment = decidedAlignment(
+      withoutRecords(stored),
+      withoutRecords(projected),
+      {
+        facts: factsOf(stored),
+        outcomes: mode === 'proposed' ? 'accept' : 'reject',
+      }
+    );
+
+    if (mode === 'proposed') {
+      assert.equal(
+        frame?.value ?? null,
+        map.roots.length > 0 ? preview : null,
+        `${label}: commands read the proposed preview`
+      );
+    }
+    if (!alignment) COMPARED.diffed += 1;
+    for (const root of ['main', ...Object.keys(stored.roots ?? {})]) {
+      const before = DocumentIndex.fromValue(valueRoot(stored, root));
+      const after = DocumentIndex.fromValue(valueRoot(preview, root));
+      const rootChange = getInternalDocumentRootChange(change, root);
+
+      assert.deepEqual(
+        valueRoot(preview, root),
+        valueRoot(projected, root),
+        `${label}: the ${mode} preview shows ${root} as the kernel does`
+      );
+      assert.deepEqual(
+        rootChange ? rootChange.apply(before).value : before.value,
+        after.value,
+        `${label}: the ${mode} change gives the preview of ${root}`
+      );
+      for (let position = 0; position <= before.length; position += 1) {
+        for (const association of ['backward', 'forward'] as const) {
+          assert.equal(
+            map.toProjected(root, position, association),
+            reference.toProjected(root, position, association),
+            `${label}: ${mode} ${root} maps stored ${position} ${association}`
+          );
+        }
         assert.equal(
-          frame.map.toStored(root, position, assoc),
-          reference.toStored(root, position, assoc),
-          `${label}: ${root} maps projected ${position} ${assoc}`
+          map.hides(root, position),
+          reference.hides(root, position),
+          `${label}: ${mode} ${root} hides stored ${position}`
         );
       }
-      assert.deepEqual(
-        frame.map.added(root, position),
-        reference.added(root, position),
-        `${label}: ${root} adds at projected ${position}`
-      );
+      for (let position = 0; position <= after.length; position += 1) {
+        for (const assoc of [-1, 1] as const) {
+          assert.equal(
+            map.toStored(root, position, assoc),
+            reference.toStored(root, position, assoc),
+            `${label}: ${mode} ${root} maps projected ${position} ${assoc}`
+          );
+        }
+        assert.deepEqual(
+          map.added(root, position),
+          reference.added(root, position),
+          `${label}: ${mode} ${root} adds at projected ${position}`
+        );
+      }
+
+      const actual = ledger.locationMap(stored, mode, root);
+      const own = authoredLocationMap(stored, preview, change, root);
+      const { letters, paths } = locationsOf(valueRoot(stored, root));
+
+      for (const path of paths) {
+        assert.deepEqual(
+          actual.path(path),
+          own.path(path),
+          `${label}: the ${mode} preview maps ${root} path ${path}`
+        );
+      }
+      if (!alignment) continue;
+
+      const expected = authoredLocationMap(stored, projected, alignment, root);
+      const keeps = keptBy(getInternalDocumentRootChange(alignment, root));
+
+      for (const letter of letters) {
+        for (const assoc of [-1, 1] as const) {
+          assert.deepEqual(
+            actual.point(letter, assoc),
+            own.point(letter, assoc),
+            `${label}: the ${mode} preview maps ${root} point ${JSON.stringify(letter)} ${assoc}`
+          );
+        }
+        if (!keeps(before.positionAt(letter))) continue;
+        COMPARED.letters += 1;
+        for (const assoc of [-1, 1] as const) {
+          assert.deepEqual(
+            actual.point(letter, assoc),
+            expected.point(letter, assoc),
+            `${label}: the ${mode} preview keeps ${root} letter ${JSON.stringify(letter)} ${assoc} where a decision does`
+          );
+        }
+      }
     }
   }
 };
@@ -1632,6 +2039,140 @@ const LEDGER_SEED = Number(
   (globalThis as { process?: { env?: Record<string, string | undefined> } })
     .process?.env?.PLITE_LEDGER_SEED ?? 20_261_015
 );
+
+/**
+ * Run the ledger law on one root shape; returns the steps it compared and
+ * how many of them changed the root its commands edit.
+ */
+const ledgerSteps = (shape: LedgerRoot, numRuns: number) => {
+  let edited = 0;
+  let steps = 0;
+
+  fc.assert(
+    fc.property(
+      documentArbitrary,
+      historyArbitrary,
+      fc.integer({ max: shape.padding, min: 0 }),
+      fc.array(ledgerStepArbitrary, { maxLength: 6, minLength: 1 }),
+      (initial, recorded, padding, plan) => {
+        const value = shape.start(replay(initial, recorded), padding);
+        let minted = 0;
+        const leader = editorFor(
+          value,
+          'bob',
+          'propose',
+          () => `bob:${(minted += 1)}`,
+          shape.plugin,
+          true
+        );
+        // A root view edits a named root as the editor edits main.
+        const actor = shape.root
+          ? createEditorView(leader, { root: shape.root })
+          : leader;
+        const follower = editorFor(
+          value,
+          'carol',
+          'edit',
+          'carol:1',
+          shape.plugin
+        );
+        const delivered: Array<
+          Parameters<Parameters<typeof leader.subscribeCommit>[0]>[0]
+        > = [];
+
+        leader.subscribeCommit((commit) => {
+          delivered.push(commit);
+        });
+
+        const label = `after ${JSON.stringify(plan)}`;
+
+        assertLedger(leader, `load ${label}`);
+        for (const [index, step] of plan.entries()) {
+          const before = rootChildren(actor);
+
+          try {
+            if (step.kind === 'command') {
+              actor.api.authored.setView({ intent: step.intent });
+              run(actor, step.command, 'XYZWV'[index % 5]);
+            } else if (step.kind === 'framed') {
+              if (
+                [...recorded, ...plan.slice(0, index)].some(
+                  (edit) => 'command' in edit && !settles(edit)
+                )
+              ) {
+                continue;
+              }
+
+              const point = ({ letter, side }: Caret) => {
+                const found = locate(actor, letter);
+
+                return found && { ...found, offset: found.offset + side };
+              };
+              const [anchor, focus] =
+                step.step.kind === 'fragment'
+                  ? [point(step.step.from), point(step.step.to)]
+                  : [point(step.step.at), point(step.step.at)];
+
+              if (anchor && focus) {
+                const lawCheck = process.env.PLITE_LAW_CHECK;
+
+                actor.api.authored.setView({ intent: step.intent });
+                // The framed law has its own property. Its selection check
+                // still fails on a caret the commands left in place before a
+                // struck leaf, which the ledger law does not read.
+                process.env.PLITE_LAW_CHECK = 'content';
+                try {
+                  runStep(actor, { anchor, focus }, step.step);
+                } finally {
+                  if (lawCheck === undefined) {
+                    delete process.env.PLITE_LAW_CHECK;
+                  } else process.env.PLITE_LAW_CHECK = lawCheck;
+                }
+              }
+            } else if (step.kind === 'decide') {
+              const ids = changesIn(rootChildren(actor));
+
+              if (ids.length > 0) {
+                authoredTestApi(leader).decide({
+                  action: step.action,
+                  changes: ids.slice(0, 1),
+                });
+              }
+            } else {
+              leader.api.history[step.kind]();
+            }
+          } catch (error) {
+            if (isRefusal(error)) continue;
+            throw error;
+          }
+          assertLedger(leader, `step ${index} ${label}`);
+          for (const commit of delivered.splice(0)) {
+            follower.update(
+              { tags: ['collaboration', 'history-skip'] },
+              // A peer receives the change as data, never the sender's nodes.
+              (tx) =>
+                tx.changes.apply(
+                  DocumentChange.fromJSON(
+                    JSON.parse(JSON.stringify(commit.changes.toJSON()))
+                  )
+                )
+            );
+          }
+          assertLedger(follower, `remote step ${index} ${label}`);
+          if (!isDeepStrictEqual(rootChildren(actor), before)) edited += 1;
+          steps += 1;
+        }
+      }
+    ),
+    {
+      examples: Object.values(shape.examples ?? {}) as never,
+      numRuns,
+      seed: LEDGER_SEED,
+    }
+  );
+
+  return { edited, steps };
+};
 
 type Shape = Readonly<{ children: Shape[]; text: boolean; type: unknown }>;
 
@@ -1842,85 +2383,46 @@ describe('authored review tree recording laws', () => {
   });
 
   it('keeps the review ledger equal to the kernel after every step, undo, redo, decision and remote commit', () => {
-    let steps = 0;
-
     console.info(JSON.stringify({ ledgerSeed: LEDGER_SEED }));
-    fc.assert(
-      fc.property(
-        documentArbitrary,
-        historyArbitrary,
-        fc.integer({ max: 40, min: 0 }),
-        fc.array(ledgerStepArbitrary, { maxLength: 6, minLength: 1 }),
-        (initial, history, padding, plan) => {
-          const value = [
-            ...filler(padding >> 1, '0'),
-            ...replay(initial, history),
-            ...filler(padding, '1'),
-          ];
-          let minted = 0;
-          const leader = editorFor(
-            value,
-            'bob',
-            'propose',
-            () => `bob:${++minted}`,
-            true,
-            true
-          );
-          const follower = editorFor(value, 'carol', 'edit', 'carol:1');
-          const delivered: Array<
-            Parameters<Parameters<typeof leader.subscribeCommit>[0]>[0]
-          > = [];
 
-          leader.subscribeCommit((commit) => {
-            delivered.push(commit);
-          });
-
-          const label = `after ${JSON.stringify(plan)}`;
-
-          assertLedger(leader, `load ${label}`);
-          for (const [index, step] of plan.entries()) {
-            try {
-              if (step.kind === 'command') {
-                leader.api.authored.setView({ intent: step.intent });
-                run(leader, step.command, 'XYZWV'[index % 5]);
-              } else if (step.kind === 'decide') {
-                const ids = changesIn(expandedChildren(leader));
-
-                if (ids.length > 0) {
-                  authoredTestApi(leader).decide({
-                    action: step.action,
-                    changes: ids.slice(0, 1),
-                  });
-                }
-              } else {
-                leader.api.history[step.kind]();
-              }
-            } catch (error) {
-              if (isRefusal(error)) continue;
-              throw error;
-            }
-            assertLedger(leader, `step ${index} ${label}`);
-            for (const commit of delivered.splice(0)) {
-              follower.update(
-                { tags: ['collaboration', 'history-skip'] },
-                // A peer receives the change as data, never the sender's nodes.
-                (tx) =>
-                  tx.changes.apply(
-                    DocumentChange.fromJSON(
-                      JSON.parse(JSON.stringify(commit.changes.toJSON()))
-                    )
-                  )
-              );
-            }
-            assertLedger(follower, `remote step ${index} ${label}`);
-            steps += 1;
-          }
-        }
-      ),
-      { numRuns: 200, seed: LEDGER_SEED }
-    );
+    const { steps } = ledgerSteps(MAIN_ROOT, 200);
 
     assert.ok(steps > 400, `only ${steps} steps compared`);
+    console.info(`ledger seed ${LEDGER_SEED}: compared`, COMPARED);
+    assert.ok(
+      COMPARED.letters > 4000,
+      `only ${COMPARED.letters} kept letters compared`
+    );
+  });
+
+  it('keeps the review ledger equal to the kernel in a titled root, a root of at least two blocks and a named root', () => {
+    const before = readLedgerWork();
+
+    for (const [name, shape] of Object.entries(OTHER_ROOTS)) {
+      const { edited, steps } = ledgerSteps(shape, 80);
+
+      assert.ok(
+        steps > 150,
+        `only ${steps} steps compared in the ${name} root`
+      );
+      assert.ok(
+        edited > steps / 3,
+        `only ${edited} of ${steps} steps changed the ${name} root`
+      );
+    }
+
+    const after = readLedgerWork();
+    const runs = {
+      filled: after.filledRuns - before.filledRuns,
+      head: after.headRuns - before.headRuns,
+    };
+
+    console.info(`ledger seed ${LEDGER_SEED}: runs`, runs);
+    assert.ok(runs.head > HEAD_RUNS, `only ${runs.head} head runs resolved`);
+    assert.ok(
+      runs.filled > FILLED_RUNS,
+      `only ${runs.filled} runs filled a minimum`
+    );
   });
 
   it('a command gives, once everything is accepted, what a plain editor gives on the accepted document, and a letter typed next lands where it does', () => {
@@ -1933,15 +2435,7 @@ describe('authored review tree recording laws', () => {
         // as Plate's keys record lifting a line out of a quote as a move, and
         // commands that cross its wrapper's edge are not settled. Commands
         // over a history that moves content are not settled either.
-        historyArbitrary.map((history) =>
-          history.filter(
-            ({ command, intent }) =>
-              (command.kind !== 'unwrap' || intent !== 'propose') &&
-              command.kind !== 'moveNode' &&
-              command.kind !== 'transferNode' &&
-              command.kind !== 'transferText'
-          )
-        ),
+        historyArbitrary.map((edits) => edits.filter(settles)),
         stepArbitrary,
         fc.constantFrom('edit' as const, 'propose' as const),
         commandCase(counts)

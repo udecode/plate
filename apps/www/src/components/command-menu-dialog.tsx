@@ -120,6 +120,7 @@ const selectedMutationObserverOptions: MutationObserverInit = {
 };
 
 type Query = Awaited<ReturnType<typeof useFumadocsSearch>>['query'];
+type IsPlateDocsHref = (href: string) => boolean;
 type HighlightCommand = (
   label: string,
   copyPayload?: string,
@@ -224,8 +225,11 @@ function getCommandMenuRegistryName(href: string) {
   return candidates.find((name) => commandMenuCopyableRegistryNames.has(name));
 }
 
-function getCommandMenuCopyCommand(href: string | undefined) {
-  if (!href) return undefined;
+function getCommandMenuCopyCommand(
+  href: string | undefined,
+  isPlateDocsHref: IsPlateDocsHref
+) {
+  if (!href || !isPlateDocsHref(href)) return undefined;
 
   const registryName = getCommandMenuRegistryName(href);
 
@@ -239,6 +243,7 @@ function getCommandMenuCopyCommand(href: string | undefined) {
 
 function CommandItems({
   content,
+  isPlateDocsHref,
   item,
   locale,
   onHighlight,
@@ -246,6 +251,7 @@ function CommandItems({
   runCommand,
 }: {
   content: (typeof i18n)['en'];
+  isPlateDocsHref: IsPlateDocsHref;
   item: NavItemWithChildren;
   locale: string;
   onHighlight: HighlightCommand;
@@ -255,9 +261,7 @@ function CommandItems({
   const router = useRouter();
   const title = getNavTitle(item, locale);
   const keywords = getItemKeywords(item, parentTitle);
-  const copyCommand = item.href
-    ? getCommandMenuCopyCommand(item.href)
-    : undefined;
+  const copyCommand = getCommandMenuCopyCommand(item.href, isPlateDocsHref);
 
   return (
     <>
@@ -297,6 +301,7 @@ function CommandItems({
         <CommandItems
           key={getCommandMenuItemKey(child)}
           content={content}
+          isPlateDocsHref={isPlateDocsHref}
           item={child}
           locale={locale}
           onHighlight={onHighlight}
@@ -310,12 +315,14 @@ function CommandItems({
 
 function CommandMenuGroup({
   content,
+  isPlateDocsHref,
   locale,
   onHighlight,
   runCommand,
   ...group
 }: {
   content: (typeof i18n)['en'];
+  isPlateDocsHref: IsPlateDocsHref;
   locale: string;
   onHighlight: HighlightCommand;
   runCommand: (command: () => unknown) => void;
@@ -330,6 +337,7 @@ function CommandMenuGroup({
         <CommandItems
           key={getCommandMenuItemKey(navItem)}
           content={content}
+          isPlateDocsHref={isPlateDocsHref}
           item={navItem}
           locale={locale}
           onHighlight={onHighlight}
@@ -343,6 +351,7 @@ function CommandMenuGroup({
 
 function SearchResults({
   content,
+  isPlateDocsHref,
   locale,
   query,
   search,
@@ -351,6 +360,7 @@ function SearchResults({
   setOpen,
 }: {
   content: (typeof i18n)['en'];
+  isPlateDocsHref: IsPlateDocsHref;
   locale: string;
   query: Query;
   search: string;
@@ -417,7 +427,10 @@ function SearchResults({
           className={commandMenuGroupClassName}
         >
           {items.map((item) => {
-            const copyCommand = getCommandMenuCopyCommand(item.url);
+            const copyCommand = getCommandMenuCopyCommand(
+              item.url,
+              isPlateDocsHref
+            );
 
             return (
               <CommandMenuItem
@@ -512,12 +525,14 @@ function CommandMenuKbd({ className, ...props }: React.ComponentProps<'kbd'>) {
 }
 
 export function CommandMenuDialog({
+  isPlateDocsHref,
   navItems,
   onOpenChange,
   onReady,
   open,
   sidebarNav,
 }: {
+  isPlateDocsHref: IsPlateDocsHref;
   navItems: MainNavItem[];
   onOpenChange: NonNullable<DialogProps['onOpenChange']>;
   onReady?: () => void;
@@ -809,6 +824,7 @@ export function CommandMenuDialog({
                     <CommandMenuGroup
                       key={`${group.title}:sidebar`}
                       content={content}
+                      isPlateDocsHref={isPlateDocsHref}
                       locale={locale}
                       onHighlight={setHighlightedCommand}
                       runCommand={runCommand}
@@ -861,6 +877,7 @@ export function CommandMenuDialog({
                     <CommandMenuGroup
                       key={group.title}
                       content={content}
+                      isPlateDocsHref={isPlateDocsHref}
                       locale={locale}
                       onHighlight={setHighlightedCommand}
                       runCommand={runCommand}
@@ -873,6 +890,7 @@ export function CommandMenuDialog({
 
             <SearchResults
               content={content}
+              isPlateDocsHref={isPlateDocsHref}
               locale={locale}
               query={query}
               search={docsSearch}

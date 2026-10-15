@@ -16,7 +16,7 @@ import {
   getInternalDocumentChangeRecords,
   valueRootIndex,
 } from './document-change';
-import { DocumentIndex } from './document-index';
+import { DocumentIndex, rootNodesOf } from './document-index';
 import type { JsonRecord } from './json';
 import {
   RootChange,
@@ -661,7 +661,8 @@ export class ChangeDraft {
       const indexedAfter = candidateBuilder.indexedAfter(accumulated);
       const indexedBefore = new Map<string, DocumentIndex>();
       const hasRestoredRoot =
-        (candidate.after.children !== this.source.children &&
+        (rootNodesOf(candidate.after, 'children') !==
+          rootNodesOf(this.source, 'children') &&
           !indexedAfter.has('main')) ||
         Object.entries(candidate.after.roots ?? {}).some(
           ([root, children]) =>

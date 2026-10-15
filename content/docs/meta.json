@@ -262,7 +262,8 @@
     "[Resizable](/docs/api/resizable)",
     "[Selection](/docs/api/selection)",
     "[DOM API](/docs/api/dom)",
-    "[React Hooks](/docs/api/react-hooks)"
+    "[React Hooks](/docs/api/react-hooks)",
+    "plite"
   ],
   "_plate": {
     "categoryGroups": {

@@ -1,4 +1,6 @@
+import { type NodeList, rootNodesOf } from '../../core/change/document-index';
 import { deriveValue } from '../../core/record-store';
+import { countLedgerWork } from '../ledger/work';
 import {
   decideKey,
   type FormatTag,
@@ -73,6 +75,8 @@ const settleFormats = (
 };
 
 const settleNode = (node: Node, pass: Pass): Node | null => {
+  countLedgerWork('settledNodes');
+
   const members = readMembers(node);
 
   if (members.length === 0) return node;
@@ -156,16 +160,23 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
     : withMembers(next, kept);
 };
 
-const settleNodes = (nodes: readonly Node[], pass: Pass): readonly Node[] => {
+const settleNodes = <L extends NodeList<Node>>(
+  nodes: L,
+  pass: Pass
+): L | Node[] => {
   let changed = false;
+  let holdsText = false;
   const next: Node[] = [];
 
-  for (const node of nodes) {
+  nodes.forEach((node) => {
+    holdsText ||= typeof node.text === 'string';
+
     const settled = settleNode(node, pass);
 
     if (!settled) {
       changed = true;
-      continue;
+
+      return;
     }
 
     const children = settled.children && settleNodes(settled.children, pass);
@@ -176,21 +187,16 @@ const settleNodes = (nodes: readonly Node[], pass: Pass): readonly Node[] => {
 
     if (result !== node) changed = true;
     next.push(result);
-  }
+  });
 
   if (!changed) return nodes;
-  if (
-    next.length === 0 &&
-    nodes.some((node) => typeof node.text === 'string')
-  ) {
-    return [{ text: '' }];
-  }
+  if (next.length === 0 && holdsText) return [{ text: '' }];
 
   return next;
 };
 
 const settleBlocks = (
-  children: readonly Node[],
+  children: NodeList<Node>,
   pass: Pass,
   blocks: ReadonlySet<number> | undefined
 ) => {
@@ -199,14 +205,14 @@ const settleBlocks = (
   let next: Node[] | null = null;
 
   for (const index of blocks) {
-    const block = children[index];
+    const block = children.at(index);
 
     if (!block) continue;
 
-    const [settled] = settleNodes([block], pass);
+    const settled = settleNodes([block], pass)[0];
 
     if (settled !== block) {
-      next ??= [...children];
+      next ??= children.slice();
       next[index] = settled;
     }
   }
@@ -238,11 +244,15 @@ export const settleValue = <V extends Value>(
     return { reopenedRejections: pass.reopenedRejections, value: null };
   }
 
-  const settleIn = (root: string, nodes: readonly Node[]) =>
+  const settleIn = (root: string, nodes: NodeList<Node>) =>
     scope === 'document'
       ? settleNodes(nodes, pass)
       : settleBlocks(nodes, pass, scope.get(root));
-  const children = settleIn('main', value.children as readonly Node[]);
+  const main = rootNodesOf(
+    value as Readonly<{ children: readonly Node[] }>,
+    'children'
+  );
+  const children = settleIn('main', main);
   const roots = Object.entries(value.roots ?? {}).map(
     ([root, nodes]) =>
       [root, nodes, settleIn(root, nodes as readonly Node[])] as const
@@ -253,12 +263,12 @@ export const settleValue = <V extends Value>(
   return {
     reopenedRejections: pass.reopenedRejections,
     value:
-      children === value.children && !rootsChanged && minted.length === 0
+      children === main && !rootsChanged && minted.length === 0
         ? null
         : deriveValue(
             value,
             {
-              children,
+              ...(children === main ? {} : { children }),
               ...(rootsChanged
                 ? {
                     roots: Object.fromEntries(

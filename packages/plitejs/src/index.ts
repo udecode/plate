@@ -14,6 +14,7 @@ export type {
   TransferRead,
 } from './core/transfer';
 export type {
+  TransferAdoptInput,
   TransferCheck,
   TransferDiagnostic,
   TransferEdge,
@@ -21,6 +22,8 @@ export type {
   TransferIntent,
   TransferLandingInput,
   TransferOutcome,
+  TransferPatch,
+  TransferPatchProperties,
   TransferPayload,
   TransferRefusalReason,
   TransferRelation,

@@ -27,6 +27,7 @@ import {
 } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
+import { isRootChangeRangeReplaced } from './change/root-change';
 import type { JsonEditorValue } from './change/tokens';
 import { getEditorSchema } from './editor-runtime';
 import type { InternalEditorSchemaApi } from './editor-schema';
@@ -535,16 +536,15 @@ const createMapContext = (
     const beforeDocument = valueRootIndex(before, root);
     const afterDocument = valueRootIndex(after, root);
     const nodeRange = beforeDocument.nodeRange(path);
-    let nodeWasRemoved = false;
+    const rootChange = getInternalDocumentRootChange(change, root);
 
-    getInternalDocumentRootChange(change, root)?.iterChangedRanges(
-      (from, to) => {
-        if (from <= nodeRange.from && to >= nodeRange.to) {
-          nodeWasRemoved = true;
-        }
-      }
-    );
-    if (options.deletion === 'drop' && nodeWasRemoved) return null;
+    if (
+      options.deletion === 'drop' &&
+      rootChange &&
+      isRootChangeRangeReplaced(rootChange, nodeRange.from, nodeRange.to)
+    ) {
+      return null;
+    }
 
     const association = options.association === 'backward' ? -1 : 1;
     const position = nodeRange.from;

@@ -1,6 +1,7 @@
 import { AuthoredPlugin } from '../../authored';
 import { definePlugin } from '../../core';
 import { PLUGINS } from '../../utils';
+import { suggestionColorOf } from './suggestionColorOf';
 
 const suggestionModes = {
   editing: 'editing',
@@ -41,7 +42,23 @@ export const BaseSuggestionPlugin = definePlugin(PLUGINS.suggestion, {
 
         if (marks.length === 0) return {};
 
+        const { read } = editor.plugin(AuthoredPlugin);
+        // The youngest claim's card paints and opens, so text typed inside
+        // another's insertion shows its own card.
+        const youngest = marks.reduce((left, right) =>
+          right.at > left.at || (right.at === left.at && right.change > left.change)
+            ? right
+            : left
+        );
+        const cards = [youngest, ...marks].flatMap(
+          (mark) => read.groupOf(mark.change)?.id ?? []
+        );
+
         return {
+          'data-editor-authored-color': cards[0]
+            ? String(suggestionColorOf(cards[0]))
+            : undefined,
+          'data-editor-authored-groups': joinUnique(cards),
           'data-editor-authored-author': joinUnique(
             marks.map((mark) => mark.author)
           ),

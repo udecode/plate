@@ -8,8 +8,10 @@ import type { NodeSelection } from '../interfaces/selection';
 import { defineRead } from './read-definition';
 import type { SliceLanding, SliceLandingInput } from './slice-landing-types';
 import type {
+  TransferAdoptInput,
   TransferEdge,
   TransferLandingInput,
+  TransferPatch,
   TransferSideInput,
   TransferSourceInput,
   TransferWrap,
@@ -38,6 +40,16 @@ export const editorReads = Object.freeze({
      * the final edge and vetoes refuse it.
      */
     landing: defineRead<TransferLandingInput, TransferEdge>('transfer.landing'),
+    /**
+     * Properties a block copy takes from where it lands, such as its list; the
+     * default, `[]`, keeps the copy as it is. It runs on the final edge, while
+     * hovering too, after the landing read and before the schema and vetoes
+     * judge the patched copy. A patch may name only properties declared
+     * `landing: 'adopt'`, or the transfer refuses with `policy`.
+     */
+    adopt: defineRead<TransferAdoptInput, readonly TransferPatch[]>(
+      'transfer.adopt'
+    ),
     /**
      * What a drop at a block's side builds, such as a column group; the
      * default, `null`, refuses. The schema must still admit the wrap, and

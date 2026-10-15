@@ -2,23 +2,15 @@ import type { Route } from 'next';
 import type { LinkProps } from 'next/link';
 
 const ABSOLUTE_HREF_REGEX = /^[a-z][a-z\d+\-.]*:/i;
+const CN_HOME_OR_DOCS_REGEX = /^\/(?:docs)?(?:[/?#]|$)/;
+
+export const hasCnPage = (href: string) => CN_HOME_OR_DOCS_REGEX.test(href);
 
 export function hrefWithLocale(href: string, locale: string): Route;
 export function hrefWithLocale(href: string, locale: string): string {
-  if (
-    locale !== 'cn' ||
-    href.startsWith('/cn') ||
-    href.startsWith('#') ||
-    ABSOLUTE_HREF_REGEX.test(href)
-  ) {
-    return href;
-  }
+  if (locale !== 'cn' || !hasCnPage(href)) return href;
 
-  if (href === '/') {
-    return '/cn';
-  }
-
-  return `/cn${href}`;
+  return href === '/' ? '/cn' : `/cn${href}`;
 }
 
 export const toLinkHref = (href: string): LinkProps<string>['href'] => {

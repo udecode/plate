@@ -1232,7 +1232,7 @@
           "name": "compileEditorSchemaContract",
           "route": null,
           "runtime": true,
-          "signature": "compileEditorSchemaContract: (editor: AnyEditor, input: PluginInput) => Readonly<{\n  diagnostics: readonly EditorSchemaDiagnostic[];\n  elements: Readonly<{\n    allowedChildren: ReadonlyArray<readonly [string, readonly string[]]>;\n    allowedParents: ReadonlyArray<readonly [string, readonly string[]]>;\n    byType: readonly EditorSchemaContractElement[];\n    contentPrograms: ReadonlyArray<readonly [string, Readonly<{\n      allowedElementTypes: readonly string[];\n      allowsText: boolean;\n      allowsUnknownElements: boolean;\n      defaultPlan: CompiledSchemaConstructionPlan | null;\n      max: number | null;\n      min: number;\n      prefix?: readonly CompiledSchemaContentPrefixSlot[];\n      remainder?: EditorSchemaContractContentProgram;\n    }>]>;\n    defaultPlans: ReadonlyArray<readonly [string, CompiledSchemaConstructionPlan]>;\n    groups: ReadonlyArray<readonly [string, readonly string[]]>;\n    textGroups: readonly string[];\n    wrapperPlans: ReadonlyArray<readonly [string, readonly string[]]>;\n  }>;\n  fingerprint: string;\n  formatVersion: 1;\n  identity: EditorSchemaIdentity;\n  primaryRoot: EditorSchemaContractRoot;\n  properties: Readonly<{\n    byId: readonly StructuralCompiledSchemaProperty[];\n    conflictsByPropertyId: ReadonlyArray<readonly [string, readonly string[]]>;\n    elementAllowedByType: ReadonlyArray<readonly [string, readonly string[]]>;\n    lifecycle: ReadonlyArray<readonly [string, Readonly<{\n      copy: 'drop' | 'preserve';\n      inclusive: boolean | null;\n      split: 'drop' | 'preserve';\n      typeChange: 'drop' | 'preserve-if-allowed';\n    }>]>;\n    lookup: Readonly<{\n      element: Readonly<{\n        exact: ReadonlyArray<readonly [string, readonly string[]]>;\n        prefixes: readonly CompiledSchemaPropertyKeyPrefix[];\n      }>;\n      text: Readonly<{\n        exact: ReadonlyArray<readonly [string, readonly string[]]>;\n        prefixes: readonly CompiledSchemaPropertyKeyPrefix[];\n      }>;\n    }>;\n    mergeStrategies: ReadonlyArray<readonly [string, CompiledSchemaPropertyMergeStrategy]>;\n    membersByExclusiveGroup: ReadonlyArray<readonly [string, readonly string[]]>;\n    textAllowedByParentType: ReadonlyArray<readonly [string, readonly string[]]>;\n  }>;\n  revision: number;\n  roots: readonly EditorSchemaContractRoot[];\n  unknown: EditorSchemaUnknownPolicy;\n  vocabulary: CompiledSchemaVocabulary;\n}>",
+          "signature": "compileEditorSchemaContract: (editor: AnyEditor, input: PluginInput) => Readonly<{\n  diagnostics: readonly EditorSchemaDiagnostic[];\n  elements: Readonly<{\n    allowedChildren: ReadonlyArray<readonly [string, readonly string[]]>;\n    allowedParents: ReadonlyArray<readonly [string, readonly string[]]>;\n    byType: readonly EditorSchemaContractElement[];\n    contentPrograms: ReadonlyArray<readonly [string, Readonly<{\n      allowedElementTypes: readonly string[];\n      allowsText: boolean;\n      allowsUnknownElements: boolean;\n      defaultPlan: CompiledSchemaConstructionPlan | null;\n      max: number | null;\n      min: number;\n      prefix?: readonly CompiledSchemaContentPrefixSlot[];\n      remainder?: EditorSchemaContractContentProgram;\n    }>]>;\n    defaultPlans: ReadonlyArray<readonly [string, CompiledSchemaConstructionPlan]>;\n    groups: ReadonlyArray<readonly [string, readonly string[]]>;\n    textGroups: readonly string[];\n    wrapperPlans: ReadonlyArray<readonly [string, readonly string[]]>;\n  }>;\n  fingerprint: string;\n  formatVersion: 1;\n  identity: EditorSchemaIdentity;\n  primaryRoot: EditorSchemaContractRoot;\n  properties: Readonly<{\n    byId: readonly StructuralCompiledSchemaProperty[];\n    conflictsByPropertyId: ReadonlyArray<readonly [string, readonly string[]]>;\n    elementAllowedByType: ReadonlyArray<readonly [string, readonly string[]]>;\n    lifecycle: ReadonlyArray<readonly [string, Readonly<{\n      copy: 'drop' | 'preserve';\n      inclusive: boolean | null;\n      landing?: Exclude<SchemaPropertyLandingPolicy, 'preserve'>;\n      split: 'drop' | 'preserve';\n      typeChange: 'drop' | 'preserve-if-allowed';\n    }>]>;\n    lookup: Readonly<{\n      element: Readonly<{\n        exact: ReadonlyArray<readonly [string, readonly string[]]>;\n        prefixes: readonly CompiledSchemaPropertyKeyPrefix[];\n      }>;\n      text: Readonly<{\n        exact: ReadonlyArray<readonly [string, readonly string[]]>;\n        prefixes: readonly CompiledSchemaPropertyKeyPrefix[];\n      }>;\n    }>;\n    mergeStrategies: ReadonlyArray<readonly [string, CompiledSchemaPropertyMergeStrategy]>;\n    membersByExclusiveGroup: ReadonlyArray<readonly [string, readonly string[]]>;\n    textAllowedByParentType: ReadonlyArray<readonly [string, readonly string[]]>;\n  }>;\n  revision: number;\n  roots: readonly EditorSchemaContractRoot[];\n  unknown: EditorSchemaUnknownPolicy;\n  vocabulary: CompiledSchemaVocabulary;\n}>",
           "source": null,
           "typeParameters": []
         },
@@ -2932,7 +2932,7 @@
           "name": "editorReads",
           "route": null,
           "runtime": true,
-          "signature": "editorReads: Readonly<{\n  nodes: Readonly<{\n    isSelectable: EditorReadDescriptor<Readonly<{\n      element: Node;\n      nodeKey: NodeKey | null;\n    }>, boolean, Editor>;\n    shouldMergeNodesRemovePrevNode: EditorReadDescriptor<Readonly<{\n      current: NodeEntry;\n      previous: NodeEntry;\n    }>, boolean, Editor>;\n  }>;\n  transfer: Readonly<{\n    /** Expand a transfer's selected blocks, such as a list item's family. */\n    source: EditorReadDescriptor<Readonly<{\n      selection: NodeSelection;\n    }>, NodeSelection, Editor>;\n    /**\n     * Redirect one landing edge, such as past a list item's family; the default\n     * keeps the edge. A redirected edge must map to itself. The schema admits\n     * the final edge and vetoes refuse it.\n     */\n    landing: EditorReadDescriptor<Readonly<{\n      edge: 'after' | 'before';\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      target: NodeEntry<Element>;\n    }>, Readonly<{\n      edge: 'after' | 'before';\n      key: NodeKey;\n    }>, Editor>;\n    /**\n     * What a drop at a block's side builds, such as a column group; the\n     * default, `null`, refuses. The schema must still admit the wrap, and\n     * vetoes can still refuse it.\n     */\n    side: EditorReadDescriptor<Readonly<{\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      side: 'end' | 'start';\n      target: NodeEntry<Element>;\n    }>, TransferWrap | null, Editor>;\n  }>;\n  slice: Readonly<{\n    /**\n     * Shape what a paste lands after command handlers delegate, from the target\n     * the editor resolved; the default lands `slice` unchanged. Reads the\n     * current command draft; raw transaction replacement and fitting bypass it.\n     */\n    landing: EditorReadDescriptor<Readonly<{\n      source: ContentSlice$1;\n      slice: ContentSlice$1;\n      target: SliceLandingTarget;\n    }>, Readonly<{\n      slice: ContentSlice$1;\n      replaceEmpty?: Readonly<{\n        omitTargetProperties?: readonly string[];\n        slice: ContentSlice$1;\n      }>;\n    }>, Editor>;\n    export: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n      source: 'assembled' | 'selection';\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n    get: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n  }>;\n}>",
+          "signature": "editorReads: Readonly<{\n  nodes: Readonly<{\n    isSelectable: EditorReadDescriptor<Readonly<{\n      element: Node;\n      nodeKey: NodeKey | null;\n    }>, boolean, Editor>;\n    shouldMergeNodesRemovePrevNode: EditorReadDescriptor<Readonly<{\n      current: NodeEntry;\n      previous: NodeEntry;\n    }>, boolean, Editor>;\n  }>;\n  transfer: Readonly<{\n    /** Expand a transfer's selected blocks, such as a list item's family. */\n    source: EditorReadDescriptor<Readonly<{\n      selection: NodeSelection;\n    }>, NodeSelection, Editor>;\n    /**\n     * Redirect one landing edge, such as past a list item's family; the default\n     * keeps the edge. A redirected edge must map to itself. The schema admits\n     * the final edge and vetoes refuse it.\n     */\n    landing: EditorReadDescriptor<Readonly<{\n      edge: 'after' | 'before';\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      target: NodeEntry<Element>;\n    }>, Readonly<{\n      edge: 'after' | 'before';\n      key: NodeKey;\n    }>, Editor>;\n    /**\n     * Properties a block copy takes from where it lands, such as its list; the\n     * default, `[]`, keeps the copy as it is. It runs on the final edge, while\n     * hovering too, after the landing read and before the schema and vetoes\n     * judge the patched copy. A patch may name only properties declared\n     * `landing: 'adopt'`, or the transfer refuses with `policy`.\n     */\n    adopt: EditorReadDescriptor<TransferAdoptInput, readonly Readonly<{\n      at: Path;\n      properties: TransferPatchProperties;\n    }>[], Editor>;\n    /**\n     * What a drop at a block's side builds, such as a column group; the\n     * default, `null`, refuses. The schema must still admit the wrap, and\n     * vetoes can still refuse it.\n     */\n    side: EditorReadDescriptor<Readonly<{\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      side: 'end' | 'start';\n      target: NodeEntry<Element>;\n    }>, TransferWrap | null, Editor>;\n  }>;\n  slice: Readonly<{\n    /**\n     * Shape what a paste lands after command handlers delegate, from the target\n     * the editor resolved; the default lands `slice` unchanged. Reads the\n     * current command draft; raw transaction replacement and fitting bypass it.\n     */\n    landing: EditorReadDescriptor<Readonly<{\n      intent: 'copy' | 'move';\n      source: ContentSlice$1;\n      slice: ContentSlice$1;\n      target: SliceLandingTarget;\n    }>, Readonly<{\n      slice: ContentSlice$1;\n      replaceEmpty?: Readonly<{\n        omitTargetProperties?: readonly string[];\n        slice: ContentSlice$1;\n      }>;\n    }>, Editor>;\n    export: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n      source: 'assembled' | 'selection';\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n    get: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n  }>;\n}>",
           "source": null,
           "typeParameters": []
         },
@@ -3300,7 +3300,7 @@
           "name": "EditorSchemaProperty",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaProperty = Readonly<{\n  id: string;\n  key: SchemaPropertyKey;\n  lifecycle: Readonly<{\n    copy: SchemaPropertyCopyPolicy;\n    inclusive: boolean | null;\n    split: SchemaPropertySplitPolicy;\n    typeChange: SchemaPropertyTypeChangePolicy;\n  }>;\n  merge: 'replace' | 'set';\n  placement: 'element' | 'text';\n  role: SchemaPropertyRole;\n  target: SchemaTarget | null;\n  value: PropertyValueDescriptor;\n}>;",
+          "signature": "type EditorSchemaProperty = Readonly<{\n  id: string;\n  key: SchemaPropertyKey;\n  lifecycle: Readonly<{\n    copy: SchemaPropertyCopyPolicy;\n    inclusive: boolean | null;\n    /** Always `preserve` for a text property. */\n    landing: SchemaPropertyLandingPolicy;\n    split: SchemaPropertySplitPolicy;\n    typeChange: SchemaPropertyTypeChangePolicy;\n  }>;\n  merge: 'replace' | 'set';\n  placement: 'element' | 'text';\n  role: SchemaPropertyRole;\n  target: SchemaTarget | null;\n  value: PropertyValueDescriptor;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -8915,7 +8915,7 @@
           "name": "SchemaElementProperty",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaElementProperty<TKey extends SchemaPropertyKey = SchemaPropertyKey, TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget> = Readonly<{\n  copy: SchemaPropertyCopyPolicy;\n  key: TKey;\n  placement: 'element';\n  role: SchemaPropertyRole;\n  split: SchemaPropertySplitPolicy;\n  target: TTarget;\n  typeChange: SchemaPropertyTypeChangePolicy;\n  value: TDescriptor;\n}>;",
+          "signature": "type SchemaElementProperty<TKey extends SchemaPropertyKey = SchemaPropertyKey, TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget> = Readonly<{\n  copy: SchemaPropertyCopyPolicy;\n  key: TKey;\n  landing: SchemaPropertyLandingPolicy;\n  placement: 'element';\n  role: SchemaPropertyRole;\n  split: SchemaPropertySplitPolicy;\n  target: TTarget;\n  typeChange: SchemaPropertyTypeChangePolicy;\n  value: TDescriptor;\n}>;",
           "source": null,
           "typeParameters": [
             "TKey extends SchemaPropertyKey = SchemaPropertyKey",
@@ -8961,7 +8961,7 @@
           "name": "SchemaElementPropertyOptions",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaElementPropertyOptions = Readonly<{\n  copy?: SchemaPropertyCopyPolicy;\n  role?: SchemaPropertyRole;\n  split?: SchemaPropertySplitPolicy;\n  target: SchemaTarget;\n  typeChange?: SchemaPropertyTypeChangePolicy;\n}>;",
+          "signature": "type SchemaElementPropertyOptions = Readonly<{\n  copy?: SchemaPropertyCopyPolicy;\n  /** Defaults to `preserve`. */\n  landing?: SchemaPropertyLandingPolicy;\n  role?: SchemaPropertyRole;\n  split?: SchemaPropertySplitPolicy;\n  target: SchemaTarget;\n  typeChange?: SchemaPropertyTypeChangePolicy;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -9217,6 +9217,18 @@
           "route": null,
           "runtime": false,
           "signature": "type SchemaPropertyKey = SchemaKeyPrefix | string;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:SchemaPropertyLandingPolicy": {
+          "aliases": [],
+          "documentation": "Whether where content lands decides an element property. `rebase`: a text\nmove may change it, such as a depth. `adopt`: a text move may change it,\nand a block copy may take it from where it lands, such as a list.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "SchemaPropertyLandingPolicy",
+          "route": null,
+          "runtime": false,
+          "signature": "type SchemaPropertyLandingPolicy = 'adopt' | 'preserve' | 'rebase';",
           "source": null,
           "typeParameters": []
         },
@@ -9787,7 +9799,7 @@
           "name": "SliceLanding",
           "route": null,
           "runtime": false,
-          "signature": "type SliceLanding = Readonly<{\n  /** What the paste fits as ordinary content. */\n  slice: ContentSlice$1;\n  /**\n   * Content that replaces an `empty` target whole. The editor checks it and\n   * falls back to `slice` when it does not fit. A middleware that rewrites\n   * `slice` rewrites or drops this too.\n   */\n  replaceEmpty?: Readonly<{\n    /** Target properties the replacement's head never keeps. */\n    omitTargetProperties?: readonly string[];\n    slice: ContentSlice$1;\n  }>;\n}>;",
+          "signature": "type SliceLanding = Readonly<{\n  /** What the paste fits as ordinary content, cut to the same length limit. */\n  slice: ContentSlice$1;\n  /**\n   * Content that replaces an `empty` target whole. The editor checks it and\n   * falls back to `slice` when it does not fit. A middleware that rewrites\n   * `slice` rewrites or drops this too.\n   */\n  replaceEmpty?: Readonly<{\n    /** Target properties the replacement's head never keeps. */\n    omitTargetProperties?: readonly string[];\n    slice: ContentSlice$1;\n  }>;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -9799,13 +9811,13 @@
           "name": "SliceLandingInput",
           "route": null,
           "runtime": false,
-          "signature": "type SliceLandingInput = Readonly<{\n  /** The command's slice as handlers left it, before the length limit. */\n  source: ContentSlice$1;\n  /**\n   * What survives the length limit at a caret or range, or the handed slice\n   * over a node selection.\n   */\n  slice: ContentSlice$1;\n  target: SliceLandingTarget;\n}>;",
+          "signature": "type SliceLandingInput = Readonly<{\n  /**\n   * `copy` for a paste, a node-selection replace and a copied text drop;\n   * `move` for a text drag that moves, where only properties declared\n   * `landing: 'rebase'` or `'adopt'` may change.\n   */\n  intent: 'copy' | 'move';\n  /** The command's slice as handlers left it, before the length limit. */\n  source: ContentSlice$1;\n  /** What survives the length limit, crediting the text the paste replaces. */\n  slice: ContentSlice$1;\n  target: SliceLandingTarget;\n}>;",
           "source": null,
           "typeParameters": []
         },
         "platejs:SliceLandingTarget": {
           "aliases": [],
-          "documentation": "Where a paste lands. `empty` is a collapsed caret in an empty block that a\nwhole-block paste may replace. `context` holds the lowest block at the\ntarget's start, or `null` without a target. `root` is the named root the\npaste lands in, absent for the main document.",
+          "documentation": "Where a paste lands, after the caret is placed. `empty` is a collapsed caret\nin an empty block that a whole-block paste may replace. `context` holds the\nlowest block at the target's start, the first selected block's start for a\npaste that replaces selected blocks whole, or `null` when no block is found\nthere. `root` is the named root the paste lands in, absent for the main\ndocument.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "SliceLandingTarget",
@@ -10496,6 +10508,18 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:TransferAdoptInput": {
+          "aliases": [],
+          "documentation": "A block copy at its final edge, before placement and vetoes judge it.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "TransferAdoptInput",
+          "route": null,
+          "runtime": false,
+          "signature": "type TransferAdoptInput = TransferLandingInput & Readonly<{\n  payload: Extract<TransferPayload, {\n    kind: 'nodes';\n  }>;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:TransferApi": {
           "aliases": [],
           "documentation": "The `editor.api.transfer` group.",
@@ -10616,6 +10640,30 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:TransferPatch": {
+          "aliases": [],
+          "documentation": "Properties a block copy adopts at `at`, a path inside the payload whose\nfirst index picks one of its nodes.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "TransferPatch",
+          "route": null,
+          "runtime": false,
+          "signature": "type TransferPatch = Readonly<{\n  at: Path;\n  properties: TransferPatchProperties;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:TransferPatchProperties": {
+          "aliases": [],
+          "documentation": "Only properties declared `landing: 'adopt'`; `undefined` unsets one.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "TransferPatchProperties",
+          "route": null,
+          "runtime": false,
+          "signature": "type TransferPatchProperties = Readonly<Record<string, unknown> & {\n  childRoots?: never;\n  children?: never;\n  text?: never;\n  type?: never;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:TransferPayload": {
           "aliases": [],
           "documentation": "",
@@ -10648,7 +10696,7 @@
           "name": "TransferRead",
           "route": null,
           "runtime": false,
-          "signature": "type TransferRead = Readonly<{\n  /**\n   * Whether a transfer would be admitted, without running it: the dry run the\n   * drop indicator paints from, for a move. A refusal at commit time, such as\n   * a lossy landing, is not predicted.\n   */\n  check: (input: TransferInput) => TransferCheck;\n  /**\n   * The blocks a transfer carries, after feature expansion such as list\n   * families, without nested duplicates, in document order. With `node`, a\n   * handle's blocks: the node selection when it holds the node, else the node\n   * alone. Without it, a keyboard move's blocks: the selected blocks, else the\n   * blocks holding the selection.\n   */\n  nodes: (options?: Readonly<{\n    node?: NodeTarget<Element>;\n  }>) => readonly NodeKey[];\n}>;",
+          "signature": "type TransferRead = Readonly<{\n  /**\n   * Whether a move would be admitted, without running it: the dry run the\n   * drop indicator paints from. A refusal at commit time, such as a lossy\n   * landing, is not predicted.\n   */\n  check: (input: TransferInput) => TransferCheck;\n  /**\n   * The blocks a transfer carries, after feature expansion such as list\n   * families, without nested duplicates, in document order. With `node`, a\n   * handle's blocks: the node selection when it holds the node, else the node\n   * alone. Without it, a keyboard move's blocks: the selected blocks, else the\n   * blocks holding the selection.\n   */\n  nodes: (options?: Readonly<{\n    node?: NodeTarget<Element>;\n  }>) => readonly NodeKey[];\n}>;",
           "source": null,
           "typeParameters": []
         },

@@ -159,10 +159,7 @@ describe('authored plugin', () => {
 
     const first = read.authored.changes({ limit: 1 });
 
-    assert.deepEqual(
-      [ids(first.items), first.cursor],
-      [['carol:1'], 'carol:1']
-    );
+    assert.deepEqual(ids(first.items), ['carol:1']);
     assert.deepEqual(
       ids(read.authored.changes({ cursor: first.cursor, limit: 2 }).items),
       ['carol:2', 'dave:3']
@@ -173,13 +170,19 @@ describe('authored plugin', () => {
     );
     assert.deepEqual(
       ids(
-        read.authored.changesAt({
-          anchor: { offset: 1, path: [0, 2] },
-          focus: { offset: 2, path: [0, 2] },
-        })
+        read.authored.changes({
+          at: {
+            anchor: { offset: 1, path: [0, 2] },
+            focus: { offset: 2, path: [0, 2] },
+          },
+        }).items
       ),
       ['carol:2']
     );
+    assert.deepEqual(ids(read.authored.changes({ group: 'carol:2' }).items), [
+      'carol:1',
+      'carol:2',
+    ]);
     assert.deepEqual(read.authored.details('carol:1').parts, [
       {
         action: 'delete',
@@ -194,19 +197,17 @@ describe('authored plugin', () => {
     ]);
     assert.deepEqual(
       read.authored
-        .groups()
-        .map(
-          (group: {
-            changes: Array<{ id: string }>;
-            id: string;
-            rank: number;
-          }) => [group.id, group.rank, ids(group.changes)]
-        ),
+        .groups({ at: [0] })
+        .map((group: { changeCount: number; id: string }) => [
+          group.id,
+          group.changeCount,
+        ]),
       [
-        ['carol:1', 0, ['carol:1', 'carol:2']],
-        ['dave:3', 1, ['dave:3']],
+        ['carol:1', 2],
+        ['dave:3', 1],
       ]
     );
+    assert.equal(read.authored.groupOf('carol:2')?.id, 'carol:1');
   });
 
   it('reads content that runs across an inline edge or fills a block as one part', () => {
@@ -267,16 +268,75 @@ describe('authored plugin', () => {
     assert.equal(read.change('ann:1').ranges.length, 3);
   });
 
-  it('reads the same groups until the document changes', () => {
+  it('decides a card as read, and refuses it once a change left it', () => {
     const { authored, editor } = make();
-    const groups = authored.read.authored.groups();
+    const card = authored.read.authored.groupOf('carol:1');
 
-    assert.equal(authored.read.authored.groups(), groups);
-    run(editor, (tx) => {
-      tx.selection.set(caret([0, 0], 0));
-      tx.command(editorCommands.insertText, { text: 'Z' });
-    });
-    assert.notEqual(authored.read.authored.groups(), groups);
+    assert.deepEqual(
+      run(editor, (tx) =>
+        tx.authored.decide({
+          action: 'accept',
+          changes: [authored.read.authored.change('carol:2')],
+        })
+      ),
+      { ids: ['carol:2'], status: 'applied' }
+    );
+    assert.deepEqual(
+      run(editor, (tx) =>
+        tx.authored.decide({ action: 'accept', groups: [card] })
+      ),
+      { ids: ['carol:1'], status: 'stale' }
+    );
+    assert.deepEqual(
+      run(editor, (tx) =>
+        tx.authored.decide({
+          action: 'accept',
+          groups: [authored.read.authored.groupOf('carol:1')],
+        })
+      ),
+      { ids: ['carol:1'], status: 'applied' }
+    );
+  });
+
+  it('decides a change read before a block was added above it', () => {
+    const { authored, editor } = make();
+    const read = authored.read.authored.change('carol:2');
+
+    run(editor, (tx) =>
+      tx.nodes.insert(
+        { children: [{ text: 'Above' }], type: 'paragraph' } as never,
+        { at: [0] }
+      )
+    );
+
+    assert.deepEqual(
+      run(editor, (tx) =>
+        tx.authored.decide({ action: 'accept', changes: [read] })
+      ),
+      { ids: ['carol:2'], status: 'applied' }
+    );
+  });
+
+  it('refuses a block change read before the text inside it changed', () => {
+    const { authored, editor } = make('propose');
+
+    run(editor, (tx) => tx.nodes.set({ type: 'heading' }, { at: [0] }));
+
+    const [id] = authored.read.authored
+      .changes()
+      .items.filter((change: { authorId: string }) => change.authorId === 'bob')
+      .map((change: { id: string }) => change.id);
+    const read = authored.read.authored.change(id);
+
+    authored.api.authored.setView({ intent: 'edit' });
+    run(editor, (tx) => tx.text.insert('!', { at: caret([0, 0], 0).anchor }));
+
+    assert.deepEqual(
+      run(editor, (tx) =>
+        tx.authored.decide({ action: 'accept', changes: [read] })
+      ),
+      { ids: [id], status: 'stale' }
+    );
   });
 
   it('decides inside an update and refuses a change read before it went', () => {
@@ -736,5 +796,91 @@ describe('authored plugin', () => {
 
     assert.equal(textOf(accepted.read.children()), 'alpha\n!beta\ngamma');
     assert.deepEqual(keysOf().slice(0, 4), keys);
+  });
+
+  it('keeps the accepted preview blocks while a suggestion strikes every block', () => {
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'alpha' }], type: 'paragraph' },
+        { children: [{ text: 'beta' }], type: 'paragraph' },
+      ],
+      plugins: [Blocks, createAuthoredPlugin({ authorId: 'alice' })],
+    });
+    const accepted = createEditorView(editor, {
+      authored: { preview: 'accepted' },
+    });
+    const writer = createEditorView(editor, {
+      authored: { intent: 'propose' },
+    });
+    const blocks = accepted.read.children();
+
+    writer.update((tx) =>
+      tx.text.delete({
+        at: { anchor: caret([0, 0], 0).anchor, focus: caret([1, 0], 4).focus },
+      })
+    );
+
+    assert.notEqual(editor.read.children()[0], blocks[0]);
+    assert.deepEqual(
+      accepted.read.children().map((block, index) => block === blocks[index]),
+      [true, true]
+    );
+  });
+
+  it('drops the line a join filled once a line is appended after it', () => {
+    const TwoLines = defineEditorSchema('authored-plugin-two-lines', {
+      elements: { paragraph: schema.element.textBlock() },
+      id: 'authored-plugin-two-lines',
+      root: schema.content.types(['paragraph'], {
+        default: { type: 'paragraph' },
+        min: 2,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'ab' }], type: 'paragraph' },
+        {
+          authored: [mark('carol:1', 'join', 1)],
+          children: [{ text: 'cd' }],
+          type: 'paragraph',
+        },
+      ] as never,
+      plugins: [TwoLines, createAuthoredPlugin({ authorId: 'alice' })],
+    });
+    const proposed = createEditorView(editor, {
+      authored: { preview: 'proposed' },
+    });
+
+    assert.equal(textOf(proposed.read.children()), 'abcd\n');
+
+    editor.update((tx) =>
+      tx.nodes.insert(
+        { children: [{ text: 'ef' }], type: 'paragraph' } as never,
+        {
+          at: [2],
+        }
+      )
+    );
+
+    assert.equal(textOf(proposed.read.children()), 'abcd\nef');
+  });
+
+  it('previews a document no change touches as the stored document, without a copy', () => {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'alpha' }], type: 'paragraph' }],
+      plugins: [Blocks, createAuthoredPlugin({ authorId: 'alice' })],
+    });
+    const proposed = createEditorView(editor, {
+      authored: { preview: 'proposed' },
+    });
+
+    assert.equal(proposed.read.children(), editor.read.children());
+
+    editor.update.text.insert('!', { at: caret([0, 0], 0).anchor });
+
+    assert.equal(textOf(proposed.read.children()), '!alpha');
+    assert.equal(proposed.read.children(), editor.read.children());
   });
 });

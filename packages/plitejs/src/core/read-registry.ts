@@ -129,18 +129,24 @@ export const executeEditorRead = <
   read: TRead,
   input: EditorReadInput<TRead>,
   applyDefault: (input: EditorReadInput<TRead>) => EditorReadResult<TRead>,
-  stateSource?: BaseEditor<any, any>
+  stateSource?: BaseEditor<any, any> | (() => BaseEditor<any, any>)
 ): EditorReadResult<TRead> => {
   const owner = getEditorRuntimeOwner(editor as Editor);
   const entries =
     getPluginRegistry(owner).reads.byDescriptor.get(read)?.entries ?? [];
+  let source = typeof stateSource === 'function' ? undefined : stateSource;
   const runInRead = <T>(fn: () => T): T => {
     const exitRead = enterEditorRead(owner);
 
     try {
-      return stateSource
+      if (typeof stateSource === 'function' && entries.length > 0) {
+        source ??= stateSource();
+      }
+      const current = source;
+
+      return current
         ? withTransactionSpecDraftRead(owner, () =>
-            stateSource.read((state) => fnWithState(fn, state))
+            current.read((state) => fnWithState(fn, state))
           )
         : fnWithState(fn, getEditorStateView(owner));
     } finally {

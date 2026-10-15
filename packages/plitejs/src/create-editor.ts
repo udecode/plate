@@ -115,6 +115,7 @@ import {
   assertEditorOptions,
   type CheckedEditorOptions,
   EDITOR_OPTION_KEYS,
+  type UnknownEditorOptionTarget,
 } from './internal/editor-options';
 
 let nextEditorId = 0;
@@ -353,10 +354,7 @@ const adoptInitialDocumentChange = (
   const initialDocument = getEditorDocumentValue(editor);
   const initialSelection = getLiveSelection(editor);
   const initialSelectionRoot = getCurrentSelectionRoot(editor);
-  const admitted = admitDocument(
-    admission,
-    change.apply(initialDocument) as ReturnType<typeof getEditorDocumentValue>
-  );
+  const admitted = admitDocument(admission, change.apply(initialDocument));
 
   initializeEditorSchemaDocument(editor, admitted.document);
   if (!initialSelection) return;
@@ -586,27 +584,24 @@ export const initializePluginEntries = <TEditor extends AnyEditor>(
   );
 };
 
+type NoPluginsEditorOptions<V extends Value = Value> = Omit<
+  CreateEditorOptions<V>,
+  'plugins'
+> & {
+  plugins?: never;
+};
+
 /**
  * Create a mutable Plite editor with schema, command, query, state, and
  * plugin runtime APIs installed.
  */
 export function createEditor<
-  const TOptions extends Omit<
-    CreateEditorOptions<any, readonly unknown[]>,
-    'lifecycleErrorSink'
-  >,
+  const TOptions extends CreateEditorOptions<any, readonly unknown[]> & {
+    plugins: readonly unknown[];
+  },
 >(
-  options: CheckedEditorOptions<
-    TOptions,
-    CreateEditorOptions<any, readonly unknown[]>
-  >
+  options: CheckedEditorOptions<TOptions, CreateEditorOptions>
 ): Editor<EditorValueFromOptions<TOptions>, PluginsFromOptions<TOptions>>;
-
-export function createEditor<V extends Value = Value>(
-  options?: Omit<CreateEditorOptions<V>, 'plugins'> & {
-    plugins?: never;
-  }
-): Editor<V>;
 
 export function createEditor<
   V extends Value,
@@ -616,6 +611,22 @@ export function createEditor<
     plugins: TPlugins;
   }
 ): Editor<V, TPlugins>;
+
+export function createEditor<
+  const TOptions extends NoPluginsEditorOptions<any>,
+>(
+  options: CheckedEditorOptions<TOptions, CreateEditorOptions>
+): Editor<EditorValueFromOptions<TOptions>>;
+
+export function createEditor<V extends Value = Value>(
+  options?: NoPluginsEditorOptions<V>
+): Editor<V>;
+
+export function createEditor<
+  const TOptions extends Partial<Record<keyof CreateEditorOptions, unknown>>,
+>(
+  options?: UnknownEditorOptionTarget<TOptions, NoPluginsEditorOptions>
+): Editor;
 
 export function createEditor<
   V extends Value = Value,

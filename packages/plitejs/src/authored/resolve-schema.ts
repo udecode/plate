@@ -22,13 +22,14 @@ export const authoredResolveSchemaOf = (
   if (cached?.schema === schema) return cached.resolve;
 
   const resolve: AuthoredResolveSchema = {
-    complete: (children, site, root, vacated) => {
+    complete: (children, site, root, vacated, part) => {
       const completion = completeChildrenAt(
         editor,
         site as readonly Element[],
         children as readonly Descendant[],
         root,
-        vacated
+        vacated,
+        part
       );
 
       return {
@@ -39,6 +40,8 @@ export const authoredResolveSchemaOf = (
         children: completion.children,
       };
     },
+    fitsPrefix: (node, slot, root) =>
+      schema.canContainAt(null, node as Descendant, slot, root),
     content: (type, root) => {
       const content =
         type === null

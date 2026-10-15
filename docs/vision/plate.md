@@ -57,11 +57,16 @@ Current priorities:
   and no context selects an editable, so an editor nested in a slot renders its
   own default content. A Plate entrypoint never exports a raw Plite editable
   such as `PagedEditable`.
-- Public docs teach one Plate API. Only the Performance comparison and From
-  Plite to Plate guide (including its translation) name the internal runtime.
-  Contributor runtime references live outside the public docs collection. The
-  boundary covers navigation, search, LLM output, examples and installable docs
-  as well as visible prose.
+- Plate's public docs teach one Plate API. Outside the Plite section, only the
+  Performance comparison and From Plite to Plate guide (including its
+  translation) name the runtime. The Plite section at `/docs/plite` documents
+  `plitejs` for developers who build on it without Plate. It opens from one
+  entry in the Plate sidebar's API section and keeps its own sidebar, pager and
+  search label, so Plate navigation never lists its pages. Installable Plate
+  docs leave it out, because Plate apps import `platejs`. Contributor runtime
+  references live outside the public docs collection. The boundary covers
+  navigation, search, LLM output, examples and installable docs as well as
+  visible prose.
 - DOM output uses `data-editor` and `data-editor-*`. Exact attribute ownership
   protects application attributes sharing the prefix. New serialized output
   uses neutral markers; supported persisted formats retain explicit readers.

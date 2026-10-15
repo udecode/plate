@@ -171,16 +171,18 @@ const assertAuthoredInference = () => {
     authorId: 'alice',
     limit: 20,
   }).items;
-  const changesAt: readonly AuthoredChange[] = editor.read.authored.changesAt({
-    anchor: { path: [0, 0], offset: 0 },
-    focus: { path: [0, 0], offset: 1 },
-  });
+  const changesAt: readonly AuthoredChange[] = editor.read.authored.changes({
+    at: {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 1 },
+    },
+  }).items;
   const details: AuthoredChangeDetails | null = editor.read.authored.details(
     changes[0]?.id ?? ''
   );
   const parts: readonly AuthoredChangePart[] = details?.parts ?? [];
-  // @ts-expect-error range lookup requires native range coordinates
-  editor.read.authored.changesAt({ path: [0, 0], offset: 0 });
+  // @ts-expect-error a place is a location or a node key
+  editor.read.authored.changes({ at: 1 });
   // @ts-expect-error details lookup requires a logical change identity
   editor.read.authored.details(1);
   const result: AuthoredResult = editor.update.authored.decide({

@@ -91,6 +91,7 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
           validationVersion: 1,
         }),
         {
+          landing: 'rebase',
           target: target.types(targetElementTypes),
           typeChange: 'preserve-if-allowed',
         }

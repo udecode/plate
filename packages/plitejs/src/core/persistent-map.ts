@@ -207,3 +207,73 @@ export function* persistentMapEntries<T>(
   yield [node.key, node.value];
   yield* persistentMapEntries(node.right);
 }
+
+type MapEntry<T> = readonly [string, T];
+
+const isMapEntry = <T>(
+  unit: PersistentMapNode<T> | MapEntry<T>
+): unit is MapEntry<T> => Array.isArray(unit);
+
+const expandMapUnit = <T>(stack: (PersistentMapNode<T> | MapEntry<T>)[]) => {
+  const node = stack.pop() as PersistentMapNode<T>;
+
+  if (node.right) stack.push(node.right);
+  stack.push([node.key, node.value]);
+  if (node.left) stack.push(node.left);
+};
+
+/**
+ * The keys whose value differs between two versions of a map, added and
+ * removed ones included, in key order. Both versions are walked in key
+ * order a subtree at a time, and a subtree they share is skipped whole, so a
+ * diff of versions a few writes apart reads those writes' paths.
+ */
+export const persistentMapChanges = <T>(
+  before: PersistentMapNode<T> | null,
+  after: PersistentMapNode<T> | null
+): string[] => {
+  const changed: string[] = [];
+
+  if (before === after) return changed;
+
+  const left: (PersistentMapNode<T> | MapEntry<T>)[] = before ? [before] : [];
+  const right: (PersistentMapNode<T> | MapEntry<T>)[] = after ? [after] : [];
+
+  while (left.length > 0 && right.length > 0) {
+    const a = getDefined(left.at(-1));
+    const b = getDefined(right.at(-1));
+
+    if (a === b) {
+      left.pop();
+      right.pop();
+    } else if (!isMapEntry(a)) {
+      expandMapUnit(isMapEntry(b) || a.size >= b.size ? left : right);
+    } else if (!isMapEntry(b)) {
+      expandMapUnit(right);
+    } else if (a[0] === b[0]) {
+      if (a[1] !== b[1]) changed.push(a[0]);
+      left.pop();
+      right.pop();
+    } else if (a[0] < b[0]) {
+      changed.push(a[0]);
+      left.pop();
+    } else {
+      changed.push(b[0]);
+      right.pop();
+    }
+  }
+  for (const rest of [left, right]) {
+    while (rest.length > 0) {
+      const unit = getDefined(rest.at(-1));
+
+      if (isMapEntry(unit)) {
+        changed.push(unit[0]);
+        rest.pop();
+      } else {
+        expandMapUnit(rest);
+      }
+    }
+  }
+
+  return changed;
+};

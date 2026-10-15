@@ -16,11 +16,22 @@ import {
   type SliceLanding,
   type SliceLandingInput,
   target,
+  transfer,
 } from 'plitejs';
 import { history } from 'plitejs/history';
 
-import { dispatchCommand } from '../src/core/command-registry';
+import { createAuthoredPlugin } from '../src/authored/authored';
+import {
+  dispatchCommand,
+  evaluateCommandWithState,
+} from '../src/core/command-registry';
 import { registerEditorContent } from '../src/core/content';
+import {
+  getEditorStateView,
+  withEditorUpdateRootScope,
+} from '../src/core/public-state';
+import { setTargetRuntime } from '../src/core/target-runtime';
+import { dom, domCommands } from '../src/dom';
 
 const text = () => schema.content.text({ default: 'text', min: 1 });
 const paragraph = (value: string, props: object = {}) => ({
@@ -725,5 +736,1050 @@ describe('slice landing', () => {
     assert.deepEqual(roots, ['notes']);
     assert.deepEqual(editor.read.root('notes'), [heading('Head')]);
     assert.deepEqual(editor.read.children(), [paragraph('Main')]);
+  });
+
+  it('shows a paste over selected blocks as a limited slice on the first block', () => {
+    const seen: unknown[] = [];
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0], [2]]),
+      initialValue: [paragraph('aa'), paragraph('b'), paragraph('cc')],
+      maxLength: 5,
+      plugins: [
+        LandingSchema,
+        landing('record-input', (input, next) => {
+          seen.push(input.source.content, input.slice.content, input.target);
+
+          return next();
+        }),
+      ],
+    });
+
+    editor.update.slice.replace(ContentSlice.closed([paragraph('123456')]));
+
+    assert.deepEqual(seen, [
+      [paragraph('123456')],
+      [paragraph('1234')],
+      { block: [paragraph('aa'), [0]], kind: 'context' },
+    ]);
+    assert.deepEqual(editor.read.children(), [
+      paragraph('1234'),
+      paragraph('b'),
+    ]);
+  });
+
+  it('reads the target root through the landing state from any editor', () => {
+    const notesPoint = { offset: 0, path: [0, 0], root: 'notes' };
+    const read = (
+      dispatch: (editor: ReturnType<typeof createEditor>) => void
+    ) => {
+      let seen: unknown;
+      const editor = createEditor({
+        initialValue: {
+          children: [paragraph('Main'), paragraph('More')],
+          roots: { header: [paragraph('Head')], notes: [paragraph('Note')] },
+        },
+        plugins: [
+          HeaderNotesSchema,
+          definePlugin('record-state', {
+            readMiddleware: ({ around }) => [
+              around(editorReads.slice.landing, ({ input, next, state }) => {
+                const path = input.target.block?.[1];
+
+                seen = [
+                  state.view.root(),
+                  path && state.nodes.get(path)?.[0],
+                  state.children().length,
+                ];
+
+                return next();
+              }),
+            ],
+          }),
+        ],
+      });
+
+      dispatch(editor);
+
+      return seen;
+    };
+    const plain = ContentSlice.closed([paragraph('Plain')]);
+
+    assert.deepEqual(
+      [
+        read((editor) => {
+          editor.update.slice.replace(plain, { at: notesPoint });
+        }),
+        read((editor) => {
+          createEditorView(editor, { root: 'header' }).update.slice.replace(
+            plain,
+            { at: notesPoint }
+          );
+        }),
+        read((editor) => {
+          createEditorView(createEditorView(editor, { root: 'header' }), {
+            root: 'header',
+          }).update.slice.replace(plain, { at: notesPoint });
+        }),
+        read((editor) => {
+          editor.update.selection.set(
+            SelectionApi.nodes([[0]], { root: 'notes' })
+          );
+          editor.update.slice.replace(plain);
+        }),
+        read((editor) => {
+          createEditorView(editor, { root: 'header' }).update.slice.replace(
+            plain,
+            { at: editor.read.key(editor.read.children()[0]) }
+          );
+        }),
+      ],
+      [
+        ['notes', paragraph('Note'), 1],
+        ['notes', paragraph('Note'), 1],
+        ['notes', paragraph('Note'), 1],
+        ['notes', paragraph('Note'), 1],
+        [undefined, paragraph('Main'), 2],
+      ]
+    );
+  });
+
+  it('builds a state for another root only for a landing handler', () => {
+    const readFactoryCalls = (withHandler: boolean) => {
+      let calls = 0;
+      const editor = createEditor({
+        initialValue: {
+          children: [paragraph('Main')],
+          roots: { header: [paragraph('Head')], notes: [paragraph('Note')] },
+        },
+        plugins: [
+          HeaderNotesSchema,
+          definePlugin('count-reads', {
+            read: () => {
+              calls += 1;
+              return {};
+            },
+          }),
+          ...(withHandler
+            ? [
+                definePlugin('pass-landing', {
+                  readMiddleware: ({ around }) => [
+                    around(editorReads.slice.landing, ({ next }) => next()),
+                  ],
+                }),
+              ]
+            : []),
+        ],
+      });
+      const paste = () =>
+        editor.update.slice.replace(ContentSlice.closed([paragraph('Plain')]), {
+          at: { offset: 0, path: [0, 0], root: 'notes' },
+        });
+
+      paste();
+      const before = calls;
+      paste();
+
+      return calls - before;
+    };
+
+    assert.deepEqual([readFactoryCalls(false), readFactoryCalls(true)], [0, 1]);
+  });
+
+  it('proposes on the empty block a content rule leaves the paste in', () => {
+    const editor = createEditor({
+      initialSelection: caret([0, 0]),
+      initialValue: [
+        paragraph('', { align: 'gone' }),
+        paragraph('', { align: 'live' }),
+      ],
+      plugins: [LandingSchema, proposeOnEmpty([paragraph('Head')])],
+    });
+
+    registerEditorContent(editor, (_reader, node) => node?.align !== 'gone');
+    editor.update.slice.replace(ContentSlice.closed([paragraph('Plain')]));
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('', { align: 'gone' }),
+      paragraph('Head', { align: 'live' }),
+    ]);
+  });
+
+  it('gives an empty target where a hanging range or a node key lands', () => {
+    const results = (['range', 'key'] as const).map((at) => {
+      const editor = createEditor({
+        initialValue: [paragraph(''), paragraph('After')],
+        plugins: [LandingSchema, proposeOnEmpty([paragraph('Head')])],
+      });
+      const plain = ContentSlice.closed([paragraph('Plain')]);
+
+      if (at === 'range') {
+        editor.update.selection.set(
+          SelectionApi.text({
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 0, path: [1, 0] },
+          })
+        );
+        editor.update.slice.replace(plain);
+      } else {
+        editor.update.slice.replace(plain, {
+          at: editor.read.key(editor.read.children()[0]),
+        });
+      }
+
+      return editor.read.children();
+    });
+
+    assert.deepEqual(results, [
+      [paragraph('Head'), paragraph('After')],
+      [paragraph('Head'), paragraph('After')],
+    ]);
+  });
+
+  it('joins open paste edges in an undeclared named root', () => {
+    const results = ([2, 1, 0, 'key'] as const).map((at) => {
+      const editor = createEditor({
+        initialValue: {
+          children: [paragraph('Body')],
+          roots: { header: [paragraph('ab')] },
+        },
+      });
+
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [paragraph('12')],
+          openEnd: 1,
+          openStart: 1,
+        }),
+        {
+          at:
+            at === 'key'
+              ? editor.read.key(editor.read.root('header')[0])
+              : { offset: at, path: [0, 0], root: 'header' },
+        }
+      );
+
+      return [editor.read.root('header'), editor.read.children()];
+    });
+
+    assert.deepEqual(
+      results,
+      [
+        paragraph('ab12'),
+        paragraph('a12b'),
+        paragraph('12ab'),
+        paragraph('12ab'),
+      ].map((header) => [[header], [paragraph('Body')]])
+    );
+  });
+
+  it('joins open edges in an undeclared named root through the raw slice APIs', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('Body')],
+        roots: { notes: [paragraph('ab')] },
+      },
+    });
+    const slice = ContentSlice.fromJSON({
+      content: [paragraph('12')],
+      openEnd: 1,
+      openStart: 1,
+    });
+    const at = { offset: 1, path: [0, 0], root: 'notes' };
+    const before = editor.read.value();
+    const fitted = editor.read((state) => state.slice.fit(slice, { at }));
+
+    editor.update((tx) => {
+      tx.slice.replace(slice, { at });
+    });
+
+    assert.deepEqual(
+      [
+        fitted && fitted.changes.apply(before).roots?.notes,
+        editor.read.root('notes'),
+      ],
+      [[paragraph('a12b')], [paragraph('a12b')]]
+    );
+  });
+
+  it('reads earlier draft changes in the target root through the landing state', () => {
+    const results = (['update', 'extend', 'projected'] as const).map(
+      (draft) => {
+        let seen: unknown;
+        const editor = createEditor({
+          initialValue: {
+            children: [paragraph('Main')],
+            roots: { notes: [paragraph('Note')] },
+          },
+          plugins: [
+            NotesSchema,
+            dom(),
+            definePlugin('record-draft', {
+              readMiddleware: ({ around }) => [
+                around(editorReads.slice.landing, ({ input, next, state }) => {
+                  const path = input.target.block?.[1];
+
+                  seen = path && state.nodes.get(path)?.[0];
+
+                  return next();
+                }),
+              ],
+            }),
+          ],
+        });
+        const at = { offset: 0, path: [0, 0], root: 'notes' };
+        const input = {
+          options: { at },
+          slice: ContentSlice.closed([paragraph('Plain')]),
+        };
+
+        if (draft === 'update') {
+          editor.update((tx) => {
+            tx.text.insert('ZZ', { at });
+            tx.command(editorCommands.replaceSlice, input);
+          });
+        } else if (draft === 'extend') {
+          editor.read((state) => {
+            const typed = state.transaction((tx) => {
+              tx.text.insert('ZZ', { at });
+            });
+
+            state.transaction.extend(typed, () => {
+              evaluateCommandWithState(
+                editor,
+                editorCommands.replaceSlice,
+                getEditorStateView(editor),
+                input
+              );
+            });
+          });
+        } else {
+          const data = new Map([['text/plain', 'Plain']]);
+
+          editor.read((state) => {
+            const typed = state.transaction((tx) => {
+              tx.text.insert('ZZ', { at });
+              tx.selection.set({ anchor: at, focus: at });
+            });
+
+            state.transaction.extend(typed, () => {
+              withEditorUpdateRootScope(editor, 'notes', () => {
+                evaluateCommandWithState(
+                  editor,
+                  domCommands.insertData,
+                  getEditorStateView(editor),
+                  {
+                    files: [] as unknown as FileList,
+                    getData: (type: string) => data.get(type) ?? '',
+                    types: [...data.keys()],
+                  } as unknown as DataTransfer
+                );
+              });
+            });
+          });
+        }
+
+        return seen;
+      }
+    );
+
+    assert.deepEqual(results, [
+      paragraph('ZZNote'),
+      paragraph('ZZNote'),
+      paragraph('ZZNote'),
+    ]);
+  });
+
+  it('lands a DOM paste over selected blocks in their root and its limit', () => {
+    const seen: unknown[] = [];
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('mmmmmm')],
+        roots: { notes: [paragraph('aa'), paragraph('b')] },
+      },
+      maxLength: 7,
+      plugins: [
+        NotesSchema,
+        dom(),
+        definePlugin('record-root', {
+          readMiddleware: ({ around }) => [
+            around(editorReads.slice.landing, ({ next, state }) => {
+              seen.push(state.view.root(), state.children().length);
+
+              return next();
+            }),
+          ],
+        }),
+      ],
+    });
+    const data = new Map([['text/plain', '1234567']]);
+
+    editor.update.selection.set(SelectionApi.nodes([[0]], { root: 'notes' }));
+    editor.api.dom.clipboard.insertData({
+      files: [] as unknown as FileList,
+      getData: (type: string) => data.get(type) ?? '',
+      types: [...data.keys()],
+    } as unknown as DataTransfer);
+
+    assert.deepEqual(seen, ['notes', 2]);
+    assert.deepEqual(editor.read.root('notes'), [
+      paragraph('123456'),
+      paragraph('b'),
+    ]);
+    assert.deepEqual(editor.read.children(), [paragraph('mmmmmm')]);
+  });
+
+  it('trims plugin output past the length limit to the limit', () => {
+    const run = (
+      initialSelection:
+        | ReturnType<typeof caret>
+        | ReturnType<typeof SelectionApi.nodes>,
+      content: Descendant[]
+    ) => {
+      const editor = createEditor({
+        initialSelection,
+        initialValue: [paragraph('ab'), paragraph('c')],
+        maxLength: 5,
+        plugins: [
+          LandingSchema,
+          landing('grow', () => ({
+            slice: ContentSlice.fromJSON({ content, openEnd: 1, openStart: 1 }),
+          })),
+        ],
+      });
+
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [paragraph('1')],
+          openEnd: 1,
+          openStart: 1,
+        })
+      );
+
+      return editor.read.children();
+    };
+
+    assert.deepEqual(
+      [
+        run(caret([0, 0], 2), [paragraph('WXYZQ')]),
+        run(SelectionApi.nodes([[0]]), [paragraph('WXYZQ')]),
+        run(SelectionApi.nodes([[0]]), [paragraph('WX'), paragraph('YZQ')]),
+      ],
+      [
+        [paragraph('abWX'), paragraph('c')],
+        [paragraph('WXYZ'), paragraph('c')],
+        [paragraph('WX'), paragraph('YZ'), paragraph('c')],
+      ]
+    );
+  });
+
+  it('replaces a selected object block whole with an open paste', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: [media('cap'), paragraph('tail')],
+      plugins: [LandingSchema],
+    });
+
+    editor.update.slice.replace(
+      ContentSlice.fromJSON({
+        content: [paragraph('12'), paragraph('34')],
+        openEnd: 1,
+        openStart: 1,
+      })
+    );
+
+    assert.deepEqual(
+      [editor.read.children(), editor.read.selection()],
+      [
+        [paragraph('12'), paragraph('34'), paragraph('tail')],
+        {
+          anchor: { offset: 2, path: [1, 0] },
+          focus: { offset: 2, path: [1, 0] },
+        },
+      ]
+    );
+  });
+
+  it('copies the content roots a paste carries over a selected block', () => {
+    const portal = (root: string) => ({
+      childRoots: { body: root },
+      children: [{ text: 'P' }],
+      type: 'portal',
+    });
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: [paragraph('aa'), paragraph('')],
+      plugins: [LandingSchema],
+    });
+
+    editor.update.slice.replace(
+      ContentSlice.fromJSON({
+        content: [portal('body:1')],
+        openEnd: 0,
+        openStart: 0,
+        roots: { 'body:1': [paragraph('Body')] },
+      })
+    );
+
+    assert.deepEqual(editor.read.value(), {
+      children: [portal('body:1:copy'), paragraph('')],
+      roots: { 'body:1:copy': [paragraph('Body')] },
+    });
+  });
+
+  it('keeps the block that owns copied roots when an open paste replaces a selected block', () => {
+    const portal = (root: string) => ({
+      childRoots: { body: root },
+      children: [{ text: 'P' }],
+      type: 'portal',
+    });
+    const copied = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      }),
+      initialValue: {
+        children: [portal('body:1'), paragraph('tail')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [LandingSchema],
+    }).read.slice.export();
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: [paragraph('aa'), paragraph('')],
+      plugins: [LandingSchema],
+    });
+
+    editor.update.slice.replace(copied);
+
+    assert.deepEqual(editor.read.value(), {
+      children: [portal('body:1:copy'), paragraph('')],
+      roots: { 'body:1:copy': [paragraph('Body')] },
+    });
+  });
+
+  it('deletes the selected blocks an empty paste replaces', () => {
+    const results = [[[0]], [[1]], [[0], [1]]].map((paths) => {
+      const editor = createEditor({
+        initialSelection: SelectionApi.nodes(paths as [number[]]),
+        initialValue: [paragraph('abc'), paragraph('def')],
+      });
+
+      return [
+        editor.update.slice.replace(ContentSlice.empty),
+        editor.read.children(),
+        editor.read.selection(),
+      ];
+    });
+
+    const at = (offset: number) => ({ offset, path: [0, 0] });
+
+    assert.deepEqual(results, [
+      [true, [paragraph('def')], { anchor: at(0), focus: at(0) }],
+      [true, [paragraph('abc')], { anchor: at(3), focus: at(3) }],
+      [true, [], null],
+    ]);
+  });
+
+  const pasteEmptyOverLastNote = (
+    notes: Array<ReturnType<typeof paragraph>>
+  ) => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[notes.length - 1]], {
+        root: 'notes',
+      }),
+      initialValue: {
+        children: [paragraph('m1'), paragraph('m2'), paragraph('m3')],
+        roots: { notes },
+      },
+      plugins: [NotesSchema],
+    });
+
+    return [
+      editor.update.slice.replace(ContentSlice.empty),
+      editor.read.root('notes'),
+      editor.read.selection(),
+    ];
+  };
+
+  it('deletes the last selected block of a named root on an empty paste', () => {
+    const at = { offset: 2, path: [0, 0], root: 'notes' };
+
+    assert.deepEqual(
+      pasteEmptyOverLastNote([paragraph('bc'), paragraph('de')]),
+      [true, [paragraph('bc')], { anchor: at, focus: at }]
+    );
+  });
+
+  it('empties the only selected block of a named root on an empty paste', () => {
+    assert.deepEqual(pasteEmptyOverLastNote([paragraph('bc')]), [
+      true,
+      [paragraph('')],
+      null,
+    ]);
+  });
+
+  it('deletes the quote around the only paragraph an empty paste replaces', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[1, 0]]),
+      initialValue: [
+        paragraph('bc'),
+        { type: 'quote', children: [paragraph('ghij')] },
+      ],
+      plugins: [LandingSchema],
+    });
+    const at = { offset: 2, path: [0, 0] };
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(ContentSlice.empty),
+        editor.read.children(),
+        editor.read.selection(),
+      ],
+      [true, [paragraph('bc')], { anchor: at, focus: at }]
+    );
+  });
+
+  it('lands the text of an open block whose content roots the paste does not carry over a selected block', () => {
+    const portal = (root: string) => ({
+      childRoots: { body: root },
+      children: [{ text: 'P' }],
+      type: 'portal',
+    });
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[1]]),
+      initialValue: {
+        children: [portal('body:1'), paragraph('aa')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [LandingSchema],
+    });
+
+    editor.update.slice.replace(
+      ContentSlice.fromJSON({
+        content: [portal('body:1')],
+        openEnd: 1,
+        openStart: 1,
+      })
+    );
+
+    assert.deepEqual(editor.read.value(), {
+      children: [portal('body:1'), paragraph('P')],
+      roots: { 'body:1': [paragraph('Body')] },
+    });
+  });
+
+  it('replaces a selected block that owns an exclusive root with another owner of that root', () => {
+    const portal = (caption: string) => ({
+      childRoots: { body: 'body:1' },
+      children: [{ text: caption }],
+      type: 'portal',
+    });
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: {
+        children: [portal('P'), paragraph('aa')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [LandingSchema],
+    });
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(ContentSlice.closed([portal('Q')])),
+        editor.read.value(),
+      ],
+      [
+        true,
+        {
+          children: [portal('Q'), paragraph('aa')],
+          roots: { 'body:1': [paragraph('Body')] },
+        },
+      ]
+    );
+  });
+
+  it('writes the proposal for an empty block when the limit empties the landing output', () => {
+    const editor = createEditor({
+      initialSelection: caret([1, 0]),
+      initialValue: [paragraph('Full'), paragraph('')],
+      maxLength: 4,
+      plugins: [
+        LandingSchema,
+        landing('propose', () => ({
+          replaceEmpty: {
+            slice: ContentSlice.closed([paragraph('', { align: 'center' })]),
+          },
+          slice: ContentSlice.closed([paragraph('X')]),
+        })),
+      ],
+    });
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(ContentSlice.closed([paragraph('')])),
+        editor.read.children(),
+      ],
+      [true, [paragraph('Full'), paragraph('', { align: 'center' })]]
+    );
+  });
+
+  it('lands an implicit paste at the caret the target runtime reports in a command frame', () => {
+    const struck = {
+      authored: [{ at: 1, author: 'carol', change: 'carol:1', kind: 'delete' }],
+      text: 'xyz',
+    };
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'ab' }, struck, { text: 'cd' }],
+        },
+      ],
+      plugins: [
+        LandingSchema,
+        createAuthoredPlugin({ authorId: 'bob', intent: 'edit' }),
+      ],
+    });
+
+    setTargetRuntime(editor, {
+      resolveImplicitTarget: () => caret([0, 2], 1),
+    });
+    editor.update.slice.replace(
+      ContentSlice.fromJSON({
+        content: [paragraph('Q')],
+        openEnd: 1,
+        openStart: 1,
+      })
+    );
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'paragraph',
+        children: [{ text: 'ab' }, struck, { text: 'cQd' }],
+      },
+    ]);
+  });
+
+  it('refuses a paste over selected blocks when the limit cuts the landing output to nothing', () => {
+    const ImageSchema = defineEditorSchema('schema:slice-landing-image', {
+      elements: {
+        image: { void: 'block' },
+        paragraph: { content: text() },
+      },
+      root: schema.content.types(['paragraph', 'image'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+    });
+    const before = [
+      { type: 'image', children: [{ text: '' }] },
+      paragraph('abcde'),
+    ];
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: before,
+      maxLength: 5,
+      plugins: [
+        ImageSchema,
+        landing('grow', () => ({
+          slice: ContentSlice.closed([paragraph('X')]),
+        })),
+      ],
+    });
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(ContentSlice.closed([paragraph('')])),
+        editor.read.children(),
+      ],
+      [false, before]
+    );
+  });
+
+  it('refuses a paste over a range when the limit cuts the landing output to nothing', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      }),
+      initialValue: [paragraph('abcde')],
+      maxLength: 3,
+      plugins: [
+        LandingSchema,
+        landing('grow', () => ({
+          slice: ContentSlice.closed([paragraph('X')]),
+        })),
+      ],
+    });
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(ContentSlice.closed([paragraph('')])),
+        editor.read.children(),
+      ],
+      [false, [paragraph('abcde')]]
+    );
+  });
+
+  it('lands an implicit paste in the root of the caret the target runtime reports, within that root', () => {
+    const seen: unknown[] = [];
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('a')],
+        roots: { header: [paragraph('h')], notes: [paragraph('abcd')] },
+      },
+      maxLength: 5,
+      plugins: [
+        HeaderNotesSchema,
+        definePlugin('record-roots', {
+          readMiddleware: ({ around }) => [
+            around(editorReads.slice.landing, ({ input, next, state }) => {
+              seen.push([input.target.root, state.view.root()]);
+
+              return next();
+            }),
+          ],
+        }),
+      ],
+    });
+
+    setTargetRuntime(editor, {
+      resolveImplicitTarget: () =>
+        SelectionApi.text({
+          anchor: { offset: 1, path: [0, 0], root: 'notes' },
+          focus: { offset: 1, path: [0, 0], root: 'notes' },
+        }),
+    });
+    editor.update.slice.replace(
+      ContentSlice.fromJSON({
+        content: [paragraph('1234')],
+        openEnd: 1,
+        openStart: 1,
+      })
+    );
+
+    assert.deepEqual(
+      [editor.read.root('notes'), seen],
+      [[paragraph('a1bcd')], [['notes', 'notes']]]
+    );
+  });
+
+  it('keeps the paste options over a selected inline node', () => {
+    const MentionSchema = defineEditorSchema('schema:slice-landing-mention', {
+      elements: {
+        mention: { void: 'inline' },
+        paragraph: {
+          content: schema.content.any(
+            [schema.content.text(), schema.content.type('mention')],
+            { default: 'text', min: 1 }
+          ),
+        },
+      },
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+    });
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0, 1]]),
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'a' },
+            { type: 'mention', children: [{ text: '' }] },
+            { text: 'b' },
+          ],
+        },
+      ],
+      plugins: [MentionSchema],
+    });
+
+    editor.update.slice.replace(
+      ContentSlice.fromJSON({
+        content: [paragraph('X')],
+        openEnd: 1,
+        openStart: 1,
+      }),
+      { voids: true }
+    );
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'a' },
+          { type: 'mention', children: [{ text: 'X' }] },
+          { text: 'b' },
+        ],
+      },
+    ]);
+  });
+
+  it('lands an implicit paste at the caret the target runtime reports', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('aa'), paragraph('bb')],
+      plugins: [LandingSchema],
+    });
+
+    setTargetRuntime(editor, { resolveImplicitTarget: () => caret([0, 0], 1) });
+    editor.update.slice.replace(
+      ContentSlice.fromJSON({
+        content: [paragraph('X')],
+        openEnd: 1,
+        openStart: 1,
+      })
+    );
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('aXa'),
+      paragraph('bb'),
+    ]);
+  });
+
+  it('reads the target root when a root view evaluates a paste with the owner state', () => {
+    const seen: unknown[] = [];
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('Main')],
+        roots: { header: [paragraph('Head')], notes: [paragraph('Note')] },
+      },
+      plugins: [
+        HeaderNotesSchema,
+        definePlugin('record-roots', {
+          readMiddleware: ({ around }) => [
+            around(editorReads.slice.landing, ({ input, next, state }) => {
+              seen.push([input.target.root, state.view.root()]);
+
+              return next();
+            }),
+          ],
+        }),
+      ],
+    });
+
+    editor.read(() => {
+      evaluateCommandWithState(
+        createEditorView(editor, { root: 'header' }),
+        editorCommands.replaceSlice,
+        getEditorStateView(editor),
+        {
+          options: { at: { offset: 0, path: [0, 0] } },
+          slice: ContentSlice.closed([paragraph('Plain')]),
+        }
+      );
+    });
+
+    assert.deepEqual(seen, [[undefined, undefined]]);
+  });
+
+  it('replaces a selected void or empty container whole', () => {
+    const ContainerSchema = defineEditorSchema(
+      'schema:slice-landing-container',
+      {
+        elements: {
+          box: {
+            content: schema.content.type('paragraph', { min: 0 }),
+          },
+          image: { void: 'block' },
+          paragraph: { content: text() },
+        },
+        root: schema.content.types(['paragraph', 'box', 'image'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+      }
+    );
+    const results = [
+      { type: 'box', children: [] },
+      { type: 'image', children: [{ text: '' }] },
+    ].map((selected) => {
+      const editor = createEditor({
+        initialSelection: SelectionApi.nodes([[0]]),
+        initialValue: [selected, paragraph('tail')],
+        plugins: [ContainerSchema],
+      });
+
+      editor.update.slice.replace(ContentSlice.closed([paragraph('X')]));
+
+      return editor.read.children();
+    });
+
+    assert.deepEqual(results, [
+      [paragraph('X'), paragraph('tail')],
+      [paragraph('X'), paragraph('tail')],
+    ]);
+  });
+
+  it('inserts at a block boundary beside an empty block without replacing it', () => {
+    const seen: unknown[] = [];
+    const editor = createEditor({
+      initialValue: [paragraph('')],
+      plugins: [
+        LandingSchema,
+        landing('record-target', (input, next) => {
+          seen.push(input.target);
+
+          return next();
+        }),
+        proposeOnEmpty([paragraph('Head')]),
+      ],
+    });
+
+    editor.update.slice.replace(ContentSlice.closed([paragraph('Plain')]), {
+      at: [1],
+    });
+
+    assert.deepEqual(seen, [{ block: null, kind: 'context' }]);
+    assert.deepEqual(editor.read.children(), [
+      paragraph(''),
+      paragraph('Plain'),
+    ]);
+  });
+});
+
+describe('slice landing intent', () => {
+  it('tells the landing read whether each caller copies or moves', () => {
+    const intentsOf = (
+      caller: 'drop copy' | 'drop move' | 'nodes' | 'paste'
+    ) => {
+      const intents: unknown[] = [];
+      const editor = createEditor({
+        initialSelection:
+          caller === 'nodes' ? SelectionApi.nodes([[1]]) : caret([0, 0], 1),
+        initialValue: [paragraph('ab'), paragraph('cd')],
+        plugins: [
+          LandingSchema,
+          transfer(),
+          landing('record-intent', (input, next) => {
+            intents.push(input.intent);
+
+            return next();
+          }),
+        ],
+      });
+
+      if (caller === 'paste' || caller === 'nodes') {
+        editor.update.slice.replace(ContentSlice.closed([paragraph('x')]));
+      } else {
+        editor.api.transfer[caller === 'drop copy' ? 'copy' : 'move']({
+          range: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 1, path: [0, 0] },
+          },
+          to: { point: { offset: 1, path: [1, 0] } },
+        });
+      }
+
+      return intents;
+    };
+
+    assert.deepEqual(
+      (['paste', 'nodes', 'drop copy', 'drop move'] as const).map(intentsOf),
+      [['copy'], ['copy'], ['copy'], ['move']]
+    );
   });
 });

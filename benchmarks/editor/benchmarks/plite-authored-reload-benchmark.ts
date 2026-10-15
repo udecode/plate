@@ -185,12 +185,23 @@ if (option('mode') === 'seed') {
     anchor: { path: [last, 0], offset: 0 },
     focus: { path: [last, 1], offset: 1 },
   };
+  const changesAt = (at: typeof visibleRange) => {
+    const found: unknown[] = [];
+
+    for (let cursor: string | undefined; ; ) {
+      const page = view.read.authored.changes({ at, cursor, limit: 200 });
+
+      found.push(...page.items);
+      if (!page.cursor) return found;
+      cursor = page.cursor;
+    }
+  };
   const localizedStart = performance.now();
-  const localized = view.read.authored.changesAt(visibleRange);
+  const localized = changesAt(visibleRange);
   const localizedAt = performance.now();
   assert.ok(localized.length > 0);
   const cachedLocalizedStart = performance.now();
-  assert.deepEqual(view.read.authored.changesAt(visibleRange), localized);
+  assert.deepEqual(changesAt(visibleRange), localized);
   const cachedLocalizedAt = performance.now();
   const editStart = performance.now();
   view.update.text.insert('!', { at: { path: [last, 1], offset: 1 } });
@@ -201,7 +212,7 @@ if (option('mode') === 'seed') {
     focus: { path: [last, 2], offset: 1 },
   };
   const updatedLocalizedStart = performance.now();
-  assert.ok(view.read.authored.changesAt(updatedRange).length > 0);
+  assert.ok(changesAt(updatedRange).length > 0);
   const updatedLocalizedAt = performance.now();
   assert.deepEqual(acceptedView.read.children(), accepted);
   const saveStart = performance.now();

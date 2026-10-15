@@ -1,6 +1,7 @@
 # createEditor refuses options it does not know
 
-Status: planning: waiting on the plan panel
+Status: executed: committed in 1a9a7cbf1e, with the Plite type refusal rebuilt by iteration 2
+Page: https://claude.ai/artifact/5bgJGacoRZ6XniABNfmsWg
 Playbook: bug-fix
 
 Run directory: `docs/plans/artifacts/2026-10-14-create-editor-options/`. Intake base: `e544d29448`. Requested by the PR 5168 redo session as suggested task `task_347dc1bf`, "After: Refuse unknown createEditor options (xhigh)". Design: `architect/synthesis.md` in the run directory.
@@ -9,11 +10,11 @@ Run directory: `docs/plans/artifacts/2026-10-14-create-editor-options/`. Intake 
 
 ### What will change?
 
-All six ways to create an editor will refuse an unknown option by name. Written in the call, it fails to compile, and every call throws at runtime. Passing value for initialValue no longer gives an empty editor.
+All six ways to make an editor reject an unknown option and name it. A typo written in the call fails to compile, and any unknown option throws at runtime. Review rejected Plite's compile-time part, and iteration 2 redid it.
 
 ### What could go wrong?
 
-Code that passes extra options today, say by spreading a bigger object, will start to throw. Two Plite tests pass an option that does nothing and need fixing.
+Code that passes extra options, say by spreading in a bigger object, now throws. We only proved the call shapes we tested. Iteration 2's Close answers the trail review's warnings.
 
 ## Teach
 
@@ -89,6 +90,7 @@ createPlateEditor({ value, plugins: [BaseParagraphPlugin] });
 
 ## Main changes
 
+- Diff round 3 reversed the Plite type refusal. The three Plite constructors' overloads went back to HEAD's and `CheckedEditorOptions` went away, because four of round 3's five critical findings hit its sink and plugins rules after each had used its one replacement. Until iteration 2, `docs/plans/2026-10-15-create-editor-options-types.md`, rebuilds the Plite type refusal, an unknown key that a Plite inferred overload takes compiles and throws only at runtime. The approved wording below stays as the reversal's record.
 - `packages/plitejs/src/internal/editor-options.ts` is new. It holds `assertEditorOptions(options, keys)`, the one owner of the closed-set check, and `CheckedEditorOptions`, the private type that refuses unknown keys on an inferred options object. Like HEAD, it also refuses an optional `plugins` key and a `plugins` value that may be undefined, and accepts `plugins: undefined` and a generic plugins tuple with the same return type. A sink that fits the plugin-taking constraint HEAD used keeps its own type, and a callback written in the call takes that constraint's sink type, so both compile with HEAD's return type. Inside the callback, the editor's value or plugin type argument can differ from HEAD's. The check reads the string keys of the options object and of every prototype, and never reads a value. It stops at `Object.prototype`, and in any other prototype it skips a key that `Object.prototype` held when Plite loaded. That lets a class instance through, and an object from another realm whose `Object.prototype` no script extended. `plitejs/internal` exports the check for Plate; no public entrypoint exports either.
 - `plitejs` `createEditor` goes from four overloads to three: one inferred overload checked by `CheckedEditorOptions`, then the two explicit ones, the one that takes `plugins` last, so a type error names the unknown key and `Parameters<typeof createEditor>[0]` reads that overload. `createEditorImplementation` checks the caller's options first. The unused `createEditorUnchecked` is deleted.
 - `plitejs/react` `createEditor` checks its options, `clipboardFormatKey` included, before it splits them. `useEditor` checks the caller's options on every render, before its memo, because later renders never reach `createEditor`. Both inferred overloads use `CheckedEditorOptions`.
@@ -121,7 +123,37 @@ createPlateEditor({ value, plugins: [BaseParagraphPlugin] });
 - [x] Rerun the regressions green, the diagnostic matrix from the cross-judge (`architect/judge/scratch/matrix/`), round 1's seat probes for the getter, the sink and the later render, round 2's for the null-prototype parent, and round 3's for an extended `Object.prototype`. Revert each round's fix alone with `mutate.mjs` and see its case fail. Proof: `plite-runtime-after-a2.log`, `plate-specs-after-a2.log`, `plite-callers-after-a1.log`, `matrix-replay-a1.log`, `mutate-a1.txt`, `mutate-a2.txt`.
 - [x] Benchmark probe for the per-render check. The metric is the median microseconds of one `useEditor` or `useCreateEditor` rerender that reuses its editor and gets a fresh options object, as an app component passes one, from `bench/hook-render.ts` in the run directory. It covers four cohorts: Plite and Plate, each with a three-key object and with every key plus two inherited. A rerender took 9 to 15 µs on the tree before the build. Budget, frozen before any candidate run: candidate over base at most 1.10 in every cohort, judged by `paired-timing.mjs` with a 3 µs busy-wait planted arm and a second candidate copy as the same-code arm. A conclusive miss sends the per-render check back to `architect`; an inconclusive run stays a gate. Proof: `bench-paired-a2.log`, `bench/measurements-a2.json` and `bench/work-count-a2.txt`; the first run, `bench-paired-a1.log`, was inconclusive on a loaded host.
 - [x] Writing passes: `deslop` and `no-comments` on the code, `unslop` on the docs, plan and changesets. Proof: decision rows of phase `writing`.
-- [ ] Panel on the diff (reviews: api-build).
-- [ ] `pnpm lint:task` on this run's files.
+- [x] Panel on the diff (reviews: api-build). Rounds: `panel-diff-1/`, `panel-diff-2/` and `panel-diff-3/` in the run directory; round 3's findings reverted the Plite type mechanism, `round3-revert.diff`, with every seat probe matching HEAD in `round3-revert-probes-a1.log`.
+- [x] Rebuild the Plite type refusal through iteration 2, `docs/plans/2026-10-15-create-editor-options-types.md`. Proof: that plan's Close and its acceptance in `accept2/compare-sides-a1.log`.
+- [x] `pnpm lint:task` on this run's files. The formatter folded one `root-location` export in `packages/plitejs/src/internal/index.ts` that other commits wrote. Proof: `accept2/lint-task-iter1-a1.log` and `accept2/lint-task-iter1-a2.log`, with no error in the eleven paths lint reads.
 - [x] Acceptance in a detached worktree at the base plus this run's patch: `plitejs` typecheck, package suite and React suite, `platejs` typecheck and package suite, `check:core`, `hook-generics`, `test:types`, `platejs` spec typecheck on the touched specs, and the root `pnpm test` and `pnpm test:slow`, which reach the apps and the other packages that build an editor, each beside the same run at the base. Proof: `acceptance/base-*` and `acceptance/cand-*` logs, the `--continue` reruns among them, and the line diffs `plite-test-tsc-base-a1.log` against `plite-test-tsc-cand-a1.log` and `plate-tsc-base-a1.log` against `plate-tsc-cand-a1.log`.
-- [ ] Decision-trail review.
+- [x] Decision-trail review. Proof: `trail-review/seat-sol.md`, shared with iteration 2 and settled in its log's `trail` rows.
+
+## Open work
+
+- Delete Plate's `hasOption` once the closed set covers its proxy cases, from diff round 1's deferred warning 4. owner: zbeyens. stop: the next change to `assertConstructorOptions`. Tracked in this plan's decision log.
+- Iteration 2's three suggested tasks, `t_dcc41973`, `t_244c89b3` and `t_54844d26`, listed in `docs/plans/2026-10-15-create-editor-options-types.md`. owner: the owner. stop: the owner starts or dismisses each task. Tracked in `docs/plans/suggested-tasks.decisions.tsv`.
+
+## Close
+
+The owner committed this iteration in `1a9a7cbf1e`. All six editor constructors check their options at runtime and throw a `TypeError` that names the first unknown key, `value` with a hint to use `initialValue`. Plate's three refuse an unknown key written in the call at compile time. Plite's three do so through iteration 2, which rebuilt the refusal that this iteration's diff round 3 sent back.
+
+Reversals come first.
+
+- Diff round 3 reversed the Plite type refusal, Main changes bullet 1. Four of its five critical findings hit the sink and plugins rules after each had used its one replacement, so the three Plite constructors went back to their overloads from before this iteration, and iteration 2 rebuilt the refusal with another type. Its Close says what that type covers.
+- Defaults row 5 now holds for Plate only. Plite's `Parameters<typeof createEditor>[0]` again reads the options without plugins, as it did before this iteration.
+
+What landed in `1a9a7cbf1e`: `assertEditorOptions` in `packages/plitejs/src/internal/editor-options.ts` and its calls in the three Plite constructors; the closed set in Plate's `assertConstructorOptions`, called by `platejs` `createEditor`, `platejs/react` `createEditor`, `useCreateEditor` and `buildEditor`; Plate's reordered overloads; the option rows in `content/docs/api/core.mdx` and its Chinese twin; the closed-option-set lines in `docs/vision/plite.md` and `docs/vision/plate.md`; the plitejs and platejs changesets; and the Plite and Plate regression tests.
+
+Proof. Each regression ran red at the base and green after: `plite-types-before-a1.log`, `plite-runtime-before-a1.log` to `a3`, `plate-specs-before-a1.log` and `plate-types-before-a1.log` against `plite-runtime-after-a2.log` and `plate-specs-after-a2.log`. The per-render check stayed within its frozen budget of 1.10 against the base in `bench-paired-a2.log`. Acceptance ran at the base and with this iteration's patch in `acceptance/`, and iteration 2's acceptance reran the same suites at `HEAD` with both iterations in `accept2/`. The mutation logs `mutate-a1.txt`, `mutate-a2.txt`, `mutate-a4.txt` and `mutate-a5.txt` cover this iteration's runtime check, which iteration 2 left unchanged. Their type mutants cover a mechanism iteration 2 replaced, so iteration 2's `accept2/cand-mutate-types-a1.log` supersedes them.
+
+Limits. An options object held in a variable, built by a spread or typed by a type parameter meets only the runtime check, on every constructor. A key named after an `Object` member, such as `toString`, passes TypeScript's excess-property check, so it likely compiles on Plate's constructors too. This run measured that only on Plite's, so the Plate claim is inferred.
+
+Counts. Of sixteen steps, all sixteen are done, and none is skipped, partial, blocked or open.
+
+### Attention
+
+reviewed by gpt-6.1-sol @xhigh
+
+- The review covered both iterations and raised six warnings and one nit, all on iteration 2's dismissals, claims and tooling. Iteration 2's Close lists each one and its fix.
+- For this iteration, one claim narrowed. Iteration 2's acceptance shows the failing test names, compiler errors and failed turbo tasks match at `HEAD` with and without iteration 2, not every diagnostic.

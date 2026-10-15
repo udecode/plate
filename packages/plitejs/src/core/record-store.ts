@@ -3,6 +3,7 @@ import { deepFreeze, isRecord } from './change/json';
 import { copyFields } from './change/lazy-root';
 import {
   persistentMapCeiling,
+  persistentMapChanges,
   persistentMapDelete,
   persistentMapEntries,
   persistentMapFromSorted,
@@ -15,6 +16,12 @@ import { assertEditorJsonValue } from './value-codec';
 
 /** One record set: each record's id to its canonical JSON text. */
 type RecordTree = PersistentMapNode<string>;
+
+/**
+ * A record set's version: the same object in every store version that left
+ * the set alone, and `null` while it holds no record.
+ */
+export type RecordSetVersion = RecordTree | null;
 
 /**
  * Every record set that holds a record, by set name. A record is keyed data
@@ -114,12 +121,15 @@ export const hasRecordWithPrefix = (
 export const getRecordCount = (store: RecordStore, set: string) =>
   persistentMapSize(treeOf(store, set));
 
-/**
- * The set's version: the same object in every store version that left the
- * set alone, and `null` while it holds no record.
- */
-export const getRecordSetVersion = (store: RecordStore, set: string) =>
-  treeOf(store, set);
+export const getRecordSetVersion = (
+  store: RecordStore,
+  set: string
+): RecordSetVersion => treeOf(store, set);
+
+export const recordSetChanges = (
+  before: RecordSetVersion,
+  after: RecordSetVersion
+) => persistentMapChanges(before, after);
 
 /** `store` without any record of `set`. */
 export const withoutRecordSet = (store: RecordStore, set: string) => {
@@ -241,11 +251,8 @@ export const recordOpsBetween = (
 
     const writes = new Map<string, string | null>();
 
-    for (const [id, json] of persistentMapEntries(afterTree)) {
-      if (persistentMapGet(beforeTree, id) !== json) writes.set(id, json);
-    }
-    for (const [id] of persistentMapEntries(beforeTree)) {
-      if (persistentMapGet(afterTree, id) === undefined) writes.set(id, null);
+    for (const id of persistentMapChanges(beforeTree, afterTree)) {
+      writes.set(id, persistentMapGet(afterTree, id) ?? null);
     }
 
     if (writes.size > 0) ops.set(set, writes);

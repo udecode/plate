@@ -3,6 +3,10 @@ import { describe, it } from 'node:test';
 
 import * as Y from 'yjs';
 
+import {
+  valueRootIndex,
+  valueRootNodes,
+} from '../../src/core/change/document-change';
 import { ElementApi, TextApi } from '../../src/index';
 import { setYjsAttribute } from '../../src/yjs/core/attributes';
 import { createYjsNode, getYjsNode } from '../../src/yjs/core/document';
@@ -61,20 +65,17 @@ describe('Yjs event-change locality', () => {
         setYjsAttribute(target, 'rank', 2);
       }
       unrelatedReads = 0;
-      const result = bridge.translate(
-        {
-          deletedTextTargets: [],
-          events: [
-            {
-              target: target as unknown as Y.AbstractType<unknown>,
-              childListChanged: false,
-              delta: [],
-              keys: mode === 'text' ? [] : ['rank'],
-            },
-          ],
-        },
-        { changedNodes: new Set(), removedNodes: new Set() }
-      );
+      const result = bridge.prepareRemote({
+        deletedTextTargets: [],
+        events: [
+          {
+            target: target as unknown as Y.AbstractType<unknown>,
+            childListChanged: false,
+            delta: [],
+            keys: mode === 'text' ? [] : ['rank'],
+          },
+        ],
+      });
       const observed = unrelatedReads;
       assert.equal(result.kind, 'change');
       if (result.kind !== 'change') {
@@ -86,16 +87,13 @@ describe('Yjs event-change locality', () => {
           ? { children: before }
           : { children: [], roots: { notes: before } };
       const applied = result.import.change.apply(initialValue);
-      assert.deepEqual(
-        rootName === 'main' ? applied.children : applied.roots?.notes,
-        result.import.children
-      );
-      assert.deepEqual(result.import.children[64], {
+      const children = valueRootNodes(applied, rootName);
+      assert.deepEqual(children.at(64), {
         type: 'paragraph',
         rank: mode === 'property' ? 2 : 1,
         children: [{ text: mode === 'text' ? '!block-64' : 'block-64' }],
       });
-      assert.equal(result.import.children[0], before[0]);
+      assert.equal(children.at(0), before[0]);
       if (mode === 'property') {
         assert.ok(
           contexts.some(
@@ -112,30 +110,30 @@ describe('Yjs event-change locality', () => {
           )
         );
       }
-      result.import.accept(result.import.children);
+      result.import.accept(valueRootIndex(applied, rootName));
       affected = 127;
       const followUp = getYjsNode(root, [127, 0]);
       assert.ok(followUp instanceof Y.XmlText);
       followUp.insert(0, '?');
       unrelatedReads = 0;
-      const next = bridge.translate(
-        {
-          deletedTextTargets: [],
-          events: [
-            {
-              target: followUp as unknown as Y.AbstractType<unknown>,
-              childListChanged: false,
-              delta: [],
-              keys: [],
-            },
-          ],
-        },
-        { changedNodes: new Set(), removedNodes: new Set() }
-      );
+      const next = bridge.prepareRemote({
+        deletedTextTargets: [],
+        events: [
+          {
+            target: followUp as unknown as Y.AbstractType<unknown>,
+            childListChanged: false,
+            delta: [],
+            keys: [],
+          },
+        ],
+      });
       assert.equal(unrelatedReads, 0);
       assert.equal(next.kind, 'change');
       if (next.kind !== 'change') throw new Error('Expected follow-up import');
-      const nextBlock = next.import.children[127];
+      const nextBlock = valueRootNodes(
+        next.import.change.apply(applied),
+        rootName
+      ).at(127);
       assert.ok(ElementApi.isElement(nextBlock));
       const nextText = nextBlock.children[0];
       assert.ok(TextApi.isText(nextText));

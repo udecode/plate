@@ -1076,7 +1076,7 @@ function elementProperty(
   if (key) assertPropertyKey(key);
   assertOnlyKeys(
     options,
-    ['copy', 'role', 'split', 'target', 'typeChange'],
+    ['copy', 'landing', 'role', 'split', 'target', 'typeChange'],
     'schema.elementProperty options'
   );
   assertPropertyCopyPolicy(value, options.copy, 'schema.elementProperty');
@@ -1085,6 +1085,7 @@ function elementProperty(
     {
       copy: options.copy ?? 'preserve',
       ...(key ? { key } : {}),
+      landing: options.landing ?? 'preserve',
       placement: 'element' as const,
       role: options.role ?? 'content',
       split: options.split ?? 'preserve',

@@ -1,7 +1,7 @@
 'use client';
 
 import castArray from 'lodash/castArray.js';
-import { ChevronRightIcon } from 'lucide-react';
+import { ArrowLeftIcon, ArrowRightIcon, ChevronRightIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
@@ -26,6 +26,7 @@ import {
   getLocalizedNavTitle,
   normalizeDocsHref,
 } from '@/lib/docs-nav-metadata';
+import { type DocsSidebar, selectDocsSidebar } from '@/lib/docs-sidebar';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 import type { SidebarNavItem } from '@/types/nav';
@@ -46,29 +47,24 @@ function getTextLabels(label: SidebarNavItem['label']) {
   );
 }
 
-function isNavItemActive(item: SidebarNavItem, pathname: string): boolean {
+function isNavItemActive(
+  item: SidebarNavItem,
+  pathname: string,
+  rootHref: string
+): boolean {
   if (item.href) {
     const href = normalizeDocsHref(item.href);
 
     if (href === pathname) return true;
-    if (href !== '/docs' && pathname.startsWith(`${href}/`)) {
+    if (href !== rootHref && pathname.startsWith(`${href}/`)) {
       return true;
     }
   }
 
-  return item.items?.some((child) => isNavItemActive(child, pathname)) ?? false;
-}
-
-function getSectionTitle(
-  section: SidebarNavItem,
-  index: number,
-  locale: string
-) {
-  if (index === 0 && section.title === 'Get Started') {
-    return locale === 'cn' ? '概览' : 'Overview';
-  }
-
-  return getLocalizedNavTitle(section, locale);
+  return (
+    item.items?.some((child) => isNavItemActive(child, pathname, rootHref)) ??
+    false
+  );
 }
 
 const docsNavItemButtonClassName =
@@ -139,11 +135,15 @@ function getNavItemCount(items: SidebarNavItem[] | undefined): number {
   );
 }
 
-function getActiveSectionKey(sections: SidebarNavItem[], pathname: string) {
+function getActiveSectionKey(
+  sections: SidebarNavItem[],
+  pathname: string,
+  rootHref: string
+) {
   if (sections.length === 0) return undefined;
 
   const activeIndex = sections.findIndex((section) =>
-    isNavItemActive(section, pathname)
+    isNavItemActive(section, pathname, rootHref)
   );
 
   if (activeIndex === -1) return getSectionKey(sections[0], 0);
@@ -151,17 +151,22 @@ function getActiveSectionKey(sections: SidebarNavItem[], pathname: string) {
   return getSectionKey(sections[activeIndex], activeIndex);
 }
 
-export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
+export function DocsNav({ sidebar }: { sidebar: DocsSidebar }) {
   const locale = useLocale();
   const pathname = usePathname();
   const normalizedPathname = normalizeDocsHref(pathname ?? '');
+  const view = React.useMemo(
+    () => selectDocsSidebar(sidebar, normalizedPathname),
+    [sidebar, normalizedPathname]
+  );
+  const { href: rootHref, nested } = view;
   const navSections = React.useMemo(
-    () => foldMatchingSectionsIntoItems(sidebarNav),
-    [sidebarNav]
+    () => foldMatchingSectionsIntoItems(view.sections),
+    [view]
   );
   const activeSectionKey = React.useMemo(
-    () => getActiveSectionKey(navSections, normalizedPathname),
-    [navSections, normalizedPathname]
+    () => getActiveSectionKey(navSections, normalizedPathname, rootHref),
+    [navSections, normalizedPathname, rootHref]
   );
   const [openSection, setOpenSection] = React.useState<{
     key?: string;
@@ -183,15 +188,33 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
     >
       <div className="h-9" />
       <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) gap-0 overflow-x-hidden px-2.5">
+        {nested ? (
+          <div className="flex shrink-0 flex-col gap-1 pt-6 pb-2">
+            <Link
+              className="flex h-8 items-center gap-2 rounded-md px-2 text-[0.8rem] font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+              href={hrefWithLocale(nested.back.href, locale)}
+            >
+              <ArrowLeftIcon className="size-3.5" />
+              {locale === 'cn'
+                ? `${nested.back.title} 文档`
+                : `${nested.back.title} docs`}
+            </Link>
+            <div className="px-2 pt-2 text-sm font-semibold">
+              {nested.title}
+            </div>
+          </div>
+        ) : null}
         {navSections.map((section, index) => {
           const sectionKey = getSectionKey(section, index);
 
           return (
             <DocsNavGroup
               key={sectionKey}
+              flushTop={Boolean(nested)}
               index={index}
               open={openSectionKey === sectionKey}
               pathname={normalizedPathname}
+              rootHref={rootHref}
               section={section}
               onOpenChange={(open) => {
                 setOpenSection({
@@ -209,27 +232,31 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
 }
 
 function DocsNavGroup({
+  flushTop,
   index,
   onOpenChange,
   open,
   pathname,
+  rootHref,
   section,
 }: {
+  flushTop: boolean;
   index: number;
   open: boolean;
   pathname: string;
+  rootHref: string;
   section: SidebarNavItem;
   onOpenChange: (open: boolean) => void;
 }) {
   const locale = useLocale();
-  const sectionTitle = getSectionTitle(section, index, locale);
+  const sectionTitle = getLocalizedNavTitle(section, locale);
   const scrollable = getNavItemCount(section.items) > 24;
 
   return (
     <SidebarGroup
       className={cn(
         'min-h-0 py-0',
-        index === 0 && 'pt-6',
+        index === 0 && !flushTop && 'pt-6',
         open && scrollable ? 'flex-1' : 'shrink-0'
       )}
     >
@@ -278,6 +305,7 @@ function DocsNavGroup({
                 dense={index > 0}
                 items={section.items}
                 pathname={pathname}
+                rootHref={rootHref}
               />
             </SidebarGroupContent>
           </CollapsibleContent>
@@ -292,10 +320,12 @@ function DocsNavItems({
   depth = 0,
   items,
   pathname,
+  rootHref,
 }: {
   dense?: boolean;
   items: SidebarNavItem[];
   pathname: string;
+  rootHref: string;
   depth?: number;
 }) {
   return items.length ? (
@@ -306,7 +336,7 @@ function DocsNavItems({
       )}
     >
       {items.map((item, index) => {
-        const active = isNavItemActive(item, pathname);
+        const active = isNavItemActive(item, pathname, rootHref);
         const key = getNavItemKey(item, index, depth);
 
         return (
@@ -319,6 +349,7 @@ function DocsNavItems({
                 depth={depth + 1}
                 items={item.items}
                 pathname={pathname}
+                rootHref={rootHref}
               />
             ) : null}
           </SidebarMenuItem>
@@ -372,6 +403,9 @@ function DocsNavItem({
           textLabels={textLabels}
           title={title}
         />
+        {item.opensRoot ? (
+          <ArrowRightIcon className="size-3.5 shrink-0 text-muted-foreground" />
+        ) : null}
       </Link>
     </SidebarMenuButton>
   );

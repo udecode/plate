@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -11,6 +11,11 @@ const compareStrings = (left, right) => {
 
 const repoRoot = resolve(import.meta.dirname, '../..');
 const docsRoots = [join(repoRoot, 'content/docs')];
+const pliteDocsPrefix = 'content/docs/plite/';
+const wwwPublicRoot = join(repoRoot, 'apps/www/public');
+const markdownImagePattern = /!\[[^\]]*\]\(([^)\s]+)/g;
+const inlineCodePattern = /`[^`]*`/g;
+const absoluteUrlPattern = /^[a-z][a-z\d+.-]*:/i;
 const comparisonDocs = new Set([
   'content/docs/(guides)/performance.mdx',
   'content/docs/migration/plite-to-plate.mdx',
@@ -635,9 +640,31 @@ function auditSlateV2Docs() {
     const codeLines = inCodeFenceByLine(lines);
 
     if (relativePath.startsWith('content/docs/')) {
-      if (!comparisonDocs.has(relativePath) && /plite/i.test(source)) {
+      // fumadocs-mdx's dynamic mode compiles MDX without a bundler and never
+      // imports an image, so only apps/www/public serves one in every mode.
+      lines.forEach((line, index) => {
+        if (codeLines.has(index)) return;
+
+        for (const [, src] of line
+          .replace(inlineCodePattern, '')
+          .matchAll(markdownImagePattern)) {
+          if (absoluteUrlPattern.test(src)) continue;
+          if (src.startsWith('/') && existsSync(join(wwwPublicRoot, src))) {
+            continue;
+          }
+
+          failures.push(
+            `${relativePath}:${index + 1}: docs images must be absolute paths to files in apps/www/public: ${src}`
+          );
+        }
+      });
+      if (
+        !relativePath.startsWith(pliteDocsPrefix) &&
+        !comparisonDocs.has(relativePath) &&
+        /plite/i.test(source)
+      ) {
         failures.push(
-          `${relativePath}: public Plate docs must use the public editor API and vocabulary; Plite belongs only in the approved comparison pages.`
+          `${relativePath}: public Plate docs must use the public editor API and vocabulary; Plite belongs only in the Plite docs section and the approved comparison pages.`
         );
       }
       for (const signal of [

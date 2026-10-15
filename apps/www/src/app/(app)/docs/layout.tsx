@@ -2,13 +2,13 @@ import { Suspense, type CSSProperties } from 'react';
 
 import { DocsNav } from '@/components/docs-nav';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { getSidebarNavFromPageTree } from '@/lib/docs-page-tree';
+import { getDocsSidebar } from '@/lib/docs-page-tree';
 
 
 export default function DocsLayout({ children }: ({
   children: React.ReactNode;
 })) {
-  const sidebarNav = getSidebarNavFromPageTree();
+  const sidebar = getDocsSidebar();
 
   return (
     <div className="container-wrapper flex flex-1 flex-col px-2">
@@ -21,7 +21,7 @@ export default function DocsLayout({ children }: ({
         }
       >
         <Suspense fallback={null}>
-          <DocsNav sidebarNav={sidebarNav} />
+          <DocsNav sidebar={sidebar} />
         </Suspense>
 
         <div className="h-full w-full">{children}</div>

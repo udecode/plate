@@ -23,6 +23,7 @@ import {
 import {
   DocumentIndex,
   NO_NODES,
+  type NodeList,
   rootIndexOf,
   rootNodesOf,
 } from './document-index';
@@ -341,7 +342,10 @@ export const valueRootIndex = (value: JsonEditorValue, root: string) =>
     : DocumentIndex.fromValue(value.roots?.[root] ?? []);
 
 /** @internal */
-export const valueRootNodes = (value: JsonEditorValue, root: string) =>
+export const valueRootNodes = (
+  value: JsonEditorValue,
+  root: string
+): NodeList =>
   root === 'main'
     ? rootNodesOf(value, 'children')
     : (value.roots?.[root] ?? NO_NODES);
@@ -1500,7 +1504,23 @@ export class DocumentChange {
       value
     );
 
-    for (const key of Object.keys(applied)) deepFreeze(applied[key]);
+    for (const key of Object.keys(applied)) {
+      const index = lazyRootOf(applied, key);
+
+      if (!index) {
+        deepFreeze(applied[key]);
+        continue;
+      }
+      // Only the blocks a change wrote can hold unfrozen nodes, and freezing
+      // the whole root would build its array.
+      for (const range of index.changedChildren(
+        rootIndexOf(value, key as 'children')
+      )) {
+        for (let at = range[2]; at < range[3]; at += 1) {
+          deepFreeze(index.child(at));
+        }
+      }
+    }
     // A value that showed its records, or plain JSON that gains some, shows
     // them; a value whose store core carries keeps carrying it.
     if (Object.hasOwn(value, 'records') || !hasValueRecords(value)) {

@@ -1,0 +1,128 @@
+---
+title: Plite Authored Changes
+description: 审阅带作者身份的建议，并派生 accepted 和 proposed 预览。
+---
+
+`plitejs/authored` 管理带作者身份的建议。文档节点保存 review mark，文档 record 保存审阅上下文和决定。只读 preview 派生 accepted 或 proposed 内容。
+
+## 安装
+
+```tsx
+import { createEditor, createEditorView } from 'plitejs';
+import { authored } from 'plitejs/authored';
+import { history } from 'plitejs/history';
+
+const editor = createEditor({
+  plugins: [
+    authored({
+      authorId: () => session.user.id,
+    }),
+    history(),
+  ],
+  initialValue,
+});
+
+const reviewView = createEditorView(editor, {
+  authored: { intent: 'propose' },
+});
+```
+
+每次写入时，author callback 都必须返回非空的作者 ID。应用负责认证。
+
+## 视图
+
+| Policy | 内容和输入 |
+| --- | --- |
+| `{ intent: 'edit' }` | 显示带 review mark 的文档，并直接应用编辑。 |
+| `{ intent: 'propose' }` | 显示带 review mark 的文档，并把输入记录为建议。 |
+| `{ preview: 'accepted' }` | 只读显示拒绝所有待处理建议后的内容。 |
+| `{ preview: 'proposed' }` | 只读显示接受所有待处理建议后的内容。 |
+
+调用 `view.api.authored.setView(policy)` 修改一个视图。Source editor 和 sibling view 保留各自的 policy 与 selection。Preview 不接受写入；切换 view 不会决定建议。Composition 期间请求的切换会在 composition 结束后应用。
+
+## 创建和决定 proposal
+
+```tsx
+let id = '';
+
+reviewView.update((tx) => {
+  id = tx.authored.propose();
+  tx.text.insert('draft');
+});
+
+const change = editor.read.authored.change(id);
+if (change) {
+  const result = editor.update.authored.decide({
+    action: 'accept',
+    changes: [change],
+  });
+}
+```
+
+向 `tx.authored.propose(...)` 传入 `{ changeId: id }`，可以指定新建议的 identity，或修订当前作者拥有的 pending change。决定使用读取时的 change revision。展示批量决定前调用 `read.authored.preview(...)`，并处理每种 `AuthoredResult` 状态。
+
+## 导入比较结果
+
+```tsx
+import { proposeAuthoredComparison } from 'plitejs/authored';
+import { compare } from 'plitejs/diff';
+
+const incomingDraft = [
+  { type: 'paragraph', children: [{ text: '修订后的句子。' }] },
+];
+const comparison = await compare({
+  before: editor.read.value(),
+  after: incomingDraft,
+  schema: editor.read.schema,
+});
+const result = proposeAuthoredComparison(editor, { comparison });
+```
+
+导入前会检查基线、schema、文档 metadata 和选中的分组，再创建一个原生 pending proposal。传入 `groupIds` 选择分组；导入会包含所需的依赖分组。结果把比较分组映射到 authored change ID。输入必须是 `TwoWayComparison`。
+
+## 查询 change
+
+```tsx
+const page = editor.read.authored.changes({
+  authorId: 'alice',
+  cursor,
+  from,
+  limit: 50,
+  to,
+});
+const change = editor.read.authored.change(id);
+const changesAtRange = editor.read.authored.changesAt(range);
+```
+
+`AuthoredChange` 提供稳定 identity、作者、创建时间、revision、kind 和当前 range。列表使用 cursor paging；keyed reader 使用 `change(id)`。
+
+## 保留作者历史
+
+
+
+使用 `plitejs/history` 的本地 undo 和 redo 管理交互历史。
+
+History undo 和 redo 保留本地交互生命周期。它们可以反转 authored transaction 并恢复映射后的 selection，但不充当协作审阅决定。
+
+## 持久化和协作
+
+把 `editor.read.value()` 作为一个文档保存，包括节点的 review mark 和文档 record。安装 authored 的 editor 在加载时验证 mark 和 record。
+
+每个 peer 安装 `plitejs/yjs` 的 `yjs`，通过普通 Yjs binding 同步带 mark 的内容和文档 record。
+
+## Format helper
+
+`plitejs/authored` 导出纯文档转换。使用 `projectAuthoredDocument(document, { projection })` 获取包含 `document`、`diagnostics`、`pending` 和 `ok` 的结果；projection 为 `accepted` 或 `proposed`。使用 `projectAuthoredRange(document, projectedDocument, range)` 把存储文档中的 range 映射到投影文档；若投影不保留该内容，返回 `null`。
+
+## API 参考
+
+| 接口 | 用途 |
+| --- | --- |
+| `tx.authored.propose(options?)` | 在当前 transaction 中开始或修订 proposal。 |
+| `read.authored.view()` | 读取当前 view policy。 |
+| `read.authored.change(id)` | 读取一个 keyed change。 |
+| `read.authored.changes(query?)` | 分页读取 change 列表。 |
+| `read.authored.changesAt(range)` | 读取与 range 相交的 change。 |
+| `read.authored.preview(decision)` | 在不应用决定的情况下验证它。 |
+| `update.authored.decide(decision)` | 接受或拒绝选中的 change。 |
+| `api.authored.setView(policy)` | 设置一个 view 的 authored policy。 |

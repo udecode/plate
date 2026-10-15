@@ -179,6 +179,7 @@ import {
   DocumentChange,
   valueRoot,
   valueRootIndex,
+  valueRootNodes,
 } from './change/document-change';
 import { DocumentIndex, type NodeList } from './change/document-index';
 import {
@@ -242,13 +243,17 @@ import {
   type InternalPluginPublicationEntry,
   type InternalEditorRuntime,
 } from './editor-runtime';
-import type { InternalEditorSchemaApi } from './editor-schema';
+import {
+  canPlaceBlocksAtPath,
+  getInternalEditorSchemaFromApi,
+  type InternalEditorSchemaApi,
+} from './editor-schema';
 import { getContentSlice } from './get-content-slice';
 import { getFragment } from './get-fragment';
 import { normalizeEditorValue } from './initial-value';
 import {
+  getInsertRemainingLength,
   limitNodeInsert,
-  limitSliceInsert,
   limitSliceToLength,
   limitTextInsert,
 } from './insert-limit';
@@ -321,6 +326,7 @@ import {
   setSelectionStateSelection,
 } from './selection-state';
 import { defineSemanticUpdateMethod } from './semantic-update-method';
+import type { SliceLandingTarget } from './slice-landing-types';
 import {
   advancePathStableSnapshotIndex,
   buildSnapshotIndex,
@@ -513,9 +519,11 @@ const PROJECTION_SNAPSHOTS = new WeakMap<
   Editor,
   WeakMap<EditorDocumentValue, Map<string, EditorSnapshot>>
 >();
+// Keyed by a root's node list, which a lazy root and the array it builds
+// share, so a commit carries an index without building either root.
 const PROJECTION_INDEXES = new WeakMap<
   Editor,
-  WeakMap<readonly Descendant[], SnapshotIndex>
+  WeakMap<NodeList<unknown>, SnapshotIndex>
 >();
 
 const projectionIndexes = (editor: Editor) => {
@@ -533,18 +541,19 @@ export const getEditorProjectionSnapshotIndex = (
   children: readonly Descendant[]
 ): SnapshotIndex => {
   const indexes = projectionIndexes(editor);
-  let index = indexes.get(children);
+  const nodes = DocumentIndex.nodesOf(children);
+  let index = indexes.get(nodes);
   if (!index) {
     index = buildSnapshotIndex(getEditorRuntimeOwner(editor), children);
-    indexes.set(children, index);
+    indexes.set(nodes, index);
   }
   return index;
 };
 
 export const hasEditorProjectionSnapshotIndex = (
   editor: Editor,
-  children: readonly Descendant[]
-) => projectionIndexes(editor).has(children);
+  nodes: NodeList<unknown>
+) => projectionIndexes(editor).has(nodes);
 
 export const advanceSnapshotIndex = (
   owner: Editor,
@@ -614,10 +623,8 @@ export const inheritEditorProjectionIndexes = (
   const indexes = projectionIndexes(editor);
   const owner = getEditorRuntimeOwner(editor);
   for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
-    const previous =
-      root === MAIN_ROOT_KEY ? before.children : (before.roots?.[root] ?? []);
-    const next =
-      root === MAIN_ROOT_KEY ? after.children : (after.roots?.[root] ?? []);
+    const previous = valueRootNodes(before, root);
+    const next = valueRootNodes(after, root);
     const index = indexes.get(previous);
     if (!index || previous === next || indexes.has(next)) continue;
 
@@ -625,8 +632,8 @@ export const inheritEditorProjectionIndexes = (
       next,
       advanceSnapshotIndex(
         owner,
-        DocumentIndex.fromValue(previous),
-        DocumentIndex.fromValue(next),
+        valueRootIndex(before, root),
+        valueRootIndex(after, root),
         rootChange,
         index,
         {
@@ -1231,8 +1238,9 @@ type DraftSpan = Readonly<{ from: number; to: number }>;
  * Run draft edits and return the span of the content they inserted into
  * `root`, in the draft after them, or `null` when they inserted none: their
  * text characters, and each element they inserted whole that holds no
- * characters, such as an inline void. Corrections move the span but add
- * nothing to it.
+ * characters, such as an inline void. `tokenSpan` runs from just before the
+ * first token they inserted to just after the last, block boundaries
+ * included. Corrections move both spans but add nothing to them.
  *
  * @internal
  */
@@ -1240,10 +1248,15 @@ export const measureDraftInsertion = <T>(
   editor: Editor,
   root: string,
   run: () => T
-): Readonly<{ result: T; span: DraftSpan | null }> => {
+): Readonly<{
+  result: T;
+  span: DraftSpan | null;
+  tokenSpan: DraftSpan | null;
+}> => {
   const snapshot = getDraftSnapshot(editor);
   const first = snapshot?.builder.draftSteps.length ?? 0;
   const result = run();
+  let tokenSpan: DraftSpan | null = null;
   let span: DraftSpan | null = null;
 
   for (const step of snapshot?.builder.draftSteps.slice(first) ?? []) {
@@ -1253,6 +1266,10 @@ export const measureDraftInsertion = <T>(
     span &&= {
       from: change.mapPos(span.from, -1) ?? span.from,
       to: change.mapPos(span.to, 1) ?? span.to,
+    };
+    tokenSpan &&= {
+      from: change.mapPos(tokenSpan.from, -1) ?? tokenSpan.from,
+      to: change.mapPos(tokenSpan.to, 1) ?? tokenSpan.to,
     };
     if (step.origin === 'canonical') continue;
 
@@ -1265,6 +1282,13 @@ export const measureDraftInsertion = <T>(
       if (inserted < 0) {
         position += length;
         continue;
+      }
+
+      if (inserted > 0) {
+        tokenSpan = {
+          from: Math.min(tokenSpan?.from ?? position, position),
+          to: Math.max(tokenSpan?.to ?? 0, position + inserted),
+        };
       }
 
       const slice = change.data[index / 2] as PreparedTokenSlice | null;
@@ -1301,7 +1325,7 @@ export const measureDraftInsertion = <T>(
     }
   }
 
-  return { result, span };
+  return { result, span, tokenSpan };
 };
 
 type RecordingFrontier = Readonly<{
@@ -1570,6 +1594,7 @@ const admitTransactionDraft = (editor: Editor) => {
       after,
       before,
       change,
+      editor,
       indexOf: (root) => snapshot.builder.getIndex(root),
     });
 
@@ -3534,31 +3559,172 @@ const discardReplacedNodeKeys = (
   }
 };
 
-type CommandSliceFit = Readonly<{
-  remaining: number | undefined;
-  replaceEmptyBlock?: true;
-}>;
+export const getCurrentNodeSelection = (
+  state: EditorStateView
+): NodeSelection | null => {
+  const paths = state.selection.nodes().map(([, path]) => path);
+  const first = paths[0];
 
-const commandSliceFits = new WeakMap<object, CommandSliceFit>();
+  if (!first) return null;
 
-export const withCommandSliceFit = <T>(
-  editor: Editor,
-  fit: CommandSliceFit,
-  run: () => T
-): T => {
-  const owner = getEditorRuntimeOwner(editor);
+  const selection = state.selection();
+  const last = paths.at(-1) ?? first;
+  const selectedPathAt = (path: Path | undefined, fallback: Path) =>
+    path
+      ? (paths.find(
+          (candidate) =>
+            PathApi.equals(candidate, path) ||
+            PathApi.isAncestor(candidate, path)
+        ) ?? fallback)
+      : fallback;
+  const anchorPath = selectedPathAt(selection?.anchor.path, first);
+  const focusPath = selectedPathAt(selection?.focus.path, last);
+  const root = SelectionApi.root(selection);
 
-  commandSliceFits.set(owner, fit);
-  try {
-    return run();
-  } finally {
-    commandSliceFits.delete(owner);
+  return SelectionApi.nodes([first, ...paths.slice(1)], {
+    anchorPath,
+    focusPath,
+    mode: 'block',
+    ...(root === undefined ? {} : { root }),
+  });
+};
+
+export const asBlockEntries = (
+  state: EditorStateView,
+  entries: readonly NodeEntry[]
+): ReadonlyArray<NodeEntry<Element>> | null => {
+  const blocks = entries.filter(
+    (entry): entry is NodeEntry<Element> =>
+      NodeApi.isElement(entry[0]) && state.schema.isBlock(entry[0])
+  );
+
+  return blocks.length > 0 && blocks.length === entries.length ? blocks : null;
+};
+
+export const getNodeSelectionReplacement = (
+  state: EditorStateView,
+  blocks: ReadonlyArray<NodeEntry<Element>>,
+  root: string,
+  createReplacement: (context: {
+    at: Path;
+    keys: readonly NodeKey[];
+    root: string;
+  }) => Readonly<{
+    replacements: readonly Descendant[];
+  }> | null
+) => {
+  const [, firstPath] = getDefined(blocks[0]);
+  const keys = blocks.map(([block]) => state.key(block));
+  const planned = createReplacement({ at: firstPath, keys, root });
+
+  if (!planned) return null;
+
+  const lastReplacement = planned.replacements.at(-1);
+  const textEntry = lastReplacement
+    ? [...NodeApi.texts(lastReplacement)].at(-1)
+    : undefined;
+
+  if (!textEntry) return null;
+
+  const parentPath = PathApi.parent(firstPath);
+  const index = getDefined(firstPath.at(-1));
+  const publicRoot = toPublicRoot(root);
+
+  if (
+    !canPlaceBlocksAtPath(state.schema, firstPath, planned.replacements, {
+      removing: blocks.flatMap(([, path]) =>
+        PathApi.equals(PathApi.parent(path), parentPath)
+          ? [getDefined(path.at(-1))]
+          : []
+      ),
+      root,
+    })
+  ) {
+    return null;
   }
+
+  const point: Point = {
+    offset: textEntry[0].text.length,
+    path: [
+      ...parentPath,
+      index + planned.replacements.length - 1,
+      ...textEntry[1],
+    ],
+    ...(publicRoot ? { root: publicRoot } : {}),
+  };
+
+  return {
+    index,
+    keys,
+    parentPath,
+    replacements: planned.replacements,
+    root: publicRoot,
+    selection: { anchor: point, focus: point, kind: 'text' as const },
+  };
+};
+
+export const replaceSelectedBlocks = (
+  transaction: EditorTransactionSpecBuilder,
+  replacement: NonNullable<ReturnType<typeof getNodeSelectionReplacement>>
+) => {
+  for (const key of replacement.keys.slice(1).toReversed()) {
+    transaction.nodes.remove({ at: key });
+  }
+  transaction.nodes.replaceChildren(replacement.replacements, {
+    at: replacement.parentPath,
+    count: 1,
+    index: replacement.index,
+    ...(replacement.root ? { root: replacement.root } : {}),
+    newSelection: replacement.selection,
+  });
 };
 
 type SliceFitOptions<V extends Value = Value> = Parameters<
   EditorTransactionSliceApi<V>['replace']
 >[1];
+
+type SliceFitPlace =
+  | Readonly<{
+      bounds: Readonly<{ from: number; to: number }> | undefined;
+      kind: 'range';
+      range: Range;
+      remainingLength: number | undefined;
+      removals: readonly NodeKey[];
+      root: string | undefined;
+    }>
+  | Readonly<{
+      blocks: ReadonlyArray<NodeEntry<Element>>;
+      kind: 'blocks';
+      remainingLength: number | undefined;
+      root: string;
+    }>;
+
+let readSliceFitPlace: (site: SliceFitSite) => SliceFitPlace;
+
+class SliceFitSite {
+  readonly #place: SliceFitPlace;
+  readonly remainingLength: number | undefined;
+  readonly target: SliceLandingTarget;
+
+  constructor(place: SliceFitPlace, target: SliceLandingTarget) {
+    this.#place = place;
+    this.remainingLength = place.remainingLength;
+    this.target = target;
+    Object.freeze(this);
+  }
+
+  static {
+    readSliceFitPlace = (site) => site.#place;
+  }
+}
+
+export type { SliceFitSite };
+
+type SliceFitInternal = Readonly<{
+  boundary?: boolean;
+  childrenAt?: NodeKey | Path;
+  rootsPrepared?: boolean;
+}>;
 
 const withSliceFitTarget = <V extends Value, T>(
   editor: Editor<V>,
@@ -3603,245 +3769,517 @@ const withSliceFitTarget = <V extends Value, T>(
   });
 };
 
-export const readAtSliceFitTarget = <T>(
+const resolveSliceFitPlace = (
+  editor: Editor,
+  resolvedOptions:
+    | ResolvedNodeTargetOptions<NonNullable<SliceFitOptions>>
+    | undefined,
+  root: string | undefined,
+  internal: SliceFitInternal | undefined,
+  command?: Readonly<{ nodes: NodeSelection | null }>
+): SliceFitPlace | false => {
+  let localOptions = resolvedOptions;
+  const state = getStateView(editor);
+  const childrenAt =
+    internal?.childrenAt === undefined
+      ? undefined
+      : typeof internal.childrenAt === 'string'
+        ? getPathByNodeKey(editor, internal.childrenAt)
+        : internal.childrenAt;
+
+  if (internal?.childrenAt !== undefined) {
+    if (!childrenAt || childrenAt.length === 0) return false;
+    const parent = state.nodes.get(childrenAt)?.[0];
+
+    if (!parent || !NodeApi.isElement(parent)) return false;
+    const anchor = state.points.start(childrenAt);
+    const focus = state.points.end(childrenAt);
+
+    if (!anchor || !focus) return false;
+    localOptions = {
+      at: { anchor, focus },
+      hanging: true,
+    };
+  }
+
+  const placeAt = (
+    at: Location
+  ): Extract<SliceFitPlace, { kind: 'range' }> | false => {
+    let range: Range | undefined;
+    let insertionBoundary: Readonly<{ from: number; to: number }> | undefined;
+
+    if (LocationApi.isRange(at)) {
+      range = at;
+    } else {
+      const point = LocationApi.isPoint(at)
+        ? at
+        : internal?.boundary
+          ? undefined
+          : state.points.get(at, { edge: 'start' });
+
+      if (point) {
+        range = { anchor: point, focus: point };
+      } else if (LocationApi.isPath(at) && at.length > 0) {
+        const parentPath = PathApi.parent(at);
+        const index = getDefined(at.at(-1));
+        const parentChildren =
+          parentPath.length === 0
+            ? getChildren(editor)
+            : state.nodes.children(parentPath);
+
+        if (index >= 0 && index <= parentChildren.length) {
+          const boundaryPoint =
+            (index < parentChildren.length
+              ? state.points.start([...parentPath, index])
+              : undefined) ??
+            (index > 0
+              ? state.points.end([...parentPath, index - 1])
+              : undefined);
+
+          if (boundaryPoint) {
+            const position = DocumentIndex.fromValue(
+              getChildren(editor)
+            ).childPosition(parentPath, index);
+
+            range = { anchor: boundaryPoint, focus: boundaryPoint };
+            insertionBoundary = { from: position, to: position };
+          }
+        }
+      }
+    }
+    if (!range) return false;
+    if (!insertionBoundary && internal?.childrenAt === undefined) {
+      range = landTextWrite(editor, range, getChildren(editor));
+    }
+
+    if (!insertionBoundary && !localOptions?.hanging) {
+      range = state.ranges.unhang(range, { voids: localOptions?.voids });
+    }
+    if (
+      !insertionBoundary &&
+      !localOptions?.voids &&
+      getEditorRuntime(editor).void({ at: range })
+    ) {
+      return false;
+    }
+
+    const remainingLength = getInsertRemainingLength(state, { at: range });
+
+    if (childrenAt && root !== MAIN_ROOT_KEY) {
+      range = {
+        anchor: { ...range.anchor, root },
+        focus: { ...range.focus, root },
+      };
+    }
+    const parentBounds = childrenAt
+      ? DocumentIndex.fromValue(getChildren(editor)).nodeRange(childrenAt)
+      : undefined;
+
+    return {
+      bounds: parentBounds
+        ? { from: parentBounds.from + 1, to: parentBounds.to - 1 }
+        : insertionBoundary,
+      kind: 'range',
+      range,
+      remainingLength,
+      removals: [],
+      root,
+    };
+  };
+
+  const at = command
+    ? (command.nodes ??
+      localOptions?.at ??
+      (getCurrentSelection(editor) ? null : getDefaultInsertLocation(editor)))
+    : (getTransactionView(editor).resolveTarget({ at: localOptions?.at }) ??
+      getDefaultInsertLocation(editor));
+
+  if (!at) return false;
+  if (!SelectionApi.isNode(at)) return placeAt(at);
+  if (!command) return false;
+
+  const entries = getSelectionNodeEntries(editor, state, at);
+  const blocks = asBlockEntries(state, entries);
+
+  if (blocks) {
+    return {
+      blocks,
+      kind: 'blocks',
+      remainingLength: getInsertRemainingLength(state, { at }),
+      root: root ?? MAIN_ROOT_KEY,
+    };
+  }
+
+  const [first, ...rest] = entries;
+  const firstRange = first ? state.ranges.get(state.key(first[0])) : undefined;
+
+  if (!firstRange) return false;
+  const place = placeAt(localizeLocation(firstRange));
+
+  return (
+    place && {
+      ...place,
+      removals: rest.map(([node]) => state.key(node)),
+    }
+  );
+};
+
+const getSliceFitTarget = (
+  state: EditorStateView,
+  place: SliceFitPlace,
+  requested: Location | undefined
+): SliceLandingTarget => {
+  const publicRoot = toPublicRoot(place.root ?? MAIN_ROOT_KEY);
+  const root = publicRoot === undefined ? {} : { root: publicRoot };
+
+  if (place.kind === 'blocks') {
+    const [, firstPath] = getDefined(place.blocks[0]);
+    const start = state.points.start(firstPath);
+
+    return {
+      block: (start && state.nodes.block({ at: start })) ?? null,
+      kind: 'context',
+      ...root,
+    };
+  }
+  if (place.bounds === undefined) {
+    const empty = getReplaceableEmptyBlock(
+      place.range,
+      (path) => state.nodes.get(path)?.[0],
+      state.schema
+    );
+
+    if (empty) return { block: empty, kind: 'empty', ...root };
+  }
+
+  return {
+    block:
+      state.nodes.block({
+        at:
+          place.bounds !== undefined &&
+          requested !== undefined &&
+          LocationApi.isPath(requested)
+            ? requested
+            : RangeApi.start(place.range),
+      }) ?? null,
+    kind: 'context',
+    ...root,
+  };
+};
+
+export const resolveSliceFitSite = (
   editor: Editor,
   viewRoot: string | undefined,
   options: SliceFitOptions,
-  read: (
-    state: EditorStateView,
-    at: Location | undefined,
-    root: string | undefined
-  ) => T
-): T | false => {
+  nodes: NodeSelection | null
+): SliceFitSite | false => {
   const owner = getEditorRuntimeOwner(editor);
-  const resolve = () =>
-    withSliceFitTarget(owner, options, undefined, (localOptions, root) =>
-      read(
-        getStateView(owner),
-        localOptions?.at,
-        root === undefined ? undefined : toPublicRoot(root)
+  const resolveAt = (
+    localOptions:
+      | ResolvedNodeTargetOptions<NonNullable<SliceFitOptions>>
+      | undefined,
+    root: string | undefined
+  ) => {
+    const place = resolveSliceFitPlace(owner, localOptions, root, undefined, {
+      nodes,
+    });
+
+    return (
+      place &&
+      new SliceFitSite(
+        place,
+        getSliceFitTarget(getStateView(owner), place, localOptions?.at)
       )
     );
+  };
+  const resolve = () => {
+    if (!nodes) return withSliceFitTarget(owner, options, undefined, resolveAt);
+    const root = nodes.root ?? MAIN_ROOT_KEY;
+
+    return runWithMutationRoot(owner, root, () =>
+      resolveAt(
+        options && { hanging: options.hanging, voids: options.voids },
+        root
+      )
+    );
+  };
 
   return viewRoot === undefined
     ? resolve()
     : runWithMutationRoot(owner, viewRoot, resolve);
 };
 
+export const readAtSliceFitSite = <T>(
+  editor: Editor,
+  site: SliceFitSite,
+  read: (state: EditorStateView) => T
+): T => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  return runWithMutationRoot(owner, readSliceFitPlace(site).root, () =>
+    read(getStateView(owner))
+  );
+};
+
+const writeSliceAtRange = <V extends Value>(
+  editor: Editor<V>,
+  place: Extract<SliceFitPlace, { kind: 'range' }>,
+  slice: import('../interfaces/editor').ContentSlice<V>,
+  options: Readonly<{ replaceEmptyBlock?: true; rootsPrepared?: boolean }>
+) => {
+  const state = getStateView(editor);
+  const { bounds, range } = place;
+
+  if (slice.content.length === 0 && RangeApi.isCollapsed(range)) {
+    return false;
+  }
+
+  const emptyBlock = options.replaceEmptyBlock
+    ? getReplaceableEmptyBlock(
+        range,
+        (path) => state.nodes.get(path)?.[0],
+        state.schema
+      )
+    : null;
+
+  if (options.replaceEmptyBlock && !emptyBlock) return false;
+  const replacedEntries = emptyBlock ? [emptyBlock] : [];
+
+  const fit = () =>
+    getEditorSchema(editor).fit(slice, {
+      apply: (step, selection) => {
+        discardReplacedNodeKeys(editor, replacedEntries);
+        applyDocumentChangeStep(
+          editor,
+          step,
+          selection
+            ? {
+                selectionAfter: selection,
+                selectionRoot: range.anchor.root ?? MAIN_ROOT_KEY,
+              }
+            : {}
+        );
+      },
+      builder: getActiveDocumentChangeBuilder(editor),
+      target: {
+        at: range,
+        ...(bounds ? { contentBounds: bounds, exactBounds: bounds } : {}),
+        kind: 'range',
+        ...(emptyBlock ? { replaceEmptyBlock: true } : {}),
+      },
+    });
+
+  if (options.rootsPrepared || !slice.roots) return fit();
+
+  const rootSpec = createTransactionSpec(editor, () => {
+    materializeContentSliceRoots(editor, slice);
+  });
+  let fitted = false;
+  const continuation = extendTransactionSpec(editor, rootSpec, () => {
+    fitted = fit();
+  });
+
+  if (!fitted) return false;
+  try {
+    const schema: InternalEditorSchemaApi = getEditorSchema(editor);
+
+    schema.assertDocument(
+      continuation.changes.apply(
+        getActiveDocumentChangeBuilder(editor).value as EditorDocumentValue
+      )
+    );
+  } catch (error) {
+    if (error instanceof EditorSchemaValidationError) return false;
+    throw error;
+  }
+  applyTransactionSpec(editor, continuation);
+
+  return true;
+};
+
+export const namesUncopiedRoot = (
+  state: EditorStateView,
+  node: Element,
+  slice: import('../interfaces/editor').ContentSlice
+) => {
+  const slots = state.schema.element(node.type)?.contentRoots;
+  const roots = state.schema.getElementContentRoots(node);
+
+  return (
+    !!slots &&
+    Object.keys(slots).some((slot) => {
+      const childRoot = roots[slot];
+
+      return (
+        typeof childRoot !== 'string' ||
+        !Object.hasOwn(slice.roots ?? {}, childRoot)
+      );
+    })
+  );
+};
+
+const getDefaultChildContent = (
+  state: EditorStateView,
+  slice: import('../interfaces/editor').ContentSlice
+) => {
+  const [head] = slice.content;
+
+  if (
+    slice.openStart === 1 &&
+    slice.openEnd === 1 &&
+    slice.content.length === 1 &&
+    NodeApi.isElement(head) &&
+    (Object.keys(state.schema.getElementContentRoots(head)).length === 0 ||
+      namesUncopiedRoot(state, head, slice))
+  ) {
+    return head.children;
+  }
+
+  return slice.openStart === 0 &&
+    slice.openEnd === 0 &&
+    slice.content.every(
+      (node) => !NodeApi.isElement(node) || state.schema.isInline(node)
+    )
+    ? slice.content
+    : null;
+};
+
+const getWholeBlockReplacements = (
+  state: EditorStateView,
+  slice: import('../interfaces/editor').ContentSlice,
+  at: Path,
+  root: string
+) => {
+  const inline = getDefaultChildContent(state, slice);
+  const defaultChild =
+    inline && state.schema.createDefaultChild({ at, root: toPublicRoot(root) });
+  const schema = getInternalEditorSchemaFromApi(state.schema);
+
+  if (
+    inline &&
+    NodeApi.isElement(defaultChild) &&
+    inline.every((node) => schema.canContain(defaultChild, node))
+  ) {
+    return { replacements: [{ ...defaultChild, children: inline }] };
+  }
+
+  return slice.content.every(
+    (node) =>
+      NodeApi.isElement(node) &&
+      state.schema.element(node.type) !== null &&
+      state.schema.isBlock(node)
+  )
+    ? { replacements: slice.content }
+    : null;
+};
+
+const replaceBlocksAtSite = (
+  editor: Editor,
+  transaction: EditorTransactionSpecBuilder,
+  place: Extract<SliceFitPlace, { kind: 'blocks' }>,
+  slice: import('../interfaces/editor').ContentSlice
+) => {
+  const state = getStateView(editor);
+
+  if (slice.content.length === 0) {
+    const [first, ...rest] = place.blocks.map(([block]) => state.key(block));
+    const range = state.ranges.get(getDefined(first));
+
+    if (!range || !transaction.slice.replace(slice, { at: range })) {
+      return false;
+    }
+    for (const key of rest.toReversed()) transaction.nodes.remove({ at: key });
+
+    return true;
+  }
+  const replacement = getNodeSelectionReplacement(
+    state,
+    place.blocks,
+    place.root,
+    ({ at, root }) => getWholeBlockReplacements(state, slice, at, root)
+  );
+
+  if (!replacement) return false;
+  materializeContentSliceRoots(editor, slice);
+  replaceSelectedBlocks(transaction, replacement);
+
+  return true;
+};
+
+export const fitSliceAtSite = (
+  editor: Editor,
+  site: SliceFitSite,
+  slice: import('../interfaces/editor').ContentSlice,
+  options: Readonly<{ replaceEmptyBlock?: true }> = {}
+): false | TransactionSpec => {
+  const owner = getEditorRuntimeOwner(editor);
+  const place = readSliceFitPlace(site);
+  let written = false;
+
+  try {
+    const spec = createTransactionSpec(owner, (transaction) => {
+      written = runWithMutationRoot(owner, place.root, () => {
+        const remapped = remapContentSliceRoots(
+          owner,
+          ContentSlice.fromJSON(slice)
+        );
+
+        if (place.kind === 'blocks') {
+          return replaceBlocksAtSite(owner, transaction, place, remapped);
+        }
+        if (!writeSliceAtRange(owner, place, remapped, options)) return false;
+        for (const key of place.removals.toReversed()) {
+          transaction.nodes.remove({ at: key });
+        }
+
+        return true;
+      });
+    });
+
+    return written ? spec : false;
+  } catch (error) {
+    if (error instanceof EditorSchemaValidationError) return false;
+    throw error;
+  }
+};
+
 const fitSliceIntoActiveDraft = <V extends Value>(
   editor: Editor<V>,
   slice: import('../interfaces/editor').ContentSlice,
   options?: SliceFitOptions<V>,
-  internal?: Readonly<{
-    boundary?: boolean;
-    childrenAt?: NodeKey | Path;
-    rootsPrepared?: boolean;
-  }>
-) => {
-  const owner = getEditorRuntimeOwner(editor);
-  const commandFit = commandSliceFits.get(owner);
-
-  commandSliceFits.delete(owner);
-
-  return withSliceFitTarget(
+  internal?: SliceFitInternal
+) =>
+  withSliceFitTarget(
     editor,
     options,
     internal?.childrenAt,
     (resolvedOptions, root) => {
-      let localOptions = resolvedOptions;
-      const state = getStateView(editor);
-      const childrenAt =
-        internal?.childrenAt === undefined
-          ? undefined
-          : typeof internal.childrenAt === 'string'
-            ? getPathByNodeKey(editor, internal.childrenAt)
-            : internal.childrenAt;
+      const place = resolveSliceFitPlace(
+        editor,
+        resolvedOptions,
+        root,
+        internal
+      );
 
-      if (internal?.childrenAt !== undefined) {
-        if (!childrenAt || childrenAt.length === 0) return false;
-        const parent = state.nodes.get(childrenAt)?.[0];
-
-        if (!parent || !NodeApi.isElement(parent)) return false;
-        const anchor = state.points.start(childrenAt);
-        const focus = state.points.end(childrenAt);
-
-        if (!anchor || !focus) return false;
-        localOptions = {
-          at: { anchor, focus },
-          hanging: true,
-        };
-      }
+      if (!place || place.kind !== 'range') return false;
       const sourceSlice = ContentSlice.fromJSON<V>(slice);
       const inputSlice = internal?.rootsPrepared
         ? sourceSlice
         : remapContentSliceRoots(editor, sourceSlice);
-      const limitedSlice = commandFit
-        ? limitSliceToLength(inputSlice, commandFit.remaining)
-        : limitSliceInsert(state, inputSlice, localOptions);
+      const limitedSlice = limitSliceToLength(
+        inputSlice,
+        place.remainingLength
+      );
 
       if (limitedSlice.content.length === 0 && inputSlice.content.length > 0) {
         return false;
       }
 
-      let at = getTransactionView(editor).resolveTarget({
-        at: localOptions?.at,
+      return writeSliceAtRange(editor, place, limitedSlice, {
+        rootsPrepared: internal?.rootsPrepared,
       });
-
-      if (!at) at = getDefaultInsertLocation(editor);
-      if (SelectionApi.isNode(at)) return false;
-
-      let range: Range | undefined;
-      let insertionBoundary: Readonly<{ from: number; to: number }> | undefined;
-
-      if (LocationApi.isRange(at)) {
-        range = at;
-      } else {
-        const point = LocationApi.isPoint(at)
-          ? at
-          : internal?.boundary
-            ? undefined
-            : state.points.get(at, { edge: 'start' });
-
-        if (point) {
-          range = { anchor: point, focus: point };
-        } else if (LocationApi.isPath(at) && at.length > 0) {
-          const parentPath = PathApi.parent(at);
-          const index = getDefined(at.at(-1));
-          const parentChildren =
-            parentPath.length === 0
-              ? getChildren(editor)
-              : state.nodes.children(parentPath);
-
-          if (index >= 0 && index <= parentChildren.length) {
-            const boundaryPoint =
-              (index < parentChildren.length
-                ? state.points.start([...parentPath, index])
-                : undefined) ??
-              (index > 0
-                ? state.points.end([...parentPath, index - 1])
-                : undefined);
-
-            if (boundaryPoint) {
-              const position = DocumentIndex.fromValue(
-                getChildren(editor)
-              ).childPosition(parentPath, index);
-
-              range = { anchor: boundaryPoint, focus: boundaryPoint };
-              insertionBoundary = { from: position, to: position };
-            }
-          }
-        }
-      }
-      if (!range) return false;
-      if (!insertionBoundary && internal?.childrenAt === undefined) {
-        range = landTextWrite(editor, range, getChildren(editor));
-      }
-
-      if (!insertionBoundary && !localOptions?.hanging) {
-        range = state.ranges.unhang(range, { voids: localOptions?.voids });
-      }
-      if (limitedSlice.content.length === 0 && RangeApi.isCollapsed(range)) {
-        return false;
-      }
-      if (
-        !insertionBoundary &&
-        !localOptions?.voids &&
-        getEditorRuntime(editor).void({ at: range })
-      ) {
-        return false;
-      }
-
-      const emptyBlock = commandFit?.replaceEmptyBlock
-        ? getReplaceableEmptyBlock(
-            range,
-            (path) => state.nodes.get(path)?.[0],
-            state.schema
-          )
-        : null;
-
-      if (commandFit?.replaceEmptyBlock && !emptyBlock) return false;
-      if (childrenAt && root !== MAIN_ROOT_KEY) {
-        range = {
-          anchor: { ...range.anchor, root },
-          focus: { ...range.focus, root },
-        };
-      }
-      const parentBounds = childrenAt
-        ? DocumentIndex.fromValue(getChildren(editor)).nodeRange(childrenAt)
-        : undefined;
-      const fitBounds = parentBounds
-        ? { from: parentBounds.from + 1, to: parentBounds.to - 1 }
-        : insertionBoundary;
-      const replacedEntries = emptyBlock ? [emptyBlock] : [];
-
-      const fit = () =>
-        getEditorSchema(editor).fit(limitedSlice, {
-          apply: (step, selection) => {
-            discardReplacedNodeKeys(editor, replacedEntries);
-            applyDocumentChangeStep(
-              editor,
-              step,
-              selection
-                ? {
-                    selectionAfter: selection,
-                    selectionRoot: range.anchor.root ?? MAIN_ROOT_KEY,
-                  }
-                : {}
-            );
-          },
-          builder: getActiveDocumentChangeBuilder(editor),
-          target: {
-            at: range,
-            ...(fitBounds
-              ? {
-                  contentBounds: fitBounds,
-                  exactBounds: fitBounds,
-                }
-              : {}),
-            kind: 'range',
-            ...(emptyBlock ? { replaceEmptyBlock: true } : {}),
-          },
-        });
-      let fitted: boolean;
-
-      if (internal?.rootsPrepared) return fit();
-
-      if (limitedSlice.roots) {
-        const rootSpec = createTransactionSpec(editor, () => {
-          materializeContentSliceRoots(editor, limitedSlice);
-        });
-        let continuationFitted = false;
-        const continuation = extendTransactionSpec(editor, rootSpec, () => {
-          continuationFitted = fit();
-        });
-
-        fitted = continuationFitted;
-        if (fitted) {
-          try {
-            const schema: InternalEditorSchemaApi = getEditorSchema(editor);
-
-            schema.assertDocument(
-              continuation.changes.apply(
-                getActiveDocumentChangeBuilder(editor)
-                  .value as EditorDocumentValue
-              )
-            );
-          } catch (error) {
-            if (error instanceof EditorSchemaValidationError) return false;
-            throw error;
-          }
-          applyTransactionSpec(editor, continuation);
-        }
-      } else {
-        fitted = fit();
-      }
-
-      if (!fitted) return false;
-
-      return true;
     }
   );
-};
 
 export type InternalSliceChildrenTarget = NodeKey | Path;
 
@@ -5184,9 +5622,18 @@ const getStateView = <
               resolvedTarget.root ?? MAIN_ROOT_KEY,
               () =>
                 resolvedTarget.paths
-                  .map((path) => NodeApi.getIf(editor, path))
-                  .filter((node): node is PliteNode => !!node)
-                  .map(NodeApi.string)
+                  .filter((path) => NodeApi.has(editor, path))
+                  .flatMap((path) =>
+                    Array.from(
+                      getNodes(editor, {
+                        at: path,
+                        match: NodeApi.isText,
+                        voids: true,
+                      }),
+                      ([, textPath]) =>
+                        getEditorRuntime(editor).string(textPath, options)
+                    )
+                  )
                   .join('')
             );
           }
@@ -8369,16 +8816,22 @@ export const setActiveImplicitTarget = (editor: Editor, target: Selection) => {
   }
 };
 
-export const resolveImplicitTarget = (
-  editor: Editor,
-  fallback: Selection
-): Selection => {
-  const moved = resolveTargetRuntimeImplicitTarget(editor, fallback);
+export const moveImplicitTarget = (
+  editor: Editor
+): Readonly<{ target: Selection }> | null => {
+  const frame = getTransactionSnapshot(editor)?.implicitTargetFrame;
 
-  if (!moved) return fallback;
-  setCurrentSelection(editor, moved.target);
+  if (!frame) {
+    return resolveTargetRuntimeImplicitTarget(
+      editor,
+      getCurrentSelection(editor)
+    );
+  }
+  const moved = withContextsBelow(editor, frame.context, () =>
+    resolveTargetRuntimeImplicitTarget(editor, frame.storedSelection)
+  );
 
-  return moved.target;
+  return moved ? { target: frame.toFrame(moved.target) } : null;
 };
 
 export const hasInternalEditorState = (value: unknown): value is Editor =>
@@ -8420,16 +8873,10 @@ const getTransactionView = (editor: Editor): EditorTransaction => {
           return cloneValue(snapshot.implicitTarget);
         }
 
-        const frame = snapshot?.implicitTargetFrame;
         const target = profileCoreDuration('resolve-implicit-target', () => {
-          if (!frame) {
-            return resolveImplicitTarget(editor, getCurrentSelection(editor));
-          }
-          const moved = withContextsBelow(editor, frame.context, () =>
-            resolveTargetRuntimeImplicitTarget(editor, frame.storedSelection)
-          );
+          const moved = moveImplicitTarget(editor);
 
-          if (moved) setCurrentSelection(editor, frame.toFrame(moved.target));
+          if (moved) setCurrentSelection(editor, moved.target);
 
           return getCurrentSelection(editor);
         });

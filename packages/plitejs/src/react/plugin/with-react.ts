@@ -167,17 +167,11 @@ export const REACT_EDITOR_OPTION_KEYS = {
 } satisfies Record<keyof CreateEditorOptions, true>;
 
 export function createEditor<
-  const TOptions extends Omit<
-    CreateEditorOptions<any, readonly unknown[]>,
-    'lifecycleErrorSink'
-  > & {
+  const TOptions extends CreateEditorOptions<any, readonly unknown[]> & {
     plugins: readonly unknown[];
   },
 >(
-  options: CheckedEditorOptions<
-    TOptions,
-    CreateEditorOptions<any, readonly unknown[]>
-  >
+  options: CheckedEditorOptions<TOptions, CreateEditorOptions>
 ): Editor<EditorValueFromOptions<TOptions>, PluginsFromOptions<TOptions>>;
 
 export function createEditor<

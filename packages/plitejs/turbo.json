@@ -292,7 +292,8 @@
         "typecheck:partition:core",
         "typecheck:partition:dom",
         "typecheck:partition:history",
-        "typecheck:partition:testing"
+        "typecheck:partition:testing",
+        "typecheck:partition:yjs"
       ],
       "inputs": [
         "src/annotations/**",

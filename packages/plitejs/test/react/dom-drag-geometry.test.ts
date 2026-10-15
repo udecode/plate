@@ -528,3 +528,61 @@ describe('DOM side strips', () => {
     expect(admissions).toBe(first);
   });
 });
+
+describe('block copy adoption while hovering', () => {
+  const counted = () => {
+    const runs: string[] = [];
+    const plugin = definePlugin('counting-adopt', {
+      readMiddleware: ({ around }) => [
+        around(editorReads.transfer.adopt, ({ input, next }) => {
+          runs.push(`${input.edge}:${input.target[1].join('.')}`);
+
+          return next();
+        }),
+      ],
+    });
+
+    return { plugin, runs };
+  };
+  const insideQuote = definePlugin('inside-quote', {
+    contributions: [transferVeto.of(({ target: [, path] }) => path.length > 1)],
+  });
+
+  test.each([
+    ["a container's bottom band shared with its last child", [], '1', 88, '0'],
+    [
+      'a refused anchor and the edge it falls back to',
+      [insideQuote],
+      '1.0',
+      55,
+      '2',
+    ],
+  ] as const)(
+    'adopts once per candidate edge over %s until the document changes',
+    (_, extra, at, clientY, payload) => {
+      const { plugin, runs } = counted();
+      const { drop, editor } = mount(LAYOUT, [plugin, ...extra]);
+
+      drop(at, clientY, payload, { copy: true });
+      const first = [...runs];
+
+      for (let repeat = 0; repeat < 4; repeat += 1) {
+        drop(at, clientY, payload, { copy: true });
+      }
+      const repeated = runs.length;
+
+      editor.update.text.insert('z', { at: { offset: 0, path: [2, 0] } });
+      drop(at, clientY, payload, { copy: true });
+
+      expect({
+        distinct: new Set(first).size === first.length && first.length > 0,
+        repeated,
+        rerun: runs.length,
+      }).toEqual({
+        distinct: true,
+        repeated: first.length,
+        rerun: 2 * first.length,
+      });
+    }
+  );
+});

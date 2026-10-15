@@ -308,8 +308,4 @@ export {
 } from '../core/document-view-read';
 export { formatDebugValue } from '../utils/format-debug-value';
 export { isObject } from '../utils/is-object';
-export {
-  getRangeRoot,
-  getReaderRange,
-  MAIN_ROOT_KEY,
-} from './root-location';
+export { getRangeRoot, getReaderRange, MAIN_ROOT_KEY } from './root-location';

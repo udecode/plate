@@ -189,6 +189,12 @@ export type SchemaTarget =
 export type SchemaPropertySplitPolicy = 'drop' | 'preserve';
 export type SchemaPropertyCopyPolicy = 'drop' | 'preserve';
 export type SchemaPropertyTypeChangePolicy = 'drop' | 'preserve-if-allowed';
+/**
+ * Whether where content lands decides an element property. `rebase`: a text
+ * move may change it, such as a depth. `adopt`: a text move may change it,
+ * and a block copy may take it from where it lands, such as a list.
+ */
+export type SchemaPropertyLandingPolicy = 'adopt' | 'preserve' | 'rebase';
 export type SchemaPropertyRole = 'content' | 'metadata';
 
 export type SchemaPropertyExclusiveGroup<TId extends string = string> =
@@ -209,6 +215,8 @@ export type SchemaTextPropertyOptions = Readonly<{
 
 export type SchemaElementPropertyOptions = Readonly<{
   copy?: SchemaPropertyCopyPolicy;
+  /** Defaults to `preserve`. */
+  landing?: SchemaPropertyLandingPolicy;
   role?: SchemaPropertyRole;
   split?: SchemaPropertySplitPolicy;
   target: SchemaTarget;
@@ -239,6 +247,7 @@ export type SchemaElementProperty<
 > = Readonly<{
   copy: SchemaPropertyCopyPolicy;
   key: TKey;
+  landing: SchemaPropertyLandingPolicy;
   placement: 'element';
   role: SchemaPropertyRole;
   split: SchemaPropertySplitPolicy;
@@ -523,6 +532,8 @@ export type EditorSchemaProperty = Readonly<{
   lifecycle: Readonly<{
     copy: SchemaPropertyCopyPolicy;
     inclusive: boolean | null;
+    /** Always `preserve` for a text property. */
+    landing: SchemaPropertyLandingPolicy;
     split: SchemaPropertySplitPolicy;
     typeChange: SchemaPropertyTypeChangePolicy;
   }>;
