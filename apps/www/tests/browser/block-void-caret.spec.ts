@@ -25,12 +25,15 @@ const readVoidState = (voidNode: Locator) =>
       anchorInVoid: Boolean(
         selection?.anchorNode && element.contains(selection.anchorNode)
       ),
+      blockHighlighted:
+        element.querySelector('[data-slot="node-selection-highlight"]') !==
+        null,
       caretColor: spacer ? getComputedStyle(spacer).caretColor : null,
-      hasBreak: Boolean(zero?.querySelector('br')),
-      selected:
+      caretEntrySelected:
         element.querySelector('[data-selected="true"]') !== null ||
         element.querySelector('.ring-2') !== null ||
         element.getAttribute('data-selected') === 'true',
+      hasBreak: Boolean(zero?.querySelector('br')),
       zeroWidthKind: zero?.getAttribute('data-editor-zero-width'),
     };
   });
@@ -126,7 +129,8 @@ test(CASE_ID, async ({ page }, testInfo) => {
     const horizontalRuleState = await readVoidState(horizontalRule);
 
     await expect(editor).toBeFocused();
-    expect(horizontalRuleState.selected).toBe(true);
+    expect(horizontalRuleState.caretEntrySelected).toBe(true);
+    expect(horizontalRuleState.blockHighlighted).toBe(false);
     expect(horizontalRuleState.anchorInVoid).toBe(true);
     expect(['transparent', 'rgba(0, 0, 0, 0)']).toContain(
       horizontalRuleState.caretColor
@@ -148,7 +152,8 @@ test(CASE_ID, async ({ page }, testInfo) => {
     const equationState = await readVoidState(equation);
 
     await expect(editor).toBeFocused();
-    expect(equationState.selected).toBe(true);
+    expect(equationState.blockHighlighted).toBe(true);
+    expect(equationState.caretEntrySelected).toBe(false);
     expect(equationState.anchorInVoid).toBe(false);
     expect(['transparent', 'rgba(0, 0, 0, 0)']).toContain(
       equationState.caretColor

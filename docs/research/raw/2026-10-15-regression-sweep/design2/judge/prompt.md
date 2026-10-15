@@ -1,0 +1,7 @@
+You are the cross-judge for a design exploration in the Plate repository at /Users/zbeyens/git/plate-2 (branch `next`). Read and report only. Never post, comment, push or change anything outside your own scratch folder.
+
+Read, in full: the task the candidates answered, `/Users/zbeyens/git/plate-2/docs/plans/artifacts/2026-10-15-regression-sweep/architect2/task.md`; its grounding, `/Users/zbeyens/git/plate-2/docs/plans/artifacts/2026-10-15-regression-sweep/architect2/grounding.md`, and the first grounding it names; the rubric, `/Users/zbeyens/git/plate-2/docs/plans/artifacts/2026-10-15-regression-sweep/architect2/rubric.md`; and the three candidates, `cand-1.md`, `cand-2.md` and `cand-3.md` in `/Users/zbeyens/git/plate-2/docs/plans/artifacts/2026-10-15-regression-sweep/architect2/judge/`.
+
+Check each candidate's claims about the trials and existing files against the files themselves before you credit them, such as the trial keys and grades in `/Users/zbeyens/git/plate-2/docs/research/raw/2026-10-15-regression-sweep/trial/`, `aim/` and `lifecycle/`, the census in `census/`, and what `pnpm kb` indexes (`tooling/scripts/knowledge/knowledge.mjs`). Say "not run" for anything that would write to the project.
+
+Answer with: one table scoring each candidate 0 to 3 on each rubric criterion with one line of evidence each; any claim you found false, with the file and line; the base you recommend and why; and one or two grafts from the other candidates, each naming its candidate label.

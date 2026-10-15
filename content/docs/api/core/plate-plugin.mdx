@@ -364,7 +364,7 @@ import { SuggestionPlugin } from 'platejs/suggestion/react';
 SuggestionPlugin.configure({
   render: {
     contentAttributes: {
-      className: '[&_[data-editor-retained=delete]]:line-through',
+      className: '[&_[data-editor-authored-kind~=delete]]:line-through',
     },
   },
 });
@@ -520,9 +520,9 @@ Renders after a node's children inside its primary component.
   `SliceLanding`, `SliceLandingInput` and `SliceLandingTarget` types from
   `platejs`.
 
-  `editorReads.transfer.adopt` returns the properties a block copy takes
-  where it lands, as `TransferPatch` entries; the
-  [Drag and drop page](/docs/dnd#shape-a-block-copy) has an example. Its
+  `editorReads.transfer.adopt` returns the properties a block copy or move
+  takes where it lands, as `TransferPatch` entries; the
+  [Drag and drop page](/docs/dnd#shape-dropped-blocks) has an example. Its
   `TransferAdoptInput` and `TransferPatch` types also come from `platejs`.
 </APIItem>
 

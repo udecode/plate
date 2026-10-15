@@ -1,0 +1,7 @@
+natamox is about to do a hands-on QA pass of the beta Plite examples, checking each beta page against its Slate original before the beta goes wider. Each page is https://beta.platejs.org/examples/plite/<name> against https://www.slatejs.org/examples/<name>, for these names: check-lists, code-highlighting, custom-placeholder, editable-voids, embeds, forced-layout, hovering-toolbar, huge-document, iframe, images, inlines, markdown-preview, markdown-shortcuts, mentions, paste-html, plaintext, read-only, richtext, search-highlighting, shadow-dom, styling, tables.
+
+Prepare the checklist natamox will run by hand on a Mac, in Chrome, Safari and Firefox, and on an iPhone in Safari. Give each check an id, its page, the browsers or devices, the starting state, the steps, what should happen, what must not happen and a minutes estimate. Keep the whole checklist under 150 minutes of hands-on time, and leave out features the Slate page does not have.
+
+You can read the Plate repository at /Users/zbeyens/git/plate-2 and browse the two sites, but do not change any file. Reply with the checklist only, as Markdown.
+
+Prepare it the way the sweep workflow says: read `/private/tmp/claude-501/-Users-zbeyens-git-plate-2/ac862676-9124-4cbd-8ab3-5c886b30fb97/scratchpad/qa-prep/sweep.mdc`, its playbook `sweep.md` and its `references/misses.md` in the same folder, and produce what its `prep P1` mode would write, as the cards it describes, without writing any file.

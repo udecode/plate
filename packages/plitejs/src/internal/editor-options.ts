@@ -88,3 +88,24 @@ export const assertEditorOptions = (
     }
   }
 };
+
+/**
+ * Copies each option in `keys` that `options` holds, own or inherited, into a
+ * plain object that a rest or spread copies whole.
+ *
+ * @internal
+ */
+export const readEditorOptions = <TOptions extends object>(
+  options: TOptions,
+  keys: Readonly<Record<string, true>>
+): Partial<TOptions> => {
+  const read: Partial<TOptions> = {};
+
+  for (const key of Object.keys(keys) as Array<keyof TOptions & string>) {
+    const value = options[key];
+
+    if (value !== undefined || key in options) read[key] = value;
+  }
+
+  return read;
+};

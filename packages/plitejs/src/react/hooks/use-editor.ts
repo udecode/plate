@@ -52,9 +52,17 @@ export function useEditor<
 ): Editor<V, TPlugins> {
   // Later renders skip createEditor, so check each render's options here.
   assertEditorOptions(options, REACT_EDITOR_OPTION_KEYS);
+  // Strict Mode runs a memo factory twice and keeps the first result, so the
+  // factory returns a getter and the component builds one editor. A second
+  // editor would activate its plugins again, and a Yjs binding refuses it.
+  const createGetter = () => {
+    let editor: Editor<V, TPlugins> | undefined;
+
+    return () => (editor ??= createEditor(options));
+  };
   // The caller-supplied list intentionally owns the component editor lifetime.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const editor = useMemo(() => createEditor(options), deps);
+  const getEditor = useMemo(createGetter, deps);
 
-  return editor;
+  return getEditor();
 }

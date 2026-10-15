@@ -5,6 +5,7 @@ export interface MainNavItem extends NavItem {}
 export type NavItem = {
   description?: string;
   disabled?: boolean;
+  experimental?: true;
   external?: boolean;
   href?: string;
   icon?: keyof typeof DocIcons;

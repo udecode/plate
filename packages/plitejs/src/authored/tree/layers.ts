@@ -24,7 +24,7 @@ export type FormatTag = Readonly<{
   over?: readonly string[];
 }>;
 
-export type LayerOutcome = (change: string) => 'accept' | 'keep' | 'reject';
+export type LayerOutcome = (tag: FormatTag) => 'accept' | 'keep' | 'reject';
 
 export type KeyDecision = Readonly<{
   /** The tags left on the key, each the same object as an input tag. */
@@ -191,7 +191,7 @@ export const decideKey = (
   tags: readonly FormatTag[],
   outcome: LayerOutcome
 ): KeyDecision => {
-  const outcomes = new Set(tags.map((tag) => outcome(tag.change)));
+  const outcomes = new Set(tags.map(outcome));
 
   // One outcome for every tag needs no steps: keeping changes nothing,
   // accepting keeps the live value, and rejecting restores what the bottom
@@ -224,7 +224,7 @@ export const decideKey = (
   const steps = keySteps(tags);
   const waits = new Set<string>();
   const statuses = steps.map((step) => {
-    const pending = step.tags.filter((tag) => outcome(tag.change) === 'keep');
+    const pending = step.tags.filter((tag) => outcome(tag) === 'keep');
 
     if (pending.length === step.tags.length) return 'keep';
     if (pending.length > 0) {
@@ -233,7 +233,7 @@ export const decideKey = (
       return 'keep';
     }
 
-    return step.tags.some((tag) => outcome(tag.change) === 'reject')
+    return step.tags.some((tag) => outcome(tag) === 'reject')
       ? 'reject'
       : 'accept';
   });

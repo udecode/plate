@@ -113,6 +113,33 @@ describe('maxLength editor option', () => {
     assert.equal(editor.read.text.string([]), 'Hello');
   });
 
+  it('counts the length when the document starts or ends with a textless block', () => {
+    const results = [
+      { at: [1, 0], value: [emptyBox(), paragraph('ab')] },
+      { at: [0, 0], value: [paragraph('ab'), emptyBox()] },
+    ].map(({ at, value }) => {
+      const editor = createEditor({
+        initialSelection: {
+          kind: 'text' as const,
+          anchor: { path: at, offset: 2 },
+          focus: { path: at, offset: 2 },
+        },
+        initialValue: value,
+        maxLength: 4,
+        plugins: [BoxSchema],
+      });
+
+      editor.update.text.insert('12345');
+
+      return editor.read.children();
+    });
+
+    assert.deepEqual(results, [
+      [emptyBox(), paragraph('ab12')],
+      [paragraph('ab12'), emptyBox()],
+    ]);
+  });
+
   it('counts selected replacement text before truncating', () => {
     const editor = createEditor({
       initialSelection: {
@@ -460,7 +487,9 @@ describe('maxLength editor option', () => {
   it('lands a cut paste over selected blocks with a caret inside it', () => {
     const results = [[[0]], [[0], [2]]].map((paths) => {
       const editor = createEditor({
-        initialSelection: SelectionApi.nodes(paths as [number[]]),
+        initialSelection: SelectionApi.nodes(paths as [number[]], {
+          mode: 'block',
+        }),
         initialValue: [paragraph('aa'), paragraph('b'), paragraph('cc')],
         maxLength: 5,
         plugins: [history()],
@@ -501,7 +530,7 @@ describe('maxLength editor option', () => {
 
   it('credits every selected block when an open paste fills the first one', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0], [2]]),
+      initialSelection: SelectionApi.nodes([[0], [2]], { mode: 'block' }),
       initialValue: [paragraph('aa'), paragraph('b'), paragraph('cc')],
       maxLength: 5,
     });
@@ -532,12 +561,52 @@ describe('maxLength editor option', () => {
       maxLength: 7,
     });
 
-    editor.update.selection.set(SelectionApi.nodes([[0]], { root: 'notes' }));
+    editor.update.selection.set(
+      SelectionApi.nodes([[0]], { mode: 'block', root: 'notes' })
+    );
 
     assert.equal(
       editor.update.slice.replace(ContentSlice.closed([paragraph('123456')])),
       true
     );
+    assert.deepEqual(editor.read.root('notes'), [
+      paragraph('123456'),
+      paragraph('b'),
+    ]);
+    assert.deepEqual(editor.read.children(), [paragraph('mmmmmm')]);
+  });
+
+  it('limits typing over selected blocks by the root that holds them', () => {
+    const blocks = () =>
+      schema.content.types(['paragraph'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      });
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('mmmmmm')],
+        roots: { notes: [paragraph('aa'), paragraph('b')] },
+      },
+      maxLength: 7,
+      plugins: [
+        defineEditorSchema('schema:max-length-notes', {
+          elements: {
+            paragraph: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+            },
+          },
+          root: blocks(),
+          roots: { notes: blocks() },
+          unknown: 'reject',
+        }),
+      ],
+    });
+
+    editor.update.selection.set(
+      SelectionApi.nodes([[0]], { mode: 'block', root: 'notes' })
+    );
+    editor.update.text.insert('123456789');
+
     assert.deepEqual(editor.read.root('notes'), [
       paragraph('123456'),
       paragraph('b'),
@@ -551,7 +620,9 @@ describe('maxLength editor option', () => {
       [[0], [1]],
     ].map((paths) => {
       const editor = createEditor({
-        initialSelection: SelectionApi.nodes(paths as [number[]]),
+        initialSelection: SelectionApi.nodes(paths as [number[]], {
+          mode: 'block',
+        }),
         initialValue: [hidden('aaa'), paragraph('b'), paragraph('c')],
         maxLength: 6,
       });
@@ -576,7 +647,7 @@ describe('maxLength editor option', () => {
 
   it('cuts a paste over a selected container by every block it replaces', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         { type: 'quote', children: [hidden('aaa'), paragraph('b')] },
         paragraph('c'),
@@ -604,7 +675,9 @@ describe('maxLength editor option', () => {
     const before = [paragraph(''), paragraph(''), paragraph('xx')];
     const results = [[[0]], [[0], [1]]].map((paths) => {
       const editor = createEditor({
-        initialSelection: SelectionApi.nodes(paths as [number[]]),
+        initialSelection: SelectionApi.nodes(paths as [number[]], {
+          mode: 'block',
+        }),
         initialValue: before,
         maxLength: 2,
       });
@@ -623,7 +696,7 @@ describe('maxLength editor option', () => {
 
   it('credits every selected block a paste replaces whole', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [hidden('aaa'), paragraph('b'), paragraph('c')],
       maxLength: 5,
     });
@@ -640,7 +713,7 @@ describe('maxLength editor option', () => {
 
   it('credits a selected void a paste replaces only with the text the length counts', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [imageWithText('aaa'), paragraph('bb')],
       maxLength: 5,
       plugins: [VoidSchema],
@@ -656,7 +729,7 @@ describe('maxLength editor option', () => {
 
   it('credits a selected void typing replaces only with the text the length counts', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [imageWithText('aaa'), paragraph('bb')],
       maxLength: 5,
       plugins: [VoidSchema],
@@ -672,7 +745,7 @@ describe('maxLength editor option', () => {
 
   it('replaces a selected empty container a paste replaces under maxLength', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[1]]),
+      initialSelection: SelectionApi.nodes([[1]], { mode: 'block' }),
       initialValue: [paragraph('aa'), emptyBox(), paragraph('bb')],
       maxLength: 5,
       plugins: [BoxSchema],
@@ -689,7 +762,7 @@ describe('maxLength editor option', () => {
 
   it('replaces a selected empty container typing replaces under maxLength', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[1]]),
+      initialSelection: SelectionApi.nodes([[1]], { mode: 'block' }),
       initialValue: [paragraph('aa'), emptyBox(), paragraph('bb')],
       maxLength: 5,
       plugins: [BoxSchema],
@@ -726,6 +799,37 @@ describe('maxLength editor option', () => {
       } else {
         editor.update((tx) => {
           tx.slice.replace(slice, { at });
+        });
+      }
+
+      return editor.read.children();
+    });
+
+    assert.deepEqual(results, [
+      [hidden('aa'), paragraph('1b')],
+      [hidden('aa'), paragraph('1b')],
+    ]);
+  });
+
+  it('credits the text typing replaces after leaving hidden text', () => {
+    const results = (['command', 'transaction'] as const).map((entry) => {
+      const editor = createEditor({
+        initialValue: [hidden('aa'), paragraph('bb')],
+        maxLength: 4,
+      });
+
+      registerEditorContent(editor, (_editor, node) => !isHidden(node));
+      editor.update.selection.set(
+        SelectionApi.text({
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 1, path: [1, 0] },
+        })
+      );
+      if (entry === 'command') {
+        editor.update.text.insert('123');
+      } else {
+        editor.update((tx) => {
+          tx.text.insert('123');
         });
       }
 

@@ -37,7 +37,7 @@ import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { insertNodes } from './insert-nodes';
 import { moveNodes } from './move-nodes';
-import { splitNodes } from './split-nodes';
+import { splitNodesKeepingType } from './split-nodes';
 
 function* contentPaths(editor: Editor, range: Range) {
   const [start, end] = RangeApi.edges(range);
@@ -270,7 +270,7 @@ export const wrapNodes = ((
       const shouldAlwaysSplit = (point: Point) => !isAtBlockEdge(point);
 
       if (landsAt(end)) {
-        splitNodes(editor, {
+        splitNodesKeepingType(editor, {
           at: end,
           match,
           voids: entersVoids,
@@ -279,7 +279,7 @@ export const wrapNodes = ((
       }
 
       if (landsAt(start)) {
-        splitNodes(editor, {
+        splitNodesKeepingType(editor, {
           at: start,
           match,
           voids: entersVoids,

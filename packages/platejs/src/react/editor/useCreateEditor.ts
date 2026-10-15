@@ -6,6 +6,7 @@ import { resolveEditorUserId } from '../../lib/editor/editorUser.internal';
 import {
   assertConstructorOptions,
   type PlatePluginsFromTuple,
+  readConstructorOptions,
   type RuntimePluginsFromTuple,
 } from '../../lib/editor/withPlite';
 import type { Editor } from './Editor';
@@ -121,21 +122,29 @@ export function useCreateEditor(
   options: object = {},
   deps: React.DependencyList = []
 ): unknown {
-  assertConstructorOptions(options, USE_CREATE_EDITOR_OPTION_KEYS);
-  const { enabled, ...editorOptions } = options as CreateEditorOptions & {
-    enabled?: boolean;
-  };
-  const userKey = resolveEditorUserId(editorOptions.userId);
+  const hookOptions = options as CreateEditorOptions & { enabled?: boolean };
+
+  assertConstructorOptions(hookOptions, USE_CREATE_EDITOR_OPTION_KEYS);
+  const { enabled, id, userId } = hookOptions;
+  const userKey = resolveEditorUserId(userId);
 
   return React.useMemo(
     () => {
       if (enabled === false) return null;
 
-      const create = createEditor as (options: unknown) => Editor;
+      const { enabled: _enabled, ...editorOptions } = readConstructorOptions(
+        hookOptions,
+        USE_CREATE_EDITOR_OPTION_KEYS
+      );
 
-      return create(editorOptions);
+      return createEditor({
+        ...editorOptions,
+        id,
+        plugins: editorOptions.plugins ?? [],
+        userId,
+      });
     },
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] The editor is keyed by id, user, enabled and caller-supplied dependencies; other option changes keep the current editor.
-    [editorOptions.id, userKey, enabled, ...deps]
+    [id, userKey, enabled, ...deps]
   );
 }

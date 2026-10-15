@@ -5,7 +5,7 @@ import type {
   EditorStateView,
   TransactionSpec,
 } from '../interfaces/editor';
-import { type Descendant, NodeApi } from '../interfaces/node';
+import { NodeApi } from '../interfaces/node';
 import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
 import { ContentSlice as ContentSliceValue } from './content-slice';
@@ -17,7 +17,6 @@ import { MAIN_ROOT_KEY } from './public-root';
 import {
   fitSliceAtSite,
   getCurrentNodeSelection,
-  namesUncopiedRoot,
   moveImplicitTarget,
   readAtSliceFitSite,
   resolveSliceFitSite,
@@ -114,13 +113,15 @@ export const planPaste = (
 
 export const writePaste = (
   editor: Editor,
-  plan: PastePlan
+  plan: PastePlan,
+  options: Readonly<{ landing?: true }> = {}
 ):
   | Readonly<{ lossy: boolean; spec: TransactionSpec; written: ContentSlice }>
   | false => {
   const proposed =
     plan.emptyBlockReplacement &&
     fitSliceAtSite(editor, plan.site, plan.emptyBlockReplacement, {
+      ...options,
       replaceEmptyBlock: true,
     });
 
@@ -133,7 +134,7 @@ export const writePaste = (
   }
   if (!plan.slice) return false;
 
-  const spec = fitSliceAtSite(editor, plan.site, plan.slice);
+  const spec = fitSliceAtSite(editor, plan.site, plan.slice, options);
 
   return (
     spec && {
@@ -142,28 +143,6 @@ export const writePaste = (
       written: plan.slice,
     }
   );
-};
-
-const canCloseSliceEdge = (
-  state: EditorStateView,
-  slice: ContentSlice,
-  edge: 'end' | 'start'
-) => {
-  let nodes: readonly Descendant[] = slice.content;
-
-  for (
-    let level = 0;
-    level < (edge === 'start' ? slice.openStart : slice.openEnd);
-    level += 1
-  ) {
-    const node = edge === 'start' ? nodes[0] : nodes.at(-1);
-
-    if (!NodeApi.isElement(node)) break;
-    if (namesUncopiedRoot(state, node, slice)) return false;
-    nodes = node.children;
-  }
-
-  return true;
 };
 
 const prepareEmptyBlockReplacement = (
@@ -178,25 +157,26 @@ const prepareEmptyBlockReplacement = (
 ): ContentSlice | null => {
   const [head, ...rest] = slice.content;
 
-  if (
-    !sliceFitsLength(slice, remaining) ||
-    !NodeApi.isElement(head) ||
-    !canCloseSliceEdge(state, slice, 'start') ||
-    !canCloseSliceEdge(state, slice, 'end')
-  ) {
+  if (!sliceFitsLength(slice, remaining) || !NodeApi.isElement(head)) {
     return null;
   }
   const [block, path] = target.block;
   const schema = getEditorSchema(editor);
   const behavior = schema.getElementBehavior(head);
   const root = target.root ?? MAIN_ROOT_KEY;
-  const kept: Record<string, unknown> = {
-    ...(behavior.object || behavior.void
+  // The pasted head brings its own children, so only the block's own
+  // properties go through the type change.
+  const kept: Record<string, unknown> =
+    behavior.object || behavior.void
       ? {}
-      : block.type === head.type
-        ? NodeApi.extractProps(block)
-        : schema.elementPropertiesForTypeChangeAt(block, head, path, root)),
-  };
+      : NodeApi.extractProps(
+          schema.elementForTypeChangeAt(
+            { ...block, children: [] },
+            head.type,
+            path,
+            root
+          )
+        );
 
   for (const key of omitTargetProperties) delete kept[key];
   const landedHead = { ...kept, ...head };

@@ -1,23 +1,11 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-import type { PliteBrowserHandleElement } from '../../../../packages/plitejs/src/react/editable/browser-handle';
 import {
   startBrowserNativeEventTrace,
   takeBrowserNativeEventTrace,
 } from '../../../../packages/test/src/playwright/native-event-trace';
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
-
-const read = (root: Locator) =>
-  root.evaluate((element: PliteBrowserHandleElement) => ({
-    model: element.__EDITOR_BROWSER_HANDLE__?.getSelection(),
-    dom: element.__EDITOR_BROWSER_HANDLE__?.getDOMSelection(),
-    value: element.__EDITOR_BROWSER_HANDLE__?.getValue().children,
-    focused: document.activeElement === element,
-  }));
-const caret = (path: number[], offset: number) => ({
-  anchor: { path, offset },
-  focus: { path, offset },
-});
+import { caret, editorRoot, read } from './details-fixture';
 
 for (const [route, option, query, type] of [
   ['details-demo', 'Blockquote', 'quote', 'blockquote'],
@@ -29,9 +17,7 @@ for (const [route, option, query, type] of [
     const errors = recordBrowserRuntimeErrors(page);
     await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
     await page.goto(`/blocks/${route}`);
-    const root = page
-      .locator('[data-editor="true"][contenteditable="true"]')
-      .first();
+    const root = editorRoot(page);
     const title =
       route === 'details-demo'
         ? 'Why use semantic Details?'
@@ -100,8 +86,8 @@ for (const [route, option, query, type] of [
           focused: true,
         });
       const after = await read(root);
-      expect(after.value![path[0]]).toEqual(before.value![path[0]]);
-      expect(after.value![path[0] + 1]).toMatchObject({ type });
+      expect(after.value[path[0]]).toEqual(before.value[path[0]]);
+      expect(after.value[path[0] + 1]).toMatchObject({ type });
       await expect(root.getByText('Z', { exact: true })).toBeVisible();
       await expect(disclosure).toHaveAttribute('aria-expanded', 'false');
       errors.assertNone();

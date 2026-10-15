@@ -1817,7 +1817,13 @@ const YjsCollaborationExample = () => {
     const nextNetwork = createExampleNetwork();
     let active = true;
     const unsubscribe = nextNetwork.subscribeNotify(() => {
-      setVersion((current) => current + 1);
+      // A peer editor publishes its awareness while React renders that peer,
+      // so the room re-renders after the render that notified it.
+      queueMicrotask(() => {
+        if (active) {
+          setVersion((current) => current + 1);
+        }
+      });
     });
 
     queueMicrotask(() => {

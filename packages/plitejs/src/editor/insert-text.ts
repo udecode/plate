@@ -1,11 +1,13 @@
 import { dispatchCommand } from '../core/command-registry';
 import { landTextWrite } from '../core/content-landing';
 import { editorCommands } from '../core/editor-commands';
+import { limitTextInsert } from '../core/insert-limit';
 import {
   getChildList,
   getCurrentMarks,
   getCurrentSelection,
   getCurrentSelectionRoot,
+  getEditorStateView,
   runEditorTransaction,
   setCurrentMarks,
   withEditorUpdateRoot,
@@ -108,6 +110,12 @@ export const applyInsertTextCommand: EditorStaticApi['insertText'] = (
         return;
       }
 
+      const limited = limitTextInsert(getEditorStateView(editor), text, {
+        at: target,
+      });
+
+      if (limited.length === 0 && text.length > 0) return;
+
       if (!hasExplicitAt) {
         if (LocationApi.isPoint(target)) {
           tx.setSelection(SelectionApi.text({ anchor: target, focus: target }));
@@ -126,7 +134,7 @@ export const applyInsertTextCommand: EditorStaticApi['insertText'] = (
         }
       }
 
-      applyInsertText(editor, text, {
+      applyInsertText(editor, limited, {
         ...options,
         at: hasExplicitAt ? target : undefined,
       });

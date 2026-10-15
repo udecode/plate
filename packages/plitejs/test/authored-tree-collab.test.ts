@@ -1992,3 +1992,71 @@ describe('review contexts on two clients', () => {
     }
   });
 });
+
+describe('an Editing deletion a suggested join holds, on two clients', () => {
+  const ann = { at: AT, author: 'ann', change: 'ann:1', kind: 'insert' };
+  const start = () =>
+    pair(
+      [
+        paragraph({ text: 'x' }),
+        { children: [{ authored: [ann], text: 'ab' }], type: 'heading' },
+        paragraph({ text: 'cd' }),
+      ],
+      ['propose', 'edit']
+    );
+  const deleteHeldLine = (peer: Peer) =>
+    peer.editor.update((tx) =>
+      tx.text.delete({
+        at: { anchor: point(0, [1, 0]), focus: point(2, [1, 0]) },
+      })
+    );
+  const undone = [
+    paragraph({ text: 'x' }),
+    {
+      children: [
+        {
+          authored: [
+            ann,
+            { at: AT, author: 'bob', change: '~edit:bob', kind: 'delete' },
+          ],
+          text: 'ab',
+        },
+      ],
+      type: 'heading',
+    },
+    paragraph({ text: 'cd' }),
+  ];
+
+  it('keeps its claim once the join is undone', () => {
+    const { alice, bob } = start();
+
+    alice.editor.update((tx) => tx.nodes.merge({ at: [2] }));
+    deliver(alice, bob);
+    deleteHeldLine(bob);
+    deliver(bob, alice);
+    alice.editor.api.history.undo();
+    deliver(alice, bob);
+
+    assert.deepEqual(converged(alice, bob), undone);
+  });
+
+  for (const undoFirst of [true, false]) {
+    it(`keeps its claim once the join is undone apart from the deletion, ${undoFirst ? 'the undo' : 'the deletion'} delivered first`, () => {
+      const { alice, bob } = start();
+
+      alice.editor.update((tx) => tx.nodes.merge({ at: [2] }));
+      deliver(alice, bob);
+      deleteHeldLine(bob);
+      alice.editor.api.history.undo();
+      if (undoFirst) {
+        deliver(alice, bob);
+        deliver(bob, alice);
+      } else {
+        deliver(bob, alice);
+        deliver(alice, bob);
+      }
+
+      assert.deepEqual(converged(alice, bob), undone);
+    });
+  }
+});

@@ -7,6 +7,7 @@ import {
   AuthoredPlugin,
   projectAuthoredDocument,
 } from 'platejs/authored';
+import { CommentsPlugin } from 'platejs/comments/react';
 import {
   EditorContent,
   EditorRoot,
@@ -14,14 +15,18 @@ import {
   createEditor,
   definePlugin,
 } from 'platejs/react';
+import { suggestionColorOf } from 'platejs/suggestion';
 import React, { Suspense } from 'react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
 import { CodeBlockKit } from '@/registry/components/editor/code-block';
 import { ColumnKit } from '@/registry/components/editor/column';
+import { DiscussionKit } from '@/registry/components/editor/discussion';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { LinkKit } from '@/registry/components/editor/link';
 import { ListKit } from '@/registry/components/editor/list';
+import { SuggestionKit } from '@/registry/components/editor/suggestion';
 import { TableKit } from '@/registry/components/editor/table';
 
 // Proof route for Phase 1 of docs/plans/2026-10-08-authored-review.md, with a
@@ -43,6 +48,7 @@ declare global {
   interface Window {
     /** Decision and intent controls the route's browser spec drives. */
     authoredProof?: {
+      cardOf: (change: string) => { id: string; slot: number } | null;
       decide: (
         decisions:
           | { action: 'accept' | 'reject'; changes: readonly string[] }
@@ -170,9 +176,16 @@ const pageFixture = [
 const fixtures = {
   fill: fillFixture,
   page: pageFixture,
+  review: pageFixture,
   title: titleFixture,
   values: valuesFixture,
 } as const;
+
+const reviewers = {
+  alice: { id: 'alice', name: 'Alice' },
+  bob: { id: 'bob', name: 'Bob' },
+  carol: { id: 'carol', name: 'Carol' },
+};
 
 const paint = (marks: readonly Mark[] | undefined) => {
   if (!marks?.length) return null;
@@ -212,7 +225,7 @@ const AuthoredPaint = definePlugin('authoredPaint', {
 
 function AuthoredReviewProof() {
   const params = useSearchParams();
-  const [{ editor, proof }] = React.useState(() => {
+  const [{ editor, proof, review }] = React.useState(() => {
     const intent = params?.get('intent') ?? 'edit';
 
     if (!isIntent(intent)) {
@@ -221,27 +234,29 @@ function AuthoredReviewProof() {
 
     const plugin = intent === 'plain' ? null : AuthoredPlugin;
     const fixture = params?.get('fixture');
-    const kits =
-      fixture === 'page'
-        ? [...BasicBlocksKit, ...BasicMarksKit]
-        : [
-            ...(fixture === 'title' ? BasicBlocksKit : []),
-            ...TableKit,
-            ...ColumnKit,
-            ...ListKit,
-            ...CodeBlockKit,
-            ...LinkKit,
-            ...BasicMarksKit,
-            FillGridPlugin,
-          ];
+    const basic = fixture === 'review' || fixture === 'page';
+    const kits = [
+      ...(basic || fixture === 'title' ? BasicBlocksKit : []),
+      ...(basic
+        ? []
+        : [...TableKit, ...ColumnKit, ...ListKit, ...CodeBlockKit, ...LinkKit]),
+      ...BasicMarksKit,
+      ...(fixture === 'review'
+        ? [
+            ...SuggestionKit,
+            ...DiscussionKit,
+            CommentsPlugin.configure({ initialState: { users: reviewers } }),
+          ]
+        : [...(basic ? [] : [FillGridPlugin]), AuthoredPaint]),
+    ];
 
     const created = createEditor({
       initialValue:
         fixture && Object.hasOwn(fixtures, fixture)
           ? fixtures[fixture as keyof typeof fixtures]
           : initialValue,
-      plugins: [...kits, AuthoredPaint, ...(plugin ? [plugin] : [])],
-      userId: 'alice',
+      plugins: [...kits, ...(plugin ? [plugin] : [])],
+      userId: (fixture === 'review' && params?.get('user')) || 'alice',
       ...(fixture === 'title' ? { schema: { root: titleRoot } } : {}),
     });
 
@@ -249,7 +264,7 @@ function AuthoredReviewProof() {
       created.plugin(plugin).api.setView({ intent });
     }
 
-    return { editor: created, proof: plugin };
+    return { editor: created, proof: plugin, review: fixture === 'review' };
   });
 
   React.useEffect(() => {
@@ -281,6 +296,7 @@ function AuthoredReviewProof() {
       };
 
       window.authoredProof = {
+        cardOf: missing,
         decide: missing,
         gesture,
         load,
@@ -303,6 +319,11 @@ function AuthoredReviewProof() {
       };
 
     window.authoredProof = {
+      cardOf: (change) => {
+        const card = authored.read.groupOf(change);
+
+        return card ? { id: card.id, slot: suggestionColorOf(card.id) } : null;
+      },
       decide: (decisions) =>
         authored.update.decide(
           [decisions].flat().map((decision) => ({
@@ -328,7 +349,13 @@ function AuthoredReviewProof() {
   return (
     <main className="p-8" data-authored-proof="ready">
       <EditorRoot editor={editor}>
-        <EditorContent className="max-w-3xl outline-none" />
+        {review ? (
+          <EditorContainer>
+            <Editor aria-label="Review document" variant="demo" />
+          </EditorContainer>
+        ) : (
+          <EditorContent className="max-w-3xl outline-none" />
+        )}
       </EditorRoot>
     </main>
   );

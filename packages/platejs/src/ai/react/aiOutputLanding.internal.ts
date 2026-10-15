@@ -7,13 +7,13 @@ import {
   type Element,
   ElementApi,
   NodeApi,
-  type NodeEntry,
   PathApi,
   type Range,
   RangeApi,
   SelectionApi,
   TextApi,
 } from '../../core';
+import { canPlaceBlocksAtPath } from '../../facade';
 import {
   type ListLanding,
   type NodeReader,
@@ -73,17 +73,16 @@ export const captureTextRange = <R extends Range>(
 };
 
 /**
- * A parent whose schema fixes its children's positions, such as a required
- * summary or title, keeps the slice fitter, which holds those positions, and
- * so does a named root's top level, whose content comes from its owner's slot.
- * The main root's content has no public read, so its top level counts as
- * unordered.
+ * The sibling blocks `range` covers whole, with the nodes `land` builds from
+ * the first of them, or `undefined` when the range is not whole sibling blocks
+ * or the schema would not let those nodes replace them, such as a replacement
+ * that removes a required title.
  */
 export const wholeTextBlocks = (
   state: Pick<EditorCoreStateView, 'nodes' | 'points' | 'schema' | 'view'>,
   range: Range,
-  answer: readonly Element[]
-): ReadonlyArray<NodeEntry<Element>> | undefined => {
+  land: (first: Element) => Element[]
+) => {
   const [start, end] = RangeApi.edges(range);
   const blocks = state.nodes.blocks({ at: range });
   const first = blocks[0];
@@ -107,28 +106,14 @@ export const wholeTextBlocks = (
   ) {
     return undefined;
   }
-  if (parentPath.length === 0) {
-    return state.view.root() === undefined &&
-      SelectionApi.root(range) === undefined
-      ? blocks
-      : undefined;
-  }
 
-  const parent = state.nodes.get(parentPath, {
-    match: ElementApi.isElement,
-  })?.[0];
-  const content = parent && state.schema.element(parent.type)?.content;
+  const nodes = land(first[0]);
 
-  if (!parent || !content || content.prefix) return undefined;
-
-  const count = parent.children.length - blocks.length + answer.length;
-
-  return count >= content.min &&
-    (content.max === null || count <= content.max) &&
-    answer.every((block) =>
-      state.schema.allowsElementType(parent.type, block.type)
-    )
-    ? blocks
+  return canPlaceBlocksAtPath(state.schema, first[1], nodes, {
+    removing: blocks.map(([, path]) => path.at(-1) ?? 0),
+    root: state.view.root() ?? SelectionApi.root(range),
+  })
+    ? { blocks, nodes }
     : undefined;
 };
 

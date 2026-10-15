@@ -1,10 +1,11 @@
-import { type Ancestor, type Descendant, NodeApi, type Path } from '..';
 import type {
   EditorSchemaPluginProvider,
   SchemaElementInNode,
 } from '../core/schema-source.internal';
 import { isObject } from '../utils/is-object';
 import type { BaseEditor, EditorNodeTypeProvider } from './editor';
+import { type Ancestor, type Descendant, NodeApi } from './node';
+import type { Path } from './path';
 import type { SchemaElementShapeFor, SchemaElementTypes } from './schema';
 
 /**

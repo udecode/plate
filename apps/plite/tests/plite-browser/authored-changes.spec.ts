@@ -51,7 +51,11 @@ const leaves = async (surface: Review['proposed'], path: number[]) => {
 
 const marked = async (surface: Review['proposed']) => {
   const count = (node: ReviewNode): number =>
-    (node.authored?.length ? 1 : 0) +
+    ((node.authored ?? []).some(
+      (member) => member.kind !== 'held' && member.kind !== 'in'
+    )
+      ? 1
+      : 0) +
     (node.children ?? []).reduce((sum, child) => sum + count(child), 0);
   return count((await surface.get.modelValue()) as ReviewNode);
 };
@@ -1055,7 +1059,9 @@ test.describe('native authored changes', () => {
       .poll(() => leaves(proposed, [0]))
       .toEqual(['A ', 'shared[delete]', ' draft.']);
     await proposed.selection.collapse({ path: [0, 0], offset: 1 });
-    await page.keyboard.press('Shift+End');
+    await page.keyboard.press(
+      process.platform === 'darwin' ? 'Meta+Shift+ArrowRight' : 'Shift+End'
+    );
     const copied = await proposed.clipboard.copyNativeEventPayload();
     expect(copied.text).toBe(' shared draft.');
     await page.keyboard.press('Home');

@@ -1,3 +1,6 @@
+import * as os from 'node:os';
+import * as path from 'node:path';
+
 import type { BrowserTestOptions } from '@platejs/test/playwright';
 import { defineConfig, devices } from '@playwright/test';
 
@@ -28,7 +31,18 @@ export default defineConfig<BrowserTestOptions>({
     },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'], clipboardTransport: 'native' },
+      use: {
+        ...devices['Desktop Firefox'],
+        clipboardTransport: 'native',
+        launchOptions: {
+          // Playwright's Firefox shares the installed Firefox's app-data dir,
+          // which macOS 27 privacy-protects, and hangs at launch reading it.
+          env: {
+            ...process.env,
+            MOZ_APP_DATA: path.join(os.tmpdir(), 'playwright-firefox-app-data'),
+          },
+        },
+      },
     },
     {
       name: 'webkit',

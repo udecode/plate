@@ -865,6 +865,17 @@ export const classifyEntrypoint = (definition, relativePath) => {
   return definition.fallbackEntrypoint ?? 'root';
 };
 
+const isEntrypointEntry = (entrypoint, relativePath) => {
+  const entry =
+    entrypoint.sourceKind === 'root'
+      ? 'index'
+      : entrypoint.sourceKind === 'file'
+        ? entrypoint.source
+        : `${entrypoint.source}/index`;
+
+  return [relativePath, path.posix.join(relativePath, 'index')].includes(entry);
+};
+
 export const resolveEntrypointEdge = (filename, importSource) => {
   const packageSource = findPackageSource(filename);
 
@@ -909,6 +920,7 @@ export const resolveEntrypointEdge = (filename, importSource) => {
       peerImport: false,
       publicImport: true,
       to: target.entrypointName,
+      toEntry: true,
       toPackageName: target.packageName,
     };
   }
@@ -937,6 +949,8 @@ export const resolveEntrypointEdge = (filename, importSource) => {
     };
   }
 
+  const to = classifyEntrypoint(packageSource.definition, targetRelativePath);
+
   return {
     definition: packageSource.definition,
     escapedSourceRoot: false,
@@ -944,7 +958,13 @@ export const resolveEntrypointEdge = (filename, importSource) => {
     packageName: packageSource.packageName,
     peerImport: false,
     publicImport: false,
-    to: classifyEntrypoint(packageSource.definition, targetRelativePath),
+    to,
+    toEntry:
+      targetRelativePath !== packageSource.relativePath &&
+      isEntrypointEntry(
+        packageSource.definition.entrypoints[to],
+        targetRelativePath
+      ),
     toPackageName: packageSource.packageName,
   };
 };

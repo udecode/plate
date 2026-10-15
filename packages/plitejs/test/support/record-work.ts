@@ -16,53 +16,56 @@ const countRecord = (value: unknown, kind: keyof typeof recordWork) => {
   if (typeof value === 'string') recordWork[kind] += 1;
 };
 
-mock.module(join(import.meta.dir, '../../src/core/persistent-map.ts'), () => ({
-  ...real,
-  persistentMapCeiling: (
-    ...args: Parameters<typeof persistentMap.persistentMapCeiling>
-  ) => {
-    const found = real.persistentMapCeiling(...args);
+mock.module(
+  join(import.meta.dirname, '../../src/core/persistent-map.ts'),
+  () => ({
+    ...real,
+    persistentMapCeiling: (
+      ...args: Parameters<typeof persistentMap.persistentMapCeiling>
+    ) => {
+      const found = real.persistentMapCeiling(...args);
 
-    countRecord(found?.[1], 'read');
+      countRecord(found?.[1], 'read');
 
-    return found;
-  },
-  // The mock also takes the map's own recursive calls, so each node counts
-  // where it is yielded and a build counts once, at its outer call.
-  *persistentMapEntries(
-    node: Parameters<typeof persistentMap.persistentMapEntries>[0]
-  ) {
-    for (const entry of real.persistentMapEntries(node)) {
-      if (entry[0] === node?.key) countRecord(entry[1], 'copied');
-      yield entry;
-    }
-  },
-  persistentMapFromSorted: (
-    ...args: Parameters<typeof persistentMap.persistentMapFromSorted>
-  ) => {
-    if (args.length === 1) {
-      for (const [, value] of args[0]) countRecord(value, 'copied');
-    }
+      return found;
+    },
+    // The mock also takes the map's own recursive calls, so each node counts
+    // where it is yielded and a build counts once, at its outer call.
+    *persistentMapEntries(
+      node: Parameters<typeof persistentMap.persistentMapEntries>[0]
+    ) {
+      for (const entry of real.persistentMapEntries(node)) {
+        if (entry[0] === node?.key) countRecord(entry[1], 'copied');
+        yield entry;
+      }
+    },
+    persistentMapFromSorted: (
+      ...args: Parameters<typeof persistentMap.persistentMapFromSorted>
+    ) => {
+      if (args.length === 1) {
+        for (const [, value] of args[0]) countRecord(value, 'copied');
+      }
 
-    return real.persistentMapFromSorted(...args);
-  },
-  // A diff reads the entries of the keys it returns.
-  persistentMapChanges: (
-    ...args: Parameters<typeof persistentMap.persistentMapChanges>
-  ) => {
-    const changed = real.persistentMapChanges(...args);
+      return real.persistentMapFromSorted(...args);
+    },
+    // A diff reads the entries of the keys it returns.
+    persistentMapChanges: (
+      ...args: Parameters<typeof persistentMap.persistentMapChanges>
+    ) => {
+      const changed = real.persistentMapChanges(...args);
 
-    recordWork.read += changed.length;
+      recordWork.read += changed.length;
 
-    return changed;
-  },
-  persistentMapGet: (
-    ...args: Parameters<typeof persistentMap.persistentMapGet>
-  ) => {
-    const value = real.persistentMapGet(...args);
+      return changed;
+    },
+    persistentMapGet: (
+      ...args: Parameters<typeof persistentMap.persistentMapGet>
+    ) => {
+      const value = real.persistentMapGet(...args);
 
-    countRecord(value, 'read');
+      countRecord(value, 'read');
 
-    return value;
-  },
-}));
+      return value;
+    },
+  })
+);

@@ -1265,13 +1265,17 @@ describe('JSON document change algebra', () => {
       draftOwner,
       new Set(),
       [],
-      false
+      'inherited'
     );
 
     assert.equal(draftIndex.keyAt([1]), blockNodeKey);
     assert.deepEqual(draftIndex.pathOf(textNodeKey), [1, 0]);
-    assert.equal(getNodeKeyForNode(after.node([1]), draftOwner), null);
-    assert.equal(getNodeKeyForNode(after.node([1, 0]), draftOwner), null);
+    assert.equal(getNodeKeyForNode(after.node([1]), draftOwner), blockNodeKey);
+    assert.equal(
+      getNodeKeyForNode(after.node([1, 0]), draftOwner),
+      textNodeKey
+    );
+    assert.equal(hasMaterializedDocumentSliceTokens(slice), false);
   });
 
   it('maps unqueried prepared identities through later moves and retained paths', () => {

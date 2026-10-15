@@ -41,11 +41,17 @@ export const editorReads = Object.freeze({
      */
     landing: defineRead<TransferLandingInput, TransferEdge>('transfer.landing'),
     /**
-     * Properties a block copy takes from where it lands, such as its list; the
-     * default, `[]`, keeps the copy as it is. It runs on the final edge, while
-     * hovering too, after the landing read and before the schema and vetoes
-     * judge the patched copy. A patch may name only properties declared
-     * `landing: 'adopt'`, or the transfer refuses with `policy`.
+     * Properties a block copy or block move takes from where it lands, such as
+     * its list; the default, `[]`, keeps the blocks as they are. It runs on the
+     * final edge of a block transfer to an edge, while hovering too, after the
+     * landing read and before the schema and vetoes judge the patched blocks. A
+     * keyboard step runs it on each sibling edge that stays in the blocks'
+     * parent and admits them unpatched, and tries the next sibling when the
+     * patched blocks are refused. `input.intent` tells a copy from a move. A
+     * move keeps its blocks, and Plite sets the patched properties on them in
+     * the same update. A patch may name only properties declared
+     * `landing: 'adopt'`, and a move patch may not set `null`; otherwise the
+     * edge refuses with `policy`.
      */
     adopt: defineRead<TransferAdoptInput, readonly TransferPatch[]>(
       'transfer.adopt'

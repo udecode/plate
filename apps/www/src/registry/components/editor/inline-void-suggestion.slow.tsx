@@ -31,8 +31,6 @@ const PopoverContext = React.createContext<{
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 } | null>(null);
 
-Object.assign(globalThis, { React });
-
 mock.module('platejs/react', () => ({
   ...PlateReact,
   EditorElement: ({

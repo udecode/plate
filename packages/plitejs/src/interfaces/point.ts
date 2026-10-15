@@ -1,6 +1,6 @@
-import { type Path, PathApi } from '..';
 import { getPointRoot } from '../internal/root-location';
 import { isObject } from '../utils/is-object';
+import { type Path, PathApi } from './path';
 
 /**
  * `Point` objects refer to a specific location in a text node in a

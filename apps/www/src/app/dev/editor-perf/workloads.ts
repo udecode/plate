@@ -105,6 +105,7 @@ export function getEditorPerfWorkloadPlugins(
       workloadId === 'huge-heading' ||
       workloadId === 'huge-paragraph-fallback') &&
     plugins !== 'basic' &&
+    plugins !== 'basic-aligned' &&
     plugins !== 'heading-only'
   ) {
     workloadPlugins.push(BenchmarkHeadingSchema);
@@ -112,6 +113,7 @@ export function getEditorPerfWorkloadPlugins(
   if (
     workloadId === 'huge-blockquote' &&
     plugins !== 'basic' &&
+    plugins !== 'basic-aligned' &&
     plugins !== 'blockquote-only'
   ) {
     workloadPlugins.push(BenchmarkBlockquoteSchema);
@@ -122,6 +124,7 @@ export function getEditorPerfWorkloadPlugins(
   if (
     workloadId === 'huge-code' &&
     plugins !== 'basic' &&
+    plugins !== 'basic-aligned' &&
     plugins !== 'code-only'
   ) {
     workloadPlugins.push(BenchmarkCodeSchema);

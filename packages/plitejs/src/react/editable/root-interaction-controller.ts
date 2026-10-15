@@ -19,10 +19,10 @@ import {
   TextApi,
 } from '../..';
 import { getSelection } from '../../dom';
-import {
-  type DOMPhase,
-  type DOMPhaseScheduler,
-  type DOMPhaseTiming,
+import type {
+  DOMPhase,
+  DOMPhaseScheduler,
+  DOMPhaseTiming,
 } from '../../dom/internal';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
 import {
@@ -92,9 +92,7 @@ import {
   getSelectionDOMRange,
   toInternalRoot,
 } from './runtime-editor-api';
-import {
-  canUseNativeViewSelection,
-} from './selection-projected-dom';
+import { canUseNativeViewSelection } from './selection-projected-dom';
 
 export { shouldReplayMouseUpDOMSelection } from './root-interaction-dom-selection-replay';
 
@@ -190,6 +188,7 @@ type PendingProjectedDrag = {
   editor: RootInteractionEditor;
   endpoint: RootInteractionDragEndpoint;
   finish: () => void;
+  wroteViewSelection: boolean;
   releaseCleanup: () => void;
 };
 
@@ -896,7 +895,7 @@ const applyProjectedDragSelectionFromEvent = ({
   }
 
   const shouldUseView =
-    !!readPliteViewSelection(projectedDrag.editor) ||
+    projectedDrag.wroteViewSelection ||
     shouldUseViewProjectedDragSelection({
       anchor: projectedDrag.endpoint,
       editor: projectedDrag.editor,
@@ -910,6 +909,9 @@ const applyProjectedDragSelectionFromEvent = ({
       focus,
       selectionBridge,
     });
+  if (appliedView) {
+    projectedDrag.wroteViewSelection = true;
+  }
   const shouldUseModel =
     !appliedView &&
     shouldUseModelProjectedDragSelection({
@@ -1061,6 +1063,48 @@ const resolveDragAutoScrollEventRange = ({
   } as unknown as Event);
 };
 
+const extendDragAutoScrollSelection = (
+  state: PendingDragAutoScroll,
+  {
+    clientX,
+    clientY,
+    delta,
+  }: { clientX: number; clientY: number; delta: number }
+) => {
+  const eventRange = resolveDragAutoScrollEventRange({
+    clientX,
+    clientY,
+    editor: state.editor,
+    rootElement: state.rootElement,
+  });
+
+  if (!eventRange) return;
+
+  const nextRange = createDragSelectionRange({
+    endRange: eventRange,
+    startRange: state.startRange,
+  });
+
+  if (
+    isRegressiveDragAutoScrollRange({
+      currentRange: state.currentRange,
+      delta,
+      nextRange,
+      startRange: state.startRange,
+    })
+  ) {
+    return;
+  }
+
+  applyModelDragSelection({
+    editor: state.editor,
+    range: nextRange,
+    root: state.root,
+    selectionBridge: state.selectionBridge,
+  });
+  state.currentRange = nextRange;
+};
+
 export const applyDragAutoScrollFrame = (state: PendingDragAutoScroll) => {
   const target = getDragAutoScrollTarget({
     clientX: state.clientX,
@@ -1072,40 +1116,7 @@ export const applyDragAutoScrollFrame = (state: PendingDragAutoScroll) => {
     return false;
   }
 
-  const eventRange = resolveDragAutoScrollEventRange({
-    clientX: target.clientX,
-    clientY: target.clientY,
-    editor: state.editor,
-    rootElement: state.rootElement,
-  });
-
-  if (!eventRange) {
-    return false;
-  }
-
-  const nextRange = createDragSelectionRange({
-    endRange: eventRange,
-    startRange: state.startRange,
-  });
-
-  if (
-    isRegressiveDragAutoScrollRange({
-      currentRange: state.currentRange,
-      delta: target.delta,
-      nextRange,
-      startRange: state.startRange,
-    })
-  ) {
-    return true;
-  }
-
-  applyModelDragSelection({
-    editor: state.editor,
-    range: nextRange,
-    root: state.root,
-    selectionBridge: state.selectionBridge,
-  });
-  state.currentRange = nextRange;
+  extendDragAutoScrollSelection(state, target);
 
   return true;
 };
@@ -1611,6 +1622,7 @@ export const useRootInteractionController = ({
             browserOwned: nativeSelectionOwnsInteraction,
             editor: projectedDragEditor,
             endpoint: projectedDragEndpoint,
+            wroteViewSelection: false,
             finish: () => {
               setNativeSelectionDragActive(rootRuntime, false);
               if (!nextProjectedDrag.browserOwned) {

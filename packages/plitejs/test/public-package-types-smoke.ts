@@ -185,8 +185,9 @@ type _PublicEditorLifecycleMethods = [
   ExpectAssignable<boolean, ReturnType<typeof editor.update.blocks.toggle>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.nodes.lift>>,
   ExpectAssignable<
-    import('plitejs').Path | undefined,
-    ReturnType<typeof editor.update.blocks.insertAfter>
+    | readonly [import('plitejs').NodeKey, ...Array<import('plitejs').NodeKey>]
+    | undefined,
+    ReturnType<typeof editor.update.blocks.insert>
   >,
   ExpectAssignable<void, ReturnType<typeof editor.update.text.insert>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.nodes.insert>>,

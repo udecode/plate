@@ -10,7 +10,11 @@ import {
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import { getDefined } from '../internal/get-defined';
-import { NO_NODES, type NodeList } from './change/document-index';
+import {
+  NO_NODES,
+  type NodeList,
+  childAtPathIndex,
+} from './change/document-index';
 import { hasEditorContent, isEditorContent } from './content';
 import { getEditorSchema } from './editor-runtime';
 import { survivalUnder } from './survival';
@@ -30,7 +34,7 @@ export const nodeAt = (document: RootChildren, path: Path) => {
   let node: Descendant | undefined;
 
   for (const index of path) {
-    node = children.at(index);
+    node = childAtPathIndex(children, index);
     if (!node) return undefined;
     children = NodeApi.isText(node) ? NO_NODES : node.children;
   }

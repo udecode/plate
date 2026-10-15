@@ -345,6 +345,9 @@ const replaceYjsTextRun = (
   attributes: YjsAttributeRecord
 ): void => {
   const lengths = run.map(getYjsLength);
+  const skipsEmpty = (index: number) =>
+    lengths[index] === 0 &&
+    lengths.slice(index + 1).some((length) => length > 0);
   let offset = 0;
 
   for (const [operation, value] of diffText(previous, next)) {
@@ -357,7 +360,10 @@ const replaceYjsTextRun = (
     let index = 0;
 
     if (operation === DiffOp.Insert) {
-      while (index < run.length - 1 && offset > start + (lengths[index] ?? 0)) {
+      while (
+        index < run.length - 1 &&
+        (offset > start + (lengths[index] ?? 0) || skipsEmpty(index))
+      ) {
         start += lengths[index] ?? 0;
         index += 1;
       }
@@ -399,7 +405,7 @@ const alignYjsChildren = (
   const runs: YjsNode[][] = [];
   let index = startIndex;
 
-  for (const oldChild of oldChildren) {
+  for (const [position, oldChild] of oldChildren.entries()) {
     const first = children[index];
 
     if (first === undefined) return null;
@@ -411,12 +417,13 @@ const alignYjsChildren = (
 
     const run: YjsNode[] = [first];
     let length = getYjsLength(first);
+    const keepsEmptied = !isPliteText(oldChildren[position + 1]);
+    const extendsRun = (next: YjsNode | undefined): next is Y.XmlText =>
+      next instanceof Y.XmlText &&
+      (length < oldChild.text.length ||
+        (keepsEmptied && getYjsLength(next) === 0));
 
-    for (
-      let next = children[index];
-      length < oldChild.text.length && next instanceof Y.XmlText;
-      next = children[index]
-    ) {
+    for (let next = children[index]; extendsRun(next); next = children[index]) {
       run.push(next);
       length += getYjsLength(next);
       index += 1;

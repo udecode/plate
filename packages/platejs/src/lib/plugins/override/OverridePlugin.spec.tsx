@@ -439,6 +439,93 @@ describe('OverridePlugin', () => {
     ]);
   });
 
+  it('keeps the split when Enter at the end of a heading leaves a block with no default to reset to', () => {
+    const SectionPlugin = definePlugin('optionalSection', {
+      schema: {
+        element: {
+          content: schema.content.types(['paragraph', 'heading'], {
+            min: 0,
+          }),
+        },
+      },
+    });
+    const initialValue = [
+      {
+        children: [
+          { children: [{ text: 'Title' }], level: 2, type: 'heading' },
+        ],
+        type: 'optionalSection',
+      },
+    ];
+    const editor = createEditor({
+      initialValue,
+      plugins: [BaseHeadingPlugin, SectionPlugin],
+      schema: { root: schema.content.element(SectionPlugin, { min: 1 }) },
+      selection: {
+        kind: 'text',
+        anchor: { offset: 5, path: [0, 0, 0] },
+        focus: { offset: 5, path: [0, 0, 0] },
+      },
+    });
+
+    insertBreak(editor);
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { children: [{ text: 'Title' }], level: 2, type: 'heading' },
+          { children: [{ text: '' }], level: 2, type: 'heading' },
+        ],
+        type: 'optionalSection',
+      },
+    ]);
+
+    editor.api.history.undo();
+
+    expect(editor.read.children()).toEqual(initialValue);
+  });
+
+  it('keeps the deletion when Backspace empties a heading with no default to reset to', () => {
+    const SectionPlugin = definePlugin('optionalSection', {
+      schema: {
+        element: {
+          content: schema.content.types(['paragraph', 'heading'], {
+            min: 0,
+          }),
+        },
+      },
+    });
+    const initialValue = [
+      {
+        children: [{ children: [{ text: 'A' }], level: 2, type: 'heading' }],
+        type: 'optionalSection',
+      },
+    ];
+    const editor = createEditor({
+      initialValue,
+      plugins: [BaseHeadingPlugin, SectionPlugin],
+      schema: { root: schema.content.element(SectionPlugin, { min: 1 }) },
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0, 0] },
+        focus: { offset: 1, path: [0, 0, 0] },
+      },
+    });
+
+    deleteBackward(editor);
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ children: [{ text: '' }], level: 2, type: 'heading' }],
+        type: 'optionalSection',
+      },
+    ]);
+
+    editor.api.history.undo();
+
+    expect(editor.read.children()).toEqual(initialValue);
+  });
+
   it('preserves an empty merge target when its plugin disables removal', () => {
     const CalloutPlugin = definePlugin('callout', {
       schema: {

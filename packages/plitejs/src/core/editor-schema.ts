@@ -107,6 +107,47 @@ import {
 } from './value-codec';
 
 /**
+ * A required property that nothing supplies. Only `createDeclarativeAndFill`
+ * and `canonicalizeDeclarativePropertyRecord` without a `validationLocation`
+ * throw it, so `refuseMissingProperty` returns `null` for it alone, and every
+ * other failure still throws, a `missing-property` error from validation or
+ * one from a generator included.
+ */
+class MissingPropertyError extends EditorSchemaValidationError {
+  constructor(
+    diagnostics: ConstructorParameters<typeof EditorSchemaValidationError>[0]
+  ) {
+    super(diagnostics);
+    this.name = 'MissingPropertyError';
+  }
+}
+
+const refuseMissingProperty = <T>(build: () => T): T | null => {
+  try {
+    return build();
+  } catch (error) {
+    if (error instanceof MissingPropertyError) return null;
+    throw error;
+  }
+};
+
+/**
+ * A `MissingPropertyError` from a generator's own schema build, such as
+ * `schema.create`, fails the outer build instead of refusing it.
+ */
+const generatePropertyValue = (
+  descriptor: Readonly<{ generate?: () => unknown }>
+) => {
+  try {
+    return descriptor.generate?.();
+  } catch (error) {
+    throw error instanceof MissingPropertyError
+      ? new EditorSchemaValidationError(error.diagnostics, { cause: error })
+      : error;
+  }
+};
+
+/**
  * Schema implementation used only by the slice transaction owner.
  *
  * @internal
@@ -146,6 +187,11 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       properties: Readonly<Record<string, unknown>> | undefined,
       site: Readonly<{ ancestors: readonly Element[]; root: RootKey }>
     ) => Element;
+    /**
+     * `createDefaultChild`, except that a default with a required property
+     * nothing supplies is `null` instead of an error.
+     */
+    tryCreateDefaultChild: EditorStateSchemaApi<V>['createDefaultChild'];
     /**
      * Whether `fit` can land before child `at` of `children`, the children of
      * `parent` (null for a root), once the `removing` indexes leave. Checks the
@@ -219,6 +265,10 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       ancestors?: readonly Element[]
     ) => readonly Descendant[];
     copyNodeAt: (node: Descendant, path: Path, root?: RootKey) => Descendant;
+    placeElementAt: (
+      source: Element,
+      options: Readonly<{ at: Path; root?: RootKey | undefined }>
+    ) => Element | null;
     /**
      * `children` reads the ancestors at `path` from that root instead of the
      * editor's document, for a draft that has moved away from it.
@@ -229,12 +279,34 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       root?: RootKey,
       children?: NodeList<Descendant>
     ) => Readonly<Record<string, unknown>>;
-    elementPropertiesForTypeChangeAt: (
+    /**
+     * `element` as changing its type to `type` at `path` leaves it: `type`
+     * set, each of its own properties the change keeps with its validated
+     * value, and each direct text child cut down to the properties it keeps.
+     * Element children pass through. Returns `element` itself when `type` is
+     * already its type, and a text child that loses nothing as the same
+     * object.
+     */
+    elementForTypeChangeAt: (
       element: Element,
-      to: Element,
+      type: string,
       path: Path,
+      root: RootKey
+    ) => Element;
+    /**
+     * The properties, `type` included, that reset gives `element` at `at`
+     * when it converts it to its slot's default: what the type change keeps,
+     * the slot's own properties, and defaults or generated values for the
+     * rest. A block already of that type also keeps each property that no
+     * default or generator could restore. `null` when the slot has no
+     * element default, when the default lacks a required property nothing
+     * supplies, or when a type change leaves the block's content without one.
+     */
+    elementPropertiesForResetAt: (
+      element: Element,
+      at: Path,
       root?: RootKey
-    ) => Readonly<Record<string, unknown>>;
+    ) => Partial<Element> | null;
     elementPropertyLanding: (
       element: Element,
       key: string,
@@ -309,13 +381,6 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       path: Path,
       root?: RootKey
     ) => Readonly<Record<string, unknown>>;
-    textPropertiesForTypeChangeAt: (
-      text: Text,
-      from: Element,
-      to: Element,
-      path: Path,
-      root?: RootKey
-    ) => Readonly<Record<string, unknown>>;
     validateTextPropertiesAtValue: (
       properties: Readonly<Record<string, unknown>>,
       path: Path,
@@ -323,16 +388,17 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       root?: RootKey
     ) => void;
     /** Validate one canonical change whose immutable baseline already has authority. */
-    validateDocumentChange: (
-      input: Readonly<{
-        after: EditorDocumentValue;
-        before: EditorDocumentValue;
-        change: DocumentChange;
-        indexedAfter: ReadonlyMap<string, DocumentIndex>;
-        indexedBefore: ReadonlyMap<string, DocumentIndex>;
-      }>
-    ) => void;
+    validateDocumentChange: (input: DocumentChangeValidationInput) => void;
+    checkDocumentChange: (input: DocumentChangeValidationInput) => void;
   };
+
+type DocumentChangeValidationInput = Readonly<{
+  after: EditorDocumentValue;
+  before: EditorDocumentValue;
+  change: DocumentChange;
+  indexedAfter: ReadonlyMap<string, DocumentIndex>;
+  indexedBefore: ReadonlyMap<string, DocumentIndex>;
+}>;
 
 const structurallyEqual = (left: unknown, right: unknown): boolean => {
   if (Object.is(left, right)) return true;
@@ -686,6 +752,13 @@ export const getCompiledEditorSchemaFromApi = (
 export const getInternalEditorSchemaFromApi = (
   schemaApi: EditorStateSchemaApi
 ) => getDefined(INTERNAL_BY_API.get(schemaApi));
+
+/** @internal */
+export const placeElementAt = (
+  schemaApi: EditorStateSchemaApi,
+  source: Element,
+  options: Readonly<{ at: Path; root?: RootKey | undefined }>
+) => getInternalEditorSchemaFromApi(schemaApi).placeElementAt(source, options);
 
 /** @internal */
 export const canPlaceBlocksAtPath = (
@@ -1741,7 +1814,7 @@ export const createEditorSchema = <V extends Value = Value>(
         ? canonicalizePropertyValue(
             `Editor element property "${property.key}"`,
             property.descriptor,
-            property.descriptor.generate()
+            generatePropertyValue(property.descriptor)
           )
         : property.descriptor.default;
     }
@@ -1756,21 +1829,23 @@ export const createEditorSchema = <V extends Value = Value>(
         matchesCompiledSchemaTarget(schema, property.target, context) &&
         !Object.hasOwn(properties ?? {}, property.key)
       ) {
-        throw createEditorSchemaValidationError(
-          'missing-property',
-          `Editor element "${type}" requires property "${property.key}".`,
-          {
-            nodeType: type,
-            path: options.path ?? [],
-            root: options.root ?? null,
-          },
-          {
-            property: {
-              candidates: [property],
-              key: property.key,
-              placement: 'element',
+        throw new MissingPropertyError(
+          createEditorSchemaValidationError(
+            'missing-property',
+            `Editor element "${type}" requires property "${property.key}".`,
+            {
+              nodeType: type,
+              path: options.path ?? [],
+              root: options.root ?? null,
             },
-          }
+            {
+              property: {
+                candidates: [property],
+                key: property.key,
+                placement: 'element',
+              },
+            }
+          ).diagnostics
         );
       }
     }
@@ -1927,37 +2002,47 @@ export const createEditorSchema = <V extends Value = Value>(
     );
   };
 
-  const createDefaultChildIn = (
+  type DefaultSlot =
+    | Readonly<{ kind: 'text' }>
+    | Readonly<{
+        kind: 'element';
+        properties: Readonly<Record<string, unknown>> | undefined;
+        schema: CompiledEditorSchema;
+        site: Readonly<{ ancestors: readonly Element[]; root: RootKey }>;
+        type: string;
+      }>;
+
+  const defaultSlotIn = (
     content: CompiledSchemaContentProgram | null | undefined,
     index: number,
     site: Readonly<{ ancestors: readonly Element[]; root: RootKey }>
-  ): Descendant | null => {
-    const declarative = getDeclarativeSchema();
+  ): DefaultSlot | null => {
+    const schema = getDeclarativeSchema();
 
-    if (!declarative || !content) return null;
+    if (!schema || !content) return null;
     const slot = content.prefix?.[index];
 
     if (slot) {
-      return createDeclarativeAndFill(
-        declarative,
-        slot.type,
-        slot.properties,
-        new Set(),
-        site
-      );
+      return {
+        kind: 'element',
+        properties: slot.properties,
+        schema,
+        site,
+        type: slot.type,
+      };
     }
     const plan = content.defaultPlan;
 
-    if (plan?.kind === 'text') return { text: '' };
+    if (plan?.kind === 'text') return { kind: 'text' };
     if (!plan) return null;
 
-    return createDeclarativeAndFill(
-      declarative,
-      plan.type,
-      undefined,
-      new Set(),
-      site
-    );
+    return {
+      kind: 'element',
+      properties: undefined,
+      schema,
+      site,
+      type: plan.type,
+    };
   };
 
   const getSlotAncestors = (at: Path, root: RootKey) => {
@@ -1969,10 +2054,7 @@ export const createEditorSchema = <V extends Value = Value>(
     return ancestors.length === at.length - 1 ? ancestors : null;
   };
 
-  const createDefaultChild: EditorStateSchemaApi<V>['createDefaultChild'] = ({
-    at,
-    root = 'main',
-  }) => {
+  const resolveDefaultSlot = (at: Path, root: RootKey) => {
     const index = at.at(-1);
     const ancestors = getSlotAncestors(at, root);
 
@@ -1984,11 +2066,77 @@ export const createEditorSchema = <V extends Value = Value>(
       : getRootContent(root);
 
     return parent && !content
-      ? createDefaultChildIn(getRootContent(root), getDefined(at[0]), {
+      ? defaultSlotIn(getRootContent(root), getDefined(at[0]), {
           ancestors: [],
           root,
         })
-      : createDefaultChildIn(content, index, { ancestors, root });
+      : defaultSlotIn(content, index, { ancestors, root });
+  };
+
+  const buildDefaultSlot = (slot: DefaultSlot | null): Descendant | null => {
+    if (!slot) return null;
+    if (slot.kind === 'text') return { text: '' };
+
+    return createDeclarativeAndFill(
+      slot.schema,
+      slot.type,
+      slot.properties,
+      new Set(),
+      slot.site
+    );
+  };
+
+  const createDefaultChild: EditorStateSchemaApi<V>['createDefaultChild'] = ({
+    at,
+    root = 'main',
+  }) => buildDefaultSlot(resolveDefaultSlot(at, root));
+
+  const tryCreateDefaultChild: InternalEditorSchemaApi<V>['tryCreateDefaultChild'] =
+    ({ at, root = 'main' }) =>
+      refuseMissingProperty(() =>
+        buildDefaultSlot(resolveDefaultSlot(at, root))
+      );
+
+  const placeDerivedElement: InternalEditorSchemaApi['placeElementAt'] = (
+    source,
+    { at, root = 'main' }
+  ) => {
+    const schema = getDeclarativeSchema();
+    const index = at.at(-1);
+    const ancestors = getSlotAncestors(at, root);
+
+    if (!schema || index === undefined || !ancestors) return source;
+    const [parent] = ancestors;
+    const content = parent
+      ? getCompiledElement(parent)?.content
+      : getRootContent(root);
+
+    if (
+      !content ||
+      contentAllowsAt(schema, content, source, index, { ancestors, root })
+    ) {
+      return source;
+    }
+    const landing = buildDefaultSlot(
+      defaultSlotIn(content, index, { ancestors, root })
+    );
+
+    if (
+      !ElementApi.isElement(landing) ||
+      !elementUsesInlineContent(landing) ||
+      !elementUsesInlineContent(source)
+    ) {
+      return null;
+    }
+
+    const preserved = NodeApi.extractProps(
+      elementForTypeChangeAt(source, landing.type, at, root)
+    );
+    const kept = { ...landing, ...preserved, children: source.children };
+
+    return contentAllowsAt(schema, content, kept, index, { ancestors, root })
+      ? kept
+      : { ...preserved, ...landing, children: source.children };
   };
 
   type CanonicalizationObserver = {
@@ -2426,7 +2574,7 @@ export const createEditorSchema = <V extends Value = Value>(
         ? canonicalizeProperty(
             property.key,
             property,
-            property.descriptor.generate()
+            generatePropertyValue(property.descriptor)
           )
         : property.descriptor.default;
     }
@@ -2457,7 +2605,7 @@ export const createEditorSchema = <V extends Value = Value>(
               },
             }
           )
-        : new EditorSchemaValidationError({
+        : new MissingPropertyError({
             code: 'missing-property',
             message,
             path: [],
@@ -2734,26 +2882,33 @@ export const createEditorSchema = <V extends Value = Value>(
     )[0];
   };
 
+  const getTextPropertyInParent = (
+    schema: CompiledEditorSchema,
+    key: string,
+    parentContext: CompiledSchemaTargetContext | null
+  ) => {
+    if (parentContext) {
+      return resolveCompiledSchemaProperty(schema, 'text', key, parentContext);
+    }
+    const candidates = getCompiledPropertyCandidates(schema, 'text', key);
+
+    return candidates.length === 1 ? candidates[0] : null;
+  };
+
   const getTextProperty = (
     schema: CompiledEditorSchema,
     key: string,
     options: RuntimeTextTargetOptions = {}
   ) => {
-    const candidates = getCompiledPropertyCandidates(schema, 'text', key);
     const parentType = options.parent
       ? (getElementType(options.parent) ?? '')
       : '';
 
-    return parentType
-      ? resolveCompiledSchemaProperty(
-          schema,
-          'text',
-          key,
-          toCompiledTargetContext(parentType, options)
-        )
-      : candidates.length === 1
-        ? candidates[0]
-        : null;
+    return getTextPropertyInParent(
+      schema,
+      key,
+      parentType ? toCompiledTargetContext(parentType, options) : null
+    );
   };
 
   const getTextTargetOptions = (
@@ -2841,80 +2996,6 @@ export const createEditorSchema = <V extends Value = Value>(
           )?.lifecycle.landing ?? 'preserve')
         : 'preserve';
     };
-
-  const elementPropertiesForTypeChangeAt = (
-    element: Element,
-    to: Element,
-    path: Path,
-    root: RootKey = 'main'
-  ) => {
-    const schema = getDeclarativeSchema();
-
-    if (!schema) return NodeApi.extractProps(element);
-    const options = getElementTargetOptionsAt(path, root);
-    const sourceContext = toCompiledTargetContext(
-      getElementType(element) ?? '',
-      options
-    );
-    const destinationContext = toCompiledTargetContext(
-      getElementType(to) ?? '',
-      options
-    );
-
-    return Object.freeze(
-      Object.fromEntries(
-        Object.entries(NodeApi.extractProps(element)).flatMap(
-          ([key, value]) => {
-            if (key === 'type') return [];
-            const candidates = getCompiledPropertyCandidates(
-              schema,
-              'element',
-              key
-            );
-            const sourceProperty = resolveCompiledSchemaProperty(
-              schema,
-              'element',
-              key,
-              sourceContext
-            );
-            const destination = resolveCompiledSchemaProperty(
-              schema,
-              'element',
-              key,
-              destinationContext
-            );
-
-            if (!sourceProperty) {
-              return candidates.length === 0 && schema.unknown === 'preserve'
-                ? [[key, value]]
-                : [];
-            }
-            if (
-              sourceProperty.lifecycle.typeChange !== 'preserve-if-allowed' ||
-              !destination
-            ) {
-              return [];
-            }
-
-            try {
-              return [
-                [
-                  key,
-                  validatePropertyValue(
-                    `Editor element property "${key}"`,
-                    destination.descriptor,
-                    value
-                  ),
-                ],
-              ];
-            } catch {
-              return [];
-            }
-          }
-        )
-      )
-    );
-  };
 
   const getTextPropertyAt = (
     key: string,
@@ -3138,71 +3219,191 @@ export const createEditorSchema = <V extends Value = Value>(
     root: RootKey = 'main'
   ) => textPropertiesForSplit(text, getTextTargetOptionsAt(path, root));
 
-  const textPropertiesForTypeChange = (
-    text: Text,
-    from: Element,
-    to: Element,
-    options: RuntimeTargetOptions = {}
-  ) => {
-    const schema = getDeclarativeSchema();
+  const keptElementProperties = (
+    schema: CompiledEditorSchema,
+    element: Element,
+    from: CompiledSchemaTargetContext,
+    to: CompiledSchemaTargetContext
+  ): Record<string, unknown> =>
+    Object.fromEntries(
+      Object.entries(NodeApi.extractProps(element)).flatMap(([key, value]) => {
+        if (key === 'type') return [];
+        const source = resolveCompiledSchemaProperty(
+          schema,
+          'element',
+          key,
+          from
+        );
 
-    if (!schema) return Object.freeze(getTextProperties(text));
+        if (!source) {
+          return schema.unknown === 'preserve' &&
+            getCompiledPropertyCandidates(schema, 'element', key).length === 0
+            ? [[key, value]]
+            : [];
+        }
+        const destination = resolveCompiledSchemaProperty(
+          schema,
+          'element',
+          key,
+          to
+        );
 
-    return Object.freeze(
-      Object.fromEntries(
-        Object.entries(getTextProperties(text)).flatMap(([key, value]) => {
-          const sourceProperty = getTextProperty(schema, key, {
-            ...options,
-            parent: from,
-          });
-          const destination = getTextProperty(schema, key, {
-            ...options,
-            parent: to,
-          });
+        if (
+          source.lifecycle.typeChange !== 'preserve-if-allowed' ||
+          !destination
+        ) {
+          return [];
+        }
 
-          if (!sourceProperty && schema.unknown === 'preserve') {
-            return [[key, value]];
-          }
+        try {
+          return [
+            [
+              key,
+              validatePropertyValue(
+                `Editor element property "${key}"`,
+                destination.descriptor,
+                value
+              ),
+            ],
+          ];
+        } catch {
+          return [];
+        }
+      })
+    );
+
+  const elementForTypeChangeAt: InternalEditorSchemaApi<V>['elementForTypeChangeAt'] =
+    (element, type, path, root) => {
+      if (element.type === type) return element;
+      const schema = getDeclarativeSchema();
+
+      if (!schema) return Object.freeze({ ...element, type });
+      const options = getElementTargetOptionsAt(path, root);
+      const fromType = getElementType(element) ?? '';
+      const toType = getElementType({ type }) ?? '';
+      const from = toCompiledTargetContext(fromType, options);
+      const to = toCompiledTargetContext(toType, options);
+      const textRules = new Map<
+        string,
+        readonly [CompiledSchemaProperty | null, CompiledSchemaProperty | null]
+      >();
+      const keepsText = (key: string, value: unknown) => {
+        let rule = textRules.get(key);
+
+        if (!rule) {
+          rule = [
+            getTextPropertyInParent(schema, key, fromType ? from : null),
+            getTextPropertyInParent(schema, key, toType ? to : null),
+          ];
+          textRules.set(key, rule);
+        }
+        const [source, destination] = rule;
+
+        if (!source) return schema.unknown === 'preserve';
+        if (
+          source.lifecycle.typeChange !== 'preserve-if-allowed' ||
+          !destination
+        ) {
+          return false;
+        }
+
+        try {
+          validatePropertyValue(
+            `Editor text property "${key}"`,
+            destination.descriptor,
+            value
+          );
+
+          return true;
+        } catch {
+          return false;
+        }
+      };
+      let children: Descendant[] | null = null;
+
+      for (let index = 0; index < element.children.length; index++) {
+        const child = element.children[index];
+
+        if (!NodeApi.isText(child)) continue;
+        let kept: Record<string, unknown> | null = null;
+
+        for (const [key, value] of Object.entries(getTextProperties(child))) {
+          if (keepsText(key, value)) continue;
+          kept ??= { ...child };
+          delete kept[key];
+        }
+        if (!kept) continue;
+        children ??= [...element.children];
+        children[index] = kept as Descendant;
+      }
+
+      return Object.freeze({
+        ...keptElementProperties(schema, element, from, to),
+        type,
+        children: children ?? element.children,
+      });
+    };
+
+  const elementPropertiesForResetAt: InternalEditorSchemaApi<V>['elementPropertiesForResetAt'] =
+    (element, at, root = 'main') => {
+      const slot = resolveDefaultSlot(at, root);
+
+      if (slot?.kind !== 'element') return null;
+      const { schema, type } = slot;
+      const options = getElementTargetOptionsAt(at, root);
+      const context = toCompiledTargetContext(type, options);
+      const changed = elementForTypeChangeAt(element, type, at, root);
+      const sameType = changed === element;
+      const seed: Record<string, unknown> = sameType
+        ? keptElementProperties(schema, element, context, context)
+        : NodeApi.extractProps(changed);
+
+      if (sameType) {
+        for (const [key, value] of Object.entries(
+          NodeApi.extractProps(element)
+        )) {
+          const property = resolveCompiledSchemaProperty(
+            schema,
+            'element',
+            key,
+            context
+          );
+
           if (
-            !sourceProperty ||
-            sourceProperty.lifecycle.typeChange !== 'preserve-if-allowed' ||
-            !destination
+            property &&
+            !Object.hasOwn(property.descriptor, 'default') &&
+            !property.descriptor.generate
           ) {
-            return [];
+            seed[key] = value;
           }
+        }
+      }
 
-          try {
-            return [
-              [
-                key,
-                validatePropertyValue(
-                  `Editor text property "${key}"`,
-                  destination.descriptor,
-                  value
-                ),
-              ],
-            ];
-          } catch {
-            return [];
-          }
-        })
-      )
-    );
-  };
+      return refuseMissingProperty(() => {
+        const properties = canonicalizeDeclarativePropertyRecord(
+          { ...seed, ...slot.properties, type },
+          schema,
+          'element',
+          context,
+          new Set(['type']),
+          false
+        ) as Partial<Element>;
 
-  const textPropertiesForTypeChangeAt = (
-    text: Text,
-    from: Element,
-    to: Element,
-    path: Path,
-    root: RootKey = 'main'
-  ) =>
-    textPropertiesForTypeChange(
-      text,
-      from,
-      to,
-      getTextTargetOptionsAt(path, root)
-    );
+        if (sameType) return properties;
+
+        // Only the refusal matters: the subtree as the update's final
+        // canonicalization will see it once `setNodes` changes the type.
+        canonicalizeDeclarativeChildren(
+          [{ ...properties, children: changed.children, type }],
+          schema,
+          root,
+          options.ancestors ?? [],
+          false
+        );
+
+        return properties;
+      });
+    };
 
   const validateTextProperties = (
     properties: Readonly<Record<string, unknown>>,
@@ -4125,33 +4326,16 @@ export const createEditorSchema = <V extends Value = Value>(
     });
   };
 
-  const validateDocumentChange = ({
+  const checkDocumentChange = ({
     after,
     before,
     change,
     indexedAfter,
     indexedBefore,
-  }: Readonly<{
-    after: EditorDocumentValue;
-    before: EditorDocumentValue;
-    change: DocumentChange;
-    indexedAfter: ReadonlyMap<string, DocumentIndex>;
-    indexedBefore: ReadonlyMap<string, DocumentIndex>;
-  }>) => {
+  }: DocumentChangeValidationInput) => {
     const beforeRoots = documentRoots(before);
-    const authority = getValidationAuthority();
+    const checked: DocumentIndex[] = [];
 
-    const unvalidatedRoot = Object.entries(beforeRoots).find(
-      ([, document]) => !isRootValidatedBy(document, authority)
-    )?.[0];
-
-    if (unvalidatedRoot) {
-      throw new Error(
-        `Incremental schema validation requires an explicitly validated immutable baseline for ${editorRootLabel(
-          unvalidatedRoot
-        )}. Call assertDocument() at the external document boundary before constructing changes.`
-      );
-    }
     if (after.roots && Object.hasOwn(after.roots, 'main')) {
       throw new EditorSchemaValidationError(
         'Editor document roots cannot redefine the primary root; use children.'
@@ -4187,6 +4371,7 @@ export const createEditorSchema = <V extends Value = Value>(
         Readonly<{
           index: ElementOwnedRootIndex;
           issue: ElementOwnedRootIssue;
+          root: string;
         }>
       > = [];
 
@@ -4220,7 +4405,7 @@ export const createEditorSchema = <V extends Value = Value>(
           ...(index.validation === 'full'
             ? getElementOwnedRootIssues(index)
             : getDirtyElementOwnedRootIssues(index)
-          ).map((issue) => ({ index, issue }))
+          ).map((issue) => ({ index, issue, root }))
         );
       }
       for (const root of change.deleteRoots) {
@@ -4248,40 +4433,52 @@ export const createEditorSchema = <V extends Value = Value>(
           ...(index.validation === 'full'
             ? getElementOwnedRootIssues(index)
             : getDirtyElementOwnedRootIssues(index)
-          ).map((issue) => ({ index, issue }))
+          ).map((issue) => ({ index, issue, root }))
         );
       }
 
-      if (dirtyIssues[0]) {
-        throwElementOwnedRootIssue(
-          after,
-          dirtyIssues[0].issue,
-          dirtyIssues[0].index
+      const baselineHasIssue = (root: string, issue: ElementOwnedRootIssue) =>
+        !!beforeRoots[root] &&
+        getElementOwnedRootIssues(
+          ensureElementOwnedRootIndex(
+            schema,
+            root,
+            indexedBefore.get(root) ?? beforeRoots[root]
+          )
+        ).some(
+          (known) =>
+            known.owner === issue.owner &&
+            known.kind === issue.kind &&
+            known.slot === issue.slot
         );
+      const introduced = dirtyIssues.find(
+        ({ issue, root }) => !baselineHasIssue(root, issue)
+      );
+
+      if (introduced) {
+        throwElementOwnedRootIssue(after, introduced.issue, introduced.index);
       }
       const ownershipRoots = new Set([
         ...dirtyChildRoots,
         ...change.createRoots,
         ...change.deleteRoots,
       ]);
-
-      for (const root of ownershipRoots) {
-        if (root === 'main') continue;
-        const projection = getProjectedRoot(
-          after,
-          schema,
-          root,
-          ownershipIndexes
-        );
+      const checkOwnedRoot = (
+        value: EditorDocumentValue,
+        roots: typeof afterRoots,
+        root: string,
+        indexes?: typeof ownershipIndexes
+      ) => {
+        const projection = getProjectedRoot(value, schema, root, indexes);
 
         if (projection) {
           const location = elementOwnedRootLocation(
-            after,
+            value,
             projection.owner,
             projection.index
           );
 
-          if (!Object.hasOwn(afterRoots, root)) {
+          if (!Object.hasOwn(roots, root)) {
             throw createEditorSchemaValidationError(
               'invalid-root',
               `Editor content root "${root}" is missing from the document.`,
@@ -4295,9 +4492,11 @@ export const createEditorSchema = <V extends Value = Value>(
               location
             );
           }
-          touchedRoots.add(root);
-        } else if (
-          Object.hasOwn(afterRoots, root) &&
+
+          return true;
+        }
+        if (
+          Object.hasOwn(roots, root) &&
           !schema.roots.has(root) &&
           schema.unknown === 'reject'
         ) {
@@ -4306,6 +4505,34 @@ export const createEditorSchema = <V extends Value = Value>(
             `Undeclared editor root "${root}" in closed editor schema.`,
             toSchemaValidationLocation(root, [])
           );
+        }
+
+        return false;
+      };
+      const baselineHasRootError = (root: string) => {
+        try {
+          checkOwnedRoot(before, beforeRoots, root);
+
+          return false;
+        } catch (error) {
+          if (error instanceof EditorSchemaValidationError) return true;
+          throw error;
+        }
+      };
+
+      for (const root of ownershipRoots) {
+        if (root === 'main') continue;
+        try {
+          if (checkOwnedRoot(after, afterRoots, root, ownershipIndexes)) {
+            touchedRoots.add(root);
+          }
+        } catch (error) {
+          if (
+            !(error instanceof EditorSchemaValidationError) ||
+            !baselineHasRootError(root)
+          ) {
+            throw error;
+          }
         }
       }
     }
@@ -4633,22 +4860,46 @@ export const createEditorSchema = <V extends Value = Value>(
         );
       }
 
-      markRootValidatedBy(afterDocument, authority);
+      checked.push(afterDocument);
     }
 
-    for (const [root, document] of Object.entries(afterRoots)) {
-      if (!isRootValidatedBy(document, authority) && !touchedRoots.has(root)) {
-        throw new EditorSchemaValidationError(
-          `Unchanged editor root "${root}" lost validation authority.`
+    return { afterRoots, checked, schema, touchedRoots };
+  };
+  const validateDocumentChange: InternalEditorSchemaApi['validateDocumentChange'] =
+    (input) => {
+      const authority = getValidationAuthority();
+      const unvalidatedRoot = Object.entries(documentRoots(input.before)).find(
+        ([, document]) => !isRootValidatedBy(document, authority)
+      )?.[0];
+
+      if (unvalidatedRoot) {
+        throw new Error(
+          `Incremental schema validation requires an explicitly validated immutable baseline for ${editorRootLabel(
+            unvalidatedRoot
+          )}. Call assertDocument() at the external document boundary before constructing changes.`
         );
       }
-    }
-    if (schema) {
+
+      const { afterRoots, checked, schema, touchedRoots } =
+        checkDocumentChange(input);
+
+      for (const document of checked) markRootValidatedBy(document, authority);
       for (const [root, document] of Object.entries(afterRoots)) {
-        sealElementOwnedRootIndex(schema, root, document);
+        if (
+          !isRootValidatedBy(document, authority) &&
+          !touchedRoots.has(root)
+        ) {
+          throw new EditorSchemaValidationError(
+            `Unchanged editor root "${root}" lost validation authority.`
+          );
+        }
       }
-    }
-  };
+      if (schema) {
+        for (const [root, document] of Object.entries(afterRoots)) {
+          sealElementOwnedRootIndex(schema, root, document);
+        }
+      }
+    };
 
   const api: InternalEditorSchemaApi<V> = Object.freeze({
     adoptDocumentBaseline: (value) => {
@@ -4665,8 +4916,10 @@ export const createEditorSchema = <V extends Value = Value>(
     canonicalizeChildren,
     copyChildren,
     copyNodeAt,
+    elementPropertiesForResetAt,
+    placeElementAt: placeDerivedElement,
     elementPropertiesForSplitAt,
-    elementPropertiesForTypeChangeAt,
+    elementForTypeChangeAt,
     elementPropertyLanding,
     assertContentSliceForSchema,
     assertDocument,
@@ -4724,8 +4977,9 @@ export const createEditorSchema = <V extends Value = Value>(
     property: getPublicProperty,
     mergeTextPropertyAt,
     textPropertiesForSplitAt,
-    textPropertiesForTypeChangeAt,
+    tryCreateDefaultChild,
     validateDocumentChange,
+    checkDocumentChange,
     validateTextPropertiesAtValue,
   });
 

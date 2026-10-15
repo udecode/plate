@@ -23,6 +23,12 @@ export type CardEntry = {
   createdAt: number;
   readonly id: string;
   last: Readonly<{ book: RootBook; slot: BookSlot }>;
+  /**
+   * The card id last published for this change, carried over when a sync
+   * recreates the entry, so publication sees which members changed card.
+   */
+  published: string | undefined;
+  revision: number;
   /** Its part of its card's revision, so a card's revision is a sum. */
   share: number;
   slot: BookSlot;
@@ -116,7 +122,9 @@ export type ChangePlaces = Readonly<{ first: Place; last: Place }>;
  * Move the entries of `touched` changes, then set the start bit again on the
  * entries whose previous change or own place may have moved: every entry of
  * a block whose entries changed, the entry after such a block, and the entry
- * at each block a sync spliced in or out.
+ * at each block a sync spliced in or out. Returns those entries as `checked`,
+ * the entry just before each such block, whose card may have lost a member,
+ * as `near`, and the entries of changes that left as `removed`.
  *
  * @internal
  */
@@ -128,6 +136,7 @@ export const syncCards = (
   placesOf: (id: string) => ChangePlaces
 ) => {
   const dirty = new Map<BookSlot, RootBook>();
+  const removed: CardEntry[] = [];
 
   for (const id of touched) {
     const old = entries.get(id);
@@ -140,7 +149,10 @@ export const syncCards = (
 
     const change = changeOf(id);
 
-    if (!change) continue;
+    if (!change) {
+      if (old) removed.push(old);
+      continue;
+    }
 
     const { first, last } = placesOf(id);
     const entry: CardEntry = {
@@ -148,6 +160,8 @@ export const syncCards = (
       createdAt: change.createdAt,
       id,
       last,
+      published: old?.published,
+      revision: change.revision,
       share: change.revision & SHARE_MASK,
       slot: first.slot,
       starts: true,
@@ -177,16 +191,21 @@ export const syncCards = (
       checked.add(entryAt(book, index));
     }
   };
+  const near: CardEntry[] = [];
+  const before = (book: RootBook, index: number) => {
+    if (index > 0) near.push(entryAt(book, index - 1));
+  };
 
   for (const [slot, book] of dirty) {
+    const rank = book.slots.rankOf(slot);
+
     for (const entry of slot.entries) checked.add(entry);
-    check(
-      book,
-      book.slots.sumBefore(book.slots.rankOf(slot) + 1, ENTRIES)
-    );
+    check(book, book.slots.sumBefore(rank + 1, ENTRIES));
+    before(book, book.slots.sumBefore(rank, ENTRIES));
   }
   for (const { book, rank } of spliced) {
     check(book, book.slots.sumBefore(rank, ENTRIES));
+    before(book, book.slots.sumBefore(rank, ENTRIES));
   }
 
   const flipped = new Map<BookSlot, RootBook>();
@@ -204,7 +223,7 @@ export const syncCards = (
   }
   for (const [slot, book] of flipped) measure(book, slot);
 
-  return checked;
+  return { checked, near, removed };
 };
 
 const startAt = (book: RootBook, nth: number) => {

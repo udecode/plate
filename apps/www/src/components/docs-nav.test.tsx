@@ -1,11 +1,8 @@
 import { describe, expect, it, mock } from 'bun:test';
 
 import { render } from '@testing-library/react';
-import * as React from 'react';
 
 let pathname = '/docs';
-
-Object.assign(globalThis, { React });
 
 mock.module('next/navigation', () => ({
   usePathname: () => pathname,
@@ -32,7 +29,7 @@ describe('DocsNav', () => {
       .getAllByRole('button', { name: /^Collapse / })
       .map((button) => button.getAttribute('aria-label'));
 
-    expect(openSections).toEqual(['Collapse Walkthroughs']);
+    expect(openSections).toEqual(['Collapse Plite']);
     expect(
       view.container
         .querySelector('[aria-current="page"]')

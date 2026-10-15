@@ -119,6 +119,7 @@ export {
   isEditor,
 } from './interfaces/editor';
 export type {
+  BlockInsertOptions,
   CompatibleEditorCommand,
   CreateEditorOptions,
   Editor,

@@ -87,12 +87,21 @@ export const HIDDEN_EXAMPLES = [
   'schema-reconfiguration',
 ] as const;
 
+export const EXPERIMENTAL_EXAMPLES = ['pagination'] as const;
+
 const hiddenExamplePaths: readonly string[] = HIDDEN_EXAMPLES;
+const experimentalExamplePaths: readonly string[] = EXPERIMENTAL_EXAMPLES;
 const upstreamPliteExamplePaths: readonly string[] =
   UPSTREAM_PLITE_EXAMPLE_PATHS;
 
-export const isNewPliteExamplePath = (path: string): boolean =>
-  !upstreamPliteExamplePaths.includes(path);
+export const getPliteExampleStatus = (
+  path: string
+): 'experimental' | 'new' | undefined => {
+  if (experimentalExamplePaths.includes(path)) return 'experimental';
+  if (!upstreamPliteExamplePaths.includes(path)) return 'new';
+
+  return undefined;
+};
 
 export const NON_HIDDEN_EXAMPLES = EXAMPLE_NAMES_AND_PATHS.filter(
   ([, path]) => !hiddenExamplePaths.includes(path)

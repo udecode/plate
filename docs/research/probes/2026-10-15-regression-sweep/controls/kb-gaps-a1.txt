@@ -1,0 +1,96 @@
+$ (/Users/zbeyens/git/plate-2) pnpm -s kb gaps
+93 locked rules have no tagged test that a gate runs.
+  EDIT-GLOBAL-004  `⌫` deletes or merges the current empty block in place before any structural lift  (docs/editor-behavior/markdown-editing-spec.md:429) no tagged test
+  EDIT-GLOBAL-005  expanded selections operate on all selected blocks without silently dropping structure  (docs/editor-behavior/markdown-editing-spec.md:430) no tagged test
+  EDIT-P-BS-START-001    (docs/editor-behavior/markdown-editing-spec.md:570) no tagged test
+  EDIT-P-BS-START-EMPTY-001    (docs/editor-behavior/markdown-editing-spec.md:612) no tagged test
+  EDIT-P-TAB-001    (docs/editor-behavior/markdown-editing-spec.md:635) no tagged test
+  EDIT-P-STAB-001    (docs/editor-behavior/markdown-editing-spec.md:643) no tagged test
+  EDIT-H-ENTER-001    (docs/editor-behavior/markdown-editing-spec.md:669) no tagged test
+  EDIT-H-ENTER-END-001    (docs/editor-behavior/markdown-editing-spec.md:678) no tagged test
+  EDIT-H-BS-START-001    (docs/editor-behavior/markdown-editing-spec.md:701) no tagged test
+  EDIT-H-BS-START-EMPTY-001    (docs/editor-behavior/markdown-editing-spec.md:709) no tagged test
+  EDIT-LIST-ENTER-001    (docs/editor-behavior/markdown-editing-spec.md:745) no tagged test
+  EDIT-LIST-ENTER-EMPTY-001    (docs/editor-behavior/markdown-editing-spec.md:785) no tagged test
+  EDIT-LIST-ENTER-EMPTY-ROOT-001    (docs/editor-behavior/markdown-editing-spec.md:793) no tagged test
+  EDIT-LIST-BS-START-001    (docs/editor-behavior/markdown-editing-spec.md:801) no tagged test
+  EDIT-LIST-BS-START-EMPTY-001    (docs/editor-behavior/markdown-editing-spec.md:809) no tagged test
+  EDIT-LIST-BS-START-EMPTY-ROOT-001    (docs/editor-behavior/markdown-editing-spec.md:817) no tagged test
+  EDIT-BQ-ENTER-001    (docs/editor-behavior/markdown-editing-spec.md:982) no tagged test
+  EDIT-BQ-ENTER-EMPTY-001    (docs/editor-behavior/markdown-editing-spec.md:993) no tagged test
+  EDIT-BQ-ENTER-EMPTY-NESTED-001    (docs/editor-behavior/markdown-editing-spec.md:1001) no tagged test
+  EDIT-BQ-BS-START-001    (docs/editor-behavior/markdown-editing-spec.md:1009) no tagged test
+  EDIT-BQ-BS-START-EMPTY-NONFIRST-001    (docs/editor-behavior/markdown-editing-spec.md:1017) no tagged test
+  EDIT-BQ-BS-START-ONLY-001    (docs/editor-behavior/markdown-editing-spec.md:1026) no tagged test
+  EDIT-BQ-STAB-001    (docs/editor-behavior/markdown-editing-spec.md:1036) no tagged test
+  EDIT-BQ-TAB-001    (docs/editor-behavior/markdown-editing-spec.md:1046) no tagged test
+  EDIT-BQ-LIST-ENTER-EMPTY-001    (docs/editor-behavior/markdown-editing-spec.md:1071) no tagged test
+  EDIT-BQ-LIST-BS-START-001    (docs/editor-behavior/markdown-editing-spec.md:1083) no tagged test
+  EDIT-CB-ENTER-001    (docs/editor-behavior/markdown-editing-spec.md:1131) no tagged test
+  EDIT-CB-BS-START-EMPTY-LINE-001    (docs/editor-behavior/markdown-editing-spec.md:1158) no tagged test
+  EDIT-CB-TAB-001    (docs/editor-behavior/markdown-editing-spec.md:1183) no tagged test
+  EDIT-MATH-ENTER-001    (docs/editor-behavior/markdown-editing-spec.md:1235) no tagged test
+  EDIT-MATH-BS-START-001    (docs/editor-behavior/markdown-editing-spec.md:1245) no tagged test
+  EDIT-MATH-BS-START-EMPTY-001    (docs/editor-behavior/markdown-editing-spec.md:1255) no tagged test
+  EDIT-MATH-TAB-001    (docs/editor-behavior/markdown-editing-spec.md:1265) no tagged test
+  EDIT-MATH-INLINE-INSERT-001  inserting an inline equation inserts an inline void equation and uses the selected text as its default expression  (docs/editor-behavior/markdown-editing-spec.md:1275) no tagged test
+  EDIT-MATH-INLINE-ARROW-001  `ArrowLeft` and `ArrowRight` at the edges of an inline equation's input hand control back to the editor  (docs/editor-behavior/markdown-editing-spec.md:1277) no tagged test
+  EDIT-MATH-BLOCK-INSERT-001  inserting an equation inserts a void block equation at the requested path  (docs/editor-behavior/markdown-editing-spec.md:1279) no tagged test
+  EDIT-TABLE-STAB-001    (docs/editor-behavior/markdown-editing-spec.md:1350) no tagged test
+  EDIT-TABLE-ROW-INSERT-002  inserting a row before the current row adds a row of empty cells and moves the selection into it when requested  (docs/editor-behavior/markdown-editing-spec.md:1419) no tagged test
+  EDIT-TABLE-COL-INSERT-001  inserting a column after the current column adds a column of empty cells and moves the selection into it when requested  (docs/editor-behavior/markdown-editing-spec.md:1421) no tagged test
+  EDIT-TABLE-COL-INSERT-002  inserting a column before the current column adds a column of empty cells and moves the selection into it when requested  (docs/editor-behavior/markdown-editing-spec.md:1423) no tagged test
+  EDIT-TABLE-ROW-DELETE-001  deleting the current row removes it and repairs row spans instead of corrupting a merged table  (docs/editor-behavior/markdown-editing-spec.md:1425) no tagged test
+  EDIT-TABLE-COL-DELETE-001  deleting the current column removes it and repairs column spans instead of corrupting a merged table  (docs/editor-behavior/markdown-editing-spec.md:1427) no tagged test
+  EDIT-TABLE-PASTE-EXPAND-001    (docs/editor-behavior/markdown-editing-spec.md:1455) no tagged test
+  EDIT-TABLE-PASTE-REJECT-001    (docs/editor-behavior/markdown-editing-spec.md:1476) no tagged test
+  EDIT-CONVERT-001    (docs/editor-behavior/markdown-editing-spec.md:1587) no tagged test
+  EDIT-CONVERT-002    (docs/editor-behavior/markdown-editing-spec.md:1597) no tagged test
+  EDIT-LINK-CLICK-001    (docs/editor-behavior/markdown-editing-spec.md:1612) no tagged test
+  EDIT-LINK-CLICK-002    (docs/editor-behavior/markdown-editing-spec.md:1623) no tagged test
+  EDIT-CALLOUT-ENTER-001    (docs/editor-behavior/markdown-editing-spec.md:1742) no tagged test
+  EDIT-CALLOUT-ENTER-EMPTY-001    (docs/editor-behavior/markdown-editing-spec.md:1754) no tagged test
+  EDIT-CALLOUT-BS-START-001    (docs/editor-behavior/markdown-editing-spec.md:1764) no tagged test
+  EDIT-DETAILS-ENTER-CLOSED-001  in a closed Summary, the caret moves after the whole Details  (docs/editor-behavior/markdown-editing-spec.md:1789) no tagged test
+  EDIT-DETAILS-ENTER-EXIT-001  in the final empty body block, a paragraph is inserted after the Details and the empty body block stays  (docs/editor-behavior/markdown-editing-spec.md:1790) no tagged test
+  EDIT-DETAILS-BS-START-001  at the Summary start, the Details unwraps  (docs/editor-behavior/markdown-editing-spec.md:1791) no tagged test
+  EDIT-DETAILS-BS-BODY-001  at the start of the first body block, the caret moves to the end of the Summary  (docs/editor-behavior/markdown-editing-spec.md:1792) no tagged test
+  EDIT-DETAILS-DEL-CLOSED-001  at the Summary end with a closed body, the caret skips the hidden body without changing content  (docs/editor-behavior/markdown-editing-spec.md:1793) no tagged test
+  EDIT-MENTION-BS-START-001    (docs/editor-behavior/markdown-editing-spec.md:1877) no tagged test
+  EDIT-MENTION-DEL-END-001    (docs/editor-behavior/markdown-editing-spec.md:1885) no tagged test
+  EDIT-DATE-INSERT-001    (docs/editor-behavior/markdown-editing-spec.md:1949) no tagged test
+  EDIT-DATE-BS-START-001    (docs/editor-behavior/markdown-editing-spec.md:1960) no tagged test
+  EDIT-DATE-DEL-END-001    (docs/editor-behavior/markdown-editing-spec.md:1968) no tagged test
+  EDIT-DATE-MDX-001    (docs/editor-behavior/markdown-editing-spec.md:1976) no tagged test
+  EDIT-TOC-NAV-001    (docs/editor-behavior/markdown-editing-spec.md:2024) no tagged test
+  EDIT-TOC-NAV-002    (docs/editor-behavior/markdown-editing-spec.md:2040) no tagged test
+  EDIT-TOC-NAV-003    (docs/editor-behavior/markdown-editing-spec.md:2054) no tagged test
+  EDIT-COLUMN-TOGGLE-001    (docs/editor-behavior/markdown-editing-spec.md:2114) no tagged test
+  EDIT-COLUMN-SET-001    (docs/editor-behavior/markdown-editing-spec.md:2127) no tagged test
+  EDIT-CAPTION-NAV-001    (docs/editor-behavior/markdown-editing-spec.md:2251) no tagged test
+  EDIT-CAPTION-NAV-002    (docs/editor-behavior/markdown-editing-spec.md:2272) no tagged test
+  EDIT-CAPTION-NAV-003    (docs/editor-behavior/markdown-editing-spec.md:2282) tagged only on tests no gate runs: apps/www/tests/browser/media-caption.spec.ts:888 (runs only through the test:www-browser scripts); apps/www/tests/browser/media-caption.spec.ts:993 (runs only through the test:www-browser scripts)
+  EDIT-CAPTION-NAV-004    (docs/editor-behavior/markdown-editing-spec.md:2302) no tagged test
+  EDIT-CAPTION-NAV-005    (docs/editor-behavior/markdown-editing-spec.md:2316) tagged only on tests no gate runs: apps/www/tests/browser/media-caption.spec.ts:913 (runs only through the test:www-browser scripts)
+  EDIT-CAPTION-NAV-006    (docs/editor-behavior/markdown-editing-spec.md:2332) tagged only on tests no gate runs: apps/www/tests/browser/media-caption.spec.ts:817 (runs only through the test:www-browser scripts); apps/www/tests/browser/media-caption.spec.ts:954 (runs only through the test:www-browser scripts)
+  EDIT-CAPTION-DELETE-001    (docs/editor-behavior/markdown-editing-spec.md:2351) tagged only on tests no gate runs: apps/www/tests/browser/media-caption-delete.spec.ts:8 (runs only through the test:www-browser scripts)
+  EDIT-CAPTION-EMPTY-001    (docs/editor-behavior/markdown-editing-spec.md:2363) no tagged test
+  EDIT-CAPTION-ENTER-001    (docs/editor-behavior/markdown-editing-spec.md:2376) no tagged test
+  EDIT-COMMENT-HISTORY-PENDING-001  when comment creation sits at the undo head and its live-session removal is awaiting persistence, typing, repeated undo…  (docs/editor-behavior/markdown-editing-spec.md:2477) no tagged test
+  EDIT-SEL-ENTER-001    (docs/editor-behavior/markdown-editing-spec.md:3198) no tagged test
+  EDIT-SEL-BS-001    (docs/editor-behavior/markdown-editing-spec.md:3207) no tagged test
+  EDIT-AFF-HARD-001    (docs/editor-behavior/markdown-editing-spec.md:3359) no tagged test
+  EDIT-MARK-MDX-001    (docs/editor-behavior/markdown-editing-spec.md:3390) no tagged test
+  EDIT-MARK-MDX-002    (docs/editor-behavior/markdown-editing-spec.md:3398) no tagged test
+  EDIT-MARK-MDX-003    (docs/editor-behavior/markdown-editing-spec.md:3406) no tagged test
+  EDIT-EMOJI-001    (docs/editor-behavior/markdown-editing-spec.md:3435) no tagged test
+  EDIT-FOOTNOTE-REF-001    (docs/editor-behavior/markdown-editing-spec.md:3484) no tagged test
+  EDIT-FOOTNOTE-PREVIEW-001    (docs/editor-behavior/markdown-editing-spec.md:3493) no tagged test
+  EDIT-FOOTNOTE-NAV-001    (docs/editor-behavior/markdown-editing-spec.md:3507) no tagged test
+  EDIT-FOOTNOTE-DEF-001    (docs/editor-behavior/markdown-editing-spec.md:3527) no tagged test
+  EDIT-FOOTNOTE-DUP-001    (docs/editor-behavior/markdown-editing-spec.md:3535) no tagged test
+  EDIT-FOOTNOTE-NAV-002    (docs/editor-behavior/markdown-editing-spec.md:3548) no tagged test
+  EDIT-INPUT-RULE-001    (docs/editor-behavior/markdown-editing-spec.md:3666) no tagged test
+  EDIT-INPUT-RULE-002    (docs/editor-behavior/markdown-editing-spec.md:3677) no tagged test
+  EDIT-INPUT-RULE-003    (docs/editor-behavior/markdown-editing-spec.md:3691) no tagged test
+exit=0

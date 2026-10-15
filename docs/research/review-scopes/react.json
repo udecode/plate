@@ -69,7 +69,6 @@
     "packages/platejs/src/react/utils/useSelectionFragment.ts",
     "packages/platejs/src/react/virtualized.tsx",
     "packages/plitejs/package.json",
-    "packages/plitejs/src/react/authored-fragment-context.tsx",
     "packages/plitejs/src/react/components/",
     "packages/plitejs/src/react/context.tsx",
     "packages/plitejs/src/react/dom-text-sync.ts",

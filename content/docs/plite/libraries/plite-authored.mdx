@@ -59,7 +59,7 @@ if (change) {
 }
 ```
 
-Pass `{ changeId: id }` to `tx.authored.propose(...)` to assign a new change identity or amend an owned pending change. Decisions use the revisions of the changes you read. Use `read.authored.preview(...)` before presenting a bulk decision and handle every `AuthoredResult` status.
+Pass `{ changeId: id }` to `tx.authored.propose(...)` to name the proposal or add the transaction's writes to the pending change with that ID. Decisions use the revisions of the changes you read. A `blocked` result names in `with` the changes to decide together; pass several decisions in one call to decide them together. Use `read.authored.preview(...)` before presenting a bulk decision and handle every `AuthoredResult` status.
 
 ## Import a comparison
 
@@ -86,23 +86,34 @@ Import validates the baseline, schema, document metadata, and selected groups be
 const page = editor.read.authored.changes({
   authorId: 'alice',
   cursor,
-  from,
   limit: 50,
-  to,
 });
+const inRange = editor.read.authored.changes({ at: range });
 const change = editor.read.authored.change(id);
-const changesAtRange = editor.read.authored.changesAt(range);
 ```
 
-`AuthoredChange` exposes stable identity, author, creation time, revision, kind, and current ranges. Use cursor paging for lists and `change(id)` for keyed readers.
+`changes(query)` reads pending changes in document order, 50 at a time by default and at most 200. Narrow it with `at`, `authorId`, `from` and `to`, or `group`, and pass the page's `cursor` to read the next page. `AuthoredChange` exposes stable identity, author, creation time, revision, kind, and current ranges. Use `change(id)` for keyed readers.
 
-## Retained author history
+## Review cards
 
+A review card groups one author's adjacent pending changes:
 
+```tsx
+const [card] = editor.read.authored.groups({ at: [0] });
 
-Use local undo and redo from `plitejs/history` for interaction history.
+if (card) {
+  const result = editor.update.authored.decide({
+    action: 'accept',
+    groups: [card],
+  });
+}
+```
 
-History undo and redo retain their local interaction lifetime. They can reverse an authored transaction and restore its mapped selection, but they do not act as collaborative review decisions.
+`groups({ at })` returns card summaries in document order: `id`, `authorId`, `createdAt`, `changeCount`, and `revision`. A card's ID is its oldest change. `groupOf(changeId)` returns the card that holds a change, and `changes({ group: card.id })` pages its changes. A card decision reads as `stale` once the card's ID or revision moved. `view.api.authored.subscribeChanges(listener)` passes `{ blocks, changed, groups, removed }` for each commit that changes the review.
+
+## Local history
+
+Use local undo and redo from `plitejs/history` for interaction history. They can reverse an authored transaction and restore its mapped selection, but they do not act as collaborative review decisions.
 
 ## Persistence and collaboration
 
@@ -118,11 +129,16 @@ Install `yjs` from `plitejs/yjs` on every peer to synchronize marked content and
 
 | Surface | Purpose |
 | --- | --- |
-| `tx.authored.propose(options?)` | Start or amend a proposal in the active transaction. |
+| `tx.authored.propose(options?)` | Record the active transaction's writes as a proposal. |
 | `read.authored.view()` | Read the current view policy. |
-| `read.authored.change(id)` | Read one keyed change. |
-| `read.authored.changes(query?)` | Read a cursor-paged change list. |
-| `read.authored.changesAt(range)` | Read changes intersecting a range. |
+| `read.authored.change(id)` | Read one pending change. |
+| `read.authored.changes(query?)` | Read a page of pending changes in document order. |
+| `read.authored.details(id)` | Read one change with its semantic parts. |
+| `read.authored.groups({ at })` | Read summaries of the cards touching a place. |
+| `read.authored.groupOf(changeId)` | Read the card that holds a change. |
+| `read.authored.reviewOf(node)` | Read a stored node's pending marks. |
 | `read.authored.preview(decision)` | Validate a decision without applying it. |
-| `update.authored.decide(decision)` | Accept or reject selected changes. |
+| `update.authored.decide(decision)` | Accept or reject changes or cards. |
 | `api.authored.setView(policy)` | Set one view's authored policy. |
+| `api.authored.subscribeChanges(listener)` | Receive one delta for each commit that changes the review. |
+| `api.authored.subscribeRefusals(listener)` | Receive each proposal write or view switch the editor refused. |

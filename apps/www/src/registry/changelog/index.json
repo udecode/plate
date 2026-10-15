@@ -2,6 +2,78 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-15-inline-combobox-hide-on-close",
+      "href": "/registry/changelog/2026-10-15-inline-combobox-hide-on-close.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Hide the inline combobox popup as soon as it closes",
+      "change": {
+        "type": "source",
+        "date": "2026-10-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["inline-combobox"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-15-quote-on-details-title",
+      "href": "/registry/changelog/2026-10-15-quote-on-details-title.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep list formatting when Quote cannot apply",
+      "change": {
+        "type": "source",
+        "date": "2026-10-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["turn-into-toolbar-button", "block-menu"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-15-slash-keeps-query-on-refusal",
+      "href": "/registry/changelog/2026-10-15-slash-keeps-query-on-refusal.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the slash query when a chosen block cannot be inserted",
+      "change": {
+        "type": "source",
+        "date": "2026-10-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["slash"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-15-upload-refusal-toast",
+      "href": "/registry/changelog/2026-10-15-upload-refusal-toast.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Explain why an upload was refused",
+      "change": {
+        "type": "source",
+        "date": "2026-10-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["upload"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-14-block-void-selection",
       "href": "/registry/changelog/2026-10-14-block-void-selection.json",
       "status": "draft",

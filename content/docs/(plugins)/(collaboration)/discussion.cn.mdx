@@ -16,13 +16,13 @@ Discussion 是复制的 UI，用于在一个锚定 popover 中打开区块的评
 
 | 所有者 | 职责 |
 | --- | --- |
-| `platejs/suggestion` 和 `platejs/suggestion/react` | 提供建议模式、语义 change 属性、精确 view 激活和稳定的 change hooks |
-| `platejs/authored` | 在文档中保存拟议编辑、身份、依赖、决定和保留内容 |
+| `platejs/suggestion` 和 `platejs/suggestion/react` | 提供建议模式、语义 change 属性、精确 view 激活，以及 change 和卡片 hooks |
+| `platejs/authored` | 在文档中保存拟议编辑及其身份，把它们分组为审阅卡片，并决定它们 |
 | `platejs/comments` 和 `platejs/comments/react` | 管理评论记录、操作、映射范围、decoration 和激活状态 |
 | 复制的 `suggestion` 项 | 配置包中 plugin 的内容属性，并组合 `SuggestionKit` |
 | 复制的 `discussion` 项 | 将 authored change 与可选评论 thread 关联，再渲染区块触发器、卡片和 Floating Discussion |
 
-应用负责关联 `CommentsJSON` 与文档版本、提供用户，并通过 `initialState.mutate` 授权持久化写入。Authored metadata 保存在 document envelope 中。评论 thread 包含语义目标，通过 `attachment(id)` 读取当前位置；目标也可以是稳定的 authored change ID。
+应用负责关联 `CommentsJSON` 与文档版本、提供用户，并通过 `initialState.mutate` 授权持久化写入。审阅 mark 保存在文档的 node 上，审阅记录保存在 document envelope 中。评论 thread 包含语义目标，通过 `attachment(id)` 读取当前位置；目标也可以是稳定的 authored change ID。
 
 ## 安装
 
@@ -95,33 +95,32 @@ export function DiscussionEditor({
 Discussion 按区块组合未解决的记录，并在每个区块内按时间排序：
 
 - 根评论 thread 显示为评论卡片；
-- 待处理的 authored change 显示为带有接受和拒绝操作的审阅卡片；
-- target 指向 change 的 thread 显示在对应审阅卡片内；
+- 待处理的 authored change 显示在带有接受和拒绝操作的审阅卡片中；
+- target 指向 change 的 thread 显示在包含该 change 的审阅卡片内；
 - 解决 thread 会移除评论 decoration；
-- 接受或拒绝 change 会隐藏其卡片和回复；
+- 接受或拒绝卡片会隐藏该卡片及其回复；
 - 文档 undo 撤销接受或拒绝决定，保留消息和 thread 的解决状态；
 - 解决或重新打开 thread 不进入文档 undo。
 
-`useSuggestionChanges(path)` 为每个区块提供原生 `AuthoredChange` record。Discussion 在复制的 registry 代码中派生日期、标签、range 和卡片文本，再关联来自 Comments 的 change-targeted thread。编辑评论正文不会重建 suggestion decoration，也不会唤醒无关区块。
+`useSuggestionGroups(blockKey)` 为每个区块提供与之相交的审阅卡片。卡片正文用 `read.changes({ group: card.id })` 逐页读取其 change。Discussion 在复制的 registry 代码中派生日期、标签、range 和卡片文本，再关联来自 Comments 的 change-targeted thread。
 
-审阅卡片直接调用 authored：
+审阅卡片决定它所显示的卡片：
 
 ```tsx
 import { AuthoredPlugin } from 'platejs/authored';
 
 const authored = editor.plugin(AuthoredPlugin);
-const selection = authored.read.select({ ids: [changeId] });
 const result = authored.update.decide({
   action: 'accept',
-  selection,
+  groups: [card],
 });
 ```
 
-使用 `action: 'reject'` 拒绝 change。当结果为 `stale` 或 `blocked` 时，请保持卡片打开，让审阅者刷新记录或显式解决依赖。
+使用 `action: 'reject'` 拒绝卡片。当结果为 `stale` 或 `blocked` 时，请保持卡片打开，让审阅者重新读取，或把 `result.with` 列出的相关 change 与它一起决定。
 
 ## Floating Discussion
 
-区块触发器会打开当前附着到该区块的未解决评论和待处理建议。点击行内评论文本会打开该位置的记录。点击 authored-change marker 会在已挂载的 suggestion view 中激活该 change。这些实时入口都打开同一个复制的 popover 和卡片。
+区块触发器会打开当前附着到该区块的未解决评论和待处理建议。点击行内评论文本会打开该位置的记录。点击 authored-change marker 会在已挂载的 suggestion view 中激活其卡片。这些实时入口都打开同一个复制的 popover 和卡片。
 
 当评论 range 重叠时，点击共享文本会按来源顺序打开该位置的全部 thread。选中的组合会在编辑和来源重排后保持不变，直到其他激活操作或 thread 删除改变它。点击未标记的编辑器内容会清除活动审阅。
 
@@ -148,11 +147,11 @@ if (result.status === 'applied') {
 }
 ```
 
-结果不是 `applied` 或抛出异常时，保留输入。回复使用 change 的位置，无需创建评论 anchor。Change 离开活动 projection 时，评论记录仍保留正文和解决状态。如果 undo 或文档更新恢复同一个 change ID，其未解决的回复会再次显示。
+结果不是 `applied` 或抛出异常时，保留输入。回复使用 change 的位置，无需创建评论 anchor。Change 不再待处理时，评论记录仍保留正文和解决状态。如果 undo 或文档更新恢复同一个 change ID，其未解决的回复会再次显示。
 
 ## 不使用 Comments
 
-`SuggestionPlugin` 不依赖 Comments。编辑器无需安装 `CommentsPlugin` 或 `DiscussionKit`，也可以使用建议模式、语义 decoration、活动 change 状态和 `useSuggestionChanges(path)`。
+`SuggestionPlugin` 不依赖 Comments。编辑器无需安装 `CommentsPlugin` 或 `DiscussionKit`，也可以使用建议模式、语义 decoration、活动卡片状态、`useSuggestionChanges(path)` 和 `useSuggestionGroups(blockKey)`。
 
 只有产品需要卡片、回复、作者、日期或 popover 时才添加 Discussion。这些展示和 thread 关联逻辑保留在复制的 registry 代码中。
 

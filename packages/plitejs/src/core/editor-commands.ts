@@ -678,6 +678,15 @@ export const editorCommands: EditorCommands = Object.freeze({
                 }
               : {}),
           });
+
+          const deletedTextMarks =
+            !survivingPoint && defaultText
+              ? NodeApi.extractProps(defaultText[0])
+              : {};
+
+          if (Object.keys(deletedTextMarks).length > 0) {
+            tx.marks.set(deletedTextMarks);
+          }
         });
       }
 

@@ -1061,10 +1061,7 @@ const mapChangedNodeKeys = (
       return false;
     }
 
-    if (
-      binding !== 'none' &&
-      !bindNodeKeyOnce(segment.after.node(targetPath), editor, nodeKey)
-    ) {
+    if (!bindNodeKeyOnce(segment.after.node(targetPath), editor, nodeKey)) {
       return false;
     }
     usedNodeKeys.add(nodeKey);
@@ -1305,13 +1302,7 @@ const queryMappedElementEntries = (
   );
 };
 
-/**
- * How a mapping binds node keys to the target document's node objects.
- * `publish` binds and allocates them, which only publication may do.
- * `inherited` binds the keys target nodes inherit by position and allocates
- * none, for a command frame's own document. `none` binds nothing.
- */
-export type NodeKeyBinding = 'inherited' | 'none' | 'publish';
+export type NodeKeyBinding = 'inherited' | 'publish';
 
 const describeMapping = (
   previous: MappedSnapshotIndexDescriptor | undefined,
@@ -1352,9 +1343,9 @@ export const mapSnapshotIndexThroughChange = (
   binding: NodeKeyBinding = 'publish'
 ): SnapshotIndex => {
   const publishNodeKeys = binding === 'publish';
+  const bindNodeKey = publishNodeKeys ? setNodeKey : bindNodeKeyOnce;
 
   assertMappingLengths(before, after, change);
-  // Materializing binds node keys, which only publication may do.
   if (publishNodeKeys) rebaseLargeSnapshotIndexOverlay(index);
 
   const previous = MAPPED_SNAPSHOT_INDEXES.get(index);
@@ -1370,9 +1361,6 @@ export const mapSnapshotIndexThroughChange = (
   const newPreparedRuntimePlacements =
     preparedRuntimePlacementsFromSegment(segment);
 
-  // Detached transaction specs still need a sparse identity overlay for draft
-  // selection mapping. Publication remains the only authority allowed to
-  // allocate or attach node keys to nodes.
   // The profiled work runs as bound calls, not arrows: an arrow would share
   // this scope with the mapped index's lookups, so each index would keep the
   // one it maps from, and every earlier one, alive.
@@ -1570,7 +1558,7 @@ export const mapSnapshotIndexThroughChange = (
       if (!nodeKey) continue;
       if (discarded.has(nodeKey)) return null;
 
-      if (publishNodeKeys) setNodeKey(node, editor, nodeKey);
+      bindNodeKey(node, editor, nodeKey);
 
       return nodeKey;
     }
@@ -1603,7 +1591,7 @@ export const mapSnapshotIndexThroughChange = (
       const existing = getNodeKeyForNode(node, editor);
 
       if (existing && existing !== nodeKey) return null;
-      if (publishNodeKeys) setNodeKey(node, editor, nodeKey);
+      bindNodeKey(node, editor, nodeKey);
 
       return targetPath;
     }
@@ -1655,9 +1643,7 @@ export const mapSnapshotIndexThroughChange = (
       pathToIdCache.set(key, null);
       return null;
     }
-    if (binding !== 'none' && !existing && !preparedNodeKey) {
-      setNodeKey(node, editor, nodeKey);
-    }
+    if (!existing && !preparedNodeKey) bindNodeKey(node, editor, nodeKey);
     cache(nodeKey, path);
 
     return nodeKey;

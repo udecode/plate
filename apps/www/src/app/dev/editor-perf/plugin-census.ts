@@ -2,6 +2,7 @@ import type { EditorPerfWorkloadId } from './workloads';
 
 export type EditorPerfPluginSetId =
   | 'basic'
+  | 'basic-aligned'
   | 'blockquote-only'
   | 'bold-only'
   | 'code-only'

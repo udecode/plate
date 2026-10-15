@@ -598,6 +598,67 @@ test('list drop: a moved text drop lands its items at the depth a paste gives th
   }
 });
 
+const dragHandle = async (
+  page: Page,
+  root: Locator,
+  { copy, from, to }: { copy: boolean; from: Locator; to: string }
+) => {
+  const handle = from
+    .locator('xpath=..')
+    .getByRole('button', { name: 'Drag block' });
+
+  await from.hover();
+  await handle.hover();
+
+  const handleBox = await handle.boundingBox();
+  const targetBox = await root
+    .locator('.editor-blockWrapper')
+    .filter({ hasText: new RegExp(`^${to}$`) })
+    .boundingBox();
+  const modifier = await page.evaluate(() =>
+    /Mac|iPad|iPhone|iPod/.test(navigator.platform) ? 'Alt' : 'Control'
+  );
+
+  await page.mouse.move(
+    handleBox!.x + handleBox!.width / 2,
+    handleBox!.y + handleBox!.height / 2
+  );
+  if (copy) await page.keyboard.down(modifier);
+  try {
+    await page.mouse.down();
+    await page.mouse.move(
+      targetBox!.x + targetBox!.width / 2,
+      targetBox!.y + 3,
+      {
+        steps: 12,
+      }
+    );
+    await page.mouse.up();
+  } finally {
+    if (copy) await page.keyboard.up(modifier);
+  }
+};
+
+const copyRomanThreeToTop = async (
+  page: Page,
+  demo: Awaited<ReturnType<typeof openListDemo>>
+) => {
+  await dragHandle(page, demo.root, {
+    copy: true,
+    from: demo.root
+      .locator('.editor-blockWrapper')
+      .filter({ hasText: /^Roman 3$/ }),
+    to: 'Todo 1',
+  });
+  await expect
+    .poll(async () => {
+      const blocks = await demo.blocks();
+
+      return blocks.length;
+    })
+    .toBe(18);
+};
+
 test('list drop: a handle copy dropped away from its list numbers as a list of its own [EDIT-LIST-DROP-001]', async ({
   page,
 }, testInfo) => {
@@ -607,46 +668,8 @@ test('list drop: a handle copy dropped away from its list numbers as a list of i
 
   try {
     const copied = await openListDemo(page, 'list-drop:handle-copy');
-    const wrapper = (text: string) =>
-      copied.root
-        .locator('.editor-blockWrapper')
-        .filter({ hasText: new RegExp(`^${text}$`) });
-    const handle = wrapper('Roman 3')
-      .locator('xpath=..')
-      .getByRole('button', { name: 'Drag block' });
 
-    await wrapper('Roman 3').hover();
-    await handle.hover();
-
-    const handleBox = await handle.boundingBox();
-    const targetBox = await wrapper('Todo 1').boundingBox();
-    const modifier = await page.evaluate(() =>
-      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ? 'Alt' : 'Control'
-    );
-
-    await page.mouse.move(
-      handleBox!.x + handleBox!.width / 2,
-      handleBox!.y + handleBox!.height / 2
-    );
-    await page.keyboard.down(modifier);
-    try {
-      await page.mouse.down();
-      await page.mouse.move(
-        targetBox!.x + targetBox!.width / 2,
-        targetBox!.y + 3,
-        { steps: 12 }
-      );
-      await page.mouse.up();
-    } finally {
-      await page.keyboard.up(modifier);
-    }
-    await expect
-      .poll(async () => {
-        const blocks = await copied.blocks();
-
-        return blocks.length;
-      })
-      .toBe(18);
+    await copyRomanThreeToTop(page, copied);
 
     const copiedBlocks = await copied.blocks();
 
@@ -670,6 +693,105 @@ test('list drop: a handle copy dropped away from its list numbers as a list of i
         ['Roman 4', 4],
       ],
     });
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('list drop: a handle move into another list joins it [EDIT-LIST-DROP-001]', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  try {
+    const moved = await openListDemo(page, 'list-drop:handle-move');
+
+    await copyRomanThreeToTop(page, moved);
+    await dragHandle(page, moved.root, {
+      copy: false,
+      from: moved.root
+        .locator('.editor-blockWrapper')
+        .filter({ hasText: /^Roman 3$/ })
+        .first(),
+      to: 'Roman 2',
+    });
+    await expect
+      .poll(async () => {
+        const blocks = await moved.blocks();
+
+        return blocks[2].text;
+      })
+      .toBe('Todo 1');
+
+    const movedBlocks = await moved.blocks();
+    const texts = movedBlocks.map(({ text }) => text);
+    const landed = texts.indexOf('Roman 2');
+
+    expect({
+      blocks: texts.slice(landed - 2, landed + 1),
+      numbers: await renderedNumbers(moved.root),
+    }).toEqual({
+      blocks: ['Decimal 13', 'Roman 3', 'Roman 2'],
+      numbers: [
+        ['Roman 1', 1],
+        ['Decimal 11', 1],
+        ['Decimal 111', 1],
+        ['Decimal 112', 2],
+        ['Decimal 12', 2],
+        ['Decimal 13', 3],
+        ['Roman 3', 2],
+        ['Roman 2', 3],
+        ['Decimal 11', 1],
+        ['Decimal 12', 2],
+        ['Roman 3', 4],
+        ['Roman 4', 5],
+      ],
+    });
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('list keys: a keyboard move into another list joins it [EDIT-LIST-DROP-001]', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  try {
+    const stepped = await openListDemo(page, 'list-keys:step-move');
+
+    await copyRomanThreeToTop(page, stepped);
+    await stepped.root.getByText('Roman 3', { exact: true }).first().click();
+    await page.keyboard.press('ControlOrMeta+Shift+ArrowDown');
+    await page.keyboard.press('ControlOrMeta+Shift+ArrowDown');
+    await expect
+      .poll(async () => {
+        const blocks = await stepped.blocks();
+
+        return blocks.slice(2, 7).map(({ text }) => text);
+      })
+      .toEqual(['Todo 1', 'Disc 1', 'Disc 2', 'Todo 2', 'Roman 3']);
+
+    expect(await renderedNumbers(stepped.root)).toEqual([
+      ['Roman 3', 1],
+      ['Roman 1', 2],
+      ['Decimal 11', 1],
+      ['Decimal 111', 1],
+      ['Decimal 112', 2],
+      ['Decimal 12', 2],
+      ['Decimal 13', 3],
+      ['Roman 2', 3],
+      ['Decimal 11', 1],
+      ['Decimal 12', 2],
+      ['Roman 3', 4],
+      ['Roman 4', 5],
+    ]);
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

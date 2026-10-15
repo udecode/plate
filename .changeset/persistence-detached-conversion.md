@@ -21,7 +21,3 @@ A migration step's `document` holds only `children`, `meta` and `roots`. Read an
 ```
 
 `plate migrate run` uses the same detached converter. Pass `--from <version|current>` for raw files; with it, the command reads every file as a raw document, so run persisted envelopes without it.
-
-Persist authored state with codec v6 footprints so current checkpoint admission can validate and index retained revisions without decoding their bodies. Older codec versions convert to v6 during admission.
-
-Compile Authored checkpoint construction and admission as a private capability of the installed Authored plugin. Generic Plite internals and Plate's core facade do not export Authored algorithms.

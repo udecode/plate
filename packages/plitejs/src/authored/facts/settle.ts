@@ -8,6 +8,7 @@ import {
   type LayerValue,
 } from '../tree/layers';
 import {
+  type AuthoredMark,
   type AuthoredMember,
   deletionOf,
   heldOf,
@@ -16,6 +17,7 @@ import {
   readMembers,
   withMembers,
 } from '../tree/marks';
+import { heldByJoinsAt, heldByPendingJoins } from '../tree/resolve';
 import { createDependencies, type Dependencies } from './dependencies';
 import { isEditingChange } from './editing';
 import { claimsOf, outcomeOf, type ReviewFacts } from './facts';
@@ -37,6 +39,7 @@ type Pass = Readonly<{
   /** Writes what a node's insertions rest on once some of them are accepted. */
   dependencies: Dependencies;
   facts: ReviewFacts;
+  heldByJoin: Readonly<{ has: (node: Node) => boolean }>;
   reopenedRejections: Set<string>;
   returnsHeld: boolean;
 }>;
@@ -47,12 +50,10 @@ const settleFormats = (
   facts: ReviewFacts
 ) => {
   const outcomes = new Map(tags.map((tag) => [tag, outcomeOf(facts, tag)]));
-  const outcome: LayerOutcome = (change) => {
-    for (const [tag, result] of outcomes) {
-      if (tag.change === change && result !== 'pending') return result;
-    }
+  const outcome: LayerOutcome = (tag) => {
+    const result = outcomes.get(tag);
 
-    return 'keep';
+    return result === 'accept' || result === 'reject' ? result : 'keep';
   };
   const dropped = new Set<FormatTag>();
   const props: Record<string, unknown> = {};
@@ -60,7 +61,7 @@ const settleFormats = (
   for (const key of new Set(tags.map((tag) => tag.key))) {
     const onKey = tags.filter((tag) => tag.key === key);
 
-    if (onKey.every((tag) => outcomes.get(tag) === 'pending')) continue;
+    if (onKey.every((tag) => outcome(tag) === 'keep')) continue;
 
     const decision = decideKey(node[key] as LayerValue, onKey, outcome);
 
@@ -127,6 +128,10 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
     const outcome = outcomeOf(facts, claim);
 
     if (claim.kind === 'delete') {
+      if (isEditingChange(claim.change) && pass.heldByJoin.has(node)) {
+        kept.push(claim);
+        continue;
+      }
       if (outcome === 'accept' && isText) return null;
       if (outcome === 'reject') {
         kept.push(member.kind === 'held' ? member : heldOf(claim));
@@ -236,18 +241,42 @@ export const settleValue = <V extends Value>(
   const pass: Pass = {
     dependencies: createDependencies(facts),
     facts,
+    heldByJoin: new Set<Node>(),
     reopenedRejections: new Set(),
     returnsHeld,
+  };
+  const decisionOf = (mark: AuthoredMark) => {
+    const outcome = outcomeOf(facts, mark);
+
+    return outcome === 'pending' ? 'keep' : outcome;
   };
 
   if (!facts.hasVerdicts) {
     return { reopenedRejections: pass.reopenedRejections, value: null };
   }
 
-  const settleIn = (root: string, nodes: NodeList<Node>) =>
-    scope === 'document'
-      ? settleNodes(nodes, pass)
-      : settleBlocks(nodes, pass, scope.get(root));
+  const settleIn = (root: string, nodes: NodeList<Node>) => {
+    if (scope === 'document') {
+      return settleNodes(nodes, {
+        ...pass,
+        heldByJoin: heldByPendingJoins(nodes, readAuthoredMarks, decisionOf),
+      });
+    }
+
+    const blocks = scope.get(root);
+    const held = [...(blocks ?? [])].map((index) =>
+      heldByJoinsAt(nodes, index, readAuthoredMarks, decisionOf)
+    );
+
+    return settleBlocks(
+      nodes,
+      {
+        ...pass,
+        heldByJoin: { has: (node) => held.some((set) => set.has(node)) },
+      },
+      blocks
+    );
+  };
   const main = rootNodesOf(
     value as Readonly<{ children: readonly Node[] }>,
     'children'

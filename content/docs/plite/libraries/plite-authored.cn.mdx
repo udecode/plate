@@ -59,7 +59,7 @@ if (change) {
 }
 ```
 
-向 `tx.authored.propose(...)` 传入 `{ changeId: id }`，可以指定新建议的 identity，或修订当前作者拥有的 pending change。决定使用读取时的 change revision。展示批量决定前调用 `read.authored.preview(...)`，并处理每种 `AuthoredResult` 状态。
+向 `tx.authored.propose(...)` 传入 `{ changeId: id }`，可以为 proposal 命名，或把该 transaction 的写入加入具有该 ID 的 pending change。决定使用读取时的 change revision。`blocked` 结果在 `with` 中列出需要一起决定的 change；在一次调用中传入多个决定即可一起决定。展示批量决定前调用 `read.authored.preview(...)`，并处理每种 `AuthoredResult` 状态。
 
 ## 导入比较结果
 
@@ -86,23 +86,34 @@ const result = proposeAuthoredComparison(editor, { comparison });
 const page = editor.read.authored.changes({
   authorId: 'alice',
   cursor,
-  from,
   limit: 50,
-  to,
 });
+const inRange = editor.read.authored.changes({ at: range });
 const change = editor.read.authored.change(id);
-const changesAtRange = editor.read.authored.changesAt(range);
 ```
 
-`AuthoredChange` 提供稳定 identity、作者、创建时间、revision、kind 和当前 range。列表使用 cursor paging；keyed reader 使用 `change(id)`。
+`changes(query)` 按文档顺序读取待处理 change，默认每页 50 条，最多 200 条。可用 `at`、`authorId`、`from` 和 `to` 或 `group` 缩小范围，并传入该页的 `cursor` 读取下一页。`AuthoredChange` 提供稳定 identity、作者、创建时间、revision、kind 和当前 range。Keyed reader 使用 `change(id)`。
 
-## 保留作者历史
+## 审阅卡片
 
+审阅卡片把同一作者的相邻待处理 change 归为一组：
 
+```tsx
+const [card] = editor.read.authored.groups({ at: [0] });
 
-使用 `plitejs/history` 的本地 undo 和 redo 管理交互历史。
+if (card) {
+  const result = editor.update.authored.decide({
+    action: 'accept',
+    groups: [card],
+  });
+}
+```
 
-History undo 和 redo 保留本地交互生命周期。它们可以反转 authored transaction 并恢复映射后的 selection，但不充当协作审阅决定。
+`groups({ at })` 按文档顺序返回卡片摘要：`id`、`authorId`、`createdAt`、`changeCount` 和 `revision`。卡片 ID 是其中最早的 change。`groupOf(changeId)` 返回包含某个 change 的卡片，`changes({ group: card.id })` 分页读取其 change。卡片的 ID 或 revision 变化后，卡片决定会返回 `stale`。`view.api.authored.subscribeChanges(listener)` 为每个改变审阅的 commit 传入 `{ blocks, changed, groups, removed }`。
+
+## 本地历史
+
+使用 `plitejs/history` 的本地 undo 和 redo 管理交互历史。它们可以反转 authored transaction 并恢复映射后的 selection，但不充当协作审阅决定。
 
 ## 持久化和协作
 
@@ -118,11 +129,16 @@ History undo 和 redo 保留本地交互生命周期。它们可以反转 author
 
 | 接口 | 用途 |
 | --- | --- |
-| `tx.authored.propose(options?)` | 在当前 transaction 中开始或修订 proposal。 |
+| `tx.authored.propose(options?)` | 把当前 transaction 的写入记录为 proposal。 |
 | `read.authored.view()` | 读取当前 view policy。 |
-| `read.authored.change(id)` | 读取一个 keyed change。 |
-| `read.authored.changes(query?)` | 分页读取 change 列表。 |
-| `read.authored.changesAt(range)` | 读取与 range 相交的 change。 |
+| `read.authored.change(id)` | 读取一个待处理 change。 |
+| `read.authored.changes(query?)` | 按文档顺序分页读取待处理 change。 |
+| `read.authored.details(id)` | 读取一个 change 及其语义 part。 |
+| `read.authored.groups({ at })` | 读取与某个位置相交的卡片摘要。 |
+| `read.authored.groupOf(changeId)` | 读取包含某个 change 的卡片。 |
+| `read.authored.reviewOf(node)` | 读取存储 node 的待处理 mark。 |
 | `read.authored.preview(decision)` | 在不应用决定的情况下验证它。 |
-| `update.authored.decide(decision)` | 接受或拒绝选中的 change。 |
+| `update.authored.decide(decision)` | 接受或拒绝 change 或卡片。 |
 | `api.authored.setView(policy)` | 设置一个 view 的 authored policy。 |
+| `api.authored.subscribeChanges(listener)` | 每次改变审阅的 commit 都会收到一个 delta。 |
+| `api.authored.subscribeRefusals(listener)` | 接收编辑器拒绝的每个 proposal 写入或 view 切换。 |

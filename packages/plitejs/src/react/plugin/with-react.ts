@@ -26,6 +26,7 @@ import {
   assertEditorOptions,
   type CheckedEditorOptions,
   EDITOR_OPTION_KEYS,
+  readEditorOptions,
 } from '../../internal/editor-options';
 import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import type { AnyEditor } from '../editable/runtime-editor-api';
@@ -193,7 +194,7 @@ export function createEditor<
     plugins: authoredPlugins,
     lifecycleErrorSink,
     ...editorOptions
-  } = options;
+  } = readEditorOptions(options, REACT_EDITOR_OPTION_KEYS);
   const exactDOMPlugin = dom({ clipboardFormatKey });
   const installedPlugins = [
     react({ dom: exactDOMPlugin }),

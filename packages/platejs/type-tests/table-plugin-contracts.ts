@@ -141,8 +141,15 @@ const extendedTablePlugin = TablePlugin.extend((ctx) => {
     borders.none satisfies boolean | 'mixed';
   }
 
+  // @ts-expect-error a block insert takes one block for after, not a node selection
+  table.update.insert({}, { after: nodeSelection });
+  // @ts-expect-error replaceEmpty applies only to an after landing
+  table.update.insert({}, { before: cellKey, replaceEmpty: true });
+  // @ts-expect-error replaceEmpty applies only to an after landing
+  table.update.insert({}, { at: [1], replaceEmpty: false });
+
   const results: readonly boolean[] = [
-    table.update.insert({ columns: 2, header: true, rows: 3 }, { at: point }),
+    table.update.insert({ columns: 2, header: true, rows: 3 }, { at: [1] }),
     table.update.insertColumn({ at: cellKey, before: true, select: false }),
     table.update.insertRow({ at: rowElement, header: true }),
     table.update.remove({ at: tableElement }),

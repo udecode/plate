@@ -93,6 +93,48 @@ describe('compilePlateModel', () => {
     );
   });
 
+  it('keeps the selection when the generated element toggle is refused', () => {
+    const ElementPlugin = defineHeadlessPlugin('calloutCapability', {
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          type: 'callout_node',
+        },
+      },
+    });
+    const initialValue = [{ children: [{ text: 'Title' }], type: 'paragraph' }];
+    const selection = {
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+      kind: 'text',
+    } as const;
+    const editor = createEditor({
+      initialValue,
+      plugins: [ElementPlugin],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseParagraphPlugin }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 0,
+          })
+        ),
+      },
+      selection,
+    });
+
+    const toggled = editor
+      .plugin(ElementPlugin)
+      .update.toggle({ at: [0], collapse: true });
+
+    expect(editor.read.selection()).toMatchObject({
+      anchor: selection.anchor,
+      focus: selection.focus,
+    });
+    expect(editor.read.children()).toEqual(initialValue);
+    expect(toggled).toBe(false);
+  });
+
   it('binds generic element updates to the plugin persisted type', () => {
     const ElementPlugin = defineHeadlessPlugin('calloutCapability', {
       schema: {
@@ -129,9 +171,9 @@ describe('compilePlateModel', () => {
     });
     const element = editor.plugin(ElementPlugin);
 
-    element.update.toggle({ at: [0] });
+    expect(element.update.toggle({ at: [0] })).toBe(true);
     expect(editor.read.children()[0]).toMatchObject({ type: 'callout_node' });
-    element.update.toggle({ at: [0] });
+    expect(element.update.toggle({ at: [0] })).toBe(true);
     expect(editor.read.children()[0]).toMatchObject({ type: 'paragraph' });
 
     element.update.insert({ tone: 'warning' }, { at: [1] });

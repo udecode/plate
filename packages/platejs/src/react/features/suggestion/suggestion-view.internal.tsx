@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { AuthoredPlugin, type AuthoredView } from '../../../authored';
 import type { Editor } from '../../editor';
+import { redrawBlocks } from '../../internal/block-redraws';
 import { useEditorViewState } from '../../plite-react';
 import { useEditor } from '../../stores';
 
@@ -76,12 +77,11 @@ export function SuggestionViewProvider({
   React.useEffect(() => {
     const authored = editor.plugin(AuthoredPlugin);
 
-    return authored.api.subscribeChanges((changeIds) => {
+    return authored.api.subscribeChanges(({ blocks, removed }) => {
       const { activeId } = store.getSnapshot();
 
-      if (activeId && changeIds.includes(activeId)) {
-        if (!authored.read.change(activeId)) store.setActiveId(null);
-      }
+      if (activeId && removed.includes(activeId)) store.setActiveId(null);
+      redrawBlocks(editor, blocks);
     });
   }, [editor, store]);
 

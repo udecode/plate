@@ -34,6 +34,7 @@ type InlineComboboxContextValue = {
   box: UseComboboxReturn;
   filter: FilterFn | false;
   match: ComboboxMatch | null;
+  open: boolean;
   setHasEmpty: (hasEmpty: boolean) => void;
 };
 
@@ -220,8 +221,8 @@ const InlineCombobox = <P extends PluginReference>({
   }, [dismiss, queryBecameProse]);
 
   const contextValue = React.useMemo<InlineComboboxContextValue>(
-    () => ({ box, filter, match, setHasEmpty }),
-    [box, filter, match]
+    () => ({ box, filter, match, open, setHasEmpty }),
+    [box, filter, match, open]
   );
 
   return (
@@ -245,7 +246,7 @@ const InlineComboboxContent = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => {
   const editor = useEditor();
-  const { box, match } = useInlineComboboxContext();
+  const { box, match, open } = useInlineComboboxContext();
   const getAnchorRect = React.useCallback(() => {
     if (!match) return null;
 
@@ -265,6 +266,11 @@ const InlineComboboxContent = ({
         autoFocusOnHide={false}
         autoFocusOnShow={false}
         getAnchorRect={getAnchorRect}
+        // Ariakit keeps a closed popover shown for at least two frames whenever
+        // its computed animation or transition duration is nonzero, even a
+        // reduced-motion reset's 0.01ms. By then the closed match has removed
+        // its options and anchor.
+        hidden={!open}
         hideOnEscape={false}
         hideOnInteractOutside={(event) =>
           !(event.target instanceof Node) ||

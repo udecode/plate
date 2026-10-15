@@ -529,7 +529,7 @@ describe('DOM side strips', () => {
   });
 });
 
-describe('block copy adoption while hovering', () => {
+describe('block adoption while hovering', () => {
   const counted = () => {
     const runs: string[] = [];
     const plugin = definePlugin('counting-adopt', {
@@ -548,31 +548,45 @@ describe('block copy adoption while hovering', () => {
     contributions: [transferVeto.of(({ target: [, path] }) => path.length > 1)],
   });
 
-  test.each([
-    ["a container's bottom band shared with its last child", [], '1', 88, '0'],
-    [
-      'a refused anchor and the edge it falls back to',
-      [insideQuote],
-      '1.0',
-      55,
-      '2',
-    ],
-  ] as const)(
-    'adopts once per candidate edge over %s until the document changes',
-    (_, extra, at, clientY, payload) => {
+  test.each(
+    (['copy', 'move'] as const).flatMap(
+      (intent) =>
+        [
+          [
+            intent,
+            "a container's bottom band shared with its last child",
+            [],
+            '1',
+            88,
+            '0',
+          ],
+          [
+            intent,
+            'a refused anchor and the edge it falls back to',
+            [insideQuote],
+            '1.0',
+            55,
+            '2',
+          ],
+        ] as const
+    )
+  )(
+    'adopts once per candidate edge for a %s over %s until the document changes',
+    (intent, _, extra, at, clientY, payload) => {
       const { plugin, runs } = counted();
       const { drop, editor } = mount(LAYOUT, [plugin, ...extra]);
+      const copy = intent === 'copy';
 
-      drop(at, clientY, payload, { copy: true });
+      drop(at, clientY, payload, { copy });
       const first = [...runs];
 
       for (let repeat = 0; repeat < 4; repeat += 1) {
-        drop(at, clientY, payload, { copy: true });
+        drop(at, clientY, payload, { copy });
       }
       const repeated = runs.length;
 
       editor.update.text.insert('z', { at: { offset: 0, path: [2, 0] } });
-      drop(at, clientY, payload, { copy: true });
+      drop(at, clientY, payload, { copy });
 
       expect({
         distinct: new Set(first).size === first.length && first.length > 0,

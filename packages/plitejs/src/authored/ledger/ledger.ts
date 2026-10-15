@@ -475,6 +475,21 @@ export class ReviewLedger {
     return this.book.sync(stored);
   }
 
+  subscribe(stored: JsonEditorValue) {
+    this.book.sync(stored);
+    this.book.subscribe();
+  }
+
+  unsubscribe() {
+    this.book.unsubscribe();
+  }
+
+  publish(stored: JsonEditorValue) {
+    this.book.sync(stored);
+
+    return this.book.publish();
+  }
+
   ranksNaming(stored: JsonEditorValue, incarnations: readonly string[]) {
     return this.book.sync(stored).ranksNaming(incarnations);
   }

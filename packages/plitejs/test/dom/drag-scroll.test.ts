@@ -5,7 +5,6 @@ import { createEditor } from 'plitejs';
 import { dom } from '../../src/dom';
 import { EDITOR_TO_ELEMENT } from '../../src/dom/internal';
 import {
-  canScrollY,
   getDragAutoScrollTarget,
   getVisibleRect,
 } from '../../src/dom/plugin/dom-drag-scroll';
@@ -156,11 +155,13 @@ describe('drag auto-scroll target', () => {
       )
     );
 
-    expect(canScrollY(scroller)).toBe(false);
+    const pointer = { clientX: 50, clientY: 90, rootElement: scroller };
+
+    expect(getDragAutoScrollTarget(pointer)).toBeNull();
 
     scroller.style.overflowY = 'auto';
 
-    expect(canScrollY(scroller)).toBe(true);
+    expect(getDragAutoScrollTarget(pointer)).not.toBeNull();
   });
 
   test('scrolls inside the visible edge and returns the pixels moved', () => {

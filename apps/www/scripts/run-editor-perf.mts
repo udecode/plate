@@ -33,6 +33,7 @@ type ScenarioId =
   | 'plate-core-element-id'
   | 'plate-core-element-id-seeded'
   | 'plate-basic'
+  | 'plate-basic-aligned'
   | 'plate-code-only';
 type VisibilityMode = 'chunk' | 'element' | 'none';
 type RunnerJob = {

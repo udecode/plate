@@ -66,9 +66,9 @@ export type AuthoredChangeDetails = Readonly<{
  * Adjacent pending changes by one author that one card shows, such as a
  * deletion and the insertion that replaces it. Its id is its oldest change by
  * creation time, then id, so every peer and reload names it alike; the id
- * moves when the card splits or merges, or when that change's earliest text
- * goes. `revision` changes when a change joins or leaves the card or a
- * member's revision changes.
+ * moves when the card splits or merges, or when that change leaves it.
+ * `revision` changes when a change joins or leaves the card or a member's
+ * revision changes.
  */
 export type AuthoredChangeGroup = Readonly<{
   authorId: string;
@@ -93,6 +93,23 @@ export type AuthoredQuery = Readonly<{
 export type AuthoredPage = Readonly<{
   cursor: string | null;
   items: readonly AuthoredChange[];
+}>;
+
+/**
+ * What one commit changed in the review, shared by every listener of a view.
+ */
+export type AuthoredChangesDelta = Readonly<{
+  /**
+   * Blocks of the view holding a change whose card id changed, which the
+   * commit may not have written.
+   */
+  blocks: readonly NodeKey[];
+  /** Pending changes that began or whose revision changed. */
+  changed: readonly string[];
+  /** Cards whose summary changed, that began or that ended, by id. */
+  groups: readonly string[];
+  /** Changes no longer pending. */
+  removed: readonly string[];
 }>;
 
 /**

@@ -588,7 +588,7 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
     return null;
   }
 
-  const getAdjacentOwner = (reverse: boolean) => {
+  const getAdjacentTarget = (reverse: boolean) => {
     const adjacent = editor.read((state) => {
       const block = state.nodes.block({ at: selection.focus });
       const edge =
@@ -607,12 +607,27 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
 
     if (!adjacent) return null;
 
-    const owner = getSelectableOwnerAncestorNodeSelection(
+    const ancestorOwner = getSelectableOwnerAncestorNodeSelection(
       editor,
       adjacent.point
     );
+    const owner =
+      ancestorOwner && !PathApi.equals(ancestorOwner.path, adjacent.blockPath)
+        ? ancestorOwner
+        : null;
+    // Browsers do not move a native caret into a nested editing host, so text
+    // under a 'model' coverage boundary, such as an external text view, is
+    // entered by setting the model selection.
+    const modelSelectedText =
+      !owner &&
+      getMountedEditableDOMRuntime(editor)
+        ?.domCoverage.getBoundariesForRange({
+          anchor: adjacent.point,
+          focus: adjacent.point,
+        })
+        .some(({ selectionPolicy }) => selectionPolicy === 'model');
 
-    if (!owner || PathApi.equals(owner.path, adjacent.blockPath)) return null;
+    if (!owner && !modelSelectedText) return null;
 
     if (!PointApi.equals(selection.focus, adjacent.edge)) {
       try {
@@ -636,6 +651,13 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
       } catch {
         return null;
       }
+    }
+
+    if (!owner) {
+      return SelectionApi.text({
+        anchor: adjacent.point,
+        focus: adjacent.point,
+      });
     }
 
     if (reverse) {
@@ -681,7 +703,7 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
   };
 
   if (event.key === 'ArrowDown') {
-    return getAdjacentOwner(false);
+    return getAdjacentTarget(false);
   }
 
   const owner = getSelectableOwnerAncestorNodeSelection(
@@ -689,7 +711,7 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
     selection.focus
   );
 
-  if (!owner) return getAdjacentOwner(true);
+  if (!owner) return getAdjacentTarget(true);
 
   if (PointApi.equals(selection.focus, owner.start)) {
     return owner.selection;

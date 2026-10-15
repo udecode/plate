@@ -13,9 +13,9 @@ export type DocsSidebar = {
 };
 
 export type DocsSidebarView = {
-  href: string;
+  rootHrefs: string[];
   sections: SidebarNavItem[];
-  nested?: { back: { href: string; title: string }; title: string };
+  nested?: { title: string };
 };
 
 const isUnder = (pathname: string, href: string) =>
@@ -41,21 +41,14 @@ export function selectDocsSidebar(
   sidebar: DocsSidebar | undefined,
   pathname: string
 ): DocsSidebarView {
-  if (!sidebar) return { href: '/docs', sections: [] };
+  if (!sidebar) return { rootHrefs: ['/docs'], sections: [] };
 
   const root = findNestedRoot(sidebar, pathname);
 
-  if (!root) {
-    return { href: sidebar.main.href, sections: sidebar.main.sections };
-  }
-
   return {
-    href: root.href,
-    nested: {
-      back: { href: sidebar.main.href, title: sidebar.main.title },
-      title: root.title,
-    },
-    sections: root.sections,
+    nested: root && { title: root.title },
+    rootHrefs: [sidebar.main.href, ...sidebar.nested.map(({ href }) => href)],
+    sections: sidebar.main.sections,
   };
 }
 

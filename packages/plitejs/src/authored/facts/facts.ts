@@ -187,6 +187,23 @@ export const assertRecordWrites = (store: RecordStore, ops: RecordOps) => {
       assertChainEnds(record, get, ended);
     }
     written.forEach(assertContentId);
+
+    const dropped = new Set(
+      [...contexts].flatMap(([ctx, json]) => (json === null ? [ctx] : []))
+    );
+
+    if (dropped.size > 0) {
+      for (const [ctx] of getRecordEntries(store, CONTEXTS)) {
+        const base = readContext(store, ctx)?.base;
+
+        if (base != null && dropped.has(base)) {
+          throw new AuthoredMarkError(
+            `Review context ${base} was dropped while context ${ctx} rests on it.`,
+            []
+          );
+        }
+      }
+    }
   }
   for (const [id, json] of verdicts ?? []) {
     if (json !== null) assertVerdict(id, json);

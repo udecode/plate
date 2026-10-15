@@ -2,4 +2,4 @@
 'plitejs': patch
 ---
 
-Add pure complete-document authored projection, review markup, and range-mapping APIs.
+Add pure complete-document authored projection and range-mapping APIs.

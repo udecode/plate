@@ -1014,7 +1014,7 @@ it('mirrors the legacy string oracle rows', () => {
 
 it('reads a node selection with the void and read-only rules of a path', () => {
   const editor = createPliteEditor({
-    initialSelection: SelectionApi.nodes([[0], [1]]),
+    initialSelection: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
     initialValue: [
       {
         type: 'paragraph',

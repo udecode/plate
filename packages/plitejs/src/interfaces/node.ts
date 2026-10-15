@@ -1,11 +1,4 @@
-import {
-  type Path,
-  PathApi,
-  type Range,
-  RangeApi,
-  type Text,
-  TextApi,
-} from '..';
+import { childAtPathIndex } from '../core/change/document-index';
 import { isEditorContent } from '../core/content';
 import {
   getEditorRuntime,
@@ -26,8 +19,10 @@ import {
   type ElementIn,
   type ElementOf,
 } from './element';
+import { type Path, PathApi } from './path';
+import { type Range, RangeApi } from './range';
 import type { SchemaElementHandle } from './schema';
-import type { TextOf } from './text';
+import { type Text, TextApi, type TextOf } from './text';
 
 /**
  * The `Node` union type represents all of the different types of nodes that
@@ -425,6 +420,9 @@ const childListOf = (node: Ancestor) =>
     ? getEditorRuntime(node).getChildList()
     : getAncestorChildren(node);
 
+const childAt = (node: Ancestor, index: number) =>
+  childAtPathIndex(childListOf(node), index);
+
 const getWholeTopLevelChildFragment = (
   root: Ancestor,
   range: Range
@@ -688,7 +686,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
       throw new Error('Expected index to be a number');
     }
 
-    const c = childListOf(root).at(index);
+    const c = childAt(root, index);
 
     if (c == null) {
       throw new Error(
@@ -929,7 +927,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
         return undefined;
       }
 
-      const child = childListOf(node).at(p);
+      const child = childAt(node, p);
 
       if (!child) {
         return undefined;
@@ -953,7 +951,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
         return false;
       }
 
-      const child = childListOf(node).at(p);
+      const child = childAt(node, p);
 
       if (!child) {
         return false;

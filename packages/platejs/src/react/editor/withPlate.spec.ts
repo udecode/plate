@@ -21,10 +21,15 @@ describe('createEditor', () => {
     );
   });
 
-  it('allocates with the options that the options object inherits', () => {
+  it('builds with the options that the options object inherits', () => {
     const reports: unknown[] = [];
     const viewOnly = createEditor(
-      Object.create({ id: 'inherited', readOnly: true })
+      Object.create({
+        id: 'inherited',
+        initialValue: [{ children: [{ text: 'One' }], type: 'paragraph' }],
+        readOnly: true,
+        userId: 'ada',
+      })
     );
     const limited = createEditor(
       Object.create({
@@ -41,10 +46,19 @@ describe('createEditor', () => {
     limited.update.text.insert('abc', { at: { offset: 0, path: [0, 0] } });
 
     expect({
+      document: viewOnly.read.text.string([]),
       id: viewOnly.id,
       readOnly: viewOnly.read.view.isReadOnly(),
       reports: reports.length,
       text: limited.read.text.string([]),
-    }).toEqual({ id: 'inherited', readOnly: true, reports: 1, text: 'ab' });
+      userId: viewOnly.userId,
+    }).toEqual({
+      document: 'One',
+      id: 'inherited',
+      readOnly: true,
+      reports: 1,
+      text: 'ab',
+      userId: 'ada',
+    });
   });
 });

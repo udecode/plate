@@ -112,6 +112,56 @@ const SharedPortalSchema = defineEditorSchema('schema:slice-landing-shared', {
   },
 });
 
+const NestedPortalSchema = defineEditorSchema('schema:slice-landing-nested', {
+  ...LandingSchema.schema,
+  elements: {
+    ...LandingSchema.schema.elements,
+    portal: {
+      content: text(),
+      contentRoots: {
+        body: {
+          content: schema.content.types(['paragraph', 'portal'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'exclusive',
+        },
+      },
+    },
+  },
+});
+
+const rootOwner = (root: string, caption = 'P') => ({
+  childRoots: { body: root },
+  children: [{ text: caption }],
+  type: 'portal',
+});
+
+const carried = (root: string) =>
+  ContentSlice.fromJSON({
+    content: [rootOwner(root)],
+    openEnd: 0,
+    openStart: 0,
+    roots: { [root]: [paragraph('X')] },
+  });
+
+const pasteOutcome = (
+  editor: ReturnType<typeof createEditor>,
+  slice: ContentSlice
+) => {
+  const before = {
+    selection: editor.read.selection(),
+    value: editor.read.value(),
+  };
+  const result = editor.update.slice.replace(slice);
+
+  return {
+    after: { selection: editor.read.selection(), value: editor.read.value() },
+    before,
+    result,
+  };
+};
+
 const SingleNoteSchema = defineEditorSchema(
   'schema:slice-landing-single-note',
   {
@@ -619,7 +669,7 @@ describe('slice landing', () => {
     ]);
   });
 
-  it('fits the landing slice when an open proposal names a root it did not copy', () => {
+  it('closes an open proposal that names an existing shared root', () => {
     const editor = createEditor({
       initialSelection: caret([1, 0]),
       initialValue: {
@@ -664,7 +714,11 @@ describe('slice landing', () => {
         children: [{ text: '' }],
         type: 'portal',
       },
-      paragraph('Plain'),
+      {
+        childRoots: { body: 'body:1' },
+        children: [{ text: 'Copied' }],
+        type: 'portal',
+      },
     ]);
   });
 
@@ -699,13 +753,23 @@ describe('slice landing', () => {
 
       editor.update.slice.replace(ContentSlice.closed([paragraph('Plain')]));
 
-      return editor.read.children();
+      return editor.read.value();
     });
 
-    assert.deepEqual(results, [
-      [portal('constructor', ''), paragraph('Plain')],
-      [portal('toString', ''), paragraph('Plain')],
-    ]);
+    assert.deepEqual(
+      results,
+      ['constructor', 'toString'].map((name) => ({
+        children: [
+          portal(name, ''),
+          portal(name, 'A'),
+          portal('copied:copy', 'B'),
+        ],
+        roots: {
+          [name]: [paragraph('Shared')],
+          'copied:copy': [paragraph('Copied')],
+        },
+      }))
+    );
   });
 
   it('replaces an empty block in a named-root view', () => {
@@ -741,7 +805,7 @@ describe('slice landing', () => {
   it('shows a paste over selected blocks as a limited slice on the first block', () => {
     const seen: unknown[] = [];
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0], [2]]),
+      initialSelection: SelectionApi.nodes([[0], [2]], { mode: 'block' }),
       initialValue: [paragraph('aa'), paragraph('b'), paragraph('cc')],
       maxLength: 5,
       plugins: [
@@ -822,7 +886,7 @@ describe('slice landing', () => {
         }),
         read((editor) => {
           editor.update.selection.set(
-            SelectionApi.nodes([[0]], { root: 'notes' })
+            SelectionApi.nodes([[0]], { mode: 'block', root: 'notes' })
           );
           editor.update.slice.replace(plain);
         }),
@@ -1113,7 +1177,9 @@ describe('slice landing', () => {
     });
     const data = new Map([['text/plain', '1234567']]);
 
-    editor.update.selection.set(SelectionApi.nodes([[0]], { root: 'notes' }));
+    editor.update.selection.set(
+      SelectionApi.nodes([[0]], { mode: 'block', root: 'notes' })
+    );
     editor.api.dom.clipboard.insertData({
       files: [] as unknown as FileList,
       getData: (type: string) => data.get(type) ?? '',
@@ -1161,8 +1227,11 @@ describe('slice landing', () => {
     assert.deepEqual(
       [
         run(caret([0, 0], 2), [paragraph('WXYZQ')]),
-        run(SelectionApi.nodes([[0]]), [paragraph('WXYZQ')]),
-        run(SelectionApi.nodes([[0]]), [paragraph('WX'), paragraph('YZQ')]),
+        run(SelectionApi.nodes([[0]], { mode: 'block' }), [paragraph('WXYZQ')]),
+        run(SelectionApi.nodes([[0]], { mode: 'block' }), [
+          paragraph('WX'),
+          paragraph('YZQ'),
+        ]),
       ],
       [
         [paragraph('abWX'), paragraph('c')],
@@ -1174,7 +1243,7 @@ describe('slice landing', () => {
 
   it('replaces a selected object block whole with an open paste', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [media('cap'), paragraph('tail')],
       plugins: [LandingSchema],
     });
@@ -1206,7 +1275,7 @@ describe('slice landing', () => {
       type: 'portal',
     });
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [paragraph('aa'), paragraph('')],
       plugins: [LandingSchema],
     });
@@ -1244,7 +1313,7 @@ describe('slice landing', () => {
       plugins: [LandingSchema],
     }).read.slice.export();
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [paragraph('aa'), paragraph('')],
       plugins: [LandingSchema],
     });
@@ -1260,7 +1329,9 @@ describe('slice landing', () => {
   it('deletes the selected blocks an empty paste replaces', () => {
     const results = [[[0]], [[1]], [[0], [1]]].map((paths) => {
       const editor = createEditor({
-        initialSelection: SelectionApi.nodes(paths as [number[]]),
+        initialSelection: SelectionApi.nodes(paths as [number[]], {
+          mode: 'block',
+        }),
         initialValue: [paragraph('abc'), paragraph('def')],
       });
 
@@ -1285,6 +1356,7 @@ describe('slice landing', () => {
   ) => {
     const editor = createEditor({
       initialSelection: SelectionApi.nodes([[notes.length - 1]], {
+        mode: 'block',
         root: 'notes',
       }),
       initialValue: {
@@ -1320,7 +1392,7 @@ describe('slice landing', () => {
 
   it('deletes the quote around the only paragraph an empty paste replaces', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[1, 0]]),
+      initialSelection: SelectionApi.nodes([[1, 0]], { mode: 'block' }),
       initialValue: [
         paragraph('bc'),
         { type: 'quote', children: [paragraph('ghij')] },
@@ -1346,7 +1418,7 @@ describe('slice landing', () => {
       type: 'portal',
     });
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[1]]),
+      initialSelection: SelectionApi.nodes([[1]], { mode: 'block' }),
       initialValue: {
         children: [portal('body:1'), paragraph('aa')],
         roots: { 'body:1': [paragraph('Body')] },
@@ -1375,7 +1447,7 @@ describe('slice landing', () => {
       type: 'portal',
     });
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: {
         children: [portal('P'), paragraph('aa')],
         roots: { 'body:1': [paragraph('Body')] },
@@ -1393,6 +1465,446 @@ describe('slice landing', () => {
         {
           children: [portal('Q'), paragraph('aa')],
           roots: { 'body:1': [paragraph('Body')] },
+        },
+      ]
+    );
+  });
+
+  it('refuses a paste over selected blocks that adds a second owner of an exclusive root', () => {
+    const { after, before, result } = pasteOutcome(
+      createEditor({
+        initialSelection: SelectionApi.nodes([[1]], { mode: 'block' }),
+        initialValue: {
+          children: [rootOwner('body:1'), paragraph('aa')],
+          roots: { 'body:1': [paragraph('Body')] },
+        },
+        plugins: [LandingSchema],
+      }),
+      ContentSlice.closed([rootOwner('body:1')])
+    );
+
+    assert.deepEqual([result, after], [false, before]);
+  });
+
+  it('lands a second owner of a shared root over selected blocks', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[1]], { mode: 'block' }),
+      initialValue: {
+        children: [rootOwner('body:1'), paragraph('aa')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [SharedPortalSchema],
+    });
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(ContentSlice.closed([rootOwner('body:1')])),
+        editor.read.value(),
+      ],
+      [
+        true,
+        {
+          children: [rootOwner('body:1'), rootOwner('body:1')],
+          roots: { 'body:1': [paragraph('Body')] },
+        },
+      ]
+    );
+  });
+
+  it('refuses a paste over selected blocks that names a root the document lacks', () => {
+    const { after, before, result } = pasteOutcome(
+      createEditor({
+        initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
+        initialValue: [paragraph('aa')],
+        plugins: [LandingSchema],
+      }),
+      ContentSlice.closed([rootOwner('body:missing')])
+    );
+
+    assert.deepEqual([result, after], [false, before]);
+  });
+
+  it('refuses a paste whose copied root holds a block naming a root the paste lacks', () => {
+    const { after, before, result } = pasteOutcome(
+      createEditor({
+        initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
+        initialValue: [paragraph('aa')],
+        plugins: [NestedPortalSchema],
+      }),
+      ContentSlice.fromJSON({
+        content: [rootOwner('body:1')],
+        openEnd: 0,
+        openStart: 0,
+        roots: { 'body:1': [rootOwner('body:missing')] },
+      })
+    );
+
+    assert.deepEqual([result, after], [false, before]);
+  });
+
+  it('refuses a paste over selected blocks whose nested blocks break the schema', () => {
+    const { after, before, result } = pasteOutcome(
+      createEditor({
+        initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
+        initialValue: [paragraph('aa')],
+        plugins: [LandingSchema],
+      }),
+      ContentSlice.closed([{ type: 'quote', children: [heading('x')] }])
+    );
+
+    assert.deepEqual([result, after], [false, before]);
+  });
+
+  it('refuses a paste over the only owner of a shared root', () => {
+    const { after, before, result } = pasteOutcome(
+      createEditor({
+        initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
+        initialValue: {
+          children: [rootOwner('body:1'), paragraph('aa')],
+          roots: { 'body:1': [paragraph('Body')] },
+        },
+        plugins: [SharedPortalSchema],
+      }),
+      ContentSlice.closed([paragraph('x')])
+    );
+
+    assert.deepEqual([result, after], [false, before]);
+  });
+
+  it('drops the exclusive root of the only owner a paste replaces', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
+      initialValue: {
+        children: [rootOwner('body:1'), paragraph('aa')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [LandingSchema],
+    });
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(ContentSlice.closed([paragraph('x')])),
+        editor.read.value(),
+      ],
+      [true, { children: [paragraph('x'), paragraph('aa')] }]
+    );
+  });
+
+  it('lands a paste carrying roots over a range that holds the owner of an exclusive root', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      }),
+      initialValue: {
+        children: [rootOwner('body:1'), paragraph('aa')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [LandingSchema],
+    });
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(
+          ContentSlice.fromJSON({
+            content: [rootOwner('body:1')],
+            openEnd: 0,
+            openStart: 0,
+            roots: { 'body:1': [paragraph('X')] },
+          })
+        ),
+        editor.read.value(),
+      ],
+      [
+        true,
+        {
+          children: [rootOwner('body:1:copy'), paragraph('aa')],
+          roots: { 'body:1:copy': [paragraph('X')] },
+        },
+      ]
+    );
+  });
+
+  it('lands the plain paste when a closed proposal adds a second owner of an exclusive root', () => {
+    const editor = createEditor({
+      initialSelection: caret([1, 0]),
+      initialValue: {
+        children: [rootOwner('body:1'), paragraph('')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [LandingSchema, proposeOnEmpty([rootOwner('body:1', 'Copied')])],
+    });
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(ContentSlice.closed([paragraph('Plain')])),
+        editor.read.children(),
+      ],
+      [true, [rootOwner('body:1'), paragraph('Plain')]]
+    );
+  });
+
+  it('lands a paste carrying a root after an earlier step in its update', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('aa'), paragraph('bb')],
+      plugins: [LandingSchema],
+    });
+    let result: boolean | undefined;
+
+    editor.update((tx) => {
+      tx.nodes.insert(paragraph('new'), { at: [2] });
+      result = tx.slice.replace(carried('body:1'), {
+        at: {
+          anchor: { offset: 0, path: [1, 0] },
+          focus: { offset: 2, path: [1, 0] },
+        },
+      });
+    });
+
+    assert.deepEqual(
+      [result, editor.read.value()],
+      [
+        true,
+        {
+          children: [
+            paragraph('aa'),
+            rootOwner('body:1:copy'),
+            paragraph('new'),
+          ],
+          roots: { 'body:1:copy': [paragraph('X')] },
+        },
+      ]
+    );
+  });
+
+  it('drops an exclusive root an earlier step orphaned when a slice write lands', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [rootOwner('body:1'), paragraph('aa')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [LandingSchema],
+    });
+    let result: boolean | undefined;
+
+    editor.update((tx) => {
+      tx.nodes.remove({ at: [0] });
+      result = tx.slice.replace(carried('src'), {
+        at: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 2, path: [0, 0] },
+        },
+      });
+    });
+
+    assert.deepEqual(
+      [result, editor.read.value()],
+      [
+        true,
+        {
+          children: [rootOwner('src:copy')],
+          roots: { 'src:copy': [paragraph('X')] },
+        },
+      ]
+    );
+  });
+
+  it('keeps an exclusive root whose owner a later step restores after a paste elsewhere', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [rootOwner('body:1'), paragraph('aa'), paragraph('cc')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [LandingSchema],
+    });
+    let result: boolean | undefined;
+
+    editor.update((tx) => {
+      tx.nodes.remove({ at: [0] });
+      tx.selection.set(SelectionApi.nodes([[0]], { mode: 'block' }));
+      result = tx.command(editorCommands.replaceSlice, {
+        slice: ContentSlice.closed([paragraph('x')]),
+      });
+      tx.nodes.insert(rootOwner('body:1'), { at: [0] });
+    });
+
+    assert.deepEqual(
+      [result, editor.read.value()],
+      [
+        true,
+        {
+          children: [rootOwner('body:1'), paragraph('x'), paragraph('cc')],
+          roots: { 'body:1': [paragraph('Body')] },
+        },
+      ]
+    );
+  });
+
+  it('lands a paste over selected blocks while an earlier step leaves a second exclusive owner that a later step removes', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [rootOwner('body:1'), paragraph('aa'), paragraph('cc')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [LandingSchema],
+    });
+    let result: boolean | undefined;
+
+    editor.update((tx) => {
+      tx.nodes.insert(rootOwner('body:1', 'dup'), { at: [3] });
+      tx.selection.set(SelectionApi.nodes([[1]], { mode: 'block' }));
+      result = tx.command(editorCommands.replaceSlice, {
+        slice: ContentSlice.closed([paragraph('x')]),
+      });
+      tx.nodes.remove({ at: [3] });
+    });
+
+    assert.deepEqual(
+      [result, editor.read.value()],
+      [
+        true,
+        {
+          children: [rootOwner('body:1'), paragraph('x'), paragraph('cc')],
+          roots: { 'body:1': [paragraph('Body')] },
+        },
+      ]
+    );
+  });
+
+  it('lands a paste over selected blocks while an earlier step leaves an owner missing its roots that a later step removes', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('aa'), paragraph('cc')],
+      plugins: [LandingSchema],
+    });
+    let result: boolean | undefined;
+
+    editor.update((tx) => {
+      tx.nodes.insert(
+        { children: [{ text: 'P' }], type: 'portal' },
+        { at: [2] }
+      );
+      tx.selection.set(SelectionApi.nodes([[0]], { mode: 'block' }));
+      result = tx.command(editorCommands.replaceSlice, {
+        slice: ContentSlice.closed([paragraph('x')]),
+      });
+      tx.nodes.remove({ at: [2] });
+    });
+
+    assert.deepEqual(
+      [result, editor.read.value()],
+      [true, { children: [paragraph('x'), paragraph('cc')] }]
+    );
+  });
+
+  it('lands a closed embed pasted mid-paragraph as text and drops its carried root', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      }),
+      initialValue: [paragraph('aa')],
+      plugins: [LandingSchema],
+    });
+
+    const result = editor.update.slice.replace(carried('src'));
+
+    assert.deepEqual(
+      [result, editor.read.value()],
+      [true, { children: [paragraph('aPa')] }]
+    );
+  });
+
+  it('lands a paste carrying a root dispatched at a caret outside an update', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      }),
+      initialValue: [paragraph('aa'), paragraph('')],
+      plugins: [LandingSchema],
+    });
+
+    const result = dispatchCommand(editor, editorCommands.replaceSlice, {
+      slice: carried('src'),
+    });
+
+    assert.deepEqual(
+      [result, editor.read.value()],
+      [
+        true,
+        {
+          children: [paragraph('aa'), rootOwner('src:copy')],
+          roots: { 'src:copy': [paragraph('X')] },
+        },
+      ]
+    );
+  });
+
+  it('drops a root an earlier slice write created when a later one replaces its owner', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('aa'), paragraph('cc')],
+      plugins: [SharedPortalSchema],
+    });
+    let results: boolean[] = [];
+
+    editor.update((tx) => {
+      results = [
+        tx.slice.replace(carried('first'), {
+          at: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 2, path: [0, 0] },
+          },
+        }),
+        tx.slice.replace(carried('second'), {
+          at: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 1, path: [0, 0] },
+          },
+        }),
+      ];
+    });
+
+    assert.deepEqual(
+      [results, editor.read.value()],
+      [
+        [true, true],
+        {
+          children: [rootOwner('second:copy'), paragraph('cc')],
+          roots: { 'second:copy': [paragraph('X')] },
+        },
+      ]
+    );
+  });
+
+  it('moves a range holding the owner of an exclusive root to a block edge', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [rootOwner('body:1'), paragraph('aa'), paragraph('cc')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [LandingSchema, transfer()],
+    });
+
+    const moved = editor.api.transfer.move({
+      range: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 1, path: [1, 0] },
+      },
+      to: { edge: 'after', key: editor.key([2]) },
+    });
+
+    assert.deepEqual(
+      [moved.status, editor.read.value()],
+      [
+        'moved',
+        {
+          children: [
+            paragraph('a'),
+            paragraph('cc'),
+            rootOwner('body:1:copy'),
+            paragraph('a'),
+          ],
+          roots: { 'body:1:copy': [paragraph('Body')] },
         },
       ]
     );
@@ -1477,7 +1989,7 @@ describe('slice landing', () => {
       paragraph('abcde'),
     ];
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: before,
       maxLength: 5,
       plugins: [
@@ -1583,7 +2095,7 @@ describe('slice landing', () => {
       unknown: 'reject',
     });
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0, 1]]),
+      initialSelection: SelectionApi.nodes([[0, 1]], { mode: 'block' }),
       initialValue: [
         {
           type: 'paragraph',
@@ -1698,7 +2210,7 @@ describe('slice landing', () => {
       { type: 'image', children: [{ text: '' }] },
     ].map((selected) => {
       const editor = createEditor({
-        initialSelection: SelectionApi.nodes([[0]]),
+        initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
         initialValue: [selected, paragraph('tail')],
         plugins: [ContainerSchema],
       });
@@ -1749,7 +2261,9 @@ describe('slice landing intent', () => {
       const intents: unknown[] = [];
       const editor = createEditor({
         initialSelection:
-          caller === 'nodes' ? SelectionApi.nodes([[1]]) : caret([0, 0], 1),
+          caller === 'nodes'
+            ? SelectionApi.nodes([[1]], { mode: 'block' })
+            : caret([0, 0], 1),
         initialValue: [paragraph('ab'), paragraph('cd')],
         plugins: [
           LandingSchema,

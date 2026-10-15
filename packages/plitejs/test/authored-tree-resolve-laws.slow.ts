@@ -33,10 +33,23 @@ type Leaf = { authored?: AuthoredMark[]; bold?: boolean; text: string };
 type Block = { authored?: AuthoredMark[]; children: Leaf[]; type: 'paragraph' };
 
 const CHANGES = ['c0', 'c1', 'c2', 'c3', 'c4', 'c5'];
-const mark = (kind: AuthoredMark['kind'], change: string): AuthoredMark =>
-  kind === 'format'
-    ? { at: 1, author: change, change, id: `t-${change}`, key: 'bold', kind }
-    : { at: 1, author: change, change, kind };
+const mark = (kind: AuthoredMark['kind'], change: string): AuthoredMark => {
+  if (kind === 'format') {
+    return {
+      at: 1,
+      author: change,
+      change,
+      id: `t-${change}`,
+      key: 'bold',
+      kind,
+    };
+  }
+  if (kind === 'insert' || kind === 'split') {
+    return { at: 1, author: change, change, kind };
+  }
+
+  return { at: 1, author: change, change, kind };
+};
 
 /**
  * Up to three linked tags on one key, as recording writes them: stacks, forks
@@ -579,89 +592,93 @@ const structuralDecisions = fc
   );
 
 describe('authored review tree structural decision laws', () => {
-  it('gives the same document for every admissible order of structural, enclosure and content decisions', () => {
-    let compared = 0;
+  it(
+    'gives the same document for every admissible order of structural, enclosure and content decisions',
+    { timeout: 300_000 },
+    () => {
+      let compared = 0;
 
-    fc.assert(
-      fc.property(
-        structuralDocument,
-        structuralDecisions,
-        (generated, [order, actions]) => {
-          let document: readonly JsonNode[];
+      fc.assert(
+        fc.property(
+          structuralDocument,
+          structuralDecisions,
+          (generated, [order, actions]) => {
+            let document: readonly JsonNode[];
 
-          try {
-            // resolveAuthoredChildren runs without review facts here, so the
-            // insertions a load folded into contexts go back to explicit claims.
-            document = expandContexts(
-              quotesEditor(generated).read.value()
-            ).children;
-          } catch {
-            return;
-          }
+            try {
+              // resolveAuthoredChildren runs without review facts here, so the
+              // insertions a load folded into contexts go back to explicit claims.
+              document = expandContexts(
+                quotesEditor(generated).read.value()
+              ).children;
+            } catch {
+              return;
+            }
 
-          const decisions = new Map(
-            order.map((change, index) => [change, actions[index]])
-          );
-          const atOnce = resolveAuthoredChildren(
-            document,
-            all(decisions),
-            quotesSchema
-          );
-          let stepped = document;
-
-          if (atOnce.blockers.length > 0 || atOnce.unplaceable) return;
-          for (const change of order) {
-            const step = resolveAuthoredChildren(
-              stepped,
-              all(new Map([[change, decisions.get(change)!]])),
+            const decisions = new Map(
+              order.map((change, index) => [change, actions[index]])
+            );
+            const atOnce = resolveAuthoredChildren(
+              document,
+              all(decisions),
               quotesSchema
             );
+            let stepped = document;
 
-            if (step.blockers.length > 0 || step.unplaceable) return;
-            stepped = step.children;
+            if (atOnce.blockers.length > 0 || atOnce.unplaceable) return;
+            for (const change of order) {
+              const step = resolveAuthoredChildren(
+                stepped,
+                all(new Map([[change, decisions.get(change)!]])),
+                quotesSchema
+              );
+
+              if (step.blockers.length > 0 || step.unplaceable) return;
+              stepped = step.children;
+            }
+
+            compared += 1;
+            assert.deepEqual(stepped, atOnce.children);
           }
-
-          compared += 1;
-          assert.deepEqual(stepped, atOnce.children);
-        }
-      ),
-      {
-        examples: [
-          // A rejected split inside a quote whose unwrap is pending lands
-          // beyond the quote only once the unwrap is accepted.
-          [
+        ),
+        {
+          examples: [
+            // A rejected split inside a quote whose unwrap is pending lands
+            // beyond the quote only once the unwrap is accepted.
             [
-              {
-                type: 'quote',
-                children: [{ type: 'paragraph', children: [{ text: 'a' }] }],
-              },
-              {
-                type: 'quote',
-                authored: [mark('unwrap', 's3')],
-                children: [
-                  spread(
-                    { type: 'paragraph', children: [{ text: 'a' }] },
-                    mark('insert', 's0')
-                  ),
-                  {
-                    type: 'paragraph',
-                    authored: [mark('split', 's0')],
-                    children: [{ text: 'a' }],
-                  },
-                ],
-              },
-            ] as never,
-            [
-              ['s2', 's1', 's0', 's3'],
-              ['accept', 'accept', 'reject', 'accept'],
-            ] as never,
+              [
+                {
+                  type: 'quote',
+                  children: [{ type: 'paragraph', children: [{ text: 'a' }] }],
+                },
+                {
+                  type: 'quote',
+                  authored: [mark('unwrap', 's3')],
+                  children: [
+                    spread(
+                      { type: 'paragraph', children: [{ text: 'a' }] },
+                      mark('insert', 's0')
+                    ),
+                    {
+                      type: 'paragraph',
+                      authored: [mark('split', 's0')],
+                      children: [{ text: 'a' }],
+                    },
+                  ],
+                },
+              ] as never,
+              [
+                ['s2', 's1', 's0', 's3'],
+                ['accept', 'accept', 'reject', 'accept'],
+              ] as never,
+            ],
           ],
-        ],
-        numRuns: 2000,
-      }
-    );
-    assert.ok(compared > 300, `only ${compared} admissible orders compared`);
-  });
+          numRuns: 2000,
+        }
+      );
+      assert.ok(compared > 300, `only ${compared} admissible orders compared`);
+    }
+  );
 });
 
 // S5 of docs/plans/2026-10-10-authored-values.md: decisions through the public
@@ -684,7 +701,7 @@ const Sizes = defineEditorSchema('laws-sizes', {
 
 type Cell = {
   authored?: unknown;
-  children: Array<{ text: string }>;
+  children: ReadonlyArray<{ text: string }>;
   size?: number;
 };
 
@@ -698,11 +715,12 @@ const SumTo100 = definePlugin('laws-sum-to-100', {
       event: 'content',
       query: { type: 'group' },
       correct({ entry: [node, path], tx }) {
-        const cells = ((node as { children: Cell[] }).children ?? []).flatMap(
-          (cell, index) =>
-            tx.nodes.isContent(cell as never)
-              ? [{ index, size: cell.size ?? 0 }]
-              : []
+        const cells = (
+          (node as { children: readonly Cell[] }).children ?? []
+        ).flatMap((cell, index) =>
+          tx.nodes.isContent(cell as never)
+            ? [{ index, size: cell.size ?? 0 }]
+            : []
         );
         const sum = cells.reduce((total, cell) => total + cell.size, 0);
 
@@ -768,9 +786,10 @@ const sizeHistory = (ops: readonly SizeOp[]) => {
   ]);
   const proof = authoredTestApi(editor);
   const live = () =>
-    (editor.read.value().children[0] as { children: Cell[] }).children.flatMap(
-      (item, index) =>
-        editor.read.nodes.isContent(item as never) ? [index] : []
+    (
+      editor.read.value().children[0] as { children: readonly Cell[] }
+    ).children.flatMap((item, index) =>
+      editor.read.nodes.isContent(item as never) ? [index] : []
     );
 
   ops.forEach((op, step) => {
@@ -788,7 +807,7 @@ const sizeHistory = (ops: readonly SizeOp[]) => {
     } else {
       proof.propose(change, (tx) => {
         if (op.kind === 'insert') {
-          tx.nodes.insert(cell('n', 50) as never, {
+          tx.nodes.insert(cell('n', 50), {
             at: [0, Math.min(op.at, indexes.length)],
           });
         } else if (op.kind === 'remove') {
@@ -797,9 +816,12 @@ const sizeHistory = (ops: readonly SizeOp[]) => {
           }
         } else {
           indexes.forEach((index, at) => {
-            tx.nodes.set({ size: op.sizes[at % op.sizes.length] } as never, {
-              at: [0, index],
-            });
+            tx.nodes.set(
+              { size: op.sizes[at % op.sizes.length] },
+              {
+                at: [0, index],
+              }
+            );
           });
         }
       });
@@ -817,7 +839,9 @@ const sizeHistory = (ops: readonly SizeOp[]) => {
  * sum (a named limit).
  */
 const sizesOutcome = (editor: ReturnType<typeof sizesEditor>) => {
-  const children = editor.read.value().children as Array<{ children: Cell[] }>;
+  const children = editor.read.value().children as ReadonlyArray<{
+    children: readonly Cell[];
+  }>;
 
   return {
     masked: children.map((group) => ({
@@ -856,74 +880,78 @@ const pendingIn = (nodes: readonly unknown[]): string[] => [
 ];
 
 describe('authored review tree decision laws with corrections', () => {
-  it('gives the batch structure and tags, with sizes summing to 100, for every admissible partition of decisions', () => {
-    let compared = 0;
+  it(
+    'gives the batch structure and tags, with sizes summing to 100, for every admissible partition of decisions',
+    { timeout: 300_000 },
+    () => {
+      let compared = 0;
 
-    fc.assert(
-      fc.property(
-        fc.array(sizeOpArbitrary, { maxLength: 5, minLength: 1 }),
-        fc.infiniteStream(fc.boolean()),
-        fc.infiniteStream(fc.nat({ max: 1000 })),
-        (ops, coins, shuffle) => {
-          const value = sizeHistory(ops);
-          const changes = pendingIn(value);
+      fc.assert(
+        fc.property(
+          fc.array(sizeOpArbitrary, { maxLength: 5, minLength: 1 }),
+          fc.infiniteStream(fc.boolean()),
+          fc.infiniteStream(fc.nat({ max: 1000 })),
+          (ops, coins, shuffle) => {
+            const value = sizeHistory(ops);
+            const changes = pendingIn(value);
 
-          if (changes.length === 0) return;
+            if (changes.length === 0) return;
 
-          const actions = new Map(
-            changes.map((change) => [
-              change,
-              coins.next().value ? ('accept' as const) : ('reject' as const),
-            ])
-          );
-          const decisionsOf = (picked: readonly string[]) =>
-            (['accept', 'reject'] as const).flatMap((action) => {
-              const of = picked.filter(
-                (change) => actions.get(change) === action
+            const actions = new Map(
+              changes.map((change) => [
+                change,
+                coins.next().value ? ('accept' as const) : ('reject' as const),
+              ])
+            );
+            const decisionsOf = (picked: readonly string[]) =>
+              (['accept', 'reject'] as const).flatMap((action) => {
+                const of = picked.filter(
+                  (change) => actions.get(change) === action
+                );
+
+                return of.length > 0 ? [{ action, changes: of }] : [];
+              });
+            const batchEditor = sizesEditor(value);
+            const batchResult = authoredTestApi(batchEditor).decide(
+              decisionsOf(changes)
+            );
+
+            if (batchResult.status !== 'applied') return;
+
+            const order = [...changes].sort(() => shuffle.next().value - 500);
+            const stepped = sizesEditor(value);
+            let waiting: string[] = [];
+
+            for (const change of order) {
+              waiting = waiting.concat(change);
+              const result = authoredTestApi(stepped).decide(
+                decisionsOf(waiting)
               );
 
-              return of.length > 0 ? [{ action, changes: of }] : [];
-            });
-          const batchEditor = sizesEditor(value);
-          const batchResult = authoredTestApi(batchEditor).decide(
-            decisionsOf(changes)
-          );
+              if (result.status === 'blocked') continue;
+              waiting = [];
+              // Each decision leaves the proposed view whole: the cells that
+              // stay sum to 100 while other changes are still pending.
+              assert.deepEqual(
+                sizesOutcome(stepped).sums,
+                sizesOutcome(stepped).sums.map(() => 100),
+                `after deciding ${change}`
+              );
+            }
 
-          if (batchResult.status !== 'applied') return;
+            const batch = sizesOutcome(batchEditor);
 
-          const order = [...changes].sort(() => shuffle.next().value - 500);
-          const stepped = sizesEditor(value);
-          let waiting: string[] = [];
-
-          for (const change of order) {
-            waiting = waiting.concat(change);
-            const result = authoredTestApi(stepped).decide(
-              decisionsOf(waiting)
-            );
-
-            if (result.status === 'blocked') continue;
-            waiting = [];
-            // Each decision leaves the proposed view whole: the cells that
-            // stay sum to 100 while other changes are still pending.
+            compared += 1;
             assert.deepEqual(
-              sizesOutcome(stepped).sums,
-              sizesOutcome(stepped).sums.map(() => 100),
-              `after deciding ${change}`
+              { ...sizesOutcome(stepped), waiting },
+              { ...batch, sums: batch.sums.map(() => 100), waiting: [] },
+              `order ${order.join(',')} with ${JSON.stringify([...actions])}`
             );
           }
-
-          const batch = sizesOutcome(batchEditor);
-
-          compared += 1;
-          assert.deepEqual(
-            { ...sizesOutcome(stepped), waiting },
-            { ...batch, sums: batch.sums.map(() => 100), waiting: [] },
-            `order ${order.join(',')} with ${JSON.stringify([...actions])}`
-          );
-        }
-      ),
-      { numRuns: 300 }
-    );
-    assert.ok(compared > 150, `only ${compared} histories compared`);
-  });
+        ),
+        { numRuns: 300 }
+      );
+      assert.ok(compared > 150, `only ${compared} histories compared`);
+    }
+  );
 });

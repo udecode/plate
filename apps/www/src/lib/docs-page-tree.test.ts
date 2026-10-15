@@ -58,22 +58,23 @@ describe('getDocsSidebar', () => {
   });
 
   it.each(['en', 'cn'])(
-    'links Plite from the Plate API section only through its entry in %s',
+    'shows Plite as its own group right after API in %s',
     (locale) => {
-      const { main } = getDocsSidebar(locale);
-      const pliteLinks = main.sections.flatMap((section) =>
-        collectItems(section.items)
-          .filter((item) => item.href?.startsWith('/docs/plite'))
-          .map((item) => ({
-            href: item.href,
-            opensRoot: item.opensRoot,
-            section: section.title,
-          }))
-      );
+      const { main, nested } = getDocsSidebar(locale);
+      const titles = main.sections.map((section) => section.title);
+      const plite = main.sections.find((section) => section.title === 'Plite');
+      const pliteHrefsElsewhere = main.sections
+        .filter((section) => section !== plite)
+        .flatMap((section) => collectItems(section.items))
+        .filter((item) => item.href?.startsWith('/docs/plite'));
 
-      expect(pliteLinks).toEqual([
-        { href: '/docs/plite', opensRoot: true, section: 'API' },
-      ]);
+      expect(titles.slice(titles.indexOf('API'))).toEqual(['API', 'Plite']);
+      expect(plite?.items?.map((item) => item.title)).toEqual(
+        nested
+          .find((root) => root.href === '/docs/plite')
+          ?.sections.map((section) => section.title)
+      );
+      expect(pliteHrefsElsewhere).toEqual([]);
     }
   );
 
@@ -92,10 +93,10 @@ describe('getDocsSidebar', () => {
 describe.each(['en', 'cn'])('selectDocsSidebar in %s', (locale) => {
   const sidebar = getDocsSidebar(locale);
 
-  it('opens the Plite sidebar with a way back only under /docs/plite', () => {
+  it('names the Plite root only under /docs/plite', () => {
     const view = (pathname: string) =>
       selectDocsSidebar(sidebar, pathname).nested;
-    const plite = { back: { href: '/docs', title: 'Plate' }, title: 'Plite' };
+    const plite = { title: 'Plite' };
 
     expect(view('/docs/plite/concepts/02-nodes')).toEqual(plite);
     expect(view('/cn/docs/plite')).toEqual(plite);
@@ -105,11 +106,8 @@ describe.each(['en', 'cn'])('selectDocsSidebar in %s', (locale) => {
   });
 
   it('titles the first section of every root Overview for every nav', () => {
-    const firstSections = ['/docs', '/docs/plite'].map((pathname) => {
-      const [{ title, titleCn }] = selectDocsSidebar(
-        sidebar,
-        pathname
-      ).sections;
+    const firstSections = [sidebar.main, ...sidebar.nested].map((root) => {
+      const [{ title, titleCn }] = root.sections;
 
       return { title, titleCn };
     });

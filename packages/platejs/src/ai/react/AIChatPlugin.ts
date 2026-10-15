@@ -38,6 +38,7 @@ import {
   editorCommands,
   HistoryPlugin,
 } from '../../core';
+import { placeElementAt } from '../../facade';
 import { isListItem } from '../../features/list/lib/listIndex.internal';
 import {
   BaseTableCellPlugin,
@@ -340,6 +341,18 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   };
   const getActionEditor = (commandEditor: Editor) =>
     commandEditor as AIActionEditor;
+  const getCapturedTargetRoot = (
+    commandEditor: Editor,
+    chatSelection: Range | null
+  ) => {
+    const [chatNode] = context.store.get('chatNodes');
+
+    if (chatNode) return chatNode.root;
+
+    return chatSelection
+      ? SelectionApi.root(chatSelection)
+      : commandEditor.read.view.root();
+  };
   const columnGroupDescriptor = getCompiledPlatePlugin(
     editor,
     PLUGINS.columnGroup
@@ -887,30 +900,69 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     if (!blocks) return false;
     tx.history.newBatch();
 
-    const nodes = landAIOutput(editor, tx, blocks, {
-      block: anchor[0],
-      kind: 'kept',
-    });
+    const nodes = placeActionBlocks(
+      tx,
+      landAIOutput(editor, tx, blocks, { block: anchor[0], kind: 'kept' }),
+      PathApi.next(anchor[1]),
+      root
+    );
 
-    tx.blocks.insertAfter(nodes, { at: tx.key(anchor[0]) });
-    selectActionEntries(tx, resolveActionBlocks(tx, nodes));
+    const inserted =
+      nodes && tx.blocks.insert(nodes, { after: tx.key(anchor[0]) });
+
+    if (!inserted) return false;
+    tx.selection.setNodes(inserted);
 
     return true;
+  };
+  const placeActionBlocks = (
+    tx: AIActionTransaction,
+    nodes: readonly Element[],
+    first: Path,
+    root: NamedRootKey | undefined
+  ) => {
+    const parentPath = PathApi.parent(first);
+    const index = first.at(-1) ?? 0;
+    const placed: Element[] = [];
+
+    for (const [offset, node] of nodes.entries()) {
+      const block = placeElementAt(tx.schema, node, {
+        at: [...parentPath, index + offset],
+        root,
+      });
+
+      if (!block) return null;
+      placed.push(block);
+    }
+
+    return placed;
   };
   const replaceActionBlocks = (
     tx: AIActionTransaction,
     nodes: Element[],
-    entries: ReadonlyArray<NodeEntry<Element>>
+    entries: ReadonlyArray<NodeEntry<Element>>,
+    root: NamedRootKey | undefined
   ) => {
     const selectedKeys = entries.map(([node]) => tx.key(node));
     const firstKey = selectedKeys[0];
+    const first = entries[0];
 
-    if (!firstKey) return false;
+    if (!firstKey || !first) return false;
+    const replacingFirst = placeActionBlocks(tx, nodes, first[1], root);
+    const keepingRequiredFirst = replacingFirst
+      ? null
+      : placeActionBlocks(tx, nodes, PathApi.next(first[1]), root);
+    const landed = replacingFirst ?? keepingRequiredFirst;
 
-    tx.nodes.insert(nodes, { at: firstKey });
-    selectActionEntries(tx, resolveActionBlocks(tx, nodes));
+    if (!landed) return false;
+    if (replacingFirst) tx.nodes.insert(replacingFirst, { at: firstKey });
+    else if (!tx.blocks.insert(landed, { after: firstKey })) return false;
+    selectActionEntries(tx, resolveActionBlocks(tx, landed));
 
-    for (const key of selectedKeys.toReversed()) {
+    for (const key of (replacingFirst
+      ? selectedKeys
+      : selectedKeys.slice(1)
+    ).toReversed()) {
       tx.nodes.remove({ at: key });
     }
 
@@ -1195,13 +1247,26 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             : landAIOutput(editor, tx, output, { kind: 'line', line: target })
           : landAIOutput(editor, tx, output, { block: anchor, kind: 'kept' })
       );
-      if (replace) tx.nodes.replace(blocks, { at: path });
-      else tx.blocks.insertAfter(blocks, { at: anchorPath });
-      const lastPath = [
-        ...firstPath.slice(0, -1),
-        firstIndex + blocks.length - 1,
-      ];
-      const end = tx.points.end(lastPath);
+      const placed = placeActionBlocks(
+        tx,
+        blocks,
+        firstPath,
+        commandEditor.read.view.root()
+      );
+
+      if (!placed) return;
+
+      let last: NodeKey | Path | undefined;
+
+      if (replace) {
+        if (!tx.nodes.replace(placed, { at: path })) return;
+        last = [...firstPath.slice(0, -1), firstIndex + placed.length - 1];
+      } else {
+        last = tx.blocks.insert(placed, { after: anchorPath })?.at(-1);
+        if (!last) return;
+      }
+
+      const end = tx.points.end(last);
       if (end) tx.selection.set(end);
       applied = true;
     });
@@ -1225,6 +1290,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           ? previewAnchor.resolve()
           : capturedSelection;
       if (capturedSelection && previewAnchor && !chatSelection) return;
+      const chatRoot = getCapturedTargetRoot(commandEditor, chatSelection);
 
       if (chatSelection) {
         const [start, end] = RangeApi.edges(chatSelection);
@@ -1239,7 +1305,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             cloneDeep(source),
             format,
             block,
-            commandEditor.read.view.root()
+            chatRoot
           );
 
           return;
@@ -1254,22 +1320,22 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         if (!blocks) return;
         tx.history.newBatch();
 
-        const whole = wholeTextBlocks(tx, chatSelection, blocks);
+        const whole = wholeTextBlocks(tx, chatSelection, (first) =>
+          landAIOutput(editor, tx, blocks, { block: first, kind: 'replaced' })
+        );
 
         if (whole) {
           applied = replaceActionBlocks(
             tx,
-            landAIOutput(editor, tx, blocks, {
-              block: whole[0][0],
-              kind: 'replaced',
-            }),
-            whole
+            whole.nodes,
+            whole.blocks,
+            chatRoot
           );
 
           return;
         }
 
-        const content = landAIOutput(editor, tx, blocks, {
+        const landed = landAIOutput(editor, tx, blocks, {
           block: block[0],
           kind: 'kept',
         });
@@ -1281,6 +1347,14 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           )
             ? 1
             : 0;
+        const [head, ...rest] = landed;
+        const tail =
+          head && openTextBlock(head)
+            ? placeActionBlocks(tx, rest, PathApi.next(block[1]), chatRoot)
+            : rest;
+
+        if (!tail) return;
+        const content = head ? [head, ...tail] : landed;
 
         applied = tx.slice.replace(
           ContentSlice.fromJSON({
@@ -1307,7 +1381,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           cloneDeep(source),
           format,
           sourceBlock,
-          commandEditor.read.view.root()
+          chatRoot
         );
 
         return;
@@ -1327,7 +1401,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           block: sourceBlock[0],
           kind: 'replaced',
         }),
-        selected
+        selected,
+        chatRoot
       );
     });
 

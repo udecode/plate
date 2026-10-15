@@ -98,7 +98,9 @@ the same way, to what fits `maxLength` after crediting the replaced text.
 A text drag lands at its drop point through the same read, without command
 handlers. The input's `intent` is `copy` for a paste or a drag that copies,
 such as one from another editor or a read-only view, and `move` for a drag
-that moves text inside one document. A move refuses with `lossy` and
+that moves text inside one document. A move carries what deleting its range
+removes, and refuses with `no-op` when that removes nothing, such as a range
+that holds only an empty line. A move refuses with `lossy` and
 changes nothing when `maxLength` would cut it or when landing would change its
 text or marks, or the type or properties of a block it carries, other than
 element properties declared `landing: 'rebase'` or `'adopt'`, such as a list

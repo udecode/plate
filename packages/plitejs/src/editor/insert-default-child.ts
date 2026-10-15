@@ -1,7 +1,6 @@
 import { getEditorSchema } from '../core/editor-runtime';
 import { toPublicRoot } from '../core/public-root';
 import { getActiveUpdateRoot } from '../core/public-state';
-import { EditorSchemaValidationError } from '../core/schema-validation';
 import type { AnyEditor } from '../interfaces/editor';
 import { parent as editorParent } from '../interfaces/editor';
 import type { Element } from '../interfaces/element';
@@ -35,19 +34,10 @@ export const buildDefaultChild = (editor: AnyEditor, at: Path) => {
     return null;
   }
 
-  let block: unknown;
-
-  try {
-    block = schema.createDefaultChild({ at, root: toPublicRoot(root) });
-  } catch (error) {
-    if (
-      error instanceof EditorSchemaValidationError &&
-      error.diagnostics.every(({ code }) => code === 'missing-property')
-    ) {
-      return null;
-    }
-    throw error;
-  }
+  const block = schema.tryCreateDefaultChild({
+    at,
+    root: toPublicRoot(root),
+  });
 
   if (
     !NodeApi.isElement(block) ||

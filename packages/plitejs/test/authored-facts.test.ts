@@ -149,25 +149,28 @@ describe('authored review facts', () => {
       change: 'A',
     });
 
-    assert.deepEqual({ ...compacted, records: recordsOf(compacted) }, {
-      children: [
-        {
-          children: [
-            { authored: [A], text: 'he' },
-            { authored: [B, { ctx, kind: 'in' }], text: 'X' },
-            { authored: [A], text: 'rs' },
-            { text: ' ' },
-            { authored: [B], text: 'Y' },
-          ],
-          type: 'paragraph',
-        },
-      ],
-      records: reviewRecords({
-        contexts: [
-          contextRecordOf(null, { at: 2, author: 'alice', change: 'A' }),
+    assert.deepEqual(
+      { ...compacted, records: recordsOf(compacted) },
+      {
+        children: [
+          {
+            children: [
+              { authored: [A], text: 'he' },
+              { authored: [B, { ctx, kind: 'in' }], text: 'X' },
+              { authored: [A], text: 'rs' },
+              { text: ' ' },
+              { authored: [B], text: 'Y' },
+            ],
+            type: 'paragraph',
+          },
         ],
-      }),
-    });
+        records: reviewRecords({
+          contexts: [
+            contextRecordOf(null, { at: 2, author: 'alice', change: 'A' }),
+          ],
+        }),
+      }
+    );
     assert.deepEqual(expandContexts(compacted), reusedId);
   });
 
@@ -347,10 +350,250 @@ describe('authored admission', () => {
 
     assert.deepEqual(
       createEditorView(editor, {
-        document: rejected('delete') as never,
+        document: rejected('delete'),
       }).read.value(),
       rejected('held')
     );
+  });
+
+  const heldDeletionUnder = (
+    join: Readonly<Record<string, unknown>>,
+    verdict: Readonly<{ change: string; verdict: 'accept' | 'reject' }>
+  ) => ({
+    children: [
+      { children: [{ text: 'x' }], type: 'paragraph' },
+      {
+        children: [
+          {
+            authored: [
+              { at: 3, author: 'bob', change: '~edit:bob', kind: 'delete' },
+            ],
+            text: 'ab',
+          },
+        ],
+        type: 'heading',
+      },
+      { ...join, children: [{ text: 'cd' }], type: 'paragraph' },
+    ],
+    records: reviewRecords({
+      verdicts: [
+        {
+          decision: 'd:1',
+          member: { at: 2, change: verdict.change },
+          verdict: verdict.verdict,
+        },
+      ],
+    }),
+  });
+  const pendingJoinHolds = () =>
+    heldDeletionUnder(
+      {
+        authored: [{ at: 1, author: 'carol', change: 'carol:1', kind: 'join' }],
+      },
+      { change: 'dana:1', verdict: 'accept' }
+    );
+  const rejectedJoinHeld = () =>
+    heldDeletionUnder({}, { change: 'carol:1', verdict: 'reject' });
+
+  it('keeps an Editing deletion a pending join holds through a load that settles verdicts', () => {
+    const editor = createEditor({
+      initialValue: pendingJoinHolds() as never,
+      plugins: [createAuthoredPlugin({ authorId: 'dana' })],
+    });
+
+    assert.deepEqual(editor.read.children(), pendingJoinHolds().children);
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['carol:1'] });
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: 'x' }], type: 'paragraph' },
+      { children: [{ text: 'cd' }], type: 'heading' },
+    ]);
+  });
+
+  it('applies an Editing deletion once its join is decided', () => {
+    const editor = createEditor({
+      initialValue: rejectedJoinHeld() as never,
+      plugins: [createAuthoredPlugin({ authorId: 'dana' })],
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: 'x' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'heading' },
+      { children: [{ text: 'cd' }], type: 'paragraph' },
+    ]);
+  });
+
+  it('keeps an Editing deletion a pending join holds through an edit to the joining line', () => {
+    const editor = createEditor({
+      initialValue: pendingJoinHolds() as never,
+      plugins: [createAuthoredPlugin({ authorId: 'dana', intent: 'edit' })],
+    });
+
+    editor.update((tx) =>
+      tx.text.insert('!', { at: { offset: 2, path: [2, 0] } })
+    );
+
+    assert.deepEqual(editor.read.children()[1], pendingJoinHolds().children[1]);
+  });
+
+  const followerBetween = () => {
+    const { children, records } = pendingJoinHolds();
+
+    return {
+      children: [
+        children[0],
+        children[1],
+        {
+          authored: [
+            {
+              at: 4,
+              author: 'dana',
+              change: 'dana:2',
+              follows: JSON.stringify(['carol:1', 1]),
+              kind: 'insert',
+            },
+          ],
+          children: [{ text: 'X' }],
+          type: 'paragraph',
+        },
+        children[2],
+      ],
+      records,
+    };
+  };
+
+  it('keeps an Editing deletion a pending join holds past a block that goes with the join, through a load that settles verdicts', () => {
+    const editor = createEditor({
+      initialValue: followerBetween() as never,
+      plugins: [createAuthoredPlugin({ authorId: 'erin' })],
+    });
+
+    assert.deepEqual(editor.read.children(), followerBetween().children);
+    authoredTestApi(editor).decide({
+      action: 'accept',
+      changes: ['carol:1', 'dana:2'],
+    });
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: 'x' }], type: 'paragraph' },
+      { children: [{ text: 'cd' }], type: 'heading' },
+      { children: [{ text: 'X' }], type: 'paragraph' },
+    ]);
+  });
+
+  for (const intent of ['edit', 'propose'] as const) {
+    it(`keeps an Editing deletion a pending join holds past a block that goes with the join, through ${intent === 'edit' ? 'an Editing' : 'a suggested'} write to the held line`, () => {
+      const editor = createEditor({
+        initialValue: followerBetween() as never,
+        plugins: [createAuthoredPlugin({ authorId: 'erin', intent })],
+      });
+
+      editor.update((tx) => tx.nodes.set({ id: 'h' }, { at: [1] }));
+
+      assert.deepEqual(
+        (editor.read.children()[1] as { children: unknown }).children,
+        followerBetween().children[1].children
+      );
+    });
+  }
+
+  it('lands a join whose change emptied its line in an earlier incarnation as two changes do', () => {
+    const accepted = (deleter: string, joiner: string) => {
+      const editor = createEditor({
+        initialValue: [
+          { children: [{ text: 'x' }], type: 'paragraph' },
+          {
+            children: [
+              {
+                authored: [
+                  {
+                    at: 1,
+                    author: 'bob',
+                    change: deleter,
+                    inc: 'del',
+                    kind: 'delete',
+                  },
+                ],
+                text: 'ab',
+              },
+            ],
+            type: 'heading',
+          },
+          {
+            authored: [
+              {
+                at: 2,
+                author: 'bob',
+                change: joiner,
+                inc: 'join',
+                kind: 'join',
+              },
+            ],
+            children: [{ text: 'cd' }],
+            type: 'paragraph',
+          },
+        ] as never,
+        plugins: [createAuthoredPlugin({ authorId: 'dana' })],
+      });
+
+      authoredTestApi(editor).decide({
+        action: 'accept',
+        changes: [...new Set([deleter, joiner])],
+      });
+
+      return editor.read.children();
+    };
+    const joined = [
+      { children: [{ text: 'x' }], type: 'paragraph' },
+      { children: [{ text: 'cd' }], type: 'paragraph' },
+    ];
+
+    assert.deepEqual(
+      { one: accepted('C', 'C'), two: accepted('C', 'D') },
+      { one: joined, two: joined }
+    );
+  });
+
+  it("admits an edit to a root's first block while its last block holds a held Editing deletion", () => {
+    const quote = {
+      children: [
+        {
+          children: [
+            {
+              authored: [
+                { at: 3, author: 'bob', change: '~edit:bob', kind: 'delete' },
+              ],
+              text: 'ab',
+            },
+          ],
+          type: 'paragraph',
+        },
+        {
+          authored: [
+            { at: 1, author: 'carol', change: 'carol:1', kind: 'join' },
+          ],
+          children: [{ text: 'cd' }],
+          type: 'paragraph',
+        },
+      ],
+      type: 'blockquote',
+    };
+    const editor = createEditor({
+      initialValue: {
+        children: [{ children: [{ text: 'x' }], type: 'paragraph' }],
+        roots: {
+          notes: [{ children: [{ text: 'n' }], type: 'paragraph' }, quote],
+        },
+      } as never,
+      plugins: [createAuthoredPlugin({ authorId: 'dana', intent: 'edit' })],
+    });
+
+    createEditorView(editor, { root: 'notes' }).update((tx) =>
+      tx.text.insert('!', { at: { offset: 1, path: [0, 0] } })
+    );
+
+    assert.deepEqual(editor.read.value().roots?.notes, [
+      { children: [{ text: 'n!' }], type: 'paragraph' },
+      quote,
+    ]);
   });
 
   const replacing = (intent: 'edit' | 'propose') => {
@@ -375,7 +618,7 @@ describe('authored admission', () => {
 
     editor.update((tx) => {
       if (intent === 'propose') tx.authored.propose({ changeId: 'D' });
-      tx.value.replace(source.read.value() as never);
+      tx.value.replace(source.read.value());
     });
 
     return { replaced: expandContexts(editor.read.value()), source };
@@ -485,7 +728,7 @@ describe('authored admission', () => {
       plugins: [Open, createAuthoredPlugin({ authorId: 'dana' })],
     });
 
-    editor.update((tx) => tx.value.replace(source.read.value() as never));
+    editor.update((tx) => tx.value.replace(source.read.value()));
     assert.deepEqual(
       expandContexts(editor.read.value()),
       expandContexts(source.read.value())
@@ -510,7 +753,7 @@ describe('authored admission', () => {
       tx.authored.propose({ changeId: 'D' });
       tx.value.replace({
         children: [{ children: [{ text: 'q' }], type: 'paragraph' }],
-      } as never);
+      });
     });
     assert.deepEqual(expandContexts(editor.read.value()), {
       children: [
@@ -538,11 +781,11 @@ describe('authored records across a value change', () => {
         tx.changes.apply(
           DocumentChange.between(editor.read.value(), {
             children: blocks,
-          } as never)
+          })
         )
       ),
     replace: (editor: ReturnType<typeof createEditor>) =>
-      editor.update((tx) => tx.value.replace({ children: blocks } as never)),
+      editor.update((tx) => tx.value.replace({ children: blocks })),
   };
 
   for (const [name, change] of Object.entries(changes)) {
@@ -603,5 +846,106 @@ describe('authored incarnations', () => {
 
     assert.notEqual(incOf(left), undefined);
     assert.notEqual(incOf(left), incOf(right));
+  });
+
+  it('keeps a format pending through a load that settles its earlier incarnation', () => {
+    const bold = {
+      at: 1,
+      author: 'ann',
+      change: 'C',
+      key: 'bold',
+      kind: 'format',
+    };
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          {
+            children: [
+              {
+                authored: [
+                  { ...bold, id: 'old' },
+                  {
+                    ...bold,
+                    at: 2,
+                    before: true,
+                    id: 'new',
+                    inc: 'ann:next',
+                    over: ['old'],
+                  },
+                ],
+                bold: false,
+                text: 'x',
+              },
+            ],
+            type: 'paragraph',
+          },
+        ],
+        records: reviewRecords({
+          verdicts: [
+            {
+              decision: 'd:1',
+              member: { at: 1, change: 'C' },
+              verdict: 'accept',
+            },
+          ],
+        }),
+      } as never,
+      plugins: [createAuthoredPlugin({ authorId: 'dana' })],
+    });
+
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['C'] });
+
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ bold: true, text: 'x' }], type: 'paragraph' },
+    ]);
+  });
+
+  it('starts a new incarnation of a change whose accepted claim a pending fork keeps', () => {
+    const bold = { key: 'bold', kind: 'format' };
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          {
+            children: [
+              {
+                authored: [
+                  { ...bold, at: 1, author: 'ann', change: 'C', id: 'c' },
+                  { ...bold, at: 2, author: 'bob', change: 'D', id: 'd' },
+                ],
+                bold: true,
+                text: 'x',
+              },
+            ],
+            type: 'paragraph',
+          },
+          { children: [{ text: 'z' }], type: 'paragraph' },
+        ],
+        records: reviewRecords({
+          verdicts: [
+            {
+              decision: 'd:1',
+              member: { at: 1, change: 'C' },
+              verdict: 'accept',
+            },
+          ],
+        }),
+      } as never,
+      plugins: [createAuthoredPlugin({ authorId: 'ann', now: () => 5 })],
+    });
+
+    editor.update((tx) => {
+      tx.authored.propose({ changeId: 'C' });
+      tx.text.insert('!', { at: { offset: 1, path: [1, 0] } });
+    });
+
+    assert.deepEqual(
+      editor.read.authored
+        .changes()
+        .items.map(({ createdAt, id, kind }) => [id, kind, createdAt]),
+      [
+        ['D', 'format', 2],
+        ['C', 'insert', 5],
+      ]
+    );
   });
 });

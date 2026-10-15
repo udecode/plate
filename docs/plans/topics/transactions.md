@@ -1,6 +1,6 @@
 # Atomic updates and document changes
 
-Page: https://claude.ai/artifact/HcWE7ANEonTn1Jbdn8WEGU
+Page: https://claude.ai/artifact/1gmj9dkmNiLTMRn1FPiHkR
 
 The ledger asks what becomes observable when updates commit, nest, fail or repair content, and which overlapping mutation authorities can disappear. An update publishes once. Updates never nest, a failed author throws its draft away, and every update author must return synchronously. One guard in `public-state.ts` enforces that, and `synchronous-transaction-authors.test.ts` covers 14 entry forms. A plugin's update methods run inside that update, and small markers in `tx-only.ts` tell the runtime how to treat a method: usable only inside an open update, or where its location arguments land when a command runs on another document. Every direct call refuses a plugin's reads, because the transaction guard knows where each member came from.
 
@@ -57,6 +57,68 @@ const createHistoryControl = <V extends Value>(
   });
 ```
 
+A block insert takes one placement, and `replaceEmpty` only beside `after` or the selection default. Plate narrows `after` to one block through the type parameter.
+
+```ts
+// packages/plitejs/src/interfaces/editor.ts
+export type BlockInsertOptions<
+  TAfter extends NodeSelectionTarget = NodeSelectionTarget,
+> = (
+  | {
+      after?: TAfter;
+      at?: never;
+      before?: never;
+      /**
+       * Replace the empty editable text block the blocks land after, instead
+       * of keeping it.
+       */
+      replaceEmpty?: boolean;
+    }
+  | { after?: never; at?: never; before: NodeTarget; replaceEmpty?: never }
+  | {
+      after?: never;
+      /** Insert at this exact path, a slot among its parent's children. */
+      at: Path;
+      before?: never;
+      replaceEmpty?: never;
+    }
+) & { select?: boolean; voids?: boolean };
+```
+
+The insert returns the keys of the top-level blocks that landed, in order, or `undefined` when nothing landed.
+
+```ts
+// packages/plitejs/test/transforms-contract.ts
+const inserted = editor.update.blocks.insert(paragraph('inserted'), {
+  replaceEmpty: true,
+  select: true,
+});
+
+assert.deepEqual(inserted, [editor.key([1])]);
+```
+
+A Plate feature acts on the returned key instead of looking up the node it passed.
+
+```ts
+// packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts
+const inserted = tx.blocks.insert(element, options);
+
+if (!inserted) return false;
+
+const [key] = inserted;
+```
+
+Plate's option types derive from Plite's without `Omit`, which collapsed the union.
+
+```ts
+// packages/platejs/src/lib/editor/pluginRuntimeTypes.ts
+export type BlockInsertOptions = PliteBlockInsertOptions<NodeTarget>;
+
+export type BlockUpsertOptions = Exclude<BlockInsertOptions, { at: Path }> & {
+  replaceEmpty?: never;
+};
+```
+
 ## Main changes
 
 - `packages/plitejs/src/core/public-state.ts` owns the update: one publish, the synchronous-author guard, the guarded `tx` groups and the command frame. The guard answers whether each plugin member came from the update group, and the command frame keeps a callable method's members.
@@ -64,6 +126,9 @@ const createHistoryControl = <V extends Value>(
 - `packages/plitejs/src/core/plugin-registry.ts` refuses a plugin group named after a built-in `tx` member other than `plugin`, from a table typed against the transaction's keys.
 - `packages/plitejs/src/core/tx-only.ts` keeps `txOnly` and the location markers in side tables on the global object, keyed by the method, so the callable tree holds no extra keys and two copies of `plitejs` in one app agree.
 - Plate's plugin resolver, `packages/platejs/src/internal/plugin/resolvePlugins.ts`, merges read capabilities without marking them. Plate's portal and `ctx.update` reach the shared dispatch through `plitejs/internal`.
+- `insertBlocks` in `packages/plitejs/src/core/public-state.ts` reads the key of each landed top-level block from its slot, in the landing root, before it removes an empty source, and returns them. A landing that wrote nothing returns `undefined`.
+- AI chat's insert below selects the returned keys, and its insert after a block ends the caret at the last returned key.
+- Media's `insertUrl` captures the key of the block it resolves before the URL wait, checks that key is still live, and passes the caller's options through whole, so a target in another root works and a conflicting placement throws once its block resolves.
 
 ## What other editors do
 
@@ -76,6 +141,8 @@ This page's 2026-10-13 review read the Lexical (`dd5c41b13`), Slate (`945a484df`
 | Slate | No marker; transforms take `at` and run anywhere | `PathRef` and `PointRef` follow operations (`packages/slate/src/interfaces/path-ref.ts:24`) |
 | Tiptap | No marker; a command runs directly, in `chain()` or as `can()` (`packages/core/src/CommandManager.ts:51`) | The caller's job |
 | Plite | `txOnly` brands the type, and every direct call refuses it at runtime | Each command or method declares where its locations land on the review tree's proposed document |
+
+The 2026-10-15 placement review read the same Slate, Lexical, ProseMirror and Tiptap checkouts. None takes more than one placement for an insert, and none returns a coordinate that is wrong outside one tree. Lexical's insert hands back the inserted node, the closest model to Plite's returned keys.
 
 ## Open work
 
@@ -97,3 +164,10 @@ This page's 2026-10-13 review read the Lexical (`dd5c41b13`), Slate (`945a484df`
 - The runner's load limit has no bound against the core count, and its arms have no timeout. owner: zbeyens. stop: the runner's next change.
 - The paired-timing runner lives in this repository's `benchmark` rule, though nothing in it is Plate-specific. owner: zbeyens. stop: the owner moves it to the shared dotai source or keeps it here.
 - No run checked the whole API reference manifest under the real config, because another session's `SchemaRoot` and `SchemaRootInput` exports are missing from `apps/www/api-reference.config.json`. owner: zbeyens. stop: those exports are listed, then `api-reference:check` runs clean.
+- An inserted live node, or a fresh block holding one, from any root gets its source's key, so `tx.blocks.insert` returns a key that can resolve to the source, and inside a transaction spec the seeding can rekey the source. owner: the owner, through suggested task `t_365a2462`. stop: that task lands or is dropped.
+- `tx.nodes.insert`, `tx.nodes.replace`, `tx.blocks.duplicate` and AI chat's replace path still report no keys for what they copy. owner: the owner, through suggested task `t_bcec338b`. stop: that task lands or is dropped.
+- A live element from another root fails as a target, entry reads through a key from another root disagree with `nodes.path`, and List's join walks root-local paths. owner: the owner, through suggested task `task_4ed42f14`. stop: that task lands or is dropped.
+- Media's `insertUrl` rejects a conflicting placement only after the URL dialog, because checking first would copy Plite's placement rules. owner: the owner. stop: Plite exports its placement check.
+- The no-placement check repeats in `applyBlockInsertion`, table, Media, code block and the generated insert. owner: the owner. stop: a refactor of `applyBlockInsertion`.
+- The registry JSON under `apps/www/public/r/` still shows the old insert docs and `TableInsertPlacement`. owner: the owner. stop: the checkout's next `build:registry` or `pnpm check`.
+- The platejs test partitions, the plitejs typecheck and the public types smoke fail at base. owner: the owner, through suggested task `t_54844d26`. stop: that task lands. The package build fails at base on a plitejs JSDoc that names Plite. owner: the owner, through suggested task `t_1436558e`. stop: that task lands.

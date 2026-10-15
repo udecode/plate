@@ -14,19 +14,19 @@ docs:
 
 <ComponentPreview name="suggestion-demo" height="360px" />
 
-The demo starts in Suggestion mode with a proposed insertion and deletion. Open a paragraph's discussion button to accept or reject its change, then try undo and redo. Switch to Editing to keep the pending changes visible while ordinary edits publish directly, or type in Suggestion mode to propose an edit.
+The demo starts in Suggestion mode with a proposed insertion and deletion. Open a paragraph's discussion button to accept or reject its card, then try undo and redo. Switch to Editing to keep the pending changes visible while ordinary edits apply directly, or type in Suggestion mode to propose an edit.
 
-You can type, paste, or press Enter inside your own pending deletion. These edits remain part of that deletion. Backspace preserves the original deleted characters and removes text you added inside it. Reject restores the original content; Accept removes the entire deletion, including your additions.
+Typing inside struck text splits the pending deletion around the new text. In Suggestion mode the new text is a proposed insertion of its own; in Editing mode it applies directly. Deleting struck text in Editing mode leaves it to its pending deletion.
 
 <PackageInfo>
 
 ## Features
 
 - Switch a mounted editor view between editing and suggesting
-- Decorate proposed text, formatting, structural edits, and retained content
-- Keep active suggestion state local to each mounted view
-- Read stable native authored changes for custom review UI
-- Save pending changes and decisions with the complete document
+- Decorate proposed text, formatting, and structural edits
+- Keep the active card local to each mounted view
+- Read native authored changes and review cards for custom review UI
+- Save pending changes with the complete document
 - Add review cards and comment replies through copied registry UI
 
 </PackageInfo>
@@ -45,7 +45,7 @@ npx shadcn@latest add https://platejs.org/r/basic-blocks.json https://platejs.or
 
 <ComponentSource name="suggestion" />
 
-`SuggestionKit` configures the package `SuggestionPlugin` with `render.contentAttributes` for its default styles. The package supplies suggestion modes, semantic attributes, active-change behavior, and authored-change hooks. Core applies the kit's classes to the existing content root, including when you render `EditorContent` directly. `DiscussionKit` adds block buttons, Accept and Reject cards, and comment replies.
+`SuggestionKit` configures the package `SuggestionPlugin` with `render.contentAttributes` for its default styles. The package supplies suggestion modes, semantic attributes, active-card behavior, and authored-change hooks. Core applies the kit's classes to the existing content root, including when you render `EditorContent` directly. `DiscussionKit` adds block buttons, Accept and Reject cards, and comment replies.
 
 ### Add the kits
 
@@ -85,10 +85,7 @@ export function SuggestionEditor() {
   });
 
   return (
-    <EditorRoot
-      editor={editor}
-      authored={{ intent: 'propose', projection: 'markup' }}
-    >
+    <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
       <EditorContainer>
         <Toolbar>
           <UndoToolbarButton />
@@ -110,7 +107,7 @@ Replace `'alice'` with the authenticated user's ID. The editor's `userId` attrib
 
 ## Set the mode
 
-Set the starting view with `EditorRoot authored={{ intent: 'propose', projection: 'markup' }}` as in the example above. Changing either value updates that view. Rerendering with the same values preserves mode changes made by its controls.
+Set the starting view with `EditorRoot authored={{ intent: 'propose' }}` as in the example above. Changing the value updates that view. Rerendering with an equivalent value preserves mode changes made by its controls.
 
 For an interactive mode control, call the `SuggestionPlugin` portal from the mounted editor view:
 
@@ -137,35 +134,23 @@ export function SuggestionModeButton() {
 }
 ```
 
-Changing the mode updates the input intent and preserves the current projection:
-
-| Mode | Intent | Projection |
-| --- | --- | --- |
-| `'suggesting'` | `'propose'` | Keeps `markup` or `proposed`. An `accepted` view changes to `markup` so new proposals remain visible. |
-| `'editing'` | `'edit'` | Keeps `accepted`, `proposed`, or `markup`. |
-
-An editing markup view shows pending changes while ordinary edits to accepted content publish directly. A replacement that fully contains pending changes resolves them and publishes the replacement directly in the same undoable transaction. Other dependent edits remain reviewable with the current author. Use an accepted projection only when the view should hide pending content.
+`setMode` sets the view's input intent: `'suggesting'` sets `{ intent: 'propose' }` and `'editing'` sets `{ intent: 'edit' }`. Both show the pending insertions and deletions. In Editing mode, ordinary edits apply directly; in Suggestion mode, they become proposals by the current author.
 
 Mode belongs to the exact mounted view. Two views over one document can use different modes without changing each other.
 
-Changing the mode affects only subsequent input. It does not accept, reject, delete, or hide pending changes, and it does not add an undo step. In Editing mode, exact accepted targets edit directly. A replacement spanning pending content applies directly only when the selection fully contains every involved pending change and dependency. Partial retained or dependency-spanning selections stay protected. Switch to Suggestion mode to intentionally propose or amend reviewable work.
+Changing the mode affects only subsequent input. It does not accept, reject, delete, or hide pending changes, and it does not add an undo step.
 
-To show accepted content without pending proposals, set `{ intent: 'edit', projection: 'accepted' }` directly on the authored view.
-
-For proposed content without retained review fragments, set an advanced authored view directly:
+To read the document with every pending change accepted or rejected, switch the view to a preview:
 
 ```tsx
 import { AuthoredPlugin } from 'platejs/authored';
 
 const authored = editor.plugin(AuthoredPlugin);
 
-authored.api.setView({
-  intent: 'propose',
-  projection: 'proposed',
-});
+authored.api.setView({ preview: 'proposed' });
 ```
 
-Changing the projection does not accept or reject changes. Coordinates can differ between projections, so read selections and apply edits through the view that produced them.
+A preview takes no writes, and `read.mode()` reports it as `'editing'`. Switching to a preview does not accept or reject changes. Coordinates can differ between views, so read selections and apply edits through the view that produced them. Call `setMode` to leave the preview.
 
 ## Read view state
 
@@ -175,17 +160,21 @@ The React entrypoint exposes focused hooks for custom controls and review UI:
 import {
   useActiveSuggestion,
   useSuggestionChanges,
+  useSuggestionGroups,
   useSuggestionMode,
 } from 'platejs/suggestion/react';
 
 const mode = useSuggestionMode();
 const changes = useSuggestionChanges(path);
+const cards = useSuggestionGroups(blockKey);
 const { activeId, setActiveId } = useActiveSuggestion();
 ```
 
-`useSuggestionChanges(path)` returns native `AuthoredChange` records touching that block. It updates for document, authored-state, and projection changes while preserving stable results when the visible records are unchanged.
+`useSuggestionChanges(path)` returns the native `AuthoredChange` records touching that block. It keeps its result stable while those records are unchanged.
 
-Clicking an element with `data-editor-authored-change` activates its change in the current view. Clicking unmarked editor content clears it. Unmounting the view, changing projection, or deciding the change also clears stale active state. Use `setActiveId` when a custom card or control needs to activate a change directly.
+`useSuggestionGroups(blockKey)` returns the review cards touching the top-level block with that key, as `read.groups` summaries. It rereads when the block redraws and when a change in the block moves to another card. An edit to the same card in another block does neither, so a summary's `changeCount` or `revision` can trail; read `editor.plugin(AuthoredPlugin).read.groupOf(card.id)` when a control needs the current one. Read a card's changes a page at a time with `read.changes({ group: card.id })`.
+
+In the current view, clicking a marked element activates the first card its `data-editor-authored-groups` attribute names. Clicking unmarked editor content clears it. Unmounting the view, switching it to another intent or preview, or deciding the card also clears stale active state. Use `setActiveId` when a custom card or control needs to activate a card directly.
 
 ## Examples
 
@@ -195,15 +184,15 @@ The first proposal makes a sentence bold; the second inserts a paragraph. Open e
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-Add [Basic Marks](/docs/basic-marks) for supported text formatting. Normal editor commands record text, mark, and node operations as proposals while the view is in suggesting mode.
+Add [Basic Marks](/docs/basic-marks) for supported text formatting. Editor commands record text, mark, and node operations as proposals while the view is in suggesting mode. A `propose` view refuses a write it cannot record as a proposal and rolls it back; see [Authored Changes](/docs/authored-changes#configure-a-view).
 
 ### Accepted, proposed, and markup
 
-Switch projections to compare accepted content, the proposed result, and retained review fragments. The proposals stay pending in all three views.
+Switch views to compare accepted content, the proposed result, and the markup view that shows pending insertions and deletions. The proposals stay pending in all three views.
 
 <ComponentPreview name="suggestion-view-demo" height="400px" />
 
-This example sets `readOnly` on both `EditorRoot` and `Editor`. Projection controls choose visible content; read-only prevents document input. The application still owns authorization for review actions and remote writes.
+The Accepted and Proposed controls set a `preview` view; Markup sets `{ intent: 'edit' }`. This example sets `readOnly` on both `EditorRoot` and `Editor`, so no view takes document input. The application still owns authorization for review actions and remote writes.
 
 ### Save proposals and replies
 
@@ -211,7 +200,7 @@ Open a change's discussion button and add a reply, then save a snapshot. Accept 
 
 <ComponentPreview name="suggestion-persistence-demo" height="440px" />
 
-The snapshot stays in memory and disappears when the page reloads. **Reload snapshot** creates a fresh editor from the saved document and `CommentsJSON`, discarding unsaved work and starting an empty local undo stack. Pending changes and decisions belong to the document; conversations persist separately from document undo.
+The snapshot stays in memory and disappears when the page reloads. **Reload snapshot** creates a fresh editor from the saved document and `CommentsJSON`, discarding unsaved work and starting an empty local undo stack. Pending changes belong to the document; conversations persist separately from document undo.
 
 ## Create and decide changes
 
@@ -228,40 +217,43 @@ editor.update((tx) => {
 });
 ```
 
-Pass `{ changeId }` to amend a pending contribution owned by the current author. Use separate proposing transactions when reviewers need to decide the edits independently.
+Pass `{ changeId }` to add the transaction's writes to the pending change with that ID. Use separate proposing transactions when reviewers need to decide the edits independently.
 
-Authored owns review decisions and their structured results:
+Authored owns review decisions and their structured results. Read the change, then decide the record you read:
 
 ```tsx
 import { AuthoredPlugin } from 'platejs/authored';
 
 const authored = editor.plugin(AuthoredPlugin);
-const selection = authored.read.select({ ids: [changeId] });
-const result = authored.update.decide({
-  action: 'accept',
-  selection,
-});
+const change = authored.read.change(changeId);
+
+if (change) {
+  const result = authored.update.decide({
+    action: 'accept',
+    changes: [change],
+  });
+}
 ```
 
-Use `action: 'reject'` to reject the change. Inspect `result.status`: another edit can make the selection `stale`, while dependencies or conflicts can make it `blocked`. [Authored Changes](/docs/authored-changes#review-changes) covers queries, previews, bulk decisions, and result handling.
+Use `action: 'reject'` to reject the change. Inspect `result.status`: another edit can make the change `stale`, and a decision that needs other changes decided with it returns `blocked`. To decide a whole card, pass `{ action, groups: [card] }`. [Authored Changes](/docs/authored-changes#review-changes) covers paging, cards, previews, and result handling.
 
 ## Save and reload
 
-Save the complete value returned by `editor.read.value()`. Its `meta.authored` field belongs to the document codec; do not edit it or copy proposal metadata into nodes.
+Save the complete value returned by `editor.read.value()`. Pending review marks live in each node's `authored` property and review records in the document's `records`; leave both to the editor.
 
 ```tsx
 const savedDocument = editor.read.value();
 const savedComments = editor.plugin(CommentsPlugin).api.toJSON();
 ```
 
-Persist the document and `CommentsJSON` atomically for the same application revision and conversation generation. Verify that association before loading, and use the same content plugins. Saving only `children` discards the authored records.
+Persist the document and `CommentsJSON` atomically for the same application revision and conversation generation. Verify that association before loading, and use the same content plugins. Saving only `children` discards the review records.
 
 Create a fresh editor with the saved document as `initialValue` and `CommentsPlugin.configure({ initialState: { initialComments: savedComments } })`. Local undo starts empty. The document preserves each change's author and ID, so replies can locate the same suggestions. Set `userId` to the current author; loading another author's suggestions does not require changing it or replaying their edits. For historical previews and restores, [join current conversations with the selected revision's targets](/docs/comment#document-history-and-versions).
 
 Choose an explicit [export projection](/docs/authored-changes#export-explicit-projections).
 HTML and Markdown carry visible `accepted` or `proposed` content only. Save
-authored JSON when Plate must recover exact review records, or use DOCX
-`review` export for Word revisions.
+authored JSON when Plate must recover the review, or use DOCX `review` export
+for Word revisions.
 
 ## Headless usage
 
@@ -282,7 +274,7 @@ const editor = createEditor({
 editor.plugin(BaseSuggestionPlugin).api.setMode('suggesting');
 ```
 
-Ordinary suggestion ranges expose `data-editor-authored-change`, `data-editor-authored-kind`, and `data-editor-authored-status`. Retained fragments expose `data-editor-authored-change` and `data-editor-retained`. Add application styles against these attributes through the plugin's `render.contentAttributes`. Static presets can configure `BaseSuggestionPlugin` with a server-safe attribute object; `SuggestionKit` supplies the live default styles.
+Marked text and elements expose `data-editor-authored-change`, `data-editor-authored-kind`, `data-editor-authored-author`, `data-editor-authored-groups`, and `data-editor-authored-color`. Each holds a space-separated list, except `color`, which holds the palette slot, 0 to 6, of the card the element paints. A pending deletion has `delete` in its `kind`. Add application styles against these attributes through the plugin's `render.contentAttributes`. Static presets can configure `BaseSuggestionPlugin` with a server-safe attribute object; `SuggestionKit` supplies the live default styles.
 
 ## Discussion review
 
@@ -320,11 +312,11 @@ Import from `platejs/suggestion/react`. It extends `BaseSuggestionPlugin` with e
 
 ### `suggestion.api.setMode(mode)`
 
-Set whether subsequent input proposes or directly edits through `editor.plugin(SuggestionPlugin)` or `editor.plugin(BaseSuggestionPlugin)`. Both modes retain the markup projection and its pending review UI.
+Set whether subsequent input proposes or directly edits through `editor.plugin(SuggestionPlugin)` or `editor.plugin(BaseSuggestionPlugin)`. It sets the view's intent, `'propose'` or `'edit'`; both show pending insertions and deletions.
 
 ### `suggestion.read.mode()`
 
-Read `'suggesting'` or `'editing'` for that editor view.
+Read `'suggesting'` for a `propose` view, and `'editing'` for an `edit` view or a preview.
 
 ### React hooks
 
@@ -332,7 +324,8 @@ Read `'suggesting'` or `'editing'` for that editor view.
 | --- | --- |
 | `useSuggestionMode()` | The exact mounted view's `'suggesting' \| 'editing'` mode. |
 | `useSuggestionChanges(path)` | Native `AuthoredChange` records touching the block at `path`. |
-| `useActiveSuggestion()` | The view-local `activeId` and `setActiveId` function. |
+| `useSuggestionGroups(blockKey)` | Summaries of the review cards touching the top-level block with that key. |
+| `useActiveSuggestion()` | The view-local active card's `activeId` and the `setActiveId` function. |
 
 ### `SuggestionKit`
 

@@ -4,12 +4,12 @@ import { NodeApi, type Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
-import { DocumentChange } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import type { DocumentIndex } from './change/document-index';
 import {
   type DraftGuardFrame,
   registerEditorDraftGuard,
 } from './document-recorder';
+import type { DraftSpan, DraftTrack } from './draft-track';
 import { type JsonValue, TransferRefusalError } from './landing';
 import type { TransferDiagnostic } from './transfer-types';
 
@@ -59,7 +59,7 @@ export const sameContent = (
     ...bProps
   } = b as Element & { childRoots?: Record<string, string> };
 
-  if (JSON.stringify(aProps) !== JSON.stringify(bProps)) return false;
+  if (stable(aProps) !== stable(bProps)) return false;
   if (aChildren.length !== bChildren.length) return false;
 
   const aRootNames = Object.keys(aChildRoots ?? {}).sort();
@@ -160,199 +160,6 @@ const headChain = (nodes: readonly Descendant[], kind: LandedKind) => {
   }
 
   return chain;
-};
-
-const openEdge = (
-  slice: ContentSlice,
-  side: 'end' | 'start',
-  kind: LandedKind
-) => {
-  const open = side === 'start' ? slice.openStart : slice.openEnd;
-  let nodes = slice.content;
-  let block: Element | null = null;
-  let inlines = 0;
-
-  for (let depth = 0; depth < open; depth++) {
-    const node = side === 'start' ? nodes[0] : nodes.at(-1);
-
-    if (!node || !ElementApi.isElement(node)) break;
-    if (kind(node) === 'inline') inlines += 1;
-    else if (kind(node) === 'block' && inlines === 0) block = node;
-    else break;
-    nodes = node.children;
-  }
-
-  return {
-    empty:
-      !!block &&
-      block.children.every(
-        (child) => NodeApi.isText(child) && child.text === ''
-      ),
-    inlines,
-  };
-};
-
-const outsideInlines = (
-  children: readonly Descendant[],
-  point: Point,
-  side: 'after' | 'before',
-  isInline: (element: Element) => boolean,
-  skipOuter: number
-): Point => {
-  let nodes = children;
-  let outer = 0;
-
-  for (const [depth, index] of point.path.entries()) {
-    const node = nodes[index];
-
-    if (!node || !ElementApi.isElement(node)) return point;
-    if (isInline(node) && outer === skipOuter) {
-      const at = side === 'after' ? index + 1 : index - 1;
-      const text = nodes[at];
-
-      return text && NodeApi.isText(text)
-        ? {
-            ...point,
-            offset: side === 'after' ? 0 : text.text.length,
-            path: [...point.path.slice(0, depth), at],
-          }
-        : point;
-    }
-    if (isInline(node)) outer += 1;
-    nodes = node.children;
-  }
-
-  return point;
-};
-
-type DraftPositions = Readonly<{ from: number; to: number }>;
-
-/**
- * The range runs from the first to the last content the landing inserted
- * (`span`), since anchors at a text's edge miss a slice that lands as leaves
- * of its own. Each end reads outward, so an inline void at the edge stays in,
- * unless that leaves the block the content's edge lies in. An empty open head
- * merges into the text block that holds the drop point, and an empty open end
- * becomes the one that holds the drop point's following text, so such an edge
- * reaches from the insertion's `tokenSpan` into that block, outside the inline
- * elements the drop point splits beyond those the slice is open into; between
- * blocks, into the blocks the fit inserted.
- */
-export const landedRange = ({
-  children,
-  fallback,
-  isInline,
-  kind,
-  span,
-  tokenSpan,
-  written,
-}: Readonly<{
-  children: readonly Descendant[];
-  fallback: Readonly<{ end: Point; start: Point }>;
-  isInline: (element: Element) => boolean;
-  kind: LandedKind;
-  span: DraftPositions | null;
-  tokenSpan: DraftPositions | null;
-  written: ContentSlice;
-}>): Range => {
-  const index = DocumentIndex.fromValue(children);
-  const blockKeyOf = (path: readonly number[]) => {
-    let nodes = children;
-    let block = '';
-
-    for (const [depth, at] of path.entries()) {
-      const node = nodes[at];
-
-      if (!node || !ElementApi.isElement(node)) break;
-      if (!isInline(node)) block = path.slice(0, depth + 1).join('/');
-      nodes = node.children;
-    }
-
-    return block;
-  };
-  const pointAt = (position: number, assoc: -1 | 1, otherwise: Point) => {
-    const found = index.pointAt(position, assoc);
-
-    return found
-      ? { ...otherwise, offset: found.offset, path: [...found.path] }
-      : otherwise;
-  };
-  const contentEdge = (position: number, outward: -1 | 1, otherwise: Point) => {
-    const out = pointAt(position, outward, otherwise);
-    const into = pointAt(position, outward === 1 ? -1 : 1, otherwise);
-
-    return blockKeyOf(out.path) === blockKeyOf(into.path) ? out : into;
-  };
-  const textBlockAt = (position: number) => {
-    const context = index.openContextAt(position);
-
-    for (let at = context.length - 1; at >= 0; at--) {
-      const { path } = context[at];
-      const node = nodeAt(children, [...path]);
-
-      if (node && ElementApi.isElement(node) && !isInline(node)) {
-        return node.children.every(
-          (child) => NodeApi.isText(child) || isInline(child)
-        )
-          ? ([node, [...path]] as const)
-          : null;
-      }
-    }
-
-    return null;
-  };
-  const insertionEdge = (
-    position: number,
-    toward: -1 | 1,
-    carried: number,
-    otherwise: Point
-  ) => {
-    const block = textBlockAt(position);
-
-    if (!block) return pointAt(position, toward === 1 ? -1 : 1, otherwise);
-
-    const [element, path] = block;
-    const read = pointAt(position, toward, otherwise);
-    const at = toward === -1 ? 0 : element.children.length - 1;
-    const text = element.children[at];
-
-    return outsideInlines(
-      children,
-      blockKeyOf(read.path) === path.join('/') || !NodeApi.isText(text)
-        ? read
-        : {
-            ...otherwise,
-            offset: toward === -1 ? 0 : text.text.length,
-            path: [...path, at],
-          },
-      toward === -1 ? 'after' : 'before',
-      isInline,
-      carried
-    );
-  };
-  const edge = (side: 'end' | 'start') => {
-    const toward = side === 'start' ? -1 : 1;
-    const open = openEdge(written, side, kind);
-
-    if (span && !open.empty) {
-      return contentEdge(
-        side === 'start' ? span.from : span.to,
-        toward,
-        fallback[side]
-      );
-    }
-
-    return tokenSpan
-      ? insertionEdge(
-          side === 'start' ? tokenSpan.from : tokenSpan.to,
-          toward,
-          open.inlines,
-          fallback[side]
-        )
-      : fallback[side];
-  };
-
-  return selectionRange(edge('start'), edge('end'));
 };
 
 const openPrefix = (slice: ContentSlice, chain: readonly Element[]) => {
@@ -481,89 +288,35 @@ export const selectionRange = (from: Point, to: Point): Range => ({
   focus: to,
 });
 
-export type DraftLanding = Readonly<{
-  children: readonly Descendant[];
-  landed: Readonly<{ paths: readonly Path[] }> | Readonly<{ range: Range }>;
-}>;
+export const trackedRange = (
+  index: DocumentIndex,
+  { from, to }: DraftSpan
+): Range | null => {
+  const start = index.pointAt(from, 1);
+  const end = index.pointAt(to, -1);
 
-type DraftMap = Readonly<{
-  path: (path: Path) => Path | null;
-  point: (point: Point, association?: 'backward' | 'forward') => Point | null;
-}>;
-
-export const mapDraft = (
-  draft: readonly Descendant[],
-  after: readonly Descendant[],
-  frame?: Readonly<{
-    mapPosition: (
-      position: number,
-      association: 'backward' | 'forward'
-    ) => number | null;
-    stored: readonly Descendant[];
-  }>
-): DraftMap => {
-  // A command frame wrote another document than the draft's, so the landing
-  // maps to the stored document and then to what the frame wrote.
-  if (frame) {
-    const toStored = mapDraft(draft, frame.stored);
-    const stored = DocumentIndex.fromValue(frame.stored);
-    const next = DocumentIndex.fromValue(after);
-    const through = frame.mapPosition;
-
-    return {
-      path: (path) => {
-        const at = toStored.path(path);
-        const mapped = at && through(stored.nodeRange(at).from, 'forward');
-        const entry = mapped == null ? null : next.nodeStartingAt(mapped);
-
-        return entry ? [...entry.path] : null;
-      },
-      point: (point, association = 'backward') => {
-        const at = toStored.point(point, association);
-        const mapped = at && through(stored.positionAt(at), association);
-
-        return mapped == null
-          ? null
-          : next.pointAt(mapped, association === 'backward' ? -1 : 1);
-      },
-    };
-  }
-  if (draft === after) {
-    return {
-      path: (path: Path): Path | null => path,
-      point: (point: Point): Point | null => point,
-    };
-  }
-
-  const before = DocumentIndex.fromValue(draft);
-  const next = DocumentIndex.fromValue(after);
-  const change = DocumentChange.between(
-    { children: draft },
-    { children: after }
-  );
-
-  return {
-    path: (path: Path): Path | null => {
-      const mapped = change.mapPosition(before.nodeRange(path).from, {
-        association: 'forward',
-      });
-      const entry = mapped == null ? null : next.nodeStartingAt(mapped);
-
-      return entry ? [...entry.path] : null;
-    },
-    point: (point: Point, association: 'backward' | 'forward' = 'backward') => {
-      const mapped = change.mapPosition(before.positionAt(point), {
-        association,
-      });
-      const mappedPoint =
-        mapped == null
-          ? null
-          : next.pointAt(mapped, association === 'backward' ? -1 : 1);
-
-      return mappedPoint;
-    },
-  };
+  return start && end
+    ? selectionRange(
+        { offset: start.offset, path: [...start.path] },
+        { offset: end.offset, path: [...end.path] }
+      )
+    : null;
 };
+
+export type DraftLanding = Readonly<{
+  kind: 'nodes' | 'range';
+  track: DraftTrack;
+}>;
+
+export const trackedPaths = (
+  index: DocumentIndex,
+  spans: readonly DraftSpan[]
+): Array<Path | null> =>
+  spans.map(({ from, to }) => {
+    const entry = index.nodeStartingAt(from);
+
+    return entry && entry.to === to ? [...entry.path] : null;
+  });
 
 export const guardLanding = (
   editor: AnyEditor,

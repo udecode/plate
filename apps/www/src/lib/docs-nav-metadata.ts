@@ -8,6 +8,7 @@ export type DocsCategory = 'api' | 'component' | 'example' | 'guide' | 'plugin';
 
 type DocsMetaOverlayItem = {
   description?: string;
+  experimental?: true;
   keywords?: string[];
   label?: string | string[];
   title?: string;

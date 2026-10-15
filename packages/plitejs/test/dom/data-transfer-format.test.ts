@@ -1554,3 +1554,76 @@ test('views insert transfers and read the clipboard key of their runtime owner',
   ).toBe(true);
   expect(editor.read.text.string([])).toBe('pasted');
 });
+
+const captionedCardSchema = defineEditorSchema('schema:data-transfer-card', {
+  elements: {
+    caption: { content: schema.content.text({ default: 'text', min: 1 }) },
+    card: {
+      content: schema.content.prefix(
+        [{ element: 'caption' }],
+        schema.content.types(['paragraph'], { default: { type: 'paragraph' } })
+      ),
+    },
+    paragraph: { content: schema.content.text({ default: 'text', min: 1 }) },
+  },
+  id: 'data-transfer-card',
+  root: schema.content.types(['card', 'paragraph'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
+const captionedCard = [
+  {
+    children: [
+      { children: [{ text: 'Title' }], type: 'caption' },
+      paragraph('Body'),
+    ],
+    type: 'card',
+  },
+];
+const caretInCaption = (offset: number) =>
+  SelectionApi.text({
+    anchor: { offset, path: [0, 0, 0] },
+    focus: { offset, path: [0, 0, 0] },
+  });
+
+test('plain-text lines pasted into a caption continue as body paragraphs', () => {
+  expect(
+    pasteIntoNested(
+      captionedCardSchema,
+      captionedCard,
+      caretInCaption(2),
+      'X\n\nY'
+    )
+  ).toEqual([
+    {
+      children: [
+        { children: [{ text: 'TiX' }], type: 'caption' },
+        paragraph(''),
+        paragraph('Ytle'),
+        paragraph('Body'),
+      ],
+      type: 'card',
+    },
+  ]);
+  expect(
+    pasteIntoNested(
+      captionedCardSchema,
+      captionedCard,
+      caretInCaption(5),
+      'X\n\nY'
+    )
+  ).toEqual([
+    {
+      children: [
+        { children: [{ text: 'TitleX' }], type: 'caption' },
+        paragraph(''),
+        paragraph('Y'),
+        paragraph('Body'),
+      ],
+      type: 'card',
+    },
+  ]);
+});

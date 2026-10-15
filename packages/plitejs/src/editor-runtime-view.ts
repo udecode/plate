@@ -782,9 +782,10 @@ const withViewTransaction = <V extends Value>(
         runImplicitSelectionMutation(options, () => {
           transaction.blocks.duplicate(options);
         })) as EditorUpdateTransaction<V, any>['blocks']['duplicate'],
-      insertAfter: (nodes, options) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.blocks.insertAfter(nodes, options)
+      insert: (nodes, options) =>
+        runImplicitSelectionMutation(
+          { at: options?.at ?? options?.after ?? options?.before },
+          () => transaction.blocks.insert(nodes, options)
         ),
       reset: (options) =>
         runImplicitSelectionMutation(options, () =>

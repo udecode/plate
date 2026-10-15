@@ -22,7 +22,9 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
+import { canPlaceBlocksAtPath } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
+import { rootOf } from '../../../internal/utils/inRoot';
 
 export type MoveMiddleColumnOptions = {
   direction: 'left' | 'right';
@@ -426,18 +428,16 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
         })),
         type,
       };
-      if (options.at === undefined || options.after !== undefined) {
-        tx.blocks.insertAfter(element, { ...options, at: options.after });
-      } else {
-        tx.nodes.insert(element, options);
+      const inserted = tx.blocks.insert(element, options);
+
+      if (!inserted) return false;
+      if (select) {
+        const point = tx.points.start(inserted[0]);
+
+        if (point) tx.selection.set(point);
       }
 
-      if (!select) return;
-
-      const path = tx.nodes.path(element);
-      const point = path && tx.points.start(path.concat(0));
-
-      if (point) tx.selection.set(point);
+      return true;
     };
     const applyColumnInsertion = (
       mode: 'insert' | 'upsert',
@@ -497,7 +497,15 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
           const parentPath = PathApi.parent(path);
           const index = path.at(-1);
 
-          if (index === undefined) return;
+          if (
+            index === undefined ||
+            !canPlaceBlocksAtPath(tx.schema, path, [columnGroup], {
+              removing: [index],
+              root: rootOf(tx, at),
+            })
+          ) {
+            return;
+          }
 
           tx.nodes.replaceChildren([columnGroup], {
             at: parentPath,

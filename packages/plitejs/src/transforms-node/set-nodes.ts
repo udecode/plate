@@ -34,7 +34,7 @@ import { getDefined } from '../internal/get-defined';
 import { select } from '../transforms-selection/select';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
-import { splitNodes } from './split-nodes';
+import { splitNodesKeepingType } from './split-nodes';
 
 type SetNodeUpdate = {
   newProperties: Record<string, unknown>;
@@ -42,7 +42,7 @@ type SetNodeUpdate = {
   properties: Record<string, unknown>;
 };
 
-const NON_SETTABLE_NODE_PROPERTIES = new Set([
+export const NON_SETTABLE_NODE_PROPERTIES: ReadonlySet<string> = new Set([
   'children',
   'text',
   ...Object.getOwnPropertyNames(Object.prototype),
@@ -217,7 +217,7 @@ export const setNodes = ((
       const [start, end] = RangeApi.edges(at);
       const splitMode = mode === 'lowest' ? 'lowest' : 'highest';
       const endAtEndOfNode = editorIsEnd(editor, end, end.path);
-      splitNodes(editor, {
+      splitNodesKeepingType(editor, {
         at: end,
         match,
         mode: splitMode,
@@ -225,7 +225,7 @@ export const setNodes = ((
         always: !endAtEndOfNode,
       });
       const startAtStartOfNode = editorIsStart(editor, start, start.path);
-      splitNodes(editor, {
+      splitNodesKeepingType(editor, {
         at: start,
         match,
         mode: splitMode,
@@ -299,10 +299,12 @@ export const setNodes = ((
 
       if (hasChanges) {
         if (NodeApi.isElement(node) && typeof newProperties.type === 'string') {
-          const nextParent = { ...node, ...newProperties };
-          const preservedElementProperties = getEditorSchema(
-            editor
-          ).elementPropertiesForTypeChangeAt(node, nextParent, path, root);
+          const changed = getEditorSchema(editor).elementForTypeChangeAt(
+            node,
+            newProperties.type,
+            path,
+            root
+          );
 
           for (const [key, value] of Object.entries(
             NodeApi.extractProps(node)
@@ -310,7 +312,7 @@ export const setNodes = ((
             if (
               key === 'type' ||
               Object.hasOwn(props, key) ||
-              Object.hasOwn(preservedElementProperties, key)
+              Object.hasOwn(changed, key)
             ) {
               continue;
             }
@@ -318,20 +320,13 @@ export const setNodes = ((
           }
 
           node.children.forEach((child, index) => {
-            if (!NodeApi.isText(child)) return;
+            const kept = changed.children[index];
 
-            const preserved = getEditorSchema(
-              editor
-            ).textPropertiesForTypeChangeAt(
-              child,
-              node,
-              nextParent,
-              path.concat(index),
-              root
-            );
+            if (kept === child || !NodeApi.isText(child)) return;
+
             const removedProperties = Object.fromEntries(
               Object.entries(NodeApi.extractProps(child)).filter(
-                ([key]) => !Object.hasOwn(preserved, key)
+                ([key]) => !Object.hasOwn(kept, key)
               )
             );
 

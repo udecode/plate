@@ -15,7 +15,7 @@ test('docs-sidebar:collapsed-sections-use-compact-row-spacing', async ({
     await page.goto('/docs/basic-blocks', { waitUntil: 'commit' });
 
     const navigation = page.getByLabel('Docs navigation');
-    const labels = ['Overview', 'Plite', 'Guides'];
+    const labels = ['Migrations', 'API', 'Plite'];
     const boxes = await Promise.all(
       labels.map((label) =>
         navigation

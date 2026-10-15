@@ -19,7 +19,7 @@ const formatEntrypoint = (packageName, entrypointName) =>
 
 const entrypointDagRule = {
   create(context) {
-    const checkSource = (source) => {
+    const checkSource = (source, typeOnly = false) => {
       if (source?.type !== 'Literal' && source?.type !== 'StringLiteral') {
         return;
       }
@@ -61,6 +61,13 @@ const entrypointDagRule = {
       }
 
       if (edge.packageName === edge.toPackageName && edge.from === edge.to) {
+        if (edge.toEntry && !typeOnly) {
+          context.report({
+            data: { from: formatEntrypoint(edge.packageName, edge.from) },
+            messageId: 'ownEntrypointImport',
+            node: source,
+          });
+        }
         return;
       }
 
@@ -122,13 +129,26 @@ const entrypointDagRule = {
       });
     };
 
+    const checkDeclaration = (node) =>
+      checkSource(
+        node.source,
+        node.importKind === 'type' ||
+          node.exportKind === 'type' ||
+          (node.specifiers?.length > 0 &&
+            node.specifiers.every(
+              (specifier) =>
+                specifier.importKind === 'type' ||
+                specifier.exportKind === 'type'
+            ))
+      );
+
     return {
-      ExportAllDeclaration: ({ source }) => checkSource(source),
-      ExportNamedDeclaration: ({ source }) => checkSource(source),
-      ImportDeclaration: ({ source }) => checkSource(source),
+      ExportAllDeclaration: checkDeclaration,
+      ExportNamedDeclaration: checkDeclaration,
+      ImportDeclaration: checkDeclaration,
       ImportExpression: checkDynamicImport,
       TSExternalModuleReference: ({ expression }) => checkSource(expression),
-      TSImportType: ({ source }) => checkSource(source),
+      TSImportType: ({ source }) => checkSource(source, true),
     };
   },
   meta: {
@@ -142,6 +162,8 @@ const entrypointDagRule = {
         '{{from}} cannot import {{to}}. Allowed cross-entrypoint dependencies: {{allowed}}.',
       forbiddenPeerImport:
         '{{from}} cannot import optional peer {{to}}. Allowed direct optional peers: {{allowed}}.',
+      ownEntrypointImport:
+        '{{from}} source cannot import its own entry file at runtime. When this module loads before the entry, the entry runs in the middle of it and can read a binding that does not exist yet. Import the module that defines the binding instead.',
       sourceRootEscape:
         '{{from}} cannot import outside {{packageName}}/src. Import a declared package entrypoint instead.',
     },

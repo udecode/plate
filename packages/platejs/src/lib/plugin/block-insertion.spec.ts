@@ -1,6 +1,15 @@
 import { expect, it } from 'bun:test';
 
-import { createEditor, definePlugin, type Editor, property } from '../../core';
+import {
+  createEditor,
+  createEditorView,
+  definePlugin,
+  type Editor,
+  type Location,
+  property,
+  schema,
+  type Value,
+} from '../../core';
 import {
   BaseBlockquotePlugin,
   BaseHeadingPlugin,
@@ -11,6 +20,7 @@ import {
   BaseTextAlignPlugin,
 } from '../../features/basic-styles';
 import { BaseCalloutPlugin } from '../../features/callout';
+import { BaseCodeBlockPlugin } from '../../features/code-block';
 import { BaseDetailsPlugin } from '../../features/details';
 import { BaseColumnPlugin } from '../../features/layout';
 import { BaseListPlugin } from '../../features/list';
@@ -192,6 +202,25 @@ it('inserts before an explicit stable block key', () => {
   ]);
 });
 
+it('throws for replaceEmpty beside before instead of dropping it', () => {
+  const editor = createEditor({
+    plugins,
+    initialValue: [
+      { type: 'paragraph', children: [{ text: '' }] },
+      { type: 'paragraph', children: [{ text: 'second' }] },
+    ],
+  });
+  const value = editor.read.value();
+  const before = editor.key([1])!;
+
+  expect(() =>
+    editor
+      .plugin(BaseCalloutPlugin)
+      .update.insert({}, { before, replaceEmpty: true } as never)
+  ).toThrow('replaceEmpty applies only to an after landing');
+  expect(editor.read.value()).toEqual(value);
+});
+
 it('keeps explicit at as insertion before that path', () => {
   const editor = createEditor({
     plugins,
@@ -221,6 +250,189 @@ it('inserts a table beside the current table, with its first cell selected', () 
   expect(editor.read.selection()?.anchor.path).toEqual([1, 0, 0, 0, 0]);
 });
 
+const FullParentPlugin = definePlugin('fullParent', {
+  schema: {
+    element: {
+      blockContent: true,
+      content: schema.content.types(
+        [
+          'callout',
+          'codeBlock',
+          'columnGroup',
+          'details',
+          'image',
+          'paragraph',
+          'table',
+        ],
+        { max: 1 }
+      ),
+    },
+  },
+});
+const inFullParent = (text: string) =>
+  createEditor({
+    plugins: [
+      ...plugins,
+      BaseCodeBlockPlugin,
+      BaseListPlugin,
+      FullParentPlugin,
+    ],
+    initialValue: [
+      {
+        type: 'fullParent',
+        children: [{ type: 'paragraph', children: [{ text }] }],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0, 0], offset: text.length },
+      focus: { path: [0, 0, 0], offset: text.length },
+    },
+  });
+
+it.each<[string, (editor: Editor) => boolean]>([
+  [
+    'callout from the caret',
+    (editor) => editor.plugin(BaseCalloutPlugin).update.insert(),
+  ],
+  [
+    'callout after a block',
+    (editor) =>
+      editor
+        .plugin(BaseCalloutPlugin)
+        .update.insert({}, { after: editor.key([0, 0])! }),
+  ],
+  [
+    'callout before a block',
+    (editor) =>
+      editor
+        .plugin(BaseCalloutPlugin)
+        .update.insert({}, { before: editor.key([0, 0])! }),
+  ],
+  [
+    'callout at a path',
+    (editor) =>
+      editor.plugin(BaseCalloutPlugin).update.insert({}, { at: [0, 1] }),
+  ],
+  [
+    'code block',
+    (editor) => editor.plugin(BaseCodeBlockPlugin).update.insert(),
+  ],
+  [
+    'column group',
+    (editor) => editor.plugin(BaseColumnPlugin).update.insert({ columns: 2 }),
+  ],
+  ['details', (editor) => editor.plugin(BaseDetailsPlugin).update.insert()],
+  [
+    'image',
+    (editor) =>
+      editor
+        .plugin(BaseImagePlugin)
+        .update.insert({ url: 'https://example.com/image.png' }),
+  ],
+  [
+    'list',
+    (editor) =>
+      editor.plugin(BaseListPlugin).update.insert({ type: 'bulleted' }),
+  ],
+  ['table', (editor) => editor.plugin(BaseTablePlugin).update.insert()],
+])(
+  'refuses a %s insert into a full parent and changes nothing',
+  (_, insert) => {
+    const editor = inFullParent('Only');
+    const children = editor.read.children();
+    const inserted = insert(editor);
+
+    expect({ children: editor.read.children(), inserted }).toEqual({
+      children,
+      inserted: false,
+    });
+  }
+);
+
+it('replaces the empty block of a full parent through upsert', () => {
+  const editor = inFullParent('');
+  const upserted = editor.plugin(BaseCalloutPlugin).update.upsert();
+
+  expect({
+    types: editor.read.children()[0].children.map((node) => node.type),
+    upserted,
+  }).toEqual({ types: ['callout'], upserted: true });
+});
+
+it('lands a table placed after a cell block in that cell', () => {
+  const editor = createEditor({
+    plugins,
+    initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    },
+  });
+  const table = editor.plugin(BaseTablePlugin);
+
+  table.update.insert();
+  const inserted = table.update.insert(
+    {},
+    { after: editor.key([0, 0, 0, 0])! }
+  );
+
+  expect({
+    cell: editor.read.nodes.get([0, 0, 0])?.[0],
+    inserted,
+    types: editor.read.children().map((node) => node.type),
+  }).toMatchObject({
+    cell: { children: [{ type: 'table' }], type: 'tableCell' },
+    inserted: true,
+    types: ['table'],
+  });
+});
+
+it('inserts a table from a closed Details title in a cell after that table', () => {
+  const editor = createEditor({
+    plugins,
+    initialValue: [
+      {
+        type: 'table',
+        children: [
+          {
+            type: 'tableRow',
+            children: [
+              {
+                type: 'tableCell',
+                children: [
+                  {
+                    type: 'details',
+                    children: [
+                      { type: 'summary', children: [{ text: 'Title' }] },
+                      { type: 'paragraph', children: [{ text: 'Body' }] },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0, 0, 0, 0, 0], offset: 5 },
+      focus: { path: [0, 0, 0, 0, 0, 0], offset: 5 },
+    },
+  });
+
+  editor.plugin(BaseTablePlugin).update.insert();
+
+  expect({
+    cell: editor.read.nodes
+      .get([0, 0, 0])?.[0]
+      .children.map((node: { type?: string }) => node.type),
+    types: editor.read.children().map((node) => node.type),
+  }).toEqual({ cell: ['details'], types: ['table', 'table'] });
+});
+
 it('creates a sibling for insert and reuses a matching empty block for upsert', () => {
   const createHeadingEditor = () =>
     createEditor({
@@ -243,9 +455,11 @@ it('creates a sibling for insert and reuses a matching empty block for upsert', 
   const block = upsertEditor.read.children()[0];
   const key = upsertEditor.key(block);
 
-  upsertEditor
-    .plugin(BaseHeadingPlugin)
-    .update.upsert({ level: 2 }, { select: true });
+  expect(
+    upsertEditor
+      .plugin(BaseHeadingPlugin)
+      .update.upsert({ level: 2 }, { select: true })
+  ).toBe(true);
   expect(upsertEditor.read.children()).toHaveLength(1);
   expect(upsertEditor.key(upsertEditor.read.children()[0])).toBe(key);
 });
@@ -278,11 +492,193 @@ it('uses list identity for authored insert and upsert', () => {
   const upsertEditor = createListEditor();
   const key = upsertEditor.key(upsertEditor.read.children()[0]);
 
-  upsertEditor
-    .plugin(BaseListPlugin)
-    .update.upsert({ type: 'bulleted' }, { select: true });
+  expect(
+    upsertEditor
+      .plugin(BaseListPlugin)
+      .update.upsert({ type: 'bulleted' }, { select: true })
+  ).toBe(true);
   expect(upsertEditor.read.children()).toHaveLength(1);
   expect(upsertEditor.key(upsertEditor.read.children()[0])).toBe(key);
+});
+
+const RootHolderPlugin = definePlugin('insertRootHolder', {
+  schema: {
+    element: {
+      blockContent: true,
+      contentRoots: {
+        body: {
+          content: schema.content.types([
+            'codeBlock',
+            'columnGroup',
+            'paragraph',
+            'table',
+          ]),
+          ownership: 'exclusive',
+        },
+      },
+      void: 'block',
+    },
+  },
+});
+
+const inHeaderRoot = (
+  header: Value,
+  focus: { offset: number; path: number[]; root?: 'header' } = {
+    offset: 0,
+    path: [0, 0],
+  }
+) =>
+  createEditor({
+    plugins: [...plugins, BaseCodeBlockPlugin, RootHolderPlugin],
+    initialValue: {
+      children: [
+        { type: 'paragraph', children: [{ text: 'main' }] },
+        {
+          childRoots: { body: 'header' },
+          children: [{ text: '' }],
+          type: 'insertRootHolder',
+        },
+      ],
+      roots: { header },
+    },
+    selection: { kind: 'text', anchor: focus, focus },
+  });
+
+const emptyCodeBlock = { type: 'codeBlock', children: [{ text: '' }] };
+const paragraph = (text: string) => ({
+  type: 'paragraph',
+  children: [{ text }],
+});
+
+it.each<[string, Location]>([
+  ['path', [0, 9]],
+  [
+    'range',
+    { anchor: { path: [0, 0], offset: 0 }, focus: { path: [0, 9], offset: 0 } },
+  ],
+])(
+  'refuses an upsert after a missing nested %s without reusing its ancestor',
+  (_, after) => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+      initialValue: [emptyCodeBlock],
+    });
+    const upserted = editor
+      .plugin(BaseCodeBlockPlugin)
+      .update.upsert({ language: 'ts' }, { after });
+
+    expect({ children: editor.read.children(), upserted }).toEqual({
+      children: [emptyCodeBlock],
+      upserted: false,
+    });
+  }
+);
+
+it.each<[string, Value, number[], boolean, Value]>([
+  [
+    'reuses the empty code block a point in another root names',
+    [paragraph('one'), paragraph('two'), emptyCodeBlock],
+    [2, 0],
+    true,
+    [paragraph('one'), paragraph('two'), { ...emptyCodeBlock, language: 'ts' }],
+  ],
+  [
+    'refuses an upsert after a point missing from its own root',
+    [emptyCodeBlock],
+    [1, 0],
+    false,
+    [emptyCodeBlock],
+  ],
+])('%s', (_, header, path, upserted, expected) => {
+  const editor = inHeaderRoot(header);
+  const result = editor
+    .plugin(BaseCodeBlockPlugin)
+    .update.upsert(
+      { language: 'ts' },
+      { after: { offset: 0, path, root: 'header' } }
+    );
+
+  expect({
+    header: createEditorView(editor, { root: 'header' }).read.children(),
+    result,
+  }).toEqual({ header: expected, result: upserted });
+});
+
+it('inserts a table beside a table the caret is in in another root', () => {
+  const editor = inHeaderRoot([paragraph('head')]);
+  const header = createEditorView(editor, { root: 'header' });
+
+  header.plugin(BaseTablePlugin).update.insert({}, { at: [0] });
+  editor.update((tx) => tx.selection.set(header.read.points.start([0])!));
+  const inserted = editor.plugin(BaseTablePlugin).update.insert();
+
+  expect({
+    inserted,
+    types: header.read.children().map((node) => node.type),
+  }).toEqual({ inserted: true, types: ['table', 'table', 'paragraph'] });
+});
+
+it.each<
+  [
+    string,
+    (editor: Editor, before: NonNullable<ReturnType<Editor['key']>>) => boolean,
+  ]
+>([
+  [
+    'column group',
+    (editor, before) =>
+      editor
+        .plugin(BaseColumnPlugin)
+        .update.insert({ columns: 2 }, { before, select: true }),
+  ],
+  [
+    'table',
+    (editor, before) =>
+      editor
+        .plugin(BaseTablePlugin)
+        .update.insert({}, { before, select: true }),
+  ],
+])('selects the start of a %s inserted into another root', (_, insert) => {
+  const editor = inHeaderRoot([
+    paragraph('one'),
+    paragraph('two'),
+    paragraph('three'),
+  ]);
+  const header = createEditorView(editor, { root: 'header' });
+
+  insert(editor, header.key([2])!);
+
+  expect(editor.read.selection()?.focus).toEqual({
+    offset: 0,
+    path: header.read.points.start([2])!.path,
+    root: 'header',
+  });
+});
+
+it('reuses a matching empty code block for upsert', () => {
+  const editor = createEditor({
+    plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+    initialValue: [{ type: 'codeBlock', children: [{ text: '' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    },
+  });
+  const key = editor.key([0]);
+  const upserted = editor
+    .plugin(BaseCodeBlockPlugin)
+    .update.upsert({ language: 'ts' }, { select: true });
+
+  expect({
+    children: editor.read.children(),
+    key: editor.key([0]),
+    upserted,
+  }).toEqual({
+    children: [{ type: 'codeBlock', language: 'ts', children: [{ text: '' }] }],
+    key,
+    upserted: true,
+  });
 });
 
 it('preserves presentation properties when upserting a matching paragraph', () => {

@@ -140,13 +140,7 @@ const insertNodesRuntime = (
 
       if (!splitPoint) return;
 
-      const [splitEntry] = getNodes(editor, {
-        at: splitPoint.path,
-        match,
-        mode,
-        voids,
-      });
-      const path = splitEntry?.[1] ?? matchPath;
+      const path = splitPoint.path.slice(0, matchPath.length);
 
       at = isAtEnd ? PathApi.next(path) : path;
     }

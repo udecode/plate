@@ -110,7 +110,6 @@ import type {
 import { SelectionApi } from './selection';
 import type {
   BlockDuplicateOptions,
-  NodeDuplicateOptions,
   NodeInsertNodesOptions,
   NodeLiftNodesOptions,
   NodeMergeNodesOptions,
@@ -204,6 +203,34 @@ type EditorBlockSetOptions<
   voids?: boolean;
 };
 
+/**
+ * Where `tx.blocks.insert` lands blocks: after a block, before one, or at an
+ * exact path, one of the three. With none, the blocks land after the
+ * selection's block, or at the end of the root without a selection.
+ */
+export type BlockInsertOptions<
+  TAfter extends NodeSelectionTarget = NodeSelectionTarget,
+> = (
+  | {
+      after?: TAfter;
+      at?: never;
+      before?: never;
+      /**
+       * Replace the empty editable text block the blocks land after, instead
+       * of keeping it.
+       */
+      replaceEmpty?: boolean;
+    }
+  | { after?: never; at?: never; before: NodeTarget; replaceEmpty?: never }
+  | {
+      after?: never;
+      /** Insert at this exact path, a slot among its parent's children. */
+      at: Path;
+      before?: never;
+      replaceEmpty?: never;
+    }
+) & { select?: boolean; voids?: boolean };
+
 export type EditorTransactionBlocksApi<V extends Value = Value> = {
   duplicate: {
     <const TType extends NodeTypeSelector>(
@@ -221,19 +248,29 @@ export type EditorTransactionBlocksApi<V extends Value = Value> = {
       }
     ): void;
   };
-  /** Insert after the target block and return the first inserted path. */
-  insertAfter: <T extends ElementIn<V>>(
-    nodes: T | readonly T[],
-    options?: NodeDuplicateOptions & {
-      at?: NodeSelectionTarget;
-      /** Replace an empty editable text block instead of retaining it. */
-      replaceEmpty?: boolean;
-    }
-  ) => Path | undefined;
   /**
-   * Reset blocks to the immediate parent or root schema default, removing the
-   * `unset` properties that default does not set. Returns `false` and changes
-   * nothing when a default is not allowed at its block's position.
+   * Insert blocks where `options` places them and return the keys of the
+   * top-level blocks that landed, in order. Each key resolves its block from
+   * any root. The keys leave out a block the editor's length limit dropped. A
+   * block that is live in another root lands under its source's key. Returns
+   * `undefined` and changes nothing when the blocks do not fit the landing
+   * parent's content, such as a parent at its child limit, when an `after` or
+   * `before` target does not resolve, or when the length limit admits none of
+   * them. An `at` path past its parent's last child, more than one placement,
+   * or `replaceEmpty` beside `before` or `at` throws.
+   */
+  insert: <T extends ElementIn<V>>(
+    nodes: T | readonly T[],
+    options?: BlockInsertOptions
+  ) => readonly [NodeKey, ...NodeKey[]] | undefined;
+  /**
+   * Reset blocks to the immediate parent or root schema default, keeping the
+   * properties a type change preserves and removing the `unset` properties
+   * that default does not set. Returns `false` and changes nothing when any
+   * block has no default it can become: its parent or root declares no
+   * element default, the default lacks a required property nothing supplies,
+   * its type change leaves the block's content without one, or the default is
+   * not allowed at the block's position.
    */
   reset: (options?: {
     at?: NodeSelectionTarget;
@@ -253,6 +290,13 @@ export type EditorTransactionBlocksApi<V extends Value = Value> = {
         ) => NodePropertyPatch<NodeProps<ElementIn<V>>>),
     options?: EditorBlockSetOptions<ElementIn<V>>
   ) => boolean;
+  /**
+   * Set `props` on every target block, or, when any target already has them,
+   * reset every target as `reset` does. With `wrap`, wrap the targets in a
+   * `props` element or unwrap them from one. Returns `false` and changes
+   * nothing when any target cannot take the change, and `false` when nothing
+   * changed.
+   */
   toggle: (
     props: NodePropertyPatch<NodeProps<ElementIn<V>>> & { type: string },
     options?: EditorBlockToggleOptions

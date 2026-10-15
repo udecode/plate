@@ -105,20 +105,26 @@ export type TransferSideInput = Readonly<{
   target: NodeEntry<Element>;
 }>;
 
-/** A block copy at its final edge, before placement and vetoes judge it. */
+/**
+ * A block copy or move at its final edge, before placement and vetoes judge
+ * it.
+ */
 export type TransferAdoptInput = TransferLandingInput &
   Readonly<{ payload: Extract<TransferPayload, { kind: 'nodes' }> }>;
 
 /**
- * Properties a block copy adopts at `at`, a path inside the payload whose
- * first index picks one of its nodes.
+ * Properties a block copy or move adopts at `at`, a path inside the payload
+ * whose first index picks one of its nodes.
  */
 export type TransferPatch = Readonly<{
   at: Path;
   properties: TransferPatchProperties;
 }>;
 
-/** Only properties declared `landing: 'adopt'`; `undefined` unsets one. */
+/**
+ * Only properties declared `landing: 'adopt'`; `undefined` unsets one. A move
+ * patch may not set `null`.
+ */
 export type TransferPatchProperties = Readonly<
   Record<string, unknown> & {
     childRoots?: never;

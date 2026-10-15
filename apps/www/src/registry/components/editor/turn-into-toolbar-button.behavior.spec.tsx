@@ -203,6 +203,34 @@ describe('turn into menu behavior', () => {
     expect(currentEditor.read.lastCommit()).toBe(commit);
   });
 
+  it('keeps a body list item when Quote is refused on its Details title', async () => {
+    currentEditor = createTestEditor({
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Title' }] },
+            {
+              type: 'paragraph',
+              indent: 1,
+              listType: 'bulleted',
+              children: [{ text: 'Item' }],
+            },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0, 0], offset: 0 },
+        focus: { path: [0, 1, 0], offset: 4 },
+      },
+    });
+    const before = currentEditor.read.children();
+    const view = await renderTurnInto();
+    fireEvent.click(view.getByRole('menuitemcheckbox', { name: 'Quote' }));
+    expect(currentEditor.read.children()).toEqual(before);
+  });
+
   it('converts a title and body range to a list without resetting the body to Summary', async () => {
     currentEditor = createTestEditor({
       initialValue: [

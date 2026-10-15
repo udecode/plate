@@ -339,7 +339,7 @@ import { SuggestionPlugin } from 'platejs/suggestion/react';
 SuggestionPlugin.configure({
   render: {
     contentAttributes: {
-      className: '[&_[data-editor-retained=delete]]:line-through',
+      className: '[&_[data-editor-authored-kind~=delete]]:line-through',
     },
   },
 });
@@ -472,8 +472,8 @@ component 或 slot。
   descriptor 与 `SliceLanding`、`SliceLandingInput`、`SliceLandingTarget` 类型
   都从 `platejs` 导入。
 
-  `editorReads.transfer.adopt` 以 `TransferPatch` 条目返回区块副本在落点获取的
-  属性；[拖放页面](/cn/docs/dnd#塑造区块副本)有示例。它的 `TransferAdoptInput`
+  `editorReads.transfer.adopt` 以 `TransferPatch` 条目返回区块副本或被移动区块
+  在落点获取的属性；[拖放页面](/cn/docs/dnd#塑造落地区块)有示例。它的 `TransferAdoptInput`
   和 `TransferPatch` 类型同样从 `platejs` 导入。
 </APIItem>
 

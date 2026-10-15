@@ -12,6 +12,7 @@ import type {
   TransferEdge,
   TransferIntent,
   TransferLandingInput,
+  TransferPatch,
   TransferPatchProperties,
   TransferPayload,
   TransferRefusalReason,
@@ -233,6 +234,7 @@ type NodesPayload = Extract<TransferPayload, { kind: 'nodes' }>;
 
 export type Adopted = Readonly<{
   fit: readonly Descendant[];
+  patches: readonly TransferPatch[];
   payload: NodesPayload;
 }>;
 
@@ -285,7 +287,7 @@ export const adoptAt = (
   { fit, intent, payload }: LandingRequest,
   { input }: ResolvedLanding
 ): Adopted | null => {
-  if (intent !== 'copy' || payload.kind !== 'nodes') return null;
+  if (payload.kind !== 'nodes') return null;
 
   const patches = executeEditorRead(
     editor,
@@ -326,8 +328,10 @@ export const adoptAt = (
       element = node;
       ({ children } = node);
     }
+    // `tx.nodes.set` removes a null property, so a move cannot land one.
     if (
       !element ||
+      (intent === 'move' && Object.values(properties).includes(null)) ||
       Object.keys(properties).some(
         (key) =>
           schema.elementPropertyLanding(
@@ -345,7 +349,7 @@ export const adoptAt = (
     patchAt(fitted, at, properties, owned);
   }
 
-  return { fit: fitted, payload: { ...payload, nodes } };
+  return { fit: fitted, patches, payload: { ...payload, nodes } };
 };
 
 export const judgeLanding = (

@@ -4,7 +4,7 @@
 
 Keep copied object blocks intact when pasting into an empty block inside a container.
 
-Replace selected blocks whole when pasting over them, and cut the paste to `maxLength` instead of throwing.
+Replace selected blocks whole when pasting over them, and cut the paste to `maxLength` instead of throwing. A paste the schema would reject, such as one naming a content root the document lacks or giving an exclusive root a second owner, returns `false` and leaves the document unchanged.
 
 Leave void and read-only element text out of `text.string` over a node selection unless `voids: true`, as for other targets, so typing or pasting over a selected void stays within `maxLength`.
 

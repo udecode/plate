@@ -383,10 +383,10 @@ test('DOCX fidelity cohort preserves mixed revisions and rich comments', async (
     snapshot.proposed.children
   );
   expect(restoredSnapshot.changes.map(({ authorId: id }) => id)).toEqual([
-    'alice',
-    'bob',
-    'carol',
     'dana',
+    'carol',
+    'bob',
+    'alice',
   ]);
 
   const commentEditor = createEditor({

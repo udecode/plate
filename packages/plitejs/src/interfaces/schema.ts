@@ -192,7 +192,7 @@ export type SchemaPropertyTypeChangePolicy = 'drop' | 'preserve-if-allowed';
 /**
  * Whether where content lands decides an element property. `rebase`: a text
  * move may change it, such as a depth. `adopt`: a text move may change it,
- * and a block copy may take it from where it lands, such as a list.
+ * and a block copy or move may take it from where it lands, such as a list.
  */
 export type SchemaPropertyLandingPolicy = 'adopt' | 'preserve' | 'rebase';
 export type SchemaPropertyRole = 'content' | 'metadata';

@@ -88,16 +88,18 @@ describe('selection runtime', () => {
     expect(shouldExportModelSelectionToDOM(inputController)).toBe(false);
   });
 
-  test('exports a control selection after handing off a native pointer selection', () => {
-    const inputController = createInputController();
-    inputController.state.selectionSource = 'dom-current';
-    inputController.state.selectionChangeOrigin = 'native-user';
-    setEditableModelSelectionPreference({
-      inputController,
-      preferModelSelection: true,
-      selectionSource: 'app-owned',
-    });
-    expect(shouldExportModelSelectionToDOM(inputController)).toBe(true);
+  test('exports a model or control selection after handing off a native pointer selection', () => {
+    for (const selectionSource of ['app-owned', 'model-owned'] as const) {
+      const inputController = createInputController();
+      inputController.state.selectionSource = 'dom-current';
+      inputController.state.selectionChangeOrigin = 'native-user';
+      setEditableModelSelectionPreference({
+        inputController,
+        preferModelSelection: true,
+        selectionSource,
+      });
+      expect(shouldExportModelSelectionToDOM(inputController)).toBe(true);
+    }
   });
 
   test('exports expanded model selection after content-changing commits', () => {

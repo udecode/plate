@@ -1001,15 +1001,13 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           { indent: 1, listType: type }
         );
 
-        if (options.at === undefined || options.after !== undefined) {
-          tx.blocks.insertAfter(element, { ...options, at: options.after });
-        } else {
-          tx.nodes.insert(element, options);
-        }
+        if (!tx.blocks.insert(element, options)) return false;
 
         const entry = tx.nodes.get(element, { match: ElementApi.isElement });
 
         if (entry) joinInsertedListItem(tx, entry, getHeadingType(editor));
+
+        return true;
       };
       const applyListInsertion = (
         mode: 'insert' | 'upsert',

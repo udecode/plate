@@ -70,7 +70,7 @@ const editor = createEditor({
 `importDocx` 读取 `Blob` 或 `ArrayBuffer`，但不会修改编辑器。导入成功后替换完整编辑器值，以保持文档元数据、命名根和 authored review 状态一致。
 
 在已挂载的 React 控件中，使用 `useModelEditor()` 获取完整编辑器。
-`useEditor()` 返回 provider 选中的已挂载命令视图，其根和 authored 投影属于该视图。
+`useEditor()` 返回 provider 选中的已挂载命令视图，其根和 authored view 属于该视图。
 
 ```bash
 npm install platejs @tanstack/react-virtual mammoth validator
@@ -138,19 +138,21 @@ imported.source?.dispose();
 - 通过内部关系引用的 AVIF、BMP、GIF、JPEG、PNG 和 WebP 图片；
 - 目标为绝对地址且满足导航下限的超链接。
 
-`PAGE` 是唯一可识别的字段指令。其他任何部件、关系、标记命名空间、字段指令或 XML 处理指令都会使 `source` 为 `null`，包括不安全或相对的超链接、其他外部关系、宏、ActiveX 控件、OLE 对象、导入的 HTML 块、外部模板、自定义 XML 数据，以及 SVG 或 EMF 图片。`source` 为 `null` 并不表示导入丢失了内容；没有 source 时，导出会从编辑器内容生成文档。
+`PAGE` 是唯一可识别的字段指令。其他任何部件、关系、标记命名空间、字段指令或 XML 处理指令都会使 `source` 为 `null`，包括不安全或相对的超链接、其他外部关系、宏、ActiveX 控件、OLE 对象、导入的 HTML 块、外部模板、Plate 审阅部件以外的自定义 XML 数据，以及 SVG 或 EMF 图片。`source` 为 `null` 并不表示导入丢失了内容；没有 source 时，导出会从编辑器内容生成文档。
 
 `DocxSource` 保留已通过检查的压缩包，以及不可变的文档、批注、schema 和限制对应关系。它不会保留展开后的 ZIP 条目或编辑器引用。`dispose()` 可重复调用。已经取得 source 的导出可以在释放后完成；后续导出会返回 `source-unavailable` diagnostic，并从编辑器内容生成新的 DOCX。
 
 ### 导入批注
 
-导入器返回批注格式事实，但不会写入应用的批注存储。`DocxComment` 可以包含富文本 Plate `body`、使用 proposed 投影坐标的精确 `target.range`、Word 作者与日期、durable ID、parent ID 和 resolved 状态。应用需要显式映射自己的用户和批注 ID。
+导入器返回批注格式事实，但不会写入应用的批注存储。`DocxComment` 可以包含富文本 Plate `body`、指向返回文档的精确 `target.range`、Word 作者与日期、durable ID、parent ID 和 resolved 状态。应用需要显式映射自己的用户和批注 ID。
 
 ### 导入修订
 
-支持的 Word 插入、删除、移动、run property 和 paragraph property 修订会转换为 authored change。修订 ID 按 Word 源顺序和结构依赖排列；日期只作为元数据。日期缺失或无效时使用 authored 的未知时间值，并返回 diagnostic。
+要保留 Word 修订，请在 `plugins` 中包含 `platejs/authored` 的 `AuthoredPlugin`。支持的插入、删除、移动、run property 和 paragraph property 修订随后会成为待处理的 authored change。每个 change 以 `docx-<id>` 形式使用其 Word 修订的 ID，并使用其作者和日期。作者缺失或日期无效时返回 `lossy-content` 警告，日期无效时以时间 0 导入。
 
-修订无法映射到已安装 schema 时，导入器保留 Word 可见的 proposed 内容，并在 `diagnostics` 中报告损失。
+未安装 `AuthoredPlugin`，或修订无法映射到已安装 schema 时，导入器会把修订展平为 proposed 文档，并返回 `lossy-content` 警告。
+
+Plate 为审阅导出的文件还包含 Plate 的审阅部件。导入器会恢复导出后 Word 段落未变化的每个被审阅 block，并保留其原始 change ID 和文档的审阅记录。段落在 Word 中被编辑过的 block 按其 Word 修订导入，并返回警告。
 
 ### 导入列表编号
 
@@ -195,16 +197,9 @@ export async function downloadEditorDocx() {
 }
 ```
 
-`accepted` 忽略待定变更，`proposed` 应用待定变更，`review` 写入 Word tracked-change 标记。Accepted 与 proposed 导出会警告被省略的 pending change，以及被解析到一侧的冲突。只要存在冲突，review 导出就返回 `ok: false` 和 `authored-conflict` 错误，因为 Word 修订无法忠实表达该状态。
+`accepted` 忽略待定变更，`proposed` 应用待定变更，`review` 写入 Word tracked-change 标记。Accepted 与 proposed 导出会警告它们决定的待处理 change。
 
-Review 文件只包含 Word 能显示的内容：文本、批注，以及带作者信息的修订。导入时，这些修订会恢复为 authored change。命名根、文档元数据，以及 authored change 的精确记录（例如原始 ID）不会写入文件。需要保留它们时，按 [Serializing](/docs/serializing) 所述，把 authored JSON 文档与文件一起保存：
-
-```tsx
-import { parseAuthoredDocument, projectAuthoredReview } from "platejs/authored";
-
-const json = JSON.stringify(projectAuthoredReview(editor.read.value()).review);
-const document = parseAuthoredDocument(json);
-```
+Review 文件包含 Word 显示的内容：文本、批注，以及带作者信息的修订。它还会在 custom XML part 中保存每个含有待处理 change 的顶层 block 以及文档的审阅记录，并用书签把每个 block 绑定到其 Word 段落。导入该文件时，Word 未修改的 block 会被恢复，详见[导入修订](#导入修订)。命名根和文档元数据不会写入文件。需要保留它们时，按 [Serializing](/docs/serializing) 所述，把 `editor.read.value()` 以 JSON 形式与文件一起保存。
 
 ### 内容损失
 
@@ -254,7 +249,7 @@ const result = await exportDocx(editor, {
 
 ### 导出批注
 
-传入使用编辑器 proposed 投影坐标的批注。导出会在渲染前把这些范围映射到 accepted 或 review 输出：
+传入范围指向编辑器存储文档（即 `editor.read.value()` 返回的值）的批注。导出会在渲染前把这些范围映射到 accepted 或 proposed 输出：
 
 ```tsx
 const result = await exportDocx(editor, {
@@ -297,7 +292,7 @@ live editor 的组件是编辑 UI。把应用的 static kit 作为 `presentation
 | --------------------------------------------- | -------------------------------------------------------------------------- |
 | 段落、标题、支持的 mark 和 property           | 通过已安装的 HTML mapping 解码，并通过配置的静态渲染器导出                 |
 | 列表、链接、书签、行、单元格和 span           | 保留支持的语义结构；省略 Word 布局细节并返回 diagnostic                    |
-| Tracked revision                              | 保留支持的 insert、delete、move、run-property 和 paragraph-property change |
+| Tracked revision                              | `plugins` 包含 `AuthoredPlugin` 时保留支持的 insert、delete、move、run-property 和 paragraph-property change；否则展平并返回 `lossy-content` 警告 |
 | 主文档批注                                    | 存在时保留富文本正文、范围、作者/日期、durable ID、回复和 resolved 状态    |
 | 导入中的嵌入图片                              | 省略资源并返回 `resource-omitted` diagnostic                               |
 | 导出中的链接和图片                            | 写入绝对且满足导航下限的链接，以及 PNG、JPEG、GIF 或 BMP 图片；报告被移除的目标和被省略的图片 |
@@ -371,7 +366,7 @@ exportDocx(
 | 选项                    | 类型                                     | 说明                             |
 | ----------------------- | ---------------------------------------- | -------------------------------- |
 | `projection`            | `'accepted' \| 'proposed' \| 'review'`   | 必填的可见文档投影               |
-| `comments`              | `readonly DocxComment[]`                 | 使用 proposed 投影坐标的批注记录 |
+| `comments`              | `readonly DocxComment[]`                 | 范围指向存储文档的批注记录 |
 | `allowRemoteImages`     | `boolean`                                | 获取远程 HTTP(S) 图片并嵌入；默认 `false` |
 | `component`             | `React.ComponentType<EditorStaticProps>` | 可选 static editor wrapper       |
 | `fontFamily`            | `string`                                 | 文档正文字体；会重新生成未改动的 `source` |

@@ -32,16 +32,22 @@ import {
 import { cleanWordHtml } from '../../html/cleanWordHtml.internal';
 import { throwIfDocxAborted } from '../../internal/abort';
 import { captureDocxDomParsers } from '../../internal/domParser';
-import { retainDocxSource, type DocxSource } from '../../internal/source';
+import {
+  type DocxListItem,
+  readDocxNumbering,
+} from '../../internal/readDocxNumbering';
 import {
   isCustomXmlItem,
   parseReviewPart,
   REVIEW_PART_NAMESPACE,
+  reviewBindingBookmarks,
   reviewBindingFingerprints,
+  reviewPackageKeys,
   wordAttribute,
   type ReviewPart,
   type ReviewPartBinding,
 } from '../../internal/reviewPart';
+import { retainDocxSource, type DocxSource } from '../../internal/source';
 import {
   describeDocxSourceViolation,
   type DocxSourceViolation,
@@ -60,10 +66,6 @@ import {
   resolveDocxImportLimits,
   type BoundedDocxPackage,
 } from './docxPackage';
-import {
-  type DocxListItem,
-  readDocxNumbering,
-} from './numbering/readDocxNumbering';
 import { instrumentWordMath, materializeEquations } from './wordMath';
 
 export { DocxSource } from '../../internal/source';
@@ -510,6 +512,21 @@ const replaceWithMarkedCopies = (
   );
 };
 
+const parsedPart = (
+  dom: DocxDomRealm,
+  entries: BoundedDocxPackage['entries'],
+  name: string
+) => {
+  const source = entries.get(name);
+
+  if (!source) return undefined;
+  try {
+    return dom.parseXml(dom.decodeUtf8(source), name);
+  } catch {
+    return undefined;
+  }
+};
+
 // Mammoth drops a paragraph's list identity, so each numbered paragraph
 // carries a marker run to the item Mammoth renders for it.
 const instrumentNumbering = (
@@ -518,21 +535,11 @@ const instrumentNumbering = (
   document: Document,
   codec: ReturnType<typeof createMarkerCodec>
 ) => {
-  const part = (name: string) => {
-    const source = entries.get(name);
-
-    if (!source) return undefined;
-    try {
-      return dom.parseXml(dom.decodeUtf8(source), name);
-    } catch {
-      return undefined;
-    }
-  };
   const items = new Map<string, DocxListItem>();
 
   for (const [paragraph, item] of readDocxNumbering(document, {
-    numbering: part('word/numbering.xml'),
-    styles: part('word/styles.xml'),
+    numbering: parsedPart(dom, entries, 'word/numbering.xml'),
+    styles: parsedPart(dom, entries, 'word/styles.xml'),
   })) {
     const { token } = codec.marker('list-item', String(items.size));
     const properties = Array.from(paragraph.children).find(
@@ -1059,35 +1066,31 @@ const instrumentReviewBindings = (
   if (part === undefined) return null;
   if (part === null) {
     diagnostics.push(
-      reviewLoss('The DOCX review part cannot be read, so its review facts are lost.')
+      reviewLoss(
+        'The DOCX review part cannot be read, so its review facts are lost.'
+      )
     );
 
     return null;
   }
   const names = new Set(part.bindings.map(({ name }) => name));
-  const fingerprints = reviewBindingFingerprints(document, names);
-  const starts = new Map<string, Element>();
-  const ends = new Map<string, Element>();
-  const nameById = new Map<string, string>();
-
-  for (const element of documentElements(document)) {
-    const id = wordAttribute(element, 'id') ?? '';
-
-    if (element.localName === 'bookmarkStart') {
-      const name = wordAttribute(element, 'name') ?? '';
-
-      if (!names.has(name)) continue;
-      starts.set(name, element);
-      nameById.set(id, name);
-    } else if (element.localName === 'bookmarkEnd' && nameById.has(id)) {
-      ends.set(nameById.get(id) ?? '', element);
-    }
-  }
+  const bookmarks = reviewBindingBookmarks(document, names);
+  const fingerprints = reviewBindingFingerprints(
+    bookmarks,
+    reviewPackageKeys(
+      document,
+      {
+        numbering: parsedPart(dom, entries, 'word/numbering.xml'),
+        relationships: parsedPart(dom, entries, 'word/_rels/document.xml.rels'),
+        styles: parsedPart(dom, entries, 'word/styles.xml'),
+      },
+      (path) => entries.get(path)
+    )
+  );
   const bindings = new Map<string, ReviewPartBinding>();
 
   part.bindings.forEach((binding, index) => {
-    const start = starts.get(binding.name);
-    const end = ends.get(binding.name);
+    const { end, start } = bookmarks.get(binding.name) ?? {};
 
     if (
       start &&
@@ -1159,7 +1162,7 @@ const moveCommentMarkers = (
   stored: readonly Descendant[],
   codec: ReturnType<typeof createMarkerCodec>
 ) => {
-  const anchors: { end: boolean; offset: number; token: string }[] = [];
+  const anchors: Array<{ end: boolean; offset: number; token: string }> = [];
   let convertedText = '';
 
   for (const text of textsOf(converted)) {
@@ -1184,7 +1187,7 @@ const moveCommentMarkers = (
   const starts = texts.map((_, index) =>
     texts.slice(0, index).reduce((length, text) => length + text.length, 0)
   );
-  const inserts = new Map<number, { at: number; token: string }[]>();
+  const inserts = new Map<number, Array<{ at: number; token: string }>>();
 
   for (const { end, offset, token } of anchors) {
     const found = starts.findIndex((from, index) =>
@@ -1254,9 +1257,11 @@ const substituteBindings = (
 
     return [];
   });
-  const groups: { from: number; nodes: Descendant[]; to: number }[] = [];
+  const groups: Array<{ from: number; nodes: Descendant[]; to: number }> = [];
 
-  for (const range of ranges.toSorted((left, right) => left.from - right.from)) {
+  for (const range of ranges.toSorted(
+    (left, right) => left.from - right.from
+  )) {
     const last = groups.at(-1);
 
     if (last && range.from <= last.to) {
@@ -1818,10 +1823,12 @@ const importBoundedDocx = async <V extends Value>(
       ) {
         throw new Error('Tracked revisions do not decide to the document.');
       }
-      resultDocument = native.document;
-      repairs = native.repairs;
+      ({ document: resultDocument, repairs } = native);
       stripped = reviewed;
-      if (review && review.bindings.size > 0) {
+      if (
+        review &&
+        (review.bindings.size > 0 || review.records !== undefined)
+      ) {
         const restored = stripCommentMarkers(
           substituteBindings(reviewedWithMarkers, review, codec, diagnostics),
           codec
@@ -1831,8 +1838,7 @@ const importBoundedDocx = async <V extends Value>(
           ...(review.records === undefined ? {} : { records: review.records }),
         });
 
-        resultDocument = fitted.document;
-        repairs = fitted.repairs;
+        ({ document: resultDocument, repairs } = fitted);
         stripped = restored;
       }
     } catch {

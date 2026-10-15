@@ -1,10 +1,10 @@
-import type { EditorDocumentRecords } from 'plitejs';
-import { hashSchemaIdentityString } from 'plitejs/internal';
-
-import type { Value } from '../../core';
+import type { EditorDocumentRecords, Value } from '../../core';
+import { readDocxNumbering } from './readDocxNumbering';
 
 const WORD = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 const MATH = 'http://schemas.openxmlformats.org/officeDocument/2006/math';
+const RELATIONSHIPS =
+  'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 
 /** Root namespace of the custom XML data item that holds the part. */
 export const REVIEW_PART_NAMESPACE = 'urn:platejs:docx:review:1';
@@ -101,6 +101,67 @@ const childOf = (element: Element | null | undefined, name: string) =>
     ? Array.from(element.children).find((child) => isWord(child, name))
     : undefined;
 
+const FINGERPRINTED_RUN_PROPERTIES = [
+  'b',
+  'caps',
+  'color',
+  'dstrike',
+  'highlight',
+  'i',
+  'rStyle',
+  'shd',
+  'smallCaps',
+  'strike',
+  'sz',
+  'u',
+  'vertAlign',
+];
+const FINGERPRINTED_PARAGRAPH_PROPERTIES = ['ind', 'jc', 'pStyle'];
+const TOGGLES = new Set(['b', 'caps', 'dstrike', 'i', 'smallCaps', 'strike']);
+const OFF = new Set(['0', 'false', 'off']);
+const UNSET = new Set(['auto', 'none']);
+
+// Word writes `left` and `right` for what a newer schema calls `start` and
+// `end`.
+const INDENTS = [
+  ['start', 'left'],
+  ['end', 'right'],
+  ['firstLine'],
+  ['hanging'],
+];
+
+const valueOf = (element: Element, name: string) => {
+  if (name === 'ind') {
+    return INDENTS.flatMap(([side, ...aliases]) => {
+      const value = [side, ...aliases]
+        .map((attribute) => wordAttribute(element, attribute))
+        .find((found) => found !== null);
+
+      return value === undefined ? [] : [`${side}:${value}`];
+    }).join(';');
+  }
+
+  return wordAttribute(element, name === 'shd' ? 'fill' : 'val');
+};
+
+const formatOf = (properties: Element | undefined, names: readonly string[]) =>
+  names
+    .flatMap((name) => {
+      const element = childOf(properties, name);
+
+      if (!element) return [];
+
+      const value = valueOf(element, name)?.toLowerCase() ?? null;
+
+      if (TOGGLES.has(name)) {
+        return value !== null && OFF.has(value) ? [] : [name];
+      }
+      if (value !== null && UNSET.has(value)) return [];
+
+      return [value === null ? name : `${name}=${value}`];
+    })
+    .join(',');
+
 const paragraphMark = (paragraph: Element) => {
   const properties = childOf(paragraph, 'pPr');
   const marks = Array.from(childOf(properties, 'rPr')?.children ?? []).filter(
@@ -123,106 +184,282 @@ const runOf = (element: Element) => {
   return element;
 };
 
-type OpenBinding = { last: string | null; name: string; tokens: string[] };
+const fnv1a64Hex = (value: string | Uint8Array) => {
+  let high = 0xcb_f2_9c_e4;
+  let low = 0x84_22_23_25;
 
-/**
- * Hash what each named bookmark covers, leaving out what Word renumbers or adds
- * when it saves: ids, run boundaries, proofing marks, other bookmarks and
- * comment anchors. A name whose bookmark or end is missing has no entry.
- */
-export const reviewBindingFingerprints = (
-  document: Document,
-  names: ReadonlySet<string>
-) => {
-  const fingerprints = new Map<string, string>();
-  const open = new Map<string, OpenBinding>();
-  const stacks = new Map<Element, string>();
-  const stackOf = (element: Element) => {
-    const run = runOf(element);
-    let stack = stacks.get(run);
+  for (let index = 0; index < value.length; index++) {
+    low =
+      (low ^
+        (typeof value === 'string'
+          ? value.charCodeAt(index)
+          : value[index])) >>>
+      0;
 
-    if (stack === undefined) {
-      const keys: string[] = [];
+    const lowProduct = low * 0x01_b3;
+    const carry = Math.floor(lowProduct / 0x1_00_00_00_00);
 
-      for (
-        let ancestor = run.parentElement;
-        ancestor;
-        ancestor = ancestor.parentElement
-      ) {
-        if (isWord(ancestor, ...CONTENT_REVISIONS)) {
-          keys.unshift(revisionKey(ancestor));
-        }
-      }
-      const change = childOf(childOf(run, 'rPr'), 'rPrChange');
+    high = (Math.imul(high, 0x01_b3) + Math.imul(low, 0x01_00) + carry) >>> 0;
+    low = lowProduct >>> 0;
+  }
 
-      if (change) keys.push(revisionKey(change));
-      stack = keys.join('/');
-      stacks.set(run, stack);
+  return `${high.toString(16).padStart(8, '0')}${low
+    .toString(16)
+    .padStart(8, '0')}`;
+};
+
+type RelationshipKey = (id: string) => string;
+
+// happy-dom parses a prefixed attribute without its namespace.
+const relationshipIdsOf = (element: Element) =>
+  Array.from(element.attributes).flatMap((attribute) =>
+    attribute.namespaceURI === RELATIONSHIPS || attribute.name.startsWith('r:')
+      ? [attribute.value]
+      : []
+  );
+
+const packagePathOf = (target: string) => {
+  if (target.startsWith('/')) return target.slice(1);
+  try {
+    return decodeURIComponent(
+      new URL(target, 'file:///word/').pathname.slice(1)
+    );
+  } catch {
+    return undefined;
+  }
+};
+
+const relationshipKeys = (
+  relationships: Document | undefined,
+  part: (path: string) => Uint8Array | undefined
+): RelationshipKey => {
+  const targets = new Map(
+    Array.from(relationships?.getElementsByTagName('Relationship') ?? []).map(
+      (relationship) =>
+        [
+          relationship.getAttribute('Id') ?? '',
+          {
+            external: relationship.getAttribute('TargetMode') === 'External',
+            target: relationship.getAttribute('Target') ?? '',
+          },
+        ] as const
+    )
+  );
+  const keys = new Map<string, string>();
+
+  return (id) => {
+    let key = keys.get(id);
+
+    if (key === undefined) {
+      const { external = true, target = '' } = targets.get(id) ?? {};
+      const path = external ? undefined : packagePathOf(target);
+      const bytes = path === undefined ? undefined : part(path);
+
+      key = bytes ? fnv1a64Hex(bytes) : target;
+      keys.set(id, key);
     }
 
-    return stack;
+    return key;
   };
-  const text = (element: Element, value: string) => {
-    const stack = stackOf(element);
+};
 
-    for (const range of open.values()) {
-      if (stack === range.last) {
-        range.tokens[range.tokens.length - 1] += value;
-      } else {
-        range.tokens.push(stack, value);
-        range.last = stack;
+type ReviewPackageKeys = Readonly<{
+  listItem: (paragraph: Element) => string;
+  relationship: RelationshipKey;
+}>;
+
+export const reviewPackageKeys = (
+  document: Document,
+  parts: Readonly<{
+    numbering?: Document;
+    relationships?: Document;
+    styles?: Document;
+  }>,
+  part: (path: string) => Uint8Array | undefined
+): ReviewPackageKeys => {
+  const items = readDocxNumbering(document, parts);
+
+  return {
+    listItem: (paragraph) => {
+      const item = items.get(paragraph);
+
+      if (!item) return '';
+
+      const { listId: _listId, ...list } = item;
+
+      return JSON.stringify(list);
+    },
+    relationship: relationshipKeys(parts.relationships, part),
+  };
+};
+
+const stackOf = (
+  run: Element,
+  stacks: Map<Element, string>,
+  relationship: RelationshipKey
+) => {
+  let stack = stacks.get(run);
+
+  if (stack === undefined) {
+    const keys: string[] = [];
+
+    for (
+      let ancestor = run.parentElement;
+      ancestor;
+      ancestor = ancestor.parentElement
+    ) {
+      if (isWord(ancestor, ...CONTENT_REVISIONS)) {
+        keys.unshift(revisionKey(ancestor));
+      } else if (isWord(ancestor, 'hyperlink')) {
+        keys.unshift(
+          `link ${relationshipIdsOf(ancestor).map(relationship).join(' ')}#${wordAttribute(ancestor, 'anchor') ?? ''}`
+        );
       }
+    }
+    const properties = childOf(run, 'rPr');
+    const change = childOf(properties, 'rPrChange');
+
+    if (change) keys.push(revisionKey(change));
+    keys.push(formatOf(properties, FINGERPRINTED_RUN_PROPERTIES));
+    stack = keys.join('/');
+    stacks.set(run, stack);
+  }
+
+  return stack;
+};
+
+const objectKeysOf = (element: Element, relationship: RelationshipKey) =>
+  [element, ...Array.from(element.getElementsByTagName('*'))]
+    .flatMap((part) => [
+      ...relationshipIdsOf(part).map(relationship),
+      ...(part.localName === 'docPr'
+        ? [part.getAttribute('descr') ?? '', part.getAttribute('title') ?? '']
+        : []),
+    ])
+    .join(' ');
+
+const fingerprintOf = (
+  blocks: readonly Element[],
+  { listItem, relationship }: ReviewPackageKeys
+) => {
+  const tokens: string[] = [];
+  const stacks = new Map<Element, string>();
+  let last: string | null = null;
+  const text = (element: Element, value: string) => {
+    const stack = stackOf(runOf(element), stacks, relationship);
+
+    if (stack === last) {
+      tokens[tokens.length - 1] += value;
+    } else {
+      tokens.push(stack, value);
+      last = stack;
     }
   };
   const boundary = (token: string) => {
-    for (const range of open.values()) {
-      range.tokens.push(token);
-      range.last = null;
-    }
+    tokens.push(token);
+    last = null;
   };
 
-  for (const element of Array.from(document.getElementsByTagName('*'))) {
-    if (isWord(element, 'bookmarkStart')) {
-      const name = wordAttribute(element, 'name');
-      const id = wordAttribute(element, 'id');
+  for (const block of blocks) {
+    for (const element of [
+      block,
+      ...Array.from(block.getElementsByTagName('*')),
+    ]) {
+      const inRun = element.parentElement
+        ? isWord(element.parentElement, 'r')
+        : false;
 
-      if (name && id && names.has(name) && !fingerprints.has(name)) {
-        open.set(id, { last: null, name, tokens: [] });
-      }
-      continue;
-    }
-    if (isWord(element, 'bookmarkEnd')) {
-      const range = open.get(wordAttribute(element, 'id') ?? '');
-
-      if (range) {
-        open.delete(wordAttribute(element, 'id') ?? '');
-        fingerprints.set(
-          range.name,
-          hashSchemaIdentityString(JSON.stringify(range.tokens))
+      if (element.namespaceURI === MATH && element.localName === 't') {
+        text(element, element.textContent ?? '');
+      } else if (isWord(element, 't', 'delText')) {
+        text(element, element.textContent ?? '');
+      } else if (inRun && isWord(element, 'tab')) {
+        text(element, '\t');
+      } else if (inRun && isWord(element, 'br', 'cr')) {
+        text(element, '\n');
+      } else if (inRun && isWord(element, 'drawing', 'object', 'pict')) {
+        text(element, `\uFFFC${objectKeysOf(element, relationship)}`);
+      } else if (isWord(element, 'p')) {
+        boundary(
+          `p ${paragraphMark(element)} ${formatOf(childOf(element, 'pPr'), FINGERPRINTED_PARAGRAPH_PROPERTIES)} ${listItem(element)}`
         );
+      } else if (isWord(element, 'tbl', 'tc', 'tr')) {
+        boundary(element.localName);
       }
-      continue;
     }
-    if (open.size === 0) continue;
-    const inRun = element.parentElement
-      ? isWord(element.parentElement, 'r')
-      : false;
+  }
 
-    if (element.namespaceURI === MATH && element.localName === 't') {
-      text(element, element.textContent ?? '');
-    } else if (isWord(element, 't', 'delText')) {
-      text(element, element.textContent ?? '');
-    } else if (inRun && isWord(element, 'tab')) {
-      text(element, '\t');
-    } else if (inRun && isWord(element, 'br', 'cr')) {
-      text(element, '\n');
-    } else if (inRun && isWord(element, 'drawing', 'object', 'pict')) {
-      text(element, '\uFFFC');
-    } else if (isWord(element, 'p')) {
-      boundary(`p ${paragraphMark(element)}`);
-    } else if (isWord(element, 'tbl', 'tc', 'tr')) {
-      boundary(element.localName);
+  return fnv1a64Hex(JSON.stringify(tokens));
+};
+
+export type ReviewBindingBookmark = { end?: Element; start: Element };
+
+/** The first bookmark of each name in `names`, with its end once found. */
+export const reviewBindingBookmarks = (
+  document: Document,
+  names: ReadonlySet<string>
+) => {
+  const bookmarks = new Map<string, ReviewBindingBookmark>();
+  const nameById = new Map<string, string>();
+
+  for (const element of Array.from(document.getElementsByTagName('*'))) {
+    const id = wordAttribute(element, 'id') ?? '';
+
+    if (isWord(element, 'bookmarkStart')) {
+      const name = wordAttribute(element, 'name') ?? '';
+
+      if (names.has(name) && !bookmarks.has(name)) {
+        bookmarks.set(name, { start: element });
+        nameById.set(id, name);
+      }
+    } else if (isWord(element, 'bookmarkEnd')) {
+      const bookmark = bookmarks.get(nameById.get(id) ?? '');
+
+      if (bookmark && !bookmark.end) bookmark.end = element;
     }
+  }
+
+  return bookmarks;
+};
+
+/**
+ * Hash every top-level block each bookmark touches, leaving out what Word
+ * renumbers or adds when it saves: ids, run boundaries, proofing marks,
+ * bookmarks, comment anchors and run properties such as fonts, languages and
+ * complex-script copies. Word also renames media parts, so a relationship
+ * counts by its external address or by the bytes of the part it names.
+ */
+export const reviewBindingFingerprints = (
+  bookmarks: ReadonlyMap<string, ReviewBindingBookmark>,
+  keys: ReviewPackageKeys
+) => {
+  const topLevelBlockOf = (element: Element) => {
+    let block = element;
+
+    while (block.parentElement && !isWord(block.parentElement, 'body')) {
+      block = block.parentElement;
+    }
+
+    return block;
+  };
+  const fingerprints = new Map<string, string>();
+
+  for (const [name, { end, start }] of bookmarks) {
+    if (!end) continue;
+
+    const last = topLevelBlockOf(end);
+    const blocks: Element[] = [];
+
+    for (
+      let block: Element | null = topLevelBlockOf(start);
+      block;
+      block = block.nextElementSibling
+    ) {
+      blocks.push(block);
+      if (block === last) break;
+    }
+    if (blocks.at(-1) !== last) continue;
+    fingerprints.set(name, fingerprintOf(blocks, keys));
   }
 
   return fingerprints;

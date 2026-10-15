@@ -19,7 +19,12 @@ const SEEDED = new Set([
 ]);
 
 type ReviewNode = {
-  authored?: Array<{ change: string; key?: string; kind: string }>;
+  authored?: Array<{
+    author: string;
+    change: string;
+    key?: string;
+    kind: string;
+  }>;
   children?: ReviewNode[];
   text?: string;
   type?: string;
@@ -486,7 +491,8 @@ const KEY_CASES: Case[] = [
         tree: [
           'Review |collaboratively [insert:added-word]|and refine this sentence.',
           'Keep this |redundant phrase [delete:removed-phrase]|out of the final draft.',
-          '[delete:n4] Try typing your own suggestion here.[delete:n1]',
+          '[delete:n4] [delete:n4]',
+          '[split:n3,join:n5] Try typing your own suggestion here.[delete:n1]',
         ],
       },
       {
@@ -494,8 +500,9 @@ const KEY_CASES: Case[] = [
         do: 'type y',
         tree: [
           'Review |collaboratively [insert:added-word]|and refine this sentence.',
-          'Keep this |redundant phrase [delete:removed-phrase]|out of the final draft.|y[insert:n5]',
-          '[delete:n4] Try typing your own suggestion here.[delete:n1]',
+          'Keep this |redundant phrase [delete:removed-phrase]|out of the final draft.|y[insert:n6]',
+          '[delete:n4] [delete:n4]',
+          '[split:n3,join:n5] Try typing your own suggestion here.[delete:n1]',
         ],
       },
       {
@@ -503,8 +510,9 @@ const KEY_CASES: Case[] = [
         do: 'type z',
         tree: [
           'Review |collaboratively [insert:added-word]|and refine this sentence.',
-          'Keep this |redundant phrase [delete:removed-phrase]|out of the final draft.|yz[insert:n5]',
-          '[delete:n4] Try typing your own suggestion here.[delete:n1]',
+          'Keep this |redundant phrase [delete:removed-phrase]|out of the final draft.|yz[insert:n6]',
+          '[delete:n4] [delete:n4]',
+          '[split:n3,join:n5] Try typing your own suggestion here.[delete:n1]',
         ],
       },
     ],
@@ -1080,9 +1088,8 @@ test('Backspace then typing shows one card in one color, and two changes paint t
     (entry) => entry.name === 'Backspace then typing'
   )!;
   const { editor, root } = await runCase(page, current, false);
-  const changes = (await children(editor))[2].children!.flatMap(
-    (leaf) => leaf.authored ?? []
-  );
+  const value = await children(editor);
+  const changes = value[2].children!.flatMap((leaf) => leaf.authored ?? []);
   const inserted = changes.find((mark) => mark.kind === 'insert')!.change;
   const deleted = changes.find((mark) => mark.kind === 'delete')!.change;
 
@@ -1186,5 +1193,393 @@ test('switching the read-only view shows each projection and decides nothing', a
     expect(await root.innerText()).toBe(text);
     expect(formatter()(await children(editor))).toEqual(review);
   }
+  errors.assertNone();
+});
+
+const insert = (author: string, change: string, at: number) => ({
+  at,
+  author,
+  change,
+  kind: 'insert',
+});
+const level = (author: string, change: string, at: number) => ({
+  at,
+  author,
+  before: 1,
+  change,
+  id: `${change}:level`,
+  key: 'level',
+  kind: 'format',
+});
+
+const openReview = async (
+  page: Page,
+  user: string,
+  value: readonly ReviewNode[]
+) => {
+  await page.goto(
+    `/dev/authored-review?fixture=review&intent=propose&user=${user}`,
+    { waitUntil: 'commit' }
+  );
+  await page.waitForFunction(() => !!window.authoredProof?.load);
+  const root = page.locator(
+    '[data-editor="true"][aria-label="Review document"]'
+  );
+  const editor = createBrowserEditorHarness(page, 'Review document', root);
+
+  await root.waitFor();
+  await page.evaluate(
+    (loaded) => window.authoredProof!.load(loaded),
+    value as unknown[]
+  );
+  return { editor, root };
+};
+
+const stalePaint = (root: Locator) =>
+  root.evaluate((element) =>
+    [
+      ...element.querySelectorAll(
+        '[data-editor-node][data-editor-authored-change]'
+      ),
+    ].flatMap((node) => {
+      const changes = node.getAttribute('data-editor-authored-change')!;
+      const oneChange = !changes.includes(' ');
+      const card = window.authoredProof!.cardOf(changes);
+      const painted = {
+        color: node.getAttribute('data-editor-authored-color'),
+        groups: node.getAttribute('data-editor-authored-groups'),
+      };
+
+      return !oneChange ||
+        (painted.groups === card?.id && painted.color === String(card.slot))
+        ? []
+        : [{ card, changes, painted }];
+    })
+  );
+
+const litTexts = (root: Locator) =>
+  root.evaluate((element) => {
+    const active = document
+      .querySelector('style[data-editor-suggestion-active]')
+      ?.getAttribute('data-editor-suggestion-active');
+    const card = active ? window.authoredProof!.cardOf(active)?.id : null;
+
+    return [
+      ...element.querySelectorAll(
+        '[data-editor-node][data-editor-authored-groups]'
+      ),
+    ]
+      .filter(
+        (node) =>
+          card &&
+          node
+            .getAttribute('data-editor-authored-groups')!
+            .split(' ')
+            .includes(card)
+      )
+      .map((node) => node.textContent);
+  });
+
+const backgroundOf = (root: Locator, text: string) =>
+  root
+    .locator('[data-editor-node="text"][data-editor-authored-change]', {
+      hasText: new RegExp(`^${text}$`),
+    })
+    .evaluate((node) => getComputedStyle(node).backgroundColor);
+
+const LEVELS_AROUND_BOLD = [
+  {
+    authored: [level('alice', 'alice:1', 1)],
+    children: [
+      { text: 'One ' },
+      {
+        authored: [
+          {
+            at: 3,
+            author: 'bob',
+            change: 'bob:1',
+            id: 'bob:1:bold',
+            key: 'bold',
+            kind: 'format',
+          },
+        ],
+        bold: true,
+        text: 'bold',
+      },
+    ],
+    level: 2,
+    type: 'heading',
+  },
+  {
+    authored: [level('alice', 'alice:2', 2)],
+    children: [{ text: 'Two' }],
+    level: 2,
+    type: 'heading',
+  },
+];
+
+test('paints and opens Bob’s own card for text he types inside Alice’s insertion', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
+  const { editor, root } = await openReview(page, 'bob', [
+    {
+      children: [
+        { text: 'Start ' },
+        { authored: [insert('alice', 'alice:1', 1)], text: 'alice words' },
+        { text: ' end' },
+      ],
+      type: 'paragraph',
+    },
+  ]);
+
+  await editor.dom.clickTextOffset({ offset: 6, path: [0, 1] });
+  await page.keyboard.press('x');
+  const typedValue = await children(editor);
+  const bob = typedValue[0]
+    .children!.flatMap((leaf) => leaf.authored ?? [])
+    .find((mark) => mark.author === 'bob')!.change;
+  const typed = root.locator('[data-editor-node="text"]', { hasText: /^x$/ });
+
+  await editor.dom.clickTextOffset({ offset: 2, path: [0, 0] });
+  expect(await typed.getAttribute('data-editor-authored-color')).toBe(
+    String(
+      await page.evaluate((id) => window.authoredProof!.cardOf(id)!.slot, bob)
+    )
+  );
+  await typed.click();
+  const card = page.locator(`[data-suggestion-review="${bob}"]`);
+
+  await expect(card).toBeVisible();
+  await card.hover();
+  await card.getByRole('button', { name: 'Accept suggestion' }).click();
+
+  await expect
+    .poll(async () => plainLines(await children(editor)).at(-1))
+    .toBe('Start |alice xwords[insert:n1]| end');
+  errors.assertNone();
+});
+
+test('lights a whole card from its second change, text under another’s deletion included, and no other card of its color', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
+  const { editor, root } = await openReview(page, 'alice', [
+    {
+      children: [
+        { text: 'A ' },
+        { authored: [insert('alice', 'alice:1', 1)], text: 'one' },
+        { authored: [insert('alice', 'alice:2', 2)], text: 'tw' },
+        {
+          authored: [
+            insert('alice', 'alice:2', 2),
+            { at: 3, author: 'bob', change: 'bob:1', kind: 'delete' },
+          ],
+          text: 'o',
+        },
+      ],
+      type: 'paragraph',
+    },
+    {
+      children: [
+        { text: 'B ' },
+        { authored: [insert('carol', 'carol:1', 4)], text: 'carol' },
+      ],
+      type: 'paragraph',
+    },
+  ]);
+
+  await editor.dom.clickTextOffset({ offset: 1, path: [0, 2] });
+  await page.mouse.move(0, 0);
+  const lit = await backgroundOf(root, 'tw');
+
+  expect({
+    carolLit: (await backgroundOf(root, 'carol')) === lit,
+    carolSlotIsAlices: await page.evaluate(
+      () =>
+        window.authoredProof!.cardOf('carol:1')!.slot ===
+        window.authoredProof!.cardOf('alice:1')!.slot
+    ),
+    lit: await litTexts(root),
+    oneLit: (await backgroundOf(root, 'one')) === lit,
+    struckLit: (await backgroundOf(root, 'o')) === lit,
+  }).toEqual({
+    carolLit: false,
+    carolSlotIsAlices: true,
+    lit: ['one', 'tw', 'o'],
+    oneLit: true,
+    struckLit: true,
+  });
+  errors.assertNone();
+});
+
+test('keeps a younger active card active through a decision that merges it', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
+  const { editor, root } = await openReview(page, 'carol', LEVELS_AROUND_BOLD);
+
+  await editor.dom.clickTextOffset({ offset: 1, path: [1, 0] });
+  expect(await litTexts(root)).toEqual(['Two']);
+  await page.evaluate(() =>
+    window.authoredProof!.decide({ action: 'accept', changes: ['bob:1'] })
+  );
+
+  await expect.poll(() => litTexts(root)).toEqual(['One bold', 'Two']);
+  errors.assertNone();
+});
+
+test('keeps a card active when its oldest change’s earliest text is withdrawn', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
+  const { editor, root } = await openReview(page, 'alice', [
+    {
+      children: [
+        { text: 'Keep ' },
+        { authored: [insert('alice', 'alice:1', 1)], text: 'old' },
+        { authored: [insert('alice', 'alice:2', 2)], text: 'new' },
+        { authored: [insert('alice', 'alice:1', 3)], text: 'more' },
+      ],
+      type: 'paragraph',
+    },
+  ]);
+
+  await editor.dom.clickTextOffset({ offset: 1, path: [0, 2] });
+  await editor.selection.select({
+    anchor: { offset: 0, path: [0, 1] },
+    focus: { offset: 3, path: [0, 1] },
+  });
+  await page.keyboard.press('Backspace');
+
+  await expect
+    .poll(async () => ({
+      card: await page.evaluate(
+        () => window.authoredProof!.cardOf('alice:1')?.id
+      ),
+      lit: await litTexts(root),
+    }))
+    .toEqual({ card: 'alice:2', lit: ['new', 'more'] });
+  errors.assertNone();
+});
+
+test('shows a merged format card on the heading the decision did not write', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
+  const { editor, root } = await openReview(page, 'carol', LEVELS_AROUND_BOLD);
+  const gutterOf = (index: number) =>
+    root
+      .locator('[data-editor-node="element"]')
+      .nth(index)
+      .evaluate((node) => getComputedStyle(node, '::after').backgroundColor);
+
+  await page.evaluate(() =>
+    window.authoredProof!.decide({ action: 'accept', changes: ['bob:1'] })
+  );
+  await expect
+    .poll(() =>
+      root
+        .locator('[data-editor-node="element"]')
+        .nth(1)
+        .getAttribute('data-editor-authored-groups')
+    )
+    .toBe('alice:1');
+  expect(await gutterOf(1)).toBe(await gutterOf(0));
+  await editor.dom.clickTextOffset({ offset: 1, path: [1, 0] });
+
+  expect({
+    active: await page
+      .locator('style[data-editor-suggestion-active]')
+      .getAttribute('data-editor-suggestion-active'),
+    lit: await litTexts(root),
+  }).toEqual({ active: 'alice:1', lit: ['One bold', 'Two'] });
+  errors.assertNone();
+});
+
+test('repaints every highlight of a card a decision merges in a block it does not write', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
+  const { root } = await openReview(page, 'carol', LEVELS_AROUND_BOLD);
+
+  await page.evaluate(() =>
+    window.authoredProof!.decide({ action: 'accept', changes: ['bob:1'] })
+  );
+
+  await expect
+    .poll(async () => ({
+      card: await page.evaluate(
+        () => window.authoredProof!.cardOf('alice:2')?.id
+      ),
+      stale: await stalePaint(root),
+    }))
+    .toEqual({ card: 'alice:1', stale: [] });
+  errors.assertNone();
+});
+
+for (const [oldest, ats, renamed] of [
+  ['before the key', [1, 2, 3, 4], 'alice:2'],
+  ['after the key', [4, 3, 2, 1], 'alice:1'],
+] as const) {
+  test(`repaints every highlight of a card another author’s key splits, with the oldest change ${oldest}`, async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page, { strict: true });
+    const { editor, root } = await openReview(
+      page,
+      'carol',
+      ats.map((at, index) => ({
+        authored: [insert('alice', `alice:${index}`, at)],
+        children: [{ text: `line ${index}` }],
+        type: 'paragraph',
+      }))
+    );
+
+    await editor.dom.clickTextOffset({ offset: 2, path: [1, 0] });
+    await page.keyboard.press('z');
+
+    await expect
+      .poll(async () => ({
+        card: await page.evaluate(
+          (id) => window.authoredProof!.cardOf(id)?.id,
+          oldest === 'before the key' ? 'alice:3' : 'alice:0'
+        ),
+        stale: await stalePaint(root),
+      }))
+      .toEqual({ card: renamed, stale: [] });
+    errors.assertNone();
+  });
+}
+
+test('paints a bold toggle’s suggestion at once', async ({
+  page,
+}, testInfo) => {
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  await page.goto(PAGE, { waitUntil: 'commit' });
+  const { container, editor, root } = await openDemo(page, FORMAT);
+
+  await editor.selection.select({
+    anchor: { offset: 7, path: [2, 0] },
+    focus: { offset: 11, path: [2, 0] },
+  });
+  await editor.focus();
+  await page.keyboard.press('ControlOrMeta+B');
+  const painted = await root
+    .locator('[data-editor-node="text"]', { hasText: /^some$/ })
+    .evaluate((node) => ({
+      bold: getComputedStyle(node.querySelector('[data-editor-string]')!)
+        .fontWeight,
+      color: node.getAttribute('data-editor-authored-color'),
+      kind: node.getAttribute('data-editor-authored-kind'),
+    }));
+
+  await container.screenshot({ path: testInfo.outputPath('bold-toggle.png') });
+  expect(painted).toEqual({
+    bold: '700',
+    color: expect.stringMatching(/^[0-6]$/),
+    kind: 'format',
+  });
   errors.assertNone();
 });

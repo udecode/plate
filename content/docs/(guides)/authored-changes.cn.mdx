@@ -1,6 +1,6 @@
 ---
 title: Authored Changes
-description: 捕获带作者身份的编辑、审阅建议、保留作者历史，并导出显式投影。
+description: 记录带作者身份的编辑，按 change 或卡片审阅 proposal，并导出显式投影。
 docs:
   - route: /docs/suggestion
     title: 建议
@@ -10,18 +10,17 @@ docs:
     title: 协作
 ---
 
-Authored changes 在一个保存的文档中维护已接受内容、proposal、决定和稳定的 change identity。常用的编辑和建议模式请使用[建议](/docs/suggestion)。本指南介绍底层记录、高级 view、决定、保留历史和格式。
+Authored changes 在一个保存的文档中维护已接受内容、待处理 proposal 和稳定的 change identity。常用的编辑和建议模式请使用[建议](/docs/suggestion)。本指南介绍底层 view、读取、决定和格式。
 
 ## 选择合适的接口
 
-| 需求                               | 接口                                                                   |
-| ---------------------------------- | ---------------------------------------------------------------------- |
-| 在编辑和建议模式之间切换           | `platejs/suggestion/react` 的 `SuggestionPlugin`                       |
-| 添加复制的高亮和审阅卡片           | [SuggestionKit](/docs/suggestion) 和 [DiscussionKit](/docs/discussion) |
-| 以编辑器的用户记录 change          | `platejs/authored` 的 `AuthoredPlugin`                                 |
-| 保留已接受历史以执行 revert        | `AuthoredPlugin.configure({ initialState: { retainHistory: true } })`  |
-| 读取、决定、解决或 revert change   | 已安装的 authored plugin portal                                        |
-| 附加对话                           | 使用 `{ type: 'change', id }` target 的 `CommentsPlugin`               |
+| 需求                       | 接口                                                                   |
+| -------------------------- | ---------------------------------------------------------------------- |
+| 在编辑和建议模式之间切换   | `platejs/suggestion/react` 的 `SuggestionPlugin`                       |
+| 添加复制的高亮和审阅卡片   | [SuggestionKit](/docs/suggestion) 和 [DiscussionKit](/docs/discussion) |
+| 以编辑器的用户记录 change  | `platejs/authored` 的 `AuthoredPlugin`                                 |
+| 读取和决定 change 或卡片   | 已安装的 authored plugin portal                                        |
+| 附加对话                   | 使用 `{ type: 'change', id }` target 的 `CommentsPlugin`               |
 
 Suggestion 是 authored change 上的行为和展示层。它不会定义另一套 change record、决定结果或持久化格式。
 
@@ -44,32 +43,11 @@ const editor = createEditor({
 const authored = editor.plugin(AuthoredPlugin);
 ```
 
-没有 `userId` 的编辑器以本地用户 `'local'` 写入，因此单人编辑器无需任何设置，AI
-建议也一样。多人编辑同一文档时，请传入经过认证且稳定的用户 ID。
-
-如需保留已接受历史，请配置同一个描述符。编辑器只在创建时读取一次 `retainHistory`：
-
-```tsx title="history-editor.ts" showLineNumbers
-import { BaseParagraphPlugin, createEditor } from "platejs";
-import { AuthoredPlugin } from "platejs/authored";
-
-const historyEditor = createEditor({
-  plugins: [
-    BaseParagraphPlugin,
-    AuthoredPlugin.configure({ initialState: { retainHistory: true } }),
-  ],
-  initialValue,
-  userId: session.user.id,
-});
-
-const retainedAuthored = historyEditor.plugin(AuthoredPlugin);
-```
-
-`retainHistory` 保留选择性 revert 所需的已关闭 edit body。如果应用只需要待处理审阅和作者归属，可以省略它。
+没有 `userId` 的编辑器以本地用户 `'local'` 写入，因此单人编辑器无需任何设置，AI 建议也一样。多人编辑同一文档时，请传入经过认证且稳定的用户 ID。
 
 ## 捕获 change
 
-Editing view 会把普通更新记录为已接受贡献。要显式创建 proposal，请先在 transaction 中开始 proposal，再应用文档修改：
+Editing view 按原样应用普通更新。要创建 proposal，请先在 transaction 中开始 proposal，再应用文档修改：
 
 ```tsx
 let changeId = "";
@@ -82,9 +60,54 @@ editor.update((tx) => {
 });
 ```
 
-传入 `{ changeId }` 可以为新 proposal 指定身份，或修订当前作者拥有的待处理贡献。若该 change 已存在，当前作者必须拥有其最新 head。
+传入 `{ changeId }` 可以为 proposal 命名，或把该 transaction 的写入加入具有该 ID 的待处理 change。若该 ID 的 change 已被决定，则开始一个新 change。以 `~edit:` 开头的 ID 属于 Editing，会被拒绝。
 
-在常用产品流程中，让 `SuggestionPlugin` 在保留当前 projection 的同时切换 intent：
+## 导入比较得到的版本
+
+将固定草稿与已接受文档比较，然后把其 canonical change 发布为一个原生 proposal：
+
+```tsx
+import { proposeAuthoredComparison } from "platejs/authored";
+import { compare } from "platejs/diff";
+
+const incomingDraft = [
+  { type: "paragraph", children: [{ text: "Revised sentence." }] },
+];
+const comparison = await compare({
+  before: editor.read.value(),
+  after: incomingDraft,
+  schema: editor.read.schema,
+});
+const imported = proposeAuthoredComparison(editor, { comparison });
+```
+
+`groupIds` 选择比较 group，并包含它们必需的依赖。结果把选中的 group ID 映射到原生 change ID。导入会在写入前检查 schema、已接受内容和 authored frontier；处理 `stale`、`blocked`、`invalid` 和 `unavailable` 时，不要把它们当作已应用的 proposal。比较必须是针对当前已接受文档的双向比较。
+
+## 配置 view
+
+在 `EditorRoot` 上设置初始 intent：
+
+```tsx
+import { AuthoredPlugin } from "platejs/authored";
+import { EditorContent, EditorRoot, useCreateEditor } from "platejs/react";
+
+export function SuggestionEditor() {
+  const editor = useCreateEditor({
+    plugins: [AuthoredPlugin],
+    userId: "alice",
+  });
+
+  return (
+    <EditorRoot editor={editor} authored={{ intent: "propose" }}>
+      <EditorContent />
+    </EditorRoot>
+  );
+}
+```
+
+编辑器必须安装 authored plugin，可以直接安装，也可以通过 `SuggestionPlugin` 安装。修改 `authored` prop 会更新这个 view。以等价值重新渲染时，会保留之后通过已挂载 view 的 portal 做出的模式修改。
+
+交互式模式控件请让 `SuggestionPlugin` 修改 intent：
 
 ```tsx
 import { SuggestionPlugin } from "platejs/suggestion/react";
@@ -92,107 +115,101 @@ import { SuggestionPlugin } from "platejs/suggestion/react";
 editor.plugin(SuggestionPlugin).api.setMode("suggesting");
 ```
 
-高级 projection 使用 authored portal：
+要以所有待处理 change 都已决定的状态阅读文档，请把 view 切换为 preview：
 
 ```tsx
 const authored = editor.plugin(AuthoredPlugin);
 
-authored.api.setView({
-  intent: "propose",
-  projection: "proposed",
-});
+authored.api.setView({ preview: "proposed" });
 ```
 
-| Projection | 可见内容                           |
-| ---------- | ---------------------------------- |
-| `accepted` | 已接受内容，不含待处理 proposal    |
-| `proposed` | 拟议结果，不含保留的审阅片段       |
-| `markup`   | 拟议内容，以及保留的删除和移动片段 |
+| View                      | 可见内容                         | 写入                         |
+| ------------------------- | -------------------------------- | ---------------------------- |
+| `{ intent: 'edit' }`      | 存储内容，以及待处理的插入和删除 | 按原样应用                   |
+| `{ intent: 'propose' }`   | 存储内容，以及待处理的插入和删除 | 记录为当前作者的 proposal    |
+| `{ preview: 'proposed' }` | 接受全部待处理 change 后的内容   | 无                           |
+| `{ preview: 'accepted' }` | 拒绝全部待处理 change 后的内容   | 无                           |
 
-`intent: 'edit'` 可与任意 projection 配合使用。编辑模式下的 markup 或 proposed view 会保留待处理 content 的可见性，同时把对独立 accepted content 的编辑直接发布。完整包含待处理 change 的 replacement 会在同一个可撤销事务中解决这些 change，并直接发布。部分命中的 retained change 或依赖跨出 selection 时保持受保护；其他依赖待处理 content 的编辑仍会成为当前作者的 proposal。普通输入需要创建 proposal 时，请将 `intent: 'propose'` 与 `proposed` 或 `markup` 配合使用。
+在被划掉的文本中输入时，待处理删除会在新文本两侧拆开。`edit` view 按原样应用这段文本，`propose` view 把它记录为插入。`propose` view 会拒绝无法记录为 proposal 的写入，例如表格内的修改，并将其回滚；`api.subscribeRefusals(listener)` 会报告每次拒绝。
 
-Intent 和 projection 属于精确 view。Selection、clipboard input、command 和 anchor 使用该 view 的坐标。同一个文档的两个已挂载 view 可以使用不同 policy。
+View 的 policy 属于该精确 view。Selection、clipboard input、command 和 anchor 使用该 view 的坐标。同一个文档的两个已挂载 view 可以使用不同 policy。
 
 ## 审阅 change
 
-先读取一页待处理 change，再为决定捕获绑定 revision 的 selection：
+读取一页待处理 change，然后决定读到的记录：
 
 ```tsx
 const authored = editor.plugin(AuthoredPlugin);
-const pending = authored.read.changes({
-  authorId: "alice",
-  limit: 50,
-  status: "pending",
-});
-const selection = authored.read.select({
-  ids: pending.items.map(({ id }) => id),
-});
+const page = authored.read.changes({ authorId: "alice", limit: 50 });
 const result = authored.update.decide({
   action: "accept",
-  selection,
+  changes: page.items,
 });
 ```
 
-使用 `action: 'reject'` 拒绝 change。示例只选择返回的当前页。向 `changes(...)` 传入非空 `cursor` 可读取下一页；调用 `select({ authorId: 'alice', status: 'pending' })` 可选择当前全部匹配项。
+使用 `action: 'reject'` 拒绝 change。`changes(query)` 按文档顺序读取待处理 change，默认每页 50 条，最多 200 条。传入非空的页 `cursor` 可读取下一页；若 cursor 对应的 change 都已离开，会以 stale 抛出。用 `at` 把一页限定到存储文档的某个位置，用 `authorId` 限定到某位作者，用 `from` 和 `to` 限定创建时间，或用 `group` 限定到某张卡片。
 
-`AuthoredSelection` 捕获 document ID、change revision 和当前 head。后续修订会使旧 selection 变为 `stale`。依赖和并发冲突返回 `blocked`，且不会部分应用 batch。
+每个 `AuthoredChange` 都有 `id`、`authorId`、`createdAt`、`kind`、当前 `ranges`，以及 `revision`；只要它的 mark 或这些 mark 标记的内容有变化，`revision` 就会不同。用 `change(id)` 读取单个 change。
 
-空间控件可用 `change(id)` 读取一条记录，用 `changesAt(range)` 查找与文本 range 相交的记录。每个 `AuthoredChange` 都包含作者、状态、类型、依赖、revision 和当前 range。
+决定会按读取时的状态指名 change；读取后 revision 已变化的 change 返回 `stale`。接受一个 change 可能需要同时接受其他 change，拒绝一个 change 可能需要同时拒绝依赖它的 change。此时结果为 `blocked`，`with` 列出所需的 change，且不会应用任何内容。编辑器绝不会决定你未指名的 change。一次调用中的多个决定会一起决定：
+
+```tsx
+if (result.status === "blocked") {
+  const related = result.with.flatMap((id) => authored.read.change(id) ?? []);
+
+  authored.update.decide([
+    { action: "accept", changes: page.items },
+    { action: "accept", changes: related },
+  ]);
+}
+```
 
 审阅者打开一条 change 时，再读取其语义详情：
 
 ```tsx
 const details = authored.read.details(changeId);
 
-if (details?.parts.status === "available") {
-  for (const part of details.parts.items) {
-    // 在审阅 UI 中渲染 content、boundary、property 或 root 信息。
-  }
+for (const part of details?.parts ?? []) {
+  // 在审阅 UI 中渲染 content、boundary、enclosure 或 property part。
 }
 ```
 
-`details(id)` 返回紧凑的 change 摘要、决定历史和不可变语义 part。Content part 包含修改前后的 slice；boundary part 区分段落拆分和合并；property part 保留准确的前后值；root part 描述 root 的创建或删除。
+`details(id)` 返回该 change 及其 part。Content part 包含修改前后的 slice；boundary part 区分段落拆分和合并；enclosure part 指明包裹和解除包裹；property part 保留准确的前后值。
 
-如果已关闭 change 没有保留 edit body，结果为 `parts.status: 'unavailable'` 和 `reason: 'retention'`；摘要和审阅历史仍可读取。列表和空间查询应保持紧凑，只为正在审阅的 change 请求 details。
+### 审阅卡片
+
+审阅卡片把同一作者的相邻待处理 change 归为一组，例如一个删除和替换它的插入：
+
+```tsx
+const [card] = authored.read.groups({ at: [0] });
+
+if (card) {
+  const firstChanges = authored.read.changes({ group: card.id, limit: 20 });
+  const decided = authored.update.decide({ action: "accept", groups: [card] });
+}
+```
+
+`groups({ at })` 按文档顺序返回与存储文档某个位置相交的卡片摘要：`id`、`authorId`、`createdAt`、`changeCount` 和 `revision`。卡片 ID 是其中最早的 change，因此每个 peer 和每次重新加载都会给出相同的 ID。卡片拆分或合并时，或该 change 离开卡片时，ID 会改变。`groupOf(changeId)` 返回包含某个 change 的卡片。
+
+决定一张卡片会决定它在那一刻包含的所有 change。卡片的 ID 或 revision 变化后，该决定会返回 `stale`，因此重试前请用 `groupOf` 重新读取卡片。
 
 ### 决定结果
 
-始终检查 `decide`、`resolve` 或 `revert` 的结果：
+始终检查 `decide` 的结果：
 
-| 状态          | 含义                                                         |
-| ------------- | ------------------------------------------------------------ |
-| `applied`     | 操作已应用到返回的 ID。                                      |
-| `unchanged`   | 无需修改。                                                   |
-| `stale`       | 选中的 revision 或 head 已变化。重新读取记录后再重试。       |
-| `blocked`     | Selection 有未解决的依赖、dependant 或冲突。检查返回的列表。 |
-| `invalid`     | Selection 或 document identity 无效。                        |
-| `unavailable` | Revert 所需的内容已不再保留。                                |
+| 状态        | 含义                                           |
+| ----------- | ---------------------------------------------- |
+| `applied`   | 决定已应用到返回的 ID。                        |
+| `unchanged` | 无需修改。                                     |
+| `stale`     | 读取后 change 或卡片已变化。请重新读取。       |
+| `blocked`   | 需与 `with` 列出的 change 一起决定。未应用任何内容。 |
+| `invalid`   | 多个决定互相矛盾，或 schema 拒绝决定结果。     |
 
-`authored.read.preview({ action, selection })` 可在不应用决定的情况下检查接受或拒绝。Preview 返回 `applied` 表示决定在该时刻可应用；后续 `decide` 调用仍需处理结果。
-
-接受 change 可能需要包含其 dependency；拒绝 change 可能需要包含其 dependant。Editor 不会静默扩大 selection。只有审阅者为完整冲突组选择决定后，才调用 `authored.update.resolve({ action, selection })`。
-
-## 保留作者历史
-
-在需要保留的工作发生前启用 `retainHistory`。加载已压缩的文档时再启用保留，无法恢复已丢弃的 edit body。
-
-选择某位作者已接受的贡献，并创建补偿 change：
-
-```tsx
-const selection = retainedAuthored.read.select({
-  authorId: "alice",
-  status: "accepted",
-});
-const result = retainedAuthored.update.revert({ selection });
-```
-
-原始记录保留其作者；补偿记录属于当前作者。后续依赖工作阻止补偿时，revert 返回 `blocked`；缺少所需内容时返回 `unavailable`。
-
-Plate History 通过 `editor.api.history.undo()` 和 `redo()` 反转本地交互 batch。本地 undo 也会恢复映射后的 selection。选择性 revert 会记录另一个 authored contribution。[版本历史示例](/docs/examples/version-history)可用两个作者编辑并 revert 一项保留贡献。
+`authored.read.preview(decision)` 返回某个决定在不应用时会得到的结果。Preview 返回 `applied` 表示该决定在那一刻可以应用；之后的 `decide` 调用仍需处理结果。
 
 ## 保存文档
 
-保存 `editor.read.value()` 的完整结果。它包含已接受内容和重建 proposal 与决定所需的 `meta.authored` record。只保存 node 数组会丢失这些记录。
+保存 `editor.read.value()` 的完整结果。它包含内容及每个 node 上的待处理审阅 mark，以及文档 `records` 中的审阅记录。只保存 node 数组会丢失这些记录。
 
 ```tsx
 const savedDocument = editor.read.value();
@@ -204,7 +221,7 @@ const restored = createEditor({
 });
 ```
 
-用相同的内容插件和 schema 将版本加载到新 editor。加载过程会在发布 value 前验证 authored record 和 document schema。将 `meta.authored` 视为 codec 管理的数据。本地 undo stack 从空开始。
+用相同的内容插件和 schema 将版本加载到新 editor。加载过程会在发布 value 前验证审阅 mark、审阅记录和 document schema。`authored` node 属性和审阅记录交由编辑器管理。本地 undo 从空开始。
 
 如果安装了[评论](/docs/comment)，请将 `editor.plugin(CommentsPlugin).api.toJSON()` 与文档、应用版本和对话代次一起原子保存。验证关联后，在新 editor 中用 `CommentsPlugin.configure({ initialState: { initialComments } })` 加载保存的 `CommentsJSON`。实时 thread target 只包含语义身份，通过 `attachment(id)` 读取位置。接受、拒绝和撤销建议决定都会保留讨论；解决或重新打开 thread 不进入文档 undo。
 
@@ -212,54 +229,36 @@ const restored = createEditor({
 
 ## 导出显式投影
 
-使用 `accepted` 或 `proposed` 得到 clean document；格式能够保留 review
-record 时使用 `review`。Clean projection 在省略 pending change 或把 conflict
-解析到一侧时返回 diagnostic。每个 helper 都接收或捕获完整 document，包括
-named root 和 metadata。
+使用 `accepted` 或 `proposed` 得到 clean document；格式能够保留审阅记录时使用 `review`。Clean projection 省略待处理工作时会返回 diagnostic。每个 helper 都接收或捕获完整 document，包括 named root 和 metadata。
 
-安装了 authored 插件的 editor 会给每个 document 写入 authored metadata，即使
-还没有人提出 proposal。对这样的 document 执行 HTML、Markdown、plain text 与
-static HTML 导出时，`projection` 必须是 `accepted` 或 `proposed`，否则抛出
-`TypeError`。没有 authored metadata 的 document 不需要 projection。DOCX export
-始终需要 projection。
+对含有待处理 change 的 document 执行 HTML、Markdown、plain text 与 static HTML 导出时，`projection` 必须是 `accepted` 或 `proposed`，否则抛出 `TypeError`。没有待处理 change 的 document 不需要 projection。DOCX export 始终需要 projection。
 
 ### JSON
 
-Detached document 使用纯 authored projection helper：
+把 `editor.read.value()` 保存为 JSON 即可保留审阅。需要 clean document 时，先投影：
 
 ```tsx
-import {
-  parseAuthoredDocument,
-  projectAuthoredDocument,
-  projectAuthoredReview,
-} from "platejs/authored";
+import { projectAuthoredDocument } from "platejs/authored";
 
-const source = editor.read.value();
-const accepted = projectAuthoredDocument(source, {
+const accepted = projectAuthoredDocument(editor.read.value(), {
   projection: "accepted",
 });
-const review = projectAuthoredReview(source);
-const json = JSON.stringify(review.review);
-const document = parseAuthoredDocument(json);
 ```
 
-`parseAuthoredDocument` 验证 document envelope。加载到 editor 时会继续执行已
-安装 application schema 和 authored record 的检查。
+`projectAuthoredDocument` 返回投影后的 `document`、其 `diagnostics`，以及它决定的待处理 change 数量 `pending`。把保存的 JSON 加载到 editor 时，会执行已安装的 application schema 和审阅检查。
 
 ### Plain text 与 Markdown
 
 ```tsx
 import { serializePlainText } from "platejs";
 
-const text = serializePlainText(editor, { projection: "accepted" });
+const text = serializePlainText(editor, { projection: "accepted" }).data;
 const markdown = editor.api.markdown.serialize({ projection: "proposed" });
 
 if (markdown.ok) downloadMarkdown(markdown.data);
 ```
 
-Plain text 与 Markdown 只携带可见 content。Feature 自己拥有的 format mapping
-会保留可表示的结构，并报告省略的 root、metadata、pending work 与不支持的 node。
-Markdown 不包含隐藏 Plate document，也不能恢复完整 review state。
+Plain text 与 Markdown 只携带可见 content。Feature 自己拥有的 format mapping 会保留可表示的结构，并报告省略的 root、metadata、待处理工作与不支持的 node。Markdown 不包含隐藏 Plate document，也不能恢复完整审阅状态。
 
 ### HTML 与 DOCX
 
@@ -279,79 +278,59 @@ const docx = await exportDocx(editor, {
 });
 ```
 
-`renderStaticHtml` 与 `exportDocx` 用作为 `presentation` 传入的 static kit
-绘制，因为 live editor 的组件是编辑 UI。需要不含应用样式的
-semantic HTML 时，调用 `editor.api.html.serialize({ projection })`。两种 HTML
-都只携带可见的 accepted 或 proposed content。成功的 DOCX result 在
-`docx.blob` 中返回 `Blob`。每个 serializer 都返回结构化 `diagnostics`。
+`renderStaticHtml` 与 `exportDocx` 用作为 `presentation` 传入的 static kit 绘制，因为 live editor 的组件是编辑 UI。Semantic HTML 使用 feature mapping，不含应用样式。两种 HTML 都只携带可见的 accepted 或 proposed content。成功的 DOCX result 在 `docx.blob` 中返回 `Blob`。每个 serializer 都返回结构化 `diagnostics`。
 
 | 格式 | Accepted 或 proposed | Review |
 | ---- | -------------------- | ------ |
-| JSON | Plain projected document | Canonical authored document |
+| JSON | Plain projected document | 保存的 editor value |
 | Plain text | Structural text | 不支持 |
 | Markdown | Plain Markdown | 不支持；保存 authored JSON |
 | Semantic HTML | Feature-mapped HTML | 不支持；保存 authored JSON |
 | Static HTML | Component-rendered HTML | 不支持；保存 authored JSON |
-| DOCX | Projected Word document | Word revision；精确状态保存 authored JSON |
+| DOCX | Projected Word document | Word revision，并在 custom XML part 中保存 Plate 的审阅 block 和记录 |
 
-DOCX review 导出会在 Word 无法表达 native construct 时报告 `lossy-content`
-或 `unsupported-content`。需要精确保留该 construct 时，把 authored JSON 与文件
-一起保存。
+DOCX review 文件显示 Word revision，同时在 custom XML part 中保存每个被审阅的 block 及其审阅记录，并绑定到该 block 的 Word 段落。导入该文件时，Word 未修改段落的 block 会被恢复；被编辑的段落按其 Word revision 导入。Named root 和 document metadata 不进入文件，需要保留时请把 authored JSON 与文件一起保存。Word 无法表达 native construct 时，DOCX review 导出会报告 `lossy-content` 或 `unsupported-content`。
 
 ## 协作
 
 每个 peer 都安装 authored plugin 和 Yjs，并使用匹配的 document 与 schema identity。Plate 默认提供本地 History。
 
-Yjs adapter 在一个 remote transaction 中应用 authored operation 和决定。Checkpoint 保留待处理工作和每个 peer 的 retained content。Retention policy 属于本地：归档 peer 可以保留已关闭 body，而另一个 peer 可以压缩它们。
+Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审阅记录。
 
-设置和 compaction owner 请参阅[协作](/docs/yjs)。
+设置请参阅[协作](/docs/yjs)。
 
 ## API 参考
 
 ### `AuthoredPlugin`
 
-从 `platejs/authored` 导入标准描述符。它以 Plate editor 的 `userId` 记录每个 change；编辑器没有 `userId` 时，以本地用户 `'local'` 记录。`SuggestionPlugin` 和 `AIChatPlugin` 依赖此描述符。
-
-| 选项                         | 类型      | 用途                                                                       |
-| ---------------------------- | --------- | -------------------------------------------------------------------------- |
-| `initialState.retainHistory` | `boolean` | 保留已关闭 edit body 以执行选择性 revert。编辑器只在创建时读取一次。默认为 `false`。 |
+从 `platejs/authored` 导入标准描述符。它以 Plate editor 的 `userId` 记录每个 change；编辑器没有 `userId` 时，以本地用户 `'local'` 记录。它不接受选项。`SuggestionPlugin` 和 `AIChatPlugin` 依赖此描述符。
 
 ### Transaction、读取和更新
 
 执行 `const authored = editor.plugin(AuthoredPlugin)` 后，可使用以下方法：
 
-| 接口                                      | 用途                                                               |
-| ----------------------------------------- | ------------------------------------------------------------------ |
-| `tx.authored.propose(options?)`           | 开始 proposal、为新 proposal 指定 `{ changeId }`，或修订当前作者的待处理 change。 |
-| `authored.read.canPropose()`              | 检查当前身份是否可以创建 proposal；使用 `AuthoredPlugin` 时始终为 true。 |
-| `authored.read.view()`                    | 读取当前 view 的 intent 和 projection。                            |
-| `authored.read.change(id)`                | 读取一个逻辑 change；不存在时返回 `null`。                         |
-| `authored.read.details(id)`               | 读取一条 change 的语义 part 和决定历史；不存在时返回 `null`。      |
-| `authored.read.changes(query?)`           | 按作者、状态或时间分页读取 change。                                |
-| `authored.read.changesAt(range)`          | 读取与文本 range 相交的 change。                                   |
-| `authored.read.select(query)`             | 为决定捕获绑定 revision 的 selection。                             |
-| `authored.read.preview(decision)`         | 在不应用决定的情况下检查接受或拒绝。                               |
-| `authored.update.decide(decision)`        | 原子接受或拒绝选中的 change。                                      |
-| `authored.update.resolve(decision)`       | 显式决定完整冲突组。                                               |
-| `authored.update.revert({ selection })`   | 补偿保留的已接受贡献。                                             |
-| `authored.api.setView(view)`              | 修改该精确 view 的 policy。                                        |
-| `authored.api.subscribeChanges(listener)` | 订阅该 view 不可变的受影响 change ID 和 decoration node key。      |
+| 接口                                       | 用途                                                                   |
+| ------------------------------------------ | ---------------------------------------------------------------------- |
+| `tx.authored.propose(options?)`            | 把该 transaction 的写入记录为 proposal；`{ changeId }` 为其命名或扩展已有 change。 |
+| `authored.read.view()`                     | 读取该 view 的 `{ intent }` 或 `{ preview }`。                         |
+| `authored.read.change(id)`                 | 读取一个待处理 change；不存在时返回 `null`。                           |
+| `authored.read.details(id)`                | 读取一个 change 及其语义 part；不存在时返回 `null`。                   |
+| `authored.read.changes(query?)`            | 按文档顺序分页读取待处理 change。                                      |
+| `authored.read.groups({ at })`             | 读取与存储文档某个位置相交的卡片摘要。                                 |
+| `authored.read.groupOf(changeId)`          | 读取包含某个 change 的卡片；不存在时返回 `null`。                      |
+| `authored.read.reviewOf(node)`             | 读取存储 node 的待处理 mark，以及这些 mark 所格式化属性的已接受值。    |
+| `authored.read.preview(decision)`          | 在不应用决定的情况下检查决定。                                         |
+| `authored.update.decide(decision)`         | 接受或拒绝 change 或卡片；决定数组会一起决定。                         |
+| `authored.api.setView(view)`               | 修改该精确 view 的 policy。                                            |
+| `authored.api.subscribeChanges(listener)`  | 每次改变审阅的 commit 都会收到一个共享 delta。                         |
+| `authored.api.subscribeRefusals(listener)` | 接收编辑器拒绝的每个 proposal 写入或 view 切换。                       |
 
-`subscribeChanges` 是语义 decorator 使用的底层集成 hook。Suggestion 应用使用 `useSuggestionChanges(path)`。
+`subscribeChanges` 传入 `{ blocks, changed, groups, removed }`：其中有 change 的卡片 ID 发生变化的 block、开始或 revision 变化的 change、摘要变化、开始或结束的卡片，以及不再待处理的 change。它是底层集成 hook；suggestion UI 改用 `useSuggestionChanges(path)` 和 `useSuggestionGroups(blockKey)`。
 
 ### 类型和格式辅助函数
 
-`platejs/authored` 导出 authored plugin 描述符、change 与 decision 类型、
-不可变 projection result 与 diagnostic，以及用于受信任累计 imported
-revision 的 `createAuthoredReviewDocument`。
+`platejs/authored` 导出 authored plugin 描述符，change、卡片、query、page、delta、decision 和 result 类型，`proposeAuthoredComparison`，以及下面的格式辅助函数。
 
-`projectAuthoredDocument(document, { projection })` 返回 accepted 或
-proposed `document`、同一次捕获的精确 `review` document、diagnostic，以及
-分开的 `unresolved.pending` 与 `unresolved.conflicted` 数量。
-`projectAuthoredReview(document)` 还公开稳定的 visible markup segment 和
-property counterpart。两个 helper 都是纯 document operation：不会构造、
-激活或订阅 editor runtime。
+`projectAuthoredDocument(document, { projection })` 为 `accepted` 或 `proposed` projection 返回 `{ ok, document, diagnostics, pending }`。它是纯 document operation：不会构造、激活或订阅 editor runtime。同时传入 `editor` 时，会用该 editor 的 schema 补全结果；在会生成属性值的 schema 下，含有待处理 change 的 document 会改为返回 `AuthoredProjectionRefusal`。
 
-`projectAuthoredRange(projection, range)` 把 proposed coordinate 映射到同一
-projection 捕获的 accepted document。`parseAuthoredDocument` 解析 JSON
-document envelope；目标 editor 仍负责 application schema。
+`projectAuthoredRange(document, projected, range)` 把存储文档的 range 映射到它的某个 projection；若 projection 不保留其中任何内容，则返回 `null`。

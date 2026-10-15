@@ -11,6 +11,8 @@ import {
   BaseBlockquotePlugin,
   BaseCodeBlockPlugin,
   BaseHeadingPlugin,
+  definePlugin,
+  schema,
   type Value,
 } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
@@ -117,17 +119,30 @@ test.each(['', 'After'])(
   }
 );
 
+const FullParentPlugin = definePlugin('fullParent', {
+  schema: {
+    element: {
+      blockContent: true,
+      content: schema.content.types(['blockquote', 'paragraph'], { max: 1 }),
+    },
+  },
+});
+
 const runSlash = async ({
   caret,
+  fullParent = false,
   heading = true,
   initialValue,
+  menuCloses = true,
   open = false,
   option,
   query,
 }: {
   caret: { offset: number; path: number[] };
+  fullParent?: boolean;
   heading?: boolean;
   initialValue: Value;
+  menuCloses?: boolean;
   open?: boolean;
   option: string;
   query: string;
@@ -146,6 +161,7 @@ const runSlash = async ({
       BaseDetailsPlugin,
       BaseBlockquotePlugin,
       BaseCodeBlockPlugin,
+      ...(fullParent ? [FullParentPlugin] : []),
       ...SlashKit,
     ],
     initialValue,
@@ -183,9 +199,11 @@ const runSlash = async ({
 
   await screen.findByRole('option', { name: option });
   fireEvent.keyDown(root, { code: 'Enter', key: 'Enter' });
-  await waitFor(() => {
-    expect(screen.queryByRole('option', { name: option })).toBeNull();
-  });
+  if (menuCloses) {
+    await waitFor(() => {
+      expect(screen.queryByRole('option', { name: option })).toBeNull();
+    });
+  }
   mounted.unmount();
 
   return viewEditor!.read.children();
@@ -294,5 +312,30 @@ test('inserts a paragraph after an H2 with text through Text', async () => {
   ).toEqual([
     { children: [{ text: 'Head ' }], level: 2, type: 'heading' },
     { children: [{ text: '' }], type: 'paragraph' },
+  ]);
+});
+
+test('keeps the query when the chosen block does not fit its parent', async () => {
+  const initialValue: Value = [
+    {
+      children: [{ children: [{ text: 'Only ' }], type: 'paragraph' }],
+      type: 'fullParent',
+    },
+  ];
+
+  expect(
+    await runSlash({
+      caret: { offset: 5, path: [0, 0, 0] },
+      fullParent: true,
+      initialValue,
+      menuCloses: false,
+      option: 'Blockquote',
+      query: 'quote',
+    })
+  ).toEqual([
+    {
+      children: [{ children: [{ text: 'Only /quote' }], type: 'paragraph' }],
+      type: 'fullParent',
+    },
   ]);
 });

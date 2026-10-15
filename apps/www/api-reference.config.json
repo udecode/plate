@@ -1101,7 +1101,6 @@
             "TableCreateOptions",
             "TableDefinition",
             "TableElement",
-            "TableInsertPlacement",
             "TableNodeTarget",
             "TablePluginState",
             "TableResize",

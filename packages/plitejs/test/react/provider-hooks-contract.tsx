@@ -11,9 +11,11 @@ import {
   Component,
   type ReactNode,
   startTransition,
+  StrictMode,
   Suspense,
   useLayoutEffect,
 } from 'react';
+import * as Y from 'yjs';
 
 import {
   getLastCommit as editorGetLastCommit,
@@ -51,6 +53,7 @@ import {
   isEditor as editorIsEditor,
   replace as editorReplace,
 } from '../../src/testing';
+import { yjs } from '../../src/yjs';
 
 const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
 
@@ -393,6 +396,22 @@ describe('plite-react provider hooks contract', () => {
       children: initialValue,
     });
     expect(result.current.read((state) => state.lastCommit())).toBe(null);
+  });
+
+  test('useEditor binds a Yjs document once under Strict Mode', () => {
+    const doc = new Y.Doc();
+    const { result } = renderHook(
+      () =>
+        useEditor({
+          initialValue,
+          plugins: [yjs({ doc, initialReady: true, seed: true })],
+        }),
+      { wrapper: StrictMode }
+    );
+
+    expect(result.current.api.yjs.admissionStatus()).toEqual({
+      state: 'ready',
+    });
   });
 
   test('useEditorContext follows a keyed provider remount', () => {

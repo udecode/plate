@@ -3970,11 +3970,7 @@
     },
     "typecheck:partition:docx-internal": {
       "cache": true,
-      "dependsOn": [
-        "plitejs#typecheck:partition:core",
-        "typecheck:partition:authored",
-        "typecheck:partition:core"
-      ],
+      "dependsOn": ["typecheck:partition:authored", "typecheck:partition:core"],
       "inputs": [
         "src/docx/internal/**",
         "!src/**/*.spec.*",

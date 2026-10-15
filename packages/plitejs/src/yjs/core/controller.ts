@@ -506,7 +506,8 @@ export class YjsController<
     if (this.pendingRemoteRecords.size === 0) return null;
 
     const store = getEditorDocumentRecords(this.editor);
-    const writes: Record<string, Record<string, unknown>> = {};
+    // No prototype, so an id such as "__proto__" stays an own key.
+    const writes: Record<string, Record<string, unknown>> = Object.create(null);
     let changed = false;
 
     for (const [set, ids] of this.pendingRemoteRecords) {
@@ -517,7 +518,7 @@ export class YjsController<
 
         if (json === (getRecord(store, set, id) ?? null)) continue;
 
-        writes[set] ??= {};
+        writes[set] ??= Object.create(null);
         writes[set][id] = json;
         changed = true;
       }

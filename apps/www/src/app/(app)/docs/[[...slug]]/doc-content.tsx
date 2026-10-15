@@ -11,6 +11,7 @@ import Link from 'next/link';
 
 import { DocsCopyPage } from '@/components/docs-copy-page';
 import { DocsTableOfContents } from '@/components/docs-toc';
+import { ExperimentalBadge } from '@/components/experimental-badge';
 import { OpenInPlus } from '@/components/open-in-plus';
 import { badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ export type DocContentDoc = {
   copyPage?: { markdown: string; product: string };
   description?: string;
   docs?: Array<{ route?: string; title?: string }>;
+  experimental?: true;
   links?: {
     api?: string;
     doc?: string;
@@ -110,16 +112,19 @@ export function DocContent({
                   isWideContent ? 'items-start' : 'items-center md:items-start'
                 )}
               >
-                <h1
-                  className={cn(
-                    'font-semibold tracking-tight sm:text-3xl',
-                    isWideContent
-                      ? 'scroll-m-20 text-4xl lg:text-4xl'
-                      : 'scroll-m-24 text-3xl'
-                  )}
-                >
-                  {title}
-                </h1>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <h1
+                    className={cn(
+                      'font-semibold tracking-tight sm:text-3xl',
+                      isWideContent
+                        ? 'scroll-m-20 text-4xl lg:text-4xl'
+                        : 'scroll-m-24 text-3xl'
+                    )}
+                  >
+                    {title}
+                  </h1>
+                  {doc?.experimental && <ExperimentalBadge />}
+                </div>
                 <div
                   className={cn(
                     'docs-nav flex items-center gap-2',

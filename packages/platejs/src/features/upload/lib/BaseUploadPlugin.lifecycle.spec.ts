@@ -596,6 +596,127 @@ describe('Files admission and lifetime', () => {
     ]);
   });
 
+  const image = () => new File(['image'], 'image.png', { type: 'image/png' });
+
+  it.each<
+    [
+      string,
+      ReturnType<typeof paragraph> | ReturnType<typeof slot>,
+      File[],
+      (editor: ReturnType<typeof createEditor>, files: File[]) => boolean,
+    ]
+  >([
+    [
+      'at the selection',
+      paragraph('keep'),
+      [image()],
+      (editor, files) => editor.plugin(BaseUploadPlugin).update.submit(files),
+    ],
+    [
+      'before a block',
+      paragraph('keep'),
+      [image()],
+      (editor, files) =>
+        editor
+          .plugin(BaseUploadPlugin)
+          .update.submit(files, { before: editor.key([0, 0])! }),
+    ],
+    [
+      'at a path',
+      paragraph('keep'),
+      [image()],
+      (editor, files) =>
+        editor.plugin(BaseUploadPlugin).update.submit(files, { at: [0, 1] }),
+    ],
+    [
+      'into a slot with a second file',
+      slot('image'),
+      [image(), image()],
+      (editor, files) =>
+        editor
+          .plugin(BaseUploadPlugin)
+          .update.submit(files, { slot: editor.key([0, 0])! }),
+    ],
+  ])(
+    'refuses an upload %s that does not fit its parent and reports why',
+    (_, child, files, submit) => {
+      const failures: UploadFailure[] = [];
+      const FullParentPlugin = definePlugin('uploadFullParent', {
+        schema: {
+          element: {
+            blockContent: true,
+            content: schema.content.types(['paragraph', 'upload'], { max: 1 }),
+          },
+        },
+      });
+      const editor = createEditor({
+        plugins: [
+          BaseImagePlugin,
+          withUpload({
+            initialState: {
+              onError: (failure) => failures.push(failure),
+              upload: () => new Promise(() => {}),
+            },
+          }),
+          FullParentPlugin,
+        ],
+        initialValue: [{ children: [child], type: 'uploadFullParent' }],
+      });
+
+      editor.update.selection.set({ offset: 0, path: [0, 0, 0] });
+      const submitted = submit(editor, files);
+
+      expect({
+        children: editor.read.children(),
+        failures,
+        submitted,
+        tasks: editor.plugin(BaseUploadPlugin).store.get('tasks'),
+      }).toEqual({
+        children: [{ children: [child], type: 'uploadFullParent' }],
+        failures: [{ code: 'does-not-fit', files, phase: 'placement' }],
+        submitted: true,
+        tasks: {},
+      });
+    }
+  );
+
+  it('starts the upload a main-root submit lands before a named-root block', () => {
+    const editor = createEditor({
+      plugins: [
+        UploadRootHolderPlugin,
+        BaseFilePlugin,
+        BaseImagePlugin,
+        withUpload({
+          initialState: { upload: () => new Promise(() => {}) },
+        }),
+      ],
+      initialValue: {
+        children: [
+          paragraph('main'),
+          {
+            childRoots: { body: 'header' },
+            children: [{ text: '' }],
+            type: 'uploadRootHolder',
+          },
+        ],
+        roots: { header: [paragraph('target')] },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+
+    editor
+      .plugin(BaseUploadPlugin)
+      .update.submit([image()], { before: header.key([0])! });
+
+    expect(header.read.children()).toEqual([
+      slot('image'),
+      paragraph('target'),
+    ]);
+    expect(
+      editor.plugin(BaseUploadPlugin).store.get('task', header.key([0])!)
+    ).toBeDefined();
+  });
+
   it('cancels on identity loss and never grants authority to a reused path', async () => {
     const request = deferred();
     let signal: AbortSignal | undefined;

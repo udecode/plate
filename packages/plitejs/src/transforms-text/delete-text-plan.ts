@@ -161,6 +161,7 @@ export const shouldPreserveEmptyStartBlockForHangingRange = (
 export type DeleteRangePlan = {
   distance: number;
   effectiveEndBlockPath: Path | null;
+  editableEdges: boolean;
   effectiveRange: Range;
   effectiveStartBlockPath: Path | null;
   end: Point;
@@ -179,6 +180,7 @@ export type DeleteRangePlan = {
   start: Point;
   startMergeBlockPath: Path | null;
   startNonEditable: ReturnType<typeof getHighestNonEditable>;
+  topLevelCountBefore: number;
   unit: NonNullable<DeleteOptions['unit']>;
   voids: boolean;
 };

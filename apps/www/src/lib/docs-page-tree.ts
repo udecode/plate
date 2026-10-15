@@ -13,7 +13,7 @@ import {
   getSidebarSectionCategory,
   normalizeDocsHref,
 } from '@/lib/docs-nav-metadata';
-import type { DocsSidebar } from '@/lib/docs-sidebar';
+import type { DocsSidebar, DocsSidebarRoot } from '@/lib/docs-sidebar';
 import { source } from '@/lib/source';
 import { hrefWithLocale } from '@/lib/withLocale';
 import type { SidebarNavItem } from '@/types/nav';
@@ -39,6 +39,7 @@ function withDocsOverlay(item: SidebarNavItem): SidebarNavItem {
   return {
     ...item,
     description: item.description ?? overlay?.description,
+    experimental: item.experimental ?? overlay?.experimental,
     keywords: item.keywords ?? overlay?.keywords,
     label: item.label ?? overlay?.label,
     titleCn: item.titleCn ?? overlay?.titleCn,
@@ -169,28 +170,55 @@ function toSidebarSections(
     );
 }
 
+function replaceRootLinksWithGroups(
+  sections: SidebarNavItem[],
+  roots: DocsSidebarRoot[]
+) {
+  return sections.flatMap((section) => {
+    const items = section.items?.filter((item) => !item.opensRoot) ?? [];
+    const groups = roots
+      .filter((root) =>
+        section.items?.some((item) => item.opensRoot && item.href === root.href)
+      )
+      .map((root) => ({
+        href: root.href,
+        items: root.sections,
+        title: root.title,
+      }));
+
+    return items.length ? [{ ...section, items }, ...groups] : groups;
+  });
+}
+
 export function getDocsSidebar(locale = 'en'): DocsSidebar {
   const tree = source.getPageTree(locale);
+  const nested = getNestedRoots(tree.children).map((folder) => ({
+    href: getRootHref(folder),
+    sections: toSidebarSections(folder.children),
+    title: nodeNameToString(folder.name) ?? 'Docs',
+  }));
 
   return {
     main: {
       href: '/docs',
-      sections: toSidebarSections(tree.children, getSidebarCategoryItems),
+      sections: replaceRootLinksWithGroups(
+        toSidebarSections(tree.children, getSidebarCategoryItems),
+        nested
+      ),
       title: 'Plate',
     },
-    nested: getNestedRoots(tree.children).map((folder) => ({
-      href: getRootHref(folder),
-      sections: toSidebarSections(folder.children),
-      title: nodeNameToString(folder.name) ?? 'Docs',
-    })),
+    nested,
   };
 }
 
 export function getDocsRootLinks(category: DocsCategory, locale = 'en') {
-  return getDocsSidebar(locale).main.sections.flatMap((section) =>
-    getSidebarSectionCategory(section.title) === category
-      ? (section.items?.filter((item) => item.opensRoot) ?? [])
-      : []
+  const tree = source.getPageTree(locale);
+
+  return toSidebarSections(tree.children, getSidebarCategoryItems).flatMap(
+    (section) =>
+      getSidebarSectionCategory(section.title) === category
+        ? (section.items?.filter((item) => item.opensRoot) ?? [])
+        : []
   );
 }
 

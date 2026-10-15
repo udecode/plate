@@ -232,9 +232,9 @@ change it. It defaults to `preserve`. Declare `rebase` for a value relative to
 where content lands, such as Indent's `indent`, and `adopt` for a value the
 landing site supplies, such as List's `listId`. A text drag that moves lands
 only when its landing read changes nothing but `rebase` and `adopt`
-properties, and a block copy's
-[`editorReads.transfer.adopt`](/docs/dnd#shape-a-block-copy) may set only
-`adopt` ones. Text properties have no `landing` option.
+properties, and the
+[`editorReads.transfer.adopt`](/docs/dnd#shape-dropped-blocks) read of a
+block copy or move may set only `adopt` ones. Text properties have no `landing` option.
 
 A paragraph node affected by the plugin looks like this:
 

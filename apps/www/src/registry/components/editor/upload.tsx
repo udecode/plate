@@ -94,6 +94,10 @@ const showUploadFailure = (failure: UploadFailure) => {
       toast.error('File uploads are not configured.');
       break;
     }
+    case 'does-not-fit': {
+      toast.error(`${fileNames(failure.files)} cannot be added here.`);
+      break;
+    }
     case 'upload-error':
     case 'resolver-error': {
       toast.error(

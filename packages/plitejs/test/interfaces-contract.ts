@@ -14,7 +14,8 @@ import {
   TextApi,
 } from 'plitejs';
 
-import { hasPath as editorHasPath } from '../src/internal';
+import { nodeAt } from '../src/core/content-landing';
+import { getEditorLiveNode, hasPath as editorHasPath } from '../src/internal';
 import {
   getSelection as editorGetSelection,
   isEditor as editorIsEditor,
@@ -53,6 +54,63 @@ describe('plite interfaces contract', () => {
 
     assert.equal(NodeApi.isNode(editor), true);
     assert.equal(ElementApi.isElement(editor), false);
+  });
+
+  it('finds no node at a negative or fractional path index', () => {
+    const children = [
+      {
+        children: [{ text: 'first' }, { bold: true, text: 'last' }],
+        type: 'paragraph',
+      },
+    ];
+    const roots = [{ children }, createEditor({ initialValue: children })];
+
+    assert.deepEqual(
+      [[0, -1], [0, 0.5], [-1], [0.5]].flatMap((path) =>
+        roots.flatMap((root) => [
+          NodeApi.getIf(root, path),
+          NodeApi.has(root, path),
+        ])
+      ),
+      Array.from({ length: 4 }, () => [
+        undefined,
+        false,
+        undefined,
+        false,
+      ]).flat()
+    );
+  });
+
+  it('reads no live node at a negative or fractional path index', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'first' }, { bold: true, text: 'last' }],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    assert.deepEqual(
+      [[0, -1], [0, 0.5], [-1], [0.5]].map((at) =>
+        getEditorLiveNode(editor, at)
+      ),
+      [undefined, undefined, undefined, undefined]
+    );
+  });
+
+  it('lands on no node at a negative or fractional path index', () => {
+    const children = [
+      {
+        children: [{ text: 'first' }, { bold: true, text: 'last' }],
+        type: 'paragraph',
+      },
+    ];
+
+    assert.deepEqual(
+      [[0, -1], [0, 0.5], [-1], [0.5]].map((at) => nodeAt(children, at)),
+      [undefined, undefined, undefined, undefined]
+    );
   });
 
   it('treats elements and text as descendants, not editor roots', () => {

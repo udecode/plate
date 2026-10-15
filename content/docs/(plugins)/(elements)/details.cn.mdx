@@ -39,11 +39,13 @@ const value = [
 ];
 ```
 
+这个结构由 schema 保证。把标题转换为引用、Callout 或分栏，或在标题中输入三个短横线，都不会生效。代码块和列表仍可转换标题，同时移除所在的 Details。在标题中按 Enter、粘贴或创建副本时，新建的块是正文段落。Summary 不在首位或有两个 Summary 的值无法加载。
+
 `open` 和 `name` 不是文档属性。应用需要展开或折叠 Details 节点时，请使用插件状态。
 
 ## 标题等级
 
-Summary 的 `level` 属性支持 `1` 到 `6`；不设置时显示为普通标题。格式转换保留 Summary 和折叠结构，不会把标题移进正文。
+Summary 的 `level` 属性支持 `1` 到 `6`；不设置时显示为普通标题。下面的标题命令保留 Summary 和折叠结构，不会把标题文本移进正文。
 
 安装 `HeadingPlugin` 后，可以在格式菜单或斜杠菜单中选择标题、使用标题快捷键，或在标题中输入 Markdown 标题前缀。同一菜单中的 Text 会移除等级。无界面调用如下：
 
@@ -206,6 +208,8 @@ Body text.
 
 解码会忽略 `open` 和 `name`，编码也不会写入这两个属性。
 
+HTML 按浏览器的规则确定标题。第一个 `<summary>` 子元素无论位于何处都是标题，之后的每个 `<summary>` 都会变成保留格式的正文块：段落，或其中包含的标题。Markdown 更严格。`<summary>` 不在首位或包含两个 `<summary>` 的 `<details>` 会解析失败。
+
 ## 工具栏
 
 使用 [`DetailsToolbarButton`](/docs/components/details-toolbar-button) 包裹当前块，或解除当前 Details 节点。
@@ -214,7 +218,7 @@ Body text.
 
 ### `BaseDetailsPlugin`
 
-为 `details` 节点提供无界面 schema、编解码器、修正逻辑、临时状态、转换，以及 Enter、Backspace 和 Delete 行为。
+为 `details` 节点提供无界面 schema、编解码器、临时状态、转换，以及 Enter、Backspace 和 Delete 行为。
 
 ### `BaseDetailsSummaryPlugin`
 

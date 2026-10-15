@@ -25,9 +25,7 @@ import {
   AuthoredMarkError,
   createAuthoredMarksValidator,
   isAuthoredSetValued,
-  readAuthoredMarks,
 } from '../tree/marks';
-import { assertEditingDeletionsHeld } from '../tree/resolve';
 import { compactClaims } from './compact';
 import {
   addCounts,
@@ -274,14 +272,7 @@ export const authoredAdmission: DocumentAdmission = {
 
     const compacted = compactClaims(document);
     const facts = factsOf(compacted);
-    const value =
-      (facts.hasVerdicts
-        ? settleValue(compacted, facts, 'document').value
-        : null) ?? compacted;
-
-    for (const children of contentRootsOf(value).values()) {
-      assertEditingDeletionsHeld(children.slice(), readAuthoredMarks);
-    }
+    const value = settleValue(compacted, facts, 'document').value ?? compacted;
 
     return value === document
       ? null

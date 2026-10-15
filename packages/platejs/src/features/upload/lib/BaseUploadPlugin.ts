@@ -91,6 +91,11 @@ export type UploadFailure =
       phase: 'configuration';
     }>
   | Readonly<{
+      code: 'does-not-fit';
+      files: readonly File[];
+      phase: 'placement';
+    }>
+  | Readonly<{
       code: 'upload-error';
       error: unknown;
       file: File;
@@ -712,6 +717,8 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
               afterCommit(() => notifyFailure(failure));
               return true;
             };
+            const refuseDoesNotFit = () =>
+              reject({ code: 'does-not-fit', files, phase: 'placement' });
             const validation = validateFiles(files, state);
             if (validation.error) {
               return reject({ ...validation.error, phase: 'admission' });
@@ -764,33 +771,8 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
 
             const prepared: PreparedUpload[] = [];
             const prepareInserted = (
-              firstPath: readonly number[],
               insertedUploads: ReadonlyArray<
-                Readonly<{
-                  file: File;
-                  kind: UploadKind;
-                }>
-              >
-            ) =>
-              insertedUploads.map(({ file, kind }, index) => {
-                const path = [...firstPath];
-                path[path.length - 1] += index;
-                const key = tx.key(path);
-                if (!key) {
-                  throw new Error(
-                    'Upload insertion did not retain its node identity.'
-                  );
-                }
-
-                return { file, key, kind };
-              });
-            const prepareByIdentity = (
-              insertedUploads: ReadonlyArray<
-                Readonly<{
-                  element: Element;
-                  file: File;
-                  kind: UploadKind;
-                }>
+                Readonly<{ element: Element; file: File; kind: UploadKind }>
               >
             ) =>
               insertedUploads.map(({ element, file, kind }) => {
@@ -803,7 +785,6 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
 
                 return { file, key, kind };
               });
-
             if (slot) {
               prepared.push({ ...uploads[0], key: slot });
               const additional = uploads.slice(1).map((upload) => ({
@@ -812,13 +793,13 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
               }));
 
               if (additional.length > 0) {
-                tx.tags.add('history-push');
-                const inserted = tx.blocks.insertAfter(
+                const inserted = tx.blocks.insert(
                   additional.map(({ element }) => element),
-                  { at: slot, replaceEmpty: false }
+                  { after: slot, replaceEmpty: false }
                 );
-                if (!inserted) return false;
-                prepared.push(...prepareInserted(inserted, additional));
+                if (!inserted) return refuseDoesNotFit();
+                tx.tags.add('history-push');
+                prepared.push(...prepareInserted(additional));
               }
               tx.effects.emit(uploadAdmissionEffect, null);
             } else {
@@ -826,49 +807,34 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
                 ...upload,
                 element: tx.schema.create(type, { kind: upload.kind }),
               }));
-              const { at, before, slot: _slot, ...insertOptions } = options;
+              const nodes = elements.map(({ element }) => element);
+              const { slot: _slot, ...insertOptions } = options;
+              let inserted: readonly NodeKey[] | undefined;
 
-              tx.tags.add('history-push');
-              if (before !== undefined) {
-                const target = tx.nodes.get(before);
-                if (!target) return false;
-
-                tx.nodes.insert(
-                  elements.map(({ element }) => element),
-                  { ...insertOptions, at: target[1] }
-                );
-                prepared.push(...prepareByIdentity(elements));
-              } else if (
-                at === undefined ||
-                insertOptions.after !== undefined
+              if (
+                insertOptions.at !== undefined ||
+                insertOptions.before !== undefined
               ) {
-                const after =
-                  insertOptions.after ??
-                  (at === undefined ? getCaretAnchor(editor, tx) : undefined);
+                inserted = tx.blocks.insert(nodes, insertOptions);
+              } else {
+                const after = insertOptions.after ?? getCaretAnchor(editor, tx);
                 const anchor = tx.nodes.block({ at: after })?.[0];
                 // A submit at the selection fills an empty block, as paste does.
                 const replaceEmpty =
                   insertOptions.replaceEmpty ??
                   insertOptions.after === undefined;
-                const inserted = tx.blocks.insertAfter(
-                  elements.map(({ element }) => element),
-                  {
-                    ...insertOptions,
-                    at: after,
-                    replaceEmpty:
-                      replaceEmpty &&
-                      (!anchor || isReplaceableEmptyBlock(tx, anchor)),
-                  }
-                );
-                if (!inserted) return false;
-                prepared.push(...prepareInserted(inserted, elements));
-              } else {
-                tx.nodes.insert(
-                  elements.map(({ element }) => element),
-                  { ...insertOptions, at }
-                );
-                prepared.push(...prepareByIdentity(elements));
+
+                inserted = tx.blocks.insert(nodes, {
+                  ...insertOptions,
+                  after,
+                  replaceEmpty:
+                    replaceEmpty &&
+                    (!anchor || isReplaceableEmptyBlock(tx, anchor)),
+                });
               }
+              if (!inserted) return refuseDoesNotFit();
+              tx.tags.add('history-push');
+              prepared.push(...prepareInserted(elements));
             }
 
             afterCommit(() => {

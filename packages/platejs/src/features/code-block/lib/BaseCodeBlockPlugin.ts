@@ -13,6 +13,7 @@ import {
   type Location,
   NodeApi,
   type NodeEntry,
+  type NodeKey,
   type NodeSelection,
   PathApi,
   type BlockInsertOptions,
@@ -25,9 +26,11 @@ import {
   SelectionApi,
   txLocate,
   locateAt,
+  type NamedRootKey,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
-import { isDocumentView } from '../../../facade';
+import { canPlaceBlocksAtPath, isDocumentView } from '../../../facade';
+import { failInvariant } from '../../../internal/failInvariant';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import {
   applyBlockReleases,
@@ -357,34 +360,89 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
           return unwrapped;
         };
+        const codeRuns = (
+          blocks: ReadonlyArray<NodeEntry<Element>>,
+          root?: NamedRootKey
+        ) => {
+          const runs: Array<Array<NodeEntry<Element>>> = [];
+
+          for (const entry of blocks) {
+            const run = runs.at(-1);
+            const last = run?.at(-1);
+
+            if (
+              run &&
+              last &&
+              PathApi.equals(PathApi.next(last[1]), entry[1])
+            ) {
+              run.push(entry);
+            } else {
+              runs.push([entry]);
+            }
+          }
+
+          const codes = runs.map((run) => ({
+            children: [
+              { text: run.map(([block]) => NodeApi.string(block)).join('\n') },
+            ],
+            type,
+          }));
+
+          if (
+            runs.length === 0 ||
+            !runs.every((run, index) =>
+              canPlaceBlocksAtPath(tx.schema, run[0][1], [codes[index]], {
+                removing: run.map(([, path]) => path.at(-1) ?? 0),
+                root,
+              })
+            )
+          ) {
+            return false;
+          }
+
+          const keys: NodeKey[] = [];
+
+          for (const [index, run] of [...runs.entries()].toReversed()) {
+            const [, at] = run[0];
+
+            if (!tx.nodes.replace(codes[index], { at })) {
+              failInvariant('A checked code block conversion refused.');
+            }
+
+            const key = tx.key(inRoot(at, root));
+
+            if (key) keys.push(key);
+            for (const [, path] of run.slice(1).toReversed()) {
+              tx.nodes.remove({ at: path });
+            }
+          }
+
+          const [first, ...rest] = keys.flatMap((key) => {
+            const entry = tx.nodes.get(key);
+
+            return entry ? [entry[1]] : [];
+          });
+
+          if (first) {
+            tx.selection.set(
+              SelectionApi.nodes([first, ...rest], { mode: 'block', root })
+            );
+          }
+
+          return true;
+        };
         const insertCodeBlock = (
           input: CodeBlockInsertInput = {},
           options: BlockInsertOptions = {}
-        ) => {
-          if (
-            !tx.selection() &&
-            options.at === undefined &&
-            options.after === undefined &&
-            options.before === undefined
-          ) {
-            return;
-          }
-
-          const element = tx.schema.create(type, input);
-          const insertOptions = {
+        ) =>
+          (tx.selection() !== null ||
+            options.at !== undefined ||
+            options.after !== undefined ||
+            options.before !== undefined) &&
+          tx.blocks.insert(tx.schema.create(type, input), {
             ...options,
             select: options.select ?? true,
-          };
-
-          if (options.at === undefined || options.after !== undefined) {
-            tx.blocks.insertAfter(element, {
-              ...insertOptions,
-              at: options.after,
-            });
-          } else {
-            tx.nodes.insert(element, insertOptions);
-          }
-        };
+          }) !== undefined;
         const applyCodeBlockInsertion = (
           mode: 'insert' | 'upsert',
           input: CodeBlockInsertInput = {},
@@ -396,12 +454,12 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
             matches: (block) =>
               block.type === type && block.listType === undefined,
             mode,
-            onReuse: ([block, path]) => {
+            onReuse: (block, key) => {
               if (
                 input.language !== undefined &&
                 block.language !== input.language
               ) {
-                tx.nodes.set({ language: input.language }, { at: path });
+                tx.nodes.set({ language: input.language }, { at: key });
               }
             },
             options,
@@ -531,10 +589,11 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
             if (root !== tx.view.root()) return false;
 
+            const selected = tx.nodes.blocks({ mode: 'lowest' });
             const releases = readBlockReleases(
               editor,
               tx,
-              tx.nodes.blocks({ at: initial, mode: 'lowest' }),
+              selected,
               () => true,
               root
             );
@@ -558,7 +617,10 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
               }
             }
 
-            if (tx.nodes.some({ at: initial, type: plugin })) return unwrap();
+            if (tx.nodes.some({ type: plugin })) return unwrap();
+            if (!release && tx.selection.nodes().length > 0) {
+              return codeRuns(selected, root);
+            }
 
             if (release) {
               const code = {

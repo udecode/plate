@@ -4,12 +4,12 @@ import {
   AuthoredPlugin,
   type AuthoredChange,
   type AuthoredChangeGroup,
+  type AuthoredChangesDelta,
 } from '../../../authored';
 import {
   RangeApi,
   TextApi,
   type EditorCommit,
-  type Location,
   type NodeKey,
   type Path,
 } from '../../../core';
@@ -54,10 +54,9 @@ export const useActiveSuggestion = () => {
 };
 
 const sameGroups = (
-  left: readonly AuthoredChangeGroup[] | null,
+  left: readonly AuthoredChangeGroup[],
   right: readonly AuthoredChangeGroup[]
 ) =>
-  left !== null &&
   left.length === right.length &&
   left.every(
     (group, index) =>
@@ -95,29 +94,73 @@ export const useSuggestionChanges = (path: Path) => {
       };
       const changes: AuthoredChange[] = [];
 
-      for (let cursor: string | undefined; ; ) {
+      for (let cursor: string | undefined; ;) {
         const page = current
           .plugin(AuthoredPlugin)
           .read.changes({ at, cursor, limit: 200 });
 
         changes.push(...page.items);
         if (!page.cursor) return changes;
-        cursor = page.cursor;
+        ({ cursor } = page);
       }
     },
     { equalityFn: sameChanges, shouldUpdate: authoredChanged }
   );
 };
 
-/**
- * Read the review cards touching one place: adjacent pending changes by one
- * author form a card, named by its oldest change.
- */
-export const useSuggestionGroups = (at: Location | NodeKey) =>
-  useEditorSelector(
-    (editor) => editor.plugin(AuthoredPlugin).read.groups({ at }),
-    { equalityFn: sameGroups, shouldUpdate: authoredChanged }
+const NO_GROUPS: readonly AuthoredChangeGroup[] = Object.freeze([]);
+
+const useAuthoredRead = <T>(
+  read: () => T,
+  {
+    equal,
+    when,
+  }: {
+    equal: (last: T, next: T) => boolean;
+    when: (delta: AuthoredChangesDelta) => boolean;
+  }
+) => {
+  const editor = useEditor();
+  const last = React.useRef<{ value: T } | null>(null);
+  const subscribe = React.useCallback(
+    (wake: () => void) =>
+      editor.plugin(AuthoredPlugin).api.subscribeChanges((delta) => {
+        if (when(delta)) wake();
+      }),
+    [editor, when]
   );
+  const snapshot = () => {
+    const next = read();
+
+    if (!last.current || !equal(last.current.value, next)) {
+      last.current = { value: next };
+    }
+
+    return last.current.value;
+  };
+
+  return React.useSyncExternalStore(subscribe, snapshot, snapshot);
+};
+
+/** Read the review cards touching one top-level block. */
+export const useSuggestionGroups = (blockKey: NodeKey) => {
+  const editor = useEditor();
+  const when = React.useCallback(
+    (delta: AuthoredChangesDelta) => delta.blocks.includes(blockKey),
+    [blockKey]
+  );
+
+  return useAuthoredRead(
+    () => {
+      const index = editor.read.nodes.path(blockKey)?.[0];
+
+      return index === undefined
+        ? NO_GROUPS
+        : editor.plugin(AuthoredPlugin).read.groups({ at: [index] });
+    },
+    { equal: sameGroups, when }
+  );
+};
 
 /** Read whether the exact mounted editor view is editing or suggesting. */
 export const useSuggestionMode = () => {

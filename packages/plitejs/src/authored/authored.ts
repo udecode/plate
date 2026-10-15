@@ -1,4 +1,3 @@
-import { definePlugin } from '..';
 import { authoredDocumentCapabilityPoint } from '../core/authored-document-capability';
 import {
   getAuthoredUpdateView,
@@ -38,9 +37,12 @@ import {
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
+  getEditorRuntimeRoot,
   getEditorSchema,
+  type InternalEditorRuntime,
 } from '../core/editor-runtime';
 import type { InternalEditorSchemaApi } from '../core/editor-schema';
+import { definePlugin } from '../core/plugin';
 import {
   getCompiledEditorSchema,
   getPluginContributions,
@@ -81,7 +83,7 @@ import type { Location } from '../interfaces/location';
 import type { Descendant } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { type Point, PointApi } from '../interfaces/point';
-import { type Range, RangeApi } from '../interfaces/range';
+import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
 import {
@@ -114,7 +116,6 @@ import {
 } from './facts/records';
 import { projectAuthoredDocument, projectionRefusal } from './format';
 import { createReviewLedger, getReviewLedger } from './ledger/ledger';
-import { countLedgerWork } from './ledger/work';
 import {
   type AuthoredRefusal,
   constructsValues,
@@ -145,6 +146,7 @@ import {
   followsOf,
   projectAuthoredValue,
   isTextBlock,
+  pastFollowers,
   resolveAuthoredChildren,
   resolveAuthoredValue,
 } from './tree/resolve';
@@ -152,6 +154,7 @@ import type {
   AuthoredChange,
   AuthoredChangeDetails,
   AuthoredChangeGroup,
+  AuthoredChangesDelta,
   AuthoredDecision,
   AuthoredOptions,
   AuthoredPage,
@@ -172,7 +175,9 @@ type AuthoredRead = {
   changes: (query?: AuthoredQuery) => AuthoredPage;
   details: (id: string) => AuthoredChangeDetails | null;
   /** The cards touching a place of the stored document, in document order. */
-  groups: (query: Readonly<{ at: Location | NodeKey }>) => readonly AuthoredChangeGroup[];
+  groups: (
+    query: Readonly<{ at: Location | NodeKey }>
+  ) => readonly AuthoredChangeGroup[];
   /** The card holding a pending change. */
   groupOf: (changeId: string) => AuthoredChangeGroup | null;
   preview: (
@@ -200,9 +205,12 @@ export type AuthoredPlugin = Plugin<{
   activate: true;
   api: {
     setView: (view: AuthoredView) => void;
-    /** Calls the listener with the ids of changes a commit added, changed or removed. */
+    /**
+     * Calls the listener once for each commit that changes the review, with
+     * one frozen delta every listener of this view shares.
+     */
     subscribeChanges: (
-      listener: (changeIds: readonly string[]) => void
+      listener: (delta: AuthoredChangesDelta) => void
     ) => () => void;
     /**
      * Calls the listener with each Suggesting change the editor refused
@@ -283,7 +291,7 @@ const claimOf = (value: EditorDocumentValue, change: string) => {
   const facts = factsOf(value);
   const find = (nodes: readonly unknown[]): AuthoredMark | null => {
     for (const node of nodes) {
-      const mark = claimsOf(node, facts).find((item) => item.change === change);
+      const mark = marksOf(node, facts).find((item) => item.change === change);
 
       if (mark) return mark;
 
@@ -404,13 +412,12 @@ const assertFramedLaw = (
   selection: boolean
 ) => {
   const { frame, root, stored } = input;
-  const written = contentOf(stored.value as JsonEditorValue);
+  const written = contentOf(stored.value);
   const accepted = contentOf(
-    projectAuthoredValue(stored.value as JsonEditorValue, 'proposed', schema)
-      .value
+    projectAuthoredValue(stored.value, 'proposed', schema).value
   );
 
-  if (!jsonEqual(accepted, contentOf(frame.value as JsonEditorValue))) {
+  if (!jsonEqual(accepted, contentOf(frame.value))) {
     throw new Error(
       `A framed recording does not accept to what its commands wrote: ${JSON.stringify(
         { accepted: accepted.children, wrote: frame.value.children }
@@ -467,6 +474,17 @@ const assertFramedLaw = (
 // otherwise project the review marks out of.
 const STORED_READS = new WeakSet<Editor>();
 
+// One publisher per view runtime, so every listener of a view gets one delta
+// per commit.
+const PUBLISHERS = new WeakMap<
+  InternalEditorRuntime,
+  {
+    ledger: ReturnType<typeof ledgerOf>;
+    listeners: Set<(delta: AuthoredChangesDelta) => void>;
+    stop: () => void;
+  }
+>();
+
 const storedValue = (editor: Editor) => {
   const owner = getEditorRuntimeOwner(editor);
 
@@ -519,23 +537,25 @@ const placeIds = (
   book: ReturnType<typeof changesOf>,
   at: Location | NodeKey
 ): string[] => {
+  const viewRoot = getEditorRuntimeRoot(editor);
+
   if (typeof at === 'string' || PathApi.isPath(at)) {
     const path =
       typeof at === 'string'
-        ? storedRead(editor, (owner) => owner.read.nodes.path(at))
+        ? storedRead(editor, () => editor.read.nodes.path(at))
         : at;
 
     if (!path) return [];
 
     const first = getDefined(path[0]);
 
-    return book.inOrder(
-      [...book.idsIn('main', first, first + 1)].filter((id) =>
+    return book.pendingInOrder(
+      [...book.idsIn(viewRoot, first, first + 1)].filter((id) =>
         book
           .occurrences(id)
           .some(
             (occurrence) =>
-              occurrence.root === 'main' &&
+              occurrence.root === viewRoot &&
               (PathApi.equals(occurrence.path, path) ||
                 PathApi.isAncestor(path, occurrence.path))
           )
@@ -543,13 +563,17 @@ const placeIds = (
     );
   }
 
-  const range = RangeApi.isRange(at) ? at : { anchor: at, focus: at };
+  const inViewRoot = (point: Point) =>
+    point.root === undefined ? { ...point, root: viewRoot } : point;
+  const range = RangeApi.isRange(at)
+    ? { ...at, anchor: inViewRoot(at.anchor), focus: inViewRoot(at.focus) }
+    : { anchor: inViewRoot(at), focus: inViewRoot(at) };
   const [start, end] = RangeApi.edges(range);
 
-  return book.inOrder(
+  return book.pendingInOrder(
     [
       ...book.idsIn(
-        start.root ?? 'main',
+        start.root ?? viewRoot,
         getDefined(start.path[0]),
         getDefined(end.path[0]) + 1
       ),
@@ -561,8 +585,11 @@ const placeIds = (
   );
 };
 
+const ledgerOf = (editor: Editor) =>
+  getDefined(getReviewLedger(getEditorRuntimeOwner(editor)));
+
 const changesOf = (editor: Editor, value: JsonEditorValue) =>
-  getDefined(getReviewLedger(getEditorRuntimeOwner(editor))).changes(value);
+  ledgerOf(editor).changes(value);
 
 type Outcome = 'accept' | 'reject';
 
@@ -671,20 +698,20 @@ const runAround = (
       ? from - 1
       : from;
 
-  // A kept join or split on the run's first block lands on the one before it,
-  // and one in the run lands past blocks whose deletion is settled.
-  while (
-    start > 0 &&
-    (holdsOwnStructure(getDefined(siblings[start]), facts) ||
-      (structural && isSettledDeletion(getDefined(siblings[start]), facts)))
-  ) {
+  const landingPassesOver = (node: JsonNode) =>
+    holdsOwnStructure(node, facts) ||
+    (structural && isSettledDeletion(node, facts));
+
+  while (start > 0 && landingPassesOver(getDefined(siblings[start]))) {
     start -= 1;
   }
+
+  const end = pastFollowers(siblings, to, (node) => claimsOf(node, facts));
 
   return {
     from: start,
     path,
-    to: to < siblings.length && isTextBlock(siblings[to]) ? to + 1 : to,
+    to: end < siblings.length && isTextBlock(siblings[end]) ? end + 1 : end,
   };
 };
 
@@ -750,11 +777,8 @@ const restedOn = (
   const named = new Set<string>();
 
   for (const [root, index] of indexes) {
-    for (const [, , from, to] of getInternalDocumentChangeRanges(
-      change,
-      root
-    )) {
-      for (const { path } of index.nodeRangesTouching(from, to)) {
+    for (const range of getInternalDocumentChangeRanges(change, root)) {
+      for (const { path } of index.nodeRangesTouching(range[2], range[3])) {
         for (const member of readMembers(index.node(path))) {
           if (member.kind === 'in') named.add(member.ctx);
         }
@@ -1101,7 +1125,7 @@ export const createAuthoredPlugin = (
     // inside a rejected insertion, goes only when it is decided too. An empty
     // block completion built holds nothing to lose.
     const remaining = indexAuthoredChanges(decidedValue).changes;
-    const taken = [...book.idsFrom(null, false)].filter(
+    const taken = [...book.idsFrom({})].filter(
       (id) =>
         !actions.has(id) &&
         !remaining.has(id) &&
@@ -1198,34 +1222,63 @@ export const createAuthoredPlugin = (
         subscribeEditorRefusals(editor, (refusal) =>
           listener(refusal as AuthoredRefusal)
         ),
-      subscribeChanges: (listener: (changeIds: readonly string[]) => void) => {
-        const book = changesOf(editor, storedValue(editor));
-        const known = new Map(book.allRevisions());
-        let seen = book.version;
+      subscribeChanges: (listener: (delta: AuthoredChangesDelta) => void) => {
+        const runtime = getEditorRuntime(editor);
+        let publisher = PUBLISHERS.get(runtime);
 
-        return getEditorRuntime(editor).subscribe(() => {
-          changesOf(editor, storedValue(editor));
-          if (book.version === seen) return;
+        if (!publisher) {
+          const ledger = ledgerOf(editor);
+          const listeners = new Set<(delta: AuthoredChangesDelta) => void>();
 
-          const since = book.changedSince(seen);
+          ledger.subscribe(storedValue(editor));
 
-          if (!since) countLedgerWork('changeScans');
+          let delivered = ledger.publish(storedValue(editor));
+          const stop = runtime.subscribe(() => {
+            const delta = ledger.publish(storedValue(editor));
 
-          const changed = (
-            since ?? [
-              ...new Set([...known.keys(), ...book.allRevisions().keys()]),
-            ]
-          ).filter((id) => known.get(id) !== book.revision(id));
+            if (delta === delivered) return;
+            delivered = delta;
 
-          seen = book.version;
-          for (const id of changed) {
-            const revision = book.revision(id);
+            const root = editor.read.view.root() ?? 'main';
+            const blocks = delta.blocks.flatMap((block) => {
+              const key = block.root === root ? editor.key([block.rank]) : null;
 
-            if (revision === undefined) known.delete(id);
-            else known.set(id, revision);
-          }
-          if (changed.length > 0) listener(changed);
-        });
+              return key ? [key] : [];
+            });
+
+            if (
+              blocks.length === 0 &&
+              delta.changed.length === 0 &&
+              delta.groups.length === 0 &&
+              delta.removed.length === 0
+            ) {
+              return;
+            }
+
+            const view: AuthoredChangesDelta = Object.freeze({
+              blocks: Object.freeze(blocks),
+              changed: delta.changed,
+              groups: delta.groups,
+              removed: delta.removed,
+            });
+
+            for (const each of [...listeners]) each(view);
+          });
+
+          publisher = { ledger, listeners, stop };
+          PUBLISHERS.set(runtime, publisher);
+        }
+
+        const { ledger, listeners, stop } = publisher;
+
+        listeners.add(listener);
+
+        return () => {
+          if (!listeners.delete(listener) || listeners.size > 0) return;
+          stop();
+          ledger.unsubscribe();
+          PUBLISHERS.delete(runtime);
+        };
       },
     }),
     read: ({ editor }) => ({
@@ -1241,7 +1294,14 @@ export const createAuthoredPlugin = (
         const book = changesOf(editor, storedValue(editor));
         const { cursor: _cursor, limit: _limit, ...rest } = query;
         const fingerprint = JSON.stringify(rest);
-        const at = query.at === undefined ? null : placeIds(editor, book, query.at);
+        const card =
+          query.group === undefined ? null : book.groupOf(query.group)?.id;
+        const at =
+          query.at === undefined
+            ? null
+            : placeIds(editor, book, query.at).filter(
+                (id) => card === null || book.groupOf(id)?.id === card
+              );
         const matches = (id: string) => {
           const change = getDefined(book.change(id));
 
@@ -1258,7 +1318,9 @@ export const createAuthoredPlugin = (
         if (query.cursor !== undefined) {
           const [text, next, last] = readCursor(query.cursor);
 
-          if (text !== fingerprint) throw new Error('Stale authored page cursor.');
+          if (text !== fingerprint) {
+            throw new Error('Stale authored page cursor.');
+          }
           if (book.has(next) && (!at || at.includes(next))) {
             start = next;
           } else if (book.has(last) && (!at || at.includes(last))) {
@@ -1271,7 +1333,7 @@ export const createAuthoredPlugin = (
 
         const ids = at
           ? at.slice(start === null ? 0 : at.indexOf(start) + (after ? 1 : 0))
-          : book.idsFrom(start, after, query.group ?? null);
+          : book.idsFrom({ after, group: query.group, start });
         const items: AuthoredChange[] = [];
         let next: string | null = null;
 
@@ -1288,7 +1350,11 @@ export const createAuthoredPlugin = (
           cursor:
             next === null
               ? null
-              : JSON.stringify([fingerprint, next, getDefined(items.at(-1)).id]),
+              : JSON.stringify([
+                  fingerprint,
+                  next,
+                  getDefined(items.at(-1)).id,
+                ]),
           items: Object.freeze(items),
         });
       },

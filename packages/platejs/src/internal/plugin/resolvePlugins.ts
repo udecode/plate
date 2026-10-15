@@ -1388,31 +1388,16 @@ export const createPlateRuntimePlugins = (
                   insertOptions.before === undefined &&
                   !('at' in insertOptions && insertOptions.at !== undefined)
                 ) {
-                  return;
+                  return isBlockElement ? false : undefined;
                 }
 
                 const element = context.tx.schema.create(
                   elementType ?? failInvariant('Expected value to be defined'),
                   properties
                 );
-                const insert = (blockOptions: BlockInsertOptions) => {
-                  if (
-                    context.tx.schema.isBlock(element) &&
-                    (blockOptions.at === undefined ||
-                      blockOptions.after !== undefined)
-                  ) {
-                    context.tx.blocks.insertAfter(element, {
-                      ...blockOptions,
-                      at: blockOptions.after,
-                    });
-                    return;
-                  }
-
-                  context.tx.nodes.insert(element, blockOptions as never);
-                };
 
                 if (!context.tx.schema.isBlock(element)) {
-                  insert(insertOptions as BlockInsertOptions);
+                  context.tx.nodes.insert(element, insertOptions as never);
 
                   const inline =
                     context.tx.schema.element(element.type)?.behavior.void &&
@@ -1428,12 +1413,14 @@ export const createPlateRuntimePlugins = (
 
                   if (inline) selectAfterInline(context.tx, inline);
 
-                  return;
+                  return undefined;
                 }
 
-                applyBlockInsertion({
+                return applyBlockInsertion({
                   editor,
-                  insert,
+                  insert: (blockOptions) =>
+                    context.tx.blocks.insert(element, blockOptions) !==
+                    undefined,
                   matches: (source) =>
                     matchesGeneratedBlockInsertion({
                       editor,
@@ -1458,14 +1445,10 @@ export const createPlateRuntimePlugins = (
                 ...(elementType
                   ? {
                       insert: txLocate(
-                        locateAt(1, 'at', 'after'),
+                        locateAt(1, 'at', 'after', 'before'),
                         (
                           properties: Readonly<Record<string, unknown>> = {},
-                          insertOptions?: Readonly<Record<string, unknown>> &
-                            Pick<
-                              BlockInsertOptions,
-                              'at' | 'after' | 'replaceEmpty'
-                            >
+                          insertOptions?: BlockInsertOptions
                         ) =>
                           applyGeneratedInsert(
                             'insert',
@@ -1533,15 +1516,18 @@ export const createPlateRuntimePlugins = (
                                 const { collapse, ...blockOptions } =
                                   toggleOptions;
 
-                                context.tx.blocks.toggle(
+                                const toggled = context.tx.blocks.toggle(
                                   { type: elementType },
                                   blockOptions
                                 );
-                                if (collapse) {
+
+                                if (toggled && collapse) {
                                   context.tx.selection.collapse(
                                     collapse === true ? undefined : collapse
                                   );
                                 }
+
+                                return toggled;
                               }
                             ),
                           }

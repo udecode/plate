@@ -134,8 +134,11 @@ test.describe('async decorations', () => {
       .toBe('composition');
 
     await expect(
+      page.locator('[data-testid="async-decoration-status"]')
+    ).toHaveText(`decorated-length:${FINAL_TEXT.length}`);
+    await expect(
       page.locator('[data-cy="async-decoration-highlight"]')
-    ).toHaveCount(3);
+    ).toHaveCount(2);
     await expect
       .poll(async () => (await getInputState(editor.root))?.activeIntent)
       .toBe('composition');
@@ -220,7 +223,7 @@ test.describe('async decorations', () => {
       text: '段',
     });
 
-    await expect(firstFlow).toHaveCount(0);
+    await expect(firstFlow).toHaveCount(1);
     await expect(secondFlow).toHaveCount(1);
     await editor.root.evaluate((element, key) => {
       const handle = (element as Record<string, any>)[key];

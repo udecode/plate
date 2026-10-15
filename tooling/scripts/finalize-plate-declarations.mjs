@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const declarationFilePattern = /\.d\.(?:c|m)?ts$/;
 const generatedRegionLinePattern = /^\s*\/\/#(?:end)?region\b.*(?:\r?\n|$)/gmu;
-const privatePackageNamePattern = /plite/iu;
+export const privatePackageNamePattern = /plite/iu;
 
 const walkDeclarations = (directory) =>
   readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {

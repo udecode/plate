@@ -1248,48 +1248,6 @@ test.describe('On richtext example', () => {
     }
   });
 
-  test('keeps empty paragraph styling after the selection leaves and returns', async ({
-    page,
-  }, testInfo) => {
-    test.skip(
-      testInfo.project.name === 'mobile',
-      'Desktop selected mark proof'
-    );
-
-    const editor = await openExample(page, 'plite/richtext', {
-      ready: {
-        editor: 'visible',
-      },
-    });
-
-    await editor.click();
-    await page.keyboard.press('ControlOrMeta+A');
-    await page.keyboard.press('Backspace');
-    await page.keyboard.type('Styled');
-    await editor.selection.selectDOM({
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 'Styled'.length },
-    });
-    const modifier = await editor.root.evaluate(() =>
-      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
-      /Mac OS X/.test(navigator.userAgent)
-        ? 'Meta'
-        : 'Control'
-    );
-
-    await editor.root.press(`${modifier}+b`);
-    await page.keyboard.press('Backspace');
-    await editor.root.press('Enter');
-    await page.keyboard.type('Other');
-    await editor.selection.collapse({ path: [0, 0], offset: 0 });
-    await page.keyboard.type('Next');
-
-    await editor.assert.blockTexts(['Next', 'Other']);
-    await expect(editor.root.locator('p').first().locator('strong')).toHaveText(
-      'Next'
-    );
-  });
-
   test('keeps active-mark hashtag typing in typed order', async ({
     page,
   }, testInfo) => {

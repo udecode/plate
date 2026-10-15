@@ -20,7 +20,7 @@ export type {
   EditorUpdateTransactionProvider,
 } from '../interfaces/editor';
 
-export { assertEditorOptions } from './editor-options';
+export { assertEditorOptions, readEditorOptions } from './editor-options';
 export { failInvariant } from './fail-invariant';
 
 export { getEditorCommitSnapshot } from '../core/commit';
@@ -149,7 +149,6 @@ export {
   EditorSchemaCompileError,
   getCompiledSchemaPropertyId,
   getCompiledPropertyMergeStrategy,
-  hashSchemaIdentityString,
   matchesCompiledSchemaTarget,
   preserveCompiledSchemaPropertyIdentity,
   resolveCompiledSchemaProperty,
@@ -186,6 +185,7 @@ export {
 } from '../core/public-root';
 export {
   canPlaceBlocksAtPath,
+  placeElementAt,
   createDetachedEditorSchema,
   getCompiledEditorSchemaFromApi,
 } from '../core/editor-schema';

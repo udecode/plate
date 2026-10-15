@@ -126,6 +126,18 @@ donor checkout as proof after the transplant.
 - Ordered required child positions and their literal property values belong to
   the compiled content grammar, including construction, admission, fitting and
   saved identity. App corrections do not maintain a second document shape.
+- A block that Plite derives from another, such as a split's tail at the
+  highest split level, each plain-text paste line after the first, or a
+  duplicate, takes the type its new position allows. It keeps the source's
+  type when the parent admits it there; otherwise it becomes that slot's
+  default text block with the source's children and the properties a type
+  change keeps, unless the slot fixes them, so Enter in a required title
+  starts the body. Its text keeps its properties, so one the new type does
+  not allow makes commit admission reject the write. When no default fits,
+  a split keeps the source shape and commit admission rejects it, and every
+  other producer changes nothing. Below the highest level a tail keeps its
+  type, because its parent splits next. `tx.nodes.set`, `wrap` and
+  `unwrap` split with the source's type.
 - Required child positions use `schema.content.prefix` followed by one ordinary
   remainder. A complete schema declares `root: SchemaContent` directly and its
   named `roots` map each name directly to `SchemaContent`; an omitted `elements`
@@ -334,6 +346,14 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   `read.value()` holds them in `records` beside the content. Code outside the authored
   owner reads a node's pending claims through `reviewOf` instead of parsing
   `authored`.
+  Review reads take a place. `read.groups({ at })` returns every card touching
+  it, and `read.changes({ at })` pages the changes there in document order, so
+  no read walks every pending change. A card is the adjacent pending changes of
+  one author, named by its oldest pending change, so every peer and reload
+  names it alike. Plite stores no color; Plate derives one from that name. A
+  decision takes the changes or cards it read and refuses one that moved since.
+  `api.subscribeChanges` hands each view one frozen delta per commit that
+  changes the review.
   A view either writes, with intent `edit` or `propose`, or previews the
   document with every pending change accepted (`proposed`) or rejected
   (`accepted`) and takes no writes. View state never becomes another saved
@@ -402,7 +422,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   authored order. Lift, unwrap, and named-root operations must preserve a
   backward, forward, or collapsed selection instead of reconstructing a
   forward range from sorted endpoints.
-- Schema owns block classification. `nodes.block()` reads the nearest block;
+- Schema owns block classification. `nodes.block()` reads the nearest block
+  in the target's own root, and nothing when the target names no node; its
+  path is local to that root, so a caller in another root acts on the block
+  through its key;
   `nodes.blocks()` reads every relevant block and defaults to the active text or
   exact node selection. `selection.nodes()` never accepts traversal filters.
   Semantic block mutations live under `tx.blocks`; generic structural changes
@@ -421,11 +444,32 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   commands keep their policy guards and delegate this structural mutation
   instead of replacing a node with a handcrafted default. `unset` names
   properties to remove when the default does not set them, as toggle-off does.
+  A property the type change preserves keeps its value, and its generator does
+  not run. A block already of the default type keeps the values its schema
+  cannot fill.
   Reset checks every target before writing and returns `false` with nothing
-  changed when a default is not allowed at one target's position; the update
-  does not roll back, so a caller that composes reset with other edits checks
-  the result first. It takes no type or mode option, and no feature publishes a
-  reset alias for it.
+  changed when one target has no default it can become: its parent or root
+  declares no element default, the default lacks a required property nothing
+  supplies, its type change leaves the target's content without one, or the
+  default is not allowed at the target's position. Any other failure to build a
+  default throws. The update does not roll back, so a caller that composes reset
+  with other edits checks the result first. It takes no type or mode option, and
+  no feature publishes a reset alias for it.
+- `tx.blocks.insert(blocks, { after?, before?, at? })` is the one block
+  insert. `after` and `before` name a block and `at` is a path; it takes no
+  point, range or `split`, because a block insert lands between blocks. Its
+  option type is a union that admits one placement, and `replaceEmpty` only
+  with `after` or the selection default; a call that passes more throws. It
+  checks the landing parent's content after the length limit and returns
+  `undefined` with nothing changed when the blocks do not fit or a named target
+  does not resolve; an `at` with no such slot throws. Otherwise it returns the
+  keys of the top-level blocks that landed, in order. A path is local to one
+  root, and each non-empty block of a batch the length limit cuts lands as a
+  copy of the node passed in, while a key resolves its block from any root.
+  Callers act on what landed through those keys. Any other block that is live
+  in another root lands under its source's key, so its returned key can resolve
+  to the source. Like reset, it does not roll back the update, so a composing
+  caller checks the result.
 - The default block that Enter on a block void or `tx.break.exit` creates is
   its landing parent's default for the landing index, or the root's for a
   top-level position. The compiled content grammar builds and admits it in the
@@ -613,10 +657,19 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   retained root provenance survives history and rebase.
 - `editor.api.transfer` is the one move and copy action for drags, custom
   drivers and keyboard moves. A text move lands through the paste landing with
-  intent `move`. A move inside one document commits its whole landed content or
-  nothing: a guard after corrections refuses a landing that changes the
-  payload's text or marks, or the type or properties of a block it carries,
-  other than element properties declared `landing: 'rebase'` or `'adopt'`. The
+  intent `move`, and carries exactly what deleting its range removes: a range
+  that starts or ends inside an inline void takes the void, a range that
+  still has an edge inside any other non-editable element once an end at a
+  block's start is pulled back refuses, and a range whose deletion removes
+  nothing moves nothing. A copy carries its range as given. The
+  paste landing reports the range it wrote, and the guard reads that range
+  through the update's own steps, corrections and command frames included, so
+  a correction that deletes the landing reads as a deleted landing whatever
+  identical text sits beside it. A move inside one document commits its whole
+  landed content or nothing: a guard after corrections refuses a landing that
+  changes the payload's text or marks, or the type or properties of a block it
+  carries, other than element properties declared `landing: 'rebase'` or
+  `'adopt'`. The
   guard skips only the block the moved text joins at the drop point and the
   blocks that contain it, and checks every other block the move carries, an
   empty last block included. A closed block, such as a title, joins nothing,
@@ -628,9 +681,11 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
 - A block lands wherever the compiled schema places it, at any depth. Placement
   checks the target's children as they will be after the transfer, for the nodes
   that actually land. A feature narrows it with a `transferVeto`, and a landing
-  read only redirects an edge. A block copy's `transfer.adopt` read sets only
-  `adopt` properties, once, on the final edge. Placement and vetoes judge the
-  patched copy at hover and at drop alike. Without a compiled content program,
+  read only redirects an edge. A block copy's or block move's `transfer.adopt`
+  read sets only `adopt` properties, once, on the final edge. A move keeps its
+  nodes and their keys, since Plite sets the patches on them in the same
+  update. A move patch may not set `null`. Placement and vetoes judge the patched
+  blocks at hover and at drop alike. Without a compiled content program,
   nested edges refuse. Hover and drop resolve the same edge. A redirected edge maps to
   itself, and every feature veto runs on the final edge, so no feature skips
   another feature's veto.

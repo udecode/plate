@@ -1124,9 +1124,10 @@ const domMutationImport = (): StressCase => {
         kind: 'undo',
         label: 'undo-follow-up-type-after-dom-import',
       },
+      { kind: 'undo', label: 'undo-dom-import-unless-merged-with-typing' },
       {
         kind: 'assertModelText',
-        label: 'assert-typing-batch-undo-restores-original-text',
+        label: 'assert-undo-restores-original-text',
         text: originalText,
       },
     ],

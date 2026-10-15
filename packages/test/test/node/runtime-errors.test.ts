@@ -35,7 +35,9 @@ describe('browser runtime error capture', () => {
 
   test('default and custom policies keep their console filters and approved ignores', () => {
     for (const patterns of [undefined, ['custom failure']]) {
-      const page = new EventEmitter();
+      const page = Object.assign(new EventEmitter(), {
+        url: () => 'http://127.0.0.1:3102/examples/plite/embeds',
+      });
       const recorder = recordBrowserRuntimeErrors(page as unknown as Page, {
         patterns,
       });

@@ -1209,7 +1209,8 @@ class RootRecorder {
         before + removed,
         before + removed,
         trail,
-        after + depth + inner
+        after + depth + inner,
+        { closesWrap: true }
       );
       return;
     }
@@ -1839,7 +1840,8 @@ class RootRecorder {
     from: number,
     to: number,
     inserted: PreparedTokenSlice,
-    after: number
+    after: number,
+    { closesWrap = false }: Readonly<{ closesWrap?: boolean }> = {}
   ) {
     const startContext = this.contextAt(from);
     const landing = this.options.moveRole === 'landing';
@@ -1870,6 +1872,7 @@ class RootRecorder {
     this.recordInsertion({
       after,
       at: to,
+      closesWrap,
       contexts: struck.contexts,
       inserted,
       landing,
@@ -2391,6 +2394,7 @@ class RootRecorder {
     input: Readonly<{
       after: number;
       at: number;
+      closesWrap?: boolean;
       contexts: readonly Context[];
       inserted: PreparedTokenSlice;
       landing: boolean;
@@ -2582,9 +2586,9 @@ class RootRecorder {
       }
     };
     const [first] = local;
-    const splitsFill = first?.kind === 'close';
+    const splitsFill = first?.kind === 'close' && !input.closesWrap;
 
-    if (first?.kind === 'close') fillAt(first.nodeKind === 'text', true);
+    if (splitsFill) fillAt(first.nodeKind === 'text', true);
 
     const unfill = () => {
       if (filled === 0) return;
@@ -2816,12 +2820,13 @@ class RootRecorder {
 
     if (!suggested && moved.length === 0) return null;
 
-    const { at, author, change } = this.options.markOf('split');
+    const { at, author, change, inc } = this.options.markOf('split');
     const cut = suggested
       ? {
           at,
           author,
           change,
+          ...(inc === undefined ? {} : { inc }),
           cut: this.options.createTagId(),
           kind: 'split' as const,
         }

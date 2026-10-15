@@ -212,9 +212,7 @@ export const BaseBlockquotePlugin = definePlugin(PLUGINS.blockquote, {
         }
       }
     ),
-    toggle: () => {
-      tx.blocks.toggle({ type }, { wrap: true });
-    },
+    toggle: () => tx.blocks.toggle({ type }, { wrap: true }),
     untab: () => {
       const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
       const blocks = [

@@ -516,6 +516,43 @@ describe('transfer', () => {
     );
   });
 
+  it('copies text across a card with its content root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          paragraph('ab'),
+          {
+            type: 'card',
+            childRoots: { body: 'card:1' },
+            children: [{ text: 'cd' }],
+          },
+          paragraph('ef'),
+          paragraph('gh'),
+        ] as Descendant[],
+        roots: { 'card:1': [paragraph('inside')] },
+      },
+      plugins: [transfer(), cardSchema],
+    });
+
+    const outcome = editor.api.transfer.copy({
+      range: textRange([0, 1], [2, 1]),
+      to: { point: { offset: 1, path: [3, 0] } },
+    });
+    const copied = editor.read.children()[4] as Element & {
+      childRoots: { body: string };
+    };
+
+    assert.equal(outcome.status, 'copied');
+    assert.deepEqual(texts(editor), ['ab', 'cd', 'ef', 'gb', 'cd', 'eh']);
+    assert.notEqual(copied.childRoots.body, 'card:1');
+    assert.deepEqual(
+      texts({
+        read: { children: () => editor.read.root(copied.childRoots.body) },
+      }),
+      ['inside']
+    );
+  });
+
   it('copies a card into another editor without touching its same-named root', () => {
     const cardEditor = (body: string) =>
       createEditor({
@@ -2384,15 +2421,10 @@ describe('text moves', () => {
 
   for (const [name, initialValue, range, landed] of [
     [
-      "ends at a block's start, keeping that block at the source too, for now",
+      "ends at a block's start, landing only its text and keeping that block once",
       endChecked(),
       textRange([0, 0], [1, 0]),
-      [
-        paragraph(''),
-        { ...paragraph('cd'), checked: true },
-        paragraph('eab'),
-        { ...paragraph('f'), checked: true },
-      ],
+      [paragraph(''), { ...paragraph('cd'), checked: true }, paragraph('eabf')],
     ],
     [
       'starts with an empty block, onto an aligned block',
@@ -2693,6 +2725,152 @@ describe('text moves', () => {
     );
   });
 
+  it('lands a text drop into an empty paragraph there', () => {
+    movesTo(
+      [paragraph('ab'), { ...paragraph('cd'), checked: true }, paragraph('')],
+      textRange([0, 1], [1, 1]),
+      textPoint([2, 0], 0),
+      [paragraph('ad'), paragraph('b'), { ...paragraph('c'), checked: true }]
+    );
+  });
+
+  const chipped = (before: string, after: string): Element => ({
+    type: 'paragraph',
+    children: [
+      { text: before },
+      { type: 'chip', label: 'x', children: [{ text: '' }] },
+      { text: after },
+    ],
+  });
+
+  it('moves an inline void its range ends inside at a later block start, leaving no copy', () => {
+    movesTo(
+      [chipped('a', 'b'), paragraph('cd'), chipped('', '')],
+      { anchor: textPoint([0, 2], 0), focus: textPoint([2, 1, 0], 0) },
+      textPoint([0, 0], 0),
+      [
+        paragraph('b'),
+        paragraph('cd'),
+        {
+          type: 'paragraph',
+          children: [
+            { text: '' },
+            { type: 'chip', label: 'x', children: [{ text: '' }] },
+            { text: 'a' },
+            { type: 'chip', label: 'x', children: [{ text: '' }] },
+            { text: '' },
+          ],
+        },
+      ],
+      chipSchema
+    );
+  });
+
+  it('refuses a move dropped right after an inline void its range ends inside', () => {
+    const initialValue = [chipped('a', 'b'), paragraph('cd'), chipped('', 'x')];
+    const editor = createEditor({
+      initialValue,
+      plugins: [transfer(), chipSchema],
+    });
+
+    const outcome = editor.api.transfer.move({
+      range: { anchor: textPoint([0, 0], 1), focus: textPoint([2, 1, 0], 0) },
+      to: { point: textPoint([2, 2], 0) },
+    });
+
+    assert.deepEqual(
+      { children: editor.read.children(), outcome },
+      {
+        children: initialValue,
+        outcome: { reason: 'no-op', status: 'refused' },
+      }
+    );
+  });
+
+  for (const [edge, range, drop] of [
+    ['ends', textRange([0, 1], [1, 1]), textPoint([2, 0], 1)],
+    ['starts', textRange([1, 1], [2, 1]), textPoint([0, 0], 1)],
+  ] as const) {
+    it(`refuses to move a range that ${edge} inside a read-only block, which its deletion removes whole`, () => {
+      const lockedSchema = defineEditorSchema(
+        'schema:transfer-contract-locked',
+        {
+          elements: {
+            locked: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+              readOnly: true,
+            },
+            paragraph: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+            },
+          },
+          id: 'transfer-contract-locked',
+          root: schema.content.types(['locked', 'paragraph'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          unknown: 'reject',
+          version: 1,
+        }
+      );
+      const initialValue = [
+        paragraph('ab'),
+        { children: [{ text: 'CDEF' }], type: 'locked' },
+        paragraph('xy'),
+      ];
+      const editor = createEditor({
+        initialValue,
+        plugins: [transfer(), lockedSchema],
+      });
+
+      const outcome = editor.api.transfer.move({ range, to: { point: drop } });
+
+      assert.deepEqual(
+        { children: editor.read.children(), outcome },
+        {
+          children: initialValue,
+          outcome: { reason: 'lossy', status: 'refused' },
+        }
+      );
+    });
+  }
+
+  it('refuses to move a range that runs to the next line, dropped at the end of its text', () => {
+    const initialValue = [paragraph('ab'), paragraph('cd')];
+    const editor = createEditor({ initialValue, plugins: [transfer()] });
+
+    const outcome = editor.api.transfer.move({
+      range: textRange([0, 0], [1, 0]),
+      to: { point: textPoint([0, 0], 2) },
+    });
+
+    assert.deepEqual(
+      { children: editor.read.children(), outcome },
+      {
+        children: initialValue,
+        outcome: { reason: 'no-op', status: 'refused' },
+      }
+    );
+  });
+
+  it('refuses to move a range that selects only an empty line', () => {
+    const initialValue = [paragraph('ab'), paragraph(''), paragraph('cd')];
+    const editor = createEditor({ initialValue, plugins: [transfer()] });
+
+    const outcome = editor.api.transfer.move({
+      range: textRange([1, 0], [2, 0]),
+      to: { point: textPoint([0, 0], 1) },
+    });
+
+    assert.deepEqual(
+      { children: editor.read.children(), outcome },
+      {
+        children: initialValue,
+        outcome: { reason: 'no-op', status: 'refused' },
+      }
+    );
+  });
+
   for (const [name, initialValue, range, point, at] of [
     [
       "starts at a block's end, from the end of the drop point's block",
@@ -2844,6 +3022,242 @@ describe('text moves', () => {
       quotedDepth
     );
   });
+
+  const trimLanded = (from: number, to: number) =>
+    definePlugin(`trim-${from}-${to}`, {
+      corrections: [
+        {
+          event: 'content',
+          correct({ entry: [node, path], tx }) {
+            if (
+              ElementApi.isElement(node) &&
+              NodeApi.string(node) === 'xbcbc'
+            ) {
+              tx.text.delete({
+                at: {
+                  anchor: { offset: from, path: [...path, 0] },
+                  focus: { offset: to, path: [...path, 0] },
+                },
+              });
+            }
+          },
+        },
+      ],
+    });
+  const moveBeside = (
+    intent: 'edit' | 'plain' | 'propose',
+    from: number,
+    to: number
+  ) => {
+    const editor = createEditor({
+      initialValue: [paragraph('bc'), paragraph('xbc')],
+      plugins: [
+        transfer(),
+        trimLanded(from, to),
+        ...(intent === 'plain'
+          ? []
+          : [history(), authored({ authorId: 'alice' })]),
+        moveSchema,
+      ],
+    });
+    const view =
+      intent === 'plain'
+        ? editor
+        : createEditorView(editor, { authored: { intent } });
+    let commits = 0;
+    const unsubscribe = editor.subscribeCommit(() => {
+      commits += 1;
+    });
+    const outcome = view.api.transfer.move({
+      range: textRange([0, 0], [0, 2]),
+      to: { point: textPoint([1, 0], 1) },
+    });
+
+    unsubscribe();
+
+    return { commits, outcome, texts: texts(view) };
+  };
+
+  const modes = {
+    edit: 'while editing',
+    plain: 'on a plain editor',
+    propose: 'while suggesting',
+  } as const;
+
+  for (const intent of ['plain', 'edit'] as const) {
+    it(`refuses a move ${modes[intent]} whose correction deletes its landing beside identical text`, () => {
+      assert.deepEqual(moveBeside(intent, 1, 3), {
+        commits: 0,
+        outcome: { reason: 'lossy', status: 'refused' },
+        texts: ['bc', 'xbc'],
+      });
+    });
+  }
+
+  for (const intent of ['plain', 'edit', 'propose'] as const) {
+    it(`lands a move ${modes[intent]} whose correction deletes the identical text beside its landing`, () => {
+      const { commits, outcome, texts: landed } = moveBeside(intent, 3, 5);
+
+      assert.equal(outcome.status, 'moved');
+      assert.equal(commits, 1);
+      assert.deepEqual(
+        landed,
+        intent === 'propose' ? ['bc', 'xbcbc'] : ['', 'xbc']
+      );
+    });
+  }
+
+  const moveFromCard = (
+    intent: 'edit' | 'propose',
+    from: number,
+    to: number
+  ) => {
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          paragraph('xbc'),
+          {
+            type: 'card',
+            childRoots: { body: 'card:1' },
+            children: [{ text: '' }],
+          },
+        ] as Descendant[],
+        roots: { 'card:1': [paragraph('bc')] },
+      },
+      plugins: [
+        transfer(),
+        cardSchema,
+        trimLanded(from, to),
+        history(),
+        authored({ authorId: 'alice' }),
+      ],
+    });
+    const view = (root?: string) =>
+      createEditorView(editor, {
+        authored: { intent },
+        ...(root ? { root } : {}),
+      });
+    const main = view();
+    const body = view('card:1');
+    const outcome = main.api.transfer.move({
+      from: body,
+      range: textRange([0, 0], [0, 2]),
+      to: { point: textPoint([0, 0], 1) },
+    });
+
+    return { body: texts(body), main: texts(main), outcome };
+  };
+
+  it('refuses a move out of a card body while editing whose correction deletes its landing', () => {
+    assert.deepEqual(moveFromCard('edit', 1, 3), {
+      body: ['bc'],
+      main: ['xbc', ''],
+      outcome: { reason: 'lossy', status: 'refused' },
+    });
+  });
+
+  it('lands a move out of a card body while suggesting whose correction deletes the text before its landing', () => {
+    const { main, outcome } = moveFromCard('propose', 0, 1);
+
+    assert.equal(outcome.status, 'moved');
+    assert.deepEqual(main, ['xbcbc', '']);
+  });
+
+  it('refuses a block move whose correction deletes it beside an identical block', () => {
+    const dedupe = definePlugin('dedupe', {
+      corrections: [
+        {
+          event: 'children',
+          query: 'root',
+          correct({ tx }) {
+            const children = tx.nodes
+              .children()
+              .map((node) => NodeApi.string(node));
+
+            if (children.join('/') === 'b/a/a') tx.nodes.remove({ at: [1] });
+          },
+        },
+      ],
+    });
+    const editor = createEditor({
+      initialValue: [paragraph('a'), paragraph('b'), paragraph('a')],
+      plugins: [transfer(), dedupe],
+    });
+
+    const outcome = editor.api.transfer.move({
+      nodes: [editor.key([0])!],
+      to: { edge: 'before', key: editor.key([2])! },
+    });
+
+    assert.deepEqual(outcome, { reason: 'lossy', status: 'refused' });
+    assert.deepEqual(texts(editor), ['a', 'b', 'a']);
+  });
+
+  const edgeSchema = defineEditorSchema('schema:transfer-contract-edges', {
+    elements: {
+      link: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+        properties: { url: property.string() },
+      },
+      paragraph: { content: moveText() },
+      quote: {
+        content: schema.content.types(['paragraph', 'title', 'quote'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      },
+      title: { content: moveText(), slice: { preserveContext: true } },
+    },
+    id: 'transfer-contract-edges',
+    root: schema.content.types(['paragraph', 'title', 'quote'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  });
+  const titled = (text: string) => block('title', { text });
+  const linkEdge = (text: string) =>
+    linkedParagraph({ text: '' }, inlineLink(text), { text: '' });
+
+  for (const [name, initialValue, range, point, landed] of [
+    [
+      'a line break between closed titles',
+      [titled(''), titled('ab'), titled('cd')],
+      textRange([1, 2], [2, 0]),
+      textPoint([0, 0], 0),
+      [titled(''), titled(''), titled('abcd')],
+    ],
+    [
+      "a link's opening edge",
+      [quote(linkEdge('ab'))],
+      { anchor: textPoint([0, 0, 0], 0), focus: textPoint([0, 0, 1, 0], 0) },
+      textPoint([0, 0, 1, 0], 2),
+      [quote(linkEdge('ab'), linkEdge(''))],
+    ],
+    [
+      "a link's opening edge, before a paragraph",
+      [quote(linkEdge('a')), paragraph('b')],
+      { anchor: textPoint([0, 0, 0], 0), focus: textPoint([0, 0, 1, 0], 0) },
+      textPoint([0, 0, 1, 0], 1),
+      [quote(linkEdge('a'), linkEdge('')), paragraph('b')],
+    ],
+  ] as const) {
+    it(`lands a move that carries no characters: ${name}`, () => {
+      const editor = createEditor({
+        initialValue: [...initialValue],
+        plugins: [transfer(), edgeSchema],
+      });
+
+      const outcome = editor.api.transfer.move({ range, to: { point } });
+
+      assert.deepEqual(
+        { children: editor.read.children(), status: outcome.status },
+        { children: landed, status: 'moved' }
+      );
+    });
+  }
 });
 
 // Built per case, so a runtime without landing policies fails each case alone.
@@ -2903,7 +3317,7 @@ const adopting = (
   return { plugin, runs };
 };
 
-describe('block copy adoption', () => {
+describe('block transfer adoption', () => {
   it('lands a block copy with the properties the adopt read gives it at the final edge', () => {
     const { plugin } = adopting(({ target: [node] }) => [
       { at: [0], properties: { group: node.group } },
@@ -3124,6 +3538,51 @@ describe('block copy adoption', () => {
     });
   }
 
+  it('refuses at hover and at drop a block move whose adopted properties set null', () => {
+    const { plugin } = adopting(() => [
+      { at: [0], properties: { group: null } },
+    ]);
+    const nullable = defineEditorSchema('schema:transfer-contract-adopt-null', {
+      elements: {
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      id: 'transfer-contract-adopt-null',
+      properties: [
+        schema.elementProperty('group', property.json(), {
+          landing: 'adopt',
+          target: target.type('paragraph'),
+        }),
+      ],
+      root: schema.content.types(['paragraph'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = createEditor({
+      initialValue: [{ ...paragraph('a'), group: 'x' }, paragraph('b')],
+      plugins: [transfer(), nullable, plugin],
+    });
+    const input = {
+      nodes: [editor.key([0])!],
+      to: { edge: 'after' as const, key: editor.key([1])! },
+    };
+
+    assert.deepEqual(
+      {
+        check: checkTransfer(editor, input, 'move'),
+        outcome: editor.api.transfer.move(input),
+      },
+      {
+        check: { admitted: false, reason: 'policy' },
+        outcome: { reason: 'policy', status: 'refused' },
+      }
+    );
+  });
+
   it('lands a copy as copied where it adopts nothing, after hovering an edge where it adopts', () => {
     const { plugin } = adopting(({ target: [node] }) =>
       node.group ? [{ at: [0], properties: { group: node.group } }] : []
@@ -3192,23 +3651,167 @@ describe('block copy adoption', () => {
     );
   });
 
-  it('never adopts for a move', () => {
+  it('lands a block move with the properties the adopt read gives it, keeping its key, in one undo step', () => {
     const { plugin, runs } = adopting(() => [
       { at: [0], properties: { group: 'g' } },
     ]);
     const editor = createEditor({
       initialValue: [paragraph('a'), paragraph('b')],
-      plugins: [transfer(), adoptSchema(), plugin],
+      plugins: [transfer(), history(), adoptSchema(), plugin],
+    });
+    const key = editor.key([0])!;
+
+    const outcome = editor.api.transfer.move({
+      nodes: [key],
+      to: { edge: 'after', key: editor.key([1])! },
+    });
+    const moved = {
+      children: editor.read.children(),
+      intents: runs.map(({ intent }) => intent),
+      keyKept: editor.key([1]) === key,
+      status: outcome.status,
+    };
+
+    editor.api.history.undo();
+
+    assert.deepEqual(
+      { ...moved, undone: editor.read.children() },
+      {
+        children: [paragraph('b'), { ...paragraph('a'), group: 'g' }],
+        intents: ['move'],
+        keyKept: true,
+        status: 'moved',
+        undone: [paragraph('a'), paragraph('b')],
+      }
+    );
+  });
+
+  it('sets a nested adopt patch on the child of a moved read-only container', () => {
+    const { plugin } = adopting(() => [
+      { at: [0, 1], properties: { group: 'g' } },
+    ]);
+    const lockedBlocks = defineEditorSchema(
+      'schema:transfer-contract-adopt-locked',
+      {
+        elements: {
+          locked: {
+            content: schema.content.types(['paragraph'], {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+            readOnly: true,
+          },
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
+        },
+        id: 'transfer-contract-adopt-locked',
+        properties: [
+          schema.elementProperty('group', property.string(), {
+            landing: 'adopt',
+            target: target.type('paragraph'),
+          }),
+        ],
+        root: schema.content.types(['locked', 'paragraph'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
+    const editor = createEditor({
+      initialValue: [
+        block('locked', paragraph('a'), paragraph('b')),
+        paragraph('c'),
+      ],
+      plugins: [transfer(), lockedBlocks, plugin],
     });
 
-    editor.api.transfer.move({
+    const outcome = editor.api.transfer.move({
       nodes: [editor.key([0])!],
       to: { edge: 'after', key: editor.key([1])! },
     });
 
     assert.deepEqual(
-      { children: editor.read.children(), runs: runs.length },
-      { children: [paragraph('b'), paragraph('a')], runs: 0 }
+      { children: editor.read.children(), status: outcome.status },
+      {
+        children: [
+          paragraph('c'),
+          block('locked', paragraph('a'), { ...paragraph('b'), group: 'g' }),
+        ],
+        status: 'moved',
+      }
+    );
+  });
+
+  it('adopts on a block moved from the main root into a content-root view', () => {
+    const { plugin } = adopting(() => [
+      { at: [0], properties: { group: 'g' } },
+    ]);
+    const groupedCards = defineEditorSchema(
+      'schema:transfer-contract-adopt-card',
+      {
+        elements: {
+          card: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            contentRoots: {
+              body: {
+                content: schema.content.types(['paragraph'], {
+                  default: { type: 'paragraph' },
+                  min: 1,
+                }),
+                ownership: 'exclusive',
+              },
+            },
+          },
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
+        },
+        id: 'transfer-contract-adopt-card',
+        properties: [
+          schema.elementProperty('group', property.string(), {
+            landing: 'adopt',
+            target: target.type('paragraph'),
+          }),
+        ],
+        root: schema.content.types(['card', 'paragraph'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          paragraph('top'),
+          {
+            type: 'card',
+            childRoots: { body: 'card:1' },
+            children: [{ text: '' }],
+          },
+        ] as Descendant[],
+        roots: { 'card:1': [paragraph('inside')] },
+      },
+      plugins: [transfer(), groupedCards, plugin],
+    });
+    const body = createEditorView(editor, { root: 'card:1' });
+
+    const outcome = body.api.transfer.move({
+      from: editor,
+      nodes: [editor.key([0])!],
+      to: { edge: 'after', key: body.key([0])! },
+    });
+
+    assert.deepEqual(
+      { body: body.read.children(), status: outcome.status },
+      {
+        body: [paragraph('inside'), { ...paragraph('top'), group: 'g' }],
+        status: 'moved',
+      }
     );
   });
 

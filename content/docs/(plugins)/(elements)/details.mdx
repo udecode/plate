@@ -39,11 +39,13 @@ const value = [
 ];
 ```
 
+The Details schema enforces this shape. Turning a title into Quote, Callout or Columns, or typing three dashes in it, changes nothing. Code and List still convert a title and remove its Details. When Enter, paste or Duplicate creates a block after the title, that block is a body paragraph. A value with a Summary out of place, or with two, fails to load.
+
 `open` and `name` are not document properties. Use the plugin state when the application needs to expand or collapse a Details node.
 
 ## Heading titles
 
-Set `level` from `1` to `6` on a Summary to render it as a heading. Omit `level` for a plain title. The Summary stays the first child; formatting never moves its text into the body.
+Set `level` from `1` to `6` on a Summary to render it as a heading. Omit `level` for a plain title. The Summary stays the first child; the heading commands below never move its text into the body.
 
 With `HeadingPlugin` installed, choose a heading in the formatting or slash menu, use the heading keyboard shortcuts, or type a Markdown heading prefix in the title. Text in the same menus removes the level. The headless equivalent is:
 
@@ -206,6 +208,8 @@ Decoding ignores `open` and `name`, and encoding never writes them.
 
 A heading title uses `<summary><h2>Title</h2></summary>` in HTML and `<summary level="2">Title</summary>` in Markdown. Both preserve inline formatting. HTML reads the level only when the heading is the summary's only child.
 
+HTML follows the browser's rule for the title. The first `<summary>` child is the title wherever it sits, and each later `<summary>` becomes a body block that keeps its formatting: a paragraph, or the heading it holds. Markdown is stricter. A `<details>` whose `<summary>` is not first, or that holds two, fails to parse.
+
 ## Toolbar
 
 Use [`DetailsToolbarButton`](/docs/components/details-toolbar-button) to wrap the current blocks or unwrap the active Details node.
@@ -214,7 +218,7 @@ Use [`DetailsToolbarButton`](/docs/components/details-toolbar-button) to wrap th
 
 ### `BaseDetailsPlugin`
 
-Headless schema, format mappings, corrections, transient state, transforms, and Enter, Backspace, and Delete behavior for `details` nodes.
+Headless schema, format mappings, transient state, transforms, and Enter, Backspace, and Delete behavior for `details` nodes.
 
 ### `BaseDetailsSummaryPlugin`
 

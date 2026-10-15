@@ -10,6 +10,7 @@ import type {
 } from '../interfaces';
 import {
   ElementApi,
+  LocationApi,
   NodeApi,
   RangeApi,
   SelectionApi,
@@ -35,19 +36,36 @@ const getText = <V extends Value>(
 const getSelection = <V extends Value>(source: InsertLimitSource<V>) =>
   'read' in source ? source.read.selection() : source.selection();
 
-const getReplacementLength = <V extends Value>(
-  editor: InsertLimitSource<V>,
-  options: { at?: InsertLimitTarget } | undefined
+const getRootText = <V extends Value>(
+  source: InsertLimitSource<V>,
+  target: InsertLimitTarget | undefined
 ) => {
-  if (options?.at !== undefined) {
-    return RangeApi.isRange(options.at) || SelectionApi.isNode(options.at)
-      ? getText(editor, options.at).length
-      : 0;
-  }
+  const root =
+    target === undefined
+      ? undefined
+      : SelectionApi.isNode(target) || RangeApi.isRange(target)
+        ? SelectionApi.root(target)
+        : LocationApi.isPoint(target)
+          ? target.root
+          : undefined;
 
-  const selection = getSelection(editor);
+  if (root === undefined) return getText(source, []);
 
-  return selection ? getText(editor, selection).length : 0;
+  const { length } =
+    'read' in source ? source.read.root(root) : source.root(root);
+
+  return length === 0
+    ? ''
+    : getText(
+        source,
+        SelectionApi.nodes(
+          [
+            [0],
+            ...Array.from({ length: length - 1 }, (_, index) => [index + 1]),
+          ],
+          { mode: 'block', root }
+        )
+      );
 };
 
 export const getInsertRemainingLength = <V extends Value>(
@@ -58,10 +76,16 @@ export const getInsertRemainingLength = <V extends Value>(
 
   if (maxLength === undefined) return undefined;
 
+  const target = options?.at ?? getSelection(editor) ?? undefined;
+  const replacementLength =
+    target !== undefined &&
+    (RangeApi.isRange(target) || SelectionApi.isNode(target))
+      ? getText(editor, target).length
+      : 0;
+
   return Math.max(
     0,
-    maxLength -
-      (getText(editor, []).length - getReplacementLength(editor, options))
+    maxLength - (getRootText(editor, target).length - replacementLength)
   );
 };
 

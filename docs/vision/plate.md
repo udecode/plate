@@ -901,8 +901,14 @@ Current priorities:
   caret in a block that hides what follows it, such as a closed Details title,
   lands after the container that hides it, and an explicit `after` stays
   literal. The hiding feature contributes that anchor; inserting features name
-  no container. An authored `insert` must author `upsert` too when
-  generic construction cannot preserve its structure or domain identity.
+  no container. A block `insert` and `upsert` return `false` with nothing
+  changed when the block does not fit where it would land, and `upsert`
+  returns `true` when it reuses a block, so a slash command keeps its query on
+  a refusal. Block placement takes a block for `after` and `before` and a path
+  for `at`; only inline inserts take a point or `split`. An authored `insert`
+  must author `upsert` too when generic construction cannot preserve its
+  structure or domain identity. A generic element `toggle` returns what
+  `tx.blocks.toggle` returns and collapses the selection only when it applied.
   Default-constructible, schema-compatible text blocks also get `toggle`; text
   blocks with required construction properties and structural plugins author
   `toggle` only for real domain, wrap, conversion, or child semantics. An opt-in

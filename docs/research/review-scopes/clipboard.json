@@ -56,7 +56,7 @@
     "packages/plitejs/test/clipboard-contract.ts",
     "packages/plitejs/test/dom/clipboard-boundary.test.ts",
     "packages/plitejs/test/react/projected-command-contract.test.ts",
-    "packages/plitejs/test/authored-retained-contract.test.ts",
+    "packages/plitejs/test/authored-tree-incoming.test.ts",
     "packages/plitejs/test/native-transaction-spec-contract.test.ts",
     "packages/platejs/src/features/upload/lib/BaseUploadPlugin.lifecycle.spec.ts",
     "packages/platejs/src/features/table/lib/BaseTablePlugin.clipboard.spec.tsx",

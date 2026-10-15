@@ -388,11 +388,13 @@ type CopiedItem = Readonly<{ node: Element; path: Path }>;
 type ListJoin = Readonly<{ anchor: Element; source: string; start: unknown }>;
 
 export const adoptListBlocks = (
-  state: Pick<EditorCoreStateView, 'nodes'>,
-  { edge, payload, target: [, targetPath] }: TransferAdoptInput,
+  state: Pick<EditorCoreStateView, 'nodes' | 'view'>,
+  { edge, from, intent, payload, target: [, targetPath] }: TransferAdoptInput,
   patches: readonly TransferPatch[],
   { headingType }: Readonly<{ headingType: string | undefined }>
 ): readonly TransferPatch[] => {
+  const move = intent === 'move';
+  const moving = new Set<Descendant>(move ? payload.nodes : []);
   const lists = new Map<string, CopiedItem[]>();
   const top: string[] = [];
   const sourceOf = (node: Element) =>
@@ -468,6 +470,7 @@ export const adoptListBlocks = (
 
       const sibling = siblings[index];
 
+      if (moving.has(sibling)) continue;
       if (!ElementApi.isElement(sibling)) return undefined;
       if (getListIndent(sibling) <= depth) {
         return {
@@ -482,12 +485,32 @@ export const adoptListBlocks = (
   const first = top[0];
   const last = top.at(-1);
   const lastNode = payload.nodes.at(-1);
+  const endsInListItem = ElementApi.isElement(lastNode) && isListItem(lastNode);
   const before =
-    first !== undefined && joinable(first)
+    first !== undefined && (move || joinable(first))
       ? nearestNotDeeper(-1, levelOf(first))
       : undefined;
+  const afterOf = () =>
+    last === undefined ? undefined : nearestNotDeeper(1, levelOf(last));
+  const after = move ? afterOf() : undefined;
+  const inList = (beside: typeof before, source: string | undefined) =>
+    !!beside &&
+    isListItem(beside.sibling) &&
+    sourceOf(beside.sibling) === source;
+
+  // A move beside its own list stays in it, whatever kind the item beside it
+  // is. Lists without ids in two roots are two lists.
+  if (
+    move &&
+    from.read.view.root() === state.view.root() &&
+    (inList(before, first) || inList(after, last))
+  ) {
+    return patches;
+  }
+
   const joinBefore = (): ListJoin | undefined =>
     first !== undefined &&
+    joinable(first) &&
     before &&
     !before.shallower &&
     isListItem(before.sibling) &&
@@ -495,33 +518,37 @@ export const adoptListBlocks = (
       ? { anchor: before.sibling, source: first, start: undefined }
       : undefined;
   const joinAfter = (): ListJoin | undefined => {
-    if (
-      last === undefined ||
-      !ElementApi.isElement(lastNode) ||
-      !isListItem(lastNode) ||
-      !joinable(last)
-    ) {
+    if (last === undefined || !endsInListItem || !joinable(last)) {
       return undefined;
     }
 
-    const after = nearestNotDeeper(1, levelOf(last));
+    const beside = move ? after : afterOf();
 
-    return after &&
-      !after.shallower &&
-      isListItem(after.sibling) &&
-      matches(after.sibling, topLevelEdgeItem(last, 'end')) &&
-      !Object.hasOwn(after.sibling, 'listRestart')
-      ? { anchor: after.sibling, source: last, start: after.sibling.listStart }
+    return beside &&
+      !beside.shallower &&
+      isListItem(beside.sibling) &&
+      matches(beside.sibling, topLevelEdgeItem(last, 'end')) &&
+      !Object.hasOwn(beside.sibling, 'listRestart')
+      ? {
+          anchor: beside.sibling,
+          source: last,
+          start: beside.sibling.listStart,
+        }
       : undefined;
   };
   const joinUnderShallower = (): ListJoin | undefined =>
-    first !== undefined && before?.shallower && isListItem(before.sibling)
+    first !== undefined &&
+    joinable(first) &&
+    before?.shallower &&
+    isListItem(before.sibling)
       ? { anchor: before.sibling, source: first, start: undefined }
       : undefined;
   const joined = joinBefore() ?? joinAfter() ?? joinUnderShallower();
 
   const adopted = [...lists].flatMap(([source, items]): TransferPatch[] => {
     if (joined?.source !== source) {
+      if (move) return [];
+
       const listId = createListId();
 
       return items.map(({ path }) => ({ at: path, properties: { listId } }));

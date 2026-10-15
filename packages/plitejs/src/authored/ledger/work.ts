@@ -9,8 +9,8 @@ export type LedgerWork = {
   bookEntries: number;
   /** Pairs of neighboring changes the card sequence checked for touching. */
   cardPairs: number;
-  /** Change listeners that compared every known revision. */
-  changeScans: number;
+  /** Card members publication walked after a member's card id changed. */
+  cardWalks: number;
   composedChanges: number;
   /** Context records followed to list a context's members. */
   contextHops: number;
@@ -38,7 +38,7 @@ const work: LedgerWork = {
   blockFacts: 0,
   bookEntries: 0,
   cardPairs: 0,
-  changeScans: 0,
+  cardWalks: 0,
   composedChanges: 0,
   contextHops: 0,
   contextsMinted: 0,

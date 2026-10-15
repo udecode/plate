@@ -9,6 +9,7 @@ import { RootChange } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
+import { incarnationOf } from '../facts/records';
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMark,
@@ -41,7 +42,8 @@ const joinFragments = (
   const rightMarks = dependencies.marks(right);
   const sharedByRight = (mark: AuthoredMark) =>
     rightMarks.some(
-      (other) => other.kind === mark.kind && other.change === mark.change
+      (other) =>
+        other.kind === mark.kind && incarnationOf(other) === incarnationOf(mark)
     );
   const marks = [
     ...dependencies
@@ -73,7 +75,7 @@ const oneSided = (
       !theirs.some(
         (other) =>
           other.kind === mark.kind &&
-          other.change === mark.change &&
+          incarnationOf(other) === incarnationOf(mark) &&
           (mark.kind !== 'format' ||
             (other.kind === 'format' && other.key === mark.key))
       )

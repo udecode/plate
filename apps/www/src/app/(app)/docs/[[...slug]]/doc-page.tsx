@@ -283,6 +283,7 @@ async function DocPageContent({
         doc={{
           ...file.meta,
           docs,
+          experimental: getDocsNavMeta(slug)?.experimental,
           slug,
         }}
         neighbours={neighbours}
@@ -349,6 +350,7 @@ async function DocPageContent({
             sidebar.main.title,
         },
         docs: frontmatterData.docs,
+        experimental: getDocsNavMeta(localizedDocUrl)?.experimental,
         links: frontmatterData.links,
         slug: localizedDocUrl,
         sourcePath: doc.path,

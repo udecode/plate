@@ -441,6 +441,9 @@ export const rootIndexOf = <K extends string>(source: Roots<K>, key: K) =>
 
 export const NO_NODES: NodeList<never> = Object.freeze([]);
 
+export const childAtPathIndex = <T>(list: NodeList<T>, index: number) =>
+  Number.isInteger(index) && index >= 0 ? list.at(index) : undefined;
+
 /**
  * An array an index built reads as that index's node list, so a root keeps
  * one identity whether a value holds it lazily or as that array.

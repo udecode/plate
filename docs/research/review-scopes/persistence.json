@@ -46,7 +46,7 @@
     "packages/platejs/src/migrations/documentMigrations.spec.ts",
     "packages/platejs/src/migrations/migratePlateV54.spec.ts",
     "packages/plitejs/test/authored-format-contract.test.ts",
-    "packages/plitejs/test/authored-retained-contract.test.ts",
+    "packages/plitejs/test/authored-facts.test.ts",
     "packages/platejs/test/public-package-import-smoke.slow.ts",
     "apps/www/tests/browser/document-migration.spec.ts",
     "apps/www/src/generated/api-reference-manifest.json",

@@ -76,7 +76,7 @@ export function MobileNav({
   const content = i18n[locale];
   const pathname = usePathname() ?? '';
   const sidebar = useLazyDocsSidebar(locale, open);
-  const { nested, sections: navTree } = selectDocsSidebar(sidebar, pathname);
+  const { sections: navTree } = selectDocsSidebar(sidebar, pathname);
 
   const renderNavLink = (
     item: SidebarNavItem,
@@ -162,20 +162,6 @@ export function MobileNav({
             </div>
           </div>
           <div className="flex flex-col gap-8">
-            {nested ? (
-              <div className="flex flex-col gap-3">
-                <MobileLink
-                  className="text-muted-foreground"
-                  onOpenChange={setOpen}
-                  href={hrefWithLocale(nested.back.href, locale)}
-                >
-                  {locale === 'cn'
-                    ? `← ${nested.back.title} 文档`
-                    : `← ${nested.back.title} docs`}
-                </MobileLink>
-                <div className="text-lg font-semibold">{nested.title}</div>
-              </div>
-            ) : null}
             {navTree.map((section, sectionIndex) => (
               <div key={sectionIndex} className="flex flex-col gap-4">
                 <div className="text-sm font-medium text-muted-foreground">

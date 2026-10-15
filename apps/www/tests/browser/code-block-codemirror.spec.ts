@@ -380,6 +380,51 @@ test('code-block: CodeMirror preserves code editing, IME, and remote updates', a
   }
 });
 
+test('code-block: vertical arrows enter CodeMirror from the paragraphs around it', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.goto(ROUTE, { waitUntil: 'commit' });
+    const editor = createBrowserEditorHarness(
+      page,
+      'code-block:vertical-entry',
+      page.locator(EDITOR_ROOT).first()
+    );
+    await editor.ready({ editor: 'visible', text: 'Huge Code Block' });
+    const input = page.locator('[data-code-block-codemirror-input]');
+    const above = await editor.get.modelBlockText(HUGE_CODE_BLOCK_INDEX - 1);
+    const code = await editor.get.modelBlockText(HUGE_CODE_BLOCK_INDEX);
+
+    await editor.selection.collapse({
+      path: [HUGE_CODE_BLOCK_INDEX - 1, 0],
+      offset: above!.length,
+    });
+    await editor.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(input).toBeFocused();
+    await editor.assert.selection({
+      anchor: { path: [HUGE_CODE_BLOCK_INDEX, 0], offset: 0 },
+      focus: { path: [HUGE_CODE_BLOCK_INDEX, 0], offset: 0 },
+    });
+
+    await editor.selection.collapse({
+      path: [HUGE_CODE_BLOCK_INDEX + 1, 0],
+      offset: 0,
+    });
+    await editor.focus();
+    await page.keyboard.press('ArrowUp');
+    await expect(input).toBeFocused();
+    await editor.assert.selection({
+      anchor: { path: [HUGE_CODE_BLOCK_INDEX, 0], offset: code!.length },
+      focus: { path: [HUGE_CODE_BLOCK_INDEX, 0], offset: code!.length },
+    });
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
 for (const key of ['Enter', 'Tab']) {
   test(`code-block: composing ${key} leaves code unchanged`, async ({
     page,

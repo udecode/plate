@@ -33,6 +33,7 @@ import {
 import { isInRemovedContent, landTextWrite, nodeAt } from './content-landing';
 import {
   getEditorDocumentRecorder,
+  type PositionMap,
   runEditorDraftGuards,
 } from './document-recorder';
 import { getEditorSchema } from './editor-runtime';
@@ -722,6 +723,7 @@ export const runInEditorCommandFrame = (
     change: DocumentChange;
     frame: EditorDocumentState;
   } | null = null;
+  let storedToWritten: PositionMap | undefined;
 
   COMMAND_FRAMES.add(editor);
   try {
@@ -754,21 +756,20 @@ export const runInEditorCommandFrame = (
     finalizeTransactionRepresentation(editor);
     const wrote = snapshot.builder.change;
 
+    storedToWritten = (root, position, assoc) => {
+      countCoreWork('adapterMappings');
+      const association = assoc === 1 ? 'forward' : 'backward';
+
+      return wrote.mapPosition(
+        projected.map.toProjected(root, position, association),
+        { association, ...(root === MAIN_ROOT_KEY ? {} : { root }) }
+      );
+    };
     runEditorDraftGuards(
       editor,
       'plain',
       snapshot.builder.value as EditorDocumentValue,
-      {
-        mapPosition: (root, position, association) => {
-          countCoreWork('adapterMappings');
-
-          return wrote.mapPosition(
-            projected.map.toProjected(root, position, association),
-            { association, ...(root === MAIN_ROOT_KEY ? {} : { root }) }
-          );
-        },
-        stored,
-      }
+      { mapPosition: storedToWritten, stored }
     );
 
     if (!wrote.empty || frame.selectionWritten) {
@@ -831,7 +832,9 @@ export const runInEditorCommandFrame = (
     disposeTransactionSpecContext(editor, frame);
   }
   if (!recorded) return true;
-  commitRecordedDraft(editor, outer, recorded, frame.selectionRoot);
+  commitRecordedDraft(editor, outer, recorded, frame.selectionRoot, {
+    storedToWritten,
+  });
   outer.changed = true;
   if (written) {
     document.recorded?.({

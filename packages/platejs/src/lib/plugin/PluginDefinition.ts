@@ -589,7 +589,11 @@ export type BreakRules<
     'default' | 'deleteExit' | 'exit' | 'lineBreak' | 'none',
     C
   >;
-  /** If true, the new block after splitting will be reset to the default type. */
+  /**
+   * If true, the new block after splitting resets to its container's default
+   * type. When the container has no default it can become, the split stays
+   * and the new block keeps its type.
+   */
   splitReset?: RuleDecision<boolean, C>;
 };
 
@@ -623,7 +627,12 @@ export type DeleteRules<
    * ```
    */
   start?: RuleDecision<'default' | 'lift' | 'reset', C>;
-  /** Action when a deletion starts from or leaves the block empty. */
+  /**
+   * Action when a deletion starts from or leaves the block empty. `'reset'`
+   * converts the emptied block to its container's default type; when the
+   * container has no default it can become, the deletion stays and the block
+   * keeps its type.
+   */
   empty?: RuleDecision<'default' | 'reset', C>;
 };
 

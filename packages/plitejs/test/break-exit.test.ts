@@ -772,9 +772,47 @@ describe('exit level', () => {
 });
 
 describe('default landing', () => {
+  let relayEditor: Editor | undefined;
+  const silentError = new EditorSchemaValidationError({
+    code: 'missing-property',
+    message: 'The token source is missing.',
+    path: [],
+    root: null,
+  });
   const Landings = definePlugin('break-landings', {
     schema: {
       elements: {
+        relayGallery: {
+          content: schema.content.types(['photo', 'relayToken'], {
+            default: { type: 'relayToken' },
+            min: 1,
+          }),
+        },
+        relayToken: {
+          content: schema.content.text(),
+          properties: {
+            token: property.string({
+              generate: () =>
+                relayEditor?.read.schema.create('idParagraph').type ?? '',
+            }),
+          },
+        },
+        silentGallery: {
+          content: schema.content.types(['photo', 'silentToken'], {
+            default: { type: 'silentToken' },
+            min: 1,
+          }),
+        },
+        silentToken: {
+          content: schema.content.text(),
+          properties: {
+            token: property.string({
+              generate: () => {
+                throw silentError;
+              },
+            }),
+          },
+        },
         badToken: {
           content: schema.content.text(),
           properties: {
@@ -847,6 +885,63 @@ describe('default landing', () => {
     });
 
     assert.throws(() => enterOnPhoto(editor), /must be string/);
+  });
+
+  it('throws on Enter in an image when the default beside it generates its own missing-property error', () => {
+    const editor = createEditor({
+      initialValue: photoIn('silentGallery'),
+      plugins: [Landings],
+    });
+
+    assert.throws(
+      () => enterOnPhoto(editor),
+      (error: unknown) => error === silentError
+    );
+  });
+
+  it('throws on Enter in an image when the default beside it generates through a schema build that misses a property', () => {
+    const editor = createEditor({
+      initialValue: photoIn('relayGallery'),
+      plugins: [Landings],
+    });
+
+    relayEditor = editor;
+
+    assert.throws(() => enterOnPhoto(editor), /requires property "id"/);
+  });
+
+  it('changes nothing on Enter in an image when the default beside it needs a text property', () => {
+    const value = [
+      {
+        type: 'gallery',
+        children: [{ type: 'photo', children: [{ text: '', lang: 'fr' }] }],
+      },
+    ];
+    const editor = createEditor({
+      initialValue: value,
+      plugins: [
+        defineEditorSchema('schema:landing-required-text', {
+          elements: {
+            gallery: {
+              content: schema.content.types(['photo', 'para'], {
+                default: { type: 'para' },
+                min: 1,
+              }),
+            },
+            para: { content: schema.content.text() },
+            photo: { void: 'block' },
+          },
+          properties: [
+            schema.textProperty('lang', property.string({ required: true })),
+          ],
+          root: schema.content.types(['gallery'], { min: 1 }),
+        }),
+      ],
+    });
+
+    enterOnPhoto(editor);
+
+    assert.deepEqual(editor.read.children(), value);
   });
 
   it('reports a missing required property of a built default as missing-property', () => {

@@ -17,10 +17,6 @@ import { AIKit } from '@/registry/components/editor/ai';
 import { Editor } from '@/registry/components/editor/editor';
 import { AIChatTransportPlugin } from '@/registry/components/editor/use-chat';
 
-// Registry components rely on the automatic JSX runtime; Bun compiles these
-// specs with the classic one.
-Object.assign(globalThis, { React });
-
 export const makeEditor = (withBlocks = false) =>
   createEditor({
     plugins: [

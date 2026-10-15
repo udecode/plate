@@ -85,7 +85,7 @@
       "? attributes({"
     ],
     "packages/platejs/src/internal/plugin/resolvePlugins.ts": [
-      "context.tx.nodes.insert(element, blockOptions as never);"
+      "context.tx.nodes.insert(element, insertOptions as never);"
     ],
     "packages/platejs/src/lib/plugin/createPluginContext.internal.ts": [
       "accessCache.set(input, access as never);"
@@ -164,6 +164,11 @@
     ],
     "packages/plitejs/src/react/plugin/with-react.ts": ["export type Editor<"],
     "packages/test/src/device/lane.ts": ["export type DeviceEditor = Pick<"]
+  },
+  "plate/no-plite-jsdoc": {
+    "packages/platejs/src/internal/plugin/resolvePlugins.ts": [
+      "* Lower every resolved Plate plugin to exactly one native Plite plugin."
+    ]
   },
   "plate/no-raised-test-timeout": {
     "apps/www/src/registry/components/editor/comment.spec.tsx": ["}, 20_000);"],
@@ -277,12 +282,6 @@
     ]
   },
   "plate/no-schema-placement-copy": {
-    "packages/platejs/src/ai/react/aiOutputLanding.internal.ts": [
-      "(content.max === null || count <= content.max) &&",
-      "(content.max === null || count <= content.max) &&",
-      "if (!parent || !content || content.prefix) return undefined;",
-      "return count >= content.min &&"
-    ],
     "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": [
       "(content.max !== null && children.length > content.max)",
       "(content.max !== null && children.length > content.max)",
@@ -419,9 +418,6 @@
   },
   "plate/no-structural-mark-copy": {
     "packages/plitejs/src/authored/tree/proposed.ts": [
-      "const found = firstBlockIn(child, enclosed || !hasMark(node, 'unwrap'));",
-      "if (found) return !found.enclosed && hasMark(found.node, 'join');",
-      "if (hasMark(child, 'join') && target) {",
       "if (hasMark(child, 'unwrap')) {",
       "while (depth > 0 && hasMark(getDefined(chain[depth - 1]), 'unwrap')) {"
     ],

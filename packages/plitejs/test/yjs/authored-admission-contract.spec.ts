@@ -16,7 +16,9 @@ import { authoredTestApi, reviewRecords } from '../support/authored';
 
 const ann = { at: 1, author: 'ann', change: 'A', kind: 'insert' };
 const bob = { at: 2, author: 'bob', change: 'B', kind: 'insert' };
+const cat = { at: 3, author: 'cat', change: 'C', kind: 'insert' };
 const inBob = contextRecordOf(null, bob);
+const inCat = contextRecordOf(inBob.ctx, cat);
 const stacked = { authored: [ann, bob], text: 'x' };
 const compacted = {
   authored: [ann, { ctx: inBob.ctx, kind: 'in' }],
@@ -169,12 +171,15 @@ describe('plitejs/yjs authored admission', () => {
       verdict: 'accept',
     });
 
-    forger
-      .getMap('document:records:authored-verdicts')
-      .set(
-        id,
-        JSON.stringify({ at: 2, change: 'B', decision: 'd:1', verdict: 'reject' })
-      );
+    forger.getMap('document:records:authored-verdicts').set(
+      id,
+      JSON.stringify({
+        at: 2,
+        change: 'B',
+        decision: 'd:1',
+        verdict: 'reject',
+      })
+    );
     send(forger, erin.doc);
 
     const { admission, value } = erin.read();
@@ -214,6 +219,85 @@ describe('plitejs/yjs authored admission', () => {
         value: {
           children: [paragraph(compacted)],
           records: reviewRecords({ contexts: [inBob] }),
+        },
+      }
+    );
+  });
+
+  it('refuses a remote drop of a context another kept context rests on', () => {
+    const room = new Y.Doc();
+
+    peer(room, createAuthoredPlugin({ authorId: 'ann' }), [
+      paragraph({ authored: [ann, bob, cat], text: 'x' }),
+    ]);
+
+    const erin = peer(copyOf(room), createAuthoredPlugin({ authorId: 'erin' }));
+    const forger = copyOf(room);
+
+    forger.getMap('document:records:authored-contexts').delete(inBob.ctx);
+    send(forger, erin.doc);
+
+    const { admission, value } = erin.read();
+
+    assert.deepEqual(
+      {
+        cause: admission.state === 'error' && String(admission.cause),
+        value,
+      },
+      {
+        cause: `AuthoredMarkError: Review context ${inBob.ctx} was dropped while context ${inCat.ctx} rests on it.`,
+        value: {
+          children: [
+            paragraph({
+              authored: [ann, { ctx: inCat.ctx, kind: 'in' }],
+              text: 'x',
+            }),
+          ],
+          records: reviewRecords({ contexts: [inBob, inCat] }),
+        },
+      }
+    );
+  });
+
+  it('keeps the claim of a remote Editing deletion that no pending join holds', () => {
+    const room = new Y.Doc();
+
+    peer(room, createAuthoredPlugin({ authorId: 'ann' }), [
+      paragraph({ text: 'a' }),
+    ]);
+
+    const erin = peer(copyOf(room), createAuthoredPlugin({ authorId: 'erin' }));
+    const forger = peer(copyOf(room), WithoutAdmission);
+
+    forger.editor.update((tx) =>
+      tx.nodes.insert(
+        paragraph({
+          authored: [
+            { at: 1, author: 'bob', change: '~edit:bob', kind: 'delete' },
+          ],
+          text: 'x',
+        }) as never,
+        { at: [1] }
+      )
+    );
+    send(forger.doc, erin.doc);
+
+    const { admission, value } = erin.read();
+
+    assert.deepEqual(
+      { state: admission.state, value },
+      {
+        state: 'ready',
+        value: {
+          children: [
+            paragraph({ text: 'a' }),
+            paragraph({
+              authored: [
+                { at: 1, author: 'bob', change: '~edit:bob', kind: 'delete' },
+              ],
+              text: 'x',
+            }),
+          ],
         },
       }
     );

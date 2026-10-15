@@ -9,20 +9,13 @@ const POSITIONED_PATTERN = /^(absolute|fixed|relative|sticky)$/;
 const CONTAINING_CONTAIN_PATTERN = /\b(content|layout|paint|strict)\b/;
 const CONTAINING_WILL_CHANGE_PATTERN = /\b(filter|perspective|transform)\b/;
 
-type VisibleBox = Readonly<{
-  bottom: number;
-  left: number;
-  right: number;
-  top: number;
-}>;
-
 const clampDragAutoScrollCoordinate = (
   value: number,
   min: number,
   max: number
 ) => Math.min(Math.max(value, min), Math.max(min, max - 1));
 
-export const canScrollY = (element: Element) => {
+const canScrollY = (element: Element) => {
   const style = element.ownerDocument.defaultView?.getComputedStyle(element);
   const overflowY = style?.overflowY ?? '';
 
@@ -53,7 +46,7 @@ const clipsAxes = (style: CSSStyleDeclaration) => {
   };
 };
 
-const getVisibleBox = (element: Element): VisibleBox | null => {
+export const getVisibleRect = (element: Element): DOMGeometryRect | null => {
   const document = element.ownerDocument;
   const view = document.defaultView;
 
@@ -107,26 +100,13 @@ const getVisibleBox = (element: Element): VisibleBox | null => {
     ({ position } = style);
   }
 
-  return right > left && bottom > top ? { bottom, left, right, top } : null;
-};
-
-export const getVisibleRect = (element: Element): DOMGeometryRect | null => {
-  const box = getVisibleBox(element);
-
-  return box
-    ? {
-        ...box,
-        height: box.bottom - box.top,
-        width: box.right - box.left,
-      }
+  return right > left && bottom > top
+    ? { bottom, height: bottom - top, left, right, top, width: right - left }
     : null;
 };
 
-const getDragAutoScrollDelta = (clientY: number, box: VisibleBox) => {
-  const edgeSize = Math.min(
-    DRAG_AUTOSCROLL_EDGE_SIZE,
-    (box.bottom - box.top) / 2
-  );
+const getDragAutoScrollDelta = (clientY: number, box: DOMGeometryRect) => {
+  const edgeSize = Math.min(DRAG_AUTOSCROLL_EDGE_SIZE, box.height / 2);
   const topDistance = clientY - box.top;
   const bottomDistance = box.bottom - clientY;
 
@@ -148,6 +128,66 @@ const getDragAutoScrollDelta = (clientY: number, box: VisibleBox) => {
   return 0;
 };
 
+type DragScroller = Readonly<{
+  box: DOMGeometryRect;
+  maxScrollTop: number;
+  scrollBy: (delta: number) => void;
+  scrollTop: () => number;
+}>;
+
+function* getDragScrollers(rootElement: HTMLElement): Generator<DragScroller> {
+  for (
+    let parent: Element | null = rootElement;
+    parent;
+    parent = getFlatTreeParentElement(parent)
+  ) {
+    if (!canScrollY(parent)) continue;
+
+    const box = getVisibleRect(parent);
+
+    if (!box) continue;
+
+    const scroller = parent;
+
+    yield {
+      box,
+      maxScrollTop: scroller.scrollHeight - scroller.clientHeight,
+      scrollBy: (delta) => {
+        scroller.scrollTop += delta;
+      },
+      scrollTop: () => scroller.scrollTop,
+    };
+  }
+
+  const document = rootElement.ownerDocument;
+  const window = document.defaultView;
+  const { scrollingElement } = document;
+
+  if (
+    !window ||
+    !scrollingElement ||
+    scrollingElement.scrollHeight <= scrollingElement.clientHeight
+  ) {
+    return;
+  }
+
+  const { clientHeight, clientWidth } = document.documentElement;
+
+  yield {
+    box: {
+      bottom: clientHeight,
+      height: clientHeight,
+      left: 0,
+      right: clientWidth,
+      top: 0,
+      width: clientWidth,
+    },
+    maxScrollTop: scrollingElement.scrollHeight - scrollingElement.clientHeight,
+    scrollBy: (delta) => window.scrollBy(0, delta),
+    scrollTop: () => scrollingElement.scrollTop,
+  };
+}
+
 export const getDragAutoScrollTarget = ({
   clientX,
   clientY,
@@ -162,87 +202,32 @@ export const getDragAutoScrollTarget = ({
   delta: number;
   scroll: () => number;
 } => {
-  for (
-    let parent: Element | null = rootElement;
-    parent;
-    parent = getFlatTreeParentElement(parent)
-  ) {
-    if (!canScrollY(parent)) continue;
-
-    const box = getVisibleBox(parent);
-
-    if (!box || clientX < box.left || clientX > box.right) continue;
+  for (const { box, maxScrollTop, scrollBy, scrollTop } of getDragScrollers(
+    rootElement
+  )) {
+    if (clientX < box.left || clientX > box.right) continue;
 
     const delta = getDragAutoScrollDelta(clientY, box);
 
     if (delta === 0) continue;
 
-    const maxScrollTop = parent.scrollHeight - parent.clientHeight;
-    const canMove =
-      delta < 0 ? parent.scrollTop > 0 : parent.scrollTop < maxScrollTop;
+    const canMove = delta < 0 ? scrollTop() > 0 : scrollTop() < maxScrollTop;
 
     if (!canMove) continue;
-
-    const scroller = parent;
 
     return {
       clientX: clampDragAutoScrollCoordinate(clientX, box.left, box.right),
       clientY: clampDragAutoScrollCoordinate(clientY, box.top, box.bottom),
       delta,
       scroll: () => {
-        const previousScrollTop = scroller.scrollTop;
+        const previousScrollTop = scrollTop();
 
-        scroller.scrollTop += delta;
+        scrollBy(delta);
 
-        return scroller.scrollTop - previousScrollTop;
+        return scrollTop() - previousScrollTop;
       },
     };
   }
 
-  const document = rootElement.ownerDocument;
-  const window = document.defaultView;
-  const { scrollingElement } = document;
-
-  if (!window || !scrollingElement) return null;
-
-  const { clientHeight, clientWidth } = document.documentElement;
-
-  if (
-    clientX < 0 ||
-    clientX > clientWidth ||
-    scrollingElement.scrollHeight <= scrollingElement.clientHeight
-  ) {
-    return null;
-  }
-
-  const delta = getDragAutoScrollDelta(clientY, {
-    bottom: clientHeight,
-    left: 0,
-    right: clientWidth,
-    top: 0,
-  });
-
-  if (delta === 0) return null;
-
-  const maxScrollTop =
-    scrollingElement.scrollHeight - scrollingElement.clientHeight;
-  const canMove =
-    delta < 0
-      ? scrollingElement.scrollTop > 0
-      : scrollingElement.scrollTop < maxScrollTop;
-
-  if (!canMove) return null;
-
-  return {
-    clientX: clampDragAutoScrollCoordinate(clientX, 0, clientWidth),
-    clientY: clampDragAutoScrollCoordinate(clientY, 0, clientHeight),
-    delta,
-    scroll: () => {
-      const previousScrollTop = scrollingElement.scrollTop;
-
-      window.scrollBy(0, delta);
-
-      return scrollingElement.scrollTop - previousScrollTop;
-    },
-  };
+  return null;
 };

@@ -42,11 +42,11 @@ Rejected:
 - packages/plitejs/src/core/authored-runtime.ts (+1 line)
 - packages/plitejs/src/core/public-state.ts (+1 line)
 - packages/plitejs/src/authored/authored.ts
-- packages/plitejs/test/authored-ingress-contract.test.ts (4 new tests)
+- 6fa1169c5e:packages/plitejs/test/authored-ingress-contract.test.ts (4 new tests)
 - docs/research/probes/2026-09-28-conversion-boundary/lanes/authored/editorkit-replace.repro.test.ts
 - docs/research/probes/2026-09-28-conversion-boundary/lanes/authored/replace-cost.probe.test.ts
 
-## Tests added (packages/plitejs/test/authored-ingress-contract.test.ts)
+## Tests added (6fa1169c5e:packages/plitejs/test/authored-ingress-contract.test.ts)
 
 - **`folds schema corrections into a loaded document with accepted input`** and **`... with proposed input`**. With a trailing-paragraph correction installed, loading [Intro, Quote] gives:
   - exactly 1 commit;

@@ -1,6 +1,7 @@
 import { getEditorSchema } from '../core/editor-runtime';
 import {
   getActiveUpdateRoot,
+  getChildList,
   getCurrentSelection,
   profileCoreDuration,
   runEditorTransaction,
@@ -16,6 +17,7 @@ import {
   type Element as EditorElement,
   type Point,
   PointApi,
+  type Range,
   RangeApi,
   SelectionApi,
   TextApi,
@@ -79,8 +81,13 @@ import {
   getWholeTopLevelBlockRange,
 } from './delete-text-whole-blocks';
 
-const shouldMergeAcrossBlocks = (plan: DeleteRangePlan) =>
-  plan.startNonEditable == null && plan.endNonEditable == null;
+const isInlineVoid = (editor: Editor, node: unknown) => {
+  const schema = getEditorSchema(editor);
+
+  return (
+    NodeApi.isElement(node) && schema.isInline(node) && schema.isVoid(node)
+  );
+};
 
 const canMergeBlocksAtPoint = (
   editor: Editor,
@@ -371,8 +378,11 @@ const resolveDeleteTarget = (
   if (!hanging) {
     const [, end] = RangeApi.edges(at);
     const endOfDocument = editorPoint(editor, [], { edge: 'end' });
+    const endHolder = voids ? undefined : getHighestNonEditable(editor, end);
+    const endsInsideInlineVoid =
+      !!endHolder && isInlineVoid(editor, endHolder[0]);
 
-    if (!PointApi.equals(end, endOfDocument)) {
+    if (!PointApi.equals(end, endOfDocument) && !endsInsideInlineVoid) {
       at = editorUnhangRange(editor, at, { voids });
     }
   }
@@ -420,6 +430,7 @@ const resolveDeleteTarget = (
     ? undefined
     : getHighestNonEditable(editor, start);
   const endNonEditable = voids ? undefined : getHighestNonEditable(editor, end);
+  let editableEdges = true;
 
   if (startNonEditable) {
     const before = editorBefore(editor, start);
@@ -430,6 +441,9 @@ const resolveDeleteTarget = (
       PathApi.isAncestor(startBlock[1], before.path)
     ) {
       start = before;
+      editableEdges &&= isInlineVoid(editor, startNonEditable[0]);
+    } else {
+      editableEdges = false;
     }
   }
 
@@ -438,6 +452,9 @@ const resolveDeleteTarget = (
 
     if (after && endBlock && PathApi.isAncestor(endBlock[1], after.path)) {
       end = after;
+      editableEdges &&= isInlineVoid(editor, endNonEditable[0]);
+    } else {
+      editableEdges = false;
     }
   }
 
@@ -503,6 +520,7 @@ const resolveDeleteTarget = (
     start,
     end,
     effectiveRange: { anchor: start, focus: end },
+    editableEdges,
     isSingleText,
     isAcrossBlocks,
     startNonEditable,
@@ -512,6 +530,7 @@ const resolveDeleteTarget = (
     preserveEmptyStartBlockPath,
     preservedEmptyStartBlock,
     startMergeBlockPath: startMergeBlock?.[1] ?? null,
+    topLevelCountBefore: getChildList(editor).length,
     effectiveStartBlockPath: effectiveStartBlock?.[1] ?? null,
     effectiveEndBlockPath: effectiveEndBlock?.[1] ?? null,
     removedInteriorElementSiblingStructure:
@@ -529,12 +548,12 @@ const reconcileDeleteStructure = (
   plan: DeleteRangePlan,
   removal: ReturnType<typeof removeDeleteContents>
 ) => {
-  const topLevelCleanupRange = getTopLevelCleanupRange(plan);
+  const cleanupRange = () => getTopLevelCleanupRange(editor, plan);
   const touchedRange = getTouchedTopLevelRange(plan);
   let keptIncompatibleBlockBoundary = false;
 
   if (!plan.isSingleText && plan.isAcrossBlocks) {
-    const candidateMergePoint = shouldMergeAcrossBlocks(plan)
+    const candidateMergePoint = plan.editableEdges
       ? resolveMergePoint(
           editor,
           plan,
@@ -556,7 +575,7 @@ const reconcileDeleteStructure = (
         editor,
         plan.preserveEmptyStartBlockPath,
         null,
-        topLevelCleanupRange
+        cleanupRange()
       );
       mergeAdjacentTextRuns(editor, touchedRange);
     } else if (plan.preserveEndBlock && mergePoint) {
@@ -565,7 +584,7 @@ const reconcileDeleteStructure = (
         editor,
         plan.preserveEmptyStartBlockPath,
         null,
-        topLevelCleanupRange
+        cleanupRange()
       );
       mergeAdjacentTextRuns(editor, touchedRange);
     } else if (plan.voids && mergePoint && plan.effectiveEndBlockPath) {
@@ -576,7 +595,7 @@ const reconcileDeleteStructure = (
         editor,
         plan.preserveEmptyStartBlockPath,
         null,
-        topLevelCleanupRange
+        cleanupRange()
       );
       mergeAdjacentTextRuns(editor, touchedRange);
     } else if (shouldRemoveEmptyForwardStartBlock(editor, plan)) {
@@ -588,7 +607,7 @@ const reconcileDeleteStructure = (
         editor,
         plan.preserveEmptyStartBlockPath,
         null,
-        topLevelCleanupRange
+        cleanupRange()
       );
       mergeAdjacentTextRuns(editor, touchedRange);
     } else if (mergePoint) {
@@ -597,7 +616,7 @@ const reconcileDeleteStructure = (
         editor,
         plan.preserveEmptyStartBlockPath,
         null,
-        topLevelCleanupRange
+        cleanupRange()
       );
       mergeAdjacentTextRuns(editor, touchedRange);
     } else {
@@ -605,7 +624,7 @@ const reconcileDeleteStructure = (
         editor,
         plan.preserveEmptyStartBlockPath,
         null,
-        topLevelCleanupRange
+        cleanupRange()
       );
 
       if (!plan.startNonEditable && !plan.endNonEditable) {
@@ -617,7 +636,7 @@ const reconcileDeleteStructure = (
       editor,
       plan.startMergeBlockPath,
       plan.effectiveStartBlockPath,
-      topLevelCleanupRange
+      cleanupRange()
     );
 
     if (!plan.removedInteriorElementSiblingStructure) {
@@ -1245,6 +1264,21 @@ const mergeBlocksAtPoint = (
     hanging: true,
     voids,
   });
+};
+
+export const resolveDeletedRange = (
+  editor: Editor,
+  range: Range
+): Range | null => {
+  const target = resolveDeleteTarget(editor, {}, range);
+
+  if (target?.kind !== 'range') return range;
+
+  return [target.startNonEditable, target.endNonEditable].every(
+    (holder) => !holder || isInlineVoid(editor, holder[0])
+  )
+    ? target.effectiveRange
+    : null;
 };
 
 export const deleteText: TextMutationMethods['delete'] = (

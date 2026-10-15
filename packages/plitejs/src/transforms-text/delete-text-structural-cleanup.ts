@@ -20,6 +20,7 @@ export type DeleteStructuralCleanupPlan = {
   effectiveEndBlockPath?: Path | null;
   effectiveStartBlockPath?: Path | null;
   isAcrossBlocks: boolean;
+  topLevelCountBefore: number;
 };
 
 const getCurrentNode = (editor: Editor, path: Path) => getNode(editor, path)[0];
@@ -294,22 +295,33 @@ export const getTouchedTopLevelRange = (
 };
 
 export const getTopLevelCleanupRange = (
+  editor: Editor,
   plan: DeleteStructuralCleanupPlan
-): { end: number; start: number } | null =>
-  plan.isAcrossBlocks &&
-  plan.effectiveStartBlockPath?.length === 1 &&
-  plan.effectiveEndBlockPath?.length === 1
-    ? {
-        end: Math.max(
-          plan.effectiveStartBlockPath[0],
-          plan.effectiveEndBlockPath[0]
-        ),
-        start: Math.min(
-          plan.effectiveStartBlockPath[0],
-          plan.effectiveEndBlockPath[0]
-        ),
-      }
-    : null;
+): { end: number; start: number } | null => {
+  if (
+    !plan.isAcrossBlocks ||
+    plan.effectiveStartBlockPath?.length !== 1 ||
+    plan.effectiveEndBlockPath?.length !== 1
+  ) {
+    return null;
+  }
+
+  const start = Math.min(
+    plan.effectiveStartBlockPath[0],
+    plan.effectiveEndBlockPath[0]
+  );
+  const removedTopLevelBlocks =
+    plan.topLevelCountBefore - getChildList(editor).length;
+
+  return {
+    end: Math.max(
+      start,
+      Math.max(plan.effectiveStartBlockPath[0], plan.effectiveEndBlockPath[0]) -
+        removedTopLevelBlocks
+    ),
+    start,
+  };
+};
 
 export const restorePreservedEmptyStartBlock = (
   editor: Editor,

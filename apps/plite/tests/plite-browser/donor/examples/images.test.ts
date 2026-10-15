@@ -1,6 +1,7 @@
 // Donor rows preserve the shared cross-browser fixture signature.
 import { expect, type Locator, test } from "@playwright/test";
 import {
+  BROWSER_HANDLE_KEY,
   installReactRenderProfiler,
   openExample,
   recordBrowserRuntimeErrors,
@@ -21,6 +22,15 @@ const firstExampleImageUrl = "https://picsum.photos/id/1015/160/90.jpg";
 const secondExampleImageUrl = "https://picsum.photos/id/1025/160/90.jpg";
 const thirdExampleImageUrl = "https://picsum.photos/id/1069/160/90.jpg";
 const zeroWidthSentinelOffset = 1;
+
+const readModelSelection = (root: Locator) =>
+  root.evaluate(
+    (element, key) =>
+      (element as unknown as Record<string, { getModelSelection: () => unknown }>)[
+        key
+      ].getModelSelection(),
+    BROWSER_HANDLE_KEY
+  );
 
 const dispatchImageDragOver = async (
   image: Locator,
@@ -687,16 +697,8 @@ test.describe("images example", () => {
           firstExampleImageUrl,
         ]);
       await expect
-        .poll(() => editor.selection.get())
-        .toEqual({
-          anchor: { path: [3, 0], offset: 0 },
-          focus: { path: [3, 0], offset: 0 },
-        });
-      await editor.assert.domSelectionTarget({
-        anchorOffset: zeroWidthSentinelOffset,
-        anchorPath: [3, 0],
-        isCollapsed: true,
-      });
+        .poll(() => readModelSelection(editor.root))
+        .toMatchObject({ kind: "node", mode: "block", paths: [[3]] });
       await expect(editor.root.locator("[data-editor-drop-cursor]")).toHaveCount(
         0
       );
@@ -805,16 +807,8 @@ test.describe("images example", () => {
         .poll(() => editor.get.modelBlockTexts())
         .toEqual([introText, targetText, "", trailingText, ""]);
       await expect
-        .poll(() => editor.selection.get())
-        .toEqual({
-          anchor: { path: [2, 0], offset: 0 },
-          focus: { path: [2, 0], offset: 0 },
-        });
-      await editor.assert.domSelectionTarget({
-        anchorOffset: zeroWidthSentinelOffset,
-        anchorPath: [2, 0],
-        isCollapsed: true,
-      });
+        .poll(() => readModelSelection(editor.root))
+        .toMatchObject({ kind: "node", mode: "block", paths: [[2]] });
       await expect(editor.root.locator("[data-editor-drop-cursor]")).toHaveCount(
         0
       );

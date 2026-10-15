@@ -391,7 +391,7 @@ React 版 `UploadPlugin` 会把拖入的文件放在指针所在区块的边缘�
 删除、改类型、改 `kind`、替换整个文档、重试或清理插件会取消任务。只读模式会阻止新提交，
 但不会取消已经提交的请求。
 
-`UploadFailure` 区分接收、配置、上传和 URL 结果错误。上传错误保留 SDK 的
+`UploadFailure` 区分接收、配置、放置、上传和 URL 结果错误。上传错误保留 SDK 的
 `unknown` 错误；无效的 URL 或抛错的 `getUrl` 属于结果错误。任务快照直接使用
 SDK 的 `AggregateProgress`（`loaded`、`total`、`fraction`），不是百分比数值。
 
@@ -412,7 +412,8 @@ SDK 的 `AggregateProgress`（`loaded`、`total`、`fraction`），不是百分�
 </API>
 
 草稿位模式复用第一个节点，并把其余文件插入相邻位置。第一个文件必须匹配草稿位的
-`kind`。所有模式都会先验证整个批次，再修改文档。
+`kind`。所有模式都会先验证整个批次，再修改文档。如果草稿放不进目标位置，例如父节点
+已达到子节点上限，整个批次不会插入，并向 `onError` 报告 `does-not-fit` 放置错误。
 
 ### `editor.plugin(BaseImagePlugin).update.insert`
 
@@ -476,7 +477,7 @@ const inserted = await editor.plugin(BaseImagePlugin).api.insertUrl(
 ```
 
 `getUrlFromDialog` 由应用提供，返回 URL、`null` 或相应的 Promise。
-选项支持插入位置 `at`、来源区块 `after`、`replaceEmpty`、`caption` 和 `select`。
+选项支持 `caption`、`select` 和一个位置：插入位置 `at`、来源区块 `after` 或目标区块 `before`。`replaceEmpty` 只能与 `after` 一起使用或在不指定位置时使用。
 设置 `replaceEmpty: true` 时，仅在 URL 解析完成后来源区块仍为空时替换它。
 区块移动或期间的文本编辑不会改变目标身份或丢失内容。应用负责 URL 对话框并选择媒体插件。
 

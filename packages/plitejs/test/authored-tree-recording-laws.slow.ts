@@ -21,7 +21,7 @@ import {
   target,
   transfer,
 } from 'plitejs';
-import { history } from 'plitejs/history';
+import { history as historyPlugin } from 'plitejs/history';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
 import {
@@ -136,7 +136,7 @@ const editorFor = (
     createEditor({
       plugins: [
         ...(withSchema === true ? [Quotes] : withSchema ? [withSchema] : []),
-        ...(withHistory ? [history()] : []),
+        ...(withHistory ? [historyPlugin()] : []),
         transfer(),
         // Plain editing reads review marks as ordinary properties, so a
         // document holding suggestions loads, and nothing records.
@@ -645,6 +645,101 @@ const deleteBackwardOverOwnPaste = [
   ],
   { from: 'd', kind: 'deleteRange', to: 'a' },
 ] as never;
+const moveJoinTarget = [
+  [
+    {
+      type: 'quote',
+      children: [
+        { type: 'paragraph', children: [{ text: 'ab' }] },
+        { type: 'paragraph', children: [{ text: 'cd' }] },
+      ],
+    },
+    {
+      type: 'quote',
+      children: [
+        { type: 'paragraph', children: [{ text: 'ef' }] },
+        { type: 'paragraph', children: [{ text: 'gh' }] },
+      ],
+    },
+  ],
+  [
+    {
+      author: 'alice',
+      command: { from: 'h', kind: 'deleteRange', to: 'a' },
+      intent: 'propose',
+    },
+    {
+      author: 'alice',
+      command: {
+        at: 'a',
+        edge: 'before',
+        kind: 'transferNode',
+        to: 'g',
+      },
+      intent: 'edit',
+    },
+  ],
+  { from: 'a', kind: 'deleteRange', to: 'a' },
+] as never;
+const joinPastMovedLine = [
+  [
+    {
+      type: 'quote',
+      children: [
+        { type: 'paragraph', children: [{ text: 'ab' }] },
+        { type: 'paragraph', children: [{ text: 'cd' }] },
+      ],
+    },
+    {
+      type: 'quote',
+      children: [
+        { type: 'paragraph', children: [{ text: 'ef' }] },
+        { type: 'paragraph', children: [{ text: 'gh' }] },
+      ],
+    },
+  ],
+  [
+    {
+      author: 'alice',
+      command: { from: 'h', kind: 'deleteRange', to: 'c' },
+      intent: 'propose',
+    },
+    {
+      author: 'alice',
+      command: {
+        at: 'a',
+        edge: 'before',
+        kind: 'transferNode',
+        to: 'g',
+      },
+      intent: 'edit',
+    },
+  ],
+  { from: 'c', kind: 'deleteRange', to: 'c' },
+] as never;
+const joinIntoJoiningLine = [
+  [
+    {
+      type: 'quote',
+      children: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+    },
+    { type: 'paragraph', children: [{ text: 'cd' }] },
+    { type: 'paragraph', children: [{ text: 'ef' }] },
+  ],
+  [
+    {
+      author: 'alice',
+      command: { at: 'd', direction: 'backward', kind: 'delete' },
+      intent: 'propose',
+    },
+    {
+      author: 'alice',
+      command: { from: 'd', kind: 'deleteRange', to: 'e' },
+      intent: 'edit',
+    },
+  ],
+  { at: 'c', direction: 'backward', kind: 'delete' },
+] as never;
 
 type RecordedLaw = (
   recorded: Readonly<{
@@ -689,6 +784,8 @@ const recordedCase =
     return true;
   };
 
+const RECORDED_SEED = process.env.PLITE_RECORDED_SEED;
+
 /**
  * Runs one generated command as Bob in both intents on a document a generated
  * history of Alice's and Bob's edits produced, and checks `law` on the
@@ -700,7 +797,7 @@ const recordedCommands = (
   prepare?: Prepare
 ) => {
   let compared = 0;
-  const run = recordedCase(law, prepare);
+  const recorded = recordedCase(law, prepare);
 
   fc.assert(
     fc.property(
@@ -708,7 +805,7 @@ const recordedCommands = (
       historyArbitrary,
       commandArbitrary(LETTERS.slice(0, 8)),
       (initial, history, command) => {
-        if (run(initial, history, command)) compared += 1;
+        if (recorded(initial, history, command)) compared += 1;
       }
     ),
     {
@@ -927,8 +1024,12 @@ const recordedCommands = (
           ],
           { from: 'a', kind: 'deleteRange', to: 'a' },
         ] as never,
+        moveJoinTarget,
+        joinPastMovedLine,
+        joinIntoJoiningLine,
       ],
       numRuns,
+      ...(RECORDED_SEED === undefined ? {} : { seed: Number(RECORDED_SEED) }),
     }
   );
 
@@ -1467,7 +1568,7 @@ const undoRestores = (
     replay(initial, edits),
     'bob',
     intent,
-    () => `bob:${++minted}`,
+    () => `bob:${(minted += 1)}`,
     true,
     true
   );
@@ -1520,12 +1621,12 @@ const undoRestores = (
   walk('redo');
 
   const last = expandedChildren(editor);
-  const decided = authoredTestApi(editor).decide({
+  const decision = authoredTestApi(editor).decide({
     action,
     changes: changesIn(last),
   });
 
-  if (decided.status !== 'applied') return 'compared';
+  if (decision.status !== 'applied') return 'compared';
 
   const after = expandedChildren(editor);
 
@@ -1819,7 +1920,7 @@ const locationsOf = (nodes: readonly Node[]) => {
   return { letters, paths };
 };
 
-const COMPARED = { diffed: 0, letters: 0 };
+const COMPARED = { deltas: 0, diffed: 0, letters: 0, renames: 0 };
 
 const LAST_FRAMES = new WeakMap<
   Editor,
@@ -1889,7 +1990,7 @@ const assertLedger = (editor: Editor, label: string) => {
   const cards = groupAuthoredChanges(indexed);
 
   assert.deepEqual(
-    [...book.idsFrom(null, false)],
+    [...book.idsFrom({})],
     cards.flatMap((card) => card.map((change) => change.id)),
     `${label}: the book orders the changes as the kernel's cards do`
   );
@@ -2031,6 +2132,124 @@ const assertLedger = (editor: Editor, label: string) => {
   }
 };
 
+type ReviewCount = Readonly<{
+  /** Each change's card, named by its oldest change. */
+  cards: ReadonlyMap<string, string>;
+  /** Each card's changes and their revisions, serialized to compare. */
+  members: ReadonlyMap<string, string>;
+  /** The main-root blocks holding each change. */
+  ranks: ReadonlyMap<string, readonly number[]>;
+  revisions: ReadonlyMap<string, number>;
+}>;
+
+const countReview = (editor: Editor): ReviewCount => {
+  const indexed = indexAuthoredChanges(editor.read.value());
+  const cards = new Map<string, string>();
+  const members = new Map<string, string>();
+
+  for (const card of groupAuthoredChanges(indexed)) {
+    const oldest = card.reduce((left, right) =>
+      right.createdAt < left.createdAt ||
+      (right.createdAt === left.createdAt && right.id < left.id)
+        ? right
+        : left
+    );
+
+    members.set(
+      oldest.id,
+      JSON.stringify(
+        card
+          .map((change) => [change.id, change.revision] as const)
+          .sort(([left], [right]) => left.localeCompare(right))
+      )
+    );
+    for (const change of card) cards.set(change.id, oldest.id);
+  }
+
+  return {
+    cards,
+    members,
+    ranks: new Map(
+      [...indexed.occurrences].map(([id, occurrences]) => [
+        id,
+        occurrences
+          .filter((occurrence) => occurrence.root === 'main')
+          .map((occurrence) => occurrence.path[0]),
+      ])
+    ),
+    revisions: new Map(
+      [...indexed.changes].map(([id, change]) => [id, change.revision])
+    ),
+  };
+};
+
+/**
+ * Check every review delta an editor delivers against the kernel's recount
+ * of the commit before it, and that a commit changing nothing in the review
+ * delivers none.
+ */
+const watchDeltas = (editor: Editor) => {
+  const delivered: unknown[] = [];
+  const expected: Array<Readonly<{ blocks: readonly string[] }>> = [];
+  let last = countReview(editor);
+
+  editor.subscribeCommit(() => {
+    const next = countReview(editor);
+    const blocks = new Set<string>();
+
+    for (const [id, card] of next.cards) {
+      const was = last.cards.get(id);
+
+      if (was === undefined || was === card) continue;
+      for (const rank of next.ranks.get(id) ?? []) {
+        blocks.add(getDefined(editor.key([rank])));
+      }
+    }
+
+    const delta = {
+      blocks: [...blocks].sort(),
+      changed: [...next.revisions]
+        .filter(([id, revision]) => last.revisions.get(id) !== revision)
+        .map(([id]) => id)
+        .sort(),
+      groups: [
+        ...[...next.members]
+          .filter(([id, members]) => last.members.get(id) !== members)
+          .map(([id]) => id),
+        ...[...last.members.keys()].filter((id) => !next.members.has(id)),
+      ].sort(),
+      removed: [...last.revisions.keys()]
+        .filter((id) => !next.revisions.has(id))
+        .sort(),
+    };
+
+    last = next;
+    if (Object.values(delta).some((ids) => ids.length > 0)) {
+      expected.push(delta);
+    }
+  });
+  editor.api.authored.subscribeChanges((delta) =>
+    delivered.push({
+      blocks: [...delta.blocks].sort(),
+      changed: [...delta.changed].sort(),
+      groups: [...delta.groups].sort(),
+      removed: [...delta.removed].sort(),
+    })
+  );
+
+  return (label: string) => {
+    COMPARED.deltas += expected.length;
+    COMPARED.renames += expected.filter(
+      (delta) => delta.blocks.length > 0
+    ).length;
+    assert.deepEqual(
+      delivered.splice(0),
+      expected.splice(0),
+      `${label}: the review deltas match the kernel's recount of each commit`
+    );
+  };
+};
+
 /**
  * The seed the ledger law runs under, printed so a failure replays;
  * PLITE_LEDGER_SEED runs another.
@@ -2085,6 +2304,8 @@ const ledgerSteps = (shape: LedgerRoot, numRuns: number) => {
         });
 
         const label = `after ${JSON.stringify(plan)}`;
+        const leaderDeltas = watchDeltas(leader);
+        const followerDeltas = watchDeltas(follower);
 
         assertLedger(leader, `load ${label}`);
         for (const [index, step] of plan.entries()) {
@@ -2146,6 +2367,7 @@ const ledgerSteps = (shape: LedgerRoot, numRuns: number) => {
             throw error;
           }
           assertLedger(leader, `step ${index} ${label}`);
+          leaderDeltas(`step ${index} ${label}`);
           for (const commit of delivered.splice(0)) {
             follower.update(
               { tags: ['collaboration', 'history-skip'] },
@@ -2159,6 +2381,7 @@ const ledgerSteps = (shape: LedgerRoot, numRuns: number) => {
             );
           }
           assertLedger(follower, `remote step ${index} ${label}`);
+          followerDeltas(`remote step ${index} ${label}`);
           if (!isDeepStrictEqual(rootChildren(actor), before)) edited += 1;
           steps += 1;
         }
@@ -2240,322 +2463,501 @@ const assertProposedChildren = (suggested: readonly Node[]) => {
 };
 
 describe('authored review tree recording laws', () => {
-  it('gives typed text no deletion and every letter one owner, and rejecting everything undoes a suggestion', () => {
-    const compared = recordedCommands(undoesSuggestion, 250);
+  it(
+    'gives typed text no deletion and every letter one owner, and rejecting everything undoes a suggestion',
+    { timeout: 300_000 },
+    () => {
+      const compared = recordedCommands(undoesSuggestion, 250);
 
-    assert.ok(compared > 150, `only ${compared} commands compared`);
-  });
+      assert.ok(compared > 150, `only ${compared} commands compared`);
+    }
+  );
 
-  it('keeps every recorded document through compaction and expansion', () => {
-    let stacked = 0;
-    const compared = recordedCommands(({ before, edited, suggested }) => {
-      for (const children of [before, edited, suggested]) {
-        const value = { children };
-        const compacted = compactClaims(value);
+  it(
+    'keeps every recorded document through compaction and expansion',
+    { timeout: 300_000 },
+    () => {
+      let stacked = 0;
+      const compared = recordedCommands(({ before, edited, suggested }) => {
+        for (const children of [before, edited, suggested]) {
+          const value = { children };
+          const compacted = compactClaims(value);
 
-        if (compacted !== value) stacked += 1;
-        assert.deepEqual(expandContexts(compacted).children, children);
-      }
-    }, 600);
-
-    assert.ok(compared > 360, `only ${compared} commands compared`);
-    assert.ok(stacked >= 10, `only ${stacked} documents held a stack`);
-  });
-
-  it('accepting everything after a command in either intent gives what a plain editor gives on the accepted document, and accepting or rejecting everything applies', () => {
-    const counts = { plain: 0 };
-    const compared = recordedCommands(acceptsLikePlainEditor(counts), 250);
-
-    console.info(JSON.stringify({ compared, plainCompared: counts.plain }));
-    assert.ok(compared > 150, `only ${compared} commands compared`);
-    assert.ok(
-      counts.plain > 4,
-      `only ${counts.plain} commands compared with a plain editor`
-    );
-  });
-
-  it('undoing commands and a decision restores each document before them, review marks included, and redoing them restores each result', () => {
-    let compared = 0;
-
-    fc.assert(
-      fc.property(
-        documentArbitrary,
-        historyArbitrary,
-        fc.array(commandArbitrary(LETTERS.slice(0, 8)), {
-          maxLength: 3,
-          minLength: 1,
-        }),
-        fc.constantFrom('edit' as const, 'propose' as const),
-        fc.constantFrom('accept' as const, 'reject' as const),
-        (initial, history, commands, intent, action) => {
-          if (
-            undoRestores(initial, history, commands, intent, action) ===
-            'compared'
-          ) {
-            compared += 1;
-          }
+          if (compacted !== value) stacked += 1;
+          assert.deepEqual(expandContexts(compacted).children, children);
         }
-      ),
-      {
-        examples: [
-          // A suggested move selects the moved copy, not the struck original.
-          [
-            [
-              { type: 'paragraph', children: [{ text: 'ab' }] },
-              {
-                type: 'quote',
-                children: [{ type: 'paragraph', children: [{ text: 'cd' }] }],
-              },
-            ],
-            [],
-            [{ at: 'a', edge: 'after', kind: 'transferNode', to: 'c' }],
-            'propose',
-            'reject',
-          ] as never,
-          [
-            [
-              { type: 'paragraph', children: [{ text: 'ab' }] },
-              {
-                type: 'quote',
-                children: [
-                  { type: 'paragraph', children: [{ text: 'cd' }] },
-                  { type: 'paragraph', children: [{ text: 'ef' }] },
-                ],
-              },
-            ],
-            [],
-            [
-              { kind: 'replaceChildren', shift: 1 },
-              { at: 'f', direction: 'backward', kind: 'delete' },
-              { from: 'a', kind: 'typeOver', to: 'a' },
-            ],
-            'propose',
-            'accept',
-          ] as never,
-          [
-            [
-              {
-                type: 'quote',
-                children: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
-              },
-              { type: 'paragraph', children: [{ text: 'cd' }] },
-            ],
-            [
-              {
-                author: 'alice',
-                command: { at: 'c', edge: 'after', kind: 'moveNode', to: 'a' },
-                intent: 'propose',
-              },
-            ],
-            [
-              { at: 'c', direction: 'forward', kind: 'delete' },
-              { from: 'a', kind: 'typeOver', to: 'a' },
-            ],
-            'edit',
-            'reject',
-          ] as never,
-          // The second drag moves a struck letter onto itself.
-          [
-            [
-              { type: 'paragraph', children: [{ text: 'ab' }] },
-              { type: 'paragraph', children: [{ text: 'cd' }] },
-            ],
-            [
-              {
-                author: 'alice',
-                command: { kind: 'replaceChildren', shift: 1 },
-                intent: 'propose',
-              },
-            ],
-            [
-              { at: 'd', kind: 'transferText', to: 'a' },
-              { at: 'd', kind: 'transferText', to: 'a' },
-            ],
-            'edit',
-            'accept',
-          ] as never,
-        ],
-        numRuns: 250,
-      }
-    );
+      }, 600);
 
-    assert.ok(compared > 150, `only ${compared} command runs compared`);
-  });
+      assert.ok(compared > 360, `only ${compared} commands compared`);
+      assert.ok(stacked >= 10, `only ${stacked} documents held a stack`);
+    }
+  );
 
-  it('keeps the review ledger equal to the kernel after every step, undo, redo, decision and remote commit', () => {
-    console.info(JSON.stringify({ ledgerSeed: LEDGER_SEED }));
+  it(
+    'accepting everything after a command in either intent gives what a plain editor gives on the accepted document, and accepting or rejecting everything applies',
+    { timeout: 300_000 },
+    () => {
+      const counts = { plain: 0 };
+      const compared = recordedCommands(acceptsLikePlainEditor(counts), 250);
 
-    const { steps } = ledgerSteps(MAIN_ROOT, 200);
-
-    assert.ok(steps > 400, `only ${steps} steps compared`);
-    console.info(`ledger seed ${LEDGER_SEED}: compared`, COMPARED);
-    assert.ok(
-      COMPARED.letters > 4000,
-      `only ${COMPARED.letters} kept letters compared`
-    );
-  });
-
-  it('keeps the review ledger equal to the kernel in a titled root, a root of at least two blocks and a named root', () => {
-    const before = readLedgerWork();
-
-    for (const [name, shape] of Object.entries(OTHER_ROOTS)) {
-      const { edited, steps } = ledgerSteps(shape, 80);
-
+      console.info(JSON.stringify({ compared, plainCompared: counts.plain }));
+      assert.ok(compared > 150, `only ${compared} commands compared`);
       assert.ok(
-        steps > 150,
-        `only ${steps} steps compared in the ${name} root`
-      );
-      assert.ok(
-        edited > steps / 3,
-        `only ${edited} of ${steps} steps changed the ${name} root`
+        counts.plain > 4,
+        `only ${counts.plain} commands compared with a plain editor`
       );
     }
+  );
 
-    const after = readLedgerWork();
-    const runs = {
-      filled: after.filledRuns - before.filledRuns,
-      head: after.headRuns - before.headRuns,
-    };
+  it(
+    'undoing commands and a decision restores each document before them, review marks included, and redoing them restores each result',
+    { timeout: 300_000 },
+    () => {
+      let compared = 0;
 
-    console.info(`ledger seed ${LEDGER_SEED}: runs`, runs);
-    assert.ok(runs.head > HEAD_RUNS, `only ${runs.head} head runs resolved`);
-    assert.ok(
-      runs.filled > FILLED_RUNS,
-      `only ${runs.filled} runs filled a minimum`
-    );
-  });
-
-  it('a command gives, once everything is accepted, what a plain editor gives on the accepted document, and a letter typed next lands where it does', () => {
-    const counts = commandCounts();
-
-    fc.assert(
-      fc.property(
-        documentArbitrary,
-        // Limits: a pending unwrap comes only from a write outside commands,
-        // as Plate's keys record lifting a line out of a quote as a move, and
-        // commands that cross its wrapper's edge are not settled. Commands
-        // over a history that moves content are not settled either.
-        historyArbitrary.map((edits) => edits.filter(settles)),
-        stepArbitrary,
-        fc.constantFrom('edit' as const, 'propose' as const),
-        commandCase(counts)
-      ),
-      {
-        examples: [
-          // Rejecting Bob's break waits on Alice's pending text, so every run
-          // meets a rejection that waits on another change.
-          [
-            [
-              { type: 'paragraph', children: [{ text: 'ab' }] },
-              { type: 'paragraph', children: [{ text: 'cd' }] },
-              {
-                type: 'quote',
-                children: [{ type: 'paragraph', children: [{ text: 'ef' }] }],
-              },
-            ],
-            [
-              {
-                author: 'alice',
-                command: { at: 'd', kind: 'type', side: 1 },
-                intent: 'propose',
-              },
-              {
-                author: 'bob',
-                command: { at: 'b', kind: 'wrap' },
-                intent: 'edit',
-              },
-            ],
-            { at: { letter: 'd', side: 1 }, kind: 'break' },
-            'propose',
-          ] as never,
-        ],
-        numRuns: 250,
-      }
-    );
-
-    console.info(JSON.stringify(counts));
-    assert.ok(
-      counts.compared > 150,
-      `only ${counts.compared} commands compared`
-    );
-    assert.ok(counts.joined >= 1, 'no command ran over a pending join');
-    assert.ok(counts.blocked >= 1, 'no rejection waited on another change');
-    assert.ok(
-      counts.struckEnd >= 5,
-      `only ${counts.struckEnd} with an end in struck text`
-    );
-  });
-
-  it('reads each element’s proposed children as accepting everything holds them before completion builds', () => {
-    const compared = recordedCommands(
-      ({ suggested }) => assertProposedChildren(suggested),
-      250
-    );
-
-    assert.ok(compared > 150, `only ${compared} commands compared`);
-  });
-
-  it('decides recorded changes to one document in every order, with and without content declarations', () => {
-    let blocked = 0;
-    let compared = 0;
-
-    fc.assert(
-      fc.property(
-        documentArbitrary,
-        withNesting(fc.array(editArbitrary, { maxLength: 4, minLength: 1 })),
-        fc.array(
-          fc.constantFrom(
-            'accept' as const,
-            'keep' as const,
-            'reject' as const
-          ),
-          {
-            maxLength: 4,
-            minLength: 4,
+      fc.assert(
+        fc.property(
+          documentArbitrary,
+          historyArbitrary,
+          fc.array(commandArbitrary(LETTERS.slice(0, 8)), {
+            maxLength: 3,
+            minLength: 1,
+          }),
+          fc.constantFrom('edit' as const, 'propose' as const),
+          fc.constantFrom('accept' as const, 'reject' as const),
+          (initial, history, commands, intent, action) => {
+            if (
+              undoRestores(initial, history, commands, intent, action) ===
+              'compared'
+            ) {
+              compared += 1;
+            }
           }
         ),
-        fc.integer({ max: 23, min: 0 }),
-        (initial, history, actions, rotation) => {
-          const recorded = replay(initial, history);
-          const changes = changesIn(recorded);
-          const decisions = new Map(
-            changes.flatMap((change, index) =>
-              actions[index % actions.length] === 'keep'
-                ? []
-                : [
-                    [
-                      change,
-                      actions[index % actions.length] as 'accept' | 'reject',
-                    ],
-                  ]
-            )
-          );
+        {
+          examples: [
+            // A suggested move selects the moved copy, not the struck original.
+            [
+              [
+                { type: 'paragraph', children: [{ text: 'ab' }] },
+                {
+                  type: 'quote',
+                  children: [{ type: 'paragraph', children: [{ text: 'cd' }] }],
+                },
+              ],
+              [],
+              [{ at: 'a', edge: 'after', kind: 'transferNode', to: 'c' }],
+              'propose',
+              'reject',
+            ] as never,
+            [
+              [
+                { type: 'paragraph', children: [{ text: 'ab' }] },
+                {
+                  type: 'quote',
+                  children: [
+                    { type: 'paragraph', children: [{ text: 'cd' }] },
+                    { type: 'paragraph', children: [{ text: 'ef' }] },
+                  ],
+                },
+              ],
+              [],
+              [
+                { kind: 'replaceChildren', shift: 1 },
+                { at: 'f', direction: 'backward', kind: 'delete' },
+                { from: 'a', kind: 'typeOver', to: 'a' },
+              ],
+              'propose',
+              'accept',
+            ] as never,
+            [
+              [
+                {
+                  type: 'quote',
+                  children: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+                },
+                { type: 'paragraph', children: [{ text: 'cd' }] },
+              ],
+              [
+                {
+                  author: 'alice',
+                  command: {
+                    at: 'c',
+                    edge: 'after',
+                    kind: 'moveNode',
+                    to: 'a',
+                  },
+                  intent: 'propose',
+                },
+              ],
+              [
+                { at: 'c', direction: 'forward', kind: 'delete' },
+                { from: 'a', kind: 'typeOver', to: 'a' },
+              ],
+              'edit',
+              'reject',
+            ] as never,
+            // The second drag moves a struck letter onto itself.
+            [
+              [
+                { type: 'paragraph', children: [{ text: 'ab' }] },
+                { type: 'paragraph', children: [{ text: 'cd' }] },
+              ],
+              [
+                {
+                  author: 'alice',
+                  command: { kind: 'replaceChildren', shift: 1 },
+                  intent: 'propose',
+                },
+              ],
+              [
+                { at: 'd', kind: 'transferText', to: 'a' },
+                { at: 'd', kind: 'transferText', to: 'a' },
+              ],
+              'edit',
+              'accept',
+            ] as never,
+          ],
+          numRuns: 250,
+        }
+      );
 
-          if (decisions.size === 0) return;
-          for (const withSchema of [true, false]) {
-            // Without content declarations, an empty block needs a text.
-            try {
-              editorFor(recorded, 'carol', 'edit', 'carol:1', withSchema);
-            } catch (error) {
-              if (error instanceof EditorSchemaValidationError) continue;
-              throw error;
+      assert.ok(compared > 150, `only ${compared} command runs compared`);
+    }
+  );
+
+  it(
+    'keeps the review ledger equal to the kernel after every step, undo, redo, decision and remote commit',
+    { timeout: 300_000 },
+    () => {
+      console.info(JSON.stringify({ ledgerSeed: LEDGER_SEED }));
+
+      const { steps } = ledgerSteps(MAIN_ROOT, 200);
+
+      assert.ok(steps > 400, `only ${steps} steps compared`);
+      console.info(`ledger seed ${LEDGER_SEED}: compared`, COMPARED);
+      assert.ok(
+        COMPARED.letters > 4000,
+        `only ${COMPARED.letters} kept letters compared`
+      );
+      assert.ok(
+        COMPARED.deltas > 300 && COMPARED.renames > 0,
+        `only ${COMPARED.deltas} review deltas compared, ${COMPARED.renames} renaming a card`
+      );
+    }
+  );
+
+  it(
+    'keeps the review ledger equal to the kernel in a titled root, a root of at least two blocks and a named root',
+    { timeout: 300_000 },
+    () => {
+      const before = readLedgerWork();
+
+      for (const [name, shape] of Object.entries(OTHER_ROOTS)) {
+        const { edited, steps } = ledgerSteps(shape, 80);
+
+        assert.ok(
+          steps > 150,
+          `only ${steps} steps compared in the ${name} root`
+        );
+        assert.ok(
+          edited > steps / 3,
+          `only ${edited} of ${steps} steps changed the ${name} root`
+        );
+      }
+
+      const after = readLedgerWork();
+      const runs = {
+        filled: after.filledRuns - before.filledRuns,
+        head: after.headRuns - before.headRuns,
+      };
+
+      console.info(`ledger seed ${LEDGER_SEED}: runs`, runs);
+      assert.ok(runs.head > HEAD_RUNS, `only ${runs.head} head runs resolved`);
+      assert.ok(
+        runs.filled > FILLED_RUNS,
+        `only ${runs.filled} runs filled a minimum`
+      );
+    }
+  );
+
+  it(
+    'a command gives, once everything is accepted, what a plain editor gives on the accepted document, and a letter typed next lands where it does',
+    { timeout: 300_000 },
+    () => {
+      const counts = commandCounts();
+
+      fc.assert(
+        fc.property(
+          documentArbitrary,
+          // Limits: a pending unwrap comes only from a write outside commands,
+          // as Plate's keys record lifting a line out of a quote as a move, and
+          // commands that cross its wrapper's edge are not settled. Commands
+          // over a history that moves content are not settled either.
+          historyArbitrary.map((edits) => edits.filter(settles)),
+          stepArbitrary,
+          fc.constantFrom('edit' as const, 'propose' as const),
+          commandCase(counts)
+        ),
+        {
+          examples: [
+            // Rejecting Bob's break waits on Alice's pending text, so every run
+            // meets a rejection that waits on another change.
+            [
+              [
+                { type: 'paragraph', children: [{ text: 'ab' }] },
+                { type: 'paragraph', children: [{ text: 'cd' }] },
+                {
+                  type: 'quote',
+                  children: [{ type: 'paragraph', children: [{ text: 'ef' }] }],
+                },
+              ],
+              [
+                {
+                  author: 'alice',
+                  command: { at: 'd', kind: 'type', side: 1 },
+                  intent: 'propose',
+                },
+                {
+                  author: 'bob',
+                  command: { at: 'b', kind: 'wrap' },
+                  intent: 'edit',
+                },
+              ],
+              { at: { letter: 'd', side: 1 }, kind: 'break' },
+              'propose',
+            ] as never,
+          ],
+          numRuns: 250,
+        }
+      );
+
+      console.info(JSON.stringify(counts));
+      assert.ok(
+        counts.compared > 150,
+        `only ${counts.compared} commands compared`
+      );
+      assert.ok(counts.joined >= 1, 'no command ran over a pending join');
+      assert.ok(counts.blocked >= 1, 'no rejection waited on another change');
+      assert.ok(
+        counts.struckEnd >= 5,
+        `only ${counts.struckEnd} with an end in struck text`
+      );
+    }
+  );
+
+  it(
+    'reads each element’s proposed children as accepting everything holds them before completion builds',
+    { timeout: 300_000 },
+    () => {
+      const compared = recordedCommands(
+        ({ suggested }) => assertProposedChildren(suggested),
+        250
+      );
+
+      assert.ok(compared > 150, `only ${compared} commands compared`);
+    }
+  );
+
+  it(
+    'decides recorded changes to one document in every order, with and without content declarations',
+    { timeout: 300_000 },
+    () => {
+      let blocked = 0;
+      let compared = 0;
+
+      fc.assert(
+        fc.property(
+          documentArbitrary,
+          withNesting(fc.array(editArbitrary, { maxLength: 4, minLength: 1 })),
+          fc.array(
+            fc.constantFrom(
+              'accept' as const,
+              'keep' as const,
+              'reject' as const
+            ),
+            {
+              maxLength: 4,
+              minLength: 4,
             }
+          ),
+          fc.integer({ max: 23, min: 0 }),
+          (initial, history, actions, rotation) => {
+            const recorded = replay(initial, history);
+            const changes = changesIn(recorded);
+            const decisions = new Map(
+              changes.flatMap((change, index) =>
+                actions[index % actions.length] === 'keep'
+                  ? []
+                  : [
+                      [
+                        change,
+                        actions[index % actions.length] as 'accept' | 'reject',
+                      ],
+                    ]
+              )
+            );
 
-            const decide = (value: unknown, batch: readonly string[]) => {
+            if (decisions.size === 0) return;
+            for (const withSchema of [true, false]) {
+              // Without content declarations, an empty block needs a text.
+              try {
+                editorFor(recorded, 'carol', 'edit', 'carol:1', withSchema);
+              } catch (error) {
+                if (error instanceof EditorSchemaValidationError) continue;
+                throw error;
+              }
+
+              const decide = (value: unknown, batch: readonly string[]) => {
+                const editor = editorFor(
+                  value as readonly Node[],
+                  'carol',
+                  'edit',
+                  'carol:1',
+                  withSchema
+                );
+                const result = authoredTestApi(editor).decide(
+                  (['accept', 'reject'] as const).map((action) => ({
+                    action,
+                    changes: batch.filter(
+                      (change) => decisions.get(change) === action
+                    ),
+                  }))
+                );
+
+                return {
+                  result,
+                  reviewed: reviewedValue(editor).children,
+                  value: editor.read.value(),
+                };
+              };
+              const together = decide(recorded, [...decisions.keys()]);
+
+              if (together.result.status !== 'applied') continue;
+              const order = [...decisions.keys()];
+
+              order.push(...order.splice(0, rotation % order.length));
+              let value: unknown = recorded;
+              let reviewed: unknown = recorded;
+              let admissible = true;
+
+              while (order.length > 0 && admissible) {
+                const batch = new Set([order.shift()!]);
+                let step = decide(value, [...batch]);
+
+                while (step.result.status === 'blocked') {
+                  blocked += 1;
+                  // A change the decision set leaves undecided cannot join it.
+                  if (
+                    step.result.with.some((change) => !decisions.has(change))
+                  ) {
+                    admissible = false;
+                    break;
+                  }
+                  for (const change of step.result.with) batch.add(change);
+                  step = decide(value, [...batch]);
+                }
+                for (const change of batch) {
+                  if (order.includes(change)) {
+                    order.splice(order.indexOf(change), 1);
+                  }
+                }
+                ({ reviewed, value } = step);
+              }
+              if (!admissible) continue;
+              compared += 1;
+              assert.deepEqual(reviewed, together.reviewed);
+            }
+            for (const action of ['accept', 'reject'] as const) {
+              const { status } = authoredTestApi(
+                editorFor(recorded, 'carol', 'edit', 'carol:1')
+              ).decide({ action, changes });
+
+              assert.ok(
+                status === 'applied' || status === 'unchanged',
+                `${action} everything returned ${status}: ${JSON.stringify(recorded)}`
+              );
+            }
+          }
+        ),
+        { numRuns: 300 }
+      );
+      assert.ok(compared > 150, `only ${compared} decision orders compared`);
+      assert.ok(blocked >= 1, 'no decision waited on another change');
+    }
+  );
+});
+
+describe('authored review tree recording laws for cuts', () => {
+  it(
+    'rejects every Enter inside a link to one link holding what a removal keeps, in every order and either intent',
+    { timeout: 300_000 },
+    () => {
+      fc.assert(
+        fc.property(
+          fc.uniqueArray(fc.integer({ max: 5, min: 1 }), {
+            maxLength: 3,
+            minLength: 2,
+          }),
+          fc.nat({ max: 3 }),
+          fc.constantFrom('edit' as const, 'propose' as const),
+          fc.infiniteStream(fc.nat({ max: 1000 })),
+          (offsets, removedPiece, intent, shuffle) => {
+            const word = 'abcdef';
+            let value: readonly Node[] = [
+              {
+                type: 'paragraph',
+                children: [
+                  { text: '' },
+                  { type: 'link', children: [{ text: word }] },
+                  { text: '' },
+                ],
+              },
+            ];
+            const enters = offsets.map((_, index) => `s${index}`);
+
+            offsets.forEach((offset, index) => {
+              const editor = editorFor(value, 'bob', 'propose', enters[index]);
+
+              if (
+                !run(editor, { at: word[offset], kind: 'break', side: 0 }, '')
+              ) {
+                throw new Error(`no letter ${word[offset]}`);
+              }
+              value = expandedChildren(editor);
+            });
+
+            const bounds = [
+              0,
+              ...[...offsets].sort((a, b) => a - b),
+              word.length,
+            ];
+            const piece = removedPiece % (bounds.length - 1);
+            const removed = word.slice(bounds[piece], bounds[piece + 1]);
+            const remover = editorFor(value, 'eve', intent, 'eve:1');
+
+            run(remover, { at: removed[0], kind: 'removeLink' }, '');
+            value = expandedChildren(remover);
+
+            const actions = new Map([
+              ...enters.map((change) => [change, 'reject'] as const),
+              ...(intent === 'propose' ? [['eve:1', 'accept'] as const] : []),
+            ]);
+            const decide = (current: unknown, changes: readonly string[]) => {
               const editor = editorFor(
-                value as readonly Node[],
+                current as readonly Node[],
                 'carol',
                 'edit',
-                'carol:1',
-                withSchema
+                'carol:1'
               );
               const result = authoredTestApi(editor).decide(
-                (['accept', 'reject'] as const).map((action) => ({
-                  action,
-                  changes: batch.filter(
-                    (change) => decisions.get(change) === action
-                  ),
-                }))
+                (['accept', 'reject'] as const).flatMap((action) => {
+                  const picked = changes.filter(
+                    (change) => actions.get(change) === action
+                  );
+
+                  return picked.length > 0 ? [{ action, changes: picked }] : [];
+                })
               );
 
               return {
@@ -2564,177 +2966,49 @@ describe('authored review tree recording laws', () => {
                 value: editor.read.value(),
               };
             };
-            const together = decide(recorded, [...decisions.keys()]);
+            const order = [...actions.keys()].sort(
+              () => shuffle.next().value - 500
+            );
+            let stepped: unknown = value;
+            let reviewed: unknown = value;
+            let waiting: string[] = [];
 
-            if (together.result.status !== 'applied') continue;
-            const order = [...decisions.keys()];
+            for (const change of order) {
+              waiting = waiting.concat(change);
+              const step = decide(stepped, waiting);
 
-            order.push(...order.splice(0, rotation % order.length));
-            let value: unknown = recorded;
-            let reviewed: unknown = recorded;
-            let admissible = true;
-
-            while (order.length > 0 && admissible) {
-              const batch = new Set([order.shift()!]);
-              let step = decide(value, [...batch]);
-
-              while (step.result.status === 'blocked') {
-                blocked += 1;
-                // A change the decision set leaves undecided cannot join it.
-                if (step.result.with.some((change) => !decisions.has(change))) {
-                  admissible = false;
-                  break;
-                }
-                for (const change of step.result.with) batch.add(change);
-                step = decide(value, [...batch]);
-              }
-              for (const change of batch) {
-                if (order.includes(change)) {
-                  order.splice(order.indexOf(change), 1);
-                }
-              }
-              ({ reviewed, value } = step);
+              if (step.result.status === 'blocked') continue;
+              ({ reviewed, value: stepped } = step);
+              waiting = [];
             }
-            if (!admissible) continue;
-            compared += 1;
-            assert.deepEqual(reviewed, together.reviewed);
-          }
-          for (const action of ['accept', 'reject'] as const) {
-            const { status } = authoredTestApi(
-              editorFor(recorded, 'carol', 'edit', 'carol:1')
-            ).decide({ action, changes });
 
-            assert.ok(
-              status === 'applied' || status === 'unchanged',
-              `${action} everything returned ${status}: ${JSON.stringify(recorded)}`
+            const kept = word.replace(removed, '');
+            const expected = [
+              {
+                type: 'paragraph',
+                children: [
+                  { text: '' },
+                  { type: 'link', children: [{ text: kept }] },
+                  { text: '' },
+                ],
+              },
+            ];
+
+            assert.deepEqual(
+              {
+                batch: decide(value, [...actions.keys()]).reviewed,
+                stepped: reviewed,
+                waiting,
+              },
+              { batch: expected, stepped: expected, waiting: [] },
+              `${JSON.stringify(offsets)} without "${removed}" (${intent}) in order ${order.join(',')}`
             );
           }
-        }
-      ),
-      { numRuns: 300 }
-    );
-    assert.ok(compared > 150, `only ${compared} decision orders compared`);
-    assert.ok(blocked >= 1, 'no decision waited on another change');
-  });
-});
-
-describe('authored review tree recording laws for cuts', () => {
-  it('rejects every Enter inside a link to one link holding what a removal keeps, in every order and either intent', () => {
-    fc.assert(
-      fc.property(
-        fc.uniqueArray(fc.integer({ max: 5, min: 1 }), {
-          maxLength: 3,
-          minLength: 2,
-        }),
-        fc.nat({ max: 3 }),
-        fc.constantFrom('edit' as const, 'propose' as const),
-        fc.infiniteStream(fc.nat({ max: 1000 })),
-        (offsets, removedPiece, intent, shuffle) => {
-          const word = 'abcdef';
-          let value: readonly Node[] = [
-            {
-              type: 'paragraph',
-              children: [
-                { text: '' },
-                { type: 'link', children: [{ text: word }] },
-                { text: '' },
-              ],
-            },
-          ];
-          const enters = offsets.map((_, index) => `s${index}`);
-
-          offsets.forEach((offset, index) => {
-            const editor = editorFor(value, 'bob', 'propose', enters[index]);
-
-            if (
-              !run(editor, { at: word[offset], kind: 'break', side: 0 }, '')
-            ) {
-              throw new Error(`no letter ${word[offset]}`);
-            }
-            value = expandedChildren(editor);
-          });
-
-          const bounds = [
-            0,
-            ...[...offsets].sort((a, b) => a - b),
-            word.length,
-          ];
-          const piece = removedPiece % (bounds.length - 1);
-          const removed = word.slice(bounds[piece], bounds[piece + 1]);
-          const remover = editorFor(value, 'eve', intent, 'eve:1');
-
-          run(remover, { at: removed[0], kind: 'removeLink' }, '');
-          value = expandedChildren(remover);
-
-          const actions = new Map([
-            ...enters.map((change) => [change, 'reject'] as const),
-            ...(intent === 'propose' ? [['eve:1', 'accept'] as const] : []),
-          ]);
-          const decide = (current: unknown, changes: readonly string[]) => {
-            const editor = editorFor(
-              current as readonly Node[],
-              'carol',
-              'edit',
-              'carol:1'
-            );
-            const result = authoredTestApi(editor).decide(
-              (['accept', 'reject'] as const).flatMap((action) => {
-                const picked = changes.filter(
-                  (change) => actions.get(change) === action
-                );
-
-                return picked.length > 0 ? [{ action, changes: picked }] : [];
-              })
-            );
-
-            return {
-              result,
-              reviewed: reviewedValue(editor).children,
-              value: editor.read.value(),
-            };
-          };
-          const order = [...actions.keys()].sort(
-            () => shuffle.next().value - 500
-          );
-          let stepped: unknown = value;
-          let reviewed: unknown = value;
-          let waiting: string[] = [];
-
-          for (const change of order) {
-            waiting = waiting.concat(change);
-            const step = decide(stepped, waiting);
-
-            if (step.result.status === 'blocked') continue;
-            ({ reviewed, value: stepped } = step);
-            waiting = [];
-          }
-
-          const kept = word.replace(removed, '');
-          const expected = [
-            {
-              type: 'paragraph',
-              children: [
-                { text: '' },
-                { type: 'link', children: [{ text: kept }] },
-                { text: '' },
-              ],
-            },
-          ];
-
-          assert.deepEqual(
-            {
-              batch: decide(value, [...actions.keys()]).reviewed,
-              stepped: reviewed,
-              waiting,
-            },
-            { batch: expected, stepped: expected, waiting: [] },
-            `${JSON.stringify(offsets)} without "${removed}" (${intent}) in order ${order.join(',')}`
-          );
-        }
-      ),
-      { numRuns: 150 }
-    );
-  });
+        ),
+        { numRuns: 150 }
+      );
+    }
+  );
 });
 
 /** A child Editing holds, with where the document being edited holds it. */
@@ -3590,7 +3864,7 @@ const replayAsAuthorsSaw = (
 
   for (const [name, typed, authorBuiltFill] of steps) {
     const step = getDefinedGesture(world, name)(
-      editingKids(expandedChildren(schemaless ?? editor) as readonly Node[]),
+      editingKids(expandedChildren(schemaless ?? editor)),
       typed
     );
 
@@ -3668,342 +3942,339 @@ const getDefinedGesture = (world: World, name: string) => {
 };
 
 describe('authored review tree fill laws', () => {
-  it('records what Editing does and decides every change set as Editing replays it', () => {
-    const seed = process.env.FILL_LAW_SEED;
-    const runs = new Map<string, number>();
-    const deferred: string[] = [];
-    // Gestures Editing has a place for that the review tree lacks, because a
-    // maximum deferred the fill that holds it (R1).
-    const unlocatable = new Map<string, number>();
-    let coalesced = 0;
-    const refusedAtMaximum: string[] = [];
-    let liftedPendingUnwrap = 0;
-    let refusedSets = 0;
-    let leftOut = 0;
-    let orders = 0;
-    let sets = 0;
-    let authorViews = 0;
+  it(
+    'records what Editing does and decides every change set as Editing replays it',
+    { timeout: 300_000 },
+    () => {
+      const seed = process.env.FILL_LAW_SEED;
+      const runs = new Map<string, number>();
+      const deferred: string[] = [];
+      // Gestures Editing has a place for that the review tree lacks, because a
+      // maximum deferred the fill that holds it (R1).
+      const unlocatable = new Map<string, number>();
+      let coalesced = 0;
+      const refusedAtMaximum: string[] = [];
+      let liftedPendingUnwrap = 0;
+      let refusedSets = 0;
+      let leftOut = 0;
+      let orders = 0;
+      let sets = 0;
+      let authorViews = 0;
 
-    fc.assert(
-      fc.property(
-        fc.nat({ max: WORLDS.length - 1 }),
-        fc.array(
-          fc.record({
-            author: fc.constantFrom('ann', 'bob'),
-            gestures: fc.array(fc.nat(), { maxLength: 2, minLength: 1 }),
-          }),
-          { maxLength: 4, minLength: 1 }
-        ),
-        fc.array(fc.boolean(), { maxLength: 4, minLength: 4 }),
-        (worldIndex, history, accepts) => {
-          const world = getDefinedWorld(worldIndex);
-          const names = Object.keys(world.gestures);
-          const start = fillEditor(
-            world,
-            world.start
-          ).read.children() as readonly Node[];
-          let review = start;
-          let edited = start;
-          const recorded: Recorded[] = [];
-          // One author's insertion beside their own pending one joins that
-          // change, so its step has no change of its own to decide.
-          let joined = false;
-
-          for (const [index, step] of history.entries()) {
-            const change = `${step.author}:${index}`;
-            const suggesting = fillEditor(world, review, {
-              author: step.author,
-              change,
-            });
-            const editing = fillEditor(world, edited);
-            const done: RecordedStep[] = [];
-
-            for (const [part, pick] of step.gestures.entries()) {
-              const name = getDefined(names[pick % names.length]);
-              const typed = String.fromCharCode(77 + index * 2 + part);
-              const inEditing = getDefinedGesture(world, name)(
-                editingKids(expandedChildren(editing) as readonly Node[]),
-                typed
-              );
-
-              if (!inEditing) continue;
-
-              const editedBefore = expandedChildren(editing);
-              const fillsBefore = emptyElementKeys(editing);
-
-              try {
-                editing.update((tx) => {
-                  inEditing(tx);
-                  tx.selection.set(null);
-                });
-              } catch (error) {
-                if (isRefusal(error)) continue;
-                throw error;
-              }
-              const authorBuiltFill = [...emptyElementKeys(editing)].some(
-                (key) => !fillsBefore.has(key)
-              );
-
-              const inReview = getDefinedGesture(world, name)(
-                proposedKids(expandedChildren(suggesting) as readonly Node[]),
-                typed
-              );
-
-              if (!inReview) {
-                // Removing what Editing rebuilds at once changes nothing.
-                if (
-                  isDeepStrictEqual(expandedChildren(editing), editedBefore)
-                ) {
-                  continue;
-                }
-                // Only a fill a maximum defers (R1) leaves Editing a place
-                // the review lacks.
-                assert.ok(
-                  world.bounded,
-                  `"${name}" has no place in the review of ${world.name} after ${JSON.stringify([...recorded, { change, steps: done }])}\n${JSON.stringify(expandedChildren(suggesting))}`
-                );
-                unlocatable.set(
-                  `${world.name} | ${name}`,
-                  (unlocatable.get(`${world.name} | ${name}`) ?? 0) + 1
-                );
-                return;
-              }
-              const unmarked = unmarkedElements(
-                expandedChildren(suggesting) as readonly Node[]
-              );
-              const marksBefore = marksByChange(
-                expandedChildren(suggesting) as readonly Node[]
-              );
-
-              try {
-                suggesting.update((tx) => {
-                  inReview(tx);
-                  tx.selection.set(null);
-                });
-              } catch (error) {
-                // The struck texts and line anchors Suggesting keeps apart,
-                // where Editing merges them, can overflow a maximum.
-                if (isRefusal(error) && world.bounded) {
-                  refusedAtMaximum.push(`${world.name} | ${name}`);
-                  return;
-                }
-                // A pending unwrap keeps its element in the review tree, so
-                // lifting it out of its parent can land it where the schema
-                // refuses its type.
-                if (isRefusal(error) && holdsMark(review, 'unwrap')) {
-                  liftedPendingUnwrap += 1;
-                  return;
-                }
-                throw new Error(
-                  `Suggesting refused "${name}" in ${world.name}: ${String(error)}\n${JSON.stringify(review)}`,
-                  { cause: error }
-                );
-              }
-              assert.ok(
-                unmarkedElements(
-                  expandedChildren(suggesting) as readonly Node[]
-                ) <= unmarked,
-                `the recorder slot built an unmarked element: ${world.name}, ${name}`
-              );
-              const marksAfter = marksByChange(
-                expandedChildren(suggesting) as readonly Node[]
-              );
-
-              joined ||= [...marksAfter].some(
-                ([other, count]) =>
-                  other !== change && count > (marksBefore.get(other) ?? 0)
-              );
-              runs.set(
-                `${world.name} | ${name}`,
-                (runs.get(`${world.name} | ${name}`) ?? 0) + 1
-              );
-              done.push([name, typed, authorBuiltFill]);
-            }
-            if (done.length === 0) continue;
-            review = expandedChildren(suggesting) as readonly Node[];
-            edited = expandedChildren(editing) as readonly Node[];
-            recorded.push({ change, steps: done });
-          }
-
-          const changes = recorded.map(({ change }) => change);
-
-          if (changes.length === 0) return;
-          const context = `${world.name}: ${JSON.stringify(recorded)}\n${JSON.stringify(review)}`;
-          const accepted = decideAll(world, review, [
-            { action: 'accept', changes },
-          ]);
-
-          if (
-            !isDeepStrictEqual(
-              plainNodes(accepted.children),
-              plainNodes(edited)
-            )
-          ) {
-            if (!world.bounded) {
-              assert.deepEqual(
-                plainNodes(accepted.children),
-                plainNodes(edited),
-                `accepting everything differs from Editing in ${context}`
-              );
-            }
-            deferred.push(context);
-          }
-          assert.deepEqual(
-            plainNodes(
-              decideAll(world, review, [{ action: 'reject', changes }]).children
-            ),
-            plainNodes(start),
-            `rejecting everything differs from the start in ${context}`
-          );
-
-          // Every order of one complete decision set ends where the batch
-          // does. A batch the schema refuses decides nothing, while an order
-          // still applies the decisions independent of the refused ones, so
-          // each order of a refused batch is refused too.
-          const actionOf = (change: string) =>
-            accepts[changes.indexOf(change) % accepts.length]
-              ? 'accept'
-              : 'reject';
-          const split = (batch: readonly string[]) =>
-            (['accept', 'reject'] as const).map((action) => ({
-              action,
-              changes: batch.filter((change) => actionOf(change) === action),
-            }));
-          const together = decideAll(world, review, split(changes));
-          const everyOrder = recorded.every(({ steps }) =>
-            steps.every(([name]) => world.everyOrder?.includes(name))
-          );
-
-          const loaded = reviewedValue(reviewer(world, review) as never)
-            .children as readonly Node[];
-
-          for (const order of permutations(changes)) {
-            let value: unknown = review;
-            let children = loaded;
-            const pending = [...order];
-            let refused = false;
-
-            while (pending.length > 0) {
-              const batch = new Set([getDefined(pending.shift())]);
-              let step = decideAll(world, value, split([...batch]));
-
-              while (step.result.status === 'blocked') {
-                assert.ok(!everyOrder, `a decision waited in ${context}`);
-                assert.deepEqual(
-                  step.children,
-                  children,
-                  `a blocked decision changed ${context}`
-                );
-                for (const change of step.result.with) {
-                  batch.add(change);
-                  if (pending.includes(change)) {
-                    pending.splice(pending.indexOf(change), 1);
-                  }
-                }
-                step = decideAll(world, value, split([...batch]));
-              }
-              refused ||= step.result.status === 'invalid';
-              ({ children, value } = step);
-            }
-            orders += 1;
-            if (together.result.status === 'invalid') {
-              assert.ok(
-                refused,
-                `order ${order.join(', ')} applies a set its batch refuses in ${context}`
-              );
-              continue;
-            }
-            assert.deepEqual(
-              children,
-              together.children,
-              `order ${order.join(', ')} differs in ${context}`
-            );
-          }
-          const { family } = world;
-
-          if (
-            !family ||
-            !recorded.every(({ steps }) =>
-              steps.every(([name]) => family.includes(name))
-            )
-          ) {
-            return;
-          }
-          if (joined) {
-            coalesced += 1;
-            return;
-          }
-
-          for (let mask = 0; mask < 2 ** changes.length; mask += 1) {
-            const kept = recorded.filter((_, index) => (mask >> index) & 1);
-            const oracle = replayAsAuthorsSaw(
+      fc.assert(
+        fc.property(
+          fc.nat({ max: WORLDS.length - 1 }),
+          fc.array(
+            fc.record({
+              author: fc.constantFrom('ann', 'bob'),
+              gestures: fc.array(fc.nat(), { maxLength: 2, minLength: 1 }),
+            }),
+            { maxLength: 4, minLength: 1 }
+          ),
+          fc.array(fc.boolean(), { maxLength: 4, minLength: 4 }),
+          (worldIndex, history, accepts) => {
+            const world = getDefinedWorld(worldIndex);
+            const names = Object.keys(world.gestures);
+            const start = fillEditor(
               world,
-              start,
-              kept.flatMap(({ steps }) => steps)
-            );
-            const outcome = decideAll(world, review, [
-              { action: 'accept', changes: kept.map(({ change }) => change) },
-              {
-                action: 'reject',
-                changes: changes.filter(
-                  (change) => !kept.some((item) => item.change === change)
-                ),
-              },
+              world.start
+            ).read.children() as readonly Node[];
+            let review = start;
+            let edited = start;
+            const recorded: Recorded[] = [];
+            // One author's insertion beside their own pending one joins that
+            // change, so its step has no change of its own to decide.
+            let joined = false;
+
+            for (const [index, step] of history.entries()) {
+              const change = `${step.author}:${index}`;
+              const suggesting = fillEditor(world, review, {
+                author: step.author,
+                change,
+              });
+              const editing = fillEditor(world, edited);
+              const done: RecordedStep[] = [];
+
+              for (const [part, pick] of step.gestures.entries()) {
+                const name = getDefined(names[pick % names.length]);
+                const typed = String.fromCharCode(77 + index * 2 + part);
+                const inEditing = getDefinedGesture(world, name)(
+                  editingKids(expandedChildren(editing)),
+                  typed
+                );
+
+                if (!inEditing) continue;
+
+                const editedBefore = expandedChildren(editing);
+                const fillsBefore = emptyElementKeys(editing);
+
+                try {
+                  editing.update((tx) => {
+                    inEditing(tx);
+                    tx.selection.set(null);
+                  });
+                } catch (error) {
+                  if (isRefusal(error)) continue;
+                  throw error;
+                }
+                const authorBuiltFill = [...emptyElementKeys(editing)].some(
+                  (key) => !fillsBefore.has(key)
+                );
+
+                const inReview = getDefinedGesture(world, name)(
+                  proposedKids(expandedChildren(suggesting)),
+                  typed
+                );
+
+                if (!inReview) {
+                  // Removing what Editing rebuilds at once changes nothing.
+                  if (
+                    isDeepStrictEqual(expandedChildren(editing), editedBefore)
+                  ) {
+                    continue;
+                  }
+                  // Only a fill a maximum defers (R1) leaves Editing a place
+                  // the review lacks.
+                  assert.ok(
+                    world.bounded,
+                    `"${name}" has no place in the review of ${world.name} after ${JSON.stringify([...recorded, { change, steps: done }])}\n${JSON.stringify(expandedChildren(suggesting))}`
+                  );
+                  unlocatable.set(
+                    `${world.name} | ${name}`,
+                    (unlocatable.get(`${world.name} | ${name}`) ?? 0) + 1
+                  );
+                  return;
+                }
+                const unmarked = unmarkedElements(expandedChildren(suggesting));
+                const marksBefore = marksByChange(expandedChildren(suggesting));
+
+                try {
+                  suggesting.update((tx) => {
+                    inReview(tx);
+                    tx.selection.set(null);
+                  });
+                } catch (error) {
+                  // The struck texts and line anchors Suggesting keeps apart,
+                  // where Editing merges them, can overflow a maximum.
+                  if (isRefusal(error) && world.bounded) {
+                    refusedAtMaximum.push(`${world.name} | ${name}`);
+                    return;
+                  }
+                  // A pending unwrap keeps its element in the review tree, so
+                  // lifting it out of its parent can land it where the schema
+                  // refuses its type.
+                  if (isRefusal(error) && holdsMark(review, 'unwrap')) {
+                    liftedPendingUnwrap += 1;
+                    return;
+                  }
+                  throw new Error(
+                    `Suggesting refused "${name}" in ${world.name}: ${String(error)}\n${JSON.stringify(review)}`,
+                    { cause: error }
+                  );
+                }
+                assert.ok(
+                  unmarkedElements(expandedChildren(suggesting)) <= unmarked,
+                  `the recorder slot built an unmarked element: ${world.name}, ${name}`
+                );
+                const marksAfter = marksByChange(expandedChildren(suggesting));
+
+                joined ||= [...marksAfter].some(
+                  ([other, count]) =>
+                    other !== change && count > (marksBefore.get(other) ?? 0)
+                );
+                runs.set(
+                  `${world.name} | ${name}`,
+                  (runs.get(`${world.name} | ${name}`) ?? 0) + 1
+                );
+                done.push([name, typed, authorBuiltFill]);
+              }
+              if (done.length === 0) continue;
+              review = expandedChildren(suggesting);
+              edited = expandedChildren(editing);
+              recorded.push({ change, steps: done });
+            }
+
+            const changes = recorded.map(({ change }) => change);
+
+            if (changes.length === 0) return;
+            const context = `${world.name}: ${JSON.stringify(recorded)}\n${JSON.stringify(review)}`;
+            const accepted = decideAll(world, review, [
+              { action: 'accept', changes },
             ]);
 
-            if (oracle.kind === 'noTarget') {
-              leftOut += 1;
-              continue;
+            if (
+              !isDeepStrictEqual(
+                plainNodes(accepted.children),
+                plainNodes(edited)
+              )
+            ) {
+              if (!world.bounded) {
+                assert.deepEqual(
+                  plainNodes(accepted.children),
+                  plainNodes(edited),
+                  `accepting everything differs from Editing in ${context}`
+                );
+              }
+              deferred.push(context);
             }
-            if (oracle.kind === 'refused') {
-              refusedSets += 1;
-              assert.equal(
-                outcome.result.status,
-                'invalid',
-                `a set Editing refuses applied in ${context}`
-              );
-              continue;
-            }
-            sets += 1;
-            if (oracle.kind === 'authorView') authorViews += 1;
             assert.deepEqual(
-              plainNodes(outcome.children),
-              plainNodes(oracle.value),
-              `accepting ${JSON.stringify(kept.map(({ change }) => change))} differs from Editing as its authors saw it in ${context}`
+              plainNodes(
+                decideAll(world, review, [{ action: 'reject', changes }])
+                  .children
+              ),
+              plainNodes(start),
+              `rejecting everything differs from the start in ${context}`
             );
+
+            // Every order of one complete decision set ends where the batch
+            // does. A batch the schema refuses decides nothing, while an order
+            // still applies the decisions independent of the refused ones, so
+            // each order of a refused batch is refused too.
+            const actionOf = (change: string) =>
+              accepts[changes.indexOf(change) % accepts.length]
+                ? 'accept'
+                : 'reject';
+            const split = (batch: readonly string[]) =>
+              (['accept', 'reject'] as const).map((action) => ({
+                action,
+                changes: batch.filter((change) => actionOf(change) === action),
+              }));
+            const together = decideAll(world, review, split(changes));
+            const everyOrder = recorded.every(({ steps }) =>
+              steps.every(([name]) => world.everyOrder?.includes(name))
+            );
+
+            const loaded = reviewedValue(reviewer(world, review) as never)
+              .children as readonly Node[];
+
+            for (const order of permutations(changes)) {
+              let value: unknown = review;
+              let children = loaded;
+              const pending = [...order];
+              let refused = false;
+
+              while (pending.length > 0) {
+                const batch = new Set([getDefined(pending.shift())]);
+                let step = decideAll(world, value, split([...batch]));
+
+                while (step.result.status === 'blocked') {
+                  assert.ok(!everyOrder, `a decision waited in ${context}`);
+                  assert.deepEqual(
+                    step.children,
+                    children,
+                    `a blocked decision changed ${context}`
+                  );
+                  for (const change of step.result.with) {
+                    batch.add(change);
+                    if (pending.includes(change)) {
+                      pending.splice(pending.indexOf(change), 1);
+                    }
+                  }
+                  step = decideAll(world, value, split([...batch]));
+                }
+                refused ||= step.result.status === 'invalid';
+                ({ children, value } = step);
+              }
+              orders += 1;
+              if (together.result.status === 'invalid') {
+                assert.ok(
+                  refused,
+                  `order ${order.join(', ')} applies a set its batch refuses in ${context}`
+                );
+                continue;
+              }
+              assert.deepEqual(
+                children,
+                together.children,
+                `order ${order.join(', ')} differs in ${context}`
+              );
+            }
+            const { family } = world;
+
+            if (
+              !family ||
+              !recorded.every(({ steps }) =>
+                steps.every(([name]) => family.includes(name))
+              )
+            ) {
+              return;
+            }
+            if (joined) {
+              coalesced += 1;
+              return;
+            }
+
+            for (let mask = 0; mask < 2 ** changes.length; mask += 1) {
+              const kept = recorded.filter((_, index) => (mask >> index) & 1);
+              const oracle = replayAsAuthorsSaw(
+                world,
+                start,
+                kept.flatMap(({ steps }) => steps)
+              );
+              const outcome = decideAll(world, review, [
+                { action: 'accept', changes: kept.map(({ change }) => change) },
+                {
+                  action: 'reject',
+                  changes: changes.filter(
+                    (change) => !kept.some((item) => item.change === change)
+                  ),
+                },
+              ]);
+
+              if (oracle.kind === 'noTarget') {
+                leftOut += 1;
+                continue;
+              }
+              if (oracle.kind === 'refused') {
+                refusedSets += 1;
+                assert.equal(
+                  outcome.result.status,
+                  'invalid',
+                  `a set Editing refuses applied in ${context}`
+                );
+                continue;
+              }
+              sets += 1;
+              if (oracle.kind === 'authorView') authorViews += 1;
+              assert.deepEqual(
+                plainNodes(outcome.children),
+                plainNodes(oracle.value),
+                `accepting ${JSON.stringify(kept.map(({ change }) => change))} differs from Editing as its authors saw it in ${context}`
+              );
+            }
           }
+        ),
+        {
+          examples: FILL_EXAMPLES,
+          numRuns: Number(process.env.FILL_LAW_RUNS ?? 1200),
+          ...(seed ? { seed: Number(seed) } : {}),
         }
-      ),
-      {
-        examples: FILL_EXAMPLES,
-        numRuns: Number(process.env.FILL_LAW_RUNS ?? 1200),
-        ...(seed ? { seed: Number(seed) } : {}),
-      }
-    );
+      );
 
-    const unexercised = WORLDS.flatMap((world) =>
-      Object.keys(world.gestures)
-        // A world whose recordings can overflow its maximum may refuse
-        // before a gesture runs, so none of its gestures is required to record.
-        .filter(
-          (name) =>
-            !runs.has(`${world.name} | ${name}`) &&
-            !refusedAtMaximum.some((refusal) =>
-              refusal.startsWith(`${world.name} | `)
-            )
-        )
-        .map((name) => `${world.name} | ${name}`)
-    );
+      const unexercised = WORLDS.flatMap((world) =>
+        Object.keys(world.gestures)
+          // A world whose recordings can overflow its maximum may refuse
+          // before a gesture runs, so none of its gestures is required to record.
+          .filter(
+            (name) =>
+              !runs.has(`${world.name} | ${name}`) &&
+              !refusedAtMaximum.some((refusal) =>
+                refusal.startsWith(`${world.name} | `)
+              )
+          )
+          .map((name) => `${world.name} | ${name}`)
+      );
 
-    process.stdout.write(
-      `fill law: ${runs.size} gestures recorded, ${orders} orders, ${sets} decision sets, ${authorViews} differing from a plain replay, ${refusedSets} sets Editing refuses, ${leftOut} left out, ${coalesced} with joined insertions, ${[...unlocatable.values()].reduce((sum, count) => sum + count, 0)} histories reaching what a maximum deferred (${[...unlocatable].map(([key, count]) => `${key}: ${count}`).join('; ')}), ${liftedPendingUnwrap} lifting a pending unwrap, ${deferred.length} R1 deferrals, ${refusedAtMaximum.length} refusals at a maximum (${[...new Set(refusedAtMaximum)].join('; ')})\n${deferred.join('\n')}\n`
-    );
-    assert.deepEqual(unexercised, [], 'every gesture records in its world');
-    assert.ok(
-      authorViews > 0,
-      'a decision set differs from a plain replay where its authors saw otherwise'
-    );
-  });
+      process.stdout.write(
+        `fill law: ${runs.size} gestures recorded, ${orders} orders, ${sets} decision sets, ${authorViews} differing from a plain replay, ${refusedSets} sets Editing refuses, ${leftOut} left out, ${coalesced} with joined insertions, ${[...unlocatable.values()].reduce((sum, count) => sum + count, 0)} histories reaching what a maximum deferred (${[...unlocatable].map(([key, count]) => `${key}: ${count}`).join('; ')}), ${liftedPendingUnwrap} lifting a pending unwrap, ${deferred.length} R1 deferrals, ${refusedAtMaximum.length} refusals at a maximum (${[...new Set(refusedAtMaximum)].join('; ')})\n${deferred.join('\n')}\n`
+      );
+      assert.deepEqual(unexercised, [], 'every gesture records in its world');
+      assert.ok(
+        authorViews > 0,
+        'a decision set differs from a plain replay where its authors saw otherwise'
+      );
+    }
+  );
 });
 
 const marksByChange = (nodes: readonly Node[]) => {

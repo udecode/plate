@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
 import { waitForSelectionSync } from '../../../../packages/test/src/playwright/selection-snapshots';
+import { editorRoot } from './details-fixture';
 
 for (const route of ['/blocks/details-demo', '/blocks/playground']) {
   test(`selects only a Details body row on ${route}`, async ({
@@ -11,9 +12,7 @@ for (const route of ['/blocks/details-demo', '/blocks/playground']) {
     try {
       await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
       await page.goto(route);
-      const root = page
-        .locator('[data-editor="true"][contenteditable="true"]')
-        .first();
+      const root = editorRoot(page);
       const title = route.endsWith('details-demo')
         ? 'Why use semantic Details?'
         : 'Expand to explore Details';

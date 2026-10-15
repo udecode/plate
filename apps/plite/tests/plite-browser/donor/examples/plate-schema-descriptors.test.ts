@@ -123,7 +123,7 @@ test("projects rich Plate descriptors to standalone HTML while the fragment enve
       JSON.parse(
         (await page.getByTestId("plate-schema-document").textContent()) ??
           "null",
-        (key, value) => (key === "id" ? undefined : value)
+        (key, value) => (key === "id" || key === "listId" ? undefined : value)
       ) as Record<string, unknown>[];
     const collectNodes = (value: unknown): Record<string, unknown>[] => {
       if (!Array.isArray(value)) return [];
@@ -248,8 +248,8 @@ test("projects rich Plate descriptors to standalone HTML while the fragment enve
     );
 
     expect(standaloneHtml).not.toContain("data-editor-fragment");
-    expect(standaloneHtml).not.toContain(
-      "https://www.youtube.com/watch?v=M7lc1UVf-VE"
+    expect(standaloneHtml).toContain(
+      'data-editor-media-source-url="https://www.youtube.com/watch?v=M7lc1UVf-VE"'
     );
 
     await page
@@ -283,10 +283,10 @@ test("projects rich Plate descriptors to standalone HTML while the fragment enve
         schemaAdvanced: "rich-proof",
       },
       media: {
-        provider: null,
-        sourceUrl: null,
+        provider: "youtube",
+        sourceUrl: "https://www.youtube.com/watch?v=M7lc1UVf-VE",
         url: "https://www.youtube.com/embed/M7lc1UVf-VE",
-        width: "480px",
+        width: 480,
       },
       table: {
         columnWidths: [180],

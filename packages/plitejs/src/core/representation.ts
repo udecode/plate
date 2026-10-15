@@ -509,7 +509,8 @@ const getTextOffsetWithin = (
   editor: Editor,
   children: readonly Descendant[],
   ancestorPath: readonly number[],
-  point: Point
+  point: Point,
+  edgeWidth: 0 | 1
 ): number | null => {
   const ancestor = getDescendant(children, ancestorPath);
 
@@ -539,8 +540,11 @@ const getTextOffsetWithin = (
         continue;
       }
 
-      if (resolveRepresentationSchema(editor).isVoid(node)) continue;
-      if (visit(node.children, nodePath)) return true;
+      const isVoid = resolveRepresentationSchema(editor).isVoid(node);
+
+      offset += edgeWidth;
+      if (!isVoid && visit(node.children, nodePath)) return true;
+      offset += edgeWidth;
     }
 
     return false;
@@ -556,7 +560,8 @@ const getPointAtTextOffset = (
   children: readonly Descendant[],
   ancestorPath: readonly number[],
   targetOffset: number,
-  association: -1 | 1
+  association: -1 | 1,
+  edgeWidth: 0 | 1
 ): Point | null => {
   const ancestor = getDescendant(children, ancestorPath);
 
@@ -564,6 +569,7 @@ const getPointAtTextOffset = (
 
   let offset = 0;
   let previous: Point | null = null;
+  let endingAt: Point | null = null;
   const visit = (
     nodes: readonly Descendant[],
     path: readonly number[]
@@ -575,7 +581,19 @@ const getPointAtTextOffset = (
       if (TextApi.isText(node)) {
         const end = offset + node.text.length;
 
-        if (targetOffset < end || (targetOffset === end && association < 0)) {
+        if (edgeWidth) {
+          if (offset <= targetOffset && targetOffset <= end) {
+            const point = { offset: targetOffset - offset, path: nodePath };
+
+            if (association < 0 || targetOffset < end || offset === end) {
+              return point;
+            }
+            endingAt = point;
+          }
+        } else if (
+          targetOffset < end ||
+          (targetOffset === end && association < 0)
+        ) {
           return {
             offset: Math.max(0, targetOffset - offset),
             path: nodePath,
@@ -587,16 +605,19 @@ const getPointAtTextOffset = (
         continue;
       }
 
-      if (resolveRepresentationSchema(editor).isVoid(node)) continue;
-      const nested = visit(node.children, nodePath);
+      const isVoid = resolveRepresentationSchema(editor).isVoid(node);
+
+      offset += edgeWidth;
+      const nested = isVoid ? null : visit(node.children, nodePath);
 
       if (nested) return nested;
+      offset += edgeWidth;
     }
 
     return null;
   };
 
-  return visit(ancestor.children, ancestorPath) ?? previous;
+  return visit(ancestor.children, ancestorPath) ?? endingAt ?? previous;
 };
 
 /**
@@ -611,8 +632,10 @@ export const mapCanonicalRepresentationPoint = (
   change: DocumentChange,
   root: string,
   point: Point,
-  association: -1 | 1
+  association: -1 | 1,
+  options: Readonly<{ countInlineEdges?: true }> = {}
 ): Point | null => {
+  const edgeWidth = options.countInlineEdges ? 1 : 0;
   const beforeChildren = beforeDocument.value as readonly Descendant[];
   const afterChildren = afterDocument.value as readonly Descendant[];
 
@@ -632,7 +655,8 @@ export const mapCanonicalRepresentationPoint = (
       editor,
       beforeChildren,
       ancestorPath,
-      point
+      point,
+      edgeWidth
     );
 
     if (textOffset === null) continue;
@@ -654,7 +678,8 @@ export const mapCanonicalRepresentationPoint = (
       afterChildren,
       mappedAncestor.path,
       textOffset,
-      association
+      association,
+      edgeWidth
     );
 
     if (mapped) return mapped;

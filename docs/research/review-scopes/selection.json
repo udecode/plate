@@ -74,7 +74,7 @@
     "apps/www/src/app/(app)/examples/plite/_examples/synced-blocks.tsx"
   ],
   "proof": [
-    "packages/plitejs/test/authored-anchor-contract.test.ts",
+    "packages/plitejs/test/authored-plugin.test.ts",
     "packages/plitejs/test/root-location-contract.ts"
   ],
   "evidenceInputs": [

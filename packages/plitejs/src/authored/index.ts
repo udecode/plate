@@ -20,6 +20,7 @@ export type {
   AuthoredChange,
   AuthoredChangeDetails,
   AuthoredChangeGroup,
+  AuthoredChangesDelta,
   AuthoredChangeKind,
   AuthoredChangePart,
   AuthoredDecision,

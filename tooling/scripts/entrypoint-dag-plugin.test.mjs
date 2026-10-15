@@ -230,6 +230,7 @@ const importSpecifier = (from, to) => {
 
 const lintSource = ({
   filename,
+  importKind,
   nodeType = 'ImportDeclaration',
   specifier,
 }) => {
@@ -243,11 +244,56 @@ const lintSource = ({
   if (nodeType === 'TSExternalModuleReference') {
     visitor[nodeType]({ expression: source });
   } else {
-    visitor[nodeType]({ source });
+    visitor[nodeType]({ importKind, source });
   }
 
   return reports;
 };
+
+const sourceFile = (relativePath) =>
+  path.join(repositoryRoot, 'packages/plitejs/src', relativePath);
+
+test('rejects a runtime import of the importing entrypoint entry file', () => {
+  for (const [filename, specifier] of [
+    ['interfaces/node.ts', '..'],
+    ['interfaces/transforms/node.ts', '../../index'],
+    ['pagination/page-mount-plan.ts', './index'],
+    ['core/plugin.ts', 'plitejs'],
+  ]) {
+    const reports = lintSource({ filename: sourceFile(filename), specifier });
+
+    assert.deepEqual(
+      reports.map((report) => report.messageId),
+      ['ownEntrypointImport'],
+      `${filename} -> ${specifier}`
+    );
+  }
+});
+
+test('allows a type-only own-entry import and a sibling module import', () => {
+  assert.deepEqual(
+    lintSource({
+      filename: sourceFile('interfaces/editor.ts'),
+      importKind: 'type',
+      specifier: '..',
+    }),
+    []
+  );
+  assert.deepEqual(
+    lintSource({
+      filename: sourceFile('interfaces/node.ts'),
+      specifier: './path',
+    }),
+    []
+  );
+  assert.deepEqual(
+    lintSource({
+      filename: sourceFile('interfaces/node.ts'),
+      specifier: '../core',
+    }),
+    []
+  );
+});
 
 test('rejects a directory import of a forbidden index entrypoint', () => {
   const reports = lintSource({

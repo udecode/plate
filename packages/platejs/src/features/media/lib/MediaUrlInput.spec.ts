@@ -1,6 +1,12 @@
 import { expect, it, mock } from 'bun:test';
 
-import { createEditor } from '../../../core';
+import {
+  BaseParagraphPlugin,
+  createEditor,
+  createEditorView,
+  definePlugin,
+  schema,
+} from '../../../core';
 import { BaseImagePlugin } from './image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from './media-embed/BaseMediaEmbedPlugin';
 
@@ -86,6 +92,58 @@ it('keeps an explicit insertion target while the document changes', async () => 
   resolveUrl('https://example.com/image.png');
   expect(await pending).toBe(true);
   expect(editor.read.children()[2]).toMatchObject({ type: 'image' });
+});
+
+it('lands after the captured block when a key inside it moves during URL input', async () => {
+  const editor = createEditor({
+    plugins: [BaseImagePlugin],
+    initialValue: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+  });
+  let resolveUrl!: (url: string) => void;
+  const pending = editor.plugin(BaseImagePlugin).api.insertUrl(
+    () =>
+      new Promise<string>((resolve) => {
+        resolveUrl = resolve;
+      }),
+    { after: editor.key([0, 0])!, replaceEmpty: false }
+  );
+  editor.update.nodes.move({ at: [0, 0], to: [1, 0] });
+  resolveUrl('https://example.com/image.png');
+  expect(await pending).toBe(true);
+  expect(editor.read.children().map((node) => node.type)).toEqual([
+    'paragraph',
+    'image',
+    'paragraph',
+  ]);
+});
+
+it('lands after the captured block when a key inside it is removed during URL input', async () => {
+  const editor = createEditor({
+    plugins: [BaseImagePlugin],
+    initialValue: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+  });
+  let resolveUrl!: (url: string) => void;
+  const pending = editor.plugin(BaseImagePlugin).api.insertUrl(
+    () =>
+      new Promise<string>((resolve) => {
+        resolveUrl = resolve;
+      }),
+    { after: editor.key([0, 0])!, replaceEmpty: false }
+  );
+  editor.update.nodes.replace({ text: 'new' }, { at: [0, 0] });
+  resolveUrl('https://example.com/image.png');
+  expect(await pending).toBe(true);
+  expect(editor.read.children().map((node) => node.type)).toEqual([
+    'paragraph',
+    'image',
+    'paragraph',
+  ]);
 });
 
 it('stops when the original block is removed during URL input', async () => {
@@ -177,10 +235,73 @@ it('uses the installed insertion override for a captured source block', async ()
   ).toBe(false);
   expect(insert).toHaveBeenCalledTimes(1);
   expect(insert.mock.calls[0][1]).toMatchObject({
-    after: { type: 'paragraph' },
+    after: editor.key([0]),
     replaceEmpty: true,
   });
   expect(editor.read.children()).toHaveLength(1);
+});
+
+it('inserts before a block in another root through its key', async () => {
+  const NoteHolderPlugin = definePlugin('testNoteHolder', {
+    dependencies: [BaseParagraphPlugin, BaseImagePlugin],
+    schema: ({ plugins }) => ({
+      element: {
+        blockContent: true,
+        contentRoots: {
+          body: {
+            content: schema.content.any([plugins.blockContent().allowed], {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+            ownership: 'exclusive',
+          },
+        },
+        void: 'block',
+      },
+    }),
+  });
+  const editor = createEditor({
+    plugins: [BaseImagePlugin, NoteHolderPlugin],
+    initialValue: {
+      children: [
+        { type: 'paragraph', children: [{ text: 'main' }] },
+        {
+          childRoots: { body: 'note' },
+          children: [{ text: '' }],
+          type: 'testNoteHolder',
+        },
+      ],
+      roots: { note: [{ type: 'paragraph', children: [{ text: 'note' }] }] },
+    },
+  });
+  const note = createEditorView(editor, { root: 'note' });
+
+  expect(
+    await editor
+      .plugin(BaseImagePlugin)
+      .api.insertUrl(() => 'https://example.com/image.png', {
+        before: note.key([0])!,
+      })
+  ).toBe(true);
+  expect(note.read.children().map((node) => node.type)).toEqual([
+    'image',
+    'paragraph',
+  ]);
+});
+
+it('rejects a misplaced replaceEmpty instead of dropping it', async () => {
+  const editor = createTestEditor();
+  const commit = editor.read.lastCommit();
+
+  await expect(
+    editor
+      .plugin(BaseImagePlugin)
+      .api.insertUrl(() => 'https://example.com/image.png', {
+        before: editor.key([0])!,
+        replaceEmpty: true,
+      } as never)
+  ).rejects.toThrow('replaceEmpty applies only to an after landing');
+  expect(editor.read.lastCommit()).toBe(commit);
 });
 
 it.each([false, true])(
