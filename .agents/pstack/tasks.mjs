@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import { basename, dirname, isAbsolute, resolve } from 'node:path';
+import { capEffort } from './lead.mjs';
 import { landed, stateOf } from './status.mjs';
 
 export const LEDGER = 'suggested-tasks.decisions.tsv';
@@ -558,16 +559,20 @@ function mergeItem(offered, tasks, git) {
 
 const line = (task, extra = '') => `  ${task.id}  ${displayTitle(task)}${task.topic ? `  [${task.topic}${task.kind === 'decide' ? ', decide' : ''}]` : ''}${task.owns.length ? `  owns ${task.owns.join(', ')}` : ''}${extra}`;
 
-export function renderBoard(view, ledger) {
+export function renderBoard(view, ledger, max = null) {
   if (view.open.length === 0 && view.lost.length === 0) return `No open suggested tasks in ${ledger}.`;
   const out = [`${view.open.length} open suggested tasks in ${ledger}. ${view.note}`, 'A session a card started works from chips brief <its task id>, because its task can change after the card.'];
   const section = (title, rows) => {
     if (rows.length > 0) out.push('', `${title} (${rows.length})`, ...rows);
   };
   const card = (task) => `  card ${task.card}${task.session && task.session !== view.here ? ` in session ${task.session}` : ''}`;
-  section('Ready', view.ready.map((task) => line(task, task.card ? card(task) : '  no card')));
+  const loweredEffort = (task) => {
+    const capped = effortOf(task, max);
+    return capped === effortOf(task, null) ? '' : `  effort ${capped}`;
+  };
+  section('Ready', view.ready.map((task) => line(task, loweredEffort(task) + (task.card ? card(task) : '  no card'))));
   section('Started', view.started.map((task) => line(task)));
-  section('Waiting', view.waiting.map(({ task, blockers }) => line(task, `  waits on ${blockers.join('; ')}`)));
+  section('Waiting', view.waiting.map(({ task, blockers }) => line(task, `${loweredEffort(task)}  waits on ${blockers.join('; ')}`)));
   section('Unmigrated', view.unmigrated.map((task) => line(task)));
   section('Lost', view.lost.map((task) => line(task)));
   section(
@@ -580,26 +585,27 @@ export function renderBoard(view, ledger) {
 
 const XHIGH = ' (xhigh)';
 const displayTitle = (task) => (!task.title.endsWith(XHIGH) && (task.kind === 'decide' || task.effort === 'xhigh' || task.covers.some((entry) => entry.title.endsWith(XHIGH))) ? task.title + XHIGH : task.title);
+const effortOf = (task, max) => capEffort(displayTitle(task).endsWith(XHIGH) ? 'xhigh' : 'high', max);
 
-export function briefOf(tasks, id, ledger) {
+export function briefOf(tasks, id, ledger, max = null) {
   const task = tasks.get(id);
   const live = follow(id, tasks);
   if (['dup', 'replaced'].includes(task.reason) && live && live !== task) {
     const moved = task.reason === 'dup' ? 'merged into' : 'replaced by';
-    if (live.status === 'offered' && !live.card) return { ok: true, text: `${id} was ${moved} ${live.id}; work from its brief.\n\n${brief(live, ledger)}` };
+    if (live.status === 'offered' && !live.card) return { ok: true, text: `${id} was ${moved} ${live.id}; work from its brief.\n\n${brief(live, ledger, max)}` };
     const held = live.status === 'offered' ? `has card ${live.card}` : `is ${taskState(live)}`;
     return { ok: false, text: `${id} was ${moved} ${live.id}, which ${held}, so there is nothing to start; tell the owner.` };
   }
-  return isOpen(task) ? { ok: true, text: brief(task, ledger) } : { ok: false, text: `${id} is ${taskState(task)}, so there is nothing to start; tell the owner.` };
+  return isOpen(task) ? { ok: true, text: brief(task, ledger, max) } : { ok: false, text: `${id} is ${taskState(task)}, so there is nothing to start; tell the owner.` };
 }
 
-function brief(task, ledger) {
+function brief(task, ledger, max) {
   return [
     displayTitle(task),
     '',
     `Suggested task ${task.id} in ${ledger}. This prompt can be older than the task, so first run node .agents/pstack/decisions-check.mjs chips brief ${task.id} and work from what it prints. Then run node .agents/pstack/decisions-check.mjs chips; when it lists this task as neither Ready nor Started, tell the owner what it waits on. Started means the lead already logged your start. Before you write any file, log a started row for it, with writes: naming any path the list below lacks, as .agents/pstack/rules/chips.md says, then run node .agents/pstack/decisions-check.mjs chips brief ${task.id} again and work from what it prints, because the task can gain work until your started row.`,
     '',
-    `Topic: ${task.topic ?? 'none'}. Kind: ${task.kind}.`,
+    `Topic: ${task.topic ?? 'none'}. Kind: ${task.kind}. Effort: ${effortOf(task, max)}.`,
     'Findings:',
     ...task.findings.map((finding) => `- ${finding}`),
     ...(task.covers.length ? ['Also covers:', ...task.covers.flatMap((entry) => [`- ${entry.id} ${entry.title}`, ...entry.findings.map((finding) => `  - ${finding}`)])] : []),

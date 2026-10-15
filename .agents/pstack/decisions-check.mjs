@@ -37,7 +37,7 @@
 
 import { appendFileSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
-import { currentLead, leadLabel } from './lead.mjs';
+import { currentLead, leadLabel, maxEffort } from './lead.mjs';
 import { board, briefOf, CHIP_STATES, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, readTasks, recordRow, renderBoard, SESSION, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
@@ -279,12 +279,12 @@ if (args[0] === 'chips') {
       console.error(`${id ?? '(no id)'} is not a task in ${ledger}`);
       process.exit(2);
     }
-    const { ok, text } = briefOf(tasks, id, ledger);
+    const { ok, text } = briefOf(tasks, id, ledger, maxEffort());
     (ok ? console.info : console.error)(text);
     process.exit(ok ? 0 : 1);
   }
   const view = board(tasks, gitMerges({ fetch, branch: projectConfig().branch }), here);
-  console.info(renderBoard(view, ledger));
+  console.info(renderBoard(view, ledger, maxEffort()));
   for (const note of startedOverlaps(tasks)) console.error(note);
   process.exit(view.problem ? 1 : 0);
 }
