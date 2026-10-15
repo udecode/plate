@@ -55,6 +55,9 @@ import {
 
 type RuntimeEditor = ReturnType<typeof useEditor>;
 
+type SuggestionCard = AuthoredChangeGroup &
+  Readonly<{ changes: readonly AuthoredChange[] }>;
+
 type DiscussionItem =
   | Readonly<{
       blockIndices: readonly number[];
@@ -64,7 +67,7 @@ type DiscussionItem =
     }>
   | Readonly<{
       createdAt: Date;
-      group: AuthoredChangeGroup;
+      group: SuggestionCard;
       id: string;
       kind: 'suggestion';
       range: Range | null;
@@ -111,7 +114,7 @@ const sortDiscussionItems = (items: readonly DiscussionItem[]) =>
     (left, right) => left.createdAt.getTime() - right.createdAt.getTime()
   );
 
-const NO_GROUPS: readonly AuthoredChangeGroup[] = Object.freeze([]);
+const NO_GROUPS: readonly SuggestionCard[] = Object.freeze([]);
 
 const blockIndicesOf = (ranges: readonly Range[]) => [
   ...new Set(
@@ -156,9 +159,9 @@ const createDiscussionStore = () => {
   let prepareSelection: (() => void) | null = null;
   let suggestionBlocks = new Map<
     NodeKey,
-    Readonly<{ blockIndex: number; groups: AuthoredChangeGroup[] }>
+    Readonly<{ blockIndex: number; groups: SuggestionCard[] }>
   >();
-  let groupsByChange = new Map<string, AuthoredChangeGroup>();
+  let groupsByChange = new Map<string, SuggestionCard>();
   let suggestionThreads = new Map<string, readonly string[]>();
   let snapshot = EMPTY_DISCUSSION_SNAPSHOT;
 
@@ -180,7 +183,7 @@ const createDiscussionStore = () => {
     });
   };
   const suggestionItem = (
-    group: AuthoredChangeGroup
+    group: SuggestionCard
   ): Extract<DiscussionItem, { kind: 'suggestion' }> => ({
     createdAt: new Date(
       Math.min(...group.changes.map((change) => change.createdAt))
@@ -308,12 +311,12 @@ const createDiscussionStore = () => {
     },
     setSuggestions(
       currentEditor: RuntimeEditor,
-      groups: readonly AuthoredChangeGroup[]
+      groups: readonly SuggestionCard[]
     ) {
       const previousKeys = new Set(suggestionBlocks.keys());
       const nextBlocks = new Map<
         NodeKey,
-        { blockIndex: number; groups: AuthoredChangeGroup[] }
+        { blockIndex: number; groups: SuggestionCard[] }
       >();
 
       groupsByChange = new Map(
@@ -411,6 +414,62 @@ const useDiscussionStore = () => {
   return store;
 };
 
+const readAllGroups = (editor: RuntimeEditor): readonly SuggestionCard[] => {
+  const { read } = editor.plugin(AuthoredPlugin);
+  const cards = new Map<
+    string,
+    { card: AuthoredChangeGroup; changes: AuthoredChange[] }
+  >();
+  let cursor: string | null = null;
+
+  do {
+    const page = read.changes({ cursor: cursor ?? undefined, limit: 200 });
+
+    for (const change of page.items) {
+      const card = read.groupOf(change.id);
+      if (!card) continue;
+      const entry = cards.get(card.id);
+
+      if (entry) entry.changes.push(change);
+      else cards.set(card.id, { card, changes: [change] });
+    }
+    ({ cursor } = page);
+  } while (cursor !== null);
+
+  return Object.freeze(
+    [...cards.values()].map(({ card, changes }) =>
+      Object.freeze({ ...card, changes: Object.freeze(changes) })
+    )
+  );
+};
+
+const sameCards = (
+  left: readonly SuggestionCard[] | null,
+  right: readonly SuggestionCard[]
+) =>
+  left !== null &&
+  left.length === right.length &&
+  left.every((card, index) => {
+    const other = right[index];
+
+    return (
+      card.id === other?.id &&
+      card.revision === other.revision &&
+      card.changes.every((change, changeIndex) => {
+        const next = other.changes[changeIndex];
+
+        return (
+          change.id === next?.id &&
+          change.revision === next.revision &&
+          change.ranges.length === next.ranges.length &&
+          change.ranges.every((range, rangeIndex) =>
+            RangeApi.equals(range, next.ranges[rangeIndex] ?? null)
+          )
+        );
+      })
+    );
+  });
+
 const useDiscussionController = () => {
   const editor = useEditor();
   const { api: comments } = useEditor().plugin(CommentsPlugin);
@@ -426,10 +485,11 @@ const useDiscussionController = () => {
       const authored = current.plugin(AuthoredPlugin);
 
       return authored.installed && current.plugin(SuggestionPlugin).installed
-        ? authored.read.groups()
+        ? readAllGroups(current)
         : NO_GROUPS;
     },
     {
+      equalityFn: sameCards,
       shouldUpdate: (commit) =>
         !commit ||
         commit.changed.hasAny('document') ||
@@ -638,7 +698,7 @@ const describeSuggestionPart = (
 };
 
 const describeSuggestion = (
-  details: readonly (AuthoredChangeDetails | null)[],
+  details: ReadonlyArray<AuthoredChangeDetails | null>,
   fallback: AuthoredChange['kind']
 ) => {
   const parts = details.flatMap((detail) => detail?.parts ?? []);
@@ -687,7 +747,7 @@ function SuggestionDiscussionCard({
   threadIds,
 }: {
   createdAt: Date;
-  group: AuthoredChangeGroup;
+  group: SuggestionCard;
   onDecisionApplied: () => void;
   threadIds: readonly string[];
 }) {
