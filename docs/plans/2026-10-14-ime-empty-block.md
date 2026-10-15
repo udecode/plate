@@ -1,6 +1,6 @@
 # IME in an empty paragraph: caret and Escape cancel
 
-Status: waiting: your word to open the PR while `pnpm check` fails as it does at HEAD
+Status: waiting: your read of the PR body before it opens
 Page: https://claude.ai/artifact/EH7444C6TAgXGVDfTka9qH
 Playbook: bug-fix
 
@@ -8,11 +8,11 @@ Playbook: bug-fix
 
 ### What will change?
 
-In an empty paragraph the input-method caret stays at the end of your draft. When you press Escape there, the editor redraws that one paragraph from the document, so you can type again right away.
+In an empty paragraph, the input-method caret now stays at the end of the draft. Escape on that draft no longer leaves the paragraph dead, because the editor redraws its block from the document before app handlers run.
 
 ### What could go wrong?
 
-Your WeType check on the Mac ran on the first Escape fix. The redraw that replaced it ran only in simulated Chrome, so try WeType once more. A Korean Android keyboard duplicates letters, as before. Safari and Firefox are untried.
+The final Escape fix ran only in Chrome with a simulated input method; real WeType ran on an earlier version. Safari and Firefox are untested. Every element's render key now carries its own redraw count.
 
 ## Teach
 
@@ -76,17 +76,22 @@ Now the editor tracks the text holder, which survives the draft. When a draft en
 - [x] Lint the task paths, rerun the repeated acceptance proof, and compare `pnpm check` with HEAD. The same 16 of 25 steps fail at HEAD, with identical error lines and the same failing tests. — `docs/plans/artifacts/ime-empty-block/b6-lint-task-a1.log`, `docs/plans/artifacts/ime-empty-block/fin-spec5-a1.log`, `docs/plans/artifacts/ime-empty-block/fin-pnpm-check-a1.log`, `docs/plans/artifacts/ime-empty-block/pnpm-check-head-a1.log`
 - [ ] Commit in a detached worktree, push a branch and open the PR against `next`.
 
+## Verification
+
+- In Chromium with the input method simulated through CDP, `homepage-ime.spec.ts` passes 25 of 25 over five repeats. The new `ime-caret.test.tsx` contracts and the plitejs React (1371) and DOM (291) partitions pass, and six of seven mutants of the fix fail a named test.
+- `pnpm check` fails 16 of 25 steps, and the same 16 fail on the base commit with identical errors and the same failing tests.
+- Real WeType on macOS and an Android phone ran only on an earlier version of the Escape fix. Safari and Firefox were not run.
+
 ## Open work
 
-- The automated native input-method lane needs Accessibility and event-posting permission for the terminal and Apple Pinyin enabled (`node tooling/ime/macos-ime.mjs status` showed all three off). owner: the owner (natamox). stop: the owner grants them or drops the lane. Tracked here.
-- Reflect Backlog, listed in the Close. owner: the owner (natamox). stop: the owner takes or drops each item. Tracked here.
-- On Android, a keyboard that marks just-typed text as its composing region and then replaces it, as the owner's Korean keyboard does, duplicates letters (`한글` becomes `ㅎ하한ㄱ그글`). The editor applies each composition update as a new insert instead of replacing the region, in any paragraph. HEAD does the same, so it is a separate bug. On the same keyboard, typing `ㅎ` in an empty paragraph and pressing Backspace merges the paragraph into the one above and keeps the letter (`more.ㅎ`), also on HEAD. owner: the owner (natamox). stop: the owner starts or drops that fix. Tracked here.
-- Plan review limits: a composition that starts over an expanded selection and empties the line is model-owned and is not rebuilt; a missing compositionend is not rebuilt, because that path cannot tell a cancel from a pending commit; WebKit and Firefox are untested. owner: the owner (natamox). stop: the owner takes or drops each. Tracked here.
-- Deferred review warnings on the recovery build: WebKit and Firefox rows for the empty-text anchor; moving the cancel branch out of the end handler; two Editables that share one view both redraw the line; the render revision helpers keep their text names while they also count element revisions; the line key is read from the host's `data-editor-node-key` instead of being recorded on the composition epoch at start; the revision bump and its wake sit in two modules; the moved-line contract checks the DOM but not the caret or the next composition. The journal-era warnings went away with the journal. owner: the owner (natamox). stop: the owner takes or drops each. Tracked here and in the decision log.
-- No jsdom test fails when a text node's own redraw key is removed, because a model edit there never bumps the text's revision; HEAD has the same gap behind a duplicate parent key. owner: the owner (natamox). stop: the owner adds a browser-level case or drops it. Tracked here and in the decision log.
-- Suggested task `local-20261015-1`, After: Fix Android composing-region duplicates and Backspace merge (xhigh). It waits for `task_43552eb2`, `task_50cd0226` and `task_4505cc97`, which also write `packages/plitejs/src/react/editable`. owner: the owner (natamox). stop: the owner starts it in its own session or drops it. Tracked in `docs/plans/suggested-tasks.decisions.tsv`.
-- `task_f1475754`, started 2026-10-12, writes `packages/plitejs/src/react/editable` too; if its session is still live, it rebases on this PR. owner: the owner (natamox). stop: that task lands or the owner stops it. Tracked in `docs/plans/suggested-tasks.decisions.tsv`.
-- `decorations-async` IME rows fail the same way at HEAD. owner: the owner (natamox). stop: the owner takes or drops it. Tracked here.
+- Real macOS input-method automation does not run yet, because the terminal lacks Accessibility and event-posting permission and Apple Pinyin is off. owner: the owner (natamox). stop: the owner grants them or drops the lane. Tracked here.
+- This run's workflow lessons wait for the owner, as the Close lists them. owner: the owner (natamox). stop: the owner takes or drops each item. Tracked here.
+- On Android, a Korean keyboard duplicates letters, and Backspace after one letter merges an empty paragraph into the one above; both happen before this change too. `한글` becomes `ㅎ하한ㄱ그글`, because the editor applies each composition update as a new insert instead of replacing the composing region. owner: the owner (natamox). stop: the owner starts or drops that fix. Tracked here and as suggested task `local-20261015-1` in `docs/plans/suggested-tasks.decisions.tsv`.
+- An empty line is not rebuilt when its composition started over a selection or when compositionend never fires, and WebKit and Firefox are untested. The second case cannot tell a cancel from a pending commit. owner: the owner (natamox). stop: the owner takes or drops each. Tracked here.
+- Review warnings deferred to a follow-up: WebKit and Firefox rows for the empty-text anchor; moving the cancel branch out of the end handler; two Editables that share one view both redraw the line; the render revision helpers keep their text names while they also count element revisions; the line key is read from the host's `data-editor-node-key` instead of being recorded when the composition starts; the revision bump and its wake sit in two modules; the moved-line contract checks the DOM but not the caret or the next composition. owner: the owner (natamox). stop: the owner takes or drops each. Tracked here and in the decision log.
+- No jsdom test fails when a text node's own redraw key is removed, because a model edit there never bumps the text's revision; the base commit has the same gap behind a duplicate parent key. owner: the owner (natamox). stop: the owner adds a browser-level case or drops it. Tracked here and in the decision log.
+- A started End-key fix (`task_f1475754`, since 2026-10-12) also edits `packages/plitejs/src/react/editable` and may need a rebase on this PR. owner: the owner (natamox). stop: that task lands or the owner stops it. Tracked in `docs/plans/suggested-tasks.decisions.tsv`.
+- The `decorations-async` IME rows fail the same way before this change. owner: the owner (natamox). stop: the owner takes or drops it. Tracked here.
 
 ## Close
 
