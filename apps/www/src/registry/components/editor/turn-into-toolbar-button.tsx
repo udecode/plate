@@ -122,10 +122,10 @@ const turnIntoList = defineCommand<
       const root = SelectionApi.root(selection);
       const at = ([first, ...rest]: ReadonlyArray<NodeEntry<Element>>) =>
         first &&
-        SelectionApi.nodes(
-          [first[1], ...rest.map(([, path]) => path)],
-          root ? { root } : {}
-        );
+        SelectionApi.nodes([first[1], ...rest.map(([, path]) => path)], {
+          mode: 'block',
+          ...(root ? { root } : {}),
+        });
       const blocks = tx.nodes.blocks({ mode: 'lowest' });
       const body = blocks.filter(([node]) => {
         const parent = tx.nodes.parent(state.key(node));

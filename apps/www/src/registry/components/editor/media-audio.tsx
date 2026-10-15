@@ -20,7 +20,7 @@ export function AudioElement(props: EditorElementProps<typeof AudioPlugin>) {
   const editor = useEditor();
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
-  const selected = useElementSelected({ mode: 'node' });
+  const selected = useElementSelected({ mode: 'object' });
   const textAlign =
     'textAlign' in props.element &&
     (props.element.textAlign === 'left' ||
@@ -38,13 +38,7 @@ export function AudioElement(props: EditorElementProps<typeof AudioPlugin>) {
       selected={selected}
       placement="top"
     >
-      <EditorElement
-        {...props}
-        attributes={{
-          ...props.attributes,
-          'data-node-selection-highlight': 'self',
-        }}
-      >
+      <EditorElement {...props}>
         <figure className="group relative cursor-default [&>figcaption]:min-h-20">
           <div className="py-1" contentEditable={false}>
             <div
@@ -64,7 +58,9 @@ export function AudioElement(props: EditorElementProps<typeof AudioPlugin>) {
                   // The native controls take focus once a click ends, so arrow
                   // keys would drive the player. Select the audio and give the
                   // keyboard back to the editor.
-                  editor.update.selection.setNodes([props.element]);
+                  editor.update.selection.setNodes([props.element], {
+                    mode: 'object',
+                  });
                   editor.api.dom.focus();
                 }}
               />

@@ -113,7 +113,7 @@ const createTestEditor = () =>
       children: [{ text }],
       type: 'paragraph',
     })),
-    selection: SelectionApi.nodes([[0], [2]]),
+    selection: SelectionApi.nodes([[0], [2]], { mode: 'block' }),
   });
 
 let currentEditor: ReturnType<typeof createTestEditor>;
@@ -179,7 +179,7 @@ describe('block menu commands', () => {
     const editor = createEditor({
       plugins: [...BaseBasicBlocksKit],
       initialValue,
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
     });
     const view = await renderBlockMenu(editor);
 
@@ -213,7 +213,7 @@ describe('block menu commands', () => {
         BaseDetailsPlugin,
       ],
       initialValue,
-      selection: SelectionApi.nodes([[0, 0]]),
+      selection: SelectionApi.nodes([[0, 0]], { mode: 'block' }),
     });
     const view = await renderBlockMenu(editor);
 

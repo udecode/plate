@@ -11,6 +11,7 @@ import {
   type EditorElementProps,
   EditorElement,
   useEditorReadOnly,
+  useElementSelected,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -27,6 +28,7 @@ export function ExcalidrawElement(
   >(null);
   const [api, setApi] = React.useState<ExcalidrawImperativeAPI | null>(null);
   const readOnly = useEditorReadOnly();
+  const selected = useElementSelected({ mode: 'text' });
   const Excalidraw = excalidraw?.Excalidraw;
   useExcalidrawSync({ api, excalidraw });
 
@@ -62,8 +64,9 @@ export function ExcalidrawElement(
       <div contentEditable={false} data-editor-root-chrome-ignore="true">
         <div
           className={cn(
-            'mx-auto aspect-video h-[600px] w-[min(100%,600px)] overflow-hidden rounded-sm border'
+            'mx-auto aspect-video h-[600px] w-[min(100%,600px)] overflow-hidden rounded-sm border data-[selected=true]:ring-2 data-[selected=true]:ring-ring'
           )}
+          data-selected={selected}
         >
           {Excalidraw && (
             <Excalidraw

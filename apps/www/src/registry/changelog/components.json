@@ -1,6 +1,141 @@
 {
   "schemaVersion": 1,
   "components": {
+    "code-drawing": [
+      "2026-10-14-block-void-selection",
+      "2026-09-10-diagram-rendering-demand",
+      "2026-09-07-drawing-renderer-config",
+      "2026-09-05-code-control-paths",
+      "2026-08-25-base-first-registry",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "excalidraw": [
+      "2026-10-14-block-void-selection",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-08-excalidraw-sync",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "upload": [
+      "2026-10-14-block-void-selection",
+      "2026-10-01-native-block-drag",
+      "2026-09-21-upload-provider-items",
+      "2026-09-19-files-sdk-upload-kit"
+    ],
+    "toc": [
+      "2026-10-14-block-void-selection",
+      "2026-10-14-toc-no-active-heading",
+      "2026-09-09-navigation-view-feedback",
+      "2026-09-07-docx-bookmarks",
+      "2026-09-07-toc-observer",
+      "2026-08-29-fix-toc-scroll-navigation",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "math": [
+      "2026-10-14-block-void-selection",
+      "2026-10-10-preserve-equation-text-selection",
+      "2026-09-07-equation-drafts",
+      "2026-08-31-fix-inline-equation-first-click",
+      "2026-08-29-fix-block-equation-layout",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-25-base-first-registry",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "horizontal-rule": [
+      "2026-10-14-block-void-selection",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-image": [
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-10-01-native-block-drag",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-file": [
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-audio": [
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-video": [
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-10-01-native-block-drag",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-embed": [
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "mention": [
+      "2026-10-14-block-void-selection",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-08-inline-combobox-input",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "tag": [
+      "2026-10-14-block-void-selection",
+      "2026-08-24-fix-tag-link-install",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "footnote": [
+      "2026-10-14-block-void-selection",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-09-navigation-view-feedback",
+      "2026-09-08-inline-combobox-input",
+      "2026-09-07-footnote-target-attributes",
+      "2026-08-25-base-first-registry",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "dnd": [
+      "2026-10-14-block-void-selection",
+      "2026-10-10-selection-context-menu",
+      "2026-10-08-registry-install-dependencies",
+      "2026-10-07-dnd-translucent-drag-image",
+      "2026-10-06-dnd-move-beside",
+      "2026-10-02-schema-block-handles",
+      "2026-10-01-block-move-actions",
+      "2026-10-01-native-block-drag",
+      "2026-09-08-drag-preparation",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-inline-component-props",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-28-inline-required-value-checks",
+      "2026-08-26-hide-block-drag-handles-during-table-selection",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-24-single-selection-authority",
+      "2026-08-20-demand-driven-dnd",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "block-menu": [
+      "2026-10-14-block-void-selection",
+      "2026-10-13-details-heading-titles",
+      "2026-10-10-selection-context-menu",
+      "2026-10-08-registry-install-dependencies",
+      "2026-10-02-schema-block-handles",
+      "2026-10-01-block-move-actions",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-09-10-discussion-focus-touch",
+      "2026-09-08-block-action-owners",
+      "2026-08-25-base-first-registry",
+      "2026-08-24-single-selection-authority",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
     "turn-into-toolbar-button": [
       "2026-10-14-details-block-conversion",
       "2026-10-14-details-unwrap-targets",
@@ -63,20 +198,6 @@
       "2026-09-07-docx-bookmarks",
       "2026-08-31-inline-component-props",
       "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "block-menu": [
-      "2026-10-13-details-heading-titles",
-      "2026-10-10-selection-context-menu",
-      "2026-10-08-registry-install-dependencies",
-      "2026-10-02-schema-block-handles",
-      "2026-10-01-block-move-actions",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-09-10-discussion-focus-touch",
-      "2026-09-08-block-action-owners",
-      "2026-08-25-base-first-registry",
-      "2026-08-24-single-selection-authority",
-      "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
     ],
     "slash": [
@@ -187,31 +308,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families",
       "2026-07-23-rich-media-caption-children"
-    ],
-    "media-image": [
-      "2026-10-13-media-caption-preview",
-      "2026-10-01-native-block-drag",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "media-audio": [
-      "2026-10-13-media-caption-preview",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "media-embed": [
-      "2026-10-13-media-caption-preview",
-      "2026-08-20-improve-editor-control-accessibility",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "media-file": [
-      "2026-10-13-media-caption-preview",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "media-video": [
-      "2026-10-13-media-caption-preview",
-      "2026-10-01-native-block-drag",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
     ],
     "media-preview-dialog": [
       "2026-10-13-media-caption-preview",
@@ -550,37 +646,6 @@
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
     ],
-    "math": [
-      "2026-10-10-preserve-equation-text-selection",
-      "2026-09-07-equation-drafts",
-      "2026-08-31-fix-inline-equation-first-click",
-      "2026-08-29-fix-block-equation-layout",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-25-base-first-registry",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "dnd": [
-      "2026-10-10-selection-context-menu",
-      "2026-10-08-registry-install-dependencies",
-      "2026-10-07-dnd-translucent-drag-image",
-      "2026-10-06-dnd-move-beside",
-      "2026-10-02-schema-block-handles",
-      "2026-10-01-block-move-actions",
-      "2026-10-01-native-block-drag",
-      "2026-09-08-drag-preparation",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-inline-component-props",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-28-inline-required-value-checks",
-      "2026-08-26-hide-block-drag-handles-during-table-selection",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-24-single-selection-authority",
-      "2026-08-20-demand-driven-dnd",
-      "2026-08-17-flat-editor-registry"
-    ],
     "docx-export": [
       "2026-10-09-export-static-presentation",
       "2026-09-24-export-menu-projection",
@@ -621,11 +686,6 @@
     "docx": [
       "2026-10-08-registry-install-dependencies",
       "2026-09-07-docx-bookmarks",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "excalidraw": [
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-08-excalidraw-sync",
       "2026-08-17-flat-editor-registry"
     ],
     "code-block": [
@@ -780,27 +840,6 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
-    "upload": [
-      "2026-10-01-native-block-drag",
-      "2026-09-21-upload-provider-items",
-      "2026-09-19-files-sdk-upload-kit"
-    ],
-    "mention": [
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-08-inline-combobox-input",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "footnote": [
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-09-navigation-view-feedback",
-      "2026-09-08-inline-combobox-input",
-      "2026-09-07-footnote-target-attributes",
-      "2026-08-25-base-first-registry",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
     "table-static": [
       "2026-09-30-static-list-table-known-paths",
       "2026-08-17-finalize-v54-ast-profile",
@@ -937,14 +976,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-07-26-plugin-store-state"
     ],
-    "code-drawing": [
-      "2026-09-10-diagram-rendering-demand",
-      "2026-09-07-drawing-renderer-config",
-      "2026-09-05-code-control-paths",
-      "2026-08-25-base-first-registry",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
     "find": [
       "2026-09-09-find-controls",
       "2026-09-09-find-view-ownership",
@@ -957,13 +988,6 @@
     "find-demo": [
       "2026-09-09-find-view-ownership",
       "2026-08-31-transient-editor-geometry"
-    ],
-    "toc": [
-      "2026-09-09-navigation-view-feedback",
-      "2026-09-07-docx-bookmarks",
-      "2026-09-07-toc-observer",
-      "2026-08-29-fix-toc-scroll-navigation",
-      "2026-08-17-flat-editor-registry"
     ],
     "copilot": [
       "2026-09-08-ai-session",
@@ -1122,10 +1146,6 @@
       "2026-07-26-plugin-store-state"
     ],
     "editor-context-menu": ["2026-08-25-base-first-registry"],
-    "tag": [
-      "2026-08-24-fix-tag-link-install",
-      "2026-08-17-flat-editor-registry"
-    ],
     "media-placeholder": [
       "2026-08-24-react-compiler-owned-editor-state",
       "2026-08-20-improve-editor-control-accessibility",
@@ -1221,7 +1241,6 @@
     "equation-toolbar-button": ["2026-08-17-flat-editor-registry"],
     "highlight": ["2026-08-17-flat-editor-registry"],
     "highlight-static": ["2026-08-17-flat-editor-registry"],
-    "horizontal-rule": ["2026-08-17-flat-editor-registry"],
     "horizontal-rule-static": ["2026-08-17-flat-editor-registry"],
     "media-image-static": ["2026-08-17-flat-editor-registry"],
     "kbd": ["2026-08-17-flat-editor-registry"],

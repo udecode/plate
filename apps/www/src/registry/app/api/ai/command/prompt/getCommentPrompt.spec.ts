@@ -94,7 +94,7 @@ test.each(['cursor', 'nodes'] as const)(
       })),
       selection:
         mode === 'nodes'
-          ? SelectionApi.nodes([[0], [2]])
+          ? SelectionApi.nodes([[0], [2]], { mode: 'block' })
           : SelectionApi.text({
               anchor: { path: [1, 0], offset: 1 },
               focus: { path: [1, 0], offset: 1 },

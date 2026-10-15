@@ -120,7 +120,7 @@ mock.module('@/registry/components/editor/toolbar', () => ({
 }));
 
 const createTestEditor = ({
-  selection = SelectionApi.nodes([[0], [2]]),
+  selection = SelectionApi.nodes([[0], [2]], { mode: 'block' }),
   initialValue = ['one', 'middle', 'three'].map((text) => ({
     children: [{ text }],
     type: 'paragraph',
@@ -193,7 +193,7 @@ describe('turn into menu behavior', () => {
         }),
       ],
       initialValue,
-      selection: SelectionApi.nodes([[0], [1, 0]]),
+      selection: SelectionApi.nodes([[0], [1, 0]], { mode: 'block' }),
     });
     const before = currentEditor.read.children();
     const view = await renderTurnInto();
@@ -456,10 +456,13 @@ describe('turn into menu behavior', () => {
         BaseTablePlugin,
       ],
       initialValue,
-      selection: SelectionApi.nodes([
-        [0, 0, 0],
-        [0, 0, 1],
-      ]),
+      selection: SelectionApi.nodes(
+        [
+          [0, 0, 0],
+          [0, 0, 1],
+        ],
+        { mode: 'block' }
+      ),
     });
     expect(
       currentEditor.read.nodes
@@ -573,7 +576,7 @@ describe('turn into menu behavior', () => {
           type: 'heading',
         },
       ],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
     });
     const view = await renderTurnInto();
 
@@ -628,7 +631,7 @@ describe('turn into menu behavior', () => {
 
   it('offers Details for one contiguous sibling run and wraps it once', async () => {
     currentEditor = createTestEditor({
-      selection: SelectionApi.nodes([[0], [1]]),
+      selection: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
     });
     const view = await renderTurnInto();
     const details = view.getByRole('menuitemcheckbox', { name: 'Details' });
@@ -660,7 +663,7 @@ describe('turn into menu behavior', () => {
         },
         { children: [{ text: 'after' }], type: 'paragraph' },
       ],
-      selection: SelectionApi.nodes([[0, 1]]),
+      selection: SelectionApi.nodes([[0, 1]], { mode: 'block' }),
     });
     const view = await renderTurnInto();
     const details = view.getByRole('menuitemcheckbox', { name: 'Details' });

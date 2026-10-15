@@ -29,7 +29,7 @@ export function MentionElement(
   }
 ) {
   const { element } = props;
-  const selected = useElementSelected();
+  const selected = useElementSelected({ mode: 'text' });
   const focused = useEditorFocused();
   const mounted = useMounted();
   const readOnly = useEditorReadOnly();

@@ -36,7 +36,7 @@ export function MediaEmbedElement(
   const path = usePath();
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
-  const selected = useElementSelected({ mode: 'node' });
+  const selected = useElementSelected({ mode: 'object' });
   const textAlign =
     'textAlign' in props.element &&
     (props.element.textAlign === 'left' ||
@@ -60,14 +60,7 @@ export function MediaEmbedElement(
 
   return (
     <MediaToolbar plugin={MediaEmbedPlugin} selected={selected}>
-      <EditorElement
-        {...props}
-        attributes={{
-          ...props.attributes,
-          'data-node-selection-highlight': 'self',
-        }}
-        className="py-2.5"
-      >
+      <EditorElement {...props} className="py-2.5">
         <figure className="relative m-0 w-full cursor-default hover:[&_.editor-media-resize-handle]:after:opacity-100">
           <div contentEditable={false}>
             <Resizable
