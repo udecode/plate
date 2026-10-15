@@ -1,6 +1,6 @@
 # IME in an empty paragraph: caret and Escape cancel
 
-Status: waiting: your read of the PR body before it opens
+Status: superseded by [2026-10-15-ime-composition.md](2026-10-15-ime-composition.md), the PR's one plan
 Page: https://claude.ai/artifact/EH7444C6TAgXGVDfTka9qH
 Playbook: bug-fix
 
@@ -24,11 +24,13 @@ Now the editor tracks the text holder, which survives the draft. When a draft en
 
 ## Demo
 
-1. Open the homepage playground, click at the end of the second paragraph, and press Enter to get an empty paragraph.
-2. Switch to a Chinese pinyin input method and type `dddd`. The caret should sit at the end of the underlined draft, not after the first letter.
-3. Pick a candidate. The characters appear with the caret after them.
-4. In a new empty paragraph, type a few letters with the input method, then press Escape. The draft disappears and the empty paragraph's placeholder text comes back.
-5. Type a few letters with the input method off. They appear in the paragraph.
+1. Open the homepage playground, click at the end of the second paragraph and press Enter. Type the pinyin `d'd'd'd` with a Chinese input method. The caret stays at the end of the draft, where before it sat after the first letter. The clips drive Chrome's input method through its debugging protocol, and a red bar and readout mark where the caret is.
+
+   ![before](artifacts/ime-empty-block/demo/caret-before.mp4) ![after](artifacts/ime-empty-block/demo/caret-after.mp4)
+
+2. In a new empty paragraph, type `d'd`, press Escape, then type `hello` with the input method off. The letters appear in the paragraph, where before nothing showed up.
+
+   ![before](artifacts/ime-empty-block/demo/escape-before.mp4) ![after](artifacts/ime-empty-block/demo/escape-after.mp4)
 
 ## Defaults
 

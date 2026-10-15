@@ -32,7 +32,6 @@ import {
   claimSettledCompositionInput,
   queuePendingCompositionModelInput,
 } from '../../src/react/editable/runtime-before-input-events';
-import type { AndroidInputManager } from '../../src/react/hooks/android-input-manager/android-input-manager';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import {
   getSelection as editorGetSelection,
@@ -40,24 +39,6 @@ import {
   string as editorString,
 } from '../../src/testing';
 import { readTextSelection } from './read-text-selection';
-
-const createAndroidManager = () =>
-  ({
-    flush: vi.fn(),
-    prepareDOMTeardown: vi.fn(),
-    scheduleFlush: vi.fn(),
-    hasPendingDiffs: vi.fn(() => false),
-    hasPendingAction: vi.fn(() => false),
-    hasPendingChanges: vi.fn(() => false),
-    isFlushing: vi.fn(() => false),
-    handleUserSelect: vi.fn(),
-    handleCompositionEnd: vi.fn(),
-    handleCompositionStart: vi.fn(),
-    handleDOMBeforeInput: vi.fn(),
-    handleKeyDown: vi.fn(),
-    handleDomMutations: vi.fn(),
-    handleInput: vi.fn(() => false),
-  }) satisfies AndroidInputManager;
 
 const replayMountedHistory = async (
   editor: Editor,
@@ -188,21 +169,17 @@ describe('composition state', () => {
     const event = createCompositionEvent('文');
     const setComposing = vi.fn();
     const inputController = createInputController();
-    const androidInputManager = createAndroidManager();
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
       .mockReturnValue(true);
 
     try {
       applyEditableCompositionStart({
-        androidInputManagerRef: { current: androidInputManager },
         editor,
         event,
         inputController,
         setComposing,
       });
-
-      expect(androidInputManager.handleCompositionStart).toHaveBeenCalled();
       expect(setComposing).toHaveBeenCalledWith(true);
       expect(editorString(editor, [])).toBe('ad');
       expect(editorGetSelection(editor)).toEqual({
@@ -232,7 +209,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionStart({
-        androidInputManagerRef: { current: null },
         editor,
         event: createCompositionEvent(),
         inputController,
@@ -306,7 +282,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionStart({
-        androidInputManagerRef: { current: null },
         editor,
         event: createCompositionEvent(),
         inputController,
@@ -346,7 +321,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionStart({
-        androidInputManagerRef: { current: null },
         editor,
         event: createCompositionEvent(),
         inputController,
@@ -414,7 +388,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionStart({
-        androidInputManagerRef: { current: null },
         editor,
         event: createCompositionEvent(),
         inputController,
@@ -447,7 +420,6 @@ describe('composition state', () => {
   it('defers Chrome fallback replacement until compositionend releases the DOM', () => {
     const editor = createTextEditor();
     const event = createCompositionEvent('文', 'a文d');
-    const androidInputManager = createAndroidManager();
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
       .mockReturnValue(true);
@@ -478,7 +450,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: androidInputManager },
         editor,
         event,
         inputController,
@@ -564,7 +535,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event: createCompositionEvent('文', 'a文d'),
         inputController,
@@ -578,7 +548,6 @@ describe('composition state', () => {
       });
 
       applyEditableCompositionStart({
-        androidInputManagerRef: { current: null },
         editor,
         event: createCompositionEvent(),
         inputController,
@@ -624,7 +593,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event: createCompositionEvent('文', 'a文d'),
         inputController,
@@ -669,7 +637,6 @@ describe('composition state', () => {
 
       try {
         applyEditableCompositionEnd({
-          androidInputManagerRef: { current: null },
           editor,
           event,
           inputController,
@@ -740,7 +707,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -811,7 +777,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -880,7 +845,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -926,7 +890,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -993,7 +956,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -1072,7 +1034,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -1131,7 +1092,6 @@ describe('composition state', () => {
 
       try {
         applyEditableCompositionEnd({
-          androidInputManagerRef: { current: null },
           editor,
           event,
           inputController,
@@ -1234,7 +1194,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -1315,7 +1274,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -1392,7 +1350,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -1453,7 +1410,6 @@ describe('composition state', () => {
     try {
       expect(() =>
         applyEditableCompositionEnd({
-          androidInputManagerRef: { current: null },
           editor,
           event,
           inputController,
@@ -1507,7 +1463,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -1582,7 +1537,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -1679,7 +1633,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -1749,7 +1702,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -1875,7 +1827,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -1895,7 +1846,7 @@ describe('composition state', () => {
     }
   });
 
-  it('leaves Android composition completion to the Android manager', () => {
+  it('leaves an Android compositionend with no open run alone', () => {
     const editor = createTextEditor();
     const frame = document.createElement('iframe');
 
@@ -1911,7 +1862,6 @@ describe('composition state', () => {
     frame.contentDocument!.body.append(root);
     const event = createCompositionEvent('文', 'a文d', root);
     const inputController = createInputController();
-    const manager = createAndroidManager();
     const scheduleTask: NonNullable<EditableInputController['scheduleTask']> =
       vi.fn(() => () => {});
     const hasSelectableTarget = vi
@@ -1924,7 +1874,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: manager },
         editor,
         event,
         inputController,
@@ -1933,7 +1882,6 @@ describe('composition state', () => {
         setComposing,
       });
 
-      expect(manager.handleCompositionEnd).toHaveBeenCalledOnce();
       expect(scheduleTask).not.toHaveBeenCalled();
       expect(setComposing).not.toHaveBeenCalled();
       expect(inputController.state.activeIntent).toBeNull();
@@ -1948,7 +1896,6 @@ describe('composition state', () => {
   it('defers externally owned composition completion without running fallback', () => {
     const editor = createTextEditor();
     const event = createCompositionEvent('文', 'a文d');
-    const androidInputManager = createAndroidManager();
     const onCompositionEnd = vi.fn(() => true);
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
@@ -1979,7 +1926,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: androidInputManager },
         editor,
         event,
         inputController,
@@ -1988,8 +1934,6 @@ describe('composition state', () => {
         scheduleTask,
         setComposing,
       });
-
-      expect(androidInputManager.handleCompositionEnd).toHaveBeenCalledOnce();
       expect(onCompositionEnd).toHaveBeenCalledOnce();
       expect(scheduleTask).toHaveBeenCalledWith(
         'model',
@@ -2048,7 +1992,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController,
@@ -2106,7 +2049,6 @@ describe('composition state', () => {
 
       try {
         applyEditableCompositionEnd({
-          androidInputManagerRef: { current: null },
           editor,
           event: compositionEnd,
           inputController,
@@ -2121,7 +2063,6 @@ describe('composition state', () => {
 
         if (eventType === 'end') {
           applyEditableCompositionEnd({
-            androidInputManagerRef: { current: null },
             editor,
             event: readOnlyEvent,
             inputController,
@@ -2132,7 +2073,6 @@ describe('composition state', () => {
           });
         } else if (eventType === 'start') {
           applyEditableCompositionStart({
-            androidInputManagerRef: { current: null },
             editor,
             event: readOnlyEvent,
             inputController,
@@ -2232,14 +2172,12 @@ describe('composition state', () => {
     const event = createCompositionEvent('文');
     const setComposing = vi.fn();
     const onCompositionStart = vi.fn();
-    const androidInputManager = createAndroidManager();
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
       .mockReturnValue(true);
 
     try {
       applyEditableCompositionStart({
-        androidInputManagerRef: { current: androidInputManager },
         editor,
         event,
         onCompositionStart,
@@ -2249,7 +2187,6 @@ describe('composition state', () => {
 
       expect(event.preventDefault).toHaveBeenCalled();
       expect(event.stopPropagation).toHaveBeenCalled();
-      expect(androidInputManager.handleCompositionStart).not.toHaveBeenCalled();
       expect(onCompositionStart).not.toHaveBeenCalled();
       expect(setComposing).not.toHaveBeenCalled();
       expect(editorString(editor, [])).toBe('abcd');
@@ -2263,7 +2200,6 @@ describe('composition state', () => {
     const event = createCompositionEvent('!');
     const setComposing = vi.fn();
     const onCompositionEnd = vi.fn();
-    const androidInputManager = createAndroidManager();
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
       .mockReturnValue(true);
@@ -2275,7 +2211,6 @@ describe('composition state', () => {
 
     try {
       applyEditableCompositionEnd({
-        androidInputManagerRef: { current: androidInputManager },
         editor,
         event,
         inputController: createInputController(),
@@ -2288,7 +2223,6 @@ describe('composition state', () => {
 
       expect(event.preventDefault).toHaveBeenCalled();
       expect(event.stopPropagation).toHaveBeenCalled();
-      expect(androidInputManager.handleCompositionEnd).not.toHaveBeenCalled();
       expect(onCompositionEnd).not.toHaveBeenCalled();
       expect(scheduleTask).not.toHaveBeenCalled();
       expect(setComposing).toHaveBeenCalledWith(false);

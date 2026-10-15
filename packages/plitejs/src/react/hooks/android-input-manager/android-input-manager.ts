@@ -3,6 +3,7 @@ import type { RefObject } from 'react';
 
 import {
   LocationApi,
+  type NodeKey,
   NodeApi,
   type Path,
   PathApi,
@@ -50,6 +51,7 @@ import {
   type EditableInputController,
   shouldMergeEditableCompositionHistory,
 } from '../../editable/input-state';
+import { hasAndroidComposition } from '../../editable/android-composition';
 import {
   applyEditableCommand,
   applyModelOwnedTextInput,
@@ -57,6 +59,7 @@ import {
 import {
   editorCommands,
   failInvariant,
+  getNodeKey as editorGetNodeKey,
   probeCommandNativeEquivalent,
   range as editorRange,
   leaf as editorLeaf,
@@ -77,11 +80,6 @@ import {
 export type Action = { at?: Point | Range; run: () => void };
 
 const DOUBLE_NEWLINE_AT_END_RE = /.*\n.*\n$/;
-const NON_WHITESPACE_OR_END_RE = /\S|$/;
-
-// https://github.com/facebook/draft-js/blob/main/src/component/handlers/composition/DraftEditorCompositionHandler.js#L41
-// When using keyboard English association function, conpositionEnd triggered too fast, resulting in after `insertText` still maintain association state.
-const RESOLVE_DELAY = 25;
 
 // Time with no user interaction before the current user action is considered as done.
 const FLUSH_DELAY = 200;
@@ -116,6 +114,8 @@ export type CreateAndroidInputManagerOptions = {
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
   receivedUserInput: RefObject<boolean>;
+  /** Remount a line whose DOM the browser changed out from under React. */
+  rebuildLine?: (lineKey: NodeKey) => void;
   /** Run a deferred paste inside its initiating view's paste observation. */
   runPaste?: <T>(paste: () => T) => T;
   scheduleTask: DOMPhaseScheduler['schedule'];
@@ -135,10 +135,6 @@ export type AndroidInputManager = {
   isFlushing: () => boolean | 'action';
 
   handleUserSelect: (range: Range | null) => void;
-  handleCompositionEnd: (event: React.CompositionEvent<HTMLDivElement>) => void;
-  handleCompositionStart: (
-    event: React.CompositionEvent<HTMLDivElement>
-  ) => void;
   handleDOMBeforeInput: (event: InputEvent) => void;
   handleKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
 
@@ -150,6 +146,7 @@ export function createAndroidInputManager({
   editor,
   inputController,
   receivedUserInput,
+  rebuildLine,
   runPaste = (paste) => paste(),
   scheduleTask,
   scheduleOnDOMSelectionChange,
@@ -157,7 +154,6 @@ export function createAndroidInputManager({
 }: CreateAndroidInputManagerOptions): AndroidInputManager {
   let flushing: 'action' | boolean = false;
   let cancelActionFlush: (() => void) | null = null;
-  let cancelCompositionEnd: (() => void) | null = null;
   let cancelFlushingReset: (() => void) | null = null;
   let cancelPlaceholderVisibility: (() => void) | null = null;
   let cancelSelectionFlush: (() => void) | null = null;
@@ -198,6 +194,14 @@ export function createAndroidInputManager({
       return;
     }
 
+    const actionPath = action.at
+      ? (LocationApi.isPoint(action.at) ? action.at : action.at.anchor).path
+      : null;
+    const lineKey =
+      actionPath && actionPath.length > 1
+        ? editorGetNodeKey(editor, actionPath.slice(0, -1))
+        : null;
+
     if (action.at) {
       const target = LocationApi.isPoint(action.at)
         ? normalizePoint(editor, action.at)
@@ -214,7 +218,26 @@ export function createAndroidInputManager({
       }
     }
 
-    action.run();
+    // Chrome has already edited the DOM, so the DOM selection is past the
+    // edit; the command targets the range the manager resolved before it.
+    inputController.state.isReplayingAndroidCommand = true;
+    try {
+      action.run();
+    } finally {
+      inputController.state.isReplayingAndroidCommand = false;
+    }
+
+    // Chrome removes the text host together with the last character it
+    // deletes, and React cannot render into a host it no longer has.
+    const line = lineKey && ReactEditor.resolveDOMNode(editor, lineKey);
+
+    if (
+      lineKey &&
+      isDOMElement(line) &&
+      !line.querySelector('[data-editor-node="text"]')
+    ) {
+      rebuildLine?.(lineKey);
+    }
   };
 
   const flush = () => {
@@ -392,8 +415,6 @@ export function createAndroidInputManager({
   const cancelScheduledWork = () => {
     cancelActionFlush?.();
     cancelActionFlush = null;
-    cancelCompositionEnd?.();
-    cancelCompositionEnd = null;
     cancelFlushingReset?.();
     cancelFlushingReset = null;
     cancelPlaceholderVisibility?.();
@@ -403,51 +424,12 @@ export function createAndroidInputManager({
   };
 
   const prepareDOMTeardown = () => {
-    cancelCompositionEnd?.();
-    cancelCompositionEnd = null;
-
-    if (IS_COMPOSING.get(editor)) {
-      IS_COMPOSING.set(editor, false);
-      setEditorComposing(editor, false);
-    }
-
     cancelFlushingReset?.();
     cancelFlushingReset = null;
     flushing = false;
     flush();
     cancelScheduledWork();
     flushing = false;
-  };
-
-  const handleCompositionEnd = (
-    _event: React.CompositionEvent<HTMLDivElement>
-  ) => {
-    cancelCompositionEnd?.();
-    cancelCompositionEnd = scheduleTask(
-      'model',
-      'android-composition-end',
-      () => {
-        cancelCompositionEnd = null;
-        IS_COMPOSING.set(editor, false);
-        setEditorComposing(editor, false);
-        flush();
-      },
-      {
-        delay: RESOLVE_DELAY,
-        key: 'android-composition-end',
-        timing: 'timeout',
-      }
-    );
-  };
-
-  const handleCompositionStart = (
-    _event: React.CompositionEvent<HTMLDivElement>
-  ) => {
-    IS_COMPOSING.set(editor, true);
-    setEditorComposing(editor, true);
-
-    cancelCompositionEnd?.();
-    cancelCompositionEnd = null;
   };
 
   const updatePlaceholderVisibility = (forceHide = false) => {
@@ -693,6 +675,16 @@ export function createAndroidInputManager({
     }
 
     const { inputType: type } = event;
+
+    // The browser owns the draft until the composition ends; the run reads it
+    // from the DOM then (android-composition.ts).
+    if (
+      type === 'insertCompositionText' ||
+      type === 'deleteCompositionText' ||
+      type === 'insertFromComposition'
+    ) {
+      return;
+    }
     const selectionWasSyncedFromDOM =
       inputController.state.modelSelectionPreference?.reason ===
         'native-selection' &&
@@ -702,9 +694,12 @@ export function createAndroidInputManager({
       selectionWasSyncedFromDOM ||
       (inputController.state.selectionSource === 'dom-current' &&
         inputController.state.selectionChangeOrigin !== 'native-user');
-    let innerTargetRange2: Range | null = preferRuntimeSelection
-      ? readRuntimeSelectionRange(editor)
-      : null;
+    const compositionTarget = inputController.state.androidCompositionTarget;
+
+    inputController.state.androidCompositionTarget = null;
+    let innerTargetRange2: Range | null =
+      compositionTarget ??
+      (preferRuntimeSelection ? readRuntimeSelectionRange(editor) : null);
     const data: DataTransfer | string | undefined =
       getInputEventData(event) ?? undefined;
 
@@ -719,11 +714,7 @@ export function createAndroidInputManager({
       flush();
     }
 
-    if (
-      insertPositionHint !== false &&
-      type !== 'insertText' &&
-      type !== 'insertCompositionText'
-    ) {
+    if (insertPositionHint !== false && type !== 'insertText') {
       insertPositionHint = false;
     }
 
@@ -742,7 +733,11 @@ export function createAndroidInputManager({
     // have to manually get the selection here to ensure it's up-to-date.
     const window = ReactEditor.getWindow(editor);
     const domSelection = window.getSelection();
-    if ((preferLiveDOMSelection || !innerTargetRange2) && domSelection) {
+    if (
+      !compositionTarget &&
+      (preferLiveDOMSelection || !innerTargetRange2) &&
+      domSelection
+    ) {
       nativeTargetRange = domSelection;
       innerTargetRange2 = ReactEditor.resolveRange(editor, domSelection, {
         exactMatch: false,
@@ -1082,31 +1077,7 @@ export function createAndroidInputManager({
             };
           }
 
-          // COMPAT: Swiftkey has a weird bug where the target range of the 2nd word
-          // inserted after a mark placeholder is inserted with an anchor offset off by 1.
-          // So writing 'some text' will result in 'some ttext'. Luckily all 'normal' insert
-          // text events are fired with the correct target ranges, only the final 'insertComposition'
-          // isn't, so we can adjust the target range start offset if we are confident this is the
-          // swiftkey insert causing the issue.
-          if (text && insertPositionHint && type === 'insertCompositionText') {
-            const hintPosition =
-              insertPositionHint.start +
-              insertPositionHint.text.search(NON_WHITESPACE_OR_END_RE);
-            const diffPosition =
-              diff.start + diff.text.search(NON_WHITESPACE_OR_END_RE);
-
-            if (
-              diffPosition === hintPosition + 1 &&
-              diff.end ===
-                insertPositionHint.start + insertPositionHint.text.length
-            ) {
-              diff.start -= 1;
-              insertPositionHint = null;
-              scheduleFlush();
-            } else {
-              insertPositionHint = false;
-            }
-          } else if (type === 'insertText') {
+          if (type === 'insertText') {
             if (insertPositionHint === null) {
               insertPositionHint = diff;
             } else if (
@@ -1176,7 +1147,9 @@ export function createAndroidInputManager({
             at: cloneRange(
               canStoreDiff
                 ? innerTargetRange2
-                : (readRuntimeSelectionRange(editor) ?? innerTargetRange2)
+                : (compositionTarget ??
+                    readRuntimeSelectionRange(editor) ??
+                    innerTargetRange2)
             ),
             inputType: type,
           }
@@ -1313,7 +1286,11 @@ export function createAndroidInputManager({
   };
 
   const handleDomMutations = (mutations: MutationRecord[]) => {
-    if (hasPendingDiffs() || hasPendingAction()) {
+    if (
+      hasPendingDiffs() ||
+      hasPendingAction() ||
+      hasAndroidComposition(inputController)
+    ) {
       return;
     }
 
@@ -1346,8 +1323,6 @@ export function createAndroidInputManager({
     isFlushing,
 
     handleUserSelect,
-    handleCompositionEnd,
-    handleCompositionStart,
     handleDOMBeforeInput,
     handleKeyDown,
 

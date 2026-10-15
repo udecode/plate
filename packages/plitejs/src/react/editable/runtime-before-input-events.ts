@@ -1,3 +1,4 @@
+import { settleAndroidCompositionBeforeInput } from './android-composition';
 import { type FormEvent, type RefObject, useCallback } from 'react';
 
 import { PathApi, type Range, RangeApi, SelectionApi } from '../..';
@@ -420,6 +421,15 @@ export const useRuntimeBeforeInputEvents = ({
   const handleDOMBeforeInput = useCallback(
     (event: InputEvent) => {
       profilePliteReactDuration('beforeinput-total', () => {
+        if (runtime.isAndroidHost) {
+          settleAndroidCompositionBeforeInput({
+            editor,
+            event,
+            inputController,
+            setComposing,
+          });
+        }
+
         const shouldFlushPendingTextInput =
           deferNativeTextInputRepair &&
           shouldFlushPendingNativeTextInputBeforeDOMBeforeInput({

@@ -1,4 +1,8 @@
 import {
+  type AndroidCompositionEndReason,
+  finishAndroidComposition,
+} from './android-composition';
+import {
   type Anchor,
   type EditorCommit,
   type HistoryApi,
@@ -769,13 +773,21 @@ export class EditableDOMRuntime {
     }
   };
 
+  finishAndroidComposition(reason: AndroidCompositionEndReason) {
+    finishAndroidComposition({
+      editor: this.editorValue,
+      inputController: this.inputController,
+      reason,
+      setComposing: this.setComposing,
+    });
+  }
+
   shouldDeferCompositionSelectionExport() {
     const epoch = this.inputController.domInputRuntime.compositionEpoch;
     const root = this.rootElement;
 
     return !!(
       this.state.isComposing &&
-      !this.isAndroidHost &&
       isDOMNode(epoch?.anchor) &&
       root?.contains(epoch.anchor) &&
       epoch.phase !== 'committing' &&
@@ -789,7 +801,6 @@ export class EditableDOMRuntime {
 
     if (
       !this.state.isComposing ||
-      this.isAndroidHost ||
       !isDOMNode(epoch?.anchor) ||
       !root?.contains(epoch.anchor)
     ) {
@@ -992,6 +1003,9 @@ export class EditableDOMRuntime {
     const { pendingCompositionEnd } = this.state;
 
     if (!this.connected || !root) return false;
+    // Unlike a desktop IME, an Android run can be ended from script: it
+    // commits the composed text and settles like the manager's pending input.
+    this.finishAndroidComposition('settle');
     if (this.state.isComposing && !pendingCompositionEnd) return false;
 
     if (pendingCompositionEnd?.ownership === 'editor') {
@@ -1021,6 +1035,7 @@ export class EditableDOMRuntime {
     if (!getInstalledPlugin(this.editorValue, 'history')) {
       return { reason: 'not-installed', status: 'unavailable' };
     }
+    this.finishAndroidComposition('settle');
     if (this.state.isComposing) {
       return { reason: 'composing', status: 'unavailable' };
     }

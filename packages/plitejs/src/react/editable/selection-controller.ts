@@ -27,6 +27,7 @@ import {
 import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
 import { getFlatTreeParentElement } from '../../dom/utils/dom';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
+import { hasAndroidComposition } from './android-composition';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import {
@@ -962,7 +963,12 @@ export const resolveEditableImplicitTarget = ({
   const preferModelSelection =
     isEditableModelSelectionPreferred(inputController);
 
-  if (!ReactEditor.editable(editor)) return request.fallback;
+  if (
+    !ReactEditor.editable(editor) ||
+    inputController.state.isReplayingAndroidCommand
+  ) {
+    return request.fallback;
+  }
 
   const root = ReactEditor.findDocumentOrShadowRoot(editor);
   const domSelection = getSelection(root);
@@ -1063,7 +1069,9 @@ export const applyEditableDOMSelectionChange = ({
   state.pendingNativeTextInputRepairSuppressedDOMSelection = false;
 
   if (
-    (!isAndroidDOMHost(editorElement) && ReactEditor.isComposing(editor)) ||
+    (ReactEditor.isComposing(editor) &&
+      (!isAndroidDOMHost(editorElement) ||
+        hasAndroidComposition(inputController))) ||
     state.isDraggingInternally ||
     state.isProjectingSelection ||
     isEditableOutsideFocusBoundarySettling(state)

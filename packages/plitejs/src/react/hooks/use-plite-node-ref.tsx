@@ -34,6 +34,7 @@ import {
   getNodeKeyDOMValue,
 } from '../editable/runtime-editor-api';
 import { recordPliteReactRender } from '../render-profiler';
+import { useRequiredEditorSelectorContext } from './use-editor-selector';
 import { EditableDOMRuntimeContext } from './use-claim-editable-dom-commit';
 import { useHydrated } from './use-hydrated';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
@@ -317,6 +318,19 @@ export const bumpDOMTextRenderRevision = (editor: Editor, nodeKey: NodeKey) => {
 
   revisions.set(nodeKey, (revisions.get(nodeKey) ?? 0) + 1);
   EDITOR_TO_TEXT_RENDER_REVISIONS.set(owner, revisions);
+};
+
+/** Remounts a line element from the model after the browser removed DOM that React still owns. */
+export const useRebuildLine = (editor: Editor) => {
+  const { invalidate } = useRequiredEditorSelectorContext();
+
+  return useCallback(
+    (lineKey: NodeKey) => {
+      bumpDOMTextRenderRevision(editor, lineKey);
+      invalidate([lineKey]);
+    },
+    [editor, invalidate]
+  );
 };
 
 export const getTextHostOwnerKey = (editor: Editor, textHost: Element) => {

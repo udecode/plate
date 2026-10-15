@@ -94,8 +94,6 @@ test.each(['before-frame', 'after-frame'] as const)(
       hasPendingChanges: () => false,
       isFlushing: () => 'action',
       handleUserSelect: vi.fn(),
-      handleCompositionEnd: vi.fn(),
-      handleCompositionStart: vi.fn(),
       handleDOMBeforeInput: vi.fn(),
       handleKeyDown: vi.fn(),
       handleDomMutations: vi.fn(),

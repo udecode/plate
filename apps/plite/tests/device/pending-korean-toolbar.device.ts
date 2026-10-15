@@ -11,11 +11,12 @@ test('a pending Korean word survives a toolbar block-type tap (Slate #5019)', as
   const lastLeaf = Math.max(leaves.length - 1, 0);
   const lastText = leaves[lastLeaf]?.text ?? '';
 
+  const [original] = await editor.get.modelBlockTexts();
+
   await editor.touch.tap({ offset: lastText.length, path: [0, lastLeaf] });
   await device.keyboard.use('ko');
   await device.keyboard.type('ㅎㅏㄴ');
 
-  const [typed] = await editor.get.modelBlockTexts();
   const typing = await device.trace();
   const lastComposition = typing.findLast((entry) =>
     entry.type.startsWith('composition')
@@ -32,6 +33,6 @@ test('a pending Korean word survives a toolbar block-type tap (Slate #5019)', as
   const [heading] = await editor.get.modelBlockTexts();
   const after = await blocks(editor);
 
-  expect(heading).toBe(typed);
+  expect(heading).toBe(`${original}한`);
   expect(after).toHaveLength(initial.length);
 });

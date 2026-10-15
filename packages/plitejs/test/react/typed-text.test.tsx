@@ -1,14 +1,10 @@
 import { act, fireEvent, render } from '@testing-library/react';
-import { vi } from 'vitest';
 
-import { createDOMPhaseScheduler } from '../../src/dom/internal';
 import { history } from '../../src/history';
 import { createEditor, Editable, EditorRoot } from '../../src/react';
 import type { TypedText } from '../../src/react';
 import { createDOMRepairQueue } from '../../src/react/editable/dom-repair-queue';
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
-import { createAndroidInputManager } from '../../src/react/hooks/android-input-manager/android-input-manager';
-import { ReactEditor } from '../../src/react/plugin/react-editor';
 
 const point = (offset: number) => ({ path: [0, 0], offset });
 const caret = (offset: number) => ({
@@ -135,53 +131,6 @@ const nativeInput = async (editable: HTMLElement, data: string) => {
     fireEvent.input(editable, { data, inputType: 'insertText' });
     await settle();
   });
-};
-
-const createAndroid = ({ editables }: Mounted) => {
-  const runtime = findMountedEditableDOMRuntime(editables[0])!;
-  const scheduler = createDOMPhaseScheduler({ getWindow: () => window });
-  const debounced = () =>
-    Object.assign(vi.fn(), { cancel: vi.fn(), flush: vi.fn() }) as never;
-  const manager = createAndroidInputManager({
-    editor: runtime.editor,
-    inputController: runtime.inputController,
-    onDOMSelectionChange: debounced(),
-    receivedUserInput: { current: true },
-    scheduleOnDOMSelectionChange: debounced(),
-    scheduleTask: scheduler.schedule,
-  });
-  const resolveRange = vi.spyOn(ReactEditor, 'resolveRange');
-  // Android lets the browser edit the DOM after `beforeinput`, then flushes
-  // the stored diff into the model.
-  const input = (inputType: string, data: string, from: number, to: number) => {
-    const text = textNodeOf(editables[0]);
-
-    resolveRange.mockReturnValueOnce({ anchor: point(from), focus: point(to) });
-    manager.handleDOMBeforeInput({
-      cancelable: true,
-      data,
-      getTargetRanges: () => [{} as StaticRange],
-      inputType,
-      preventDefault: vi.fn(),
-    } as unknown as InputEvent);
-    text.replaceData(from, to - from, data);
-    document
-      .getSelection()!
-      .setBaseAndExtent(text, from + data.length, text, from + data.length);
-  };
-
-  return {
-    destroy: () => {
-      resolveRange.mockRestore();
-      scheduler.destroy();
-    },
-    flush: () => act(async () => manager.flush()),
-    handleInput: () =>
-      act(async () => {
-        manager.handleInput();
-      }),
-    input,
-  };
 };
 
 describe('subscribeTypedText', () => {
@@ -476,72 +425,6 @@ describe('subscribeTypedText', () => {
         },
       ]);
     } finally {
-      mounted.rendered.unmount();
-    }
-  });
-
-  test('an Android composition rewrite reports only its new characters', async () => {
-    const mounted = mount('hel');
-    const android = createAndroid(mounted);
-
-    try {
-      await placeCaret(mounted, mounted.editables[0], 3);
-      android.input('insertCompositionText', 'hello', 0, 3);
-      await android.flush();
-
-      expect(mounted.editor.read.text.string([])).toBe('hello');
-      expect(summarize(mounted.reports)).toEqual([
-        {
-          editable: 'Left',
-          range: { anchor: point(3), focus: point(5) },
-          text: 'lo',
-        },
-      ]);
-    } finally {
-      android.destroy();
-      mounted.rendered.unmount();
-    }
-  });
-
-  test('an Android typed trigger followed by pasted text on the same leaf reports only the trigger', async () => {
-    const mounted = mount();
-    const android = createAndroid(mounted);
-
-    try {
-      await placeCaret(mounted, mounted.editables[0], 2);
-      android.input('insertCompositionText', '@', 2, 2);
-      await android.handleInput();
-      android.input('insertFromPaste', 'XY', 3, 3);
-      await android.handleInput();
-
-      expect(mounted.editor.read.text.string([])).toBe('ab@XY');
-      expect(summarize(mounted.reports)).toEqual([
-        {
-          editable: 'Left',
-          range: { anchor: point(2), focus: point(3) },
-          text: '@',
-        },
-      ]);
-    } finally {
-      android.destroy();
-      mounted.rendered.unmount();
-    }
-  });
-
-  test('an Android pending diff that merges typed and pasted text reports nothing', async () => {
-    const mounted = mount();
-    const android = createAndroid(mounted);
-
-    try {
-      await placeCaret(mounted, mounted.editables[0], 2);
-      android.input('insertCompositionText', '@', 2, 2);
-      android.input('insertFromPaste', 'XY', 3, 3);
-      await android.flush();
-
-      expect(mounted.editor.read.text.string([])).toBe('ab@XY');
-      expect(mounted.reports).toEqual([]);
-    } finally {
-      android.destroy();
       mounted.rendered.unmount();
     }
   });

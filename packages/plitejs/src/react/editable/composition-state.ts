@@ -1,4 +1,4 @@
-import { type CompositionEvent, type RefObject, useEffect } from 'react';
+import { type CompositionEvent, useEffect } from 'react';
 
 import {
   type EditorMarks,
@@ -20,8 +20,13 @@ import {
   isWebKitDOMHost,
 } from '../../dom/internal';
 import { createTypedText } from '../../transforms-text/insert-text';
-import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { getTextHostOwnerKey } from '../hooks/use-plite-node-ref';
+import {
+  ANDROID_COMPOSITION_END_DELAY,
+  hasAndroidComposition,
+  openAndroidComposition,
+  scheduleAndroidCompositionEnd,
+} from './android-composition';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   getMountedEditableDOMRuntime,
@@ -775,7 +780,6 @@ const removeUnmanagedCompositionTextNodes = ({
 };
 
 export const applyEditableCompositionEnd = ({
-  androidInputManagerRef,
   editor,
   event,
   inputController,
@@ -787,7 +791,6 @@ export const applyEditableCompositionEnd = ({
   scheduleTask,
   setComposing,
 }: {
-  androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
   editor: ReactRuntimeEditor;
   event: CompositionEvent<HTMLDivElement>;
   inputController: EditableInputController;
@@ -849,8 +852,6 @@ export const applyEditableCompositionEnd = ({
       if (lineKey) rebuildCancelledLine(lineKey);
     }
 
-    androidInputManagerRef.current?.handleCompositionEnd(event);
-
     const compositionEndIsExternallyOwned =
       isCompositionEventHandled({ event, handler: onCompositionEnd }) ||
       isAndroidDOMHost(event);
@@ -865,6 +866,16 @@ export const applyEditableCompositionEnd = ({
       }
     };
 
+    if (isAndroidDOMHost(event) && hasAndroidComposition(inputController)) {
+      scheduleAndroidCompositionEnd({
+        delay: ANDROID_COMPOSITION_END_DELAY,
+        editor,
+        inputController,
+        scheduleTask,
+        setComposing,
+      });
+      return;
+    }
     if (isAndroidDOMHost(event) || !wasComposing) {
       clearEditableCompositionRuntimeState(editor);
       inputController.state.compositionSession = null;
@@ -1007,7 +1018,6 @@ export const applyEditableCompositionEnd = ({
 };
 
 export const applyEditableCompositionStart = ({
-  androidInputManagerRef,
   editor,
   event,
   inputController,
@@ -1015,7 +1025,6 @@ export const applyEditableCompositionStart = ({
   readOnly = false,
   setComposing,
 }: {
-  androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
   editor: ReactRuntimeEditor;
   event: CompositionEvent<HTMLDivElement>;
   inputController?: EditableInputController;
@@ -1048,12 +1057,14 @@ export const applyEditableCompositionStart = ({
     inputController?.state.pendingCompositionEnd?.cancel();
     if (inputController) inputController.state.pendingCompositionEnd = null;
     clearEditableCompositionRuntimeState(editor);
-    androidInputManagerRef.current?.handleCompositionStart(event);
 
-    if (
-      isCompositionEventHandled({ event, handler: onCompositionStart }) ||
-      isAndroidDOMHost(event)
-    ) {
+    if (isCompositionEventHandled({ event, handler: onCompositionStart })) {
+      return;
+    }
+    if (isAndroidDOMHost(event)) {
+      if (inputController) {
+        openAndroidComposition({ editor, inputController, setComposing });
+      }
       return;
     }
 
@@ -1141,7 +1152,12 @@ export const applyEditableCompositionUpdate = ({
       if (inputController) {
         inputController.state.activeIntent = 'composition';
       }
-      if (!ReactEditor.isComposing(editor)) {
+      if (isAndroidDOMHost(event)) {
+        // An update after a forced end opens a new run on the committed text.
+        if (inputController) {
+          openAndroidComposition({ editor, inputController, setComposing });
+        }
+      } else if (!ReactEditor.isComposing(editor)) {
         if (inputController) beginEditableCompositionSession(inputController);
         setComposing(true);
       }

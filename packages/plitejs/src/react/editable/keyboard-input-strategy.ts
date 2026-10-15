@@ -1,3 +1,7 @@
+import {
+  finishAndroidComposition,
+  hasAndroidComposition,
+} from './android-composition';
 import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react';
 
 import {
@@ -689,7 +693,16 @@ export const applyEditableKeyDown = ({
     // so we sometimes might end up stuck in a composition state even though we
     // aren't composing any more.
     if (ReactEditor.isComposing(editor) && !nativeEvent.isComposing) {
-      setComposing(false);
+      if (inputController && hasAndroidComposition(inputController)) {
+        finishAndroidComposition({
+          editor,
+          inputController,
+          reason: 'keydown',
+          setComposing,
+        });
+      } else {
+        setComposing(false);
+      }
     }
 
     if (ReactEditor.isComposing(editor)) {
