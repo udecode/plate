@@ -30,15 +30,20 @@
 //        --fetch refreshes the remote branches that PR waits read, and --session names
 //        this session, so each card it does not hold gets a check item instead of a
 //        withdraw problem)
+//        node .agents/pstack/decisions-check.mjs chips stale [<ledger>]
+//        (prints each open task's age, the paths it writes that were deleted since its offer
+//        or are missing, the commits on its paths since its offer, its closed PR waits and
+//        its card, likeliest stale first)
 //        node .agents/pstack/decisions-check.mjs chips id
 //        (prints a fresh id for a new task)
 //        node .agents/pstack/decisions-check.mjs chips brief <id> [<ledger>]
 //        (prints the prompt a card for that task carries)
 
-import { appendFileSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { currentLead, leadLabel, maxEffort } from './lead.mjs';
-import { board, briefOf, CHIP_STATES, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, readTasks, recordRow, renderBoard, SESSION, startedOverlaps } from './tasks.mjs';
+import { board, briefOf, CHIP_STATES, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -266,13 +271,51 @@ if (args[0] === 'chips') {
     process.exit(0);
   }
   const id = rest[0] === 'brief' ? rest[1] : null;
-  const named = rest[0] === 'brief' ? rest[2] : rest[0];
+  const named = rest[0] === 'brief' ? rest[2] : rest[0] === 'stale' ? rest[1] : rest[0];
   const ledger = named ?? join(plansDir(), LEDGER);
   if (!existsSync(ledger)) {
     console.error(named ? `no log at ${ledger}` : `No ledger at ${ledger} yet; run this from the project root.`);
     process.exit(named ? 2 : 0);
   }
-  const tasks = readTasks(readFileSync(ledger, 'utf8').split('\n').slice(1));
+  const lines = readFileSync(ledger, 'utf8').split('\n').slice(1);
+  const tasks = readTasks(lines);
+  if (rest[0] === 'stale') {
+    const states = new Map();
+    const prState = (pr) => {
+      if (!states.has(pr)) {
+        try {
+          states.set(pr, execFileSync('gh', ['pr', 'view', String(pr), '--json', 'state', '-q', '.state'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim());
+        } catch {
+          states.set(pr, null);
+        }
+      }
+      return states.get(pr);
+    };
+    const repoOf = (path) => (!isAbsolute(path) ? '.' : existsSync(path) && statSync(path).isDirectory() ? path : dirname(path));
+    const deletedSince = (since, path) => {
+      try {
+        return execFileSync('git', ['-C', repoOf(path), 'log', '-1', '--no-renames', '--diff-filter=D', `--since=${since}`, '--format=%h', '--', path], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() !== '';
+      } catch {
+        return false;
+      }
+    };
+    const commitsSince = (since, paths) => {
+      const seen = new Map();
+      for (const path of paths) {
+        const repo = repoOf(path);
+        try {
+          for (const entry of execFileSync('git', ['-C', repo, 'log', '--no-merges', `--since=${since}`, '--format=%ct%x09%h%x09%s', '--', path], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).split('\n').filter(Boolean)) {
+            const [time, hash, subject] = entry.split('\t');
+            seen.set(hash, { time: Number(time), subject });
+          }
+        } catch {}
+      }
+      return [...seen.values()].sort((a, b) => b.time - a.time).map((commit) => commit.subject);
+    };
+    const rows = staleReport(tasks, offeredAt(lines), { exists: existsSync, deletedSince, commitsSince, prState, now: Date.now() });
+    console.info(rows.length ? `${rows.length} open suggested tasks in ${ledger}, the likeliest stale first:\n${rows.join('\n')}` : `No open suggested tasks in ${ledger}.`);
+    process.exit(0);
+  }
   if (rest[0] === 'brief') {
     const task = tasks.get(id ?? '');
     if (!task) {

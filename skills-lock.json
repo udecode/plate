@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "chips": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "skillPath": "skills/chips/SKILL.md",
+      "computedHash": "4a1dbf7326fccc07cd22b97873f4a9b2fc090f7399152a8de6268b86ac99dfbe"
+    },
     "plan-page": {
       "source": "udecode/dotai",
       "sourceType": "github",
