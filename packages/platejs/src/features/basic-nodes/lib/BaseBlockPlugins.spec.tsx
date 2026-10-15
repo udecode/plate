@@ -77,7 +77,7 @@ describe('BaseBlockquotePlugin', () => {
   it('decodes and encodes its HTML element claim', () => {
     const editor = createEditor({
       plugins: [BaseBlockquotePlugin],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [{ children: [{ text: 'Quote' }], type: 'paragraph' }],
@@ -318,7 +318,7 @@ describe('BaseHorizontalRulePlugin', () => {
   it('decodes and encodes its void HTML element claim', () => {
     const editor = createEditor({
       plugins: [BaseHorizontalRulePlugin],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [{ text: '' }],

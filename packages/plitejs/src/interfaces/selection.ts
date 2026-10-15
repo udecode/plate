@@ -16,16 +16,26 @@ export type TextSelection = Range &
     marks?: Readonly<Record<string, unknown>>;
   }>;
 
+/**
+ * How a node selection was made: `block` for block gestures such as a marquee,
+ * a drag handle or block arrows, `object` for picking one object itself, such
+ * as clicking an image.
+ */
+export type NodeSelectionMode = 'block' | 'object';
+
 export type NodeSelection = Readonly<{
   /** First exact selected node in the user's selection direction. */
   anchorPath: Path;
   /** Active exact selected node in the user's selection direction. */
   focusPath: Path;
   kind: 'node';
-  paths: readonly [Path, ...Path[]];
   /** Named root containing every selected path. Omit for the primary root. */
   root?: NamedRootKey;
-}>;
+}> &
+  (
+    | Readonly<{ mode: 'block'; paths: readonly [Path, ...Path[]] }>
+    | Readonly<{ mode: 'object'; paths: readonly [Path] }>
+  );
 
 export type SelectionValue = NodeSelection | TextSelection;
 
@@ -102,7 +112,7 @@ const canonicalizePaths = (
 };
 
 type NodeSelectionOptions = Readonly<
-  { root?: NamedRootKey } & (
+  { mode: NodeSelectionMode; root?: NamedRootKey } & (
     | { anchorPath?: never; focusPath?: never }
     | { anchorPath: Path; focusPath: Path }
   )
@@ -166,10 +176,15 @@ export const SelectionApi = Object.freeze({
         'anchorPath',
         'focusPath',
         'kind',
+        'mode',
         'paths',
         'root',
       ]) &&
       value.kind === 'node' &&
+      (value.mode === 'block' ||
+        (value.mode === 'object' &&
+          Array.isArray(value.paths) &&
+          value.paths.length === 1)) &&
       (value.root === undefined ||
         (typeof value.root === 'string' && value.root !== 'main')) &&
       isCanonicalPaths(value.paths) &&
@@ -202,13 +217,23 @@ export const SelectionApi = Object.freeze({
   },
   nodes(
     paths: readonly [Path, ...Path[]],
-    options: NodeSelectionOptions = {}
+    options: NodeSelectionOptions
   ): NodeSelection {
+    const { mode } = options;
+
+    if (mode !== 'block' && mode !== 'object') {
+      throw new Error("Node selection mode must be 'block' or 'object'.");
+    }
     if (options.root === 'main') {
       throw new Error('Omit root to target the primary document.');
     }
 
     const canonicalPaths = canonicalizePaths(paths);
+
+    if (mode === 'object' && canonicalPaths.length !== 1) {
+      throw new Error('An object node selection holds exactly one path.');
+    }
+
     const anchorPath = options.anchorPath ?? canonicalPaths[0];
     const focusPath = options.focusPath ?? canonicalPaths.at(-1);
 
@@ -227,9 +252,10 @@ export const SelectionApi = Object.freeze({
       anchorPath: Object.freeze([...anchorPath]),
       focusPath: Object.freeze([...focusPath]),
       kind: 'node',
+      mode,
       paths: canonicalPaths,
       ...(options.root === undefined ? {} : { root: options.root }),
-    });
+    }) as NodeSelection;
   },
   root(selection: Range | Selection): NamedRootKey | undefined {
     if (!selection) return undefined;

@@ -336,7 +336,7 @@ describe('BaseListPlugin canonical model', () => {
 
   it('toggles only exact node selection members', () => {
     const editor = createEditor({
-      selection: SelectionApi.nodes([[0], [2]]),
+      selection: SelectionApi.nodes([[0], [2]], { mode: 'block' }),
       initialValue: [
         { children: [{ text: 'one' }], type: 'paragraph' },
         { children: [{ text: 'middle' }], type: 'paragraph' },
@@ -1889,7 +1889,7 @@ describe('BaseListPlugin canonical model', () => {
           type: 'paragraph',
         },
       ],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
     });
     const data = new DataTransfer();
 
@@ -1913,7 +1913,7 @@ describe('BaseListPlugin canonical model', () => {
           type: 'paragraph',
         },
       ],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
     });
     const data = new DataTransfer();
 
@@ -2429,7 +2429,7 @@ describe('BaseListPlugin list identity', () => {
   it('keeps the default list one list through Plate HTML', () => {
     const editor = createEditor({
       initialValue: [listItem('One'), note('Note'), listItem('Two')],
-      selection: SelectionApi.nodes([[0], [1], [2]]),
+      selection: SelectionApi.nodes([[0], [1], [2]], { mode: 'block' }),
     });
     const data = new DataTransfer();
 
@@ -2616,7 +2616,7 @@ describe('BaseListPlugin list identity', () => {
       initialValue: [
         listItem('Bullet', { listStart: 4, listType: ListType.Bulleted }),
       ],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
     });
     const data = new DataTransfer();
 
@@ -3567,7 +3567,7 @@ describe('BaseListPlugin list identity', () => {
     it('uses an explicit caret independently of the current node selection', () => {
       const editor = createEditor({
         initialValue: [note('')],
-        selection: SelectionApi.nodes([[0]]),
+        selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       });
 
       editor.update.slice.replace(
@@ -3733,7 +3733,7 @@ describe('BaseListPlugin list identity', () => {
     it('keeps selected empty blocks under the length limit on the ordinary paste path', () => {
       const editor = paste(
         [note('')],
-        SelectionApi.nodes([[0]]),
+        SelectionApi.nodes([[0]], { mode: 'block' }),
         [task('AA'), task('B')],
         1,
         { maxLength: 1 }
@@ -3820,7 +3820,9 @@ describe('BaseListPlugin list identity', () => {
         },
         selection: caretAt([1, 0]),
       });
-      const slice = editor.read.slice.get({ at: SelectionApi.nodes([[0]]) });
+      const slice = editor.read.slice.get({
+        at: SelectionApi.nodes([[0]], { mode: 'block' }),
+      });
 
       expect(editor.update.slice.replace(slice)).toBe(true);
       expect(editor.read.root('caption:copy')).toEqual([note('Caption')]);
@@ -4030,7 +4032,7 @@ describe('BaseListPlugin list identity', () => {
         const before = source.read.value();
         const slice = source.read.slice.get({
           at: wholeOwner
-            ? SelectionApi.nodes([[0], [1]])
+            ? SelectionApi.nodes([[0], [1]], { mode: 'block' })
             : {
                 anchor: { path: [0, 0], offset: 1 },
                 focus: { path: [1, 0], offset: 4 },
@@ -4497,7 +4499,7 @@ describe('BaseListPlugin list identity', () => {
     it('keeps a list that lives only inside a pasted table apart from the list it lands in', () => {
       const editor = paste(
         [listItem('A', { listId: 'a' }), listItem('B', { listId: 'a' })],
-        SelectionApi.nodes([[1]]),
+        SelectionApi.nodes([[1]], { mode: 'block' }),
         [cell(listItem('X', { listId: 'cell' }))]
       );
 
@@ -4505,11 +4507,15 @@ describe('BaseListPlugin list identity', () => {
     });
 
     it('keeps one counter for a pasted list that continues through a table cell', () => {
-      const editor = paste([note('target')], SelectionApi.nodes([[0]]), [
-        listItem('A', { listId: 's', listStart: 5 }),
-        cell(listItem('X', { listId: 's' })),
-        listItem('B', { listId: 's' }),
-      ]);
+      const editor = paste(
+        [note('target')],
+        SelectionApi.nodes([[0]], { mode: 'block' }),
+        [
+          listItem('A', { listId: 's', listStart: 5 }),
+          cell(listItem('X', { listId: 's' })),
+          listItem('B', { listId: 's' }),
+        ]
+      );
 
       expect(
         [[0], [1, 0, 0, 0], [2]].map((path) => editor.read.list.ordinal(path))
@@ -4523,7 +4529,7 @@ describe('BaseListPlugin list identity', () => {
           listItem('L2', { listId: 'l' }),
           listItem('L3', { listId: 'l' }),
         ],
-        SelectionApi.nodes([[1]]),
+        SelectionApi.nodes([[1]], { mode: 'block' }),
         [
           listItem('A', { listId: 's' }),
           cell(listItem('X', { listId: 's' })),
@@ -4544,7 +4550,7 @@ describe('BaseListPlugin list identity', () => {
           listItem('A', { listId: 'l', listStart: 5 }),
           listItem('B', { listId: 'l' }),
         ],
-        SelectionApi.nodes([[0]]),
+        SelectionApi.nodes([[0]], { mode: 'block' }),
         [
           listItem('X', { listId: 's', listStart: 7 }),
           listItem('Y', { listId: 's' }),
@@ -4561,7 +4567,7 @@ describe('BaseListPlugin list identity', () => {
           listItem('B', { listId: 'l' }),
           listItem('C', { listId: 'l' }),
         ],
-        SelectionApi.nodes([[1]]),
+        SelectionApi.nodes([[1]], { mode: 'block' }),
         [
           listItem('X', { listId: 's', listRestart: 7, listStart: 7 }),
           listItem('Y', { listId: 's' }),

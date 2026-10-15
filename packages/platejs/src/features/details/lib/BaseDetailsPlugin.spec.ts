@@ -473,7 +473,7 @@ describe('BaseDetailsPlugin', () => {
   it('round-trips fixed Details and Summary HTML without persisted UI state', () => {
     const editor = createEditor({
       plugins,
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [
@@ -569,7 +569,7 @@ describe('BaseDetailsPlugin', () => {
   it('moves a body node selection to Summary before closing', () => {
     const editor = createEditor({
       plugins,
-      selection: SelectionApi.nodes([[0, 1]]),
+      selection: SelectionApi.nodes([[0, 1]], { mode: 'block' }),
       initialValue: [
         {
           children: [
@@ -623,7 +623,7 @@ describe('BaseDetailsPlugin', () => {
   it('wraps selected text blocks as Summary and direct body content', () => {
     const editor = createEditor({
       plugins,
-      selection: SelectionApi.nodes([[0], [1]]),
+      selection: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
       initialValue: [
         { children: [{ text: 'Title' }], type: 'paragraph' },
         { children: [{ text: 'Body' }], type: 'paragraph' },
@@ -649,7 +649,7 @@ describe('BaseDetailsPlugin', () => {
   it('wraps a text block with inline content as Summary', () => {
     const editor = createEditor({
       plugins: [...plugins, BaseInlinePlugin],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [
@@ -689,7 +689,7 @@ describe('BaseDetailsPlugin', () => {
   it('adds an empty Summary when the first wrapped block is structural', () => {
     const editor = createEditor({
       plugins,
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [
@@ -723,7 +723,7 @@ describe('BaseDetailsPlugin', () => {
   it('unwraps Summary as a default text block before direct body blocks', () => {
     const editor = createEditor({
       plugins,
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [

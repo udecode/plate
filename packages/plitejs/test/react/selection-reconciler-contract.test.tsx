@@ -1389,7 +1389,7 @@ test('selection reconciler preserves node selection while clearing native select
   runtime.inputController.preferModelSelectionForInputRef.current = true;
   runtime.androidInputManagerRef.current = null;
   let renderTick = 0;
-  const selection = SelectionApi.nodes([[0], [1]]);
+  const selection = SelectionApi.nodes([[0], [1]], { mode: 'block' });
 
   editorReplace(editor, {
     children: [
@@ -2070,7 +2070,7 @@ test('trailing click preserves an authoritative node selection', () => {
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
   });
-  const selection = SelectionApi.nodes([[0], [1]]);
+  const selection = SelectionApi.nodes([[0], [1]], { mode: 'block' });
 
   editorReplace(editor, {
     children: [

@@ -116,6 +116,7 @@ export type {
   NodeOf,
   NodeRemoveNodesOptions,
   NodeSelection,
+  NodeSelectionMode,
   NodeSetNodesOptions,
   NodeTarget,
   NodeTypeSelector,

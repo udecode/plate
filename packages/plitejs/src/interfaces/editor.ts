@@ -103,6 +103,7 @@ import type {
 import type {
   EditorSelection,
   NodeSelection,
+  NodeSelectionMode,
   Selection,
   SelectionValue,
 } from './selection';
@@ -755,12 +756,20 @@ export type EditorSelectionTargetOptions = {
   at?: NodeTarget | null;
 };
 
-export type EditorSelectionSetNodesOptions = Readonly<{
-  /** First exact selected node in the user's selection direction. */
-  anchor: Descendant | NodeKey | Path;
-  /** Active exact selected node in the user's selection direction. */
-  focus: Descendant | NodeKey | Path;
-}>;
+export type EditorSelectionSetNodesOptions = Readonly<
+  {
+    /** `object` picks one object itself; defaults to `block`. */
+    mode?: NodeSelectionMode;
+  } & (
+    | { anchor?: never; focus?: never }
+    | {
+        /** First exact selected node in the user's selection direction. */
+        anchor: Descendant | NodeKey | Path;
+        /** Active exact selected node in the user's selection direction. */
+        focus: Descendant | NodeKey | Path;
+      }
+  )
+>;
 
 export type EditorSelectionBlockOptions = EditorSelectionTargetOptions & {
   match?: NodeMatch<Element>;
@@ -782,6 +791,8 @@ export type EditorStateSelectionApi<
   isExpanded: () => boolean;
   isValid: (value: unknown) => value is Selection<TSelection>;
   isWithinBlock: (options?: EditorSelectionBlockOptions) => boolean;
+  /** How the current node selection was made, or `null` without one. */
+  nodeMode: () => NodeSelectionMode | null;
   /** Exact live entries in the current node selection. */
   nodes: () => ReadonlyArray<NodeEntry<ValueDescendant<V>>>;
   ranges: () => readonly Range[];

@@ -372,7 +372,7 @@ const mapSelection = (
 
   if (!first) return null;
 
-  const { paths } = SelectionApi.nodes([first, ...rest]);
+  const { paths } = SelectionApi.nodes([first, ...rest], { mode: 'block' });
   const endpoint = (path: Path, fallback: Path) => {
     const mapped = mapPath(path);
 
@@ -384,6 +384,7 @@ const mapSelection = (
   return SelectionApi.nodes(paths, {
     anchorPath: endpoint(selection.anchorPath, paths[0]),
     focusPath: endpoint(selection.focusPath, paths.at(-1) ?? paths[0]),
+    mode: selection.mode,
     ...(selection.root === undefined ? {} : { root: selection.root }),
   });
 };

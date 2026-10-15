@@ -211,7 +211,7 @@ describe('AIChatPlugin read.markdown', () => {
         type: 'paragraph',
         children: [{ text }],
       })),
-      selection: SelectionApi.nodes([[0], [2]]),
+      selection: SelectionApi.nodes([[0], [2]], { mode: 'block' }),
     });
     const aiChat = editor.plugin(AIChatPlugin);
     aiChat.api.submit('Review', { toolName: 'comment' });

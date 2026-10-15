@@ -578,6 +578,33 @@ export const TablePlugin = toReactPlugin(BaseTablePlugin, {
         return true;
       }
 
+      const selectedNodes = editor.read.selection.nodes();
+      const cellType = editor.plugin(BaseTableCellPlugin).schema.type;
+
+      if (
+        selectedNodes.length > 0 &&
+        selectedNodes.every(
+          ([node]) => ElementApi.isElement(node) && node.type === cellType
+        ) &&
+        (Hotkeys.isMoveBackward(event) || Hotkeys.isMoveForward(event))
+      ) {
+        const reverse = Hotkeys.isMoveBackward(event);
+        const cellPath = (
+          reverse ? selectedNodes[0] : selectedNodes.at(-1)
+        )?.[1];
+        const point =
+          cellPath &&
+          (reverse
+            ? editor.read.points.start(cellPath)
+            : editor.read.points.end(cellPath));
+
+        if (point) editor.update.selection.set(point);
+        event.preventDefault();
+        event.stopPropagation();
+
+        return true;
+      }
+
       const extended = {
         'shift+down': Hotkeys.isExtendDownward(event),
         'shift+left': Hotkeys.isExtendBackward(event),

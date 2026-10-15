@@ -396,7 +396,7 @@ describe('versioned history persistence', () => {
   });
 
   it('round-trips canonical changes, state effects, and node selections', () => {
-    const selection = SelectionApi.nodes([[0]]);
+    const selection = SelectionApi.nodes([[0]], { mode: 'block' });
     const source = createEditor({
       plugins: [history(), titlePlugin] as const,
       initialSelection: selection,

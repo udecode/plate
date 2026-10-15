@@ -976,7 +976,7 @@ describe('pure command transaction specs', () => {
   });
 
   it('keeps a node selection intact when a replacement slice cannot fit', () => {
-    const selection = SelectionApi.nodes([[0], [2]]);
+    const selection = SelectionApi.nodes([[0], [2]], { mode: 'block' });
     const editor = createEditor({
       plugins: [CommandScriptSchema],
       initialSelection: selection,
@@ -1001,7 +1001,7 @@ describe('pure command transaction specs', () => {
   it('removes the remaining selected nodes after an open slice fits', () => {
     const editor = createEditor({
       plugins: [CommandScriptSchema],
-      initialSelection: SelectionApi.nodes([[0], [2]]),
+      initialSelection: SelectionApi.nodes([[0], [2]], { mode: 'block' }),
       initialValue: [
         { type: 'paragraph', children: [{ text: 'one' }] },
         { type: 'paragraph', children: [{ text: 'middle' }] },
@@ -2343,7 +2343,10 @@ describe('pure command transaction specs', () => {
           version: 1,
         }),
       ],
-      initialSelection: SelectionApi.nodes([[0], [1]], { root: 'header' }),
+      initialSelection: SelectionApi.nodes([[0], [1]], {
+        mode: 'block',
+        root: 'header',
+      }),
       initialValue: {
         children: [
           { type: 'paragraph', children: [{ text: 'ab' }] },
@@ -2415,7 +2418,7 @@ describe('pure command transaction specs', () => {
     const replaceSelected = (command: (editor: Editor) => unknown): Value => {
       const editor = createEditor({
         plugins: [Boxed],
-        initialSelection: SelectionApi.nodes([[0, 1]]),
+        initialSelection: SelectionApi.nodes([[0, 1]], { mode: 'block' }),
         initialValue: [
           {
             type: 'box',
@@ -2464,7 +2467,7 @@ describe('pure command transaction specs', () => {
 
   it('types over a picked block in an undeclared container as the default of the slot that holds it', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0, 0]]),
+      initialSelection: SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       initialValue: [
         {
           type: 'quote',
@@ -2504,7 +2507,7 @@ describe('pure command transaction specs', () => {
           },
         }),
       ],
-      initialSelection: SelectionApi.nodes([[0, 0]]),
+      initialSelection: SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       initialValue: [
         {
           type: 'quote',
@@ -2533,7 +2536,7 @@ describe('pure command transaction specs', () => {
   const typeInQuotedSection = (plugin: PluginDefinitionInput) => {
     const editor = createEditor({
       plugins: [plugin],
-      initialSelection: SelectionApi.nodes([[0, 0, 0]]),
+      initialSelection: SelectionApi.nodes([[0, 0, 0]], { mode: 'block' }),
       initialValue: [
         {
           type: 'section',
@@ -2645,7 +2648,7 @@ describe('pure command transaction specs', () => {
           version: 1,
         }),
       ],
-      initialSelection: SelectionApi.nodes([[1, 0]]),
+      initialSelection: SelectionApi.nodes([[1, 0]], { mode: 'block' }),
       initialValue: [
         { type: 'heading', level: 1, children: [{ text: 'H' }] },
         {
@@ -2699,7 +2702,7 @@ describe('pure command transaction specs', () => {
           schema: { elements: { image: { void: 'block' } } },
         }),
       ],
-      initialSelection: SelectionApi.nodes([[0, 0]]),
+      initialSelection: SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       initialValue: [
         {
           type: 'quote',

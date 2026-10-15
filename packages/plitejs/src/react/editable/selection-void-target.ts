@@ -1,4 +1,5 @@
 import { NodeApi, type Path, type Point, SelectionApi } from '../..';
+import { isObjectSelectionTarget } from '../../core/selection-protocol';
 import { getSelection, isDOMElement, isDOMNode, isDOMText } from '../../dom';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -93,20 +94,15 @@ export const getSelectableOwnerNodeSelection = (
   editor.read((state) => {
     const node = state.nodes.get(path)?.[0];
 
-    if (
-      !node ||
-      !NodeApi.isElement(node) ||
-      state.schema.isVoid(node) ||
-      !state.schema.isSelectable(node) ||
-      !(state.schema.isObject(node) || state.schema.isAtom(node))
-    ) {
-      return null;
-    }
+    if (!isObjectSelectionTarget(state.schema, node)) return null;
 
     const start = state.points.start(path);
 
     return start
-      ? SelectionApi.nodes([path], start.root ? { root: start.root } : {})
+      ? SelectionApi.nodes([path], {
+          mode: 'object',
+          ...(start.root ? { root: start.root } : {}),
+        })
       : null;
   });
 
@@ -118,8 +114,7 @@ export const getSelectableOwnerAncestorNodeSelection = (
     const entry = state.nodes.above({
       at: point,
       match: (node) =>
-        NodeApi.isElement(node) &&
-        !state.schema.isVoid(node) &&
+        isObjectSelectionTarget(state.schema, node) &&
         state.schema.isObject(node),
       mode: 'lowest',
       voids: true,
@@ -133,10 +128,10 @@ export const getSelectableOwnerAncestorNodeSelection = (
     return start
       ? {
           path,
-          selection: SelectionApi.nodes(
-            [path],
-            start.root ? { root: start.root } : {}
-          ),
+          selection: SelectionApi.nodes([path], {
+            mode: 'object',
+            ...(start.root ? { root: start.root } : {}),
+          }),
           start,
         }
       : null;

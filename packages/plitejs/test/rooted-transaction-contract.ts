@@ -323,7 +323,7 @@ describe('rooted transaction contract', () => {
 
     editor.update((tx) => {
       tx.nodes.remove({
-        at: SelectionApi.nodes([[0], [2]], { root: 'header' }),
+        at: SelectionApi.nodes([[0], [2]], { mode: 'block', root: 'header' }),
       });
     });
 
@@ -342,7 +342,9 @@ describe('rooted transaction contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.merge({ at: SelectionApi.nodes([[1]], { root: 'header' }) });
+      tx.nodes.merge({
+        at: SelectionApi.nodes([[1]], { mode: 'block', root: 'header' }),
+      });
     });
 
     assert.deepEqual(editor.read.value(), {
@@ -361,7 +363,7 @@ describe('rooted transaction contract', () => {
 
     editor.update((tx) => {
       tx.nodes.move({
-        at: SelectionApi.nodes([[0]], { root: 'header' }),
+        at: SelectionApi.nodes([[0]], { mode: 'block', root: 'header' }),
         to: [2],
       });
     });
@@ -383,7 +385,7 @@ describe('rooted transaction contract', () => {
     editor.update((tx) => {
       tx.nodes.wrap(
         { type: 'quote', children: [] },
-        { at: SelectionApi.nodes([[0]], { root: 'header' }) }
+        { at: SelectionApi.nodes([[0]], { mode: 'block', root: 'header' }) }
       );
     });
 
@@ -406,7 +408,9 @@ describe('rooted transaction contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.unwrap({ at: SelectionApi.nodes([[0]], { root: 'header' }) });
+      tx.nodes.unwrap({
+        at: SelectionApi.nodes([[0]], { mode: 'block', root: 'header' }),
+      });
     });
 
     assert.deepEqual(editor.read.value(), {
@@ -426,7 +430,9 @@ describe('rooted transaction contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.lift({ at: SelectionApi.nodes([[0, 0]], { root: 'header' }) });
+      tx.nodes.lift({
+        at: SelectionApi.nodes([[0, 0]], { mode: 'block', root: 'header' }),
+      });
     });
 
     assert.deepEqual(editor.read.value(), {

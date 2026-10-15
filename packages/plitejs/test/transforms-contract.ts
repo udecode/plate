@@ -42,7 +42,8 @@ const paragraph = (text: string): Element => ({
   children: [{ text }],
 });
 
-const disjointNodeSelection = () => SelectionApi.nodes([[0], [2]]);
+const disjointNodeSelection = () =>
+  SelectionApi.nodes([[0], [2]], { mode: 'block' });
 
 const getNodeEntry = <T extends Descendant>(
   editor: Editor<any, any>,
@@ -608,7 +609,7 @@ describe('plite transforms contract', () => {
         defineTestSchema('insert-after-atom', { image: { void: 'block' } }),
       ],
       initialValue: [image],
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
     });
     assert.deepEqual(
       editor.update.blocks.insertAfter(paragraph('inserted'), {

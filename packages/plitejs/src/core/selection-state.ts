@@ -28,19 +28,12 @@ const normalizeSelectionRoot = (
   }
 
   if (SelectionApi.isNode(cloned)) {
-    return SelectionApi.nodes(
-      cloned.paths,
-      root === MAIN_ROOT_KEY
-        ? {
-            anchorPath: cloned.anchorPath,
-            focusPath: cloned.focusPath,
-          }
-        : {
-            anchorPath: cloned.anchorPath,
-            focusPath: cloned.focusPath,
-            root,
-          }
-    );
+    return SelectionApi.nodes(cloned.paths, {
+      anchorPath: cloned.anchorPath,
+      focusPath: cloned.focusPath,
+      mode: cloned.mode,
+      ...(root === MAIN_ROOT_KEY ? {} : { root }),
+    });
   }
 
   if (!RangeApi.isRange(cloned)) {

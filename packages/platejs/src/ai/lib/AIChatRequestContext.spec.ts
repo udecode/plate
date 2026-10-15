@@ -8,6 +8,7 @@ describe('resolveAIChatRequestContext', () => {
         nodeSelection: {
           anchorPath: [1],
           focusPath: [0],
+          mode: 'block',
           paths: [[0], [1]],
         },
         selection: {
@@ -18,6 +19,7 @@ describe('resolveAIChatRequestContext', () => {
     ).toEqual({
       isSelecting: true,
       selection: SelectionApi.nodes([[0], [1]], {
+        mode: 'block',
         anchorPath: [1],
         focusPath: [0],
       }),
@@ -44,6 +46,7 @@ describe('resolveAIChatRequestContext', () => {
         nodeSelection: {
           anchorPath: [0],
           focusPath: [0],
+          mode: 'object',
           paths: [[0]],
         },
         selection: {
@@ -53,7 +56,7 @@ describe('resolveAIChatRequestContext', () => {
       })
     ).toEqual({
       isSelecting: true,
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'object' }),
     });
   });
 

@@ -603,6 +603,11 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
         },
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           isSelectionWithinBlock(scopedState, selection(), options),
+        nodeMode: () => {
+          const current = semanticSelection();
+
+          return SelectionApi.isNode(current) ? current.mode : null;
+        },
         nodes: selectionNodes,
         ranges: selectionRanges,
       })
@@ -684,6 +689,7 @@ const withViewTransaction = <V extends Value>(
             ? SelectionApi.nodes(selectionInput.paths, {
                 anchorPath: selectionInput.anchorPath,
                 focusPath: selectionInput.focusPath,
+                mode: selectionInput.mode,
                 root: viewState.root,
               })
             : RangeApi.isRange(selectionInput)
@@ -916,6 +922,7 @@ const withViewTransaction = <V extends Value>(
         isValid: (value: unknown) => state.selection.isValid(value),
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           state.selection.isWithinBlock(options),
+        nodeMode: () => state.selection.nodeMode(),
         nodes: state.selection.nodes,
         ranges: () => state.selection.ranges(),
         collapse: (options = {}) =>

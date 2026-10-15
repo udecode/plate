@@ -118,26 +118,26 @@ describe('plitejs/yjs editor adapter', () => {
     });
     const adapter = createYjsEditorAdapter(editor, (_root, value) => value);
 
-    editor.update.selection.set(SelectionApi.nodes([[0]]));
+    editor.update.selection.set(SelectionApi.nodes([[0]], { mode: 'block' }));
     adapter.applyRemote({ effects: [], selection: null });
     assert.equal(editor.read.selection(), null);
 
     adapter.applyRemote({
       effects: [],
-      selection: SelectionApi.nodes([[0], [1]]),
+      selection: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
     });
     assert.deepEqual(
       getEditorLiveSelection(editor),
-      SelectionApi.nodes([[0], [1]])
+      SelectionApi.nodes([[0], [1]], { mode: 'block' })
     );
 
     adapter.applyRemote({
       effects: [],
-      selection: SelectionApi.nodes([[0]], { root: 'header' }),
+      selection: SelectionApi.nodes([[0]], { mode: 'block', root: 'header' }),
     });
     assert.deepEqual(
       getEditorLiveSelection(editor),
-      SelectionApi.nodes([[0]], { root: 'header' })
+      SelectionApi.nodes([[0]], { mode: 'block', root: 'header' })
     );
   });
 
@@ -149,7 +149,7 @@ describe('plitejs/yjs editor adapter', () => {
 
     adapter.applyRemote({
       effects: [],
-      selection: SelectionApi.nodes([[9]]),
+      selection: SelectionApi.nodes([[9]], { mode: 'block' }),
     });
     assert.equal(editor.read.selection(), null);
 

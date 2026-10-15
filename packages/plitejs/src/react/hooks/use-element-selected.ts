@@ -27,8 +27,21 @@ import {
 import { useEditorContext } from './use-editor-context';
 import { useEditorSelector } from './use-editor-selector';
 
-/** Selection match mode for `useElementSelected`. */
-export type UseElementSelectedMode = 'collapsed' | 'intersects' | 'node';
+/**
+ * Selection match mode for `useElementSelected`:
+ *
+ * - `intersects`: any selection reaches the element.
+ * - `collapsed`: a collapsed selection reaches the element.
+ * - `text`: a text selection reaches the element; any node selection is false.
+ * - `node`: a node selection holds the element.
+ * - `object`: an object node selection holds the element itself.
+ */
+export type UseElementSelectedMode =
+  | 'collapsed'
+  | 'intersects'
+  | 'node'
+  | 'object'
+  | 'text';
 
 /** Options for selecting the context element or an explicit element path. */
 export type UseElementSelectedOptions = {
@@ -72,14 +85,16 @@ export const useElementSelected = ({
       if (!selectedPath) return false;
       const selection = readRuntimeSelection(current);
       if (!selection) return false;
-      if (mode === 'node') {
+      if (mode === 'node' || mode === 'object') {
         return (
           SelectionApi.isNode(selection) &&
+          (mode === 'node' || selection.mode === 'object') &&
           selection.paths.some((candidatePath) =>
             PathApi.equals(candidatePath, selectedPath)
           )
         );
       }
+      if (mode === 'text' && SelectionApi.isNode(selection)) return false;
       if (mode === 'collapsed' && !current.read.selection.isCollapsed()) {
         return false;
       }
@@ -96,6 +111,7 @@ export const useElementSelected = ({
     if (
       !selectedPath ||
       mode === 'node' ||
+      mode === 'object' ||
       (mode === 'collapsed' && !isPliteViewSelectionCollapsed(selection))
     ) {
       return false;

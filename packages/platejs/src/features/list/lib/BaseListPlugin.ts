@@ -1353,7 +1353,8 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           ? SelectionApi.nodes(
               getListFamilies(state, entries).flatMap((family) =>
                 family.map(({ path }) => path)
-              ) as [Path, ...Path[]]
+              ) as [Path, ...Path[]],
+              { mode: 'block' }
             )
           : selection;
       }),

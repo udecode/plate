@@ -138,10 +138,13 @@ describe('Details list conversion', () => {
     });
     editor.plugin(BaseListPlugin).update.toggle({
       type: 'bulleted',
-      at: SelectionApi.nodes([
-        [0, 0],
-        [0, 1, 0],
-      ]),
+      at: SelectionApi.nodes(
+        [
+          [0, 0],
+          [0, 1, 0],
+        ],
+        { mode: 'block' }
+      ),
     });
     expect(editor.read.children().map((node) => node.indent)).toEqual([
       1, 2, 3,
@@ -200,7 +203,7 @@ describe('Details list conversion', () => {
 
     editor.plugin(BaseListPlugin).update.toggle({
       type: 'bulleted',
-      at: SelectionApi.nodes([[0, 0]], { root: 'note' }),
+      at: SelectionApi.nodes([[0, 0]], { mode: 'block', root: 'note' }),
     });
 
     expect({
@@ -226,11 +229,11 @@ describe('Details list conversion', () => {
 
     list.toggle({
       type: 'bulleted',
-      at: SelectionApi.nodes([[0, 0]], { root: 'note' }),
+      at: SelectionApi.nodes([[0, 0]], { mode: 'block', root: 'note' }),
     });
     list.toggle({
       type: 'numbered',
-      at: SelectionApi.nodes([[0]], { root: 'note' }),
+      at: SelectionApi.nodes([[0]], { mode: 'block', root: 'note' }),
     });
 
     expect(editor.read.root('note')[0]).toMatchObject({ listType: 'numbered' });
@@ -240,7 +243,7 @@ describe('Details list conversion', () => {
     const editor = noteEditor();
     const main = editor.read.children();
     const note = (path: number[]) =>
-      SelectionApi.nodes([path], { root: 'note' });
+      SelectionApi.nodes([path], { mode: 'block', root: 'note' });
     const indents = () => editor.read.root('note').map((node) => node.indent);
 
     editor.plugin(BaseListPlugin).update.toggle({
@@ -521,10 +524,13 @@ describe('a Details title conversion that cannot finish', () => {
     expect(
       convertAfterWrite(editor, (tx) =>
         tx.plugin(BaseListPlugin).toggle({
-          at: SelectionApi.nodes([
-            [0, 0, 0],
-            [0, 1, 0],
-          ]),
+          at: SelectionApi.nodes(
+            [
+              [0, 0, 0],
+              [0, 1, 0],
+            ],
+            { mode: 'block' }
+          ),
           type: 'bulleted',
         })
       )
@@ -546,10 +552,13 @@ describe('a Details title conversion that cannot finish', () => {
 
     expect(
       editor.plugin(BaseListPlugin).update.toggle({
-        at: SelectionApi.nodes([
-          [0, 0, 0],
-          [0, 1, 0],
-        ]),
+        at: SelectionApi.nodes(
+          [
+            [0, 0, 0],
+            [0, 1, 0],
+          ],
+          { mode: 'block' }
+        ),
         type: 'bulleted',
       })
     ).toBe(true);
@@ -580,10 +589,13 @@ describe('a Details title conversion that cannot finish', () => {
 
     expect({
       converted: editor.plugin(BaseListPlugin).update.toggle({
-        at: SelectionApi.nodes([
-          [0, 0, 0],
-          [0, 2, 0],
-        ]),
+        at: SelectionApi.nodes(
+          [
+            [0, 0, 0],
+            [0, 2, 0],
+          ],
+          { mode: 'block' }
+        ),
         type: 'bulleted',
       }),
       value: editor.read.children(),
@@ -610,10 +622,13 @@ describe('a Details title conversion that cannot finish', () => {
     });
 
     editor.plugin(BaseListPlugin).update.toggle({
-      at: SelectionApi.nodes([
-        [0, 0, 0],
-        [0, 2, 0],
-      ]),
+      at: SelectionApi.nodes(
+        [
+          [0, 0, 0],
+          [0, 2, 0],
+        ],
+        { mode: 'block' }
+      ),
       type: 'bulleted',
     });
 

@@ -155,7 +155,11 @@ export const expandSource = (from: AnyEditor, paths: readonly Path[]) => {
   const expanded = executeEditorRead(
     from,
     editorReads.transfer.source,
-    { selection: SelectionApi.nodes(paths as [Path, ...Path[]]) },
+    {
+      selection: SelectionApi.nodes(paths as [Path, ...Path[]], {
+        mode: 'block',
+      }),
+    },
     ({ selection }) => selection,
     from
   );
@@ -412,7 +416,8 @@ const admit = (
           source.kind === 'text'
             ? source.range
             : SelectionApi.nodes(
-                source.entries.map(([, path]) => path) as [Path, ...Path[]]
+                source.entries.map(([, path]) => path) as [Path, ...Path[]],
+                { mode: 'block' }
               ),
           undefined,
           intent
@@ -635,7 +640,9 @@ const runTransfer = (
       const selectLanded = (keys: readonly NodeKey[]) => {
         const paths = keys.map(pathOf);
 
-        const nodes = SelectionApi.nodes(paths as [Path, ...Path[]]);
+        const nodes = SelectionApi.nodes(paths as [Path, ...Path[]], {
+          mode: 'block',
+        });
 
         landed = nodes;
         draft.current = {
@@ -875,7 +882,9 @@ const runTransfer = (
         first + i,
       ]);
 
-      const nodes = SelectionApi.nodes(paths as [Path, ...Path[]]);
+      const nodes = SelectionApi.nodes(paths as [Path, ...Path[]], {
+        mode: 'block',
+      });
 
       landed = nodes;
       draft.current = { children: tx.nodes.children(), landed: { paths } };
@@ -965,7 +974,7 @@ const readHeld = (
     (_, offset): Path => [...parent, from + offset + 1]
   );
 
-  return SelectionApi.nodes([first, ...rest]);
+  return SelectionApi.nodes([first, ...rest], { mode: 'block' });
 };
 
 type CachedCheck = Readonly<{ check: TransferCheck; key: readonly unknown[] }>;

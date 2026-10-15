@@ -266,8 +266,8 @@ export interface DOMDragApi {
   /** Publish this view's drop indicator for a target, or clear it. */
   indicate: (target: DOMDropTarget | null) => void;
   /**
-   * Start a block drag: select what a transfer of `node` carries, open the
-   * drag session and return inert previews for the drag image. A read-only
+   * Start a block drag: block-select what a transfer of `node` carries, open
+   * the drag session and return inert previews for the drag image. A read-only
    * view starts a copy-only drag.
    */
   start: (

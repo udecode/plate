@@ -800,7 +800,7 @@ describe('primitive method runtime contract', () => {
 
     setEditorTargetRuntime(editor, {
       resolveImplicitTarget() {
-        return SelectionApi.nodes([[0], [2]]);
+        return SelectionApi.nodes([[0], [2]], { mode: 'block' });
       },
     });
 

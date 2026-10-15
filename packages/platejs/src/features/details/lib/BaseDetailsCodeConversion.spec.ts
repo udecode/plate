@@ -82,7 +82,9 @@ describe('Code from a Details title', () => {
     });
     const before = editor.read.children();
 
-    editor.update.selection.set(SelectionApi.nodes([[0], [2]]));
+    editor.update.selection.set(
+      SelectionApi.nodes([[0], [2]], { mode: 'block' })
+    );
 
     expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(false);
     expect(editor.read.children()).toEqual(before);

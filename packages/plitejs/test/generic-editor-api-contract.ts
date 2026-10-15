@@ -126,5 +126,5 @@ withTransfer.api.transfer.move({ to: { edge: 'after', key: nodeKey } });
 
 editor.update.slice.replace(ContentSlice.closed<CustomValue>([]), {
   // @ts-expect-error a paste lands at a location; a node selection is replaced through the current selection
-  at: SelectionApi.nodes([[0]]),
+  at: SelectionApi.nodes([[0]], { mode: 'block' }),
 });

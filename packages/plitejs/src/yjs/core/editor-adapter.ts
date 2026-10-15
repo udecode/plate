@@ -70,19 +70,12 @@ const sanitizeImportSelection = (
     };
 
     return selection.paths.every((path) => NodeApi.getIf(root, path))
-      ? SelectionApi.nodes(
-          selection.paths,
-          selection.root === undefined
-            ? {
-                anchorPath: selection.anchorPath,
-                focusPath: selection.focusPath,
-              }
-            : {
-                anchorPath: selection.anchorPath,
-                focusPath: selection.focusPath,
-                root: selection.root,
-              }
-        )
+      ? SelectionApi.nodes(selection.paths, {
+          anchorPath: selection.anchorPath,
+          focusPath: selection.focusPath,
+          mode: selection.mode,
+          ...(selection.root === undefined ? {} : { root: selection.root }),
+        })
       : null;
   }
   if ('kind' in selection && selection.kind !== 'text') return null;

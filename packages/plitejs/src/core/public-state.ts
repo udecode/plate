@@ -4605,6 +4605,11 @@ const getStateView = <
           ),
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           isSelectionWithinBlock(state, getPublicSelection(editor), options),
+        nodeMode: () => {
+          const selection = getCurrentSelection(editor);
+
+          return SelectionApi.isNode(selection) ? selection.mode : null;
+        },
         nodes: selectionNodes,
         ranges: () =>
           getSelectionRanges(
@@ -6655,6 +6660,7 @@ export const getUpdateView = <
         isValid: (value: unknown) => state.selection.isValid(value),
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           state.selection.isWithinBlock(options),
+        nodeMode: () => state.selection.nodeMode(),
         nodes: state.selection.nodes,
         ranges: () => state.selection.ranges(),
         collapse: defineSemanticUpdateMethod<
@@ -6740,7 +6746,7 @@ export const getUpdateView = <
               getCurrentChildrenRoot(editor) ??
               getActiveMutationRoot(editor) ??
               MAIN_ROOT_KEY;
-            const directionalTargets = options
+            const directionalTargets = options?.anchor
               ? [options.anchor, options.focus]
               : [];
             const targetRoots = [...targets, ...directionalTargets].map(
@@ -6782,7 +6788,7 @@ export const getUpdateView = <
               const firstPath = paths[0];
 
               if (!firstPath) return;
-              const endpoints = options
+              const endpoints = options?.anchor
                 ? {
                     anchorPath: resolveSelectedPath(options.anchor),
                     focusPath: resolveSelectedPath(options.focus),
@@ -6809,19 +6815,17 @@ export const getUpdateView = <
               }
 
               const publicRoot = toPublicRoot(root);
+              const selectionOptions = {
+                mode: options?.mode ?? 'block',
+                ...(publicRoot ? { root: publicRoot } : {}),
+              };
               select(
                 editor,
                 SelectionApi.nodes(
                   [firstPath, ...paths.slice(1)],
                   endpoints
-                    ? {
-                        anchorPath: endpoints.anchorPath,
-                        focusPath: endpoints.focusPath,
-                        ...(publicRoot ? { root: publicRoot } : {}),
-                      }
-                    : publicRoot
-                      ? { root: publicRoot }
-                      : {}
+                    ? { ...endpoints, ...selectionOptions }
+                    : selectionOptions
                 )
               );
             });
@@ -10664,6 +10668,7 @@ export const replaceTransformedSnapshot = (
           ? SelectionApi.nodes(snapshotInput.selection.paths, {
               anchorPath: snapshotInput.selection.anchorPath,
               focusPath: snapshotInput.selection.focusPath,
+              mode: snapshotInput.selection.mode,
             })
           : {
               ...snapshotInput.selection,
@@ -10810,6 +10815,7 @@ const resolveSnapshotSelection = (
       ? SelectionApi.nodes(selection.paths, {
           anchorPath: selection.anchorPath,
           focusPath: selection.focusPath,
+          mode: selection.mode,
         })
       : null;
   }
@@ -10887,6 +10893,7 @@ export const initializeEditorSchemaSnapshot = (
         ? SelectionApi.nodes(snapshotInput.selection.paths, {
             anchorPath: snapshotInput.selection.anchorPath,
             focusPath: snapshotInput.selection.focusPath,
+            mode: snapshotInput.selection.mode,
           })
         : {
             ...snapshotInput.selection,

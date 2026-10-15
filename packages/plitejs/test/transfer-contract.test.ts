@@ -1036,7 +1036,13 @@ describe('schema-derived landing', () => {
     });
 
     assert.deepEqual(outcome, {
-      at: { anchorPath: [1], focusPath: [1], kind: 'node', paths: [[1]] },
+      at: {
+        anchorPath: [1],
+        focusPath: [1],
+        kind: 'node',
+        mode: 'block',
+        paths: [[1]],
+      },
       status: 'moved',
     });
     assert.deepEqual(editor.read.children(), [
@@ -1295,6 +1301,7 @@ describe('side landing', () => {
           anchorPath: [0, 0, 0],
           focusPath: [0, 0, 1],
           kind: 'node',
+          mode: 'block',
           paths: [
             [0, 0, 0],
             [0, 0, 1],

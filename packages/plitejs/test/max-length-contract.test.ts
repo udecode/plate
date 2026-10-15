@@ -358,7 +358,9 @@ describe('maxLength editor option', () => {
       maxLength: 5,
     });
 
-    editor.update.selection.set(SelectionApi.nodes([[0], [2]]));
+    editor.update.selection.set(
+      SelectionApi.nodes([[0], [2]], { mode: 'block' })
+    );
     editor.update.text.insert('123456');
 
     assert.deepEqual(editor.read.children(), [
@@ -369,7 +371,7 @@ describe('maxLength editor option', () => {
 
   it('limits a paste at an explicit caret by the caret, not the selected node', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [paragraph('aa'), paragraph('b'), paragraph('cc')],
       maxLength: 7,
     });
@@ -389,7 +391,7 @@ describe('maxLength editor option', () => {
 
   it('limits an open paste over a selected block after freeing its text', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[1]]),
+      initialSelection: SelectionApi.nodes([[1]], { mode: 'block' }),
       initialValue: [paragraph('aa'), paragraph('b'), paragraph('cc')],
       maxLength: 7,
     });
@@ -447,7 +449,7 @@ describe('maxLength editor option', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.remove({ at: SelectionApi.nodes([[0]]) });
+      tx.nodes.remove({ at: SelectionApi.nodes([[0]], { mode: 'block' }) });
       tx.text.insert('AAAAA', { at: { path: [0, 0], offset: 5 } });
     });
 

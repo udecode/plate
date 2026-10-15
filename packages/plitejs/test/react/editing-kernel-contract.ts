@@ -529,7 +529,7 @@ test('keyboard structural commands keep model selection after programmatic DOM e
 
 test('keyboard movement keeps DOM-less node selections model-owned', () => {
   const editor = createEditor({
-    initialSelection: SelectionApi.nodes([[0]]),
+    initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
     initialValue: [{ children: [{ text: 'caption' }], type: 'media' }],
   }) as any;
   const inputController = createEditableInputController({

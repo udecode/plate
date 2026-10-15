@@ -401,7 +401,7 @@ test('plain-text paste over a nested picked block lands the blocks its parent de
           type: 'box',
         },
       ],
-      SelectionApi.nodes([[0, 1]]),
+      SelectionApi.nodes([[0, 1]], { mode: 'block' }),
       'one\ntwo'
     )
   ).toEqual([
@@ -426,7 +426,7 @@ test('plain-text paste over a picked prefix block builds each line at its own sl
           type: 'box',
         },
       ],
-      SelectionApi.nodes([[0, 0]]),
+      SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       'one\ntwo'
     )
   ).toEqual([
@@ -580,7 +580,7 @@ test('plain-text paste over a picked block in a full container changes nothing',
     pasteIntoNested(
       oneBlockSchema,
       [{ children: [paragraph('q')], type: 'box' }],
-      SelectionApi.nodes([[0, 0]]),
+      SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       'one\ntwo'
     )
   ).toEqual([{ children: [paragraph('q')], type: 'box' }]);
@@ -615,7 +615,7 @@ test('plain-text paste over a picked block changes nothing when a later line has
     pasteIntoNested(
       oneSlotSchema,
       [{ children: [paragraph('q')], type: 'box' }],
-      SelectionApi.nodes([[0, 0]]),
+      SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       'one\ntwo'
     )
   ).toEqual([{ children: [paragraph('q')], type: 'box' }]);
@@ -636,7 +636,7 @@ test('plain-text paste over a picked void in an undeclared container lands the d
           type: 'quote',
         },
       ],
-      SelectionApi.nodes([[0, 0]]),
+      SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       'one\ntwo'
     )
   ).toEqual([
@@ -678,7 +678,7 @@ test('plain-text paste over a picked inline pastes as over its text', () => {
           type: 'paragraph',
         },
       ],
-      SelectionApi.nodes([[0, 1]]),
+      SelectionApi.nodes([[0, 1]], { mode: 'block' }),
       'x'
     )
   ).toEqual([
@@ -698,7 +698,7 @@ test('plain-text paste over a picked block in an undeclared container lands the 
     pasteIntoNested(
       definePlugin('data-transfer-derived-schema-test', {}),
       [{ children: [paragraph('q'), paragraph('r')], type: 'quote' }],
-      SelectionApi.nodes([[0, 0]]),
+      SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       'one\ntwo'
     )
   ).toEqual([

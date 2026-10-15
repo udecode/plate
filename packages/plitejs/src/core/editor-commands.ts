@@ -106,12 +106,12 @@ const getCurrentNodeSelection = (
   const focusPath = selectedPathAt(selection?.focus.path, last);
   const root = SelectionApi.root(selection);
 
-  return SelectionApi.nodes(
-    [first, ...paths.slice(1)],
-    root === undefined
-      ? { anchorPath, focusPath }
-      : { anchorPath, focusPath, root }
-  );
+  return SelectionApi.nodes([first, ...paths.slice(1)], {
+    anchorPath,
+    focusPath,
+    mode: 'block',
+    ...(root === undefined ? {} : { root }),
+  });
 };
 
 const equalsInRoot = (point: Point | undefined, target: Point) => {

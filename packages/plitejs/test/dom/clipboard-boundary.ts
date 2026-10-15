@@ -646,7 +646,7 @@ describe('plite-dom clipboard boundary', () => {
       ];
       const editor = createEditor({
         plugins: [dom(), objectClipboardSchema],
-        initialSelection: SelectionApi.nodes([[1]]),
+        initialSelection: SelectionApi.nodes([[1]], { mode: 'block' }),
         initialValue: {
           children: [
             { children: [{ text: 'before' }], type: 'paragraph' as const },

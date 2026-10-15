@@ -130,7 +130,7 @@ describe('BaseDetailsPlugin', () => {
     } else {
       editor
         .plugin(BaseDetailsPlugin)
-        .update.unwrap({ at: SelectionApi.nodes([[0, 1]]) });
+        .update.unwrap({ at: SelectionApi.nodes([[0, 1]], { mode: 'block' }) });
     }
     expect(editor.read.children()).toMatchObject([
       {
@@ -331,16 +331,16 @@ describe('BaseDetailsPlugin', () => {
       const editor = createNoteEditor([value[1]]);
       editor.update.selection.set({ path: [0, 0, 0], offset: 0 });
 
-      editor
-        .plugin(BaseDetailsPlugin)
-        .update.unwrap({ at: SelectionApi.nodes([[0]], { root: 'note' }) });
+      editor.plugin(BaseDetailsPlugin).update.unwrap({
+        at: SelectionApi.nodes([[0]], { mode: 'block', root: 'note' }),
+      });
       expect(editor.read.children()).toMatchObject(main);
       expect(editor.read.root('note')).toMatchObject([value[1]]);
     });
 
     it.each([
-      ['container', SelectionApi.nodes([[0]], { root: 'note' })],
-      ['body', SelectionApi.nodes([[0, 1]], { root: 'note' })],
+      ['container', SelectionApi.nodes([[0]], { mode: 'block', root: 'note' })],
+      ['body', SelectionApi.nodes([[0, 1]], { mode: 'block', root: 'note' })],
       [
         'body through a range only its focus roots',
         {
@@ -405,7 +405,7 @@ describe('BaseDetailsPlugin', () => {
         },
       ],
     });
-    const target = SelectionApi.nodes([[0, 1, 0, 0]]);
+    const target = SelectionApi.nodes([[0, 1, 0, 0]], { mode: 'block' });
     editor.update.selection.set(target);
     editor.update((tx) =>
       tx.command(editorCommands.deleteFragment, {
@@ -462,7 +462,7 @@ describe('BaseDetailsPlugin', () => {
       value[1],
     ];
     const editor = createEditor({ plugins: [BaseDetailsPlugin], initialValue });
-    editor.update.selection.set(SelectionApi.nodes([[1]]));
+    editor.update.selection.set(SelectionApi.nodes([[1]], { mode: 'block' }));
     editor.update.text.deleteBackward({ unit: 'character' });
     expect(editor.read.selection()).toMatchObject({
       anchor: { path: [0, 0, 0], offset: 5 },

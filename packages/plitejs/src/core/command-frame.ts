@@ -516,7 +516,10 @@ const createFramePlace = (
   const path = (at: Path): Path | null => {
     if (at.length === 0) return at;
 
-    const mapped = map(SelectionApi.nodes([at]), locationRoot);
+    const mapped = map(
+      SelectionApi.nodes([at], { mode: 'block' }),
+      locationRoot
+    );
 
     if (mapped?.kind === 'node') return getDefined(mapped.paths[0]);
 

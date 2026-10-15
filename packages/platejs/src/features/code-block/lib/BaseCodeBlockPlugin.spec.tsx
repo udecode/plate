@@ -263,7 +263,7 @@ describe('BaseCodeBlockPlugin', () => {
   it('decodes and encodes one newline-bearing text through HTML', () => {
     const editor = createFixtureEditor({
       plugins: [BaseCodeBlockPlugin],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [{ text: 'const a = 1;\n\nconst b = 2;\n' }],

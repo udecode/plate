@@ -99,7 +99,7 @@ describe('plite public accessor + transaction boundary', () => {
         type: 'paragraph';
       }>
     >({
-      initialSelection: SelectionApi.nodes([[0], [1]]),
+      initialSelection: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
       initialValue: [paragraph('one'), paragraph('two')],
     });
 

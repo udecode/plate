@@ -181,7 +181,7 @@ describe('required document prefix', () => {
             level: node.type === 'heading' ? 3 : 2,
           }),
           {
-            at: SelectionApi.nodes([[0], [1, 0]]),
+            at: SelectionApi.nodes([[0], [1, 0]], { mode: 'block' }),
           }
         ),
         false
@@ -196,7 +196,7 @@ describe('required document prefix', () => {
             level: NodeApi.string(node) === 'Before' ? 2 : 3,
           }),
           {
-            at: SelectionApi.nodes([[0], [1, 2]]),
+            at: SelectionApi.nodes([[0], [1, 2]], { mode: 'block' }),
           }
         ),
         true
@@ -1075,7 +1075,9 @@ describe('contextual schema slice fitting', () => {
         focus: { offset: 4, path: [1, 0] },
       },
     });
-    const owner = source.read.slice.get({ at: SelectionApi.nodes([[1]]) });
+    const owner = source.read.slice.get({
+      at: SelectionApi.nodes([[1]], { mode: 'block' }),
+    });
     const across = source.read.slice.get({
       at: {
         anchor: { offset: 2, path: [0, 0] },
@@ -1142,7 +1144,7 @@ describe('contextual schema slice fitting', () => {
     const replacementTarget = createEditor({
       plugins: [ObjectSchema],
       initialValue: [paragraph('before'), media, paragraph('after')],
-      initialSelection: SelectionApi.nodes([[1]]),
+      initialSelection: SelectionApi.nodes([[1]], { mode: 'block' }),
     });
 
     replacementTarget.update.slice.replace(
@@ -3555,7 +3557,7 @@ describe('node selection replacement', () => {
   it('refuses a raw replacement while a node selection is current', () => {
     const before = [paragraph('aa'), paragraph('b')];
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: before,
     });
     let replaced = true;
@@ -3598,7 +3600,7 @@ describe('closed object placement [EDIT-CLIPBOARD-BLOCK-TYPE-001]', () => {
     const editor = createEditor({
       plugins: [CodeSchema, history()],
       initialValue: before,
-      initialSelection: SelectionApi.nodes([[0, 0]]),
+      initialSelection: SelectionApi.nodes([[0, 0]], { mode: 'block' }),
     });
 
     assert.equal(

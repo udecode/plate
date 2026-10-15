@@ -55,19 +55,12 @@ export const select: SelectionMutationMethods['select'] = (editor, target) => {
 
     writeSelection(
       editor,
-      SelectionApi.nodes(
-        target.paths,
-        root === 'main'
-          ? {
-              anchorPath: target.anchorPath,
-              focusPath: target.focusPath,
-            }
-          : {
-              anchorPath: target.anchorPath,
-              focusPath: target.focusPath,
-              root,
-            }
-      ),
+      SelectionApi.nodes(target.paths, {
+        anchorPath: target.anchorPath,
+        focusPath: target.focusPath,
+        mode: target.mode,
+        ...(root === 'main' ? {} : { root }),
+      }),
       root
     );
     return;

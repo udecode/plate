@@ -65,7 +65,7 @@ describe('plite delete contract', () => {
   it('deletes an exact node selection and restores the directional text boundary', () => {
     for (const direction of ['backward', 'forward'] as const) {
       const editor = createEditor({
-        initialSelection: SelectionApi.nodes([[1]]),
+        initialSelection: SelectionApi.nodes([[1]], { mode: 'block' }),
         initialValue: [
           paragraph('before'),
           { type: 'media', children: [{ text: 'caption' }] },
@@ -100,7 +100,7 @@ describe('plite delete contract', () => {
   it('deletes every selected node once and preserves directional fallback', () => {
     for (const direction of ['backward', 'forward'] as const) {
       const editor = createEditor({
-        initialSelection: SelectionApi.nodes([[1], [2]]),
+        initialSelection: SelectionApi.nodes([[1], [2]], { mode: 'block' }),
         initialValue: [
           paragraph('before'),
           paragraph('one'),
@@ -140,7 +140,10 @@ describe('plite delete contract', () => {
       paragraph('main after'),
     ];
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[1]], { root: 'caption' }),
+      initialSelection: SelectionApi.nodes([[1]], {
+        mode: 'block',
+        root: 'caption',
+      }),
       initialValue: {
         children: main,
         roots: {

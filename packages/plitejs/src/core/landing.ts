@@ -356,7 +356,7 @@ export const landBeside = (
       executeEditorRead(
         editor,
         editorReads.transfer.source,
-        { selection: SelectionApi.nodes([targetPath]) },
+        { selection: SelectionApi.nodes([targetPath], { mode: 'block' }) },
         ({ selection }) => selection,
         editor
       ).paths.some((path) => !PathApi.equals(path, targetPath))

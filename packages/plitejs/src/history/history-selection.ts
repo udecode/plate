@@ -28,19 +28,14 @@ export const cloneSelection = (
   if (SelectionApi.isNode(selection)) {
     const selectionRoot = selection.root ?? root;
 
-    return SelectionApi.nodes(
-      selection.paths,
-      selectionRoot && selectionRoot !== MAIN_ROOT_KEY
-        ? {
-            anchorPath: selection.anchorPath,
-            focusPath: selection.focusPath,
-            root: selectionRoot,
-          }
-        : {
-            anchorPath: selection.anchorPath,
-            focusPath: selection.focusPath,
-          }
-    );
+    return SelectionApi.nodes(selection.paths, {
+      anchorPath: selection.anchorPath,
+      focusPath: selection.focusPath,
+      mode: selection.mode,
+      ...(selectionRoot && selectionRoot !== MAIN_ROOT_KEY
+        ? { root: selectionRoot }
+        : {}),
+    });
   }
 
   return {

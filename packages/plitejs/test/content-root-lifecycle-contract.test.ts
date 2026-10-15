@@ -240,7 +240,9 @@ describe('element-owned root lifecycle', () => {
     );
 
     editor.update((tx) => {
-      tx.blocks.duplicate({ at: SelectionApi.nodes([[0], [1]]) });
+      tx.blocks.duplicate({
+        at: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
+      });
     });
 
     assert.deepEqual(editor.read.children(), [
