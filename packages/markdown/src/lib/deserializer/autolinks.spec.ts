@@ -10,9 +10,11 @@ import { remarkMdx } from '../plugins/remarkMdx';
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { deserializeMd, markdownToAstProcessor } from './deserializeMd';
 
+const editor = createTestEditor();
+
 it('keeps JSX after a pending list exit', () => {
   const input = '- item\n\n<u{/*@example.com>*/...a\n> b}>keep</u>';
-  expect(markdownToAstProcessor(createTestEditor(), input)).toEqual(
+  expect(markdownToAstProcessor(editor, input)).toEqual(
     unified().use(remarkParse).use(baseRemarkMdx).parse(input)
   );
 });
@@ -27,7 +29,7 @@ it('preserves inherited native construct flags', () => {
   }
   const input = '<A title="\n> x\n" />\n\n<u>keep</u>';
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [remarkMdx, inheritFlow],
     })
   ).toEqual(
@@ -42,7 +44,7 @@ it('accepts frozen native extensions', () => {
   }
   const input = '<u>keep</u>';
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [remarkMdx, freezeExtensions],
     })
   ).toEqual(
@@ -71,7 +73,7 @@ it('preserves native grammar getter receivers', () => {
   }
   const input = '<A title="\n> x\n" />\n\n<u>keep</u>';
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [remarkMdx, nativeGetter],
     })
   ).toEqual(
@@ -82,7 +84,7 @@ it('preserves native grammar getter receivers', () => {
 it('normalizes later HTML after failed quoted code inside JSX', () => {
   expect(
     deserializeMd(
-      createTestEditor(),
+      editor,
       '<div>\n`<Foo title=">`\n\ntext<br>after\n\n</div>\n\n<u>keep</u>'
     )
   ).toEqual([
@@ -105,7 +107,7 @@ it('does not inspect unrelated processor data while parsing', () => {
   }
   const input = '<u>keep</u>';
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [remarkMdx, unrelatedData],
     })
   ).toEqual(
@@ -121,7 +123,7 @@ it('uses configured math ownership before later JSX', () => {
   const input =
     '$$\n~~~\n$$\n\n> <u{/*@example.com>\n> */...a\n> > b}>keep</u>';
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [remarkMdx, remarkMath],
     })
   ).toEqual(
@@ -138,7 +140,7 @@ it('retains attached native roles after construct names change', () => {
           if (construct) construct.name = `application${construct.name}`;
   }
   expect(
-    deserializeMd(createTestEditor(), '<a@example.com>\n\n<u>keep</u>', {
+    deserializeMd(editor, '<a@example.com>\n\n<u>keep</u>', {
       remarkPlugins: [remarkMdx, rename],
     })
   ).toEqual([
@@ -165,7 +167,7 @@ it('respects replacement tokenizers on attached constructs', () => {
   }
   const input = '<a@example.com>\n\n<u>keep</u>';
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [remarkMdx, replace],
     })
   ).toEqual(
@@ -197,7 +199,7 @@ it('keeps source ownership when nested parsing reuses live constructs', () => {
   }
   const input = '! <Foo title="<ignore@example.com>" /><u>outer</u>';
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [remarkMdx, nested],
     })
   ).toEqual(
@@ -206,9 +208,7 @@ it('keeps source ownership when nested parsing reuses live constructs', () => {
 });
 
 it('preserves angle-wrapped link destinations', () => {
-  expect(
-    deserializeMd(createTestEditor(), '[link](<https://example.com>)')
-  ).toEqual([
+  expect(deserializeMd(editor, '[link](<https://example.com>)')).toEqual([
     {
       type: 'p',
       children: [
@@ -220,10 +220,7 @@ it('preserves angle-wrapped link destinations', () => {
 
 it('preserves angle-wrapped image destinations', () => {
   expect(
-    deserializeMd(
-      createTestEditor(),
-      '![image](<https://example.com/image.png>)'
-    )
+    deserializeMd(editor, '![image](<https://example.com/image.png>)')
   ).toEqual([
     {
       caption: [{ text: 'image' }],
@@ -236,10 +233,7 @@ it('preserves angle-wrapped image destinations', () => {
 
 it('preserves email-like text in JSX attributes', () => {
   expect(
-    deserializeMd(
-      createTestEditor(),
-      'Before <Foo label="<user@example.com>" /> after'
-    )
+    deserializeMd(editor, 'Before <Foo label="<user@example.com>" /> after')
   ).toEqual([
     {
       type: 'p',
@@ -257,20 +251,16 @@ it.each([
   'mailto:widget',
   'MAILTO:widget',
 ])('preserves the JSX namespace %s', (name) => {
-  expect(
-    deserializeMd(createTestEditor(), `<${name}>label</${name}>\n\nAfter`)
-  ).toEqual([
+  expect(deserializeMd(editor, `<${name}>label</${name}>\n\nAfter`)).toEqual([
     { type: 'p', children: [{ text: `<${name}>label</${name}>` }] },
     { type: 'p', children: [{ text: 'After' }] },
   ]);
 });
 
 it('parses standalone autolinks through the AST entry point with direct remark-mdx', () => {
-  const ast = markdownToAstProcessor(
-    createTestEditor(),
-    '<user@example.com>\n\nAfter',
-    { remarkPlugins: [baseRemarkMdx] }
-  );
+  const ast = markdownToAstProcessor(editor, '<user@example.com>\n\nAfter', {
+    remarkPlugins: [baseRemarkMdx],
+  });
   expect(ast.children).toMatchObject([
     {
       type: 'paragraph',
@@ -288,7 +278,7 @@ it('parses standalone autolinks through the AST entry point with direct remark-m
 
 it('parses an autolink adjacent to JSX without losing later content', () => {
   const ast = markdownToAstProcessor(
-    createTestEditor(),
+    editor,
     '<u><user@example.com></u>\n\nAfter'
   );
   expect(ast.children).toMatchObject([
@@ -313,7 +303,7 @@ it('parses an autolink adjacent to JSX without losing later content', () => {
 });
 
 it('removes direct remark-mdx when withoutMdx is requested', () => {
-  const ast = markdownToAstProcessor(createTestEditor(), '<u>under</u>', {
+  const ast = markdownToAstProcessor(editor, '<u>under</u>', {
     remarkPlugins: [baseRemarkMdx],
     withoutMdx: true,
   });
@@ -335,7 +325,7 @@ it('keeps the document and MDX marks after an email beginning with a void tag na
     errors.push(error);
   };
   const value = deserializeMd(
-    createTestEditor(),
+    editor,
     '<input@example.com>\n\n## After\n\n<u>keep underline</u>',
     { onError }
   );
@@ -357,7 +347,6 @@ it('keeps the document and MDX marks after an email beginning with a void tag na
 });
 
 it('accepts native email local parts that resemble MDX expressions', () => {
-  const editor = createTestEditor();
   const input = '<first{last}@example.com>\n\n## After';
   expect(deserializeMd(editor, input)).toEqual([
     {
@@ -389,7 +378,7 @@ it('accepts native email local parts that resemble MDX expressions', () => {
 
 it('keeps later blockquotes and lists after an email with an unmatched brace', () => {
   const ast = markdownToAstProcessor(
-    createTestEditor(),
+    editor,
     '<a{@example.com>\n\n> quoted\n\n- item'
   );
   expect(ast.children).toMatchObject([
@@ -425,10 +414,7 @@ it('keeps later blockquotes and lists after an email with an unmatched brace', (
 });
 
 it('keeps a lazy blockquote continuation after a brace email', () => {
-  const ast = markdownToAstProcessor(
-    createTestEditor(),
-    '> <a{@example.com>\ncontinued'
-  );
+  const ast = markdownToAstProcessor(editor, '> <a{@example.com>\ncontinued');
   expect(ast.children).toMatchObject([
     {
       type: 'blockquote',
@@ -451,7 +437,7 @@ it('keeps a lazy blockquote continuation after a brace email', () => {
 
 it('keeps a complete JSX expression when its string also resembles an email autolink', () => {
   const ast = markdownToAstProcessor(
-    createTestEditor(),
+    editor,
     "<A{...'u@example.com>text'}>label</A>"
   );
   expect(ast.children).toMatchObject([
@@ -476,7 +462,7 @@ it('keeps a complete JSX expression when its string also resembles an email auto
 
 it('keeps multiline JSX and an adjacent email inside the original blockquote', () => {
   const ast = markdownToAstProcessor(
-    createTestEditor(),
+    editor,
     '> <u\n> ><user@example.com></u>\n\nAfter'
   );
   expect(ast.children).toMatchObject([
@@ -501,7 +487,7 @@ it('keeps multiline JSX and an adjacent email inside the original blockquote', (
 
 it('does not reuse a comment decision across different blockquote prefixes', () => {
   const ast = markdownToAstProcessor(
-    createTestEditor(),
+    editor,
     '<A{/*@example.com>\n\n> <A{/*@example.com>\n> */...props\n> }>text</A>'
   );
   expect(ast.children).toMatchObject([
@@ -529,7 +515,7 @@ it('does not reuse a comment decision across different blockquote prefixes', () 
 
 it('keeps syntax-significant newlines in comment ownership decisions', () => {
   const ast = markdownToAstProcessor(
-    createTestEditor(),
+    editor,
     '<A{...async/*@example.com>\n\n<A{...async/*@example.com>*/()=>1}>ok</A>'
   );
   expect(ast.children).toMatchObject([
@@ -552,7 +538,7 @@ it('keeps syntax-significant newlines in comment ownership decisions', () => {
 
 it('preserves native JSX when a consumed tag marker resembles a nested blockquote', () => {
   const input = '> <u\n> ><A{/*@example.com>\n> */...a\n> > b}>text</A></u>';
-  expect(markdownToAstProcessor(createTestEditor(), input)).toEqual(
+  expect(markdownToAstProcessor(editor, input)).toEqual(
     unified().use(remarkParse).use(baseRemarkMdx).parse(input)
   );
 });
@@ -566,7 +552,7 @@ it('uses configured Acorn grammar when distinguishing JSX from email links', () 
   };
   const input = "<A{...let+'u@example.com>text'}>label</A>";
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [configuredMdx],
     })
   ).toEqual(
@@ -608,7 +594,7 @@ it('calls configured Acorn observers only for the actual parse', () => {
     });
   };
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [configuredMdx],
     })
   ).toEqual(baseline);
@@ -624,12 +610,12 @@ it('keeps JSX when a later plugin replaces the parser', () => {
   };
   const input = '<u>text</u>';
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [remarkMdx, resetParser],
     })
   ).toEqual(unified().use(remarkParse).use(baseRemarkMdx).parse(input));
   expect(
-    deserializeMd(createTestEditor(), input, {
+    deserializeMd(editor, input, {
       remarkPlugins: [remarkMdx, resetParser],
     })
   ).toEqual([{ type: 'p', children: [{ text: 'text', underline: true }] }]);
@@ -647,17 +633,14 @@ it('keeps real blockquotes after repeated fence markers inside MDX comments', ()
     '{/*\n~~~\n*/}\n\n> <A{/*@example.com>\n> */...a\n> > b}>text</A>\n\n'.repeat(
       2
     );
-  expect(markdownToAstProcessor(createTestEditor(), input)).toEqual(
+  expect(markdownToAstProcessor(editor, input)).toEqual(
     unified().use(remarkParse).use(baseRemarkMdx).parse(input)
   );
 });
 
 it('keeps code text after a quoted greater-than sign', () => {
   expect(
-    deserializeMd(
-      createTestEditor(),
-      '`<Foo title=">" data=user@example.com />`'
-    )
+    deserializeMd(editor, '`<Foo title=">" data=user@example.com />`')
   ).toEqual([
     {
       type: 'p',
@@ -689,7 +672,7 @@ it.each([
     remarkMdx.call(this, options(after));
   };
   unified().use(remarkParse).use(baseRemarkMdx, options(before)).parse(input);
-  deserializeMd(createTestEditor(), input, { remarkPlugins: [configured] });
+  deserializeMd(editor, input, { remarkPlugins: [configured] });
   expect(before.length).toBeGreaterThan(0);
   expect(after).toEqual(before);
 });
@@ -713,7 +696,7 @@ it('captures grammar options when the native extension attaches', () => {
     })
     .parse(input);
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [configured, mutate],
     })
   ).toEqual(expected);
@@ -730,7 +713,7 @@ it('lets a replacement parser trim its source before native parsing', () => {
   };
   const input = `${' '.repeat(24)}<Foo title="<ignore@example.com>" /><u>text</u>`;
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [remarkMdx, trimmed],
     })
   ).toEqual(unified().use(remarkParse).use(baseRemarkMdx).parse(input.trim()));
@@ -748,7 +731,7 @@ it('keeps unified legacy Parser fallback authoritative', () => {
     Reflect.set(this, 'Parser', parse);
   };
   expect(
-    deserializeMd(createTestEditor(), '<u>text</u>', {
+    deserializeMd(editor, '<u>text</u>', {
       remarkPlugins: [remarkMdx, legacy],
     })
   ).toEqual([{ type: 'p', children: [{ text: 'text', underline: true }] }]);
@@ -757,10 +740,10 @@ it('keeps unified legacy Parser fallback authoritative', () => {
 it('keeps quote prefixes after fence markers inside MDX ESM', () => {
   const input =
     'export const a = /*\n~~~\n*/1;\n\n> <u{/*@example.com>\n> */...a\n> > b}>keep</u>';
-  expect(markdownToAstProcessor(createTestEditor(), input)).toEqual(
+  expect(markdownToAstProcessor(editor, input)).toEqual(
     unified().use(remarkParse).use(baseRemarkMdx).parse(input)
   );
-  expect(deserializeMd(createTestEditor(), input)).toEqual([
+  expect(deserializeMd(editor, input)).toEqual([
     {
       type: 'blockquote',
       children: [{ type: 'p', children: [{ text: 'keep', underline: true }] }],
@@ -770,24 +753,21 @@ it('keeps quote prefixes after fence markers inside MDX ESM', () => {
 
 it('keeps native JSX when its closing brace lands on a probe checkpoint', () => {
   const input = `<AA:B{...${'x'.repeat(118)}}/>`;
-  expect(markdownToAstProcessor(createTestEditor(), input)).toEqual(
+  expect(markdownToAstProcessor(editor, input)).toEqual(
     unified().use(remarkParse).use(baseRemarkMdx).parse(input)
   );
 });
 
 it('keeps an underlined tail after a quoted expression ends on a checkpoint', () => {
   const input = `<u{...'a@b.co>${'x'.repeat(112)}'}>ok</u>`;
-  expect(deserializeMd(createTestEditor(), input)).toEqual([
+  expect(deserializeMd(editor, input)).toEqual([
     { type: 'p', children: [{ text: 'ok', underline: true }] },
   ]);
 });
 
 it('keeps code lines outside the HTML attribute conversion range', () => {
   expect(
-    deserializeMd(
-      createTestEditor(),
-      '~~~jsx\n<Foo data=x title=">"\n    />\n~~~'
-    )
+    deserializeMd(editor, '~~~jsx\n<Foo data=x title=">"\n    />\n~~~')
   ).toEqual([
     {
       type: 'code_block',
@@ -802,20 +782,20 @@ it('keeps code lines outside the HTML attribute conversion range', () => {
 
 it('keeps a native comment whose opening star overlaps an apparent terminator', () => {
   const input = '<u{/*/@example.com>*/...x}>ok</u>';
-  expect(markdownToAstProcessor(createTestEditor(), input)).toEqual(
+  expect(markdownToAstProcessor(editor, input)).toEqual(
     unified().use(remarkParse).use(baseRemarkMdx).parse(input)
   );
-  expect(deserializeMd(createTestEditor(), input)).toEqual([
+  expect(deserializeMd(editor, input)).toEqual([
     { type: 'p', children: [{ text: 'ok', underline: true }] },
   ]);
 });
 
 it('keeps spread expressions that cross private probe chunk boundaries', () => {
   const input = `<u{/*@example.com>*/${' '.repeat(119)}...x}>ok</u>`;
-  expect(markdownToAstProcessor(createTestEditor(), input)).toEqual(
+  expect(markdownToAstProcessor(editor, input)).toEqual(
     unified().use(remarkParse).use(baseRemarkMdx).parse(input)
   );
-  expect(deserializeMd(createTestEditor(), input)).toEqual([
+  expect(deserializeMd(editor, input)).toEqual([
     { type: 'p', children: [{ text: 'ok', underline: true }] },
   ]);
 });
@@ -841,7 +821,7 @@ it('keeps nested native parses separate from the outer source', () => {
   };
   const input = '! <Foo title="<ignore@example.com>" /><u>outer</u>';
   expect(
-    markdownToAstProcessor(createTestEditor(), input, {
+    markdownToAstProcessor(editor, input, {
       remarkPlugins: [remarkMdx, nested],
     })
   ).toEqual(unified().use(remarkParse).use(baseRemarkMdx).parse(input));
@@ -849,17 +829,14 @@ it('keeps nested native parses separate from the outer source', () => {
 
 it('keeps quote prefixes for JSX on a column-one lazy continuation', () => {
   const input = '> hello\n<u{/*@example.com>\n> */...a\n> > b}>keep</u>';
-  expect(markdownToAstProcessor(createTestEditor(), input)).toEqual(
+  expect(markdownToAstProcessor(editor, input)).toEqual(
     unified().use(remarkParse).use(baseRemarkMdx).parse(input)
   );
 });
 
 it('normalizes later tags after a failed probe inside inline code', () => {
   expect(
-    deserializeMd(
-      createTestEditor(),
-      '`<A title=">`\n\ntext<br>after\n\n<u>keep</u>'
-    )
+    deserializeMd(editor, '`<A title=">`\n\ntext<br>after\n\n<u>keep</u>')
   ).toEqual([
     { type: 'p', children: [{ text: '<A title=">', code: true }] },
     {
