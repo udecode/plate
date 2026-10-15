@@ -38,6 +38,10 @@
 //        (prints a fresh id for a new task)
 //        node .agents/pstack/decisions-check.mjs chips brief <id> [<ledger>]
 //        (prints the prompt a card for that task carries)
+//        node .agents/pstack/decisions-check.mjs chips wait [--timeout <minutes>] [--every <seconds>] [<ledger>]
+//        (polls the ledger and exits once a task lands or one with no card turns ready,
+//        or at the timeout, 240 minutes by default, so a lead that runs it in the
+//        background wakes for the next wave)
 
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
@@ -265,13 +269,23 @@ if (args[0] === 'chips') {
     console.error("--session takes this session's id, the one the runtime's session tool gives it");
     process.exit(2);
   }
-  const rest = args.filter((arg, index) => index > 0 && arg !== '--fetch' && index !== at && index !== at + 1);
+  const option = (name, fallback) => {
+    const index = args.indexOf(name);
+    const value = index === -1 ? fallback : Number(args[index + 1]);
+    if (!(value > 0)) {
+      console.error(`${name} takes a positive number`);
+      process.exit(2);
+    }
+    return value;
+  };
+  const valued = new Set(['--session', '--timeout', '--every'].flatMap((name) => (args.includes(name) ? [args.indexOf(name), args.indexOf(name) + 1] : [])));
+  const rest = args.filter((arg, index) => index > 0 && arg !== '--fetch' && !valued.has(index));
   if (rest[0] === 'id') {
     console.info(newId());
     process.exit(0);
   }
   const id = rest[0] === 'brief' ? rest[1] : null;
-  const named = rest[0] === 'brief' ? rest[2] : rest[0] === 'stale' ? rest[1] : rest[0];
+  const named = rest[0] === 'brief' ? rest[2] : ['stale', 'wait'].includes(rest[0]) ? rest[1] : rest[0];
   const ledger = named ?? join(plansDir(), LEDGER);
   if (!existsSync(ledger)) {
     console.error(named ? `no log at ${ledger}` : `No ledger at ${ledger} yet; run this from the project root.`);
@@ -314,6 +328,31 @@ if (args[0] === 'chips') {
     };
     const rows = staleReport(tasks, offeredAt(lines), { exists: existsSync, deletedSince, commitsSince, prState, now: Date.now() });
     console.info(rows.length ? `${rows.length} open suggested tasks in ${ledger}, the likeliest stale first:\n${rows.join('\n')}` : `No open suggested tasks in ${ledger}.`);
+    process.exit(0);
+  }
+  if (rest[0] === 'wait') {
+    const branch = projectConfig().branch;
+    const state = () => {
+      const now = readTasks(readFileSync(ledger, 'utf8').split('\n').slice(1));
+      const view = board(now, gitMerges({ branch }), here);
+      return {
+        ready: view.ready.filter((task) => !task.card).map((task) => task.id),
+        landed: [...now.values()].filter((task) => task.status === 'landed').map((task) => task.id),
+      };
+    };
+    const start = state();
+    const deadline = Date.now() + option('--timeout', 240) * 60_000;
+    while (Date.now() < deadline) {
+      await new Promise((done) => setTimeout(done, option('--every', 30) * 1000));
+      const now = state();
+      const turned = now.ready.filter((each) => !start.ready.includes(each));
+      const landedNow = now.landed.filter((each) => !start.landed.includes(each));
+      if (turned.length || landedNow.length) {
+        console.info([landedNow.length ? `Landed: ${landedNow.join(', ')}.` : '', turned.length ? `Ready with no card: ${turned.join(', ')}.` : '', 'Run the chips sweep.'].filter(Boolean).join(' '));
+        process.exit(0);
+      }
+    }
+    console.info('No task landed or turned ready before the timeout; run chips wait again while any task is started or carded.');
     process.exit(0);
   }
   if (rest[0] === 'brief') {

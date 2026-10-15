@@ -135,6 +135,7 @@ export const STATUSES = [
   'proven',
   'recorded',
   'reopened',
+  'reviewed',
   'reverted',
   'skipped',
   'started',
