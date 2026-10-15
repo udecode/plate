@@ -369,10 +369,17 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   comparison and one native import path, never annotated-node diff tags or a
   matcher re-run during conflict resolution.
 - `NodeSelection` stores canonical exact membership as `paths`, directional
-  `anchorPath` and `focusPath`, and an optional explicit root. Mapping,
-  persistence, history, marks, slices, and collaboration preserve that state.
-  React and UI code may control or render selection but never own another
-  selected-node store.
+  `anchorPath` and `focusPath`, an optional explicit root, and a required
+  `mode`: `block` for block gestures or `object` for selecting one selectable
+  object or atom that is not void. The constructor requires the mode, so a
+  rebuild cannot drop it. Mapping keeps `object` only while that node keeps its
+  object role. Mapping, persistence, history, marks, slices, and collaboration
+  preserve that state; a remote collaboration import that replaces a local node
+  selection with a range is open work in
+  `docs/plans/2026-10-15-node-selection-mode.md`. React and UI code may control
+  or render selection but never own another selected-node store, and they read
+  the mode by name (`selection.nodeMode()`, `useElementSelected({ mode })`)
+  instead of guessing it from the count or schema.
 - The callable `selection()` is the sole singular read and returns a plain
   `Range` or `null`. It never exposes selection-kind tags or feature payloads.
   `selection.ranges()` is the sole plural projection, and `selection.nodes()`

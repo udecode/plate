@@ -44,6 +44,21 @@ editor.update.selection.set(null);
 | 节点选择 | 一个代表性 `Range` | `nodes()` 和 `ranges()` 返回所有已选节点 | Plate 节点选择组件；原生选择保持为空 |
 | 无选择 | `null` | 空数组 | 无 |
 
+每个节点选择都用 `mode` 记录它的来源：
+
+| 模式 | 来源 | 渲染 |
+| --- | --- | --- |
+| `block` | 区块手势：框选、拖拽手柄、Block Menu、区块方向键、拖放，以及不带模式的 `setNodes` | `NodeSelectionHighlight` 绘制每个已选区块 |
+| `object` | 选中对象本身，例如点击图片或用方向键移到图片上 | 对象自己绘制选中状态，例如选中框和工具栏 |
+
+`editor.read.selection.nodeMode()` 返回 `'block'`、`'object'`，没有节点选择时
+返回 `null`。对象选择只包含一个可选中、非 void，且 schema 标为 `object` 或 `atom` 的元素。
+
+```tsx
+editor.update.selection.setNodes([imagePath], { mode: 'object' });
+editor.read.selection.nodeMode(); // 'object'
+```
+
 React 中如何取得编辑器参见[编辑器方法](/docs/editor-methods)，完整查询和校验
 契约参见 [Selection API](/docs/api/selection)。
 
@@ -117,7 +132,8 @@ Plate 提供中性的输出标记，产品 CSS 决定外观：
 
 精确节点选择是模型状态，不是浏览器原生范围。复制的 `Editor` 在
 `EditorContent` 后组合 `NodeSelectionHighlight` 和 `NodeSelectionDrag`，
-用于绘制已选区块并支持空白区域指针拖选。
+用于绘制已选区块并支持空白区域指针拖选。`NodeSelectionHighlight` 只绘制区块
+选择；对象选择的选中状态由对象自己的组件绘制。
 
 DOM 契约参见[节点选择组件](/docs/api/core/plate-components#node-selection)，
 复制的 Editor 组合参见[节点选择示例](/docs/examples/node-selection)。Block

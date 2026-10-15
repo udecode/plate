@@ -458,7 +458,7 @@ editor.update((tx) => {
 });
 ```
 
-#### `tx.selection.setNodes(targets: readonly (Path | NodeKey | Descendant)[])`
+#### `tx.selection.setNodes(targets: readonly (Path | NodeKey | Descendant)[], options?)`
 
 Select live nodes in the transaction draft. The transaction resolves every
 target in one root and canonicalizes exact membership. An empty collection
@@ -470,6 +470,9 @@ editor.update((tx) => {
   tx.selection.setNodes(blocks);
 });
 ```
+
+`options` takes `{ anchor, focus }` to keep direction and `mode`, which
+defaults to `'block'`; pass `'object'` when the user selected one object itself.
 
 #### `tx.selection.set(null)`
 

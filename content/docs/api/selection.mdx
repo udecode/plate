@@ -47,6 +47,17 @@ Range predicates such as `selection.isExpanded()`, `isWithinBlock()`, and
 exact node-selection membership instead of treating those predicates as a
 selection-kind test.
 
+#### `editor.read.selection.nodeMode() => NodeSelectionMode | null`
+
+Read how the current node selection was made: `'block'` for block gestures or
+`'object'` for one selected object. Text selections and a missing
+selection return `null`. Use `state.selection.nodeMode()` or
+`tx.selection.nodeMode()` inside a read or update callback.
+
+```typescript
+type NodeSelectionMode = "block" | "object";
+```
+
 #### `editor.read.selection.ranges() => readonly Range[]`
 
 Read every exact range in the current selection. Text selections return one
@@ -66,8 +77,17 @@ of selected ancestors. An empty collection clears the selection. A missing or
 foreign target rejects the whole update.
 
 Pass `{ anchor, focus }` when gesture direction matters. Both endpoints must be
-members of the exact selected targets. Omit the options for deterministic
+members of the exact selected targets. Omit them for deterministic
 document-order endpoints.
+
+`mode` defaults to `'block'`. Pass `{ mode: 'object' }` when the user selected one
+object itself, such as an image or focused media controls. An object selection
+must hold one selectable element that is not void and whose schema marks it
+`object` or `atom`; any other target rejects the update.
+
+```typescript
+editor.update.selection.setNodes([image], { mode: "object" });
+```
 
 Use `tx.selection.setNodes(targets)` when earlier writes in the same transaction
 create or move the targets.
@@ -101,12 +121,22 @@ selection returns `undefined`.
 
 Create a text selection from a range and optional affinity or insertion marks.
 
-#### `SelectionApi.nodes(paths: readonly [Path, ...Path[]], options?) => NodeSelection`
+#### `SelectionApi.nodes(paths: readonly [Path, ...Path[]], options) => NodeSelection`
 
-Create a detached multi-node selection. Paths are non-empty, deduplicated, and
-sorted in document order. Descendants of selected ancestors are removed.
-`anchorPath` and `focusPath` preserve direction and must both be exact members.
-Live editor code uses `selection.setNodes(targets, { anchor, focus })` instead.
+Create a detached node selection. `options.mode` is required: `'block'` or
+`'object'`. Paths are non-empty, deduplicated, and sorted in document order.
+Descendants of selected ancestors are removed. An `'object'` selection holds
+exactly one path after that. `anchorPath` and `focusPath` preserve direction and
+must both be exact members. Live editor code uses
+`selection.setNodes(targets, { anchor, focus, mode })` instead.
+
+```typescript
+SelectionApi.nodes([[0], [2]], { mode: "block" });
+SelectionApi.nodes([[1]], { mode: "object", root: "header" });
+```
+
+Mapping keeps an object selection while its node survives as an object, and
+turns it into a block selection when the node stops being one.
 
 Read exact selected entries with `editor.read.selection.nodes()` or
 `tx.selection.nodes()`. Use `editor.read.nodes.blocks()` to project the active

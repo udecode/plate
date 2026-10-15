@@ -244,7 +244,8 @@ editor.plugin(ImagePlugin).update.insert({
 
 | Selection | 行为 |
 | --- | --- |
-| 媒体路径上的 Plate `NodeSelection` | 聚焦资源并显示选中边框，空标题保持隐藏；页面显示标题时，前进方向键或 `ArrowDown` 进入标题，Delete 删除整个媒体节点。 |
+| 媒体路径上的对象 `NodeSelection`，来自点击或用方向键移到资源上，或聚焦其原生控件 | 聚焦资源并显示选中边框和媒体工具栏，空标题保持隐藏；页面显示标题时，前进方向键或 `ArrowDown` 进入标题，Delete 删除整个媒体节点。 |
+| 包含媒体的区块 `NodeSelection`，来自框选、拖拽手柄、Block Menu 或区块方向键 | 绘制共享的蓝色区块高亮，不显示选中边框和工具栏；方向键越过媒体，不进入标题。 |
 | 媒体 children 内的 Plate `TextSelection` | 编辑标题；光标位于标题开头时，后退方向键或 `ArrowUp` 返回资源焦点。 |
 
 在从左到右的文本中，从媒体块前面的文本按 `ArrowRight` 会先选中资源，再按一次才

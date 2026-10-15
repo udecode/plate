@@ -246,8 +246,8 @@ inside one document and copies between editors; every drop runs
 
 #### `editor.api.dom.drag.start(event: DragEvent, options: { node: Element }): { origin: { x: number; y: number }; previews: HTMLElement[] } | null`
 
-Start a block drag from a handle's `dragstart`. It selects the blocks
-`editor.read.transfer.nodes({ node })` returns, such as the selected blocks
+Start a block drag from a handle's `dragstart`. It makes a block selection of
+the blocks `editor.read.transfer.nodes({ node })` returns, such as the selected blocks
 around `node` or a list item's family, marks their hosts with `data-editor-dragging`, and returns inert previews plus
 the pointer's offset for `event.dataTransfer.setDragImage`. A read-only view
 starts a copy-only drag. Returns `null` when nothing can be dragged.

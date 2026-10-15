@@ -300,7 +300,9 @@ export function Editor(props: EditorContentProps) {
 }
 ```
 
-`NodeSelectionHighlight` portals a highlight into each selected block.
+`NodeSelectionHighlight` portals a highlight into each block of a block
+selection. An object selection, such as a clicked image, gets no highlight; the
+object's component paints its own selected state.
 `NodeSelectionDrag` renders the active drag rectangle in the editable document’s
 body and
 writes intersecting blocks through the editor's selection API. Selection
@@ -311,7 +313,7 @@ While the selected blocks share one parent, `ArrowUp` and `ArrowDown` select
 the previous or next sibling block and scroll it into view. A sibling that a
 content boundary leaves unmounted ends the move. `Shift` extends or contracts
 the selection from its anchor block. A table cell selection keeps its own
-`Shift` cell extension, and a single selected object keeps its own arrows
+`Shift` cell extension, and an object selection keeps the object's own arrows
 without `Shift`.
 
 Escape, pointer cancellation, window blur, and readonly transitions stop the

@@ -51,7 +51,7 @@ to the text children of void elements.
 
 Keep the empty text child in the document. Bind a component to the owning plugin and render `EditorElement` with its `children` so Plate preserves the editable shell and selection anchor.
 
-Use the [Image](/docs/media), [Mention](/docs/mention), or [Horizontal Rule](/docs/horizontal-rule) component for a complete example. `useElementSelected()` subscribes to selection for the rendered element; keep its selection ring in that component.
+Use the [Equation](/docs/equation), [Mention](/docs/mention), or [Horizontal Rule](/docs/horizontal-rule) component for a complete example. `useElementSelected({ mode: 'text' })` subscribes to a text selection reaching the rendered element; keep its selection ring in that component. A block selection of the void or its parent paints the shared block highlight instead.
 
 Marks on a markable void's text child can control its visible style. The schema's `isMarkableVoid` policy determines whether the editor applies those marks.
 

@@ -45,6 +45,22 @@ editor.update.selection.set(null);
 | Node selection | One representative `Range` | `nodes()` and `ranges()` return every selected node | Plate node-selection primitives; the native selection stays empty |
 | No selection | `null` | Empty arrays | None |
 
+Every node selection records how it was made in `mode`:
+
+| Mode | Made by | Rendering |
+| --- | --- | --- |
+| `block` | Block gestures: marquee drag, drag handle, Block Menu, block arrow keys, drag and drop, and `setNodes` without a mode | `NodeSelectionHighlight` paints each selected block |
+| `object` | Selecting one object itself, such as clicking or arrowing onto an image | The object paints its own selected state, such as a ring and toolbar |
+
+`editor.read.selection.nodeMode()` returns `'block'`, `'object'`, or `null`
+without a node selection. An object selection holds exactly one selectable element that is not void and
+whose schema marks it `object` or `atom`.
+
+```tsx
+editor.update.selection.setNodes([imagePath], { mode: 'object' });
+editor.read.selection.nodeMode(); // 'object'
+```
+
 Use [Editor Methods](/docs/editor-methods) for editor access inside React and
 [Selection API](/docs/api/selection) for the complete query and
 validation contracts.
@@ -128,6 +144,8 @@ selection, history, clipboard, or collaboration state.
 Exact node selection is model state, not a native browser range. The copied
 `Editor` composes `NodeSelectionHighlight` and `NodeSelectionDrag` after
 `EditorContent` to render selected blocks and support blank-space pointer drag.
+`NodeSelectionHighlight` paints block selections only; an object selection leaves its
+selected state to the object's component.
 
 Use the [Node Selection components](/docs/api/core/plate-components#node-selection)
 for the DOM contract and the [Node Selection demo](/docs/examples/node-selection)
@@ -197,13 +215,16 @@ does not establish that browser input and visible selection are correct.
 A block element can declare `object: true` when it owns both an asset and
 editable child content. An object is selectable and structurally isolating,
 while its children remain ordinary editable content. Selecting the owner node
-focuses the asset and keeps native selection empty. ArrowDown enters its text
-while the page draws it and otherwise moves to the next block; ArrowUp from the
-leading visual boundary returns to node selection. Backspace or Delete removes a
-selected owner.
+focuses the asset and keeps native selection empty. On an object selection, ArrowDown
+enters its text while the page draws it and otherwise moves to the next block;
+ArrowUp from the leading visual boundary returns to the object selection. A block
+selection of the same owner leaves it instead: arrow keys move past the selected
+blocks, and a neighboring object becomes an object selection. Backspace or Delete
+removes a selected owner.
 
-Clicking a noneditable descendant selects the owner; clicking editable text
-selects text. Use `useElementSelected({ mode: 'node' })` for the exact asset
-selection. The default intersection mode also matches text selection inside it.
+Clicking a noneditable descendant makes an object selection of the owner; clicking
+editable text selects text. Use `useElementSelected({ mode: 'object' })` for the
+asset's ring and toolbar. `mode: 'node'` also matches block selections, and the
+default intersection mode also matches text selection inside it.
 An empty caption does not make the asset an empty block. Copying the owner
 transfers the whole object; selecting caption text transfers only that text.

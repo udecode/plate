@@ -2035,11 +2035,11 @@ helpers or fabricate a landed text selection
 ```text
 scroll / edit in same document
 =>
-one current toc item
+no toc item marked current
 ```
 
-note: TOC rendering should reflect the current active heading while the user
-scrolls or edits through the same document
+note: the TOC block lists every heading in one style; it does not mark or
+highlight the heading in view while the user scrolls or edits
 
 - `EDIT-TOC-*` `locked`
 
@@ -2590,7 +2590,7 @@ separate explicit edit-entry gesture is defined
 note: keyboard-accessible navigation controls should expose the same activation
 result on `↵` / `Space` as on pointer activation
 
-note: an outline highlights the current heading while the user edits or scrolls through the document
+note: the TOC block never highlights the current heading while the user edits or scrolls through the document (`EDIT-TOC-NAV-003`)
 
 ### Navigation Feedback
 
@@ -3283,11 +3283,15 @@ Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-brow
 
 - `EDIT-SEL-BLOCK-SHIFT-001` `proposed` `⇧↑ or ⇧↓ with selected blocks`: Shift extends or contracts the block selection one sibling block at a time from its anchor block, through objects such as images
 
-- `EDIT-SEL-BLOCK-YIELD-001` `proposed` `arrows on table cells or one selected object`: a table cell selection keeps `⇧+arrow` cell extension, and `↓` on a single selected image enters its caption
+- `EDIT-SEL-BLOCK-YIELD-001` `proposed` `arrows on table cells or an object pick`: a table cell selection keeps `⇧+arrow` cell extension, and `↓` on an image picked by clicking or arrowing onto it enters its caption; a block pick of the same image moves to the next block instead
+
+- `EDIT-SEL-BLOCK-ONE-001` `proposed` `block gesture over one object`: a marquee drag, a drag-handle click or a Block Menu right-click over one image, file, audio, video or embed paints the shared block highlight with no asset ring and no media toolbar, the same as a selection of several blocks; clicking the asset itself shows its ring and toolbar
+
+- `EDIT-SEL-BLOCK-HORIZONTAL-001` `proposed` `← or → with selected blocks`: `←` leaves before the first selected block and `→` leaves after the last, in reading direction; a neighboring object becomes an object pick instead of a caret in its hidden caption; at the document edge the key does nothing and the block selection stays; on a table cell selection the caret lands inside the first or last selected cell
 
 Classification: substitutable capability, by the tests in docs/vision/plate.md:129-137; without these rules, `↑` and `↓` leave a block selection for a caret beside it (inferred from `getSelectableOwnerVerticalNavigationTarget` in `packages/plitejs/src/react/editable/caret-engine.ts`)
 Authority: syntax: none; primary UX ref: none checked; secondary ref: none checked
-Proof: `apps/www/tests/browser/node-selection-input.spec.ts` drives real keys in Chromium: Details body and top-level block moves, Shift extension and contraction, the first-body-block edge, a block range through an image, a stop before an unmounted sibling (`packages/platejs/src/react/components/NodeSelection.spec.tsx`), the reveal of each newly selected block in a short viewport, and table cell `⇧↓`; `apps/www/tests/browser/media-caption.spec.ts:412` covers `↓` into an image caption. Code: `packages/platejs/src/react/components/NodeSelection.tsx` `onKey` in `NodeSelectionDrag`.
+Proof: `apps/www/tests/browser/node-selection-input.spec.ts` drives real keys in Chromium: Details body and top-level block moves, Shift extension and contraction, the first-body-block edge, a block range through an image, a stop before an unmounted sibling (`packages/platejs/src/react/components/NodeSelection.spec.tsx`), the reveal of each newly selected block in a short viewport, and table cell `⇧↓`; `apps/www/tests/browser/media-caption.spec.ts:412` covers `↓` into an image caption. `EDIT-SEL-BLOCK-ONE-001`: `apps/www/tests/browser/media-caption.spec.ts` "a marquee over one media block paints it blue with no ring or toolbar" and "clicking an image makes an object pick that block gestures turn blue" in Chromium, which also covers `↓` from a block-picked image to the next block. `EDIT-SEL-BLOCK-HORIZONTAL-001`: `packages/plitejs/test/react/object-selection.test.tsx` "a block pick of one object leaves it with arrows instead of entering it", "horizontal arrows on a block pick pick a neighboring object and stop at the document edge" and "RTL block picks leave in reading direction" in jsdom, and `packages/platejs/src/react/features/table/TablePlugin.navigation.spec.tsx` "lands Left and Right inside a cell pick"; no browser case drives `←` or `→` on a block pick. Code: `packages/platejs/src/react/components/NodeSelection.tsx` `onKey` in `NodeSelectionDrag`; `getNodeSelectionExitTarget` in `packages/plitejs/src/react/editable/caret-engine.ts`.
 
 ## Affinity Rules
 

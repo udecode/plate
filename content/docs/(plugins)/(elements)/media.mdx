@@ -252,7 +252,8 @@ Asset focus and caption editing are separate selection states:
 
 | Selection | Behavior |
 | --- | --- |
-| Plate `NodeSelection` at the media path | Focuses the asset and shows its selection ring while an empty caption stays hidden, lets the forward arrow or `ArrowDown` enter a caption the page shows, and lets Delete remove the media node. |
+| Object `NodeSelection` at the media path, from clicking or arrowing onto the asset or focusing its native controls | Focuses the asset and shows its selection ring and media toolbar while an empty caption stays hidden, lets the forward arrow or `ArrowDown` enter a caption the page shows, and lets Delete remove the media node. |
+| Block `NodeSelection` holding the media, from a marquee drag, the drag handle, Block Menu or block arrow keys | Paints the shared blue block highlight with no ring or toolbar; arrow keys move past the media instead of entering its caption. |
 | Plate `TextSelection` inside the media children | Edits the caption; the backward arrow or `ArrowUp` at its start returns focus to the asset. |
 
 In left-to-right text, `ArrowRight` from the text before a media block selects
