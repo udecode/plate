@@ -38,16 +38,16 @@
 //        (prints a fresh id for a new task)
 //        node .agents/pstack/decisions-check.mjs chips brief <id> [<ledger>]
 //        (prints the prompt a card for that task carries)
-//        node .agents/pstack/decisions-check.mjs chips wait [--timeout <minutes>] [--every <seconds>] [<ledger>]
-//        (polls the ledger and exits once a task lands or one with no card turns ready,
-//        or at the timeout, 240 minutes by default, so a lead that runs it in the
-//        background wakes for the next wave)
+//        node .agents/pstack/decisions-check.mjs chips wait [--session <id>] [--timeout <minutes>] [--every <seconds>] [<ledger>]
+//        (polls the ledger and exits once a task lands, one with no card turns ready or,
+//        with --session, a task that session carded starts, or at the timeout, 240 minutes
+//        by default, so a lead that runs it in the background wakes for the next wave)
 
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { currentLead, leadLabel, maxEffort } from './lead.mjs';
-import { board, briefOf, CHIP_STATES, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
+import { board, briefOf, cardEffortOf, CHIP_STATES, effortOf, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -335,9 +335,11 @@ if (args[0] === 'chips') {
     const state = () => {
       const now = readTasks(readFileSync(ledger, 'utf8').split('\n').slice(1));
       const view = board(now, gitMerges({ branch }), here);
+      const started = [...now.values()].filter((task) => task.status === 'started' && here !== null && task.session === here);
       return {
         ready: view.ready.filter((task) => !task.card).map((task) => task.id),
         landed: [...now.values()].filter((task) => task.status === 'landed').map((task) => task.id),
+        started: new Map(started.map((task) => [task.id, `${task.id} in ${task.startedIn ? `session ${task.startedIn}` : 'a session its started row does not name'}, carded at ${cardEffortOf(task, maxEffort())}, brief at ${effortOf(task, maxEffort())}`])),
       };
     };
     const start = state();
@@ -347,12 +349,22 @@ if (args[0] === 'chips') {
       const now = state();
       const turned = now.ready.filter((each) => !start.ready.includes(each));
       const landedNow = now.landed.filter((each) => !start.landed.includes(each));
-      if (turned.length || landedNow.length) {
-        console.info([landedNow.length ? `Landed: ${landedNow.join(', ')}.` : '', turned.length ? `Ready with no card: ${turned.join(', ')}.` : '', 'Run the chips sweep.'].filter(Boolean).join(' '));
+      const startedNow = [...now.started].filter(([each]) => !start.started.has(each)).map(([, text]) => text);
+      if (turned.length || landedNow.length || startedNow.length) {
+        console.info(
+          [
+            landedNow.length ? `Landed: ${landedNow.join(', ')}.` : '',
+            turned.length ? `Ready with no card: ${turned.join(', ')}.` : '',
+            startedNow.length ? `Started: ${startedNow.join('; ')}.` : '',
+            startedNow.length ? "Lower to its brief's effort, with the session tool, each started session above it that still runs at its card's effort, or at yours when the suggest tool took no effort; a session at any other effort is the owner's choice. Then run the chips sweep." : 'Run the chips sweep.',
+          ]
+            .filter(Boolean)
+            .join(' ')
+        );
         process.exit(0);
       }
     }
-    console.info('No task landed or turned ready before the timeout; run chips wait again while any task is started or carded.');
+    console.info('No task landed, started or turned ready before the timeout; run chips wait again while any task is started or carded.');
     process.exit(0);
   }
   if (rest[0] === 'brief') {

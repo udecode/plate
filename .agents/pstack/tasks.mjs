@@ -37,7 +37,7 @@ const RESULT = new RegExp(`^(${CHIP_STATES.join('|')}|dismissed (?:${REASONS.joi
 const LEGACY_ONLY = ['dismissed gone', 'dismissed replaced'];
 const TAKES = {
   offered: ['writes', 'topic', 'kind', 'waits', 'owns', 'fast', 'card', 'session'],
-  updated: ['writes', 'topic', 'kind', 'waits', 'owns', 'fast'],
+  updated: ['writes', 'topic', 'kind', 'effort', 'waits', 'owns', 'fast'],
   folded: ['writes', 'kind', 'effort', 'waits', 'owns'],
   started: ['writes', 'session'],
   landed: ['patch'],
@@ -147,7 +147,7 @@ const mergeInto = (kept, task, tasks) => {
   kept.writes = joined(kept.writes, task.writes);
   kept.keys = kept.writes.map(writeKey);
   if (task.kind === 'decide') kept.kind = 'decide';
-  if (task.effort) kept.effort = task.effort;
+  if (needsJudgment(task)) kept.effort = 'xhigh';
 };
 
 export function recordRow(tasks, cells) {
@@ -182,6 +182,7 @@ export function recordRow(tasks, cells) {
       findings: [row.why],
       covers: [],
     };
+    created.cardEffort = created.card ? levelOf(created) : null;
     tasks.set(row.id, created);
     return;
   }
@@ -209,10 +210,12 @@ export function recordRow(tasks, cells) {
   if (row.move === 'carded') {
     task.card = given.card ?? null;
     task.session = given.session ?? null;
+    task.cardEffort = levelOf(task);
   }
   if (row.move === 'uncarded' || row.move === 'reopened' || row.move.startsWith('dismissed')) {
     task.card = null;
     task.session = null;
+    task.cardEffort = null;
   }
   if (row.move === 'reopened') {
     task.status = 'offered';
@@ -223,7 +226,7 @@ export function recordRow(tasks, cells) {
       task.writes = given.writes;
       task.keys = given.writes.map(writeKey);
     }
-    for (const key of ['topic', 'kind', 'waits', 'owns']) if (given[key] !== undefined) task[key] = given[key];
+    for (const key of ['topic', 'kind', 'effort', 'waits', 'owns']) if (given[key] !== undefined) task[key] = given[key];
     if (given.fast !== undefined) task.fast = given.fast === 'yes';
   }
   if (row.move.startsWith('dismissed')) {
@@ -248,7 +251,7 @@ const tokenProblems = (given, where) => {
   if (given.kind !== undefined && !KINDS.includes(given.kind)) found.push(`${where}: kind: is fix, decide or review`);
   if (given.fast !== undefined && !['yes', 'no'].includes(given.fast)) found.push(`${where}: fast: is yes or no`);
   if (given.patch !== undefined && NOT_A_PATH.test(given.patch)) found.push(`${where}: patch: names the patch file the session applied, as one path with no whitespace, glob or quote`);
-  if (given.effort !== undefined && given.effort !== 'xhigh') found.push(`${where}: effort: takes only xhigh, for a folded finding that needs design judgment the task's title lacks`);
+  if (given.effort !== undefined && !['high', 'xhigh'].includes(given.effort)) found.push(`${where}: effort: is high or xhigh`);
   for (const wait of given.waits ?? []) if (!WAIT.test(wait)) found.push(`${where}: waits: takes pr:<number>, task:<id> or run:<plan path ending in .md>, comma-separated, or none; "${wait}" is none of them`);
   for (const check of given.owns ?? []) if (!CHECK.test(check)) found.push(`${where}: owns: names each check as one token, such as ci:check`);
   if (given.session !== undefined && !SESSION.test(given.session)) found.push(`${where}: session: names the session id as one token`);
@@ -264,7 +267,7 @@ const afterRow = (before, cells) => {
 export function chipRowProblems(cells, before, where) {
   const [, decision, , evidence] = cells;
   const [, id] = decision.match(CHIP) ?? [];
-  if (!id) return [`${where}: a chip row's decision is "<task id> <title>", with (xhigh) after a title that needs design judgment`];
+  if (!id) return [`${where}: a chip row's decision is "<task id> <title>", with (xhigh) after the title of a design question or of a bug whose cause nobody has located`];
   const row = parseRow(cells);
   if (!row) return [`${where}: a chip row's result is offered, carded, uncarded, updated, folded, started, landed, reviewed, reopened, or dismissed with done, superseded, declined, stopped or dup <task id>`];
   const { move } = row;
@@ -283,13 +286,14 @@ export function chipRowProblems(cells, before, where) {
     if (!FROM[move].includes(state)) found.push(`${where}: ${id} is ${state}, so it cannot be ${move}`);
   }
   if (move === 'carded' && !given.card) found.push(`${where}: a carded row names the suggest tool's card id as "card: <id>"`);
-  if (move === 'updated' && !TAKES.updated.some((key) => given[key] !== undefined)) found.push(`${where}: an updated row names what changes: writes:, topic:, kind:, waits: or owns:`);
+  if (move === 'updated' && !TAKES.updated.some((key) => given[key] !== undefined)) found.push(`${where}: an updated row names what changes: writes:, topic:, kind:, effort:, waits:, owns: or fast:`);
   if (move === 'updated' && known && sessionPicksPlan(known) && Object.keys(given).some((key) => key !== 'owns')) {
     found.push(`${where}: ${id} is started, so an updated row on it takes only owns:; the session adds paths with another started row`);
   }
   const kept = row.target && before.get(row.target);
   if (move === 'dismissed dup' && (row.target === id || !kept || !isOpen(kept))) found.push(`${where}: ${row.target} must be another task the ledger holds as offered; offer the task it merges into before this row`);
   if (move === 'folded' && given.kind !== undefined && given.kind !== 'decide') found.push(`${where}: a folded row takes kind: decide only, when its finding is a design question; it never turns a design question back into a fix`);
+  if (move === 'folded' && given.effort !== undefined && given.effort !== 'xhigh') found.push(`${where}: a folded row takes effort: xhigh only, when its finding is a bug or slowness whose cause nobody has located; an updated row lowers a task's effort`);
   if (found.length > 0) return found;
   const after = afterRow(before, cells);
   const dup = move === 'dismissed dup';
@@ -334,7 +338,7 @@ export function newChipRowProblems(cells, before, where, git) {
     if (!takes.includes(key)) found.push(`${where}: ${article(move)} ${move} row does not take ${key}:, so it would be ignored; ${takes.length ? `it takes ${takes.map((each) => `${each}:`).join(', ')}` : 'it takes none'}`);
   }
   if (move === 'offered' && !before.has(id)) {
-    if (untaggedTitle(decision, id) !== decision.slice(id.length + 1)) found.push(`${where}: a new title is a plain imperative phrase, with (xhigh) when it needs design judgment; chips works out when a task can start, so no title says Now: or After:, and fast: yes adds (fast) for it`);
+    if (untaggedTitle(decision, id) !== decision.slice(id.length + 1)) found.push(`${where}: a new title is a plain imperative phrase, with (xhigh) only for a design question or a bug whose cause nobody has located; chips works out when a task can start, so no title says Now: or After:, and fast: yes adds (fast) for it`);
     if (!given.topic) found.push(`${where}: a new offer names its owner question as "topic: <word>"; run chips to see the open topics and reuse one when the finding answers its question`);
   }
   const cycledBefore = cyclicEdges(before);
@@ -376,8 +380,9 @@ export function newChipRowProblems(cells, before, where, git) {
   if (move === 'folded' && held(own)) found.push(`${where}: ${id} holds card ${own.card}, which cannot show new work; offer the finding as a new task in topic ${own.topic ?? '<its question>'} with waits: task:${id}, and chips merges it once the card is withdrawn`);
   const narrows = Object.keys(given).every((key) => key === 'writes') && (given.writes ?? []).map(writeKey).every((key) => own?.keys.some((old) => key === old || contains(old, key)));
   const addsWaits = Object.keys(given).every((key) => key === 'waits') && given.waits !== undefined && given.waits.length > (own?.waits.length ?? 0) && (own?.waits ?? []).every((wait) => given.waits.includes(wait));
-  if (move === 'updated' && held(own) && !narrows && !addsWaits) {
-    found.push(`${where}: ${id} holds card ${own.card}, which cannot change; withdraw the card first, as chips.md's Limits says, then log this row; a row that only narrows writes:, or only adds waits: and keeps every wait it has, needs no withdrawal`);
+  const setsEffort = Object.keys(given).every((key) => key === 'effort');
+  if (move === 'updated' && held(own) && !narrows && !addsWaits && !setsEffort) {
+    found.push(`${where}: ${id} holds card ${own.card}, which cannot change; withdraw the card first, as chips.md's Limits says, then log this row; a row that only narrows writes:, only adds waits: and keeps every wait it has, or only sets effort:, needs no withdrawal`);
   }
   if (given.fast === 'yes') {
     const after = afterRow(before, cells).get(id);
@@ -736,11 +741,15 @@ export function renderBoard(view, ledger, max = null) {
 
 const XHIGH = ' (xhigh)';
 const FAST = ' (fast)';
-const needsJudgment = (task) => task.title.endsWith(XHIGH) || task.kind === 'decide' || task.effort === 'xhigh' || task.covers.some((entry) => entry.title.endsWith(XHIGH));
+// An effort: token outranks the title, so a row can lower a task an older offer tagged (xhigh).
+const levelOf = (task) => (task.kind === 'decide' ? 'xhigh' : (task.effort ?? (task.title.endsWith(XHIGH) || task.covers.some((entry) => entry.title.endsWith(XHIGH)) ? 'xhigh' : 'high')));
+const needsJudgment = (task) => levelOf(task) === 'xhigh';
 // Read from the task as it stands, so a fold or dup that raises it drops the mark.
 const fastOf = (task) => task.fast && task.kind === 'fix' && !needsJudgment(task);
-const displayTitle = (task) => (needsJudgment(task) && !task.title.endsWith(XHIGH) ? task.title + XHIGH : task.title) + (fastOf(task) ? FAST : '');
-const effortOf = (task, max) => capEffort(needsJudgment(task) ? 'xhigh' : 'high', max);
+const displayTitle = (task) => (task.title.endsWith(XHIGH) ? task.title.slice(0, -XHIGH.length) : task.title) + (needsJudgment(task) ? XHIGH : '') + (fastOf(task) ? FAST : '');
+export const effortOf = (task, max) => capEffort(levelOf(task), max);
+// The level the task had when its card landed, which a later effort: row does not change.
+export const cardEffortOf = (task, max) => capEffort(task.cardEffort, max);
 
 export function briefOf(tasks, id, ledger, max = null) {
   const task = tasks.get(id);
