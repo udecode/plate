@@ -15,7 +15,6 @@ docs:
 
 - 自动从文档标题生成目录
 - 平滑滚动至标题位置
-- 滚动时跟踪当前活动标题
 
 TOC 使用 editor 作用域内的 `NodeKey` 跟踪标题。它不需要持久化元素 ID，
 也不会安装 `ElementIdPlugin`。
@@ -194,6 +193,6 @@ editor.plugin(BaseTocPlugin).update.insert();
 
 ## Registry UI
 
-复制的 [`toc`](/docs/components/toc) 组件负责活动标题跟踪、滚动和导航反馈。
+复制的 [`toc`](/docs/components/toc) 组件负责滚动和导航反馈。
 这些面向产品的交互选择放在 renderer 旁边；package plugin 通过
 `editor.plugin(TocPlugin).read.headings()` 负责标题发现。
