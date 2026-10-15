@@ -151,7 +151,7 @@
       ".agents/pstack/plan-page.mjs": "92f271e5078a5ea5653fa56dfd6069e16ed2032752e3d9bb49f0f1e5e7085d64",
       ".agents/pstack/status.mjs": "391eab7f797956f7ca741600851f0aab461a27e07a3b8b6803009ef4d1296a42",
       ".agents/pstack/tasks.mjs": "c737f476e14c5e0cd77d7f2dfc0594db9d35cd2270cffd0b88a5bcfd2e165cac",
-      ".agents/pstack/rules/browser.md": "97e8739d8fc2751a55c83e6c790ff7659927861361abac85894cfdf316bcbb22",
+      ".agents/pstack/rules/browser.md": "bd446f08c4becb8edb7d70efe044a969e0802a78c6e7d5959942e99ddec38e2b",
       ".agents/pstack/rules/chips.md": "d728b5c8fda3ab7e2ec99a3bba6d31c03e86c02a14af5a49bb0dbd0d0640893c",
       ".agents/pstack/rules/close.md": "8d0c0c46467dcac8fa6221ef07082c89e506e16913b0148152e6ffe59d960000",
       ".agents/pstack/rules/long-runs.md": "b9215736b3a004bfdb2e0bf79d93bf540bff84e533abd8fca3cc4661db4a30a9",
@@ -162,6 +162,6 @@
       ".agents/pstack/rules/title.md": "3790bd24dd6a72b615d394823a5ea46e7fc949e2d3d2248a6358c29d1ed19db5",
       ".agents/pstack/rules/trails.md": "df808e0228a76435614d01f349bf7fb810f9e9679ddd6c471b8a337b81931e35"
     },
-    "source": "bb27327d6f588b173d399bc81a84e92f9705e7fe"
+    "source": "878f50d584a05132b68e074d570b86881ac822b4"
   }
 }
