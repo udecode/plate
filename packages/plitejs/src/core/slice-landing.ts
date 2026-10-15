@@ -6,18 +6,15 @@ import type {
   TransactionSpec,
 } from '../interfaces/editor';
 import { NodeApi } from '../interfaces/node';
-import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
 import { ContentSlice as ContentSliceValue } from './content-slice';
 import type { ReplaceSliceCommand } from './editor-commands';
 import { editorReads } from './editor-reads';
-import { getEditorRuntimeOwner, getEditorSchema } from './editor-runtime';
+import { getEditorSchema } from './editor-runtime';
 import { limitSliceToLength, sliceFitsLength } from './insert-limit';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
   fitSliceAtSite,
-  getCurrentNodeSelection,
-  moveImplicitTarget,
   readAtSliceFitSite,
   resolveSliceFitSite,
   type SliceFitSite,
@@ -43,20 +40,7 @@ export const planPaste = (
   input: ReplaceSliceCommand,
   intent: SliceLandingInput['intent']
 ): PastePlan | false => {
-  const implicitTarget =
-    input.options?.at === undefined
-      ? (getCurrentNodeSelection(state) ??
-        state.selection() ??
-        moveImplicitTarget(getEditorRuntimeOwner(editor))?.target ??
-        null)
-      : null;
-  const nodes = SelectionApi.isNode(implicitTarget) ? implicitTarget : null;
-  const options =
-    implicitTarget && !SelectionApi.isNode(implicitTarget)
-      ? { ...input.options, at: implicitTarget }
-      : input.options;
-  const viewRoot = state.view.root();
-  const site = resolveSliceFitSite(editor, viewRoot, options, nodes);
+  const site = resolveSliceFitSite(editor, state, input.options);
 
   if (!site) return false;
   const limited = limitSliceToLength(input.slice, site.remainingLength);
@@ -118,19 +102,19 @@ export const writePaste = (
 ):
   | Readonly<{ lossy: boolean; spec: TransactionSpec; written: ContentSlice }>
   | false => {
-  const proposed =
-    plan.emptyBlockReplacement &&
-    fitSliceAtSite(editor, plan.site, plan.emptyBlockReplacement, {
+  if (plan.emptyBlockReplacement) {
+    const spec = fitSliceAtSite(editor, plan.site, plan.emptyBlockReplacement, {
       ...options,
       replaceEmptyBlock: true,
     });
 
-  if (proposed && plan.emptyBlockReplacement) {
-    return {
-      lossy: plan.inputCut,
-      spec: proposed,
-      written: plan.emptyBlockReplacement,
-    };
+    if (spec) {
+      return {
+        lossy: plan.inputCut,
+        spec,
+        written: plan.emptyBlockReplacement,
+      };
+    }
   }
   if (!plan.slice) return false;
 

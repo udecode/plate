@@ -281,7 +281,11 @@ export class EditorSchemaCompileError extends Error {
 }
 
 export type CompiledSchemaConstructionPlan =
-  | Readonly<{ kind: 'element'; type: string }>
+  | Readonly<{
+      kind: 'element';
+      properties?: Readonly<Record<string, EditorJsonValue>>;
+      type: string;
+    }>
   | Readonly<{ kind: 'text' }>;
 
 export type CompiledSchemaContentPrefixSlot = Readonly<{
@@ -929,7 +933,16 @@ const collectSchemaKeyDiagnostics = (
     if (!content) return;
     visitContentRule(content.allowed, owner, `${path}.allowed`);
     if (content.default && content.default !== 'text') {
-      check(content.default, ['type'], owner, `${path}.default`);
+      const entry = check(
+        content.default,
+        ['properties', 'type'],
+        owner,
+        `${path}.default`
+      );
+
+      if (entry?.properties !== undefined) {
+        object(entry.properties, owner, `${path}.default.properties`);
+      }
     }
     if (content.prefix !== undefined) {
       array(content.prefix, owner, `${path}.prefix`)?.forEach((slot, index) => {
@@ -1595,6 +1608,7 @@ const remapSchemaContent = (
     ...(content.default && content.default !== 'text'
       ? {
           default: Object.freeze({
+            ...content.default,
             type: remapSchemaType(content.default.type, renames),
           }),
         }
@@ -2369,7 +2383,13 @@ const compileContent = (
         source.path
       );
     }
-    defaultPlan = Object.freeze({ kind: 'element', type: value.default.type });
+    defaultPlan = Object.freeze({
+      kind: 'element',
+      ...(value.default.properties
+        ? { properties: Object.freeze({ ...value.default.properties }) }
+        : {}),
+      type: value.default.type,
+    });
   } else if (min > 0) {
     const candidateCount = allowed.types.size + (allowed.allowsText ? 1 : 0);
 
@@ -5561,7 +5581,9 @@ const isContractEntryArray = (
 const isContractConstructionPlan = (value: unknown) =>
   isRecord(value) &&
   (value.kind === 'text' ||
-    (value.kind === 'element' && typeof value.type === 'string'));
+    (value.kind === 'element' &&
+      typeof value.type === 'string' &&
+      (value.properties === undefined || isRecord(value.properties))));
 
 const isContractContentProgram = (value: unknown): boolean =>
   isRecord(value) &&

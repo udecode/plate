@@ -90,13 +90,16 @@ for (const viewport of [
 
         if (viewport.width === 1280) {
           await page
-            .getByRole('button', { name: 'Editing', exact: true })
+            .getByRole('button', { name: 'Editing mode: Editing', exact: true })
             .click();
           await page
             .getByRole('menuitemradio', { name: 'Viewing', exact: true })
             .click();
           await expect(
-            page.getByRole('button', { name: 'Viewing', exact: true })
+            page.getByRole('button', {
+              name: 'Editing mode: Viewing',
+              exact: true,
+            })
           ).toBeVisible();
           await link.click();
           await expect(heading).toHaveAttribute('data-nav-target', 'true');

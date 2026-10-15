@@ -477,7 +477,7 @@ export const compileSliceFitter = <V extends Value>(
     return createDeclarativeAndFill(
       innerSchema,
       plan.type,
-      undefined,
+      plan.properties,
       creating,
       options
     );
@@ -754,7 +754,7 @@ export const compileSliceFitter = <V extends Value>(
     const shell = createDeclarativeAndFill(
       innerSchema7,
       plan.type,
-      undefined,
+      plan.properties,
       new Set(),
       options
     );

@@ -139,7 +139,10 @@ donor checkout as proof after the transplant.
   type, because its parent splits next. `tx.nodes.set`, `wrap` and
   `unwrap` split with the source's type.
 - Required child positions use `schema.content.prefix` followed by one ordinary
-  remainder. A complete schema declares `root: SchemaContent` directly and its
+  remainder. An element default and a prefix slot both carry the element's
+  fixed values in `properties`. Every child Plite builds from either one gets
+  them, and so does every block that reset converts to that default. A default
+  takes no key but `type` and `properties`. A complete schema declares `root: SchemaContent` directly and its
   named `roots` map each name directly to `SchemaContent`; an omitted `elements`
   means `{}`, an omitted `unknown` means "reject", and open vocabulary requires
   an explicit "preserve". `schema.element.textBlock()` is the standard editable
@@ -199,7 +202,11 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   key, and options held in a variable, built by a spread or typed by a type
   parameter meet only the runtime check. At runtime the constructor throws a
   `TypeError` that names the first string key outside the set, own or
-  inherited, without reading a value. `useEditor` checks on every render.
+  inherited, without reading a value. `useEditor` checks on every render. A
+  constructor that splits its options reads each option in its set wherever
+  the options object holds it. An inherited option, a class getter and an own
+  non-enumerable option build the same editor as that option written in the
+  call.
 - A DOM-scope hook accepts only the DOM capabilities it reads, and an
   identity-only registry uses object keys. Neither requires an erased mutable
   `Editor`, whose unrelated write variance can reject a correctly inferred

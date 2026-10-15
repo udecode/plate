@@ -31,12 +31,17 @@ for (const activation of ['Enter', 'click'] as const) {
       const root = page.locator(EDITOR_ROOT).first();
       const editor = createBrowserEditorHarness(page, 'slash:suggesting', root);
       await editor.ready({ editor: 'visible', text: 'Collaborative Editing' });
-      await page.getByRole('button', { name: 'Editing', exact: true }).click();
+      await page
+        .getByRole('button', { name: 'Editing mode: Editing', exact: true })
+        .click();
       await page
         .getByRole('menuitemradio', { name: 'Suggestion', exact: true })
         .click();
       await expect(
-        page.getByRole('button', { name: 'Suggestion', exact: true })
+        page.getByRole('button', {
+          name: 'Editing mode: Suggestion',
+          exact: true,
+        })
       ).toBeVisible();
       await editor.selection.collapse({
         path: [1, 4],

@@ -285,7 +285,16 @@ export type SchemaContentRule =
   | Readonly<{ kind: 'type'; type: string }>
   | Readonly<{ kind: 'types'; types: readonly string[] }>;
 
-export type SchemaContentDefault = 'text' | Readonly<{ type: string }>;
+/**
+ * The child content creates when it needs one: an empty text, or a `type`
+ * element with optional `properties`, such as a heading's required `level`.
+ */
+export type SchemaContentDefault =
+  | 'text'
+  | Readonly<{
+      properties?: Readonly<Record<string, EditorJsonValue>>;
+      type: string;
+    }>;
 
 export type SchemaContentOptions = Readonly<{
   default?: SchemaContentDefault;

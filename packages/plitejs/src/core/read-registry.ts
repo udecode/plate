@@ -122,6 +122,10 @@ export const registerReadInRegistry = <TEditor extends BaseEditor<any, any>>(
   };
 };
 
+/**
+ * A function `stateSource` runs only when the read has handlers, so a read
+ * without handlers runs its default on the owner's state.
+ */
 export const executeEditorRead = <
   TRead extends EditorReadDescriptor<any, any, any>,
 >(
@@ -134,19 +138,19 @@ export const executeEditorRead = <
   const owner = getEditorRuntimeOwner(editor as Editor);
   const entries =
     getPluginRegistry(owner).reads.byDescriptor.get(read)?.entries ?? [];
-  let source = typeof stateSource === 'function' ? undefined : stateSource;
+  const source =
+    typeof stateSource === 'function'
+      ? entries.length > 0
+        ? stateSource()
+        : undefined
+      : stateSource;
   const runInRead = <T>(fn: () => T): T => {
     const exitRead = enterEditorRead(owner);
 
     try {
-      if (typeof stateSource === 'function' && entries.length > 0) {
-        source ??= stateSource();
-      }
-      const current = source;
-
-      return current
+      return source
         ? withTransactionSpecDraftRead(owner, () =>
-            current.read((state) => fnWithState(fn, state))
+            source.read((state) => fnWithState(fn, state))
           )
         : fnWithState(fn, getEditorStateView(owner));
     } finally {

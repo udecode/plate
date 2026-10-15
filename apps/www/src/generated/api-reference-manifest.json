@@ -8667,13 +8667,13 @@
         },
         "platejs:SchemaContentDefault": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "The child content creates when it needs one: an empty text, or a `type`\nelement with optional `properties`, such as a heading's required `level`.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "SchemaContentDefault",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaContentDefault = 'text' | Readonly<{\n  type: string;\n}>;",
+          "signature": "type SchemaContentDefault = 'text' | Readonly<{\n  properties?: Readonly<Record<string, EditorJsonValue>>;\n  type: string;\n}>;",
           "source": null,
           "typeParameters": []
         },

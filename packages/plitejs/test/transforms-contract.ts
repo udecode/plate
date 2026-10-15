@@ -3281,6 +3281,79 @@ describe('plite transforms contract', () => {
     );
   });
 
+  it('insertNodes lands a block between the halves at either edge of an inline', () => {
+    const link = { type: 'link', children: [{ text: 'two' }] };
+    const embed = { type: 'embed', children: [{ text: '' }] };
+
+    for (const [offset, expected] of [
+      [
+        3,
+        [
+          {
+            type: 'paragraph',
+            children: [{ text: 'one' }, link, { text: '' }],
+          },
+          embed,
+          paragraph('three'),
+        ],
+      ],
+      [
+        0,
+        [
+          paragraph('one'),
+          embed,
+          {
+            type: 'paragraph',
+            children: [{ text: '' }, link, { text: 'three' }],
+          },
+        ],
+      ],
+    ] as const) {
+      const editor = createEditor();
+
+      editor.install(
+        defineTestSchema('insert-inline-edge', {
+          embed: {},
+          link: { inline: true },
+        })
+      );
+      editorReplace(editor, {
+        children: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'one' }, link, { text: 'three' }],
+          },
+        ],
+        selection: collapsedSelection([0, 1, 0], offset),
+      });
+
+      editor.update((tx) => {
+        tx.nodes.insert(embed);
+      });
+
+      assert.deepEqual(editor.read.children(), expected);
+    }
+  });
+
+  it('insertNodes lands a block after an empty block holding the caret', () => {
+    const editor = createEditor();
+
+    editor.install(defineTestSchema('insert-empty-block', { embed: {} }));
+    editorReplace(editor, {
+      children: [paragraph('')],
+      selection: collapsedSelection([0, 0], 0),
+    });
+
+    editor.update((tx) => {
+      tx.nodes.insert({ type: 'embed', children: [{ text: '' }] });
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph(''),
+      { type: 'embed', children: [{ text: '' }] },
+    ]);
+  });
+
   it('splitNodes rejects the editor root as a split target', () => {
     const editor = createEditor();
 

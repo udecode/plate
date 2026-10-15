@@ -69,7 +69,7 @@
 - Expose `PluginTypeProvider` as the public value-sensitive capability bridge and keep higher-kinded encoding, normalized installed capabilities, and transitive dependency expansion private
 - Infer descriptor-owned element shapes with `ElementOf<typeof Plugin>`; remove the two-owner `SchemaElementOf` and `SchemaElementShapeOf` extractors
 - Keep immutable author inputs in the descriptor factory closure instead of an plugin `config` channel
-- Construct missing root and nested content only from authored `SchemaContent.default` declarations; remove the separate default-block option and implicit paragraph fallback
+- Construct missing root and nested content only from authored `SchemaContent.default` declarations; remove the separate default-block option and implicit paragraph fallback. An element default can also set properties, such as `{ type: 'heading', properties: { level: 2 } }`, and a default with any other key throws
 - Accept document `maxLength` only when creating the editor
 - Resolve functional plugin APIs against each editor view root and preserve the complete root-scoped read surface, including exported selection slices
 - Declare every plugin API through an `api` factory, including context-free API objects; contextual factories receive one `{ editor, root, getContributions }` object

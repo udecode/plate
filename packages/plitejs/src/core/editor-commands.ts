@@ -47,13 +47,13 @@ import { getActiveCommandEditor } from './command-registry';
 import { ContentSlice as ContentSliceValue } from './content-slice';
 import { getInternalEditorSchemaFromApi } from './editor-schema';
 import { limitTextInsert } from './insert-limit';
-import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
 import {
-  getCurrentNodeSelection,
   asBlockEntries,
+  getCurrentNodeSelection,
   getNodeSelectionReplacement,
   replaceSelectedBlocks,
-} from './public-state';
+} from './node-selection';
+import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
 import { planPaste, writePaste } from './slice-landing';
 import { areEditorJsonValuesEqual } from './value-codec';
 
@@ -728,35 +728,33 @@ export const editorCommands: EditorCommands = Object.freeze({
     locate: locateOptionsAt,
     build: ({ input, state }) => {
       const nodeSelection = getCurrentNodeSelection(state);
-      const nodeReplacementText = nodeSelection
-        ? limitTextInsert(state, input.text, { at: nodeSelection })
-        : input.text;
-      const nodeBlocks =
-        input.options?.at === undefined && nodeSelection
-          ? asBlockEntries(state, state.selection.nodes())
-          : null;
-      const nodeReplacement = nodeBlocks
-        ? getNodeSelectionReplacement(
-            state,
-            nodeBlocks,
-            SelectionApi.root(state.selection()) ?? MAIN_ROOT_KEY,
-            ({ at, keys, root }) => {
-              if (LINE_BREAK_PATTERN.test(nodeReplacementText)) return null;
-
-              const replacement = fillDefaultChild(
-                state,
-                at,
-                root,
-                nodeReplacementText,
-                state.marks() ?? getConsistentBlockTextMarks(state, keys)
-              );
-
-              return replacement ? { replacements: [replacement] } : null;
-            }
-          )
-        : null;
 
       if (input.options?.at === undefined && nodeSelection) {
+        const nodeReplacementText = limitTextInsert(state, input.text, {
+          at: nodeSelection,
+        });
+        const nodeBlocks = asBlockEntries(state, state.selection.nodes());
+
+        if (!nodeBlocks || LINE_BREAK_PATTERN.test(nodeReplacementText)) {
+          return false;
+        }
+        const [, firstPath] = getDefined(nodeBlocks[0]);
+        const root = SelectionApi.root(state.selection()) ?? MAIN_ROOT_KEY;
+        const replacement = fillDefaultChild(
+          state,
+          firstPath,
+          root,
+          nodeReplacementText,
+          state.marks() ??
+            getConsistentBlockTextMarks(
+              state,
+              nodeBlocks.map(([block]) => state.key(block))
+            )
+        );
+        const nodeReplacement =
+          replacement &&
+          getNodeSelectionReplacement(state, nodeBlocks, root, [replacement]);
+
         if (!nodeReplacement) return false;
 
         return state.transaction((tx) => {

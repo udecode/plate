@@ -109,9 +109,12 @@ text and inline elements, requires one child, and constructs an empty text
 child by default. Structural and void elements still declare their own shape.
 
 `min`, `max`, and `default` define cardinality and construction. A required
-content rule needs a constructable default. `state.schema.create(type)`
-uses the compiled plan, and `state.schema.findWrapping(parent, child)` uses the
-same grammar.
+content rule needs a constructable default. An element default can also set
+properties, such as a heading's required level:
+`{ type: "heading", properties: { level: 2 } }`. Every child Plite builds from
+that default gets them, and so does every block that `tx.blocks.reset`
+converts to it. `state.schema.create(type)` uses the compiled plan, and
+`state.schema.findWrapping(parent, child)` uses the same grammar.
 
 `schema.content.not(...)` is a true complement. It permits undeclared element
 types when they are outside the excluded rule. Inspect compiled grammar through

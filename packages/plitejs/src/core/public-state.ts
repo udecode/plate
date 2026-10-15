@@ -257,7 +257,6 @@ import {
   type InternalEditorRuntime,
 } from './editor-runtime';
 import {
-  canPlaceBlocksAtPath,
   getInternalEditorSchemaFromApi,
   type InternalEditorSchemaApi,
 } from './editor-schema';
@@ -279,6 +278,12 @@ import {
   initializeListenerState,
 } from './listener-state';
 import { normalizeNodeUnsetInput } from './node-property-mutation';
+import {
+  asBlockEntries,
+  getCurrentNodeSelection,
+  getNodeSelectionReplacement,
+  replaceSelectedBlocks,
+} from './node-selection';
 import { PLUGIN_UPDATE_ORIGIN } from './plugin-dispatch';
 import {
   assertPluginPublicationInactive,
@@ -3524,126 +3529,6 @@ const discardReplacedNodeKeys = (
   }
 };
 
-export const getCurrentNodeSelection = (
-  state: EditorStateView
-): NodeSelection | null => {
-  const paths = state.selection.nodes().map(([, path]) => path);
-  const first = paths[0];
-
-  if (!first) return null;
-
-  const selection = state.selection();
-  const last = paths.at(-1) ?? first;
-  const selectedPathAt = (path: Path | undefined, fallback: Path) =>
-    path
-      ? (paths.find(
-          (candidate) =>
-            PathApi.equals(candidate, path) ||
-            PathApi.isAncestor(candidate, path)
-        ) ?? fallback)
-      : fallback;
-  const anchorPath = selectedPathAt(selection?.anchor.path, first);
-  const focusPath = selectedPathAt(selection?.focus.path, last);
-  const root = SelectionApi.root(selection);
-
-  return SelectionApi.nodes([first, ...paths.slice(1)], {
-    anchorPath,
-    focusPath,
-    mode: 'block',
-    ...(root === undefined ? {} : { root }),
-  });
-};
-
-export const asBlockEntries = (
-  state: EditorStateView,
-  entries: readonly NodeEntry[]
-): ReadonlyArray<NodeEntry<Element>> | null => {
-  const blocks = entries.filter(
-    (entry): entry is NodeEntry<Element> =>
-      NodeApi.isElement(entry[0]) && state.schema.isBlock(entry[0])
-  );
-
-  return blocks.length > 0 && blocks.length === entries.length ? blocks : null;
-};
-
-export const getNodeSelectionReplacement = (
-  state: EditorStateView,
-  blocks: ReadonlyArray<NodeEntry<Element>>,
-  root: string,
-  createReplacement: (context: {
-    at: Path;
-    keys: readonly NodeKey[];
-    root: string;
-  }) => Readonly<{
-    replacements: readonly Descendant[];
-  }> | null
-) => {
-  const [, firstPath] = getDefined(blocks[0]);
-  const keys = blocks.map(([block]) => state.key(block));
-  const planned = createReplacement({ at: firstPath, keys, root });
-
-  if (!planned) return null;
-
-  const lastReplacement = planned.replacements.at(-1);
-  const textEntry = lastReplacement
-    ? [...NodeApi.texts(lastReplacement)].at(-1)
-    : undefined;
-
-  if (!textEntry) return null;
-
-  const parentPath = PathApi.parent(firstPath);
-  const index = getDefined(firstPath.at(-1));
-  const publicRoot = toPublicRoot(root);
-
-  if (
-    !canPlaceBlocksAtPath(state.schema, firstPath, planned.replacements, {
-      removing: blocks.flatMap(([, path]) =>
-        PathApi.equals(PathApi.parent(path), parentPath)
-          ? [getDefined(path.at(-1))]
-          : []
-      ),
-      root,
-    })
-  ) {
-    return null;
-  }
-
-  const point: Point = {
-    offset: textEntry[0].text.length,
-    path: [
-      ...parentPath,
-      index + planned.replacements.length - 1,
-      ...textEntry[1],
-    ],
-    ...(publicRoot ? { root: publicRoot } : {}),
-  };
-
-  return {
-    index,
-    keys,
-    parentPath,
-    replacements: planned.replacements,
-    root: publicRoot,
-    selection: { anchor: point, focus: point, kind: 'text' as const },
-  };
-};
-
-export const replaceSelectedBlocks = (
-  transaction: EditorTransactionSpecBuilder,
-  replacement: NonNullable<ReturnType<typeof getNodeSelectionReplacement>>
-) => {
-  for (const key of replacement.keys.slice(1).toReversed()) {
-    transaction.nodes.remove({ at: key });
-  }
-  transaction.nodes.replaceChildren(replacement.replacements, {
-    at: replacement.parentPath,
-    count: 1,
-    index: replacement.index,
-    ...(replacement.root ? { root: replacement.root } : {}),
-    newSelection: replacement.selection,
-  });
-};
-
 type SliceFitOptions<V extends Value = Value> = Parameters<
   EditorTransactionSliceApi<V>['replace']
 >[1];
@@ -3734,134 +3619,116 @@ const withSliceFitTarget = <V extends Value, T>(
   });
 };
 
-const resolveSliceFitPlace = (
+type SliceFitRangePlace = Extract<SliceFitPlace, { kind: 'range' }>;
+
+type SliceFitPlaceOptions = Readonly<{
+  boundary?: boolean;
+  childrenAt?: Path;
+  hanging?: boolean;
+  voids?: boolean;
+}>;
+
+const placeSliceFitRange = (
   editor: Editor,
-  resolvedOptions:
-    | ResolvedNodeTargetOptions<NonNullable<SliceFitOptions>>
-    | undefined,
+  state: EditorStateView,
+  at: Location,
   root: string | undefined,
-  internal: SliceFitInternal | undefined,
-  command?: Readonly<{ nodes: NodeSelection | null }>
-): SliceFitPlace | false => {
-  let localOptions = resolvedOptions;
-  const state = getStateView(editor);
-  const childrenAt =
-    internal?.childrenAt === undefined
-      ? undefined
-      : typeof internal.childrenAt === 'string'
-        ? getPathByNodeKey(editor, internal.childrenAt)
-        : internal.childrenAt;
+  options: SliceFitPlaceOptions | undefined
+): SliceFitRangePlace | false => {
+  const childrenAt = options?.childrenAt;
+  let range: Range | undefined;
+  let insertionBoundary: Readonly<{ from: number; to: number }> | undefined;
 
-  if (internal?.childrenAt !== undefined) {
-    if (!childrenAt || childrenAt.length === 0) return false;
-    const parent = state.nodes.get(childrenAt)?.[0];
+  if (LocationApi.isRange(at)) {
+    range = at;
+  } else {
+    const point = LocationApi.isPoint(at)
+      ? at
+      : options?.boundary
+        ? undefined
+        : state.points.get(at, { edge: 'start' });
 
-    if (!parent || !NodeApi.isElement(parent)) return false;
-    const anchor = state.points.start(childrenAt);
-    const focus = state.points.end(childrenAt);
+    if (point) {
+      range = { anchor: point, focus: point };
+    } else if (LocationApi.isPath(at) && at.length > 0) {
+      const parentPath = PathApi.parent(at);
+      const index = getDefined(at.at(-1));
+      const parentChildren =
+        parentPath.length === 0
+          ? getChildren(editor)
+          : state.nodes.children(parentPath);
 
-    if (!anchor || !focus) return false;
-    localOptions = {
-      at: { anchor, focus },
-      hanging: true,
-    };
-  }
+      if (index >= 0 && index <= parentChildren.length) {
+        const boundaryPoint =
+          (index < parentChildren.length
+            ? state.points.start([...parentPath, index])
+            : undefined) ??
+          (index > 0
+            ? state.points.end([...parentPath, index - 1])
+            : undefined);
 
-  const placeAt = (
-    at: Location
-  ): Extract<SliceFitPlace, { kind: 'range' }> | false => {
-    let range: Range | undefined;
-    let insertionBoundary: Readonly<{ from: number; to: number }> | undefined;
+        if (boundaryPoint) {
+          const position = DocumentIndex.fromValue(
+            getChildren(editor)
+          ).childPosition(parentPath, index);
 
-    if (LocationApi.isRange(at)) {
-      range = at;
-    } else {
-      const point = LocationApi.isPoint(at)
-        ? at
-        : internal?.boundary
-          ? undefined
-          : state.points.get(at, { edge: 'start' });
-
-      if (point) {
-        range = { anchor: point, focus: point };
-      } else if (LocationApi.isPath(at) && at.length > 0) {
-        const parentPath = PathApi.parent(at);
-        const index = getDefined(at.at(-1));
-        const parentChildren =
-          parentPath.length === 0
-            ? getChildren(editor)
-            : state.nodes.children(parentPath);
-
-        if (index >= 0 && index <= parentChildren.length) {
-          const boundaryPoint =
-            (index < parentChildren.length
-              ? state.points.start([...parentPath, index])
-              : undefined) ??
-            (index > 0
-              ? state.points.end([...parentPath, index - 1])
-              : undefined);
-
-          if (boundaryPoint) {
-            const position = DocumentIndex.fromValue(
-              getChildren(editor)
-            ).childPosition(parentPath, index);
-
-            range = { anchor: boundaryPoint, focus: boundaryPoint };
-            insertionBoundary = { from: position, to: position };
-          }
+          range = { anchor: boundaryPoint, focus: boundaryPoint };
+          insertionBoundary = { from: position, to: position };
         }
       }
     }
-    if (!range) return false;
-    if (!insertionBoundary && internal?.childrenAt === undefined) {
-      range = landTextWrite(editor, range, getChildren(editor));
-    }
+  }
+  if (!range) return false;
+  if (!insertionBoundary && childrenAt === undefined) {
+    range = landTextWrite(editor, range, getChildren(editor));
+  }
 
-    if (!insertionBoundary && !localOptions?.hanging) {
-      range = state.ranges.unhang(range, { voids: localOptions?.voids });
-    }
-    if (
-      !insertionBoundary &&
-      !localOptions?.voids &&
-      getEditorRuntime(editor).void({ at: range })
-    ) {
-      return false;
-    }
+  if (!insertionBoundary && !options?.hanging) {
+    range = state.ranges.unhang(range, { voids: options?.voids });
+  }
+  if (
+    !insertionBoundary &&
+    !options?.voids &&
+    getEditorRuntime(editor).void({ at: range })
+  ) {
+    return false;
+  }
 
-    const remainingLength = getInsertRemainingLength(state, { at: range });
+  const remainingLength = getInsertRemainingLength(state, { at: range });
 
-    if (childrenAt && root !== MAIN_ROOT_KEY) {
-      range = {
-        anchor: { ...range.anchor, root },
-        focus: { ...range.focus, root },
-      };
-    }
-    const parentBounds = childrenAt
-      ? DocumentIndex.fromValue(getChildren(editor)).nodeRange(childrenAt)
-      : undefined;
-
-    return {
-      bounds: parentBounds
-        ? { from: parentBounds.from + 1, to: parentBounds.to - 1 }
-        : insertionBoundary,
-      kind: 'range',
-      range,
-      remainingLength,
-      removals: [],
-      root,
+  if (childrenAt && root !== MAIN_ROOT_KEY) {
+    range = {
+      anchor: { ...range.anchor, root },
+      focus: { ...range.focus, root },
     };
+  }
+  const parentBounds = childrenAt
+    ? DocumentIndex.fromValue(getChildren(editor)).nodeRange(childrenAt)
+    : undefined;
+
+  return {
+    bounds: parentBounds
+      ? { from: parentBounds.from + 1, to: parentBounds.to - 1 }
+      : insertionBoundary,
+    kind: 'range',
+    range,
+    remainingLength,
+    removals: [],
+    root,
   };
+};
 
-  const at = command
-    ? (command.nodes ??
-      localOptions?.at ??
-      (getCurrentSelection(editor) ? null : getDefaultInsertLocation(editor)))
-    : (getTransactionView(editor).resolveTarget({ at: localOptions?.at }) ??
-      getDefaultInsertLocation(editor));
+const resolveSliceFitPlace = (
+  editor: Editor,
+  at: Location | NodeSelection,
+  root: string | undefined,
+  options: SliceFitPlaceOptions | undefined
+): SliceFitPlace | false => {
+  const state = getStateView(editor);
 
-  if (!at) return false;
-  if (!SelectionApi.isNode(at)) return placeAt(at);
-  if (!command) return false;
+  if (!SelectionApi.isNode(at)) {
+    return placeSliceFitRange(editor, state, at, root, options);
+  }
 
   const entries = getSelectionNodeEntries(editor, state, at);
   const blocks = asBlockEntries(state, entries);
@@ -3879,7 +3746,13 @@ const resolveSliceFitPlace = (
   const firstRange = first ? state.ranges.get(state.key(first[0])) : undefined;
 
   if (!firstRange) return false;
-  const place = placeAt(localizeLocation(firstRange));
+  const place = placeSliceFitRange(
+    editor,
+    state,
+    localizeLocation(firstRange),
+    root,
+    options
+  );
 
   return (
     place && {
@@ -3934,40 +3807,60 @@ const getSliceFitTarget = (
 
 export const resolveSliceFitSite = (
   editor: Editor,
-  viewRoot: string | undefined,
-  options: SliceFitOptions,
-  nodes: NodeSelection | null
+  state: EditorStateView,
+  options: SliceFitOptions
 ): SliceFitSite | false => {
   const owner = getEditorRuntimeOwner(editor);
-  const resolveAt = (
-    localOptions:
-      | ResolvedNodeTargetOptions<NonNullable<SliceFitOptions>>
-      | undefined,
-    root: string | undefined
+  const implicitTarget =
+    options?.at === undefined
+      ? (getCurrentNodeSelection(state) ??
+        state.selection() ??
+        moveImplicitTarget(owner)?.target ??
+        null)
+      : null;
+  const createSite = (
+    at: Location | NodeSelection | null,
+    root: string | undefined,
+    placeOptions: SliceFitPlaceOptions | undefined,
+    requested: Location | undefined
   ) => {
-    const place = resolveSliceFitPlace(owner, localOptions, root, undefined, {
-      nodes,
-    });
+    if (!at) return false;
+    const place = resolveSliceFitPlace(owner, at, root, placeOptions);
 
     return (
       place &&
       new SliceFitSite(
         place,
-        getSliceFitTarget(getStateView(owner), place, localOptions?.at)
+        getSliceFitTarget(getStateView(owner), place, requested)
       )
     );
   };
   const resolve = () => {
-    if (!nodes) return withSliceFitTarget(owner, options, undefined, resolveAt);
-    const root = nodes.root ?? MAIN_ROOT_KEY;
+    if (SelectionApi.isNode(implicitTarget)) {
+      const root = implicitTarget.root ?? MAIN_ROOT_KEY;
 
-    return runWithMutationRoot(owner, root, () =>
-      resolveAt(
-        options && { hanging: options.hanging, voids: options.voids },
-        root
-      )
+      return runWithMutationRoot(owner, root, () =>
+        createSite(implicitTarget, root, options, undefined)
+      );
+    }
+
+    return withSliceFitTarget(
+      owner,
+      implicitTarget ? { ...options, at: implicitTarget } : options,
+      undefined,
+      (localOptions, root) =>
+        createSite(
+          localOptions?.at ??
+            (getCurrentSelection(owner)
+              ? null
+              : getDefaultInsertLocation(owner)),
+          root,
+          localOptions,
+          localOptions?.at
+        )
     );
   };
+  const viewRoot = state.view.root();
 
   return viewRoot === undefined
     ? resolve()
@@ -4192,12 +4085,21 @@ const replaceBlocksAtSite = (
 
     return true;
   }
-  const replacement = getNodeSelectionReplacement(
+  const [, firstPath] = getDefined(place.blocks[0]);
+  const planned = getWholeBlockReplacements(
     state,
-    place.blocks,
-    place.root,
-    ({ at, root }) => getWholeBlockReplacements(state, slice, at, root)
+    slice,
+    firstPath,
+    place.root
   );
+  const replacement =
+    planned &&
+    getNodeSelectionReplacement(
+      state,
+      place.blocks,
+      place.root,
+      planned.replacements
+    );
 
   if (!replacement) return false;
   replaceSelectedBlocks(transaction, replacement);
@@ -4253,6 +4155,52 @@ export const fitSliceAtSite = (
   return spec;
 };
 
+const resolveRawSliceFitPlace = (
+  editor: Editor,
+  resolvedOptions:
+    | ResolvedNodeTargetOptions<NonNullable<SliceFitOptions>>
+    | undefined,
+  root: string | undefined,
+  internal: Readonly<{ boundary?: boolean; childrenAt?: NodeKey | Path }> = {}
+): SliceFitRangePlace | false => {
+  const state = getStateView(editor);
+
+  if (internal.childrenAt === undefined) {
+    const at =
+      getTransactionView(editor).resolveTarget({ at: resolvedOptions?.at }) ??
+      getDefaultInsertLocation(editor);
+
+    return (
+      !SelectionApi.isNode(at) &&
+      placeSliceFitRange(editor, state, at, root, {
+        boundary: internal.boundary,
+        hanging: resolvedOptions?.hanging,
+        voids: resolvedOptions?.voids,
+      })
+    );
+  }
+
+  const childrenAt =
+    typeof internal.childrenAt === 'string'
+      ? getPathByNodeKey(editor, internal.childrenAt)
+      : internal.childrenAt;
+
+  if (!childrenAt || childrenAt.length === 0) return false;
+  const parent = state.nodes.get(childrenAt)?.[0];
+
+  if (!parent || !NodeApi.isElement(parent)) return false;
+  const anchor = state.points.start(childrenAt);
+  const focus = state.points.end(childrenAt);
+
+  if (!anchor || !focus) return false;
+
+  return placeSliceFitRange(editor, state, { anchor, focus }, root, {
+    boundary: internal.boundary,
+    childrenAt,
+    hanging: true,
+  });
+};
+
 const fitSliceIntoActiveDraft = <V extends Value>(
   editor: Editor<V>,
   slice: import('../interfaces/editor').ContentSlice,
@@ -4264,14 +4212,14 @@ const fitSliceIntoActiveDraft = <V extends Value>(
     options,
     internal?.childrenAt,
     (resolvedOptions, root) => {
-      const place = resolveSliceFitPlace(
+      const place = resolveRawSliceFitPlace(
         editor,
         resolvedOptions,
         root,
         internal
       );
 
-      if (!place || place.kind !== 'range') return false;
+      if (!place) return false;
       const sourceSlice = ContentSlice.fromJSON<V>(slice);
       const inputSlice = internal?.rootsPrepared
         ? sourceSlice
@@ -8917,7 +8865,7 @@ export const setActiveImplicitTarget = (editor: Editor, target: Selection) => {
   }
 };
 
-export const moveImplicitTarget = (
+const moveImplicitTarget = (
   editor: Editor
 ): Readonly<{ target: Selection }> | null => {
   const frame = getTransactionSnapshot(editor)?.implicitTargetFrame;

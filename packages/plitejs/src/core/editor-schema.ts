@@ -901,7 +901,12 @@ export const createEditorSchema = <V extends Value = Value>(
         content.defaultPlan?.kind === 'text'
           ? 'text'
           : content.defaultPlan?.kind === 'element'
-            ? Object.freeze({ type: content.defaultPlan.type })
+            ? Object.freeze({
+                ...(content.defaultPlan.properties
+                  ? { properties: content.defaultPlan.properties }
+                  : {}),
+                type: content.defaultPlan.type,
+              })
             : null,
       max: content.max,
       min: content.min,
@@ -2038,7 +2043,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
     return {
       kind: 'element',
-      properties: undefined,
+      properties: plan.properties,
       schema,
       site,
       type: plan.type,

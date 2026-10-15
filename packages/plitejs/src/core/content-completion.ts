@@ -629,7 +629,9 @@ export const completeContent = (
     }
 
     const unit: Descendant =
-      plan.kind === 'text' ? { text: '' } : schema.create(plan.type, undefined);
+      plan.kind === 'text'
+        ? { text: '' }
+        : schema.create(plan.type, plan.properties);
     const next = element
       ? canonicalizeContentChildren([...rest, unit], remainder, {
           dropsFromEmptyText,

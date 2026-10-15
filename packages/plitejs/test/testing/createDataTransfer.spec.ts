@@ -12,4 +12,17 @@ describe('createDataTransfer', () => {
     expect(dataTransfer.setData('text/plain', 'after')).toBeUndefined();
     expect(dataMap.get('text/plain')).toBe('after');
   });
+
+  it('lists the types it holds and no files', () => {
+    const dataTransfer = createDataTransfer(
+      new Map([['text/plain', 'before']])
+    );
+
+    dataTransfer.setData('text/html', '<p>after</p>');
+
+    expect([dataTransfer.types, dataTransfer.files.length]).toEqual([
+      ['text/plain', 'text/html'],
+      0,
+    ]);
+  });
 });

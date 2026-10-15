@@ -48,7 +48,7 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "c6a085f1ee2aac87df6ece4bbbf123665c1b1eb7243db3e755a242a38e287930",
+    "block": "b91754b80bfe6f1922108ac998a4cf6933a4521b2b707cf58f2a40fde2086e34",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
@@ -66,19 +66,19 @@
       ".agents/pstack/plan-open.mjs": "b379db52274bbf459b2c8909120c5c7ad4ec46a2302016a63d1e3e6e81a08423",
       ".agents/pstack/plan-page.mjs": "92f271e5078a5ea5653fa56dfd6069e16ed2032752e3d9bb49f0f1e5e7085d64",
       ".agents/pstack/status.mjs": "b018cb97dc71d298af9e61bd69a7ac606d0e087c9f0e17e9026e984335ad0435",
-      ".agents/pstack/tasks.mjs": "fdc597d84cf4e87f91be9de138899df47a71b8e8be26ac0606034ae68b50e374",
+      ".agents/pstack/tasks.mjs": "daedd3ae9b61f4b0de195d767ab624d9fc40c3a2743d8c1a4683f2bdcfcb3db8",
       ".agents/pstack/rules/browser.md": "bd446f08c4becb8edb7d70efe044a969e0802a78c6e7d5959942e99ddec38e2b",
-      ".agents/pstack/rules/chips.md": "1813ceb88e2ee49e9d745daa8c7720decc9e9918130bdc45a01ef0ee3f74b566",
+      ".agents/pstack/rules/chips.md": "d67ae9d99b5516a465543cb341488a9220a22864d5bd933a14b6e51024614ffa",
       ".agents/pstack/rules/close.md": "56fc14947b4d5d8fe327a923c84355e4d7eda56a959589e229cf280dad124110",
       ".agents/pstack/rules/long-runs.md": "2ee0ca8b9d01a2018fea6f7d412df25b5e916b82a398f45bd368d15caeab3b5c",
       ".agents/pstack/rules/pages.md": "4a437e2db42fe0d01c41777ffb5e9788b23d5bb1bac5f94a4fb58f20f19b5ec9",
       ".agents/pstack/rules/panel.md": "5079f504a795e32dcc6e26b65ce648087006da3548a852dc3b6a5f12f7c5890a",
-      ".agents/pstack/rules/reflect.md": "97fa96ea1959494709313f2d7877345dc3f8d0fd93e88d35e0ea0d22a18f58d2",
+      ".agents/pstack/rules/reflect.md": "82ab2777a04d538a60db29a71f743db3cb9952774a51b5f76ebbbba7c51c7f4c",
       ".agents/pstack/rules/tests.md": "2db2dddc0dc6985d7ce5a4563b1989d6334f1afa47c58e80ceab331ff1e29b26",
       ".agents/pstack/rules/title.md": "3790bd24dd6a72b615d394823a5ea46e7fc949e2d3d2248a6358c29d1ed19db5",
       ".agents/pstack/rules/trails.md": "df808e0228a76435614d01f349bf7fb810f9e9679ddd6c471b8a337b81931e35"
     },
-    "source": "dd9d19a10e66954855fb4c1496b8ee6135fe9009"
+    "source": "b29d1b6c99de5406f098d0345bee6ddcb1a58271"
   },
   "pageTopic": {
     "field": "review_scopes",
