@@ -350,7 +350,8 @@ export function newChipRowProblems(cells, before, where, git) {
   }
   const held = (task) => task?.status === 'offered' && task.card;
   if (move === 'folded' && held(own)) found.push(`${where}: ${id} holds card ${own.card}, which cannot show new work; offer the finding as a new task in topic ${own.topic ?? '<its question>'} with waits: task:${id}, and chips merges it once the card is withdrawn`);
-  if (move === 'updated' && held(own)) found.push(`${where}: ${id} holds card ${own.card}, which cannot change; withdraw the card first, as chips.md's Limits says, then log this row`);
+  const narrows = Object.keys(given).every((key) => key === 'writes') && (given.writes ?? []).map(writeKey).every((key) => own?.keys.some((old) => key === old || contains(old, key)));
+  if (move === 'updated' && held(own) && !narrows) found.push(`${where}: ${id} holds card ${own.card}, which cannot change; withdraw the card first, as chips.md's Limits says, then log this row; a row that only narrows writes: needs no withdrawal`);
   if (move === 'dismissed dup' && held(keeper)) found.push(`${where}: ${keeper.id} holds card ${keeper.card}, which cannot show new work; keep ${id} open and log updated on it with its waits plus task:${keeper.id}, and chips merges it once the card is withdrawn`);
   if (move === 'carded' || (move === 'offered' && given.card)) {
     const uncarded = move === 'carded' ? before : afterRow(before, cells);
