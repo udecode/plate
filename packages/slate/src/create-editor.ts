@@ -206,6 +206,7 @@ export const createEditor = <V extends Value>({
     hasBlocks: bindFirst(hasBlocks, editor),
     hasInlines: bindFirst(hasInlines, editor),
     hasPath: bindFirst(hasPath, editor as any),
+    hasRange: bindFirst(hasRange, editor),
     hasTexts: bindFirst(hasTexts, editor),
     insertNodes: bindFirst(insertNodes, editor),
     isBlock: bindFirst(isBlock, editor),
