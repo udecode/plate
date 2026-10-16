@@ -134,7 +134,10 @@ export type AndroidInputManager = {
   isFlushing: () => boolean | 'action';
 
   handleUserSelect: (range: Range | null) => void;
-  handleDOMBeforeInput: (event: InputEvent) => void;
+  handleDOMBeforeInput: (
+    event: InputEvent,
+    compositionTarget?: Range | null
+  ) => void;
   handleKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
 
   handleDomMutations: (mutations: MutationRecord[]) => void;
@@ -437,7 +440,11 @@ export function createAndroidInputManager({
       return;
     }
 
-    if (hasPendingDiffs() || forceHide) {
+    if (
+      hasPendingDiffs() ||
+      hasAndroidComposition(inputController) ||
+      forceHide
+    ) {
       placeholderElement.style.display = 'none';
       return;
     }
@@ -665,7 +672,10 @@ export function createAndroidInputManager({
     );
   };
 
-  const handleDOMBeforeInput = (event: InputEvent): void => {
+  const handleDOMBeforeInput = (
+    event: InputEvent,
+    compositionTarget: Range | null = null
+  ): void => {
     cancelSelectionFlush?.();
     cancelSelectionFlush = null;
 
@@ -693,9 +703,6 @@ export function createAndroidInputManager({
       selectionWasSyncedFromDOM ||
       (inputController.state.selectionSource === 'dom-current' &&
         inputController.state.selectionChangeOrigin !== 'native-user');
-    const compositionTarget = inputController.state.androidCompositionTarget;
-
-    inputController.state.androidCompositionTarget = null;
     let innerTargetRange2: Range | null =
       compositionTarget ??
       (preferRuntimeSelection ? readRuntimeSelectionRange(editor) : null);

@@ -108,8 +108,6 @@ export type PendingCompositionEnd =
 
 export type EditableInputControllerState = {
   activeIntent: InputIntent | null;
-  /** The target an input keeps after it ended an Android composition run. */
-  androidCompositionTarget: Range | null;
   compositionSession: {
     modelCommitted: boolean;
     text: string | null;
@@ -290,7 +288,6 @@ export const createEditableInputControllerState = (
   bindEditableInputRuntimeState(
     {
       activeIntent: null,
-      androidCompositionTarget: null,
       compositionSession: null,
       draggedBlock: false,
       draggedRange: null,

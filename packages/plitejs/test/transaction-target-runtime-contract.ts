@@ -252,6 +252,80 @@ describe('transaction target runtime', () => {
     ]);
   });
 
+  it('uses an unchanged explicit point as the next implicit target', () => {
+    const editor = setupEditor();
+    let calls = 0;
+
+    setEditorTargetRuntime(editor, {
+      resolveImplicitTarget() {
+        calls += 1;
+        return {
+          kind: 'text' as const,
+          anchor: { path: [1, 0], offset: 0 },
+          focus: { path: [1, 0], offset: 0 },
+        };
+      },
+    });
+
+    editor.update((tx) => {
+      tx.selection.set({ path: [0, 0], offset: 0 });
+      tx.text.insert('!');
+    });
+
+    assert.deepEqual(editorGetChildren(editor), [
+      paragraph('!one'),
+      paragraph('two'),
+    ]);
+    assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    });
+    assert.equal(calls, 0);
+  });
+
+  it('uses the selected-range deletion caret for the next implicit node insertion', () => {
+    const editor = createEditor();
+    let calls = 0;
+
+    editorReplace(editor, {
+      children: [paragraph('Mention @bi')],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 8 },
+        focus: { path: [0, 0], offset: 11 },
+      },
+    });
+    setEditorTargetRuntime(editor, {
+      resolveImplicitTarget() {
+        calls += 1;
+        return {
+          kind: 'text' as const,
+          anchor: { path: [0, 0], offset: 11 },
+          focus: { path: [0, 0], offset: 11 },
+        };
+      },
+    });
+
+    editor.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { path: [0, 0], offset: 8 },
+          focus: { path: [0, 0], offset: 11 },
+        },
+      });
+      tx.nodes.insert({ text: '!' });
+    });
+
+    assert.deepEqual(editorGetChildren(editor), [paragraph('Mention !')]);
+    assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 9 },
+      focus: { path: [0, 0], offset: 9 },
+    });
+    assert.equal(calls, 0);
+  });
+
   it('inherits an explicit outer target into nested command specs', () => {
     const editor = setupEditor();
     let calls = 0;

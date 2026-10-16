@@ -51,9 +51,9 @@ export type ReactApi = {
   isFocused: () => boolean;
   isReadOnly: () => boolean;
   /**
-   * Commit pending native input, such as a finished composition, into the
-   * model. Returns false while a composition is still active or when the
-   * editor unmounts during the flush.
+   * Commit pending native input to the model, including an active Android
+   * keyboard draft. Returns false while a non-Android composition is active or
+   * when the mounted Editable unmounts during the flush.
    */
   settleInput: () => boolean;
   /**

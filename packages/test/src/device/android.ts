@@ -6,7 +6,7 @@
 // Node loads this file directly for tooling/device/android.mjs, so it has no
 // relative imports and only erasable TypeScript.
 
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -29,7 +29,47 @@ const GBOARD_EXPECTED_SETTINGS: Record<string, boolean> = {
   'Word suggestions': true,
 };
 
-export type DeviceLanguage = 'en' | 'ko';
+export type DeviceLanguage = 'en' | 'ja' | 'ko' | 'zh';
+
+const GBOARD_LAYOUTS = {
+  en: { languageTag: 'en-US', variant: 'qwerty', row: 'English (US), QWERTY' },
+  ja: {
+    languageTag: 'ja-JP',
+    variant: 'japanese_qwerty',
+    row: '日本語, QWERTY',
+  },
+  ko: {
+    languageTag: 'ko-KR',
+    variant: 'korean_two_bulsik',
+    row: '한국어, 두벌식',
+  },
+  zh: { languageTag: 'zh-CN', variant: 'qwerty', row: '简体中文, 拼音' },
+};
+
+export type DeviceKeyboardIdentity = {
+  chineseInlineComposing: boolean | null;
+  languageTag: string;
+  subtypeHashCode: string;
+  variant: string;
+};
+
+export const requestedLanguages = (): DeviceLanguage[] => {
+  const values = process.env.PLATE_DEVICE_LANGUAGES?.split(',') ?? ['en', 'ko'];
+  const languages: DeviceLanguage[] = [];
+
+  for (const value of values) {
+    if (value !== 'en' && value !== 'ko' && value !== 'ja' && value !== 'zh') {
+      throw new Error(
+        `Unsupported device language "${value}"; use en, ko, ja or zh.`
+      );
+    }
+    if (languages.includes(value)) {
+      throw new Error(`Device language "${value}" is requested twice.`);
+    }
+    languages.push(value);
+  }
+  return languages;
+};
 
 export type DevicePanel = 'letters' | 'symbols';
 
@@ -40,17 +80,20 @@ export type DeviceKey = {
 };
 
 export type DeviceKeyMap = {
+  controls: { backspace: string; enter: string; space: string };
   gboardVersion: string;
   language: DeviceLanguage;
+  languageTag: string;
+  letterLabels: string[];
   panel: DevicePanel;
   screen: string;
   subtype: string;
+  variant: string;
   keys: Record<string, DeviceKey>;
 };
 
 export type DeviceRestoreState = {
-  /** Korean layouts before setup added its own; null when setup added none. */
-  koreanLayoutsBefore: string[] | null;
+  languageLayoutsBefore: Array<{ language: DeviceLanguage; layouts: string[] }>;
   changedSettings: Array<{ name: string; from: boolean }>;
   createdAt: string;
   forwards: string[];
@@ -206,15 +249,30 @@ export const releaseSerialLock = (serial: string, owner = process.pid) => {
 // Restore file. Originals are recorded once; later records only add owned
 // resources, so an interrupted run never overwrites what setup found.
 
-export const readRestoreState = (serial: string) =>
-  readJSON<DeviceRestoreState>(restorePath(serial));
+export const readRestoreState = (serial: string) => {
+  const saved = readJSON<
+    DeviceRestoreState & { koreanLayoutsBefore?: string[] | null }
+  >(restorePath(serial));
+
+  if (!saved) return null;
+  const { koreanLayoutsBefore, ...current } = saved;
+
+  return {
+    ...current,
+    languageLayoutsBefore:
+      current.languageLayoutsBefore ??
+      (koreanLayoutsBefore
+        ? [{ language: 'ko' as const, layouts: koreanLayoutsBefore }]
+        : []),
+  };
+};
 
 const recordRestore = (serial: string, patch: Partial<DeviceRestoreState>) => {
   const current: DeviceRestoreState = readRestoreState(serial) ?? {
     changedSettings: [],
     createdAt: new Date().toISOString(),
     forwards: [],
-    koreanLayoutsBefore: null,
+    languageLayoutsBefore: [],
     ownedTargets: [],
     reverses: [],
     selectedSubtype: shell(
@@ -235,8 +293,15 @@ const recordRestore = (serial: string, patch: Partial<DeviceRestoreState>) => {
 
   writeJSON(restorePath(serial), {
     ...current,
-    koreanLayoutsBefore:
-      current.koreanLayoutsBefore ?? patch.koreanLayoutsBefore ?? null,
+    languageLayoutsBefore: [
+      ...current.languageLayoutsBefore,
+      ...(patch.languageLayoutsBefore ?? []).filter(
+        (entry) =>
+          !current.languageLayoutsBefore.some(
+            (known) => known.language === entry.language
+          )
+      ),
+    ],
     changedSettings: [
       ...current.changedSettings,
       ...(patch.changedSettings ?? []).filter(
@@ -402,25 +467,46 @@ const parseNodes = (xml: string): UiNode[] =>
     };
   });
 
-const dumpApp = (serial: string) => {
-  shell(serial, 'uiautomator', 'dump', '/sdcard/plate-proof-app.xml');
-  return parseNodes(
-    adb(serial, ['exec-out', 'cat', '/sdcard/plate-proof-app.xml'])
-  );
+const dumpUi = (serial: string, windows: boolean) => {
+  const path = windows
+    ? '/sdcard/plate-proof-ui.xml'
+    : '/sdcard/plate-proof-app.xml';
+  const helper = process.env.PLATE_DEVICE_UI_DUMP_JAR;
+
+  shell(serial, 'rm', '-f', path);
+  if (helper) {
+    if (!/^\/data\/local\/tmp\/[\w./-]+\.jar$/.test(helper)) {
+      throw new Error('PLATE_DEVICE_UI_DUMP_JAR must name a device-local JAR.');
+    }
+    shell(
+      serial,
+      'env',
+      `CLASSPATH=${helper}`,
+      'app_process',
+      '/system/bin',
+      'WindowDump',
+      path
+    );
+  } else {
+    shell(
+      serial,
+      'uiautomator',
+      'dump',
+      ...(windows ? ['--windows'] : []),
+      path
+    );
+  }
+
+  const xml = adb(serial, ['exec-out', 'cat', path]);
+
+  if (!xml.startsWith('<?xml') || !xml.includes('<node ')) {
+    throw new Error('The device returned no readable UI hierarchy.');
+  }
+  return parseNodes(xml);
 };
 
-const dumpWindows = (serial: string) => {
-  shell(
-    serial,
-    'uiautomator',
-    'dump',
-    '--windows',
-    '/sdcard/plate-proof-ui.xml'
-  );
-  return parseNodes(
-    adb(serial, ['exec-out', 'cat', '/sdcard/plate-proof-ui.xml'])
-  );
-};
+const dumpApp = (serial: string) => dumpUi(serial, false);
+const dumpWindows = (serial: string) => dumpUi(serial, true);
 
 const clickText = async (serial: string, pattern: RegExp, wait = 1500) => {
   const node = dumpApp(serial).find(
@@ -433,23 +519,30 @@ const clickText = async (serial: string, pattern: RegExp, wait = 1500) => {
 };
 
 const openGboardSettings = async (serial: string, section: RegExp) => {
+  const activity = shell(serial, 'dumpsys', 'input_method')
+    .split('\n')
+    .find((line) => line.includes(`mId=${GBOARD_IME} `))
+    ?.match(/mSettingsActivityName=(\S+)/)?.[1];
+
+  if (!activity || activity === 'null') {
+    throw new Error('Gboard declares no settings activity.');
+  }
   shell(
     serial,
     'am',
     'start',
-    '--activity-clear-task',
-    '-a',
-    'android.settings.INPUT_METHOD_SETTINGS'
+    '-f',
+    '0x10008000',
+    '-n',
+    `${GBOARD_PACKAGE}/${activity}`
   );
   await sleep(2000);
-  await clickText(serial, /^Gboard$/);
   await clickText(serial, section);
 };
 
 // The switch beside each title, which a tap flips; tapping a title can open
 // that setting's own page instead (Auto-correction does on Gboard 17).
-const readSettingToggles = (serial: string) => {
-  const nodes = dumpApp(serial);
+const readSettingToggles = (nodes: UiNode[]) => {
   const titles = new Map<string, UiNode>();
   const switches = new Map<string, UiNode>();
 
@@ -472,14 +565,46 @@ const readSettingToggles = (serial: string) => {
   return switches;
 };
 
+const findSettingToggle = async (serial: string, name: string) => {
+  const [width, height] = screenSize(serial).split('x').map(Number);
+  let nodes = dumpApp(serial);
+
+  for (const direction of [1, -1]) {
+    let previous = '';
+
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const toggle = readSettingToggles(nodes).get(name);
+
+      if (toggle && toggle.bounds[1] < toggle.bounds[3]) return toggle;
+
+      const position = JSON.stringify(
+        nodes.map(({ bounds, desc, text }) => ({ bounds, desc, text }))
+      );
+
+      if (position === previous) break;
+      previous = position;
+      createDeviceTouch(serial).move(
+        [width / 2, height * (direction === 1 ? 0.4 : 0.85)],
+        [width / 2, height * (direction === 1 ? 0.85 : 0.4)]
+      );
+      await sleep(600);
+      nodes = dumpApp(serial);
+    }
+  }
+  throw new Error(`Gboard setting "${name}" is not on its settings screen.`);
+};
+
 const readGboardSettings = async (serial: string) => {
   await openGboardSettings(serial, /^Corrections & suggestions$/);
-  return Object.fromEntries(
-    [...readSettingToggles(serial)].map(([name, toggle]) => [
-      name,
-      toggle.checked,
-    ])
-  );
+
+  const settings: Record<string, boolean> = {};
+
+  for (const name of Object.keys(GBOARD_EXPECTED_SETTINGS)) {
+    const toggle = await findSettingToggle(serial, name);
+
+    settings[name] = toggle.checked;
+  }
+  return settings;
 };
 
 /**
@@ -497,20 +622,16 @@ const flipSettings = async (
 
   for (const [name, value] of Object.entries(wanted)) {
     // A toggle can reflow the screen, so each tap reads fresh positions.
-    const toggle = readSettingToggles(serial).get(name);
-
-    if (!toggle) {
-      throw new Error(
-        `Gboard setting "${name}" is not on its settings screen.`
-      );
-    }
+    const toggle = await findSettingToggle(serial, name);
     if (toggle.checked !== value) {
       const change = { from: toggle.checked, name };
 
       beforeTap?.(change);
       createDeviceTouch(serial).tap(toggle.x, toggle.y);
       await sleep(800);
-      if (readSettingToggles(serial).get(name)?.checked !== value) {
+      const updated = await findSettingToggle(serial, name);
+
+      if (updated.checked !== value) {
         throw new Error(`Gboard setting "${name}" did not switch.`);
       }
       changed.push(change);
@@ -522,26 +643,36 @@ const flipSettings = async (
 
 // Each language row carries "<language>, <layout>" as its description; its
 // visible text splits the two across nodes.
-const koreanLayouts = async (serial: string) => {
+const languageLayouts = async (serial: string, language: DeviceLanguage) => {
   await openGboardSettings(serial, /^Languages$/);
+  const prefix = GBOARD_LAYOUTS[language].row.split(', ')[0];
+
   return dumpApp(serial)
     .map((node) => node.desc)
-    .filter((desc) => desc.startsWith('한국어, '));
+    .filter((desc) => desc.startsWith(`${prefix}, `));
 };
 
-const addKorean = async (serial: string) => {
-  const before = await koreanLayouts(serial);
+const addLanguage = async (serial: string, language: DeviceLanguage) => {
+  const before = await languageLayouts(serial, language);
 
-  if (before.includes('한국어, 두벌식')) return false;
+  if (before.includes(GBOARD_LAYOUTS[language].row)) return false;
 
-  // Gboard can enable more than one layout for a new language.
-  recordRestore(serial, { koreanLayoutsBefore: before });
+  recordRestore(serial, {
+    languageLayoutsBefore: [{ language, layouts: before }],
+  });
   await clickText(serial, /^Add keyboard$/, 2500);
   await clickText(serial, /^Search language$/);
+  await switchKeyboardLanguage(serial, 'en');
 
   const keyboard = readKeyboard(serial);
+  const names = {
+    en: { query: 'english', title: /^English \(US\)$/ },
+    ja: { query: 'japanese', title: /^日本語$/ },
+    ko: { query: 'korean', title: /^한국어$/ },
+    zh: { query: 'chinese', title: /^简体中文$/ },
+  };
 
-  for (const letter of 'korean') {
+  for (const letter of names[language].query) {
     const key = keyboard[letter];
 
     if (!key) {
@@ -552,26 +683,44 @@ const addKorean = async (serial: string) => {
   }
 
   await sleep(1500);
-  await clickText(serial, /^한국어$/, 2500);
+  await clickText(serial, names[language].title, 2500);
+  if (language === 'ja') {
+    if (before.length === 0) await clickText(serial, /^12 キー$/);
+    await clickText(serial, /^QWERTY$/);
+  }
   await clickText(serial, /^Done$/, 2500);
+  const after = await languageLayouts(serial, language);
+
+  if (
+    !after.includes(GBOARD_LAYOUTS[language].row) ||
+    before.some((row) => !after.includes(row))
+  ) {
+    throw new Error(
+      `Gboard did not add ${GBOARD_LAYOUTS[language].row} while preserving its original layouts.`
+    );
+  }
   return true;
 };
 
-// The journal records the layouts before setup adds Korean, so an interrupted
+// The journal records the layouts before setup adds a language, so an interrupted
 // setup or restore finds nothing, or only some layouts, left to remove.
-const removeAddedKorean = async (serial: string, before: string[]) => {
-  const layouts = await koreanLayouts(serial);
+const removeAddedLanguage = async (
+  serial: string,
+  language: DeviceLanguage,
+  before: string[]
+) => {
+  const layouts = await languageLayouts(serial, language);
   const added = layouts.filter((desc) => !before.includes(desc));
 
   if (added.length === 0) return;
-  await clickText(serial, /^EDIT$/);
+  await clickText(serial, /^Edit$/i);
   for (const node of dumpApp(serial).filter((row) =>
     added.includes(row.desc)
   )) {
     createDeviceTouch(serial).tap(node.x, node.y);
     await sleep(800);
   }
-  await clickText(serial, /^REMOVE$/);
+  await clickText(serial, /^Remove$/i);
 };
 
 export const gboardVersion = (serial: string) =>
@@ -597,46 +746,129 @@ export const chromeContentTop = (serial: string) => {
   return container?.bounds[3] ?? 0;
 };
 
+export const chromeContentBounds = (serial: string) => {
+  const nodes = dumpWindows(serial);
+  const content = nodes.find(
+    (node) => node.id === 'com.android.chrome:id/compositor_view_holder'
+  );
+  const toolbar = nodes.find(
+    (node) => node.id === 'com.android.chrome:id/control_container'
+  );
+
+  if (!content) throw new Error('Chrome has no native content rectangle.');
+
+  return {
+    bottom: Math.min(
+      content.bounds[3],
+      ...nodes
+        .filter(
+          (node) =>
+            node.pkg === GBOARD_PACKAGE &&
+            node.clickable &&
+            node.desc &&
+            node.bounds[2] > node.bounds[0] &&
+            node.bounds[3] > node.bounds[1]
+        )
+        .map((node) => node.bounds[1])
+    ),
+    left: content.bounds[0],
+    right: content.bounds[2],
+    top: toolbar?.bounds[3] ?? content.bounds[1],
+  };
+};
+
 /** Read Gboard's clickable keys by label from the current keyboard. */
 export const readKeyboard = (serial: string) => {
   const keys: Record<string, DeviceKey> = {};
 
   for (const node of dumpWindows(serial)) {
-    if (node.pkg !== GBOARD_PACKAGE || !node.clickable || !node.desc) continue;
+    if (
+      node.pkg !== GBOARD_PACKAGE ||
+      !node.clickable ||
+      !node.desc ||
+      node.bounds[2] <= node.bounds[0] ||
+      node.bounds[3] <= node.bounds[1]
+    ) {
+      continue;
+    }
 
     const label = /^[a-z]$/i.test(node.desc)
       ? node.desc.toLowerCase()
       : node.desc;
 
-    keys[label] ??= { bounds: node.bounds, x: node.x, y: node.y };
+    if (!keys[label] || /:id\/(?:[A-D]\d{2}|key_pos_\w+)$/.test(node.id)) {
+      keys[label] = { bounds: node.bounds, x: node.x, y: node.y };
+    }
   }
 
   return keys;
 };
 
-/** Which calibrated language a keyboard read shows, from one key only it has. */
-export const keyboardLanguage = (
-  keys: Record<string, DeviceKey>
-): DeviceLanguage | null => (keys.q ? 'en' : keys['히읗'] ? 'ko' : null);
+/** Gboard's current entry, independent of Android's selected-subtype setting. */
+export const keyboardIdentity = (serial: string): DeviceKeyboardIdentity => {
+  const current = shell(serial, 'dumpsys', 'input_method').match(
+    /\[CurrentInputMethodEntryNotification[^\]]*\]([\s\S]*?)\[\/CurrentInputMethodEntryNotification/
+  )?.[1];
+  const languageTag = current?.match(/^\s+languageTag = (\S+)$/m)?.[1];
+  const variant = current?.match(/^\s+variant = (\S+)$/m)?.[1];
+  const subtypeHashCode = current?.match(
+    /^\s+subtypeHashCode = (-?\d+)$/m
+  )?.[1];
+  const inline = current?.match(
+    /(?:^|_)enable_chinese_inline_composing_cn=(true|false)(?:_|$)/m
+  )?.[1];
+
+  if (!languageTag || !variant || !subtypeHashCode) {
+    throw new Error(
+      'Gboard did not report a current language, layout and subtype identity.'
+    );
+  }
+  return {
+    chineseInlineComposing: inline ? inline === 'true' : null,
+    languageTag,
+    subtypeHashCode,
+    variant,
+  };
+};
+
+const languageFor = (
+  identity: DeviceKeyboardIdentity
+): DeviceLanguage | null => {
+  for (const language of ['en', 'ko', 'ja', 'zh'] as const) {
+    const expected = GBOARD_LAYOUTS[language];
+
+    if (
+      identity.languageTag === expected.languageTag &&
+      identity.variant === expected.variant
+    ) {
+      return language;
+    }
+  }
+  return null;
+};
 
 /** Tap the navigation bar's input method key until Gboard shows `language`. */
 export const switchKeyboardLanguage = async (
   serial: string,
   language: DeviceLanguage
 ) => {
-  // The language key cycles through every enabled Gboard layout.
-  const layouts =
-    shell(serial, 'settings', 'get', 'secure', 'enabled_input_methods')
-      .split(':')
-      .find((entry) => entry.startsWith(GBOARD_IME))
-      ?.split(';').length ?? 2;
+  const visited = new Set<string>();
 
-  for (let attempt = 0; attempt < layouts; attempt++) {
+  for (;;) {
     const keys = readKeyboard(serial);
+    const identity = keyboardIdentity(serial);
+    const layout = `${identity.languageTag}/${identity.variant}`;
 
-    if (keyboardLanguage(keys) === language) return selectedSubtype(serial);
+    if (languageFor(identity) === language) return identity;
+    if (visited.has(layout)) break;
+    visited.add(layout);
 
-    const switcher = keys['Switch input method'];
+    const switcher =
+      keys['Switch input method'] ??
+      keys['Next language'] ??
+      keys['다음 언어'] ??
+      keys['次の言語'] ??
+      keys['下一种语言'];
 
     if (!switcher) throw new Error('Gboard shows no language key.');
     createDeviceTouch(serial).tap(switcher.x, switcher.y);
@@ -657,14 +889,17 @@ export const currentKeyMap = (
 ) => {
   const version = gboardVersion(serial);
   const screen = screenSize(serial);
-  const subtype = selectedSubtype(serial);
+  const identity = keyboardIdentity(serial);
   const map = readKeyMaps(serial).find(
     (candidate) =>
       candidate.language === language &&
       candidate.panel === panel &&
       candidate.gboardVersion === version &&
       candidate.screen === screen &&
-      candidate.subtype === subtype
+      candidate.languageTag === identity.languageTag &&
+      candidate.variant === identity.variant &&
+      candidate.subtype === identity.subtypeHashCode &&
+      candidate.letterLabels?.length > 0
   );
 
   if (map) return map;
@@ -675,18 +910,14 @@ export const currentKeyMap = (
       candidate.gboardVersion === version &&
       candidate.screen === screen
   );
-  const otherSubtype = calibrated.find(
-    (candidate) => candidate.panel === panel && candidate.subtype !== subtype
-  );
-
-  if (otherSubtype) {
+  if (languageFor(identity) !== language) {
     throw new Error(
-      `Gboard shows subtype ${subtype}, not the ${language} layout calibrated as ${otherSubtype.subtype}; switch with device.keyboard.use('${language}').`
+      `Gboard shows ${identity.languageTag}/${identity.variant}, not ${language}; switch with device.keyboard.use('${language}').`
     );
   }
   throw new Error(
     calibrated.length > 0
-      ? `Gboard ${language} has no calibrated ${panel} panel.`
+      ? `Gboard ${language} has no current calibrated ${panel} panel; run tooling/device/android.mjs calibrate ${serial}.`
       : `No calibrated ${language} key map for Gboard ${version} on ${screen}; run tooling/device/android.mjs calibrate ${serial}.`
   );
 };
@@ -724,6 +955,8 @@ const CALIBRATION_PAGE =
 
 /** Record a key map for each lane language. The keyboard must show for a text field. */
 export const calibrateKeyboard = async (serial: string, port = 8790) => {
+  const languages = requestedLanguages();
+
   acquireSerialLock(serial);
 
   const calibrationURL = `http://localhost:${port}/?calibrate=${Date.now()}`;
@@ -770,14 +1003,46 @@ export const calibrateKeyboard = async (serial: string, port = 8790) => {
 
     const maps: DeviceKeyMap[] = [];
 
-    for (const language of ['en', 'ko'] as const) {
-      const subtype = await switchKeyboardLanguage(serial, language);
+    for (const language of languages) {
+      const identity = await switchKeyboardLanguage(serial, language);
       const letters = readKeyboard(serial);
+      const mainLetters =
+        language === 'ko'
+          ? '비읍 지읒 디귿 기역 시옷 요 여 야 애 에 미음 니은 이응 리을 히읗 오 어 아 이 키읔 티읕 치읓 피읖 유 우 으'.split(
+              ' '
+            )
+          : [...'abcdefghijklmnopqrstuvwxyz'];
+      const letterLabels = mainLetters.filter((label) => letters[label]);
+      const nodes = dumpWindows(serial);
+      const control = (id: string) => {
+        const label = nodes.find(
+          (node) =>
+            node.pkg === GBOARD_PACKAGE &&
+            node.id === `${GBOARD_PACKAGE}:id/${id}`
+        )?.desc;
+
+        if (!label || !letters[label]) {
+          throw new Error(`Gboard ${language} has no ${id} control.`);
+        }
+        return label;
+      };
+
+      if (letterLabels.length < 20) {
+        throw new Error(`Gboard ${language} did not show its letter keys.`);
+      }
       const entry = {
+        controls: {
+          backspace: control('key_pos_del'),
+          enter: control('key_pos_ime_action'),
+          space: control('key_pos_space'),
+        },
         gboardVersion: gboardVersion(serial),
         language,
         screen: screenSize(serial),
-        subtype,
+        languageTag: identity.languageTag,
+        letterLabels,
+        subtype: identity.subtypeHashCode,
+        variant: identity.variant,
       };
 
       maps.push({ ...entry, keys: letters, panel: 'letters' });
@@ -829,7 +1094,41 @@ export const setupDevice = async (serial: string) => {
   }
 };
 
+const setZenMode = async (serial: string, mode: string) => {
+  if (shell(serial, 'settings', 'get', 'global', 'zen_mode') === mode) return;
+
+  const modes: Record<string, string> = {
+    '0': 'all',
+    '1': 'priority',
+    '2': 'none',
+    '3': 'alarms',
+  };
+
+  // Android 9 prints this help without set_dnd and exits 255.
+  const help = spawnSync(
+    'adb',
+    ['-s', serial, 'shell', 'cmd', 'notification', 'help'],
+    {
+      encoding: 'utf-8',
+    }
+  ).stdout;
+
+  if (modes[mode] && help?.includes('set_dnd')) {
+    shell(serial, 'cmd', 'notification', 'set_dnd', modes[mode]);
+  } else if (mode === '0' || mode === '1') {
+    shell(serial, 'am', 'start', '-a', 'android.settings.ZEN_MODE_SETTINGS');
+    await sleep(1500);
+    await clickText(serial, mode === '0' ? /^Regular$/ : /^DND$/);
+  } else {
+    throw new Error(`The device cannot set Do Not Disturb mode ${mode}.`);
+  }
+  if (shell(serial, 'settings', 'get', 'global', 'zen_mode') !== mode) {
+    throw new Error(`The device did not enter Do Not Disturb mode ${mode}.`);
+  }
+};
+
 const setupLockedDevice = async (serial: string) => {
+  const languages = requestedLanguages();
   recordRestore(serial, {});
 
   const ime = shell(
@@ -850,11 +1149,14 @@ const setupLockedDevice = async (serial: string) => {
     (change) => recordRestore(serial, { changedSettings: [change] })
   );
 
-  // oxlint-disable-next-line react-doctor/server-sequential-independent-await -- [P0 device-ui] Both steps drive the one Gboard settings screen, so they cannot overlap.
-  const addedKorean = await addKorean(serial);
+  const addedLanguages: DeviceLanguage[] = [];
+
+  for (const language of languages) {
+    if (await addLanguage(serial, language)) addedLanguages.push(language);
+  }
 
   if (!isEmulator(serial)) {
-    shell(serial, 'cmd', 'notification', 'set_dnd', 'priority');
+    await setZenMode(serial, '1');
   }
 
   const settings = await readGboardSettings(serial);
@@ -871,7 +1173,7 @@ const setupLockedDevice = async (serial: string) => {
   shell(serial, 'input', 'keyevent', 'KEYCODE_HOME');
   recordRestore(serial, { setupCompletedAt: new Date().toISOString() });
   return {
-    addedKorean,
+    addedLanguages,
     changed,
     gboardVersion: gboardVersion(serial),
     settings,
@@ -879,6 +1181,7 @@ const setupLockedDevice = async (serial: string) => {
 };
 
 export const doctorDevice = (serial: string) => {
+  const languages = requestedLanguages();
   const problems: string[] = [];
   const restore = readRestoreState(serial);
   const lock = readJSON<{ owner: number }>(lockPath(serial));
@@ -909,6 +1212,24 @@ export const doctorDevice = (serial: string) => {
     problems.push(
       'the screen size differs from the calibrated one; run calibrate'
     );
+  }
+  for (const language of languages) {
+    const expected = GBOARD_LAYOUTS[language];
+
+    if (
+      !maps.some(
+        (map) =>
+          map.language === language &&
+          map.panel === 'letters' &&
+          map.languageTag === expected.languageTag &&
+          map.variant === expected.variant &&
+          map.letterLabels?.length >= 20
+      )
+    ) {
+      problems.push(
+        `no current calibrated ${language} letter map; run calibrate`
+      );
+    }
   }
 
   return {
@@ -956,8 +1277,8 @@ export const restoreDevice = async (
       )
     );
   }
-  if (restore.koreanLayoutsBefore) {
-    await removeAddedKorean(serial, restore.koreanLayoutsBefore);
+  for (const entry of restore.languageLayoutsBefore) {
+    await removeAddedLanguage(serial, entry.language, entry.layouts);
   }
 
   shell(
@@ -969,14 +1290,14 @@ export const restoreDevice = async (
     restore.selectedSubtype
   );
   if (restore.zenMode !== null) {
-    shell(serial, 'settings', 'put', 'global', 'zen_mode', restore.zenMode);
+    await setZenMode(serial, restore.zenMode);
   }
   shell(serial, 'input', 'keyevent', 'KEYCODE_HOME');
   if (unclosed.length > 0) {
     writeJSON(restorePath(serial), {
       ...restore,
       changedSettings: [],
-      koreanLayoutsBefore: null,
+      languageLayoutsBefore: [],
       forwards: [],
       ownedTargets: unclosed,
       reverses: [],

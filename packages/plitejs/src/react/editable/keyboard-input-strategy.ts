@@ -1,7 +1,3 @@
-import {
-  finishAndroidComposition,
-  hasAndroidComposition,
-} from './android-composition';
 import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react';
 
 import {
@@ -34,6 +30,10 @@ import {
   readPliteViewSelection,
 } from '../view-selection';
 import { isSelectAllHotkey } from '../viewport-commands';
+import {
+  finishAndroidComposition,
+  hasAndroidComposition,
+} from './android-composition';
 import {
   applyEditableCaretMovement,
   getSelectableOwnerHorizontalNavigationTarget,

@@ -27,7 +27,6 @@ import {
 import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
 import { getFlatTreeParentElement } from '../../dom/utils/dom';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
-import { hasAndroidComposition } from './android-composition';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import {
@@ -40,6 +39,7 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
+import { hasAndroidComposition } from './android-composition';
 import {
   type ContentRootOwner,
   createContentRootViewBoundaryGraph,

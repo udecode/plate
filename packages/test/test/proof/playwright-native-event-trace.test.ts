@@ -50,6 +50,7 @@ const dispatchInputEvent = (
 ) => {
   const event = new InputEvent(type, {
     bubbles: true,
+    cancelable: init.cancelable,
     composed: true,
     data: init.data,
     inputType: init.inputType,
@@ -87,6 +88,7 @@ describe('playwright native event trace', () => {
 
     selectTextOffset(text, 5);
     dispatchInputEvent(root, 'beforeinput', {
+      cancelable: true,
       data: '!',
       inputType: 'insertText',
       targetRanges: [
@@ -103,6 +105,7 @@ describe('playwright native event trace', () => {
     text.data = 'hello!';
     selectTextOffset(text, 6);
     dispatchInputEvent(root, 'input', {
+      cancelable: false,
       data: '!',
       inputType: 'insertText',
     });
@@ -110,9 +113,11 @@ describe('playwright native event trace', () => {
     const trace = await takeBrowserNativeEventTrace(locator);
 
     expect(trace.anomalies).toEqual([]);
-    expect(trace.entries.map((entry) => entry.type)).toEqual([
-      'beforeinput',
-      'input',
+    expect(
+      trace.entries.map(({ cancelable, type }) => ({ cancelable, type }))
+    ).toEqual([
+      { cancelable: true, type: 'beforeinput' },
+      { cancelable: false, type: 'input' },
     ]);
     expect(trace.entries[0].targetRanges[0]).toMatchObject({
       collapsed: true,

@@ -8,6 +8,7 @@ import {
   createEditor,
   type DecorationSource,
   Editable,
+  type EditableDOMBeforeInputHandler,
   type Editor,
   EditorRoot,
   type EditorRootProps,
@@ -51,9 +52,11 @@ const createParagraphs = <
 const mountEditor = <TEditor extends EditorRootProps['editor']>(
   editor: TEditor,
   {
+    onDOMBeforeInput,
     placeholder,
     rendering = 'custom-leaf',
   }: {
+    onDOMBeforeInput?: EditableDOMBeforeInputHandler;
     placeholder?: string;
     rendering?: Rendering;
   } = {}
@@ -88,6 +91,7 @@ const mountEditor = <TEditor extends EditorRootProps['editor']>(
     <EditorRoot decorations={[decorations]} editor={editor}>
       {showEditable && (
         <Editable
+          onDOMBeforeInput={onDOMBeforeInput}
           placeholder={placeholder}
           renderLeaf={
             rendering === 'custom-leaf'
@@ -222,8 +226,6 @@ const placeCaretAtEnd = async (
   });
 };
 
-// Records every write a script makes to a node on the path from the
-// composing text node up to the editor root.
 const spyOnWrites = (text: Text, root: HTMLElement) => {
   const writes: string[] = [];
   let native = false;
@@ -618,6 +620,96 @@ const caretIn = (text: Text, offset: number): StaticRangeLike => ({
 });
 
 describe('Android composition boundaries', () => {
+  test.each(['custom-leaf', 'retained'] as const)(
+    'a draft before a trailing soft break excludes the display newline (%s)',
+    async (rendering) => {
+      const mounted = mount(['ab\n'], { rendering });
+
+      try {
+        const text = firstTextNode(mounted.block(0))!;
+        await act(async () => {
+          mounted.root.focus();
+          document.getSelection()!.setBaseAndExtent(text, 2, text, 2);
+          document.dispatchEvent(new Event('selectionchange'));
+          await wait(100);
+        });
+        const ime = composeIn(mounted, 0);
+
+        await ime.start();
+        await ime.update('한글');
+        await act(async () => {
+          ime.text.splitText(ime.text.length);
+        });
+        await ime.end();
+
+        expect({
+          model: blockText(mounted.editor, 0),
+          dom: mounted.block(0).textContent,
+          selection: mounted.editor.read((state) => state.selection()),
+        }).toEqual({
+          model: 'ab한글\n',
+          dom: 'ab한글\n\n',
+          selection: {
+            anchor: { path: [0, 0], offset: 4 },
+            focus: { path: [0, 0], offset: 4 },
+          },
+        });
+      } finally {
+        mounted.rendered.unmount();
+      }
+    }
+  );
+
+  test('a handled replacement after a draft cannot redirect later typing', async () => {
+    const mounted = mountEditor(createParagraphs(['teh ']), {
+      onDOMBeforeInput: (event) => {
+        if (event.inputType === 'insertReplacementText') {
+          event.preventDefault();
+          return true;
+        }
+        return false;
+      },
+    });
+
+    try {
+      await placeCaretAtEnd(mounted, 0);
+      const ime = composeIn(mounted, 0);
+
+      await ime.start();
+      await ime.update('한');
+      await nativeInput(mounted.root, {
+        cancelable: true,
+        data: 'the',
+        inputType: 'insertReplacementText',
+        range: {
+          endContainer: ime.text,
+          endOffset: 3,
+          startContainer: ime.text,
+          startOffset: 0,
+        },
+      });
+      const text = firstTextNode(mounted.block(0))!;
+
+      await nativeInput(mounted.root, {
+        applyNative: () => {
+          text.insertData(5, 'x');
+          document.getSelection()!.setBaseAndExtent(text, 6, text, 6);
+        },
+        cancelable: true,
+        data: 'x',
+        inputType: 'insertText',
+        range: caretIn(text, 5),
+      });
+
+      expect({
+        model: blockText(mounted.editor, 0),
+        dom: mounted.root.textContent,
+      }).toEqual({ model: 'teh 한x', dom: 'teh 한x' });
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
   test('reports only the characters a composition adds to the word it rewrites', async () => {
     const mounted = mount(['hel', 'second']);
     const reports: Array<{ range: unknown; text: string }> = [];
@@ -1311,10 +1403,17 @@ describe('Android composition commits through the editor', () => {
 
       await ime.start();
       for (const next of ['ㅇ', '아', '안', '안ㄴ', '안녀', '안녕']) {
+        fireEvent.keyDown(mounted.root, {
+          isComposing: true,
+          key: 'Unidentified',
+          keyCode: 229,
+          which: 229,
+        });
         await ime.update(next);
       }
 
       const during = placeholderShown();
+      const modelDuring = blockText(mounted.editor, 0);
 
       await nativeInput(mounted.root, {
         cancelable: true,
@@ -1327,16 +1426,53 @@ describe('Android composition commits through the editor', () => {
           state.nodes.children().map((_, index) => state.text.string([index]))
         ),
         during,
+        modelDuring,
         selection: mounted.editor.read((state) => state.selection()),
       }).toMatchObject({
         blocks: ['안녕', ''],
         during: false,
+        modelDuring: '',
         selection: { anchor: { offset: 0, path: [1, 0] } },
       });
     } finally {
       mounted.rendered.unmount();
     }
   });
+
+  test.each([false, true])(
+    'canceling a draft after an IME keydown restores the placeholder (erased %s)',
+    async (erased) => {
+      const mounted = mount([''], { placeholder: 'Type here' });
+
+      try {
+        await placeCaretAtEnd(mounted, 0);
+        const ime = composeIn(mounted, 0);
+
+        fireEvent.keyDown(mounted.root, {
+          key: 'Unidentified',
+          keyCode: 229,
+          which: 229,
+        });
+        await ime.start();
+        if (erased) {
+          await ime.update('ㅇ');
+          await ime.update('');
+        }
+        await ime.end();
+
+        const placeholder = mounted.root.querySelector<HTMLElement>(
+          '[data-editor-placeholder]'
+        );
+
+        expect({
+          shown: !!placeholder && placeholder.style.display !== 'none',
+          text: blockText(mounted.editor, 0),
+        }).toEqual({ shown: true, text: '' });
+      } finally {
+        mounted.rendered.unmount();
+      }
+    }
+  );
 });
 
 describe('Android composition range and recovery', () => {
@@ -2474,6 +2610,60 @@ describe('Android composition over a selection', () => {
 });
 
 describe('Android composition ends when the user leaves the draft', () => {
+  test('leaving a draft across blocks keeps the caret in the tapped surviving block', async () => {
+    const mounted = mount(['abc', 'def', 'tapped', 'untouched']);
+
+    try {
+      const first = firstTextNode(mounted.block(0))!;
+      const second = firstTextNode(mounted.block(1))!;
+      const tapped = firstTextNode(mounted.block(2))!;
+
+      await act(async () => {
+        mounted.root.focus();
+        document.getSelection()!.setBaseAndExtent(first, 1, second, 2);
+        document.dispatchEvent(new Event('selectionchange'));
+        await wait(100);
+      });
+      await act(async () => {
+        fireEvent.compositionStart(mounted.root, { data: '' });
+        first.data = 'a한f';
+        mounted.block(1).remove();
+        document.getSelection()!.setBaseAndExtent(first, 2, first, 2);
+        fireEvent.compositionUpdate(mounted.root, { data: '한' });
+        document.getSelection()!.setBaseAndExtent(tapped, 2, tapped, 2);
+        document.dispatchEvent(new Event('selectionchange'));
+        await wait(100);
+      });
+
+      expect({
+        model: mounted.editor.read((state) => state.children()),
+        selection: mounted.editor.read((state) => state.selection()),
+        nativeText: document.getSelection()!.focusNode?.textContent,
+        nativeOffset: document.getSelection()!.focusOffset,
+      }).toEqual({
+        model: [
+          { type: 'paragraph', children: [{ text: 'a한f' }] },
+          { type: 'paragraph', children: [{ text: 'tapped' }] },
+          { type: 'paragraph', children: [{ text: 'untouched' }] },
+        ],
+        selection: {
+          anchor: { path: [1, 0], offset: 2 },
+          focus: { path: [1, 0], offset: 2 },
+        },
+        nativeText: 'tapped',
+        nativeOffset: 2,
+      });
+      await nativeInput(mounted.root, {
+        cancelable: true,
+        data: 'x',
+        inputType: 'insertText',
+      });
+      expect(blockText(mounted.editor, 1)).toBe('taxpped');
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
   const draftThen = async (
     leave: (mounted: ReturnType<typeof mount>) => void
   ) => {

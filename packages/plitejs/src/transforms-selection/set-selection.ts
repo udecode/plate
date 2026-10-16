@@ -75,6 +75,7 @@ export const setSelection: SelectionMutationMethods['setSelection'] = (
   }
 
   if (Object.keys(oldProps).length === 0) {
+    syncImplicitTargetToCurrentSelection(editor);
     return;
   }
 
@@ -84,8 +85,7 @@ export const setSelection: SelectionMutationMethods['setSelection'] = (
     SelectionApi.isText(selection) &&
     selection.marks !== undefined &&
     !Object.hasOwn(newProps, 'marks') &&
-    ((newProps.anchor &&
-      !PointApi.equals(selection.anchor, newProps.anchor)) ||
+    ((newProps.anchor && !PointApi.equals(selection.anchor, newProps.anchor)) ||
       (newProps.focus && !PointApi.equals(selection.focus, newProps.focus)))
   ) {
     const { marks: _marks, ...selectionWithoutMarks } = nextSelection;

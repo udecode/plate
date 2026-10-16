@@ -34,8 +34,8 @@ import {
   getNodeKeyDOMValue,
 } from '../editable/runtime-editor-api';
 import { recordPliteReactRender } from '../render-profiler';
-import { useRequiredEditorSelectorContext } from './use-editor-selector';
 import { EditableDOMRuntimeContext } from './use-claim-editable-dom-commit';
+import { useRequiredEditorSelectorContext } from './use-editor-selector';
 import { useHydrated } from './use-hydrated';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 

@@ -16,7 +16,9 @@ test('commits a Korean word typed under the placeholder once, then Enter splits 
   const trace = await device.trace();
 
   expect(trace.some((entry) => entry.type === 'compositionstart')).toBe(true);
-  await editor.assert.renderedBlockText(0, '안녕');
+  await editor.assert.modelBlockTexts(['']);
+  await editor.assert.placeholderVisible(false);
+  await editor.assert.renderedDOMShape({ blockIndex: 0, innerText: '안녕' });
   await device.keyboard.type('\n');
   await expect.poll(() => editor.get.modelBlockTexts()).toEqual(['안녕', '']);
 
@@ -24,4 +26,12 @@ test('commits a Korean word typed under the placeholder once, then Enter splits 
 
   expect(caret?.path[0]).toBe(1);
   expect(device.keyboard.shown()).toBe(true);
+
+  await device.keyboard.type('ㄷㅏ ');
+  await editor.assert.modelBlockTexts(['안녕', '다 ']);
+  await editor.assert.renderedBlockText(1, '다 ');
+
+  const followUpCaret = await caretLeaf(editor);
+
+  expect(followUpCaret?.before).toBe('다 ');
 });

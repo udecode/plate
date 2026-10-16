@@ -410,6 +410,7 @@ export const startBrowserNativeEventTrace = async (
         }
 
         const entry: BrowserNativeEventTraceEntry = {
+          cancelable: event.cancelable,
           clientX: pointerEvent?.clientX ?? null,
           clientY: pointerEvent?.clientY ?? null,
           data: inputEvent?.data ?? compositionEvent?.data ?? null,

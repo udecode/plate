@@ -163,22 +163,50 @@ const readLineTextNodes = (line: Element) => {
 // Chrome edits, splits and replaces text nodes while it composes, so the
 // line's text is read from every text node in DOM order, not from the nodes
 // React rendered.
+const readLineTextParts = (line: Element) => {
+  const parts = readLineTextNodes(line).map((node) => ({
+    node,
+    text: node.data.replace(ZERO_WIDTH_SPACE_RE, ''),
+  }));
+
+  for (let index = parts.length - 1; index >= 0; index -= 1) {
+    const part = parts[index];
+
+    if (part.text === '') continue;
+    if (
+      part.text.endsWith('\n') &&
+      part.node.parentElement?.closest(
+        '[data-editor-string][data-editor-length]'
+      )
+    ) {
+      part.text = part.text.slice(0, -1);
+    }
+    break;
+  }
+
+  return parts;
+};
+
 const readLineText = (line: Element) =>
-  readLineTextNodes(line)
-    .map((node) => node.data.replace(ZERO_WIDTH_SPACE_RE, ''))
+  readLineTextParts(line)
+    .map(({ text }) => text)
     .join('');
 
 const readLineOffset = (line: Element, node: Node, offset: number) => {
   let total = 0;
 
-  for (const text of readLineTextNodes(line)) {
-    if (text === node) {
+  for (const part of readLineTextParts(line)) {
+    if (part.node === node) {
       return (
         total +
-        text.data.slice(0, offset).replace(ZERO_WIDTH_SPACE_RE, '').length
+        Math.min(
+          part.node.data.slice(0, offset).replace(ZERO_WIDTH_SPACE_RE, '')
+            .length,
+          part.text.length
+        )
       );
     }
-    total += text.data.replace(ZERO_WIDTH_SPACE_RE, '').length;
+    total += part.text.length;
   }
 
   return line.contains(node) ? total : null;
@@ -394,12 +422,19 @@ const listenForLeave = (
 
     // The word's commit puts the caret after it, so the caret the user moved
     // to is read first and put back.
-    const moved =
-      selection?.rangeCount &&
-      ReactEditor.resolveRange(editor, selection, { exactMatch: false });
+    const moved = selection?.rangeCount
+      ? ReactEditor.resolveRange(editor, selection, { exactMatch: false })
+      : null;
+    const target = moved ? editor.anchor(moved, { deletion: 'nearest' }) : null;
 
-    end('selection');
-    if (moved) editor.update((tx) => tx.selection.set(moved));
+    try {
+      end('selection');
+      const range = target?.resolve();
+
+      if (range) editor.update((tx) => tx.selection.set(range));
+    } finally {
+      target?.release();
+    }
   };
   const onFocusOut = () => end('blur');
   const onVisibilityChange = () => {
@@ -436,7 +471,7 @@ const hidePlaceholder = (editor: ReactRuntimeEditor) => {
   placeholder.style.display = 'none';
 
   return () => {
-    placeholder.style.display = display;
+    placeholder.style.display = display === 'none' ? '' : display;
   };
 };
 
@@ -834,7 +869,7 @@ export const settleAndroidCompositionBeforeInput = ({
   event: InputEvent;
   inputController: EditableInputController;
   setComposing: (composing: boolean) => void;
-}) => {
+}): Range | null => {
   if (isAndroidCompositionInputType(event.inputType)) {
     openAndroidComposition({
       editor,
@@ -842,12 +877,12 @@ export const settleAndroidCompositionBeforeInput = ({
       setComposing,
       text: event.data,
     });
-    return;
+    return null;
   }
 
   const run = RUNS.get(inputController);
 
-  if (!run) return;
+  if (!run) return null;
 
   const line = ReactEditor.resolveDOMNode(editor, run.base.lineKey);
   const [range] =
@@ -869,11 +904,12 @@ export const settleAndroidCompositionBeforeInput = ({
 
   const read = readLineSegments(editor, run.base.lineKey);
 
-  if (!read || !offsets || offsets[0] === null || offsets[1] === null) return;
+  if (!read || !offsets || offsets[0] === null || offsets[1] === null) {
+    return null;
+  }
 
   const anchor = toModelPoint(editor, toKeyedPoint(read.segments, offsets[0]));
   const focus = toModelPoint(editor, toKeyedPoint(read.segments, offsets[1]));
 
-  inputController.state.androidCompositionTarget =
-    anchor && focus ? { anchor, focus } : null;
+  return anchor && focus ? { anchor, focus } : null;
 };

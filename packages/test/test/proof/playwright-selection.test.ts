@@ -7,6 +7,10 @@ import {
   takeSelectionSnapshot,
 } from '../../src/playwright';
 import { BROWSER_HANDLE_KEY } from '../../src/playwright/constants';
+import {
+  getRenderedBlockDOMShape,
+  getRenderedBlockDOMShapes,
+} from '../../src/playwright/dom-shape';
 import { waitForSelectionRange } from '../../src/playwright/selection-handle';
 import { waitForSelectionSync } from '../../src/playwright/selection-snapshots';
 
@@ -38,6 +42,49 @@ describe('playwright selection snapshots', () => {
     if (GlobalRegistrator.isRegistered) {
       await GlobalRegistrator.unregister();
     }
+  });
+
+  test('reads top-level block hosts through wrappers without hiding raw rendered text', async () => {
+    document.body.innerHTML = `
+      <div data-editor data-editor-node="value">
+        <p data-editor-node="element" data-editor-path="0">direct</p>
+        <div class="editor-draggable">
+          <div class="editor-gutterLeft" contenteditable="false">gutter</div>
+          <div class="editor-blockWrapper">
+            <p data-editor-node="element" data-editor-path="1"><span data-editor-node="text" data-editor-path="1,0"><span data-editor-string data-editor-length="1">한꼬리</span></span><a data-editor-node="element" data-editor-path="1,1">link</a></p>
+          </div>
+        </div>
+        <div class="editor-draggable">
+          <div class="editor-blockWrapper">
+            <blockquote data-editor-node="element" data-editor-path="2"><p data-editor-node="element" data-editor-path="2,0"><span data-editor-node="text" data-editor-path="2,0,0"><span data-editor-zero-width="n" data-editor-length="0">\uFEFF<br /></span></span></p></blockquote>
+          </div>
+          <div data-editor data-editor-node="value">
+            <p data-editor-node="element" data-editor-path="0">another editor</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const root = createRootLocator(
+      document.querySelector<HTMLElement>('[data-editor]')!
+    );
+    const shapes = await getRenderedBlockDOMShapes(root);
+
+    expect(
+      shapes.map(({ index, textContent }) => ({ index, textContent }))
+    ).toEqual([
+      { index: 0, textContent: 'direct' },
+      { index: 1, textContent: '한꼬리link' },
+      { index: 2, textContent: '' },
+    ]);
+    const emptyBlock = await getRenderedBlockDOMShape(root, 2);
+
+    expect(emptyBlock.zeroWidthNodes).toMatchObject([
+      { hasBr: true, hasFEFF: true, kind: 'n', length: '0' },
+    ]);
+    await expect(getRenderedBlockDOMShape(root, 3)).rejects.toThrow(
+      'Missing rendered block DOM shape for index 3'
+    );
   });
 
   test('normalizes zero-width DOM artifact offsets back to editor offset zero', async () => {

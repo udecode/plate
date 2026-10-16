@@ -51,14 +51,14 @@ type WitnessEvent = Pick<
   | 'clientY'
   | 'data'
   | 'inputType'
+  | 'isComposing'
   | 'isTrusted'
   | 'key'
+  | 'keyCode'
   | 'seq'
   | 'type'
 >;
 
-// Gboard reports every key but Enter and Backspace as Unidentified, and a
-// suggestion-strip tap as Unidentified keydowns; a content touch sends none.
 const expectedKey = (step: DeviceWitnessStep): DeviceWitnessKey => {
   if (step.kind === 'key') return step.key;
   return step.kind === 'strip' ? 'Unidentified' : null;
@@ -69,7 +69,9 @@ const expectedKey = (step: DeviceWitnessStep): DeviceWitnessKey => {
  *
  * Every event that can deliver input must be trusted, and every event must
  * fall inside a step window. Every `keydown` must carry the key its step
- * produces. Every `beforeinput` needs its own preceding `keydown`, except a
+ * produces, be an IME companion of a trusted Enter/13 in that same step, or
+ * repeat and close the composition already active before that Enter step.
+ * Every `beforeinput` needs its own preceding `keydown`, except a
  * composition commit carried by a content touch, and every `input` needs its
  * own preceding `beforeinput` of the same input type. A key or strip step
  * that expects a key must show one. Content touches must deliver a
@@ -91,6 +93,21 @@ export const judgeDeviceWitness = ({
   const traced = events
     .filter((event) => event.type !== 'selectionchange')
     .toSorted((a, b) => a.seq - b.seq);
+  const enterSteps = new Set(
+    ordered.filter(
+      (step) =>
+        expectedKey(step) === 'Enter' &&
+        traced.some(
+          (event) =>
+            event.seq >= step.seqStart &&
+            event.seq < step.seqEnd &&
+            event.type === 'keydown' &&
+            event.isTrusted &&
+            event.key === 'Enter' &&
+            event.keyCode === 13
+        )
+    )
+  );
 
   for (const [index, step] of ordered.entries()) {
     const next = ordered[index + 1];
@@ -107,6 +124,7 @@ export const judgeDeviceWitness = ({
 
   let compositionOpen = false;
   let compositionData: string | null = null;
+  let stepCompositionData: string | null = null;
   let pendingKeydowns = 0;
   // A canceled beforeinput sends no input, so unmatched ones stay pending.
   let pendingBeforeInputs: Array<string | null> = [];
@@ -114,7 +132,7 @@ export const judgeDeviceWitness = ({
   const pointerSteps = new Set<DeviceWitnessStep>();
   const keyedSteps = new Set<DeviceWitnessStep>();
 
-  for (const event of traced) {
+  for (const [index, event] of traced.entries()) {
     const step =
       ordered.find(
         (candidate) =>
@@ -123,6 +141,7 @@ export const judgeDeviceWitness = ({
     const at = { seq: event.seq, step: step?.label ?? null };
 
     if (step !== currentStep) {
+      stepCompositionData = compositionOpen ? compositionData : null;
       currentStep = step;
       pendingKeydowns = 0;
       pendingBeforeInputs = [];
@@ -149,10 +168,37 @@ export const judgeDeviceWitness = ({
 
     if (event.type === 'keydown') {
       const key = expectedKey(step);
+      const [update, before, input, end] = traced.slice(index + 1, index + 5);
+      const compositionCommit =
+        key === 'Enter' &&
+        compositionOpen &&
+        stepCompositionData !== null &&
+        compositionData === stepCompositionData &&
+        event.isComposing === true &&
+        update?.type === 'compositionupdate' &&
+        update.isTrusted &&
+        update.data === compositionData &&
+        before?.type === 'beforeinput' &&
+        before.isTrusted &&
+        before.isComposing === true &&
+        before.inputType === 'insertCompositionText' &&
+        before.data === compositionData &&
+        input?.type === 'input' &&
+        input.isTrusted &&
+        input.isComposing === true &&
+        input.inputType === 'insertCompositionText' &&
+        input.data === compositionData &&
+        end?.type === 'compositionend' &&
+        end.data === compositionData &&
+        end.seq < step.seqEnd;
       // An IME-driven delete can arrive as Unidentified instead of Backspace.
       const matches =
         event.key === key ||
-        (key === 'Backspace' && event.key === 'Unidentified');
+        (key === 'Backspace' && event.key === 'Unidentified') ||
+        (event.isTrusted &&
+          event.key === 'Unidentified' &&
+          event.keyCode === 229 &&
+          (enterSteps.has(step) || compositionCommit));
 
       if (!matches) {
         violations.push({
