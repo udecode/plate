@@ -15,6 +15,7 @@ jobs:
   verify:
     name: Verify changeset policy
     runs-on: ubuntu-latest
+    if: ${{ vars.SKIP_NEXT_CI != 'true' || github.base_ref != 'next' }}
     permissions:
       contents: read
       pull-requests: read
