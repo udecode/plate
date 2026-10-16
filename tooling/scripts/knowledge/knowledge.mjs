@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, normalize } from 'node:path';
 
@@ -631,6 +632,10 @@ function parseTests(text, file) {
         }
         const declared = {
           file,
+          hash: createHash('sha256')
+            .update(text.slice(node.start, node.end))
+            .digest('hex')
+            .slice(0, 12),
           line: node.loc.start.line,
           title,
           suite: [],

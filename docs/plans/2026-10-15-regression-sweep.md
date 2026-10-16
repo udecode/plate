@@ -8,7 +8,7 @@ review_inputs: [docs/plans/topics/proof.md, .agents/rules/verify.mdc, .agents/ru
 
 # Sweep: aim the team's hands-on beta pass at what tests missed
 
-Status: planning: waiting on your go, which also approves the trial after review, then your commit
+Status: building: steps 1.1 to 1.5 built and reviewed, waiting on their PR into next; step 1.6 waits on zbeyens's seeded preview
 Topic: proof
 Playbook: plan
 
@@ -16,11 +16,11 @@ Playbook: plan
 
 ### What will change?
 
-natamox tests every page for a few recorded minutes beside the page it matches. Round 1 checks whether six set moves beat free clicking at catching old bugs we put back. Each find becomes an issue, then a tested fix.
+Everything natamox needs before round 1 is built: the 129-page test list, a script that checks every page loads, the tester guide and the issue and fix rules. That script already found HTML Export broken on beta.
 
 ### What could go wrong?
 
-Round 1 takes about three tester days, and per-page time does not shrink. Round 1 shows whether the moves help. You asked for a skill like verdict; we build none, because in trials its rules did no better than verify.
+Round 1 waits on your seeded preview and takes about three tester days; the six moves stay untested until then. The page script always fails in WebKit, which warns about a header on the 45 pages with Plate Plus frames.
 
 ## Teach
 
@@ -65,6 +65,15 @@ Each find becomes an issue, then a fix with a test tagged by the issue. The issu
 | Videos | Session recordings stay on natamox's machine or on the issue, never in the repo | Store clips in the repo | store clips | detail |
 | Page link | A new proof page, Y6QsX8Ny4kbj1XG5XC3Pd1, because the old one, E6bAkaDFgx3iSEVtRV2oSH, now reads as another account's and refuses updates | Keep trying the old page | old page | detail |
 | Plan review | Three models designed it twice, trials tested each part an agent can run, then three review rounds read it | Skip review | skip review | detail |
+| Hand-built example pages | HTML Export and Server-Side join P2, because the plan pairs HTML Export with its stable page | Leave them out of P2 | registry examples only | small |
+| Chinese pages in the page check | Check only Chinese pages that have their own text; the rest just show the English page, which is already checked. This is less than step 1.4 asked (look) | Open every Chinese address too | every chinese page | small |
+| Pages renamed on platejs.org | Eight pairs set by hand, such as Find with Find Replace and Details with Toggle; five pages marked beta-only, such as Pagination and the Selection guide; the Demo example page stays unresolved, because main's source has it but platejs.org answers 404 (look) | Leave each one unresolved until you pair it | pair later | small |
+| Two issue-draft checks | The main and next case is skipped, and the one-video case ran on a P1 recording instead of a P3 one, because both paths keep their old text and the Slate and one-video drafts passed (look) | Record a main and next pair and a P3 find, then run both | main pair check | small |
+| The knowledge check in step 1.2 | Step 1.2 closes with the same failures as before, because that check was already failing before this work and another task owns fixing it (look) | Keep step 1.2 open until the knowledge check passes | kb green first | small |
+| Who the tester guide names | The tester, so a second tester can follow it unchanged | Name natamox | name natamox | detail |
+| Pages with no editor by design | Server-Side and the annotation anchors page load without waiting for an editor | Report them as missing an editor | flag editorless | detail |
+| Docs app pages in the page check | The page check also opens the docs pages that have no doc file, in English and Chinese, and the old release pages. Of these, only a Chinese copy of a demo page waits for the editor to load | Open only the routes step 1.4 names | step routes only | detail |
+| What a test hash covers | The test's exact text, so even reformatting it changes the hash, and its recheck stays on the list until someone checks the test again | Ignore whitespace, which also hid a changed expected string | ignore whitespace | detail |
 
 ## Changed since the last page
 
@@ -113,7 +122,8 @@ Plate keeps CKEditor's written human steps only for known bugs. Like Lexical, it
 ## Main changes
 
 - `.agents/rules/verify/references/tester-pass.md` holds the tester's session, the six moves as round 1's candidate, the find note, the browser rotation, the rechecks and how to prepare a round. `verify.mdc` links it, and `verify` prepares each round from it.
-- `tooling/scripts/page-health.mjs --list` prints each round's session pages by priority from the example registry, `hand-drive.mjs`'s docs reader and the registry's example list. Without a flag it opens every deployed docs and example route in Chromium, Firefox and WebKit and prints its page errors.
+- `tooling/scripts/page-health.mjs --list` prints each round's session pages by priority from the example registry, the docs reader and the registry's example list. It asks platejs.org whether each P2 page has a twin at the same path, and its `STABLE_TWINS` and `BETA_ONLY` tables settle the pages that differ. Without a flag it opens every deployed docs and example route in Chromium, Firefox and WebKit and prints its page errors.
+- The docs reader moves out of `hand-drive.mjs` into `tooling/scripts/docs-sources.mjs`, which both scripts import, so the page list and the hand drive read the same docs pages.
 - `pnpm kb` prints each test's source hash beside its gate, from the parse it already makes.
 - Maintainer's issue-draft takes a Slate, stable Plate or other-editor recording as the baseline of a two-video report and labels it by its source, instead of assuming `main` and `next`.
 - The project Bug fix playbook puts a sweep find's test at the lowest layer that sees it, tags it with the published issue as `[plate#N]`, writes the test and its hash on the find's recheck, and puts a Plate browser test in `apps/www/tests/browser/regressions/`.
@@ -209,17 +219,17 @@ The execution playbook is Build (`.agents/playbooks/build.md`). natamox runs it,
 
 ### Phase 1. Build the round inputs and run round 1
 
-- [ ] 1.1 Fix issue-draft's two-video baseline. In `.agents/rules/maintainer/references/issue-draft.md:61-72`, two recordings are a baseline and a current beta bug; the baseline keeps its source label, `main`, Slate, stable Plate or another editor's name, and the one question asked when the evidence is ambiguous names those sources. A find with no reference page keeps issue-draft's one-video and text paths. Proof: a draft from a beta recording and a Slate recording of the forced-layout Enter find labels Slate as its baseline and asks no `main` or `next` question; a draft from a `main` and a `next` recording reads as before; a P3 draft from one video reads as before.
-- [ ] 1.2 Print each test's source hash. `tooling/scripts/knowledge/knowledge.mjs` hashes each test's own source from the parse it already makes (`knowledge.mjs:632-645`), and `pnpm kb <id>` prints the hash beside the test's gate. Proof: a knowledge test where editing one test's body changes its hash, while editing another test in the same file or a line outside both leaves it; `pnpm -s kb check` passes.
-- [ ] 1.3 Tag sweep finds in Bug fix. Add one delta to `.agents/playbooks/bug-fix.md`. When the report is a sweep find, the test lands at the lowest layer that sees the bug, and its title carries the published issue's `[plate#N]` tag beside any `[EDIT-…]` tag. The fixer reads the issue first and tags only a test that checks all of it. Then it writes `covered-by:` on the find's recheck in the round's plan: the test's path, its title and the hash `pnpm kb plate#N` prints. A Plate browser test goes in `apps/www/tests/browser/regressions/`, which step 2.1's lane runs. Proof: `check-playbooks.mjs` passes with the delta's anchor, and the playbook text names the tag, the layer, the whole-issue rule, `covered-by` and the folder.
-- [ ] 1.4 Write the page script. `tooling/scripts/page-health.mjs --list` prints the round's session pages by priority:
+- [x] 1.1 Fix issue-draft's two-video baseline. In `.agents/rules/maintainer/references/issue-draft.md:61-72`, two recordings are a baseline and a current beta bug; the baseline keeps its source label, `main`, Slate, stable Plate or another editor's name, and the one question asked when the evidence is ambiguous names those sources. A find with no reference page keeps issue-draft's one-video and text paths. Proof: a draft from a beta recording and a Slate recording of the forced-layout Enter find labels Slate as its baseline and asks no `main` or `next` question; a draft from a `main` and a `next` recording reads as before; a P3 draft from one video reads as before. Closed by `docs/plans/artifacts/2026-10-15-regression-sweep/build/trial/e-slate-pair.answer.md` and `docs/plans/artifacts/2026-10-15-regression-sweep/build/trial/g-one-video.answer.md`; the main and next case did not run, as the main pair check default says.
+- [x] 1.2 Print each test's source hash. `tooling/scripts/knowledge/knowledge.mjs` hashes each test's own source from the parse it already makes (`knowledge.mjs:632-645`), and `pnpm kb <id>` prints the hash beside the test's gate. Proof: a knowledge test where editing one test's body changes its hash, while editing another test in the same file or a line outside both leaves it; `pnpm -s kb check` passes. Closed by `docs/plans/artifacts/2026-10-15-regression-sweep/build/mutate/hash-whole-file-a2.log` and `docs/plans/artifacts/2026-10-15-regression-sweep/build/mutate/hash-title-only-a2.log`; `docs/plans/artifacts/2026-10-15-regression-sweep/build/kb-check-a1.log` holds the same 18 findings, each printed twice, as `docs/plans/artifacts/2026-10-15-regression-sweep/build/kb-check-head-a1.log` at base, so the check still fails, as the kb green first default says.
+- [x] 1.3 Tag sweep finds in Bug fix. Add one delta to `.agents/playbooks/bug-fix.md`. When the report is a sweep find, the test lands at the lowest layer that sees the bug, and its title carries the published issue's `[plate#N]` tag beside any `[EDIT-…]` tag. The fixer reads the issue first and tags only a test that checks all of it. Then it writes `covered-by:` on the find's recheck in the round's plan: the test's path, its title and the hash `pnpm kb plate#N` prints. A Plate browser test goes in `apps/www/tests/browser/regressions/`, which step 2.1's lane runs. Proof: `check-playbooks.mjs` passes with the delta's anchor, and the playbook text names the tag, the layer, the whole-issue rule, `covered-by` and the folder. Closed by `docs/plans/artifacts/2026-10-15-regression-sweep/build/check-playbooks-a1.log`.
+- [x] 1.4 Write the page script. Closed by `docs/plans/artifacts/2026-10-15-regression-sweep/build/mutate/no-twin-counts-as-paired-a3.log`, `docs/plans/artifacts/2026-10-15-regression-sweep/build/page-health-planted-a2.log`, `docs/plans/artifacts/2026-10-15-regression-sweep/build/page-health-unplanted-a1.log` and `docs/plans/artifacts/2026-10-15-regression-sweep/pr/page-health-beta-a3.log`. `tooling/scripts/page-health.mjs --list` prints the round's session pages by priority:
   - P1 is every path in `UPSTREAM_PLITE_EXAMPLE_PATHS` that `HIDDEN_EXAMPLES` leaves out, 22 today, beside its Slate page; `android-tests` belongs to the Android device lane.
-  - P2 is every English docs page that `readSources` in `tooling/scripts/hand-drive.mjs` finds with a `<ComponentPreview>`, every registry example that no such page shows except the frames of other products, and the playground, beside the same page on platejs.org; about 83 pages. Component routes are left out, because each one either shows no editor or repeats an example's demo. One table in the script holds the pairs whose names differ, such as `slate-to-html` and `html-export`.
+  - P2 is every English docs page that `readSources` in `tooling/scripts/docs-sources.mjs` finds with a `<ComponentPreview>`, every registry example that no such page shows except the frames of other products, and the playground, beside the same page on platejs.org; about 83 pages. Component routes are left out, because each one either shows no editor or repeats an example's demo. One table in the script holds the pairs whose names differ, such as `slate-to-html` and `html-export`.
   - P3 is every other registered Plite example, hidden and experimental ones included. P4 is a P2 page with no stable twin.
   - A page whose pairing is unsettled prints as unresolved and keeps the round open.
 
   With no flag, the script opens every docs and example route that `doc-page.tsx` and the example registry serve on beta, component routes included, in Chromium, Firefox and WebKit. It waits for the page to load, and for its editor only on a page that shows a demo, then prints each page error, rendered Not Found or failed status. Proof: tests over a fixture registry and docs tree put each session page in exactly one of P1 to P4 or unresolved, and leave a component route out of the session list but in the health run; a run against a local www server with one demo planted to throw on load reports that page alone; then one logged run against beta.
-- [ ] 1.5 Write the tester reference. Create `.agents/rules/verify/references/tester-pass.md` and link it from `.agents/rules/verify.mdc`. It says:
+- [x] 1.5 Write the tester reference. Closed by `docs/plans/artifacts/2026-10-15-regression-sweep/build/sync-resources-a2.log`, `docs/plans/artifacts/2026-10-15-regression-sweep/build/trial/b-round2.grade.txt` and `docs/plans/artifacts/2026-10-15-regression-sweep/build/trial/c-next.answer.md`. Create `.agents/rules/verify/references/tester-pass.md` and link it from `.agents/rules/verify.mdc`. It says:
   - A session is one recorded, timed visit to one page and scope in one browser: 8 minutes for P1 and P2, 6 for P3 and P4. P1 and P2 sessions have the reference page beside beta and cover shared behavior; a paired page whose beta adds features gets a second session for them in P3 or P4. The tester builds state instead of resetting it, follows anything odd at once, and never clicks to repair focus.
   - The six moves, applied live to each control the tester finds: then-type (act, then type without clicking, Backspace, Enter, undo, type again); again-elsewhere (repeat at a second spot, after Escape and after undo); other-route (keyboard, toolbar, slash menu, block menu, the browser's own menus, native pickers, plain-text paste, paste from another app); edge-start (start at a block, cell or mark boundary, an empty block, or beside a void, table or image); inside-other (inside each other block type on the page, and in suggesting or read-only mode); moved-ground (scrolled, inside a scrolled container, in a narrow window, or with content taller than the screen). The tester watches the caret, selection paint, focus, where menus land and layout during each move. The moves map the census kinds: features used together to inside-other, focus and first click to then-type and again-elsewhere, native keys and clipboard to other-route, layout during a gesture to moved-ground, drag and drop to edge-start, and caret and selection paint to the watch list. The section says the moves are a candidate until round 1's trial.
   - Browsers take turns along Chrome, Safari, Firefox, iPhone. In round 1, the first page in the list starts in Chrome, the second in Safari, the third in Firefox, the fourth on the iPhone, and so on. Each later round moves every page one step along, so each round covers all four and each page sees all four in four rounds.
@@ -270,8 +280,84 @@ Tracked here until phase 1 closes, then in the proof subject's Open work.
 - Real Safari for Mac through `safaridriver`, so Safari rechecks can leave the hand list; it needs `safaridriver --enable` once with an admin password on the machine that runs it (inferred from Apple's setup, not run). owner: natamox. stop: a plan that adds it or drops it, or 2027-01-15.
 - A real Android phone, for Android rechecks and the device lane, which the proof subject's Android review is waiting on. owner: zbeyens. stop: that review's plan closes.
 - A test weakened through a shared helper keeps its hash, because the hash covers the test's own source only. owner: natamox. stop: round 2's tally shows whether a retired recheck's bug came back, or 2027-01-15.
+- The HTML Export page shows a server error on beta, while its platejs.org twin renders, as the first page check found. It joins round 1's rechecks. owner: natamox. stop: step 1.7 writes it into round 1's plan.
+- WebKit logs on 45 docs pages that the Plate Plus frames send an X-Frame-Options allow-from directive naming next.platejs.org, which it does not recognize and ignores. Whether any frame fails to load is unchecked. owner: zbeyens. stop: zbeyens checks those frames on beta, or drops it.
+- The Demo example page has no settled twin. The source on `main` routes it, but platejs.org answers 404, so the page list prints it unresolved. owner: natamox. stop: step 1.7 names its twin or lists it as beta-only.
+- natamox proposes splitting round 1 between two testers, natamox and Sin, with 64 pages each, matched to the areas each fixed lately. natamox takes every P1 and P3 page and 21 P2 pages; Sin takes the other 59 P2 pages and every P4 page. The page list, the minutes and who runs each recheck are on the split page, https://claude.ai/artifact/5jB9HGL3ujyo9Zx99T5smK. The planted trial then needs both pages of each pair in one tester's pages and a tester name on each session row. owner: natamox, who asks zbeyens. stop: zbeyens answers before step 1.6 seeds the trial.
+- Three small `page-health.mjs` changes the diff review deferred: find routes in one place with `docs-sources.mjs`, keep known third-party frame noise from turning the exit code red, and warn about a `STABLE_TWINS` or `BETA_ONLY` entry that matches no page. owner: natamox. stop: step 1.7, or the next change to how the script finds routes.
 
 ## Close
+
+### Diff review before the PR, 2026-10-16
+
+natamox asked for a review of this build and a PR into `next` for zbeyens to merge, because natamox may not be able to push `next`. Two diff panel rounds ran with all three seats, beside a thermo-nuclear review. Nothing is committed until the PR.
+
+**Reversals and deviations.** Firefox now runs in the page check. The script gives Playwright's Firefox its own app-data folder, as the repository's Playwright configs already do. So the firefox first default and its Open work item are gone, and step 1.4's beta proof covers all three engines. The page check also opens the docs pages built as app pages, English and Chinese, and the release pages of older majors, beyond the routes step 1.4 names. A Chinese app page waits for an editor when its English page does. A test's hash now covers its exact source, so a reformat changes it too. Each of the last two is a Defaults row.
+
+**What landed.**
+
+- `knowledge.mjs` hashes each test's exact source instead of its whitespace-collapsed display text.
+- `page-health.mjs` opens the English and Chinese docs app pages and the release pages of older majors, and launches Firefox with its own app-data folder.
+- `verify.mdc`, its skill copy and step 1.4 name `docs-sources.mjs` as the home of `readSources`, and `verify.mdc` names `healthRoutes` as the list of every route the page check opens.
+
+**Proof and its limits.**
+
+- Reverting each fix alone on frozen commit `60018211` fails its test: the hash test on a string's inner whitespace and a line break after a comment, and the page-health test on the docs app pages and on a dynamic route segment.
+- Firefox launched in 1.4 s with the folder set, and timed out after 45 s without it.
+- The beta run opened 590 routes per engine. Chromium and Firefox reported only the broken HTML Export page. WebKit also reported the embeds example's third-party frame errors and the Plate Plus header on 45 pages; the Potion page reported nothing this time.
+- Round 2's fixes bring the check to 600 routes. Reverting each alone on frozen commit `b5763ef7` fails the page-health test: the Chinese app pages, the older release pages, the Chinese editor wait and the Chinese Server-Side page. On beta, the 123 Chinese routes report only the Chinese HTML Export copy in all three engines, plus the Plate Plus header in WebKit. The five release routes report nothing.
+- `pnpm check` fails in lint, type-aware lint, the lint baseline and typecheck, each on files this PR does not touch. The working tree differs from `HEAD` only in this PR's files. The lead stopped the run in its test step to apply the fixes, after a slow list test had timed out.
+
+**Counts.** Two panel rounds. Round 1 applied 1 critical and 3 warnings and deferred 3 nits to Open work. Round 2 found no critical; it applied 2 warnings and 2 nits and dismissed 1 nit. The thermo-nuclear review found no structural problem beyond two of round 1's points.
+
+**Attention**, panel round 1 on claude-opus-5-5 @high, gpt-6-astra @xhigh and gpt-6.1-sol @xhigh, with each response:
+
+- **Critical.** A test's hash ignored whitespace inside strings and line breaks after comments, so a weakened test kept its hash (Sol, Astra; Opus as a warning). The hash now reads the exact source.
+- **Warning.** The page check left out the docs app pages, such as `/docs/plugins` (Sol, Astra). It now opens them.
+- **Warning.** Firefox failed because the script set no app-data folder, not because of the machine (Opus). It now sets one.
+- **Warning.** Two instructions still placed `readSources` in `hand-drive.mjs` (Opus; Sol and Astra as nits). Both now name `docs-sources.mjs`.
+- **Warning, round 2.** The release pages of older majors were still left out (Sol, Astra; Opus as a nit). The check now opens them from the app's own release helper.
+- **Warning, round 2.** The Chinese docs app pages were left out, though the plan checks Chinese pages with their own text (Opus). The check now opens them, each with its English page's editor wait.
+
+### Build of steps 1.1 to 1.5, 2026-10-16
+
+natamox's session built steps 1.1 to 1.5 once natamox said to start. Step 1.6 stays with zbeyens. Nothing is committed; the owner commits after review.
+
+**Reversals and deviations.** No approved pick changed. The build made these calls, each a Defaults row: HTML Export and Server-Side join P2; eight renamed pages are paired by hand and five are marked beta-only, while the Demo example page stays unresolved; Server-Side and the annotation anchors page load without waiting for an editor; and the tester guide says "the tester" instead of natamox. Four proofs ran narrower than approved, and each closes on a look default with an accepted log row. Step 1.4's page check leaves out Chinese pages that have no file of their own, and its beta run covered Chromium and WebKit, because Firefox does not launch on this Mac. Step 1.1 skipped the main and next draft case, because two recordings of issue 5088 showed no block selection on either site, and ran its one-video case on a P1 recording. Step 1.2's knowledge check fails at base with the same findings.
+
+**What landed.**
+
+- `tooling/scripts/page-health.mjs` and its test. The docs reader moved into `tooling/scripts/docs-sources.mjs`, which `hand-drive.mjs` now imports.
+- `pnpm kb` prints each test's source hash beside its gate.
+- The project Bug fix playbook's sweep-find delta.
+- Issue-draft's two-video baseline from `main`, Slate, stable Plate or another editor.
+- `.agents/rules/verify/references/tester-pass.md`, its section in `verify.mdc`, and the generated skill copies.
+
+**Proof and its limits.**
+
+- The page-health tests pass, and six mutants that break the priorities, the twin check, the frame and Chinese filters and the component flag each fail them, on frozen commit `069a53b6`.
+- A dev server from a worktree at `fa0ac06f55`, with the plaintext example planted to throw, reported that page alone among 44 Plite routes in Chromium, and nothing once the plant was removed.
+- The beta run opened 586 routes per engine. Chromium reported only the broken HTML Export page. WebKit also reported third-party Vimeo and Cloudflare frame errors on the embeds example, the Plate Plus header error on 45 pages and the Potion header error on one. Firefox timed out at launch.
+- The hash test passes, and hashing the whole file or only the title fails it. `pnpm -s kb check` stays red with the same 18 findings at base, each printed twice; suggested task `t_3ea68f2e` owns that check.
+- `check-playbooks.mjs` passes on the Bug fix delta under pstack 0.9.67, the version cached on this machine, while `.claude/settings.json` pins 0.9.84.
+- Headless Opus sessions ran the plan's prompts. On the guide's final text, the round 1, round 2 and after-round prompts loaded `verify` and read `tester-pass.md`. Round 2 gave 129 of 129 pages the next browser and carried 10 of 10 rechecks, and the after-round answer named drafting, fixes P1 first and waiting until beta serves every fix. In the first run, the diagnose prompt read the Bug fix playbook and never opened the tester guide. The Slate-pair draft labeled Slate as its baseline and asked no `main` or `next` question. The one-video draft kept its old path, though it used a P1 recording and read the script beside it.
+
+**Finds.** The first page check found the HTML Export page broken on beta (`docs/plans/artifacts/2026-10-15-regression-sweep/build/html-export-beta.png`), while its platejs.org twin renders. It joins round 1's rechecks, as Open work says. natamox also proposed splitting round 1 between two testers by priority; that waits on zbeyens, as Open work says.
+
+**Counts.** This close covers 13 items: 7 done, 3 partial, 3 skipped, 0 blocked and 0 open. The steps are 1.3 and 1.5 done, and 1.1, 1.2 and 1.4 partial, each closed on a look default. The gates done are the writing passes, the lint, the decision-trail review, the chips sweep and the page. The gates skipped are thermos, because no package or plugin code changed, a diff panel, because no reviews row owes one, and reflect, because the owner corrected no workflow.
+
+**Attention**, reviewed by gpt-6.1-sol, with each response:
+
+- **Critical.** Step 1.2 closed while its knowledge check fails, with no partial row or look default. The log now holds the partial row, the kb green first default and its accepted row.
+- **Warning.** Step 1.4 left out Chinese fallback routes without saying so. A partial row and the every chinese page default now cover it, and this Close names it.
+- **Warning.** Step 1.1's one-video case ran on a P1 recording. A partial row and the widened main pair check default cover it.
+- **Warning.** The Demo example page was marked beta-only, though the source on `main` routes it. It now prints as unresolved, and Open work settles it at step 1.7.
+- **Warning.** The tester guide still taught `null` in the twin table. It now names `BETA_ONLY`, and three fresh sessions reran on the final text.
+- **Warning.** The editorless fix row cited the first beta run. A corrected row cites the final run.
+- **Warning.** The frame-header item claimed a cause the log does not show. Open work now states what WebKit logs and that frame loading is unchecked.
+- **Nit.** The knowledge and Plate Plus counts were off. This Close now says 18 findings, and 45 Plate Plus pages plus one Potion page.
+
+### Planning, 2026-10-15
 
 This run wrote a plan and its evidence, and nothing in product code. Every step above is open for natamox to build after your go.
 

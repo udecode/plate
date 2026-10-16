@@ -10,12 +10,8 @@ import {
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const warningListeners = process.listeners('warning');
-process.removeAllListeners('warning');
-process.on('warning', (warning) => {
-  if (warning.code === 'MODULE_TYPELESS_PACKAGE_JSON') return;
-  for (const listener of warningListeners) listener(warning);
-});
+import { readSources } from './docs-sources.mjs';
+
 const { registryExampleSlug, sourcePathToDocsRoute } =
   await import('../../apps/www/src/lib/docs-routes.ts');
 
@@ -27,7 +23,6 @@ const DRIVE_DIR = 'docs/plans/artifacts/drive';
 const DESKTOP_MIN_WIDTH = 1200;
 const LOOK_PAGE_LIMIT = 6;
 const SETTLE_MS = 5000;
-const PLITE_EXAMPLES_DIR = 'apps/www/src/app/(app)/examples/plite';
 const REGISTRY_DIR = 'apps/www/src/registry/';
 const SHOWN_ROOTS =
   /^(?:apps\/(?:plite|www)\/|config\/|content\/docs\/|packages\/[^/]+\/src\/.*\.(?:[cm]?[jt]sx?|css|json)$)/;
@@ -64,80 +59,6 @@ const appendJsonl = (file, record) => {
   mkdirSync(path.dirname(file), { recursive: true });
   appendFileSync(file, `${JSON.stringify(record)}\n`);
 };
-
-function previewNames(text) {
-  const prose = [];
-  let fence = null;
-
-  for (const line of text.split('\n')) {
-    const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
-    if (marker && !fence) fence = marker;
-    else if (
-      marker &&
-      marker.startsWith(fence[0]) &&
-      marker.length >= fence.length
-    ) {
-      fence = null;
-    } else if (!fence) prose.push(line);
-  }
-
-  return [
-    ...prose
-      .join('\n')
-      .matchAll(/<ComponentPreview\b[^>]*?\bname=["']([^"']+)["']/g),
-  ].map((match) => match[1]);
-}
-
-function readSources(root) {
-  const { items } = JSON.parse(
-    readFileSync(
-      path.join(root, 'apps/www/src/__registry__/registry-metadata.json'),
-      'utf-8'
-    )
-  ).registries.base;
-  const previews = new Map();
-  const docs = git(root, [
-    'ls-files',
-    '--cached',
-    '--others',
-    '--exclude-standard',
-    '--',
-    'content/docs',
-  ])
-    .split('\n')
-    .filter(
-      (file) => file.endsWith('.mdx') && existsSync(path.join(root, file))
-    );
-
-  for (const file of docs) {
-    const route = sourcePathToDocsRoute(file.slice('content/docs/'.length));
-    for (const name of previewNames(
-      readFileSync(path.join(root, file), 'utf-8')
-    )) {
-      previews.set(name, unique([...(previews.get(name) ?? []), route]));
-    }
-  }
-
-  const loadersFile = path.join(
-    root,
-    PLITE_EXAMPLES_DIR,
-    'plite-example-loaders.tsx'
-  );
-  const loaders = existsSync(loadersFile)
-    ? [
-        ...readFileSync(loadersFile, 'utf-8').matchAll(
-          /['"]?([\w-]+)['"]?:\s*createPliteExampleLoader\(\s*\(\)\s*=>\s*import\(\s*['"]([^'"]+)['"]/g
-        ),
-      ].map(([, id, specifier]) => ({
-        base: specifier.startsWith('@/')
-          ? `apps/www/src/${specifier.slice(2)}`
-          : path.posix.join(PLITE_EXAMPLES_DIR, specifier),
-        route: `/examples/plite/${id}`,
-      }))
-    : [];
-
-  return { items, loaders, previews };
-}
 
 const docsRoutes = (item) =>
   (item.meta?.docs ?? [])
