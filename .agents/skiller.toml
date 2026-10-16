@@ -18,23 +18,6 @@ enabled = true
 [gitignore]
 enabled = false
 
-# MCP (Model Context Protocol) server configuration
-[mcp]
-enabled = true
-merge_strategy = "merge"
-
-# --- MCP Server Definitions ---
-[mcp_servers.plate]
-command = "npx"
-args = [ "shadcn@latest", "mcp" ]
-
-[mcp_servers.plate.env]
-REGISTRY_URL = "http://localhost:3000/rd/registry.json"
-
-[mcp_servers.agentation]
-command = "npx"
-args = [ "-y", "agentation-mcp@latest", "server" ]
-
 # --- Agent-Specific Configuration ---
 
 [agents.claude-code]

@@ -127,7 +127,6 @@
     "@udecode/cmdk": "workspace:^",
     "@udecode/cn": "workspace:^",
     "@uploadthing/react": "7.3.1",
-    "agentation": "^3.0.2",
     "ai": "^7.0.0",
     "babel-plugin-react-compiler": "1.0.0",
     "class-variance-authority": "0.7.1",
