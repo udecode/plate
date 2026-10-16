@@ -54,7 +54,7 @@ describe('customMdxDeserialize', () => {
       { editor }
     );
 
-    expect(result).toEqual([{ text: '<Badge>New</Badge>' }]);
+    expect(result).toEqual([{ rawHtml: true, text: '<Badge>New</Badge>' }]);
   });
 
   it('preserves inline mdx attributes in the fallback source text', () => {
@@ -73,7 +73,9 @@ describe('customMdxDeserialize', () => {
       { editor }
     );
 
-    expect(result).toEqual([{ text: '<label for="email">Email</label>' }]);
+    expect(result).toEqual([
+      { rawHtml: true, text: '<label for="email">Email</label>' },
+    ]);
   });
 
   it('warns and falls back when the inline mdx tag name is empty', () => {
@@ -97,7 +99,7 @@ describe('customMdxDeserialize', () => {
         type: 'mdxJsxTextElement',
       })
     );
-    expect(result).toEqual([{ text: '<>New</>' }]);
+    expect(result).toEqual([{ rawHtml: true, text: '<>New</>' }]);
   });
 
   it('falls back to a paragraph wrapper for unknown block mdx tags', () => {
@@ -115,7 +117,7 @@ describe('customMdxDeserialize', () => {
 
     expect(result).toEqual([
       {
-        children: [{ text: '<Widget />' }],
+        children: [{ rawHtml: true, text: '<Widget />' }],
         type: 'p',
       },
     ]);
@@ -150,6 +152,7 @@ describe('customMdxDeserialize', () => {
       {
         children: [
           {
+            rawHtml: true,
             text: '<figure class="hero">\n<img src="/image.png" />\n</figure>',
           },
         ],

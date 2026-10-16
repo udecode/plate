@@ -31,7 +31,18 @@ export const convertNodesSerialize = (
   for (let i = 0; i <= nodes.length; i++) {
     const n = nodes[i] as any;
 
-    if (n && TextApi.isText(n)) {
+    if (n && TextApi.isText(n) && (n as { rawHtml?: unknown }).rawHtml) {
+      if (textQueue.length > 0) {
+        mdastNodes.push(
+          ...(convertTextsSerialize(
+            textQueue,
+            options
+          ) as any as unistLib.Node[])
+        );
+        textQueue = [];
+      }
+      mdastNodes.push({ type: 'html', value: n.text } as unistLib.Node);
+    } else if (n && TextApi.isText(n)) {
       // Only add text nodes that pass the filtering
       if (shouldIncludeText(n, options)) {
         textQueue.push(n);

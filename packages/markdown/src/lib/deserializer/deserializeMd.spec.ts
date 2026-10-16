@@ -15,7 +15,7 @@ describe('deserializeMd', () => {
 
     expect(deserializeMd(editor, '<u>', { onError: onError as any })).toEqual([
       {
-        children: [{ text: '<u>' }],
+        children: [{ rawHtml: true, text: '<u>' }],
         type: 'p',
       },
     ]);
@@ -397,6 +397,7 @@ describe('deserializeMd', () => {
       {
         children: [
           {
+            rawHtml: true,
             text: '<figure class="hero">\n<img src="/image.png" />\n</figure>',
           },
         ],

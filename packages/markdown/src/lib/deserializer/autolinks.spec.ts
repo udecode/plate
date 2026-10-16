@@ -90,7 +90,12 @@ it('normalizes later HTML after failed quoted code inside JSX', () => {
   ).toEqual([
     {
       type: 'p',
-      children: [{ text: '<div>\n<Foo title=">\ntext<br />after\n</div>' }],
+      children: [
+        {
+          rawHtml: true,
+          text: '<div>\n`<Foo title=">`\ntext<br />after\n</div>',
+        },
+      ],
     },
     { type: 'p', children: [{ text: 'keep', underline: true }] },
   ]);
@@ -239,7 +244,7 @@ it('preserves email-like text in JSX attributes', () => {
       type: 'p',
       children: [
         { text: 'Before ' },
-        { text: '<Foo label="<user@example.com>" />' },
+        { rawHtml: true, text: '<Foo label="<user@example.com>" />' },
         { text: ' after' },
       ],
     },
@@ -252,7 +257,10 @@ it.each([
   'MAILTO:widget',
 ])('preserves the JSX namespace %s', (name) => {
   expect(deserializeMd(editor, `<${name}>label</${name}>\n\nAfter`)).toEqual([
-    { type: 'p', children: [{ text: `<${name}>label</${name}>` }] },
+    {
+      type: 'p',
+      children: [{ rawHtml: true, text: `<${name}>label</${name}>` }],
+    },
     { type: 'p', children: [{ text: 'After' }] },
   ]);
 });
