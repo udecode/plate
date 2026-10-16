@@ -7,10 +7,7 @@ export function PreviewDevOverlayStyles() {
           [data-tailwind-indicator],
           nextjs-portal,
           [data-nextjs-dev-tools-button],
-          [data-nextjs-dev-tools],
-          [data-feedback-toolbar],
-          [data-agentation-root],
-          [data-agentation-settings-panel] {
+          [data-nextjs-dev-tools] {
             display: none !important;
             visibility: hidden !important;
             pointer-events: none !important;
