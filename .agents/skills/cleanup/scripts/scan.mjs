@@ -17,7 +17,8 @@
 // --brief prints one line, or nothing, counting the unlocked agent worktrees and
 // the checkout caches cleanup could remove that show no git or cache writes for
 // three days. --landed exits 0 only when every change and ignored file of one
-// worktree is committed, recreated by an install or build, or in the checkout.
+// worktree is committed, recreated by an install or build, or in the checkout,
+// where a tracked edit also counts once the checkout's copy holds its hunks.
 // --remove takes worktrees whose work the caller knows landed and judges none of
 // them: it stops each process working in one, saves its uncommitted changes as a
 // patch as --delete does and removes it. It keeps a worktree git does not list, a
@@ -25,7 +26,7 @@
 // worktree, the one it runs in, one whose processes lsof cannot list and one git
 // refuses to remove, and exits 1 when it keeps any.
 import { execFileSync } from 'node:child_process';
-import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, resolve, sep } from 'node:path';
 import process from 'node:process';
@@ -211,12 +212,30 @@ function statusEntries(path) {
 
 const nestedRepos = (path, entries) => entries.filter((entry) => existsSync(join(path, entry.file, '.git'))).length;
 
+function checkoutHoldsHunks(main, path, entry) {
+  if (!/^[ M]{2}$/u.test(entry.x + entry.y) || !statOrNull(join(main, entry.file))?.isFile()) return false;
+  const scratch = mkdtempSync(join(tmpdir(), 'cleanup-merge-'));
+  try {
+    const base = join(scratch, 'base');
+    writeFileSync(base, execFileSync('git', ['--no-optional-locks', 'show', `HEAD:${entry.file}`], { cwd: path, maxBuffer: Number.POSITIVE_INFINITY, stdio: ['ignore', 'pipe', 'ignore'] }));
+    const ours = join(main, entry.file);
+    const merged = execFileSync('git', ['merge-file', '-p', ours, base, join(path, entry.file)], { maxBuffer: Number.POSITIVE_INFINITY, stdio: ['ignore', 'pipe', 'ignore'] });
+    return merged.equals(readFileSync(ours));
+  } catch {
+    return false;
+  } finally {
+    rmSync(scratch, { force: true, recursive: true });
+  }
+}
+
 function compareWithCheckout(main, path, listings) {
   const entries = statusEntries(path);
   const repos = nestedRepos(path, entries);
   const staged = entries.filter((entry) => !' ?'.includes(entry.x) && entry.y !== ' ').length;
   const unlanded = entries.filter(
-    (entry) => !matchesCheckout(main, path, entry.file, listings) || (entry.from && !matchesCheckout(main, path, entry.from, listings))
+    (entry) =>
+      (!matchesCheckout(main, path, entry.file, listings) && !checkoutHoldsHunks(main, path, entry)) ||
+      (entry.from && !matchesCheckout(main, path, entry.from, listings))
   ).length;
   return { dirty: entries.length, repos, staged, unlanded };
 }

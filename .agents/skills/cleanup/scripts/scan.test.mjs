@@ -135,6 +135,14 @@ test('--landed asks about a change the checkout lacks even when its reverse patc
   assert.equal(landedOf(f.archived), 'ask');
 });
 
+test('--landed passes a change the checkout holds beside another landed patch to the same file', () => {
+  const f = fixture();
+  const card = DUP.replace('head 0', 'HEAD 0');
+  writeFileSync(join(f.archived, 'dup.txt'), card);
+  writeFileSync(join(f.main, 'dup.txt'), card.replace('tail 9', 'TAIL 9'));
+  assert.equal(landedOf(f.archived), 'safe');
+});
+
 test('--landed asks about an ignored file the checkout lacks', () => {
   const f = fixture();
   mkdirSync(join(f.archived, 'artifacts', 'run'), { recursive: true });
