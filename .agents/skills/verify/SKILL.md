@@ -1,6 +1,6 @@
 ---
-description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, before calling a failure pre-existing or unrelated, before running a base or HEAD control, including an evidence probe or browser control run during an API review or investigation, before claiming a fix works, before closing any change with a browser-visible result, and to prepare a round of hands-on beta testing, a sweep round, or decide what follows one.
-argument-hint: '[package | route | cli | collaboration | testing audit] <target>'
+description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, before calling a failure pre-existing or unrelated, before running a base or HEAD control, including an evidence probe or browser control run during an API review or investigation, before claiming a fix works, before closing any change with a browser-visible result, to prepare a round of hands-on beta testing, a sweep round, or decide what follows one, and to playtest one editor feature.
+argument-hint: '[package | route | cli | collaboration | testing audit | playtest] <target>'
 name: verify
 metadata:
   skiller:
@@ -325,6 +325,16 @@ beside its reference page. Read [the tester pass](./references/tester-pass.md)
 in full before preparing a round, writing its round plan, or deciding what
 follows a round. It holds the session, the six moves, the browser rotation, the
 find note, the rechecks and the round loop.
+
+## Playtest
+
+A playtest is the agent's own hands-on test of one editor feature against
+its reference editor, beside the feature's specs in every engine. It runs at a
+build's close when the Build playbook says so, and as
+`verify playtest <feature>` any other time. Read
+[the playtest](./references/playtest.md) in full before a pass or before
+writing a scenario catalog. It holds the catalog, the runner, the drive and
+what happens to each finding.
 
 ## Evidence
 

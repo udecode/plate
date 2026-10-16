@@ -135,24 +135,6 @@ const BaseImagePlugin = definePlugin('image', {
 const BaseMediaEmbedPlugin = definePlugin('mediaEmbed', {
   schema: { element: mediaElement({}) },
 });
-const BaseCodeDrawingPlugin = definePlugin('codeDrawing', {
-  schema: {
-    element: {
-      properties: {
-        code: property.string({ default: '', omitDefault: false }),
-        language: property.enum(
-          ['flowchart', 'graphviz', 'mermaid', 'plantuml'],
-          { default: 'mermaid', omitDefault: false }
-        ),
-        view: property.enum(['code', 'preview', 'split'], {
-          default: 'split',
-          omitDefault: false,
-        }),
-      },
-      void: 'block',
-    },
-  },
-});
 const BaseExcalidrawPlugin = definePlugin('excalidraw', {
   schema: {
     element: { properties: { data: property.json() }, void: 'block' },
@@ -283,7 +265,6 @@ const plugins = [
   BaseFilePlugin,
   BaseImagePlugin,
   BaseMediaEmbedPlugin,
-  BaseCodeDrawingPlugin,
   BaseExcalidrawPlugin,
   BaseTablePlugin,
   BaseIndentPlugin,
@@ -378,15 +359,6 @@ describe('migratePlateV54 AST contracts', () => {
           },
           {
             children: [{ text: '' }],
-            data: {
-              code: 'graph TD; A-->B',
-              drawingMode: 'Both',
-              drawingType: 'Mermaid',
-            },
-            type: 'codeDrawing',
-          },
-          {
-            children: [{ text: '' }],
             texExpression: 'x^2',
             type: 'equation',
           },
@@ -475,12 +447,6 @@ describe('migratePlateV54 AST contracts', () => {
     expect(result.children).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ ref: '1', type: 'footnoteDefinition' }),
-        expect.objectContaining({
-          code: 'graph TD; A-->B',
-          language: 'mermaid',
-          type: 'codeDrawing',
-          view: 'split',
-        }),
         expect.objectContaining({ latex: 'x^2', type: 'equation' }),
         expect.objectContaining({ naturalWidth: 640, type: 'image' }),
         expect.objectContaining({ name: 'report.pdf', type: 'file' }),
@@ -911,34 +877,6 @@ describe('migratePlateV54 AST contracts', () => {
       latex: 'x',
       type: 'inlineEquation',
     });
-  });
-
-  it('preserves canonical Code Drawing fields when legacy data is partial', () => {
-    const { editor, migrations } = createMigrationEditor();
-    const result = migrateDocument(
-      {
-        children: [
-          {
-            children: [{ text: '' }],
-            code: '',
-            data: { code: 'x' },
-            language: 'graphviz',
-            type: 'codeDrawing',
-            view: 'preview',
-          },
-        ],
-      },
-      { editor, migrations }
-    ).document;
-
-    expect(result.children).toMatchObject([
-      {
-        code: 'x',
-        language: 'graphviz',
-        type: 'codeDrawing',
-        view: 'preview',
-      },
-    ]);
   });
 
   it('sanitizes malformed legacy border descriptors', () => {

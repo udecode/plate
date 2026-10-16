@@ -1,0 +1,22 @@
+---
+id: 2026-10-16-code-block-diagrams
+date: 2026-10-16
+status: draft
+kind: new
+summary: 'Draw diagrams in code blocks'
+change: { 'type': 'source', 'date': '2026-10-16', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-16-code-block-diagram-draw-diagrams-blocks-77929476","kind":"new","migrationNotes":[]} -->
+
+- **`code-block-diagram`**, **`code-block-diagram-mermaid`**, **`code-block-diagram-graphviz`**, **`code-block-diagram-flowchart`**, **`code-block-diagram-plantuml`**: Draw the picture of a code block in a diagram language below its source. `withDiagrams` wraps `CodeBlockElement` or `CodeBlockCodeMirrorElement` with the renderers you pass, the toolbar switches between Code and Both and exports a PNG, and the PlantUML renderer sends source only to the server you configure.
+
+<!-- entry: {"id":"2026-10-16-code-block-addon-prop-4f0d2c61","kind":"new","migrationNotes":[]} -->
+
+- **`code-block`**, **`code-block-codemirror`**: Add an `addon` prop that adds language options, toolbar controls and content around the source, so a wrapper such as `withDiagrams` extends the copied component without editing it.
+
+<!-- entry: {"id":"2026-10-16-remove-code-drawing-items-9b3e7a05","kind":"remove","migrationNotes":["Replace the code-drawing items with code-block-diagram and a renderer item per engine; migrateV54 turns saved drawings into code blocks."]} -->
+
+- **`insert-toolbar-button`**, **`slash`**, **`indent`**, **`indent-static`**, **`editor-plugins-static`**: Remove the Code Drawing menu entries, indent target and static kit, and remove the `code-drawing` and `code-drawing-static` items and the `code-drawing-demo` example.

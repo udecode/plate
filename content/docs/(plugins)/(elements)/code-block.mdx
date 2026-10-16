@@ -146,6 +146,122 @@ The copied component uses two-space line indentation for Tab and syntax-aware
 indentation for Enter. Its language picker, search panel and theme stay in the
 component.
 
+## Diagrams
+
+A code block in a diagram language can draw its picture below the source.
+
+<ComponentPreview name="code-block-diagram-demo" />
+
+Add the diagram wrapper and one renderer item for each engine you draw:
+
+```bash
+npx shadcn@latest add @plate/code-block-diagram @plate/code-block-diagram-mermaid @plate/code-block-diagram-graphviz
+```
+
+<ComponentSource name="code-block-diagram" />
+
+| Item | Renderer | Languages | Packages |
+| --- | --- | --- | --- |
+| `code-block-diagram-mermaid` | `mermaidRenderer` | `mermaid` | `mermaid` |
+| `code-block-diagram-graphviz` | `graphvizRenderer` | `graphviz`, `dot` | `viz.js`, `@types/viz.js` |
+| `code-block-diagram-flowchart` | `flowchartRenderer` | `flowchart` | `flowchart.js` |
+| `code-block-diagram-plantuml` | `createPlantUmlRenderer({ server })` | `plantuml`, `puml` | `plantuml-encoder`, `@types/plantuml-encoder` |
+
+Wrap the code block component and replace the kit's code-block plugin:
+
+```tsx title="components/editor/diagram-editor-kit.tsx"
+import { CodeBlockPlugin } from 'platejs/react';
+
+import {
+  CodeBlockElement,
+  createCodeBlockPlugin,
+} from '@/components/editor/code-block';
+import { withDiagrams } from '@/components/editor/code-block-diagram';
+import { graphvizRenderer } from '@/components/editor/code-block-diagram-graphviz';
+import { mermaidRenderer } from '@/components/editor/code-block-diagram-mermaid';
+import { EditorKit } from '@/components/editor/plugins';
+
+const diagramCodeBlockPlugin = createCodeBlockPlugin(
+  withDiagrams(CodeBlockElement, {
+    renderers: [mermaidRenderer, graphvizRenderer],
+  })
+);
+
+export const DiagramEditorKit = EditorKit.map((plugin) =>
+  plugin.name === CodeBlockPlugin.name ? diagramCodeBlockPlugin : plugin
+);
+```
+
+`withDiagrams` wraps `CodeBlockCodeMirrorElement` the same way. Each renderer
+adds its label to the language picker, and `withDiagrams` throws when two
+renderers claim one language. The Mermaid renderer uses your app's Mermaid
+configuration and never calls `mermaid.initialize`.
+
+### PlantUML server
+
+PlantUML draws through a server your app runs. The renderer sends each block's
+source only to that server, as `<server>/svg/<encoded source>`, and fails
+instead of following a redirect.
+
+```tsx
+import { createPlantUmlRenderer } from '@/components/editor/code-block-diagram-plantuml';
+
+const plantUmlRenderer = createPlantUmlRenderer({
+  server: 'https://plantuml.example.com',
+});
+```
+
+### Views
+
+A diagram block's toolbar switches between Code, which shows only the source,
+and Both, which shows the picture below it. Both is the default in editable and
+read-only editors. The view lives in the component; the document stores only the
+code block's text and language. Export PNG saves the drawn picture as
+`diagram.png`.
+
+A block draws once it is near the viewport and the browser is idle. Each block
+runs one render at a time, and only its latest source waits for the next one.
+
+- The picture is an image of the renderer's SVG, with the language as its alt
+  text. Mermaid gives most diagram types only a width of 100%, so those pictures
+  scale to fit the column, and their PNG takes the browser's default size for
+  such an image.
+- A failed render shows its error below the source. Output that is not SVG, such
+  as Mermaid's iframe under `securityLevel: 'sandbox'`, shows as an error.
+- Mermaid builds each drawing in the page under your app's `securityLevel`, so
+  with `'loose'` the HTML in a label runs there.
+- A language that no renderer claims stays an ordinary code block.
+- A diagram block deletes like any other block.
+
+### Insert menu
+
+The shared insert and slash menus have no Diagram entry, because the default
+editor kit installs no renderer. An app that draws diagrams adds one to its copy
+of the insert menu:
+
+```tsx
+import { BaseCodeBlockPlugin } from 'platejs';
+
+const insertItem = {
+  icon: <WorkflowIcon />,
+  label: 'Diagram',
+  value: 'diagram',
+  onSelect: () => {
+    const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+    if (!codeBlock.installed || editor.read.view.isReadOnly()) return;
+
+    codeBlock.update.insert({ language: 'mermaid' }, { select: true });
+  },
+};
+```
+
+### Static and export output
+
+Static rendering and Markdown export draw no picture. A diagram block keeps its
+source as an ordinary code block, and Markdown writes it as a code fence with
+its language, such as `mermaid`.
+
 ## Manual usage
 
 <Steps>

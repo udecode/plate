@@ -45,8 +45,7 @@ describe('BaseEditorKit', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error(result.diagnostics[0].message);
     expect(result.data).toContain('Welcome to the Plate Playground!');
-    expect(result.data).toContain('<codeDrawing');
-    expect(result.data).toContain('classDiagram');
+    expect(result.data).toContain('```mermaid\nclassDiagram');
   });
 
   it('draws everything EditorKit draws except AI highlights', async () => {
@@ -128,14 +127,11 @@ describe('BaseEditorKit', () => {
           'toc',
           'docx',
         ] as const
-      )
-        .flatMap((id) => {
-          const value = DEMO_VALUES[id];
+      ).flatMap((id) => {
+        const value = DEMO_VALUES[id];
 
-          return Array.isArray(value) ? value : value.children;
-        })
-        // EditorKit does not install code drawings.
-        .filter((block) => block.type !== 'codeDrawing'),
+        return Array.isArray(value) ? value : value.children;
+      }),
     });
 
     const { diagnostics } = await renderStaticHtml(editor, {

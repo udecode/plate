@@ -1,5 +1,8 @@
+import { getEditorSchema } from '../core/editor-runtime';
+import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
   applyBuiltDocumentChange,
+  getActiveUpdateRoot,
   runEditorTransaction,
 } from '../core/public-state';
 import { node as getNode } from '../editor/node';
@@ -38,7 +41,7 @@ export const liftNodes = ((
   const liftNodeAtPath = (path: Path) => {
     const [node] = getNode(editor, path);
 
-    if (NodeApi.isText(node)) {
+    if (!NodeApi.isElement(node)) {
       return;
     }
 
@@ -55,11 +58,25 @@ export const liftNodes = ((
 
     const index = getDefined(path.at(-1));
     const childCount = getChildren(editor, parent).length;
+    const parentIndex = getDefined(parentPath.at(-1));
+    const destination =
+      index === 0 && childCount > 1
+        ? parentPath
+        : [...parentPath.slice(0, -1), parentIndex + 1];
+
+    if (
+      !getEditorSchema(editor).canPlaceAtPath(destination, [node], {
+        removing: childCount === 1 ? [parentIndex] : [],
+        root: getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY,
+      })
+    ) {
+      return;
+    }
 
     if (childCount === 1) {
       moveNodes(editor, {
         at: path,
-        to: [...parentPath.slice(0, -1), getDefined(parentPath.at(-1)) + 1],
+        to: destination,
       });
       removeNodes(editor, { at: parentPath });
       return;
@@ -68,7 +85,7 @@ export const liftNodes = ((
     if (index === 0) {
       moveNodes(editor, {
         at: path,
-        to: parentPath,
+        to: destination,
       });
       return;
     }
@@ -76,7 +93,7 @@ export const liftNodes = ((
     if (index === childCount - 1) {
       moveNodes(editor, {
         at: path,
-        to: [...parentPath.slice(0, -1), getDefined(parentPath.at(-1)) + 1],
+        to: destination,
       });
       return;
     }
@@ -94,7 +111,7 @@ export const liftNodes = ((
 
     moveNodes(editor, {
       at: path,
-      to: [...parentPath.slice(0, -1), getDefined(parentPath.at(-1)) + 1],
+      to: destination,
     });
   };
 

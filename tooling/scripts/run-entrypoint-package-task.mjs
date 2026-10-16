@@ -99,7 +99,7 @@ const assertDependencyCache = () => {
 
   if (missing.length > 0) {
     console.error(
-      `${aggregateTaskId} cannot run without its partition tasks. Remove --only or run the package script directly. Missing successful cache entries: ${missing.join(', ')}`
+      `${aggregateTaskId} cannot run without its partition tasks passing. These have no successful run: ${missing.join(', ')}. Under --only, run the package script directly instead.`
     );
     return 1;
   }
@@ -123,6 +123,7 @@ process.exit(
       'run',
       taskName,
       `--filter=${packageName}`,
+      '--continue=always',
       '--output-logs=errors-only',
       '--log-order=grouped',
     ],

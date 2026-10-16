@@ -155,7 +155,6 @@
     "[Blockquote Element](/docs/components/blockquote)",
     "[Callout Node](/docs/components/callout)",
     "[Code Block Nodes](/docs/components/code-block)",
-    "[Code Drawing Node](/docs/components/code-drawing)",
     "[Code Leaf](/docs/components/code)",
     "[Column Nodes](/docs/components/column)",
     "[Comments UI](/docs/components/comment)",
@@ -199,7 +198,6 @@
     "[Collaboration Demo](/docs/examples/collaboration)",
     "[Table Nomerge Demo](/docs/examples/table-nomerge)",
     "[Excalidraw Demo](/docs/examples/excalidraw)",
-    "[Code Drawing Demo](/docs/examples/code-drawing)",
     "[Single Block Demo](/docs/examples/single-block)",
     "[Find Demo](/docs/examples/find)",
     "[Lint Demo](/docs/examples/lint)",
@@ -657,12 +655,6 @@
               "titleCn": "Code Block"
             },
             {
-              "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-              "href": "/docs/components/code-drawing",
-              "title": "Code Drawing",
-              "titleCn": "Code Drawing"
-            },
-            {
               "description": "An inline component for code snippets.",
               "href": "/docs/components/code",
               "title": "Code",
@@ -920,12 +912,6 @@
               "href": "/docs/examples/excalidraw",
               "title": "Excalidraw Demo",
               "titleCn": "Excalidraw"
-            },
-            {
-              "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-              "href": "/docs/examples/code-drawing",
-              "title": "Code Drawing Demo",
-              "titleCn": "Code Drawing"
             },
             {
               "description": "Restrict the editor to a single block.",
@@ -2681,11 +2667,6 @@
         "title": "Code Block",
         "titleCn": "Code Block"
       },
-      "/docs/components/code-drawing": {
-        "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-        "title": "Code Drawing",
-        "titleCn": "Code Drawing"
-      },
       "/docs/components/code": {
         "description": "An inline component for code snippets.",
         "title": "Code",
@@ -2892,11 +2873,6 @@
         "description": "A drawing component powered by Excalidraw.",
         "title": "Excalidraw Demo",
         "titleCn": "Excalidraw"
-      },
-      "/docs/examples/code-drawing": {
-        "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-        "title": "Code Drawing Demo",
-        "titleCn": "Code Drawing"
       },
       "/docs/examples/single-block": {
         "description": "Restrict the editor to a single block.",

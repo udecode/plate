@@ -2240,7 +2240,7 @@ test('keeps static/base component bindings free of Plate React adapters', () => 
   for (const source of [
     `import { ParagraphPlugin } from 'platejs/react';`,
     `import { H1Plugin } from 'platejs/react';`,
-    `import { CodeDrawingElement } from '@/registry/components/editor/code-drawing';`,
+    `import { CodeBlockElement } from '@/registry/components/editor/code-block';`,
     `import { toReactPlugin } from 'platejs/react';`,
     `toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic });`,
     `ParagraphPlugin.configure({ component: ParagraphStatic });`,

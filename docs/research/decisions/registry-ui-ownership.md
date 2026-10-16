@@ -111,9 +111,8 @@ without improving this contract.
 Alignment and line-height are safe candidates for shared neutral policy;
 Font is not an automatic third case. Live Font sets a black default that its
 static counterpart does not. Markdown already demonstrates shared neutral
-composition. Static presets also intentionally include Code Drawing for AI
-serialization while the default live preset omits it. Preserve those deliberate
-jobs instead of imposing blanket parity.
+composition. Preserve those deliberate jobs instead of imposing blanket
+parity.
 
 Both registry build modes write `src/__registry__/overlays`. The response owner
 rewrites only dependencies beginning with the source prefix for the requested

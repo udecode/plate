@@ -2,6 +2,37 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-16-code-block-diagrams",
+      "href": "/registry/changelog/2026-10-16-code-block-diagrams.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Draw diagrams in code blocks",
+      "change": {
+        "type": "source",
+        "date": "2026-10-16",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "code-block-diagram",
+        "code-block-diagram-mermaid",
+        "code-block-diagram-graphviz",
+        "code-block-diagram-flowchart",
+        "code-block-diagram-plantuml",
+        "code-block",
+        "code-block-codemirror",
+        "insert-toolbar-button",
+        "slash",
+        "indent",
+        "indent-static",
+        "editor-plugins-static"
+      ],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-16-code-on-sparse-block-selection",
       "href": "/registry/changelog/2026-10-16-code-on-sparse-block-selection.json",
       "status": "draft",

@@ -14,15 +14,6 @@
     "apps/www/src/registry/components/editor/code-block.spec.tsx": [
       "mock.module('platejs/react', () => ({"
     ],
-    "apps/www/src/registry/components/editor/code-drawing-static.spec.tsx": [
-      "mock.module('platejs/code-drawing', () => ({",
-      "mock.module('platejs/static', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/code-drawing.spec.tsx": [
-      "mock.module('platejs/code-drawing', () => ({",
-      "mock.module('platejs/code-drawing/react', () => ({",
-      "mock.module('platejs/react', () => ({"
-    ],
     "apps/www/src/registry/components/editor/date-static.spec.tsx": [
       "mock.module('platejs/date', () => ({",
       "mock.module('platejs/static', () => ({"

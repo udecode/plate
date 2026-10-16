@@ -416,39 +416,6 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      dependencies: ['@platejs/test'],
-      description:
-        'Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.',
-      files: [
-        {
-          path: 'examples/code-drawing-demo.tsx',
-          type: 'registry:example',
-        },
-        {
-          path: 'examples/values/code-drawing-value.tsx',
-          type: 'registry:example',
-        },
-      ],
-      meta: {
-        docs: [
-          {
-            route: '/docs/code-drawing',
-            title: 'Code Drawing',
-          },
-        ],
-        label: 'New',
-      },
-      name: 'code-drawing-demo',
-      registryDependencies: [
-        '@plate/code-drawing',
-        '@plate/editor',
-        '@plate/ai',
-        '@plate/dnd',
-      ],
-      title: 'Code Drawing',
-      type: 'registry:example',
-    },
-    {
       description: 'Restrict the editor to a single block.',
       files: [
         {
@@ -870,6 +837,41 @@ export const demoExamples: Registry['items'] = (
         '@plate/ai',
         '@plate/dnd',
       ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description:
+        'Draw Mermaid, Graphviz and Flowchart code blocks below their source.',
+      files: [
+        {
+          path: 'examples/code-block-diagram-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/code-block-diagram-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/code-block#diagrams',
+            title: 'Code Block',
+          },
+        ],
+      },
+      name: 'code-block-diagram-demo',
+      registryDependencies: [
+        '@plate/code-block-diagram',
+        '@plate/code-block-diagram-mermaid',
+        '@plate/code-block-diagram-graphviz',
+        '@plate/code-block-diagram-flowchart',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      title: 'Code Block Diagram',
       type: 'registry:example',
     },
     {
@@ -1616,7 +1618,10 @@ export const internalExamples: Registry['items'] = (
       ],
       name: 'playground-demo',
       registryDependencies: [
-        '@plate/code-drawing',
+        '@plate/code-block-diagram',
+        '@plate/code-block-diagram-mermaid',
+        '@plate/code-block-diagram-graphviz',
+        '@plate/code-block-diagram-flowchart',
         '@plate/comment',
         '@plate/discussion',
         '@plate/editor',

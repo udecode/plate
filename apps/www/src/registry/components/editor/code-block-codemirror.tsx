@@ -15,9 +15,11 @@ import { EditorState } from '@codemirror/state';
 import { EditorView, keymap, runScopeHandlers } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
 import { createCodeMirrorAdapter } from 'platejs/code-block/codemirror';
-import type { CodeBlockPlugin, EditorElementProps } from 'platejs/react';
 
-import { CodeBlockContainer } from '@/registry/components/editor/code-block';
+import {
+  CodeBlockContainer,
+  type CodeBlockElementProps,
+} from '@/registry/components/editor/code-block';
 
 const syntaxColors = syntaxHighlighting(
   HighlightStyle.define([
@@ -114,16 +116,17 @@ const codeMirrorAdapter = createCodeMirrorAdapter({
   },
 });
 
-export function CodeBlockCodeMirrorElement(
-  props: EditorElementProps<typeof CodeBlockPlugin> & {
-    showLanguageLabel?: boolean;
-  }
-) {
+export function CodeBlockCodeMirrorElement({
+  addon,
+  showLanguageLabel = true,
+  ...props
+}: CodeBlockElementProps) {
   return (
     <CodeBlockContainer
+      addon={addon}
       elementProps={props}
       languageOptions={codeMirrorLanguages}
-      showLanguageLabel={props.showLanguageLabel ?? true}
+      showLanguageLabel={showLanguageLabel}
     >
       {props.slots.externalText({
         adapter: codeMirrorAdapter,

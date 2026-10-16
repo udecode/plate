@@ -300,12 +300,13 @@ test('homepage select-all deletion stays editable', async ({ page }) => {
   await page.keyboard.press('Backspace');
   // Editing removes the live text and keeps Bob's pending deletion as its own
   // struck line, so accepting it leaves the plain editor's one empty line.
+  const emptyLine = 1;
   await expect
     .poll(() => reviewTree(editor))
     .toEqual(['[delete] mark text for removal[delete:bob]', '']);
   await editor.assert.selection({
-    anchor: { path: [0, 0], offset: 0 },
-    focus: { path: [0, 0], offset: 0 },
+    anchor: { path: [emptyLine, 0], offset: 0 },
+    focus: { path: [emptyLine, 0], offset: 0 },
   });
 
   await page.keyboard.type('x');
@@ -314,7 +315,7 @@ test('homepage select-all deletion stays editable', async ({ page }) => {
     .poll(() => reviewTree(editor))
     .toEqual(['[delete] mark text for removal[delete:bob]', 'x']);
   await editor.assert.collapsedModelDOMSelection({
-    path: [1, 0],
+    path: [emptyLine, 0],
     offset: 1,
     text: 'x',
   });

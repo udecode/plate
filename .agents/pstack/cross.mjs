@@ -17,6 +17,8 @@ export const otherRuntime = (env = process.env) => (env.CLAUDECODE ? 'codex' : '
 
 const DASHED_WORD = /^-\S+$/u;
 const TIME_BUDGET_SECONDS = 3600;
+// A --bypass run is a Codex worker writing code, and stopping a long fix wastes its work.
+const CODING_BUDGET_SECONDS = 21_600;
 const VALUE_FLAGS = new Map([
   ['--to', 'to'],
   ['--timeout', 'timeout'],
@@ -191,7 +193,11 @@ async function main(argv) {
     console.error(usage);
     return 2;
   }
-  if (!stress && timeout > TIME_BUDGET_SECONDS) {
+  if (!stress && bypass && timeout > CODING_BUDGET_SECONDS) {
+    console.error(`--timeout ${timeout} is over the ${CODING_BUDGET_SECONDS}-second budget of a --bypass coding run; split the task, or run it from a suggested task's session with --stress\n${usage}`);
+    return 2;
+  }
+  if (!stress && !bypass && timeout > TIME_BUDGET_SECONDS) {
     console.error(`--timeout ${timeout} is over the ${TIME_BUDGET_SECONDS}-second time budget; split the task, or run it from a suggested task's session with --stress\n${usage}`);
     return 2;
   }

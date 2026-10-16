@@ -4,6 +4,23 @@
 
 Require React and React DOM 19.2 or newer.
 
-Insert code drawings through the descriptor's standard `editor.plugin(BaseCodeDrawingPlugin).update.insert(props?, nodeOptions?)` update. The compiled schema owns the complete default drawing data and versioned inline validation. Persist flat `code`, lowercase `language`, and `view` fields instead of an opaque `data` object with display-label enum values. The plugin also owns its Markdown MDX codec, so code-drawing data round-trips through Markdown without falling through the generic unreachable-node path. The capability name, command namespace, and default persisted element type are all `codeDrawing`. The MDX tag follows the resolved application schema type. Use `PLUGINS.codeDrawing` for the capability name instead of `CODE_DRAWING_KEY`.
+Remove the code drawing plugin. A diagram is a code block in a diagram language, such as `mermaid`, and the copied `code-block-diagram` registry item draws it with the renderer items your app installs. PlantUML draws only through a server your app configures.
 
-**Migration:** Replace direct `insertCodeDrawing` calls with the installed plugin update. Pass `at` as the second argument for an explicit location. MDX attributes cannot replace code-drawing children or its resolved schema type.
+**Migration:** Remove `@platejs/code-drawing` and its plugins. `migrateV54` turns each saved `code_drawing` element into a code block. Its `data.code` becomes the text, and a drawing with no saved code keeps its own text. Its lowercased `data.drawingType` becomes the `language`, or `mermaid` when missing. An app whose own schema declares a `code_drawing` element keeps it. To draw the pictures, add the diagram items and wrap your code block component:
+
+```bash
+npx shadcn@latest add @plate/code-block-diagram @plate/code-block-diagram-mermaid
+```
+
+```tsx
+import {
+  CodeBlockElement,
+  createCodeBlockPlugin,
+} from '@/components/editor/code-block';
+import { withDiagrams } from '@/components/editor/code-block-diagram';
+import { mermaidRenderer } from '@/components/editor/code-block-diagram-mermaid';
+
+const diagramCodeBlockPlugin = createCodeBlockPlugin(
+  withDiagrams(CodeBlockElement, { renderers: [mermaidRenderer] })
+);
+```

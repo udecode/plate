@@ -1,4 +1,3 @@
-import { BaseCodeDrawingPlugin } from '../../code-drawing';
 import {
   type Descendant,
   type Element,
@@ -21,7 +20,6 @@ import { createTestEditor } from './__tests__/createTestEditor';
  * `listRestart` with the same meaning.
  */
 const editor = createTestEditor([
-  BaseCodeDrawingPlugin,
   BaseLineHeightPlugin,
   BaseTextAlignPlugin.configure({
     targetPlugins: [
@@ -78,15 +76,6 @@ const fixtures: Record<string, Descendant[]> = {
   ],
   'code block': [
     { children: [{ text: 'const a = 1;' }], language: 'ts', type: 'codeBlock' },
-  ],
-  'code drawing': [
-    {
-      children: [{ text: '' }],
-      code: 'graph TD;\n  A-->"B"',
-      language: 'mermaid',
-      type: 'codeDrawing',
-      view: 'split',
-    },
   ],
   columns: [
     {

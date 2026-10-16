@@ -2765,6 +2765,26 @@ describe('authored review tree recording laws', () => {
     () => {
       let blocked = 0;
       let compared = 0;
+      const rejectInsertionHoldingAcceptedInsertion = [
+        [
+          { type: 'paragraph', children: [{ text: 'ab' }] },
+          { type: 'paragraph', children: [{ text: 'cd' }] },
+        ],
+        [
+          {
+            author: 'alice',
+            command: { at: 'a', kind: 'nest', side: 0 },
+            intent: 'propose',
+          },
+          {
+            author: 'bob',
+            command: { at: 'M', kind: 'nest', side: 1 },
+            intent: 'propose',
+          },
+        ],
+        ['reject', 'accept', 'accept', 'accept'],
+        0,
+      ] as never;
 
       fc.assert(
         fc.property(
@@ -2880,7 +2900,7 @@ describe('authored review tree recording laws', () => {
             }
           }
         ),
-        { numRuns: 300 }
+        { examples: [rejectInsertionHoldingAcceptedInsertion], numRuns: 300 }
       );
       assert.ok(compared > 150, `only ${compared} decision orders compared`);
       assert.ok(blocked >= 1, 'no decision waited on another change');

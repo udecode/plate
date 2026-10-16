@@ -73,6 +73,114 @@ const editor = createEditor({
 对应的 Promise。配置变更和卸载会使过期加载失效。不要启用 CodeMirror 历史扩展，
 撤销与重做由编辑器共享历史管理。组件中的 Tab 使用两个空格缩进行，Enter 根据语法缩进。
 
+## 图表 [#diagrams]
+
+图表语言的代码块可以在源码下方绘制图片。
+
+<ComponentPreview name="code-block-diagram-demo" />
+
+添加图表包装组件，并为每个要绘制的引擎添加一个渲染器条目：
+
+```bash
+npx shadcn@latest add @plate/code-block-diagram @plate/code-block-diagram-mermaid @plate/code-block-diagram-graphviz
+```
+
+<ComponentSource name="code-block-diagram" />
+
+| 条目 | 渲染器 | 语言 | 依赖包 |
+| --- | --- | --- | --- |
+| `code-block-diagram-mermaid` | `mermaidRenderer` | `mermaid` | `mermaid` |
+| `code-block-diagram-graphviz` | `graphvizRenderer` | `graphviz`、`dot` | `viz.js`、`@types/viz.js` |
+| `code-block-diagram-flowchart` | `flowchartRenderer` | `flowchart` | `flowchart.js` |
+| `code-block-diagram-plantuml` | `createPlantUmlRenderer({ server })` | `plantuml`、`puml` | `plantuml-encoder`、`@types/plantuml-encoder` |
+
+包装代码块组件，并替换套件中的代码块插件：
+
+```tsx title="components/editor/diagram-editor-kit.tsx"
+import { CodeBlockPlugin } from 'platejs/react';
+
+import {
+  CodeBlockElement,
+  createCodeBlockPlugin,
+} from '@/components/editor/code-block';
+import { withDiagrams } from '@/components/editor/code-block-diagram';
+import { graphvizRenderer } from '@/components/editor/code-block-diagram-graphviz';
+import { mermaidRenderer } from '@/components/editor/code-block-diagram-mermaid';
+import { EditorKit } from '@/components/editor/plugins';
+
+const diagramCodeBlockPlugin = createCodeBlockPlugin(
+  withDiagrams(CodeBlockElement, {
+    renderers: [mermaidRenderer, graphvizRenderer],
+  })
+);
+
+export const DiagramEditorKit = EditorKit.map((plugin) =>
+  plugin.name === CodeBlockPlugin.name ? diagramCodeBlockPlugin : plugin
+);
+```
+
+`withDiagrams` 也能以同样方式包装 `CodeBlockCodeMirrorElement`。每个渲染器都会把自己的
+标签加入语言选择器；两个渲染器声明同一种语言时，`withDiagrams` 会抛出错误。Mermaid
+渲染器使用应用自己的 Mermaid 配置，从不调用 `mermaid.initialize`。
+
+### PlantUML 服务器
+
+PlantUML 通过你的应用运行的服务器绘制。渲染器只把每个代码块的源码发送到该服务器，
+请求地址为 `<server>/svg/<encoded source>`，遇到重定向时直接失败而不跟随。
+
+```tsx
+import { createPlantUmlRenderer } from '@/components/editor/code-block-diagram-plantuml';
+
+const plantUmlRenderer = createPlantUmlRenderer({
+  server: 'https://plantuml.example.com',
+});
+```
+
+### 视图
+
+图表代码块的工具栏在 Code 和 Both 之间切换：Code 只显示源码，Both 在源码下方显示图片。
+可编辑和只读编辑器中默认都是 Both。视图保存在组件中，文档只存储代码块的文本和语言。
+Export PNG 会把已绘制的图片保存为 `diagram.png`。
+
+代码块接近视口且浏览器空闲时才开始绘制。每个代码块同时只运行一次渲染，只有最新的源码
+会等待下一次渲染。
+
+- 图片是渲染器输出的 SVG 图像，以语言作为替代文本。Mermaid 的大多数图表类型只声明
+  100% 宽度，因此这些图片会缩放以适应栏宽，其 PNG 采用浏览器对这类图像的默认尺寸。
+- 渲染失败时，错误显示在源码下方。不是 SVG 的输出也显示为错误，例如
+  `securityLevel: 'sandbox'` 下 Mermaid 的 iframe。
+- Mermaid 在页面中按应用的 `securityLevel` 构建每张图，因此设置为 `'loose'` 时，
+  标签中的 HTML 会在页面中运行。
+- 没有渲染器声明的语言仍是普通代码块。
+- 图表代码块与其他块一样删除。
+
+### 插入菜单
+
+共享的插入菜单和斜杠菜单没有 Diagram 条目，因为默认编辑器套件不安装任何渲染器。绘制
+图表的应用在自己的插入菜单副本中添加一个条目：
+
+```tsx
+import { BaseCodeBlockPlugin } from 'platejs';
+
+const insertItem = {
+  icon: <WorkflowIcon />,
+  label: 'Diagram',
+  value: 'diagram',
+  onSelect: () => {
+    const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+    if (!codeBlock.installed || editor.read.view.isReadOnly()) return;
+
+    codeBlock.update.insert({ language: 'mermaid' }, { select: true });
+  },
+};
+```
+
+### 静态与导出输出
+
+静态渲染和 Markdown 导出不绘制图片。图表代码块的源码保持为普通代码块，Markdown 将其
+写为带语言的代码围栏，例如 `mermaid`。
+
 ## 手动使用
 
 <Steps>

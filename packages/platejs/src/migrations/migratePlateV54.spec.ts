@@ -8,6 +8,10 @@ import {
 import { ElementApi, property, schema, target } from '../core';
 import { BaseHeadingPlugin } from '../features/basic-nodes';
 import { BaseCodeBlockPlugin } from '../features/code-block';
+import {
+  BaseDetailsPlugin,
+  BaseDetailsSummaryPlugin,
+} from '../features/details';
 import { BaseListPlugin } from '../features/list';
 import {
   BaseFilePlugin,
@@ -1293,5 +1297,46 @@ describe('migratePlateV54 profile', () => {
     live.update.list.toggle({ at: [2], type: 'numbered' });
     live.update.list.toggle({ at: [4], type: 'numbered' });
     expect([ordinal(2), ordinal(4)]).toEqual([4, 3]);
+  });
+});
+
+describe('migratePlateV54 selection', () => {
+  it('keeps a caret in the paragraph before a converted Toggle', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseDetailsSummaryPlugin,
+        BaseDetailsPlugin,
+      ],
+    });
+    const result = migrateDocument(
+      {
+        document: {
+          children: [
+            { children: [{ text: 'before' }], type: 'p' },
+            { children: [{ text: 'Title' }], type: 'toggle' },
+            { children: [{ text: 'after' }], type: 'p' },
+          ],
+        },
+        schema: {
+          fingerprint: 'plate-v53',
+          id: MigrationSchema.id,
+          kind: 'named',
+          version: 53,
+        },
+        selection: {
+          anchor: { offset: 4, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
+          kind: 'text',
+        },
+      },
+      { editor, migrations: editor.migrations }
+    );
+
+    expect(result.selection).toEqual({
+      anchor: { offset: 4, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+      kind: 'text',
+    });
   });
 });

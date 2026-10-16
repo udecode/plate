@@ -60,9 +60,11 @@ const appendJsonl = (file, record) => {
   appendFileSync(file, `${JSON.stringify(record)}\n`);
 };
 
+const pageOf = (route) => route?.split('#')[0];
+
 const docsRoutes = (item) =>
   (item.meta?.docs ?? [])
-    .map((doc) => doc.route)
+    .map((doc) => pageOf(doc.route))
     .filter((route) => route?.startsWith('/docs'));
 
 const primaryPage = (item) =>

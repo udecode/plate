@@ -65,16 +65,6 @@
       "import": "./dist/code-block/codemirror/index.js",
       "default": "./dist/code-block/codemirror/index.js"
     },
-    "./code-drawing": {
-      "types": "./dist/code-drawing/index.d.ts",
-      "import": "./dist/code-drawing/index.js",
-      "default": "./dist/code-drawing/index.js"
-    },
-    "./code-drawing/react": {
-      "types": "./dist/code-drawing/react/index.d.ts",
-      "import": "./dist/code-drawing/react/index.js",
-      "default": "./dist/code-drawing/react/index.js"
-    },
     "./combobox": {
       "types": "./dist/features/combobox/index.d.ts",
       "import": "./dist/features/combobox/index.js",
@@ -377,8 +367,6 @@
     "lint:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout",
     "lint:partition:callout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout-react",
     "lint:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-block-codemirror",
-    "lint:partition:code-drawing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-drawing",
-    "lint:partition:code-drawing-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-drawing-react",
     "lint:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs combobox",
     "lint:partition:combobox-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs combobox-react",
     "lint:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comments",
@@ -453,7 +441,6 @@
     "test:partition:authored": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs authored",
     "test:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs callout",
     "test:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs code-block-codemirror",
-    "test:partition:code-drawing": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs code-drawing",
     "test:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs combobox",
     "test:partition:combobox-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs combobox-react",
     "test:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comments",
@@ -512,8 +499,6 @@
     "typecheck:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs callout",
     "typecheck:partition:callout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs callout-react",
     "typecheck:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs code-block-codemirror",
-    "typecheck:partition:code-drawing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs code-drawing",
-    "typecheck:partition:code-drawing-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs code-drawing-react",
     "typecheck:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs combobox",
     "typecheck:partition:combobox-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs combobox-react",
     "typecheck:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs comments",
@@ -620,10 +605,8 @@
     "@types/katex": "0.16.7",
     "@types/lodash": "^4.17.13",
     "@types/node": "24.12.0",
-    "@types/plantuml-encoder": "^1.4.2",
     "@types/react": "19.2.7",
     "@types/use-sync-external-store": "1.5.0",
-    "@types/viz.js": "^2.1.5",
     "ai": "^6.0.0",
     "color-name": "^2.0.0",
     "commonmark-spec": "0.31.2",
@@ -631,7 +614,6 @@
     "fast-check": "^3.23.2",
     "fastest-levenshtein": "1.0.16",
     "files-sdk": "2.6.0",
-    "flowchart.js": "^1.15.0",
     "html-to-vdom": "^0.7.0",
     "jszip": "^3.10.1",
     "juice": "^11.0.1",
@@ -639,9 +621,7 @@
     "linkedom": "0.18.13",
     "lowlight": "^3.3.0",
     "mammoth": "^1.9.0",
-    "mermaid": "^11.6.1",
     "mime-types": "^2.1.35",
-    "plantuml-encoder": "^1.4.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "remark-emoji": "5.0.1",
@@ -654,7 +634,6 @@
     "use-sync-external-store": "1.6.0",
     "validator": "^13.15.15",
     "virtual-dom": "^2.1.1",
-    "viz.js": "^2.1.2",
     "xmlbuilder2": "^3.1.1",
     "yjs": "13.6.30"
   },
@@ -671,16 +650,13 @@
     "diff-match-patch-ts": "^0.6.0",
     "fastest-levenshtein": "1.0.16",
     "files-sdk": "^2.6.0",
-    "flowchart.js": "^1.15.0",
     "html-to-vdom": "^0.7.0",
     "jszip": "^3.10.1",
     "juice": "^11.0.1",
     "katex": "0.16.22",
     "linkedom": "^0.18.13",
     "mammoth": "^1.9.0",
-    "mermaid": "^11.6.1",
     "mime-types": "^2.1.35",
-    "plantuml-encoder": "^1.4.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0",
     "remark-parse": "^11.0.0",
@@ -689,7 +665,6 @@
     "unified": "^11.0.5",
     "validator": "^13.15.15",
     "virtual-dom": "^2.1.1",
-    "viz.js": "^2.1.2",
     "xmlbuilder2": "^3.1.1"
   },
   "peerDependenciesMeta": {
@@ -729,9 +704,6 @@
     "files-sdk": {
       "optional": true
     },
-    "flowchart.js": {
-      "optional": true
-    },
     "html-to-vdom": {
       "optional": true
     },
@@ -750,13 +722,7 @@
     "mammoth": {
       "optional": true
     },
-    "mermaid": {
-      "optional": true
-    },
     "mime-types": {
-      "optional": true
-    },
-    "plantuml-encoder": {
       "optional": true
     },
     "react": {
@@ -781,9 +747,6 @@
       "optional": true
     },
     "virtual-dom": {
-      "optional": true
-    },
-    "viz.js": {
       "optional": true
     },
     "xmlbuilder2": {

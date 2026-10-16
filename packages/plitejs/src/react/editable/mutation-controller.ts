@@ -854,6 +854,13 @@ export const applyModelOwnedTextInput = ({
                   tx.annotations.set(nativeGroupingInput, nativeInput);
                 }
                 tx.selection.set(target);
+                // A composition writes where the browser composed it. The
+                // insert-text command would move it where a typed letter
+                // goes, after struck text.
+                if (inputType === 'insertFromComposition') {
+                  tx.text.insert(data, { at: target });
+                  return;
+                }
                 tx.command(editorCommands.insertText, {
                   options: { at: target },
                   text: data,

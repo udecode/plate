@@ -256,7 +256,7 @@ const internalCoreCompilerTypeSymbols = new Set([
   'NormalizePluginInput',
 ]);
 const liveRegistryNodeModulePattern =
-  /^(?:@\/registry\/components\/editor\/|\.\/)(?:block-list|blockquote|callout|caption|code|code-block|code-drawing|column|comment|date|details|footnote|heading|highlight|horizontal-rule|kbd|link|math|media-audio|media-embed|media-file|media-image|media-video|mention|paragraph|suggestion|table|toc)$/;
+  /^(?:@\/registry\/components\/editor\/|\.\/)(?:block-list|blockquote|callout|caption|code|code-block|column|comment|date|details|footnote|heading|highlight|horizontal-rule|kbd|link|math|media-audio|media-embed|media-file|media-image|media-video|mention|paragraph|suggestion|table|toc)$/;
 const historicalOrGeneratedSourcePattern =
   /(?:^|\/)(?:generated|historical)(?:\/|$)|^(?:apps\/www\/public|templates)\//;
 const intentionalProductionExtendStageChains = new Map([
@@ -418,7 +418,6 @@ const intentionalRawSchemaQueryCounts = new Map([
     'packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts',
     8,
   ],
-  ['packages/platejs/src/code-drawing/lib/BaseCodeDrawingPlugin.spec.ts', 3],
   ['packages/platejs/src/internal/plugin/compilePlateModel.spec.ts', 6],
   ['packages/platejs/src/lib/editor/withPlite.slow.ts', 2],
   ['packages/platejs/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],

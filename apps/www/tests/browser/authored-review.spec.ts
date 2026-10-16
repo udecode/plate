@@ -12,10 +12,11 @@ import { expect, type Page, test } from '@playwright/test';
 
 type Intent = 'edit' | 'propose';
 type Leaf = {
-  authored?: Array<{ author: string; kind: string }>;
+  authored?: Array<{ author?: string; ctx?: string; kind: string }>;
   text: string;
 };
 type Block = { authored?: Array<{ kind: string }>; children: Leaf[] };
+type Contexts = Record<string, { base?: string; member: { author: string } }>;
 
 const MODES: Array<[Intent, string]> = [
   ['edit', 'Editing'],
@@ -57,13 +58,28 @@ const open = async (
 
 /** One block's leaves as `text` or `text[kind:author,…]`. */
 const leaves = async (editor: BrowserEditorHarness, block: number) => {
-  const value = (await editor.get.modelValue()) as { children: Block[] };
+  const value = (await editor.get.modelValue()) as {
+    children: Block[];
+    records?: { 'authored-contexts'?: Contexts };
+  };
+  const contexts = value.records?.['authored-contexts'] ?? {};
+  const restsOn = (ctx: string): string[] => {
+    const { base, member } = contexts[ctx];
 
-  return value.children[block].children.map((leaf) =>
-    leaf.authored?.length
-      ? `${leaf.text}[${leaf.authored.map((mark) => `${mark.kind}:${mark.author}`).join(',')}]`
-      : leaf.text
-  );
+    return [...(base ? restsOn(base) : []), `insert:${member.author}`];
+  };
+
+  return value.children[block].children.map((leaf) => {
+    const authored = leaf.authored ?? [];
+    const marks = [
+      ...authored.flatMap((mark) => (mark.ctx ? restsOn(mark.ctx) : [])),
+      ...authored.flatMap((mark) =>
+        mark.ctx ? [] : [`${mark.kind}:${mark.author}`]
+      ),
+    ];
+
+    return marks.length ? `${leaf.text}[${marks.join(',')}]` : leaf.text;
+  });
 };
 
 const blocks = async (editor: BrowserEditorHarness) =>
@@ -1038,12 +1054,17 @@ test.describe('authored review tree caret', () => {
             'Last line',
           ],
         },
+        // A join over alice's own split, not its withdrawal. Withdrawing would
+        // merge the struck text into the line her previous key struck, so
+        // accepting that line's deletion and rejecting the text's own would
+        // still remove the text.
         {
           caret: { offset: 10, path: [0, 0], text: 'First line' },
           key: 'Backspace',
           tree: [
             'First line',
-            '[delete] Second line[delete:alice]',
+            '[delete] [delete:alice]',
+            '[split,join] Second line[delete:alice]',
             'Last line',
           ],
         },
@@ -1052,7 +1073,8 @@ test.describe('authored review tree caret', () => {
           key: 'type ab',
           tree: [
             'First line|ab[insert:alice]',
-            '[delete] Second line[delete:alice]',
+            '[delete] [delete:alice]',
+            '[split,join] Second line[delete:alice]',
             'Last line',
           ],
         },
@@ -1117,24 +1139,24 @@ test.describe('authored review tree caret', () => {
   }
 
   for (const [intent, key, caret, afterTyping] of [
-    // Editing keeps the other author's struck block, now after the joined
-    // line, so rejecting their deletion brings it back.
     [
       'edit',
       'Backspace',
-      { offset: 6, path: [0, 4], text: ' gammaPlain line' },
+      { offset: 6, path: [0, 4], text: ' gamma' },
       [
-        'Alpha |gone[delete:bob]| beta |theirs[insert:bob]| gammaabPlain line',
+        'Alpha |gone[delete:bob]| beta |theirs[insert:bob]| gammaab',
         '[delete] Struck block[delete:bob]',
+        '[join] Plain line',
       ],
     ],
     [
       'edit',
       'Delete',
-      { offset: 6, path: [0, 4], text: ' gammaPlain line' },
+      { offset: 0, path: [2, 0], text: 'Plain line' },
       [
-        'Alpha |gone[delete:bob]| beta |theirs[insert:bob]| gammaabPlain line',
+        'Alpha |gone[delete:bob]| beta |theirs[insert:bob]| gamma',
         '[delete] Struck block[delete:bob]',
+        '[join] abPlain line',
       ],
     ],
     [
@@ -1158,7 +1180,7 @@ test.describe('authored review tree caret', () => {
       ],
     ],
   ] as const) {
-    test(`${key} next to another author’s struck block joins across it (${intent === 'edit' ? 'Editing' : 'Suggesting'})`, async ({
+    test(`${key} next to another author’s struck block records a join that waits on their deletion (${intent === 'edit' ? 'Editing' : 'Suggesting'})`, async ({
       page,
     }) => {
       const errors = recordBrowserRuntimeErrors(page, { strict: true });

@@ -245,6 +245,14 @@ const BOUNDARY_KINDS: ReadonlySet<AuthoredMember['kind']> = new Set([
 const reviewed = (token: JsonToken) =>
   token.kind === 'open' && readMembers(token.props).length > 0;
 
+/**
+ * The insertion the content belongs to: the last one, since `marks` lists a
+ * node's insertions outer to inner. A block's `follows` insertion is listed
+ * outside that order.
+ */
+const innermostInsert = (marks: readonly AuthoredMark[]) =>
+  marks.findLast((mark) => mark.kind === 'insert');
+
 const struckWhole = (node: JsonNode): boolean => {
   const members = readMembers(node);
 
@@ -2031,12 +2039,13 @@ class RootRecorder {
           (mode === 'delete' || mark.change === changeId) &&
           !reinserted.has(incarnationOf(mark))
       );
-    // Content another author's pending insertion also holds, as a move's copy
-    // of one's own text, stays for that insertion's decision.
-    const withdrawn = (marks: readonly AuthoredMark[]) =>
-      mode === 'delete' &&
-      marks.some((mark) => mark.kind === 'insert' && isOwn(mark)) &&
-      !marks.some((mark) => mark.kind === 'insert' && !isOwn(mark));
+    // Another author's insertion inside one's own, as a move's copy of one's
+    // own text, stays for that insertion's decision.
+    const withdrawn = (marks: readonly AuthoredMark[]) => {
+      const innermost = innermostInsert(marks);
+
+      return mode === 'delete' && innermost !== undefined && isOwn(innermost);
+    };
     // A node is removed outright only when everything inside it is withdrawn too,
     // so another author's pending content inside it stays to be decided.
     const withdrawnThroughout = (open: number, close: number) => {
@@ -2885,13 +2894,15 @@ class RootRecorder {
     }
 
     const marks = this.marks(leaf.props);
-    const own = marks.find(
-      (mark) => mark.kind === 'insert' && this.options.isOwn(mark)
-    );
+    const innermost = innermostInsert(marks);
+    // Text whose innermost insertion is another author's is theirs, so typing
+    // in it nests a new insertion inside theirs that a delete withdraws, even
+    // in one's own pending element, unless that element is one-text.
+    const foreign = innermost !== undefined && !this.options.isOwn(innermost);
     const struck = marks.some((mark) => mark.kind === 'delete');
 
-    if (own && !struck) return withoutHeld(leaf.props);
-    if (ownElement) {
+    if (innermost && !foreign && !struck) return withoutHeld(leaf.props);
+    if (ownElement && (ownElement.oneText || !foreign)) {
       // Text in one's own pending element carries that element's insert mark,
       // so a late edit is reviewable; a one-text element cannot split.
       const live = marks.filter(
@@ -3010,11 +3021,9 @@ class RootRecorder {
 
       if (marks.some((mark) => mark.kind === 'delete')) continue;
 
-      const own = marks.find(
-        (mark) => mark.kind === 'insert' && this.options.isOwn(mark)
-      );
+      const innermost = innermostInsert(marks);
 
-      if (own) return own;
+      if (innermost && this.options.isOwn(innermost)) return innermost;
     }
 
     return null;

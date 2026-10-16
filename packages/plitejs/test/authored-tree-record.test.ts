@@ -273,6 +273,69 @@ describe('authored review tree recording', () => {
     ]);
   });
 
+  for (const [where, block] of [
+    [
+      'another author’s insertion',
+      paragraph(
+        { text: 'a' },
+        { text: 'QR', authored: [mark('insert', 'alice')] },
+        { text: 'b' }
+      ),
+    ],
+    [
+      'another author’s insertion within one’s own',
+      paragraph(
+        { text: 'mi', authored: [mark('insert', 'bob', 'bob:9')] },
+        {
+          text: 'QR',
+          authored: [mark('insert', 'bob', 'bob:9'), mark('insert', 'alice')],
+        },
+        { text: 'ne', authored: [mark('insert', 'bob', 'bob:9')] }
+      ),
+    ],
+    [
+      'another author’s insertion within one’s own block',
+      whole(
+        paragraph(
+          { text: 'mi' },
+          { text: 'QR', authored: [mark('insert', 'alice')] },
+          { text: 'ne' }
+        ),
+        mark('insert', 'bob', 'bob:9')
+      ),
+    ],
+    [
+      'the formatted end of another author’s insertion within one’s own',
+      paragraph(
+        { text: 'mi', authored: [mark('insert', 'bob', 'bob:9')] },
+        {
+          bold: true,
+          text: 'Q',
+          authored: [mark('insert', 'bob', 'bob:9'), mark('insert', 'alice')],
+        },
+        {
+          text: 'R',
+          authored: [mark('insert', 'bob', 'bob:9'), mark('insert', 'alice')],
+        },
+        { text: 'ne', authored: [mark('insert', 'bob', 'bob:9')] }
+      ),
+    ],
+  ] as const) {
+    it(`removes one’s own text typed inside ${where} for real on Backspace`, () => {
+      const editor = suggesting([block]);
+      const before = expandedChildren(editor);
+
+      editor.update((tx) => {
+        tx.selection.set({ anchor: point(1, [0, 1]), focus: point(1, [0, 1]) });
+        tx.text.insert('XY');
+      });
+      editor.update((tx) => tx.text.deleteBackward());
+      editor.update((tx) => tx.text.deleteBackward());
+
+      assert.deepEqual(expandedChildren(editor), before);
+    });
+  }
+
   it('rests Suggesting text typed between insertions by A and B and by B and C on B alone, with its own claim', () => {
     const editor = suggesting(
       [
@@ -402,7 +465,9 @@ describe('authored review tree recording', () => {
           author,
           on: base === undefined ? undefined : authorOf.get(base),
         }))
-        .sort((left, right) => String(left.author).localeCompare(String(right.author))),
+        .sort((left, right) =>
+          String(left.author).localeCompare(String(right.author))
+        ),
       [
         { author: 'ann', on: 'bob' },
         { author: 'bob', on: undefined },
@@ -1481,15 +1546,30 @@ describe('authored review tree recording', () => {
   });
 
   it('keeps its own deleted pending text for another author’s pending insertion that also holds it', () => {
-    const moved = {
-      text: 'N',
-      authored: [mark('insert', 'bob', 'bob:9'), mark('insert', 'alice')],
-    };
-    const editor = suggesting([paragraph({ text: 'a' }, moved, { text: 'b' })]);
+    const alice = editorFor(
+      [
+        paragraph(
+          { text: 'a' },
+          { text: 'N', authored: [mark('insert', 'bob', 'bob:9')] },
+          { text: 'b' }
+        ),
+        paragraph({ text: 'cd' }),
+      ],
+      'propose',
+      'alice',
+      [transfer()]
+    );
+
+    alice.api.transfer.move({
+      range: { anchor: point(0, [0, 1]), focus: point(1, [0, 1]) },
+      to: { point: point(1, [1, 0]) },
+    });
+
+    const editor = suggesting(alice.read.value() as never);
 
     editor.update((tx) =>
       tx.text.delete({
-        at: { anchor: point(0, [0, 1]), focus: point(1, [0, 1]) },
+        at: { anchor: point(0, [1, 1]), focus: point(1, [1, 1]) },
       })
     );
 
@@ -1498,7 +1578,10 @@ describe('authored review tree recording', () => {
       { action: 'accept', changes: ['alice:1', 'bob:9'] },
     ]);
 
-    assert.deepEqual(editor.read.children(), [paragraph({ text: 'aNb' })]);
+    assert.deepEqual(editor.read.children(), [
+      paragraph({ text: 'ab' }),
+      paragraph({ text: 'cNd' }),
+    ]);
   });
 
   it('keeps an Editing join into a quote another author’s pending unwrap dissolves until that unwrap is decided', () => {

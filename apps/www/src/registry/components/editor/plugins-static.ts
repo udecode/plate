@@ -5,7 +5,6 @@ import { BaseBasicBlocksKit } from './basic-blocks-static';
 import { BaseBasicMarksKit } from './basic-marks-static';
 import { BaseCalloutKit } from './callout-static';
 import { BaseCodeBlockKit } from './code-block-static';
-import { BaseCodeDrawingKit } from './code-drawing-static';
 import { BaseColumnKit } from './column-static';
 import { BaseDateKit } from './date-static';
 import { BaseDetailsKit } from './details-static';
@@ -24,7 +23,6 @@ import { BaseTocKit } from './toc-static';
 export const BaseEditorKit = [
   ...BaseBasicBlocksKit,
   ...BaseCodeBlockKit,
-  ...BaseCodeDrawingKit,
   ...BaseTableKit,
   ...BaseDetailsKit,
   ...BaseTocKit,

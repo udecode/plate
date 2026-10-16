@@ -10,7 +10,6 @@ import {
 import { getDocumentMigrationAuthoredCapability } from './documentMigrationAuthored.internal';
 import type {
   DocumentMigrationContext,
-  DocumentMigrationSelectionContext,
   DocumentMigrationStepResult,
 } from './documentMigrations';
 import { migratePlateV54Ast } from './migratePlateV54Ast.internal';
@@ -52,7 +51,7 @@ const shapeDocument = (
   context: DocumentMigrationContext,
   document: EditorDocumentValue
 ): PlateV54Shape => {
-  const inputs = migratePlateV54Inputs(document);
+  const inputs = migratePlateV54Inputs({ ...context, document });
   const profile = migratePlateV54Profile({
     ...context,
     document: inputs.document,
@@ -87,72 +86,33 @@ export const migrateV54: PlateV54Migration = (context) => {
   const schema = context.target.schema as InternalEditorSchemaApi;
   const legacy = migratePlateV54Suggestions(context.document);
   const shapedSource = shapeDocument(context, context.document);
-  // The code-block stage falls back to `mapped` outside code, so URL-stage
-  // points must win there too.
-  const mapThroughUrls = ({
-    mappedSelection,
-    selection,
-  }: DocumentMigrationSelectionContext) => {
-    const { inputs } = shapedSource;
+  // One diff across stages that rename some blocks and restructure others
+  // replaces everything between them, so the selection follows each stage.
+  const mapThroughStages = (selection: Selection) => {
+    const { ast, codeBlocks, inputs, profile, urls } = shapedSource;
     const inputSelection = inputs.mapSelection?.(selection) ?? selection;
-    const profileSelection = mapBetween(
-      schema,
-      inputSelection,
-      inputs.document,
-      shapedSource.profile
-    );
     const astSelection = mapBetween(
       schema,
-      profileSelection,
-      shapedSource.profile,
-      shapedSource.ast
+      mapBetween(schema, inputSelection, inputs.document, profile),
+      profile,
+      ast
     );
-    const { mapSelection: mapUrls } = shapedSource.urls;
-    const mapped = inputs.mapSelection
-      ? mapBetween(
-          schema,
-          inputSelection,
-          inputs.document,
-          shapedSource.document
-        )
-      : mappedSelection;
+    const urlDiff = mapBetween(schema, astSelection, ast, urls.document);
+    const urlSelection = urls.mapSelection?.(astSelection, urlDiff) ?? urlDiff;
+    const codeDiff = mapBetween(
+      schema,
+      urlSelection,
+      urls.document,
+      codeBlocks.document
+    );
 
-    if (!mapUrls) {
-      return { mapped, urlSelection: astSelection };
-    }
-
-    return {
-      mapped: mapUrls(astSelection, mapped),
-      urlSelection: mapUrls(
-        astSelection,
-        mapBetween(
-          schema,
-          astSelection,
-          shapedSource.ast,
-          shapedSource.urls.document
-        )
-      ),
-    };
+    return codeBlocks.mapSelection?.(urlSelection, codeDiff) ?? codeDiff;
   };
 
   if (!legacy) {
-    const mapSelection: NonNullable<
-      DocumentMigrationStepResult['mapSelection']
-    > = (selectionContext) => {
-      const { mapped, urlSelection } = mapThroughUrls(selectionContext);
-
-      return (
-        shapedSource.codeBlocks.mapSelection?.(urlSelection, mapped) ?? mapped
-      );
-    };
-
     return Object.freeze({
       document: shapedSource.document,
-      ...(shapedSource.codeBlocks.mapSelection ||
-      shapedSource.inputs.mapSelection ||
-      shapedSource.urls.mapSelection
-        ? { mapSelection }
-        : {}),
+      mapSelection: ({ selection }) => mapThroughStages(selection),
     });
   }
 
@@ -173,23 +133,12 @@ export const migrateV54: PlateV54Migration = (context) => {
 
   return Object.freeze({
     document,
-    mapSelection: (selectionContext) => {
-      const { mapped, urlSelection } = mapThroughUrls(selectionContext);
-      const shapedSelection = shapedSource.codeBlocks.mapSelection
-        ? shapedSource.codeBlocks.mapSelection(urlSelection, mapped)
-        : mapBetween(
-            schema,
-            urlSelection,
-            shapedSource.urls.document,
-            shapedSource.document
-          );
-
-      return mapBetween(
+    mapSelection: ({ selection }) =>
+      mapBetween(
         schema,
-        shapedSelection,
+        mapThroughStages(selection),
         shapedSource.document,
         document
-      );
-    },
+      ),
   });
 };

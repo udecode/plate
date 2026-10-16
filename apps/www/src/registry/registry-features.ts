@@ -53,17 +53,6 @@ export const registryStaticFeatures: Registry['items'] = [
     dependencies: ['platejs'],
     files: [
       {
-        path: 'components/editor/code-drawing-static.tsx',
-        type: 'registry:component',
-      },
-    ],
-    name: 'code-drawing-static',
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['platejs'],
-    files: [
-      {
         path: 'components/editor/column-static.tsx',
         type: 'registry:component',
       },
@@ -421,26 +410,85 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
-    dependencies: ['platejs', 'lodash'],
     files: [
       {
-        path: 'components/editor/code-drawing.tsx',
+        path: 'components/editor/code-block-diagram.tsx',
         type: 'registry:component',
       },
     ],
-    name: 'code-drawing',
+    name: 'code-block-diagram',
     type: 'registry:component',
     description:
-      'Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.',
-    title: 'Code Drawing',
+      'Draw code blocks in diagram languages, with Code and Both views.',
+    title: 'Code Block Diagram',
     meta: {
-      docs: [
-        { route: '/docs/code-drawing' },
-        {
-          route: 'https://pro.platejs.org/docs/components/code-drawing',
-        },
-      ],
-      examples: ['code-drawing-demo'],
+      docs: [{ route: '/docs/code-block#diagrams' }],
+      examples: ['code-block-diagram-demo'],
+    },
+  },
+  {
+    files: [
+      {
+        path: 'components/editor/code-block-diagram-mermaid.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-diagram-mermaid',
+    type: 'registry:component',
+    description: 'Draw Mermaid code blocks.',
+    title: 'Code Block Diagram Mermaid',
+    meta: {
+      docs: [{ route: '/docs/code-block#diagrams' }],
+      examples: ['code-block-diagram-demo'],
+    },
+  },
+  {
+    devDependencies: ['@types/viz.js'],
+    files: [
+      {
+        path: 'components/editor/code-block-diagram-graphviz.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-diagram-graphviz',
+    type: 'registry:component',
+    description: 'Draw Graphviz DOT code blocks.',
+    title: 'Code Block Diagram Graphviz',
+    meta: {
+      docs: [{ route: '/docs/code-block#diagrams' }],
+      examples: ['code-block-diagram-demo'],
+    },
+  },
+  {
+    files: [
+      {
+        path: 'components/editor/code-block-diagram-flowchart.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-diagram-flowchart',
+    type: 'registry:component',
+    description: 'Draw flowchart.js code blocks.',
+    title: 'Code Block Diagram Flowchart',
+    meta: {
+      docs: [{ route: '/docs/code-block#diagrams' }],
+      examples: ['code-block-diagram-demo'],
+    },
+  },
+  {
+    devDependencies: ['@types/plantuml-encoder'],
+    files: [
+      {
+        path: 'components/editor/code-block-diagram-plantuml.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-diagram-plantuml',
+    type: 'registry:component',
+    description: 'Draw PlantUML code blocks through your own PlantUML server.',
+    title: 'Code Block Diagram PlantUML',
+    meta: {
+      docs: [{ route: '/docs/code-block#diagrams' }],
     },
   },
   {

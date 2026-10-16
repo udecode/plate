@@ -12,8 +12,6 @@
       "platejs/callout": ["./src/features/callout/index.ts"],
       "platejs/callout/react": ["./src/react/features/callout/index.ts"],
       "platejs/code-block/codemirror": ["./src/code-block/codemirror/index.ts"],
-      "platejs/code-drawing": ["./src/code-drawing/index.ts"],
-      "platejs/code-drawing/react": ["./src/code-drawing/react/index.ts"],
       "platejs/combobox": ["./src/features/combobox/index.ts"],
       "platejs/combobox/react": ["./src/react/features/combobox/index.ts"],
       "platejs/comments": ["./src/features/comments/index.ts"],

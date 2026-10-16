@@ -79,7 +79,7 @@ const commandMenuCopyableRegistryNames = new Set(
   `
   ai align autoformat basic-blocks
   basic-marks basic-nodes block-menu block-placeholder
-  callout code-block code-drawing column
+  callout code-block column
   comment copilot selection date discussion dnd
   docx docx-export editor-static editor-plugins emoji exit-break
   fixed-toolbar floating-toolbar footnote font indent
@@ -88,7 +88,7 @@ const commandMenuCopyableRegistryNames = new Set(
   tabbable table toc details
   ai-demo align-demo autoformat-demo basic-blocks-demo basic-marks-demo
   basic-nodes-demo block-menu-demo node-selection-demo callout-demo
-  code-block-demo code-drawing-demo collaboration-demo column-demo
+  code-block-demo collaboration-demo column-demo
   controlled-demo copilot-demo date-demo discussion-demo
   dnd-demo editable-voids-demo emoji-demo equation-demo excalidraw-demo
   exit-break-demo find-demo floating-toolbar-demo font-demo
@@ -98,7 +98,7 @@ const commandMenuCopyableRegistryNames = new Set(
   select-editor-demo single-block-demo slash-command-demo suggestion-demo tabbable-demo
   table-demo toc-demo details-demo version-history-demo
   ai ai-toolbar-button blockquote callout caption code-block
-  code-drawing code column comment-node date editor
+  code column comment-node date editor
   math excalidraw fixed-toolbar floating-toolbar font-size-toolbar-button
   heading highlight horizontal-rule kbd link
   media-image media-toolbar mention paragraph slash
