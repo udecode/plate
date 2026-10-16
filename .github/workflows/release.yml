@@ -5,6 +5,13 @@ on:
     branches:
       - main
       - next
+    paths-ignore:
+      - '.agents/**'
+      - '.claude/**'
+      - '.codex/**'
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+      - 'skills-lock.json'
 
 permissions: {}
 
