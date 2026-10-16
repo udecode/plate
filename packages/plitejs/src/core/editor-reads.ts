@@ -48,8 +48,8 @@ export const editorReads = Object.freeze({
      * keyboard step runs it on each sibling edge that stays in the blocks'
      * parent and admits them unpatched, and tries the next sibling when the
      * patched blocks are refused. `input.intent` tells a copy from a move. A
-     * move keeps its blocks, and Plite sets the patched properties on them in
-     * the same update. A patch may name only properties declared
+     * move keeps its blocks and sets the patched properties on them in the
+     * same update. A patch may name only properties declared
      * `landing: 'adopt'`, and a move patch may not set `null`; otherwise the
      * edge refuses with `policy`.
      */

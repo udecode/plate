@@ -30,14 +30,18 @@ const directBuildScript = 'tsdown --config tsdown.config.mts --log-level warn';
 const plateBuildScript = `${directBuildScript} && tsdown --config tsdown.declarations.config.mts --log-level warn && node ../../tooling/scripts/fix-declaration-specifiers.mjs dist && node ../../tooling/scripts/finalize-plate-declarations.mjs dist`;
 
 test('finalizes Plate declarations without private-layer provenance', (t) => {
-  const declarationRoot = mkdtempSync(
+  const packagesRoot = mkdtempSync(
     path.join(os.tmpdir(), 'plate-declarations-')
   );
 
-  t.after(() => rmSync(declarationRoot, { force: true, recursive: true }));
+  t.after(() => rmSync(packagesRoot, { force: true, recursive: true }));
 
+  const declarationRoot = path.join(packagesRoot, 'platejs', 'dist');
   const declarationPath = path.join(declarationRoot, 'index.d.ts');
+  const bundledSource = path.join(packagesRoot, 'plitejs', 'src', 'core');
 
+  mkdirSync(declarationRoot, { recursive: true });
+  mkdirSync(bundledSource, { recursive: true });
   writeFileSync(
     declarationPath,
     '//#region ../internal/editor.d.ts\nexport type Editor = {};\n//#endregion\n'
@@ -48,10 +52,17 @@ test('finalizes Plate declarations without private-layer provenance', (t) => {
     'export type Editor = {};\n'
   );
 
-  writeFileSync(declarationPath, '/** Private Plite implementation. */\n');
+  writeFileSync(
+    path.join(bundledSource, 'reads.ts'),
+    'export type Reads = {\n  /**\n   * Plite sets the patched properties.\n   */\n  adopt: true;\n};\n'
+  );
+  writeFileSync(
+    declarationPath,
+    '//#region ../plitejs/dist/core/reads.d.ts\n//#region src/core/reads.d.ts\ntype Reads = {\n    /**\n     * Plite sets the patched properties.\n     */\n    adopt: true;\n};\n//#endregion\n'
+  );
   assert.throws(
     () => finalizePlateDeclarations(declarationRoot),
-    /Plate declarations expose the private Plite layer/u
+    /plitejs\/src\/core\/reads\.ts:3 \(index\.d\.ts:3\)$/u
   );
 });
 
