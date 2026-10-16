@@ -8,11 +8,6 @@ import { capEffort } from './lead.mjs';
 import { landed, stateOf } from './status.mjs';
 
 export const LEDGER = 'suggested-tasks.decisions.tsv';
-// A ledger row with this phase names the session the owner last typed /chips
-// in, the one session that cards tasks other sessions offered.
-export const LEAD_PHASE = 'chips-lead';
-
-export const chipsLead = (lines) => lines.findLast((line) => line.split('\t')[1] === LEAD_PHASE)?.split('\t')[2] ?? null;
 
 const FROM = {
   started: ['offered', 'started'],
@@ -41,8 +36,8 @@ export const CHIP_STATES = ['offered', ...Object.keys(FROM).filter((move) => !mo
 const RESULT = new RegExp(`^(${CHIP_STATES.join('|')}|dismissed (?:${REASONS.join('|')}|(${TARGETED.join('|')}) ([\\w-]+)))(?:[.:;,]?(?:\\s.*)?)?$`, 'u');
 const LEGACY_ONLY = ['dismissed gone', 'dismissed replaced'];
 const TAKES = {
-  offered: ['writes', 'topic', 'kind', 'waits', 'owns', 'fast', 'card', 'session'],
-  updated: ['writes', 'topic', 'kind', 'effort', 'waits', 'owns', 'fast'],
+  offered: ['writes', 'topic', 'kind', 'waits', 'owns', 'fast', 'card', 'session', 'transcript'],
+  updated: ['writes', 'topic', 'kind', 'effort', 'waits', 'owns', 'fast', 'session', 'transcript'],
   folded: ['writes', 'kind', 'effort', 'waits', 'owns'],
   started: ['writes', 'session'],
   landed: ['patch', 'commit'],
@@ -51,7 +46,7 @@ const TAKES = {
   'dismissed declined': ['card'],
 };
 const LIST_KEYS = ['writes', 'waits', 'owns', 'commit'];
-const SCALAR_KEYS = ['topic', 'kind', 'effort', 'fast', 'patch', 'card', 'session', 'codex'];
+const SCALAR_KEYS = ['topic', 'kind', 'effort', 'fast', 'patch', 'card', 'session', 'transcript', 'codex'];
 const KINDS = ['fix', 'decide', 'review'];
 
 const CHIP = /^([\w-]+) (?:(?:Now|After): )?\S/u;
@@ -190,7 +185,8 @@ export function recordRow(tasks, cells, ts = null) {
       card: given.card ?? null,
       codex: false,
       session: given.card ? (given.session ?? null) : null,
-      offeredIn: given.session ?? null,
+      owner: given.session ?? null,
+      ownerTranscript: given.transcript ?? null,
       startedIn: null,
       effort: null,
       fast: given.fast === 'yes',
@@ -234,6 +230,9 @@ export function recordRow(tasks, cells, ts = null) {
     task.codex = given.codex === 'always';
     task.session = given.session ?? null;
     task.cardEffort = levelOf(task);
+    // An offer older than the session: token has no owner, so the first
+    // session that cards it takes it.
+    task.owner ??= task.session;
   }
   if (row.move === 'uncarded' || row.move === 'reopened' || row.move.startsWith('dismissed')) {
     task.card = null;
@@ -252,6 +251,10 @@ export function recordRow(tasks, cells, ts = null) {
     }
     for (const key of ['topic', 'kind', 'effort', 'waits', 'owns']) if (given[key] !== undefined) task[key] = given[key];
     if (given.fast !== undefined) task.fast = given.fast === 'yes';
+    if (given.session !== undefined) {
+      task.owner = given.session;
+      task.ownerTranscript = given.transcript ?? null;
+    }
   }
   if (row.move.startsWith('dismissed')) {
     task.status = 'dismissed';
@@ -283,6 +286,7 @@ const tokenProblems = (given, where) => {
   for (const wait of given.waits ?? []) if (!WAIT.test(wait)) found.push(`${where}: waits: takes pr:<number>, task:<id> or run:<plan path ending in .md>, comma-separated, or none; "${wait}" is none of them`);
   for (const check of given.owns ?? []) if (!CHECK.test(check)) found.push(`${where}: owns: names each check as one token, such as ci:check`);
   if (given.session !== undefined && !SESSION.test(given.session)) found.push(`${where}: session: names the session id as one token`);
+  if (given.transcript !== undefined && !SESSION.test(given.transcript)) found.push(`${where}: transcript: names the session's transcript id as one token`);
   if (given.codex !== undefined && given.codex !== 'always') found.push(`${where}: codex: is always, which forces the card session's Codex handoff`);
   return found;
 };
@@ -315,7 +319,8 @@ export function chipRowProblems(cells, before, where) {
     if (!FROM[move].includes(state)) found.push(`${where}: ${id} is ${state}, so it cannot be ${move}`);
   }
   if (move === 'carded' && !given.card) found.push(`${where}: a carded row names the suggest tool's card id as "card: <id>"`);
-  if (move === 'updated' && !TAKES.updated.some((key) => given[key] !== undefined)) found.push(`${where}: an updated row names what changes: writes:, topic:, kind:, effort:, waits:, owns: or fast:`);
+  if (move === 'updated' && !TAKES.updated.some((key) => given[key] !== undefined)) found.push(`${where}: an updated row names what changes: writes:, topic:, kind:, effort:, waits:, owns:, fast: or session:`);
+  if (move === 'updated' && given.transcript !== undefined && given.session === undefined) found.push(`${where}: transcript: goes beside session:, the owner it names`);
   if (move === 'updated' && known && sessionPicksPlan(known) && Object.keys(given).some((key) => key !== 'owns')) {
     found.push(`${where}: ${id} is started, so an updated row on it takes only owns:; the session adds paths with another started row`);
   }
@@ -353,7 +358,12 @@ export function chipRowProblems(cells, before, where) {
   return found;
 }
 
-export function newChipRowProblems(cells, before, where, git, lead = null) {
+// A session owns the tasks it offered, or carded first when the offer named no
+// session. here is the writing session's { session, transcript }; either id
+// matches, because an account switch can change one of them.
+export const ownedBy = (task, here) => Boolean(here) && ((here.session && task.owner === here.session) || (here.transcript && task.ownerTranscript === here.transcript));
+
+export function newChipRowProblems(cells, before, where, git, here = null) {
   const [, decision, , evidence] = cells;
   const row = parseRow(cells);
   if (!row) return [];
@@ -402,8 +412,9 @@ export function newChipRowProblems(cells, before, where, git, lead = null) {
   }
   if (move === 'carded' && before.get(id)?.card) found.push(`${where}: ${id} already has card ${before.get(id).card}; log uncarded with card: ${before.get(id).card} once that card is withdrawn or its session has ended, then card it again`);
   if (given.card && !given.session && ['carded', 'offered'].includes(move)) found.push(`${where}: a card names the session that holds it as "session: <id>", the id the runtime's session tool gives this session`);
-  if (move === 'carded' && lead && given.session && given.session !== lead && before.get(id)?.offeredIn !== given.session) {
-    found.push(`${where}: session ${lead} leads the chips, so only it or the session that offered ${id} cards it; withdraw this card, as chips.md's Limits says, and leave ${id} to session ${lead}`);
+  const owner = before.get(id)?.owner;
+  if (move === 'carded' && owner && given.session && given.session !== owner && !ownedBy(before.get(id), here)) {
+    found.push(`${where}: ${id} belongs to session ${owner}, so only that session cards it; withdraw this card, as chips.md's Limits says, and once that session is archived or gone, /chips all takes the task with updated session: ${given.session}`);
   }
   if (own && ['uncarded', 'dismissed declined'].includes(move) && (given.card ?? null) !== own.card) {
     if (move === 'uncarded' && !own.card) found.push(`${where}: ${id} has no card to withdraw`);
@@ -628,9 +639,10 @@ export function startedOverlaps(tasks) {
   );
 }
 
-// Before any session leads, every session cards; after, a session that does
-// not lead cards only the tasks it offered and withdraws its other cards.
-export function board(tasks, git, here = null, lead = null) {
+// A session cards only the tasks it owns. With all, it also cards the tasks no
+// session owns and takes over each one whose owner is not in live, the ids of
+// the sessions not archived; without live, no owner counts as gone.
+export function board(tasks, git, here = null, { transcript = null, all = false, live = null } = {}) {
   const open = [...tasks.values()].filter(isOpen).sort(byOrder);
   const started = open.filter((task) => task.status === 'started');
   const offered = open.filter((task) => task.status === 'offered');
@@ -680,16 +692,19 @@ export function board(tasks, git, here = null, lead = null) {
         ? `check session ${task.startedIn}, which started ${task.id}: when the session tool reports it archived, log landed when a commit holds its change or its last report says it landed the change, with patch: when it names one; when that report hands back a patch it never applied, land that patch as chips brief's footer says and log landed with patch:; and log dismissed stopped when it hands back no patch and neither this checkout nor its worktree holds an uncommitted edit on its paths`
         : `find the session that started ${task.id} with the session tool, archived sessions included, as the one whose transcript opens with its card prompt, and log started with session: <its id>; when the search finds none, ${task.id} stays started`,
     }));
-  const leads = here === null || lead === null || lead === here;
-  const mayCard = (task) => leads || task.offeredIn === here;
-  const withdrawals = [
-    ...waiting
-      .filter(({ task }) => task.card && !elsewhere(task))
-      .map(({ task, blockers }) => ({ kind: 'problem', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: ${blockers[0]}; ${withdrawn(task.card)} once it is withdrawn or its session has ended` })),
-    ...ready
-      .filter((task) => task.card && !elsewhere(task) && !mayCard(task))
-      .map((task) => ({ kind: 'cede', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: session ${lead} leads the chips now; ${withdrawn(task.card)}, and session ${lead} cards it again` })),
-  ];
+  const me = here === null ? null : { session: here, transcript };
+  const mine = (task) => here === null || ownedBy(task, me);
+  const ownerless = (task) => !task.owner && !task.ownerTranscript;
+  const mayCard = (task) => mine(task) || (all && ownerless(task));
+  const others = offered.filter((task) => !mine(task));
+  const adoptions = all
+    ? others
+        .filter((task) => !task.card && task.owner && live !== null && !live.has(task.owner))
+        .map((task) => ({ kind: 'adopt', ids: [task.id], text: `take ${task.id}: its owner session ${task.owner} is archived or gone; log updated with session: ${here}` }))
+    : [];
+  const withdrawals = waiting
+    .filter(({ task }) => task.card && !elsewhere(task))
+    .map(({ task, blockers }) => ({ kind: 'problem', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: ${blockers[0]}; ${withdrawn(task.card)} once it is withdrawn or its session has ended` }));
   const rows = [
     ...waiting.flatMap(({ task, stuck }) => stuck.map((blocker) => ({ kind: 'problem', ids: [task.id], text: `fix ${task.id}'s wait: ${blocker}; log updated with the waits it has now` }))),
     ...[...topics.values()]
@@ -700,7 +715,7 @@ export function board(tasks, git, here = null, lead = null) {
     ...lost.map((task) => ({ kind: 'migrate', ids: [task.id], text: `reopen ${task.id} or close it: a dropped card closed it as gone; log reopened, then updated with topic: and waits:, or dismissed done or superseded` })),
   ];
   const owed = [...tasks.values()].filter((task) => task.status === 'landed' && fastOf(task) && !task.reviewed).sort(byOrder);
-  rows.push(...reviewItems(tasks, owed));
+  rows.push(...reviewItems(tasks, owed), ...adoptions);
   const merge = mergeItem(offered, tasks, git);
   const cardable = ready.filter((task) => !task.card && mayCard(task));
   const cards = cardable
@@ -720,7 +735,7 @@ export function board(tasks, git, here = null, lead = null) {
   ];
   const [pass, items] = passes.find(([, each]) => each.length > 0) ?? [null, []];
   const problem = [...withdrawals, ...rows].some((item) => item.kind === 'problem');
-  return { open, ready, cardable, started, waiting, unmigrated, lost, owed, topics: [...topics.values()], todo: [...items, ...checks, ...runs], pass, problem, here, lead, note: git.note };
+  return { open, ready, cardable, others, all, started, waiting, unmigrated, lost, owed, topics: [...topics.values()], todo: [...items, ...checks, ...runs], pass, problem, here, note: git.note };
 }
 
 // Fast work stays owed until a review task covers it, so a declined or
@@ -765,12 +780,16 @@ const line = (task, extra = '') => `  ${task.id}  ${displayTitle(task)}${task.to
 export function renderBoard(view, ledger, max = null) {
   if (view.open.length === 0 && view.lost.length === 0 && view.owed.length === 0) return `No open suggested tasks in ${ledger}.`;
   const out = [`${view.open.length} open suggested tasks in ${ledger}. ${view.note}`, 'A session a card started works from chips brief <its task id>, because its task can change after the card.'];
-  if (view.lead && view.lead === view.here) out.push('This session leads the chips, so it cards every task that can start.');
-  else if (view.lead && view.here) out.push(`Session ${view.lead} leads the chips, so this session cards only the tasks it offered and withdraws its cards on the rest.`);
-  else if (view.lead) out.push(`Session ${view.lead} leads the chips.`);
+  if (view.here && view.all) out.push('This session cards the tasks it owns and the ones no session owns, and takes over each task whose owner session is archived or gone.');
+  else if (view.here) out.push('This session cards only the tasks it owns: the ones it offered, or carded first when the offer named no session. chips all also takes the tasks no live session owns.');
   const section = (title, rows) => {
     if (rows.length > 0) out.push('', `${title} (${rows.length})`, ...rows);
   };
+  const owners = new Map();
+  for (const task of view.others) {
+    const owner = task.owner ? `session ${task.owner}` : 'no owner';
+    owners.set(owner, [...(owners.get(owner) ?? []), task.id]);
+  }
   const card = (task) => `  card ${task.card}${task.session && task.session !== view.here ? ` in session ${task.session}` : ''}`;
   const loweredEffort = (task) => {
     const capped = effortOf(task, max);
@@ -786,6 +805,7 @@ export function renderBoard(view, ledger, max = null) {
   section('Owed review', view.owed.map((task) => line(task, task.patch ? `  patch ${task.patch}` : '')));
   section('Unmigrated', view.unmigrated.map((task) => line(task)));
   section('Lost', view.lost.map((task) => line(task)));
+  section('Other owners', [...owners].map(([owner, ids]) => `  ${owner}  ${ids.length} open: ${ids.join(', ')}`));
   section(
     'Topics',
     view.topics.filter((entry) => entry.tasks.length > 1 || entry.decides.length > 0).map((entry) => `  ${entry.topic}  ${entry.tasks.length} open${entry.decides.length ? `, design question ${entry.decides.map((task) => task.id).join(' and ')}` : ''}`),

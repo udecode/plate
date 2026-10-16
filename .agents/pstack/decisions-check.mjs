@@ -28,11 +28,11 @@
 //        a wait that can never clear or two open design questions in one topic;
 //        <ledger> defaults to <plans>/suggested-tasks.decisions.tsv,
 //        --fetch refreshes the remote branches that PR waits read, and --session names
-//        this session, so each card it does not hold gets a check item instead of a
-//        withdraw problem; once a session leads, another cards only the tasks it offered)
-//        node .agents/pstack/decisions-check.mjs chips lead --session <id> [<ledger>]
-//        (makes this session the chips lead, the one that cards tasks other sessions
-//        offered; the owner's /chips runs it, and it writes nothing when it already leads)
+//        this session, so it cards only the tasks it owns and each card it does not hold
+//        gets a check item instead of a withdraw problem)
+//        node .agents/pstack/decisions-check.mjs chips all --session <id> [--sessions <file>] [<ledger>]
+//        (also cards the tasks no session owns, and with the session tool's list saved as
+//        a JSON array, takes over each task whose owner session is archived or gone)
 //        node .agents/pstack/decisions-check.mjs chips stale [<ledger>]
 //        (prints each open task's age, the paths it writes that were deleted since its offer
 //        or are missing, the commits on its paths since its offer, its closed PR waits and
@@ -43,8 +43,8 @@
 //        (prints the prompt a card for that task carries)
 //        node .agents/pstack/decisions-check.mjs chips wait [--session <id>] [--timeout <minutes>] [--every <seconds>] [<ledger>]
 //        (polls the ledger and exits once a task lands, one this session may card turns
-//        ready, with --session a task that session carded starts or another session takes
-//        the lead from it, or at --timeout when given; with no --timeout it waits until one of those happens)
+//        ready, or with --session a task that session carded starts, or at --timeout when
+//        given; with no --timeout it waits until one of those happens)
 //        node .agents/pstack/decisions-check.mjs chips cleanup --sessions <file> [--session <id>] [<ledger>]
 //        (reads the session tool's list of every session, archived ones included, saved as a
 //        JSON array, and prints the idle card sessions of landed tasks to archive, the worktrees
@@ -55,7 +55,7 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { currentLead, leadLabel, maxEffort } from './lead.mjs';
-import { board, briefOf, cardEffortOf, CHIP_STATES, chipsLead, cleanupOf, effortOf, chipRowProblems, baseRedProblems, gitMerges, LEAD_PHASE, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
+import { board, briefOf, cardEffortOf, CHIP_STATES, cleanupOf, effortOf, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -150,12 +150,20 @@ function missingFindingPaths(cells, where) {
     .map((path) => `${where}: the finding cites ${path}, which this checkout lacks; copy it here from the worktree that wrote it, or cite the path it was saved to`);
 }
 
-function newRowProblems(cells, where, chips, lead) {
+function newRowProblems(cells, where, chips, writer) {
   const found = [];
   if (cells[0] === 'chip' && chips) found.push(...missingFindingPaths(cells, where));
-  if (cells[0] === LEAD_PHASE && !chips) found.push(`${where}: a ${LEAD_PHASE} row goes in the project's ledger ${join(plansDir(), LEDGER)}; run chips lead --session <id> to write it`);
-  if (cells[0] === LEAD_PHASE && !SESSION.test(cells[1])) found.push(`${where}: a ${LEAD_PHASE} row's decision is the id of the session that leads, the one the runtime's session tool gives it`);
-  return [...found, ...(cells[0] === 'chip' && chips ? newChipRowProblems(cells, chips, where, git, lead) : []), ...baseRedProblems(cells[3], chips ?? currentLedger(), where)];
+  return [...found, ...(cells[0] === 'chip' && chips ? newChipRowProblems(cells, chips, where, git, writer) : []), ...baseRedProblems(cells[3], chips ?? currentLedger(), where)];
+}
+
+const transcriptOf = (run) => (run ? basename(run.transcript, '.jsonl') : null);
+
+// An owner's session id can change with the account, so an offer or a takeover
+// that names session: also records the writing session's transcript id.
+function stampTranscript(cells, run) {
+  const [phase, , , evidence, result] = cells;
+  const owning = phase === 'chip' && /^(?:offered|updated)\b/u.test(result) && /(?:^|[\s;])session:/u.test(evidence) && !/(?:^|[\s;])transcript:/u.test(evidence);
+  return owning && run ? [cells[0], cells[1], cells[2], `${evidence}; transcript: ${transcriptOf(run)}`, cells[4]] : cells;
 }
 
 function appendOnlyLabelProblems(log, row, earlier, where) {
@@ -225,10 +233,11 @@ function append(path, batch, run) {
   let rounds = roundsSince(existing);
   const chips = readTasks(existing.slice(1));
   const ledger = resolve(path) === resolve(join(plansDir(), LEDGER));
-  let lead = chipsLead(existing);
+  const writer = run ? { session: null, transcript: transcriptOf(run) } : null;
   const rows = [];
   const found = [];
-  for (const [index, cells] of batch.entries()) {
+  for (let [index, cells] of batch.entries()) {
+    if (cells.length === 5) cells = stampTranscript(cells, run);
     const where = batch.length > 1 ? `${path} (new row ${index + 1})` : `${path} (new row)`;
     if (cells.length !== 5) {
       found.push(`${where}: append takes 5 cells, got ${cells.length}`);
@@ -241,7 +250,7 @@ function append(path, batch, run) {
     }
     const row = [stamp, ...cells].join('\t');
     if (cells[0] === 'chip' && !ledger) found.push(`${where}: chip rows go in the project's ledger ${join(plansDir(), LEDGER)}, because a suggested task outlives the run that offered it`);
-    found.push(...rowProblems(row, where, opened, ledger ? chips : null), ...newRowProblems(cells, where, ledger ? chips : null, lead), ...missingPlan(path, row, where), ...appendOnlyLabelProblems(path, row, [...existing.slice(1).filter(Boolean), ...rows], where));
+    found.push(...rowProblems(row, where, opened, ledger ? chips : null), ...newRowProblems(cells, where, ledger ? chips : null, writer), ...missingPlan(path, row, where), ...appendOnlyLabelProblems(path, row, [...existing.slice(1).filter(Boolean), ...rows], where));
     if (opens(row) && opened && !written) {
       found.push(`${where}: a later round's seats row needs a writing row after the previous seats row: log the round's writing passes under phase writing, or log a writing row that says why none ran`);
     }
@@ -255,7 +264,6 @@ function append(path, batch, run) {
     } else if (isWriting(row)) written = true;
     opened ||= opens(row);
     recordRow(chips, cells, stamp);
-    if (cells[0] === LEAD_PHASE) lead = cells[1];
     rows.push(row);
   }
   if (found.length > 0) return found;
@@ -310,7 +318,7 @@ if (args[0] === 'chips') {
     process.exit(0);
   }
   const id = rest[0] === 'brief' ? rest[1] : null;
-  const named = rest[0] === 'brief' ? rest[2] : ['stale', 'wait', 'lead', 'cleanup'].includes(rest[0]) ? rest[1] : rest[0];
+  const named = rest[0] === 'brief' ? rest[2] : ['stale', 'wait', 'all', 'cleanup'].includes(rest[0]) ? rest[1] : rest[0];
   const ledger = named ?? join(plansDir(), LEDGER);
   if (!existsSync(ledger)) {
     console.error(named ? `no log at ${ledger}` : `No ledger at ${ledger} yet; run this from the project root.`);
@@ -318,38 +326,30 @@ if (args[0] === 'chips') {
   }
   const lines = readFileSync(ledger, 'utf8').split('\n').slice(1);
   const tasks = readTasks(lines);
-  const lead = chipsLead(lines);
-  if (rest[0] === 'lead') {
-    if (here === null) {
-      console.error('chips lead takes --session <id>, the id the runtime\'s session tool gives this session');
-      process.exit(2);
-    }
-    if (lead === here) {
-      console.info('This session already leads the chips.');
-      process.exit(0);
-    }
-    const found = append(ledger, [[LEAD_PHASE, here, 'the owner typed /chips in this session, so it cards the tasks other sessions offered', `session: ${here}`, 'recorded']], currentLead(basename(ledger)));
-    if (found.length > 0) {
-      console.error(`Row not written:\n${found.join('\n')}`);
-      process.exit(1);
-    }
-    console.info(lead ? `This session leads the chips now. At its next sweep, session ${lead} withdraws its cards on tasks it did not offer.` : 'This session leads the chips now.');
-    process.exit(0);
-  }
-  if (rest[0] === 'cleanup') {
+  const sessionList = () => {
     const file = args.includes('--sessions') ? args[args.indexOf('--sessions') + 1] : null;
-    if (!file || !existsSync(file)) {
-      console.error("chips cleanup takes --sessions <file>, the session tool's list of every session, archived ones included, saved as a JSON array");
+    if (!file) return null;
+    let sessions = null;
+    try {
+      sessions = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
+    } catch {}
+    if (!Array.isArray(sessions)) {
+      console.error(`${file} does not hold a JSON array of sessions, the session tool's list saved as JSON`);
       process.exit(2);
     }
-    let sessions;
-    try {
-      sessions = JSON.parse(readFileSync(file, 'utf8'));
-    } catch {
-      sessions = null;
-    }
-    if (!Array.isArray(sessions)) {
-      console.error(`${file} does not hold a JSON array of sessions`);
+    return sessions;
+  };
+  const all = rest[0] === 'all';
+  if (all && here === null) {
+    console.error("chips all takes --session <id>, the id the runtime's session tool gives this session, because the tasks it takes become this session's");
+    process.exit(2);
+  }
+  const listed = all ? sessionList() : null;
+  const owning = { transcript: here === null ? null : transcriptOf(currentLead(here)), all, live: listed && new Set(listed.filter((session) => !session.isArchived).map((session) => session.sessionId)) };
+  if (rest[0] === 'cleanup') {
+    const sessions = sessionList();
+    if (!sessions) {
+      console.error("chips cleanup takes --sessions <file>, the session tool's list of every session, archived ones included, saved as a JSON array");
       process.exit(2);
     }
     const { archive, remove, report } = cleanupOf(tasks, sessions, here);
@@ -406,10 +406,9 @@ if (args[0] === 'chips') {
     const state = () => {
       const rows = readFileSync(ledger, 'utf8').split('\n').slice(1);
       const now = readTasks(rows);
-      const view = board(now, gitMerges({ branch }), here, chipsLead(rows));
+      const view = board(now, gitMerges({ branch }), here, owning);
       const started = [...now.values()].filter((task) => task.status === 'started' && here !== null && task.session === here);
       return {
-        lead: view.lead,
         ready: view.cardable.map((task) => task.id),
         landed: [...now.values()].filter((task) => task.status === 'landed').map((task) => task.id),
         started: new Map(started.map((task) => [task.id, `${task.id} in ${task.startedIn ? `session ${task.startedIn}` : 'a session its started row does not name'}, carded at ${cardEffortOf(task, maxEffort())}, brief at ${effortOf(task, maxEffort())}`])),
@@ -421,10 +420,6 @@ if (args[0] === 'chips') {
     while (Date.now() < deadline) {
       await new Promise((done) => setTimeout(done, option('--every', 30) * 1000));
       const now = state();
-      if (here !== null && start.lead === here && now.lead !== here) {
-        console.info(`Session ${now.lead} leads the chips now. Run the chips sweep, which lists the cards this session withdraws, and stop waiting.`);
-        process.exit(0);
-      }
       const turned = now.ready.filter((each) => !start.ready.includes(each));
       const landedNow = now.landed.filter((each) => !start.landed.includes(each));
       const startedNow = [...now.started].filter(([each]) => !start.started.has(each)).map(([, text]) => text);
@@ -455,7 +450,7 @@ if (args[0] === 'chips') {
     (ok ? console.info : console.error)(text);
     process.exit(ok ? 0 : 1);
   }
-  const view = board(tasks, gitMerges({ fetch, branch: projectConfig().branch }), here, lead);
+  const view = board(tasks, gitMerges({ fetch, branch: projectConfig().branch }), here, owning);
   console.info(renderBoard(view, ledger, maxEffort()));
   for (const note of startedOverlaps(tasks)) console.error(note);
   process.exit(view.problem ? 1 : 0);
