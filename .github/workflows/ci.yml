@@ -6,12 +6,6 @@ on:
       - main
       - next
     paths:
-      - '.agents/**'
-      - '.claude/**'
-      - '.codex/**'
-      - 'AGENTS.md'
-      - 'CLAUDE.md'
-      - 'skills-lock.json'
       - 'packages/**'
       - 'tooling/**'
       - 'package.json'
@@ -33,12 +27,6 @@ on:
       - synchronize
       - reopened
     paths:
-      - '.agents/**'
-      - '.claude/**'
-      - '.codex/**'
-      - 'AGENTS.md'
-      - 'CLAUDE.md'
-      - 'skills-lock.json'
       - 'packages/**'
       - 'tooling/**'
       - 'package.json'
