@@ -88,22 +88,10 @@ Completion Gates:
 
 ## Brief
 
-### What did you find?
-
-TODO: The finding behind this plan, in at most 40 words.
-
 ### What will change?
 
-TODO: What the owner will notice, in at most 40 words.
-
-### What do you need from me?
-
-TODO: The decision the owner must make, or nothing.
-
-### What happens if I say go?
-
-TODO: What go starts and what it does not authorize.
+TODO: What the owner gets, in at most 40 words.
 
 ### What could go wrong?
 
-TODO: The largest risk and what limits it.
+TODO: What could hurt the owner, in at most 40 words.

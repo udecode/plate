@@ -4,10 +4,10 @@ import * as React from 'react';
 import { failInvariant } from '../../internal/failInvariant';
 import {
   getCompiledPlateModelBinding,
-  getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import { createTextInjectionMatcher } from '../../internal/plugin/pluginInjectNodeProps';
 import type { AnyBasePlugin, EditableProps } from '../../lib';
 import { getPluginNodeClass } from '../../lib';
 import { EditorText } from '../components/plate-nodes';
@@ -57,22 +57,7 @@ export const pipeRenderText = (
   const plateRuntime = getPlateRuntime(modelEditor);
   const hasInjectNodeProps =
     plateRuntime.pluginCache.inject.nodeProps.text.length > 0;
-  const textInjectionPlugins =
-    plateRuntime.pluginCache.inject.nodeProps.text.flatMap((name) => {
-      const plugin =
-        getCompiledPlatePlugin(modelEditor, name) ??
-        failInvariant('Expected value to be defined');
-      const { nodeProps } = plugin.inject;
-      const hasTextInjectionTransform = [
-        nodeProps?.transformClassName,
-        nodeProps?.transformNodeValue,
-        nodeProps?.transformProps,
-        nodeProps?.transformStyle,
-      ].some((transform) => typeof transform === 'function');
-
-      return hasTextInjectionTransform ? [plugin] : [];
-    });
-  const hasUnknownTextInjection = textInjectionPlugins.length > 0;
+  const isTextInjectionActive = createTextInjectionMatcher(modelEditor);
 
   plateRuntime.pluginList.forEach((plugin) => {
     const binding = getCompiledPlateModelBinding(modelEditor, plugin);
@@ -230,7 +215,7 @@ export const pipeRenderText = (
     typeof setDOMTextSyncRendererCapability
   >[1] = ({ marks }) =>
     !renderTextProp &&
-    !hasUnknownTextInjection &&
+    !isTextInjectionActive(marks) &&
     !renderTexts.some(
       ({ requiresModelTextSync, textKey }) =>
         requiresModelTextSync && isTextMarkActive(marks, textKey)
@@ -245,9 +230,6 @@ export const pipeRenderText = (
       resolveDOMTextSync
     ),
     ({ marks }) =>
-      !renderTextProp &&
-      textInjectionPlugins.length === 0 &&
-      Object.keys(marks).length === 0 &&
-      resolveDOMTextSync({ marks })
+      Object.keys(marks).length === 0 && resolveDOMTextSync({ marks })
   );
 };

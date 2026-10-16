@@ -183,7 +183,11 @@ handler 使用 `keyDownCapture` 等名称。
 
 <APISubList>
 <APISubListItem parent="inject" name="nodeProps" type="Record<string, any>" optional>
-Plate 用于向任何节点组件注入 props 的属性。
+Plate 用于向任何节点组件注入 props 的属性。带 transform 或 node key 为 `text`
+的 text 注入会在每个 text 上运行，因此在任何 text 中输入都会重新渲染它。设置
+`textScope: 'nodeKey'` 可让该注入只在 node key 的值不为 null 或 undefined 的 text
+上运行，`SuggestionPlugin` 即是如此。扩展此类 plugin 并绘制其他 text 的 plugin
+应设置 `textScope: 'all'`。
 </APISubListItem>
 
 <APISubListItem parent="inject" name="excludePlugins" type="readonly (PluginReference | string)[]" optional>

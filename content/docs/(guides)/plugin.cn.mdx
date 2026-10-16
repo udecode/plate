@@ -426,7 +426,9 @@ const FindPlugin = BaseFindPlugin.configure({
 plugin 需要为少量完整 element host 添加响应式 attribute 时，使用
 `render.useViewElementAttributes`。每个 mounted view 中启用的 plugin 只有一个 hook
 program，并返回 `{ key, attributes }[]`。`render.attributes` 与
-`inject.nodeProps.transformProps` 会按 node 运行，因此必须保持纯函数。inline range
+`inject.nodeProps.transformProps` 会按 node 运行，因此必须保持纯函数。只绘制带有其 node key
+的 text 的注入应设置 `inject.nodeProps.textScope: 'nodeKey'`，这样在其他 text
+中输入时，该注入不再强制触发 React 渲染。inline range
 使用 `decorate`，结构化输出使用 component 或 slot。参见
 [Plate Plugin API](/docs/api/core/plate-plugin#properties-attrs-render)。
 

@@ -460,8 +460,10 @@ Use `render.useViewElementAttributes` when a plugin needs reactive attributes
 on a sparse set of whole element hosts. Plate mounts one hook program per
 enabled plugin per view and returns `{ key, attributes }[]`. Keep
 `render.attributes` and `inject.nodeProps.transformProps` pure because those
-callbacks run per node. Inline ranges use `decorate`; structural output uses
-components or slots. See the
+callbacks run per node. A text injection that paints only text holding its
+node key sets `inject.nodeProps.textScope: 'nodeKey'`, so it no longer forces
+a React render when typing in other text. Inline ranges use `decorate`;
+structural output uses components or slots. See the
 [Plate Plugin API](/docs/api/core/plate-plugin#properties-attrs-render).
 
 ### HTML document preparation

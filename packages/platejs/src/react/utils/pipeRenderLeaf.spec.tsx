@@ -4,6 +4,7 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import { property } from '../../core';
+import { BaseSuggestionPlugin } from '../../features/suggestion/BaseSuggestionPlugin';
 import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { createEditor } from '../editor/withPlate';
@@ -159,6 +160,110 @@ it('fails DOM text sync closed for untargeted text style transforms', () => {
   expect(getRetainedTextFlowCapability(renderLeaf)?.({ marks: {} })).toBe(
     false
   );
+});
+
+it('keeps native text paths for text without a suggestion', () => {
+  const editor = createEditor({
+    navigationFeedback: false,
+    plugins: [BaseSuggestionPlugin],
+  });
+  const authored = {
+    authored: [{ author: 'alice', change: 'c1', kind: 'insert' }],
+  };
+
+  for (const renderer of [pipeRenderLeaf(editor)!, pipeRenderText(editor)!]) {
+    const resolveDOMTextSyncCapability = getDOMTextSyncCapability(renderer);
+    const retained = getRetainedTextFlowCapability(renderer);
+
+    expect(resolveDOMTextSyncCapability({ marks: {} })).toBe(true);
+    expect(retained?.({ marks: {} })).toBe(true);
+    expect(resolveDOMTextSyncCapability({ marks: authored })).toBe(false);
+    expect(retained?.({ marks: authored })).toBe(false);
+  }
+});
+
+it('fails DOM text sync closed for every text under a content-keyed scoped transform', () => {
+  const contentPlugin = defineHeadlessPlugin('content', {
+    inject: {
+      nodeProps: {
+        nodeKey: 'text',
+        textScope: 'nodeKey',
+        transformProps: ({ props }) => props,
+      },
+    },
+  });
+  const editor = createEditor({
+    navigationFeedback: false,
+    plugins: [contentPlugin],
+  });
+
+  for (const renderer of [pipeRenderLeaf(editor)!, pipeRenderText(editor)!]) {
+    expect(getDOMTextSyncCapability(renderer)({ marks: {} })).toBe(false);
+    expect(getRetainedTextFlowCapability(renderer)?.({ marks: {} })).toBe(
+      false
+    );
+  }
+});
+
+it.each([
+  ['a query and the all scope', { query: () => true, textScope: 'all' }],
+  [
+    'a query and the nodeKey scope',
+    { query: () => true, textScope: 'nodeKey' },
+  ],
+  ['no query', {}],
+] as const)(
+  'fails DOM text sync closed for every text under a content-keyed injection with %s',
+  (_, options) => {
+    const contentPlugin = defineHeadlessPlugin('content', {
+      inject: {
+        nodeProps: {
+          classNames: { a: 'short', ab: 'long' },
+          nodeKey: 'text',
+          styleKey: '',
+          ...options,
+        },
+      },
+    });
+    const editor = createEditor({
+      navigationFeedback: false,
+      plugins: [contentPlugin],
+    });
+
+    for (const renderer of [pipeRenderLeaf(editor)!, pipeRenderText(editor)!]) {
+      expect(getDOMTextSyncCapability(renderer)({ marks: {} })).toBe(false);
+      expect(getRetainedTextFlowCapability(renderer)?.({ marks: {} })).toBe(
+        false
+      );
+    }
+  }
+);
+
+it('fails DOM text sync closed only for text a query injection can paint', () => {
+  const tonePlugin = defineHeadlessPlugin('tone', {
+    inject: {
+      nodeProps: {
+        nodeKey: 'tone',
+        query: () => true,
+      },
+    },
+  });
+  const editor = createEditor({
+    navigationFeedback: false,
+    plugins: [tonePlugin],
+  });
+
+  for (const renderer of [pipeRenderLeaf(editor)!, pipeRenderText(editor)!]) {
+    const resolveDOMTextSyncCapability = getDOMTextSyncCapability(renderer);
+
+    expect(resolveDOMTextSyncCapability({ marks: {} })).toBe(true);
+    expect(resolveDOMTextSyncCapability({ marks: { tone: null } })).toBe(true);
+    expect(resolveDOMTextSyncCapability({ marks: { tone: 'red' } })).toBe(
+      false
+    );
+    expect(resolveDOMTextSyncCapability({ marks: { tone: 0 } })).toBe(false);
+    expect(getRetainedTextFlowCapability(renderer)?.({ marks: {} })).toBe(true);
+  }
 });
 
 it('fails DOM text sync closed for active custom plugin components', () => {

@@ -9,6 +9,7 @@ import {
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import { createTextInjectionMatcher } from '../../internal/plugin/pluginInjectNodeProps';
 import type { EditableProps, EditOnlyConfig } from '../../lib';
 import { EditorLeaf } from '../components';
 import type { Editor } from '../editor/Editor';
@@ -81,23 +82,7 @@ export const pipeRenderLeaf = (
   const plateRuntime = getPlateRuntime(modelEditor);
   const hasInjectNodeProps =
     plateRuntime.pluginCache.inject.nodeProps.text.length > 0;
-  const textInjectionTransformScopes =
-    plateRuntime.pluginCache.inject.nodeProps.text.flatMap((name) => {
-      const plugin =
-        getCompiledPlatePlugin(modelEditor, name) ??
-        failInvariant('Expected value to be defined');
-      const nodeProps = plugin.inject?.nodeProps;
-      const hasTextInjectionTransform = [
-        nodeProps?.transformClassName,
-        nodeProps?.transformNodeValue,
-        nodeProps?.transformProps,
-        nodeProps?.transformStyle,
-      ].some((transform) => typeof transform === 'function');
-
-      return hasTextInjectionTransform
-        ? [{ keys: [] as string[], wildcard: true }]
-        : [];
-    });
+  const isTextInjectionActive = createTextInjectionMatcher(modelEditor);
 
   const renderLeafPluginNames = new Set(
     plateRuntime.pluginCache.node.leafRenderers
@@ -317,22 +302,14 @@ export const pipeRenderLeaf = (
   };
   const resolveDOMTextSync: Parameters<
     typeof setDOMTextSyncRendererCapability
-  >[1] = ({ marks }) => {
-    const hasActiveTextInjectionTransform = textInjectionTransformScopes.some(
-      ({ keys, wildcard }) =>
-        wildcard || keys.some((key) => Boolean(marks[key]))
-    );
-
-    return (
-      !renderLeafProp &&
-      !hasActiveTextInjectionTransform &&
-      !complexRenderLeafEntries.some(
-        ({ key, requiresModelTextSync }) =>
-          requiresModelTextSync && Boolean(marks[key])
-      ) &&
-      !leafAttributeEntries.some(({ key }) => Boolean(marks[key]))
-    );
-  };
+  >[1] = ({ marks }) =>
+    !renderLeafProp &&
+    !isTextInjectionActive(marks) &&
+    !complexRenderLeafEntries.some(
+      ({ key, requiresModelTextSync }) =>
+        requiresModelTextSync && Boolean(marks[key])
+    ) &&
+    !leafAttributeEntries.some(({ key }) => Boolean(marks[key]));
 
   return setRetainedTextFlowRendererCapability(
     setDOMTextSyncRendererCapability(
@@ -340,9 +317,6 @@ export const pipeRenderLeaf = (
       resolveDOMTextSync
     ),
     ({ marks }) =>
-      !renderLeafProp &&
-      textInjectionTransformScopes.length === 0 &&
-      Object.keys(marks).length === 0 &&
-      resolveDOMTextSync({ marks })
+      Object.keys(marks).length === 0 && resolveDOMTextSync({ marks })
   );
 };

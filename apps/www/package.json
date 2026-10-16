@@ -91,7 +91,6 @@
     "@radix-ui/react-tooltip": "1.2.7",
     "@shikijs/core": "1.10.1",
     "@tabler/icons-react": "3.34.0",
-    "agentation": "^3.0.2",
     "ai": "^6.0.0",
     "babel-plugin-react-compiler": "1.0.0",
     "class-variance-authority": "0.7.1",

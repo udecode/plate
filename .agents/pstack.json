@@ -1,5 +1,5 @@
 {
-  "tag": "v0.9.84",
+  "tag": "v0.9.88",
   "branch": "next",
   "protected": "main",
   "delivery": "user",
@@ -48,7 +48,7 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "34de08172dd9999ec22eeddd656dd3b50f946228bfaa3aa72ff6ddee0ba8490a",
+    "block": "28907144f15029101d1c5e30de219e51317b2976160fb4c71480d74f9bbe6eea",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-build.md": "7371c8760bd3bf2a18d53e4efe3f0b2a4b814bc2d7da5c01e741e7ee6bc49599",
@@ -79,7 +79,7 @@
       ".agents/pstack/rules/title.md": "3790bd24dd6a72b615d394823a5ea46e7fc949e2d3d2248a6358c29d1ed19db5",
       ".agents/pstack/rules/trails.md": "9f3de7dcdf5d4fd952f76fbc6a247e29a3cf12bc87c851a0827d311503c11a7a"
     },
-    "source": "b4fa23fe8ffab3d702fe98472ff6c49a4db8f180"
+    "source": "1aad9ce1b7f2843f8481a63fb6714f0e44231364"
   },
   "pageTopic": {
     "field": "review_scopes",

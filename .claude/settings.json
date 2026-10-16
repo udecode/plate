@@ -3,7 +3,7 @@
     "allow": ["Bash", "Edit", "Skill", "WebFetch", "WebSearch"]
   },
   "enableAllProjectMcpServers": true,
-  "autoCompactWindow": 600000,
+  "autoCompactWindow": 400000,
   "hooks": {
     "Stop": [
       {
@@ -71,7 +71,7 @@
       "source": {
         "source": "github",
         "repo": "michael-denyer/pstack-claude",
-        "ref": "v0.9.84"
+        "ref": "v0.9.88"
       }
     }
   }

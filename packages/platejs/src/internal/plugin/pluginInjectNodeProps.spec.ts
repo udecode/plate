@@ -175,6 +175,45 @@ describe('pluginInjectNodeProps', () => {
     });
   });
 
+  it('runs a nodeKey-scoped injection only on text holding its key', () => {
+    const query = mock(() => true);
+    const transformProps = mock(() => ({ 'data-tone': 'yes' }));
+    const ScopedPlugin = definePlugin('scoped', {
+      inject: {
+        nodeProps: {
+          nodeKey: 'tone',
+          query,
+          textScope: 'nodeKey',
+          transformProps,
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [ScopedPlugin],
+    });
+    const inject = (nodeProps: Parameters<typeof pluginInjectNodeProps>[2]) =>
+      pluginInjectNodeProps(
+        editor,
+        editor.plugin(ScopedPlugin),
+        nodeProps,
+        () => [0]
+      );
+
+    expect(inject({ text: { text: 'hello' } })).toBeUndefined();
+    expect(inject({ text: { text: 'hello', tone: null } })).toBeUndefined();
+    expect(query).not.toHaveBeenCalled();
+    expect(transformProps).not.toHaveBeenCalled();
+
+    expect(inject({ text: { text: 'hello', tone: false } })).toEqual({
+      'data-tone': 'yes',
+    });
+    expect(
+      inject({
+        element: { children: [{ text: 'hello' }], type: 'paragraph' },
+      })
+    ).toEqual({ 'data-tone': 'yes' });
+  });
+
   it('uses transform callbacks in precedence order', () => {
     const TonePlugin = definePlugin('tone', {
       inject: {
