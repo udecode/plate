@@ -167,6 +167,41 @@ describe('paragraph breaks preservation', () => {
     });
   });
 
+  it('does not add zero-width spaces around inline elements', () => {
+    const originalValue = [
+      {
+        children: [
+          { text: '' },
+          { children: [{ text: 'link' }], type: 'a', url: 'https://x.y' },
+          { text: '' },
+        ],
+        type: 'p',
+      },
+      {
+        children: [
+          { text: 'a' },
+          {
+            children: [{ text: '' }],
+            identifier: '1',
+            type: 'footnoteReference',
+          },
+          { text: '' },
+        ],
+        type: 'p',
+      },
+      {
+        children: [{ children: [{ text: 'note' }], type: 'p' }],
+        identifier: '1',
+        type: 'footnoteDefinition',
+      },
+    ];
+
+    const serialized = serializeMd(editor as any, { value: originalValue });
+
+    expect(serialized).not.toContain('\u200B');
+    expect(serialized).toBe('[link](https://x.y)\n\na[^1]\n\n[^1]: note\n');
+  });
+
   it('handle zero-width space in regular text content', () => {
     const originalValue = [
       {

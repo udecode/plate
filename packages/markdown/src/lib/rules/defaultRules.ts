@@ -143,7 +143,11 @@ const normalizeParagraphLineBreaks = (
   children.flatMap((child): Descendant[] => {
     const text = (child as { text?: unknown }).text;
 
-    if (text === '' && options.preserveEmptyParagraphs !== false) {
+    if (
+      text === '' &&
+      children.length === 1 &&
+      options.preserveEmptyParagraphs !== false
+    ) {
       return [{ ...child, text: '\u200B' }];
     }
 
