@@ -70,7 +70,8 @@ DOM and returns an `ExternalTextView<TConfig>`:
 | Method | Contract |
 | --- | --- |
 | `update({ changes, state })` | Apply exact patches and the supplied canonical state without dispatching another edit. |
-| `focus({ edge?, x? }?)` | Focus the local input and honor the requested boundary or horizontal position where supported. |
+| `focus()` | Install the delivered `state.selection`, then focus the local input. |
+| `offsetAt?({ edge, x })` | Optional. Return the offset nearest client `x` on the first (`'start'`) or last (`'end'`) visual line, or `null`. Plite asks before ArrowUp or ArrowDown enters the view, then writes the selection itself. Read layout only: never dispatch, change text or selection, focus, scroll, or run deferred layout work. Without it, the caret enters at the first or last offset. |
 | `destroy()` | Release every local listener and resource and remove the adapter's DOM. |
 
 `state` contains `text`, `version`, `selection`, `readOnly`, `decorations`, and
@@ -104,7 +105,7 @@ invalid, and read-only edits without changing the document.
 | --- | --- |
 | `dispatch({ baseVersion, changes, intent, selection })` | Submit one edit with `input`, `paste`, `cut`, `drop`, or `composition` intent. Selection uses the resulting text's directed UTF-16 offsets. |
 | `select({ baseVersion, selection })` | Set directed `{ anchor, focus }` offsets without changing text. |
-| `navigateOut({ baseVersion, direction, extend?, x? })` | Ask Plite to move into neighboring document content, optionally extending selection. |
+| `navigateOut({ baseVersion, direction, extend?, x? })` | Ask Plite to move into neighboring document content, optionally extending selection. For ArrowUp or ArrowDown, pass the caret's goal client `x` so Plite keeps the column; omit it for other keys. |
 | `deleteOut({ baseVersion, direction })` | Delete across a block edge when the canonical caret is collapsed at that edge. |
 | `composition("start" \| "end")` | Join and finish Plite's composition epoch. Submit composition edits with `intent: "composition"`. |
 | `history("undo" \| "redo")` | Use the installed Plite history plugin. Returns `false` when no history action applies. |

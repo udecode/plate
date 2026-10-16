@@ -1152,7 +1152,7 @@ describe('PlateContent', () => {
     expect(getByTestId('container-renderer-b')).toBeInTheDocument();
     expect(getByTestId('plite-renderer-b')).toBeInTheDocument();
 
-    let inserted = false;
+    let inserted: boolean | undefined = false;
 
     act(() => {
       inserted = editor.api.dom.clipboard.insertData({

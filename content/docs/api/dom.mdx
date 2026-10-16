@@ -292,25 +292,28 @@ another editor never resolves to a side. Pass the target to
 
 ## DataTransfer
 
-#### `editor.api.dom.clipboard.insertData(data: DataTransfer): boolean`
+#### `editor.api.dom.clipboard.insertData(data: DataTransfer): boolean | undefined`
 
 Insert data from a `DataTransfer` into the editor. Returns `true` when Plate or
-a plugin inserts content. The DOM adapter dispatches `domCommands.insertData`;
-typed plugin command interceptors can claim the payload, transform it, or return
-`next()` to continue. The accepted command spec commits through one transaction.
+a plugin inserts content, `false` when no format applies, and `undefined` when
+the editor refuses the update, as Suggesting does for a write it cannot record.
+The DOM adapter dispatches `domCommands.insertData`; typed plugin command
+interceptors can claim the payload, transform it, or return `next()` to
+continue. The accepted command spec commits through one transaction.
 
 The default command path reads the editor fragment format, then configured
-DataTransfer formats, then plain text.
+DataTransfer formats, then plain text. A refused format ends the paste; no later
+format runs.
 
-#### `editor.api.dom.clipboard.insertFragmentData(data: DataTransfer): boolean`
+#### `editor.api.dom.clipboard.insertFragmentData(data: DataTransfer): boolean | undefined`
 
 Insert editor fragment data from a `DataTransfer`. Returns `true` when fragment
-content was inserted.
+content was inserted and `undefined` when the editor refuses the update.
 
-#### `editor.api.dom.clipboard.insertTextData(data: DataTransfer): boolean`
+#### `editor.api.dom.clipboard.insertTextData(data: DataTransfer): boolean | undefined`
 
 Insert plain text data from a `DataTransfer`. Returns `true` when text content
-was inserted.
+was inserted and `undefined` when the editor refuses the update.
 
 #### `editor.api.dom.clipboard.readSlice(data: Pick<DataTransfer, 'getData' | 'types'>): ClipboardSliceRead`
 

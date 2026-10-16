@@ -941,9 +941,24 @@ export const applyEditableCaretMovement = ({
     );
 
     if (!target) return caretMovementHandled();
+    const landing =
+      (nativeEvent.key === 'ArrowDown' || nativeEvent.key === 'ArrowUp') &&
+      preferredX !== undefined &&
+      SelectionApi.isText(target) &&
+      RangeApi.isCollapsed(target)
+        ? runtime?.externalText.verticalEntryPoint(
+            target.focus,
+            nativeEvent.key === 'ArrowDown' ? 'start' : 'end',
+            preferredX
+          )
+        : null;
     writePliteViewSelection(editor, null);
     getMountedEditableDOMRuntime(editor)?.clearModelSelectionDOMPreference();
-    dispatchCommand(editor, editorCommands.select, { target });
+    dispatchCommand(editor, editorCommands.select, {
+      target: landing
+        ? SelectionApi.text({ anchor: landing, focus: landing })
+        : target,
+    });
 
     return caretMovementHandled();
   }

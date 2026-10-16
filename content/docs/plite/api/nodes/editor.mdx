@@ -193,10 +193,12 @@ plugin from `plitejs/history`; `tags` is always available.
 
 The configured facade exposes core and installed plugin update methods. A
 method marked with `txOnly(...)` is omitted because it requires an explicit
-transaction. `editor.update(policy)` returns that configured facade; a direct
-method returns the underlying method result.
+transaction. `editor.update(policy)` returns that configured facade. A direct
+method returns the underlying method result, or `undefined` when the editor
+refuses the update, as Suggesting does for a write it cannot record. A refused
+update rolls back whole and publishes one refusal.
 
-#### `editor.update(fn) => void`
+#### `editor.update(fn) => R | undefined`
 
 Run one atomic update with the default policy. The callback receives `tx`, which
 owns reads and writes for the active transaction.
@@ -209,7 +211,7 @@ editor.update((tx) => {
 });
 ```
 
-#### `editor.update(policy, fn) => void`
+#### `editor.update(policy, fn) => R | undefined`
 
 Run one atomic update with a semantic policy.
 
@@ -249,8 +251,19 @@ editor.update((tx, { afterCommit }) => {
 });
 ```
 
-All callback forms return `void`, must finish synchronously, and invalidate
-`tx` when they return. Update callbacks, plugin write methods, and transaction
+An update returns its callback's value, or `undefined` when the editor refuses
+the update. Read what landed from that answer. A `tx` method answers for its
+draft, and the editor can still refuse the whole update.
+
+```javascript
+const inserted = editor.update((tx) => tx.slice.replace(importedSlice));
+
+if (inserted === undefined) {
+  // Refused: nothing changed.
+}
+```
+
+Callbacks must finish synchronously, and `tx` is invalid once they return. Update callbacks, plugin write methods, and transaction
 spec callbacks must not return a Promise or other thenable. An uncaught failure
 discards the draft without publishing a commit. Escaped transactions are rejected.
 A public update cannot be nested; pass the active `tx` into helpers instead.

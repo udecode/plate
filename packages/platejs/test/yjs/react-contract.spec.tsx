@@ -15,7 +15,13 @@ import {
   schema,
 } from '../../src/index';
 import { getPlateDecorationSources } from '../../src/internal/plugin/getPlateDecorationSources';
-import { createEditor, EditorContent, EditorRoot } from '../../src/react/core';
+import {
+  createEditor,
+  type Editor,
+  EditorContent,
+  EditorRoot,
+  useCreateEditor,
+} from '../../src/react/core';
 import {
   YjsPlugin,
   useYjsAdmissionStatus,
@@ -339,6 +345,120 @@ describe('platejs/yjs React facade', () => {
       assert.equal(view.container.textContent, 'none');
     } finally {
       view.unmount();
+      doc.destroy();
+    }
+  });
+});
+
+describe('platejs/yjs useCreateEditor lifetime', () => {
+  const createCollaboration = () => {
+    const doc = new Y.Doc();
+    const awareness = new DocumentAwareness(doc, doc.clientID);
+    const Collaboration = YjsPlugin.create({
+      awareness,
+      doc,
+      initialReady: true,
+      seed: true,
+    });
+
+    return { awareness, Collaboration, doc };
+  };
+
+  it('replaces the editor on an id change and paints the remote selections it found at start', () => {
+    const { awareness, Collaboration, doc } = createCollaboration();
+    const editors: Editor[] = [];
+    const App = ({ id }: { id: string }) => {
+      const editor = useCreateEditor({
+        id,
+        initialValue: initialValue(),
+        plugins: [BaseParagraphPlugin, Collaboration],
+      });
+
+      editors.push(editor);
+
+      return (
+        <EditorRoot editor={editor}>
+          <EditorContent aria-label="Editor" />
+        </EditorRoot>
+      );
+    };
+    const container = document.createElement('div');
+    const root = createRoot(container);
+    const remoteSelection = () =>
+      container.querySelector('[data-remote-selection][data-client-id="202"]')
+        ?.textContent;
+
+    document.body.append(container);
+
+    try {
+      act(() => {
+        root.render(
+          <React.StrictMode>
+            <App id="first" />
+          </React.StrictMode>
+        );
+      });
+      const first = editors.at(-1)!;
+
+      act(() => {
+        first.update.selection.set(selection([0, 0], 1));
+        first.plugin(Collaboration).api.syncSelection();
+        awareness.setRemoteState(
+          202,
+          awareness.getLocalState() ?? { data: null, selection: null }
+        );
+      });
+      const before = remoteSelection();
+
+      act(() => {
+        root.render(
+          <React.StrictMode>
+            <App id="second" />
+          </React.StrictMode>
+        );
+      });
+
+      assert.deepEqual(
+        {
+          after: remoteSelection(),
+          before,
+          replaced: editors.at(-1) !== first,
+        },
+        { after: 'lp', before: 'lp', replaced: true }
+      );
+    } finally {
+      act(() => root.unmount());
+      container.remove();
+      doc.destroy();
+    }
+  });
+
+  it('frees the document when enabled turns off', () => {
+    const { Collaboration, doc } = createCollaboration();
+    const App = ({ enabled }: { enabled: boolean }) => {
+      useCreateEditor({
+        enabled,
+        initialValue: initialValue(),
+        plugins: [BaseParagraphPlugin, Collaboration],
+      });
+
+      return null;
+    };
+    const container = document.createElement('div');
+    const root = createRoot(container);
+
+    try {
+      act(() => root.render(<App enabled />));
+      act(() => root.render(<App enabled={false} />));
+
+      const next = createEditor({
+        initialValue: initialValue(),
+        plugins: [BaseParagraphPlugin, Collaboration],
+      });
+
+      next.destroy();
+    } finally {
+      act(() => root.unmount());
       doc.destroy();
     }
   });

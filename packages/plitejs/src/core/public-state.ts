@@ -246,6 +246,7 @@ import {
   trackDraftSpans,
 } from './draft-track';
 import { editorCommands } from './editor-commands';
+import { assertEditorNotDestroyed } from './editor-lifetime';
 import {
   isEditorNodeSelectable,
   projectEditorExportSlice,
@@ -8261,14 +8262,16 @@ export const readEditor = <
 export const updateEditor = <
   V extends Value,
   TPlugins extends readonly unknown[] = readonly [],
+  R = void,
 >(
   editor: Editor<V, TPlugins>,
   fn: (
     transaction: EditorUpdateTransaction<V, TPlugins>,
     context: EditorUpdateContext<Editor<V, TPlugins>>
-  ) => void,
+  ) => R,
   options: InternalEditorUpdateOptions = {}
-) => {
+): R | undefined => {
+  assertEditorNotDestroyed(editor);
   if (isInTransaction(editor)) {
     throw new Error('editor.update cannot be nested inside another update');
   }
@@ -8284,15 +8287,7 @@ export const updateEditor = <
   const run = () =>
     runEditorTransaction(
       editor,
-      () => {
-        const tx = getUpdateView(editor);
-        const author: (
-          transaction: EditorUpdateTransaction<V, TPlugins>,
-          context: EditorUpdateContext<Editor<V, TPlugins>>
-        ) => unknown = fn;
-
-        return author(tx, getUpdateContext(editor));
-      },
+      () => fn(getUpdateView(editor), getUpdateContext(editor)),
       {
         authority: 'update',
         skipCorrections: options.skipCorrections,
@@ -10490,14 +10485,14 @@ const assertSynchronousTransactionAuthorResult = (result: unknown) => {
   }
 };
 
-export const runEditorTransaction = (
+export const runEditorTransaction = <R>(
   editor: Editor,
-  fn: (transaction: EditorTransaction) => unknown,
+  fn: (transaction: EditorTransaction) => R,
   options: {
     authority?: TransactionAuthority;
     skipCorrections?: boolean;
   } = {}
-) => {
+): R | undefined => {
   if (PREPARING_COMMIT.has(getEditorRuntimeOwner(editor))) {
     throw new Error('Cannot reenter a finalized editor transaction.');
   }
@@ -10507,12 +10502,14 @@ export const runEditorTransaction = (
     incrementEditorTransactionDepth(editor, depth);
 
     try {
-      assertSynchronousTransactionAuthorResult(fn(getTransactionView(editor)));
+      const answer = fn(getTransactionView(editor));
+
+      assertSynchronousTransactionAuthorResult(answer);
+
+      return answer;
     } finally {
       decrementEditorTransactionDepth(editor);
     }
-
-    return null;
   }
 
   let pluginPublication:
@@ -10520,6 +10517,7 @@ export const runEditorTransaction = (
     | undefined;
   let pluginSchemaIdentity: EditorSchemaIdentity | undefined;
   let committed: EditorCommit | null = null;
+  let answer: R | undefined;
   let transactionFailed = false;
   let transactionError: Readonly<{ value: unknown }> | null = null;
 
@@ -10530,11 +10528,9 @@ export const runEditorTransaction = (
 
   try {
     const transaction = getTransactionView(editor);
-    const result = profileCoreDuration('transaction-callback', () =>
-      fn(transaction)
-    );
+    answer = profileCoreDuration('transaction-callback', () => fn(transaction));
 
-    assertSynchronousTransactionAuthorResult(result);
+    assertSynchronousTransactionAuthorResult(answer);
 
     finalizeWithoutOrphanedRoots(editor);
 
@@ -10959,17 +10955,19 @@ export const runEditorTransaction = (
   }
 
   if (transactionError) {
-    // A refused update rolled back whole; it reports instead of throwing.
-    if (transactionError.value instanceof EditorRefusalError) {
+    if (
+      committed === null &&
+      transactionError.value instanceof EditorRefusalError
+    ) {
       publishEditorRefusal(editor, transactionError.value.refusal);
 
-      return committed;
+      return undefined;
     }
 
     throw transactionError.value;
   }
 
-  return committed;
+  return answer;
 };
 
 const createRootFitTransactionSpec = (

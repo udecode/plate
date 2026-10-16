@@ -1,7 +1,6 @@
 import {
   BaseParagraphPlugin,
   ContentSlice,
-  createEditorView,
   createEditor as createProductEditor,
   createEditorView,
   definePlugin,

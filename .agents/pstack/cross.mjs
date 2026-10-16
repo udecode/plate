@@ -16,6 +16,7 @@ export const MODELS = { claude: 'opus', codex: 'gpt-6.1-sol' };
 export const otherRuntime = (env = process.env) => (env.CLAUDECODE ? 'codex' : 'claude');
 
 const DASHED_WORD = /^-\S+$/u;
+const TIME_BUDGET_SECONDS = 3600;
 const VALUE_FLAGS = new Map([
   ['--to', 'to'],
   ['--timeout', 'timeout'],
@@ -131,6 +132,7 @@ async function main(argv) {
   let isolated = false;
   let bypass = false;
   let reach = false;
+  let stress = false;
   let help = false;
   let refusal;
   const positional = [];
@@ -145,6 +147,7 @@ async function main(argv) {
     else if (arg === '--ignore-user-config') isolated = true;
     else if (arg === '--bypass') bypass = true;
     else if (arg === '--reach') reach = true;
+    else if (arg === '--stress') stress = true;
     else if (arg === '--help' || arg === '-h') help = true;
     else if (DASHED_WORD.test(arg)) refusal ??= `unknown flag ${arg}`;
     else positional.push(arg);
@@ -153,7 +156,7 @@ async function main(argv) {
   const sources = [...positional, values.prompt, promptFile].filter((source) => source !== undefined);
   let prompt = sources[0] ?? '';
   const timeout = Number(values.timeout ?? 900);
-  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] [--reach | --bypass | --computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
+  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] [--stress] [--reach | --bypass | --computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
   if (help) {
     console.info(usage);
     return 0;
@@ -186,6 +189,10 @@ async function main(argv) {
   if (promptFile) prompt = readFileSync(promptFile, 'utf8');
   if (!prompt.trim() || !['claude', 'codex'].includes(to) || !(timeout > 0)) {
     console.error(usage);
+    return 2;
+  }
+  if (!stress && timeout > TIME_BUDGET_SECONDS) {
+    console.error(`--timeout ${timeout} is over the ${TIME_BUDGET_SECONDS}-second time budget; split the task, or run it from a suggested task's session with --stress\n${usage}`);
     return 2;
   }
   if ((events || chromeProfile) && (to !== 'codex' || !events || !chromeProfile)) {

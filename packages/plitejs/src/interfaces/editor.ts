@@ -1873,27 +1873,41 @@ type EditorBivariantMethods<T> = {
       : T[K];
 };
 
+type EditorDirectMethods<T> = {
+  [
+    K in keyof T as T[K] extends TxOnlyMethod<(...args: any[]) => any>
+      ? never
+      : K
+  ]: T[K] extends EditorGenericMethod<(...args: any[]) => any>
+    ? T[K]
+    : T[K] extends (...args: infer TArgs) => infer TResult
+      ? BivariantMethod<TArgs, TResult | undefined>
+      : T[K] extends object
+        ? EditorDirectMethods<T[K]>
+        : T[K];
+};
+
 export type EditorCoreUpdateMethods<
   V extends Value = Value,
   TPlugins extends readonly unknown[] = readonly [],
 > = {
-  annotations: EditorBivariantMethods<EditorTransactionAnnotationsApi>;
-  blocks: EditorBivariantMethods<EditorTransactionBlocksApi<V>>;
-  break: EditorBivariantMethods<EditorTransactionBreakApi>;
-  changes: EditorBivariantMethods<EditorTransactionChangesApi>;
+  annotations: EditorDirectMethods<EditorTransactionAnnotationsApi>;
+  blocks: EditorDirectMethods<EditorTransactionBlocksApi<V>>;
+  break: EditorDirectMethods<EditorTransactionBreakApi>;
+  changes: EditorDirectMethods<EditorTransactionChangesApi>;
   /** Dispatch a typed semantic command in one update. */
-  command: EditorCommandDispatch<BaseEditor<V, TPlugins>>;
-  effects: EditorBivariantMethods<EditorTransactionEffectsApi>;
-  plugins: EditorBivariantMethods<
+  command: EditorDirectCommandDispatch<BaseEditor<V, TPlugins>>;
+  effects: EditorDirectMethods<EditorTransactionEffectsApi>;
+  plugins: EditorDirectMethods<
     Pick<EditorTransactionPluginsApi, 'reconfigure'>
   >;
-  fragment: EditorBivariantMethods<
+  fragment: EditorDirectMethods<
     Pick<EditorTransactionFragmentApi<V>, 'delete' | 'replace'>
   >;
-  marks: EditorBivariantMethods<
+  marks: EditorDirectMethods<
     Pick<EditorTransactionMarksApi<V>, 'add' | 'remove' | 'set' | 'toggle'>
   >;
-  nodes: EditorBivariantMethods<
+  nodes: EditorDirectMethods<
     Pick<
       EditorTransactionNodesApi<V>,
       | 'insert'
@@ -1910,22 +1924,22 @@ export type EditorCoreUpdateMethods<
   > &
     Pick<EditorTransactionNodesApi<V>, 'set' | 'unset'>;
   records: EditorTransactionRecordsApi;
-  roots: EditorBivariantMethods<EditorTransactionRootsApi<V>>;
-  slice: EditorBivariantMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;
-  selection: EditorBivariantMethods<
+  roots: EditorDirectMethods<EditorTransactionRootsApi<V>>;
+  slice: EditorDirectMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;
+  selection: EditorDirectMethods<
     Pick<
       EditorTransactionSelectionApi<EditorSelection>,
       'collapse' | 'move' | 'set' | 'setNodes' | 'setPoint'
     >
   >;
   setField: BivariantFunction<EditorCoreUpdateTransaction<V>['setField']>;
-  text: EditorBivariantMethods<
+  text: EditorDirectMethods<
     Pick<
       EditorTransactionTextApi,
       'delete' | 'deleteBackward' | 'deleteForward' | 'insert'
     >
   >;
-  value: EditorBivariantMethods<
+  value: EditorDirectMethods<
     Pick<EditorUpdateValueApi<V>, 'repair' | 'replace'>
   >;
 };
@@ -1937,6 +1951,16 @@ type PluginUpdateMethods<TGroups> = {
     ? Readonly<Record<never, never>>
     : TGroups[K] extends object
       ? EditorBivariantMethods<TGroups[K]>
+      : TGroups[K];
+};
+
+type DirectPluginUpdateMethods<TGroups> = {
+  [K in keyof TGroups]: TGroups[K] extends TxOnlyMethod<
+    (...args: never[]) => unknown
+  >
+    ? Readonly<Record<never, never>>
+    : TGroups[K] extends object
+      ? EditorDirectMethods<TGroups[K]>
       : TGroups[K];
 };
 
@@ -1976,27 +2000,27 @@ export type EditorUpdateMethods<
   V extends Value = Value,
   TPlugins extends readonly unknown[] = readonly [],
 > = EditorCoreUpdateMethods<V, TPlugins> &
-  PluginUpdateMethods<EditorInstalledUpdateGroups<V, TPlugins>>;
+  DirectPluginUpdateMethods<EditorInstalledUpdateGroups<V, TPlugins>>;
 
 export type EditorUpdate<
   V extends Value = Value,
   TPlugins extends readonly unknown[] = readonly [],
 > = {
-  (
+  <R = void>(
     fn: (
       transaction: EditorUpdateTransaction<V, TPlugins>,
       context: EditorUpdateContext<BaseEditor<V, TPlugins>>
-    ) => void
-  ): void;
-  (
+    ) => R
+  ): R | undefined;
+  <R = void>(
     policy: EditorAvailableUpdatePolicy<
       EditorInstalledUpdateGroups<V, TPlugins>
     >,
     fn: (
       transaction: EditorUpdateTransaction<V, TPlugins>,
       context: EditorUpdateContext<BaseEditor<V, TPlugins>>
-    ) => void
-  ): void;
+    ) => R
+  ): R | undefined;
   (
     policy: EditorAvailableUpdatePolicy<
       EditorInstalledUpdateGroups<V, TPlugins>
@@ -2029,6 +2053,14 @@ export interface BaseEditor<
     plugin: PluginInput,
     options?: PluginReconfigureOptions
   ) => () => void;
+  /**
+   * End this editor's runtime: release every plugin's acquired resources
+   * and run every plugin cleanup with reason `remove`. Afterwards `update`
+   * and `install` throw and an uninstall handle does nothing. Idempotent.
+   * A `useEditor` editor is ended by its component; call this only for an
+   * editor you created with `createEditor`.
+   */
+  destroy: () => void;
 }
 
 /** Update policy available for a specific editor's installed plugins. */
@@ -2591,6 +2623,19 @@ export type EditorCommandDispatch<TEditor = Editor> = <
     : [input: EditorCommandInput<TCommand>]
 ) => boolean;
 
+/**
+ * Dispatch a command in its own update. It answers `undefined` when the editor
+ * refuses that update.
+ */
+export type EditorDirectCommandDispatch<TEditor = Editor> = <
+  TCommand extends EditorCommandDescriptor,
+>(
+  command: TCommand & CompatibleEditorCommand<TEditor, TCommand>,
+  ...input: [EditorCommandInput<TCommand>] extends [void]
+    ? [] | [input: EditorCommandInput<TCommand>]
+    : [input: EditorCommandInput<TCommand>]
+) => boolean | undefined;
+
 export type EditorCorrectionTransaction<
   V extends Value = Value,
   TPlugins extends readonly unknown[] = readonly [],
@@ -2757,14 +2802,32 @@ export type PluginCleanupContext = Readonly<{
 }>;
 
 export type PluginActivationContext = Readonly<{
+  /**
+   * Register `take`, which claims something outside the editor, such as a
+   * listener on a shared document or a network channel, and returns its
+   * release. Activation can run in a React render that never commits, so
+   * keep `activate` in memory and claim outside resources only here. On an
+   * editor from `createEditor`, or a component's editor after React commits
+   * it, `take` runs during publication once every `beforePublish` has
+   * passed, and a throw rolls the publication back. On a component's editor
+   * before that commit, `take` runs at the commit. Each release runs once:
+   * when the component unmounts, when the editor is destroyed, or when the
+   * plugin is removed, replaced or rolled back. `take` and its release must
+   * be synchronous and must not update the editor.
+   */
+  acquire: (take: () => (context: PluginCleanupContext) => void) => void;
   afterPublish: (callback: () => void) => void;
   /**
    * Initialize against the final document before publication becomes permanent.
    * Must be synchronous. Throwing aborts publication and runs activation cleanup.
-   * Document writes are forbidden; register acquired resources with onCleanup.
+   * Document writes are forbidden; take outside resources with `acquire`.
    */
   beforePublish: (callback: () => void) => void;
   pluginName: string;
+  /**
+   * Drop in-memory state when the plugin is removed, replaced or rolled back,
+   * or when the editor is destroyed.
+   */
   onCleanup: (cleanup: (context: PluginCleanupContext) => void) => void;
   /** Named view root, or `undefined` for the primary document. */
   root: NamedRootKey | undefined;
@@ -2782,7 +2845,7 @@ export type EditorLifecycleError<TEditor = Editor> =
   | Readonly<{
       cause: unknown;
       editor: TEditor;
-      phase: 'mount' | 'update' | 'focus' | 'destroy';
+      phase: 'mount' | 'update' | 'focus' | 'offsetAt' | 'destroy';
       source: 'external-text';
     }>
   | Readonly<{

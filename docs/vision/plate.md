@@ -203,7 +203,9 @@ Current priorities:
   narrowing instead of publishing an always-present method family.
 - `platejs` and `platejs/react` call the live editor type `Editor`; package and
   entrypoint establish the layer. React creation uses `useCreateEditor(options,
-  deps?)`. Every Plate constructor and creation hook allocates a new editor and
+  deps?)`, which owns its editor for the component lifetime the way Plite's
+  `useEditor` does, so a remount or a replaced editor binds the same shared
+  document again. Every Plate constructor and creation hook allocates a new editor and
   refuses an `editor` option, and, like Plite's constructors, any other option
   outside its closed set. Static and server output use the same
   constructors. `platejs/static` adds renderers such as `EditorStatic` and

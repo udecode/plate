@@ -61,7 +61,8 @@ editor.update.command(insertText, { text: "Hello" });
 
 `state.transaction(...)` builds a frozen `TransactionSpec` without publishing
 a commit. `editor.update.command(...)` runs plugin policy, then applies the
-handled spec in one update.
+handled spec in one update. It returns `true` when the spec landed, `false` when
+no handler applied, and `undefined` when the editor refused the update.
 
 Callbacks passed to `state.transaction(...)` and
 `state.transaction.extend(base, callback)` must finish synchronously. Returning

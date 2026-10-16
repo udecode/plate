@@ -1422,10 +1422,12 @@ const PeerPanelContent = ({
   network,
   peer,
   version: _version,
+  onRemount,
 }: {
   network: ExampleNetwork;
   peer: ExamplePeer;
   version: number;
+  onRemount: () => void;
 }) => {
   const editor = useEditorContext() as YjsEditor;
   const [incompatibleJoin, setIncompatibleJoin] =
@@ -1589,6 +1591,9 @@ const PeerPanelContent = ({
           testId={`yjs-peer-${peer.id}-redo`}
         >
           Redo
+        </CommandButton>
+        <CommandButton onRun={onRemount} testId={`yjs-peer-${peer.id}-remount`}>
+          Remount
         </CommandButton>
       </div>
 
@@ -1779,10 +1784,12 @@ const PeerPanel = ({
   network,
   peer,
   version,
+  onRemount,
 }: {
   network: ExampleNetwork;
   peer: ExamplePeer;
   version: number;
+  onRemount: () => void;
 }) => {
   const editor = useEditor({
     plugins: [
@@ -1804,7 +1811,12 @@ const PeerPanel = ({
         network.syncAll();
       }}
     >
-      <PeerPanelContent network={network} peer={peer} version={version} />
+      <PeerPanelContent
+        network={network}
+        onRemount={onRemount}
+        peer={peer}
+        version={version}
+      />
     </EditorRoot>
   );
 };
@@ -1812,18 +1824,15 @@ const PeerPanel = ({
 const YjsCollaborationExample = () => {
   const [network, setNetwork] = useState<ExampleNetwork | null>(null);
   const [version, setVersion] = useState(0);
+  const [mounts, setMounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const nextNetwork = createExampleNetwork();
     let active = true;
     const unsubscribe = nextNetwork.subscribeNotify(() => {
-      // A peer editor publishes its awareness while React renders that peer,
-      // so the room re-renders after the render that notified it.
-      queueMicrotask(() => {
-        if (active) {
-          setVersion((current) => current + 1);
-        }
-      });
+      if (active) {
+        setVersion((current) => current + 1);
+      }
     });
 
     queueMicrotask(() => {
@@ -1861,8 +1870,14 @@ const YjsCollaborationExample = () => {
       <div className="mx-auto grid max-w-7xl gap-4 lg:grid-cols-2">
         {network.peers.map((peer) => (
           <PeerPanel
-            key={peer.id}
+            key={`${peer.id}:${mounts[peer.id] ?? 0}`}
             network={network}
+            onRemount={() => {
+              setMounts((current) => ({
+                ...current,
+                [peer.id]: (current[peer.id] ?? 0) + 1,
+              }));
+            }}
             peer={peer}
             version={version}
           />

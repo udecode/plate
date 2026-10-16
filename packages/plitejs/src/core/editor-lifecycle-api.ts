@@ -24,13 +24,17 @@ type RunEditorRead<V extends Value, TPlugins extends readonly unknown[]> = <T>(
   fn: (state: EditorStateView<V, TPlugins>) => T
 ) => T;
 
-type RunEditorUpdate<V extends Value, TPlugins extends readonly unknown[]> = (
-  fn: (
-    transaction: EditorUpdateTransaction<V, TPlugins>,
-    context: EditorUpdateContext<Editor<V, TPlugins>>
-  ) => void,
+type UpdateAuthor<V extends Value, TPlugins extends readonly unknown[], R> = (
+  transaction: EditorUpdateTransaction<V, TPlugins>,
+  context: EditorUpdateContext<Editor<V, TPlugins>>
+) => R;
+
+type RunEditorUpdate<V extends Value, TPlugins extends readonly unknown[]> = <
+  R,
+>(
+  fn: UpdateAuthor<V, TPlugins, R>,
   policy: CompiledEditorUpdatePolicy
-) => void;
+) => R | undefined;
 
 type EditorUpdateApiOptions = {
   hasTxGroup?: (groupName: string) => boolean;
@@ -103,12 +107,7 @@ const createUpdatePluginPath = <
   V extends Value,
   TPlugins extends readonly unknown[],
 >(
-  runUpdate: (
-    fn: (
-      transaction: EditorUpdateTransaction<V, TPlugins>,
-      context: EditorUpdateContext<Editor<V, TPlugins>>
-    ) => void
-  ) => void,
+  runUpdate: <R>(fn: UpdateAuthor<V, TPlugins, R>) => R | undefined,
   groupName: string,
   pathCache: Map<string, unknown>,
   path: readonly string[] = []
@@ -123,17 +122,13 @@ const createUpdatePluginPath = <
   const label = `Editor update group "${groupName}" method "${path.join('.')}"`;
   const pluginPath = new Proxy(() => {}, {
     apply(_target, _thisArg, args) {
-      let result: unknown;
-
-      runUpdate((tx) => {
-        result = callPluginUpdateMethod(
+      return runUpdate((tx) =>
+        callPluginUpdateMethod(
           label,
           resolvePluginMethod((tx as Record<string, unknown>)[groupName], path),
           args
-        );
-      });
-
-      return result;
+        )
+      );
     },
     get(_target, key) {
       if (typeof key !== 'string') return undefined;
@@ -286,10 +281,7 @@ export const createEditorUpdateApi = <
   runUpdate: RunEditorUpdate<V, TPlugins>,
   apiOptions: EditorUpdateApiOptions
 ): EditorUpdate<V, TPlugins> => {
-  type UpdateCallback = (
-    transaction: EditorUpdateTransaction<V, TPlugins>,
-    context: EditorUpdateContext<Editor<V, TPlugins>>
-  ) => void;
+  type UpdateCallback = UpdateAuthor<V, TPlugins, unknown>;
 
   const historyFacades = new Map<
     NonNullable<EditorUpdatePolicy['history']>,
@@ -341,17 +333,17 @@ export const createEditorUpdateApi = <
   ): EditorUpdate<V, TPlugins> => {
     const propertyCache = new Map<string, unknown>();
     const pluginPathCache = new Map<string, unknown>();
-    const invoke = (fn: UpdateCallback) => {
+    const invoke = <R>(fn: UpdateAuthor<V, TPlugins, R>) => {
       if (requiresHistory) {
         assertHistoryCapability(apiOptions);
       }
 
-      runUpdate(fn, compiledPolicy ?? EMPTY_EDITOR_UPDATE_POLICY);
+      return runUpdate(fn, compiledPolicy ?? EMPTY_EDITOR_UPDATE_POLICY);
     };
     const update = ((
       policyOrFn: EditorUpdatePolicy | UpdateCallback,
       fn?: UpdateCallback
-    ): EditorUpdateMethods<V, TPlugins> | void => {
+    ): unknown => {
       if (typeof policyOrFn === 'function') {
         if (fn !== undefined) {
           throw new Error(
@@ -359,15 +351,13 @@ export const createEditorUpdateApi = <
           );
         }
 
-        invoke(policyOrFn);
-        return;
+        return invoke(policyOrFn);
       }
 
       assertUpdatePolicy(policyOrFn, apiOptions);
 
       if (fn) {
-        runUpdate(fn, compileEditorUpdatePolicy(policyOrFn));
-        return;
+        return runUpdate(fn, compileEditorUpdatePolicy(policyOrFn));
       }
 
       return getConfiguredFacade(policyOrFn);
@@ -402,9 +392,7 @@ export const createEditorUpdateApi = <
               return existing;
             }
 
-            const method = (...args: unknown[]) => {
-              let result: unknown;
-
+            const method = (...args: unknown[]) =>
               invoke((tx) => {
                 const transactionMethod = (
                   tx[groupName] as Record<
@@ -414,13 +402,10 @@ export const createEditorUpdateApi = <
                 )[key];
                 const lower = getSemanticUpdateLowering(transactionMethod);
 
-                result = lower
+                return lower
                   ? lower(tx.command, args, transactionMethod)
                   : transactionMethod(...args);
               });
-
-              return result;
-            };
 
             methodCache.set(key, method);
 
@@ -441,15 +426,8 @@ export const createEditorUpdateApi = <
 
       switch (property) {
         case 'command': {
-          value = (command: EditorCommand<unknown>, input?: unknown) => {
-            let handled = false;
-
-            invoke((tx) => {
-              handled = Reflect.apply(tx.command, tx, [command, input]);
-            });
-
-            return handled;
-          };
+          value = (command: EditorCommand<unknown>, input?: unknown) =>
+            invoke((tx) => Reflect.apply(tx.command, tx, [command, input]));
           break;
         }
 

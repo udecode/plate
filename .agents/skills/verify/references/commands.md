@@ -237,10 +237,14 @@ A typecheck that reports TS6305, a referenced project's output not built, checke
 
 Use root `pnpm lint:fix` when the affected lint scope needs that command.
 `pnpm typecheck` checks root packages from source; `pnpm build` builds all
-packages only when needed. `bun run test` is the fast aggregate test lane;
-`pnpm check` is the CI gate for required handoff proof, not the default
-iteration command. `pnpm check --list` names its steps, and `pnpm check <step>`
-runs one. A proof runs a gate as `pnpm check <step>`, whose `run` is the
+packages only when needed. `bun run test` is the fast aggregate test lane,
+and `pnpm check` is the handoff check, not the default iteration command. It
+skips only its `www-build` step, the production build, which CI runs as
+`pnpm check --build`. Pass `--build` locally only when the change can break the
+build itself, such as a Next config, bundler, server-rendering or prerender
+change.
+`pnpm check --list` names its steps, and `pnpm check <step>` runs one. A proof
+runs a gate as `pnpm check <step>`, whose `run` is the
 read-only check, never the package script of the same name, which may be that
 step's `fix` writer.
 
@@ -362,8 +366,9 @@ browser mode, first search the log for `Vite unexpectedly reloaded a test`.
 That line means Vite re-optimized dependencies mid-run, so rerun the command or
 list the dependencies in `optimizeDeps.include` instead of reinstalling.
 
-Reinstall removes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`
-and `tsconfig.tsbuildinfo`, then runs `pnpm install`. A changed/disappeared failure
-supports install corruption; an unchanged failure returns to ordinary diagnosis.
+Reinstall removes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`,
+the per-port dev caches `apps/www/.next-*` and `tsconfig.tsbuildinfo`, then runs
+`pnpm install`. A changed/disappeared failure supports install corruption; an
+unchanged failure returns to ordinary diagnosis.
 Do not use reinstall to avoid fixing source errors or keep retrying unchanged
 failures.

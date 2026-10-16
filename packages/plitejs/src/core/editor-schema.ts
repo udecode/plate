@@ -2139,11 +2139,12 @@ export const createEditorSchema = <V extends Value = Value>(
     const preserved = NodeApi.extractProps(
       elementForTypeChangeAt(source, landing.type, at, root)
     );
-    const kept = { ...landing, ...preserved, children: source.children };
+    const fixed = content.prefix?.[index]?.properties ?? {};
+    const kept = Object.fromEntries(
+      Object.entries(preserved).filter(([key]) => !Object.hasOwn(fixed, key))
+    );
 
-    return contentAllowsAt(schema, content, kept, index, { ancestors, root })
-      ? kept
-      : { ...preserved, ...landing, children: source.children };
+    return { ...landing, ...kept, children: source.children };
   };
 
   type CanonicalizationObserver = {

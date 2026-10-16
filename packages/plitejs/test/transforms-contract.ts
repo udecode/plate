@@ -4553,7 +4553,7 @@ describe('blocks built for a required position', () => {
     ]);
   });
 
-  it('keeps the property a required slot fixes over a preserved one', () => {
+  it("keeps a required slot's fixed property and the other preserved ones", () => {
     const editor = createEditor({
       plugins: [
         defineEditorSchema('schema:card-required-tone', {
@@ -4574,6 +4574,15 @@ describe('blocks built for a required position', () => {
           },
           properties: [
             schema.elementProperty(
+              'align',
+              property.string({ default: 'left' }),
+              {
+                split: 'preserve',
+                target: schemaTarget.types(['caption', 'paragraph']),
+                typeChange: 'preserve-if-allowed',
+              }
+            ),
+            schema.elementProperty(
               'tone',
               property.string({ default: 'plain' }),
               {
@@ -4587,8 +4596,8 @@ describe('blocks built for a required position', () => {
       ],
       initialValue: [
         card(
-          { ...caption('Title'), tone: 'loud' },
-          { ...paragraph('Body'), tone: 'plain' }
+          { ...caption('Title'), align: 'center', tone: 'loud' },
+          { ...paragraph('Body'), align: 'left', tone: 'plain' }
         ),
       ],
     });
@@ -4600,9 +4609,60 @@ describe('blocks built for a required position', () => {
 
     assert.deepEqual(editor.read.children(), [
       card(
+        { ...caption('Ti'), align: 'center', tone: 'loud' },
+        { ...paragraph('tle'), align: 'center', tone: 'plain' },
+        { ...paragraph('Body'), align: 'left', tone: 'plain' }
+      ),
+    ]);
+  });
+
+  it("keeps a required slot's fixed property when its default is omitted", () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:card-required-omitted-tone', {
+          ...CardSchema.schema,
+          elements: {
+            ...CardSchema.schema.elements,
+            card: {
+              content: schema.content.prefix(
+                [
+                  { element: 'caption' },
+                  { element: 'paragraph', properties: { tone: 'plain' } },
+                ],
+                schema.content.types(['paragraph'], {
+                  default: { type: 'paragraph' },
+                })
+              ),
+            },
+          },
+          properties: [
+            schema.elementProperty(
+              'tone',
+              property.string({ default: 'plain', omitDefault: true }),
+              {
+                split: 'preserve',
+                target: schemaTarget.types(['caption', 'paragraph']),
+                typeChange: 'preserve-if-allowed',
+              }
+            ),
+          ],
+        }),
+      ],
+      initialValue: [
+        card({ ...caption('Title'), tone: 'loud' }, paragraph('Body')),
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set(textRange(2, 2));
+      tx.break.insert();
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      card(
         { ...caption('Ti'), tone: 'loud' },
-        { ...paragraph('tle'), tone: 'plain' },
-        { ...paragraph('Body'), tone: 'plain' }
+        paragraph('tle'),
+        paragraph('Body')
       ),
     ]);
   });

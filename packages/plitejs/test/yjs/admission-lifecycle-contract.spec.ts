@@ -10,11 +10,16 @@ import {
   definePlugin,
   definePluginSlot,
   defineStateField,
-  type Descendant,
+  type Element,
   schema,
   valueCodecs,
 } from '../../src/index';
 import type { AnyEditor, PluginReference } from '../../src/interfaces/editor';
+import {
+  createDormantEditor,
+  startEditor,
+  releaseEditor,
+} from '../../src/internal';
 import { yjs, type YjsAdmissionStatus } from '../../src/yjs';
 import {
   getYjsSchemaMetadataName,
@@ -80,12 +85,12 @@ const LocalStatePlugin = definePlugin('yjs-admission-lifecycle-local-state', {
   stateFields: [localRevision],
 });
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   children: [{ text }],
   type: 'paragraph',
 });
 
-const card = (text: string): Descendant => ({
+const card = (text: string): Element => ({
   children: [{ text }],
   type: 'card',
 });
@@ -795,5 +800,463 @@ describe('plitejs/yjs admission lifecycle contract', () => {
 
     cleanupRight();
     cleanupLeft();
+  });
+});
+
+const afterTransactionListeners = (doc: Y.Doc): number =>
+  // Yjs keeps document listeners on lib0's observable map.
+  (doc as unknown as { _observers: Map<string, Set<unknown>> })._observers.get(
+    'afterTransaction'
+  )?.size ?? 0;
+
+const bindingFor = (doc: Y.Doc, rootName: string) =>
+  yjs({ doc, initialReady: true, rootName, seed: true });
+
+const throwingTake = definePlugin('yjs-lifetime-throwing-take', {
+  activate({ acquire }) {
+    acquire(() => {
+      throw new Error('later take failed');
+    });
+  },
+});
+
+describe('plitejs/yjs binding lifetime contract', () => {
+  it('takes nothing from the document while a component editor is dormant', () => {
+    const doc = new Y.Doc();
+    const shareBefore = [...doc.share.keys()];
+
+    doc.on('update', () =>
+      assert.fail('a dormant build wrote to the document')
+    );
+    createDormantEditor({
+      initialValue: [paragraph('base')],
+      plugins: [ParagraphSchema, bindingFor(doc, 'dormant')] as const,
+    });
+
+    assert.deepEqual(
+      {
+        listeners: afterTransactionListeners(doc),
+        share: [...doc.share.keys()],
+      },
+      { listeners: 0, share: shareBefore }
+    );
+  });
+
+  it('binds a document again after the editor that held it is destroyed', () => {
+    const doc = new Y.Doc();
+    const first = createEditor({
+      initialValue: [paragraph('base')],
+      plugins: [ParagraphSchema, bindingFor(doc, 'rebind')] as const,
+    });
+
+    first.destroy();
+    createEditor({
+      initialValue: [paragraph('base')],
+      plugins: [ParagraphSchema, bindingFor(doc, 'rebind')] as const,
+    });
+
+    assert.equal(afterTransactionListeners(doc), 1);
+  });
+
+  it('writes nothing to the document when a later plugin rejects the publication', () => {
+    const doc = new Y.Doc();
+    const before = stateVector(doc);
+
+    assert.throws(() =>
+      createEditor({
+        initialValue: [paragraph('base')],
+        plugins: [
+          ParagraphSchema,
+          bindingFor(doc, 'rejected'),
+          definePlugin('yjs-lifetime-reject', {
+            activate({ beforePublish }) {
+              beforePublish(() => {
+                throw new Error('rejected');
+              });
+            },
+          }),
+        ] as const,
+      })
+    );
+
+    assert.deepEqual(stateVector(doc), before);
+  });
+
+  it('writes nothing to the document when a later take throws during install', () => {
+    const doc = new Y.Doc();
+    const editor = createEditor({
+      initialValue: [paragraph('base')],
+      plugins: [ParagraphSchema] as const,
+    });
+    const before = stateVector(doc);
+
+    assert.throws(() =>
+      editor.install([bindingFor(doc, 'install-rollback'), throwingTake])
+    );
+
+    assert.deepEqual(
+      { listeners: afterTransactionListeners(doc), vector: stateVector(doc) },
+      { listeners: 0, vector: before }
+    );
+  });
+
+  it('keeps the controller and its subscribers through a same-binding replacement', () => {
+    const doc = new Y.Doc();
+    const awareness = new TestAwareness(doc);
+    const binding = yjs({
+      awareness,
+      doc,
+      initialReady: true,
+      rootName: 'replacement',
+      seed: true,
+    });
+    const slot = definePluginSlot('yjs-lifetime-replacement');
+    const editor = createEditor({
+      initialValue: [paragraph('base')],
+      plugins: [ParagraphSchema, slot.of(binding)] as const,
+    });
+    const api = getAdmissionApi(editor, binding);
+    let heard = 0;
+
+    api.subscribeAdmissionStatus(() => {
+      heard += 1;
+    });
+    editor.update((tx) => {
+      tx.plugins.reconfigure(slot, binding);
+    });
+
+    assert.deepEqual(
+      {
+        heard,
+        listeners: afterTransactionListeners(doc),
+        status: api.admissionStatus().state,
+      },
+      { heard: 0, listeners: 1, status: 'ready' }
+    );
+  });
+
+  it('keeps the incumbent binding when a same-binding replacement rolls back', () => {
+    const doc = new Y.Doc();
+    const binding = bindingFor(doc, 'replacement-rollback');
+    const slot = definePluginSlot('yjs-lifetime-replacement-rollback');
+    const editor = createEditor({
+      initialValue: [paragraph('base')],
+      plugins: [ParagraphSchema, slot.of(binding)] as const,
+    });
+    const remote = new Y.Doc();
+
+    assert.throws(() =>
+      editor.update((tx) => {
+        tx.plugins.reconfigure(slot, [binding, throwingTake]);
+      })
+    );
+    sync(doc, remote);
+    editor.update.text.insert('!', { at: { offset: 4, path: [0, 0] } });
+    sync(doc, remote);
+
+    assert.deepEqual(
+      {
+        listeners: afterTransactionListeners(doc),
+        status: getAdmissionApi(editor, binding).admissionStatus().state,
+        synced: stateVector(remote),
+      },
+      {
+        listeners: 1,
+        status: 'ready',
+        synced: stateVector(doc),
+      }
+    );
+  });
+
+  it('leaves app-owned awareness alone when a later take rolls the binding back', () => {
+    const doc = new Y.Doc();
+    const awareness = new TestAwareness(doc);
+
+    awareness.setLocalStateField('selection', { app: true });
+    awareness.writes.length = 0;
+    assert.throws(() =>
+      createEditor({
+        initialValue: [paragraph('base')],
+        plugins: [
+          ParagraphSchema,
+          yjs({
+            awareness,
+            doc,
+            initialReady: true,
+            rootName: 'aw',
+            seed: true,
+          }),
+          throwingTake,
+        ] as const,
+      })
+    );
+
+    assert.deepEqual(
+      {
+        selection: awareness.getLocalState()?.selection,
+        writes: awareness.writes,
+      },
+      { selection: { app: true }, writes: [] }
+    );
+  });
+
+  it('frees the document when a readiness subscriber throws while binding', () => {
+    const doc = new Y.Doc();
+    const failing = {
+      doc,
+      getSnapshot: () => true,
+      subscribe: () => {
+        throw new Error('readiness failed');
+      },
+    };
+
+    assert.throws(() =>
+      createEditor({
+        initialValue: [paragraph('base')],
+        plugins: [
+          ParagraphSchema,
+          yjs({
+            doc,
+            initialReady: failing,
+            rootName: 'ready-throw',
+            seed: true,
+          }),
+        ] as const,
+      })
+    );
+    createEditor({
+      initialValue: [paragraph('base')],
+      plugins: [ParagraphSchema, bindingFor(doc, 'ready-throw')] as const,
+    });
+
+    assert.equal(afterTransactionListeners(doc), 1);
+  });
+
+  it('removes every document listener when a readiness unsubscribe throws at teardown', () => {
+    const doc = new Y.Doc();
+    const readiness = {
+      doc,
+      getSnapshot: () => true,
+      subscribe: () => () => {
+        throw new Error('unsubscribe failed');
+      },
+    };
+    const errors: unknown[] = [];
+    const first = createEditor({
+      initialValue: [paragraph('base')],
+      lifecycleErrorSink: (error) => errors.push(error.cause),
+      plugins: [
+        ParagraphSchema,
+        yjs({ doc, initialReady: readiness, rootName: 'unsub', seed: true }),
+      ] as const,
+    });
+
+    first.destroy();
+    createEditor({
+      initialValue: [paragraph('base')],
+      plugins: [ParagraphSchema, bindingFor(doc, 'unsub')] as const,
+    });
+
+    assert.deepEqual(
+      { errors: errors.map(String), listeners: afterTransactionListeners(doc) },
+      { errors: ['Error: unsubscribe failed'], listeners: 1 }
+    );
+  });
+
+  it('answers reads and holds writes while dormant, then admits at start', () => {
+    const doc = new Y.Doc();
+    const awareness = new TestAwareness(doc);
+    const binding = yjs({
+      awareness,
+      doc,
+      initialReady: true,
+      rootName: 'dormant-api',
+      seed: true,
+    });
+    const editor = createDormantEditor({
+      initialValue: [paragraph('base')],
+      plugins: [ParagraphSchema, binding] as const,
+    });
+    const api = getAdmissionApi(editor, binding);
+    const statuses: string[] = [];
+
+    api.subscribeAdmissionStatus(() => {
+      statuses.push(api.admissionStatus().state);
+    });
+    const dormant = {
+      cursors: api.remoteCursors(),
+      status: api.admissionStatus().state,
+    };
+
+    api.setCursorData({ name: 'Ada' });
+    api.syncSelection();
+    api.clearSelection();
+    api.retryImport();
+    editor.update.text.insert('!', { at: { offset: 4, path: [0, 0] } });
+    const writesBeforeStart = awareness.writes.length;
+
+    startEditor(editor);
+
+    assert.deepEqual(
+      {
+        dormant,
+        lastStatus: statuses.at(-1),
+        published: awareness.getLocalState()?.data,
+        writesBeforeStart,
+      },
+      {
+        dormant: { cursors: [], status: 'waiting' },
+        lastStatus: 'ready',
+        published: { name: 'Ada' },
+        writesBeforeStart: 0,
+      }
+    );
+  });
+
+  it('writes nothing to the document from a released editor', () => {
+    const doc = new Y.Doc();
+    const editor = createDormantEditor({
+      initialValue: [paragraph('base')],
+      plugins: [ParagraphSchema, bindingFor(doc, 'released')] as const,
+    });
+
+    startEditor(editor);
+    releaseEditor(editor);
+    const before = stateVector(doc);
+
+    editor.update.text.insert('!', { at: { offset: 4, path: [0, 0] } });
+
+    assert.deepEqual(
+      { listeners: afterTransactionListeners(doc), vector: stateVector(doc) },
+      { listeners: 0, vector: before }
+    );
+  });
+
+  it('retries a start whose later take threw without writing in between', () => {
+    const doc = new Y.Doc();
+    let fail = true;
+    const editor = createDormantEditor({
+      initialValue: [paragraph('base')],
+      plugins: [
+        ParagraphSchema,
+        bindingFor(doc, 'retry-start'),
+        definePlugin('yjs-lifetime-flaky-take', {
+          activate({ acquire }) {
+            acquire(() => {
+              if (fail) throw new Error('busy');
+
+              return () => {};
+            });
+          },
+        }),
+      ] as const,
+    });
+    const before = stateVector(doc);
+
+    assert.throws(() => startEditor(editor), /busy/);
+    const afterFailure = stateVector(doc);
+
+    fail = false;
+    startEditor(editor);
+
+    assert.deepEqual(
+      { afterFailure, listeners: afterTransactionListeners(doc) },
+      { afterFailure: before, listeners: 1 }
+    );
+  });
+
+  it('keeps receiving shared effects after one was pushed while it was dormant', () => {
+    const rootName = 'dormant-shared-effect';
+    const delivered = defineEffect<string>({
+      persist: { ...valueCodecs.string, version: 1 },
+      collab: 'shared',
+      collabReplay: 'live',
+      history: 'skip',
+      key: 'yjs-lifetime.delivered',
+    });
+    const received = defineStateField<readonly string[]>({
+      initial: () => [],
+      key: 'yjs-lifetime.received',
+      reduce: (value, effect) =>
+        effect.type === delivered ? [...value, effect.value] : value,
+    });
+    const EffectPlugin = definePlugin('yjs-lifetime-effects', {
+      effectTypes: [delivered],
+      stateFields: [received],
+    });
+    const sourceDoc = new Y.Doc();
+    const targetDoc = new Y.Doc();
+    const source = createEditor({
+      initialValue: [paragraph('base')],
+      plugins: [
+        ParagraphSchema,
+        EffectPlugin,
+        bindingFor(sourceDoc, rootName),
+      ] as const,
+    });
+
+    sync(sourceDoc, targetDoc);
+    const target = createDormantEditor({
+      initialValue: [paragraph('placeholder')],
+      plugins: [
+        ParagraphSchema,
+        EffectPlugin,
+        yjs({ doc: targetDoc, initialReady: true, rootName }),
+      ] as const,
+    });
+
+    source.update((tx) => {
+      tx.effects.emit(delivered, 'between');
+    });
+    sync(sourceDoc, targetDoc);
+    startEditor(target);
+    sync(targetDoc, sourceDoc);
+    source.update((tx) => {
+      tx.effects.emit(delivered, 'after');
+    });
+    sync(sourceDoc, targetDoc);
+
+    assert.deepEqual(target.read.getField(received), ['after']);
+  });
+
+  it('publishes cursor data set before the start only after every take succeeds', () => {
+    const doc = new Y.Doc();
+    const awareness = new TestAwareness(doc);
+    const binding = yjs({
+      awareness,
+      doc,
+      initialReady: true,
+      rootName: 'cursor-before-start',
+      seed: true,
+    });
+    let fail = true;
+    const editor = createDormantEditor({
+      initialValue: [paragraph('base')],
+      plugins: [
+        ParagraphSchema,
+        binding,
+        definePlugin('yjs-lifetime-flaky-cursor-take', {
+          activate({ acquire }) {
+            acquire(() => {
+              if (fail) throw new Error('busy');
+
+              return () => {};
+            });
+          },
+        }),
+      ] as const,
+    });
+
+    getAdmissionApi(editor, binding).setCursorData({ name: 'Ada' });
+    assert.throws(() => startEditor(editor), /busy/);
+    const afterFailure = awareness.getLocalState()?.data ?? null;
+
+    fail = false;
+    startEditor(editor);
+
+    assert.deepEqual(
+      { afterFailure, afterStart: awareness.getLocalState()?.data },
+      { afterFailure: null, afterStart: { name: 'Ada' } }
+    );
   });
 });

@@ -262,7 +262,7 @@ const sequentialPlateEditor = createEditor({
 });
 sequentialPlateEditor.api.sequentialPlate.third() satisfies 3;
 sequentialPlateEditor.read.sequentialPlate.third() satisfies 3;
-sequentialPlateEditor.update.sequentialPlate.third() satisfies 3;
+sequentialPlateEditor.update.sequentialPlate.third() satisfies 3 | undefined;
 void (sequentialPlateEditor.plugin(SequentialPlatePlugin).store.get()
   .third satisfies 'ready');
 void (sequentialPlateEditor

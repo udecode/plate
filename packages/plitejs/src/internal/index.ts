@@ -140,10 +140,16 @@ export {
   getEditorAuthoredDocumentCapability,
   withCompiledEditorSchemaCapabilityEntries,
   compileEditorSchemaContractEntries,
+  createDormantEditor,
   initializePluginEntries,
   initializePlugins,
 } from '../create-editor';
 export { isAuthorId } from '../core/authored-document-capability';
+export {
+  createEditorOwner,
+  type EditorOwner,
+  startOwnedEditor,
+} from '../core/editor-owner';
 export {
   compileEditorSchemaContributions,
   EditorSchemaCompileError,
@@ -173,8 +179,11 @@ export {
   getInstalledPlugin,
   getInstalledPluginApi,
   isPlugin,
+  queueAfterPluginAcquisition,
   reportEditorLifecycleError,
   resolveInstalledPlugin,
+  startEditor,
+  releaseEditor,
   setPluginPortalFactory,
   withPluginPortalCandidates,
 } from '../core/plugin';

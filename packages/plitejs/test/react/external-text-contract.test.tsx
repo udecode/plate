@@ -16,15 +16,15 @@ import React from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 
+import { toInternalRoot } from '../../src/core/public-root';
 import { getLastCommit } from '../../src/internal';
 import {
   createEditor,
   Editable,
   EditorRoot,
   type DecorationSource,
-  type RenderElementProps,
-  useEditorSelector,
 } from '../../src/react';
+import { resolveVerticalNavigationPoint } from '../../src/react/editable/content-root-vertical-geometry';
 import { applyDOMCoverageSelectionPolicy } from '../../src/react/editable/dom-coverage-selection';
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import type { getMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
@@ -2537,5 +2537,396 @@ describe('external text views', () => {
     rendered.unmount();
     expect(records.length).toBeGreaterThan(1);
     expect(records.every((record) => record.destroyed === 1)).toBe(true);
+  });
+});
+
+describe('vertical column across external views', () => {
+  const createAnswering = (
+    answer: (
+      input: { edge: 'end' | 'start'; x: number },
+      index: number
+    ) => number | null
+  ) => {
+    const fixture = createAdapter();
+    const queries: Array<{ edge: 'end' | 'start'; index: number; x: number }> =
+      [];
+    const adapter: ExternalTextAdapter = {
+      mount(context) {
+        const index = fixture.records.length;
+        const view = fixture.adapter.mount(context);
+        return {
+          ...view,
+          offsetAt(input) {
+            queries.push({ ...input, index });
+            return answer(input, index);
+          },
+        };
+      },
+    };
+    return { adapter, queries, records: fixture.records };
+  };
+  const renderBlocks = (
+    adapter: ExternalTextAdapter,
+    errors = vi.fn(),
+    initialValue: any[] = [
+      { type: 'code', children: [{ text: 'first' }] },
+      { type: 'code', children: [{ text: 'second' }] },
+    ]
+  ) => {
+    const editor = createEditor({
+      plugins: [textSchema],
+      initialValue,
+      lifecycleErrorSink: errors,
+    });
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <Editable renderElement={externalRenderer(adapter)} />
+      </EditorRoot>
+    );
+    const runtime = getMountedRuntime(
+      rendered.container.querySelector('[data-editor]')!
+    );
+    return { editor, errors, rendered, runtime };
+  };
+  const leaveFirst = (
+    records: ReturnType<typeof createAdapter>['records'],
+    editor: ReturnType<typeof renderBlocks>['editor'],
+    x?: number
+  ) => {
+    act(() => {
+      records[0].host.querySelector('textarea')!.focus();
+      editor.update.selection.set({
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 5 },
+      });
+    });
+    act(() => {
+      records[0].actions.navigateOut({
+        baseVersion: records[0].state.version,
+        direction: 'forward',
+        ...(x === undefined ? {} : { x }),
+      });
+    });
+  };
+
+  test("lands a vertical exit at the next view's answer and keeps its x as the goal", () => {
+    const { adapter, queries, records } = createAnswering(() => 3);
+    const { editor, errors, runtime } = renderBlocks(adapter);
+    leaveFirst(records, editor, 120);
+    const focus = { path: [1, 0], offset: 3 };
+    expect(editor.read.selection()).toEqual({ anchor: focus, focus });
+    expect(queries).toEqual([{ edge: 'start', index: 1, x: 120 }]);
+    expect(runtime.readVerticalGoalX(focus)).toBe(120);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  test('lands at the edge and reports nothing when the view answers null', () => {
+    const { adapter, queries, records } = createAnswering(() => null);
+    const { editor, errors } = renderBlocks(adapter);
+    leaveFirst(records, editor, 120);
+    const focus = { path: [1, 0], offset: 0 };
+    expect(editor.read.selection()).toEqual({ anchor: focus, focus });
+    expect(queries).toHaveLength(1);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    [
+      'a throw',
+      (): number => {
+        throw new Error('measure failed');
+      },
+    ],
+    ['an offset past the text', (): number => 7],
+    ['a fractional offset', (): number => 1.5],
+  ] as const)(
+    'lands at the edge after %s, reports offsetAt and keeps the view',
+    (_case, answer) => {
+      const { adapter, records } = createAnswering(answer);
+      const { editor, errors } = renderBlocks(adapter);
+      leaveFirst(records, editor, 120);
+      const focus = { path: [1, 0], offset: 0 };
+      expect(editor.read.selection()).toEqual({ anchor: focus, focus });
+      expect(errors).toHaveBeenCalledWith(
+        expect.objectContaining({ phase: 'offsetAt', source: 'external-text' })
+      );
+      expect(records[1].updates).not.toContain(null);
+      expect(records[1].destroyed).toBe(0);
+    }
+  );
+
+  test('leaves at the edge and clears the goal without an x', () => {
+    const { adapter, queries, records } = createAnswering(() => 3);
+    const { editor, runtime } = renderBlocks(adapter);
+    runtime.setVerticalGoalX(64, { path: [0, 0], offset: 5 });
+    leaveFirst(records, editor);
+    const focus = { path: [1, 0], offset: 0 };
+    expect(editor.read.selection()).toEqual({ anchor: focus, focus });
+    expect(queries).toHaveLength(0);
+    expect(runtime.readVerticalGoalX({ path: [0, 0], offset: 5 })).toBeNull();
+  });
+
+  test('refuses every action while a view answers, in any Editable of the editor', () => {
+    const results: string[] = [];
+    let records: ReturnType<typeof createAdapter>['records'] = [];
+    const answering = createAnswering(() => {
+      for (const record of records) {
+        results.push(
+          record.actions.select({
+            baseVersion: record.state.version,
+            selection: { anchor: 1, focus: 1 },
+          }).status
+        );
+      }
+      records[0].actions.composition('end');
+      return 2;
+    });
+    ({ records } = answering);
+    const editor = createEditor({
+      plugins: [textSchema],
+      initialValue: [
+        { type: 'code', children: [{ text: 'first' }] },
+        { type: 'code', children: [{ text: 'second' }] },
+      ],
+    });
+    render(
+      <EditorRoot editor={editor}>
+        <Editable
+          id="first"
+          renderElement={externalRenderer(answering.adapter)}
+        />
+        <Editable
+          id="second"
+          renderElement={externalRenderer(answering.adapter)}
+        />
+      </EditorRoot>
+    );
+    expect(records).toHaveLength(4);
+    act(() => {
+      records[0].host.querySelector('textarea')!.focus();
+      editor.update.selection.set({
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 5 },
+      });
+      records[0].actions.composition('start');
+    });
+    act(() => {
+      records[0].actions.navigateOut({
+        baseVersion: records[0].state.version,
+        direction: 'forward',
+        x: 40,
+      });
+    });
+    expect(results.length).toBeGreaterThan(0);
+    expect(results.every((status) => status === 'stale')).toBe(true);
+    const focus = { path: [1, 0], offset: 2 };
+    expect(editor.read.selection()).toEqual({ anchor: focus, focus });
+  });
+
+  const renderTwoEditables = (adapter: ExternalTextAdapter) => {
+    const editor = createEditor({
+      plugins: [textSchema],
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'above' }] },
+        { type: 'code', children: [{ text: 'first' }] },
+        { type: 'paragraph', children: [{ text: 'below' }] },
+      ],
+    });
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <Editable id="first" renderElement={externalRenderer(adapter)} />
+        <Editable id="second" renderElement={externalRenderer(adapter)} />
+      </EditorRoot>
+    );
+    const second = getMountedRuntime(
+      rendered.container.querySelectorAll('[data-editor]')[1]
+    );
+    return { editor, second };
+  };
+
+  test("ArrowDown in a second Editable asks that Editable's view", () => {
+    const { adapter, queries } = createAnswering(() => 2);
+    const { editor, second } = renderTwoEditables(adapter);
+    const caret = { path: [0, 0], offset: 5 };
+    act(() => {
+      second.rootElement!.focus();
+      editor.update.selection.set({ anchor: caret, focus: caret });
+    });
+    second.setVerticalGoalX(48, caret);
+    act(() => {
+      fireEvent.keyDown(second.rootElement!, { key: 'ArrowDown' });
+    });
+    expect(queries).toEqual([{ edge: 'start', index: 1, x: 48 }]);
+  });
+
+  test("a vertical exit from a view in a second Editable asks that Editable's next view", () => {
+    const { adapter, queries, records } = createAnswering(() => 2);
+    const editor = createEditor({
+      plugins: [textSchema],
+      initialValue: [
+        { type: 'code', children: [{ text: 'first' }] },
+        { type: 'code', children: [{ text: 'second' }] },
+      ],
+    });
+    render(
+      <EditorRoot editor={editor}>
+        <Editable id="first" renderElement={externalRenderer(adapter)} />
+        <Editable id="second" renderElement={externalRenderer(adapter)} />
+      </EditorRoot>
+    );
+    expect(records).toHaveLength(4);
+    act(() => {
+      records[2].host.querySelector('textarea')!.focus();
+      editor.update.selection.set({
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 5 },
+      });
+    });
+    act(() => {
+      records[2].actions.navigateOut({
+        baseVersion: records[2].state.version,
+        direction: 'forward',
+        x: 40,
+      });
+    });
+    expect(queries).toEqual([{ edge: 'start', index: 3, x: 40 }]);
+  });
+
+  test("a vertical exit from a second Editable's view asks that Editable even while the first holds focus", () => {
+    const { adapter, queries, records } = createAnswering(() => 2);
+    const editor = createEditor({
+      plugins: [textSchema],
+      initialValue: [
+        { type: 'code', children: [{ text: 'first' }] },
+        { type: 'code', children: [{ text: 'second' }] },
+      ],
+    });
+    render(
+      <EditorRoot editor={editor}>
+        <Editable id="first" renderElement={externalRenderer(adapter)} />
+        <Editable id="second" renderElement={externalRenderer(adapter)} />
+      </EditorRoot>
+    );
+    act(() => {
+      records[0].host.querySelector('textarea')!.focus();
+      editor.update.selection.set({
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 5 },
+      });
+    });
+    act(() => {
+      records[2].actions.navigateOut({
+        baseVersion: records[2].state.version,
+        direction: 'forward',
+        x: 40,
+      });
+    });
+    expect(queries).toEqual([{ edge: 'start', index: 3, x: 40 }]);
+  });
+
+  test('ends no composition from inside the query', () => {
+    let records: ReturnType<typeof createAdapter>['records'] = [];
+    const answering = createAnswering(() => {
+      records[0].actions.composition('end');
+      return 0;
+    });
+    ({ records } = answering);
+    const { runtime } = renderBlocks(answering.adapter);
+    act(() => {
+      records[0].host.querySelector('textarea')!.focus();
+      records[0].actions.composition('start');
+    });
+    expect(runtime.inputController.state.isComposing).toBe(true);
+    act(() => {
+      runtime.externalText.verticalEntryPoint(
+        { path: [1, 0], offset: 0 },
+        'start',
+        10
+      );
+    });
+    expect(runtime.inputController.state.isComposing).toBe(true);
+  });
+
+  test('the keydown probe finds an external target without asking its view, and the move asks once', () => {
+    let column = 4;
+    const { adapter, queries } = createAnswering(() => column);
+    const { runtime } = renderBlocks(adapter);
+    const fallbackPoint = { path: [1, 0], offset: 0 };
+    const resolve = (askExternalViews: boolean) =>
+      resolveVerticalNavigationPoint({
+        askExternalViews,
+        direction: 'forward',
+        fallbackPoint,
+        preferredX: 30,
+        targetEditor: runtime.editor,
+        targetRoot: toInternalRoot(undefined),
+      });
+    expect(resolve(false)).toEqual(fallbackPoint);
+    expect(queries).toHaveLength(0);
+    column = 6;
+    expect(resolve(true)).toEqual({ path: [1, 0], offset: 6 });
+    expect(queries).toHaveLength(1);
+  });
+
+  test('the shared vertical resolver answers an external target before hit-testing', () => {
+    const { adapter } = createAnswering(() => 4);
+    const { runtime } = renderBlocks(adapter);
+    const fallbackPoint = { path: [1, 0], offset: 0 };
+    expect(
+      resolveVerticalNavigationPoint({
+        direction: 'forward',
+        fallbackPoint,
+        preferredX: 30,
+        targetEditor: runtime.editor,
+        targetRoot: toInternalRoot(undefined),
+      })
+    ).toEqual({ path: [1, 0], offset: 4 });
+    expect(
+      resolveVerticalNavigationPoint({
+        direction: 'forward',
+        fallbackPoint,
+        preferredX: 30,
+        source: {
+          editor: runtime.editor,
+          point: { path: [0, 0], offset: 5 },
+          root: toInternalRoot(undefined),
+        },
+        targetEditor: runtime.editor,
+        targetRoot: toInternalRoot(undefined),
+      })
+    ).toBeNull();
+  });
+
+  test('ArrowDown from a paragraph enters a view at its answer for the goal x', () => {
+    const { adapter, queries } = createAnswering(() => 2);
+    const { editor, runtime } = renderBlocks(adapter, vi.fn(), [
+      { type: 'paragraph', children: [{ text: 'above' }] },
+      { type: 'code', children: [{ text: 'first' }] },
+    ]);
+    const caret = { path: [0, 0], offset: 5 };
+    act(() => {
+      runtime.rootElement!.focus();
+      editor.update.selection.set({ anchor: caret, focus: caret });
+    });
+    runtime.setVerticalGoalX(48, caret);
+    act(() => {
+      fireEvent.keyDown(runtime.rootElement!, { key: 'ArrowDown' });
+    });
+    const focus = { path: [1, 0], offset: 2 };
+    expect(editor.read.selection()).toEqual({ anchor: focus, focus });
+    expect(queries).toEqual([{ edge: 'start', index: 0, x: 48 }]);
+  });
+
+  test('rejects an offsetAt that is not a function at mount', () => {
+    const fixture = createAdapter();
+    const adapter: ExternalTextAdapter = {
+      mount(context) {
+        return { ...fixture.adapter.mount(context), offsetAt: 3 as never };
+      },
+    };
+    const { errors } = renderBlocks(adapter);
+    expect(errors).toHaveBeenCalledWith(
+      expect.objectContaining({ phase: 'mount', source: 'external-text' })
+    );
   });
 });

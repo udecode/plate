@@ -10,6 +10,7 @@ import {
   type TestEditor,
 } from '#platejs-test-internal';
 
+import { AuthoredPlugin } from '../../../authored';
 import { createTestTableEditor } from '../../../features/table/lib/__tests__/getTestTablePlugins';
 import { EditorRoot, EditorContent, definePlugin } from '../../core';
 import { pipeHandler } from '../../utils/pipeHandler.internal';
@@ -279,6 +280,75 @@ describe('TablePlugin onKeyDown', () => {
       expect(window.getSelection()?.anchorOffset).toBe(0);
       expect(window.getSelection()?.isCollapsed).toBe(true);
     });
+  });
+
+  it('consumes Tab in the last cell when Suggesting refuses the new row', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>11</hp>
+            </htd>
+            <htd>
+              <hp>
+                12
+                <cursor />
+              </hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const editor = createTestTableEditor({
+      plugins: [
+        TablePlugin.configure({
+          initialState: { allowCellSpanEditing: false },
+        }),
+        AuthoredPlugin,
+      ],
+      selection: input.selection,
+      initialValue: input.children,
+      userId: 'bob',
+    });
+    const authored = editor.plugin(AuthoredPlugin).api;
+    const refusals: unknown[] = [];
+
+    authored.setView({ intent: 'propose' });
+    authored.subscribeRefusals((refusal) => refusals.push(refusal));
+    const before = editor.read.children();
+    const { container, getByText } = render(
+      React.createElement(
+        TestPlate,
+        { editor, suppressInstanceWarning: true },
+        React.createElement(EditorContent)
+      )
+    );
+    const editable = container.querySelector('[contenteditable="true"]');
+    const text = getByText('12').firstChild;
+
+    if (!editable) throw new Error('Expected editable root');
+    if (!text) throw new Error('Expected last cell text node');
+
+    const range = document.createRange();
+
+    range.setStart(text, 2);
+    range.collapse(true);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(range);
+
+    const notPrevented = fireEvent.keyDown(editable, {
+      code: 'Tab',
+      key: 'Tab',
+      keyCode: 9,
+      which: 9,
+    });
+
+    expect(notPrevented).toBe(false);
+    expect(editor.read.children()).toEqual(before);
+    expect(refusals).toEqual([
+      expect.objectContaining({ code: 'veto', reasons: ['table'] }),
+    ]);
   });
 
   it('owns plain ArrowDown before browser default movement', () => {

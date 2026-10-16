@@ -242,9 +242,7 @@ const selectAllTable = (editor: Editor) => {
   return handled;
 };
 
-const tabTable = (editor: Editor, reverse = false) => {
-  let handled = false;
-
+const tabTable = (editor: Editor, reverse = false) =>
   editor.update((tx) => {
     const selection = tx.selection();
     const view = readTableSelection(tx, {
@@ -255,8 +253,8 @@ const tabTable = (editor: Editor, reverse = false) => {
 
     if (selection && (view?.anchors.length ?? 0) > 1) {
       tx.selection.collapse({ edge: 'end' });
-      handled = true;
-      return;
+
+      return true;
     }
     const cell = tx.nodes.find({
       match: (node) =>
@@ -264,7 +262,7 @@ const tabTable = (editor: Editor, reverse = false) => {
         node.type === editor.plugin(BaseTableCellPlugin).schema.type,
     });
 
-    if (!cell || !view) return;
+    if (!cell || !view) return false;
     const anchor = view.context.anchorAtPath(cell[1]);
     const target =
       anchor &&
@@ -279,19 +277,16 @@ const tabTable = (editor: Editor, reverse = false) => {
       const point = tx.points.start(targetEntry[1]);
 
       if (point) tx.selection.set(point);
-      handled = true;
-      return;
-    }
-    if (!reverse) {
-      handled = tx.plugin(BaseTablePlugin).insertRow({
-        at: cell[1],
-        select: true,
-      });
-    }
-  });
 
-  return handled;
-};
+      return true;
+    }
+    if (reverse) return false;
+
+    return tx.plugin(BaseTablePlugin).insertRow({
+      at: cell[1],
+      select: true,
+    });
+  });
 
 export const TableCellPlugin = toReactPlugin(BaseTableCellPlugin);
 

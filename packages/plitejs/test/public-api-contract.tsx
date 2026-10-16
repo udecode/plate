@@ -185,13 +185,19 @@ const assertAuthoredInference = () => {
   editor.read.authored.changes({ at: 1 });
   // @ts-expect-error details lookup requires a logical change identity
   editor.read.authored.details(1);
-  const result: AuthoredResult = editor.update.authored.decide({
+  const result: AuthoredResult | undefined = editor.update.authored.decide({
+    action: 'accept',
+    changes,
+  });
+  // @ts-expect-error a direct update answers undefined when it is refused
+  const landed: AuthoredResult = editor.update.authored.decide({
     action: 'accept',
     changes,
   });
   void changesAt;
   void parts;
-  if (result.status === 'applied') {
+  void landed;
+  if (result?.status === 'applied') {
     // @ts-expect-error decided identities are immutable
     result.ids.push('another');
   }

@@ -373,7 +373,8 @@ Only the editor surface that received the paste is called, and only while it
 is mounted. `onPasteResult` is not called when `onPaste` or a
 `domCommands.insertData` handler handles the paste without the built-in
 formats, for drops, or for a separate `editor.api.dom.clipboard.insertData`
-call, which returns a boolean. An `onPaste` handler that calls `insertData`
+call, which returns `true` when content landed, `false` when no format applied
+and `undefined` when the editor refused the update. An `onPaste` handler that calls `insertData`
 during the paste gets that insertion's result.
 
 Plate and the registry `Editor` show no paste-result UI by default. Add

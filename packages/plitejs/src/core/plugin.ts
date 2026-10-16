@@ -8,8 +8,6 @@ import type {
   PluginApiFactoryContext,
   PluginApiMap,
   PluginCleanupContext,
-  PluginContribution,
-  PluginContributionInput,
   PluginCandidateContext,
   PluginCommandContext,
   PluginDefinition,
@@ -48,6 +46,7 @@ import {
   readDocumentRecord,
   rejectEditorRecord,
 } from './document-shape';
+import { getEditorLifetime, setEditorLifetime } from './editor-lifetime';
 import {
   getEditorRuntimeOwner,
   getEditorRuntimeRoot,
@@ -212,22 +211,18 @@ export const createPluginUpdatePortal = (
       (...args: unknown[]) => {
         assertCapabilityOwner();
 
-        let result: unknown;
-        const run = (tx: Record<PropertyKey, unknown>) => {
-          result = callPluginUpdateMethod(
+        const run = (tx: Record<PropertyKey, unknown>) =>
+          callPluginUpdateMethod(
             label,
             resolvePluginMethod(tx[pluginName], path),
             args
           );
-        };
 
-        Reflect.apply(
+        return Reflect.apply(
           editor.update,
           editor,
           policy === undefined ? [run] : [policy, run]
         );
-
-        return result;
       },
       {
         get(_target, key) {
@@ -274,9 +269,14 @@ type PluginRuntimeDefinition = PluginDefinitionInput &
   Readonly<{ name: string }>;
 
 type PluginState = {
+  afterAcquisition: Array<
+    Readonly<{ callback: () => void; pluginName: string }>
+  >;
   nextOrder: number;
   records: Map<string, PluginRecord>;
 };
+
+type PluginCleanup = (context: PluginCleanupContext) => void;
 
 type PluginActivation = {
   abortController: AbortController;
@@ -284,8 +284,10 @@ type PluginActivation = {
   afterPublishCallbacks: Array<() => void>;
   beforePublishCallbacks: Array<() => void>;
   beforePublishCalled: boolean;
-  cleanups: Array<(context: PluginCleanupContext) => void>;
+  cleanups: PluginCleanup[];
   published: boolean;
+  releases: PluginCleanup[];
+  takes: Array<() => PluginCleanup>;
 };
 
 const PLUGIN_STATE = new WeakMap<Editor, PluginState>();
@@ -345,16 +347,22 @@ const assertSynchronousLifecycleResult = (result: unknown, label: string) => {
   }
 };
 
+const PUBLICATION_PHASE_LABELS = {
+  acquire: 'acquisition',
+  activate: 'activation',
+  beforePublish: 'before-publish callback',
+} as const;
+
 export class PluginPublicationError extends Error {
   readonly pluginName: string;
-  readonly phase: 'activate' | 'beforePublish';
+  readonly phase: 'acquire' | 'activate' | 'beforePublish';
   readonly rollbackErrors: readonly unknown[];
 
   constructor(
     pluginName: string,
     cause: unknown,
     rollbackErrors: readonly unknown[] = [],
-    phase: 'activate' | 'beforePublish' = 'activate'
+    phase: 'acquire' | 'activate' | 'beforePublish' = 'activate'
   ) {
     const causeMessage =
       cause instanceof Error
@@ -364,7 +372,7 @@ export class PluginPublicationError extends Error {
           : undefined;
 
     super(
-      `Editor plugin "${pluginName}" ${phase === 'activate' ? 'activation' : 'before-publish callback'} failed${
+      `Editor plugin "${pluginName}" ${PUBLICATION_PHASE_LABELS[phase]} failed${
         causeMessage ? `: ${causeMessage}` : '.'
       }`,
       { cause }
@@ -382,6 +390,7 @@ const getPluginState = (editor: Editor) => {
 
   if (!state) {
     state = {
+      afterAcquisition: [],
       nextOrder: 0,
       records: new Map(),
     };
@@ -1485,6 +1494,7 @@ const deactivatePluginRecord = (
     errors.push(error);
   }
 
+  errors.push(...releaseActivation(record, reason));
   for (const cleanup of activation.cleanups.toReversed()) {
     try {
       assertSynchronousLifecycleResult(
@@ -1499,6 +1509,165 @@ const deactivatePluginRecord = (
   record.activation = null;
 
   return errors;
+};
+
+const releaseActivation = (
+  record: PluginRecord,
+  reason: PluginCleanupContext['reason']
+) => {
+  const errors: unknown[] = [];
+  const context: PluginCleanupContext = Object.freeze({ reason });
+
+  for (
+    let release = record.activation?.releases.pop();
+    release;
+    release = record.activation?.releases.pop()
+  ) {
+    try {
+      assertSynchronousLifecycleResult(
+        // oxlint-disable-next-line typescript/no-confusing-void-expression -- Runtime plugins can violate their declared void contract with a Promise; this guard rejects that actual value.
+        release(context),
+        `Editor plugin "${record.descriptor.name}" release`
+      );
+    } catch (error) {
+      errors.push(error);
+    }
+  }
+
+  return errors;
+};
+
+const releasePluginRecords = (
+  records: readonly PluginRecord[],
+  reason: PluginCleanupContext['reason']
+) => {
+  for (const record of records.toReversed()) {
+    for (const cause of releaseActivation(record, reason)) {
+      reportPluginLifecycleError(
+        record.editor,
+        record.descriptor.name,
+        'cleanup',
+        cause
+      );
+    }
+  }
+};
+
+const acquirePluginRecords = (records: readonly PluginRecord[]) => {
+  const touched: PluginRecord[] = [];
+
+  for (const record of records) {
+    const { activation } = record;
+
+    if (!activation?.active || activation.releases.length > 0) continue;
+    touched.push(record);
+    try {
+      for (const take of activation.takes) {
+        const release = take();
+
+        assertSynchronousLifecycleResult(
+          release,
+          `Editor plugin "${record.descriptor.name}" acquisition`
+        );
+        if (typeof release !== 'function') {
+          throw new Error('Editor plugin acquisition must return a release.');
+        }
+        activation.releases.push(release);
+      }
+    } catch (error) {
+      releasePluginRecords(touched, 'rollback');
+      throw new PluginPublicationError(
+        record.descriptor.name,
+        error,
+        [],
+        'acquire'
+      );
+    }
+  }
+};
+
+const flushAfterAcquisition = (editor: Editor) => {
+  const state = getPluginState(editor);
+  const callbacks = state.afterAcquisition;
+
+  state.afterAcquisition = [];
+  for (const { callback, pluginName } of callbacks) {
+    try {
+      callback();
+    } catch (error) {
+      reportPluginLifecycleError(editor, pluginName, 'afterPublish', error);
+    }
+  }
+};
+
+/** @internal */
+export const queueAfterPluginAcquisition = (
+  editor: Editor,
+  pluginName: string,
+  callback: () => void
+) => {
+  getPluginState(editor).afterAcquisition.push({ callback, pluginName });
+};
+
+/** @internal */
+export const markEditorDormant = (editor: Editor) => {
+  if (
+    getPluginState(editor).records.size > 0 ||
+    getEditorLifetime(editor) !== 'live'
+  ) {
+    throw new Error('Only a new editor can be built dormant.');
+  }
+  setEditorLifetime(editor, 'dormant');
+};
+
+const getInstalledRecordsInOrder = (state: PluginState) =>
+  [...state.records.values()].sort((left, right) => left.order - right.order);
+
+/** @internal */
+export const startEditor = (editor: Editor) => {
+  const state = getPluginState(editor);
+
+  if (getEditorLifetime(editor) !== 'dormant') return;
+
+  try {
+    runWithPluginPublicationGuard(editor, () => {
+      acquirePluginRecords(getInstalledRecordsInOrder(state));
+    });
+  } catch (error) {
+    state.afterAcquisition = [];
+    throw error;
+  }
+  setEditorLifetime(editor, 'live');
+  flushAfterAcquisition(editor);
+};
+
+/** @internal */
+export const releaseEditor = (editor: Editor) => {
+  if (getEditorLifetime(editor) === 'destroyed') return;
+  setEditorLifetime(editor, 'released');
+  releasePluginRecords(
+    getInstalledRecordsInOrder(getPluginState(editor)),
+    'remove'
+  );
+};
+
+/** @internal */
+export const destroyEditor = (editor: Editor) => {
+  if (getEditorLifetime(editor) === 'destroyed') return;
+  releaseEditor(editor);
+  for (const record of getInstalledRecordsInOrder(
+    getPluginState(editor)
+  ).toReversed()) {
+    for (const cause of deactivatePluginRecord(record, 'remove')) {
+      reportPluginLifecycleError(
+        record.editor,
+        record.descriptor.name,
+        'cleanup',
+        cause
+      );
+    }
+  }
+  setEditorLifetime(editor, 'destroyed');
 };
 
 const activatePluginRecord = <TEditor extends Editor>(
@@ -1519,6 +1688,8 @@ const activatePluginRecord = <TEditor extends Editor>(
     beforePublishCalled: false,
     cleanups: [],
     published: false,
+    releases: [],
+    takes: [],
   };
   record.activation = activation;
   const { definition, descriptor } = record;
@@ -1526,6 +1697,18 @@ const activatePluginRecord = <TEditor extends Editor>(
   const context = Object.freeze({
     editor,
     pluginName: descriptor.name,
+    acquire(take) {
+      if (!activation.active || activation.beforePublishCalled) {
+        throw new Error(
+          `Editor plugin "${descriptor.name}" can acquire only during activation.`
+        );
+      }
+      if (typeof take !== 'function') {
+        throw new Error('Editor plugin acquisition must be a function.');
+      }
+
+      activation.takes.push(take);
+    },
     onCleanup(cleanup) {
       if (!activation.active) {
         throw new Error(
@@ -2650,10 +2833,30 @@ const prepareRecordPublication = <TEditor extends Editor>(
             }
           }
         });
+        if (getEditorLifetime(editor) !== 'live') return;
+        try {
+          acquirePluginRecords(activatedRecords);
+        } catch (error) {
+          const failure = error as PluginPublicationError;
+
+          getPluginState(editor).afterAcquisition = [];
+          throw new PluginPublicationError(
+            failure.pluginName,
+            failure.cause,
+            rollbackStagedActivations().map(({ cause }) => cause),
+            'acquire'
+          );
+        }
       });
     },
     cleanup() {
-      if (cleanupCalled || cleanupRunning) return;
+      if (
+        cleanupCalled ||
+        cleanupRunning ||
+        getEditorLifetime(editor) === 'destroyed'
+      ) {
+        return;
+      }
       cleanupRunning = true;
 
       try {
@@ -2780,6 +2983,7 @@ const prepareRecordPublication = <TEditor extends Editor>(
       if (phase !== 'finalized' || afterPublishCalled) return;
       afterPublishCalled = true;
 
+      flushAfterAcquisition(editor);
       for (const record of activatedRecords) {
         runPluginAfterPublish(record.editor, record);
       }

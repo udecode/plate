@@ -230,8 +230,10 @@ const extendedTablePlugin = TablePlugin.extend((ctx) => {
     },
   });
 
-  ctx.editor.update.table.insert({ columns: 2, rows: 2 }) satisfies boolean;
-  ctx.editor.update.table.removeRow() satisfies boolean;
+  ctx.editor.update.table.insert({ columns: 2, rows: 2 }) satisfies
+    | boolean
+    | undefined;
+  ctx.editor.update.table.removeRow() satisfies boolean | undefined;
   ctx.editor.read((state) => {
     state.table.selection({
       at: nodeSelection,

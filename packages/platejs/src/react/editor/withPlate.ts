@@ -173,6 +173,14 @@ export function createEditor<
 >;
 
 export function createEditor(options: unknown = {}): unknown {
+  return createPlateEditor(options, false);
+}
+
+/** @internal */
+export const createDormantPlateEditor = (options: unknown) =>
+  createPlateEditor(options, true);
+
+const createPlateEditor = (options: unknown, dormant: boolean) => {
   const resolvedOptions = options as CreateEditorOptionsForValue<
     Value,
     readonly RuntimePluginReference[],
@@ -185,8 +193,11 @@ export function createEditor(options: unknown = {}): unknown {
     ...rest
   } = readConstructorOptions(resolvedOptions, REACT_EDITOR_OPTION_KEYS);
 
-  return buildEditor({
-    ...rest,
-    plugins: [...getPlateCorePlugins({ navigationFeedback }), ...plugins],
-  });
-}
+  return buildEditor(
+    {
+      ...rest,
+      plugins: [...getPlateCorePlugins({ navigationFeedback }), ...plugins],
+    },
+    dormant
+  );
+};

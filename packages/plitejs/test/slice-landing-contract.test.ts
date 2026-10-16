@@ -35,7 +35,7 @@ describe('slice landing', () => {
       initialValue: before,
       plugins: [LandingSchema, history(), proposeOnEmpty([paragraph('Head')])],
     });
-    const keys = [0, 1, 2].map((index) => editor.read.key([index]));
+    const keys = [0, 1, 2].map((index) => editor.key([index]));
     const emptyAnchor = editor.anchor([1], { deletion: 'drop' });
 
     assert.equal(
@@ -48,7 +48,7 @@ describe('slice landing', () => {
       paragraph('After'),
     ]);
     assert.deepEqual(
-      [0, 1, 2].map((index) => editor.read.key([index]) === keys[index]),
+      [0, 1, 2].map((index) => editor.key([index]) === keys[index]),
       [true, false, true],
       'only the replaced block loses its key'
     );

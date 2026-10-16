@@ -12,6 +12,10 @@ TARGETS=(
   "${ROOT_DIR}/apps/www/.next"
 )
 
+for path in "${ROOT_DIR}"/apps/www/.next-*; do
+  TARGETS+=("${path}")
+done
+
 while IFS= read -r path; do
   TARGETS+=("${path}")
 done < <(

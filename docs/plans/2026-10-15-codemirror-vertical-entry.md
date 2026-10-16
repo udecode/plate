@@ -63,6 +63,6 @@ The proof covers Chromium only. The entry does not keep the caret's column, and 
 
 ## Open work
 
-- Keep the caret's column when Up or Down enters an external text view. The view's `focus({ edge, x })` already takes a column, but Plite cannot learn the offset the view picked without a contract change. Tracked as suggested task `t_58c21399`. owner: zbeyens; stop: that task lands or is dropped.
+- Done in `docs/plans/2026-10-16-external-text-vertical-column.md` (suggested task `t_58c21399`): Up and Down keep the caret's column entering and leaving the CodeMirror code block, through the view's `offsetAt({ edge, x })` query.
 - Let Shift plus Up or Down extend a selection into an external text view. Tracked as suggested task `t_3608c4f4`. owner: zbeyens; stop: that task lands or is dropped.
 - `block-void-caret.spec.ts` fails at the intake base: the block equation is not selected after Done. Tracked as suggested task `t_42473c32`, which owns that check. owner: zbeyens; stop: that task lands or is dropped.

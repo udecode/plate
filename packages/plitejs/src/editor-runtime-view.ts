@@ -1257,8 +1257,8 @@ const createViewRuntime = <V extends Value>(
         throw new Error('Cannot update a read-only editor view.');
       }
 
-      const runUpdate = () => {
-        withEditorUpdateRoot(editor, viewState.root, () => {
+      const runUpdate = () =>
+        withEditorUpdateRoot(editor, viewState.root, () =>
           baseRuntime.update(
             (transaction, context) =>
               fn(
@@ -1271,21 +1271,23 @@ const createViewRuntime = <V extends Value>(
                 withViewUpdateContext(editor, context, viewState, getViewEditor)
               ),
             updateOptions
-          );
-        });
-      };
+          )
+        );
       const targetRuntime = getViewEditor()
         ? getTargetRuntime(getDefined(getViewEditor()))
         : null;
 
       if (targetRuntime) {
-        withAuthoredUpdateView(editor, getViewEditor() ?? editor, () =>
+        return withAuthoredUpdateView(editor, getViewEditor() ?? editor, () =>
           withEditorTargetRuntime(editor, targetRuntime, runUpdate)
         );
-        return;
       }
 
-      withAuthoredUpdateView(editor, getViewEditor() ?? editor, runUpdate);
+      return withAuthoredUpdateView(
+        editor,
+        getViewEditor() ?? editor,
+        runUpdate
+      );
     },
     void: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.void(...args)),
@@ -1352,11 +1354,11 @@ export const createEditorViewRuntime = <
         throw new Error('Cannot update a read-only editor view.');
       }
 
-      viewRuntime.update(
+      return viewRuntime.update(
         fn as (
           transaction: EditorUpdateTransaction<V, any>,
           context: EditorUpdateContext<Editor<V>>
-        ) => void,
+        ) => ReturnType<typeof fn>,
         { tags: policy.tags }
       );
     },
@@ -1414,6 +1416,7 @@ export const createEditorViewRuntime = <
           plugin: PluginReference
         ) => Readonly<{ api: unknown }>
       )(descriptor)) as unknown as Editor<V, TPlugins>['plugin'],
+    destroy: sourceEditor.destroy,
     id: sourceEditor.id,
     key: createViewKey,
     read: viewRead,

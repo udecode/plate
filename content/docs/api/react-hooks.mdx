@@ -23,7 +23,9 @@ Create one component-owned editor. A change of `id`, of the user that `userId`
 names or of an entry in the optional dependency list creates a replacement
 editor from that render's options; other option changes keep the current
 editor. A missing, empty or `'local'` `userId` all name the local user. Pass `enabled: false`
-while the session that supplies `userId` loads.
+while the session that supplies `userId` loads. Plugins take outside
+resources, such as a Yjs document, when React commits the component, and give
+them back when it unmounts, the editor is replaced or `enabled` turns off.
 
 The replacement editor starts from the options you pass, so capture the old
 editor's document and comments before you switch users:
@@ -53,8 +55,9 @@ const switchUser = (nextUserId: string) => {
 
 A comment change still pending at the switch is missing from the new editor,
 and saving the new editor's comments without a revision check can undo it in
-storage, restoring a removed thread or message. A new editor cannot bind a
-`rootName` in a `Y.Doc` that the old editor still holds.
+storage, restoring a removed thread or message. The old editor lets go of its
+Yjs document when React commits the new one, so the new editor binds the same
+`rootName` in the same `Y.Doc`.
 
 #### `useEditor(): Editor`
 

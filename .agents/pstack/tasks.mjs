@@ -3,7 +3,7 @@
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync, realpathSync } from 'node:fs';
-import { basename, dirname, isAbsolute, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
 import { capEffort } from './lead.mjs';
 import { landed, stateOf } from './status.mjs';
 
@@ -802,6 +802,7 @@ function brief(task, ledger, max, tasks) {
   const root = process.cwd();
   const run = `cd ${root} && node .agents/pstack/decisions-check.mjs`;
   const patch = resolve(root, dirname(ledger), 'artifacts', 'chips', `${task.id}.patch`);
+  const artifacts = relative(root, dirname(dirname(patch)));
   const reviewed = task.waits.map((wait) => follow(wait.match(WAIT)?.[2] ?? '', tasks)).filter(Boolean);
   return [
     displayTitle(task),
@@ -824,7 +825,7 @@ function brief(task, ledger, max, tasks) {
         ]
       : []),
     '',
-    `When you finish in your own worktree and your project's rules have you hand your diff back rather than commit it, land it yourself: run git add -A in your worktree and save git diff --cached HEAD, which holds new files too, as ${patch}, run git -C ${root} apply --check --whitespace=error-all ${patch}, then git -C ${root} apply ${patch}, which changes only the checkout's working tree and leaves its index alone. When the check fails, copy the checkout's copy of each refused file into your worktree, redo your change on it, rerun your checks and save the patch again. Then log landed with patch: ${patch}, and deliver the patch's paths from ${root} as your project's Delivery rule says, because an applied patch ships nothing: where that rule commits, commit only those paths there; where the owner owns commits, leave them in the working tree. Otherwise land the change as your project's Delivery rule says and log landed.`,
+    `When you finish in your own worktree and your project's rules have you hand your diff back rather than commit it, land it yourself: run git add -A in your worktree and save git diff --cached HEAD, which holds new files too, as ${patch}, run git -C ${root} apply --check --whitespace=error-all ${patch}, then git -C ${root} apply ${patch}, which changes only the checkout's working tree and leaves its index alone. When the check fails, copy the checkout's copy of each refused file into your worktree, redo your change on it, rerun your checks and save the patch again. Then log landed with patch: ${patch}, and deliver the patch's paths from ${root} as your project's Delivery rule says, because an applied patch ships nothing: where that rule commits, commit only those paths there; where the owner owns commits, leave them in the working tree. Last, stop each server you started. Merge each run directory you wrote under ${artifacts} in your worktree into the same path in ${root} without overwriting, with mkdir -p <that path> && cp -Rn <your run directory>/. <that path>/, because removing the worktree deletes ignored files and your logged rows cite them. Then run node ${root}/.agents/skills/cleanup/scripts/scan.mjs --landed <your worktree's absolute path>. When it exits 0, every change and ignored file of yours is committed, recreated by an install or build, or in the checkout, so remove your worktree as your final command with git -C ${root} worktree remove --force <your worktree's absolute path> && git -C ${root} worktree list, and check that its list no longer names your worktree. Your next command may fail once because its directory is gone, so use absolute paths after it. When it exits otherwise or the script is missing, keep the worktree and tell the owner what it printed. When you work in the checkout itself, or your project's rules have you commit instead, land the change as your project's Delivery rule says and log landed. In every report, write each commit you name as a link to that commit on GitHub, https://github.com/<owner>/<repo>/commit/<sha>, with the owner and repository read from ${root}'s origin remote.`,
     '',
     `Suggested task ${task.id} in ${ledger} of the project checkout ${root}. This prompt can be older than the task, so before anything else run ${run} chips brief ${task.id} and work from what it prints. Run every ledger command from ${root} that way, even when your session opened in its own worktree, because the live ledger is there; make your edits and run your checks in your own worktree. Then run ${run} chips; when it lists this task as neither Ready nor Started, tell the owner what it waits on. Started means the lead already logged your start. Before you write any file, log a started row for it, with writes: naming any path the Writes line above lacks and session: naming this session's id where the runtime's session tool gives one, as .agents/pstack/rules/chips.md says, then run ${run} chips brief ${task.id} again and work from what it prints, because the task can gain work until your started row.`,
   ].join('\n');

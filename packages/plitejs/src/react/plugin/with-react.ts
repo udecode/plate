@@ -15,6 +15,7 @@ import {
   type TransferPlugin,
   type Value,
 } from '../..';
+import { createDormantEditor } from '../../create-editor';
 import type { DOMEditorOptions, DOMPlugin, DOMPluginTypes } from '../../dom';
 import { dom } from '../../dom';
 import {
@@ -188,6 +189,24 @@ export function createEditor<
   V extends Value = Value,
   const TPlugins extends readonly unknown[] = readonly [],
 >(options: CreateEditorOptions<V, TPlugins> = {}): Editor<V, TPlugins> {
+  return createReactEditor(options, false);
+}
+
+/** @internal */
+export const createDormantReactEditor = <
+  V extends Value = Value,
+  const TPlugins extends readonly unknown[] = readonly [],
+>(
+  options: CreateEditorOptions<V, TPlugins> = {}
+): Editor<V, TPlugins> => createReactEditor(options, true);
+
+const createReactEditor = <
+  V extends Value,
+  const TPlugins extends readonly unknown[],
+>(
+  options: CreateEditorOptions<V, TPlugins>,
+  dormant: boolean
+): Editor<V, TPlugins> => {
   assertEditorOptions(options, REACT_EDITOR_OPTION_KEYS);
   const {
     clipboardFormatKey,
@@ -201,11 +220,17 @@ export function createEditor<
     ...((authoredPlugins ?? []) as TPlugins),
   ] as const;
 
-  return createCoreEditor<V, typeof installedPlugins>({
+  const coreOptions = {
     ...editorOptions,
     plugins: installedPlugins,
     lifecycleErrorSink: lifecycleErrorSink as EditorLifecycleErrorSink<
       AnyEditor<V, typeof installedPlugins>
     >,
-  }) as unknown as Editor<V, TPlugins>;
-}
+  };
+
+  return (dormant
+    ? createDormantEditor<V, typeof installedPlugins>(coreOptions)
+    : createCoreEditor<V, typeof installedPlugins>(
+        coreOptions
+      )) as unknown as Editor<V, TPlugins>;
+};

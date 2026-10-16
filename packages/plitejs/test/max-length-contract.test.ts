@@ -385,7 +385,7 @@ describe('maxLength editor option', () => {
           openEnd: 1,
           openStart: 1,
         }),
-        { at: editor.read.key(editor.read.root('notes')[0]) }
+        { at: editor.key(editor.read.root('notes')[0]) }
       );
 
       return [ok, rootText(editor.read.root('notes'))];

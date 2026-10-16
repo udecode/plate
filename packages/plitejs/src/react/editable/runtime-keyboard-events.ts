@@ -369,6 +369,7 @@ export const useRuntimeKeyboardEvents = ({
               getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
               isRTL: false,
               preferredX: preferredVerticalX,
+              askExternalViews: false,
               selection: snapshotRange,
             })
           )

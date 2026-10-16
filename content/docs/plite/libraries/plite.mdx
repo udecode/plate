@@ -155,18 +155,22 @@ resolve functional API factories against that view. `context.root` identifies th
 exported selection slices stay scoped to it. The primary document view receives
 `undefined`.
 
-Register reversible resources with `context.onCleanup`. Register work that may
-update the editor with `context.afterPublish`; it runs after commit observers.
-Activation, validation, API factories, and cleanup are synchronous.
+Take anything outside the editor, such as a host subscription or a shared
+document, with `context.acquire(take)`. `take` runs after every plugin's
+`beforePublish` passes and returns the function that lets the resource go.
+An editor from `useEditor` takes nothing until React commits its component.
+Register in-memory resources with `context.onCleanup`; cleanups run after the
+releases. Register work that may update the editor with
+`context.afterPublish`; it runs after commit observers. Activation,
+validation, API factories, takes, releases and cleanup are synchronous.
+`editor.destroy()` releases and cleans up every plugin.
 
 ```ts
 import { definePlugin } from "plitejs";
 
 const plugin = definePlugin("host-state", {
   activate({ editor, ...context }) {
-    const unsubscribe = subscribeToHostState(refreshHostCache);
-
-    context.onCleanup(() => unsubscribe());
+    context.acquire(() => subscribeToHostState(refreshHostCache));
     context.afterPublish(() => {
       editor.update((tx) => {
         tx.marks.set(null);

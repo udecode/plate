@@ -259,15 +259,15 @@ Merge the current transaction into the previous compatible undo batch.
 
 Start a fresh undo batch for the current transaction.
 
-#### `editor.update({ history: "skip" }, fn): void`
+#### `editor.update({ history: "skip" }, fn): R | undefined`
 
 Run one update without saving it to history.
 
-#### `editor.update({ history: "merge" }, fn): void`
+#### `editor.update({ history: "merge" }, fn): R | undefined`
 
 Run one update that merges into the previous compatible undo batch.
 
-#### `editor.update({ history: "new-batch" }, fn): void`
+#### `editor.update({ history: "new-batch" }, fn): R | undefined`
 
 Run one update where the first write starts a fresh history batch, then the
 rest of the callback merges into that batch.

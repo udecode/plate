@@ -98,7 +98,7 @@ jobs:
         if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
         env:
           PLATE_BASELINE_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: pnpm check
+        run: pnpm check --build
 
       - name: 🔧 Configure git
         if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'push' && steps.barrel-changes.outputs.changed == 'true' && github.repository == 'udecode/plate' }}

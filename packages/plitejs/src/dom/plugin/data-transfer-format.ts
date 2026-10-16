@@ -1081,13 +1081,15 @@ export const insertDataTransfer = <V extends Value>(
   if (spec === false) return false;
   const transaction = getActiveEditorTransaction(editor);
 
-  if (transaction) {
-    applyTransactionSpec(editor, spec);
-  } else {
-    editor.update({ tags: 'paste' }, () => {
+  if (!transaction) {
+    return editor.update({ tags: 'paste' }, () => {
       applyTransactionSpec(editor, spec);
+
+      return true;
     });
   }
+
+  applyTransactionSpec(editor, spec);
 
   return true;
 };

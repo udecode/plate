@@ -5,7 +5,13 @@
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/chips/SKILL.md",
-      "computedHash": "6e378b6cbc9582daf4d101cf25c4037a58b5169c30f8124f7874d62e6d668c5b"
+      "computedHash": "5a27ee312559b80da8ef3b39c5adefa6a6632c9a452aaa39ba1d4841e3843fa7"
+    },
+    "cleanup": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "skillPath": "skills/cleanup/SKILL.md",
+      "computedHash": "d3c42e0b9764236e70ea78e91965bf4f18f1441d6d7e9f2af959d35fd878496c"
     },
     "plan-page": {
       "source": "udecode/dotai",

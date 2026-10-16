@@ -258,8 +258,16 @@ exactEditor.update((tx) => {
 exactEditor.update.paragraph.insert({ align: 'left' });
 exactEditor.update.paragraph.upsert({ align: 'left' });
 exactEditor.update.paragraph.toggle();
-const quoteInserted: boolean = exactEditor.update.quote.insert({}, { at: [1] });
-const quoteUpserted: boolean = exactEditor.update.quote.upsert();
+const quoteInserted: boolean | undefined = exactEditor.update.quote.insert(
+  {},
+  { at: [1] }
+);
+const quoteUpserted: boolean | undefined = exactEditor.update.quote.upsert();
+const updateAnswer: boolean | undefined = exactEditor.update((tx) =>
+  tx.quote.upsert()
+);
+// @ts-expect-error an update answers undefined when the editor refuses it
+const updateLanded: boolean = exactEditor.update((tx) => tx.quote.upsert());
 // @ts-expect-error a block insert takes a path, not a point inside a block
 exactEditor.update.quote.insert({}, { at: { offset: 0, path: [0, 0] } });
 const insertRange = {
@@ -506,6 +514,8 @@ void layoutVariant;
 void mentionTrigger;
 void quoteInserted;
 void quoteUpserted;
+void updateAnswer;
+void updateLanded;
 void rawValueStaysBroad;
 void toolbarDescription;
 

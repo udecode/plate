@@ -2688,7 +2688,7 @@ type PluginEditorUpdateOverloads<
   S = D,
   TRuntimePlugins extends readonly unknown[] = readonly [],
 > = {
-  (
+  <R = void>(
     fn: (
       transaction: PluginTransactionForInstalledDefinitions<
         D,
@@ -2699,9 +2699,9 @@ type PluginEditorUpdateOverloads<
       context: EditorUpdateContext<
         RuntimeBaseEditor<V, PluginRuntimePlugins<V, D, S, TRuntimePlugins>>
       >
-    ) => void
-  ): void;
-  (
+    ) => R
+  ): R | undefined;
+  <R = void>(
     policy: PluginEditorUpdatePolicy<V, D, S, TRuntimePlugins>,
     fn: (
       transaction: PluginTransactionForInstalledDefinitions<
@@ -2713,8 +2713,8 @@ type PluginEditorUpdateOverloads<
       context: EditorUpdateContext<
         RuntimeBaseEditor<V, PluginRuntimePlugins<V, D, S, TRuntimePlugins>>
       >
-    ) => void
-  ): void;
+    ) => R
+  ): R | undefined;
   (
     policy: PluginEditorUpdatePolicy<V, D, S, TRuntimePlugins>
   ): PluginEditorUpdateMethods<V, D, S, TRuntimePlugins>;

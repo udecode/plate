@@ -525,3 +525,43 @@ it('paints nothing on text a rejected replacement gives back', async () => {
   expect(JSON.stringify(editor.read.children())).toContain('"kind":"held"');
   mounted.unmount();
 });
+
+it('reports stored changes to the callbacks of an accepted preview root', () => {
+  const editor = createEditor({
+    initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+    plugins: [SuggestionPlugin],
+    userId: 'alice',
+  });
+  const changes: string[] = [];
+
+  render(
+    <EditorRoot
+      editor={editor}
+      authored={{ preview: 'accepted' }}
+      suppressInstanceWarning
+      onSelectionChange={() => changes.push('selection')}
+      onValueChange={({ value }) =>
+        changes.push(`value:${JSON.stringify(value.children)}`)
+      }
+    >
+      <EditorContent />
+    </EditorRoot>
+  );
+  act(() => {
+    editor.update((tx) => {
+      tx.authored.propose();
+      tx.text.insert(' proposal', { at: { offset: 4, path: [0, 0] } });
+    });
+  });
+  act(() => {
+    editor.update.selection.set({
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    });
+  });
+
+  expect(changes).toEqual([
+    `value:${JSON.stringify(editor.read.value().children)}`,
+    'selection',
+  ]);
+});

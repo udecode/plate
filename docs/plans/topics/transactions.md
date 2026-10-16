@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/D17heqLZLTZZRkwSZC5aky
 
-The ledger asks what becomes observable when updates commit, nest, fail or repair content, and which overlapping mutation authorities can disappear. An update publishes once. Updates never nest, a failed author throws its draft away, and every update author must return synchronously. One guard in `public-state.ts` enforces that, and `synchronous-transaction-authors.test.ts` covers 14 entry forms. A plugin's update methods run inside that update, and small markers in `tx-only.ts` tell the runtime how to treat a method: usable only inside an open update, or where its location arguments land when a command runs on another document. Every direct call refuses a plugin's reads, because the transaction guard knows where each member came from.
+The ledger asks what becomes observable when updates commit, nest, fail or repair content, and which overlapping mutation authorities can disappear. An update publishes once. Updates never nest, a failed author throws its draft away, and every update author must return synchronously. One guard in `public-state.ts` enforces that, and `synchronous-transaction-authors.test.ts` covers 14 entry forms. An update returns its callback's answer, or `undefined` when the editor refuses it before publication, and every call that opens its own update forwards that answer, while `tx` methods report the draft. A plugin's update methods run inside that update, and small markers in `tx-only.ts` tell the runtime how to treat a method: usable only inside an open update, or where its location arguments land when a command runs on another document. Every direct call refuses a plugin's reads, because the transaction guard knows where each member came from.
 
 ## Public API
 
@@ -171,6 +171,60 @@ editor.update((tx) => {
 // result is false and the document is unchanged
 ```
 
+A direct update call answers `undefined` when the editor refuses the update it opened, and its type says so.
+
+```ts
+// packages/plitejs/src/interfaces/editor.ts, EditorCoreUpdateMethods
+slice: EditorDirectMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;
+// editor.update.slice.replace(slice): boolean | undefined
+// undefined when the editor refuses the update this call opened
+```
+
+The callback form returns the callback's answer, or `undefined` when the editor refuses the update. Inside the callback, `tx` methods keep reporting the draft.
+
+```ts
+// packages/plitejs/src/interfaces/editor.ts, EditorUpdate
+<R = void>(
+  fn: (
+    transaction: EditorUpdateTransaction<V, TPlugins>,
+    context: EditorUpdateContext<BaseEditor<V, TPlugins>>
+  ) => R
+): R | undefined;
+```
+
+`editor.update.command` answers the same way, while `tx.command` keeps its draft boolean, so the direct form gets its own dispatch type.
+
+```ts
+// packages/plitejs/src/interfaces/editor.ts, EditorCoreUpdateMethods
+/** Dispatch a typed semantic command in one update. */
+command: EditorDirectCommandDispatch<BaseEditor<V, TPlugins>>;
+```
+
+The DOM clipboard inserts and the React command dispatcher open their own update when no update is open, so they answer `undefined` for a refusal too.
+
+```ts
+// packages/plitejs/src/dom/plugin/dom-editor.ts and packages/plitejs/src/react/hooks/use-plite-runtime.tsx
+insertData: (data: DataTransfer) => boolean | undefined;
+insertFragmentData: (data: DataTransfer) => boolean | undefined;
+insertTextData: (data: DataTransfer) => boolean | undefined;
+export type CommandDispatcher<TCommand extends EditorCommandDescriptor> = (
+  ...input: CommandArgs<TCommand>
+) => boolean | undefined;
+```
+
+`runTransfer` reads its own update's answer instead of listening for any refusal while it runs. Every exit of its callback that writes the move returns `true`, so only a refused update reads as a refusal.
+
+```ts
+// packages/plitejs/src/core/transfer.ts, runTransfer
+let accepted: true | undefined;
+
+try {
+  accepted = editor.update((tx) => {
+    // each exit that writes the move ends with
+    return true;
+  });
+```
+
 ## Main changes
 
 - `packages/plitejs/src/core/public-state.ts` owns the update: one publish, the synchronous-author guard, the guarded `tx` groups and the command frame. The guard answers whether each plugin member came from the update group, and the command frame keeps a callable method's members.
@@ -184,6 +238,16 @@ editor.update((tx) => {
 - In a schema with `unknown: 'reject'`, commit drops a shared content root with its last owner, as it already drops an exclusive one (`getOrphanedElementOwnedRoots` in `packages/plitejs/src/core/editor-schema.ts`). An open schema keeps it.
 - `finalizeWithoutOrphanedRoots` in `public-state.ts` repeats its orphan pass until none drops, so roots owned inside a dropped root go too, and each deleted root gets a fresh empty owner index.
 - A raw `tx.slice.replace` whose content names a content root takes the checked spec path that carried roots already take (`writeSliceAtRange`, `namesContentRoot` in `content-slice-roots.ts`), so it returns false where commit would have thrown.
+
+- `runEditorTransaction` in `packages/plitejs/src/core/public-state.ts` keeps the author callback's answer and returns it when the update commits or changes nothing, and returns `undefined` when an `EditorRefusalError` rolls the update back before publication. A refusal error thrown after publication publishes no refusal and takes the path any other error after publication takes. `updateEditor`, the editor runtime and the view runtime forward that answer.
+- `tabTable` in `packages/platejs/src/react/features/table/TablePlugin.tsx` returns its update's answer instead of a flag set inside the draft. A refused Tab answers `undefined`, which the shortcut dispatcher already treats as handled.
+- `packages/plitejs/src/core/editor-lifecycle-api.ts` and `packages/plitejs/src/core/plugin.ts` return the update's answer from every direct method, the command facade and both plugin portals, and delete their captured results.
+- `runCommandChain` and `applyCommandEvaluation` in `packages/plitejs/src/core/command-registry.ts`, `insertDataTransfer` in `packages/plitejs/src/dom/plugin/data-transfer-format.ts` and the `insert-data` command in `packages/plitejs/src/react/editable/mutation-controller.ts` return the update's answer when they open the update, and the draft answer inside an open one.
+- `runTransfer` in `packages/plitejs/src/core/transfer.ts` reads its update's answer and drops its refusal subscription.
+- Plate's `createUpdateFacade` in `packages/platejs/src/lib/plugin/createPluginContext.internal.ts` returns the update's answer, and Plate's update overloads in `packages/platejs/src/lib/editor/pluginRuntimeTypes.ts` return `R | undefined`.
+- Media's `insertUrl` in `packages/platejs/src/features/media/lib/BaseMediaPlugin.ts` answers `false` for a refused insert. AI chat's `decideCurrentChange` is unchanged, because a `decide` update never reaches a commit refusal.
+- The projected view-selection paste in `packages/plitejs/src/react/editable/mutation-controller.ts` answers its update's answer and keeps the view selection when the paste is refused, instead of clearing it and answering `true`.
+- `EditorDirectMethods` in `packages/plitejs/src/interfaces/editor.ts` recurses into nested method groups, so a nested direct plugin method is typed `| undefined` too.
 
 ## What other editors do
 
@@ -208,6 +272,8 @@ The 2026-10-16 spec key review read the Lexical (`dd5c41b13`), Slate (`945a484df
 | Slate | None; paths | No |
 | Tiptap | None; ProseMirror positions | Commands build on ProseMirror's `Transaction` |
 | Plite | `NodeKey` through `editor.key`, `state.key`, an update's `tx.key` and a spec builder's `tx.key` | A `TransactionSpec`, whose builder reads draft keys |
+
+The 2026-10-16 refused-result review read the ProseMirror (`prosemirror-state` `ffad5d9`, `prosemirror-view` `ca4c78e`), Lexical, Slate and Tiptap checkouts. None reports whether a dispatched edit survived a whole-update refusal: ProseMirror's paste and commands return `true` after `dispatch` even when a `filterTransaction` dropped the transaction. Plite's update returns its own answer, or `undefined` when it was refused.
 
 ## Open work
 
@@ -243,3 +309,12 @@ The 2026-10-16 spec key review read the Lexical (`dd5c41b13`), Slate (`945a484df
 - Plate types the `tx` of its commands and input rules as an update transaction, though they run on spec drafts, so those types promise `command` and `txOnly` controls the runtime withholds. owner: the owner, through suggested task `t_b75959c5`. stop: that task lands or is dropped.
 - `replaceBlocksAtSite` in `packages/plitejs/src/core/public-state.ts` receives the spec builder but reads keys through `getStateView(editor).key`, which `tx.key` can now replace. Suggested task `t_b78aada2`, started in another session, is moving that paste resolver code. owner: the owner. stop: `t_b78aada2` lands, then the next change to `replaceBlocksAtSite`.
 - Six `editor.read.key(...)` calls in Plite's contract tests fail the test typecheck, because `editor.read` leaves out `key` and `editor.key` is the direct reader. owner: the owner, through suggested task `t_d4703034`. stop: that task lands or is dropped.
+- Suggesting refuses deleting a block that owns an exclusive content root, so a paste or removal over that block cannot be suggested at all, and a rich paste there no longer falls back to plain text. owner: the owner, through suggested task `t_a7c71be6`. stop: that task lands or is dropped.
+- A move keeps its landing guard on until after commit observers run, so an update a commit listener opens during a move throws `lossy` and its write is lost. owner: the owner, through suggested task `t_b6f088b9`. stop: that task lands or is dropped.
+- AI chat's suggestion publish stores the change id it captured before a refused commit. owner: the owner, through suggested task `task_bb870590`. stop: that task lands or is dropped.
+- The registry link editor's text-only edit calls a `void` upsert, then hides its popover even when a table's Suggesting veto refuses the edit. owner: zbeyens. stop: the next change to the link editor's submit.
+- A descriptor portal and Plate's context `update` types omit the `undefined` a refused call answers, and `EditorGenericMethod` does not require a return that admits it. owner: zbeyens. stop: the next change to `EditorDirectUpdate` or `EditorGenericMethod`.
+- `editor.api.dom.clipboard.insert*` returns a boolean rather than the explicit outcome `docs/vision/plite.md` asks of an `api` service. owner: zbeyens. stop: an API decision on the clipboard service's outcome.
+- An error that reaches `runEditorTransaction`'s final catch after publication rethrows, though `docs/vision/plite.md` sends a post-publication failure to `lifecycleErrorSink`. owner: zbeyens. stop: the next change to the transaction's notification error path.
+- Plate's `on` handler pipe in `packages/platejs/src/react/utils/pipeHandler.internal.ts` counts `undefined` as unhandled, so a handler that returns a refused call's answer passes its event on, and a refused paste can reach Plite's own paste. owner: the owner, through suggested task `t_7d051d7b`. stop: that task lands or is dropped.
+- `tx.dom.insertData` is typed `boolean | undefined` though a draft call never answers `undefined`. Narrowing it needs the broad editor type that reads the DOM plugin's update unprojected. owner: the owner, through suggested task `t_f9fb1a96`. stop: that task lands or is dropped.

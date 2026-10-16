@@ -2,6 +2,7 @@ import {
   type EditorCommit,
   type NodeKey,
   PathApi,
+  type Point,
   PointApi,
   RangeApi,
   type Range,
@@ -27,6 +28,7 @@ import type {
   ExternalTextState,
   ExternalTextView,
 } from '../external-text';
+import { resolveVerticalNavigationPoint } from './content-root-vertical-geometry';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import {
   failTextProjectionConflict,
@@ -39,6 +41,7 @@ import {
 } from './input-history';
 import { registerExternalTextHost } from './interaction-owner';
 import {
+  getEditorRuntimeOwner,
   getSnapshot,
   setEditorFocused,
   toInternalRoot,
@@ -98,6 +101,7 @@ const externalDecorations = (bucket: readonly DecorationSlice[]) => {
 const APPLIED = Object.freeze({ status: 'applied' } as const);
 const READ_ONLY = Object.freeze({ status: 'read-only' } as const);
 const STALE = Object.freeze({ status: 'stale' } as const);
+const OWNERS_IN_OFFSET_AT = new WeakSet<object>();
 const IGNORED_REGISTRATION = Object.freeze({
   destroy: () => undefined,
   update: () => undefined,
@@ -321,6 +325,12 @@ export class ExternalTextRuntime {
           'An external text adapter must return destroy, focus, and update.'
         );
       }
+      if (
+        entry.view.offsetAt !== undefined &&
+        typeof entry.view.offsetAt !== 'function'
+      ) {
+        throw new Error('An external text view offsetAt must be a function.');
+      }
     });
     return {
       destroy: () => this.remove(entry),
@@ -455,7 +465,60 @@ export class ExternalTextRuntime {
     }
   }
 
-  focusSelection(options?: { edge?: 'end' | 'start'; x?: number }) {
+  private activeEntryAt(point: Point) {
+    const viewRoot = toInternalRoot(this.runtime.editor.read.view.root());
+    if (toInternalRoot(point.root) !== viewRoot) return null;
+    const snapshot = getSnapshot(this.runtime.editor);
+    const key = snapshot.index.keyAt(point.path);
+    const entry = key ? this.byText.get(key) : undefined;
+
+    return entry?.active ? { entry, snapshot } : null;
+  }
+
+  externalEntryPoint(point: Point) {
+    return this.activeEntryAt(point) ? point : null;
+  }
+
+  verticalEntryPoint(point: Point, edge: 'end' | 'start', x: number) {
+    const found = this.activeEntryAt(point);
+    if (!found) return null;
+    const { entry, snapshot } = found;
+    if (entry.sourceVersion !== snapshot.version) this.refresh(entry);
+    const { state, textKey, view } = entry;
+    if (!view?.offsetAt || entry.invalid) return point;
+    const owner = getEditorRuntimeOwner(this.runtime.editor);
+    let offset: number | null;
+    OWNERS_IN_OFFSET_AT.add(owner);
+    try {
+      offset = view.offsetAt({ edge, x });
+    } catch (error) {
+      this.reportQueryError(error);
+      return point;
+    } finally {
+      OWNERS_IN_OFFSET_AT.delete(owner);
+    }
+    if (
+      offset !== null &&
+      (!Number.isSafeInteger(offset) ||
+        offset < 0 ||
+        offset > state.text.length)
+    ) {
+      this.reportQueryError(
+        new RangeError(`offsetAt returned ${String(offset)}.`)
+      );
+      return point;
+    }
+    if (
+      entry.state !== state ||
+      entry.textKey !== textKey ||
+      getSnapshot(this.runtime.editor).version !== snapshot.version
+    ) {
+      return point;
+    }
+    return offset === null ? point : { ...point, offset };
+  }
+
+  focusSelection() {
     const snapshot = getSnapshot(this.runtime.editor);
     if (
       !RangeApi.isRange(snapshot.selection) ||
@@ -477,7 +540,7 @@ export class ExternalTextRuntime {
     if (!this.runtime.rootElement?.contains(active)) return false;
     if (
       !entry.host.contains(active) &&
-      !this.call(entry, 'focus', () => view.focus(options))
+      !this.call(entry, 'focus', () => view.focus())
     ) {
       return false;
     }
@@ -493,12 +556,18 @@ export class ExternalTextRuntime {
     for (const entry of [...this.entries.values()]) this.remove(entry);
   }
 
-  private focusModelSelection(options?: {
-    edge?: 'end' | 'start';
-    x?: number;
-  }) {
+  private reportQueryError(cause: unknown) {
+    reportEditorLifecycleError({
+      cause,
+      editor: this.runtime.editor,
+      source: 'external-text',
+      phase: 'offsetAt',
+    });
+  }
+
+  private focusModelSelection() {
     this.runtime.rootElement?.focus({ preventScroll: true });
-    if (!this.focusSelection(options)) {
+    if (!this.focusSelection()) {
       this.runtime.requestSelectionExportAfterDOMCommit();
     }
   }
@@ -733,6 +802,10 @@ export class ExternalTextRuntime {
     version: number,
     write: boolean
   ): ExternalTextDispatchResult | null {
+    if (OWNERS_IN_OFFSET_AT.has(getEditorRuntimeOwner(this.runtime.editor))) {
+      this.counters.staleWrites += 1;
+      return STALE;
+    }
     if (
       !entry.active ||
       entry.inCallback ||
@@ -766,6 +839,11 @@ export class ExternalTextRuntime {
   private actions(entry: Entry): ExternalTextActions {
     return {
       composition: (phase) => {
+        if (
+          OWNERS_IN_OFFSET_AT.has(getEditorRuntimeOwner(this.runtime.editor))
+        ) {
+          return;
+        }
         if (phase === 'end') {
           this.endComposition(entry);
           return;
@@ -927,22 +1005,34 @@ export class ExternalTextRuntime {
           entry.elementKey
         );
         if (!binding) return this.stale(entry);
-        const point = this.runtime.editor.read((state) =>
+        const edge = this.runtime.editor.read((state) =>
           direction === 'backward'
             ? state.points.before(binding.path)
             : state.points.after(binding.path)
         );
-        if (!point) return APPLIED;
+        if (!edge) return APPLIED;
+        const point =
+          x === undefined
+            ? edge
+            : (resolveVerticalNavigationPoint({
+                direction,
+                fallbackPoint: edge,
+                preferredX: x,
+                targetEditor: this.runtime.editor,
+                targetRoot: toInternalRoot(
+                  this.runtime.editor.read.view.root()
+                ),
+                targetRuntime: this.runtime,
+              }) ?? edge);
         const previous = this.runtime.editor.read.selection();
         writeRuntimeSelection(this.runtime.editor, {
           anchor: extend && previous ? previous.anchor : point,
           focus: point,
         });
+        if (x === undefined) this.runtime.clearVerticalGoal();
+        else this.runtime.setVerticalGoalX(x, point);
         this.endComposition(entry);
-        this.focusModelSelection({
-          edge: direction === 'backward' ? 'end' : 'start',
-          x,
-        });
+        this.focusModelSelection();
         return APPLIED;
       },
       deleteOut: ({ baseVersion, direction }) => {

@@ -30,8 +30,12 @@ editor.api.dom.clipboard.insertTextData(dataTransfer);
 editor.api.react.isComposing();
 ```
 
-Use `createEditor` when the editor is created outside a component or
-inside a custom hook that owns the same one-shot lifetime.
+Its plugins take outside resources, such as a Yjs document, when React
+commits the component, and give them back when it unmounts or its `deps`
+replace the editor.
+
+Use `createEditor` when the editor is created outside a component. It is
+live when it returns, and `editor.destroy()` ends it.
 
 ## createEditor
 

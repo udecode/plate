@@ -330,7 +330,7 @@ describe('paste site', () => {
         read((editor) => {
           createEditorView(editor, { root: 'header' }).update.slice.replace(
             plain,
-            { at: editor.read.key(editor.read.children()[0]) }
+            { at: editor.key(editor.read.children()[0]) }
           );
         }),
       ],
@@ -423,7 +423,7 @@ describe('paste site', () => {
         editor.update.slice.replace(plain);
       } else {
         editor.update.slice.replace(plain, {
-          at: editor.read.key(editor.read.children()[0]),
+          at: editor.key(editor.read.children()[0]),
         });
       }
 
@@ -454,7 +454,7 @@ describe('paste site', () => {
         {
           at:
             at === 'key'
-              ? editor.read.key(editor.read.root('header')[0])
+              ? editor.key(editor.read.root('header')[0])
               : { offset: at, path: [0, 0], root: 'header' },
         }
       );

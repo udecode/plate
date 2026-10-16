@@ -214,26 +214,27 @@ Check whether a DOM event target is inside a non-read-only void element.
 
 ## DataTransfer
 
-#### `editor.api.dom.clipboard.insertData(data: DataTransfer): boolean`
+#### `editor.api.dom.clipboard.insertData(data: DataTransfer): boolean | undefined`
 
 Insert data from a `DataTransfer` into the editor. Returns `true` when Plite or
-a plugin inserts content. The DOM adapter dispatches `domCommands.insertData`;
+a plugin inserts content, `false` when no format applies, and `undefined` when
+the editor refuses the update. The DOM adapter dispatches `domCommands.insertData`;
 typed plugin command interceptors can claim the payload, transform it, or return
 `next()` to continue. The accepted command spec commits through one transaction.
 
 The default command path tries an internal Plite slice for the editor's
 configured `clipboardFormatKey`, then registered DataTransfer formats, then
-plain text.
+plain text. A refused format ends the paste; no later format runs.
 
-#### `editor.api.dom.clipboard.insertFragmentData(data: DataTransfer): boolean`
+#### `editor.api.dom.clipboard.insertFragmentData(data: DataTransfer): boolean | undefined`
 
 Insert Plite fragment data from a `DataTransfer`. Returns `true` when fragment
-content was inserted.
+content was inserted and `undefined` when the editor refuses the update.
 
-#### `editor.api.dom.clipboard.insertTextData(data: DataTransfer): boolean`
+#### `editor.api.dom.clipboard.insertTextData(data: DataTransfer): boolean | undefined`
 
 Insert plain text data from a `DataTransfer`. Returns `true` when text content
-was inserted.
+was inserted and `undefined` when the editor refuses the update.
 
 #### `editor.api.dom.clipboard.readSlice(data: Pick<DataTransfer, 'getData' | 'types'>): ClipboardSliceRead`
 

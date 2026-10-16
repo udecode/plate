@@ -51,7 +51,7 @@ An exception to a `plate/*` rule goes on the line as `// oxlint-disable-next-lin
 
 | Rule | Enforced by |
 | --- | --- |
-| A green local check means a green CI | `tooling/scripts/check.mjs`; `tooling/scripts/ci-workflow.test.mjs` fails when `ci.yml` runs any other lint, test, typecheck or check command |
+| A green local `pnpm check --build` means a green CI; plain `pnpm check` skips only the production build | `tooling/scripts/check.mjs`; `tooling/scripts/ci-workflow.test.mjs` fails when `ci.yml` runs any other lint, test, typecheck or check command, or when plain `pnpm check` selects the build |
 | Every check, test or typecheck script in the root and www `package.json` runs in `pnpm check` or names why it stays manual | `ci-workflow.test.mjs` against `manualOnly` in `check.mjs` |
 | Generated output matches its source | `pnpm check` steps barrels, entrypoint-graph, registry-changelog, bench-report, skill-mirrors and www; fix with `pnpm generate` |
 | A package script whose command names `run-entrypoint-task.mjs` or `run-entrypoint-package-task.mjs` is one the entrypoint generator emits, so none names a partition the DAG lacks | `pnpm check entrypoint-graph`, over the manifests of the packages `tooling/entrypoints/entrypoint-dag.mjs` defines; a script that reaches a runner through another file is rule-only |

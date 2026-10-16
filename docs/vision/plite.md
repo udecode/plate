@@ -187,7 +187,11 @@ donor checkout as proof after the transplant.
   descriptor or a compatible source ancestor, so a same-name object is not an
   interchangeable token.
 - React creation and context retrieval are separate jobs. `useEditor(options,
-deps?)` owns one editor for a component lifetime. `useEditorContext()` and
+deps?)` owns one editor for a component lifetime. Render builds it dormant.
+  Its plugins activate in memory and take nothing outside the editor until
+  React commits the component. A real unmount or a `deps` change gives back
+  what they took and destroys the editor. An editor from `createEditor`
+  is live when it returns and ends with `editor.destroy()`. `useEditorContext()` and
   `useOptionalEditorContext()` retrieve the mounted contract without caller
   generics, and selector hooks infer only their selected result. Exact
   plugin capabilities come from `editor.plugin(Plugin)`. `pnpm check
@@ -214,7 +218,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   casting callers.
 - A public `EditorRoot` requires an editor and owns one independent mounted
   view. Its root, authored, and read-only inputs configure that view through the
-  existing view owner. Replacing the editor requires a keyed remount; changing
+  existing view owner. Replacing the editor remounts its views; changing
   the root retires queued work and commands from the prior view before
   descendants observe the next one. Nested same-document roots may share the
   nearest private provider while retaining independent mounted views. An
@@ -321,7 +325,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   exist in the inferred `api.yjs` only when their inputs are supplied. Live
   admission and awareness state never become replayable `read` methods or
   transaction updates; each `(Y.Doc, rootName)` has one binding owner while
-  mounted views retain exact selection projection.
+  mounted views retain exact selection projection. The binding takes its
+  document when its editor goes live and frees it when the editor is released, so a
+  remount or a replaced editor binds the same document again. Before that, its
+  status answers waiting and its cursors answer none.
 - Plite owns the complete editor selection model. It supports text selection
   and one built-in directional `NodeSelection`; plugins cannot add selection
   kinds or parallel selection state. Feature owners write exact nodes and
@@ -546,9 +553,15 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   runtime resources stay in factory closures or honest host owners. `validate`
   checks assembled context without a configuration argument. `validate` and
   `activate` run early. Activation registers synchronous final-candidate
-  validation or resource initialization with `beforePublish`; document writes
-  are forbidden, and throwing vetoes publication. Resources remain
-  activation-owned through `onCleanup`, including rollback cleanup.
+  validation with `beforePublish`; document writes are forbidden, and throwing
+  vetoes publication. A plugin takes a resource outside the editor, such as a
+  shared document or a listener on it, with `acquire(take)`. Every take runs
+  after the last `beforePublish` passes, and only on a live editor. The release
+  it returns runs before the plugin's cleanups on removal, replacement,
+  rollback, unmount or `editor.destroy()`. A throwing take rolls the publication
+  back.
+  In-memory resources remain activation-owned through `onCleanup`, including
+  rollback cleanup.
   `afterPublish` is nonthrowing observation of published state, not a veto. Any
   externally owned runtime resource stays in host factory arguments; a plugin
   observes it but never mirrors its connect, disconnect, replacement or
@@ -745,6 +758,8 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   monotonically: lifecycle callbacks cannot edit the mounted view or canonical
   editor, an older callback cannot overwrite newer delivered state, and bounded
   failure recovery reads the latest canonical state without a replay queue.
+  A view answers layout questions, such as which offset lies under a caret's
+  column, and never picks the selection: Plite asks, then writes it.
 - Runtime-owned DOM, such as a void's hidden spacer or an inline void's hidden anchor, is rendered by the runtime and never passed through app renderers. A renderer API that asks authors for hidden editor structure is wrong unless it is an explicit escape hatch. Block and inline voids keep separate primitives with one ownership rule: the app renders visible content and the runtime renders the hidden editor children.
 - An embedded editor that owns syntax parsing omits the duplicated syntax
   provider when every view uses it. When native and external views mix, the
@@ -772,6 +787,16 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   belongs before publication; observers that run after an `EditorCommit`
   exists report failure through `lifecycleErrorSink` and cannot make the
   committed update appear rejected.
+- An update call answers what landed. `editor.update(fn)` returns the
+  callback's value, and a call that opens its own update, such as a direct
+  method, `editor.update.command` or a plugin portal, returns its method's
+  answer. When the editor refuses the update, everything
+  rolls back, one refusal publishes, and the call answers `undefined`. That
+  stays distinct from a method's `false`, which declines without mutating. A
+  `tx` method answers for its draft, which the whole update can still refuse.
+  A refused paste ends there and tries no other format, because the refusal
+  answers the write rather than the format. An `api` service that opens an
+  update maps `undefined` into its own explicit outcome.
 - Document state, authored projection, persistent anchors, plugin
   configuration, and local history prepare inside the same rejection boundary
   and publish before commit observers. Native edit grouping has one history

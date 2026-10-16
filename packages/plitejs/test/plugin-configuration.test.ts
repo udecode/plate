@@ -2204,6 +2204,7 @@ describe('transactional plugin configuration', () => {
 
     assert.deepEqual(contexts, [
       [
+        'acquire',
         'afterPublish',
         'beforePublish',
         'editor',

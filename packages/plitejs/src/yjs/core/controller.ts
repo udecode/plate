@@ -587,21 +587,36 @@ export class YjsController<
     if (this.disposed) return;
 
     this.disposed = true;
-    this.unregisterTransactionGuard?.();
+    const errors: unknown[] = [];
+    const run = (step: () => void) => {
+      try {
+        step();
+      } catch (error) {
+        errors.push(error);
+      }
+    };
+
+    run(() => this.unregisterTransactionGuard?.());
     this.unregisterTransactionGuard = undefined;
-    this.sharedEffectLog.destroy();
+    run(() => this.sharedEffectLog.destroy());
     if (this.initialized) {
       this.initialized = false;
-      this.unbindExternalEvents();
-      this.schemaMetadata.unobserve(this.schemaObserver);
-      this.root.unobserveDeep(this.observer);
-      this.roots.unobserveDeep(this.rootsObserver);
-      this.unobserveRecordMaps();
-      this.sharedEffectLog.unobserve(this.sharedEffectsObserver);
-      this.doc.off('afterTransaction', this.afterTransactionObserver);
+      run(() => this.unbindExternalEvents());
+      run(() => this.schemaMetadata.unobserve(this.schemaObserver));
+      run(() => this.root.unobserveDeep(this.observer));
+      run(() => this.roots.unobserveDeep(this.rootsObserver));
+      run(() => this.unobserveRecordMaps());
+      run(() => this.sharedEffectLog.unobserve(this.sharedEffectsObserver));
+      run(() =>
+        this.doc.off('afterTransaction', this.afterTransactionObserver)
+      );
     }
-    this.awarenessAdapter?.destroy();
+    run(() => this.awarenessAdapter?.destroy());
     this.admissionSubscribers.clear();
+    if (errors.length === 1) throw errors[0];
+    if (errors.length > 1) {
+      throw new AggregateError(errors, 'Yjs binding teardown failed.');
+    }
   }
 
   cursorCache(view: YjsEditor = this.editor): YjsAwarenessAdapter<TCursorData> {
@@ -630,9 +645,14 @@ export class YjsController<
   }
 
   private unbindExternalEvents(): void {
-    this.readinessUnsubscribe?.();
+    const unsubscribe = this.readinessUnsubscribe;
+
     this.readinessUnsubscribe = undefined;
-    this.awareness?.off('change', this.awarenessObserver);
+    try {
+      unsubscribe?.();
+    } finally {
+      this.awareness?.off('change', this.awarenessObserver);
+    }
   }
 
   matches(doc: Y.Doc, rootName: string): boolean {

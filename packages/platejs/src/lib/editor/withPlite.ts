@@ -19,6 +19,7 @@ import {
   type NativeAuthoredDocumentCapability,
   withCompiledEditorSchemaCapabilityEntries,
   withEditorDocumentProjection,
+  createDormantEditor,
   withPluginPortalCandidates,
 } from 'plitejs/internal';
 
@@ -1019,7 +1020,8 @@ type BuildEditorOptions<TEditor extends Editor> = EditorOptions<
 
 /** @internal */
 export const buildEditor = <TEditor extends Editor = Editor>(
-  options: BuildEditorOptions<TEditor>
+  options: BuildEditorOptions<TEditor>,
+  dormant = false
 ): Editor => {
   const {
     affinity,
@@ -1039,12 +1041,10 @@ export const buildEditor = <TEditor extends Editor = Editor>(
     ...rootPluginConfig
   } = options;
   const editorUserId = resolveEditorUserId(userId);
-  const editor = createPliteEditor({
-    id,
-    lifecycleErrorSink,
-    maxLength,
-    readOnly,
-  }) as unknown as Editor;
+  const runtimeOptions = { id, lifecycleErrorSink, maxLength, readOnly };
+  const editor = (dormant
+    ? createDormantEditor(runtimeOptions)
+    : createPliteEditor(runtimeOptions)) as unknown as Editor;
 
   defineEditorUser(editor, editorUserId);
   const pluginInputs = partitionPluginInputs(plugins);

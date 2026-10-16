@@ -500,14 +500,22 @@ component 或 slot。
 </APIItem>
 
 <APIItem name="activate" type="PluginDefinitionInput['activate']">
-  在早期运行并管理同步资源。需要最终文档候选值的验证或资源初始化，通过
+  在早期运行并管理同步的内存资源。需要最终文档候选值的验证通过
   `context.beforePublish(callback)` 注册，其签名为
   `beforePublish: (callback: () => void) => void`。回调在编辑器构造和动态插件
   变更中、发布不可回退之前执行。它必须同步运行，且不能写入文档。
   抛出异常会否决发布并回滚候选值。
 
-  通过 `context.onCleanup(...)` 注册资源清理，包括在 `beforePublish` 中获取的
-  资源。清理由 activation 管理，在回滚、移除或替换时执行。
+  编辑器之外的资源，例如共享文档上的监听器，通过 `context.acquire(take)` 获取，
+  其签名为
+  `acquire: (take: () => (context: { reason: 'remove' | 'replace' | 'rollback' }) => void) => void`。
+  `take` 在所有插件的 `beforePublish` 通过后执行，并返回释放该资源的函数。
+  `take` 抛出异常会回滚候选值。`useCreateEditor` 创建的编辑器在 React 提交其
+  组件之前不获取任何资源，因为一次渲染可能被丢弃。
+
+  通过 `context.onCleanup(...)` 注册内存资源清理。清理由 activation 管理，在
+  回滚、移除或替换时、该 activation 的释放函数之后执行。`editor.destroy()` 会
+  释放并清理所有插件。
 
   `context.afterPublish(...)` 用于不抛出异常的发布后观察。回调错误会被报告，
   不能否决或回滚发布。

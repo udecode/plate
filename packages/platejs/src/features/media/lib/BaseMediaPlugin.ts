@@ -232,16 +232,18 @@ export function defineMediaPlugin(
               const at = atAnchor?.resolve();
 
               return at
-                ? update.insert({ caption, url }, { ...options, at })
+                ? update.insert({ caption, url }, { ...options, at }) === true
                 : false;
             }
             if (!key || !editor.read.nodes.get(key)) return false;
 
-            return update.insert(
-              { caption, url },
-              options.before === undefined
-                ? { ...options, after: key }
-                : { ...options, before: key }
+            return (
+              update.insert(
+                { caption, url },
+                options.before === undefined
+                  ? { ...options, after: key }
+                  : { ...options, before: key }
+              ) === true
             );
           } finally {
             atAnchor?.release();

@@ -55,7 +55,6 @@ import {
   withEditorUpdateRootScope,
 } from './public-state';
 import { executeEditorRead } from './read-registry';
-import { subscribeEditorRefusals } from './refusal';
 import { EditorSchemaValidationError } from './schema-validation';
 import { screenReaderAnnouncementEffect } from './screen-reader-announcement';
 import { planPaste, writePaste } from './slice-landing';
@@ -673,15 +672,10 @@ const runTransfer = (
 
   const asMove = <T>(role: 'landing' | 'source', run: () => T): T =>
     copy ? run() : withDraftMove(getEditorRuntimeOwner(editor), { role }, run);
-  // A policy such as Suggesting's can refuse the whole update, which then
-  // reports instead of throwing.
-  let declined = false;
-  const stopRefusals = subscribeEditorRefusals(editor, () => {
-    declined = true;
-  });
+  let accepted: true | undefined;
 
   try {
-    editor.update((tx) => {
+    accepted = editor.update((tx): true => {
       if (input.announce) {
         tx.effects.emit(screenReaderAnnouncementEffect, input.announce);
       }
@@ -759,7 +753,7 @@ const runTransfer = (
         moveChain(landing.keys, () => slot(payload, 0));
         selectLanded(landing.keys);
 
-        return;
+        return true;
       }
       if (relocate && source.kind === 'nodes' && landing.kind === 'edge') {
         const keys = source.entries.map(
@@ -780,7 +774,7 @@ const runTransfer = (
         }
         selectLanded(keys);
 
-        return;
+        return true;
       }
 
       const removeSource = () => {
@@ -888,7 +882,7 @@ const runTransfer = (
         hold(landed);
         if (select) tx.selection.set(landed);
 
-        return;
+        return true;
       }
 
       removeSource();
@@ -926,6 +920,8 @@ const runTransfer = (
       draft.current = trackNodes(paths);
       holdNodes(nodes);
       if (select) tx.selection.set(nodes);
+
+      return true;
     });
   } catch (error) {
     releaseHeld(held);
@@ -937,11 +933,10 @@ const runTransfer = (
     }
     throw error;
   } finally {
-    stopRefusals();
     release();
   }
 
-  if (declined) {
+  if (!accepted) {
     releaseHeld(held);
 
     return { reason: 'policy', status: 'refused' };

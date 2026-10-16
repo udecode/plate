@@ -24,12 +24,14 @@
 // run's output is searched, and a match proves the text appeared, not which
 // assertion printed it, so read the mutant's log. Every test run is logged
 // through proof.mjs and stops after the spec's timeout in seconds, 900 by
-// default. Exits 0 only when every mutation is caught and the export is gone.
+// default. A spec timeout over 3,600 seconds is refused, and the whole run stops
+// after an hour, logging each mutation it never ran. Exits 0 only when every
+// mutation is caught and the export is gone.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve, sep } from 'node:path';
-import { prove } from './proof.mjs';
+import { prove, TIME_BUDGET_SECONDS } from './proof.mjs';
 
 function problemWith(mutation, control, original) {
   const text = original.toString('utf8');
@@ -41,11 +43,16 @@ function problemWith(mutation, control, original) {
   return null;
 }
 
-function check(dir, spec, tree) {
+function check(dir, spec, tree, deadline) {
   const timeout = spec.timeout ?? 900;
   const controls = new Map();
   const lines = [];
   let ok = true;
+  const proveInTime = (name, command) => {
+    const seconds = Math.min(timeout, Math.floor((deadline - Date.now()) / 1000));
+    return seconds < 1 ? null : prove({ dir, name, command, cwd: tree, timeout: seconds });
+  };
+  const outOfTime = "not run, the run's hour ran out";
   for (const mutation of spec.mutations) {
     const command = mutation.test ?? spec.test;
     if (!Array.isArray(command) || command.length === 0) {
@@ -55,7 +62,12 @@ function check(dir, spec, tree) {
     }
     const key = JSON.stringify(command);
     if (!controls.has(key)) {
-      const control = prove({ dir, name: `mutate/control-${controls.size + 1}`, command, cwd: tree, timeout });
+      const control = proveInTime(`mutate/control-${controls.size + 1}`, command);
+      if (!control) {
+        lines.push(`${mutation.name}: ${outOfTime}`);
+        ok = false;
+        continue;
+      }
       controls.set(key, control);
       lines.push(`control ${command.join(' ')}: exit=${control.exit} log ${control.path}`);
       if (control.exit !== 0) ok = false;
@@ -81,9 +93,14 @@ function check(dir, spec, tree) {
     let run;
     try {
       writeFileSync(path, original.toString('utf8').replace(mutation.from, () => mutation.to));
-      run = prove({ dir, name: `mutate/${mutation.name}`, command, cwd: tree, timeout });
+      run = proveInTime(`mutate/${mutation.name}`, command);
     } finally {
       writeFileSync(path, original);
+    }
+    if (!run) {
+      lines.push(`${mutation.name}: ${outOfTime}`);
+      ok = false;
+      continue;
     }
     const restored = readFileSync(path).equals(original);
     const named = run.exit !== 0 && run.output.includes(mutation.expect);
@@ -121,6 +138,11 @@ if (!spec.commit || !(spec.mutations?.length > 0)) {
   console.error('the spec names no commit or lists no mutations');
   process.exit(1);
 }
+if (spec.timeout !== undefined && !(spec.timeout > 0 && spec.timeout <= TIME_BUDGET_SECONDS)) {
+  console.error(`the spec's timeout must be a positive number of seconds within the ${TIME_BUDGET_SECONDS}-second time budget, got ${spec.timeout}`);
+  process.exit(2);
+}
+const deadline = Date.now() + TIME_BUDGET_SECONDS * 1000;
 let attempt = 1;
 while (existsSync(join(dir, 'mutate', `tree-a${attempt}`))) attempt++;
 const tree = resolve(dir, 'mutate', `tree-a${attempt}`);
@@ -138,7 +160,7 @@ let result;
 let removed = false;
 try {
   linkModules(spawnSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).stdout.trim(), tree, spec.commit);
-  result = check(dir, spec, tree);
+  result = check(dir, spec, tree, deadline);
 } finally {
   removed = removeTree();
 }

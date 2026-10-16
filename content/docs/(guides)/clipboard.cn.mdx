@@ -308,7 +308,7 @@ plain text 并不能恢复 HTML 丢失的内容。
 
 只会调用接收 paste 的 editor surface，且仅在其仍挂载时调用。`onPaste` 或
 `domCommands.insertData` handler 不经内置 format 处理 paste 时、drop 时，以及单独
-调用 `editor.api.dom.clipboard.insertData`（返回 boolean）时都不会调用
+调用 `editor.api.dom.clipboard.insertData`（内容插入时返回 `true`，没有可用 format 时返回 `false`，编辑器拒绝 update 时返回 `undefined`）时都不会调用
 `onPasteResult`。在 paste 期间通过 `insertData` 插入的 `onPaste` handler 会收到该次
 插入的结果。
 

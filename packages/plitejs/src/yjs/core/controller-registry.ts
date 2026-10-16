@@ -1,11 +1,13 @@
 import type * as Y from 'yjs';
 
 import { getEditorRuntimeOwner } from '../../index';
+import type { YjsBinding } from './binding';
 import type { YjsController } from './controller';
 import type { YjsEditor } from './editor-types';
 import type { YjsRemoteCursorData } from './types';
 
 const activeControllers = new WeakMap<YjsEditor, object>();
+const activeBindings = new WeakMap<YjsEditor, object>();
 
 type NamespaceEntry = {
   readonly factoryToken: object;
@@ -44,6 +46,36 @@ export const deleteActiveYjsController = <
   }
 };
 
+export const getActiveYjsBinding = <
+  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+>(
+  editor: YjsEditor
+): YjsBinding<TCursorData> | undefined =>
+  activeBindings.get(getEditorRuntimeOwner(editor)) as
+    | YjsBinding<TCursorData>
+    | undefined;
+
+export const setActiveYjsBinding = <TCursorData extends YjsRemoteCursorData>(
+  editor: YjsEditor,
+  binding: YjsBinding<TCursorData>
+): void => {
+  activeBindings.set(getEditorRuntimeOwner(editor), binding);
+};
+
+export const deleteActiveYjsBinding = <TCursorData extends YjsRemoteCursorData>(
+  editor: YjsEditor,
+  binding: YjsBinding<TCursorData>
+): void => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (activeBindings.get(owner) === binding) activeBindings.delete(owner);
+};
+
+type NamespaceRelease = (
+  reason: 'dispose' | 'rollback',
+  teardown?: () => void
+) => void;
+
 export const claimYjsNamespace = (
   doc: Y.Doc,
   rootName: string,
@@ -66,22 +98,23 @@ export const claimYjsNamespace = (
 
     current.currentLease = lease;
 
-    return Object.freeze({
-      reused: true,
-      release(reason: 'dispose' | 'rollback') {
-        if (current.currentLease !== lease) return false;
-        if (reason === 'rollback') {
-          current.currentLease = previousLease;
+    const release: NamespaceRelease = (reason, teardown) => {
+      if (current.currentLease !== lease) return;
+      if (reason === 'rollback') {
+        current.currentLease = previousLease;
 
-          return false;
-        }
+        return;
+      }
 
+      try {
+        teardown?.();
+      } finally {
         roots.delete(rootName);
         if (roots.size === 0) namespaces.delete(doc);
+      }
+    };
 
-        return true;
-      },
-    });
+    return Object.freeze({ release, reused: true });
   }
 
   const entry: NamespaceEntry = {
@@ -93,15 +126,16 @@ export const claimYjsNamespace = (
   roots.set(rootName, entry);
   namespaces.set(doc, roots);
 
-  return Object.freeze({
-    reused: false,
-    release(_reason: 'dispose' | 'rollback') {
-      if (entry.currentLease !== lease) return false;
+  const release: NamespaceRelease = (_reason, teardown) => {
+    if (entry.currentLease !== lease) return;
 
+    try {
+      teardown?.();
+    } finally {
       roots.delete(rootName);
       if (roots.size === 0) namespaces.delete(doc);
+    }
+  };
 
-      return true;
-    },
-  });
+  return Object.freeze({ release, reused: false });
 };

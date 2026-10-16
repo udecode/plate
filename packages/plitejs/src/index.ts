@@ -131,6 +131,7 @@ export type {
   EditorCommandContinuation,
   EditorCommandDescriptor,
   EditorCommandDispatch,
+  EditorDirectCommandDispatch,
   EditorCommandHandler,
   EditorCommandInput,
   EditorCommandPlace,

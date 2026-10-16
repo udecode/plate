@@ -16,7 +16,7 @@ import type {
   EditorCommit,
   EditorCommitListener,
   EditorCommitSource,
-  EditorCommandDispatch,
+  EditorDirectCommandDispatch,
   PluginReference,
   PluginDefinitionInput,
   PluginInput,
@@ -123,20 +123,20 @@ export type InternalEditorSnapshotRuntime<V extends Value = Value> = {
 
 export type InternalEditorTransactionRuntime<V extends Value = Value> = {
   read: <T>(fn: (state: EditorStateView<V, any>) => T) => T;
-  runCommand: EditorCommandDispatch<Editor<V>>;
+  runCommand: EditorDirectCommandDispatch<Editor<V>>;
   subscribe: (listener: SnapshotListener<V>) => () => void;
   subscribeCommit: (listener: EditorCommitListener<V>) => () => void;
   subscribeSource: (
     source: EditorCommitSource,
     listener: SnapshotListener<V>
   ) => () => void;
-  update: (
+  update: <R = void>(
     fn: (
       transaction: EditorUpdateTransaction<V, any>,
       context: EditorUpdateContext<Editor<V>>
-    ) => void,
+    ) => R,
     options?: InternalEditorUpdateOptions
-  ) => void;
+  ) => R | undefined;
 };
 
 export type InternalPluginRuntime<V extends Value = Value> = {
@@ -226,7 +226,7 @@ export const getEditorRuntime = <V extends Value = Value>(
   return runtime as unknown as InternalEditorRuntime<V>;
 };
 
-type EditorRuntimeCarrier = Readonly<{
+export type EditorRuntimeCarrier = Readonly<{
   id: string;
   read: object;
   update: object;

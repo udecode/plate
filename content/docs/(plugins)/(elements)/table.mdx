@@ -274,7 +274,7 @@ Read options are `TableTargetOptions`, except `cell`, which takes `{ at?: TableC
 
 ## Transforms
 
-Every table update returns `boolean`: `true` for an accepted change, `false` for an unavailable target, rejected operation, or unchanged request. Invalid dimensions and numeric options throw before publication. The command rechecks eligibility even after a capability read.
+Every table update returns `boolean`: `true` for an accepted change, `false` for an unavailable target, rejected operation, or unchanged request. A call through `editor.update.table` or the plugin's `update` returns `undefined` instead when the editor refuses its update, as Suggesting does for a table. Invalid dimensions and numeric options throw before publication. The command rechecks eligibility even after a capability read.
 
 | Update | Options | Purpose |
 | --- | --- | --- |

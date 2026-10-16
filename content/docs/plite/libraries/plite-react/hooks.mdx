@@ -20,7 +20,9 @@ hooks for rendered nodes, and targeted hooks for annotations.
 #### `useEditor(options?, deps?): Editor`
 
 Create one component-owned editor. The optional dependency list controls when
-React creates a replacement editor.
+React creates a replacement editor. Plugins take outside resources, such as a
+Yjs document, when React commits the component, and give them back when it
+unmounts or the editor is replaced.
 
 #### `useEditorContext(): Editor`
 
@@ -262,11 +264,12 @@ Resolve the stable child-root key for an element and slot.
 Prefer persisted `childRoots[slot]` when the child root is part of document
 data. The runtime fallback is for ephemeral editor islands.
 
-#### `useCommand(command, options?): (input) => boolean`
+#### `useCommand(command, options?): (input) => boolean | undefined`
 
 Bind one typed semantic command to the mounted root editor. Command input
 belongs to the returned dispatcher, so event-time data never becomes hook
-configuration.
+configuration. The dispatcher returns `true` when the command landed, `false`
+when no handler applied, and `undefined` when the editor refused the update.
 
 ```tsx
 import { editorCommands } from "plitejs";

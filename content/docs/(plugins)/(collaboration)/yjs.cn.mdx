@@ -98,8 +98,10 @@ const editor = createEditor({
 
 编辑器同时记录建议或评论时，为每位协作者传入 `createEditor({ userId })`。未传入时，
 所有协作者都以本地用户 `'local'` 写入，编辑器会在开发环境中于首次写入或评论时警告一次。
-仅用 Yjs 做持久化的单人编辑器可以传入任意稳定 ID。`userId` 在编辑器生命周期内固定，
-新编辑器不能绑定仍被旧编辑器持有的同一 `Y.Doc` 中的 `rootName`。
+仅用 Yjs 做持久化的单人编辑器可以传入任意稳定 ID。`userId` 在编辑器生命周期内固定。
+一个 `Y.Doc` 中的每个 `rootName` 同时只由一个活动编辑器绑定。`useCreateEditor`
+创建的编辑器在组件卸载或替换它时释放绑定，因此重新挂载或新的 `id` 可以再次绑定同一
+`rootName`。`createEditor` 创建的编辑器持有绑定，直到调用 `editor.destroy()`。
 
 `rootName` 命名整个协作文档：主文档子节点位于 `rootName`，命名根位于 `${rootName}:roots`；一次修改多个根的提交会成为一个 Yjs 事务和一个历史批次；awareness 会拒绝 anchor 和 focus 位于不同根的选择。
 

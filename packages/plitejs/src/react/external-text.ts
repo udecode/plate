@@ -59,6 +59,7 @@ export type ExternalTextActions = Readonly<{
     baseVersion: number;
     direction: 'backward' | 'forward';
     extend?: boolean;
+    /** The caret's goal client x for an ArrowUp or ArrowDown exit; omit it for other keys. */
     x?: number;
   }) => ExternalTextDispatchResult;
   select: (input: {
@@ -70,7 +71,18 @@ export type ExternalTextActions = Readonly<{
 /** Adapter-owned DOM and local resources for one mounted host. */
 export type ExternalTextView<TConfig = undefined> = Readonly<{
   destroy: () => void;
-  focus: (options?: { edge?: 'end' | 'start'; x?: number }) => void;
+  /** Install the delivered `state.selection`, then focus the local input. */
+  focus: () => void;
+  /**
+   * The offset nearest client `x` on the view's first (`'start'`) or last
+   * (`'end'`) visual line, in the delivered `state.text`; `null` when the view
+   * cannot tell. Plite asks before a vertical arrow enters the view and writes
+   * the selection itself. Read layout only: never dispatch an action, change
+   * the view's text or selection, focus, scroll, or run work the view
+   * deferred, such as a pending layout pass. Actions called during the query
+   * are refused. Omitted, Plite enters at the first or last offset.
+   */
+  offsetAt?: (input: { edge: 'end' | 'start'; x: number }) => number | null;
   /** Apply patches and canonical state before returning without dispatching an action. */
   update: (input: {
     /** `null` resets from state.text; a list applies exact patches; [] acknowledges. */

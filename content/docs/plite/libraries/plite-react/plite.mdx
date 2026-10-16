@@ -65,24 +65,15 @@ const MyEditor = () => {
 };
 ```
 
-`EditorRoot` binds one editor runtime for the provider's mounted lifetime. Remount
-the provider with a different React key before replacing the editor instance.
-
-```tsx
-<EditorRoot editor={editor} key={editorInstanceKey}>
-  <Editable />
-</EditorRoot>
-```
-
-Change `editorInstanceKey` whenever the host intentionally supplies a different
-editor. Keep the key stable for ordinary document updates and named-root
-changes.
+`EditorRoot` binds one editor runtime for its mounted lifetime. Passing a
+different editor remounts everything below it, so it needs no `key`. A
+named-root change keeps the same runtime.
 
 Seed the editor with `initialValue` when the editor is created. `<EditorRoot>` does
 not take an `initialValue` prop.
 
 Use `createEditor` when an editor must be created outside a React
-component or inside a custom hook that owns the same one-shot lifetime.
+component. It is live when it returns, and `editor.destroy()` ends it.
 
 Use editor APIs for later document replacement. `initialValue` is not a
 controlled value prop.

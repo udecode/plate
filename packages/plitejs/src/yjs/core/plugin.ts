@@ -1,5 +1,8 @@
 import { getCompiledEditorSchemaFromApi } from '../../core/editor-schema';
-import { carryPluginFactoryType } from '../../core/plugin';
+import {
+  carryPluginFactoryType,
+  queueAfterPluginAcquisition,
+} from '../../core/plugin';
 import {
   definePlugin,
   type Descendant,
@@ -10,12 +13,13 @@ import type {
   PluginDefinitionInput,
   PluginFactoryTypeLambda,
 } from '../../interfaces/editor';
+import { YjsBinding } from './binding';
 import { YjsController } from './controller';
 import {
   claimYjsNamespace,
-  deleteActiveYjsController,
-  getActiveYjsController,
-  setActiveYjsController,
+  deleteActiveYjsBinding,
+  getActiveYjsBinding,
+  setActiveYjsBinding,
 } from './controller-registry';
 import type { YjsEditor } from './editor-types';
 import { DEFAULT_YJS_ROOT_NAME } from './keys';
@@ -48,51 +52,50 @@ type YjsOptionsWithCompaction<
   }>;
 
 const createDeferredBaseApi = <TCursorData extends YjsRemoteCursorData>(
-  getController: () => YjsController<TCursorData>
+  getBinding: () => YjsBinding<TCursorData>
 ): YjsBaseApi =>
   Object.freeze({
-    admissionStatus: () => getController().baseApi().admissionStatus(),
-    retryImport: () => getController().baseApi().retryImport(),
+    admissionStatus: () => getBinding().baseApi().admissionStatus(),
+    retryImport: () => getBinding().baseApi().retryImport(),
     subscribeAdmissionStatus: (listener) =>
-      getController().baseApi().subscribeAdmissionStatus(listener),
+      getBinding().baseApi().subscribeAdmissionStatus(listener),
   });
 
 const createDeferredPresenceApi = <TCursorData extends YjsRemoteCursorData>(
-  getController: () => YjsController<TCursorData>,
+  getBinding: () => YjsBinding<TCursorData>,
   view: YjsEditor
 ): YjsPresenceApi<TCursorData> =>
   Object.freeze({
-    clearSelection: () => getController().presenceApi(view).clearSelection(),
+    clearSelection: () => getBinding().presenceApi(view).clearSelection(),
     remoteCursor: (clientId) =>
-      getController().presenceApi(view).remoteCursor(clientId),
-    remoteCursors: () => getController().presenceApi(view).remoteCursors(),
-    setCursorData: (data) =>
-      getController().presenceApi(view).setCursorData(data),
+      getBinding().presenceApi(view).remoteCursor(clientId),
+    remoteCursors: () => getBinding().presenceApi(view).remoteCursors(),
+    setCursorData: (data) => getBinding().presenceApi(view).setCursorData(data),
     subscribeRemoteCursors: (listener) =>
-      getController().presenceApi(view).subscribeRemoteCursors(listener),
-    syncSelection: () => getController().presenceApi(view).syncSelection(),
+      getBinding().presenceApi(view).subscribeRemoteCursors(listener),
+    syncSelection: () => getBinding().presenceApi(view).syncSelection(),
   });
 
 const createDeferredCompactionApi = <TCursorData extends YjsRemoteCursorData>(
-  getController: () => YjsController<TCursorData>
+  getBinding: () => YjsBinding<TCursorData>
 ): YjsCompactionApi =>
   Object.freeze({
     retireSharedEffectPeer: (clientId) =>
-      getController().compactionApi().retireSharedEffectPeer(clientId),
+      getBinding().compactionApi().retireSharedEffectPeer(clientId),
   });
 
 const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
   options: YjsPluginOptions<TCursorData>
 ) => {
   const activationErrors = new WeakMap<YjsEditor, unknown>();
-  const controllers = new WeakMap<YjsEditor, YjsController<TCursorData>>();
+  const bindings = new WeakMap<YjsEditor, YjsBinding<TCursorData>>();
   const factoryToken = {};
   const rootName = options.rootName ?? DEFAULT_YJS_ROOT_NAME;
-  const getController = (editor: YjsEditor) => {
+  const getBinding = (editor: YjsEditor) => {
     const owner = getEditorRuntimeOwner(editor);
-    const controller = controllers.get(owner);
+    const binding = bindings.get(owner);
 
-    if (controller) return controller;
+    if (binding) return binding;
 
     const activationError = activationErrors.get(owner);
 
@@ -104,130 +107,155 @@ const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
   const common = {
     activate(context) {
       const owner = getEditorRuntimeOwner(context.editor);
-      const lease = claimYjsNamespace(
-        options.doc,
-        rootName,
-        owner,
-        factoryToken
-      );
-      let controller: YjsController<TCursorData>;
+      let binding = bindings.get(owner);
 
-      try {
-        if (lease.reused) {
-          const current = controllers.get(owner);
-
-          if (!current) {
-            throw new Error('A reused Yjs binding lost its owning controller.');
-          }
-          controller = current;
-        } else {
-          const active = getActiveYjsController(owner);
-
-          if (active) {
-            throw new Error(
-              'Changing a Yjs document or namespace requires a fresh editor.'
-            );
-          }
-
-          const compiledSchema = getCompiledEditorSchemaFromApi(context.schema);
-          const emptyValueFor = (root: string): readonly Descendant[] => {
-            const rootContent =
-              root === 'main'
-                ? compiledSchema?.primaryRoot.content
-                : compiledSchema?.roots.get(root)?.content;
-
-            if (!rootContent || rootContent.min === 0) return Object.freeze([]);
-
-            const children: Descendant[] = [];
-
-            while (children.length < rootContent.min) {
-              const child = context.schema.createDefaultChild({
-                at: [children.length],
-                root: root === 'main' ? undefined : root,
-              });
-
-              if (!child) {
-                throw new Error(
-                  `Yjs root "${root}" requires content but has no schema default.`
-                );
-              }
-              children.push(child);
-            }
-
-            return Object.freeze(children);
-          };
-
-          controller = new YjsController(owner, options, {
-            canonicalize: (root, children) =>
-              owner.read((state) => {
-                const before = state.value();
-                const transaction = state.transaction((tx) => {
-                  if (root === 'main') {
-                    tx.value.replace({ children, selection: null });
-
-                    return;
-                  }
-
-                  // A replacement that names no records keeps the
-                  // editor's.
-                  const { records: _records, ...content } = before;
-
-                  tx.value.replace({
-                    ...content,
-                    roots: { ...content.roots, [root]: children },
-                    selection: readEditorSelection(owner),
-                  });
-                });
-                const value = transaction.changes.apply(before);
-
-                return root === 'main'
-                  ? value.children
-                  : (value.roots?.[root] ?? []);
-              }),
-            emptyValueFor,
-          });
-          controller.initializeCanonicalState();
-          controllers.set(owner, controller);
-          setActiveYjsController(owner, controller);
+      if (!binding) {
+        if (getActiveYjsBinding(owner)) {
+          throw new Error(
+            'Changing a Yjs document or namespace requires a fresh editor.'
+          );
         }
-
-        activationErrors.delete(owner);
-      } catch (error) {
-        if (lease.release('rollback')) {
-          controllers.get(owner)?.destroy();
-          controllers.delete(owner);
-        }
-        activationErrors.set(owner, error);
-        throw error;
+        binding = new YjsBinding(owner, options);
+        bindings.set(owner, binding);
+        setActiveYjsBinding(owner, binding);
       }
 
-      context.onCleanup(({ reason }) => {
-        if (!lease.release(reason === 'rollback' ? 'rollback' : 'dispose')) {
-          return;
+      const current = binding;
+
+      current.records += 1;
+      context.onCleanup(() => {
+        current.records -= 1;
+        if (current.records > 0) return;
+
+        current.destroy();
+        if (bindings.get(owner) === current) bindings.delete(owner);
+        deleteActiveYjsBinding(owner, current);
+      });
+      const buildController = () => {
+        const compiledSchema = getCompiledEditorSchemaFromApi(context.schema);
+        const emptyValueFor = (root: string): readonly Descendant[] => {
+          const rootContent =
+            root === 'main'
+              ? compiledSchema?.primaryRoot.content
+              : compiledSchema?.roots.get(root)?.content;
+
+          if (!rootContent || rootContent.min === 0) return Object.freeze([]);
+
+          const children: Descendant[] = [];
+
+          while (children.length < rootContent.min) {
+            const child = context.schema.createDefaultChild({
+              at: [children.length],
+              root: root === 'main' ? undefined : root,
+            });
+
+            if (!child) {
+              throw new Error(
+                `Yjs root "${root}" requires content but has no schema default.`
+              );
+            }
+            children.push(child);
+          }
+
+          return Object.freeze(children);
+        };
+
+        const controller = new YjsController(owner, options, {
+          canonicalize: (root, children) =>
+            owner.read((state) => {
+              const before = state.value();
+              const transaction = state.transaction((tx) => {
+                if (root === 'main') {
+                  tx.value.replace({ children, selection: null });
+
+                  return;
+                }
+
+                // A replacement that names no records keeps the
+                // editor's.
+                const { records: _records, ...content } = before;
+
+                tx.value.replace({
+                  ...content,
+                  roots: { ...content.roots, [root]: children },
+                  selection: readEditorSelection(owner),
+                });
+              });
+              const value = transaction.changes.apply(before);
+
+              return root === 'main'
+                ? value.children
+                : (value.roots?.[root] ?? []);
+            }),
+          emptyValueFor,
+        });
+
+        try {
+          controller.initializeCanonicalState();
+        } catch (error) {
+          controller.destroy();
+          throw error;
         }
 
-        controller.destroy();
-        if (controllers.get(owner) === controller) controllers.delete(owner);
-        deleteActiveYjsController(owner, controller);
+        return controller;
+      };
+      context.acquire(() => {
+        const lease = claimYjsNamespace(
+          options.doc,
+          rootName,
+          owner,
+          factoryToken
+        );
+
+        try {
+          if (!lease.reused) {
+            current.attach(buildController());
+            queueAfterPluginAcquisition(owner, context.pluginName, () => {
+              try {
+                current.publishPendingCursorData();
+              } finally {
+                if (current.published) current.controller?.start();
+              }
+            });
+          } else if (!current.controller) {
+            throw new Error('A reused Yjs binding lost its owning controller.');
+          }
+          activationErrors.delete(owner);
+        } catch (error) {
+          lease.release('rollback', () => current.detach());
+          activationErrors.set(owner, error);
+          throw error;
+        }
+
+        return ({ reason }) => {
+          lease.release(reason === 'rollback' ? 'rollback' : 'dispose', () =>
+            current.detach()
+          );
+        };
       });
-      context.afterPublish(() => controller.start());
+      context.afterPublish(() => {
+        current.published = true;
+        current.controller?.start();
+      });
     },
     on: {
       commit({ commit, editor, snapshot }) {
-        getController(editor).handleCommit(commit, snapshot);
+        bindings
+          .get(getEditorRuntimeOwner(editor))
+          ?.controller?.handleCommit(commit, snapshot);
       },
     },
     validate({ editor, schema }) {
-      controllers
+      bindings
         .get(getEditorRuntimeOwner(editor))
-        ?.assertSchemaIdentity(schema.identity());
+        ?.controller?.assertSchemaIdentity(schema.identity());
     },
   } satisfies Pick<
     PluginDefinitionInput<YjsEditor>,
     'activate' | 'on' | 'validate'
   >;
 
-  return { common, getController };
+  return { common, getBinding };
 };
 
 const createBaseYjsPlugin = <TCursorData extends YjsRemoteCursorData>(
@@ -238,7 +266,7 @@ const createBaseYjsPlugin = <TCursorData extends YjsRemoteCursorData>(
   return definePlugin('yjs', {
     ...runtime.common,
     api: ({ editor }) =>
-      createDeferredBaseApi(() => runtime.getController(editor)),
+      createDeferredBaseApi(() => runtime.getBinding(editor)),
   });
 };
 
@@ -250,8 +278,8 @@ const createPresenceYjsPlugin = <TCursorData extends YjsRemoteCursorData>(
   return definePlugin('yjs', {
     ...runtime.common,
     api: ({ editor }) => ({
-      ...createDeferredBaseApi(() => runtime.getController(editor)),
-      ...createDeferredPresenceApi(() => runtime.getController(editor), editor),
+      ...createDeferredBaseApi(() => runtime.getBinding(editor)),
+      ...createDeferredPresenceApi(() => runtime.getBinding(editor), editor),
     }),
   });
 };
@@ -264,8 +292,8 @@ const createCompactionYjsPlugin = <TCursorData extends YjsRemoteCursorData>(
   return definePlugin('yjs', {
     ...runtime.common,
     api: ({ editor }) => ({
-      ...createDeferredBaseApi(() => runtime.getController(editor)),
-      ...createDeferredCompactionApi(() => runtime.getController(editor)),
+      ...createDeferredBaseApi(() => runtime.getBinding(editor)),
+      ...createDeferredCompactionApi(() => runtime.getBinding(editor)),
     }),
   });
 };
@@ -281,9 +309,9 @@ const createPresenceCompactionYjsPlugin = <
   return definePlugin('yjs', {
     ...runtime.common,
     api: ({ editor }) => ({
-      ...createDeferredBaseApi(() => runtime.getController(editor)),
-      ...createDeferredPresenceApi(() => runtime.getController(editor), editor),
-      ...createDeferredCompactionApi(() => runtime.getController(editor)),
+      ...createDeferredBaseApi(() => runtime.getBinding(editor)),
+      ...createDeferredPresenceApi(() => runtime.getBinding(editor), editor),
+      ...createDeferredCompactionApi(() => runtime.getBinding(editor)),
     }),
   });
 };

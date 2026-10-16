@@ -152,11 +152,12 @@ its `exit N` line; after an interruption or resume, only those logs count.
   then generates and serves dynamic docs. When the tree must not change, such
   as during a proof or a panel freeze, run
   `PLATE_WWW_DYNAMIC_DOCS=1 next dev --port <port>` from `apps/www` with the
-  same env and its own `PLATE_WWW_DIST_DIR`. Set `PLATE_WWW_DEV_SOURCE=1` by
+  same env. Set `PLATE_WWW_DEV_SOURCE=1` by
   default when the tree changes a package the page renders, so the server
-  serves source instead of built output. If an existing server holds `.next/dev/lock`, use a
-  separate available output directory through the existing configuration;
-  the current `PLATE_WWW_PLITE=1` option selects `.next-plite`.
+  serves source instead of built output. A dev server keeps its cache in
+  `.next-<port>`, or `.next-plite-<port>` with `PLATE_WWW_PLITE=1`, so a rerun
+  on the same port reuses it; when a server already holds that port, pick
+  another port, and leave `PLATE_WWW_DIST_DIR` unset.
 - Plite examples for interactive source proof:
   `pnpm --filter plite exec next dev --port 3298`.
 - Existing managed Plite browser proof:

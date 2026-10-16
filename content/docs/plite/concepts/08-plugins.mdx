@@ -255,6 +255,13 @@ factories see the same declarative schema and descriptor-resolved dependency
 APIs. Factory results become visible together in the final candidate passed to
 `validate(context)`. Activation runs only after every validator succeeds.
 
+Activation can run during a React render that never commits, so keep
+`activate` in memory and take anything outside the editor, such as a shared
+document, with `context.acquire(take)`. `take` runs after every
+`beforePublish` passes, or when React commits the component that owns the
+editor, and returns the release. Releases run before cleanups, on removal,
+replacement, rollback, unmount and `editor.destroy()`.
+
 Lifecycle callbacks are synchronous and cannot publish editor writes. Cleanup
 receives `remove`, `replace`, or `rollback` as its reason; lifecycle failures
 report through the editor error sink.

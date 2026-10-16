@@ -35,6 +35,8 @@ import {
 } from './core/editor-schema';
 import {
   createEditorViewPluginApis,
+  destroyEditor,
+  markEditorDormant,
   prepareInitialPluginPublication,
   prepareScopedPluginPublication,
   setEditorLifecycleErrorSink,
@@ -632,14 +634,23 @@ export function createEditor<
   V extends Value = Value,
   const TPlugins extends readonly unknown[] = readonly [],
 >(options: CreateEditorOptions<V, TPlugins> = {}): Editor<V, TPlugins> {
-  return createEditorImplementation(options);
+  return createEditorImplementation(options, false);
 }
+
+/** @internal */
+export const createDormantEditor = <
+  V extends Value = Value,
+  const TPlugins extends readonly unknown[] = readonly [],
+>(
+  options: CreateEditorOptions<V, TPlugins> = {}
+): Editor<V, TPlugins> => createEditorImplementation(options, true);
 
 const createEditorImplementation = <
   V extends Value,
   const TPlugins extends readonly unknown[],
 >(
-  options: CreateEditorOptions<V, TPlugins>
+  options: CreateEditorOptions<V, TPlugins>,
+  dormant: boolean
 ): Editor<V, TPlugins> => {
   assertEditorOptions(options, EDITOR_OPTION_KEYS);
   let editor!: Editor<V, TPlugins>;
@@ -674,11 +685,11 @@ const createEditorImplementation = <
     subscribeCommit: (listener) => subscribeCommit(editor, listener),
     subscribeSource: (source, listener) =>
       subscribeSource(editor, source, listener),
-    update: (
+    update: <R = void>(
       fn: (
         transaction: EditorUpdateTransaction<V, any>,
         context: EditorUpdateContext<Editor<V, any>>
-      ) => void,
+      ) => R,
       innerOptions?: InternalEditorUpdateOptions
     ) => updateEditor(runtimeBoundaryEditor(), fn, innerOptions),
   } satisfies InternalEditorTransactionRuntime<V>;
@@ -731,6 +742,7 @@ const createEditorImplementation = <
     update,
     install: (plugin, pluginOptions) =>
       extendEditor(editor, plugin, pluginOptions),
+    destroy: () => destroyEditor(editor),
   };
 
   editor = baseEditor;
@@ -746,6 +758,7 @@ const createEditorImplementation = <
   } satisfies InternalEditorRuntime<V>;
 
   setEditorRuntime(editor, runtime);
+  if (dormant) markEditorDormant(editor);
 
   const baseRegistry = createPluginRegistry();
 

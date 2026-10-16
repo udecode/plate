@@ -2,4 +2,4 @@
 'plitejs': patch
 ---
 
-Require keyed remounts when replacing mounted `Plite` or `PliteRuntime` editor runtimes
+Remount the views of an `EditorRoot` when its `editor` prop changes, so replacing the editor needs no `key`
