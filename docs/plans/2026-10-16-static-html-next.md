@@ -1,6 +1,7 @@
 # Pick the browser renderer for static HTML inside Next
 
-Status: building: waits on its PR to merge, then a beta deploy to confirm it
+Status: building: waits on PR 5176 to merge, then a beta deploy to confirm it
+Page: https://claude.ai/artifact/WcKaZQjf9bRyibUEBALaH5
 Playbook: bug-fix
 
 ## Brief
@@ -25,8 +26,8 @@ The fix takes the browser build whenever Next runs the code. Next keeps that bui
 
 1. Build and start the docs app in production with webpack, then open `/docs/examples/html-export`. Before the fix, the preview says "This page couldn't load" with error E1021, the same thing beta shows today. After the fix, the preview shows the exported document. Both clips are production builds of the same commit, one without the fix and one with it.
 
-   ![before](artifacts/2026-10-16-static-html-next/video/local-before.mp4)
-   ![after](artifacts/2026-10-16-static-html-next/video/local-after.mp4)
+   ![before](https://github.com/user-attachments/assets/741490c8-de2c-4f6c-8b05-a86ed2385ad2)
+   ![after](https://github.com/user-attachments/assets/8ebe389b-10b7-4a67-a47f-6d8604afb0b0)
 
 ## Main changes
 
@@ -36,7 +37,7 @@ The fix takes the browser build whenever Next runs the code. Next keeps that bui
 
 | Decision | Pick | Alternative | Word | Impact |
 | --- | --- | --- | --- | --- |
-| Regression check | No new test. The before and after production builds are the proof. A test that fakes Next's stand-in would also break the other static tests running in the same process (look) | Add a test that fakes Next's stand-in | add a check | small |
+| Regression check | No new test. The before and after production builds are the proof. A test that fakes Next's stand-in may also break the other static tests running in the same process, though nobody has tried it (look) | Add a test that fakes Next's stand-in | add a check | small |
 | Browser build inside Next | Keep it. The browser build stops a plain Node process from exiting on its own, but Next shuts down its own server. The fixed server stopped right away when told to (safe) | Close the handle after each render | close the handle | detail |
 
 ## Verification
@@ -47,7 +48,7 @@ The fix takes the browser build whenever Next runs the code. Next keeps that bui
 
 ## Close
 
-The fix landed as one condition in `loadStaticRenderer`, its comment, and a platejs patch changeset.
+The fix landed as one condition in `loadStaticRenderer` and its comment, with no changeset.
 
 Proof, from the decision log's scopes:
 
@@ -61,7 +62,29 @@ Proof, from the decision log's scopes:
 
 **Reversals.** An earlier local "red" build was not the base. The docs app reads `platejs` from source, and that build ran after the source fix, so it rendered fine and made the error look Vercel-only. A clean worktree at the base replaced it, and the log marks the old rows superseded. The writing passes ran after the panel launched instead of before.
 
-Panel round 1 ran Opus, Sol and Astra and found no critical issue. The fixes applied were the clean red control, a clearer comment and the changeset's `exportDocx` scope. All three asked for a check that fails without the condition, and the first Defaults row answers that. Astra noted that the browser build stops a process from exiting on its own inside Next too, and the second Defaults row answers that.
+**Deviations.** The fixed build reused the base worktree after the red run had finished and its outputs were saved, instead of a second worktree as the verify recipes say. The first comment pass spawned comment-sicko directly instead of through the no-comments skill, so it did not count, and the pass ran again through the skill. The PR opened before its title and body were shown to the owner. The first push carried a changeset for a fix to `renderStaticHtml`, which no published platejs has, so users upgrading from the published beta never saw the bug. The owner said to drop it, and a second commit removed it.
+
+**Reflect.** One Opus reviewer read this fix's part of the transcript with three lenses. Nothing was applied, and 13 Backlog items wait on the owner.
+
+Backlog, each with owner natamox and stop when the owner takes or drops it:
+
+1. Run a red control in a base worktree before the first source edit, and say so in the bug-fix playbook's reproduce step.
+2. Treat a proof as reopened when the owner asks where it came from, and recheck the artifact.
+3. Carry a narrowed claim into drafted messages to teammates too.
+4. Note in the verify recipes that the docs app compiles `platejs` from source, so a package `dist` rebuild never matters there.
+5. Add a production-only error recipe: `next dev` skips webpack's aliases, and an inlined env check is bound by the shape it compiles to.
+6. Let `page-health.mjs` follow the example frame and print the server digest.
+7. Copy or document the generated docs source folder that a production build in a proof worktree needs.
+8. Small recipe notes: exit a Node probe that loads the browser renderer, the platejs spec command, and binding a beta finding to its deploy.
+9. Keep control build outputs until the row that cites them closes.
+10. Make the decision-log helper check row order by time, not only at append.
+11. Add a CI lane that runs the page check on a production build of the docs app.
+12. Check whether any route calls Fumadocs' `serializePageTree` on the server, since it loads Next's throwing stand-in too.
+13. Make the changeset skill trigger when a package fix writes a changeset.
+
+Rejected as already covered: showing PR text before opening a PR, proof logs in panel briefs, patching the base worktree, a writing row that claims an uninvoked skill, and the unproven test-skip claim, which the Defaults row now marks.
+
+Panel round 1 ran Opus, Sol and Astra and found no critical issue. The fixes applied were the clean red control, a clearer comment and the changeset's `exportDocx` scope, before the changeset was dropped. All three asked for a check that fails without the condition, and the first Defaults row answers that. Astra noted that the browser build stops a process from exiting on its own inside Next too, and the second Defaults row answers that.
 
 ## Open work
 
