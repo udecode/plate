@@ -11,20 +11,25 @@
 // --sessions takes a JSON array of sessions, each with cwd, isRunning, pinned
 // and title. Only a running or pinned session, a running process or a recent
 // transcript keeps a worktree; uncommitted changes do not, because a card
-// session lands them in the checkout as a patch. --delete measures each safe item,
-// judges it again, checks the running processes once more, saves a worktree's
-// uncommitted changes as a patch under the git folder's cleanup/ and removes it.
+// session lands them in the checkout as a patch. A commit that no branch, tag
+// or remote reaches, which only the worktree's HEAD history keeps, makes the
+// scan ask, because removing the worktree loses it. --delete measures each
+// safe item, judges it again, checks the running processes once more, saves a
+// worktree's uncommitted changes the checkout lacks as a patch under the git
+// folder's cleanup/ and removes it.
 // --brief prints one line, or nothing, counting the unlocked agent worktrees and
 // the checkout caches cleanup could remove that show no git or cache writes for
 // three days. --landed exits 0 only when every change and ignored file of one
-// worktree is committed, recreated by an install or build, or in the checkout,
-// where a tracked edit also counts once the checkout's copy holds its hunks.
+// worktree is committed where a branch, tag or remote reaches it, recreated by
+// an install or build, or in the checkout, where a tracked edit also counts
+// once the checkout's copy holds its hunks.
 // --remove takes worktrees whose work the caller knows landed and judges none of
-// them: it stops each process working in one, saves its uncommitted changes as a
-// patch as --delete does and removes it. It keeps a worktree git does not list, a
-// locked one, one outside the folders agents make worktrees in, one holding another
-// worktree, the one it runs in, one whose processes lsof cannot list and one git
-// refuses to remove, and exits 1 when it keeps any.
+// them: it stops each process working in one, saves the uncommitted changes the
+// checkout lacks as a patch as --delete does and removes it. It keeps a
+// worktree git does not list, a locked one, one outside the folders agents make
+// worktrees in, one holding another worktree, the one it runs in, one holding a
+// commit no branch, tag or remote reaches, one whose processes lsof cannot list
+// and one git refuses to remove, and exits 1 when it keeps any.
 import { execFileSync } from 'node:child_process';
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -109,10 +114,14 @@ function usageVerdict(facts) {
   return null;
 }
 
+const unreachedReason = (count) =>
+  count === null ? 'git could not list the commits its HEAD history keeps' : `${count} ${count === 1 ? 'commit' : 'commits'} that no branch, tag or remote reaches, kept only by its HEAD history; save them with git branch <name> <sha>`;
+
 function cleanupVerdict(facts) {
   if (facts.heldCaches === null) return ['keep', 'lsof could not tell whether a server holds a cache inside it'];
   if (facts.heldCaches > 0) return ['keep', 'a running server holds a cache inside it'];
   if (facts.repos > 0) return ['ask', `${facts.repos} submodules or nested repositories inside it`];
+  if (facts.unreached !== 0) return ['ask', unreachedReason(facts.unreached)];
   return ['safe', facts.session ? 'no session that used it is running' : 'no session has used it for a day'];
 }
 
@@ -124,7 +133,7 @@ function landedVerdict(facts) {
   if (facts.unlanded > 0) return ['ask', `${facts.unlanded} uncommitted changes the checkout does not hold`];
   if (facts.ignored.overflow) return ['ask', `more than ${IGNORED_LIMIT} ignored files to compare with the checkout`];
   if (facts.ignored.unique.length > 0) return ['ask', `${facts.ignored.unique.length} ignored files the checkout lacks, such as ${facts.ignored.unique[0]}`];
-  if (!facts.reachable) return ['ask', 'its commit is on no branch'];
+  if (facts.unreached !== 0) return ['ask', unreachedReason(facts.unreached)];
   return ['safe', facts.dirty > 0 ? 'the checkout holds its changes' : 'nothing uncommitted'];
 }
 
@@ -342,7 +351,20 @@ function heldCaches(path, worktrees) {
   return caches.includes(null) ? null : caches.filter(Boolean).length;
 }
 
-const cleanupFacts = (entry, worktrees) => ({ heldCaches: heldCaches(entry.path, worktrees), repos: nestedRepos(entry.path, statusEntries(entry.path)) });
+// Removing a worktree deletes its HEAD reflog, so a commit made on a detached
+// HEAD and left behind by a later switch or reset is lost unless a ref reaches it.
+function unreachedCommits(main, entry) {
+  try {
+    const history = execFileSync('git', ['--no-optional-locks', 'reflog', 'show', '--format=%H', 'HEAD'], { cwd: entry.path, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    const tips = [...new Set([entry.HEAD, ...history.split('\n')].filter(Boolean))];
+    const input = [...tips, '--not', '--branches', '--tags', '--remotes', ''].join('\n');
+    return Number(execFileSync('git', ['--no-optional-locks', 'rev-list', '--count', '--ignore-missing', '--stdin'], { cwd: main, encoding: 'utf8', input, stdio: ['pipe', 'pipe', 'ignore'] }));
+  } catch {
+    return null;
+  }
+}
+
+const cleanupFacts = (main, entry, worktrees) => ({ heldCaches: heldCaches(entry.path, worktrees), repos: nestedRepos(entry.path, statusEntries(entry.path)), unreached: unreachedCommits(main, entry) });
 
 function contentFacts(main, entry, worktrees) {
   const listings = new Map();
@@ -350,11 +372,11 @@ function contentFacts(main, entry, worktrees) {
     ...compareWithCheckout(main, entry.path, listings),
     heldCaches: heldCaches(entry.path, worktrees),
     ignored: ignoredWork(main, entry.path, listings),
-    reachable: Boolean(entry.branch) || git(main, ['for-each-ref', '--contains', entry.HEAD, '--count=1', '--format=%(refname)']) !== '',
+    unreached: unreachedCommits(main, entry),
   };
 }
 
-const judgeWorktree = (main, entry, context) => usageVerdict(usageFacts(main, entry, context)) ?? cleanupVerdict(cleanupFacts(entry, context.worktrees));
+const judgeWorktree = (main, entry, context) => usageVerdict(usageFacts(main, entry, context)) ?? cleanupVerdict(cleanupFacts(main, entry, context.worktrees));
 
 const sizeOf = (path) => {
   try {
@@ -406,8 +428,10 @@ function savePatch(main, path) {
   }
 }
 
+// A card's landing patch already holds what the checkout matches, so only a
+// worktree with changes the checkout lacks gets a patch.
 function removeFolder(main, item) {
-  if (item.kind === 'worktree' && existsSync(item.path)) item.patch = savePatch(main, item.path);
+  if (item.kind === 'worktree' && existsSync(item.path)) item.patch = compareWithCheckout(main, item.path, new Map()).unlanded > 0 ? savePatch(main, item.path) : null;
   if (item.kind === 'worktree') {
     try {
       git(main, ['worktree', 'remove', '--force', item.path]);
@@ -491,6 +515,8 @@ function removalRefusal(main, listed, path) {
   const nested = nestedIn(path, listed);
   if (nested) return `another worktree lives inside it: ${nested}`;
   if (within(real(process.cwd()), path)) return 'this command runs in it';
+  const unreached = unreachedCommits(main, entry);
+  if (unreached !== 0) return unreachedReason(unreached);
   return null;
 }
 
