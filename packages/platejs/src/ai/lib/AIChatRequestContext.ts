@@ -1,4 +1,5 @@
 import {
+  type NodeSelectionMode,
   type Path,
   type Range,
   RangeApi,
@@ -24,6 +25,7 @@ export type AIChatRequestRefs = Readonly<{
 export type AIChatRequestNodeSelection = Readonly<{
   anchorPath: Path;
   focusPath: Path;
+  mode: NodeSelectionMode;
   paths: readonly [Path, ...Path[]];
 }>;
 
@@ -49,6 +51,7 @@ export const resolveAIChatRequestContext = (
       ? SelectionApi.nodes(nodeSelection.paths, {
           anchorPath: nodeSelection.anchorPath,
           focusPath: nodeSelection.focusPath,
+          mode: nodeSelection.mode,
         })
       : selection
         ? SelectionApi.text(selection)

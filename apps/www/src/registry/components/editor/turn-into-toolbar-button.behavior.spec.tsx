@@ -120,7 +120,7 @@ mock.module('@/registry/components/editor/toolbar', () => ({
 }));
 
 const createTestEditor = ({
-  selection = SelectionApi.nodes([[0], [2]]),
+  selection = SelectionApi.nodes([[0], [2]], { mode: 'block' }),
   initialValue = ['one', 'middle', 'three'].map((text) => ({
     children: [{ text }],
     type: 'paragraph',
@@ -193,7 +193,7 @@ describe('turn into menu behavior', () => {
         }),
       ],
       initialValue,
-      selection: SelectionApi.nodes([[0], [1, 0]]),
+      selection: SelectionApi.nodes([[0], [1, 0]], { mode: 'block' }),
     });
     const before = currentEditor.read.children();
     const view = await renderTurnInto();
@@ -201,6 +201,34 @@ describe('turn into menu behavior', () => {
     fireEvent.click(view.getByRole('radio', { name: 'Bulleted list' }));
     expect(currentEditor.read.children()).toEqual(before);
     expect(currentEditor.read.lastCommit()).toBe(commit);
+  });
+
+  it('keeps a body list item when Quote is refused on its Details title', async () => {
+    currentEditor = createTestEditor({
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Title' }] },
+            {
+              type: 'paragraph',
+              indent: 1,
+              listType: 'bulleted',
+              children: [{ text: 'Item' }],
+            },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0, 0], offset: 0 },
+        focus: { path: [0, 1, 0], offset: 4 },
+      },
+    });
+    const before = currentEditor.read.children();
+    const view = await renderTurnInto();
+    fireEvent.click(view.getByRole('menuitemcheckbox', { name: 'Quote' }));
+    expect(currentEditor.read.children()).toEqual(before);
   });
 
   it('converts a title and body range to a list without resetting the body to Summary', async () => {
@@ -365,13 +393,6 @@ describe('turn into menu behavior', () => {
     expect(
       (
         view.getByRole('menuitemcheckbox', {
-          name: 'Code',
-        }) as HTMLButtonElement
-      ).disabled
-    ).toBe(true);
-    expect(
-      (
-        view.getByRole('menuitemcheckbox', {
           name: '3 columns',
         }) as HTMLButtonElement
       ).disabled
@@ -397,6 +418,19 @@ describe('turn into menu behavior', () => {
       currentEditor.api.history.undo();
     });
     expect(currentEditor.read.children()).toEqual(before);
+  });
+
+  it('codes each block of a sparse block selection and leaves the block between them', async () => {
+    const middle = currentEditor.read.children()[1];
+    const view = await renderTurnInto();
+
+    fireEvent.click(view.getByRole('menuitemcheckbox', { name: 'Code' }));
+
+    expect(currentEditor.read.children()).toMatchObject([
+      { children: [{ text: 'one' }], type: 'codeBlock' },
+      middle,
+      { children: [{ text: 'three' }], type: 'codeBlock' },
+    ]);
   });
 
   it('uses the schema reset for exact list-to-text conversion', async () => {
@@ -456,10 +490,13 @@ describe('turn into menu behavior', () => {
         BaseTablePlugin,
       ],
       initialValue,
-      selection: SelectionApi.nodes([
-        [0, 0, 0],
-        [0, 0, 1],
-      ]),
+      selection: SelectionApi.nodes(
+        [
+          [0, 0, 0],
+          [0, 0, 1],
+        ],
+        { mode: 'block' }
+      ),
     });
     expect(
       currentEditor.read.nodes
@@ -573,7 +610,7 @@ describe('turn into menu behavior', () => {
           type: 'heading',
         },
       ],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
     });
     const view = await renderTurnInto();
 
@@ -628,7 +665,7 @@ describe('turn into menu behavior', () => {
 
   it('offers Details for one contiguous sibling run and wraps it once', async () => {
     currentEditor = createTestEditor({
-      selection: SelectionApi.nodes([[0], [1]]),
+      selection: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
     });
     const view = await renderTurnInto();
     const details = view.getByRole('menuitemcheckbox', { name: 'Details' });
@@ -660,7 +697,7 @@ describe('turn into menu behavior', () => {
         },
         { children: [{ text: 'after' }], type: 'paragraph' },
       ],
-      selection: SelectionApi.nodes([[0, 1]]),
+      selection: SelectionApi.nodes([[0, 1]], { mode: 'block' }),
     });
     const view = await renderTurnInto();
     const details = view.getByRole('menuitemcheckbox', { name: 'Details' });

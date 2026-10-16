@@ -14,7 +14,7 @@ import {
 } from 'plitejs';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
-import { authoredTestApi } from './support/authored';
+import { authoredTestApi, reviewRecords } from './support/authored';
 
 // S4 of docs/plans/2026-10-10-authored-values.md: an Enter inside an inline
 // element records a cut on both halves, and rejecting it joins exactly them.
@@ -426,6 +426,72 @@ describe('cuts', () => {
         ),
       },
       { leftDeleted: [['b@u#r1']], rejected: [['ab@u#r1']] }
+    );
+  });
+
+  it('gives back the dropped ref of an Enter that a change made again after its accept', () => {
+    const bob = editorFor([linked(link('abc', 'u', { ref: 'r1' }))], 'bob');
+    const propose = (write: (tx: EditorUpdateTransaction) => void) =>
+      bob.update((tx) => {
+        (
+          tx as unknown as {
+            authored: { propose: (input: { changeId: string }) => void };
+          }
+        ).authored.propose({ changeId: 'bob:c' });
+        write(tx);
+      });
+
+    propose((tx) =>
+      tx.text.insert('X', { at: { offset: 3, path: [0, 1, 0] } })
+    );
+    authoredTestApi(bob).decide({ action: 'accept', changes: ['bob:c'] });
+    propose((tx) => enterIn(tx, [0, 1, 0], 1));
+
+    assert.deepEqual(
+      shape(
+        decide(bob.read.value(), { action: 'reject', changes: ['bob:c'] }).value
+      ),
+      [['abcX@u#r1']]
+    );
+  });
+
+  it('waits on each incarnation of a change that formats one half before joining a rejected Enter', () => {
+    const carol = editorFor([linked(link('ab'))], 'carol');
+
+    enter(carol, [0, 1, 0], 1);
+    const value = structuredClone(carol.read.value()) as {
+      children: Array<{ children: Node[] }>;
+      records?: unknown;
+    };
+    const setUrl = (half: Node, inc: string, url: string) =>
+      Object.assign(half, {
+        authored: [
+          ...((half.authored as unknown[]) ?? []),
+          {
+            at: 1,
+            author: 'alice',
+            before: 'u',
+            change: 'A',
+            id: inc,
+            inc,
+            key: 'url',
+            kind: 'format',
+          },
+        ],
+        url,
+      });
+
+    setUrl(value.children[0].children[1], 'a1', 'v');
+    setUrl(value.children[1].children[1], 'a2', 'w');
+    value.records = reviewRecords({
+      verdicts: [
+        { decision: 'd:1', member: { at: 1, change: 'A' }, verdict: 'accept' },
+      ],
+    });
+
+    assert.deepEqual(
+      decide(value, { action: 'reject', changes: ['carol:1'] }).result,
+      { ids: ['carol:1'], status: 'blocked', with: ['A'] }
     );
   });
 

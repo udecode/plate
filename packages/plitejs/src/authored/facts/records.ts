@@ -79,6 +79,25 @@ export const verdictIdOf = ({ decision, member, verdict }: VerdictRecord) =>
     member.inc === undefined ? member.at : null
   )}${JSON.stringify(verdict)},${JSON.stringify(decision)}]`;
 
+export const verdictIncarnationOf = (id: string) => {
+  const [, change, inc, at] = JSON.parse(id) as [
+    string,
+    string,
+    string | null,
+    number | null,
+  ];
+
+  return incarnationOf({
+    at: at ?? 0,
+    change,
+    ...(inc === null ? {} : { inc }),
+  });
+};
+
+export const verdictIncarnationsOf = (ids: Iterable<string>) => [
+  ...new Set([...ids].map(verdictIncarnationOf)),
+];
+
 /** The id prefix of the verdicts on `incarnation`, or of one verdict on it. */
 export const verdictProbeOf = (incarnation: string, verdict?: Verdict) => {
   const [change, which] = JSON.parse(incarnation) as [string, number | string];

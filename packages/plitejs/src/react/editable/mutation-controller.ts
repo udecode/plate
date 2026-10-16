@@ -324,16 +324,20 @@ const applyProjectedViewSelectionDataCommand = ({
       rebaseTransactionSpecWithoutChanges(runtimeEditor, prefix, insertion)
     );
 
-    editor.update({ tags: 'paste' }, () => {
+    return editor.update({ tags: 'paste' }, () => {
       applyTransactionSpec(runtimeEditor, rebased);
-    });
 
-    return true;
+      return true;
+    });
   }
 
-  editor.update({ tags: 'paste' }, () => {
+  const landed = editor.update({ tags: 'paste' }, () => {
     applyTransactionSpec(runtimeEditor, combined);
+
+    return true;
   });
+
+  if (!landed) return;
   savePliteViewSelectionHistoryEntry(editor, {
     redo: null,
     undo: viewSelection,
@@ -629,29 +633,24 @@ export const applyEditableCommand = ({
     }
 
     case 'insert-data': {
-      if (
-        applyProjectedViewSelectionDataCommand({
-          data: command.data,
-          editor,
-        })
-      ) {
-        return true;
-      }
+      const projected = applyProjectedViewSelectionDataCommand({
+        data: command.data,
+        editor,
+      });
+
+      if (projected !== false) return projected;
 
       const selection = readRuntimeSelection(editor);
-      let handled = false;
 
-      editor.update((tx) => {
+      return editor.update((tx) => {
         if (SelectionApi.isNode(selection)) {
           tx.selection.set(selection);
         }
 
-        handled = toReactRuntimeEditor(editor).api.dom.clipboard.insertData(
+        return toReactRuntimeEditor(editor).api.dom.clipboard.insertData(
           command.data
         );
       });
-
-      return handled;
     }
 
     case 'insert-text': {

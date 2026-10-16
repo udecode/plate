@@ -59,7 +59,7 @@ type Item = {
   isAvailable: (editor: Editor) => boolean;
   value: string;
   onClick?: (editor: Editor) => void;
-  onSelect?: (editor: Editor, tx: PluginTransaction) => false | void;
+  onSelect?: (editor: Editor, tx: PluginTransaction) => boolean | void;
   className?: string;
   focusEditor?: boolean;
   keywords?: string[];
@@ -84,12 +84,11 @@ const upsertHeading = (
   tx: PluginTransaction,
   level: 1 | 2 | 3
 ) => {
-  if (!isTitle(editor, tx)) {
-    tx.plugin(BaseHeadingPlugin).upsert({ level }, { select: true });
-  } else if (!tx.plugin(BaseHeadingPlugin).setLevel(level)) {
-    return false;
-  }
-  return undefined;
+  const heading = tx.plugin(BaseHeadingPlugin);
+
+  return isTitle(editor, tx)
+    ? heading.setLevel(level)
+    : heading.upsert({ level }, { select: true });
 };
 
 const groups: Group[] = [
@@ -120,14 +119,10 @@ const groups: Group[] = [
         keywords: ['paragraph'],
         label: 'Text',
         value: PLUGINS.paragraph,
-        onSelect: (editor, tx) => {
-          if (!isTitle(editor, tx)) {
-            tx.plugin(BaseParagraphPlugin).upsert({}, { select: true });
-          } else if (!tx.blocks.reset({ unset: ['level'] })) {
-            return false;
-          }
-          return undefined;
-        },
+        onSelect: (editor, tx) =>
+          isTitle(editor, tx)
+            ? tx.blocks.reset({ unset: ['level'] })
+            : tx.plugin(BaseParagraphPlugin).upsert({}, { select: true }),
       },
       {
         icon: <Heading1Icon />,
@@ -159,12 +154,10 @@ const groups: Group[] = [
         keywords: ['unordered', 'ul', '-'],
         label: 'Bulleted list',
         value: 'disc',
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseListPlugin).upsert(
-            { type: 'bulleted' },
-            { select: true }
-          );
-        },
+        onSelect: (_editor, tx) =>
+          tx
+            .plugin(BaseListPlugin)
+            .upsert({ type: 'bulleted' }, { select: true }),
       },
       {
         icon: <ListOrdered />,
@@ -172,12 +165,10 @@ const groups: Group[] = [
         keywords: ['ordered', 'ol', '1'],
         label: 'Numbered list',
         value: 'decimal',
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseListPlugin).upsert(
-            { type: 'numbered' },
-            { select: true }
-          );
-        },
+        onSelect: (_editor, tx) =>
+          tx
+            .plugin(BaseListPlugin)
+            .upsert({ type: 'numbered' }, { select: true }),
       },
       {
         icon: <Square />,
@@ -185,9 +176,8 @@ const groups: Group[] = [
         keywords: ['checklist', 'task', 'checkbox', '[]'],
         label: 'To-do list',
         value: 'todo',
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseListPlugin).upsert({ type: 'task' }, { select: true });
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseListPlugin).upsert({ type: 'task' }, { select: true }),
       },
       {
         icon: <ChevronRightIcon />,
@@ -195,9 +185,8 @@ const groups: Group[] = [
         keywords: ['collapsible', 'expandable'],
         label: 'Details',
         value: PLUGINS.details,
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseDetailsPlugin).upsert({}, { select: true });
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseDetailsPlugin).upsert({}, { select: true }),
       },
       {
         icon: <Code2 />,
@@ -205,18 +194,16 @@ const groups: Group[] = [
         keywords: ['```'],
         label: 'Code Block',
         value: PLUGINS.codeBlock,
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseCodeBlockPlugin).upsert({}, { select: true });
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseCodeBlockPlugin).upsert({}, { select: true }),
       },
       {
         icon: <Table />,
         isAvailable: (editor) => editor.plugin(BaseTablePlugin).installed,
         label: 'Table',
         value: PLUGINS.table,
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseTablePlugin).upsert({}, { select: true });
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseTablePlugin).upsert({}, { select: true }),
       },
       {
         icon: <Quote />,
@@ -224,9 +211,8 @@ const groups: Group[] = [
         keywords: ['citation', 'blockquote', 'quote', '>'],
         label: 'Blockquote',
         value: PLUGINS.blockquote,
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseBlockquotePlugin).upsert({}, { select: true });
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseBlockquotePlugin).upsert({}, { select: true }),
       },
       {
         icon: <LightbulbIcon />,
@@ -234,9 +220,8 @@ const groups: Group[] = [
         keywords: ['note'],
         label: 'Callout',
         value: PLUGINS.callout,
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseCalloutPlugin).upsert({}, { select: true });
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseCalloutPlugin).upsert({}, { select: true }),
       },
     ],
   },
@@ -249,18 +234,16 @@ const groups: Group[] = [
         keywords: ['toc'],
         label: 'Table of contents',
         value: PLUGINS.toc,
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseTocPlugin).upsert({}, { select: true });
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseTocPlugin).upsert({}, { select: true }),
       },
       {
         icon: <Columns3Icon />,
         isAvailable: (editor) => editor.plugin(BaseColumnPlugin).installed,
         label: '3 columns',
         value: 'action_three_columns',
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseColumnPlugin).upsert({ columns: 3 }, { select: true });
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseColumnPlugin).upsert({ columns: 3 }, { select: true }),
       },
       {
         focusEditor: false,
@@ -268,9 +251,8 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseEquationPlugin).installed,
         label: 'Equation',
         value: PLUGINS.equation,
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseEquationPlugin).upsert({}, { select: true });
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseEquationPlugin).upsert({}, { select: true }),
       },
       {
         icon: <PenToolIcon />,
@@ -278,9 +260,8 @@ const groups: Group[] = [
         keywords: ['excalidraw'],
         label: 'Excalidraw',
         value: PLUGINS.excalidraw,
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseExcalidrawPlugin).upsert({}, { select: true });
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseExcalidrawPlugin).upsert({}, { select: true }),
       },
       {
         icon: <Code2 />,
@@ -295,9 +276,8 @@ const groups: Group[] = [
         ],
         label: 'Code Drawing',
         value: PLUGINS.codeDrawing,
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseCodeDrawingPlugin).upsert({}, { select: true });
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseCodeDrawingPlugin).upsert({}, { select: true }),
       },
     ],
   },
@@ -404,7 +384,9 @@ export function SlashCombobox({
                   onClick={() => {
                     onClick?.(editor);
                   }}
-                  onSelect={(tx) => onSelect?.(editor, tx)}
+                  onSelect={(tx) =>
+                    onSelect?.(editor, tx) === false ? false : undefined
+                  }
                   label={label}
                   focusEditor={focusEditor}
                   group={group}

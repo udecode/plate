@@ -302,7 +302,7 @@ describe('useElementSelected', () => {
           const start = tx.points.start([0, 1]);
 
           expect(start).toBeTruthy();
-          tx.selection.set(SelectionApi.nodes([[0, 1]]));
+          tx.selection.set(SelectionApi.nodes([[0, 1]], { mode: 'block' }));
         });
       });
 
@@ -420,6 +420,89 @@ describe('useElementSelected', () => {
     });
 
     expect(selectedByHostId['0']).toBe(true);
+  });
+
+  it('tells object, node and text selections apart', async () => {
+    const definition = defineEditorSchema('schema:selected-modes', {
+      elements: {
+        media: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          object: true,
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      id: 'selected-modes',
+      root: schema.content.types(['media', 'paragraph'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const localEditor = createEditor({
+      plugins: [definition],
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'before' }] },
+        { type: 'media', children: [{ text: 'caption' }] },
+      ],
+    });
+    const latest = new Map<string, Record<string, boolean>>();
+    const Probe = ({ name }: { name: string }) => {
+      latest.set(name, {
+        intersects: useElementSelected(),
+        node: useElementSelected({ mode: 'node' }),
+        object: useElementSelected({ mode: 'object' }),
+        text: useElementSelected({ mode: 'text' }),
+      });
+
+      return null;
+    };
+
+    render(
+      <EditorRoot editor={localEditor}>
+        <Editable
+          renderElement={({ attributes, children, element }) => (
+            <div {...attributes}>
+              <Probe name={element.type} />
+              {children}
+            </div>
+          )}
+        />
+      </EditorRoot>
+    );
+
+    await act(async () => {
+      localEditor.update.selection.setNodes([[1]]);
+    });
+    expect(latest.get('media')).toEqual({
+      intersects: true,
+      node: true,
+      object: false,
+      text: false,
+    });
+
+    await act(async () => {
+      localEditor.update.selection.setNodes([[1]], { mode: 'object' });
+    });
+    expect(latest.get('media')).toEqual({
+      intersects: true,
+      node: true,
+      object: true,
+      text: false,
+    });
+
+    await act(async () => {
+      localEditor.update.selection.set({ path: [0, 0], offset: 1 });
+    });
+    expect(latest.get('paragraph')).toEqual({
+      intersects: true,
+      node: false,
+      object: false,
+      text: true,
+    });
+    expect(latest.get('media')?.object).toBe(false);
   });
 
   it('tracks exact node selection by explicit node key', async () => {

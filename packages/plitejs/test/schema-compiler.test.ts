@@ -12,7 +12,10 @@ import {
   type SchemaContent,
 } from 'plitejs';
 
-import { hashSchemaIdentityString } from '../src/core/schema-compiler';
+import {
+  createEditorSchemaContract,
+  hashSchemaIdentityString,
+} from '../src/core/schema-compiler';
 import {
   compileEditorSchemaContributions,
   EditorSchemaCompileError,
@@ -2108,6 +2111,47 @@ describe('schema compiler', () => {
       compileEditorSchemaContributions([record(Media.name, Media.schema)])
         .identity.fingerprint,
       'fnv1a64:2cef62983b4aa32c'
+    );
+  });
+
+  it('keeps the fingerprint of a schema whose properties declare no landing', () => {
+    const Marked = defineEditorSchema('schema:marked', {
+      elements: {
+        paragraph: { content: schema.content.text() },
+      },
+      id: 'marked',
+      properties: [
+        schema.elementProperty('align', property.string(), {
+          target: target.type('paragraph'),
+        }),
+        schema.textProperty('bold', property.boolean(), {
+          target: target.type('paragraph'),
+        }),
+      ],
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+
+    const compiled = compileEditorSchemaContributions([
+      record(Marked.name, Marked.schema),
+    ]);
+
+    assert.deepEqual(
+      {
+        fingerprint: compiled.identity.fingerprint,
+        lifecycle: JSON.stringify(
+          createEditorSchemaContract(compiled).properties.lifecycle
+        ),
+      },
+      {
+        fingerprint: 'fnv1a64:aa074861a9191158',
+        lifecycle:
+          '[["element:align@c13f9fcce86b9135",{"copy":"preserve","inclusive":null,"split":"preserve","typeChange":"drop"}],["text:bold@5eb442dc342d2ba3",{"copy":"preserve","inclusive":true,"split":"preserve","typeChange":"drop"}]]',
+      }
     );
   });
 

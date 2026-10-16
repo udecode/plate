@@ -72,10 +72,16 @@ const withMDX = createMDX({ outDir: docsSourceDir });
 
 const nextConfig = (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
+  const baseDistDir = isPliteMode ? '.next-plite' : '.next';
+  // next dev sets PORT before it loads this file and locks its distDir, so
+  // each port gets its own cache that the next server on that port reuses.
+  const devDistDir =
+    isDev && process.env.PORT
+      ? `${baseDistDir}-${process.env.PORT}`
+      : baseDistDir;
   const config: NextConfig = {
     cacheComponents: true,
-    distDir:
-      process.env.PLATE_WWW_DIST_DIR ?? (isPliteMode ? '.next-plite' : '.next'),
+    distDir: process.env.PLATE_WWW_DIST_DIR ?? devDistDir,
     allowedDevOrigins: ['udecodes-mac-studio.tail49dee1.ts.net'],
     env: {
       PLATE_WWW_DRIVE: isDev && process.env.PLATE_WWW_DRIVE_DIR ? '1' : '',

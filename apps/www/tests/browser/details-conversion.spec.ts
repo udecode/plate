@@ -2,14 +2,7 @@ import { expect, test, type Locator } from '@playwright/test';
 
 import type { PliteBrowserHandleElement } from '../../../../packages/plitejs/src/react/editable/browser-handle';
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
-
-const read = (root: Locator) =>
-  root.evaluate((element: PliteBrowserHandleElement) => ({
-    model: element.__EDITOR_BROWSER_HANDLE__?.getSelection(),
-    dom: element.__EDITOR_BROWSER_HANDLE__?.getDOMSelection(),
-    value: element.__EDITOR_BROWSER_HANDLE__?.getValue().children,
-    focused: document.activeElement === element,
-  }));
+import { editorRoot, read } from './details-fixture';
 
 const nodeAt = (root: Locator, path: number[]) =>
   root.evaluate((element: PliteBrowserHandleElement, at) => {
@@ -51,9 +44,7 @@ for (const item of [
     const errors = recordBrowserRuntimeErrors(page);
     await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
     await page.goto(`/blocks/${route}`);
-    const root = page
-      .locator('[data-editor="true"][contenteditable="true"]')
-      .first();
+    const root = editorRoot(page);
     await root
       .getByRole('button', { name: 'Expand details', exact: true })
       .first()
@@ -216,3 +207,19 @@ for (const item of [
     }
   });
 }
+
+test('playground: show the Structure group in the Turn into menu', async ({
+  page,
+}) => {
+  await page.goto('/blocks/playground');
+  await editorRoot(page)
+    .locator('[data-editor-string]', { hasText: 'Rich Content Editing' })
+    .click();
+  await page
+    .getByRole('button', { name: /^Turn into:/ })
+    .first()
+    .click();
+  await expect(
+    page.getByRole('menuitemcheckbox', { name: 'Code', exact: true })
+  ).toBeVisible();
+});

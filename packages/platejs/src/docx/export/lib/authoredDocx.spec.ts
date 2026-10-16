@@ -7,7 +7,6 @@ import {
   createEditorView,
   definePlugin,
   type Editor,
-  type EditorCommit,
   type EditorDocumentValue,
   property,
   schema,
@@ -17,6 +16,9 @@ import {
   BaseBoldPlugin,
   BaseHeadingPlugin,
 } from '../../../features/basic-nodes';
+import { BaseFontColorPlugin } from '../../../features/basic-styles';
+import { BaseIndentPlugin } from '../../../features/indent';
+import { BaseListPlugin } from '../../../features/list';
 import { BaseParagraphPlugin } from '../../../lib';
 import { EditorStatic, type EditorStaticProps } from '../../../static';
 import { importDocx } from '../../import/lib/importDocx';
@@ -33,7 +35,9 @@ const withoutDecisionTokens = ({ records, ...value }: EditorDocumentValue) => {
         records: {
           ...records,
           'authored-verdicts': Object.values(verdicts)
-            .map(({ decision: _decision, ...verdict }) => JSON.stringify(verdict))
+            .map(({ decision: _decision, ...verdict }) =>
+              JSON.stringify(verdict)
+            )
             .sort(),
         },
       }
@@ -232,9 +236,9 @@ describe('authored DOCX', () => {
       { children: [{ text: 'ABCDE' }], type: 'paragraph' },
     ]);
     expect(restoredChanges.map(({ authorId }) => authorId)).toEqual([
-      'alice',
-      'bob',
       'carol',
+      'bob',
+      'alice',
     ]);
     expect(restoredAs('proposed')).toEqual([
       {
@@ -501,26 +505,69 @@ describe('authored DOCX', () => {
 });
 
 describe('review DOCX round trip', () => {
+  const LinkPlugin = definePlugin('link', {
+    component: 'a',
+    render: { attributes: ({ element }) => ({ href: element.url as string }) },
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+        properties: { url: property.string() },
+      },
+    },
+    formats: ({ defineFormats }) =>
+      defineFormats({
+        html: {
+          decode: ({ element }) => {
+            const url = element.getAttribute('href');
+
+            return url ? { url } : undefined;
+          },
+          decodeOnly: true,
+          match: [{ tag: 'a' }],
+        },
+      }),
+  });
   const plugins = [
     BaseParagraphPlugin,
     BaseBlockquotePlugin,
     BaseBoldPlugin,
+    BaseFontColorPlugin,
+    BaseIndentPlugin.configure({ targetPlugins: ['paragraph'] }),
+    BaseListPlugin.configure({
+      slots: {
+        wrapNodeChildren: ({ element }) =>
+          element.listType
+            ? ({ children }) =>
+                React.createElement(
+                  'ol',
+                  null,
+                  React.createElement('li', null, children)
+                )
+            : undefined,
+      },
+      targetPlugins: ['paragraph'],
+    }),
+    LinkPlugin,
     AuthoredPlugin,
   ] as const;
   const reimport = async (
     editor: Editor,
     rewrite: (documentXml: string) => string = (documentXml) => documentXml,
-    lossPolicy: 'allow' | 'reject' = 'reject'
+    lossPolicy: 'allow' | 'reject' = 'reject',
+    rewriteParts: Readonly<Record<string, (xml: string) => string>> = {}
   ) => {
     const result = await exportDocx(editor, { projection: 'review' });
 
     if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
     const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
 
-    zip.file(
-      'word/document.xml',
-      rewrite(await zip.file('word/document.xml')!.async('string'))
-    );
+    for (const [name, rewritePart] of Object.entries({
+      ...rewriteParts,
+      'word/document.xml': rewrite,
+    })) {
+      zip.file(name, rewritePart(await zip.file(name)!.async('string')));
+    }
 
     return importDocx(await zip.generateAsync({ type: 'arraybuffer' }), {
       lossPolicy,
@@ -535,15 +582,20 @@ describe('review DOCX round trip', () => {
   const renumberIds = (documentXml: string) => {
     const bookmarks = new Map<string, number>();
     let next = 40;
+    const take = () => {
+      next += 1;
+
+      return next - 1;
+    };
 
     return documentXml.replaceAll(
       /<w:(\w+) ([^>]*?)w:id="(\d+)"/g,
       (_, tag: string, rest: string, id: string) => {
         if (tag.startsWith('bookmark') && !bookmarks.has(id)) {
-          bookmarks.set(id, next++);
+          bookmarks.set(id, take());
         }
 
-        return `<w:${tag} ${rest}w:id="${tag.startsWith('bookmark') ? bookmarks.get(id) : next++}"`;
+        return `<w:${tag} ${rest}w:id="${tag.startsWith('bookmark') ? bookmarks.get(id) : take()}"`;
       }
     );
   };
@@ -822,7 +874,8 @@ describe('review DOCX round trip', () => {
 
     if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
     const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
-    const documentXml = (await zip.file('word/document.xml')!.async('string'))
+    const rawXml = await zip.file('word/document.xml')!.async('string');
+    const documentXml = rawXml
       .replaceAll(/>\s+</g, '><')
       .replaceAll(/ (w:date|w:id|xml:space)="[^"]*"/g, '');
 
@@ -901,6 +954,286 @@ describe('review DOCX round trip', () => {
         severity: 'error',
       }),
     });
+  });
+
+  it.each([
+    {
+      allowed: [{ children: [{ text: 'NEW Base draft' }], type: 'paragraph' }],
+      edit: (documentXml: string) =>
+        documentXml.replace(
+          /<w:bookmarkStart w:id="\d+" w:name="_ReviewBlock1"\/>/,
+          '<w:r><w:t xml:space="preserve">NEW </w:t></w:r>$&'
+        ),
+      title: 'text before its bookmark',
+    },
+    {
+      allowed: [
+        {
+          children: [{ bold: true, text: 'Base' }, { text: ' draft' }],
+          type: 'paragraph',
+        },
+      ],
+      edit: (documentXml: string) =>
+        documentXml.replace(
+          /<w:rPr\/>(\s*<w:t xml:space="preserve">Base<\/w:t>)/,
+          '<w:rPr><w:b/></w:rPr>$1'
+        ),
+      title: 'bold on its plain text',
+    },
+  ])('refuses a reviewed block Word gave $title', async ({ allowed, edit }) => {
+    const alice = createEditor({
+      plugins,
+      initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+      userId: 'alice',
+    });
+
+    createEditorView(alice, {
+      authored: { intent: 'propose' },
+    }).update.text.insert(' draft', { at: { offset: 4, path: [0, 0] } });
+    const [rejected, loose] = await Promise.all([
+      reimport(alice, edit),
+      reimport(alice, edit, 'allow'),
+    ]);
+
+    expect({
+      allowed: loose.ok
+        ? projectAuthoredDocument(loose.document, { projection: 'proposed' })
+            .document.children
+        : loose.diagnostics,
+      rejected: rejected.ok ? rejected.document : rejected.diagnostics[0],
+    }).toEqual({
+      allowed,
+      rejected: expect.objectContaining({
+        code: 'lossy-content',
+        feature: 'authored-review',
+        severity: 'error',
+      }),
+    });
+  });
+
+  it('refuses a reviewed numbered paragraph whose level Word changed, and keeps that level when loss is allowed', async () => {
+    const alice = createEditor({
+      plugins,
+      initialValue: [
+        {
+          children: [
+            {
+              authored: [
+                { at: 1, author: 'alice', change: 'c1', kind: 'insert' },
+              ],
+              text: '!',
+            },
+            { text: 'one' },
+          ],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ] as never,
+      userId: 'alice',
+    });
+    const edit = (documentXml: string) =>
+      documentXml.replace('<w:ilvl w:val="0"/>', '<w:ilvl w:val="1"/>');
+    const [rejected, loose] = await Promise.all([
+      reimport(alice, edit),
+      reimport(alice, edit, 'allow'),
+    ]);
+
+    expect({
+      allowed: loose.ok
+        ? projectAuthoredDocument(loose.document, {
+            projection: 'proposed',
+          }).document.children.map(({ indent, listType }) => ({
+            indent,
+            listType,
+          }))
+        : loose.diagnostics,
+      rejected: rejected.ok ? rejected.document : rejected.diagnostics[0],
+    }).toEqual({
+      allowed: [{ indent: 2, listType: 'numbered' }],
+      rejected: expect.objectContaining({
+        code: 'lossy-content',
+        feature: 'authored-review',
+        severity: 'error',
+      }),
+    });
+  });
+
+  it('refuses a reviewed numbered paragraph whose list format Word changed in its numbering part, and keeps that format when loss is allowed', async () => {
+    const alice = createEditor({
+      plugins,
+      initialValue: [
+        {
+          children: [
+            {
+              authored: [
+                { at: 1, author: 'alice', change: 'c1', kind: 'insert' },
+              ],
+              text: '!',
+            },
+            { text: 'one' },
+          ],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ] as never,
+      userId: 'alice',
+    });
+    const numbering = {
+      'word/numbering.xml': (numberingXml: string) =>
+        numberingXml.replace(
+          '<w:numFmt w:val="decimal"/>',
+          '<w:numFmt w:val="upperRoman"/>'
+        ),
+    };
+    const [rejected, loose] = await Promise.all([
+      reimport(alice, undefined, 'reject', numbering),
+      reimport(alice, undefined, 'allow', numbering),
+    ]);
+
+    expect({
+      allowed: loose.ok
+        ? projectAuthoredDocument(loose.document, {
+            projection: 'proposed',
+          }).document.children.map(({ listStyle }) => listStyle)
+        : loose.diagnostics,
+      rejected: rejected.ok ? rejected.document : rejected.diagnostics[0],
+    }).toEqual({
+      allowed: ['upper-roman'],
+      rejected: expect.objectContaining({
+        code: 'lossy-content',
+        feature: 'authored-review',
+        severity: 'error',
+      }),
+    });
+  });
+
+  const linked = (
+    leading: Record<string, unknown> = {},
+    url = 'https://a.example/'
+  ) => {
+    const editor = createEditor({
+      plugins,
+      initialValue: [
+        {
+          children: [
+            { ...leading, text: 'see ' },
+            {
+              children: [{ text: 'site' }],
+              type: 'link',
+              url,
+            },
+            { text: '' },
+          ],
+          type: 'paragraph',
+        },
+      ] as never,
+      userId: 'alice',
+    });
+
+    createEditorView(editor, {
+      authored: { intent: 'propose' },
+    }).update.text.insert('!', { at: { offset: 0, path: [0, 0] } });
+
+    return editor;
+  };
+
+  it('refuses a reviewed link whose target Word changed, and keeps that target when loss is allowed', async () => {
+    const alice = linked();
+    const retarget = {
+      'word/_rels/document.xml.rels': (relationshipsXml: string) =>
+        relationshipsXml.replace('https://a.example/', 'https://b.example/'),
+    };
+    const [rejected, loose] = await Promise.all([
+      reimport(alice, undefined, 'reject', retarget),
+      reimport(alice, undefined, 'allow', retarget),
+    ]);
+
+    expect({
+      allowed: loose.ok
+        ? projectAuthoredDocument(loose.document, {
+            projection: 'proposed',
+          }).document.children.flatMap(({ children }) =>
+            children.filter((child) => 'type' in child)
+          )
+        : loose.diagnostics,
+      rejected: rejected.ok ? rejected.document : rejected.diagnostics[0],
+    }).toEqual({
+      allowed: [
+        {
+          children: [{ text: 'site' }],
+          type: 'link',
+          url: 'https://b.example/',
+        },
+      ],
+      rejected: expect.objectContaining({
+        code: 'lossy-content',
+        feature: 'authored-review',
+        severity: 'error',
+      }),
+    });
+  });
+
+  it('keeps a reviewed block through a Word save that renumbers relationships and upper-cases colors', async () => {
+    const alice = linked({ color: '#ff0000' });
+    const renumber = (xml: string) =>
+      xml.replaceAll(/rId(\d+)/g, (_, id: string) => `rId${Number(id) + 50}`);
+    const imported = await reimport(
+      alice,
+      (documentXml) => renumber(documentXml).replaceAll('ff0000', 'FF0000'),
+      'reject',
+      { 'word/_rels/document.xml.rels': renumber }
+    );
+
+    expect(
+      imported.ok &&
+        createEditor({
+          plugins,
+          initialValue: imported.document,
+          userId: 'reader',
+        }).read.value()
+    ).toEqual(alice.read.value());
+  });
+
+  it('exports and reimports a reviewed link whose address holds a stray percent sign', async () => {
+    const alice = linked({}, 'https://example.com/100%');
+    const imported = await reimport(alice);
+
+    expect(
+      imported.ok &&
+        createEditor({
+          plugins,
+          initialValue: imported.document,
+          userId: 'reader',
+        }).read.value()
+    ).toEqual(alice.read.value());
+  });
+
+  it('keeps the verdicts of a document whose every change is decided', async () => {
+    const alice = createEditor({
+      plugins,
+      initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+      userId: 'alice',
+    });
+
+    createEditorView(alice, {
+      authored: { intent: 'propose' },
+    }).update.text.insert(' draft', { at: { offset: 4, path: [0, 0] } });
+    alice.update.authored.decide({
+      action: 'accept',
+      changes: alice.read.authored.changes().items,
+    });
+    const imported = await reimport(alice);
+
+    expect(
+      imported.ok &&
+        createEditor({
+          plugins,
+          initialValue: imported.document,
+          userId: 'reader',
+        }).read.value()
+    ).toEqual(alice.read.value());
   });
 
   it('replaces the review part of a retained source without reporting it omitted', async () => {

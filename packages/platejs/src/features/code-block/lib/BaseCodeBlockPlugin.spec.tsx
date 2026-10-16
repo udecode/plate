@@ -157,6 +157,75 @@ describe('BaseCodeBlockPlugin', () => {
     expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(false);
   });
 
+  it('codes each run of a sparse block selection and leaves the blocks between them', () => {
+    const editor = createEditor({
+      plugins: [BaseCodeBlockPlugin],
+      initialValue: ['A', 'B', 'C', 'D'].map((text) => ({
+        type: 'paragraph',
+        children: [{ text }],
+      })),
+      selection: SelectionApi.nodes([[0], [1], [3]], { mode: 'block' }),
+    });
+
+    expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { type: 'codeBlock', children: [{ text: 'A\nB' }] },
+      { type: 'paragraph', children: [{ text: 'C' }] },
+      { type: 'codeBlock', children: [{ text: 'D' }] },
+    ]);
+    expect(editor.read.selection.nodes().map(([, path]) => path)).toEqual([
+      [0],
+      [2],
+    ]);
+  });
+
+  it('codes a sparse block selection around a code block it does not hold', () => {
+    const editor = createEditor({
+      plugins: [BaseCodeBlockPlugin],
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'A' }] },
+        { type: 'codeBlock', children: [{ text: 'B' }] },
+        { type: 'paragraph', children: [{ text: 'C' }] },
+      ],
+      selection: SelectionApi.nodes([[0], [2]], { mode: 'block' }),
+    });
+
+    expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { type: 'codeBlock', children: [{ text: 'A' }] },
+      { type: 'codeBlock', children: [{ text: 'B' }] },
+      { type: 'codeBlock', children: [{ text: 'C' }] },
+    ]);
+  });
+
+  it('codes no run of a block selection when one run cannot become code', () => {
+    const ProseOnly = definePlugin('proseOnly', {
+      schema: {
+        element: {
+          blockContent: true,
+          content: schema.content.any([
+            schema.content.type('paragraph').allowed,
+          ]),
+        },
+      },
+    });
+    const initialValue = [
+      { type: 'paragraph', children: [{ text: 'A' }] },
+      {
+        type: 'proseOnly',
+        children: [{ type: 'paragraph', children: [{ text: 'B' }] }],
+      },
+    ];
+    const editor = createEditor({
+      plugins: [BaseCodeBlockPlugin, ProseOnly],
+      initialValue,
+      selection: SelectionApi.nodes([[0], [1, 0]], { mode: 'block' }),
+    });
+
+    expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(false);
+    expect(editor.read.children()).toEqual(initialValue);
+  });
+
   it('indents the first empty line at offset zero', () => {
     const editor = createFixtureEditor({
       plugins: [BaseCodeBlockPlugin],
@@ -263,7 +332,7 @@ describe('BaseCodeBlockPlugin', () => {
   it('decodes and encodes one newline-bearing text through HTML', () => {
     const editor = createFixtureEditor({
       plugins: [BaseCodeBlockPlugin],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [{ text: 'const a = 1;\n\nconst b = 2;\n' }],

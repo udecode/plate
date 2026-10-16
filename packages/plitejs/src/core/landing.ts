@@ -12,6 +12,8 @@ import type {
   TransferEdge,
   TransferIntent,
   TransferLandingInput,
+  TransferPatch,
+  TransferPatchProperties,
   TransferPayload,
   TransferRefusalReason,
   TransferRelation,
@@ -228,11 +230,150 @@ const readLanding = (
 const sameEdge = (a: TransferEdge, b: TransferEdge) =>
   a.key === b.key && a.edge === b.edge;
 
-export const landAt = (
+type NodesPayload = Extract<TransferPayload, { kind: 'nodes' }>;
+
+export type Adopted = Readonly<{
+  fit: readonly Descendant[];
+  patches: readonly TransferPatch[];
+  payload: NodesPayload;
+}>;
+
+export type Landed = Readonly<{ adopted: Adopted | null; edge: TransferEdge }>;
+
+export type ResolvedLanding = Readonly<{
+  edge: TransferEdge;
+  input: TransferLandingInput;
+  target: NodeEntry<Element>;
+}>;
+
+/** @internal */
+export const landingMetrics = { copiedEntries: 0 };
+
+const copyChildren = (node: Element): Element => {
+  landingMetrics.copiedEntries += node.children.length;
+
+  return { ...node, children: [...node.children] };
+};
+
+const patchAt = (
+  roots: Descendant[],
+  path: Path,
+  properties: TransferPatchProperties,
+  owned: WeakSet<Element>
+) => {
+  let siblings = roots;
+
+  for (const [depth, index] of path.entries()) {
+    const found = siblings[index];
+    const node = ElementApi.isElement(found) ? found : refuse('policy');
+    const copy = owned.has(node) ? node : copyChildren(node);
+    const next =
+      depth === path.length - 1
+        ? (Object.fromEntries(
+            Object.entries({ ...copy, ...properties }).filter(
+              ([, value]) => value !== undefined
+            )
+          ) as Element)
+        : copy;
+
+    owned.add(next);
+    siblings[index] = next;
+    siblings = next.children as Descendant[];
+  }
+};
+
+export const adoptAt = (
+  editor: AnyEditor,
+  { fit, intent, payload }: LandingRequest,
+  { input }: ResolvedLanding
+): Adopted | null => {
+  if (payload.kind !== 'nodes') return null;
+
+  const patches = executeEditorRead(
+    editor,
+    editorReads.transfer.adopt,
+    { ...input, payload },
+    () => [],
+    editor
+  );
+
+  if (patches.length === 0) return null;
+
+  const schema = getEditorSchema(editor);
+  const root = getEditorRuntimeRoot(editor);
+  const [, targetPath] = input.target;
+  const destination = targetPath
+    .slice(0, -1)
+    .map(
+      (_, depth) => editor.read.nodes.get(targetPath.slice(0, depth + 1))?.[0]
+    )
+    .filter((node) => ElementApi.isElement(node))
+    .reverse();
+  const fitted = [...fit];
+  const nodes = [...payload.nodes];
+  const owned = new WeakSet<Element>();
+
+  landingMetrics.copiedEntries += fitted.length + nodes.length;
+
+  for (const { at, properties } of patches) {
+    const ancestors: Element[] = [];
+    let children: readonly Descendant[] = nodes;
+    let element: Element | undefined;
+
+    for (const index of at) {
+      if (element) ancestors.unshift(element);
+      const node = children[index];
+
+      if (!ElementApi.isElement(node)) return refuse('policy');
+      element = node;
+      ({ children } = node);
+    }
+    // `tx.nodes.set` removes a null property, so a move cannot land one.
+    if (
+      !element ||
+      (intent === 'move' && Object.values(properties).includes(null)) ||
+      Object.keys(properties).some(
+        (key) =>
+          schema.elementPropertyLanding(
+            element,
+            key,
+            [...ancestors, ...destination],
+            root
+          ) !== 'adopt'
+      )
+    ) {
+      return refuse('policy');
+    }
+
+    patchAt(nodes, at, properties, owned);
+    patchAt(fitted, at, properties, owned);
+  }
+
+  return { fit: fitted, patches, payload: { ...payload, nodes } };
+};
+
+export const judgeLanding = (
+  editor: AnyEditor,
+  request: LandingRequest,
+  { edge, input, target: [, path] }: ResolvedLanding,
+  adopted: Adopted | null
+): Landed => {
+  checkPlacement(
+    editor,
+    adopted ? { ...request, fit: adopted.fit } : request,
+    edge,
+    path
+  );
+  runVetoes(editor, adopted ? { ...input, payload: adopted.payload } : input);
+
+  return { adopted, edge };
+};
+
+export const resolveLanding = (
   editor: AnyEditor,
   request: LandingRequest,
   edge: TransferEdge
-): TransferEdge => {
+): ResolvedLanding => {
   const target = liveTarget(editor, edge);
 
   checkIdentity(editor, request, edge, target[1]);
@@ -247,10 +388,22 @@ export const landAt = (
     checkIdentity(editor, request, to, final[1]);
   }
 
-  checkPlacement(editor, request, to, final[1]);
-  runVetoes(editor, input);
+  return { edge: to, input, target: final };
+};
 
-  return to;
+export const landAt = (
+  editor: AnyEditor,
+  request: LandingRequest,
+  edge: TransferEdge
+): Landed => {
+  const resolved = resolveLanding(editor, request, edge);
+
+  return judgeLanding(
+    editor,
+    request,
+    resolved,
+    adoptAt(editor, request, resolved)
+  );
 };
 
 const withSlot = (
@@ -356,7 +509,7 @@ export const landBeside = (
       executeEditorRead(
         editor,
         editorReads.transfer.source,
-        { selection: SelectionApi.nodes([targetPath]) },
+        { selection: SelectionApi.nodes([targetPath], { mode: 'block' }) },
         ({ selection }) => selection,
         editor
       ).paths.some((path) => !PathApi.equals(path, targetPath))

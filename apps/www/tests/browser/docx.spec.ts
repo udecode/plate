@@ -142,27 +142,30 @@ test('the export menu applies one suggestion projection to every format', async 
 
     await page.getByRole('button', { name: 'Editing' }).click();
     await page.getByRole('menuitemradio', { name: 'Suggestion' }).click();
-    await editor.evaluate((element) => {
-      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-      let text: Text | null = null;
-
-      while (walker.nextNode()) text = walker.currentNode as Text;
-      if (!text) throw new Error('The DOCX editor has no text node.');
-
-      const selection = window.getSelection();
-      const range = document.createRange();
-
-      range.setStart(text, text.length);
-      range.collapse(true);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-      (element as HTMLElement).focus();
+    const paragraph = editor.locator('[data-editor-node="element"]', {
+      hasText: 'content into the editor.',
     });
+    const lastCharacter = await paragraph
+      .locator('[data-editor-string]')
+      .last()
+      .evaluate((string) => {
+        const text = string.firstChild as Text;
+        const range = document.createRange();
+
+        range.setStart(text, text.length - 1);
+        range.setEnd(text, text.length);
+        const { bottom, right, top } = range.getBoundingClientRect();
+
+        return { x: right - 1, y: (top + bottom) / 2 };
+      });
+
+    await page.mouse.click(lastCharacter.x, lastCharacter.y);
     await page.keyboard.type(marker);
 
-    const authoredMarker = page.locator('[data-editor-authored-change]', {
-      hasText: marker,
-    });
+    const authoredMarker = paragraph.locator(
+      '[data-editor-node="text"][data-editor-authored-change]',
+      { hasText: marker }
+    );
 
     await expect(authoredMarker).toHaveCount(1);
     await expect(authoredMarker).toHaveText(marker);

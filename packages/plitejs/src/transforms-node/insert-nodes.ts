@@ -22,6 +22,7 @@ import {
   isBlock as editorIsBlock,
   isEnd as editorIsEnd,
   isInline as editorIsInline,
+  isStart as editorIsStart,
   point as editorPoint,
   unhangRange as editorUnhangRange,
   void as editorVoid,
@@ -130,25 +131,14 @@ const insertNodesRuntime = (
       }
 
       const [, matchPath] = entry;
-      const pointAnchor = editor.anchor(at, {
-        association: 'forward',
-        deletion: 'nearest',
-      });
-      const isAtEnd = editorIsEnd(editor, at, matchPath);
+      // splitNodes keeps the left half at matchPath, and at an inline edge the
+      // point stays in that left half, so placement comes from the original point.
+      const isBefore =
+        editorIsStart(editor, at, matchPath) &&
+        !editorIsEnd(editor, at, matchPath);
       splitNodes(editor, { at, match, mode, voids });
-      const splitPoint = pointAnchor.release();
 
-      if (!splitPoint) return;
-
-      const [splitEntry] = getNodes(editor, {
-        at: splitPoint.path,
-        match,
-        mode,
-        voids,
-      });
-      const path = splitEntry?.[1] ?? matchPath;
-
-      at = isAtEnd ? PathApi.next(path) : path;
+      at = isBefore ? matchPath : PathApi.next(matchPath);
     }
 
     if (LocationApi.isPath(at) && at.length === 0) {

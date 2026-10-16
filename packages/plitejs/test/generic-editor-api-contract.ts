@@ -126,5 +126,28 @@ withTransfer.api.transfer.move({ to: { edge: 'after', key: nodeKey } });
 
 editor.update.slice.replace(ContentSlice.closed<CustomValue>([]), {
   // @ts-expect-error a paste lands at a location; a node selection is replaced through the current selection
-  at: SelectionApi.nodes([[0]]),
+  at: SelectionApi.nodes([[0]], { mode: 'block' }),
 });
+
+const paragraph: ParagraphElement = {
+  type: 'paragraph',
+  children: [{ text: '' }],
+};
+const insertedKeys: readonly [NodeKey, ...NodeKey[]] | undefined =
+  editor.update.blocks.insert(paragraph, {
+    after: nodeKey,
+    replaceEmpty: true,
+  });
+
+editor.update.blocks.insert(paragraph, { before: nodeKey });
+editor.update.blocks.insert(paragraph, { at: [0] });
+// @ts-expect-error a block insert takes one placement
+editor.update.blocks.insert(paragraph, { after: nodeKey, before: nodeKey });
+// @ts-expect-error a block insert takes one placement
+editor.update.blocks.insert(paragraph, { at: [0], before: nodeKey });
+// @ts-expect-error replaceEmpty applies only to an after landing
+editor.update.blocks.insert(paragraph, { before: nodeKey, replaceEmpty: true });
+// @ts-expect-error replaceEmpty applies only to an after landing
+editor.update.blocks.insert(paragraph, { at: [0], replaceEmpty: false });
+
+void insertedKeys;

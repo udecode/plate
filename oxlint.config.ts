@@ -506,6 +506,19 @@ export default defineConfig({
       },
     },
     {
+      files: ['packages/platejs/src/**/*.{cts,mts,ts,tsx}'],
+      excludeFiles: [
+        '**/*.internal.*',
+        '**/*.spec.*',
+        '**/*.test.*',
+        '**/*.slow.*',
+        '**/__tests__/**',
+      ],
+      rules: {
+        'plate/no-plite-jsdoc': 'error',
+      },
+    },
+    {
       files: ['packages/plitejs/src/**/*.{ts,tsx}'],
       excludeFiles: [
         '**/*.spec.*',

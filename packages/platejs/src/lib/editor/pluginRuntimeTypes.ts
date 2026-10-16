@@ -50,6 +50,8 @@ import type {
   NodeSetNodesOptions,
   NodeTarget,
   NodeTypeSelector,
+  Path,
+  PliteBlockInsertOptions,
   PropertyValueDescriptor,
   PropertyValueOf,
   PropertyOptionsOf,
@@ -750,7 +752,7 @@ type EditorElementMutation = Readonly<{
 }>;
 
 type ElementToggleUpdate = Readonly<{
-  toggle: (options?: Omit<EditorToggleBlockOptions, 'wrap'>) => void;
+  toggle: (options?: Omit<EditorToggleBlockOptions, 'wrap'>) => boolean;
 }>;
 
 type GeneratedElementForSelector<TMutations, TSelector> =
@@ -772,21 +774,20 @@ type ElementInsertOptions<
   TSchema,
   TSelector extends PluginNodeTypeSelector,
   TMutations = never,
-> = Omit<NodeInsertNodesOptions<Element>, 'match' | 'split' | 'type'> &
-  Pick<BlockInsertOptions, 'after' | 'before' | 'replaceEmpty'> & {
-    split?: Omit<
-      NonNullable<NodeInsertNodesOptions<Element>['split']>,
-      'match' | 'type'
-    > & {
-      match?: NodeMatch<
-        ElementInsertNode<TSchema, TMutations, NoInfer<TSelector>>
-      >;
-      type: TSelector & NoInfer<ElementSelectorGuard<TSelector>>;
-    };
+> = Omit<NodeInsertNodesOptions<Element>, 'match' | 'split' | 'type'> & {
+  split?: Omit<
+    NonNullable<NodeInsertNodesOptions<Element>['split']>,
+    'match' | 'type'
+  > & {
+    match?: NodeMatch<
+      ElementInsertNode<TSchema, TMutations, NoInfer<TSelector>>
+    >;
+    type: TSelector & NoInfer<ElementSelectorGuard<TSelector>>;
   };
+};
 
 /**
- * Inserts a new element, replacing a different empty block by default. An
+ * Inserts a new inline element at the selection or an explicit location. An
  * inline void inserted at the caret leaves the caret after it unless `select`
  * is passed.
  */
@@ -808,12 +809,29 @@ type ElementInsert<
   ) => void
 >;
 
-/** Reuses a matching empty block, or inserts with the standard block policy. */
+/**
+ * Inserts a new block after the caret's block or where `options` places it.
+ * A different empty editable block is replaced, a matching empty block gets a
+ * sibling, and content or structural blocks are kept before the new block.
+ * Returns `false` and changes nothing when the block does not fit where it
+ * would land.
+ */
+type BlockElementInsert<TConstruction extends object> = (
+  ...args: {} extends TConstruction
+    ? [properties?: TConstruction, options?: BlockInsertOptions]
+    : [properties: TConstruction, options?: BlockInsertOptions]
+) => boolean;
+
+/**
+ * Reuses a matching empty block, or inserts with the standard block policy.
+ * Returns `false` and changes nothing when the block does not fit where it
+ * would land.
+ */
 type ElementUpsert<TConstruction extends object> = (
   ...args: {} extends TConstruction
     ? [properties?: TConstruction, options?: BlockUpsertOptions]
     : [properties: TConstruction, options?: BlockUpsertOptions]
-) => void;
+) => boolean;
 
 type GeneratedElementUpdate<
   TMutations,
@@ -821,11 +839,13 @@ type GeneratedElementUpdate<
 > = TPlugin['name'] extends infer TName extends keyof TMutations
   ? TMutations[TName] extends infer TMutation extends EditorElementMutation
     ? Readonly<{
-        insert: ElementInsert<
-          TMutation['construction'],
-          InternalEditorMutationProvider<TMutations>,
-          TMutations
-        >;
+        insert: TMutation extends Readonly<{ block: false }>
+          ? ElementInsert<
+              TMutation['construction'],
+              InternalEditorMutationProvider<TMutations>,
+              TMutations
+            >
+          : BlockElementInsert<TMutation['construction']>;
         remove: (
           options?: Omit<NodeRemoveNodesOptions<Element>, 'match' | 'type'>
         ) => void;
@@ -866,15 +886,24 @@ type DefaultElementUpdate<
             >
           >
           ? Readonly<{
-              insert: ElementInsert<
-                SchemaElementConstructionPropertiesFor<
-                  SchemaSourceForInstalledDefinitions<
-                    InstalledSchemaDefinitionsOf<TSchemaDefinitions>
-                  >,
-                  TType
-                >,
-                TSchemaDefinitions
-              >;
+              insert: EditorDefinitionElementSupportsBlockInsertion<TPlugin> extends true
+                ? BlockElementInsert<
+                    SchemaElementConstructionPropertiesFor<
+                      SchemaSourceForInstalledDefinitions<
+                        InstalledSchemaDefinitionsOf<TSchemaDefinitions>
+                      >,
+                      TType
+                    >
+                  >
+                : ElementInsert<
+                    SchemaElementConstructionPropertiesFor<
+                      SchemaSourceForInstalledDefinitions<
+                        InstalledSchemaDefinitionsOf<TSchemaDefinitions>
+                      >,
+                      TType
+                    >,
+                    TSchemaDefinitions
+                  >;
               remove: (
                 options?: Omit<
                   NodeRemoveNodesOptions<Element>,
@@ -1045,13 +1074,11 @@ type SchemaElementSupportsBlockInsertion<TElement> = [TElement] extends [never]
 
 type DirectPluginSchemaElement<D extends AnyBasePluginDefinition> =
   D extends Readonly<{ schema: infer TSchema }>
-    ? TSchema extends (...args: never[]) => unknown
-      ? never
-      : Extract<TSchema, PluginSchemaDeclaration> extends Readonly<{
-            element: infer TElement extends SchemaElement;
-          }>
-        ? TElement
-        : never
+    ? Extract<TSchema, PluginSchemaDeclaration> extends Readonly<{
+        element: infer TElement extends SchemaElement;
+      }>
+      ? TElement
+      : never
     : never;
 
 type EditorDefinitionElementSupportsToggle<D extends AnyBasePluginDefinition> =
@@ -1633,32 +1660,18 @@ export type NodeInsertOptions = Omit<
 };
 
 /**
- * Placement options for feature commands that insert whole blocks.
- *
- * `before` and `after` accept stable block targets. Without an explicit target,
- * insertion uses the current block as its source. A different empty editable
- * block is replaced, a matching empty block gets a sibling, and content or
- * structural blocks are preserved before the new block. `at` is an exact
- * insertion location. `replaceEmpty` explicitly overrides the semantic
- * empty-block choice for `insert`.
+ * Placement options for feature commands that insert whole blocks: one of
+ * `after` a block, `before` a block or a path `at`.
  */
-export type BlockInsertOptions = NodeInsertOptions & {
-  /** Insert after this block target; omit `at` when using `after`. */
-  after?: NodeTarget;
-  /** Insert before this stable block key; omit `at` and `after`. */
-  before?: NodeKey;
-  /** Replace an empty editable source when inserting after a block. */
-  replaceEmpty?: boolean;
-};
+export type BlockInsertOptions = PliteBlockInsertOptions<NodeTarget>;
 
 /**
  * Placement options for a block upsert. A matching empty editable block is
  * reused; every other source follows the standard semantic insertion policy.
  */
-export type BlockUpsertOptions = Omit<
-  BlockInsertOptions,
-  'at' | 'replaceEmpty'
->;
+export type BlockUpsertOptions = Exclude<BlockInsertOptions, { at: Path }> & {
+  replaceEmpty?: never;
+};
 
 type ElementForSelector<TSchema, TSelector> =
   TSelector extends ReadonlyArray<infer TItem>
@@ -2675,7 +2688,7 @@ type PluginEditorUpdateOverloads<
   S = D,
   TRuntimePlugins extends readonly unknown[] = readonly [],
 > = {
-  (
+  <R = void>(
     fn: (
       transaction: PluginTransactionForInstalledDefinitions<
         D,
@@ -2686,9 +2699,9 @@ type PluginEditorUpdateOverloads<
       context: EditorUpdateContext<
         RuntimeBaseEditor<V, PluginRuntimePlugins<V, D, S, TRuntimePlugins>>
       >
-    ) => void
-  ): void;
-  (
+    ) => R
+  ): R | undefined;
+  <R = void>(
     policy: PluginEditorUpdatePolicy<V, D, S, TRuntimePlugins>,
     fn: (
       transaction: PluginTransactionForInstalledDefinitions<
@@ -2700,8 +2713,8 @@ type PluginEditorUpdateOverloads<
       context: EditorUpdateContext<
         RuntimeBaseEditor<V, PluginRuntimePlugins<V, D, S, TRuntimePlugins>>
       >
-    ) => void
-  ): void;
+    ) => R
+  ): R | undefined;
   (
     policy: PluginEditorUpdatePolicy<V, D, S, TRuntimePlugins>
   ): PluginEditorUpdateMethods<V, D, S, TRuntimePlugins>;

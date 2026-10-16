@@ -1,8 +1,8 @@
 # Suggestions and tracked-change review
 
-Page: https://claude.ai/artifact/Dxh6ofPPaKban1rAawYEf8
+Page: https://claude.ai/artifact/RHmV8unJBZmh4yntdG4wuZ
 
-Plite's native authored capability owns suggested edits: change identity, retained content, dependencies, the accepted, proposed and markup views, and atomic accept and reject. Plate owns `BaseSuggestionPlugin` (suggestion mode and decorations), `SuggestionPlugin`, the copied `SuggestionKit` and discussion UI, and `AuthoredPlugin`, which stamps every write with the editor's `userId`. The ledger asks which proposed-edit, accept/reject and attribution policies belong to Suggestions, and which reuse native authored changes (`docs/research/review-scopes/suggestions.json`). Native authored ownership (2026-09-10), the `EditorRoot authored` view input and its five intent and projection pairs (2026-09-17), plugin-owned content attributes (2026-09-14), the direct replacement of fully selected pending changes (2026-09-22) one fixed user per editor for suggestions, comments and copied UI (2026-10-07) and constructors that always create a new editor (2026-10-08) have landed, with browser cases in `apps/www/tests/browser/suggestion.spec.ts`. An editor with no `userId` writes as the local user `'local'`. `node tooling/scripts/review-ledger.mjs show suggestions` prints the scope's full history.
+Plite's native authored capability owns suggested edits: review marks in the stored document, change identity, review cards, dependencies, the accepted and proposed previews, and atomic accept and reject. Plate owns `BaseSuggestionPlugin` (suggestion mode and decorations), `SuggestionPlugin`, the copied `SuggestionKit` and discussion UI, and `AuthoredPlugin`, which stamps every write with the editor's `userId`. The ledger asks which proposed-edit, accept/reject and attribution policies belong to Suggestions, and which reuse native authored changes (`docs/research/review-scopes/suggestions.json`). Native authored ownership (2026-09-10), plugin-owned content attributes (2026-09-14), the direct replacement of fully selected pending changes (2026-09-22), one fixed user per editor for suggestions, comments and copied UI (2026-10-07), constructors that always create a new editor (2026-10-08) and the review-tree pivot, which keeps pending changes as review marks in the one stored document and groups them into cards (`docs/plans/2026-10-13-review-tree-pivot.md`), have landed, with browser cases in `apps/www/tests/browser/suggestion.spec.ts`. An editor with no `userId` writes as the local user `'local'`. The `EditorRoot authored` view input takes an `edit` or `propose` intent, or an `accepted` or `proposed` preview. `node tooling/scripts/review-ledger.mjs show suggestions` prints the scope's full history.
 
 ## Public API
 
@@ -23,24 +23,17 @@ const editor = useCreateEditor({
 });
 ```
 
-Saved suggestions from several authors load through `initialValue`, with each revision's author stated.
+Saved suggestions from several authors load through `initialValue`. Each suggested node carries the review mark that names its change, author, time and kind.
 
 ```tsx
 // apps/www/src/registry/examples/discussion-demo.tsx
-const fixture = createEditor({
-  plugins: EditorKit,
-  initialValue: createAuthoredReviewDocument({
-    accepted,
-    revisions: [
-      {
-        id: 'playground2',
-        authorId: 'bob',
-        createdAt: Date.parse('2026-09-09T12:00:00.000Z'),
-        change: DocumentChange.between(accepted, deleted),
-      },
-    ],
-  }),
-  userId: 'alice',
+const suggested = (
+  change: string,
+  author: string,
+  at: string,
+  kind: 'delete' | 'insert'
+): { authored: AuthoredMark[] } => ({
+  authored: [{ at: Date.parse(at), author, change, kind }],
 });
 ```
 
@@ -70,25 +63,23 @@ const switchUser = (nextUserId: string) => {
 };
 ```
 
-An app that wants revert beside suggestions configures the one authored plugin that suggestions and AI depend on. Retention is read once, when the editor is created.
-
-```tsx
-// apps/www/src/registry/examples/version-history-demo.tsx
-AuthoredPlugin.configure({ initialState: { retainHistory: true } }),
-```
-
-Copied review UI reaches native authored decisions through that plugin.
+Copied review UI reaches native authored decisions through the one authored plugin that suggestions and AI depend on, and reads the cards touching each top-level block.
 
 ```tsx
 // apps/www/src/registry/components/editor/discussion.tsx
 const authored = editor.plugin(AuthoredPlugin);
 ```
 
-Copied suggestion UI picks the reader's own color from the editor's user.
+```tsx
+// apps/www/src/registry/components/editor/discussion.tsx
+const cards = useSuggestionGroups(blockKey);
+```
+
+Copied suggestion UI colors each change by the palette slot its card's id gives it.
 
 ```tsx
 // apps/www/src/registry/components/editor/suggestion.tsx
-if (authorId !== editor.userId) {
+`${scope} [data-editor-authored-color="${slot}"]{${colorDeclarations(color)}}`
 ```
 
 Copied comment UI names the current user from the editor.
@@ -98,43 +89,14 @@ Copied comment UI names the current user from the editor.
 const currentUser = useCommentUser(useEditor().userId);
 ```
 
-The homepage playground loads its three authors' suggestions as data.
+The homepage playground marks its three authors' suggestions on the nodes of its value.
 
 ```tsx
 // apps/www/src/registry/examples/playground-demo.tsx
-initialValue: createAuthoredReviewDocument({
-  accepted: baseline,
-  revisions: [
-    {
-      id: 'playground1',
-      authorId: 'alice',
-      createdAt: createdAt - 900_000,
-      change: DocumentChange.between(baseline, inserted),
-    },
-    {
-      id: 'playground2',
-      authorId: 'bob',
-      createdAt: createdAt - 800_000,
-      change: DocumentChange.between(inserted, deleted),
-    },
-    {
-      id: overlapChangeId,
-      authorId: 'charlie',
-      createdAt: createdAt - 700_000,
-      change: DocumentChange.between(deleted, capture()),
-    },
-  ],
-}),
-```
-
-The version-history demo's "Edit as" control hands the document to a new editor for the chosen user.
-
-```tsx
-// apps/www/src/registry/examples/version-history-demo.tsx
-onChange={(event) => {
-  setSnapshot(editor.read.value());
-  setAuthorId(event.target.value);
-}}
+const added = mark('playground1', 'alice', 900_000, 'insert');
+const removed = mark('playground2', 'bob', 800_000, 'delete');
+const overlapChangeId = 'playground3';
+const overlapped = mark(overlapChangeId, 'charlie', 700_000, 'insert');
 ```
 
 Every constructor creates its own editor; a test that built a raw editor first now lets `createEditor` allocate it, and passing an `editor` option throws.
@@ -146,10 +108,11 @@ const editor = createReactEditor();
 
 ## Main changes
 
-- `packages/plitejs/src/authored/` owns authored identity. `authored({ authorId, retainHistory })` resolves the author once per write transaction and rejects a write without one; reads stay actorless. Its author ID rule leaves through `plitejs/internal` as `isAuthorId`.
+- `packages/plitejs/src/authored/` owns authored identity. `authored({ authorId })` resolves the author once per write transaction and rejects a write without one; reads stay actorless. Its author ID rule leaves through `plitejs/internal` as `isAuthorId`.
 - Every Plate constructor, `createEditor` from `platejs` and `platejs/react`, ends in one internal `buildEditor` in `packages/platejs/src/lib/editor/withPlite.ts`, which allocates the Plite editor with `id`, `lifecycleErrorSink`, `readOnly` and `maxLength` and builds it. `assertConstructorOptions` refuses an `editor` or `migrations` key on the options a caller passed, at every constructor and on every render of `useCreateEditor`; it counts a key that either `in` or an own-property check along the prototype chain sees, and never calls a getter.
 - `packages/platejs/src/lib/editor/editorUser.internal.ts` checks `userId` with Plite's author rule and turns an omitted or empty `userId` into the local user `'local'`. Right after allocation, `buildEditor` defines `editor.userId` as a fixed data property and records the user in a map keyed by the editor, so construction callbacks and every view read the same user. The author read looks the user up through the runtime owner and throws `This editor has no user` for an editor no constructor built.
-- `packages/platejs/src/authored/AuthoredPlugin.ts` is `definePlugin('authored', { initialState: { retainHistory: false } })` extended by a stage that returns Plite's `authored()` with the editor's user and the configured retention. `BaseSuggestionPlugin`, `SuggestionPlugin` and `AIChatPlugin` depend on it.
+- `packages/platejs/src/authored/AuthoredPlugin.ts` is `definePlugin('authored', { dependencies: [authoredRecords] })` extended by a stage that returns Plite's `authored()` with the editor's user, so it takes no options. `BaseSuggestionPlugin`, `SuggestionPlugin` and `AIChatPlugin` depend on it.
+- `BaseSuggestionPlugin` writes each suggested node's `data-editor-authored-*` attributes, the change ids, kinds, authors, cards and the color slot of its first card, and `useSuggestionGroups(blockKey)` in `packages/platejs/src/react/features/suggestion/useSuggestion.ts` rereads a block's cards when a change delta names that block.
 - The author read warns once per editor through `editor.api.debug.warn`, which is silent in production, when a write or a comment is stamped with the local user while a published plugin is keyed `yjs`, because collaborators would then share one author.
 - `packages/platejs/src/features/comments/BaseCommentsPlugin.ts` stamps thread creation, replies and resolution with the editor's user and keeps the `users` directory that copied UI also uses to name suggestion authors.
 - `useCreateEditor` keys its editor on the normalized `userId` as it keys on `id`.
@@ -174,7 +137,7 @@ Read from local checkouts at the commits named; CKEditor 5's users and track-cha
 - Plate's `YjsPlugin`, which `yjs.mdx` teaches and the copied `CollaborationPlugin` builds on, installs only at creation and cannot sit in a plugin slot, so its Yjs binding holds its namespace for as long as the document exists and a new editor on that namespace throws, with or without the hook. Every Plate plugin fails the same way when installed after creation, and the errors do not say why. `useCreateEditor` also builds its editor inside `useMemo`, whose factory StrictMode runs twice in development, so an editor that claims an outside resource, such as a Yjs binding, throws on its first mount there. (found by the 2026-10-07 suggestions plan panel). owner: zbeyens, who decides whether a Plate plugin that claims an outside resource can be installed after creation or in a slot and whether the hook builds editors outside render. stop: that decision is recorded here.
 - `AuthoredPlugin` exports a checked `InternalBasePluginRuntimeExtension` annotation, and `HistoryPlugin` (`packages/platejs/src/lib/plugins/HistoryPlugin.ts` lines 48-51) an `as unknown as` cast, both transitional debt under `docs/vision/plate.md`. The package declaration build (tsdown with tsgo) cannot print Plite's private plugin brand (TS4094) even when `plitejs/internal` exports it, so the repair belongs to Plite's brand design or the declaration build. owner: zbeyens, who decides that repair. stop: a `platejs` package build passes with both exports inferred, recorded here.
 - `api-reference:check` fails at base on `HistoryApi`, which `apps/www/api-reference.config.json` neither includes nor excludes (the base run of `api-reference:check`), so the generated manifest still names Comments' `currentUserId`. owner: zbeyens, who records the `HistoryApi` decision. stop: the check passes and `pnpm --filter www api-reference` regenerates the manifest.
-- The playground builds one extra full `EditorKit` editor per mount to stage its three authors' revisions, unmeasured. owner: zbeyens, who decides whether to measure the homepage mount or cache the revision values per locale. stop: that measurement or cache lands.
+- The playground builds one extra full `EditorKit` editor per mount to save its comment's anchor, unmeasured. owner: zbeyens, who decides whether to measure the homepage mount or cache the saved document per locale. stop: that measurement or cache lands.
 - A raw `plitejs/authored` descriptor with its own `authorId` can still sit beside Comments and split identity, and copied suggestion cards label the local user `local`. owner: zbeyens, who decides whether `buildEditor` asserts the authored descriptor and how copied UI names the local user. stop: those decisions are recorded here.
 - Every unknown option key, such as a typo, falls into the root plugin's definition, untyped (found by plan iteration 3's panels and reviews). The same decision settles typing the root plugin's keys in `buildEditor`, letting React `createEditor` pass its options untouched so every inherited option survives, and folding the per-entry refusals into one check that returns the options it checked. owner: zbeyens, who decides whether Plate constructors take a closed option set. stop: a constructor-options plan records that decision as a Defaults row.
 - With every editor allocated just before construction, the failure-path restores, the empty-document fit, `resolvePlugins`' publication guard and its `clearPluginStores` at entry, and `buildEditor`'s runtime-candidate clear may be dead or duplicated; plan iteration 3's panel found an early compile failure and a root minimum of 0 that reach two of them, and no test fails without the candidate clear. owner: zbeyens, who decides whether a cleanup plan proves each one. stop: that cleanup plan's Close, or the owner dropping the item.

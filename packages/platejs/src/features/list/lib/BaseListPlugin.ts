@@ -52,6 +52,7 @@ import {
 } from './listFamily.internal';
 import { flattenHtmlListItem, isHtmlList } from './listHtml.internal';
 import {
+  adoptListBlocks,
   createListId,
   findContinuedItem,
   getListRunSiblings,
@@ -301,6 +302,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           validationVersion: 1,
         }),
         {
+          landing: 'adopt',
           split: 'drop',
           target: target.types(targetElementTypes),
           typeChange: 'preserve-if-allowed',
@@ -312,23 +314,27 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           validationVersion: 1,
         }),
         {
+          landing: 'adopt',
           split: 'drop',
           target: target.types(targetElementTypes),
           typeChange: 'preserve-if-allowed',
         }
       ),
       listId: schema.elementProperty(property.string(), {
+        landing: 'adopt',
         target: target.types(targetElementTypes),
         typeChange: 'preserve-if-allowed',
       }),
       listLevels: schema.elementProperty(
         property.json({ validate: isListLevels, validationVersion: 1 }),
         {
+          landing: 'adopt',
           target: target.types(targetElementTypes),
           typeChange: 'preserve-if-allowed',
         }
       ),
       listStyle: schema.elementProperty(property.string(), {
+        landing: 'adopt',
         target: target.types(targetElementTypes),
         typeChange: 'preserve-if-allowed',
       }),
@@ -995,15 +1001,13 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           { indent: 1, listType: type }
         );
 
-        if (options.at === undefined || options.after !== undefined) {
-          tx.blocks.insertAfter(element, { ...options, at: options.after });
-        } else {
-          tx.nodes.insert(element, options);
-        }
+        if (!tx.blocks.insert(element, options)) return false;
 
         const entry = tx.nodes.get(element, { match: ElementApi.isElement });
 
         if (entry) joinInsertedListItem(tx, entry, getHeadingType(editor));
+
+        return true;
       };
       const applyListInsertion = (
         mode: 'insert' | 'upsert',
@@ -1341,6 +1345,11 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           paragraphType: editor.plugin(BaseParagraphPlugin).schema.type,
         })
       ),
+      around(editorReads.transfer.adopt, ({ editor, input, next, state }) =>
+        adoptListBlocks(state, input, next(), {
+          headingType: getHeadingType(editor),
+        })
+      ),
       around(editorReads.transfer.source, ({ next, state }) => {
         const selection = next();
         const entries = selection.paths.flatMap((path) => {
@@ -1353,7 +1362,8 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           ? SelectionApi.nodes(
               getListFamilies(state, entries).flatMap((family) =>
                 family.map(({ path }) => path)
-              ) as [Path, ...Path[]]
+              ) as [Path, ...Path[]],
+              { mode: 'block' }
             )
           : selection;
       }),

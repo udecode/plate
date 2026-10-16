@@ -28,13 +28,26 @@ const DOCS_HREF_ATTRIBUTE_REGEX = /\bhref=(["'])\/docs(?=\/|#|\?|\1)/g;
 
 type JsonRecord = Record<string, unknown>;
 
-async function getFiles(dir: string): Promise<string[]> {
+async function isNestedDocsRoot(dir: string) {
+  const meta: unknown = await fs
+    .readFile(path.join(dir, META_FILE), 'utf-8')
+    .then(
+      (source) => JSON.parse(source),
+      () => null
+    );
+
+  return isRecord(meta) && meta.root === true;
+}
+
+async function getPlateDocFiles(dir: string): Promise<string[]> {
   const entries = await fs.readdir(dir, { withFileTypes: true });
   const files = await Promise.all(
     entries.map(async (entry) => {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        return getFiles(fullPath);
+        return (await isNestedDocsRoot(fullPath))
+          ? []
+          : getPlateDocFiles(fullPath);
       }
       if (
         entry.name.endsWith('.mdx') &&
@@ -126,12 +139,29 @@ function rewriteInstalledDocsMetaValue(value: unknown): unknown {
 async function createInstalledDocsMetaContent() {
   const source = await fs.readFile(path.join(SOURCE_DIR, META_FILE), 'utf-8');
   const meta = rewriteInstalledDocsMetaValue(JSON.parse(source));
+  const entries = await fs.readdir(SOURCE_DIR, { withFileTypes: true });
+  const nestedRoots = new Set<string>();
+
+  for (const entry of entries) {
+    if (
+      entry.isDirectory() &&
+      (await isNestedDocsRoot(path.join(SOURCE_DIR, entry.name)))
+    ) {
+      nestedRoots.add(entry.name);
+    }
+  }
+
+  if (isRecord(meta) && Array.isArray(meta.pages)) {
+    meta.pages = meta.pages.filter(
+      (page) => typeof page !== 'string' || !nestedRoots.has(page)
+    );
+  }
 
   return `${JSON.stringify(meta, null, 2)}\n`;
 }
 
 export async function createDocsRegistry(): Promise<Registry> {
-  const files = await getFiles(SOURCE_DIR);
+  const files = await getPlateDocFiles(SOURCE_DIR);
   const docsMetaContent = await createInstalledDocsMetaContent();
 
   const items = await Promise.all(

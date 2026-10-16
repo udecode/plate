@@ -200,7 +200,7 @@ describe('format layers', () => {
           );
           const outcomeFor =
             (part: readonly string[]): LayerOutcome =>
-            (change) =>
+            ({ change }) =>
               part.includes(change) ? (actions.get(change) ?? 'keep') : 'keep';
           const batch = apply(live, tags, outcomeFor(decided));
           const order = [...decided].sort(() => shuffle.next().value - 500);
@@ -270,7 +270,7 @@ describe('format layers', () => {
               (['accept', 'keep', 'reject'] as const)[picks.next().value],
             ])
           );
-          const outcome: LayerOutcome = (change) =>
+          const outcome: LayerOutcome = ({ change }) =>
             outcomes.get(change) ?? 'keep';
           const shuffled = [...tags].sort(() => shuffle.next().value - 500);
           const shape = (list: readonly FormatTag[]) =>
@@ -323,7 +323,7 @@ describe('format layers', () => {
           const { kept } = decideKey(
             live,
             tags,
-            (change) => outcomes.get(change) ?? 'keep'
+            ({ change }) => outcomes.get(change) ?? 'keep'
           );
 
           for (const tag of kept) {
@@ -384,7 +384,7 @@ describe('format layers', () => {
               (['accept', 'keep', 'reject'] as const)[picks.next().value],
             ])
           );
-          const outcome: LayerOutcome = (change) =>
+          const outcome: LayerOutcome = ({ change }) =>
             outcomes.get(change) ?? 'keep';
           const before = decideKey(live, tags, outcome);
           const after = decideKey(VALUES[corrected], tags, outcome);

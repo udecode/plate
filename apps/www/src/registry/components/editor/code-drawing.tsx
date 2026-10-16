@@ -67,7 +67,7 @@ export function CodeDrawingElement({
   const isMobile = useIsMobile();
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
-  const selected = useElementSelected();
+  const selected = useElementSelected({ mode: 'text' });
   const isFocusedLast = useFocusedLast();
   const element = useElement(CodeDrawingPlugin);
   const { code, language, view } = element;
@@ -191,6 +191,7 @@ export function CodeDrawingElement({
             onViewChange={handleViewChange}
             readOnly={readOnly}
             isMobile={isMobile}
+            selected={selected}
           />
         </div>
       </div>
@@ -275,6 +276,7 @@ function CodeDrawingPreview({
   onViewChange,
   readOnly = false,
   isMobile = false,
+  selected = false,
 }: {
   code: string;
   language: CodeDrawingLanguage;
@@ -287,6 +289,7 @@ function CodeDrawingPreview({
   onViewChange: (view: CodeDrawingView) => void;
   readOnly?: boolean;
   isMobile?: boolean;
+  selected?: boolean;
 }) {
   const viewMode = view;
   const showCode = viewMode === 'split' || viewMode === 'code';
@@ -314,7 +317,8 @@ function CodeDrawingPreview({
     <div
       className={`flex ${
         isMobile ? 'flex-col-reverse' : 'flex-col'
-      } my-4 w-full items-stretch border bg-muted/50 md:flex-row hover:[&_[role=toolbar]]:opacity-100`}
+      } my-4 w-full items-stretch border bg-muted/50 data-[selected=true]:ring-2 data-[selected=true]:ring-ring md:flex-row hover:[&_[role=toolbar]]:opacity-100`}
+      data-selected={selected}
       style={{
         minHeight: `${DEFAULT_MIN_HEIGHT}px`,
       }}

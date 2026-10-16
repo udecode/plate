@@ -307,7 +307,7 @@ describe('state/tx public API contract', () => {
     const editor = createEditor({
       initialValue: [paragraph('one')],
     });
-    const selection = SelectionApi.nodes([[0], [1]]);
+    const selection = SelectionApi.nodes([[0], [1]], { mode: 'block' });
 
     editor.update.value.replace({
       children: [paragraph('two'), paragraph('new')],

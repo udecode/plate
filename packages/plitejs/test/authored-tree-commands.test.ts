@@ -406,7 +406,7 @@ describe('authored review tree commands', () => {
     start: [p('ab'), struckBlock(p('gone')), p('cd')],
   });
   law({
-    accepted: [p('ab'), p('cd')],
+    accepted: [p('ab'), p(''), p('cd')],
     at: [[0, 0], 2],
     name: "Delete at the end of a line before an empty line and another author's pending empty line",
     plainAt: [[0, 0], 2],

@@ -3,6 +3,7 @@ import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 import { NavItemsGrid } from '@/app/(app)/docs/[[...slug]]/nav-items-grid';
+import { getDocsRootLinks } from '@/lib/docs-page-tree';
 
 const title = 'API';
 const description = 'Browse all Plate APIs.';
@@ -30,7 +31,11 @@ export const metadata: Metadata = {
 export default function ApiPage() {
   return (
     <Suspense fallback={null}>
-      <NavItemsGrid category="api" showFilter={false} />
+      <NavItemsGrid
+        category="api"
+        roots={getDocsRootLinks('api')}
+        showFilter={false}
+      />
     </Suspense>
   );
 }

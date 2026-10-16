@@ -175,27 +175,57 @@ Options: `at`, `type`, `match`, `mode`, `to`, `voids`.
 Use semantic block mutations from `tx.blocks` inside a transaction or from
 `editor.update.blocks` for a direct update.
 
-#### `tx.blocks.insertAfter(blocks, options?)`
+#### `tx.blocks.insert(blocks, options?)`
 
-Insert one or more block elements after the block containing `options.at`.
-When `at` is omitted, the transaction selection is the reference. Ranges use
-their document-order end; node selections use their final selected block.
-An absent selection appends to the current root. An unresolved explicit target
-is a no-op. Returns the first inserted path, or `undefined` if nothing was inserted.
+Insert one or more block elements after a block, before a block or at a path,
+and return the keys of the top-level blocks that landed, in order. Without a
+placement, the blocks land after the selection's block: a range uses its
+document-order end and a node selection its final selected block. An absent
+selection appends to the current root.
+
+Act on what landed through the returned keys, not the nodes you passed. A key
+resolves its block from any root for as long as the block exists. When the
+editor's length limit cuts the batch, the result leaves out each block it
+dropped, and each non-empty block it admits lands as a copy under its own key.
+Any other block that is live in another root lands under its source's key, so
+its returned key can resolve to that source.
+
+The insert checks the parent the blocks land in. When they do not fit, because
+that parent already holds as many children as it allows or does not allow their
+type, nothing changes and the method returns `undefined`. It also returns
+`undefined` when an `after` or `before` target does not resolve. An `at` path
+past its parent's last child throws. The update keeps its other changes after a
+refusal, so check the result before you act on the inserted blocks.
+
+The options take one of `after`, `before` and `at`, and `replaceEmpty` only
+with `after` or no placement. The type refuses other combinations, and passing
+one throws.
 
 Options:
 
-- `at?: NodeSelectionTarget`: Reference location, live descendant, node key, or node selection.
+- `after?: NodeSelectionTarget`: Insert after this block, given as a location,
+  live descendant, node key or node selection.
+- `before?: NodeTarget`: Insert before this block.
+- `at?: Path`: Insert at this path, a slot among its parent's children.
 - `select?: boolean`: Select the inserted blocks.
-- `replaceEmpty?: boolean`: Replace an empty editable, non-atomic text block
-  in the same transaction. Nonempty sources and empty structural or atomic
-  blocks remain intact.
+- `replaceEmpty?: boolean`: Replace the empty editable, non-atomic text block
+  the blocks land after, in the same transaction. Applies only to an `after` or
+  selection landing. Nonempty sources and empty structural or atomic blocks
+  remain intact.
 
 ```typescript
-editor.update.blocks.insertAfter(
+const inserted = editor.update.blocks.insert(
   { type: "callout", children: [{ text: "" }] },
-  { at: calloutElement, select: true }
+  { after: calloutElement, select: true }
 );
+
+if (!inserted) {
+  // The callout does not fit next to calloutElement.
+} else {
+  const [callout] = inserted;
+
+  editor.update.nodes.set({ icon: "💡" }, { at: callout });
+}
 ```
 
 #### `tx.blocks.duplicate(options?)`
@@ -208,12 +238,24 @@ Reset each targeted block to the default element declared by its immediate
 parent, or by its document root for a top-level block. The mutation preserves
 the block's children, selection, and live node key. Element properties survive
 only when their schema lifecycle uses `typeChange: "preserve-if-allowed"` and
-the destination element accepts them.
+the destination element accepts them. A surviving property keeps its value, and
+its generator does not run. A block already of the default type also keeps the
+values its schema has no default or generator for.
 
-Reset checks every target before it writes. When a default is not allowed at
-one target's position, such as a heading the parent requires first, it returns
-`false` and changes nothing; otherwise it returns `true`. The update does not
-roll back on `false`, so check the result before composing other edits.
+Reset checks every target before it writes. It returns `false` and changes
+nothing when one target has no default it can become:
+
+- its parent or root declares no element default, or declares text;
+- the default needs a required property that neither the schema nor the block
+  supplies;
+- changing the block to the default's type leaves its content without a
+  required property;
+- the default is not allowed at the target's position, such as a heading the
+  parent requires first.
+
+Otherwise it returns `true`. Any other failure to build a default throws. The
+update does not roll back on `false`, so check the result before composing
+other edits.
 
 Options:
 
@@ -229,8 +271,6 @@ editor.update((tx) => {
   tx.plugin(BaseListPlugin).clear();
 });
 ```
-
-The parent or root grammar must declare an element default.
 
 #### `tx.blocks.set(props, options?)`
 
@@ -252,7 +292,9 @@ editor.update.blocks.set((node) =>
 #### `tx.blocks.toggle(props, options?)`
 
 Toggle targeted blocks between the complete `props` shape and their immediate
-parent or document-root default block shape.
+parent or document-root default block shape. Turning blocks off resets them as
+`tx.blocks.reset` does, so it returns `false` and changes nothing when one
+target has no default it can become.
 
 ```typescript
 editor.update.blocks.toggle({ type: "heading", level: 2 });
@@ -458,7 +500,7 @@ editor.update((tx) => {
 });
 ```
 
-#### `tx.selection.setNodes(targets: readonly (Path | NodeKey | Descendant)[])`
+#### `tx.selection.setNodes(targets: readonly (Path | NodeKey | Descendant)[], options?)`
 
 Select live nodes in the transaction draft. The transaction resolves every
 target in one root and canonicalizes exact membership. An empty collection
@@ -470,6 +512,9 @@ editor.update((tx) => {
   tx.selection.setNodes(blocks);
 });
 ```
+
+`options` takes `{ anchor, focus }` to keep direction and `mode`, which
+defaults to `'block'`; pass `'object'` when the user selected one object itself.
 
 #### `tx.selection.set(null)`
 

@@ -103,10 +103,7 @@ describe('DiscussionSlots', () => {
       return null;
     }
     const view = render(
-      <EditorRoot
-        editor={model}
-        authored={{ intent: 'edit' }}
-      >
+      <EditorRoot editor={model} authored={{ intent: 'edit' }}>
         <CaptureEditor />
         <EditorContainer>
           <EditorContent />
@@ -375,9 +372,7 @@ describe('DiscussionSlots', () => {
         <>
           <button
             onClick={() =>
-              editor
-                .plugin(AuthoredPlugin)
-                .api.setView({ preview: 'accepted' })
+              editor.plugin(AuthoredPlugin).api.setView({ preview: 'accepted' })
             }
             type="button"
           >
@@ -385,9 +380,7 @@ describe('DiscussionSlots', () => {
           </button>
           <button
             onClick={() =>
-              editor
-                .plugin(AuthoredPlugin)
-                .api.setView({ intent: 'edit' })
+              editor.plugin(AuthoredPlugin).api.setView({ intent: 'edit' })
             }
             type="button"
           >
@@ -431,7 +424,9 @@ describe('DiscussionSlots', () => {
     expect(
       view.getByRole('button', { name: 'Accept suggestion' })
     ).toBeTruthy();
-    expect(restored.plugin(AuthoredPlugin).read.change(changeId)).not.toBeNull();
+    expect(
+      restored.plugin(AuthoredPlugin).read.change(changeId)
+    ).not.toBeNull();
     view.unmount();
   });
 
@@ -769,14 +764,15 @@ it('bounds the number of mounted review cards in a busy block', async () => {
     decorate: { attributes: commentDecorationAttributes },
     slots: DiscussionSlots,
   });
-  // 25 insertions apart from each other, so each is its own card.
+  // 60 insertions apart from each other, so each is its own card, filling
+  // three discussion pages.
   const editor = createEditor({
     plugins: [...SuggestionKit, plugin],
     userId: 'alice',
     initialValue: [
       {
         type: 'paragraph',
-        children: Array.from({ length: 25 }, (_, index) => [
+        children: Array.from({ length: 60 }, (_, index) => [
           { text: ' ' },
           {
             authored: [
@@ -805,7 +801,7 @@ it('bounds the number of mounted review cards in a busy block', async () => {
 
   fireEvent.click(
     await view.findByRole('button', {
-      name: 'Open 25 discussion items for this block',
+      name: 'Open 60 discussion items for this block',
     })
   );
   await waitFor(() =>
@@ -813,14 +809,186 @@ it('bounds the number of mounted review cards in a busy block', async () => {
       view.container.querySelectorAll('[data-suggestion-review]')
     ).toHaveLength(20)
   );
-  fireEvent.click(
-    view.getByRole('button', { name: 'Show more discussion items' })
+  for (const count of [40, 60]) {
+    fireEvent.click(
+      view.getByRole('button', { name: 'Show more discussion items' })
+    );
+    await waitFor(() =>
+      expect(
+        view.container.querySelectorAll('[data-suggestion-review]')
+      ).toHaveLength(count)
+    );
+  }
+  expect(
+    view.container.querySelector('[data-suggestion-review="busy:59"]')
+  ).not.toBeNull();
+  view.unmount();
+});
+
+it('reads a card’s changes past the first twenty before deciding the card', async () => {
+  const { DiscussionSlots } = await import(
+    `./discussion?test=${Math.random().toString(36).slice(2)}`
   );
+  const plugin = CommentsPlugin.configure({
+    decorate: { attributes: commentDecorationAttributes },
+    slots: DiscussionSlots,
+  });
+  // 21 touching insertions by one author make one card.
+  const letters = 'abcdefghijklmnopqrstu';
+  const editor = createEditor({
+    plugins: [...SuggestionKit, plugin],
+    userId: 'alice',
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'Start ' },
+          ...[...letters].map((letter, index) => ({
+            authored: [
+              {
+                at: index + 1,
+                author: 'alice',
+                change: `run:${index}`,
+                kind: 'insert' as const,
+              },
+            ],
+            text: letter,
+          })),
+          { text: ' end' },
+        ],
+      },
+    ],
+  });
+  const view = render(
+    <EditorRoot editor={editor}>
+      <EditorContainer>
+        <EditorContent aria-label="Long card" />
+      </EditorContainer>
+    </EditorRoot>
+  );
+
   await waitFor(() =>
     expect(
-      view.container.querySelectorAll('[data-suggestion-review]')
-    ).toHaveLength(25)
+      view.container.querySelector('[data-editor-authored-change="run:20"]')
+    ).not.toBeNull()
   );
+  fireEvent.click(
+    view.container.querySelector('[data-editor-authored-change="run:20"]')!
+  );
+  fireEvent.click(
+    await view.findByRole('button', { name: 'Show 1 more changes' })
+  );
+  expect(view.getByText('Add “u”')).toBeTruthy();
+  fireEvent.click(view.getByRole('button', { name: 'Accept suggestion' }));
+  await waitFor(() =>
+    expect(editor.plugin(AuthoredPlugin).read.changes().items).toEqual([])
+  );
+  view.unmount();
+});
+
+it('decides an open card after it grows in another block', async () => {
+  const { DiscussionSlots } = await import(
+    `./discussion?test=${Math.random().toString(36).slice(2)}`
+  );
+  const plugin = CommentsPlugin.configure({
+    decorate: { attributes: commentDecorationAttributes },
+    slots: DiscussionSlots,
+  });
+  const editor = createEditor({
+    plugins: [...SuggestionKit, plugin],
+    userId: 'alice',
+    initialValue: [{ type: 'paragraph', children: [{ text: 'One' }] }],
+  });
+  editor.update((tx) => {
+    tx.authored.propose();
+    tx.text.insert(' more', { at: { offset: 3, path: [0, 0] } });
+    tx.nodes.insert(
+      { type: 'paragraph', children: [{ text: 'Two' }] },
+      { at: [1] }
+    );
+  });
+  const view = render(
+    <EditorRoot editor={editor}>
+      <EditorContainer>
+        <EditorContent aria-label="Growing card" />
+      </EditorContainer>
+    </EditorRoot>
+  );
+
+  const [first] = await view.findAllByRole('button', {
+    name: 'Open 1 discussion item for this block',
+  });
+  fireEvent.click(first);
+  await view.findByRole('button', { name: 'Accept suggestion' });
+  act(() => {
+    editor.update((tx) => {
+      tx.authored.propose();
+      tx.text.insert('!', { at: { offset: 3, path: [1, 0] } });
+    });
+  });
+  fireEvent.click(view.getByRole('button', { name: 'Accept suggestion' }));
+  await waitFor(() =>
+    expect(editor.plugin(AuthoredPlugin).read.changes().items).toEqual([])
+  );
+  view.unmount();
+});
+
+it('counts a thread in the block holding its change and lists it on the card from every block', async () => {
+  const { DiscussionSlots } = await import(
+    `./discussion?test=${Math.random().toString(36).slice(2)}`
+  );
+  const plugin = CommentsPlugin.configure({
+    decorate: { attributes: commentDecorationAttributes },
+    slots: DiscussionSlots,
+  });
+  const editor = createEditor({
+    plugins: [...SuggestionKit, plugin],
+    userId: 'alice',
+    initialValue: [{ type: 'paragraph', children: [{ text: 'One' }] }],
+  });
+  editor.update((tx) => {
+    tx.authored.propose();
+    tx.text.insert(' more', { at: { offset: 3, path: [0, 0] } });
+    tx.nodes.insert(
+      { type: 'paragraph', children: [{ text: 'Two' }] },
+      { at: [1] }
+    );
+  });
+  let second = '';
+  editor.update((tx) => {
+    second = tx.authored.propose();
+    tx.text.insert('!', { at: { offset: 3, path: [1, 0] } });
+  });
+  applied(
+    await editor.plugin(CommentsPlugin).api.createThread({
+      body: createCommentValue('Second note'),
+      target: { id: second, type: 'change' },
+    })
+  );
+  const view = render(
+    <EditorRoot editor={editor}>
+      <EditorContainer>
+        <EditorContent aria-label="Card threads" />
+      </EditorContainer>
+    </EditorRoot>
+  );
+
+  const blockOf = (button: HTMLElement) =>
+    button.parentElement?.parentElement?.textContent;
+  await waitFor(() =>
+    expect(
+      view
+        .getAllByRole('button', { name: /discussion items? for this block/ })
+        .map((button) => [blockOf(button), button.getAttribute('aria-label')])
+    ).toEqual([
+      ['One more', 'Open 1 discussion item for this block'],
+      ['Two!', 'Open 2 discussion items for this block'],
+    ])
+  );
+  fireEvent.click(
+    view.getByRole('button', { name: 'Open 1 discussion item for this block' })
+  );
+  expect(await view.findByText('Second note')).toBeTruthy();
   view.unmount();
 });
 
@@ -884,9 +1052,7 @@ it('keeps a blocked decision open and applies related changes only after an expl
   );
   fireEvent.click(view.getByRole('button', { name: 'Reject related' }));
   await waitFor(() =>
-    expect(
-      editor.plugin(AuthoredPlugin).read.changes().items
-    ).toEqual([])
+    expect(editor.plugin(AuthoredPlugin).read.changes().items).toEqual([])
   );
   view.unmount();
 });
@@ -1320,11 +1486,7 @@ it('hands the document and comments to the next user through a keyed editor', as
     mounted = editor;
 
     return (
-      <EditorRoot
-        authored={{ intent: 'edit' }}
-        editor={editor}
-        key={editor.id}
-      >
+      <EditorRoot authored={{ intent: 'edit' }} editor={editor} key={editor.id}>
         <button
           onClick={() => {
             setSnapshot({

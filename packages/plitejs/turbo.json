@@ -292,7 +292,8 @@
         "typecheck:partition:core",
         "typecheck:partition:dom",
         "typecheck:partition:history",
-        "typecheck:partition:testing"
+        "typecheck:partition:testing",
+        "typecheck:partition:yjs"
       ],
       "inputs": [
         "src/annotations/**",
@@ -440,7 +441,8 @@
         "typecheck:partition:history",
         "typecheck:partition:react",
         "typecheck:partition:react-virtualized",
-        "typecheck:partition:testing"
+        "typecheck:partition:testing",
+        "typecheck:partition:yjs"
       ],
       "inputs": [
         "src/react/**",

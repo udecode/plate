@@ -245,7 +245,7 @@ describe('BaseMarkPlugins', () => {
         text: 'text',
       });
 
-      editor.update.selection.set(SelectionApi.nodes([[0]]));
+      editor.update.selection.set(SelectionApi.nodes([[0]], { mode: 'block' }));
       editor.api.dom.clipboard.writeSelection(data);
 
       const { body } = new DOMParser().parseFromString(
@@ -260,7 +260,7 @@ describe('BaseMarkPlugins', () => {
   it('composes product mark wrappers without losing claims', () => {
     const editor = createEditor({
       plugins: [BaseBoldPlugin, BaseItalicPlugin, BaseUnderlinePlugin],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [

@@ -451,8 +451,6 @@ const createPluginAccess = (
 
     return new Proxy(
       (...args: unknown[]) => {
-        let result: unknown;
-
         const update = Reflect.get(editor, 'update');
 
         if (typeof update !== 'function') {
@@ -461,7 +459,7 @@ const createPluginAccess = (
         const callback = (transaction: Record<PropertyKey, unknown>) => {
           const own = resolvePluginMethod(transaction[getPlugin().name], path);
 
-          result = callPluginUpdateMethod(
+          return callPluginUpdateMethod(
             label,
             typeof own.value === 'function'
               ? own
@@ -470,13 +468,11 @@ const createPluginAccess = (
           );
         };
 
-        Reflect.apply(
+        return Reflect.apply(
           update,
           editor,
           policy === undefined ? [callback] : [policy, callback]
         );
-
-        return result;
       },
       {
         get(target, key) {

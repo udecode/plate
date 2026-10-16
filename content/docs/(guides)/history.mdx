@@ -8,7 +8,7 @@ canonical document change, effects, and selection.
 
 Saving a document revision and its [Comments JSON](/docs/comment#save-and-load)
 does not save local undo. Ordinary reload creates a fresh editor with empty undo
-and redo stacks. Application version history and retained authored contributions
+and redo stacks. Application version history and pending authored proposals
 have separate lifetimes from this session history.
 
 ## Usage
@@ -259,15 +259,15 @@ Merge the current transaction into the previous compatible undo batch.
 
 Start a fresh undo batch for the current transaction.
 
-#### `editor.update({ history: "skip" }, fn): void`
+#### `editor.update({ history: "skip" }, fn): R | undefined`
 
 Run one update without saving it to history.
 
-#### `editor.update({ history: "merge" }, fn): void`
+#### `editor.update({ history: "merge" }, fn): R | undefined`
 
 Run one update that merges into the previous compatible undo batch.
 
-#### `editor.update({ history: "new-batch" }, fn): void`
+#### `editor.update({ history: "new-batch" }, fn): R | undefined`
 
 Run one update where the first write starts a fresh history batch, then the
 rest of the callback merges into that batch.
@@ -284,24 +284,22 @@ Restore decoded history as one direct update.
 
 ## Authored changes
 
-Install `AuthoredPlugin` when the document needs attributed accepted edits or review proposals, and configure it to retain history. It shares Plate's existing History:
+Install `AuthoredPlugin` when the document needs review proposals. It shares Plate's existing History:
 
 ```tsx
 import { AuthoredPlugin } from "platejs/authored";
 
 const editor = createEditor({
-  plugins: [
-    AuthoredPlugin.configure({ initialState: { retainHistory: true } }),
-  ],
+  plugins: [AuthoredPlugin],
   userId: session.user.id,
 });
 ```
 
-Undo and redo reverse local interaction batches, including the authored operation and mapped selection recorded with that batch. An accept or reject decision made as a local document action can be undone. Undo is not a substitute for choosing a review decision through Authored.
+Undo and redo reverse local interaction batches, including the review marks and mapped selection recorded with that batch. An accept or reject decision made as a local document action can be undone. Undo is not a substitute for choosing a review decision through Authored.
 
-Use `update.authored.decide(...)` for review decisions. Use `update.authored.revert(...)` to create a new compensating contribution from retained accepted history. The original contribution and author remain in the authored record.
+Use `editor.plugin(AuthoredPlugin).update.decide(...)` for review decisions.
 
-Persist History with `History.toJSON` only when the application needs local undo stacks after reload. The authored document envelope in `editor.read.value()` separately persists proposals, decisions, causal operations, and optional retained author history.
+Persist History with `History.toJSON` only when the application needs local undo stacks after reload. `editor.read.value()` separately persists pending proposals, as review marks on its nodes and review records in its `records`.
 
 See [Authored Changes](/docs/authored-changes).
 

@@ -146,7 +146,7 @@ name 投影它。不要发布两份实现。
 `defineCommand`。构建器返回 `false` 或冻结的 `TransactionSpec`。
 `state.transaction(...)` 构建 spec 但不发布；
 `editor.update.command(descriptor, input)` 在一次 update 中应用处理后的
-spec。像 `editor.update.text.insert(...)` 这样由命令支撑的一次性更新会运行已安装的命令处理器，而对应的 `tx.text.insert(...)` 是用于原子组合的原语，绝不会重新派发命令。
+spec，编辑器拒绝该 update 时返回 `undefined`。像 `editor.update.text.insert(...)` 这样由命令支撑的一次性更新会运行已安装的命令处理器，而对应的 `tx.text.insert(...)` 是用于原子组合的原语，绝不会重新派发命令。
 
 `state.transaction(...)` 和 `state.transaction.extend(...)` 的 callback
 必须同步完成。返回 Promise 或 thenable 会抛错并丢弃 draft。先完成异步工作，
@@ -161,7 +161,7 @@ handler 顺序；descriptor 会保留 input inference。
 
 ### 在建议模式下放置位置
 
-Plite 的审阅树把待定的 [建议](/docs/suggestion) 保存在正在编辑的文档里。它在
+审阅树把待定的 [建议](/docs/suggestion) 保存在正在编辑的文档里。它在
 proposed 文档，也就是接受所有待定建议后的文档上运行命令和插件 update 方法，再
 把结果记录回建议。在这里，带 input 的命令和带参数调用的 update 方法，必须声明
 其中的存储位置在 proposed 文档里落在哪里，或声明它们不含位置。什么都不声明的

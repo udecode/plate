@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import { act, fireEvent, render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import * as React from 'react';
 
 const PlateElementMock = mock(
@@ -25,8 +25,6 @@ let domElements: Record<string, HTMLElement> = {
   intro: introElement,
   benefits: headingElement,
 };
-let observers: IntersectionObserverMock[] = [];
-const originalObserver = window.IntersectionObserver;
 const headings = [
   { depth: 1, key: 'intro', title: 'Intro', type: 'h1' },
   { depth: 2, key: 'benefits', title: 'Benefits', type: 'h2' },
@@ -67,22 +65,6 @@ const editor = {
   },
 };
 
-class IntersectionObserverMock {
-  callback: (
-    entries: Array<{ target: Element; isIntersecting: boolean }>
-  ) => void;
-  constructor(callback: IntersectionObserverMock['callback']) {
-    this.callback = callback;
-    observers.push(this);
-  }
-  disconnect = mock();
-  observe = mock();
-  unobserve = mock();
-}
-
-globalThis.IntersectionObserver =
-  IntersectionObserverMock as unknown as typeof IntersectionObserver;
-
 mock.module('platejs/react', () => ({
   TocPlugin: {
     configure: mock(() => ({ name: 'toc' })),
@@ -91,9 +73,8 @@ mock.module('platejs/react', () => ({
   EditorElement: PlateElementMock,
   NavigationFeedbackPlugin: {},
   useEditor: () => editor,
-  useEditorScrollElement: () => null,
-  useEditorRootElement: () => headingElement,
   useEditorSelector: useEditorSelectorMock,
+  useElementSelected: () => false,
 }));
 
 mock.module('@/components/ui/button', () => ({
@@ -107,7 +88,6 @@ const tocProps = {
 
 describe('toc node rendering', () => {
   beforeEach(() => {
-    observers = [];
     domElements = { intro: introElement, benefits: headingElement };
     PlateElementMock.mockClear();
     ButtonMock.mockClear();
@@ -118,11 +98,10 @@ describe('toc node rendering', () => {
   });
 
   afterAll(() => {
-    window.IntersectionObserver = originalObserver;
     mock.restore();
   });
 
-  it('marks only the active heading row as current', async () => {
+  it('scrolls to and flashes the clicked heading', async () => {
     const { TocElement } = await import(
       `./toc?test=${Math.random().toString(36).slice(2)}`
     );
@@ -133,16 +112,8 @@ describe('toc node rendering', () => {
       </TocElement>
     );
 
-    const intro = view.getByRole('button', { name: 'Intro' });
-    const benefits = view.getByRole('button', { name: 'Benefits' });
+    fireEvent.click(view.getByRole('button', { name: 'Benefits' }));
 
-    expect(intro.getAttribute('aria-current')).toBeNull();
-    expect(benefits.getAttribute('aria-current')).toBeNull();
-
-    fireEvent.click(benefits);
-
-    expect(benefits.getAttribute('aria-current')).toBe('location');
-    expect(view.container.querySelectorAll('[aria-current]').length).toBe(1);
     expect(flashTargetMock).toHaveBeenCalledWith({
       key: 'benefits',
       attributes: { className: 'rounded-md bg-(--color-highlight)' },
@@ -188,61 +159,6 @@ describe('toc node rendering', () => {
       )
     ).toBe(false);
   });
-  it('keeps one observer across scrolling and replaces only a remounted heading', async () => {
-    const { TocElement } = await import('./toc');
-    const view = render(
-      <TocElement {...tocProps}>
-        <span />
-      </TocElement>
-    );
-    expect(observers.length).toBe(1);
-    const observer = observers[0];
-    expect(observer.observe).toHaveBeenCalledTimes(2);
-    fireEvent.scroll(window);
-    fireEvent.scroll(window);
-    expect(observers.length).toBe(1);
-    expect(observer.observe).toHaveBeenCalledTimes(2);
-    const replacement = document.createElement('h1');
-    domElements.intro = replacement;
-    fireEvent.scroll(window);
-    expect(observer.unobserve).toHaveBeenCalledWith(introElement);
-    expect(observer.observe).toHaveBeenLastCalledWith(replacement);
-    view.unmount();
-    expect(observer.disconnect).toHaveBeenCalledTimes(1);
-    fireEvent.scroll(window);
-    expect(observer.observe).toHaveBeenCalledTimes(3);
-  });
-
-  it('retains intersection state across partial batches and follows document order', async () => {
-    const { TocElement } = await import('./toc');
-    const view = render(
-      <TocElement {...tocProps}>
-        <span />
-      </TocElement>
-    );
-    const observer = observers[0];
-    act(() =>
-      observer.callback([{ target: headingElement, isIntersecting: true }])
-    );
-    expect(
-      view
-        .getByRole('button', { name: 'Benefits' })
-        .getAttribute('aria-current')
-    ).toBe('location');
-    act(() =>
-      observer.callback([{ target: introElement, isIntersecting: true }])
-    );
-    expect(
-      view.getByRole('button', { name: 'Intro' }).getAttribute('aria-current')
-    ).toBe('location');
-    act(() =>
-      observer.callback([{ target: headingElement, isIntersecting: false }])
-    );
-    expect(
-      view.getByRole('button', { name: 'Intro' }).getAttribute('aria-current')
-    ).toBe('location');
-  });
-
   it('configures scrolling on the copied view', async () => {
     const { TocElement } = await import('./toc');
     const view = render(
@@ -254,64 +170,5 @@ describe('toc node rendering', () => {
     expect(scrollIntoViewMock).not.toHaveBeenCalled();
     expect(headingElement.style.scrollMarginTop).toBe('120px');
     expect(flashTargetMock).toHaveBeenCalledTimes(1);
-  });
-  it('does not revive a stale clicked heading when scrolling back', async () => {
-    const { TocElement } = await import('./toc');
-    const view = render(
-      <TocElement {...tocProps}>
-        <span />
-      </TocElement>
-    );
-    const observer = observers[0];
-    act(() =>
-      observer.callback([{ target: introElement, isIntersecting: true }])
-    );
-    fireEvent.click(view.getByRole('button', { name: 'Benefits' }));
-    act(() =>
-      observer.callback([
-        { target: introElement, isIntersecting: false },
-        { target: headingElement, isIntersecting: true },
-      ])
-    );
-    act(() =>
-      observer.callback([
-        { target: introElement, isIntersecting: true },
-        { target: headingElement, isIntersecting: false },
-      ])
-    );
-    expect(
-      view.getByRole('button', { name: 'Intro' }).getAttribute('aria-current')
-    ).toBe('location');
-    expect(
-      view
-        .getByRole('button', { name: 'Benefits' })
-        .getAttribute('aria-current')
-    ).toBeNull();
-  });
-  it('ignores a disposed observer after Strict Mode remount', async () => {
-    const { TocElement } = await import('./toc');
-    const view = render(
-      <React.StrictMode>
-        <TocElement {...tocProps}>
-          <span />
-        </TocElement>
-      </React.StrictMode>
-    );
-    expect(observers.length).toBe(2);
-    expect(observers[0].disconnect).toHaveBeenCalledTimes(1);
-    act(() =>
-      observers[1].callback([{ target: introElement, isIntersecting: true }])
-    );
-    expect(
-      view.getByRole('button', { name: 'Intro' }).getAttribute('aria-current')
-    ).toBe('location');
-    act(() =>
-      observers[0].callback([{ target: headingElement, isIntersecting: true }])
-    );
-    expect(
-      view.getByRole('button', { name: 'Intro' }).getAttribute('aria-current')
-    ).toBe('location');
-    view.unmount();
-    expect(observers[1].disconnect).toHaveBeenCalledTimes(1);
   });
 });

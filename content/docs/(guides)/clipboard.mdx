@@ -84,13 +84,31 @@ in Plate core unless the rule is part of Plate's model contract.
 
 After command handlers delegate, `editorReads.slice.landing` decides what the
 paste lands. Its input has the handlers' slice as `source`, what fits
-`maxLength` as `slice`, and the resolved `target`. A caret in an empty block
-gives an `empty` target, and anything else gives a `context` target with the
-block where the paste starts. Return the `slice` to land, and add
-`replaceEmpty` to replace an `empty` target with whole blocks.
+`maxLength` as `slice`, and the resolved `target`. The text the paste
+replaces does not count toward the limit. A caret in an empty block gives an
+`empty` target, and anything else gives a `context` target with the block
+where the paste starts. A paste over selected blocks replaces them whole, and
+its `context` block is the innermost block where the first selected block
+starts, such as a quote's first paragraph. The read's `state` reads the
+root the paste lands in, such as a caption's, so a path in `target.block`
+resolves there. Return the `slice` to land, and add `replaceEmpty` to
+replace an `empty` target with whole blocks. Plate cuts the returned `slice`
+the same way, to what fits `maxLength` after crediting the replaced text.
 
-A text drag that copies, such as one from another editor or a read-only view,
-lands at its drop point through the same read, without command handlers.
+A text drag lands at its drop point through the same read, without command
+handlers. The input's `intent` is `copy` for a paste or a drag that copies,
+such as one from another editor or a read-only view, and `move` for a drag
+that moves text inside one document. A move carries what deleting its range
+removes, and refuses with `no-op` when that removes nothing, such as a range
+that holds only an empty line. A move refuses with `lossy` and
+changes nothing when `maxLength` would cut it or when landing would change its
+text or marks, or the type or properties of a block it carries, other than
+element properties declared `landing: 'rebase'` or `'adopt'`, such as a list
+item's depth or list. It does not check the block the moved text joins at the
+drop point or the blocks that contain it, and it checks every other block the
+move carries, an empty last block included. A closed block, such as a title,
+joins nothing. In an empty block, the moved block may take properties from the
+block it replaces.
 
 ```ts
 import { definePlugin, editorReads } from "platejs";
@@ -355,7 +373,8 @@ Only the editor surface that received the paste is called, and only while it
 is mounted. `onPasteResult` is not called when `onPaste` or a
 `domCommands.insertData` handler handles the paste without the built-in
 formats, for drops, or for a separate `editor.api.dom.clipboard.insertData`
-call, which returns a boolean. An `onPaste` handler that calls `insertData`
+call, which returns `true` when content landed, `false` when no format applied
+and `undefined` when the editor refused the update. An `onPaste` handler that calls `insertData`
 during the paste gets that insertion's result.
 
 Plate and the registry `Editor` show no paste-result UI by default. Add

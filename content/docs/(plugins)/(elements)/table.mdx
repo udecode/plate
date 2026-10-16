@@ -274,11 +274,11 @@ Read options are `TableTargetOptions`, except `cell`, which takes `{ at?: TableC
 
 ## Transforms
 
-Every table update returns `boolean`: `true` for an accepted change, `false` for an unavailable target, rejected operation, or unchanged request. Invalid dimensions and numeric options throw before publication. The command rechecks eligibility even after a capability read.
+Every table update returns `boolean`: `true` for an accepted change, `false` for an unavailable target, rejected operation, or unchanged request. A call through `editor.update.table` or the plugin's `update` returns `undefined` instead when the editor refuses its update, as Suggesting does for a table. Invalid dimensions and numeric options throw before publication. The command rechecks eligibility even after a capability read.
 
 | Update | Options | Purpose |
 | --- | --- | --- |
-| `table.update.insert(options?, placement?)` | `TableCreateOptions`, `TableInsertPlacement` | Insert a table; defaults to two rows and two columns. |
+| `table.update.insert(options?, placement?)` | `TableCreateOptions`, `BlockInsertOptions` | Insert a table; defaults to two rows and two columns. |
 | `table.update.insertColumn(options?)` | `TableAxisInsertOptions` | Insert at a logical column boundary. |
 | `table.update.insertRow(options?)` | `TableAxisInsertOptions` | Insert at a logical row boundary. |
 | `table.update.removeColumn(options?)` | `TableTargetOptions` | Remove targeted columns; remove the table when none remain. |
@@ -293,7 +293,7 @@ Every table update returns `boolean`: `true` for an accepted change, `false` for
 | `table.update.setColumnWidth(options)` | `TableColumnWidthOptions` | Set `{ at?, colIndex, width }`. |
 | `table.update.setRowHeight(options)` | `TableRowHeightOptions` | Set `{ at?, rowIndex, height }`. |
 
-`TableCreateOptions` contains `rows`, `columns`, and `header`. Counts must be positive safe integers. `header: true` makes the first row a header row. In `TableInsertPlacement`, choose either `at` for exact insertion or `after` for a live block target, never both. Other block insertion options, including `select` and `replaceEmpty`, remain available. Without explicit placement, insertion follows the containing table or block.
+`TableCreateOptions` contains `rows`, `columns`, and `header`. Counts must be positive safe integers. `header: true` makes the first row a header row. The placement is `BlockInsertOptions`. Pass one of `at` for exact insertion, or `after` or `before` for a live block target. `select` works with every placement, and `replaceEmpty` only with `after` or no placement. Without explicit placement, insertion follows the containing table or block.
 
 `TableAxisInsertOptions` contains `at`, `before`, `header`, and `select`. For a spanning cell, insertion uses its logical leading or trailing boundary. Table targets prepend or append. Row and column indexes for sizing are zero-based; widths and heights must be positive and finite.
 

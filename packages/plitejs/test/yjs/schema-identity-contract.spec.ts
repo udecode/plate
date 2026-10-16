@@ -435,7 +435,7 @@ describe('plitejs/yjs schema identity contract', () => {
     assert.deepEqual(
       bindFormat2Room(FORMAT_2_DEFAULT_ROOT_UPDATE),
       {
-        error: `Editor plugin "yjs" activation failed: ${FORMAT_2_REFUSAL}`,
+        error: `Editor plugin "yjs" acquisition failed: ${FORMAT_2_REFUSAL}`,
         unchanged: true,
         updates: 0,
       },
@@ -447,7 +447,7 @@ describe('plitejs/yjs schema identity contract', () => {
     assert.deepEqual(
       bindFormat2Room(FORMAT_2_ALPHA_ROOT_UPDATE, 'beta'),
       {
-        error: `Editor plugin "yjs" activation failed: ${FORMAT_2_REFUSAL}`,
+        error: `Editor plugin "yjs" acquisition failed: ${FORMAT_2_REFUSAL}`,
         unchanged: true,
         updates: 0,
       },
@@ -459,7 +459,7 @@ describe('plitejs/yjs schema identity contract', () => {
     assert.deepEqual(
       bindFormat2Room(FORMAT_2_AUTHORED_DEFAULT_ROOT_UPDATE),
       {
-        error: `Editor plugin "yjs" activation failed: ${FORMAT_2_REFUSAL}`,
+        error: `Editor plugin "yjs" acquisition failed: ${FORMAT_2_REFUSAL}`,
         unchanged: true,
         updates: 0,
       },
@@ -474,7 +474,7 @@ describe('plitejs/yjs schema identity contract', () => {
         format: 2,
         identity: { fingerprint: 'schema', kind: 'derived' },
       }),
-      { message: `Editor plugin "yjs" activation failed: ${FORMAT_2_REFUSAL}` }
+      { message: `Editor plugin "yjs" acquisition failed: ${FORMAT_2_REFUSAL}` }
     );
   });
 
@@ -484,7 +484,7 @@ describe('plitejs/yjs schema identity contract', () => {
         format: 2,
         identity: { extra: true, fingerprint: 'schema', kind: 'derived' },
       }),
-      { message: `Editor plugin "yjs" activation failed: ${FORMAT_2_REFUSAL}` }
+      { message: `Editor plugin "yjs" acquisition failed: ${FORMAT_2_REFUSAL}` }
     );
   });
 

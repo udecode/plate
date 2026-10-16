@@ -1,5 +1,6 @@
 import type * as Y from 'yjs';
 
+import { countCoreWork } from '../../core/work';
 import {
   type Descendant,
   DocumentChange,
@@ -122,6 +123,8 @@ export const reconcileYjsRoot = (
   isSetValued: YjsSetPropertyResolver = () => false,
   schemaRootName: string | null = null
 ): YjsCanonicalChangeResult => {
+  countCoreWork('reconciles');
+
   const visibleChildren = getYjsVisibleChildren(root, root);
 
   if (

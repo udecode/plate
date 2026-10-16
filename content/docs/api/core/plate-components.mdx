@@ -38,26 +38,22 @@ export function Editor() {
 
 ### Authored view
 
-For an editor with [authored changes](/docs/authored-changes), pass `authored` to choose its starting input intent and visible projection:
+For an editor with [authored changes](/docs/authored-changes), pass `authored` to choose its starting view:
 
 ```tsx
-<EditorRoot
-  editor={editor}
-  authored={{ intent: 'edit', projection: 'markup' }}
->
+<EditorRoot editor={editor} authored={{ intent: 'propose' }}>
   <EditorContent />
 </EditorRoot>
 ```
 
 | `authored` value | Behavior |
 | --- | --- |
-| `{ intent: 'edit', projection: 'accepted' }` | Edit accepted content. |
-| `{ intent: 'edit', projection: 'markup' }` | Display review markup while publishing independent accepted-content edits directly. |
-| `{ intent: 'edit', projection: 'proposed' }` | Display the proposed result while publishing independent accepted-content edits directly. |
-| `{ intent: 'propose', projection: 'markup' }` | Propose edits and display retained review content. |
-| `{ intent: 'propose', projection: 'proposed' }` | Propose edits and display the proposed result. |
+| `{ intent: 'edit' }` | Display pending insertions and deletions and apply edits as written. |
+| `{ intent: 'propose' }` | Display pending insertions and deletions and record edits as proposals by the current author. |
+| `{ preview: 'proposed' }` | Display every pending change accepted. Takes no writes. |
+| `{ preview: 'accepted' }` | Display every pending change rejected. Takes no writes. |
 
-The prop requires an installed authored capability. Each `EditorRoot` configures its own view, so two views of one document can use different values. Changing the intent or projection updates that view without remounting it. Rerendering with equivalent values preserves mode changes made through its mounted plugin portal. In an editing markup or proposed view, an edit that depends on pending content remains reviewable with the current author. The prop does not change the saved document or accept or reject suggestions.
+The prop requires an installed authored capability. Each `EditorRoot` configures its own view, so two views of one document can use different values. Changing the value updates that view without remounting it. Rerendering with an equivalent value preserves mode changes made through its mounted plugin portal. The prop does not change the saved document or accept or reject suggestions.
 
 ## Read-only view
 
@@ -300,7 +296,9 @@ export function Editor(props: EditorContentProps) {
 }
 ```
 
-`NodeSelectionHighlight` portals a highlight into each selected block.
+`NodeSelectionHighlight` portals a highlight into each block of a block
+selection. An object selection, such as a clicked image, gets no highlight; the
+object's component paints its own selected state.
 `NodeSelectionDrag` renders the active drag rectangle in the editable document’s
 body and
 writes intersecting blocks through the editor's selection API. Selection
@@ -311,7 +309,7 @@ While the selected blocks share one parent, `ArrowUp` and `ArrowDown` select
 the previous or next sibling block and scroll it into view. A sibling that a
 content boundary leaves unmounted ends the move. `Shift` extends or contracts
 the selection from its anchor block. A table cell selection keeps its own
-`Shift` cell extension, and a single selected object keeps its own arrows
+`Shift` cell extension, and an object selection keeps the object's own arrows
 without `Shift`.
 
 Escape, pointer cancellation, window blur, and readonly transitions stop the
@@ -349,9 +347,9 @@ Root provider for one editor instance.
       React children that can read the selected editor context.
     </APIItem>
     <APIItem name="authored" type="EditorViewOptions['authored']" optional>
-      Sets the input intent and accepted, proposed, or markup projection for
-      this mounted authored view. Editing can keep pending changes visible;
-      changing the projection does not accept or reject them.
+      Sets this mounted authored view: an `edit` or `propose` intent, or an
+      `accepted` or `proposed` preview that takes no writes. Changing the view
+      does not accept or reject pending changes.
     </APIItem>
     <APIItem name="readOnly" type="boolean" optional>
       Read-only state provided to content views. Defaults to `editor.read.view.isReadOnly()`.

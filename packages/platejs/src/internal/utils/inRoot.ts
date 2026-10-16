@@ -7,19 +7,21 @@ import {
   type Path,
 } from '../../facade';
 
-/**
- * A key read through this location also resolves a node an unfinished draft
- * just wrote, where `tx.key(node)` does not.
- */
 export const inRoot = (path: Path, root?: NamedRootKey): Location =>
   root === undefined ? path : { offset: 0, path, root };
 
 export const rootOf = (
-  state: Pick<EditorCoreStateView, 'selection'>,
+  state: Pick<EditorCoreStateView, 'selection' | 'view'>,
   at: Location | NodeSelection | readonly [Path, Path] | undefined
 ) => {
-  if (at === undefined) return SelectionApi.root(state.selection());
-  if ('anchor' in at || SelectionApi.isNode(at)) return SelectionApi.root(at);
+  const root =
+    at === undefined
+      ? SelectionApi.root(state.selection())
+      : 'anchor' in at || SelectionApi.isNode(at)
+        ? SelectionApi.root(at)
+        : 'root' in at
+          ? at.root
+          : undefined;
 
-  return 'root' in at ? at.root : undefined;
+  return root ?? state.view.root();
 };

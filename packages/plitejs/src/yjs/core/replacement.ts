@@ -2,6 +2,7 @@ import { type Diff, DiffMatchPatch, DiffOp } from 'diff-match-patch-ts';
 import * as Y from 'yjs';
 
 import type { Descendant } from '../../index';
+import { getDefined } from '../../internal/get-defined';
 import {
   formatYjsTextAttributes,
   getYjsAttributes,
@@ -333,6 +334,107 @@ const replaceYjsText = (
   }
 };
 
+/**
+ * Applies a text's edit across the run of Yjs texts that shows it. An insert
+ * where two texts meet goes to the end of the left one.
+ */
+const replaceYjsTextRun = (
+  run: readonly Y.XmlText[],
+  previous: string,
+  next: string,
+  attributes: YjsAttributeRecord
+): void => {
+  const lengths = run.map(getYjsLength);
+  const skipsEmpty = (index: number) =>
+    lengths[index] === 0 &&
+    lengths.slice(index + 1).some((length) => length > 0);
+  let offset = 0;
+
+  for (const [operation, value] of diffText(previous, next)) {
+    if (operation === DiffOp.Equal) {
+      offset += value.length;
+      continue;
+    }
+
+    let start = 0;
+    let index = 0;
+
+    if (operation === DiffOp.Insert) {
+      while (
+        index < run.length - 1 &&
+        (offset > start + (lengths[index] ?? 0) || skipsEmpty(index))
+      ) {
+        start += lengths[index] ?? 0;
+        index += 1;
+      }
+      run[index]?.insert(offset - start, value, attributes);
+      lengths[index] = (lengths[index] ?? 0) + value.length;
+      offset += value.length;
+      continue;
+    }
+
+    for (let remaining = value.length; remaining > 0;) {
+      while (offset >= start + (lengths[index] ?? 0)) {
+        start += lengths[index] ?? 0;
+        index += 1;
+      }
+
+      const count = Math.min(remaining, start + (lengths[index] ?? 0) - offset);
+
+      run[index]?.delete(offset - start, count);
+      lengths[index] = (lengths[index] ?? 0) - count;
+      remaining -= count;
+    }
+  }
+};
+
+/**
+ * The Yjs children each editor child shows, from `startIndex`: one for an
+ * element, and for a text the run of adjacent Yjs texts whose lengths add up
+ * to it, which a join leaves. Null when they do not line up.
+ */
+const alignYjsChildren = (
+  children: readonly YjsNode[],
+  oldChildren: readonly Descendant[],
+  startIndex: number
+): YjsNode[][] | null => {
+  if (children.length - startIndex === oldChildren.length) {
+    return children.slice(startIndex).map((child) => [child]);
+  }
+
+  const runs: YjsNode[][] = [];
+  let index = startIndex;
+
+  for (const [position, oldChild] of oldChildren.entries()) {
+    const first = children[index];
+
+    if (first === undefined) return null;
+    index += 1;
+    if (!(first instanceof Y.XmlText) || !isPliteText(oldChild)) {
+      runs.push([first]);
+      continue;
+    }
+
+    const run: YjsNode[] = [first];
+    let length = getYjsLength(first);
+    const keepsEmptied = !isPliteText(oldChildren[position + 1]);
+    const extendsRun = (next: YjsNode | undefined): next is Y.XmlText =>
+      next instanceof Y.XmlText &&
+      (length < oldChild.text.length ||
+        (keepsEmptied && getYjsLength(next) === 0));
+
+    for (let next = children[index]; extendsRun(next); next = children[index]) {
+      run.push(next);
+      length += getYjsLength(next);
+      index += 1;
+    }
+    if (length !== oldChild.text.length) return null;
+    runs.push(run);
+  }
+
+  return index === children.length ? runs : null;
+};
+
 const canReplaceCompatibleYjsChildrenWithReader = (
   readVisibleChildren: YjsVisibleChildrenReader,
   children: readonly YjsNode[],
@@ -340,17 +442,20 @@ const canReplaceCompatibleYjsChildrenWithReader = (
   newChildren: readonly Descendant[],
   startIndex = 0
 ): boolean => {
-  if (
-    children.length - startIndex !== oldChildren.length ||
-    oldChildren.length !== newChildren.length
-  ) {
+  const runs =
+    oldChildren.length === newChildren.length
+      ? alignYjsChildren(children, oldChildren, startIndex)
+      : null;
+
+  if (runs === null) {
     return false;
   }
 
   let index = 0;
 
   while (index < oldChildren.length) {
-    const child = children[startIndex + index];
+    const run = getDefined(runs[index]);
+    const child = run[0];
     const oldChild = oldChildren[index];
     const newChild = newChildren[index];
 
@@ -401,10 +506,12 @@ const applyCompatibleYjsChildrenReplacement = (
   isSetValued: YjsSetPropertyResolver = () => false,
   location: YjsPropertyLocation = { ancestors: [], path: [], root: null }
 ): void => {
+  const runs = getDefined(alignYjsChildren(children, oldChildren, startIndex));
   let index = 0;
 
   while (index < oldChildren.length) {
-    const child = children[startIndex + index];
+    const run = getDefined(runs[index]);
+    const child = run[0];
     const oldChild = oldChildren[index];
     const newChild = newChildren[index];
 
@@ -427,18 +534,29 @@ const applyCompatibleYjsChildrenReplacement = (
 
       const attributes = getTextAttributes(newChild);
 
-      setYjsNodeAttributes(
-        child,
-        getTextAttributes(oldChild),
-        attributes,
-        (key) => isSetValued(newChild, key, context)
-      );
-      replaceYjsText(
-        child,
-        oldChild.text,
-        newChild.text,
-        getEncodedTextAttributes(newChild, isSetValued, context)
-      );
+      for (const text of run) {
+        setYjsNodeAttributes(
+          text,
+          getTextAttributes(oldChild),
+          attributes,
+          (key) => isSetValued(newChild, key, context)
+        );
+      }
+      if (run.length === 1) {
+        replaceYjsText(
+          child,
+          oldChild.text,
+          newChild.text,
+          getEncodedTextAttributes(newChild, isSetValued, context)
+        );
+      } else {
+        replaceYjsTextRun(
+          run as Y.XmlText[],
+          oldChild.text,
+          newChild.text,
+          getEncodedTextAttributes(newChild, isSetValued, context)
+        );
+      }
 
       index += 1;
       continue;

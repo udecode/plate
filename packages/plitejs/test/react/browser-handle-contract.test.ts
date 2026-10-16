@@ -279,12 +279,15 @@ test('browser handle preserves multi-node selection', () => {
     setExplicitViewportBackedSelection: vi.fn(),
   });
 
-  editor.update.selection.set(SelectionApi.nodes([[0], [1]]));
+  editor.update.selection.set(
+    SelectionApi.nodes([[0], [1]], { mode: 'block' })
+  );
 
   expect(element[BROWSER_HANDLE_KEY]?.getModelSelection()).toEqual({
     anchorPath: [0],
     focusPath: [1],
     kind: 'node',
+    mode: 'block',
     paths: [[0], [1]],
   });
   expect(element[BROWSER_HANDLE_KEY]?.getSelection()).toEqual({
@@ -327,6 +330,7 @@ test('browser handle keeps named-root selections local to its attached root', ()
     anchorPath: [0],
     focusPath: [0],
     kind: 'node',
+    mode: 'block',
     paths: [[0]],
     root: 'header',
   });

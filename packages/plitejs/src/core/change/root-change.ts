@@ -1563,6 +1563,45 @@ export const isRootChangePositionReplaced = (
   return change.sections[section * 2 + 1] >= 0 && start <= position;
 };
 
+type ChangedRanges = Readonly<{ fromA: Float64Array; toA: Float64Array }>;
+
+const CHANGED_RANGES = new WeakMap<RootChange, ChangedRanges>();
+
+/**
+ * Whether one of the change's changed ranges, as `iterChangedRanges` merges
+ * them, covers `from` to `to` in its input.
+ *
+ * @internal
+ */
+export const isRootChangeRangeReplaced = (
+  change: RootChange,
+  from: number,
+  to: number
+) => {
+  let ranges = CHANGED_RANGES.get(change);
+
+  if (!ranges) {
+    const starts: number[] = [];
+    const ends: number[] = [];
+
+    change.iterChangedRanges((fromA, toA) => {
+      starts.push(fromA);
+      ends.push(toA);
+    });
+    ranges = {
+      fromA: Float64Array.from(starts),
+      toA: Float64Array.from(ends),
+    };
+    CHANGED_RANGES.set(change, ranges);
+  }
+
+  // Ranges are sorted and disjoint, so the last one starting at or before
+  // `from` reaches furthest.
+  const after = firstSectionEnding(ranges.fromA, from, false);
+
+  return after > 0 && ranges.toA[after - 1] >= to;
+};
+
 /**
  * Map an output position back to the input, as `change.invert(before).mapPos`
  * would, without copying the content the change replaced.

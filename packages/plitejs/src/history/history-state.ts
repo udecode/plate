@@ -251,20 +251,13 @@ const omitPrimaryPointRoot = <T extends { readonly root?: string }>(
 const omitPrimarySelectionRoot = <T extends Batch['selectionAfter']>(
   selection: T
 ): T =>
-  (SelectionApi.isNode(selection)
-    ? selection.root === MAIN_ROOT_KEY
-      ? SelectionApi.nodes(selection.paths, {
-          anchorPath: selection.anchorPath,
-          focusPath: selection.focusPath,
-        })
-      : selection
-    : selection
-      ? {
-          ...selection,
-          anchor: omitPrimaryPointRoot(selection.anchor),
-          focus: omitPrimaryPointRoot(selection.focus),
-        }
-      : null) as T;
+  !selection || SelectionApi.isNode(selection)
+    ? selection
+    : {
+        ...selection,
+        anchor: omitPrimaryPointRoot(selection.anchor),
+        focus: omitPrimaryPointRoot(selection.focus),
+      };
 
 const additionalRoot = (root: string | undefined) =>
   root && root !== MAIN_ROOT_KEY ? root : undefined;

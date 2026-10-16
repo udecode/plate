@@ -1,17 +1,20 @@
 import React from 'react';
 
 import type { RuntimePluginReference, Value } from '../../facade';
+import { createEditorOwner } from '../../internal/editor/editorOwner';
 import type { EditorApplicationSchema } from '../../lib';
 import { resolveEditorUserId } from '../../lib/editor/editorUser.internal';
 import {
   assertConstructorOptions,
   type PlatePluginsFromTuple,
+  readConstructorOptions,
   type RuntimePluginsFromTuple,
 } from '../../lib/editor/withPlite';
+import { useIsomorphicLayoutEffect } from '../internal/react-helpers';
 import type { Editor } from './Editor';
 import {
   type CreateEditorOptions,
-  createEditor,
+  createDormantPlateEditor,
   USE_CREATE_EDITOR_OPTION_KEYS,
 } from './withPlate';
 
@@ -33,11 +36,12 @@ type UseCreateEditorResult<
 >;
 
 /**
- * Creates a memoized Plate editor for React components.
+ * Creates a Plate editor for the component lifetime.
  *
- * This hook creates a fully configured Plate editor instance that is memoized
- * based on the provided dependencies. It's optimized for React components to
- * prevent unnecessary re-creation of the editor on every render.
+ * The editor is memoized by `id`, `userId`, `enabled` and `deps`. Plugins
+ * take resources outside the editor, such as a Yjs document, when React
+ * commits the component, and give them back when it unmounts or the editor is
+ * replaced.
  *
  * Examples:
  *
@@ -66,11 +70,9 @@ type UseCreateEditorResult<
  * from the options of that render; a missing, empty or `'local'` `userId` all
  * name the local user. The old editor's unsaved document and comments are
  * dropped, so pass them in as the new editor's initial value and comments.
- * A new editor cannot bind a `rootName` in a `Y.Doc` that the old editor still
- * holds.
  *
  * @param options - Configuration options for creating the Plate editor
- * @param deps - Additional dependencies for the useMemo hook (default: [])
+ * @param deps - Values that replace the editor when they change (default: [])
  * @see {@link createEditor} for imperative editor creation.
  */
 export function useCreateEditor<
@@ -121,21 +123,48 @@ export function useCreateEditor(
   options: object = {},
   deps: React.DependencyList = []
 ): unknown {
-  assertConstructorOptions(options, USE_CREATE_EDITOR_OPTION_KEYS);
-  const { enabled, ...editorOptions } = options as CreateEditorOptions & {
-    enabled?: boolean;
-  };
-  const userKey = resolveEditorUserId(editorOptions.userId);
+  const hookOptions = options as CreateEditorOptions & { enabled?: boolean };
 
-  return React.useMemo(
+  assertConstructorOptions(hookOptions, USE_CREATE_EDITOR_OPTION_KEYS);
+  const { enabled, id, userId } = hookOptions;
+  const userKey = resolveEditorUserId(userId);
+
+  const owner = React.useMemo(
     () => {
       if (enabled === false) return null;
 
-      const create = createEditor as (options: unknown) => Editor;
+      const { enabled: _enabled, ...editorOptions } = readConstructorOptions(
+        hookOptions,
+        USE_CREATE_EDITOR_OPTION_KEYS
+      );
 
-      return create(editorOptions);
+      return createEditorOwner(() =>
+        createDormantPlateEditor({
+          ...editorOptions,
+          id,
+          plugins: editorOptions.plugins ?? [],
+          userId,
+        })
+      );
     },
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] The editor is keyed by id, user, enabled and caller-supplied dependencies; other option changes keep the current editor.
-    [editorOptions.id, userKey, enabled, ...deps]
+    [id, userKey, enabled, ...deps]
   );
+
+  React.useInsertionEffect(() => (owner ? owner.retire : undefined), [owner]);
+  useIsomorphicLayoutEffect(() => {
+    if (!owner) return undefined;
+    owner.startUnlessViewStarted();
+    owner.layoutConnected();
+
+    return owner.layoutDisconnected;
+  }, [owner]);
+  React.useEffect(() => {
+    if (!owner) return undefined;
+    owner.passiveConnected();
+
+    return owner.passiveDisconnected;
+  }, [owner]);
+
+  return owner?.editor ?? null;
 }

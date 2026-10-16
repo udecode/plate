@@ -42,7 +42,8 @@ const paragraph = (text: string): Element => ({
   children: [{ text }],
 });
 
-const disjointNodeSelection = () => SelectionApi.nodes([[0], [2]]);
+const disjointNodeSelection = () =>
+  SelectionApi.nodes([[0], [2]], { mode: 'block' });
 
 const getNodeEntry = <T extends Descendant>(
   editor: Editor<any, any>,
@@ -381,7 +382,7 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('blocks.insertAfter inserts after the target block', () => {
+  it('blocks.insert inserts after the target block', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -403,10 +404,10 @@ describe('plite transforms contract', () => {
     };
     const [target] = getNodeEntry(editor, [2], NodeApi.isElement);
 
-    editor.update.blocks.insertAfter(inserted);
-    editor.update.blocks.insertAfter(
+    editor.update.blocks.insert(inserted);
+    editor.update.blocks.insert(
       { type: 'paragraph', children: [{ text: 'after target' }] },
-      { at: target }
+      { after: target }
     );
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -418,7 +419,7 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('blocks.insertAfter uses the last exact node-selection member', () => {
+  it('blocks.insert uses the last exact node-selection member', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -426,7 +427,7 @@ describe('plite transforms contract', () => {
       selection: disjointNodeSelection(),
     });
 
-    editor.update.blocks.insertAfter(paragraph('inserted'));
+    editor.update.blocks.insert(paragraph('inserted'));
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
       paragraph('one'),
@@ -436,7 +437,7 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('blocks.insertAfter resolves a named-root node key in its owner root', () => {
+  it('blocks.insert resolves a named-root node key in its owner root', () => {
     const editor = createEditor({
       initialValue: {
         children: [paragraph('body')],
@@ -447,7 +448,7 @@ describe('plite transforms contract', () => {
     const target = header.key([0]);
 
     assert.ok(target);
-    editor.update.blocks.insertAfter(paragraph('inserted'), { at: target });
+    editor.update.blocks.insert(paragraph('inserted'), { after: target });
 
     assert.deepEqual(editor.read.children(), [paragraph('body')]);
     assert.deepEqual(header.read.children(), [
@@ -457,19 +458,19 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('blocks.insertAfter replaces an empty source in one undoable commit', () => {
+  it('blocks.insert replaces an empty source in one undoable commit', () => {
     const editor = createEditor({
       plugins: [history()],
       initialValue: [paragraph('before'), paragraph('')],
       initialSelection: collapsedSelection([1, 0], 0),
     });
     const version = editor.read.lastCommit()?.version ?? 0;
-    const path = editor.update.blocks.insertAfter(paragraph('inserted'), {
+    const inserted = editor.update.blocks.insert(paragraph('inserted'), {
       replaceEmpty: true,
       select: true,
     });
 
-    assert.deepEqual(path, [1]);
+    assert.deepEqual(inserted, [editor.key([1])]);
     assert.equal(editor.read.lastCommit()?.version, version + 1);
     assert.deepEqual(editor.read.children(), [
       paragraph('before'),
@@ -516,13 +517,12 @@ describe('plite transforms contract', () => {
       const block = tx.nodes.block()!;
       assert.equal(block[0].children.length, 2);
       assert.equal(tx.nodes.isEmpty(block[0]), true);
-      assert.deepEqual(
-        tx.blocks.insertAfter(paragraph('inserted'), {
-          replaceEmpty: true,
-          select: true,
-        }),
-        [0]
-      );
+      const inserted = tx.blocks.insert(paragraph('inserted'), {
+        replaceEmpty: true,
+        select: true,
+      });
+
+      assert.deepEqual(inserted, [tx.key([0])]);
     });
     assert.deepEqual(editor.read.children(), [paragraph('inserted')]);
     assert.equal(editor.read.lastCommit()?.version, version + 1);
@@ -532,24 +532,23 @@ describe('plite transforms contract', () => {
     assert.deepEqual(editor.read.children(), [paragraph('inserted')]);
   });
 
-  it('blocks.insertAfter keeps nonempty content and does not delete for an empty insertion', () => {
+  it('blocks.insert keeps nonempty content and does not delete for an empty insertion', () => {
     const editor = createEditor({
       initialValue: [paragraph('content'), paragraph('')],
       initialSelection: collapsedSelection([0, 0], 2),
     });
-    assert.deepEqual(
-      editor.update.blocks.insertAfter(paragraph('inserted'), {
-        replaceEmpty: true,
-      }),
-      [1]
-    );
+    const inserted = editor.update.blocks.insert(paragraph('inserted'), {
+      replaceEmpty: true,
+    });
+
+    assert.deepEqual(inserted, [editor.key([1])]);
     assert.deepEqual(editor.read.children(), [
       paragraph('content'),
       paragraph('inserted'),
       paragraph(''),
     ]);
     assert.equal(
-      editor.update.blocks.insertAfter([], { at: [2], replaceEmpty: true }),
+      editor.update.blocks.insert([], { after: [2], replaceEmpty: true }),
       undefined
     );
     assert.deepEqual(editor.read.children(), [
@@ -559,17 +558,16 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('blocks.insertAfter replaces only the final exact node-selection member', () => {
+  it('blocks.insert replaces only the final exact node-selection member', () => {
     const editor = createEditor({
       initialValue: [paragraph('one'), paragraph('middle'), paragraph('')],
       initialSelection: disjointNodeSelection(),
     });
-    assert.deepEqual(
-      editor.update.blocks.insertAfter(paragraph('inserted'), {
-        replaceEmpty: true,
-      }),
-      [2]
-    );
+    const inserted = editor.update.blocks.insert(paragraph('inserted'), {
+      replaceEmpty: true,
+    });
+
+    assert.deepEqual(inserted, [editor.key([2])]);
     assert.deepEqual(editor.read.children(), [
       paragraph('one'),
       paragraph('middle'),
@@ -577,7 +575,7 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('blocks.insertAfter replaces an empty named-root source through its key', () => {
+  it('blocks.insert replaces an empty named-root source through its key', () => {
     const editor = createEditor({
       initialValue: {
         children: [paragraph('body')],
@@ -587,13 +585,12 @@ describe('plite transforms contract', () => {
     const header = createEditorView(editor, { root: 'header' });
     const at = header.key([0]);
     assert.ok(at);
-    assert.deepEqual(
-      editor.update.blocks.insertAfter(paragraph('inserted'), {
-        at,
-        replaceEmpty: true,
-      }),
-      [0]
-    );
+    const inserted = editor.update.blocks.insert(paragraph('inserted'), {
+      after: at,
+      replaceEmpty: true,
+    });
+
+    assert.deepEqual(inserted, [header.key([0])]);
     assert.deepEqual(editor.read.children(), [paragraph('body')]);
     assert.deepEqual(header.read.children(), [
       paragraph('inserted'),
@@ -601,25 +598,24 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('blocks.insertAfter retains an empty atomic block', () => {
+  it('blocks.insert retains an empty atomic block', () => {
     const image = { type: 'image', children: [{ text: '' }] };
     const editor = createEditor({
       plugins: [
         defineTestSchema('insert-after-atom', { image: { void: 'block' } }),
       ],
       initialValue: [image],
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
     });
-    assert.deepEqual(
-      editor.update.blocks.insertAfter(paragraph('inserted'), {
-        replaceEmpty: true,
-      }),
-      [1]
-    );
+    const inserted = editor.update.blocks.insert(paragraph('inserted'), {
+      replaceEmpty: true,
+    });
+
+    assert.deepEqual(inserted, [editor.key([1])]);
     assert.deepEqual(editor.read.children(), [image, paragraph('inserted')]);
   });
 
-  it('blocks.insertAfter preserves an empty structural container', () => {
+  it('blocks.insert preserves an empty structural container', () => {
     const container = { type: 'container', children: [] };
     const editor = createEditor({
       plugins: [
@@ -630,27 +626,26 @@ describe('plite transforms contract', () => {
       initialValue: [container],
     });
     assert.deepEqual(editor.read.children(), [container]);
-    assert.deepEqual(
-      editor.update.blocks.insertAfter(paragraph('inserted'), {
-        at: [0],
-        replaceEmpty: true,
-      }),
-      [1]
-    );
+    const inserted = editor.update.blocks.insert(paragraph('inserted'), {
+      after: [0],
+      replaceEmpty: true,
+    });
+
+    assert.deepEqual(inserted, [editor.key([1])]);
     assert.deepEqual(editor.read.children(), [
       container,
       paragraph('inserted'),
     ]);
   });
 
-  it('blocks.insertAfter retains an empty source when maxLength rejects insertion', () => {
+  it('blocks.insert retains an empty source when maxLength rejects insertion', () => {
     const editor = createEditor({
       initialValue: [paragraph('full'), paragraph('')],
       initialSelection: collapsedSelection([1, 0], 0),
       maxLength: 4,
     });
     assert.equal(
-      editor.update.blocks.insertAfter(paragraph('more'), {
+      editor.update.blocks.insert(paragraph('more'), {
         replaceEmpty: true,
       }),
       undefined
@@ -659,6 +654,269 @@ describe('plite transforms contract', () => {
       paragraph('full'),
       paragraph(''),
     ]);
+  });
+
+  it('blocks.insert refuses blocks once their parent is full', () => {
+    const editor = createEditor({
+      plugins: [
+        defineTestSchema('insert-full', {
+          holder: { content: schema.content.types(['paragraph'], { max: 3 }) },
+        }),
+      ],
+      initialValue: [{ type: 'holder', children: [paragraph('one')] }],
+    });
+    let inserted: unknown[] = [];
+
+    editor.update((tx) => {
+      inserted = [
+        tx.blocks.insert(paragraph('two'), { after: [0, 0] }),
+        tx.blocks.insert(paragraph('zero'), { before: [0, 0] }),
+        tx.blocks.insert(paragraph('after'), { after: [0, 2] }),
+        tx.blocks.insert(paragraph('before'), { before: [0, 0] }),
+        tx.blocks.insert(paragraph('at'), { at: [0, 1] }),
+      ];
+    });
+
+    assert.deepEqual(
+      { children: editor.read.children(), inserted },
+      {
+        children: [
+          {
+            type: 'holder',
+            children: [paragraph('zero'), paragraph('one'), paragraph('two')],
+          },
+        ],
+        inserted: [
+          [editor.key([0, 2])],
+          [editor.key([0, 0])],
+          undefined,
+          undefined,
+          undefined,
+        ],
+      }
+    );
+  });
+
+  it('blocks.insert refuses a block type its parent does not allow', () => {
+    const editor = createEditor({
+      plugins: [
+        defineTestSchema('insert-type', {
+          holder: { content: schema.content.types(['quote']) },
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'holder',
+          children: [{ type: 'quote', children: [{ text: 'q' }] }],
+        },
+      ],
+    });
+    const before = editor.read.children();
+
+    assert.deepEqual(
+      {
+        inserted: editor.update.blocks.insert(paragraph('p'), {
+          after: [0, 0],
+        }),
+        children: editor.read.children(),
+      },
+      { inserted: undefined, children: before }
+    );
+  });
+
+  it('blocks.insert replaces the empty only child of a full parent', () => {
+    const editor = createEditor({
+      plugins: [
+        defineTestSchema('insert-replace-full', {
+          holder: {
+            content: schema.content.types(['paragraph', 'quote'], { max: 1 }),
+          },
+        }),
+      ],
+      initialValue: [{ type: 'holder', children: [paragraph('')] }],
+    });
+    const quote = { type: 'quote', children: [{ text: 'q' }] };
+
+    assert.deepEqual(
+      {
+        inserted: editor.update.blocks.insert(quote, {
+          after: [0, 0],
+          replaceEmpty: true,
+        }),
+        children: editor.read.children(),
+      },
+      {
+        inserted: [editor.key([0, 0])],
+        children: [{ type: 'holder', children: [quote] }],
+      }
+    );
+  });
+
+  it('blocks.insert returns the keys of the blocks a length limit admits', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('')],
+      maxLength: 2,
+    });
+
+    const inserted = editor.update.blocks.insert(
+      [paragraph('ab'), paragraph('cd'), paragraph('')],
+      { after: [0] }
+    );
+
+    assert.deepEqual(
+      { inserted, children: editor.read.children() },
+      {
+        inserted: [editor.key([1]), editor.key([2])],
+        children: [paragraph(''), paragraph('ab'), paragraph('')],
+      }
+    );
+  });
+
+  it('blocks.insert returns keys that resolve in the root the blocks land in', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body'), paragraph('tail')],
+        roots: { header: [paragraph('h0'), paragraph('h1')] },
+      },
+      initialSelection: collapsedSelection([0, 0], 0),
+    });
+    const header = createEditorView(editor, { root: 'header' });
+    const target = header.key([1]);
+
+    assert.ok(target);
+    const inserted = editor.update.blocks.insert(paragraph('new'), {
+      before: target,
+    });
+
+    assert.deepEqual(inserted, [header.key([1])]);
+  });
+
+  it('blocks.insert throws for replaceEmpty beside before or at', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+    const target = editor.key([0]);
+
+    assert.ok(target);
+    assert.throws(
+      () =>
+        editor.update.blocks.insert(paragraph('two'), {
+          before: target,
+          // @ts-expect-error replaceEmpty applies only to an after landing
+          replaceEmpty: true,
+        }),
+      /replaceEmpty applies only to an after landing/
+    );
+    assert.throws(
+      () =>
+        editor.update.blocks.insert(paragraph('two'), {
+          at: [1],
+          // @ts-expect-error replaceEmpty applies only to an after landing
+          replaceEmpty: false,
+        }),
+      /replaceEmpty applies only to an after landing/
+    );
+    assert.deepEqual(editor.read.children(), [paragraph('one')]);
+  });
+
+  it('blocks.insert keeps the rest of an update when it refuses', () => {
+    const editor = createEditor({
+      plugins: [
+        defineTestSchema('insert-keeps-update', {
+          holder: { content: schema.content.types(['paragraph'], { max: 1 }) },
+        }),
+      ],
+      initialValue: [{ type: 'holder', children: [paragraph('one')] }],
+    });
+
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0, 0], offset: 3 } });
+      tx.blocks.insert(paragraph('two'), { after: [0, 0] });
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'holder', children: [paragraph('one!')] },
+    ]);
+  });
+
+  it('blocks.insert lands after and before named-root blocks while main holds the selection', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+      initialSelection: collapsedSelection([0, 0], 0),
+    });
+    const header = createEditorView(editor, { root: 'header' });
+    const target = header.key([0]);
+
+    assert.ok(target);
+    header.update.blocks.insert(paragraph('after'), { after: [0] });
+    editor.update.blocks.insert(paragraph('before'), { before: target });
+
+    assert.deepEqual(
+      { body: editor.read.children(), header: header.read.children() },
+      {
+        body: [paragraph('body')],
+        header: [paragraph('before'), paragraph('header'), paragraph('after')],
+      }
+    );
+  });
+
+  it('blocks.insert changes nothing for a missing nested before or after target', () => {
+    const editor = createEditor({
+      plugins: [
+        defineTestSchema('insert-missing', {
+          holder: { content: schema.content.types(['paragraph']) },
+        }),
+      ],
+      initialValue: [{ type: 'holder', children: [paragraph('one')] }],
+    });
+    const before = editor.read.children();
+    const found = { path: [0, 0, 0], offset: 0 };
+    const missing = { path: [0, 9], offset: 0 };
+    const targets = [
+      [0, 9],
+      missing,
+      { anchor: found, focus: missing },
+      { anchor: missing, focus: found },
+    ];
+
+    assert.deepEqual(
+      {
+        block: editor.read.nodes.block({ at: [0, 9] }),
+        paths: targets.flatMap((target) => [
+          editor.update.blocks.insert(paragraph('x'), { before: target }),
+          editor.update.blocks.insert(paragraph('y'), { after: target }),
+        ]),
+        children: editor.read.children(),
+      },
+      {
+        block: undefined,
+        paths: targets.flatMap(() => [undefined, undefined]),
+        children: before,
+      }
+    );
+  });
+
+  it('blocks.insert throws for an at that names no slot', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+
+    assert.throws(
+      () => editor.update.blocks.insert(paragraph('two'), { at: [3] }),
+      /no such slot/
+    );
+  });
+
+  it('blocks.insert throws for a point at', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+
+    assert.throws(
+      () =>
+        editor.update.blocks.insert(paragraph('two'), {
+          // @ts-expect-error A block insert's at is a path.
+          at: { path: [0, 0], offset: 1 },
+        }),
+      /takes a path for at/
+    );
   });
 
   it('insertText keeps the selected mark when replacing a marked leaf', () => {
@@ -1369,6 +1627,52 @@ describe('plite transforms contract', () => {
     ]);
   });
 
+  for (const [write, type, options] of [
+    ['a custom compare', 'paragraph', { compare: () => true }],
+    ['a merge that keeps the old type', 'quote', { merge: () => 'paragraph' }],
+  ] as const) {
+    it(`setNodes keeps the properties and marks of a block whose type ${write} leaves as it was`, () => {
+      const editor = createEditor({
+        plugins: [
+          defineEditorSchema(`schema:same-type-write-${write}`, {
+            elements: {
+              paragraph: { content: schema.content.text() },
+              quote: { content: schema.content.text() },
+            },
+            properties: [
+              schema.elementProperty('tone', property.string(), {
+                target: schemaTarget.type('paragraph'),
+              }),
+              schema.textProperty('lang', property.string(), {
+                target: schemaTarget.type('paragraph'),
+              }),
+            ],
+            root: schema.content.types(['paragraph', 'quote']),
+          }),
+        ],
+        initialValue: [
+          {
+            type: 'paragraph',
+            tone: 'loud',
+            children: [{ text: 'one', lang: 'fr' }],
+          },
+        ],
+      });
+
+      editor.update((tx) => {
+        tx.nodes.set({ type }, { at: [0], ...options });
+      });
+
+      assert.deepEqual(editorGetSnapshot(editor).children, [
+        {
+          type: 'paragraph',
+          tone: 'loud',
+          children: [{ text: 'one', lang: 'fr' }],
+        },
+      ]);
+    });
+  }
+
   it('setNodes with split does not include the next text when a range ends at offset zero', () => {
     const editor = createEditor();
 
@@ -1621,6 +1925,135 @@ describe('plite transforms contract', () => {
     ]);
   });
 
+  it('blocks.toggle turns a block on but refuses to turn it off where its parent has no element default', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:toggle-missing-default', {
+          elements: {
+            box: {
+              content: schema.content.types(['paragraph', 'quote'], {
+                default: { type: 'paragraph' },
+              }),
+            },
+            paragraph: { content: schema.content.text() },
+            quote: { content: schema.content.text() },
+          },
+          root: schema.content.types(['box', 'paragraph', 'quote'], {
+            min: 0,
+          }),
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'box',
+          children: [{ type: 'quote', children: [{ text: 'one' }] }],
+        },
+        paragraph('two'),
+      ],
+    });
+
+    assert.equal(
+      editor.update.blocks.toggle({ type: 'quote' }, { at: [1] }),
+      true
+    );
+    const before = editor.read.children();
+    let toggled: boolean | undefined;
+    let draft: readonly Descendant[] = [];
+
+    editor.update((tx) => {
+      tx.selection.setNodes([[0, 0], [1]]);
+      toggled = tx.blocks.toggle({ type: 'quote' });
+      draft = tx.children();
+    });
+
+    assert.equal(toggled, false);
+    assert.deepEqual(draft, before);
+  });
+
+  it('blocks.toggle builds each default once and writes the one it checked', () => {
+    let stamps = 0;
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:toggle-default-once', {
+          elements: {
+            paragraph: {
+              content: schema.content.text(),
+              properties: {
+                stamp: property.string({
+                  generate: () => {
+                    stamps += 1;
+
+                    return `stamp-${stamps}`;
+                  },
+                }),
+              },
+            },
+            quote: { content: schema.content.text() },
+          },
+          root: schema.content.types(['paragraph', 'quote'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+      ],
+      initialValue: [{ type: 'quote', children: [{ text: 'one' }] }],
+    });
+    const before = stamps;
+
+    assert.equal(
+      editor.update.blocks.toggle({ type: 'quote' }, { at: [0] }),
+      true
+    );
+    assert.equal(stamps - before, 1);
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'paragraph',
+        stamp: `stamp-${before + 1}`,
+        children: [{ text: 'one' }],
+      },
+    ]);
+  });
+
+  it('blocks.toggle throws when a later default fails to build another way, even after an earlier target refused', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:toggle-bad-generated-default', {
+          elements: {
+            box: {
+              content: schema.content.types(['quote', 'token'], {
+                default: { type: 'token' },
+              }),
+            },
+            quote: { content: schema.content.text() },
+            token: {
+              content: schema.content.text(),
+              properties: {
+                token: property.string({
+                  generate: () => 1 as unknown as string,
+                }),
+              },
+            },
+          },
+          root: schema.content.types(['box', 'quote'], { min: 0 }),
+        }),
+      ],
+      initialValue: [
+        { type: 'quote', children: [{ text: 'zero' }] },
+        {
+          type: 'box',
+          children: [{ type: 'quote', children: [{ text: 'one' }] }],
+        },
+      ],
+    });
+
+    editor.update.selection.setNodes([[0], [1, 0]]);
+
+    assert.throws(
+      () => editor.update.blocks.toggle({ type: 'quote' }),
+      /must be string/
+    );
+  });
+
   it('blocks.reset uses the immediate schema default', () => {
     const editor = createEditor({
       plugins: [
@@ -1859,24 +2292,732 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('blocks.reset rejects a parent without an element default', () => {
+  it('blocks.reset refuses every target when one parent has no element default', () => {
     const editor = createEditor({
       plugins: [
         defineEditorSchema('schema:reset-missing-default', {
           elements: {
+            box: {
+              content: schema.content.types(['paragraph', 'quote'], {
+                default: { type: 'paragraph' },
+              }),
+            },
             paragraph: { content: schema.content.text() },
             quote: { content: schema.content.text() },
           },
-          root: schema.content.types(['paragraph', 'quote'], { min: 0 }),
+          root: schema.content.types(['box', 'quote'], { min: 0 }),
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'box',
+          children: [{ type: 'quote', children: [{ text: 'one' }] }],
+        },
+        { type: 'quote', children: [{ text: 'two' }] },
+      ],
+    });
+    const before = editor.read.children();
+    let reset: boolean | undefined;
+    let draft: readonly Descendant[] = [];
+
+    editor.update((tx) => {
+      tx.selection.setNodes([[0, 0], [1]]);
+      reset = tx.blocks.reset();
+      draft = tx.children();
+    });
+
+    assert.equal(reset, false);
+    assert.deepEqual(draft, before);
+  });
+
+  it('blocks.reset keeps a property the type change preserves instead of building a new one', () => {
+    let generated = 0;
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-preserved-generated-id', {
+          elements: {
+            heading: { content: schema.content.text() },
+            paragraph: { content: schema.content.text() },
+          },
+          properties: [
+            schema.elementProperty(
+              'id',
+              property.string({
+                generate: () => {
+                  generated += 1;
+
+                  return 'generated';
+                },
+              }),
+              {
+                role: 'metadata',
+                target: schemaTarget.group('element'),
+                typeChange: 'preserve-if-allowed',
+              }
+            ),
+          ],
+          root: schema.content.types(['heading', 'paragraph'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+      ],
+      initialValue: [
+        { type: 'heading', id: 'kept', children: [{ text: 'one' }] },
+      ],
+    });
+
+    const kept = [
+      { type: 'paragraph', id: 'kept', children: [{ text: 'one' }] },
+    ];
+
+    assert.equal(editor.update.blocks.reset({ at: [0] }), true);
+    assert.deepEqual(editor.read.children(), kept);
+    assert.equal(
+      editor.update.blocks.toggle({ type: 'heading' }, { at: [0] }),
+      true
+    );
+    assert.equal(
+      editor.update.blocks.toggle({ type: 'heading' }, { at: [0] }),
+      true
+    );
+    assert.deepEqual(editor.read.children(), kept);
+    assert.equal(generated, 0);
+  });
+
+  it('blocks.reset keeps a required property of a block that is already its default type', () => {
+    const value = [
+      {
+        type: 'box',
+        children: [{ type: 'tagged', id: 't', children: [{ text: 'one' }] }],
+      },
+    ];
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-same-type-required', {
+          elements: {
+            box: {
+              content: schema.content.types(['paragraph', 'tagged'], {
+                default: { type: 'tagged' },
+              }),
+            },
+            paragraph: { content: schema.content.text() },
+            tagged: {
+              content: schema.content.text(),
+              properties: { id: property.string({ required: true }) },
+            },
+          },
+          root: schema.content.types(['box'], { min: 1 }),
+        }),
+      ],
+      initialValue: value,
+    });
+
+    assert.equal(editor.update.blocks.reset({ at: [0, 0] }), true);
+    assert.deepEqual(editor.read.children(), value);
+  });
+
+  it('blocks.reset converts a block whose kept text has a required property a fresh default could not fill', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-keeps-required-text', {
+          elements: {
+            paragraph: { content: schema.content.text() },
+            quote: { content: schema.content.text() },
+          },
+          properties: [
+            schema.textProperty('lang', property.string({ required: true }), {
+              target: schemaTarget.types(['paragraph', 'quote']),
+              typeChange: 'preserve-if-allowed',
+            }),
+          ],
+          root: schema.content.types(['paragraph', 'quote'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+      ],
+      initialValue: [
+        { type: 'quote', children: [{ text: 'one', lang: 'fr' }] },
+      ],
+    });
+
+    assert.equal(editor.update.blocks.reset({ at: [0] }), true);
+    assert.deepEqual(editor.read.children(), [
+      { type: 'paragraph', children: [{ text: 'one', lang: 'fr' }] },
+    ]);
+  });
+
+  it('blocks.reset refuses when the kept text lacks a property the new type requires', () => {
+    const value = [{ type: 'quote', children: [{ text: 'one' }] }];
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-missing-required-text', {
+          elements: {
+            paragraph: { content: schema.content.text() },
+            quote: { content: schema.content.text() },
+          },
+          properties: [
+            schema.textProperty('lang', property.string({ required: true }), {
+              target: schemaTarget.type('paragraph'),
+            }),
+          ],
+          root: schema.content.types(['paragraph', 'quote'], {
+            default: { type: 'paragraph' },
+            min: 0,
+          }),
+        }),
+      ],
+      initialValue: value,
+    });
+    let reset: boolean | undefined;
+    let draft: readonly Descendant[] = [];
+
+    editor.update((tx) => {
+      reset = tx.blocks.reset({ at: [0] });
+      draft = tx.children();
+    });
+
+    assert.equal(reset, false);
+    assert.deepEqual(draft, value);
+  });
+
+  it('blocks.reset restores a default on a block of the default type whose text keeps a property a type change would drop', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-same-type-required-text', {
+          elements: { paragraph: { content: schema.content.text() } },
+          properties: [
+            schema.elementProperty(
+              'tone',
+              property.string({ default: 'plain' }),
+              { target: schemaTarget.type('paragraph') }
+            ),
+            schema.textProperty('lang', property.string({ required: true }), {
+              target: schemaTarget.type('paragraph'),
+            }),
+          ],
+          root: schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+            min: 0,
+          }),
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'paragraph',
+          tone: 'loud',
+          children: [{ text: 'one', lang: 'fr' }],
+        },
+      ],
+    });
+
+    assert.equal(editor.update.blocks.reset({ at: [0] }), true);
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'paragraph',
+        tone: 'plain',
+        children: [{ text: 'one', lang: 'fr' }],
+      },
+    ]);
+  });
+
+  it('blocks.reset refuses when text inside an inline lacks a property the new type requires', () => {
+    const value = [
+      {
+        type: 'quote',
+        children: [
+          { text: '' },
+          { type: 'link', children: [{ text: 'site' }] },
+          { text: '' },
+        ],
+      },
+    ];
+    const withLinks = schema.content.any([
+      schema.content.text(),
+      schema.content.type('link'),
+    ]);
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-inline-required-text', {
+          elements: {
+            link: { content: schema.content.text(), inline: true },
+            paragraph: { content: withLinks },
+            quote: { content: withLinks },
+          },
+          properties: [
+            schema.textProperty('lang', property.string({ required: true }), {
+              target: schemaTarget.and(
+                schemaTarget.type('link'),
+                schemaTarget.parent(schemaTarget.type('paragraph'))
+              ),
+            }),
+          ],
+          root: schema.content.types(['paragraph', 'quote'], {
+            default: { type: 'paragraph' },
+            min: 0,
+          }),
+        }),
+      ],
+      initialValue: value,
+    });
+    let reset: boolean | undefined;
+    let draft: readonly Descendant[] = [];
+
+    editor.update((tx) => {
+      reset = tx.blocks.reset({ at: [0] });
+      draft = tx.children();
+    });
+
+    assert.equal(reset, false);
+    assert.deepEqual(draft, value);
+  });
+
+  it('blocks.reset converts a block that holds an inline whose text the new type accepts', () => {
+    const withLinks = schema.content.any([
+      schema.content.text(),
+      schema.content.type('link'),
+    ]);
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-inline-accepted', {
+          elements: {
+            link: { content: schema.content.text(), inline: true },
+            paragraph: { content: withLinks },
+            quote: { content: withLinks },
+          },
+          properties: [
+            schema.textProperty('lang', property.string(), {
+              target: schemaTarget.and(
+                schemaTarget.type('link'),
+                schemaTarget.parent(schemaTarget.type('paragraph'))
+              ),
+            }),
+          ],
+          root: schema.content.types(['paragraph', 'quote'], {
+            default: { type: 'paragraph' },
+            min: 0,
+          }),
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'quote',
+          children: [
+            { text: '' },
+            { type: 'link', children: [{ text: 'site' }] },
+            { text: '' },
+          ],
+        },
+      ],
+    });
+
+    assert.equal(editor.update.blocks.reset({ at: [0] }), true);
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'paragraph',
+        children: [
+          { text: '' },
+          { type: 'link', children: [{ text: 'site' }] },
+          { text: '' },
+        ],
+      },
+    ]);
+  });
+
+  it('blocks.reset keeps a property that targets the block inside an undeclared wrapper', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-undeclared-wrapper', {
+          elements: {
+            paragraph: { content: schema.content.text() },
+            quote: { content: schema.content.text() },
+          },
+          properties: [
+            schema.elementProperty('mark', property.string(), {
+              target: schemaTarget.and(
+                schemaTarget.types(['paragraph', 'quote']),
+                schemaTarget.parent(
+                  schemaTarget.not(schemaTarget.type('paragraph'))
+                )
+              ),
+              typeChange: 'preserve-if-allowed',
+            }),
+          ],
+          root: schema.content.types(['paragraph', 'quote'], {
+            default: { type: 'paragraph' },
+            min: 0,
+          }),
+          unknown: 'preserve',
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'wrapper',
+          children: [
+            { type: 'quote', mark: 'kept', children: [{ text: 'one' }] },
+          ],
+        },
+      ] as never,
+    });
+
+    assert.equal(editor.update.blocks.reset({ at: [0, 0] }), true);
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'wrapper',
+        children: [
+          { type: 'paragraph', mark: 'kept', children: [{ text: 'one' }] },
+        ],
+      },
+    ]);
+  });
+
+  it('blocks.reset keeps the children of a block when unset names them', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-unset-children', {
+          elements: {
+            paragraph: { content: schema.content.text() },
+            quote: { content: schema.content.text() },
+          },
+          root: schema.content.types(['paragraph', 'quote'], {
+            default: { type: 'paragraph' },
+            min: 0,
+          }),
         }),
       ],
       initialValue: [{ type: 'quote', children: [{ text: 'one' }] }],
     });
 
-    assert.throws(
-      () => editor.update.blocks.reset({ at: [0] }),
-      /element default/
+    assert.equal(
+      editor.update.blocks.reset({ at: [0], unset: 'children' }),
+      true
     );
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+    ]);
+  });
+
+  it('blocks.reset restores a default in a required leading slot when unset names children', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-leading-slot-unset-children', {
+          elements: {
+            box: {
+              content: schema.content.prefix(
+                [{ element: 'heading', properties: { level: 1 } }],
+                schema.content.types(['heading', 'paragraph'], {
+                  default: { type: 'paragraph' },
+                })
+              ),
+            },
+            heading: {
+              content: schema.content.text(),
+              properties: {
+                level: property.number(),
+                tone: property.string({ default: 'plain' }),
+              },
+            },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.types(['box'], { min: 1 }),
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'box',
+          children: [
+            {
+              level: 1,
+              tone: 'loud',
+              type: 'heading',
+              children: [{ text: 'Title' }],
+            },
+          ],
+        },
+      ],
+    });
+
+    assert.equal(
+      editor.update.blocks.reset({ at: [0, 0], unset: 'children' }),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'box',
+        children: [
+          {
+            level: 1,
+            tone: 'plain',
+            type: 'heading',
+            children: [{ text: 'Title' }],
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('blocks.reset converts a block of the default type whose text an earlier edit left without a required property', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-same-type-stripped-text', {
+          elements: { paragraph: { content: schema.content.text() } },
+          properties: [
+            schema.elementProperty(
+              'tone',
+              property.string({ default: 'plain' }),
+              { target: schemaTarget.type('paragraph') }
+            ),
+            schema.textProperty('lang', property.string({ required: true }), {
+              target: schemaTarget.type('paragraph'),
+            }),
+          ],
+          root: schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+            min: 0,
+          }),
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'paragraph',
+          tone: 'loud',
+          children: [{ text: 'one', lang: 'fr' }],
+        },
+      ],
+    });
+    let reset: boolean | undefined;
+
+    editor.update((tx) => {
+      tx.nodes.unset('lang', { at: [0, 0] });
+      reset = tx.blocks.reset({ at: [0] });
+      tx.nodes.set({ lang: 'fr' }, { at: [0, 0] });
+    });
+
+    assert.equal(reset, true);
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'paragraph',
+        tone: 'plain',
+        children: [{ text: 'one', lang: 'fr' }],
+      },
+    ]);
+  });
+
+  it('blocks.reset keeps a required property the type change carries and refuses when the lifecycle drops it', () => {
+    const resetWith = (typeChange: 'drop' | 'preserve-if-allowed') => {
+      const editor = createEditor({
+        plugins: [
+          defineEditorSchema(`schema:reset-carried-required-${typeChange}`, {
+            elements: {
+              box: {
+                content: schema.content.types(['paragraph', 'tagged'], {
+                  default: { type: 'tagged' },
+                }),
+              },
+              paragraph: { content: schema.content.text() },
+              tagged: { content: schema.content.text() },
+            },
+            properties: [
+              schema.elementProperty('id', property.string(), {
+                target: schemaTarget.type('paragraph'),
+                typeChange,
+              }),
+              schema.elementProperty(
+                'id',
+                property.string({ required: true }),
+                { target: schemaTarget.type('tagged'), typeChange }
+              ),
+            ],
+            root: schema.content.types(['box'], { min: 1 }),
+          }),
+        ],
+        initialValue: [
+          {
+            type: 'box',
+            children: [
+              { type: 'paragraph', id: 'p', children: [{ text: 'one' }] },
+            ],
+          },
+        ],
+      });
+
+      return [editor.update.blocks.reset({ at: [0, 0] }), editor] as const;
+    };
+    const [kept, keptEditor] = resetWith('preserve-if-allowed');
+    const [dropped] = resetWith('drop');
+
+    assert.equal(kept, true);
+    assert.deepEqual(keptEditor.read.children(), [
+      {
+        type: 'box',
+        children: [{ type: 'tagged', id: 'p', children: [{ text: 'one' }] }],
+      },
+    ]);
+    assert.equal(dropped, false);
+  });
+
+  it('blocks.reset restores a defaulted property of a block already of the default type', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-same-type-default', {
+          elements: {
+            paragraph: {
+              content: schema.content.text(),
+              properties: { tone: property.string({ default: 'plain' }) },
+            },
+          },
+          root: schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+      ],
+      initialValue: [
+        { type: 'paragraph', tone: 'loud', children: [{ text: 'one' }] },
+      ],
+    });
+
+    assert.equal(editor.update.blocks.reset({ at: [0] }), true);
+    assert.deepEqual(editor.read.children(), [
+      { type: 'paragraph', tone: 'plain', children: [{ text: 'one' }] },
+    ]);
+  });
+
+  it('blocks.reset removes an unset property that the type change would keep', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-unset-preserved', {
+          elements: {
+            paragraph: { content: schema.content.text() },
+            quote: { content: schema.content.text() },
+          },
+          properties: [
+            schema.elementProperty('shared', property.string(), {
+              target: schemaTarget.types(['paragraph', 'quote']),
+              typeChange: 'preserve-if-allowed',
+            }),
+          ],
+          root: schema.content.types(['paragraph', 'quote'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+      ],
+      initialValue: [
+        { type: 'quote', shared: 'x', children: [{ text: 'one' }] },
+      ],
+    });
+
+    assert.equal(
+      editor.update.blocks.reset({ at: [0], unset: 'shared' }),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+    ]);
+  });
+
+  it('blocks.reset refuses a default that needs a property it cannot fill', () => {
+    const value = [
+      {
+        type: 'box',
+        children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+      },
+    ];
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-required-property-default', {
+          elements: {
+            box: {
+              content: schema.content.types(['paragraph', 'tagged'], {
+                default: { type: 'tagged' },
+              }),
+            },
+            paragraph: { content: schema.content.text() },
+            tagged: {
+              content: schema.content.text(),
+              properties: { id: property.string({ required: true }) },
+            },
+          },
+          root: schema.content.types(['box'], { min: 1 }),
+        }),
+      ],
+      initialValue: value,
+    });
+
+    assert.equal(editor.update.blocks.reset({ at: [0, 0] }), false);
+    assert.deepEqual(editor.read.children(), value);
+  });
+
+  it('blocks.reset refuses a text default', () => {
+    const value = [
+      {
+        type: 'box',
+        children: [{ type: 'quote', children: [{ text: 'one' }] }],
+      },
+    ];
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-text-default', {
+          elements: {
+            box: {
+              content: schema.content.any(
+                [
+                  schema.content.text(),
+                  schema.content.types(['paragraph', 'quote']),
+                ],
+                { default: 'text' }
+              ),
+            },
+            paragraph: { content: schema.content.text() },
+            quote: { content: schema.content.text() },
+          },
+          root: schema.content.types(['box'], { min: 1 }),
+        }),
+      ],
+      initialValue: value,
+    });
+
+    assert.equal(editor.update.blocks.reset({ at: [0, 0] }), false);
+    assert.deepEqual(editor.read.children(), value);
+  });
+
+  it('blocks.reset throws when a later default fails to build another way, even after an earlier target refused', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-bad-generated-default', {
+          elements: {
+            box: {
+              content: schema.content.types(['paragraph', 'token'], {
+                default: { type: 'token' },
+              }),
+            },
+            paragraph: { content: schema.content.text() },
+            token: {
+              content: schema.content.text(),
+              properties: {
+                token: property.string({
+                  generate: () => 1 as unknown as string,
+                }),
+              },
+            },
+          },
+          root: schema.content.types(['box', 'paragraph'], { min: 0 }),
+        }),
+      ],
+      initialValue: [
+        paragraph('zero'),
+        {
+          type: 'box',
+          children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+        },
+      ],
+    });
+
+    editor.update.selection.setNodes([[0], [1, 0]]);
+
+    assert.throws(() => editor.update.blocks.reset(), /must be string/);
   });
 
   it('blocks.reset gives a block in a required leading slot that slot', () => {
@@ -2138,6 +3279,79 @@ describe('plite transforms contract', () => {
       editorGetSnapshot(editor).selection,
       collapsedSelection([1, 0], 0)
     );
+  });
+
+  it('insertNodes lands a block between the halves at either edge of an inline', () => {
+    const link = { type: 'link', children: [{ text: 'two' }] };
+    const embed = { type: 'embed', children: [{ text: '' }] };
+
+    for (const [offset, expected] of [
+      [
+        3,
+        [
+          {
+            type: 'paragraph',
+            children: [{ text: 'one' }, link, { text: '' }],
+          },
+          embed,
+          paragraph('three'),
+        ],
+      ],
+      [
+        0,
+        [
+          paragraph('one'),
+          embed,
+          {
+            type: 'paragraph',
+            children: [{ text: '' }, link, { text: 'three' }],
+          },
+        ],
+      ],
+    ] as const) {
+      const editor = createEditor();
+
+      editor.install(
+        defineTestSchema('insert-inline-edge', {
+          embed: {},
+          link: { inline: true },
+        })
+      );
+      editorReplace(editor, {
+        children: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'one' }, link, { text: 'three' }],
+          },
+        ],
+        selection: collapsedSelection([0, 1, 0], offset),
+      });
+
+      editor.update((tx) => {
+        tx.nodes.insert(embed);
+      });
+
+      assert.deepEqual(editor.read.children(), expected);
+    }
+  });
+
+  it('insertNodes lands a block after an empty block holding the caret', () => {
+    const editor = createEditor();
+
+    editor.install(defineTestSchema('insert-empty-block', { embed: {} }));
+    editorReplace(editor, {
+      children: [paragraph('')],
+      selection: collapsedSelection([0, 0], 0),
+    });
+
+    editor.update((tx) => {
+      tx.nodes.insert({ type: 'embed', children: [{ text: '' }] });
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph(''),
+      { type: 'embed', children: [{ text: '' }] },
+    ]);
   });
 
   it('splitNodes rejects the editor root as a split target', () => {
@@ -3090,6 +4304,366 @@ describe('plite transforms contract', () => {
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'void-block', children: [{ text: '' }] },
+    ]);
+  });
+});
+
+describe('blocks built for a required position', () => {
+  const CardSchema = defineEditorSchema('schema:card-required-caption', {
+    elements: {
+      blockquote: {
+        content: schema.content.types(['paragraph'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      },
+      caption: { content: schema.content.text({ default: 'text', min: 1 }) },
+      card: {
+        content: schema.content.prefix(
+          [{ element: 'caption' }],
+          schema.content.types(['paragraph', 'blockquote', 'divider'], {
+            default: { type: 'paragraph' },
+          })
+        ),
+      },
+      divider: { void: 'block' },
+      heading: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        properties: { level: property.number() },
+      },
+      paragraph: { content: schema.content.text({ default: 'text', min: 1 }) },
+    },
+    root: schema.content.types(['card', 'paragraph', 'divider'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+  });
+  const caption = (text: string): Element => ({
+    children: [{ text }],
+    type: 'caption',
+  });
+  const card = (...children: Element[]): Element => ({
+    children,
+    type: 'card',
+  });
+  const divider: Element = { children: [{ text: '' }], type: 'divider' };
+  const create = () =>
+    createEditor({
+      plugins: [CardSchema],
+      initialValue: [card(caption('Title'), paragraph('Body'))],
+    });
+  const textRange = (from: number, to: number) => ({
+    kind: 'text' as const,
+    anchor: { path: [0, 0, 0], offset: from },
+    focus: { path: [0, 0, 0], offset: to },
+  });
+
+  it('gives the tail of a split caption the body type', () => {
+    for (const [from, to, expected] of [
+      [2, 2, [caption('Ti'), paragraph('tle')]],
+      [5, 5, [caption('Title'), paragraph('')]],
+      [1, 3, [caption('T'), paragraph('le')]],
+    ] as const) {
+      const editor = create();
+
+      editor.update((tx) => {
+        tx.selection.set(textRange(from, to));
+        tx.break.insert();
+      });
+
+      assert.deepEqual(editor.read.children(), [
+        card(...expected, paragraph('Body')),
+      ]);
+    }
+  });
+
+  it('gives the tail of a split root title the next slot type', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:root-required-title', {
+          elements: {
+            paragraph: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+            },
+            title: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+            },
+          },
+          root: schema.content.prefix(
+            [{ element: 'title' }, { element: 'paragraph' }],
+            schema.content.group('block')
+          ),
+          unknown: 'reject',
+        }),
+      ],
+      initialValue: [
+        { children: [{ text: 'Title' }], type: 'title' },
+        paragraph('Body'),
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set(collapsedSelection([0, 0], 2));
+      tx.break.insert();
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: 'Ti' }], type: 'title' },
+      paragraph('tle'),
+      paragraph('Body'),
+    ]);
+  });
+
+  it('duplicates a picked caption as body blocks', () => {
+    for (const [paths, expected] of [
+      [[[0, 0]], [caption('Title'), paragraph('Title'), paragraph('Body')]],
+      [
+        [
+          [0, 0],
+          [0, 1],
+        ],
+        [
+          caption('Title'),
+          paragraph('Body'),
+          paragraph('Title'),
+          paragraph('Body'),
+        ],
+      ],
+    ] as const) {
+      const editor = create();
+
+      editor.update((tx) => {
+        tx.blocks.duplicate({
+          at: SelectionApi.nodes(paths as unknown as [Path], { mode: 'block' }),
+        });
+      });
+
+      assert.deepEqual(editor.read.children(), [card(...expected)]);
+    }
+  });
+
+  it('splits a caption around a void inserted at its caret', () => {
+    const editor = create();
+
+    editor.update((tx) => {
+      tx.selection.set(textRange(2, 2));
+      tx.nodes.insert(divider);
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      card(caption('Ti'), divider, paragraph('tle'), paragraph('Body')),
+    ]);
+  });
+
+  it('refuses formatting that splits off the start or middle of a caption', () => {
+    for (const change of [
+      (tx: Parameters<Parameters<Editor['update']>[0]>[0]) =>
+        tx.nodes.set({ type: 'paragraph' }, { split: true }),
+      (tx: Parameters<Parameters<Editor['update']>[0]>[0]) =>
+        tx.nodes.wrap({ children: [], type: 'blockquote' }, { split: true }),
+    ]) {
+      const editor = create();
+      const before = editor.read.children();
+
+      assert.throws(
+        () =>
+          editor.update((tx) => {
+            tx.selection.set(textRange(1, 3));
+            change(tx);
+          }),
+        /cannot contain "caption"/
+      );
+      assert.deepEqual(editor.read.children(), before);
+    }
+  });
+
+  it('keeps each lower level whole when a split goes up through a card', () => {
+    for (const change of [
+      (tx: Parameters<Parameters<Editor['update']>[0]>[0]) =>
+        tx.nodes.split({ type: 'card' }),
+      (tx: Parameters<Parameters<Editor['update']>[0]>[0]) =>
+        tx.nodes.insert(divider, { mode: 'highest' }),
+    ]) {
+      const editor = create();
+
+      editor.update((tx) => {
+        tx.selection.set(textRange(2, 2));
+        change(tx);
+      });
+
+      assert.deepEqual(
+        editor.read.children().filter((node) => node.type === 'card'),
+        [card(caption('Ti')), card(caption('tle'), paragraph('Body'))]
+      );
+    }
+  });
+
+  it('inserts a block mid-caption when the split names the caption type', () => {
+    const editor = create();
+
+    editor.update((tx) => {
+      tx.nodes.insert(divider, {
+        at: { offset: 2, path: [0, 0, 0] },
+        split: { type: 'caption' },
+      });
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      card(caption('Ti'), divider, paragraph('tle'), paragraph('Body')),
+    ]);
+  });
+
+  it('keeps a preserved caption property over the body default', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:card-caption-tone', {
+          ...CardSchema.schema,
+          properties: [
+            schema.elementProperty(
+              'tone',
+              property.string({ default: 'plain' }),
+              {
+                split: 'preserve',
+                target: schemaTarget.types(['caption', 'paragraph']),
+                typeChange: 'preserve-if-allowed',
+              }
+            ),
+          ],
+        }),
+      ],
+      initialValue: [
+        card(
+          { ...caption('Title'), tone: 'loud' },
+          { ...paragraph('Body'), tone: 'plain' }
+        ),
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set(textRange(2, 2));
+      tx.break.insert();
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      card(
+        { ...caption('Ti'), tone: 'loud' },
+        { ...paragraph('tle'), tone: 'loud' },
+        { ...paragraph('Body'), tone: 'plain' }
+      ),
+    ]);
+  });
+
+  it("keeps a required slot's fixed property and the other preserved ones", () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:card-required-tone', {
+          ...CardSchema.schema,
+          elements: {
+            ...CardSchema.schema.elements,
+            card: {
+              content: schema.content.prefix(
+                [
+                  { element: 'caption' },
+                  { element: 'paragraph', properties: { tone: 'plain' } },
+                ],
+                schema.content.types(['paragraph'], {
+                  default: { type: 'paragraph' },
+                })
+              ),
+            },
+          },
+          properties: [
+            schema.elementProperty(
+              'align',
+              property.string({ default: 'left' }),
+              {
+                split: 'preserve',
+                target: schemaTarget.types(['caption', 'paragraph']),
+                typeChange: 'preserve-if-allowed',
+              }
+            ),
+            schema.elementProperty(
+              'tone',
+              property.string({ default: 'plain' }),
+              {
+                split: 'preserve',
+                target: schemaTarget.types(['caption', 'paragraph']),
+                typeChange: 'preserve-if-allowed',
+              }
+            ),
+          ],
+        }),
+      ],
+      initialValue: [
+        card(
+          { ...caption('Title'), align: 'center', tone: 'loud' },
+          { ...paragraph('Body'), align: 'left', tone: 'plain' }
+        ),
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set(textRange(2, 2));
+      tx.break.insert();
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      card(
+        { ...caption('Ti'), align: 'center', tone: 'loud' },
+        { ...paragraph('tle'), align: 'center', tone: 'plain' },
+        { ...paragraph('Body'), align: 'left', tone: 'plain' }
+      ),
+    ]);
+  });
+
+  it("keeps a required slot's fixed property when its default is omitted", () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:card-required-omitted-tone', {
+          ...CardSchema.schema,
+          elements: {
+            ...CardSchema.schema.elements,
+            card: {
+              content: schema.content.prefix(
+                [
+                  { element: 'caption' },
+                  { element: 'paragraph', properties: { tone: 'plain' } },
+                ],
+                schema.content.types(['paragraph'], {
+                  default: { type: 'paragraph' },
+                })
+              ),
+            },
+          },
+          properties: [
+            schema.elementProperty(
+              'tone',
+              property.string({ default: 'plain', omitDefault: true }),
+              {
+                split: 'preserve',
+                target: schemaTarget.types(['caption', 'paragraph']),
+                typeChange: 'preserve-if-allowed',
+              }
+            ),
+          ],
+        }),
+      ],
+      initialValue: [
+        card({ ...caption('Title'), tone: 'loud' }, paragraph('Body')),
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set(textRange(2, 2));
+      tx.break.insert();
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      card(
+        { ...caption('Ti'), tone: 'loud' },
+        paragraph('tle'),
+        paragraph('Body')
+      ),
     ]);
   });
 });

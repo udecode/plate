@@ -222,6 +222,7 @@ const qualifySelectionRoot = (
       : SelectionApi.nodes(selection.paths, {
           anchorPath: selection.anchorPath,
           focusPath: selection.focusPath,
+          mode: selection.mode,
           root,
         });
   }
@@ -1073,10 +1074,12 @@ export const applyEditableKeyDown = ({
           editorIsBlock(editor, currentNode))
       ) {
         const voidPath = selectionRange.anchor.path.slice(0, -1) as Path;
-        const voidSelection = SelectionApi.nodes(
-          [voidPath],
-          selectionRange.anchor.root ? { root: selectionRange.anchor.root } : {}
-        );
+        const voidSelection = SelectionApi.nodes([voidPath], {
+          mode: 'block',
+          ...(selectionRange.anchor.root
+            ? { root: selectionRange.anchor.root }
+            : {}),
+        });
 
         event.preventDefault();
         applyEditableCommand({

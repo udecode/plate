@@ -1,3 +1,6 @@
+import * as os from 'node:os';
+import * as path from 'node:path';
+
 import { defineConfig, devices } from '@playwright/test';
 
 const explicitBaseURL = process.env.PLAYWRIGHT_BASE_URL;
@@ -34,7 +37,17 @@ export default defineConfig({
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: {
+        ...devices['Desktop Firefox'],
+        launchOptions: {
+          // Playwright's Firefox shares the installed Firefox's app-data dir,
+          // which macOS 27 privacy-protects, and hangs at launch reading it.
+          env: {
+            ...process.env,
+            MOZ_APP_DATA: path.join(os.tmpdir(), 'playwright-firefox-app-data'),
+          },
+        },
+      },
     },
 
     {

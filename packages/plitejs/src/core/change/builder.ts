@@ -16,7 +16,7 @@ import {
   getInternalDocumentChangeRecords,
   valueRootIndex,
 } from './document-change';
-import { DocumentIndex } from './document-index';
+import { DocumentIndex, rootNodesOf } from './document-index';
 import type { JsonRecord } from './json';
 import {
   RootChange,
@@ -93,6 +93,11 @@ const UNSCOPED_ORIGINS: ReadonlySet<DraftStepOrigin> = new Set([
   'canonical',
   'migration',
 ]);
+
+const isClassified = (change: DocumentChange) =>
+  [...getInternalDocumentChangeEntries(change)].every(([root]) =>
+    getInternalDocumentChangeClassification(change, root)
+  );
 
 /**
  * Whether a step comes from a plugin correction, whatever primitive wrote it.
@@ -186,6 +191,9 @@ export class ChangeDraft {
       indexedBefore: ReadonlyMap<string, DocumentIndex>;
     }>
   ) => void;
+  private readonly checkConstructed?: (
+    input: Parameters<DocumentChangeConstructionPolicy>[0]
+  ) => void;
 
   constructor(
     value: JsonEditorValue,
@@ -218,6 +226,9 @@ export class ChangeDraft {
           indexedBefore: ReadonlyMap<string, DocumentIndex>;
         }>
       ) => void;
+      checkConstructed?: (
+        input: Parameters<DocumentChangeConstructionPolicy>[0]
+      ) => void;
     }> = {}
   ) {
     this.source = value;
@@ -233,6 +244,7 @@ export class ChangeDraft {
     this.trackChanges = options.trackChanges ?? true;
     this.validate = options.validate;
     this.validateConstructed = options.validateConstructed;
+    this.checkConstructed = options.checkConstructed;
     this.accumulated = DocumentChange.empty;
   }
 
@@ -340,6 +352,7 @@ export class ChangeDraft {
       preparationAuthority: this.preparationAuthority,
       preparationRevision: this.preparationRevision,
       trackChanges: this.trackChanges,
+      checkConstructed: this.checkConstructed,
       ...(options.validation === 'defer-to-parent'
         ? {}
         : {
@@ -355,6 +368,12 @@ export class ChangeDraft {
     fork.canonical = this.canonical;
     fork.validationPending = this.validationPending;
     return fork;
+  }
+
+  check() {
+    if (!this.accumulated.empty) {
+      this.checkConstructed?.(this.validationInput());
+    }
   }
 
   /**
@@ -474,11 +493,8 @@ export class ChangeDraft {
   /** Classify a transaction-wide change against cached source/current indexes. */
   classify(change: DocumentChange = this.accumulated) {
     const cachedRuntimeCandidates = this.runtimeCandidatesByChange.get(change);
-    const alreadyClassified = [
-      ...getInternalDocumentChangeEntries(change),
-    ].every(([root]) => getInternalDocumentChangeClassification(change, root));
 
-    if (cachedRuntimeCandidates && alreadyClassified) return change;
+    if (cachedRuntimeCandidates && isClassified(change)) return change;
 
     const classifications = new Map<string, DocumentChangeRootClassification>();
     const runtimeCandidates = new Map<
@@ -661,7 +677,8 @@ export class ChangeDraft {
       const indexedAfter = candidateBuilder.indexedAfter(accumulated);
       const indexedBefore = new Map<string, DocumentIndex>();
       const hasRestoredRoot =
-        (candidate.after.children !== this.source.children &&
+        (rootNodesOf(candidate.after, 'children') !==
+          rootNodesOf(this.source, 'children') &&
           !indexedAfter.has('main')) ||
         Object.entries(candidate.after.roots ?? {}).some(
           ([root, children]) =>
@@ -920,37 +937,12 @@ export class ChangeDraft {
   ): DocumentChangeStep | null {
     if (this.canonical && !this.validationPending) return null;
 
-    const before = this.current;
     let constructionChange: DocumentChange | undefined;
 
     if (!this.canonical && this.construct) {
-      const indexedAfter = new Map<string, DocumentIndex>();
-      const indexedBefore = new Map<string, DocumentIndex>();
-      const touchedRoots = new Set([
-        ...[...getInternalDocumentChangeEntries(this.accumulated)].map(
-          ([root]) => root
-        ),
-        ...this.accumulated.createRoots,
-      ]);
-
-      for (const root of touchedRoots) {
-        if (!this.accumulated.deleteRoots.has(root)) {
-          indexedAfter.set(root, this.getIndex(root));
-        }
-        indexedBefore.set(root, this.getSourceIndex(root));
-      }
-
-      constructionChange = this.construct(
-        {
-          after: before,
-          before: this.source,
-          change: this.accumulated,
-          indexedAfter,
-          indexedBefore,
-        },
-        preparation
-      );
+      constructionChange = this.construct(this.validationInput(), preparation);
     }
+    const classified = isClassified(this.accumulated);
     const step =
       constructionChange && !constructionChange.empty
         ? this.apply(constructionChange, {
@@ -958,6 +950,18 @@ export class ChangeDraft {
             origin: options.origin ?? 'canonical',
           })
         : null;
+
+    // Composing the correction drops the classification of each root both
+    // changes write, because their paths read in two documents, and a commit
+    // without one reads its roots whole to answer what changed.
+    if (
+      step &&
+      classified &&
+      options.classify !== false &&
+      !this.accumulated.empty
+    ) {
+      this.accumulated = this.classify(this.accumulated);
+    }
 
     if (this.accumulated.empty) {
       this.current = this.source;
@@ -1002,29 +1006,7 @@ export class ChangeDraft {
     }
 
     if (this.validateConstructed) {
-      const indexedAfter = new Map<string, DocumentIndex>();
-      const indexedBefore = new Map<string, DocumentIndex>();
-
-      const touchedRoots = new Set([
-        ...[...getInternalDocumentChangeEntries(this.accumulated)].map(
-          ([root]) => root
-        ),
-        ...this.accumulated.createRoots,
-      ]);
-
-      for (const root of touchedRoots) {
-        if (!this.accumulated.deleteRoots.has(root)) {
-          indexedAfter.set(root, this.getIndex(root));
-        }
-        indexedBefore.set(root, this.getSourceIndex(root));
-      }
-      this.validateConstructed({
-        after: this.current,
-        before: this.source,
-        change: this.accumulated,
-        indexedAfter,
-        indexedBefore,
-      });
+      this.validateConstructed(this.validationInput());
     } else {
       this.validate?.(this.current, this.accumulated);
     }
@@ -1313,6 +1295,32 @@ export class ChangeDraft {
     }
 
     return document;
+  }
+
+  private validationInput() {
+    const indexedAfter = new Map<string, DocumentIndex>();
+    const indexedBefore = new Map<string, DocumentIndex>();
+    const touchedRoots = new Set([
+      ...[...getInternalDocumentChangeEntries(this.accumulated)].map(
+        ([root]) => root
+      ),
+      ...this.accumulated.createRoots,
+    ]);
+
+    for (const root of touchedRoots) {
+      if (!this.accumulated.deleteRoots.has(root)) {
+        indexedAfter.set(root, this.getIndex(root));
+      }
+      indexedBefore.set(root, this.getSourceIndex(root));
+    }
+
+    return {
+      after: this.current,
+      before: this.source,
+      change: this.accumulated,
+      indexedAfter,
+      indexedBefore,
+    };
   }
 
   private getSourceIndex(root: string) {

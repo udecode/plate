@@ -7,9 +7,11 @@ import {
   Compartment,
   EditorSelection,
   EditorState,
+  findClusterBreak,
   StateEffect,
   StateField,
   type Extension,
+  type SelectionRange,
   type Transaction,
   type TransactionSpec,
 } from '@codemirror/state';
@@ -97,19 +99,209 @@ const getIntent = (
   return 'input';
 };
 
-const writeSelection = (view: EditorView, selection: ExternalTextSelection) => {
+const writeSelection = (
+  view: EditorView,
+  selection: ExternalTextSelection,
+  goalX?: number
+) => {
   const current = view.state.selection.main;
 
-  if (current.anchor === selection.anchor && current.head === selection.focus) {
+  if (
+    goalX === undefined &&
+    current.anchor === selection.anchor &&
+    current.head === selection.focus
+  ) {
     return false;
   }
   view.dispatch({
     annotations: appliedByAdapter.of(true),
     filter: false,
-    selection: EditorSelection.single(selection.anchor, selection.focus),
+    scrollIntoView: goalX !== undefined,
+    selection: EditorSelection.create([
+      EditorSelection.range(
+        selection.anchor,
+        selection.focus,
+        // CodeMirror keeps the goal column relative to the content's left edge.
+        goalX === undefined
+          ? undefined
+          : goalX - view.contentDOM.getBoundingClientRect().left
+      ),
+    ]),
   });
 
   return true;
+};
+
+const RIGHT_TO_LEFT =
+  /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFC\u200F\u202B\u202E\u2067\u{10800}-\u{10FFF}\u{1E800}-\u{1EFFF}]/u;
+
+const textCaretOnSide = (view: EditorView, offset: number, side: -1 | 1) => {
+  let { node, offset: domOffset } = view.domAtPos(offset, side);
+
+  while (node.nodeType === 1) {
+    const after = node.childNodes[domOffset];
+    if (after) {
+      node = after;
+      domOffset = 0;
+      continue;
+    }
+    const before = node.childNodes[domOffset - 1];
+    if (!before) return null;
+    node = before;
+    domOffset =
+      before.nodeType === 3
+        ? (before as Text).length
+        : before.childNodes.length;
+  }
+  const widget = node.parentElement?.closest('[contenteditable="false"]');
+  const walkedPastWidget = view.posAtDOM(node, domOffset) !== offset;
+  if (
+    node.nodeType !== 3 ||
+    (widget &&
+      widget !== view.contentDOM &&
+      view.contentDOM.contains(widget)) ||
+    walkedPastWidget
+  ) {
+    return null;
+  }
+  const range = view.dom.ownerDocument.createRange();
+  range.setStart(node, domOffset);
+  range.setEnd(node, domOffset);
+  const rect = range.getClientRects()[0];
+
+  return rect ? rect.left : null;
+};
+
+const drawnCaret = (view: EditorView, offset: number) =>
+  textCaretOnSide(view, offset, 1) ?? textCaretOnSide(view, offset, -1);
+
+const textInsetLeft = (view: EditorView, lineFrom: number) => {
+  const drawnLeft = drawnCaret(view, lineFrom);
+  if (drawnLeft !== null) return drawnLeft;
+  const { node, offset } = view.domAtPos(lineFrom);
+  const at = node === view.contentDOM ? node.childNodes[offset] : node;
+  const line = (
+    at?.nodeType === 1 ? (at as Element) : at?.parentElement
+  )?.closest('.cm-line');
+  const box = line ?? view.contentDOM;
+  const style = getComputedStyle(box);
+
+  return (
+    box.getBoundingClientRect().left +
+    (Number.parseFloat(style.borderLeftWidth) || 0) +
+    (Number.parseFloat(style.paddingLeft) || 0)
+  );
+};
+
+const estimateOffset = (
+  view: EditorView,
+  lineFrom: number,
+  text: string,
+  x: number
+) => {
+  const { tabSize } = view.state;
+  const charWidth = view.defaultCharacterWidth;
+  const textLeft = textInsetLeft(view, view.viewport.from);
+  let column = 0;
+
+  for (let index = 0; index < text.length;) {
+    const next = findClusterBreak(text, index);
+    const width =
+      text.charCodeAt(index) === 9 ? tabSize - (column % tabSize) : 1;
+    const left = textLeft + column * charWidth;
+    const right = left + width * charWidth;
+
+    if (x < right) return lineFrom + (x - left <= right - x ? index : next);
+    column += width;
+    index = next;
+  }
+
+  return lineFrom + text.length;
+};
+
+/** Avoids posAtCoords and coordsAtPos, which flush CodeMirror's pending measure. */
+const readEdgeLineOffset = (
+  view: EditorView,
+  edge: 'end' | 'start',
+  x: number
+) => {
+  const { doc } = view.state;
+  const line = edge === 'start' ? doc.line(1) : doc.line(doc.lines);
+  const edgeOffset = edge === 'start' ? line.from : line.to;
+  if (view.lineWrapping) return edgeOffset;
+  if (line.length === 0) return edgeOffset;
+  const boundaries: number[] = [];
+
+  for (const range of view.visibleRanges) {
+    const from = Math.max(range.from, line.from);
+    const to = Math.min(range.to, line.to);
+    for (let index = from - line.from; index <= to - line.from;) {
+      boundaries.push(line.from + index);
+      if (index >= line.length) break;
+      index = findClusterBreak(line.text, index);
+    }
+  }
+  type Candidate = { index: number; left: number; offset: number };
+  const candidates = new Map<number, Candidate | null>();
+  const read = (index: number) => {
+    let candidate = candidates.get(index);
+    if (candidate === undefined) {
+      const left = drawnCaret(view, boundaries[index]);
+      candidate =
+        left === null ? null : { index, left, offset: boundaries[index] };
+      candidates.set(index, candidate);
+    }
+    return candidate;
+  };
+  const nearestDrawnCandidate = (index: number, low: number, high: number) => {
+    for (let step = 0; index - step > low || index + step < high; step++) {
+      const below = index - step > low ? read(index - step) : null;
+      if (below) return below;
+      const above = index + step < high ? read(index + step) : null;
+      if (above) return above;
+    }
+    return null;
+  };
+  const first =
+    boundaries.length > 0
+      ? nearestDrawnCandidate(0, -1, boundaries.length)
+      : null;
+
+  if (!first) return estimateOffset(view, line.from, line.text, x);
+  const last =
+    nearestDrawnCandidate(boundaries.length - 1, -1, boundaries.length) ??
+    first;
+  let found: Array<Candidate | null>;
+
+  if (RIGHT_TO_LEFT.test(line.text)) {
+    found = boundaries.map((_, index) => read(index));
+  } else {
+    let low = first;
+    let high = last;
+    if (low.left >= x) high = low;
+    else if (high.left < x) low = high;
+    while (high.index - low.index > 1) {
+      const middle = nearestDrawnCandidate(
+        (low.index + high.index) >> 1,
+        low.index,
+        high.index
+      );
+      if (!middle) break;
+      if (middle.left < x) low = middle;
+      else high = middle;
+    }
+    found = [low, high];
+  }
+  const nearest = found
+    .filter((candidate): candidate is Candidate => !!candidate)
+    .reduce((a, b) => (Math.abs(b.left - x) < Math.abs(a.left - x) ? b : a));
+  const beyond =
+    (x < first.left && boundaries[0] > line.from) ||
+    (x > last.left && boundaries.at(-1) < line.to);
+
+  return beyond
+    ? estimateOffset(view, line.from, line.text, x)
+    : nearest.offset;
 };
 
 const decorationAttributes = (
@@ -190,6 +382,21 @@ export function createCodeMirrorAdapter({
       const attributes = new Compartment();
       const language = new Compartment();
       let current = state;
+      let predictedEntry: { offset: number; x: number } | null = null;
+      const keepPredictedEntry = (
+        changes: readonly ExternalTextChange[] | null,
+        next: CodeMirrorExternalTextUpdate['state']
+      ) => {
+        if (
+          predictedEntry &&
+          (changes === null ||
+            changes.length > 0 ||
+            next.selection?.anchor !== predictedEntry.offset ||
+            next.selection.focus !== predictedEntry.offset)
+        ) {
+          predictedEntry = null;
+        }
+      };
       let destroyed = false;
       let composing = false;
       let applyingCodeMirror = false;
@@ -316,6 +523,10 @@ export function createCodeMirrorAdapter({
 
         if (result.status === 'stale') resetFromPlite();
       };
+      const exitX = (selection: SelectionRange) =>
+        selection.goalColumn === undefined
+          ? view.coordsAtPos(selection.head)?.left
+          : view.contentDOM.getBoundingClientRect().left + selection.goalColumn;
       const handleBoundaryKey = (event: KeyboardEvent) => {
         if (
           composing ||
@@ -364,13 +575,14 @@ export function createCodeMirrorAdapter({
           return true;
         }
         if (!selection.empty && !event.shiftKey) return false;
+        const vertical = event.key === 'ArrowUp' || event.key === 'ArrowDown';
         event.preventDefault();
         syncSelection();
         const result = actions.navigateOut({
           baseVersion: current.version,
           direction,
           extend: event.shiftKey,
-          x: view.coordsAtPos(selection.head)?.left,
+          x: vertical ? exitX(selection) : undefined,
         });
 
         if (result.status === 'stale') resetFromPlite();
@@ -536,6 +748,7 @@ export function createCodeMirrorAdapter({
         if (destroyed) return;
         const previous = current;
         current = next;
+        keepPredictedEntry(changes, next);
         const effects: Array<StateEffect<unknown>> = [];
         if (next.config.language !== previous.config.language) {
           effects.push(language.reconfigure([]));
@@ -639,26 +852,31 @@ export function createCodeMirrorAdapter({
           delete host.dataset.language;
           delete host.dataset.codeBlockLanguageError;
         },
-        focus({ edge, x } = {}) {
+        focus() {
+          const entered = predictedEntry;
+          predictedEntry = null;
           if (current.selection) {
-            writeSelection(view, current.selection);
-          } else if (edge) {
-            let offset = edge === 'end' ? view.state.doc.length : 0;
-
-            if (x !== undefined) {
-              const rect = view.scrollDOM.getBoundingClientRect();
-              const y = edge === 'end' ? rect.bottom - 1 : rect.top + 1;
-
-              offset = view.posAtCoords({ x, y }) ?? offset;
-            }
-            writeSelection(view, { anchor: offset, focus: offset });
+            writeSelection(
+              view,
+              current.selection,
+              entered?.offset === current.selection.focus
+                ? entered.x
+                : undefined
+            );
           }
           view.focus();
+        },
+        offsetAt({ edge, x }) {
+          const offset = readEdgeLineOffset(view, edge, x);
+          predictedEntry = { offset, x };
+
+          return offset;
         },
         update(input) {
           if (applyingCodeMirror) {
             if (!canAcceptInFlightFocusRefresh(input)) assertIdle();
             current = input.state;
+            keepPredictedEntry(input.changes, input.state);
 
             return;
           }

@@ -17,7 +17,6 @@ import {
   isDOMText,
 } from '../../dom';
 import {
-  type DOMPhaseScheduler,
   IS_FOCUSED,
   IS_NODE_MAP_DIRTY,
   isAndroidDOMHost,
@@ -310,7 +309,7 @@ export type EditableDOMSelectionSyncOptions = {
   preserveScroll?: boolean;
 };
 
-const captureScrollOffsets = (startElement: HTMLElement) => {
+const preserveScrollAround = (startElement: HTMLElement, write: () => void) => {
   const elements: Array<{
     element: Element;
     scrollLeft: number;
@@ -329,42 +328,19 @@ const captureScrollOffsets = (startElement: HTMLElement) => {
     });
   }
 
+  write();
+
+  for (const { element, scrollLeft, scrollTop } of elements) {
+    element.scrollLeft = scrollLeft;
+    element.scrollTop = scrollTop;
+  }
+
   const window = startElement.ownerDocument.defaultView;
   const { scrollingElement } = startElement.ownerDocument;
 
-  return () => {
-    for (const { element, scrollLeft, scrollTop } of elements) {
-      element.scrollLeft = scrollLeft;
-      element.scrollTop = scrollTop;
-    }
-
-    if (window && scrollingElement) {
-      window.scrollTo(scrollingElement.scrollLeft, scrollingElement.scrollTop);
-    }
-  };
-};
-
-const restoreScrollOffsets = (
-  restoreScroll: (() => void) | null,
-  domPhaseScheduler: DOMPhaseScheduler
-) => {
-  if (!restoreScroll) {
-    return;
+  if (window && scrollingElement) {
+    window.scrollTo(scrollingElement.scrollLeft, scrollingElement.scrollTop);
   }
-
-  restoreScroll();
-  domPhaseScheduler.schedule(
-    'dom-write',
-    'restore-selection-scroll-microtask',
-    restoreScroll,
-    { timing: 'microtask' }
-  );
-  domPhaseScheduler.schedule(
-    'dom-write',
-    'restore-selection-scroll-frame',
-    restoreScroll,
-    { timing: 'animation-frame' }
-  );
 };
 
 export const isStaleModelOwnedTextInputDOMRange = ({
@@ -594,7 +570,6 @@ export const setEditableModelSelectionPreference = ({
   reason?: ModelSelectionPreferenceReason;
   selectionSource?: SelectionSource;
 }) => {
-  // Keep the input guard and the controller's selection provenance in lockstep.
   const nextSelectionSource =
     selectionSource ?? (preferModelSelection ? 'model-owned' : 'dom-current');
   const nextReason =
@@ -616,7 +591,6 @@ export const setEditableModelSelectionPreference = ({
   inputController.state.selectionSource = nextSelectionSource;
   if (
     preferModelSelection &&
-    nextSelectionSource === 'app-owned' &&
     inputController.state.selectionChangeOrigin === 'native-user'
   ) {
     inputController.state.selectionChangeOrigin = null;
@@ -1536,16 +1510,19 @@ export const syncEditableDOMSelectionToEditor = ({
 
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';
-      const restoreScroll = preserveScroll
-        ? captureScrollOffsets(editorElement)
-        : null;
-      domSelection.setBaseAndExtent(
-        anchorNode,
-        anchorOffset,
-        focusNode,
-        focusOffset
-      );
-      restoreScrollOffsets(restoreScroll, domPhaseScheduler);
+      const writeSelection = () =>
+        domSelection.setBaseAndExtent(
+          anchorNode,
+          anchorOffset,
+          focusNode,
+          focusOffset
+        );
+
+      if (preserveScroll) {
+        preserveScrollAround(editorElement, writeSelection);
+      } else {
+        writeSelection();
+      }
       scheduleClearSelectionUpdate('clear-exported-view-range-update');
       return;
     }
@@ -1643,34 +1620,33 @@ export const syncEditableDOMSelectionToEditor = ({
     state.selectionChangeOrigin = 'programmatic-export';
 
     try {
-      const restoreScroll = preserveScroll
-        ? captureScrollOffsets(editorElement)
-        : null;
       const isBackward = RangeApi.isBackward(projectedSelection);
+      const writeSelection = () => {
+        if (options?.forceModelExport) {
+          replaceDOMSelectionRange(domSelection, domRange, {
+            backward: isBackward,
+          });
+        } else if (isBackward) {
+          domSelection.setBaseAndExtent(
+            domRange.endContainer,
+            domRange.endOffset,
+            domRange.startContainer,
+            domRange.startOffset
+          );
+        } else {
+          domSelection.setBaseAndExtent(
+            domRange.startContainer,
+            domRange.startOffset,
+            domRange.endContainer,
+            domRange.endOffset
+          );
+        }
+      };
 
-      if (options?.forceModelExport) {
-        replaceDOMSelectionRange(domSelection, domRange, {
-          backward: isBackward,
-        });
-      } else if (isBackward) {
-        domSelection.setBaseAndExtent(
-          domRange.endContainer,
-          domRange.endOffset,
-          domRange.startContainer,
-          domRange.startOffset
-        );
+      if (preserveScroll) {
+        preserveScrollAround(editorElement, writeSelection);
       } else {
-        domSelection.setBaseAndExtent(
-          domRange.startContainer,
-          domRange.startOffset,
-          domRange.endContainer,
-          domRange.endOffset
-        );
-      }
-
-      restoreScrollOffsets(restoreScroll, domPhaseScheduler);
-
-      if (!preserveScroll) {
+        writeSelection();
         scrollSelectionIntoView(editor, domRange);
       }
     } finally {

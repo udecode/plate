@@ -1,0 +1,392 @@
+---
+title: "Plite React Hooks"
+description: "Read editor state, root state, annotations, and DOM-aware facts from React."
+---
+
+Use hooks inside an `EditorRoot` provider when React UI needs editor facts. Prefer the
+narrowest hook that matches the UI: editor-wide hooks for toolbars, element
+hooks for rendered nodes, and targeted hooks for annotations.
+
+## On this page
+
+- [Editor Hooks](hooks#editor-hooks)
+- [Runtime And Root Hooks](hooks#runtime-and-root-hooks)
+- [Element And Node Hooks](hooks#element-and-node-hooks)
+- [Annotation Hooks](hooks#annotation-hooks)
+- [Widget Hooks](hooks#widget-hooks)
+
+## Editor hooks
+
+#### `useEditor(options?, deps?): Editor`
+
+Create one component-owned editor. The optional dependency list controls when
+React creates a replacement editor. Plugins take outside resources, such as a
+Yjs document, when React commits the component, and give them back when it
+unmounts or the editor is replaced.
+
+#### `useEditorContext(): Editor`
+
+Get the editor from the nearest `EditorRoot` provider. Use
+`useOptionalEditorContext()` when a component may render outside a provider.
+
+#### `useEditorComposing(): boolean`
+
+Get whether the editor is currently handling a composition session.
+
+#### `useEditorFocused(): boolean`
+
+Get whether the editor is focused. Use this for toolbar UI, not for
+every rendered node in a large document.
+
+#### `useEditorReadOnly(): boolean`
+
+Get whether the current editor is read-only.
+
+#### `useEditorSelection(): Range | null`
+
+Get the current editor selection. This hook re-renders when the selection
+changes, so keep it out of large rendered node trees.
+
+#### `useEditorState<T>(selector, options?): T`
+
+Subscribe to a derived editor-state value. The selector runs inside
+`editor.read`, so toolbar UI does not need to open a read boundary by
+hand.
+
+```typescript
+const isBold = useEditorState((state) => {
+  return state.marks()?.bold === true;
+});
+```
+
+Use `options.shouldUpdate` to skip commits that cannot affect the selected
+value.
+
+```typescript
+const selection = useEditorState((state) => state.selection(), {
+  shouldUpdate: (change) => Boolean(change?.selectionChanged),
+});
+```
+
+Selectors always call the latest render's function, so they can close over
+component props without a dependency list.
+
+```typescript
+const matchingText = useEditorState((state) =>
+  state.text.string([]).includes(query)
+);
+```
+
+#### `useEditorRuntimeState<T>(editor, selector, options?): T`
+
+Subscribe to editor state from an explicit editor instance. Use this for
+toolbars, containers, or app chrome that receives an editor but is not rendered
+inside that editor's `EditorRoot` provider.
+
+```typescript
+const readOnly = useEditorRuntimeState(editor, (state) =>
+  state.view.isReadOnly()
+);
+```
+
+Inside provider descendants, prefer `useEditorState`. It reads the same state
+but gets the editor from context.
+
+Commit subscriptions invalidate this selector synchronously. `equalityFn` and
+`shouldUpdate` suppress unnecessary renders. Use a provider selector's explicit
+`deferred` option when delayed delivery is an intentional product choice.
+
+#### `useStateFieldValue<T>(field, options?): T`
+
+Subscribe to one `defineStateField` value.
+
+```tsx
+const title = useStateFieldValue(documentTitle);
+```
+
+The hook only re-renders when that field key appears in
+`change.dirtyStateKeys`. Use it for document title, page settings, spellcheck,
+and other document meta controls.
+
+#### `useSetStateField<T>(field): (value, policy?) => void`
+
+Create a setter for one `defineStateField` value.
+
+```tsx
+const setTitle = useSetStateField(documentTitle);
+
+setTitle("Q3 Launch Brief", { history: "new-batch", tags: "title-input" });
+```
+
+The setter writes through `editor.update` and preserves DOM selection by
+default. Pass the editor's typed update policy when the app needs history or
+additional tags; the hook appends its selection-preservation tags.
+
+#### `useEditorSelector<T>(selector, options?): T`
+
+Subscribe to a low-level derived editor value.
+
+Use `useEditorState` for normal app-level editor reads. Use
+`useEditorSelector` when you intentionally need the editor object or an
+installed runtime API. Prefer node-, text-, decoration-, or element-scoped
+hooks when rendering editor content.
+
+```typescript
+const documentVersion = useEditorSelector(
+  (editor) => editor.read.runtime.snapshot().version,
+  {
+    equalityFn: Object.is,
+    shouldUpdate: (commit) =>
+      commit === undefined || commit.changed.has("document"),
+  }
+);
+```
+
+#### `useEditorHistory(options?): EditorHistoryController`
+
+Create undo/redo commands and keyboard handling for the active root.
+
+```tsx
+const history = useEditorHistory();
+
+return (
+  <button
+    aria-busy={history.pending !== null}
+    disabled={!history.canUndo}
+    onClick={history.undo}
+  >
+    Undo
+  </button>
+);
+```
+
+Pass `options.root` to bind history controls to one root in the current
+provider. Pass `options.editor` to use an existing command view, including
+outside a Plite provider; omit `root` with an explicit editor. Explicit controls
+read the view's current read-only permission and restore focus to that exact
+view. Pass
+`focusPolicy: 'preserve'` when undo/redo is controlled from external UI and
+DOM focus should stay outside the editor. `history.root` is `undefined` for the
+primary document and the root key for an extra root.
+
+`history.undo()` and `history.redo()` dispatch mounted UI actions and return
+`void`. `history.pending` is `"undo"`, `"redo"`, or `null`; `canUndo` and
+`canRedo` are both `false` while a live-session replay is pending. A repeated
+shortcut during that wait is consumed and reports a `busy` result.
+
+Use the model service when application code needs the outcome itself. It
+returns synchronously; only a live-session replay returns `pending` with a
+`settled` promise:
+
+```typescript
+const result = editor.api.history.undo();
+const outcome = result.status === "pending" ? await result.settled : result;
+```
+
+Mounted controls deliver every final outcome to the exact initiating editor
+surface. Handle expected outcomes such as `blocked`, `busy`, `empty`, and
+`failed` on `Editable`:
+
+```tsx
+<Editable
+  onHistoryReplay={({ direction, result }) => {
+    if (result.status === "blocked") {
+      showHistoryConflict(direction, result);
+    }
+  }}
+/>
+```
+
+A `failed` outcome means the replay's owner or settlement threw; the editor
+reports that error to its `lifecycleErrorSink`. With no sink, it uses
+`reportError`, or `console.error` where `reportError` does not exist. The mounted runtime restores selection and focus only when the
+initiating surface, focus target, and editor commit remain unchanged through
+settlement.
+
+## Runtime and root hooks
+
+Use these when one editor owns multiple roots or external chrome.
+
+- Runtime hooks read the whole editor runtime.
+- Root state hooks read one root.
+- Root editor hooks return a command-capable editor for one root.
+
+Use `useRootEditor(root)` when UI knows its root. Use `useCommand` for commands
+that should follow the active or editable root.
+
+#### `useRuntimeState<T>(selector, options?): T`
+
+Subscribe to whole-runtime editor state. The selector runs in a read boundary and
+re-renders only when the selected value changes.
+
+Shared selector options are `equalityFn`, `shouldUpdate`, and `deferred`.
+Selectors always read the latest render closure. Use `shouldUpdate(commit)`
+with `commit.changed` to skip commits that cannot affect the selected value.
+
+#### `useRootState<T>(root, selector, options?): T`
+
+Subscribe to one root's state. The selector skips commits that cannot affect
+that root.
+
+#### `useRootEditor(root?, options?): Editor`
+
+Create a command-capable editor for one root.
+
+Use this for root-specific toolbar or sidebar commands. Pass `{ readOnly:
+true }` when the editor should only read state.
+Omit `root` for the primary document.
+
+#### `useRootChrome(root?, options?): RootChromeController`
+
+Create root chrome props for mouse interaction outside the editable content,
+such as margin clicks and drag selection around a root.
+
+```tsx
+const chrome = useRootChrome("body");
+
+return <div {...chrome.props}>{children}</div>;
+```
+
+Pass `selection: 'end'` for chrome that should place the caret at the end of a
+root when clicked.
+
+#### `useContentRoot(element?, options?): ContentRootController`
+
+Resolve a schema-owned child content root and its chrome controller.
+
+Use this inside an element renderer for editable voids or nested editor
+surfaces.
+
+#### `useChildRoot(element?, slot?): RootKey`
+
+Resolve the stable child-root key for an element and slot.
+
+Prefer persisted `childRoots[slot]` when the child root is part of document
+data. The runtime fallback is for ephemeral editor islands.
+
+#### `useCommand(command, options?): (input) => boolean | undefined`
+
+Bind one typed semantic command to the mounted root editor. Command input
+belongs to the returned dispatcher, so event-time data never becomes hook
+configuration. The dispatcher returns `true` when the command landed, `false`
+when no handler applied, and `undefined` when the editor refused the update.
+
+```tsx
+import { editorCommands } from "plitejs";
+import { useCommand } from "plitejs/react";
+
+const insertBreak = useCommand(editorCommands.insertBreak, {
+  focus: "restore-root",
+});
+
+return <button onClick={() => insertBreak()}>New paragraph</button>;
+```
+
+Pass `focus: 'restore-root'` when the command should move focus back to the
+editor root before running. Pass `focus: 'none'` to leave focus alone. The
+default is `focus: 'preserve'`. Pass `root` when the command should target a
+known root instead of the editable or active root.
+
+For an imperative UI callback that is not a semantic command, use the provider
+editor and React directly. This does not claim replayable command semantics.
+
+```tsx
+const editor = useEditorContext();
+const insertTitle = React.useCallback(() => {
+  editor.update.text.insert("Title");
+}, [editor]);
+```
+
+## Element and node hooks
+
+Use these inside rendered editor content or node-local UI.
+
+#### `useElement(): Element`
+
+Get the current element object inside an element renderer.
+
+#### `useElementPath(): Path | null`
+
+Subscribe to the current path of the rendered element. Use this only for UI
+that displays or derives live path state during render. Event handlers should
+usually call `editor.api.dom.resolvePath(element)` and return early when it is
+not mounted.
+
+#### `useElementSelected(options?: UseElementSelectedOptions): boolean`
+
+Subscribe to whether the current element, or an explicit element path,
+matches the current selection. The default `intersects` mode includes text
+selection inside the element. Use `{ mode: 'collapsed' }` for a collapsed
+selection and `{ mode: 'node' }` only when the selection is a `NodeSelection`
+whose path exactly matches the element. Node-focused asset rings and toolbars
+should use `node`; caption or descendant editing UI should use `intersects`.
+Pass `{ at: path }` to watch an explicit path.
+
+```ts
+type UseElementSelectedOptions = {
+  at?: Path | null;
+  mode?: "intersects" | "collapsed" | "node";
+};
+```
+
+#### `useNodeSelector<T>(selector, equalityFn?, options?): T`
+
+Subscribe to a value derived from one mounted node.
+
+Pass `options.nodeKey` to target a specific node, or call it inside an editor
+node renderer to use that renderer's runtime target.
+
+#### `useTextSelector<T>(selector, equalityFn?, options?): T`
+
+Subscribe to a value derived from one mounted text node.
+
+Pass `options.nodeKey` to target a specific text node, or call it inside an
+editor text renderer to use that renderer's runtime target.
+
+## Annotation hooks
+
+Use annotation hooks for durable anchored ranges such as comments, diagnostics,
+and external review markers.
+
+#### `useAnnotationStore<TData>(editor, annotations, options?): AnnotationStore<TData>`
+
+Create an annotation store for durable anchored ranges such as comments,
+diagnostics, or external review markers.
+
+Pass the store explicitly to annotation reader hooks.
+
+Pass the current annotation array directly. A new array identity refreshes the
+store automatically. Use `revision` only for an external mutable source that
+changes without producing a new array.
+
+```tsx
+const annotations = comments.map((comment) => ({
+  anchor: comment.anchor,
+  data: comment,
+  id: comment.id,
+}));
+
+const annotationStore = useAnnotationStore(editor, annotations);
+
+const externalStore = useAnnotationStore(editor, mutableAnnotations, {
+  revision: mutableAnnotationsRevision,
+});
+```
+
+#### `useAnnotations<TData>(store): AnnotationSnapshot<TData>`
+
+Read the current annotation snapshot from an explicit store.
+
+#### `useAnnotation<TData>(store, id): ResolvedAnnotation<TData> | null`
+
+Read one annotation by id.
+
+## Widget hooks
+
+Render app-owned UI from node, selection, or annotation state.
+
+#### `useSelectionGeometry({ editableRef }): RangeGeometry | null`
+
+Read the current editor selection geometry.
+Use this direct domain hook for toolbars, link controls, and retained carets.
+Pass the exact Editable ref received by the render slot.

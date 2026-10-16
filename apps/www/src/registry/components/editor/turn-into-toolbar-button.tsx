@@ -21,13 +21,11 @@ import {
   BaseCodeBlockPlugin,
   BaseHeadingPlugin,
   BaseListPlugin,
-  BaseParagraphPlugin,
   defineCommand,
   ElementApi,
   PathApi,
   SelectionApi,
   type Element,
-  type NodeEntry,
 } from 'platejs';
 import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { BaseColumnPlugin } from 'platejs/layout';
@@ -98,21 +96,11 @@ const structuralStateEqual = (
   previous.quote.active === next.quote.active &&
   previous.quote.eligible === next.quote.eligible;
 
-// A block directly inside a Details body becomes a paragraph instead of
-// resetting, because the Details' only content default is its title.
 const turnIntoList = defineCommand<
-  Readonly<{
-    detailsType: string | undefined;
-    paragraphType: string;
-    summaryType: string | undefined;
-    type: 'bulleted' | 'numbered' | 'task';
-  }>,
+  Readonly<{ type: 'bulleted' | 'numbered' | 'task' }>,
   Editor
 >('turn-into:list', {
-  build: ({
-    input: { detailsType, paragraphType, summaryType, type },
-    state,
-  }) => {
+  build: ({ input: { type }, state }) => {
     let applied = false;
     const result = state.transaction((tx) => {
       const selection = tx.selection();
@@ -120,32 +108,22 @@ const turnIntoList = defineCommand<
       if (!selection) return;
 
       const root = SelectionApi.root(selection);
-      const at = ([first, ...rest]: ReadonlyArray<NodeEntry<Element>>) =>
+      const [first, ...rest] = tx.nodes
+        .blocks({ mode: 'lowest' })
+        .map(([, path]) => path);
+
+      if (
         first &&
-        SelectionApi.nodes(
-          [first[1], ...rest.map(([, path]) => path)],
-          root ? { root } : {}
-        );
-      const blocks = tx.nodes.blocks({ mode: 'lowest' });
-      const body = blocks.filter(([node]) => {
-        const parent = tx.nodes.parent(state.key(node));
-
-        return (
-          detailsType !== undefined &&
-          node.type !== summaryType &&
-          !!parent &&
-          ElementApi.isElementType(parent[0], detailsType)
-        );
-      });
-      const reset = at(blocks.filter((entry) => !body.includes(entry)));
-      const retyped = at(body.filter(([node]) => node.type !== paragraphType));
-      const bodyAt = at(body);
-
-      if (reset && !tx.blocks.reset({ at: reset, unset: ['level'] })) return;
-      if (retyped && !tx.blocks.set({ type: paragraphType }, { at: retyped })) {
+        !tx.blocks.reset({
+          at: SelectionApi.nodes([first, ...rest], {
+            mode: 'block',
+            ...(root ? { root } : {}),
+          }),
+          unset: ['level'],
+        })
+      ) {
         return;
       }
-      if (bodyAt) tx.nodes.unset('level', { at: bodyAt });
       tx.plugin(BaseListPlugin).clear();
       applied = tx.plugin(BaseListPlugin).toggle({ type });
     });
@@ -256,7 +234,7 @@ const getStructuralState = (editor: Editor): StructuralState => {
         code.installed &&
         !codeMixed &&
         !holdsTitleAndMore &&
-        isContiguousSiblingRun(entries),
+        (selectedEntries.length > 0 || isContiguousSiblingRun(entries)),
     },
     columns: {
       active: columnActive,
@@ -471,14 +449,7 @@ export function TurnIntoToolbarButton() {
             return;
           }
 
-          const summary = editor.plugin(BaseDetailsSummaryPlugin);
-
-          editor.update.command(turnIntoList, {
-            detailsType: details.installed ? details.schema.type : undefined,
-            paragraphType: editor.plugin(BaseParagraphPlugin).schema.type,
-            summaryType: summary.installed ? summary.schema.type : undefined,
-            type,
-          });
+          editor.update.command(turnIntoList, { type });
         },
       });
     });
@@ -497,10 +468,12 @@ export function TurnIntoToolbarButton() {
               if (!current.eligible || editor.read.view.isReadOnly()) return;
 
               editor.update((tx) => {
-                if (editor.plugin(BaseListPlugin).installed) {
+                if (
+                  tx.plugin(BaseBlockquotePlugin).toggle() &&
+                  editor.plugin(BaseListPlugin).installed
+                ) {
                   tx.plugin(BaseListPlugin).clear();
                 }
-                tx.plugin(BaseBlockquotePlugin).toggle();
               });
             },
           },

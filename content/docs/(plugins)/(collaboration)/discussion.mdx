@@ -16,13 +16,13 @@ Discussion is copied UI that opens a block's comments and authored changes in on
 
 | Owner | Responsibility |
 | --- | --- |
-| `platejs/suggestion` and `platejs/suggestion/react` | Supply suggestion modes, semantic change attributes, exact-view activation, and stable change hooks |
-| `platejs/authored` | Store proposed edits, identities, dependencies, decisions, and retained content in the document |
+| `platejs/suggestion` and `platejs/suggestion/react` | Supply suggestion modes, semantic change attributes, exact-view activation, and change and card hooks |
+| `platejs/authored` | Store proposed edits and their identities in the document, group them into review cards, and decide them |
 | `platejs/comments` and `platejs/comments/react` | Own comment records, actions, mapped ranges, decoration, and activation |
 | Copied `suggestion` item | Configure the package plugin's content attributes and compose `SuggestionKit` |
 | Copied `discussion` item | Join authored changes to optional comment threads, then render block triggers, cards, and Floating Discussion |
 
-The application pairs `CommentsJSON` with a document revision, provides users, and authorizes durable writes through `initialState.mutate`. Authored metadata stays in the document envelope. Comment threads contain semantic targets; current placement comes from `attachment(id)` and may refer to a stable authored change ID.
+The application pairs `CommentsJSON` with a document revision, provides users, and authorizes durable writes through `initialState.mutate`. Review marks stay on the document's nodes and review records in its envelope. Comment threads contain semantic targets; current placement comes from `attachment(id)` and may refer to a stable authored change ID.
 
 ## Installation
 
@@ -95,33 +95,32 @@ For a smaller editor composition, configure `SuggestionPlugin` from `platejs/sug
 Discussion groups unresolved records by block and sorts each block chronologically:
 
 - root comment threads appear as comment cards;
-- pending authored changes appear as review cards with Accept and Reject actions;
-- threads whose target is a change appear inside that review card;
+- pending authored changes appear in review cards with Accept and Reject actions;
+- threads whose target is a change appear inside the review card holding it;
 - resolving a thread removes its comment decoration;
-- accepting or rejecting a change hides its card and replies;
+- accepting or rejecting a card hides it and its replies;
 - document undo reverses an accept or reject decision without changing messages or thread resolution;
 - resolving or reopening a thread stays outside document undo.
 
-`useSuggestionChanges(path)` supplies native `AuthoredChange` records for each block. Discussion derives dates, labels, ranges, and card text in copied registry code, then joins change-targeted threads from Comments. Editing a comment body does not rebuild suggestion decorations or wake unrelated blocks.
+`useSuggestionGroups(blockKey)` supplies the review cards touching each block. A card's body reads its changes a page at a time with `read.changes({ group: card.id })`. Discussion derives dates, labels, ranges, and card text in copied registry code, then joins change-targeted threads from Comments.
 
-Review cards call authored directly:
+Review cards decide the card they show:
 
 ```tsx
 import { AuthoredPlugin } from 'platejs/authored';
 
 const authored = editor.plugin(AuthoredPlugin);
-const selection = authored.read.select({ ids: [changeId] });
 const result = authored.update.decide({
   action: 'accept',
-  selection,
+  groups: [card],
 });
 ```
 
-Use `action: 'reject'` to reject the change. Keep a card open for `stale` or `blocked` results so the reviewer can refresh the record or resolve its dependencies explicitly.
+Use `action: 'reject'` to reject the card. Keep a card open for `stale` or `blocked` results so the reviewer can read it again or decide the related changes `result.with` names together with it.
 
 ## Floating Discussion
 
-A block trigger opens every unresolved comment and pending suggestion currently attached to that block. Clicking inline comment text opens the records at that point. Clicking an authored-change marker activates that change in the mounted suggestion view. These live entry points open the same copied popover and cards.
+A block trigger opens every unresolved comment and pending suggestion currently attached to that block. Clicking inline comment text opens the records at that point. Clicking an authored-change marker activates its card in the mounted suggestion view. These live entry points open the same copied popover and cards.
 
 When comment ranges overlap, clicking the shared text opens every thread at that point in source order. The selected group survives edits and source reordering until another activation or thread removal changes it. Clicking unmarked editor content clears the active review.
 
@@ -148,11 +147,11 @@ if (result.status === 'applied') {
 }
 ```
 
-Preserve input for non-applied results and thrown errors. Replies use the change's location without allocating a comment anchor. Comment records retain their bodies and resolution when the change leaves the active projection. If undo or a document update restores that change ID, its unresolved replies appear again.
+Preserve input for non-applied results and thrown errors. Replies use the change's location without allocating a comment anchor. Comment records retain their bodies and resolution when the change is no longer pending. If undo or a document update restores that change ID, its unresolved replies appear again.
 
 ## Without Comments
 
-`SuggestionPlugin` does not depend on Comments. An editor can use suggestion modes, semantic decorations, active-change state, and `useSuggestionChanges(path)` without installing `CommentsPlugin` or `DiscussionKit`.
+`SuggestionPlugin` does not depend on Comments. An editor can use suggestion modes, semantic decorations, active-card state, `useSuggestionChanges(path)`, and `useSuggestionGroups(blockKey)` without installing `CommentsPlugin` or `DiscussionKit`.
 
 Add Discussion only when the product needs cards, replies, authors, dates, or popovers. Those presentation and thread-joining choices remain in copied registry code.
 

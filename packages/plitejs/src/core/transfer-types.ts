@@ -106,6 +106,35 @@ export type TransferSideInput = Readonly<{
 }>;
 
 /**
+ * A block copy or move at its final edge, before placement and vetoes judge
+ * it.
+ */
+export type TransferAdoptInput = TransferLandingInput &
+  Readonly<{ payload: Extract<TransferPayload, { kind: 'nodes' }> }>;
+
+/**
+ * Properties a block copy or move adopts at `at`, a path inside the payload
+ * whose first index picks one of its nodes.
+ */
+export type TransferPatch = Readonly<{
+  at: Path;
+  properties: TransferPatchProperties;
+}>;
+
+/**
+ * Only properties declared `landing: 'adopt'`; `undefined` unsets one. A move
+ * patch may not set `null`.
+ */
+export type TransferPatchProperties = Readonly<
+  Record<string, unknown> & {
+    childRoots?: never;
+    children?: never;
+    text?: never;
+    type?: never;
+  }
+>;
+
+/**
  * A veto's input. For a side landing, `edge` and `target` place the shell and
  * `wrap` is set: the payload lands inside the shell, deeper than the edge, and
  * a wrap that takes the target's place also runs every veto with the target as

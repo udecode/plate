@@ -20,7 +20,7 @@ export type {
   EditorUpdateTransactionProvider,
 } from '../interfaces/editor';
 
-export { assertEditorOptions } from './editor-options';
+export { assertEditorOptions, readEditorOptions } from './editor-options';
 export { failInvariant } from './fail-invariant';
 
 export { getEditorCommitSnapshot } from '../core/commit';
@@ -140,16 +140,21 @@ export {
   getEditorAuthoredDocumentCapability,
   withCompiledEditorSchemaCapabilityEntries,
   compileEditorSchemaContractEntries,
+  createDormantEditor,
   initializePluginEntries,
   initializePlugins,
 } from '../create-editor';
 export { isAuthorId } from '../core/authored-document-capability';
 export {
+  createEditorOwner,
+  type EditorOwner,
+  startOwnedEditor,
+} from '../core/editor-owner';
+export {
   compileEditorSchemaContributions,
   EditorSchemaCompileError,
   getCompiledSchemaPropertyId,
   getCompiledPropertyMergeStrategy,
-  hashSchemaIdentityString,
   matchesCompiledSchemaTarget,
   preserveCompiledSchemaPropertyIdentity,
   resolveCompiledSchemaProperty,
@@ -174,8 +179,11 @@ export {
   getInstalledPlugin,
   getInstalledPluginApi,
   isPlugin,
+  queueAfterPluginAcquisition,
   reportEditorLifecycleError,
   resolveInstalledPlugin,
+  startEditor,
+  releaseEditor,
   setPluginPortalFactory,
   withPluginPortalCandidates,
 } from '../core/plugin';
@@ -186,6 +194,7 @@ export {
 } from '../core/public-root';
 export {
   canPlaceBlocksAtPath,
+  placeElementAt,
   createDetachedEditorSchema,
   getCompiledEditorSchemaFromApi,
 } from '../core/editor-schema';
@@ -308,8 +317,4 @@ export {
 } from '../core/document-view-read';
 export { formatDebugValue } from '../utils/format-debug-value';
 export { isObject } from '../utils/is-object';
-export {
-  getRangeRoot,
-  getReaderRange,
-  MAIN_ROOT_KEY,
-} from './root-location';
+export { getRangeRoot, getReaderRange, MAIN_ROOT_KEY } from './root-location';

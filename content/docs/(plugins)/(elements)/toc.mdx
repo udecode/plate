@@ -15,7 +15,6 @@ docs:
 
 - Automatically generates a table of contents from document headings
 - Smooth scrolling to headings
-- Active section tracking for the current heading while you scroll
 - Keyboard-accessible heading navigation with `Enter` and `Space`
 
 TOC tracks headings with editor-scoped `NodeKey` values. It does not require
@@ -200,7 +199,7 @@ editor.plugin(BaseTocPlugin).update.insert();
 
 ## Registry UI
 
-The copied [`toc`](/docs/components/toc) component owns active-heading
-tracking, scrolling, and navigation feedback. Keep those product-facing
-interaction choices beside the renderer; the package plugin owns heading
-discovery through `editor.plugin(TocPlugin).read.headings()`.
+The copied [`toc`](/docs/components/toc) component owns scrolling and
+navigation feedback. Keep those product-facing interaction choices beside the
+renderer; the package plugin owns heading discovery through
+`editor.plugin(TocPlugin).read.headings()`.

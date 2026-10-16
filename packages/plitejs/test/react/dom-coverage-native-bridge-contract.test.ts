@@ -1756,7 +1756,9 @@ describe('native block drag', () => {
   test('drag.start selects the dragged blocks, marks their hosts and returns inert previews', () => {
     const { dataTransfer, editor, hosts, root } = setup();
 
-    editor.update.selection.set(SelectionApi.nodes([[0], [1]]));
+    editor.update.selection.set(
+      SelectionApi.nodes([[0], [1]], { mode: 'block' })
+    );
 
     try {
       const drag = editor.api.dom.drag.start(

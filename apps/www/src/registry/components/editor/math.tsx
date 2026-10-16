@@ -52,7 +52,7 @@ export function EquationElement(
     lineBreakBadge?: React.ReactNode;
   }
 ) {
-  const selected = useElementSelected();
+  const selected = useElementSelected({ mode: 'text' });
   const [open, setOpen] = React.useState(selected);
   const katexRef = React.useRef<HTMLDivElement | null>(null);
   const { lineBreakBadge } = props;
@@ -123,7 +123,7 @@ export function InlineEquationElement(
 ) {
   const { element } = props;
   const katexRef = React.useRef<HTMLDivElement | null>(null);
-  const selected = useElementSelected();
+  const selected = useElementSelected({ mode: 'text' });
   const collapsedSelected = useElementSelected({ mode: 'collapsed' });
   const [popoverState, setPopoverState] = React.useState({
     open: collapsedSelected,

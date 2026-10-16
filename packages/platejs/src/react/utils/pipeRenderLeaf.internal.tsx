@@ -12,6 +12,7 @@ import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { EditableProps, EditOnlyConfig } from '../../lib';
 import { EditorLeaf } from '../components';
 import type { Editor } from '../editor/Editor';
+import { useRedrawWithBlock } from '../internal/block-redraws';
 import { usePlateRenderContext } from '../internal/plate-context';
 import {
   setDOMTextSyncRendererCapability,
@@ -198,6 +199,7 @@ export const pipeRenderLeaf = (
   }) => {
     const { attributes: initialAttributes, ...props } = nodeProps;
     const { editor, wrap } = usePlateRenderContext(modelEditor);
+    useRedrawWithBlock();
     let attributes = initialAttributes;
     let { children } = props;
     const readOnly = editor.read.view.isReadOnly();

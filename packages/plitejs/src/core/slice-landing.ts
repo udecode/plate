@@ -1,19 +1,24 @@
+import { createEditorViewRuntime } from '../editor-runtime-view';
 import type {
   ContentSlice,
   Editor,
   EditorStateView,
+  TransactionSpec,
 } from '../interfaces/editor';
-import type { Location } from '../interfaces/location';
-import { type Descendant, NodeApi } from '../interfaces/node';
-import { PointApi } from '../interfaces/point';
-import { RangeApi } from '../interfaces/range';
+import { NodeApi } from '../interfaces/node';
 import { getDefined } from '../internal/get-defined';
 import { ContentSlice as ContentSliceValue } from './content-slice';
+import type { ReplaceSliceCommand } from './editor-commands';
 import { editorReads } from './editor-reads';
 import { getEditorSchema } from './editor-runtime';
-import { sliceFitsLength } from './insert-limit';
-import { getReplaceableEmptyBlock } from './is-empty-element';
+import { limitSliceToLength, sliceFitsLength } from './insert-limit';
 import { MAIN_ROOT_KEY } from './public-root';
+import {
+  fitSliceAtSite,
+  readAtSliceFitSite,
+  resolveSliceFitSite,
+  type SliceFitSite,
+} from './public-state';
 import { executeEditorRead } from './read-registry';
 import type {
   SliceLanding,
@@ -21,91 +26,110 @@ import type {
   SliceLandingTarget,
 } from './slice-landing-types';
 
-export const rootField = (root: string | undefined) =>
-  root === undefined ? {} : { root };
+export type PastePlan = Readonly<{
+  emptyBlockReplacement: ContentSlice | null;
+  inputCut: boolean;
+  landingCut: boolean;
+  site: SliceFitSite;
+  slice: ContentSlice | null;
+}>;
 
-export const landSlice = (editor: Editor, input: SliceLandingInput) =>
-  executeEditorRead(
+export const planPaste = (
+  editor: Editor,
+  state: EditorStateView,
+  input: ReplaceSliceCommand,
+  intent: SliceLandingInput['intent']
+): PastePlan | false => {
+  const site = resolveSliceFitSite(editor, state, input.options);
+
+  if (!site) return false;
+  const limited = limitSliceToLength(input.slice, site.remainingLength);
+
+  if (limited.content.length === 0 && input.slice.content.length > 0) {
+    return {
+      emptyBlockReplacement: null,
+      inputCut: true,
+      landingCut: false,
+      site,
+      slice: null,
+    };
+  }
+
+  const { target } = site;
+  const landed = executeEditorRead(
     editor,
     editorReads.slice.landing,
-    input,
+    { intent, slice: limited, source: input.slice, target },
     ({ slice }): SliceLanding => ({ slice }),
-    editor
+    target.root === editor.read.view.root()
+      ? editor
+      : () =>
+          createEditorViewRuntime(
+            editor,
+            target.root === undefined ? {} : { root: target.root }
+          )
   );
-
-const toSliceRange = (location: Location | undefined) =>
-  PointApi.isPoint(location)
-    ? { anchor: location, focus: location }
-    : RangeApi.isRange(location)
-      ? location
-      : undefined;
-
-export const resolveSliceLandingTarget = (
-  state: EditorStateView,
-  location: Location | undefined,
-  publicRoot: string | undefined
-): SliceLandingTarget => {
-  const range = toSliceRange(location);
-  const root = rootField(publicRoot);
-
-  const empty =
-    range &&
-    getReplaceableEmptyBlock(
-      range,
-      (path) => state.nodes.get(path)?.[0],
-      state.schema
-    );
-
-  if (empty) return { block: empty, kind: 'empty', ...root };
+  const { replaceEmpty } = landed;
+  const slice = limitSliceToLength(landed.slice, site.remainingLength);
 
   return {
-    block:
-      (location === undefined
-        ? undefined
-        : state.nodes.block({
-            at: range ? RangeApi.start(range) : location,
-          })) ?? null,
-    kind: 'context',
-    ...root,
+    emptyBlockReplacement:
+      target.kind === 'empty' && replaceEmpty
+        ? readAtSliceFitSite(editor, site, (rootState) =>
+            prepareEmptyBlockReplacement(
+              editor,
+              rootState,
+              target,
+              replaceEmpty,
+              site.remainingLength
+            )
+          )
+        : null,
+    inputCut: limited !== input.slice,
+    landingCut: slice !== landed.slice,
+    site,
+    slice:
+      slice.content.length === 0 && landed.slice.content.length > 0
+        ? null
+        : slice,
   };
 };
 
-const canCloseSliceEdge = (
-  state: EditorStateView,
-  slice: ContentSlice,
-  edge: 'end' | 'start'
-) => {
-  let nodes: readonly Descendant[] = slice.content;
-  const copiedRoots = new Set(Object.keys(slice.roots ?? {}));
+export const writePaste = (
+  editor: Editor,
+  plan: PastePlan,
+  options: Readonly<{ landing?: true }> = {}
+):
+  | Readonly<{ lossy: boolean; spec: TransactionSpec; written: ContentSlice }>
+  | false => {
+  if (plan.emptyBlockReplacement) {
+    const spec = fitSliceAtSite(editor, plan.site, plan.emptyBlockReplacement, {
+      ...options,
+      replaceEmptyBlock: true,
+    });
 
-  for (
-    let level = 0;
-    level < (edge === 'start' ? slice.openStart : slice.openEnd);
-    level += 1
-  ) {
-    const node = edge === 'start' ? nodes[0] : nodes.at(-1);
-
-    if (!NodeApi.isElement(node)) break;
-    const slots = state.schema.element(node.type)?.contentRoots;
-    const roots = state.schema.getElementContentRoots(node);
-
-    if (
-      slots &&
-      Object.keys(slots).some((slot) => {
-        const childRoot = roots[slot];
-
-        return typeof childRoot !== 'string' || !copiedRoots.has(childRoot);
-      })
-    ) {
-      return false;
+    if (spec) {
+      return {
+        lossy: plan.inputCut,
+        spec,
+        written: plan.emptyBlockReplacement,
+      };
     }
-    nodes = node.children;
   }
+  if (!plan.slice) return false;
 
-  return true;
+  const spec = fitSliceAtSite(editor, plan.site, plan.slice, options);
+
+  return (
+    spec && {
+      lossy: plan.inputCut || plan.landingCut,
+      spec,
+      written: plan.slice,
+    }
+  );
 };
 
-export const prepareEmptyBlockReplacement = (
+const prepareEmptyBlockReplacement = (
   editor: Editor,
   state: EditorStateView,
   target: Extract<SliceLandingTarget, { kind: 'empty' }>,
@@ -117,25 +141,26 @@ export const prepareEmptyBlockReplacement = (
 ): ContentSlice | null => {
   const [head, ...rest] = slice.content;
 
-  if (
-    !sliceFitsLength(slice, remaining) ||
-    !NodeApi.isElement(head) ||
-    !canCloseSliceEdge(state, slice, 'start') ||
-    !canCloseSliceEdge(state, slice, 'end')
-  ) {
+  if (!sliceFitsLength(slice, remaining) || !NodeApi.isElement(head)) {
     return null;
   }
   const [block, path] = target.block;
   const schema = getEditorSchema(editor);
   const behavior = schema.getElementBehavior(head);
   const root = target.root ?? MAIN_ROOT_KEY;
-  const kept: Record<string, unknown> = {
-    ...(behavior.object || behavior.void
+  // The pasted head brings its own children, so only the block's own
+  // properties go through the type change.
+  const kept: Record<string, unknown> =
+    behavior.object || behavior.void
       ? {}
-      : block.type === head.type
-        ? NodeApi.extractProps(block)
-        : schema.elementPropertiesForTypeChangeAt(block, head, path, root)),
-  };
+      : NodeApi.extractProps(
+          schema.elementForTypeChangeAt(
+            { ...block, children: [] },
+            head.type,
+            path,
+            root
+          )
+        );
 
   for (const key of omitTargetProperties) delete kept[key];
   const landedHead = { ...kept, ...head };

@@ -65,7 +65,7 @@ describe('plite delete contract', () => {
   it('deletes an exact node selection and restores the directional text boundary', () => {
     for (const direction of ['backward', 'forward'] as const) {
       const editor = createEditor({
-        initialSelection: SelectionApi.nodes([[1]]),
+        initialSelection: SelectionApi.nodes([[1]], { mode: 'block' }),
         initialValue: [
           paragraph('before'),
           { type: 'media', children: [{ text: 'caption' }] },
@@ -100,7 +100,7 @@ describe('plite delete contract', () => {
   it('deletes every selected node once and preserves directional fallback', () => {
     for (const direction of ['backward', 'forward'] as const) {
       const editor = createEditor({
-        initialSelection: SelectionApi.nodes([[1], [2]]),
+        initialSelection: SelectionApi.nodes([[1], [2]], { mode: 'block' }),
         initialValue: [
           paragraph('before'),
           paragraph('one'),
@@ -140,7 +140,10 @@ describe('plite delete contract', () => {
       paragraph('main after'),
     ];
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[1]], { root: 'caption' }),
+      initialSelection: SelectionApi.nodes([[1]], {
+        mode: 'block',
+        root: 'caption',
+      }),
       initialValue: {
         children: main,
         roots: {
@@ -168,6 +171,81 @@ describe('plite delete contract', () => {
       anchor: { offset: 11, path: [0, 0], root: 'caption' },
       focus: { offset: 11, path: [0, 0], root: 'caption' },
     });
+  });
+
+  it("deletes a named root's last selected block forward while the main root continues", () => {
+    const main = [
+      paragraph('main 0'),
+      paragraph('main 1'),
+      paragraph('main 2'),
+    ];
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[1]], {
+        mode: 'block',
+        root: 'caption',
+      }),
+      initialValue: {
+        children: main,
+        roots: {
+          caption: [paragraph('root before'), paragraph('root last')],
+        },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.fragment.delete({ direction: 'forward' });
+    });
+
+    assert.deepEqual(editor.read.value(), {
+      children: main,
+      roots: { caption: [paragraph('root before')] },
+    });
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
+      anchor: { offset: 11, path: [0, 0], root: 'caption' },
+      focus: { offset: 11, path: [0, 0], root: 'caption' },
+    });
+  });
+
+  it('deletes a node selection beside a textless block toward the other side', () => {
+    const box = { type: 'box', children: [] };
+    const cases = [
+      {
+        direction: 'forward',
+        value: [paragraph('a'), paragraph('b'), box],
+        children: [paragraph('a'), box],
+        caret: { path: [0, 0], offset: 1 },
+      },
+      {
+        direction: 'backward',
+        value: [box, paragraph('a'), paragraph('b')],
+        children: [box, paragraph('b')],
+        caret: { path: [1, 0], offset: 0 },
+      },
+    ] as const;
+
+    for (const { caret, children, direction, value } of cases) {
+      const editor = createEditor({
+        initialSelection: SelectionApi.nodes([[1]], { mode: 'block' }),
+        initialValue: value,
+        plugins: [
+          defineTestSchema('textless-neighbor-delete-contract', {
+            box: { content: schema.content.type('paragraph', { min: 0 }) },
+          }),
+        ],
+      });
+
+      editor.update((tx) => {
+        tx.fragment.delete({ direction });
+      });
+
+      assert.deepEqual(editorGetSnapshot(editor).children, children);
+      assert.deepEqual(editorGetSnapshot(editor).selection, {
+        kind: 'text',
+        anchor: caret,
+        focus: caret,
+      });
+    }
   });
 
   it('keeps adjacent text boundaries when deleting selectable and non-selectable inline voids', () => {
@@ -721,6 +799,182 @@ describe('plite delete contract', () => {
       focus: { path: [0, 0], offset: 'fi'.length },
     });
   });
+
+  it('keeps the empty block after the block a cross-block delete ends in', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [paragraph('first'), paragraph('second'), paragraph('')],
+      selection: null,
+    });
+    editor.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { path: [0, 0], offset: 'fi'.length },
+          focus: { path: [1, 0], offset: 'sec'.length },
+        },
+      });
+    });
+
+    assert.deepEqual(editorGetChildren(editor), [
+      paragraph('fiond'),
+      paragraph(''),
+    ]);
+  });
+
+  const tokenParagraph = (before: string, after: string) => ({
+    type: 'paragraph',
+    children: [
+      { text: before },
+      { type: 'token', children: [{ text: '' }] },
+      { text: after },
+    ],
+  });
+
+  it('takes an inline void a cross-block delete ends inside at a later block start, and merges', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('cross-block-void-end-delete', {
+        token: { void: 'inline' },
+      })
+    );
+    editorReplace(editor, {
+      children: [paragraph('ab'), paragraph('cd'), tokenParagraph('', 'x')],
+      selection: null,
+    });
+    editor.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [2, 1, 0], offset: 0 },
+        },
+      });
+    });
+
+    assert.deepEqual(editorGetChildren(editor), [paragraph('x')]);
+  });
+
+  it('merges the blocks after a cross-block delete moves its start out of an inline void', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('cross-block-void-start-delete', {
+        token: { void: 'inline' },
+      })
+    );
+    editorReplace(editor, {
+      children: [tokenParagraph('a', 'b'), paragraph('cd'), paragraph('ef')],
+      selection: null,
+    });
+    editor.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { path: [0, 1, 0], offset: 0 },
+          focus: { path: [1, 0], offset: 1 },
+        },
+      });
+    });
+
+    assert.deepEqual(editorGetChildren(editor), [
+      paragraph('ad'),
+      paragraph('ef'),
+    ]);
+  });
+
+  const tagged = {
+    type: 'paragraph',
+    children: [
+      { text: 'cd' },
+      { type: 'tag', children: [{ text: 'TAG' }] },
+      { text: 'ef' },
+    ],
+  };
+
+  for (const [name, start, offset, kept] of [
+    [
+      'keeps the blocks apart when a delete ends inside a read-only inline',
+      1,
+      1,
+      [paragraph('a'), paragraph('ef'), paragraph('xy')],
+    ],
+    [
+      'keeps a read-only inline a delete from a line start ends at the start of',
+      0,
+      0,
+      [paragraph(''), tagged, paragraph('xy')],
+    ],
+  ] as const) {
+    it(name, () => {
+      const editor = createEditor();
+
+      editor.install(
+        defineTestSchema(`read-only-inline-end-delete-${offset}`, {
+          tag: { inline: true, readOnly: true },
+        })
+      );
+      editorReplace(editor, {
+        children: [paragraph('ab'), tagged, paragraph('xy')],
+        selection: null,
+      });
+      editor.update((tx) => {
+        tx.text.delete({
+          at: {
+            anchor: { path: [0, 0], offset: start },
+            focus: { path: [1, 1, 0], offset },
+          },
+        });
+      });
+
+      assert.deepEqual(editorGetChildren(editor), [...kept]);
+    });
+  }
+
+  for (const [edge, anchor, focus, kept] of [
+    [
+      'starts',
+      [[0, 1, 0], 0],
+      [[0, 2, 0], 1],
+      [paragraph('ab'), paragraph('d')],
+    ],
+    ['ends', [[0, 0, 0], 1], [[0, 1, 0], 0], [paragraph('a'), paragraph('cd')]],
+  ] as const) {
+    it(`keeps the blocks apart when a delete ${edge} inside a block void nested in a container`, () => {
+      const editor = createEditor();
+
+      editor.install(
+        defineTestSchema(`nested-block-void-delete-${edge}`, {
+          box: {},
+          image: { void: 'block' },
+        })
+      );
+      editorReplace(editor, {
+        children: [
+          {
+            type: 'box',
+            children: [
+              paragraph('ab'),
+              { type: 'image', children: [{ text: '' }] },
+              paragraph('cd'),
+            ],
+          },
+        ],
+        selection: null,
+      });
+      editor.update((tx) => {
+        tx.text.delete({
+          at: {
+            anchor: { path: [...anchor[0]], offset: anchor[1] },
+            focus: { path: [...focus[0]], offset: focus[1] },
+          },
+        });
+      });
+
+      assert.deepEqual(editorGetChildren(editor), [
+        { type: 'box', children: [...kept] },
+      ]);
+    });
+  }
 
   it('preserves an unselected suffix inside an isolating nested block', () => {
     const editor = createEditor();

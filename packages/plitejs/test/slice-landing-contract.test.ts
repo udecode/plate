@@ -6,147 +6,26 @@ import {
   createEditor,
   createEditorView,
   defineEditorSchema,
-  definePlugin,
   type Descendant,
-  editorCommands,
-  editorReads,
-  property,
   schema,
   SelectionApi,
-  type SliceLanding,
-  type SliceLandingInput,
-  target,
+  transfer,
 } from 'plitejs';
 import { history } from 'plitejs/history';
 
-import { dispatchCommand } from '../src/core/command-registry';
-import { registerEditorContent } from '../src/core/content';
-
-const text = () => schema.content.text({ default: 'text', min: 1 });
-const paragraph = (value: string, props: object = {}) => ({
-  type: 'paragraph',
-  ...props,
-  children: [{ text: value }],
-});
-const heading = (value: string) => ({
-  type: 'heading',
-  children: [{ text: value }],
-});
-const media = (caption: string) => ({
-  type: 'media',
-  children: [{ text: caption }],
-});
-const blocks = () =>
-  schema.content.types(['paragraph', 'heading', 'media', 'portal', 'quote'], {
-    default: { type: 'paragraph' },
-    min: 1,
-  });
-
-const LandingSchema = defineEditorSchema('schema:slice-landing', {
-  elements: {
-    heading: { content: text() },
-    media: { content: text(), object: true },
-    paragraph: { content: text(), properties: { align: property.string() } },
-    portal: {
-      content: text(),
-      contentRoots: {
-        body: {
-          content: schema.content.type('paragraph', {
-            default: { type: 'paragraph' },
-            min: 1,
-          }),
-          ownership: 'exclusive',
-        },
-      },
-    },
-    quote: {
-      content: schema.content.types(['paragraph', 'portal'], {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-    },
-  },
-  properties: [
-    schema.elementProperty('indent', property.number(), {
-      target: target.types(['heading', 'paragraph']),
-      typeChange: 'preserve-if-allowed',
-    }),
-  ],
-  root: blocks(),
-  unknown: 'reject',
-});
-const NotesSchema = defineEditorSchema('schema:slice-landing-notes', {
-  ...LandingSchema.schema,
-  roots: { notes: blocks() },
-});
-
-const HeaderNotesSchema = defineEditorSchema('schema:slice-landing-header', {
-  ...LandingSchema.schema,
-  roots: { header: blocks(), notes: blocks() },
-});
-
-const SharedPortalSchema = defineEditorSchema('schema:slice-landing-shared', {
-  ...LandingSchema.schema,
-  elements: {
-    ...LandingSchema.schema.elements,
-    portal: {
-      content: text(),
-      contentRoots: {
-        body: schema.content.type('paragraph', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      },
-    },
-  },
-});
-
-const SingleNoteSchema = defineEditorSchema(
-  'schema:slice-landing-single-note',
-  {
-    ...LandingSchema.schema,
-    roots: {
-      notes: schema.content.types(['paragraph', 'heading'], {
-        default: { type: 'paragraph' },
-        max: 1,
-        min: 1,
-      }),
-    },
-  }
-);
-
-const caret = (path: number[], offset = 0) =>
-  SelectionApi.text({ anchor: { offset, path }, focus: { offset, path } });
-
-const landing = (
-  name: string,
-  land: (
-    input: SliceLandingInput,
-    next: (input?: SliceLandingInput) => SliceLanding
-  ) => SliceLanding
-) =>
-  definePlugin(name, {
-    readMiddleware: ({ around }) => [
-      around(editorReads.slice.landing, ({ input, next }) =>
-        land(input, (override) => (override ? next(override) : next()))
-      ),
-    ],
-  });
-
-const proposeOnEmpty = (content: Descendant[], omit?: string[]) =>
-  landing('propose-on-empty', (input, next) => {
-    const landed = next();
-
-    return input.target.kind === 'empty'
-      ? {
-          ...landed,
-          replaceEmpty: {
-            omitTargetProperties: omit,
-            slice: ContentSlice.closed(content),
-          },
-        }
-      : landed;
-  });
+import {
+  text,
+  paragraph,
+  heading,
+  media,
+  LandingSchema,
+  NotesSchema,
+  SharedPortalSchema,
+  rootOwner,
+  caret,
+  landing,
+  proposeOnEmpty,
+} from './support/slice-landing';
 
 describe('slice landing', () => {
   it('replaces the resolved empty block with an admitted proposal', () => {
@@ -156,7 +35,7 @@ describe('slice landing', () => {
       initialValue: before,
       plugins: [LandingSchema, history(), proposeOnEmpty([paragraph('Head')])],
     });
-    const keys = [0, 1, 2].map((index) => editor.read.key([index]));
+    const keys = [0, 1, 2].map((index) => editor.key([index]));
     const emptyAnchor = editor.anchor([1], { deletion: 'drop' });
 
     assert.equal(
@@ -169,7 +48,7 @@ describe('slice landing', () => {
       paragraph('After'),
     ]);
     assert.deepEqual(
-      [0, 1, 2].map((index) => editor.read.key([index]) === keys[index]),
+      [0, 1, 2].map((index) => editor.key([index]) === keys[index]),
       [true, false, true],
       'only the replaced block loses its key'
     );
@@ -338,186 +217,6 @@ describe('slice landing', () => {
     });
   }
 
-  it('resolves the target in the root that holds the caret', () => {
-    const notesCaret = SelectionApi.text({
-      anchor: { offset: 0, path: [0, 0], root: 'notes' },
-      focus: { offset: 0, path: [0, 0], root: 'notes' },
-    });
-    const layouts = [
-      { main: 'Body', notes: '' },
-      { main: '', notes: 'note' },
-    ];
-    const targets = layouts.map(({ main, notes }) => {
-      let seen: SliceLandingInput['target'] | undefined;
-      const editor = createEditor({
-        initialValue: {
-          children: [paragraph(main)],
-          roots: { notes: [paragraph(notes)] },
-        },
-        plugins: [
-          NotesSchema,
-          landing('record-target', (input, next) => {
-            seen = input.target;
-
-            return next();
-          }),
-        ],
-      });
-
-      editor.update.selection.set(notesCaret);
-      editor.update.slice.replace(ContentSlice.closed([paragraph('Plain')]));
-
-      return seen;
-    });
-
-    assert.deepEqual(targets, [
-      { block: [paragraph(''), [0]], kind: 'empty', root: 'notes' },
-      { block: [paragraph('note'), [0]], kind: 'context', root: 'notes' },
-    ]);
-  });
-
-  it('resolves the target in the root an explicit target names, not the view root', () => {
-    let seen: SliceLandingInput['target'] | undefined;
-    const editor = createEditor({
-      initialValue: {
-        children: [paragraph('Main')],
-        roots: { header: [paragraph('Head')], notes: [paragraph('')] },
-      },
-      plugins: [
-        HeaderNotesSchema,
-        landing('record-target', (input, next) => {
-          seen = input.target;
-
-          return next();
-        }),
-      ],
-    });
-
-    createEditorView(editor, { root: 'header' }).update.slice.replace(
-      ContentSlice.closed([paragraph('Plain')]),
-      { at: { offset: 0, path: [0, 0], root: 'notes' } }
-    );
-
-    assert.deepEqual(seen, {
-      block: [paragraph(''), [0]],
-      kind: 'empty',
-      root: 'notes',
-    });
-  });
-
-  it('keeps the properties of the empty block an explicit target names through a view', () => {
-    const editor = createEditor({
-      initialValue: {
-        children: [paragraph('', { align: 'right' })],
-        roots: { notes: [paragraph('', { align: 'left' })] },
-      },
-      plugins: [NotesSchema, proposeOnEmpty([paragraph('Head')])],
-    });
-
-    createEditorView(editor).update.slice.replace(
-      ContentSlice.closed([paragraph('Plain')]),
-      { at: { offset: 0, path: [0, 0], root: 'notes' } }
-    );
-
-    assert.deepEqual(editor.read.root('notes'), [
-      paragraph('Head', { align: 'left' }),
-    ]);
-  });
-
-  it('lands a paste dispatched through a named-root view in the view root', () => {
-    const results = ['', 'KEEP'].map((header) => {
-      const editor = createEditor({
-        initialValue: {
-          children: [paragraph('', { align: 'right' })],
-          roots: {
-            header: [paragraph(header, { align: 'left' })],
-            notes: [paragraph('')],
-          },
-        },
-        plugins: [HeaderNotesSchema, proposeOnEmpty([paragraph('Head')])],
-      });
-
-      dispatchCommand(
-        createEditorView(editor, { root: 'header' }),
-        editorCommands.replaceSlice,
-        {
-          options: { at: { offset: 0, path: [0, 0] } },
-          slice: ContentSlice.closed([paragraph('Plain')]),
-        }
-      );
-
-      return [editor.read.root('header'), editor.read.children()];
-    });
-
-    assert.deepEqual(results, [
-      [
-        [paragraph('Head', { align: 'left' })],
-        [paragraph('', { align: 'right' })],
-      ],
-      [
-        [paragraph('PlainKEEP', { align: 'left' })],
-        [paragraph('', { align: 'right' })],
-      ],
-    ]);
-  });
-
-  it('replaces no empty block that content rules removed from the landing', () => {
-    const results = [
-      {
-        children: [paragraph('Before'), paragraph('', { align: 'gone' })],
-        path: [1, 0],
-      },
-      {
-        children: [paragraph('', { align: 'gone' }), paragraph('After')],
-        path: [0, 0],
-      },
-    ].map(({ children, path }) => {
-      const editor = createEditor({
-        initialSelection: caret(path),
-        initialValue: children,
-        plugins: [LandingSchema, proposeOnEmpty([paragraph('Head')])],
-      });
-
-      registerEditorContent(editor, (_reader, node) => node?.align !== 'gone');
-      editor.update.slice.replace(ContentSlice.closed([paragraph('Plain')]));
-
-      return editor.read.children();
-    });
-
-    assert.deepEqual(results, [
-      [paragraph('BeforePlain'), paragraph('', { align: 'gone' })],
-      [paragraph('', { align: 'gone' }), paragraph('PlainAfter')],
-    ]);
-  });
-
-  it('keeps the properties of the empty block in the caret root', () => {
-    const editor = createEditor({
-      initialValue: {
-        children: [paragraph('', { align: 'right' })],
-        roots: { notes: [paragraph('', { align: 'left' })] },
-      },
-      plugins: [NotesSchema, proposeOnEmpty([paragraph('Head')])],
-    });
-
-    editor.update.selection.set(
-      SelectionApi.text({
-        anchor: { offset: 0, path: [0, 0], root: 'notes' },
-        focus: { offset: 0, path: [0, 0], root: 'notes' },
-      })
-    );
-
-    assert.equal(
-      editor.update.slice.replace(ContentSlice.closed([paragraph('Plain')])),
-      true
-    );
-    assert.deepEqual(editor.read.root('notes'), [
-      paragraph('Head', { align: 'left' }),
-    ]);
-    assert.deepEqual(editor.read.children(), [
-      paragraph('', { align: 'right' }),
-    ]);
-  });
-
   it('closes an open proposal whose roots it copied', () => {
     const editor = createEditor({
       initialSelection: caret([0, 0]),
@@ -560,55 +259,7 @@ describe('slice landing', () => {
     });
   });
 
-  it('admits a proposal against the children of the caret root', () => {
-    const editor = createEditor({
-      initialValue: {
-        children: [paragraph('A'), paragraph('B')],
-        roots: { notes: [paragraph('')] },
-      },
-      plugins: [SingleNoteSchema, proposeOnEmpty([heading('Head')])],
-    });
-
-    editor.update.selection.set(
-      SelectionApi.text({
-        anchor: { offset: 0, path: [0, 0], root: 'notes' },
-        focus: { offset: 0, path: [0, 0], root: 'notes' },
-      })
-    );
-
-    assert.equal(
-      editor.update.slice.replace(ContentSlice.closed([paragraph('Plain')])),
-      true
-    );
-    assert.deepEqual(editor.read.root('notes'), [heading('Head')]);
-  });
-
-  it('admits a nested proposal against its parent in the caret root', () => {
-    const editor = createEditor({
-      initialValue: {
-        children: [paragraph('Main')],
-        roots: { notes: [{ type: 'quote', children: [paragraph('')] }] },
-      },
-      plugins: [NotesSchema, proposeOnEmpty([paragraph('Head')])],
-    });
-
-    editor.update.selection.set(
-      SelectionApi.text({
-        anchor: { offset: 0, path: [0, 0, 0], root: 'notes' },
-        focus: { offset: 0, path: [0, 0, 0], root: 'notes' },
-      })
-    );
-
-    assert.equal(
-      editor.update.slice.replace(ContentSlice.closed([paragraph('Plain')])),
-      true
-    );
-    assert.deepEqual(editor.read.root('notes'), [
-      { type: 'quote', children: [paragraph('Head')] },
-    ]);
-  });
-
-  it('fits the landing slice when an open proposal names a root it did not copy', () => {
+  it('closes an open proposal that names an existing shared root', () => {
     const editor = createEditor({
       initialSelection: caret([1, 0]),
       initialValue: {
@@ -653,7 +304,11 @@ describe('slice landing', () => {
         children: [{ text: '' }],
         type: 'portal',
       },
-      paragraph('Plain'),
+      {
+        childRoots: { body: 'body:1' },
+        children: [{ text: 'Copied' }],
+        type: 'portal',
+      },
     ]);
   });
 
@@ -688,13 +343,23 @@ describe('slice landing', () => {
 
       editor.update.slice.replace(ContentSlice.closed([paragraph('Plain')]));
 
-      return editor.read.children();
+      return editor.read.value();
     });
 
-    assert.deepEqual(results, [
-      [portal('constructor', ''), paragraph('Plain')],
-      [portal('toString', ''), paragraph('Plain')],
-    ]);
+    assert.deepEqual(
+      results,
+      ['constructor', 'toString'].map((name) => ({
+        children: [
+          portal(name, ''),
+          portal(name, 'A'),
+          portal('copied:copy', 'B'),
+        ],
+        roots: {
+          [name]: [paragraph('Shared')],
+          'copied:copy': [paragraph('Copied')],
+        },
+      }))
+    );
   });
 
   it('replaces an empty block in a named-root view', () => {
@@ -725,5 +390,232 @@ describe('slice landing', () => {
     assert.deepEqual(roots, ['notes']);
     assert.deepEqual(editor.read.root('notes'), [heading('Head')]);
     assert.deepEqual(editor.read.children(), [paragraph('Main')]);
+  });
+
+  it('shows a paste over selected blocks as a limited slice on the first block', () => {
+    const seen: unknown[] = [];
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0], [2]], { mode: 'block' }),
+      initialValue: [paragraph('aa'), paragraph('b'), paragraph('cc')],
+      maxLength: 5,
+      plugins: [
+        LandingSchema,
+        landing('record-input', (input, next) => {
+          seen.push(input.source.content, input.slice.content, input.target);
+
+          return next();
+        }),
+      ],
+    });
+
+    editor.update.slice.replace(ContentSlice.closed([paragraph('123456')]));
+
+    assert.deepEqual(seen, [
+      [paragraph('123456')],
+      [paragraph('1234')],
+      { block: [paragraph('aa'), [0]], kind: 'context' },
+    ]);
+    assert.deepEqual(editor.read.children(), [
+      paragraph('1234'),
+      paragraph('b'),
+    ]);
+  });
+
+  it('trims plugin output past the length limit to the limit', () => {
+    const run = (
+      initialSelection:
+        | ReturnType<typeof caret>
+        | ReturnType<typeof SelectionApi.nodes>,
+      content: Descendant[]
+    ) => {
+      const editor = createEditor({
+        initialSelection,
+        initialValue: [paragraph('ab'), paragraph('c')],
+        maxLength: 5,
+        plugins: [
+          LandingSchema,
+          landing('grow', () => ({
+            slice: ContentSlice.fromJSON({ content, openEnd: 1, openStart: 1 }),
+          })),
+        ],
+      });
+
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [paragraph('1')],
+          openEnd: 1,
+          openStart: 1,
+        })
+      );
+
+      return editor.read.children();
+    };
+
+    assert.deepEqual(
+      [
+        run(caret([0, 0], 2), [paragraph('WXYZQ')]),
+        run(SelectionApi.nodes([[0]], { mode: 'block' }), [paragraph('WXYZQ')]),
+        run(SelectionApi.nodes([[0]], { mode: 'block' }), [
+          paragraph('WX'),
+          paragraph('YZQ'),
+        ]),
+      ],
+      [
+        [paragraph('abWX'), paragraph('c')],
+        [paragraph('WXYZ'), paragraph('c')],
+        [paragraph('WX'), paragraph('YZ'), paragraph('c')],
+      ]
+    );
+  });
+
+  it('lands the plain paste when a closed proposal adds a second owner of an exclusive root', () => {
+    const editor = createEditor({
+      initialSelection: caret([1, 0]),
+      initialValue: {
+        children: [rootOwner('body:1'), paragraph('')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [LandingSchema, proposeOnEmpty([rootOwner('body:1', 'Copied')])],
+    });
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(ContentSlice.closed([paragraph('Plain')])),
+        editor.read.children(),
+      ],
+      [true, [rootOwner('body:1'), paragraph('Plain')]]
+    );
+  });
+
+  it('writes the proposal for an empty block when the limit empties the landing output', () => {
+    const editor = createEditor({
+      initialSelection: caret([1, 0]),
+      initialValue: [paragraph('Full'), paragraph('')],
+      maxLength: 4,
+      plugins: [
+        LandingSchema,
+        landing('propose', () => ({
+          replaceEmpty: {
+            slice: ContentSlice.closed([paragraph('', { align: 'center' })]),
+          },
+          slice: ContentSlice.closed([paragraph('X')]),
+        })),
+      ],
+    });
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(ContentSlice.closed([paragraph('')])),
+        editor.read.children(),
+      ],
+      [true, [paragraph('Full'), paragraph('', { align: 'center' })]]
+    );
+  });
+
+  it('refuses a paste over selected blocks when the limit cuts the landing output to nothing', () => {
+    const ImageSchema = defineEditorSchema('schema:slice-landing-image', {
+      elements: {
+        image: { void: 'block' },
+        paragraph: { content: text() },
+      },
+      root: schema.content.types(['paragraph', 'image'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+    });
+    const before = [
+      { type: 'image', children: [{ text: '' }] },
+      paragraph('abcde'),
+    ];
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
+      initialValue: before,
+      maxLength: 5,
+      plugins: [
+        ImageSchema,
+        landing('grow', () => ({
+          slice: ContentSlice.closed([paragraph('X')]),
+        })),
+      ],
+    });
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(ContentSlice.closed([paragraph('')])),
+        editor.read.children(),
+      ],
+      [false, before]
+    );
+  });
+
+  it('refuses a paste over a range when the limit cuts the landing output to nothing', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      }),
+      initialValue: [paragraph('abcde')],
+      maxLength: 3,
+      plugins: [
+        LandingSchema,
+        landing('grow', () => ({
+          slice: ContentSlice.closed([paragraph('X')]),
+        })),
+      ],
+    });
+
+    assert.deepEqual(
+      [
+        editor.update.slice.replace(ContentSlice.closed([paragraph('')])),
+        editor.read.children(),
+      ],
+      [false, [paragraph('abcde')]]
+    );
+  });
+});
+
+describe('slice landing intent', () => {
+  it('tells the landing read whether each caller copies or moves', () => {
+    const intentsOf = (
+      caller: 'drop copy' | 'drop move' | 'nodes' | 'paste'
+    ) => {
+      const intents: unknown[] = [];
+      const editor = createEditor({
+        initialSelection:
+          caller === 'nodes'
+            ? SelectionApi.nodes([[1]], { mode: 'block' })
+            : caret([0, 0], 1),
+        initialValue: [paragraph('ab'), paragraph('cd')],
+        plugins: [
+          LandingSchema,
+          transfer(),
+          landing('record-intent', (input, next) => {
+            intents.push(input.intent);
+
+            return next();
+          }),
+        ],
+      });
+
+      if (caller === 'paste' || caller === 'nodes') {
+        editor.update.slice.replace(ContentSlice.closed([paragraph('x')]));
+      } else {
+        editor.api.transfer[caller === 'drop copy' ? 'copy' : 'move']({
+          range: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 1, path: [0, 0] },
+          },
+          to: { point: { offset: 1, path: [1, 0] } },
+        });
+      }
+
+      return intents;
+    };
+
+    assert.deepEqual(
+      (['paste', 'nodes', 'drop copy', 'drop move'] as const).map(intentsOf),
+      [['copy'], ['copy'], ['copy'], ['move']]
+    );
   });
 });

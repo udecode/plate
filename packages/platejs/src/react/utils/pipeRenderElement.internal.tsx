@@ -13,6 +13,11 @@ import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { type EditableProps, getPluginNodeClass } from '../../lib';
 import { isHtmlVoidElementTag, EditorElement } from '../components';
 import type { Editor } from '../editor/Editor';
+import {
+  BlockRedraw,
+  useBlockRedraw,
+  useRedrawWithBlock,
+} from '../internal/block-redraws';
 import { usePlateRenderContext } from '../internal/plate-context';
 import { useEditorContext } from '../internal/plite-components';
 import {
@@ -149,6 +154,7 @@ function FastElementBody({
   plugin: AnyResolvedPlugin;
   slots: RenderElementProps['slots'];
 }) {
+  useRedrawWithBlock();
   const readOnly = useEditorReadOnly();
   const viewEditor = useEditorContext();
   const pluginContext = createPluginContext(editor, plugin.name);
@@ -252,6 +258,7 @@ function FastIntrinsicElementBody({
   slots: RenderElementProps['slots'];
   tag: keyof HTMLElementTagNameMap;
 }) {
+  useRedrawWithBlock();
   const readOnly = useEditorReadOnly();
   const viewEditor = useEditorContext();
   const elementContext = createPluginContext(editor, plugin.name);
@@ -355,6 +362,7 @@ function DefaultElementWithPath({
   editor: Editor;
   props: RenderElementProps;
 }) {
+  useRedrawWithBlock();
   const readOnly = useEditorReadOnly();
   const viewEditor = useEditorContext();
   const path = getRenderedElementPath(editor, props.element, props.attributes);
@@ -513,7 +521,27 @@ export const pipeRenderElement = (
     return wrap(render(viewEditor, props));
   };
 
+  const RenderInjectedElement = ({ props }: { props: RenderElementProps }) => {
+    const { editor: viewEditor, wrap } = usePlateRenderContext(modelEditor);
+    const version = useBlockRedraw(
+      viewEditor,
+      getRenderedElementPath(viewEditor, props.element, props.attributes)
+    );
+    const rendered = wrap(render(viewEditor, props));
+
+    return version === null ? (
+      rendered
+    ) : (
+      <BlockRedraw version={version}>{rendered}</BlockRedraw>
+    );
+  };
+  const injected = getPlateRuntime(modelEditor).pluginCache.inject.nodeProps;
+  const Render =
+    injected.element.length > 0 || injected.text.length > 0
+      ? RenderInjectedElement
+      : RenderElement;
+
   return function renderElement(props) {
-    return <RenderElement props={props} />;
+    return <Render props={props} />;
   };
 };

@@ -272,11 +272,11 @@ if (selected) {
 
 ## 转换操作
 
-所有表格更新均返回 `boolean`：接受变更返回 `true`；目标不可用、操作被拒绝或内容不变时返回 `false`。无效尺寸和数值选项会在提交前抛出错误。即使已经读取过可用性，执行命令时仍会重新检查。
+所有表格更新均返回 `boolean`：接受变更返回 `true`；目标不可用、操作被拒绝或内容不变时返回 `false`。通过 `editor.update.table` 或插件的 `update` 调用时，若编辑器拒绝该 update（例如建议模式下的表格），则返回 `undefined`。无效尺寸和数值选项会在提交前抛出错误。即使已经读取过可用性，执行命令时仍会重新检查。
 
 | 更新方法 | 选项 | 用途 |
 | --- | --- | --- |
-| `table.update.insert(options?, placement?)` | `TableCreateOptions`、`TableInsertPlacement` | 插入表格，默认为两行两列。 |
+| `table.update.insert(options?, placement?)` | `TableCreateOptions`、`BlockInsertOptions` | 插入表格，默认为两行两列。 |
 | `table.update.insertColumn(options?)` | `TableAxisInsertOptions` | 在逻辑列边界插入列。 |
 | `table.update.insertRow(options?)` | `TableAxisInsertOptions` | 在逻辑行边界插入行。 |
 | `table.update.removeColumn(options?)` | `TableTargetOptions` | 删除目标列；没有剩余列时删除表格。 |
@@ -291,7 +291,7 @@ if (selected) {
 | `table.update.setColumnWidth(options)` | `TableColumnWidthOptions` | 设置 `{ at?, colIndex, width }`。 |
 | `table.update.setRowHeight(options)` | `TableRowHeightOptions` | 设置 `{ at?, rowIndex, height }`。 |
 
-`TableCreateOptions` 包含 `rows`、`columns` 和 `header`。行列数必须为正安全整数；`header: true` 将首行设为表头。`TableInsertPlacement` 中，`at` 指定精确插入位置，`after` 指定当前文档中的块，两者不能同时使用。其他块插入选项（包括 `select` 和 `replaceEmpty`）仍可使用。省略位置时，表格插入在当前所在的表格或块之后。
+`TableCreateOptions` 包含 `rows`、`columns` 和 `header`。行列数必须为正安全整数；`header: true` 将首行设为表头。位置参数为 `BlockInsertOptions`：`at` 指定精确插入位置，`after` 或 `before` 指定当前文档中的块，三者只能选一个；可加 `select`，`replaceEmpty` 只能与 `after` 一起使用或在不指定位置时使用。省略位置时，表格插入在当前所在的表格或块之后。
 
 `TableAxisInsertOptions` 包含 `at`、`before`、`header` 和 `select`。目标为跨行或跨列单元格时，插入使用其逻辑起始或结束边界；目标为表格时，在开头或结尾插入。尺寸调整中的行列索引从零开始，宽度和高度必须为有限正数。
 

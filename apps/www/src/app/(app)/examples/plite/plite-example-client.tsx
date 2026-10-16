@@ -1,10 +1,15 @@
 'use client';
 
+import { ExperimentalBadge } from '@/components/experimental-badge';
+
 import {
   pliteExampleComponents,
   type PliteExampleId,
 } from './plite-example-loaders';
-import { EXAMPLE_NAMES_AND_PATHS } from './plite-example-registry';
+import {
+  EXAMPLE_NAMES_AND_PATHS,
+  getPliteExampleStatus,
+} from './plite-example-registry';
 
 const exampleLabels = new Map(
   EXAMPLE_NAMES_AND_PATHS.map(([name, slug]) => [slug, name])
@@ -24,10 +29,13 @@ export function PliteExampleClient({
       data-editor-example={exampleId}
       data-editor-scope="donor-route"
     >
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <h1 className="example-page-title text-3xl font-semibold tracking-tight">
           {title}
         </h1>
+        {getPliteExampleStatus(exampleId) === 'experimental' && (
+          <ExperimentalBadge />
+        )}
       </div>
       <Example />
     </div>

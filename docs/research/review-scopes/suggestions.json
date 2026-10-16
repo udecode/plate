@@ -13,7 +13,7 @@
   },
   "owners": [
     "packages/plitejs/src/authored/authored.ts",
-    "packages/plitejs/src/authored/fragment-index.ts",
+    "packages/plitejs/src/authored/ledger/cards.ts",
     "packages/platejs/src/features/suggestion/BaseSuggestionPlugin.ts",
     "packages/platejs/src/react/features/suggestion/SuggestionPlugin.tsx",
     "apps/www/src/registry/components/editor/suggestion.tsx",
@@ -48,7 +48,7 @@
     "apps/www/src/registry/examples/suggestion-view-demo.tsx"
   ],
   "proof": [
-    "packages/plitejs/test/authored-changes-contract.test.ts",
+    "packages/plitejs/test/authored-plugin.test.ts",
     "packages/plitejs/test/react/decoration-manager-contract.test.ts",
     "packages/platejs/src/features/suggestion/BaseSuggestionPlugin.spec.ts",
     "packages/platejs/src/react/features/suggestion/SuggestionPlugin.spec.tsx",
@@ -67,7 +67,7 @@
     "packages/platejs/src/lib/editor/editorUser.internal.ts",
     "packages/platejs/src/ai/react/AIChatPlugin.ts",
     "packages/plitejs/src/authored/types.ts",
-    "packages/plitejs/src/dom/plugin/dom-fragment-view.ts",
+    "packages/platejs/src/features/suggestion/BaseSuggestionPlugin.ts",
     "packages/platejs/package.json",
     "tooling/entrypoints/entrypoint-dag.mjs",
     "packages/platejs/src/lib/plugin/BasePlugin.ts",

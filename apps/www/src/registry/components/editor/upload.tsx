@@ -6,6 +6,7 @@ import {
   EditorElement,
   useEditor,
   useEditorReadOnly,
+  useElementSelected,
   usePath,
   usePluginStore,
   type EditorElementProps,
@@ -93,6 +94,10 @@ const showUploadFailure = (failure: UploadFailure) => {
       toast.error('File uploads are not configured.');
       break;
     }
+    case 'does-not-fit': {
+      toast.error(`${fileNames(failure.files)} cannot be added here.`);
+      break;
+    }
     case 'upload-error':
     case 'resolver-error': {
       toast.error(
@@ -115,6 +120,7 @@ export function UploadElement(props: EditorElementProps<typeof UploadPlugin>) {
   const { element } = props;
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
+  const selected = useElementSelected({ mode: 'text' });
   const nodeKey = usePath((path) => editor.key(path));
   if (!nodeKey) {
     throw new Error('File upload element requires a live node key.');
@@ -153,8 +159,9 @@ export function UploadElement(props: EditorElementProps<typeof UploadPlugin>) {
         {(!loading || !isImage) && (
           <button
             className={cn(
-              'flex w-full cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 text-left hover:bg-primary/10'
+              'flex w-full cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 text-left hover:bg-primary/10 data-[selected=true]:bg-primary/10'
             )}
+            data-selected={selected}
             disabled={loading || readOnly}
             onClick={() => openFilePicker()}
             type="button"

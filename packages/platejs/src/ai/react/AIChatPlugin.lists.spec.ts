@@ -1009,6 +1009,43 @@ describe('AIChatPlugin list output', () => {
       });
     });
 
+    it('keeps the required heading of the main root when an answer replaces all of its text', () => {
+      const selection = textRange([[0, 0], 0], [[0, 0], 5]);
+      const editor = createProductEditor({
+        plugins: [
+          BaseParagraphPlugin,
+          BaseHeadingPlugin,
+          BaseAIPlugin,
+          MarkdownPlugin.configure({
+            initialState: { remarkPlugins: [remarkGfm] },
+          }),
+          AIChatPlugin,
+        ],
+        schema: {
+          root: schema.content.prefix(
+            [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+            schema.content.group('block')
+          ),
+        },
+        selection,
+        initialValue: [
+          { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+          paragraph('Body'),
+        ],
+        userId: 'alice',
+      });
+      const ai = editor.plugin(AIChatPlugin);
+
+      ai.store.set({ chatNodes: [], chatSelection: selection, mode: 'chat' });
+      ai.api.setPreview('New');
+      ai.api.replaceSelection({ format: 'none' });
+
+      expect(editor.read.children()).toEqual([
+        { children: [{ text: 'New' }], level: 1, type: 'heading' },
+        paragraph('Body'),
+      ]);
+    });
+
     it('keeps the paragraph a box requires first when a heading answer replaces all of it', () => {
       const BoxPlugin = definePlugin('aiParagraphSlotBox', {
         schema: {

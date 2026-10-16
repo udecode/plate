@@ -227,7 +227,10 @@ function Draggable(props: RenderNodeWrapperProps) {
   const selectBlocks = () => {
     const keys = nodes();
 
-    if (!keys.every((key) => editor.read.selection.contains(key))) {
+    if (
+      editor.read.selection.nodeMode() === 'object' ||
+      !keys.every((key) => editor.read.selection.contains(key))
+    ) {
       editor.update.selection.setNodes(keys);
     }
     return keys;

@@ -10,8 +10,8 @@ Use a format parser or serializer when content crosses an application boundary.
 
 | Task | Surface |
 | --- | --- |
-| Persist the complete editor document | `editor.read.value()` |
-| Persist exact proposals and decisions | `projectAuthoredReview` and `parseAuthoredDocument` |
+| Persist the complete editor document, pending proposals included | `editor.read.value()` |
+| Export a clean accepted or proposed document | `projectAuthoredDocument` from `platejs/authored` |
 | Convert semantic HTML | `platejs/html`; Node parsing uses `platejs/html/server` |
 | Convert Markdown | `platejs/markdown` |
 | Import or export Word | `platejs/docx/import` and `platejs/docx/export` |
@@ -37,21 +37,23 @@ Saving only `children` drops roots and metadata. Persist an application schema
 identity when stored documents require versioned migration. Validate migrated
 data before publishing it to an editor.
 
-Exact authored review state is canonical JSON-compatible model data:
+The saved value also holds the authored review: each node's pending review
+marks in its `authored` property and the review records in the document's
+`records`. Loading it into an editor that installs `AuthoredPlugin` restores
+the pending proposals. To save a clean document instead, project it:
 
 ```ts
-import { parseAuthoredDocument, projectAuthoredReview } from 'platejs/authored';
+import { projectAuthoredDocument } from 'platejs/authored';
 
-const snapshot = projectAuthoredReview(editor.read.value());
-const json = JSON.stringify(snapshot.review);
-const document = parseAuthoredDocument(json);
+const accepted = projectAuthoredDocument(editor.read.value(), {
+  projection: 'accepted',
+});
 ```
 
-HTML, Markdown, and DOCX do not hide an authored document in their output.
-A document from an editor with authored changes installed carries authored
-metadata even before any proposal. Every HTML, Markdown, plain-text and static
-HTML export of it throws a `TypeError` unless `projection` is `'accepted'` or
-`'proposed'`. A document without authored metadata needs no projection.
+HTML and Markdown carry no review. Every HTML, Markdown, plain-text and static
+HTML export of a document with pending changes throws a `TypeError` unless
+`projection` is `'accepted'` or `'proposed'`. A document without pending
+changes needs no projection.
 
 ## Serialize plain text
 
@@ -132,8 +134,9 @@ A live editor's components are editing UI, so pass the app's static kit as
 `presentation` to draw the file.
 
 A Word file contains the visible Word document, its comments, and its tracked
-revisions. Save Plate JSON beside it when another Plate editor must recover
-named roots, metadata, or exact authored change records.
+revisions. A `review` export also stores the reviewed blocks and review records
+in a custom XML part that a Plate import restores. Save Plate JSON beside it
+when another Plate editor must recover named roots or metadata.
 
 See [DOCX](/docs/docx) for cancellation, package limits, comments, and retained
 source.

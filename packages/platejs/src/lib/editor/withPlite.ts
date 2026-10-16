@@ -9,6 +9,7 @@ import {
   getCompiledEditorSchema,
   isEnvelopeInput,
   readDocumentRecord,
+  readEditorOptions,
   readPersistedEnvelope,
   getEditorAuthoredDocumentCapability,
   initializePluginEntries,
@@ -18,6 +19,7 @@ import {
   type NativeAuthoredDocumentCapability,
   withCompiledEditorSchemaCapabilityEntries,
   withEditorDocumentProjection,
+  createDormantEditor,
   withPluginPortalCandidates,
 } from 'plitejs/internal';
 
@@ -295,7 +297,7 @@ const TRANSACTION_NODE_OPTION_INDEXES = Object.freeze({
 
 const BLOCK_OPTION_INDEXES = Object.freeze({
   duplicate: 0,
-  insertAfter: 1,
+  insert: 1,
   set: 1,
   toggle: 1,
 });
@@ -977,12 +979,7 @@ const hasOption = (options: object, key: string) => {
   return false;
 };
 
-/**
- * Call this on the options a caller passed, before any copy drops a key, and on
- * any object that reaches the root plugin.
- *
- * @internal
- */
+/** @internal */
 export const assertConstructorOptions = (
   options: object,
   keys: Readonly<Record<string, true>>
@@ -1000,6 +997,19 @@ export const assertConstructorOptions = (
   assertEditorOptions(options, keys);
 };
 
+/** @internal */
+export const readConstructorOptions = <TOptions extends object>(
+  options: TOptions,
+  keys: Readonly<Record<string, true>>
+): Partial<TOptions> => {
+  assertConstructorOptions(options, keys);
+  const read = readEditorOptions(options, keys);
+  // A getter the copy runs can add `editor`.
+  assertConstructorOptions(options, keys);
+
+  return read;
+};
+
 type BuildEditorOptions<TEditor extends Editor> = EditorOptions<
   readonly RuntimePluginReference[]
 > & {
@@ -1008,14 +1018,10 @@ type BuildEditorOptions<TEditor extends Editor> = EditorOptions<
     | EditorValueInput<Value>;
 };
 
-/**
- * Options that are not editor options configure the root plugin.
- *
- * @internal
- */
+/** @internal */
 export const buildEditor = <TEditor extends Editor = Editor>(
   options: BuildEditorOptions<TEditor>,
-  optionKeys: Readonly<Record<string, true>>
+  dormant = false
 ): Editor => {
   const {
     affinity,
@@ -1034,19 +1040,11 @@ export const buildEditor = <TEditor extends Editor = Editor>(
     userId,
     ...rootPluginConfig
   } = options;
-  // A getter read above can add a key, so check what reaches the root plugin.
-  // `satisfies` fails the build if a BuildEditorOptions key reaches it.
-  assertConstructorOptions(
-    rootPluginConfig satisfies Record<string, never>,
-    optionKeys
-  );
   const editorUserId = resolveEditorUserId(userId);
-  const editor = createPliteEditor({
-    id,
-    lifecycleErrorSink,
-    maxLength,
-    readOnly,
-  }) as unknown as Editor;
+  const runtimeOptions = { id, lifecycleErrorSink, maxLength, readOnly };
+  const editor = (dormant
+    ? createDormantEditor(runtimeOptions)
+    : createPliteEditor(runtimeOptions)) as unknown as Editor;
 
   defineEditorUser(editor, editorUserId);
   const pluginInputs = partitionPluginInputs(plugins);
@@ -1056,7 +1054,7 @@ export const buildEditor = <TEditor extends Editor = Editor>(
     prepared = prepareInitialPlatePlugins(
       editor,
       { affinity, plugins: pluginInputs.plate, schema },
-      rootPluginConfig
+      rootPluginConfig satisfies Record<string, never>
     );
     const { identity, userPlugins } = prepared;
 
@@ -1512,7 +1510,5 @@ export function createEditor(
     readonly RuntimePluginReference[]
   > = {}
 ): unknown {
-  assertConstructorOptions(options, EDITOR_OPTION_KEYS);
-
-  return buildEditor(options, EDITOR_OPTION_KEYS);
+  return buildEditor(readConstructorOptions(options, EDITOR_OPTION_KEYS));
 }

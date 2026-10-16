@@ -76,7 +76,8 @@ const editorVariants = cva(
     'relative w-full cursor-text select-text overflow-x-hidden whitespace-break-spaces break-words',
     'rounded-md ring-offset-background focus-visible:outline-none',
     '**:data-editor-placeholder:!top-1/2 **:data-editor-placeholder:-translate-y-1/2 placeholder:text-muted-foreground/80 **:data-editor-placeholder:text-muted-foreground/80 **:data-editor-placeholder:opacity-100! **:data-editor-drop-cursor:z-20 **:data-editor-drop-cursor:rounded-full **:data-editor-drop-cursor:bg-brand **:data-editor-inactive-selection:bg-brand/25 **:data-editor-inactive-selection-caret:z-20 **:data-editor-inactive-selection-caret:w-0.5 **:data-editor-inactive-selection-caret:bg-primary',
-    '[&_strong]:font-bold'
+    '[&_strong]:font-bold',
+    '[--node-selection-tint:color-mix(in_oklab,var(--color-brand)_13%,transparent)]'
   ),
   {
     defaultVariants: {
@@ -131,7 +132,7 @@ export function Editor({
         disableDefaultStyles
         {...props}
       />
-      <NodeSelectionHighlight className="z-1 bg-brand/[.13]" />
+      <NodeSelectionHighlight className="z-1 bg-(--node-selection-tint)" />
       <NodeSelectionDrag className="z-50 border border-brand/25 bg-brand/15" />
     </>
   );

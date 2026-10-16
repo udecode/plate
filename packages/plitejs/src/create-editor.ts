@@ -35,6 +35,8 @@ import {
 } from './core/editor-schema';
 import {
   createEditorViewPluginApis,
+  destroyEditor,
+  markEditorDormant,
   prepareInitialPluginPublication,
   prepareScopedPluginPublication,
   setEditorLifecycleErrorSink,
@@ -115,6 +117,7 @@ import {
   assertEditorOptions,
   type CheckedEditorOptions,
   EDITOR_OPTION_KEYS,
+  type UnknownEditorOptionTarget,
 } from './internal/editor-options';
 
 let nextEditorId = 0;
@@ -353,10 +356,7 @@ const adoptInitialDocumentChange = (
   const initialDocument = getEditorDocumentValue(editor);
   const initialSelection = getLiveSelection(editor);
   const initialSelectionRoot = getCurrentSelectionRoot(editor);
-  const admitted = admitDocument(
-    admission,
-    change.apply(initialDocument) as ReturnType<typeof getEditorDocumentValue>
-  );
+  const admitted = admitDocument(admission, change.apply(initialDocument));
 
   initializeEditorSchemaDocument(editor, admitted.document);
   if (!initialSelection) return;
@@ -586,27 +586,24 @@ export const initializePluginEntries = <TEditor extends AnyEditor>(
   );
 };
 
+type NoPluginsEditorOptions<V extends Value = Value> = Omit<
+  CreateEditorOptions<V>,
+  'plugins'
+> & {
+  plugins?: never;
+};
+
 /**
  * Create a mutable Plite editor with schema, command, query, state, and
  * plugin runtime APIs installed.
  */
 export function createEditor<
-  const TOptions extends Omit<
-    CreateEditorOptions<any, readonly unknown[]>,
-    'lifecycleErrorSink'
-  >,
+  const TOptions extends CreateEditorOptions<any, readonly unknown[]> & {
+    plugins: readonly unknown[];
+  },
 >(
-  options: CheckedEditorOptions<
-    TOptions,
-    CreateEditorOptions<any, readonly unknown[]>
-  >
+  options: CheckedEditorOptions<TOptions, CreateEditorOptions>
 ): Editor<EditorValueFromOptions<TOptions>, PluginsFromOptions<TOptions>>;
-
-export function createEditor<V extends Value = Value>(
-  options?: Omit<CreateEditorOptions<V>, 'plugins'> & {
-    plugins?: never;
-  }
-): Editor<V>;
 
 export function createEditor<
   V extends Value,
@@ -618,17 +615,42 @@ export function createEditor<
 ): Editor<V, TPlugins>;
 
 export function createEditor<
+  const TOptions extends NoPluginsEditorOptions<any>,
+>(
+  options: CheckedEditorOptions<TOptions, CreateEditorOptions>
+): Editor<EditorValueFromOptions<TOptions>>;
+
+export function createEditor<V extends Value = Value>(
+  options?: NoPluginsEditorOptions<V>
+): Editor<V>;
+
+export function createEditor<
+  const TOptions extends Partial<Record<keyof CreateEditorOptions, unknown>>,
+>(
+  options?: UnknownEditorOptionTarget<TOptions, NoPluginsEditorOptions>
+): Editor;
+
+export function createEditor<
   V extends Value = Value,
   const TPlugins extends readonly unknown[] = readonly [],
 >(options: CreateEditorOptions<V, TPlugins> = {}): Editor<V, TPlugins> {
-  return createEditorImplementation(options);
+  return createEditorImplementation(options, false);
 }
+
+/** @internal */
+export const createDormantEditor = <
+  V extends Value = Value,
+  const TPlugins extends readonly unknown[] = readonly [],
+>(
+  options: CreateEditorOptions<V, TPlugins> = {}
+): Editor<V, TPlugins> => createEditorImplementation(options, true);
 
 const createEditorImplementation = <
   V extends Value,
   const TPlugins extends readonly unknown[],
 >(
-  options: CreateEditorOptions<V, TPlugins>
+  options: CreateEditorOptions<V, TPlugins>,
+  dormant: boolean
 ): Editor<V, TPlugins> => {
   assertEditorOptions(options, EDITOR_OPTION_KEYS);
   let editor!: Editor<V, TPlugins>;
@@ -663,11 +685,11 @@ const createEditorImplementation = <
     subscribeCommit: (listener) => subscribeCommit(editor, listener),
     subscribeSource: (source, listener) =>
       subscribeSource(editor, source, listener),
-    update: (
+    update: <R = void>(
       fn: (
         transaction: EditorUpdateTransaction<V, any>,
         context: EditorUpdateContext<Editor<V, any>>
-      ) => void,
+      ) => R,
       innerOptions?: InternalEditorUpdateOptions
     ) => updateEditor(runtimeBoundaryEditor(), fn, innerOptions),
   } satisfies InternalEditorTransactionRuntime<V>;
@@ -720,6 +742,7 @@ const createEditorImplementation = <
     update,
     install: (plugin, pluginOptions) =>
       extendEditor(editor, plugin, pluginOptions),
+    destroy: () => destroyEditor(editor),
   };
 
   editor = baseEditor;
@@ -735,6 +758,7 @@ const createEditorImplementation = <
   } satisfies InternalEditorRuntime<V>;
 
   setEditorRuntime(editor, runtime);
+  if (dormant) markEditorDormant(editor);
 
   const baseRegistry = createPluginRegistry();
 

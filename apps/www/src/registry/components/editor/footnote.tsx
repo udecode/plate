@@ -103,7 +103,7 @@ export function FootnoteReferenceElement(
   });
   const isResolved = livePreview?.isResolved ?? fallbackResolved;
   const previewText = livePreview?.previewText ?? fallbackPreviewText;
-  const selected = useElementSelected();
+  const selected = useElementSelected({ mode: 'text' });
   const isSelectionInsideAtom = useEditorSelector((currentEditor) => {
     const selection = currentEditor.read.selection();
 

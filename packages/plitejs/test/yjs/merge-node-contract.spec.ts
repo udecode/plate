@@ -1,16 +1,21 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import * as Y from 'yjs';
+
 import type { Descendant } from '../../src/index';
+import { DEFAULT_YJS_ROOT_NAME } from '../../src/yjs/core/keys';
 import {
   assertCanonicalYjsTrace,
   assertPeerTexts,
+  clearYjsTrace,
   connectYjsPeerAndSync,
   createSeededYjsHistoryPeers,
   createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
+  getYjsTrace,
   type Peer,
   paragraph,
   redoHistoryPeerAndSync,
@@ -125,6 +130,106 @@ describe('plitejs/yjs merge_node collaboration contract', () => {
     syncConnectedPeers(peers);
 
     assertPeerTexts(peers, ['abcdZ']);
+  });
+
+  it('keeps two peers typing into the second half of a joined text in one block', () => {
+    const peers = createPeers(['a', 'b']);
+    const [a, b] = peers;
+
+    mergeSecondParagraph(a);
+    syncConnectedPeers(peers);
+
+    for (let round = 1; round <= 3; round++) {
+      for (const peer of peers) clearYjsTrace(peer);
+      a.editor.update.text.insert('x', {
+        at: { path: [0, 0], offset: 'alphab'.length },
+      });
+      b.editor.update.text.insert('y', {
+        at: {
+          path: [0, 0],
+          offset: `alphab${'x'.repeat(round - 1)}eta`.length + round - 1,
+        },
+      });
+      syncConnectedPeers(peers);
+
+      assertPeerTexts(peers, [
+        `alphab${'x'.repeat(round)}eta${'y'.repeat(round)}`,
+      ]);
+      for (const peer of peers) {
+        assert.deepEqual(
+          getYjsTrace(peer).flatMap((entry) => entry.fallback ?? []),
+          []
+        );
+      }
+    }
+  });
+
+  it('keeps two peers typing in one block after the second half of a joined text is deleted', () => {
+    const peers = createPeers(['a', 'b']);
+    const [a, b] = peers;
+
+    mergeSecondParagraph(a);
+    syncConnectedPeers(peers);
+    a.editor.update.text.delete({
+      at: {
+        anchor: { path: [0, 0], offset: 'alpha'.length },
+        focus: { path: [0, 0], offset: 'alphabeta'.length },
+      },
+    });
+    syncConnectedPeers(peers);
+    for (const peer of peers) clearYjsTrace(peer);
+    a.editor.update.text.insert('x', { at: { path: [0, 0], offset: 1 } });
+    b.editor.update.text.insert('y', {
+      at: { path: [0, 0], offset: 'alpha'.length },
+    });
+    syncConnectedPeers(peers);
+
+    assertPeerTexts(peers, ['axlphay']);
+    for (const peer of peers) {
+      assert.deepEqual(
+        getYjsTrace(peer).flatMap((entry) => entry.fallback ?? []),
+        []
+      );
+    }
+  });
+
+  it('keeps what a peer types beside an empty bold Yjs text plain on every peer', () => {
+    const children: Descendant[] = [
+      {
+        type: 'paragraph',
+        children: [{ bold: true, text: 'alpha' }, { text: 'z' }],
+      },
+    ];
+    const seed = createPeer('seed', undefined, children);
+    const root = seed.doc.share.get(DEFAULT_YJS_ROOT_NAME) as Y.XmlElement;
+    const paragraphNode = root.get(0) as Y.XmlElement;
+    const empty = new Y.XmlText();
+
+    seed.doc.transact(() => {
+      paragraphNode.insert(1, [empty]);
+      empty.setAttribute('bold', true);
+      empty.setAttribute('yjs:id', 'written-elsewhere');
+    });
+
+    const room = Y.encodeStateAsUpdate(seed.doc);
+    const peers = [
+      createPeer('a', room, children),
+      createPeer('b', room, children),
+    ];
+    const [a] = peers;
+
+    a.editor.update.text.insert('x', { at: { path: [0, 1], offset: 0 } });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(
+      peers.map((peer) => peer.editor.read.children()),
+      Array.from({ length: 2 }, () => [
+        {
+          type: 'paragraph',
+          children: [{ bold: true, text: 'alpha' }, { text: 'xz' }],
+        },
+      ])
+    );
   });
 
   it('merges adjacent text leaves through a canonical change', () => {

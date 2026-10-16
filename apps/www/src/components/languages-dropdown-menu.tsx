@@ -10,31 +10,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { hasCnPage, hrefWithLocale } from '@/lib/withLocale';
+
+const CN_PREFIX_REGEX = /^\/cn(?=\/|$)/;
 
 export function LanguagesDropdownMenu() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '/';
 
-  const handleClick = (locale?: string) => {
-    let newPathname: string;
+  const handleClick = (locale: 'cn' | 'en') => {
+    const englishPath = pathname.replace(CN_PREFIX_REGEX, '') || '/';
+    const target =
+      locale === 'cn' && !hasCnPage(englishPath)
+        ? hrefWithLocale('/', 'cn')
+        : hrefWithLocale(englishPath, locale);
 
-    if (locale === 'cn') {
-      // Switch to Chinese - add /cn prefix if not present
-      if (pathname?.startsWith('/cn')) {
-        // Already on CN
-        return;
-      }
-      newPathname = `/cn${pathname || '/'}`;
-    } else {
-      // Switch to English - remove /cn prefix
-      if (!pathname?.startsWith('/cn')) {
-        // Already on English
-        return;
-      }
-      const segments = pathname.split('/').filter((p) => !!p && p !== 'cn');
-      newPathname = segments.length > 0 ? `/${segments.join('/')}` : '/';
-    }
-
-    window.location.href = newPathname;
+    if (target !== pathname) window.location.href = target;
   };
 
   return (
@@ -51,7 +41,7 @@ export function LanguagesDropdownMenu() {
             type="button"
             className="m-0 w-full cursor-pointer"
             onClick={() => {
-              handleClick();
+              handleClick('en');
             }}
           >
             English

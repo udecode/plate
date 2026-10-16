@@ -42,8 +42,9 @@ test('paints the first typed character after restoring suggestions', async ({
       return {
         model: editorRoot[key]?.getBlockText(0) ?? null,
         spans: [
-          ...(block?.querySelectorAll('[data-editor-authored-kind="insert"]') ??
-            []),
+          ...(block?.querySelectorAll(
+            '[data-editor-node="text"][data-editor-authored-kind="insert"]'
+          ) ?? []),
         ].map((node) => node.textContent ?? ''),
         text: block?.textContent ?? '',
       };

@@ -23,6 +23,10 @@ import {
 import type { ContentRootNavigationDirection } from './content-root-navigation-actions';
 import type { ContentRootOwner } from './content-root-owners';
 import {
+  type EditableDOMRuntime,
+  getMountedEditableDOMRuntime,
+} from './editable-dom-runtime';
+import {
   resolveProjectedDOMSelectionEndpoint,
   resolveViewBoundaryDOMPoint,
 } from './selection-projected-dom';
@@ -205,44 +209,65 @@ export const isPointOnVisualBoundaryLine = ({
 };
 
 export const resolveVerticalNavigationPoint = ({
-  currentRoot,
   direction,
+  askExternalViews = true,
   fallbackPoint,
-  point,
   preferredX,
-  sourceEditor,
+  source,
   targetEditor,
   targetRoot,
+  targetRuntime = getMountedEditableDOMRuntime(targetEditor),
 }: {
-  currentRoot: RootKey;
+  askExternalViews?: boolean;
   direction: ContentRootNavigationDirection;
   fallbackPoint: Point;
-  point: Point;
-  preferredX?: number;
-  sourceEditor: ReactRuntimeEditor;
   targetEditor: ReactRuntimeEditor;
+  targetRuntime?: EditableDOMRuntime | null;
   targetRoot: RootKey;
-}): Point | null => {
-  const sourceRect = resolveUsableRangeRect(
-    sourceEditor,
-    rootedRange(point, currentRoot)
-  );
+} & (
+  | {
+      preferredX?: number;
+      source: { editor: ReactRuntimeEditor; point: Point; root: RootKey };
+    }
+  | { preferredX: number; source?: undefined }
+)): Point | null => {
+  const sourceRect = source
+    ? resolveUsableRangeRect(
+        source.editor,
+        rootedRange(source.point, source.root)
+      )
+    : null;
+  const goalX = hasUsableRect(sourceRect)
+    ? (preferredX ?? sourceRect.left)
+    : source
+      ? undefined
+      : preferredX;
+
+  if (goalX === undefined) return null;
+
+  const externalText = targetRuntime?.externalText;
+  const rootedFallback = rootPlitePoint(fallbackPoint, targetRoot);
+  const external = askExternalViews
+    ? externalText?.verticalEntryPoint(
+        rootedFallback,
+        direction === 'forward' ? 'start' : 'end',
+        goalX
+      )
+    : externalText?.externalEntryPoint(rootedFallback);
+
+  if (external) return external;
+
   const fallbackRect = resolveUsableRangeRect(
     targetEditor,
     rootedRange(fallbackPoint, targetRoot)
   );
   const targetElement = targetEditor.api.dom.resolveDOMNode(targetEditor);
 
-  if (!hasUsableRect(sourceRect) || !targetElement) {
-    return null;
-  }
+  if (!targetElement) return null;
+  if (!source && !hasUsableRect(fallbackRect)) return fallbackPoint;
 
   const targetRect = targetElement.getBoundingClientRect();
-  const x = clamp(
-    preferredX ?? sourceRect.left,
-    targetRect.left + 1,
-    targetRect.right - 1
-  );
+  const x = clamp(goalX, targetRect.left + 1, targetRect.right - 1);
   const yRect = hasUsableRect(fallbackRect) ? fallbackRect : targetRect;
   const y =
     direction === 'forward'

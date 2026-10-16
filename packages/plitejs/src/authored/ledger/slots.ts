@@ -11,17 +11,28 @@ export type Slot = {
 
 type SlotBranch = {
   children: SlotNode[];
+  least: Slot | null;
   parent: SlotBranch | null;
   size: number;
   sums: number[];
 };
 
 export type SlotLeaf = {
+  least: Slot | null;
   parent: SlotBranch | null;
   size: number;
   slots: Slot[];
   sums: number[];
 };
+
+/**
+ * A key each slot may hold, such as its oldest entry, whose least the tree
+ * keeps per subtree beside the sums.
+ */
+export type SlotKey<S, K> = Readonly<{
+  before: (left: K, right: K) => boolean;
+  of: (slot: S) => K | null;
+}>;
 
 type SlotNode = SlotBranch | SlotLeaf;
 
@@ -30,7 +41,7 @@ const MAX = 2 * WIDTH;
 
 const isLeaf = (node: SlotNode): node is SlotLeaf => 'slots' in node;
 
-const entriesOf = (node: SlotNode): readonly (Slot | SlotNode)[] =>
+const entriesOf = (node: SlotNode): ReadonlyArray<Slot | SlotNode> =>
   isLeaf(node) ? node.slots : node.children;
 
 const chunks = <V>(items: readonly V[]): V[][] => {
@@ -49,19 +60,24 @@ const chunks = <V>(items: readonly V[]): V[][] => {
 };
 
 /**
- * Top-level blocks in document order, each with numbers the tree sums, so a
- * rank, a block's rank and the sum of a measure before a rank cost the
- * tree's height. It is mutable: the ledger that owns it is the only writer.
+ * Slots in order, each with numbers the tree sums, so finding the slot at a
+ * rank, a slot's rank and the sum of a measure before a rank cost the tree's
+ * height. It is mutable: the ledger that owns it is the only writer.
  *
  * @internal
  */
-export class SlotTree<S extends Slot> {
+export class SlotTree<S extends Slot, K = never> {
   private root: SlotNode;
+  private readonly key: SlotKey<S, K> | null;
+  private readonly measures: number;
 
   constructor(
-    private readonly measures: number,
-    slots: readonly S[] = []
+    measures: number,
+    slots: readonly S[] = [],
+    key: SlotKey<S, K> | null = null
   ) {
+    this.measures = measures;
+    this.key = key;
     this.root = this.build(slots);
   }
 
@@ -94,25 +110,61 @@ export class SlotTree<S extends Slot> {
   }
 
   rankOf(slot: S) {
-    const leaf = slot.leaf;
+    const { leaf } = slot;
 
     if (!leaf) throw new Error('A slot outside its tree has no rank.');
 
     let rank = leaf.slots.indexOf(slot);
-    let child: SlotNode = leaf;
 
-    for (let parent = leaf.parent; parent; parent = parent.parent) {
-      for (const sibling of parent.children) {
+    for (let child: SlotNode = leaf; child.parent; child = child.parent) {
+      for (const sibling of child.parent.children) {
         if (sibling === child) break;
         rank += sibling.size;
       }
-      child = parent;
     }
 
     return rank;
   }
 
-  /** The sum of `measure` over the slots before `rank`. */
+  /** Sum again above `slot`, whose measures or key changed in place. */
+  update(slot: S) {
+    this.refresh(getDefined(slot.leaf));
+  }
+
+  /** The slot holding the least key from rank `from` to `to`. */
+  leastIn(from: number, to: number): S | null {
+    let best: S | null = null;
+    const take = (slot: Slot | null) => {
+      if (slot && (!best || this.before(slot as S, best))) best = slot as S;
+    };
+    const walk = (node: SlotNode, start: number) => {
+      const end = start + node.size;
+
+      if (end <= from || start >= to) return;
+      if (from <= start && end <= to) {
+        take(node.least);
+        return;
+      }
+      if (isLeaf(node)) {
+        for (let local = Math.max(0, from - start); local < node.size && start + local < to; local += 1) {
+          take(this.ownKey(node.slots[local] as S));
+        }
+        return;
+      }
+
+      let at = start;
+
+      for (const child of node.children) {
+        walk(child, at);
+        at += child.size;
+      }
+    };
+
+    walk(this.root, 0);
+
+    return best;
+  }
+
   sumBefore(rank: number, measure: number) {
     let node = this.root;
     let local = rank;
@@ -172,7 +224,6 @@ export class SlotTree<S extends Slot> {
     return this.size;
   }
 
-  /** Visit slots from `from` up to `to`, until `visit` returns false. */
   forEach(
     from: number,
     to: number,
@@ -205,13 +256,8 @@ export class SlotTree<S extends Slot> {
     if (from < to && from < this.size) walk(this.root, from);
   }
 
-  /** Replace `deleteCount` slots at `rank` with `inserted`. */
   splice(rank: number, deleteCount: number, inserted: readonly S[]) {
-    if (
-      rank < 0 ||
-      deleteCount < 0 ||
-      rank + deleteCount > this.size
-    ) {
+    if (rank < 0 || deleteCount < 0 || rank + deleteCount > this.size) {
       throw new RangeError(`Invalid slot splice of ${deleteCount} at ${rank}.`);
     }
     for (let left = deleteCount; left > 0;) {
@@ -223,13 +269,11 @@ export class SlotTree<S extends Slot> {
       this.refresh(leaf);
       if (leaf.size === 0 && leaf !== this.root) this.detach(leaf);
     }
+    // Emptied branches hold no leaf to insert into.
+    if (this.size === 0) this.root = this.build([]);
     if (inserted.length > 0) {
       const { leaf, local } =
-        this.size === 0
-          ? { leaf: this.firstLeaf(), local: 0 }
-          : rank === this.size
-            ? this.leafAt(rank - 1, 1)
-            : this.leafAt(rank);
+        rank === this.size ? this.afterLast() : this.leafAt(rank);
 
       leaf.slots.splice(local, 0, ...inserted);
       for (const slot of inserted) slot.leaf = leaf;
@@ -239,14 +283,10 @@ export class SlotTree<S extends Slot> {
     this.shrink();
   }
 
-  /** Sum a slot's changed measures into its ancestors. */
-  update(slot: S) {
-    this.refresh(getDefined(slot.leaf));
-  }
-
   private build(slots: readonly S[]): SlotNode {
     let level: SlotNode[] = chunks(slots).map((items) => {
       const leaf: SlotLeaf = {
+        least: null,
         parent: null,
         size: 0,
         slots: [...items],
@@ -263,6 +303,7 @@ export class SlotTree<S extends Slot> {
       level = chunks(level).map((children) => {
         const branch: SlotBranch = {
           children,
+          least: null,
           parent: null,
           size: 0,
           sums: [],
@@ -280,36 +321,56 @@ export class SlotTree<S extends Slot> {
 
   private sum(node: SlotNode) {
     const sums = new Array<number>(this.measures).fill(0);
+    let least: Slot | null = null;
     let size = 0;
 
     for (const entry of entriesOf(node)) {
       const values = 'measures' in entry ? entry.measures : entry.sums;
+      const candidate =
+        'measures' in entry ? this.ownKey(entry as S) : entry.least;
 
       for (let measure = 0; measure < this.measures; measure += 1) {
         sums[measure] += getDefined(values[measure]);
       }
+      if (candidate && (!least || this.before(candidate as S, least as S))) {
+        least = candidate;
+      }
       size += 'measures' in entry ? 1 : entry.size;
     }
+    node.least = least;
     node.sums = sums;
     node.size = size;
   }
 
+  private ownKey(slot: S): S | null {
+    return this.key?.of(slot) == null ? null : slot;
+  }
+
+  private before(left: S, right: S) {
+    const key = getDefined(this.key);
+
+    return key.before(getDefined(key.of(left)), getDefined(key.of(right)));
+  }
+
   private refresh(node: SlotNode) {
-    for (let current: SlotNode | null = node; current; current = current.parent) {
+    for (
+      let current: SlotNode | null = node;
+      current;
+      current = current.parent
+    ) {
       this.sum(current);
     }
   }
 
-  private firstLeaf() {
+  private afterLast() {
     let node = this.root;
 
-    while (!isLeaf(node)) node = getDefined(node.children[0]);
+    while (!isLeaf(node)) node = getDefined(node.children.at(-1));
 
-    return node;
+    return { leaf: node, local: node.slots.length };
   }
 
-  // The leaf holding `rank`; `after` reads the slot's position after it.
-  private leafAt(rank: number, after: 0 | 1 = 0) {
+  private leafAt(rank: number) {
     let node = this.root;
     let local = rank;
 
@@ -323,7 +384,7 @@ export class SlotTree<S extends Slot> {
       }
     }
 
-    return { leaf: node, local: local + after };
+    return { leaf: node, local };
   }
 
   private detach(node: SlotNode) {
@@ -346,6 +407,7 @@ export class SlotTree<S extends Slot> {
     const siblings: SlotNode[] = parts.map((part) => {
       if (isLeaf(node)) {
         const leaf: SlotLeaf = {
+          least: null,
           parent: null,
           size: 0,
           slots: part as Slot[],
@@ -360,6 +422,7 @@ export class SlotTree<S extends Slot> {
 
       const branch: SlotBranch = {
         children: part as SlotNode[],
+        least: null,
         parent: null,
         size: 0,
         sums: [],
@@ -370,11 +433,12 @@ export class SlotTree<S extends Slot> {
 
       return branch;
     });
-    const parent = node.parent;
+    const { parent } = node;
 
     if (!parent) {
       const root: SlotBranch = {
         children: siblings,
+        least: null,
         parent: null,
         size: 0,
         sums: [],
@@ -392,7 +456,6 @@ export class SlotTree<S extends Slot> {
     this.overflow(parent);
   }
 
-  // A root with one child hands the root to it.
   private shrink() {
     while (!isLeaf(this.root) && this.root.children.length === 1) {
       const child = getDefined(this.root.children[0]);
@@ -401,7 +464,7 @@ export class SlotTree<S extends Slot> {
       this.root = child;
     }
     if (!isLeaf(this.root) && this.root.children.length === 0) {
-      this.root = { parent: null, size: 0, slots: [], sums: [] };
+      this.root = { least: null, parent: null, size: 0, slots: [], sums: [] };
       this.sum(this.root);
     }
   }

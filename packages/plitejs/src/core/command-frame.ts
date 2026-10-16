@@ -17,6 +17,7 @@ import { getDefined } from '../internal/get-defined';
 import { enterAnchorScope } from './anchor-state';
 import {
   DocumentChange,
+  getInternalDocumentChangeEntries,
   getInternalDocumentRootChange,
   valueRoot,
 } from './change/document-change';
@@ -32,10 +33,10 @@ import {
 import { isInRemovedContent, landTextWrite, nodeAt } from './content-landing';
 import {
   getEditorDocumentRecorder,
+  type PositionMap,
   runEditorDraftGuards,
 } from './document-recorder';
 import { getEditorSchema } from './editor-runtime';
-import { countFrameWork } from './frame-work';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
   advanceSnapshotIndex,
@@ -49,6 +50,7 @@ import {
   getCurrentSelectionRoot,
   getEditorDocumentValue,
   getEditorUpdateRoot,
+  getSnapshot,
   getTransactionSnapshot,
   getTransactionSpecContext,
   getUpdateView,
@@ -66,6 +68,7 @@ import {
   getTxMethodLocate,
   isTxOnlyMethod,
 } from './tx-only';
+import { countCoreWork } from './work';
 
 /**
  * The command frame: a command runs on the document every pending change
@@ -283,12 +286,68 @@ const LAST_FRAME_INDEXES = new WeakMap<
   Readonly<{ index: SnapshotIndex; root: DocumentIndex }>
 >();
 
+const frameIndexOf = (
+  editor: Editor,
+  stored: EditorDocumentValue,
+  projected: CommandProjection,
+  storedIndex: () => SnapshotIndex
+) => {
+  const { carried } = projected;
+  const last = LAST_FRAME_INDEXES.get(editor);
+  const root = rootIndexOf(projected.value, 'children');
+  const index =
+    last?.root === root
+      ? last.index
+      : carried && last?.root === carried.from
+        ? advanceSnapshotIndex(
+            editor,
+            carried.from,
+            projectedIndex(projected, MAIN_ROOT_KEY),
+            carried.change,
+            last.index,
+            { binding: 'inherited' }
+          )
+        : mapSnapshotIndexThroughChange(
+            DocumentIndex.fromValue(valueRoot(stored, MAIN_ROOT_KEY)),
+            projectedIndex(projected, MAIN_ROOT_KEY),
+            getDefined(
+              getInternalDocumentRootChange(
+                projected.map.change(),
+                MAIN_ROOT_KEY
+              )
+            ),
+            storedIndex(),
+            editor,
+            new Set(),
+            undefined,
+            'inherited'
+          );
+
+  LAST_FRAME_INDEXES.set(editor, { index, root });
+
+  return index;
+};
+
+/**
+ * Maps the published document's runtime index into its command projection,
+ * so the first key advances it as every later key does.
+ */
+export const prepareCommandFrame = (editor: Editor) => {
+  const document = getEditorCommandDocument(editor);
+  const stored = getEditorDocumentValue(editor) as EditorDocumentValue;
+  const projected = document?.project(stored);
+
+  if (projected?.map.roots.includes(MAIN_ROOT_KEY)) {
+    frameIndexOf(editor, stored, projected, () => getSnapshot(editor).index);
+  }
+};
+
 const projectedIndex = (projected: CommandProjection, root: string) => {
   const index = projected.indexes.get(root);
 
   if (index) return index;
   if (projected.map.roots.includes(root)) {
-    countFrameWork('projectedIndexes');
+    countCoreWork('projectedIndexes');
   }
 
   return DocumentIndex.fromValue(valueRoot(projected.value, root));
@@ -308,62 +367,28 @@ const enterFrameDraft = (
 
   copyRoot(roots, MAIN_ROOT_KEY, projected.value, 'children');
   snapshot.roots = Object.assign(roots, projected.value.roots);
-  countFrameWork('snapshotRoots', Object.keys(snapshot.roots).length);
+  countCoreWork('snapshotRoots', Object.keys(snapshot.roots).length);
   snapshot.rootIndexes = {};
   snapshot.baseRuntimeIndexes = {};
   snapshot.baseSnapshots = {};
   if (storedIndex && projected.map.roots.includes(MAIN_ROOT_KEY)) {
     let mapped: SnapshotIndex | undefined;
 
-    snapshot.baseRuntimeIndexes[MAIN_ROOT_KEY] = () => {
-      if (mapped) return mapped;
-
-      const { carried } = projected;
-      const last = LAST_FRAME_INDEXES.get(editor);
-      const root = rootIndexOf(projected.value, 'children');
-
-      mapped =
-        carried && last?.root === carried.from
-          ? advanceSnapshotIndex(
-              editor,
-              carried.from,
-              projectedIndex(projected, MAIN_ROOT_KEY),
-              carried.change,
-              last.index,
-              { binding: 'inherited' }
-            )
-          : mapSnapshotIndexThroughChange(
-              DocumentIndex.fromValue(valueRoot(stored, MAIN_ROOT_KEY)),
-              projectedIndex(projected, MAIN_ROOT_KEY),
-              getDefined(
-                getInternalDocumentRootChange(
-                  projected.map.change(),
-                  MAIN_ROOT_KEY
-                )
-              ),
-              storedIndex(),
-              editor,
-              new Set(),
-              undefined,
-              'inherited'
-            );
-      LAST_FRAME_INDEXES.set(editor, { index: mapped, root });
-
-      return mapped;
-    };
+    snapshot.baseRuntimeIndexes[MAIN_ROOT_KEY] = () =>
+      (mapped ??= frameIndexOf(editor, stored, projected, storedIndex));
   }
   // The accept-all projection of a valid review tree is valid, so the frame
   // adopts it as its validated baseline.
   getEditorSchema(editor).adoptDocumentBaseline(projected.value);
-  countFrameWork('baselines');
+  countCoreWork('baselines');
   snapshot.builder = createEditorDocumentChangeBuilder(editor, projected.value);
-  countFrameWork('builders');
+  countCoreWork('builders');
   snapshot.activeChange = { change: snapshot.builder.change };
   frame.selection = selection;
   snapshot.selection = selection;
   frame.exitAnchorScope();
   frame.exitAnchorScope = enterAnchorScope(editor, projected.value);
-  countFrameWork('anchorScopes');
+  countCoreWork('anchorScopes');
 };
 
 /**
@@ -516,7 +541,10 @@ const createFramePlace = (
   const path = (at: Path): Path | null => {
     if (at.length === 0) return at;
 
-    const mapped = map(SelectionApi.nodes([at]), locationRoot);
+    const mapped = map(
+      SelectionApi.nodes([at], { mode: 'block' }),
+      locationRoot
+    );
 
     if (mapped?.kind === 'node') return getDefined(mapped.paths[0]);
 
@@ -600,7 +628,18 @@ const effectChange = (
   let whole: DocumentChange | null = null;
   const composed = () => {
     if (!whole) {
-      const out = projected.map.change().compose(wrote).invert(stored);
+      const projection = projected.map.change();
+
+      for (const [, rootChange] of getInternalDocumentChangeEntries(
+        projection
+      )) {
+        countCoreWork(
+          'composedProjectionSections',
+          rootChange.sections.length / 2
+        );
+      }
+
+      const out = projection.compose(wrote).invert(stored);
 
       whole = recorded ? out.compose(recorded) : out;
     }
@@ -613,7 +652,7 @@ const effectChange = (
     if (options?.track !== undefined || wrote.createRoots.has(root)) {
       return composed().mapPosition(position, options);
     }
-    countFrameWork('adapterMappings');
+    countCoreWork('adapterMappings');
 
     const assoc = options?.association === 'forward' ? 1 : -1;
     const written = getInternalDocumentRootChange(wrote, root);
@@ -680,7 +719,11 @@ export const runInEditorCommandFrame = (
   const frame = createTransactionSpecContext(editor);
   const { snapshot } = frame;
   let recorded: RecordedDraft | null = null;
-  let written: EditorDocumentState | null = null;
+  let written: {
+    change: DocumentChange;
+    frame: EditorDocumentState;
+  } | null = null;
+  let storedToWritten: PositionMap | undefined;
 
   COMMAND_FRAMES.add(editor);
   try {
@@ -713,21 +756,20 @@ export const runInEditorCommandFrame = (
     finalizeTransactionRepresentation(editor);
     const wrote = snapshot.builder.change;
 
+    storedToWritten = (root, position, assoc) => {
+      countCoreWork('adapterMappings');
+      const association = assoc === 1 ? 'forward' : 'backward';
+
+      return wrote.mapPosition(
+        projected.map.toProjected(root, position, association),
+        { association, ...(root === MAIN_ROOT_KEY ? {} : { root }) }
+      );
+    };
     runEditorDraftGuards(
       editor,
       'plain',
       snapshot.builder.value as EditorDocumentValue,
-      {
-        mapPosition: (root, position, association) => {
-          countFrameWork('adapterMappings');
-
-          return wrote.mapPosition(
-            projected.map.toProjected(root, position, association),
-            { association, ...(root === MAIN_ROOT_KEY ? {} : { root }) }
-          );
-        },
-        stored,
-      }
+      { mapPosition: storedToWritten, stored }
     );
 
     if (!wrote.empty || frame.selectionWritten) {
@@ -748,8 +790,11 @@ export const runInEditorCommandFrame = (
         throw new Error('A command frame needs a recorder that records it.');
       }
       written = {
-        selection: frame.selection,
-        value: snapshot.builder.value as EditorDocumentValue,
+        change: wrote,
+        frame: {
+          selection: frame.selection,
+          value: snapshot.builder.value as EditorDocumentValue,
+        },
       };
     }
     // Effects name places in the frame's document, so they map to the
@@ -787,11 +832,14 @@ export const runInEditorCommandFrame = (
     disposeTransactionSpecContext(editor, frame);
   }
   if (!recorded) return true;
-  commitRecordedDraft(editor, outer, recorded, frame.selectionRoot);
+  commitRecordedDraft(editor, outer, recorded, frame.selectionRoot, {
+    storedToWritten,
+  });
   outer.changed = true;
   if (written) {
-    document.checkRecorded?.({
-      frame: written,
+    document.recorded?.({
+      ...written,
+      projection: projected,
       root: frame.selectionRoot,
       stored: {
         selection: outer.selection,

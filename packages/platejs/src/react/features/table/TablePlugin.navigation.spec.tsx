@@ -350,6 +350,61 @@ describe('TablePlugin navigation', () => {
     });
   });
 
+  it('lands Left and Right inside a cell pick', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <cursor />
+                11
+              </hp>
+            </htd>
+            <htd>
+              <hp>12</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const editor = createTableEditor(input);
+    const pickCells = () =>
+      editor.update.selection.setNodes([
+        [0, 0, 0],
+        [0, 0, 1],
+      ]);
+
+    pickCells();
+    expect(
+      pressTableKey(editor, 'ArrowLeft', { which: 37 }).preventDefault
+    ).toHaveBeenCalled();
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
+      focus: { offset: 0, path: [0, 0, 0, 0, 0] },
+    });
+
+    pickCells();
+    pressTableKey(editor, 'ArrowRight', { which: 39 });
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 2, path: [0, 0, 1, 0, 0] },
+      focus: { offset: 2, path: [0, 0, 1, 0, 0] },
+    });
+
+    editor.update.selection.setNodes([[0, 0, 1]]);
+    pressTableKey(editor, 'ArrowLeft', { which: 37 });
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [0, 0, 1, 0, 0] },
+      focus: { offset: 0, path: [0, 0, 1, 0, 0] },
+    });
+
+    editor.update.selection.setNodes([[0]]);
+    expect(
+      pressTableKey(editor, 'ArrowRight', { which: 39 }).preventDefault
+    ).not.toHaveBeenCalled();
+    expect(editor.read.selection.nodeMode()).toBe('block');
+  });
+
   it('tabs forward to the next cell [EDIT-TABLE-TAB-001]', () => {
     const input = (
       <editor>

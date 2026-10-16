@@ -262,7 +262,8 @@
     "[Resizable](/docs/api/resizable)",
     "[Selection](/docs/api/selection)",
     "[DOM API](/docs/api/dom)",
-    "[React Hooks](/docs/api/react-hooks)"
+    "[React Hooks](/docs/api/react-hooks)",
+    "plite"
   ],
   "_plate": {
     "categoryGroups": {
@@ -2910,7 +2911,8 @@
       "/docs/examples/lint": {
         "description": "Lint a document with local and server rules, a findings list and fixes.",
         "title": "Lint Demo",
-        "titleCn": "文本检查"
+        "titleCn": "文本检查",
+        "label": "New"
       },
       "/docs/examples/ai": {
         "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
@@ -3208,7 +3210,8 @@
       },
       "/docs/pagination": {
         "title": "Pagination",
-        "titleCn": "分页"
+        "titleCn": "分页",
+        "experimental": true
       },
       "/docs/annotations": {
         "title": "Annotations",
@@ -3237,6 +3240,10 @@
       "/docs/api/react-hooks": {
         "title": "React Hooks",
         "titleCn": "React Hooks"
+      },
+      "/docs/plite/libraries/plite-pagination": {
+        "title": "Plite Pagination",
+        "experimental": true
       }
     }
   }

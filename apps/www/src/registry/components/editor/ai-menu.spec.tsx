@@ -3,13 +3,8 @@ import { expect, it } from 'bun:test';
 import { act, render } from '@testing-library/react';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { EditorRoot, ParagraphPlugin, createEditor } from 'platejs/react';
-import * as React from 'react';
 
 import { AIChatEditor } from './ai-menu';
-
-// Registry components rely on the automatic JSX runtime; Bun compiles these
-// specs with the classic one.
-Object.assign(globalThis, { React });
 
 const paragraph = (text: string) => ({
   children: [{ text }],

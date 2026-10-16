@@ -9,7 +9,6 @@ const newExampleSlugs = [
   'hidden-content-blocks',
   'linting',
   'multi-root-document',
-  'pagination',
   'synced-blocks',
   'yjs-collaboration',
   'yjs-hocuspocus',

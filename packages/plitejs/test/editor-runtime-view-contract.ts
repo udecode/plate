@@ -92,14 +92,12 @@ describe('editor runtime/view contract', () => {
     const headerEditor = createEditorView(runtime, { root: 'header' });
 
     headerEditor.update.selection.set(
-      SelectionApi.nodes([[0]], {
-        root: 'header',
-      })
+      SelectionApi.nodes([[0]], { mode: 'block', root: 'header' })
     );
 
     assert.deepEqual(
       getEditorLiveSelection(headerEditor),
-      SelectionApi.nodes([[0]], { root: 'header' })
+      SelectionApi.nodes([[0]], { mode: 'block', root: 'header' })
     );
   });
 

@@ -61,7 +61,7 @@ describe('base heading plugin', () => {
     for (let level = 1; level <= 6; level++) {
       const editor = createEditor({
         plugins: [BaseHeadingPlugin],
-        selection: SelectionApi.nodes([[0]]),
+        selection: SelectionApi.nodes([[0]], { mode: 'block' }),
         initialValue: [
           {
             children: [{ text: 'Heading' }],

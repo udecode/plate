@@ -56,7 +56,7 @@ test('refreshes proposal decorations when the authored projection changes withou
         if (!TextApi.isText(node)) return [];
         const entryRange = view.read.ranges.get(path);
         if (!entryRange) return [];
-        return view.read.authored.changesAt(entryRange).flatMap((change) =>
+        return view.read.authored.changes({ at: entryRange, limit: 200 }).items.flatMap((change) =>
           change.ranges.map((range, index) => ({
             key: `${change.id}:${index}`,
             attributes: { 'data-proposal': change.id },
@@ -113,7 +113,7 @@ test('does not remap an observer refresh through the same native insertion', asy
         const range = view.read.ranges.get(path);
         if (!range) return [];
 
-        return view.read.authored.changesAt(range).flatMap((change) =>
+        return view.read.authored.changes({ at: range, limit: 200 }).items.flatMap((change) =>
           change.ranges.map((changeRange, index) => ({
             attributes: { 'data-proposal': change.id },
             key: `${change.id}:${index}`,

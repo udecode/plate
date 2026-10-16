@@ -64,6 +64,20 @@ describe('createEditor', () => {
     expect(editor.read.text.string([])).toBe('slotted document');
   });
 
+  it('builds the root plugin from options the options object inherits', () => {
+    const editor = createEditor(
+      Object.create({
+        api: () => ({ rootMethod: () => 'root' }),
+        initialValue: [{ children: [{ text: 'One' }], type: 'paragraph' }],
+      })
+    );
+
+    expect({
+      root: (editor.api as any).root?.rootMethod(),
+      text: editor.read.text.string([]),
+    }).toEqual({ root: 'root', text: 'One' });
+  });
+
   it('selects the document end when autoSelect is end', () => {
     const editor = createEditor({
       autoSelect: 'end',

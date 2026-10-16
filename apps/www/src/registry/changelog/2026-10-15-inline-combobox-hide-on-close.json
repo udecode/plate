@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-15-inline-combobox-hide-on-close",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-15-inline-combobox-hide-on-close.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-15",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Hide the inline combobox popup as soon as it closes",
+  "targets": [
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-15-inline-combobox-moment-closes-bccdca24",
+      "kind": "fix",
+      "summary": "Hide the popup as soon as it closes. With reduced motion on, a slash, mention or emoji pick no longer shows a \"No results\" popup for a few frames.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["inline-combobox"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-15",
+          "entry": "2026-10-15-inline-combobox-hide-on-close",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

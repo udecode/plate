@@ -2,6 +2,7 @@ import {
   BaseParagraphPlugin,
   ContentSlice,
   createEditor as createProductEditor,
+  createEditorView,
   definePlugin,
   editorCommands,
   ElementApi,
@@ -29,6 +30,7 @@ import { BaseBoldPlugin } from '../../basic-nodes/lib/BaseMarkPlugins';
 import { BaseTextAlignPlugin } from '../../basic-styles/lib/BaseStylePlugins';
 import { BaseCalloutPlugin } from '../../callout/lib/BaseCalloutPlugin';
 import { BaseCodeBlockPlugin } from '../../code-block';
+import { BaseDetailsPlugin } from '../../details/lib/BaseDetailsPlugin';
 import { BaseIndentPlugin } from '../../indent';
 import { BaseColumnPlugin } from '../../layout/lib/BaseColumnPlugin';
 import { BaseAudioPlugin, BaseImagePlugin } from '../../media';
@@ -44,6 +46,7 @@ import {
   OrderedListRules,
   TaskListRules,
 } from './BaseListPlugin';
+import { adoptMetrics } from './listIdentity.internal';
 import { getListIndexMetrics } from './listIndex.internal';
 
 const createEditor = (
@@ -336,7 +339,7 @@ describe('BaseListPlugin canonical model', () => {
 
   it('toggles only exact node selection members', () => {
     const editor = createEditor({
-      selection: SelectionApi.nodes([[0], [2]]),
+      selection: SelectionApi.nodes([[0], [2]], { mode: 'block' }),
       initialValue: [
         { children: [{ text: 'one' }], type: 'paragraph' },
         { children: [{ text: 'middle' }], type: 'paragraph' },
@@ -1889,7 +1892,7 @@ describe('BaseListPlugin canonical model', () => {
           type: 'paragraph',
         },
       ],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
     });
     const data = new DataTransfer();
 
@@ -1913,7 +1916,7 @@ describe('BaseListPlugin canonical model', () => {
           type: 'paragraph',
         },
       ],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
     });
     const data = new DataTransfer();
 
@@ -2398,6 +2401,1075 @@ describe('BaseListPlugin transfer copies', () => {
   });
 });
 
+describe('BaseListPlugin text moves', () => {
+  const item = (
+    text: string,
+    indent: number,
+    listId: string,
+    extra: Record<string, unknown> = {}
+  ) => ({
+    children: [{ text }],
+    indent,
+    listId,
+    listType: ListType.Numbered,
+    type: 'paragraph',
+    ...extra,
+  });
+  const note = (text: string) => ({ children: [{ text }], type: 'paragraph' });
+  const range = (
+    [anchorBlock, anchorOffset]: [number, number],
+    [focusBlock, focusOffset]: [number, number]
+  ) => ({
+    anchor: { offset: anchorOffset, path: [anchorBlock, 0] },
+    focus: { offset: focusOffset, path: [focusBlock, 0] },
+  });
+  const landed = (editor: ReturnType<typeof createEditor>) =>
+    editor.read
+      .children()
+      .map((node) => [NodeApi.string(node), node.indent, node.listId]);
+  const numbersOf = (editor: ReturnType<typeof createEditor>) =>
+    editor.read
+      .children()
+      .map((node, index) =>
+        node.listType ? (editor.read.list.ordinal([index]) ?? null) : null
+      );
+
+  it('lands moved items at the drop item depth in its list, removing the emptied source item [EDIT-CLIPBOARD-LIST-LANDING-001] [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('One', 1, 'a'),
+        item('Two', 2, 'a'),
+        note('gap'),
+        item('X', 1, 'b'),
+        item('Y', 2, 'b'),
+        item('Z', 3, 'b'),
+      ],
+      selection: undefined,
+    });
+
+    const outcome = editor.api.transfer.move({
+      range: range([0, 0], [1, 3]),
+      to: { point: { offset: 1, path: [5, 0] } },
+    });
+
+    expect({ landed: landed(editor), status: outcome.status }).toEqual({
+      landed: [
+        ['gap', undefined, undefined],
+        ['X', 1, 'b'],
+        ['Y', 2, 'b'],
+        ['ZOne', 3, 'b'],
+        ['Two', 4, 'b'],
+      ],
+      status: 'moved',
+    });
+  });
+
+  it('keeps moved items in a list Word continues past a paragraph [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('A', 1, 'w'),
+        note('para'),
+        item('B', 1, 'w'),
+        item('C', 1, 'w'),
+        item('D', 1, 'w'),
+      ],
+      selection: undefined,
+    });
+
+    editor.api.transfer.move({
+      range: range([3, 0], [4, 1]),
+      to: { point: { offset: 4, path: [1, 0] } },
+    });
+
+    expect(
+      editor.read
+        .children()
+        .map((node, index) => [NodeApi.string(node), numbersOf(editor)[index]])
+    ).toEqual([
+      ['A', 1],
+      ['paraC', null],
+      ['D', 2],
+      ['B', 3],
+    ]);
+  });
+
+  it.each([
+    ['joins a numbered drop item', ListType.Numbered, 't'],
+    ['keeps its list beside a bulleted drop item', ListType.Bulleted, 's'],
+  ] as const)('%s [EDIT-LIST-DROP-001]', (_, listType, list) => {
+    const editor = createEditor({
+      initialValue: [
+        item('One', 1, 's'),
+        item('Two', 1, 's'),
+        item('T', 1, 't', { listType }),
+      ],
+      selection: undefined,
+    });
+
+    editor.api.transfer.move({
+      range: range([0, 1], [1, 3]),
+      to: { point: { offset: 1, path: [2, 0] } },
+    });
+
+    expect(landed(editor)).toEqual([
+      ['O', 1, 's'],
+      ['Tne', 1, 't'],
+      ['Two', 1, list],
+    ]);
+  });
+
+  it('keeps moved whole items in their list in an empty paragraph below a bulleted list [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('X', 1, 't', { listType: ListType.Bulleted }),
+        note(''),
+        item('One', 1, 's'),
+        item('Two', 1, 's'),
+      ],
+      selection: undefined,
+    });
+
+    editor.api.transfer.move({
+      range: range([2, 0], [3, 3]),
+      to: { point: { offset: 0, path: [1, 0] } },
+    });
+
+    expect({ landed: landed(editor), numbers: numbersOf(editor) }).toEqual({
+      landed: [
+        ['X', 1, 't'],
+        ['One', 1, 's'],
+        ['Two', 1, 's'],
+      ],
+      numbers: [null, 1, 2],
+    });
+  });
+
+  it('keeps the level rules of a list moved in part to another depth [EDIT-LIST-DROP-001]', () => {
+    const levels = { '2': { start: 5 } };
+    const editor = createEditor({
+      initialValue: [
+        item('A', 1, 'w', { listLevels: levels }),
+        item('Bee', 2, 'w', { listLevels: levels }),
+        item('C', 2, 'w', { listLevels: levels }),
+        item('D', 1, 'w', { listLevels: levels }),
+        item('X', 1, 'x', { listType: ListType.Bulleted }),
+      ],
+      selection: undefined,
+    });
+
+    editor.api.transfer.move({
+      range: range([1, 1], [2, 1]),
+      to: { point: { offset: 1, path: [4, 0] } },
+    });
+
+    expect({
+      landed: landed(editor),
+      levels: editor.read.children()[4].listLevels,
+      numbers: numbersOf(editor),
+    }).toEqual({
+      landed: [
+        ['A', 1, 'w'],
+        ['B', 2, 'w'],
+        ['D', 1, 'w'],
+        ['Xee', 1, 'x'],
+        ['C', 1, 'w'],
+      ],
+      levels,
+      numbers: [1, 5, 2, null, 3],
+    });
+  });
+
+  it('joins only the first of two moved lists to the drop item list [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('One', 1, 's1'),
+        item('Uno', 1, 's1'),
+        item('Two', 1, 's2', { listType: ListType.Bulleted }),
+        item('Dos', 1, 's2', { listType: ListType.Bulleted }),
+        item('T', 1, 't'),
+      ],
+      selection: undefined,
+    });
+
+    editor.api.transfer.move({
+      range: range([0, 1], [3, 3]),
+      to: { point: { offset: 1, path: [4, 0] } },
+    });
+
+    expect(landed(editor)).toEqual([
+      ['O', 1, 's1'],
+      ['Tne', 1, 't'],
+      ['Uno', 1, 't'],
+      ['Two', 1, 's2'],
+      ['Dos', 1, 's2'],
+    ]);
+  });
+
+  it('lands a moved image item at the drop item depth [EDIT-CLIPBOARD-LIST-LANDING-001]', () => {
+    const editor = createProductEditor({
+      initialValue: [
+        item('One', 1, 's'),
+        {
+          children: [{ text: '' }],
+          indent: 1,
+          listId: 's',
+          listType: ListType.Numbered,
+          type: 'image',
+          url: 'https://platejs.org/a.png',
+        },
+        item('Two', 1, 's'),
+        item('T', 2, 't'),
+      ],
+      plugins: [BaseImagePlugin, BaseListPlugin],
+    });
+
+    const outcome = editor.api.transfer.move({
+      range: range([0, 1], [2, 3]),
+      to: { point: { offset: 1, path: [3, 0] } },
+    });
+
+    expect({
+      landed: editor.read
+        .children()
+        .map((node) => [node.type, node.indent, node.listId]),
+      status: outcome.status,
+    }).toEqual({
+      landed: [
+        ['paragraph', 1, 's'],
+        ['paragraph', 2, 't'],
+        ['image', 2, 't'],
+        ['paragraph', 2, 't'],
+      ],
+      status: 'moved',
+    });
+  });
+
+  it('keeps the ids of whole blocks a move carries', () => {
+    const editor = createProductEditor({
+      initialValue: [
+        item('One', 1, 's', { id: 'one' }),
+        item('Two', 1, 's', { id: 'two' }),
+        item('Three', 1, 's', { id: 'three' }),
+        item('T', 1, 't', { id: 't' }),
+      ],
+      plugins: [ElementIdPlugin, BaseListPlugin],
+    });
+
+    const outcome = editor.api.transfer.move({
+      range: range([0, 1], [2, 5]),
+      to: { point: { offset: 1, path: [3, 0] } },
+    });
+
+    expect({
+      landed: editor.read
+        .children()
+        .map((node) => [NodeApi.string(node), node.id]),
+      status: outcome.status,
+    }).toMatchObject({
+      landed: [
+        ['O', 'one'],
+        ['Tne', 't'],
+        ['Two', 'two'],
+        ['Three', expect.any(String)],
+      ],
+      status: 'moved',
+    });
+  });
+
+  it('lands whole items moved out of a blockquote into an empty paragraph under a list item, and undoes in one step [EDIT-CLIPBOARD-LIST-LANDING-001]', () => {
+    const before = [
+      item('X', 1, 'x'),
+      note(''),
+      {
+        children: [item('One', 1, 'a'), item('Two', 2, 'a')],
+        type: 'blockquote',
+      },
+    ];
+    const editor = createProductEditor({
+      initialValue: before,
+      plugins: [BaseBlockquotePlugin, BaseListPlugin],
+      selection: undefined,
+    });
+
+    const outcome = editor.api.transfer.move({
+      range: {
+        anchor: { offset: 0, path: [2, 0, 0] },
+        focus: { offset: 3, path: [2, 1, 0] },
+      },
+      to: { point: { offset: 0, path: [1, 0] } },
+    });
+
+    expect({ landed: landed(editor), status: outcome.status }).toEqual({
+      landed: [
+        ['X', 1, 'x'],
+        ['One', 1, 'x'],
+        ['Two', 2, 'x'],
+      ],
+      status: 'moved',
+    });
+
+    editor.api.history.undo();
+
+    expect(editor.read.children()).toEqual(before);
+  });
+});
+
+describe('BaseListPlugin block transfers', () => {
+  const item = (
+    text: string,
+    indent: number,
+    listId: string | undefined,
+    extra: Record<string, unknown> = {}
+  ) => ({
+    children: [{ text }],
+    indent,
+    ...(listId === undefined ? {} : { listId }),
+    listType: ListType.Numbered,
+    type: 'paragraph',
+    ...extra,
+  });
+  const note = (text: string) => ({ children: [{ text }], type: 'paragraph' });
+  const numbered = (editor: ReturnType<typeof createEditor>) =>
+    editor.read
+      .children()
+      .map(
+        (node, index) =>
+          [
+            NodeApi.string(node),
+            node.listType ? (editor.read.list.ordinal([index]) ?? null) : null,
+          ] as const
+      );
+  const copy = (
+    editor: ReturnType<typeof createEditor>,
+    blocks: readonly number[],
+    edge: 'after' | 'before',
+    at: number
+  ) =>
+    editor.api.transfer.copy({
+      nodes: blocks.map((index) => editor.key([index])!),
+      to: { edge, key: editor.key([at])! },
+    });
+
+  it.each([
+    ['with', 'a'],
+    ['without', undefined],
+  ] as const)(
+    'gives a block copy dropped away from lists its own list, %s source ids [EDIT-LIST-DROP-001]',
+    (_, id) => {
+      const editor = createEditor({
+        initialValue: [item('A', 1, id), item('B', 1, id), note('x')],
+        selection: undefined,
+      });
+
+      copy(editor, [0], 'after', 2);
+
+      expect({
+        fresh: editor.read.children()[3].listId,
+        numbers: numbered(editor),
+      }).toEqual({
+        fresh: expect.not.stringMatching(/^a$/),
+        numbers: [
+          ['A', 1],
+          ['B', 2],
+          ['x', null],
+          ['A', 1],
+        ],
+      });
+    }
+  );
+
+  it('joins a block copy from another list to the list it lands inside [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('X', 1, 'x'),
+        item('Y', 1, 'x'),
+        note('n'),
+        item('A', 1, 'a'),
+      ],
+      selection: undefined,
+    });
+
+    copy(editor, [3], 'after', 0);
+
+    expect(numbered(editor)).toEqual([
+      ['X', 1],
+      ['A', 2],
+      ['Y', 3],
+      ['n', null],
+      ['A', 1],
+    ]);
+  });
+
+  it('joins a block copy dropped before a nested child to the child list [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('P', 1, 'p'),
+        item('C', 2, 'c'),
+        note('n'),
+        item('S', 2, 's'),
+      ],
+      selection: undefined,
+    });
+
+    copy(editor, [3], 'before', 1);
+
+    expect(editor.read.children()[1]).toMatchObject({
+      indent: 2,
+      listId: 'c',
+    });
+  });
+
+  it("gives a block copy dropped before a list's first item that item's start [EDIT-LIST-DROP-001]", () => {
+    const editor = createEditor({
+      initialValue: [
+        note('n'),
+        item('F', 1, 'f', { listStart: 5 }),
+        item('G', 1, 'f'),
+        item('S', 1, 's'),
+      ],
+      selection: undefined,
+    });
+
+    copy(editor, [3], 'before', 1);
+
+    expect(numbered(editor)).toEqual([
+      ['n', null],
+      ['S', 5],
+      ['F', 6],
+      ['G', 7],
+      ['S', 1],
+    ]);
+  });
+
+  it("joins only the last of two copied lists dropped before a list's first item [EDIT-LIST-DROP-001]", () => {
+    const editor = createEditor({
+      initialValue: [
+        item('A', 1, 'a', { listType: ListType.Bulleted }),
+        item('B', 1, 'b'),
+        note('n'),
+        item('F', 1, 'f', { listStart: 5 }),
+        item('G', 1, 'f'),
+      ],
+      selection: undefined,
+    });
+
+    copy(editor, [0, 1], 'before', 3);
+
+    const copied = editor.read.children()[3];
+
+    expect({
+      fresh: copied.listId,
+      numbers: numbered(editor),
+    }).toEqual({
+      fresh: expect.not.stringMatching(/^a$/),
+      numbers: [
+        ['A', null],
+        ['B', 1],
+        ['n', null],
+        ['A', null],
+        ['B', 5],
+        ['F', 6],
+        ['G', 7],
+      ],
+    });
+  });
+
+  it('joins only the first of two copied lists dropped inside a list [EDIT-LIST-DROP-001]', () => {
+    const source = createEditor({
+      initialValue: [item('A', 1, 'a'), item('B', 1, 'b')],
+      selection: undefined,
+    });
+    const editor = createEditor({
+      initialValue: [item('X', 1, 'x'), item('Y', 1, 'x'), item('Z', 1, 'x')],
+      selection: undefined,
+    });
+
+    editor.api.transfer.copy({
+      from: source,
+      nodes: [source.key([0])!, source.key([1])!],
+      to: { edge: 'after', key: editor.key([1])! },
+    });
+
+    expect(numbered(editor).map(([, number]) => number)).toEqual([
+      1, 2, 3, 1, 4,
+    ]);
+  });
+
+  it("drops a joined copy's restart so the list keeps counting [EDIT-LIST-DROP-001]", () => {
+    const editor = createEditor({
+      initialValue: [
+        item('X', 1, 'x'),
+        note('n'),
+        item('A', 1, 'a', { listRestart: 3 }),
+      ],
+      selection: undefined,
+    });
+
+    copy(editor, [2], 'after', 0);
+
+    expect(numbered(editor)).toEqual([
+      ['X', 1],
+      ['A', 2],
+      ['n', null],
+      ['A', 3],
+    ]);
+  });
+
+  it("keeps a joined copy's child list start and restart [EDIT-LIST-DROP-001]", () => {
+    const editor = createEditor({
+      initialValue: [
+        item('X', 1, 'x'),
+        note('n'),
+        item('P', 1, 'p'),
+        item('C1', 2, 'c', { listStart: 5 }),
+        item('C2', 2, 'c'),
+        item('C3', 2, 'c', { listRestart: 9 }),
+      ],
+      selection: undefined,
+    });
+
+    copy(editor, [2], 'after', 0);
+
+    expect(numbered(editor)).toEqual([
+      ['X', 1],
+      ['P', 2],
+      ['C1', 5],
+      ['C2', 6],
+      ['C3', 9],
+      ['n', null],
+      ['P', 1],
+      ['C1', 5],
+      ['C2', 6],
+      ['C3', 9],
+    ]);
+  });
+
+  it.each([
+    ['after', 1],
+    ['before', 0],
+  ] as const)(
+    'gives a copied list that restarts at its top level its own list, dropped %s a list [EDIT-LIST-DROP-001]',
+    (edge, at) => {
+      const editor = createEditor({
+        initialValue: [
+          item('X', 1, 'x'),
+          item('Y', 1, 'x'),
+          note('n'),
+          item('R1', 1, 'r'),
+          item('R2', 1, 'r', { listRestart: 7 }),
+        ],
+        selection: undefined,
+      });
+
+      copy(editor, [3, 4], edge, at);
+
+      const numbers = Object.fromEntries(
+        numbered(editor).filter(([text]) => text === 'X' || text === 'Y')
+      );
+
+      expect({
+        copied: numbered(editor).filter(([text]) => text.startsWith('R')),
+        numbers,
+      }).toEqual({
+        copied: [
+          ['R1', 1],
+          ['R2', 7],
+          ['R1', 1],
+          ['R2', 7],
+        ],
+        numbers: { X: 1, Y: 2 },
+      });
+    }
+  );
+
+  it('gives a copied family whose child restarts its own list, so a counter that runs across parents keeps counting [EDIT-LIST-DROP-001]', () => {
+    const across = { listLevels: { '2': { restartAfter: 0 } } };
+    const editor = createEditor({
+      initialValue: [
+        item('P1', 1, 't', across),
+        item('C1', 2, 't', across),
+        item('P2', 1, 't', across),
+        item('C2', 2, 't', across),
+        note('n'),
+        item('S', 1, 's'),
+        item('SC', 2, 's', { listRestart: 9 }),
+      ],
+      selection: undefined,
+    });
+
+    copy(editor, [5, 6], 'after', 1);
+
+    expect(numbered(editor).slice(0, 6)).toEqual([
+      ['P1', 1],
+      ['C1', 1],
+      ['S', 1],
+      ['SC', 9],
+      ['P2', 2],
+      ['C2', 2],
+    ]);
+  });
+
+  it('gives a copied family whose child sets its own start its own list, so a counter that runs across parents keeps counting [EDIT-LIST-DROP-001]', () => {
+    const across = { listLevels: { '2': { restartAfter: 0 } } };
+    const editor = createEditor({
+      initialValue: [
+        item('P1', 1, 't', across),
+        item('P2', 1, 't', across),
+        item('C2', 2, 't', across),
+        note('n'),
+        item('S', 1, 's'),
+        item('SC', 2, 's', { listStart: 9 }),
+      ],
+      selection: undefined,
+    });
+
+    copy(editor, [4, 5], 'after', 0);
+
+    expect(numbered(editor).slice(0, 5)).toEqual([
+      ['P1', 1],
+      ['S', 1],
+      ['SC', 9],
+      ['P2', 2],
+      ['C2', 1],
+    ]);
+  });
+
+  it('admits a family copied between its own head and first child where it was dropped [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('P', 1, 'p', { listStart: 4 }),
+        item('C', 2, 'p'),
+        item('D', 2, 'p'),
+      ],
+      selection: undefined,
+    });
+
+    const outcome = copy(editor, [0], 'before', 1);
+
+    expect({ numbers: numbered(editor), status: outcome.status }).toEqual({
+      numbers: [
+        ['P', 4],
+        ['P', 5],
+        ['C', 1],
+        ['D', 2],
+        ['C', 3],
+        ['D', 4],
+      ],
+      status: 'copied',
+    });
+  });
+
+  it.each([
+    ['next to a list as part of it', 0, 2],
+    ['away from lists as a list of its own', 1, 1],
+  ] as const)(
+    'numbers a block copy from another editor dropped %s [EDIT-LIST-DROP-001]',
+    (_, at, number) => {
+      const source = createEditor({
+        initialValue: [item('S', 1, 's')],
+        selection: undefined,
+      });
+      const editor = createEditor({
+        initialValue: [item('X', 1, 'x'), note('n')],
+        selection: undefined,
+      });
+
+      editor.api.transfer.copy({
+        from: source,
+        nodes: [source.key([0])!],
+        to: { edge: 'after', key: editor.key([at])! },
+      });
+
+      expect(numbered(editor).find(([text]) => text === 'S')).toEqual([
+        'S',
+        number,
+      ]);
+    }
+  );
+
+  it('joins a block copy after a family of 65 deeper items [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('A', 1, 'a'),
+        ...Array.from({ length: 65 }, (_, index) => item(`c${index}`, 2, 'c')),
+        note('n'),
+        item('S', 1, 's'),
+      ],
+      selection: undefined,
+    });
+
+    copy(editor, [67], 'after', 65);
+
+    expect(editor.read.children()[66]).toMatchObject({ listId: 'a' });
+  });
+
+  it.each(['copy', 'move'] as const)(
+    'walks only the deeper run beside the gap for a block %s, with 10 or 300 other list items',
+    (intent) => {
+      const walkedFor = (others: number) => {
+        const editor = createEditor({
+          initialValue: [
+            ...Array.from({ length: others }, (_, index) =>
+              item(`o${index}`, 1, 'o')
+            ),
+            note('n'),
+            item('A', 1, 'a', { listType: ListType.Bulleted }),
+            item('A1', 2, 'a', { listType: ListType.Bulleted }),
+            item('A2', 2, 'a', { listType: ListType.Bulleted }),
+            item('A3', 2, 'a', { listType: ListType.Bulleted }),
+            item('B', 1, 'b', { listType: ListType.Bulleted }),
+            ...Array.from({ length: others }, (_, index) =>
+              item(`p${index}`, 1, 'p')
+            ),
+            item('S', 1, 's'),
+          ],
+          selection: undefined,
+        });
+        const before = adoptMetrics.visited;
+
+        editor.api.transfer[intent]({
+          nodes: [editor.key([2 * others + 6])!],
+          to: { edge: 'after', key: editor.key([others + 4])! },
+        });
+
+        return adoptMetrics.visited - before;
+      };
+
+      expect({ ten: walkedFor(10), threeHundred: walkedFor(300) }).toEqual({
+        ten: 5,
+        threeHundred: 5,
+      });
+    }
+  );
+
+  it('walks nothing after the gap for a block copy that joins the list before it, with 10 or 300 deeper items after it', () => {
+    const walkedFor = (others: number) => {
+      const editor = createEditor({
+        initialValue: [
+          item('T', 1, 't'),
+          ...Array.from({ length: others }, (_, index) =>
+            item(`c${index}`, 2, 't')
+          ),
+          note('end'),
+          note('p'),
+          item('S', 1, 's'),
+        ],
+        selection: undefined,
+      });
+      const before = adoptMetrics.visited;
+
+      copy(editor, [others + 2, others + 3], 'after', 0);
+
+      return adoptMetrics.visited - before;
+    };
+
+    expect({ ten: walkedFor(10), threeHundred: walkedFor(300) }).toEqual({
+      ten: 1,
+      threeHundred: 1,
+    });
+  });
+
+  it('joins a block moved into another list to that list, keeping its key [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('a1', 1, 'a'),
+        item('b1', 1, 'b'),
+        item('b2', 1, 'b'),
+        item('a2', 1, 'a'),
+      ],
+      selection: undefined,
+    });
+    const key = editor.key([3])!;
+
+    editor.api.transfer.move({
+      nodes: [key],
+      to: { edge: 'after', key: editor.key([1])! },
+    });
+
+    expect({
+      keyKept: editor.key([2]) === key,
+      numbers: numbered(editor),
+    }).toEqual({
+      keyKept: true,
+      numbers: [
+        ['a1', 1],
+        ['b1', 1],
+        ['a2', 2],
+        ['b2', 3],
+      ],
+    });
+  });
+
+  it('joins a keyboard step past a paragraph to the next list, and gives back its list on the way back [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('a1', 1, 'a'),
+        item('a2', 1, 'a'),
+        note('n'),
+        item('b1', 1, 'b'),
+      ],
+      selection: undefined,
+    });
+    const nodes = [editor.key([1])!];
+
+    editor.api.transfer.move({ nodes, to: 'next' });
+    const down = numbered(editor);
+
+    editor.api.transfer.move({ nodes, to: 'previous' });
+
+    expect({ down, up: numbered(editor) }).toEqual({
+      down: [
+        ['a1', 1],
+        ['n', null],
+        ['a2', 1],
+        ['b1', 2],
+      ],
+      up: [
+        ['a1', 1],
+        ['a2', 2],
+        ['n', null],
+        ['b1', 1],
+      ],
+    });
+  });
+
+  it('drops the start of a moved first item that joins the middle of another list [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('a1', 1, 'a', { listStart: 7 }),
+        item('b1', 1, 'b'),
+        item('b2', 1, 'b'),
+      ],
+      selection: undefined,
+    });
+
+    editor.api.transfer.move({
+      nodes: [editor.key([0])!],
+      to: { edge: 'after', key: editor.key([1])! },
+    });
+
+    expect({
+      moved: editor.read.children()[1],
+      numbers: numbered(editor),
+    }).toEqual({
+      moved: item('a1', 1, 'b'),
+      numbers: [
+        ['b1', 1],
+        ['a1', 2],
+        ['b2', 3],
+      ],
+    });
+  });
+
+  it('reads the list beside the gap past the blocks that move [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('x', 1, 'x'),
+        item('m1', 1, 'm'),
+        item('b1', 1, 'b'),
+        item('m2', 1, 'm'),
+      ],
+      selection: undefined,
+    });
+
+    editor.api.transfer.move({
+      nodes: [editor.key([1])!, editor.key([3])!],
+      to: { edge: 'before', key: editor.key([2])! },
+    });
+
+    expect(numbered(editor)).toEqual([
+      ['x', 1],
+      ['m1', 2],
+      ['m2', 3],
+      ['b1', 1],
+    ]);
+  });
+
+  it('keeps the numbers and restart of a keyboard step inside its own list [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('a1', 1, 'a'),
+        item('a2', 1, 'a', { listRestart: 5 }),
+        item('a3', 1, 'a'),
+      ],
+      selection: undefined,
+    });
+
+    editor.api.transfer.move({ nodes: [editor.key([1])!], to: 'next' });
+
+    expect(numbered(editor)).toEqual([
+      ['a1', 1],
+      ['a3', 2],
+      ['a2', 5],
+    ]);
+  });
+
+  it('keeps a keyboard step to the head of its own list in that list, under another list of its kind [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('b1', 1, 'b'),
+        item('a1', 1, 'a'),
+        item('a2', 1, 'a'),
+      ],
+      selection: undefined,
+    });
+
+    editor.api.transfer.move({ nodes: [editor.key([2])!], to: 'previous' });
+
+    expect(numbered(editor)).toEqual([
+      ['b1', 1],
+      ['a2', 1],
+      ['a1', 2],
+    ]);
+  });
+
+  it('keeps the list and start of a moved list that joins no list [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('a1', 1, 'a'),
+        item('a2', 1, 'a', { listStart: 3 }),
+        note('n'),
+      ],
+      selection: undefined,
+    });
+
+    editor.api.transfer.move({
+      nodes: [editor.key([1])!],
+      to: { edge: 'after', key: editor.key([2])! },
+    });
+
+    expect({
+      moved: editor.read.children()[2],
+      numbers: numbered(editor),
+    }).toEqual({
+      moved: item('a2', 1, 'a', { listStart: 3 }),
+      numbers: [
+        ['a1', 1],
+        ['n', null],
+        ['a2', 2],
+      ],
+    });
+  });
+
+  it('gives a moved item without a style or start the style and start of the list whose head it joins [EDIT-LIST-DROP-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('b1', 1, 'b', { listStart: 3, listStyle: 'upper-roman' }),
+        item('b2', 1, 'b', { listStyle: 'upper-roman' }),
+        note('n'),
+        item('a', 1, 'a'),
+      ],
+      selection: undefined,
+    });
+
+    const outcome = editor.api.transfer.move({
+      nodes: [editor.key([3])!],
+      to: { edge: 'before', key: editor.key([0])! },
+    });
+
+    expect({
+      moved: editor.read.children()[0],
+      numbers: numbered(editor),
+      status: outcome.status,
+    }).toEqual({
+      moved: item('a', 1, 'b', { listStart: 3, listStyle: 'upper-roman' }),
+      numbers: [
+        ['a', 3],
+        ['b1', 4],
+        ['b2', 5],
+        ['n', null],
+      ],
+      status: 'moved',
+    });
+  });
+
+  it('joins an item without a list id moved into a content root to the list there, not to its list in the main root [EDIT-LIST-DROP-001]', () => {
+    const Card = definePlugin('card', {
+      schema: {
+        element: schema.element.textBlock({
+          contentRoots: {
+            body: {
+              content: schema.content.type('paragraph', {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+        }),
+      },
+    });
+    const editor = createProductEditor({
+      initialValue: {
+        children: [
+          item('s', 1, undefined, { listStart: 7 }),
+          {
+            type: 'card',
+            children: [{ text: '' }],
+            childRoots: { body: 'card:1' },
+          },
+        ],
+        roots: {
+          'card:1': [
+            item('b1', 1, undefined, { listStart: 3 }),
+            item('b2', 1, undefined),
+          ],
+        },
+      },
+      plugins: [Card, BaseListPlugin],
+      selection: undefined,
+    });
+    const body = createEditorView(editor, { root: 'card:1' });
+
+    body.api.transfer.move({
+      from: editor,
+      nodes: [editor.key([0])!],
+      to: { edge: 'before', key: body.key([0])! },
+    });
+
+    expect(
+      body.read
+        .children()
+        .map((node, index) => [
+          NodeApi.string(node),
+          body.read.list.ordinal([index]),
+        ])
+    ).toEqual([
+      ['s', 3],
+      ['b1', 4],
+      ['b2', 5],
+    ]);
+  });
+
+  it.each(['after', 'before'] as const)(
+    'gives a copied list its own list when its item at the join depth is another kind than the item it is dropped %s [EDIT-LIST-DROP-001]',
+    (edge) => {
+      const editor = createEditor({
+        initialValue: [
+          item('X', 1, 'x', { listType: ListType.Bulleted }),
+          note('n'),
+          item('B', 2, 'm', { listType: ListType.Bulleted }),
+          item('N', 1, 'm'),
+        ],
+        selection: undefined,
+      });
+
+      copy(editor, [2, 3], edge, 0);
+
+      const at = edge === 'after' ? 1 : 0;
+      const copies = editor.read
+        .children()
+        .slice(at, at + 2)
+        .map((node) => [NodeApi.string(node), node.listId]);
+
+      expect(copies).toEqual([
+        ['B', expect.not.stringMatching(/^[mx]$/)],
+        ['N', copies[0][1]],
+      ]);
+    }
+  );
+});
+
 describe('BaseListPlugin list identity', () => {
   const listItem = (text: string, extra: Record<string, unknown> = {}) => ({
     children: [{ text }],
@@ -2429,7 +3501,7 @@ describe('BaseListPlugin list identity', () => {
   it('keeps the default list one list through Plate HTML', () => {
     const editor = createEditor({
       initialValue: [listItem('One'), note('Note'), listItem('Two')],
-      selection: SelectionApi.nodes([[0], [1], [2]]),
+      selection: SelectionApi.nodes([[0], [1], [2]], { mode: 'block' }),
     });
     const data = new DataTransfer();
 
@@ -2534,19 +3606,6 @@ describe('BaseListPlugin list identity', () => {
         ),
     ],
     [
-      'at the end of a block',
-      (editor: ReturnType<typeof createEditor>, index: number) =>
-        editor.update.list.insert(
-          { type: ListType.Numbered },
-          {
-            at: {
-              offset: NodeApi.string(editor.read.children()[index]).length,
-              path: [index, 0],
-            },
-          }
-        ),
-    ],
-    [
       'in place of an empty block',
       (editor: ReturnType<typeof createEditor>, index: number) => {
         editor.update.nodes.insert(note(''), { at: [index + 1] });
@@ -2616,7 +3675,7 @@ describe('BaseListPlugin list identity', () => {
       initialValue: [
         listItem('Bullet', { listStart: 4, listType: ListType.Bulleted }),
       ],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
     });
     const data = new DataTransfer();
 
@@ -3567,7 +4626,7 @@ describe('BaseListPlugin list identity', () => {
     it('uses an explicit caret independently of the current node selection', () => {
       const editor = createEditor({
         initialValue: [note('')],
-        selection: SelectionApi.nodes([[0]]),
+        selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       });
 
       editor.update.slice.replace(
@@ -3733,7 +4792,7 @@ describe('BaseListPlugin list identity', () => {
     it('keeps selected empty blocks under the length limit on the ordinary paste path', () => {
       const editor = paste(
         [note('')],
-        SelectionApi.nodes([[0]]),
+        SelectionApi.nodes([[0]], { mode: 'block' }),
         [task('AA'), task('B')],
         1,
         { maxLength: 1 }
@@ -3820,7 +4879,9 @@ describe('BaseListPlugin list identity', () => {
         },
         selection: caretAt([1, 0]),
       });
-      const slice = editor.read.slice.get({ at: SelectionApi.nodes([[0]]) });
+      const slice = editor.read.slice.get({
+        at: SelectionApi.nodes([[0]], { mode: 'block' }),
+      });
 
       expect(editor.update.slice.replace(slice)).toBe(true);
       expect(editor.read.root('caption:copy')).toEqual([note('Caption')]);
@@ -4030,7 +5091,7 @@ describe('BaseListPlugin list identity', () => {
         const before = source.read.value();
         const slice = source.read.slice.get({
           at: wholeOwner
-            ? SelectionApi.nodes([[0], [1]])
+            ? SelectionApi.nodes([[0], [1]], { mode: 'block' })
             : {
                 anchor: { path: [0, 0], offset: 1 },
                 focus: { path: [1, 0], offset: 4 },
@@ -4354,7 +5415,7 @@ describe('BaseListPlugin list identity', () => {
       }
     );
 
-    it('keeps a content root on the ordinary paste path', () => {
+    it('continues the list a named root holds when whole items land on its empty line', () => {
       const RootHolder = definePlugin('pasteRootHolder', {
         schema: {
           element: {
@@ -4372,34 +5433,43 @@ describe('BaseListPlugin list identity', () => {
           },
         },
       });
+      const main = [
+        listItem('Main', { listId: 'main', listStyle: 'lower-alpha' }),
+        {
+          type: 'pasteRootHolder',
+          childRoots: { body: 'note' },
+          children: [{ text: '' }],
+        },
+      ];
       const editor = createProductEditor({
         plugins: [RootHolder, BaseListPlugin],
         initialValue: {
-          children: [
-            {
-              type: 'pasteRootHolder',
-              childRoots: { body: 'note' },
-              children: [{ text: '' }],
-            },
-          ],
-          roots: { note: [note('')] },
+          children: main,
+          roots: { note: [roman('One'), note('')] },
         },
         selection: {
           kind: 'text',
-          anchor: { root: 'note', path: [0, 0], offset: 0 },
-          focus: { root: 'note', path: [0, 0], offset: 0 },
+          anchor: { root: 'note', path: [1, 0], offset: 0 },
+          focus: { root: 'note', path: [1, 0], offset: 0 },
         },
       });
       editor.update.slice.replace(
         ContentSlice.fromJSON({
-          content: [task('A'), task('B')],
+          content: [
+            listItem('A', { listId: 'copy' }),
+            listItem('B', { listId: 'copy' }),
+          ],
           openStart: 1,
           openEnd: 1,
         })
       );
 
-      expect(editor.read.root('note')[0]).toEqual(note('A'));
-      expect(editor.read.children()[0].type).toBe('pasteRootHolder');
+      expect(editor.read.root('note')).toEqual([
+        roman('One'),
+        roman('A'),
+        roman('B'),
+      ]);
+      expect(editor.read.children()).toEqual(main);
     });
 
     it('keeps paragraph-only root content when a pasted list starts with a heading', () => {
@@ -4497,7 +5567,7 @@ describe('BaseListPlugin list identity', () => {
     it('keeps a list that lives only inside a pasted table apart from the list it lands in', () => {
       const editor = paste(
         [listItem('A', { listId: 'a' }), listItem('B', { listId: 'a' })],
-        SelectionApi.nodes([[1]]),
+        SelectionApi.nodes([[1]], { mode: 'block' }),
         [cell(listItem('X', { listId: 'cell' }))]
       );
 
@@ -4505,11 +5575,15 @@ describe('BaseListPlugin list identity', () => {
     });
 
     it('keeps one counter for a pasted list that continues through a table cell', () => {
-      const editor = paste([note('target')], SelectionApi.nodes([[0]]), [
-        listItem('A', { listId: 's', listStart: 5 }),
-        cell(listItem('X', { listId: 's' })),
-        listItem('B', { listId: 's' }),
-      ]);
+      const editor = paste(
+        [note('target')],
+        SelectionApi.nodes([[0]], { mode: 'block' }),
+        [
+          listItem('A', { listId: 's', listStart: 5 }),
+          cell(listItem('X', { listId: 's' })),
+          listItem('B', { listId: 's' }),
+        ]
+      );
 
       expect(
         [[0], [1, 0, 0, 0], [2]].map((path) => editor.read.list.ordinal(path))
@@ -4523,7 +5597,7 @@ describe('BaseListPlugin list identity', () => {
           listItem('L2', { listId: 'l' }),
           listItem('L3', { listId: 'l' }),
         ],
-        SelectionApi.nodes([[1]]),
+        SelectionApi.nodes([[1]], { mode: 'block' }),
         [
           listItem('A', { listId: 's' }),
           cell(listItem('X', { listId: 's' })),
@@ -4544,7 +5618,7 @@ describe('BaseListPlugin list identity', () => {
           listItem('A', { listId: 'l', listStart: 5 }),
           listItem('B', { listId: 'l' }),
         ],
-        SelectionApi.nodes([[0]]),
+        SelectionApi.nodes([[0]], { mode: 'block' }),
         [
           listItem('X', { listId: 's', listStart: 7 }),
           listItem('Y', { listId: 's' }),
@@ -4561,7 +5635,7 @@ describe('BaseListPlugin list identity', () => {
           listItem('B', { listId: 'l' }),
           listItem('C', { listId: 'l' }),
         ],
-        SelectionApi.nodes([[1]]),
+        SelectionApi.nodes([[1]], { mode: 'block' }),
         [
           listItem('X', { listId: 's', listRestart: 7, listStart: 7 }),
           listItem('Y', { listId: 's' }),
@@ -4670,6 +5744,76 @@ describe('BaseListPlugin keystroke cost', () => {
       expect(recountFor(300)).toBe(recountFor(10));
     }
   );
+});
+
+describe('BaseListPlugin named views', () => {
+  it('converts a Details title in a named view while the main root starts with a Details', () => {
+    const details = (title: string) => ({
+      children: [
+        { children: [{ text: title }], type: 'summary' },
+        { children: [{ text: 'Body' }], type: 'paragraph' },
+      ],
+      type: 'details',
+    });
+    const HeaderHolder = definePlugin('testHeaderHolder', {
+      schema: {
+        element: {
+          blockContent: true,
+          contentRoots: {
+            header: {
+              content: schema.content.any(
+                [
+                  schema.content.type('blockquote').allowed,
+                  schema.content.type('details').allowed,
+                  schema.content.type('paragraph').allowed,
+                ],
+                { default: { type: 'paragraph' }, min: 1 }
+              ),
+              ownership: 'exclusive',
+            },
+          },
+          void: 'block',
+        },
+      },
+    });
+    const editor = createProductEditor({
+      initialValue: {
+        children: [
+          details('Main'),
+          {
+            childRoots: { header: 'header' },
+            children: [{ text: '' }],
+            type: 'testHeaderHolder',
+          },
+        ],
+        roots: {
+          header: [{ children: [details('Head')], type: 'blockquote' }],
+        },
+      },
+      plugins: [
+        BaseParagraphPlugin,
+        BaseBlockquotePlugin,
+        BaseDetailsPlugin,
+        BaseListPlugin,
+        HeaderHolder,
+      ],
+    });
+    const header = createEditorView(editor, { root: 'header' });
+
+    expect(
+      header
+        .plugin(BaseListPlugin)
+        .update.toggle({ at: [0, 0, 0], type: ListType.Bulleted })
+    ).toBe(true);
+    expect(
+      header.read.children()[0].children.map((node) => NodeApi.string(node))
+    ).toEqual(['Head', 'Body']);
+    expect(header.read.nodes.get([0, 0])![0]).toMatchObject({
+      indent: 1,
+      listType: ListType.Bulleted,
+      type: 'paragraph',
+    });
+  });
 });
 
 void BaseParagraphPlugin;

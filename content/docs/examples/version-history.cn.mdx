@@ -1,9 +1,9 @@
 ---
 title: 版本历史
-description: 保留作者历史，并比较保存的文档版本。
+description: 保存文档版本、比较它们，并恢复其中一个。
 ---
 
-此示例安装原生 authored changes，并启用 `retainHistory: true`。以 Alice 或 Bob 身份编辑、revert 一个已接受贡献，或保存两个版本以查看结构比较。
+此示例把 editor 文档的快照保存为版本。编辑文本，保存一个版本以与上一个版本比较，或恢复任意已保存的版本。
 
 带评论的应用版本预览与恢复请参阅[评论的历史版本](/cn/docs/comment#历史版本)。
 
@@ -15,49 +15,41 @@ description: 保留作者历史，并比较保存的文档版本。
 
 <ComponentSource name="version-history-demo" />
 
-## Runtime 结构
+## 用法
 
-| 部分 | 所有者 | 用途 |
-| --- | --- | --- |
-| `AuthoredPlugin.configure({ initialState: { retainHistory: true } })` | `platejs/authored` | 用稳定的作者和 change identity 捕获已接受编辑，并保留其编辑内容。编辑器只在创建时读取一次该选项。 |
-| `userId` | 应用 | 为每个已接受编辑命名作者；没有它时，编辑器以本地用户写入。 |
-| `read.authored.changes(...)` | 原生 authored read | 以分页 `AuthoredChange` record 返回已接受历史。 |
-| `update.authored.revert(...)` | 原生 authored update | 为选中的 retained change 创建补偿贡献。 |
-| `compare(...)` | `platejs/diff` | 比较两个不可变的已保存版本，不修改 editor。 |
-| `Diff` | 复制的 Plate UI | 显示比较分组、效果、筛选和导航。 |
-| `BasicMarksKit` | 复制的 Plate UI | 为可编辑文档提供普通富文本 mark。 |
-
-## Retained history 流程
-
-1. Editor 安装 `authored`，并启用 `retainHistory: true`。
-2. 作者选择器修改后续 transaction 使用的身份。
-3. 普通 accepted edit 创建带作者身份的 record。
-4. 历史列表按稳定 ID 和 revision 读取 accepted change。
-5. **Revert** 捕获绑定快照的 selection，并调用 `update.authored.revert(...)`。
-6. 新的补偿 change 归属于当前作者；原 record 保持不变。
-
-后续依赖工作可能让 revert 返回 `blocked`；所需保留内容过期时返回 `unavailable`。本地 undo 和 redo 仍属于独立的交互历史。接受或拒绝 pending review proposal 时使用原生 `decide(...)`。
+- `editor.read.value()` 把完整文档捕获为一个版本。
+- `tx.value.replace(revision)` 以一次可撤销的更新恢复已保存的版本。
+- `platejs/diff` 的 `compare(...)` 比较两个不可变的已保存版本，不修改 editor。
+- 复制的 `Diff` 组件显示比较 group、effect、筛选和导航。
+- 复制的 `BasicMarksKit` 为可编辑文档提供富文本 mark。
 
 ## 比较保存的版本
 
-演示会先捕获初始快照。编辑文档后点击 **Save revision**，即可比较最近两个快照。再次保存会开始新的比较，并取消过时的比较。比较结果只供读取。如需将通过校验的比较结果转成待审 proposal，使用 [`proposeAuthoredComparison(...)`](/docs/authored-changes)。
+演示会先捕获初始快照。编辑文档后点击 **Save revision**，即可比较最近两个快照。再次保存会开始新的比较，并取消过时的那一个。比较结果只供读取。如需将通过校验的比较结果转成待审 proposal，使用 [`proposeAuthoredComparison(...)`](/cn/docs/authored-changes#导入比较得到的版本)。
 
-## 持久化历史
+## 恢复版本
 
-把 `editor.read.value()` 作为一个文档保存。Authored envelope 包含 accepted content、causal record、decision，以及 retention policy 选择保留的内容。
+**Restore** 以一次更新把文档替换为该已保存版本：
+
+```tsx
+editor.update((tx) => tx.value.replace(revision));
+```
+
+已保存的版本保存在应用状态中，因此恢复其中一个不会影响其他版本。
+
+## 持久化版本
+
+把每个 `editor.read.value()` 快照作为一个文档保存。要把某个版本加载到新 editor，请将它作为 `initialValue` 传入：
 
 ```tsx
 const saved = editor.read.value();
 
 const reloaded = createEditor({
-  plugins: [
-    AuthoredPlugin.configure({ initialState: { retainHistory: true } }),
-  ],
+  plugins: BasicMarksKit,
   initialValue: saved,
-  userId: session.user.id,
 });
 ```
 
-新 editor 从空的本地 undo 和 redo stack 开始；保留的 authored contribution 仍在保存的文档中。如果文档包含评论，用 `comments.toJSON()` 将 `CommentsJSON` 与同一版本保存，通过 `initialComments` 加载；文档 undo 不会回退讨论。
+新 editor 从空的本地 undo 和 redo stack 开始。如果文档包含评论，用 `comments.toJSON()` 将 `CommentsJSON` 与同一版本保存，通过 `initialComments` 加载；文档 undo 不会回退讨论。
 
-Review view、decision result、协作和 format projection 请参阅 [Authored Changes](/docs/authored-changes)。
+要提议和审阅修改而不是替换文档，请参阅 [Authored Changes](/cn/docs/authored-changes)。

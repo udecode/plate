@@ -1813,7 +1813,6 @@
         "typecheck:partition:compiler",
         "typecheck:partition:core",
         "typecheck:partition:details",
-        "typecheck:partition:docx-export",
         "typecheck:partition:html",
         "typecheck:partition:layout",
         "typecheck:partition:markdown",
@@ -2095,6 +2094,7 @@
         "typecheck:partition:math",
         "typecheck:partition:media",
         "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-basic-styles",
         "typecheck:partition:standard-code-block",
         "typecheck:partition:standard-indent",
         "typecheck:partition:standard-list",
@@ -2366,8 +2366,10 @@
       "dependsOn": [
         "plitejs#typecheck:partition:authored",
         "typecheck:partition:core",
+        "typecheck:partition:details",
         "typecheck:partition:layout",
         "typecheck:partition:layout-react",
+        "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-indent",
         "typecheck:partition:standard-list"
       ],
@@ -2818,6 +2820,7 @@
         "plitejs#typecheck:partition:authored",
         "typecheck:partition:callout",
         "typecheck:partition:core",
+        "typecheck:partition:details",
         "typecheck:partition:layout",
         "typecheck:partition:markdown",
         "typecheck:partition:media",
@@ -3002,6 +3005,7 @@
     "test:partition:table-react": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:proxies",
         "typecheck:partition:react-core",
@@ -3971,11 +3975,7 @@
     },
     "typecheck:partition:docx-internal": {
       "cache": true,
-      "dependsOn": [
-        "plitejs#typecheck:partition:core",
-        "typecheck:partition:authored",
-        "typecheck:partition:core"
-      ],
+      "dependsOn": ["typecheck:partition:authored", "typecheck:partition:core"],
       "inputs": [
         "src/docx/internal/**",
         "!src/**/*.spec.*",

@@ -146,7 +146,7 @@ const sections = [
     key: 'tests',
     label: 'TESTS',
     line: (test) =>
-      `${test.tags.length ? test.tags.join(' ') : 'untagged'}  ${clip(test.title ?? '(title is not a literal)')}  (${test.file}:${test.line}; ${runState(test)})`,
+      `${test.tags.length ? test.tags.join(' ') : 'untagged'}  ${clip(test.title ?? '(title is not a literal)')}  (${test.file}:${test.line}; ${runState(test)}; hash ${test.hash})`,
   },
   {
     key: 'upstream',

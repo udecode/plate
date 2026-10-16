@@ -63,5 +63,5 @@ const LandingPlugin = definePlugin('landingContract', {
 createEditor({ plugins: [LandingPlugin] }).update.slice.replace(
   ContentSlice.closed([]),
   // @ts-expect-error A paste lands at a location; a selected node is replaced through the current selection.
-  { at: SelectionApi.nodes([[0]]) }
+  { at: SelectionApi.nodes([[0]], { mode: 'block' }) }
 );

@@ -8,6 +8,7 @@ import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { RenderElementProps } from '../../lib';
 import { type EditorNodeProps, EditorElement } from '../components';
 import type { Editor } from '../editor/Editor';
+import { useRedrawWithBlock } from '../internal/block-redraws';
 import { useEditorContext } from '../internal/plite-components';
 import {
   getElementNodeKey,
@@ -32,6 +33,7 @@ function ElementContent({
 }: (EditorNodeProps & RenderElementProps & { path: Path }) & {
   pluginContext?: Record<string, unknown>;
 }) {
+  useRedrawWithBlock();
   let props = initialProps;
   const readOnly = useEditorReadOnly();
   const viewEditor = useEditorContext();

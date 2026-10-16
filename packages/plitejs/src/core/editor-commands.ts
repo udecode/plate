@@ -45,23 +45,16 @@ import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
 import { getActiveCommandEditor } from './command-registry';
 import { ContentSlice as ContentSliceValue } from './content-slice';
+import { getInternalEditorSchemaFromApi } from './editor-schema';
+import { limitTextInsert } from './insert-limit';
 import {
-  canPlaceBlocksAtPath,
-  getInternalEditorSchemaFromApi,
-} from './editor-schema';
-import {
-  getInsertRemainingLength,
-  limitSliceToLength,
-  limitTextInsert,
-} from './insert-limit';
+  asBlockEntries,
+  getCurrentNodeSelection,
+  getNodeSelectionReplacement,
+  replaceSelectedBlocks,
+} from './node-selection';
 import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
-import { readAtSliceFitTarget, withCommandSliceFit } from './public-state';
-import {
-  landSlice,
-  prepareEmptyBlockReplacement,
-  resolveSliceLandingTarget,
-  rootField,
-} from './slice-landing';
+import { planPaste, writePaste } from './slice-landing';
 import { areEditorJsonValuesEqual } from './value-codec';
 
 type CommandStateView = EditorStateView<Value, any>;
@@ -82,36 +75,6 @@ const resolveCommandRange = (
   }
 
   return RangeApi.isRange(at) ? at : state.ranges.get(at);
-};
-
-const getCurrentNodeSelection = (
-  state: CommandStateView
-): NodeSelection | null => {
-  const paths = state.selection.nodes().map(([, path]) => path);
-  const first = paths[0];
-
-  if (!first) return null;
-
-  const selection = state.selection();
-  const last = paths.at(-1) ?? first;
-  const selectedPathAt = (path: Path | undefined, fallback: Path) =>
-    path
-      ? (paths.find(
-          (candidate) =>
-            PathApi.equals(candidate, path) ||
-            PathApi.isAncestor(candidate, path)
-        ) ?? fallback)
-      : fallback;
-  const anchorPath = selectedPathAt(selection?.anchor.path, first);
-  const focusPath = selectedPathAt(selection?.focus.path, last);
-  const root = SelectionApi.root(selection);
-
-  return SelectionApi.nodes(
-    [first, ...paths.slice(1)],
-    root === undefined
-      ? { anchorPath, focusPath }
-      : { anchorPath, focusPath, root }
-  );
 };
 
 const equalsInRoot = (point: Point | undefined, target: Point) => {
@@ -461,77 +424,6 @@ const getFullBlockTextReplacement = (
   };
 };
 
-// A path has no root, so the selected blocks come from the selection read,
-// which reads them in the selection's root.
-const getNodeSelectionReplacement = (
-  state: CommandStateView,
-  createReplacement: (context: {
-    at: Path;
-    keys: readonly NodeKey[];
-    root: string;
-  }) => Readonly<{
-    replacements: readonly Descendant[];
-  }> | null
-) => {
-  const entries = state.selection.nodes();
-  const blocks = entries.filter(
-    (entry): entry is NodeEntry<Element> =>
-      NodeApi.isElement(entry[0]) && state.schema.isBlock(entry[0])
-  );
-  const firstPath = blocks[0]?.[1];
-
-  if (!firstPath || blocks.length !== entries.length) return null;
-
-  const keys = blocks.map(([block]) => state.key(block));
-  const root = SelectionApi.root(state.selection()) ?? MAIN_ROOT_KEY;
-  const planned = createReplacement({ at: firstPath, keys, root });
-
-  if (!planned) return null;
-
-  const lastReplacement = planned.replacements.at(-1);
-  const textEntry = lastReplacement
-    ? [...NodeApi.texts(lastReplacement)].at(-1)
-    : undefined;
-
-  if (!textEntry) return null;
-
-  const parentPath = PathApi.parent(firstPath);
-  const index = getDefined(firstPath.at(-1));
-  const publicRoot = toPublicRoot(root);
-
-  if (
-    !canPlaceBlocksAtPath(state.schema, firstPath, planned.replacements, {
-      removing: blocks.flatMap(([, path]) =>
-        PathApi.equals(PathApi.parent(path), parentPath)
-          ? [getDefined(path.at(-1))]
-          : []
-      ),
-      root,
-    })
-  ) {
-    return 'refused' as const;
-  }
-
-  const point: Point = {
-    offset: textEntry[0].text.length,
-    path: [
-      ...parentPath,
-      index + planned.replacements.length - 1,
-      ...textEntry[1],
-    ],
-    ...(publicRoot ? { root: publicRoot } : {}),
-  };
-
-  return {
-    index,
-    keys,
-    parentPath,
-    replacements: planned.replacements,
-    root: publicRoot,
-    selection: { anchor: point, focus: point, kind: 'text' as const },
-  };
-};
-
 const locateOptionsAt = <
   TInput extends { options?: { at?: NodeSelection | NodeTarget } },
 >(
@@ -786,6 +678,15 @@ export const editorCommands: EditorCommands = Object.freeze({
                 }
               : {}),
           });
+
+          const deletedTextMarks =
+            !survivingPoint && defaultText
+              ? NodeApi.extractProps(defaultText[0])
+              : {};
+
+          if (Object.keys(deletedTextMarks).length > 0) {
+            tx.marks.set(deletedTextMarks);
+          }
         });
       }
 
@@ -827,40 +728,37 @@ export const editorCommands: EditorCommands = Object.freeze({
     locate: locateOptionsAt,
     build: ({ input, state }) => {
       const nodeSelection = getCurrentNodeSelection(state);
-      const nodeReplacementText = nodeSelection
-        ? limitTextInsert(state, input.text, { at: nodeSelection })
-        : input.text;
-      const nodeReplacement =
-        input.options?.at === undefined && nodeSelection
-          ? getNodeSelectionReplacement(state, ({ at, keys, root }) => {
-              if (LINE_BREAK_PATTERN.test(nodeReplacementText)) return null;
-
-              const replacement = fillDefaultChild(
-                state,
-                at,
-                root,
-                nodeReplacementText,
-                state.marks() ?? getConsistentBlockTextMarks(state, keys)
-              );
-
-              return replacement ? { replacements: [replacement] } : null;
-            })
-          : null;
 
       if (input.options?.at === undefined && nodeSelection) {
-        if (!nodeReplacement || nodeReplacement === 'refused') return false;
+        const nodeReplacementText = limitTextInsert(state, input.text, {
+          at: nodeSelection,
+        });
+        const nodeBlocks = asBlockEntries(state, state.selection.nodes());
+
+        if (!nodeBlocks || LINE_BREAK_PATTERN.test(nodeReplacementText)) {
+          return false;
+        }
+        const [, firstPath] = getDefined(nodeBlocks[0]);
+        const root = SelectionApi.root(state.selection()) ?? MAIN_ROOT_KEY;
+        const replacement = fillDefaultChild(
+          state,
+          firstPath,
+          root,
+          nodeReplacementText,
+          state.marks() ??
+            getConsistentBlockTextMarks(
+              state,
+              nodeBlocks.map(([block]) => state.key(block))
+            )
+        );
+        const nodeReplacement =
+          replacement &&
+          getNodeSelectionReplacement(state, nodeBlocks, root, [replacement]);
+
+        if (!nodeReplacement) return false;
 
         return state.transaction((tx) => {
-          for (const key of nodeReplacement.keys.slice(1).toReversed()) {
-            tx.nodes.remove({ at: key });
-          }
-          tx.nodes.replaceChildren(nodeReplacement.replacements, {
-            at: nodeReplacement.parentPath,
-            count: 1,
-            index: nodeReplacement.index,
-            ...(nodeReplacement.root ? { root: nodeReplacement.root } : {}),
-            newSelection: nodeReplacement.selection,
-          });
+          replaceSelectedBlocks(tx, nodeReplacement);
         });
       }
 
@@ -945,167 +843,10 @@ export const editorCommands: EditorCommands = Object.freeze({
     locate: locateOptionsAt,
     build: ({ input, state }) => {
       const editor = getActiveCommandEditor();
-      const nodeSelection = getCurrentNodeSelection(state);
+      const plan = planPaste(editor, state, input, 'copy');
+      const written = plan && writePaste(editor, plan);
 
-      if (input.options?.at === undefined && nodeSelection) {
-        const covered = state.selection();
-        const { slice } = landSlice(editor, {
-          slice: input.slice,
-          source: input.slice,
-          target: {
-            block:
-              (covered && state.nodes.block({ at: RangeApi.start(covered) })) ??
-              null,
-            kind: 'context',
-            ...rootField(SelectionApi.root(nodeSelection) ?? state.view.root()),
-          },
-        });
-        const nodeReplacement = getNodeSelectionReplacement(
-          state,
-          ({ at, root }) => {
-            if (slice.roots !== undefined || slice.content.length === 0) {
-              return null;
-            }
-
-            if (
-              slice.openStart === 0 &&
-              slice.openEnd === 0 &&
-              slice.content.every(
-                (node) =>
-                  NodeApi.isElement(node) &&
-                  state.schema.element(node.type) !== null &&
-                  state.schema.isBlock(node)
-              )
-            ) {
-              return { replacements: slice.content };
-            }
-
-            const defaultChild = state.schema.createDefaultChild({
-              at,
-              root: toPublicRoot(root),
-            });
-
-            if (!defaultChild || !NodeApi.isElement(defaultChild)) {
-              return null;
-            }
-
-            const schema = getInternalEditorSchemaFromApi(state.schema);
-            const content =
-              slice.openStart === 1 &&
-              slice.openEnd === 1 &&
-              slice.content.length === 1 &&
-              NodeApi.isElement(slice.content[0])
-                ? slice.content[0].children
-                : slice.openStart === 0 && slice.openEnd === 0
-                  ? slice.content
-                  : null;
-
-            if (
-              !content ||
-              content.some((node) => !schema.canContain(defaultChild, node))
-            ) {
-              return null;
-            }
-
-            return {
-              replacements: [{ ...defaultChild, children: content }],
-            };
-          }
-        );
-
-        if (nodeReplacement === 'refused') return false;
-        if (nodeReplacement) {
-          return state.transaction((tx) => {
-            tx.selection.set(null);
-            tx.nodes.insert([...nodeReplacement.replacements], {
-              at: getDefined(nodeReplacement.keys[0]),
-            });
-            for (const key of nodeReplacement.keys.toReversed()) {
-              tx.nodes.remove({ at: key });
-            }
-            tx.selection.set(nodeReplacement.selection);
-          });
-        }
-
-        const [first, ...rest] = state.selection.nodes();
-        const firstRange = first
-          ? state.ranges.get(state.key(first[0]))
-          : undefined;
-
-        if (!firstRange) return false;
-
-        const removalKeys = rest.map(([node]) => state.key(node));
-
-        let replaced = false;
-        const spec = state.transaction((tx) => {
-          replaced = tx.slice.replace(slice, {
-            ...input.options,
-            at: firstRange,
-          });
-          if (!replaced) return;
-
-          for (const key of removalKeys.toReversed()) {
-            tx.nodes.remove({ at: key });
-          }
-        });
-
-        return replaced ? spec : false;
-      }
-
-      const selection = state.selection();
-      const options =
-        input.options?.at === undefined && selection
-          ? { ...input.options, at: selection }
-          : input.options;
-      const viewRoot = state.view.root();
-      const resolved = readAtSliceFitTarget(
-        editor,
-        viewRoot,
-        options,
-        (rootState, at, root) => ({
-          remaining: getInsertRemainingLength(rootState, { at }),
-          target: resolveSliceLandingTarget(rootState, at, root),
-        })
-      );
-
-      if (!resolved) return false;
-      const { remaining, target } = resolved;
-      const slice = limitSliceToLength(input.slice, remaining);
-
-      if (slice.content.length === 0 && input.slice.content.length > 0) {
-        return false;
-      }
-      const landing = landSlice(editor, { slice, source: input.slice, target });
-      const { replaceEmpty } = landing;
-
-      if (target.kind === 'empty' && replaceEmpty) {
-        const replacement = readAtSliceFitTarget(
-          editor,
-          viewRoot,
-          options,
-          (rootState) =>
-            prepareEmptyBlockReplacement(
-              editor,
-              rootState,
-              target,
-              replaceEmpty,
-              remaining
-            )
-        );
-        const spec =
-          replacement &&
-          withCommandSliceFit(
-            editor,
-            { remaining, replaceEmptyBlock: true },
-            () => state.slice.fit(replacement, options)
-          );
-
-        if (spec) return spec;
-      }
-
-      return withCommandSliceFit(editor, { remaining }, () =>
-        state.slice.fit(landing.slice, options)
-      );
+      return written ? written.spec : false;
     },
     prepare: (input) =>
       Object.freeze({

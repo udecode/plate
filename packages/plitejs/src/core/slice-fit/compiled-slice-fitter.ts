@@ -53,6 +53,7 @@ import {
 import { getReplaceableEmptyBlock } from '../is-empty-element';
 import { profileCoreDuration } from '../profiling';
 import { toPublicRoot } from '../public-root';
+import { recordStoreFromJson, showValueRecords } from '../record-store';
 import {
   bindCanonicalFitPreparation,
   constructCanonicalDocumentChange,
@@ -63,6 +64,7 @@ import {
   type CanonicalFitPreparation,
 } from '../representation';
 import {
+  resolveCompiledSchemaProperty,
   resolveCompiledSchemaWrapperPlan,
   type CompiledEditorSchema,
   type CompiledSchemaContentProgram,
@@ -70,7 +72,6 @@ import {
 } from '../schema-compiler';
 import { EditorSchemaValidationError } from '../schema-validation';
 import { mapSelectionWithContext } from '../selection-protocol';
-import { recordStoreFromJson, showValueRecords } from '../record-store';
 import { assertEditorJsonValue, snapshotEditorJsonValue } from '../value-codec';
 import {
   type EditorSchemaFitReport,
@@ -110,6 +111,7 @@ export type InternalSliceFitTarget =
       exactBounds?: Readonly<{ from: number; to: number }>;
       kind: 'range';
       replaceEmptyBlock?: true;
+      reportLanding?: true;
     }>
   | Readonly<{
       kind: 'root';
@@ -124,7 +126,8 @@ export type InternalSliceFitTarget =
 export type InternalSliceFitOptions = Readonly<{
   apply?: (
     step: DocumentChangeStep,
-    selection?: NonNullable<Selection>
+    selection?: NonNullable<Selection>,
+    landing?: Range | null
   ) => void;
   builder: ChangeDraft;
   target: InternalSliceFitTarget;
@@ -474,7 +477,7 @@ export const compileSliceFitter = <V extends Value>(
     return createDeclarativeAndFill(
       innerSchema,
       plan.type,
-      undefined,
+      plan.properties,
       creating,
       options
     );
@@ -751,7 +754,7 @@ export const compileSliceFitter = <V extends Value>(
     const shell = createDeclarativeAndFill(
       innerSchema7,
       plan.type,
-      undefined,
+      plan.properties,
       new Set(),
       options
     );
@@ -1020,7 +1023,26 @@ export const compileSliceFitter = <V extends Value>(
     if (!element?.content) return null;
     const parentContent = element.content;
     const root = options.root ?? 'main';
+    const rootContext = {
+      ancestors: [],
+      root: root === 'main' ? null : root,
+      type: parentType,
+    };
+    // The detached parent sits at a root, so it keeps the properties its type
+    // takes there, a required one included, and drops any that target other
+    // ancestors.
     const structuralParent: Element = {
+      ...Object.fromEntries(
+        Object.entries(options.parent).filter(
+          ([key]) =>
+            resolveCompiledSchemaProperty(
+              innerSchema10,
+              'element',
+              key,
+              rootContext
+            ) !== null
+        )
+      ),
       children: options.parent.children,
       type: parentType,
       ...(element.contentRoots.size > 0 &&
@@ -1764,6 +1786,7 @@ export const compileSliceFitter = <V extends Value>(
         : PreparedTokenSlice.concat([prefix, insert, suffix]);
 
     return {
+      content: { from: prefix.length, to: prefix.length + insert.length },
       insert: restored,
       selectionOffset: prefix.length + getContentEndOffset(insert),
     };
@@ -1871,6 +1894,44 @@ export const compileSliceFitter = <V extends Value>(
           selectionAssociation === 1 || rawPoint.offset === 0 ? 1 : -1
         )
       : null;
+  };
+
+  const mapFittedLanding = (
+    rawDocument: DocumentIndex,
+    canonicalDocument: DocumentIndex,
+    constructionChange: DocumentChange,
+    root: string,
+    content: Readonly<{ from: number; to: number }>
+  ): Range | null => {
+    const edge = (position: number, inward: -1 | 1): Point | null => {
+      const raw =
+        rawDocument.pointAt(position, inward) ??
+        rawDocument.pointAt(position, inward === 1 ? -1 : 1);
+      const point =
+        raw &&
+        mapCanonicalRepresentationPoint(
+          getEditor(),
+          rawDocument,
+          canonicalDocument,
+          constructionChange,
+          root,
+          { offset: raw.offset, path: [...raw.path] },
+          inward,
+          { countInlineEdges: true }
+        );
+
+      return (
+        point && {
+          offset: point.offset,
+          path: [...point.path],
+          ...(root === 'main' ? {} : { root }),
+        }
+      );
+    };
+    const anchor = edge(content.from, 1);
+    const focus = edge(content.to, -1);
+
+    return anchor && focus ? { anchor, focus } : null;
   };
 
   const resolveExternalDocumentPoint = (
@@ -2324,6 +2385,20 @@ export const compileSliceFitter = <V extends Value>(
             ElementApi.isElement(rightNode) &&
             getElementType(leftNode) === getElementType(rightNode);
     };
+    const leafBlocksShareContent = (
+      left: FitOpenToken,
+      right: FitOpenToken
+    ) => {
+      const leftNode = openTokenNode(left);
+      const rightNode = openTokenNode(right);
+
+      return (
+        (NodeApi.isText(leftNode) && NodeApi.isText(rightNode)) ||
+        (ElementApi.isElement(leftNode) &&
+          ElementApi.isElement(rightNode) &&
+          contextsShareContent(leftNode, rightNode))
+      );
+    };
     let startContext: FitOpenToken[] | undefined;
     let endContext: FitOpenToken[] | undefined;
     const getStartContext = () => (startContext ??= getOpenContext(exactFrom));
@@ -2500,6 +2575,7 @@ export const compileSliceFitter = <V extends Value>(
         const targetRange = document.nodeRange(start.path.slice(0, -1));
 
         return Object.freeze({
+          content: { from: 0, to: encoded.length },
           cost,
           from: targetRange.from,
           insert: encoded,
@@ -2563,6 +2639,7 @@ export const compileSliceFitter = <V extends Value>(
       const stack = [...localStartContext];
       let outputPosition = 0;
       let selectionPosition: number | null = null;
+      let contentStart: number | null = null;
       const append = (token: FitToken) => {
         output.push(token);
         outputPosition += tokenLength(token);
@@ -2721,7 +2798,12 @@ export const compileSliceFitter = <V extends Value>(
       let insertedPosition = 0;
 
       for (const token of encoded.tokens) {
+        const appended = output.length;
+
         if (!process(token)) return null;
+        if (output.length > appended) {
+          contentStart ??= outputPosition - tokenLength(token);
+        }
 
         insertedPosition += tokenLength(token);
         if (selectionPosition === null && insertedPosition >= contentEnd) {
@@ -2730,6 +2812,10 @@ export const compileSliceFitter = <V extends Value>(
       }
 
       selectionPosition ??= outputPosition;
+      const content = {
+        from: contentStart ?? outputPosition,
+        to: outputPosition,
+      };
 
       const syncPosition = getLocalSyncPosition();
       const expected =
@@ -2748,7 +2834,9 @@ export const compileSliceFitter = <V extends Value>(
         stack.length > 0 &&
         stack.length < localEndContext.length &&
         stack.every((token, index) =>
-          openContextsMatch(token, localEndContext[index])
+          index < stack.length - 1
+            ? openContextsMatch(token, localEndContext[index])
+            : leafBlocksShareContent(token, localEndContext[index])
         )
       ) {
         for (
@@ -2815,6 +2903,10 @@ export const compileSliceFitter = <V extends Value>(
       }
 
       return Object.freeze({
+        content: {
+          from: Math.max(0, content.from - removedPrefixLength),
+          to: Math.max(0, content.to - removedPrefixLength),
+        },
         cost,
         from: candidateFrom,
         insert: PreparedTokenSlice.fromTokens(candidateOutput),
@@ -2969,7 +3061,7 @@ export const compileSliceFitter = <V extends Value>(
         ? innerSchema12.elements.byType.get(parentType)?.content
         : targetRootProgram;
 
-      if (!program) return false;
+      if (!program) return !parent && content.every(rootCanContain);
 
       return acceptsReplacement(
         innerSchema12,
@@ -3203,8 +3295,19 @@ export const compileSliceFitter = <V extends Value>(
       }
       Object.freeze(runtimeCandidatePaths);
 
+      const selectionOffset =
+        insert.length -
+        suffix.length -
+        getSliceEdgeOpenDepth(preparedContent, 'end') -
+        1;
+
       return Object.freeze({
         ...base,
+        content: {
+          from:
+            getSliceEdgeOpenDepth(preparedContent, 'start') + 1 + prefix.length,
+          to: selectionOffset,
+        },
         insert,
         runtimeCandidatePaths,
         semanticChange: Object.freeze({
@@ -3212,11 +3315,7 @@ export const compileSliceFitter = <V extends Value>(
           insert: semanticInsert,
           to: exactTo,
         }),
-        selectionOffset:
-          insert.length -
-          suffix.length -
-          getSliceEdgeOpenDepth(preparedContent, 'end') -
-          1,
+        selectionOffset,
         trustedCanonical: true,
       });
     };
@@ -3487,6 +3586,7 @@ export const compileSliceFitter = <V extends Value>(
           : [
               contextInsert,
               {
+                content: { from: 0, to: encoded.length },
                 insert: encoded,
                 selectionOffset: getContentEndOffset(encoded),
               },
@@ -3508,6 +3608,10 @@ export const compileSliceFitter = <V extends Value>(
         ]);
 
         inserts.unshift({
+          content: {
+            from: closeTarget.length,
+            to: closeTarget.length + encoded.length,
+          },
           insert: PreparedTokenSlice.concat([closeTarget, encoded, openTarget]),
           selectionOffset: closeTarget.length + getContentEndOffset(encoded),
         });
@@ -3515,13 +3619,15 @@ export const compileSliceFitter = <V extends Value>(
 
       return (
         endsInInlineVoid(variant.slice)
-          ? inserts.map(({ insert }) => ({
+          ? inserts.map(({ content, insert }) => ({
+              content,
               insert,
               selectionAssociation: 1 as const,
               selectionOffset: insert.length,
             }))
           : inserts
-      ).map(({ insert, selectionOffset }): SliceFitCandidate => ({
+      ).map(({ content, insert, selectionOffset }): SliceFitCandidate => ({
+        content,
         cost,
         from: boundary.from,
         insert,
@@ -3566,6 +3672,10 @@ export const compileSliceFitter = <V extends Value>(
       const incoming = encodeContentSlice(inputSlice);
 
       return {
+        content: {
+          from: retained.length,
+          to: retained.length + incoming.length,
+        },
         cost: -1,
         from: exactFrom,
         insert: PreparedTokenSlice.concat([retained, incoming]),
@@ -3604,6 +3714,7 @@ export const compileSliceFitter = <V extends Value>(
       const insert = encodeContentSlice(inputSlice);
 
       const candidate = {
+        content: { from: 0, to: insert.length },
         cost: boundary.cost,
         from: boundary.from,
         insert,
@@ -3620,6 +3731,7 @@ export const compileSliceFitter = <V extends Value>(
             const insert = encodeContentSlice(inputSlice);
 
             return Object.freeze({
+              content: { from: 0, to: insert.length },
               cost: 0,
               from: 0,
               insert,
@@ -3949,13 +4061,23 @@ export const compileSliceFitter = <V extends Value>(
             })
           )
         : undefined;
+    const landing =
+      options.target.kind === 'range' &&
+      options.target.reportLanding &&
+      rawIndex &&
+      canonicalIndex
+        ? mapFittedLanding(rawIndex, canonicalIndex, constructionChange, root, {
+            from: candidate.from + candidate.content.from,
+            to: candidate.from + candidate.content.to,
+          })
+        : null;
     const step = options.builder.adopt(prepared);
 
     if (!step) {
       throw new Error('Prepared slice fit does not match its transaction.');
     }
 
-    options.apply?.(step, selection);
+    options.apply?.(step, selection, landing);
 
     return true;
   };

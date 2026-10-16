@@ -2,4 +2,4 @@
 'plitejs': patch
 ---
 
-Allow authors to type, paste, and insert breaks inside their pending deletions. Preserve the original content for rejection and keep amendments in the same suggestion through undo, redo, saving, and collaboration.
+Allow typing inside text a pending deletion strikes. The deletion splits around the new text, which Suggesting records as an insertion and Editing applies directly, and rejecting the deletion restores the original content.

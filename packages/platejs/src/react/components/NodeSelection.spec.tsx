@@ -191,6 +191,51 @@ describe('NodeSelection', () => {
     });
   });
 
+  it('paints a block pick of one object and leaves an object pick to its element', async () => {
+    const ObjectPlugin = definePlugin('objectSelectionTest', {
+      schema: {
+        element: schema.element.textBlock({ object: true }),
+      },
+    });
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'caption' }], type: 'objectSelectionTest' },
+        { children: [{ text: 'after' }], type: 'paragraph' },
+      ],
+      plugins: [BaseParagraphPlugin, ObjectPlugin],
+    });
+    const view = render(
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent />
+        <NodeSelectionHighlight data-testid="selection-highlight" />
+        <NodeSelectionDrag />
+      </EditorRoot>
+    );
+    const highlights = () =>
+      view.container.querySelectorAll('[data-testid="selection-highlight"]');
+
+    act(() => {
+      editor.update.selection.setNodes([[0]], { mode: 'object' });
+    });
+    await waitFor(() => expect(highlights()).toHaveLength(0));
+
+    act(() => {
+      editor.update.selection.setNodes([[0]]);
+    });
+    await waitFor(() => expect(highlights()).toHaveLength(1));
+
+    const editable =
+      view.container.querySelector<HTMLElement>('[data-editor]')!;
+
+    act(() => {
+      fireEvent.keyDown(editable, { key: 'ArrowDown' });
+    });
+    expect(editor.read.selection.nodes().map(([, path]) => path)).toEqual([
+      [1],
+    ]);
+    expect(editor.read.selection.nodeMode()).toBe('block');
+  });
+
   it('uses an owned header target without selecting its container for body drags', async () => {
     const ContainerPlugin = definePlugin('selectionHeaderContainer', {
       schema: {

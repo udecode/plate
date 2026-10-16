@@ -8,29 +8,25 @@ import {
 import {
   type DocumentIndex,
   NO_NODES,
+  type SparseNodes,
   type NodeList,
-  rootNodesOf,
 } from '../../core/change/document-index';
 import type { RootChange } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import type { DocumentAdmission } from '../../core/document-admission';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { EditorMissingReferenceError } from '../../core/missing-reference';
-import {
-  getRecordSetVersion,
-  getValueRecords,
-  recordOpsBetween,
-} from '../../core/record-store';
+import { getValueRecords, recordOpsBetween } from '../../core/record-store';
 import type { EditorDocumentValue } from '../../interfaces/editor';
 import type { Path } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
+import { getReviewLedger } from '../ledger/ledger';
 import {
   AuthoredMarkError,
   createAuthoredMarksValidator,
   isAuthoredSetValued,
-  readAuthoredMarks,
 } from '../tree/marks';
-import { assertEditingDeletionsHeld } from '../tree/resolve';
-import { compactClaims, type TopLevelIndicesByRoot } from './compact';
+import { compactClaims } from './compact';
 import {
   addCounts,
   assertRecordStore,
@@ -41,7 +37,7 @@ import {
   insertionsOf,
   rememberInsertions,
 } from './facts';
-import { CONTEXTS, VERDICTS } from './records';
+import { CONTEXTS, VERDICTS, verdictIncarnationsOf } from './records';
 import { settleValue } from './settle';
 
 const firstChildEndingAfter = (index: DocumentIndex, position: number) => {
@@ -96,7 +92,7 @@ const changedSpan = (
 const repairOf = (
   after: JsonEditorValue,
   settled: JsonEditorValue,
-  scope: TopLevelIndicesByRoot | null,
+  scope: ReadonlyMap<string, Iterable<number>>,
   indexOf: (root: string) => DocumentIndex
 ) => {
   const changes = new Map<string, RootChange>();
@@ -109,9 +105,7 @@ const repairOf = (
 
     let index = indexOf(root);
     let composed: RootChange | null = null;
-    const at = scope
-      ? (scope.get(root) ?? [])
-      : Array.from({ length: nodes.length }, (_, child) => child);
+    const at = [...(scope.get(root) ?? [])].sort((left, right) => left - right);
 
     for (const child of at) {
       if (next.at(child) === nodes.at(child)) continue;
@@ -143,7 +137,7 @@ export const createDocumentMarksValidator = () => {
   /** Validate the given nodes of `value`'s roots, each listed at its index. */
   const validateIn = (
     value: EditorDocumentValue,
-    roots: Iterable<NodeList<unknown>>
+    roots: Iterable<SparseNodes<unknown>>
   ) => {
     const facts = factsOf(value);
     const restsOn = (ctx: string, path: Path) => {
@@ -192,7 +186,7 @@ const assertDroppedContextsUnused = (
 };
 
 export const authoredAdmission: DocumentAdmission = {
-  commit: ({ after, before, change, indexOf }) => {
+  commit: ({ after, before, change, editor, indexOf }) => {
     const records = getInternalDocumentChangeRecords(change);
     const dropped = new Set(
       [...(records.get(CONTEXTS) ?? [])].flatMap(([ctx, json]) =>
@@ -238,26 +232,39 @@ export const authoredAdmission: DocumentAdmission = {
 
     const compacted = compactClaims(after, scope);
     const compactedFacts = factsOf(compacted);
-    // A decision, or an incarnation a verdict names starting or stopping to
-    // insert, can settle claims anywhere.
-    const whole =
-      getRecordSetVersion(getValueRecords(before), VERDICTS) !==
-        getRecordSetVersion(getValueRecords(after), VERDICTS) ||
-      [...flipped].some((incarnation) => facts.hasVerdict(incarnation));
+    // A verdict, or an incarnation a verdict names starting or stopping to
+    // insert, settles claims in every block naming that incarnation.
+    const decided = [
+      ...verdictIncarnationsOf(records.get(VERDICTS)?.keys() ?? []),
+      ...[...flipped].filter((incarnation) => facts.hasVerdict(incarnation)),
+    ];
+    const settled = new Map(
+      [...scope].map(([root, at]) => [root, new Set(at)])
+    );
+
+    if (decided.length > 0) {
+      const ledger = getDefined(getReviewLedger(getEditorRuntimeOwner(editor)));
+
+      for (const [root, ranks] of ledger.ranksNaming(after, decided)) {
+        const at = settled.get(root) ?? new Set<number>();
+
+        for (const rank of ranks) at.add(rank);
+        settled.set(root, at);
+      }
+    }
+
     const inserting = { has: (incarnation: string) => counts.has(incarnation) };
     const admitted =
       settleValue(
         compacted,
         { ...compactedFacts, insertedIncarnations: () => inserting },
-        whole
-          ? 'document'
-          : new Map([...scope].map(([root, at]) => [root, new Set(at)])),
+        settled,
         { returnsHeld: true }
       ).value ?? compacted;
 
     return admitted === after
       ? null
-      : repairOf(after, admitted, whole ? null : scope, indexOf);
+      : repairOf(after, admitted, settled, indexOf);
   },
   load: (document) => {
     assertRecordStore(getValueRecords(document));
@@ -265,14 +272,7 @@ export const authoredAdmission: DocumentAdmission = {
 
     const compacted = compactClaims(document);
     const facts = factsOf(compacted);
-    const value =
-      (facts.hasVerdicts
-        ? settleValue(compacted, facts, 'document').value
-        : null) ?? compacted;
-
-    for (const children of contentRootsOf(value).values()) {
-      assertEditingDeletionsHeld(children.slice(), readAuthoredMarks);
-    }
+    const value = settleValue(compacted, facts, 'document').value ?? compacted;
 
     return value === document
       ? null

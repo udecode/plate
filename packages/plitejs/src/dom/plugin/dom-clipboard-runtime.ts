@@ -688,7 +688,7 @@ export const writeDOMRangeData = <V extends Value>(
 export const insertDOMData = <V extends Value>(
   editor: DOMEditor<V>,
   data: DataTransfer
-): boolean => dispatchCommand(editor, domCommands.insertData, data);
+): boolean | undefined => dispatchCommand(editor, domCommands.insertData, data);
 
 /** Interpret DOM data into one unpublished transaction spec. */
 export const createDOMDataTransactionSpec = <V extends Value>(
@@ -790,7 +790,7 @@ export const writeDOMClipboardSlice = <V extends Value>(
 export const insertDOMFragmentData = <V extends Value>(
   editor: DOMEditor<V>,
   data: DataTransfer
-): boolean => {
+): boolean | undefined => {
   const slice = readDOMFragmentData(editor, data);
 
   if (slice) {
@@ -805,4 +805,5 @@ export const insertDOMFragmentData = <V extends Value>(
 export const insertDOMTextData = <V extends Value>(
   editor: DOMEditor<V>,
   data: DataTransfer
-): boolean => insertDataTransfer(editor, data, { mimeType: 'text/plain' });
+): boolean | undefined =>
+  insertDataTransfer(editor, data, { mimeType: 'text/plain' });

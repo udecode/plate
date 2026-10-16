@@ -27,6 +27,8 @@ export type SliceVariantFamily = Readonly<{
   source: ContentSlice;
 }>;
 
+export type SliceFitContent = Readonly<{ from: number; to: number }>;
+
 type SliceFitCandidateBase = Readonly<{
   cost: number;
   from: number;
@@ -46,6 +48,7 @@ type PreparedOpenBlockFitCandidate = Readonly<{
 
 export type MaterializedSliceFitCandidate = SliceFitCandidateBase &
   Readonly<{
+    content: SliceFitContent;
     insert: PreparedTokenSlice;
     runtimeCandidatePaths?: ReadonlyArray<readonly number[]>;
     semanticChange?: Readonly<{
@@ -60,6 +63,7 @@ export type MaterializedSliceFitCandidate = SliceFitCandidateBase &
 export type SliceFitCandidate = SliceFitCandidateBase &
   (
     | Readonly<{
+        content: SliceFitContent;
         insert: PreparedTokenSlice;
         selectionOffset: number;
       }>

@@ -13,13 +13,14 @@ import {
   type StaticComponentOverrides,
 } from './staticPresentation';
 
-// Each runtime loads the React server build that works there. The browser
-// build keeps a Node process alive through its MessagePort, Next's webpack
-// client bundles stub the edge build's legacy renderers, and Next rejects the
-// bare `react-dom/server` specifier in server components.
+// The browser build keeps a plain Node process alive through its MessagePort.
+// Next's webpack bundles, server ones included, stub the edge build's legacy
+// renderers, and Next rejects the bare `react-dom/server` specifier in server
+// components. `process.env.NEXT_RUNTIME` stays bare so bundlers inline it, and
+// stays after the Node check so a browser bundle never reads `process`.
 const loadStaticRenderer = () =>
   (globalThis as { process?: { versions?: { node?: string } } }).process
-    ?.versions?.node
+    ?.versions?.node && !process.env.NEXT_RUNTIME
     ? import('react-dom/server.edge')
     : import('react-dom/server.browser');
 

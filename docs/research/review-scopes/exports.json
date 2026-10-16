@@ -48,7 +48,7 @@
     "packages/platejs/src/markdown/lib/internal/markdownConversion.ts",
     "packages/platejs/src/markdown/lib/types.ts",
     "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts",
-    "packages/plitejs/src/authored/checkpoint.ts",
+    "packages/plitejs/src/authored/facts/records.ts",
     "packages/plitejs/src/dom/plugin/data-transfer-format.ts",
     "packages/plitejs/src/core/persisted-document.ts",
     "content/docs/(guides)/serializing.mdx",

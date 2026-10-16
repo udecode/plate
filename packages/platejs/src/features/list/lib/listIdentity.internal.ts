@@ -10,6 +10,8 @@ import {
   type NodeEntry,
   type Path,
   type NamedRootKey,
+  type TransferAdoptInput,
+  type TransferPatch,
 } from '../../../core';
 import { inRoot } from '../../../internal/utils/inRoot';
 import type { ListType } from './BaseListPlugin';
@@ -26,8 +28,7 @@ export type NodeReader = {
   nodes: Pick<EditorCoreStateView['nodes'], 'get'>;
 };
 
-// Joining looks at nearby blocks only, so a command never walks a long run.
-const JOIN_SCAN_LIMIT = 64;
+const SIBLING_WALK_LIMIT = 64;
 
 /** The identity an item takes: an existing list's, or a fresh one. */
 export type ListIdentity = Readonly<{
@@ -64,7 +65,7 @@ const walkSiblings = (
 ): Element | undefined => {
   let siblingPath = path;
 
-  for (let visited = 0; visited < JOIN_SCAN_LIMIT; visited += 1) {
+  for (let visited = 0; visited < SIBLING_WALK_LIMIT; visited += 1) {
     if (direction === 'previous' && !PathApi.hasPrevious(siblingPath)) {
       return undefined;
     }
@@ -182,22 +183,6 @@ export type ListLanding =
       line: NodeEntry<Element>;
     }>;
 
-/**
- * Give inserted content's lists their identities. Each source list gets one
- * fresh id across the content, tables included, and items without an id count
- * as one list. Only the first top-level list may join the landing's list.
- * Joining requires matching kind and heading role; `land` also requires
- * matching style. On an empty line, a shallower list item above it can supply
- * the identity without those matches. Every other list keeps its fresh id.
- *
- * `paste` lands the copied list forest at the target depth and joins without
- * matching styles. Joined roots take the joined list's style only when their
- * kinds match. The paste middleware gives the inserted head an empty target's
- * own start and restart when present. `land`
- * also shifts top-level content by the landing's depth, and the joined head
- * takes a replaced landing's start and restart, or drops its own start to
- * continue the list of a kept block or an empty line.
- */
 export const landListContent = <N extends Descendant>(
   state: NodeReader,
   content: readonly N[],
@@ -207,7 +192,7 @@ export const landListContent = <N extends Descendant>(
     placement,
   }: Readonly<{
     headingType: string | undefined;
-    placement: 'land' | 'paste';
+    placement: 'land' | 'move' | 'paste';
   }>
 ): ReadonlyArray<Element | N> => {
   const sourceOf = (node: Element) =>
@@ -231,7 +216,7 @@ export const landListContent = <N extends Descendant>(
 
   const into = landing.kind === 'line' ? landing.line[0] : landing.block;
   const land = placement === 'land';
-  const paste = placement === 'paste';
+  const move = placement === 'move';
   const shift = land && into ? getListIndent(into) - 1 : 0;
 
   if (heads.size === 0 && shift === 0) return content;
@@ -250,8 +235,8 @@ export const landListContent = <N extends Descendant>(
             state,
             landing.line[1],
             {
-              depth: paste ? 1 : getListIndent(landing.line[0]),
-              matchStyle: !paste,
+              depth: land ? getListIndent(landing.line[0]) : 1,
+              matchStyle: land,
               heading,
               headingType,
               listType,
@@ -261,7 +246,7 @@ export const landListContent = <N extends Descendant>(
           )
         : into &&
             isListItem(into) &&
-            compatible(into, listType, style, heading, headingType, !paste)
+            compatible(into, listType, style, heading, headingType, land)
           ? into
           : undefined;
   }
@@ -271,7 +256,7 @@ export const landListContent = <N extends Descendant>(
   const depths = new Map<Element, number>();
   const ancestors: Array<{ source: number; landed: number }> = [];
 
-  if (paste) {
+  if (!land) {
     for (const node of content) {
       if (!ElementApi.isElement(node) || !isListItem(node)) {
         ancestors.length = 0;
@@ -329,13 +314,16 @@ export const landListContent = <N extends Descendant>(
     const { listId, listLevels: levels } =
       joined && source === joinedSource
         ? joined
-        : { listId: fresh.get(source), listLevels };
+        : move
+          ? identityOf(node)
+          : { listId: fresh.get(source), listLevels };
     const levelOffset =
       depth.indent === undefined ? 0 : depth.indent - getListIndent(node);
     let landedLevels = levels;
 
     if (
       !(joined && source === joinedSource) &&
+      !move &&
       levelOffset !== 0 &&
       isListLevels(levels)
     ) {
@@ -355,7 +343,7 @@ export const landListContent = <N extends Descendant>(
       landedLevels = rebased;
     }
     const style =
-      paste &&
+      !land &&
       joined &&
       source === joinedSource &&
       pastedDepth === landingDepth &&
@@ -391,6 +379,199 @@ export const landListContent = <N extends Descendant>(
   return content.map((node) =>
     ElementApi.isElement(node) ? landElement(node, true) : node
   );
+};
+
+export const adoptMetrics = { visited: 0 };
+
+type CopiedItem = Readonly<{ node: Element; path: Path }>;
+
+type ListJoin = Readonly<{ anchor: Element; source: string; start: unknown }>;
+
+export const adoptListBlocks = (
+  state: Pick<EditorCoreStateView, 'nodes' | 'view'>,
+  { edge, from, intent, payload, target: [, targetPath] }: TransferAdoptInput,
+  patches: readonly TransferPatch[],
+  { headingType }: Readonly<{ headingType: string | undefined }>
+): readonly TransferPatch[] => {
+  const move = intent === 'move';
+  const moving = new Set<Descendant>(move ? payload.nodes : []);
+  const lists = new Map<string, CopiedItem[]>();
+  const top: string[] = [];
+  const sourceOf = (node: Element) =>
+    typeof node.listId === 'string' ? node.listId : '';
+  const scan = (nodes: readonly Descendant[], parentPath: Path) => {
+    nodes.forEach((node, index) => {
+      if (!ElementApi.isElement(node)) return;
+
+      const path = [...parentPath, index];
+
+      if (isListItem(node)) {
+        const source = sourceOf(node);
+
+        const items = lists.get(source);
+
+        if (items) items.push({ node, path });
+        else lists.set(source, [{ node, path }]);
+        if (parentPath.length === 0) top.push(source);
+      }
+      scan(node.children, path);
+    });
+  };
+
+  scan(payload.nodes, []);
+  if (lists.size === 0) return patches;
+
+  const levels = new Map(
+    [...lists].map(([source, items]) => [
+      source,
+      items.reduce(
+        (level, { node }) => Math.min(level, getListIndent(node)),
+        Number.POSITIVE_INFINITY
+      ),
+    ])
+  );
+  const levelOf = (source: string) =>
+    levels.get(source) ?? Number.POSITIVE_INFINITY;
+  const joinable = (source: string) =>
+    !(lists.get(source) ?? [])
+      .slice(1)
+      .some(
+        ({ node }) =>
+          Object.hasOwn(node, 'listRestart') || Object.hasOwn(node, 'listStart')
+      );
+  const topLevelEdgeItem = (source: string, side: 'end' | 'start') => {
+    const items = lists.get(source) ?? [];
+    const atTopLevel = ({ node }: CopiedItem) =>
+      getListIndent(node) === levelOf(source);
+
+    return (
+      side === 'start' ? items.find(atTopLevel) : items.findLast(atTopLevel)
+    )?.node;
+  };
+  const matches = (candidate: Element, node: Element | undefined) =>
+    !!node &&
+    compatible(
+      candidate,
+      node.listType as ListType,
+      undefined,
+      headingType !== undefined && node.type === headingType,
+      headingType,
+      false
+    );
+  const siblings = state.nodes.children(targetPath.slice(0, -1));
+  const gap = (targetPath.at(-1) as number) + (edge === 'after' ? 1 : 0);
+  const nearestNotDeeper = (step: -1 | 1, depth: number) => {
+    for (
+      let index = step < 0 ? gap - 1 : gap;
+      index >= 0 && index < siblings.length;
+      index += step
+    ) {
+      adoptMetrics.visited += 1;
+
+      const sibling = siblings[index];
+
+      if (moving.has(sibling)) continue;
+      if (!ElementApi.isElement(sibling)) return undefined;
+      if (getListIndent(sibling) <= depth) {
+        return {
+          shallower: getListIndent(sibling) < depth,
+          sibling,
+        };
+      }
+    }
+
+    return undefined;
+  };
+  const first = top[0];
+  const last = top.at(-1);
+  const lastNode = payload.nodes.at(-1);
+  const endsInListItem = ElementApi.isElement(lastNode) && isListItem(lastNode);
+  const before =
+    first !== undefined && (move || joinable(first))
+      ? nearestNotDeeper(-1, levelOf(first))
+      : undefined;
+  const afterOf = () =>
+    last === undefined ? undefined : nearestNotDeeper(1, levelOf(last));
+  const after = move ? afterOf() : undefined;
+  const inList = (beside: typeof before, source: string | undefined) =>
+    !!beside &&
+    isListItem(beside.sibling) &&
+    sourceOf(beside.sibling) === source;
+
+  // A move beside its own list stays in it, whatever kind the item beside it
+  // is. Lists without ids in two roots are two lists.
+  if (
+    move &&
+    from.read.view.root() === state.view.root() &&
+    (inList(before, first) || inList(after, last))
+  ) {
+    return patches;
+  }
+
+  const joinBefore = (): ListJoin | undefined =>
+    first !== undefined &&
+    joinable(first) &&
+    before &&
+    !before.shallower &&
+    isListItem(before.sibling) &&
+    matches(before.sibling, topLevelEdgeItem(first, 'start'))
+      ? { anchor: before.sibling, source: first, start: undefined }
+      : undefined;
+  const joinAfter = (): ListJoin | undefined => {
+    if (last === undefined || !endsInListItem || !joinable(last)) {
+      return undefined;
+    }
+
+    const beside = move ? after : afterOf();
+
+    return beside &&
+      !beside.shallower &&
+      isListItem(beside.sibling) &&
+      matches(beside.sibling, topLevelEdgeItem(last, 'end')) &&
+      !Object.hasOwn(beside.sibling, 'listRestart')
+      ? {
+          anchor: beside.sibling,
+          source: last,
+          start: beside.sibling.listStart,
+        }
+      : undefined;
+  };
+  const joinUnderShallower = (): ListJoin | undefined =>
+    first !== undefined &&
+    joinable(first) &&
+    before?.shallower &&
+    isListItem(before.sibling)
+      ? { anchor: before.sibling, source: first, start: undefined }
+      : undefined;
+  const joined = joinBefore() ?? joinAfter() ?? joinUnderShallower();
+
+  const adopted = [...lists].flatMap(([source, items]): TransferPatch[] => {
+    if (joined?.source !== source) {
+      if (move) return [];
+
+      const listId = createListId();
+
+      return items.map(({ path }) => ({ at: path, properties: { listId } }));
+    }
+
+    const { anchor, start } = joined;
+    const { listId, listLevels } = identityOf(anchor);
+
+    return items.map(({ node, path }, index) => ({
+      at: path,
+      properties: {
+        listId,
+        listLevels,
+        ...(getListIndent(node) === getListIndent(anchor) &&
+        node.listType === anchor.listType
+          ? { listStyle: anchor.listStyle }
+          : {}),
+        ...(index === 0 ? { listRestart: undefined, listStart: start } : {}),
+      },
+    }));
+  });
+
+  return [...patches, ...adopted];
 };
 
 /**

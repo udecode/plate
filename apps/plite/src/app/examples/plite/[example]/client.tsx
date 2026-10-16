@@ -6,7 +6,7 @@ import type { PliteExampleId } from '../../../../../../www/src/app/(app)/example
 import { pliteExampleComponents } from '../../../../../../www/src/app/(app)/examples/plite/plite-example-loaders';
 import {
   EXAMPLE_NAMES_AND_PATHS,
-  isNewPliteExamplePath,
+  getPliteExampleStatus,
   NON_HIDDEN_EXAMPLES,
 } from '../../../../../../www/src/app/(app)/examples/plite/plite-example-registry';
 
@@ -67,7 +67,7 @@ function PliteExampleLinks({
   return (
     <div className="flex flex-wrap gap-3">
       {NON_HIDDEN_EXAMPLES.map(([name, slug]) => {
-        const isNewExample = isNewPliteExamplePath(slug);
+        const status = getPliteExampleStatus(slug);
 
         return (
           <Link
@@ -78,7 +78,10 @@ function PliteExampleLinks({
             prefetch={false}
           >
             <span>{name}</span>
-            {isNewExample ? (
+            {status === 'experimental' ? (
+              <span data-editor-example-experimental={slug}>Experimental</span>
+            ) : null}
+            {status === 'new' ? (
               <span
                 data-editor-example-new-dot={slug}
                 title="New"

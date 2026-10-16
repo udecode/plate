@@ -90,7 +90,6 @@ import type {
   TableCellTarget,
   TableColumnWidthOptions,
   TableCreateOptions,
-  TableInsertPlacement,
   TableResize,
   TableResizeOptions,
   TableResizeTarget,
@@ -1577,32 +1576,14 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
               'Table insertion requires positive safe integer rows and columns.'
             );
           }
-          if (placement.at !== undefined && placement.after !== undefined) {
-            throw new TypeError(
-              'Table insertion accepts either at or after, never both.'
-            );
-          }
           if (tx.view.isReadOnly()) return false;
 
           const table = createTable(editor, type, { columns, header, rows });
+          const inserted = tx.blocks.insert(table, placement);
 
-          if (placement.at !== undefined) {
-            tx.nodes.insert(table, placement);
-          } else {
-            const currentTable = tx.nodes.above({
-              at: placement.after,
-              type,
-            });
-            tx.blocks.insertAfter(table, {
-              ...placement,
-              at: currentTable?.[1] ?? placement.after,
-            });
-          }
-
+          if (!inserted) return false;
           if (placement.select) {
-            const tablePath = tx.nodes.path(table);
-            const point =
-              tablePath && tx.points.start(tablePath.concat([0, 0]));
+            const point = tx.points.start(inserted[0]);
 
             if (point) tx.selection.set(point);
           }
@@ -1613,23 +1594,37 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           mode: 'insert' | 'upsert',
           input: TableCreateOptions = {},
           options: BlockInsertOptions | BlockUpsertOptions = {}
-        ) =>
-          applyBlockInsertion({
+        ) => {
+          let placement = options;
+
+          if (
+            options.after === undefined &&
+            options.at === undefined &&
+            options.before === undefined
+          ) {
+            const caretTable = tx.nodes.above({ type });
+
+            if (caretTable) {
+              placement = { ...options, after: tx.key(caretTable[0]) };
+            }
+          }
+
+          return applyBlockInsertion({
             editor,
             insert: (insertOptions) => insertTable(input, insertOptions),
             matches: (block) => block.type === type,
             mode,
-            onReuse: () => true,
-            options,
+            options: placement,
             tx,
-          }) ?? false;
+          });
+        };
 
         return {
           insert: txLocate(
             locateAt(1, 'at', 'after', 'before'),
             (
               input: TableCreateOptions = {},
-              placement: TableInsertPlacement = {}
+              placement: BlockInsertOptions = {}
             ): boolean => applyTableInsertion('insert', input, placement)
           ),
           insertColumn: txLocate(

@@ -6,7 +6,7 @@ import type {
   EditorCommandContext,
   EditorCommandInput,
   EditorCommandContinuation,
-  EditorCommandDispatch,
+  EditorDirectCommandDispatch,
   EditorCommandPlace,
   EditorCommandRegistration,
   EditorCommandResult,
@@ -424,14 +424,16 @@ const applyCommandEvaluation = (
 
   const owner = getEditorRuntimeOwner(editor);
 
-  if (isInTransaction(owner)) {
-    getActiveEditorTransaction(owner)?.tags.add('semantic-command');
-    applyTransactionSpec(owner, result);
-  } else {
-    editor.update({ tags: 'semantic-command' }, () => {
+  if (!isInTransaction(owner)) {
+    return editor.update({ tags: 'semantic-command' }, () => {
       applyTransactionSpec(owner, result);
+
+      return true;
     });
   }
+
+  getActiveEditorTransaction(owner)?.tags.add('semantic-command');
+  applyTransactionSpec(owner, result);
 
   return true;
 };
@@ -440,7 +442,7 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
   editor: TEditor,
   command: EditorCommand<Input, TEditor>,
   input: Input
-): boolean => {
+): boolean | undefined => {
   const owner = getEditorRuntimeOwner(editor);
   const run = () =>
     applyCommandEvaluation(
@@ -484,13 +486,7 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
 
   if (isInTransaction(owner)) return apply();
 
-  let applied = false;
-
-  editor.update({ tags: 'semantic-command' }, () => {
-    applied = apply();
-  });
-
-  return applied;
+  return editor.update({ tags: 'semantic-command' }, apply);
 };
 
 const assertCommandLocated = <Input, TEditor extends BaseEditor<any, any>>(
@@ -631,7 +627,7 @@ export const dispatchCommand = <TCommand extends EditorCommandDescriptor>(
   ...input: [EditorCommandInput<TCommand>] extends [void]
     ? [] | [input: EditorCommandInput<TCommand>]
     : [input: EditorCommandInput<TCommand>]
-): boolean =>
+): boolean | undefined =>
   runCommandChain(
     editor,
     command as unknown as EditorCommand<unknown, Editor>,
@@ -646,7 +642,7 @@ export const dispatchCommand = <TCommand extends EditorCommandDescriptor>(
 export const createCommandDispatch =
   <TEditor extends Editor>(
     getEditor: () => TEditor
-  ): EditorCommandDispatch<TEditor> =>
+  ): EditorDirectCommandDispatch<TEditor> =>
   (command: EditorCommand<unknown>, input?: unknown) =>
     runCommandChain(
       getEditor(),

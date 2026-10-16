@@ -55,10 +55,7 @@ import {
 } from '../../src/react';
 import { getMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { didSyncTextPathToDOM } from '../../src/react/hooks/use-plite-node-ref';
-import {
-  EditorRuntimeProvider,
-  useMountedEditorRuntimeOwner,
-} from '../../src/react/hooks/use-plite-runtime';
+import { EditorRuntimeProvider } from '../../src/react/hooks/use-plite-runtime';
 
 const TestEditorContext = createContext<ReturnType<
   typeof useEditor<any, any>
@@ -86,17 +83,13 @@ const TestProvider = ({
 }: {
   children: ReactNode;
   runtime: { editor: ReturnType<typeof useEditor<any, any>> };
-}) => {
-  useMountedEditorRuntimeOwner('EditorRoot', runtime.editor);
-
-  return (
-    <TestEditorContext value={runtime.editor}>
-      <EditorRuntimeProvider editor={runtime.editor}>
-        {children}
-      </EditorRuntimeProvider>
-    </TestEditorContext>
-  );
-};
+}) => (
+  <TestEditorContext value={runtime.editor}>
+    <EditorRuntimeProvider editor={runtime.editor}>
+      {children}
+    </EditorRuntimeProvider>
+  </TestEditorContext>
+);
 
 const TestRoot = ({ editor, ...props }: any) => {
   const inheritedEditor = useContext(TestEditorContext);
@@ -200,30 +193,6 @@ const createRootWrapper =
   };
 
 describe('EditorRoot provider contract', () => {
-  test('rejects replacing a mounted runtime owner', () => {
-    const runtimeA = renderHook(() =>
-      useTestEditor({ initialValue: [paragraph('A')] })
-    ).result.current;
-    const runtimeB = renderHook(() =>
-      useTestEditor({ initialValue: [paragraph('B')] })
-    ).result.current;
-    const rendered = render(
-      <TestProvider runtime={runtimeA}>
-        <span>runtime</span>
-      </TestProvider>
-    );
-
-    expect(() =>
-      rendered.rerender(
-        <TestProvider runtime={runtimeB}>
-          <span>runtime</span>
-        </TestProvider>
-      )
-    ).toThrow(
-      '[EditorRoot] Cannot replace the editor runtime of a mounted provider. Remount <EditorRoot> with a different React key.'
-    );
-  });
-
   test('provides a replacement runtime after a keyed remount', () => {
     const runtimeA = renderHook(() =>
       useTestEditor({ initialValue: [paragraph('A')] })

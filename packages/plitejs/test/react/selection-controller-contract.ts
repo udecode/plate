@@ -578,6 +578,56 @@ test('native selection drag keeps DOM selection and scroll under browser ownersh
   }
 });
 
+test('scroll-preserving export keeps a scroll made after it', () => {
+  const editor = createEditor<Value>();
+  const editorElement = document.createElement('div');
+  const textNode = document.createTextNode('abc');
+  const domSelection = document.getSelection()!;
+  const domRange = document.createRange();
+
+  editorElement.append(textNode);
+  document.body.append(editorElement);
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    },
+  });
+  domRange.setStart(textNode, 1);
+  domRange.collapse(true);
+  domSelection.setBaseAndExtent(textNode, 2, textNode, 2);
+  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
+  vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(domRange);
+  const runtime = new EditableDOMRuntime({ editor });
+  runtime.setRoot(editorElement);
+  runtime.connect();
+  testRuntimes.add(runtime);
+
+  try {
+    editorElement.scrollTop = 100;
+    syncEditableDOMSelectionToEditor({
+      editor,
+      options: { forceModelExport: true, preserveScroll: true },
+      scrollSelectionIntoView: vi.fn(),
+      viewportBackedSelection: false,
+      state: runtime.inputController.state,
+    });
+    expect(domSelection.focusOffset).toBe(1);
+
+    editorElement.scrollTop = 192;
+    runtime.domPhaseScheduler.flush();
+
+    expect(editorElement.scrollTop).toBe(192);
+  } finally {
+    editorElement.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
 test('view selection export clears stale native selection ranges', () => {
   vi.useFakeTimers();
 

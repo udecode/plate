@@ -1234,29 +1234,216 @@ test('media resize handles remain visible over the image caption', async ({
   await expect.poll(opacities).toEqual(['0', '0']);
 });
 
-test('media selection highlights the asset without covering its editable caption', async ({
-  page,
-}) => {
+const openMediaDocs = async (page: Page) => {
   await page.goto('/docs/media', { waitUntil: 'commit' });
   const editor = page.locator(EDITOR).first();
-  const figures = editor.locator('figure');
-  await expect(figures).toHaveCount(5, { timeout: 30_000 });
 
-  for (const figure of await figures.all()) {
-    await expect(figure.locator('..')).toHaveAttribute(
-      'data-node-selection-highlight',
-      'self'
+  await expect(editor.locator('figure').first()).toBeVisible({
+    timeout: 30_000,
+  });
+
+  const block = (text: string) =>
+    editor
+      .locator('[data-editor-node="element"]')
+      .filter({ hasText: text })
+      .first();
+  const modelSelection = () =>
+    editor.evaluate(
+      (element, key) =>
+        (
+          element as HTMLElement &
+            Record<string, { getModelSelection: () => unknown } | undefined>
+        )[key]?.getModelSelection(),
+      BROWSER_HANDLE_KEY
     );
+  const blockTypes = () =>
+    editor.evaluate((element, key) => {
+      const value = (
+        element as HTMLElement &
+          Record<string, { getValue: () => unknown } | undefined>
+      )[key]?.getValue() as
+        | { children: Array<{ type: string }> }
+        | Array<{ type: string }>
+        | undefined;
+      const children = Array.isArray(value) ? value : (value?.children ?? []);
+
+      return children.map((node) => node.type);
+    }, BROWSER_HANDLE_KEY);
+  const marquee = async (from: Locator, to: Locator) => {
+    await from.evaluate((element) =>
+      element.scrollIntoView({ block: 'center', behavior: 'instant' })
+    );
+    const start = await from.boundingBox();
+    const end = await to.boundingBox();
+
+    if (!start || !end) throw new Error('Missing media block box');
+    await page.mouse.move(start.x - 60, start.y + 4);
+    await page.mouse.down();
+    await page.mouse.move(start.x + 80, end.y + end.height - 4, { steps: 12 });
+    await page.mouse.up();
+  };
+
+  return {
+    audio: editor.locator('.editor-audio').first(),
+    blockTypes,
+    editor,
+    file: editor.locator('.editor-file').first(),
+    highlights: page.locator('[data-slot="node-selection-highlight"]'),
+    image: editor.locator('.editor-image').first(),
+    marquee,
+    modelSelection,
+    paragraph: block('Customize image captions and resize images.'),
+    rings: editor.locator('.ring-2'),
+    toolbar: page.getByRole('button', { name: 'Edit link', exact: true }),
+  };
+};
+
+test('a marquee over one media block paints it blue with no ring or toolbar', async ({
+  page,
+}, info) => {
+  const errors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const media = await openMediaDocs(page);
+
+    await media.marquee(media.file, media.file);
+    await expect
+      .poll(media.modelSelection)
+      .toMatchObject({ kind: 'node', mode: 'block' });
+    await expect(
+      media.file.locator('[data-slot="node-selection-highlight"]')
+    ).toHaveCount(1);
+    await expect(media.toolbar).toHaveCount(0);
+    await expect(media.rings).toHaveCount(0);
+    await page.screenshot({ path: info.outputPath('one-file.png') });
+
+    await media.marquee(media.image, media.audio);
+    await expect
+      .poll(media.modelSelection)
+      .toMatchObject({ kind: 'node', mode: 'block' });
+    for (const block of [media.image, media.file, media.audio]) {
+      await expect(
+        block.locator('[data-slot="node-selection-highlight"]')
+      ).toHaveCount(1);
+    }
+    await expect(media.toolbar).toHaveCount(0);
+    await expect(media.rings).toHaveCount(0);
+    await page.screenshot({ path: info.outputPath('three-media.png') });
+    errors.assertNone();
+  } finally {
+    errors.stop();
   }
+});
 
-  const figure = figures.filter({ has: page.locator('img') }).first();
+test('clicking an image makes an object pick that block gestures turn blue', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
 
-  await figure.locator('img').click();
-  await expect(figure.locator('figcaption')).toBeVisible();
-  await expect(figure.locator('img')).toHaveClass(/ring-2/);
-  await expect(
-    figure.locator('[data-slot="node-selection-highlight"]')
-  ).toHaveCount(0);
+  try {
+    const media = await openMediaDocs(page);
+    const img = media.image.locator('img');
+
+    await img.click();
+    await expect
+      .poll(media.modelSelection)
+      .toMatchObject({ kind: 'node', mode: 'object' });
+    await expect(img).toHaveClass(/ring-2/);
+    await expect(media.toolbar).toBeVisible();
+    await expect(media.highlights).toHaveCount(0);
+
+    await media.image.hover();
+    await media.image
+      .locator('xpath=ancestor::*[contains(@class,"editor-draggable")][1]')
+      .getByRole('button', { name: 'Drag block', exact: true })
+      .first()
+      .click();
+    await page.keyboard.press('Escape');
+    await expect
+      .poll(media.modelSelection)
+      .toMatchObject({ kind: 'node', mode: 'block', paths: [[2]] });
+    await expect(
+      media.image.locator('[data-slot="node-selection-highlight"]')
+    ).toHaveCount(1);
+    await expect(img).not.toHaveClass(/ring-2/);
+    await expect(media.toolbar).toHaveCount(0);
+
+    await media.marquee(media.image, media.image);
+    await expect
+      .poll(media.modelSelection)
+      .toMatchObject({ kind: 'node', mode: 'block', paths: [[2]] });
+    await page.keyboard.press('ArrowDown');
+    await expect
+      .poll(media.modelSelection)
+      .toMatchObject({ kind: 'node', mode: 'block', paths: [[3]] });
+    await expect(
+      media.paragraph.locator('[data-slot="node-selection-highlight"]')
+    ).toHaveCount(1);
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
+
+test('focusing native audio controls makes an object pick', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const media = await openMediaDocs(page);
+
+    await media.audio.locator('audio').focus();
+    await expect
+      .poll(media.modelSelection)
+      .toMatchObject({ kind: 'node', mode: 'object', paths: [[8]] });
+    await expect(media.highlights).toHaveCount(0);
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
+
+test('dropping a dragged image leaves a block pick on it', async ({ page }) => {
+  const errors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const media = await openMediaDocs(page);
+
+    await media.image.locator('img').click();
+    const before = await media.blockTypes();
+    const picked = (await media.modelSelection()) as { paths: number[][] };
+    const imageType = before[picked.paths[0][0]];
+    await media.image.hover();
+    const handle = media.image
+      .locator('xpath=ancestor::*[contains(@class,"editor-draggable")][1]')
+      .getByRole('button', { name: 'Drag block', exact: true })
+      .first();
+    const from = await handle.boundingBox();
+    const to = await media.paragraph.boundingBox();
+
+    if (!from || !to) throw new Error('Missing drag boxes');
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(to.x + 120, to.y + to.height - 2, { steps: 12 });
+    await page.mouse.up();
+
+    await expect.poll(media.blockTypes).not.toEqual(before);
+    await expect
+      .poll(media.modelSelection)
+      .toMatchObject({ kind: 'node', mode: 'block' });
+    const landed = (await media.modelSelection()) as { paths: number[][] };
+    expect(landed.paths).toHaveLength(1);
+    const after = await media.blockTypes();
+    expect(after[landed.paths[0][0]]).toBe(imageType);
+    await expect(
+      media.image.locator('[data-slot="node-selection-highlight"]')
+    ).toHaveCount(1);
+    await expect(media.toolbar).toHaveCount(0);
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
 });
 
 test(CASE_ID, async ({ page }, testInfo) => {

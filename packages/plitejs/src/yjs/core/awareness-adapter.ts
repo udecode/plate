@@ -529,6 +529,7 @@ export const createYjsAwarenessAdapter = <
     publish(changedClientIds);
   };
 
+  let ownsSelectionField = false;
   const clearSelectionField = (): void => {
     const localState = awareness.getLocalState();
 
@@ -583,6 +584,7 @@ export const createYjsAwarenessAdapter = <
     ) {
       awareness.setLocalStateField('selection', nextSelection);
     }
+    ownsSelectionField = true;
   };
 
   const subscribe = (listeners: Set<() => void>, listener: () => void) => {
@@ -649,7 +651,7 @@ export const createYjsAwarenessAdapter = <
     clearSelection: rootSelection.clearSelection,
     currentSelection,
     destroy() {
-      clearSelectionField();
+      if (ownsSelectionField) clearSelectionField();
       selectionOwner = null;
       publishOwnedSelection = null;
       for (const cached of cursors.values()) releaseCursorAnchors(cached);

@@ -71,7 +71,7 @@ describe('Code from a Details title', () => {
     expect(editor.read.children()).toEqual(before);
   });
 
-  it('refuses two selected blocks around a Details left unselected', () => {
+  it('codes two selected blocks and leaves a Details between them whole', () => {
     const editor = createEditor({
       plugins: [BaseDetailsPlugin, BaseCodeBlockPlugin],
       initialValue: [
@@ -80,12 +80,18 @@ describe('Code from a Details title', () => {
         { type: 'paragraph', children: [{ text: 'B' }] },
       ],
     });
-    const before = editor.read.children();
+    const details = editor.read.children()[1];
 
-    editor.update.selection.set(SelectionApi.nodes([[0], [2]]));
+    editor.update.selection.set(
+      SelectionApi.nodes([[0], [2]], { mode: 'block' })
+    );
 
-    expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(false);
-    expect(editor.read.children()).toEqual(before);
+    expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { type: 'codeBlock', children: [{ text: 'A' }] },
+      details,
+      { type: 'codeBlock', children: [{ text: 'B' }] },
+    ]);
   });
 
   it('converts a title in a named document through its view', () => {

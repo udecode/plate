@@ -401,7 +401,7 @@ test('plain-text paste over a nested picked block lands the blocks its parent de
           type: 'box',
         },
       ],
-      SelectionApi.nodes([[0, 1]]),
+      SelectionApi.nodes([[0, 1]], { mode: 'block' }),
       'one\ntwo'
     )
   ).toEqual([
@@ -426,7 +426,7 @@ test('plain-text paste over a picked prefix block builds each line at its own sl
           type: 'box',
         },
       ],
-      SelectionApi.nodes([[0, 0]]),
+      SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       'one\ntwo'
     )
   ).toEqual([
@@ -580,7 +580,7 @@ test('plain-text paste over a picked block in a full container changes nothing',
     pasteIntoNested(
       oneBlockSchema,
       [{ children: [paragraph('q')], type: 'box' }],
-      SelectionApi.nodes([[0, 0]]),
+      SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       'one\ntwo'
     )
   ).toEqual([{ children: [paragraph('q')], type: 'box' }]);
@@ -615,7 +615,7 @@ test('plain-text paste over a picked block changes nothing when a later line has
     pasteIntoNested(
       oneSlotSchema,
       [{ children: [paragraph('q')], type: 'box' }],
-      SelectionApi.nodes([[0, 0]]),
+      SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       'one\ntwo'
     )
   ).toEqual([{ children: [paragraph('q')], type: 'box' }]);
@@ -636,7 +636,7 @@ test('plain-text paste over a picked void in an undeclared container lands the d
           type: 'quote',
         },
       ],
-      SelectionApi.nodes([[0, 0]]),
+      SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       'one\ntwo'
     )
   ).toEqual([
@@ -678,7 +678,7 @@ test('plain-text paste over a picked inline pastes as over its text', () => {
           type: 'paragraph',
         },
       ],
-      SelectionApi.nodes([[0, 1]]),
+      SelectionApi.nodes([[0, 1]], { mode: 'block' }),
       'x'
     )
   ).toEqual([
@@ -698,7 +698,7 @@ test('plain-text paste over a picked block in an undeclared container lands the 
     pasteIntoNested(
       definePlugin('data-transfer-derived-schema-test', {}),
       [{ children: [paragraph('q'), paragraph('r')], type: 'quote' }],
-      SelectionApi.nodes([[0, 0]]),
+      SelectionApi.nodes([[0, 0]], { mode: 'block' }),
       'one\ntwo'
     )
   ).toEqual([
@@ -1553,4 +1553,77 @@ test('views insert transfers and read the clipboard key of their runtime owner',
     view.api.dom.clipboard.insertData(data as unknown as DataTransfer)
   ).toBe(true);
   expect(editor.read.text.string([])).toBe('pasted');
+});
+
+const captionedCardSchema = defineEditorSchema('schema:data-transfer-card', {
+  elements: {
+    caption: { content: schema.content.text({ default: 'text', min: 1 }) },
+    card: {
+      content: schema.content.prefix(
+        [{ element: 'caption' }],
+        schema.content.types(['paragraph'], { default: { type: 'paragraph' } })
+      ),
+    },
+    paragraph: { content: schema.content.text({ default: 'text', min: 1 }) },
+  },
+  id: 'data-transfer-card',
+  root: schema.content.types(['card', 'paragraph'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
+const captionedCard = [
+  {
+    children: [
+      { children: [{ text: 'Title' }], type: 'caption' },
+      paragraph('Body'),
+    ],
+    type: 'card',
+  },
+];
+const caretInCaption = (offset: number) =>
+  SelectionApi.text({
+    anchor: { offset, path: [0, 0, 0] },
+    focus: { offset, path: [0, 0, 0] },
+  });
+
+test('plain-text lines pasted into a caption continue as body paragraphs', () => {
+  expect(
+    pasteIntoNested(
+      captionedCardSchema,
+      captionedCard,
+      caretInCaption(2),
+      'X\n\nY'
+    )
+  ).toEqual([
+    {
+      children: [
+        { children: [{ text: 'TiX' }], type: 'caption' },
+        paragraph(''),
+        paragraph('Ytle'),
+        paragraph('Body'),
+      ],
+      type: 'card',
+    },
+  ]);
+  expect(
+    pasteIntoNested(
+      captionedCardSchema,
+      captionedCard,
+      caretInCaption(5),
+      'X\n\nY'
+    )
+  ).toEqual([
+    {
+      children: [
+        { children: [{ text: 'TitleX' }], type: 'caption' },
+        paragraph(''),
+        paragraph('Y'),
+        paragraph('Body'),
+      ],
+      type: 'card',
+    },
+  ]);
 });

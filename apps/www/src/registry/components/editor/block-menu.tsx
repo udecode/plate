@@ -186,7 +186,8 @@ export function BlockContextMenu({ children }: WrapContentProps) {
 
           if (
             ElementApi.isElement(node) &&
-            !editor.read.selection.contains(node)
+            (editor.read.selection.nodeMode() === 'object' ||
+              !editor.read.selection.contains(node))
           ) {
             editor.update.selection.setNodes([node]);
           }
@@ -309,10 +310,12 @@ export function BlockContextMenu({ children }: WrapContentProps) {
                     }
 
                     editor.update((tx) => {
-                      if (editor.plugin(BaseListPlugin).installed) {
+                      if (
+                        tx.plugin(BaseBlockquotePlugin).toggle() &&
+                        editor.plugin(BaseListPlugin).installed
+                      ) {
                         tx.plugin(BaseListPlugin).clear();
                       }
-                      tx.plugin(BaseBlockquotePlugin).toggle();
                     });
                   }}
                 >

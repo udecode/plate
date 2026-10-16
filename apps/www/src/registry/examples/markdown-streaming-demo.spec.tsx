@@ -3,14 +3,11 @@ import { afterEach, beforeEach, expect, it, jest } from 'bun:test';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { act, fireEvent, render } from '@testing-library/react';
 import { createEditor, NodeApi } from 'platejs';
-import * as React from 'react';
 
 import { findDOMRootRuntime } from '../../../../../packages/plitejs/src/dom/internal';
 import { nameListIds } from '../../__tests__/package-integration/list/nameListIds';
 import { BaseEditorKit } from '../components/editor/plugins-static';
 import MarkdownStreamingDemo from './markdown-streaming-demo';
-
-Object.assign(globalThis, { React });
 
 const lists = '1. number 1\n- List B\n- [x] Task C';
 

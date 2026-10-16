@@ -14,17 +14,19 @@ docs:
 
 <ComponentPreview name="suggestion-demo" height="360px" />
 
-示例默认使用建议模式，并包含一条插入建议和一条删除建议。打开段落旁的讨论按钮来接受或拒绝修改，再尝试撤销和重做。切换到编辑模式后，待处理修改仍然可见，而普通编辑会直接发布；在建议模式下输入可提议修改。
+示例默认使用建议模式，并包含一条插入建议和一条删除建议。打开段落旁的讨论按钮来接受或拒绝其卡片，再尝试撤销和重做。切换到编辑模式后，待处理修改仍然可见，而普通编辑会直接应用；在建议模式下输入可提议修改。
+
+在被划掉的文本中输入时，待处理删除会在新文本两侧拆开。建议模式下，新文本是一条独立的插入建议；编辑模式下，它直接应用。在编辑模式下删除被划掉的文本时，这些文本仍归属于其待处理删除。
 
 <PackageInfo>
 
 ## 功能
 
 - 在编辑和建议模式之间切换一个已挂载的 editor view
-- 装饰拟议的文本、格式、结构修改和保留内容
-- 让每个已挂载 view 独立维护活动建议
-- 为自定义审阅 UI 读取稳定的原生 authored change
-- 将待处理 change 和决定保存在完整文档中
+- 装饰拟议的文本、格式和结构修改
+- 让每个已挂载 view 独立维护活动卡片
+- 为自定义审阅 UI 读取原生 authored change 和审阅卡片
+- 将待处理 change 保存在完整文档中
 - 通过复制的 registry UI 添加审阅卡片和评论回复
 
 </PackageInfo>
@@ -43,7 +45,7 @@ npx shadcn@latest add https://platejs.org/r/basic-blocks.json https://platejs.or
 
 <ComponentSource name="suggestion" />
 
-`SuggestionKit` 通过 `render.contentAttributes` 配置包中 `SuggestionPlugin` 的默认样式。包负责建议模式、语义属性、活动 change 行为和 authored-change hooks。Core 将 kit 的类名应用到现有内容根节点，直接使用 `EditorContent` 时也适用。`DiscussionKit` 添加区块按钮、接受和拒绝卡片以及评论回复。
+`SuggestionKit` 通过 `render.contentAttributes` 配置包中 `SuggestionPlugin` 的默认样式。包负责建议模式、语义属性、活动卡片行为和 authored-change hooks。Core 将 kit 的类名应用到现有内容根节点，直接使用 `EditorContent` 时也适用。`DiscussionKit` 添加区块按钮、接受和拒绝卡片以及评论回复。
 
 ### 添加套件
 
@@ -83,10 +85,7 @@ export function SuggestionEditor() {
   });
 
   return (
-    <EditorRoot
-      editor={editor}
-      authored={{ intent: 'propose', projection: 'markup' }}
-    >
+    <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
       <EditorContainer>
         <Toolbar>
           <UndoToolbarButton />
@@ -108,7 +107,9 @@ export function SuggestionEditor() {
 
 ## 设置模式
 
-从已挂载的 editor view 调用 `SuggestionPlugin` portal：
+如上例所示，用 `EditorRoot authored={{ intent: 'propose' }}` 设置初始 view。修改该值会更新这个 view。以等价值重新渲染时，会保留其控件做出的模式修改。
+
+交互式模式控件请从已挂载的 editor view 调用 `SuggestionPlugin` portal：
 
 ```tsx
 import { SuggestionPlugin, useSuggestionMode } from 'platejs/suggestion/react';
@@ -133,35 +134,23 @@ export function SuggestionModeButton() {
 }
 ```
 
-切换模式会更新输入 intent，并保留当前 projection：
-
-| 模式 | Intent | Projection |
-| --- | --- | --- |
-| `'suggesting'` | `'propose'` | 保留 `markup` 或 `proposed`。`accepted` view 会切换到 `markup`，以便显示新 proposal。 |
-| `'editing'` | `'edit'` | 保留 `accepted`、`proposed` 或 `markup`。 |
-
-编辑模式下的 markup view 会显示待处理 change，同时把对 accepted content 的普通编辑直接发布。完整包含待处理 change 的 replacement 会在同一个可撤销事务中解决这些 change，并直接发布 replacement。其他依赖待处理 content 的编辑仍可审阅，并归属于当前作者。只有需要隐藏待处理 content 时才使用 accepted projection。
+`setMode` 设置 view 的输入 intent：`'suggesting'` 设置 `{ intent: 'propose' }`，`'editing'` 设置 `{ intent: 'edit' }`。两者都显示待处理的插入和删除。编辑模式下，普通编辑直接应用；建议模式下，它们成为当前作者的 proposal。
 
 模式属于精确的已挂载 view。同一个文档的两个 view 可以使用不同模式，互不影响。
 
-改变模式只影响后续输入。它不会接受、拒绝、删除或隐藏待处理 change，也不会新增撤销步骤。编辑模式会直接修改 accepted 内容。跨 pending content 的 replacement 只有在 selection 完整包含所有相关 change 和依赖时才直接应用。部分命中的 retained change 或依赖跨出 selection 时保持受保护。需要主动创建或修订 proposal 时，请切换到建议模式。
+改变模式只影响后续输入。它不会接受、拒绝、删除或隐藏待处理 change，也不会新增撤销步骤。
 
-如需只显示已接受内容，请直接为 authored view 设置 `{ intent: 'edit', projection: 'accepted' }`。
-
-如需显示不含保留审阅片段的 proposed 内容，请直接设置高级 authored view：
+要以所有待处理 change 都已接受或已拒绝的状态阅读文档，请把 view 切换为 preview：
 
 ```tsx
 import { AuthoredPlugin } from 'platejs/authored';
 
 const authored = editor.plugin(AuthoredPlugin);
 
-authored.api.setView({
-  intent: 'propose',
-  projection: 'proposed',
-});
+authored.api.setView({ preview: 'proposed' });
 ```
 
-改变 projection 不会接受或拒绝 change。不同 projection 的坐标可能不同，因此请通过产生 selection 的 view 读取 selection 并应用编辑。
+Preview 不接受写入，`read.mode()` 把它报告为 `'editing'`。切换到 preview 不会接受或拒绝 change。不同 view 的坐标可能不同，因此请通过产生 selection 的 view 读取 selection 并应用编辑。调用 `setMode` 可离开 preview。
 
 ## 读取 view 状态
 
@@ -171,17 +160,21 @@ React 入口提供用于自定义控件和审阅 UI 的 hooks：
 import {
   useActiveSuggestion,
   useSuggestionChanges,
+  useSuggestionGroups,
   useSuggestionMode,
 } from 'platejs/suggestion/react';
 
 const mode = useSuggestionMode();
 const changes = useSuggestionChanges(path);
+const cards = useSuggestionGroups(blockKey);
 const { activeId, setActiveId } = useActiveSuggestion();
 ```
 
-`useSuggestionChanges(path)` 返回接触该区块的原生 `AuthoredChange` 记录。文档、authored state 或 projection 变化时它会更新；可见记录未变化时，结果保持稳定。
+`useSuggestionChanges(path)` 返回接触该区块的原生 `AuthoredChange` 记录。这些记录未变化时，结果保持稳定。
 
-点击带有 `data-editor-authored-change` 的元素会激活当前 view 中的 change。点击未标记的编辑器内容会清除活动项。卸载 view、改变 projection 或决定 change 时，也会清除失效的活动状态。自定义卡片或控件可调用 `setActiveId` 直接激活 change。
+`useSuggestionGroups(blockKey)` 以 `read.groups` 摘要的形式，返回与该 key 对应顶层区块相交的审阅卡片。区块重绘时，以及区块中的某个 change 移到另一张卡片时，它会重新读取。同一张卡片在其他区块中的编辑不会触发这两种情况，因此摘要中的 `changeCount` 或 `revision` 可能滞后；控件需要当前摘要时，请读取 `editor.plugin(AuthoredPlugin).read.groupOf(card.id)`。用 `read.changes({ group: card.id })` 逐页读取卡片中的 change。
+
+点击带标记的元素会在当前 view 中激活其 `data-editor-authored-groups` 属性列出的第一张卡片。点击未标记的编辑器内容会清除活动项。卸载 view、把它切换到其他 intent 或 preview，或决定该卡片时，也会清除失效的活动状态。自定义卡片或控件可调用 `setActiveId` 直接激活卡片。
 
 ## 示例
 
@@ -191,15 +184,15 @@ const { activeId, setActiveId } = useActiveSuggestion();
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-为编辑器支持的文本格式添加[基础标记](/docs/basic-marks)。View 处于建议模式时，普通编辑器命令会将文本、mark 和 node 操作记录为 proposal。
+为编辑器支持的文本格式添加[基础标记](/docs/basic-marks)。View 处于建议模式时，编辑器命令会将文本、mark 和 node 操作记录为 proposal。`propose` view 会拒绝无法记录为 proposal 的写入并将其回滚；参阅 [Authored Changes](/cn/docs/authored-changes#配置-view)。
 
 ### Accepted、proposed 和 markup
 
-切换 projection，比较已接受内容、拟议结果和保留的审阅片段。三个 view 中的 proposal 都保持待处理状态。
+切换 view，比较已接受内容、拟议结果，以及显示待处理插入和删除的 markup view。三个 view 中的 proposal 都保持待处理状态。
 
 <ComponentPreview name="suggestion-view-demo" height="400px" />
 
-此示例在 `EditorRoot` 和 `Editor` 上都设置 `readOnly`。Projection 控件选择可见内容；read-only 阻止文档输入。应用仍负责审阅操作和远程写入的授权。
+Accepted 和 Proposed 控件设置 `preview` view；Markup 设置 `{ intent: 'edit' }`。此示例在 `EditorRoot` 和 `Editor` 上都设置 `readOnly`，因此任何 view 都不接受文档输入。应用仍负责审阅操作和远程写入的授权。
 
 ### 保存 proposal 和回复
 
@@ -207,7 +200,7 @@ const { activeId, setActiveId } = useActiveSuggestion();
 
 <ComponentPreview name="suggestion-persistence-demo" height="440px" />
 
-Snapshot 仅保存在内存中，页面重新加载后会消失。**Reload snapshot** 会从已保存的文档和 `CommentsJSON` 创建新 editor，丢弃未保存的工作，并从空的本地 undo stack 开始。待处理 change 和决定属于文档；对话独立于文档 undo 保存。
+Snapshot 仅保存在内存中，页面重新加载后会消失。**Reload snapshot** 会从已保存的文档和 `CommentsJSON` 创建新 editor，丢弃未保存的工作，并从空的本地 undo stack 开始。待处理 change 属于文档；对话独立于文档 undo 保存。
 
 ## 创建和决定 change
 
@@ -224,39 +217,40 @@ editor.update((tx) => {
 });
 ```
 
-传入 `{ changeId }` 可以修订当前作者拥有的待处理贡献。当审阅者需要独立决定每项编辑时，请使用不同的 proposing transaction。
+传入 `{ changeId }` 可把该 transaction 的写入加入具有该 ID 的待处理 change。当审阅者需要独立决定每项编辑时，请使用不同的 proposing transaction。
 
-Authored 管理审阅决定和结构化结果：
+Authored 管理审阅决定和结构化结果。先读取 change，再决定读到的记录：
 
 ```tsx
 import { AuthoredPlugin } from 'platejs/authored';
 
 const authored = editor.plugin(AuthoredPlugin);
-const selection = authored.read.select({ ids: [changeId] });
-const result = authored.update.decide({
-  action: 'accept',
-  selection,
-});
+const change = authored.read.change(changeId);
+
+if (change) {
+  const result = authored.update.decide({
+    action: 'accept',
+    changes: [change],
+  });
+}
 ```
 
-使用 `action: 'reject'` 拒绝 change。请检查 `result.status`：其他编辑可能使 selection 变为 `stale`，依赖或冲突可能使其变为 `blocked`。[Authored Changes](/cn/docs/authored-changes#审阅-change)介绍查询、预览、批量决定和结果处理。
+使用 `action: 'reject'` 拒绝 change。请检查 `result.status`：其他编辑可能使 change 变为 `stale`；需要同时决定其他 change 的决定返回 `blocked`。要决定整张卡片，请传入 `{ action, groups: [card] }`。[Authored Changes](/cn/docs/authored-changes#审阅-change)介绍分页、卡片、预览和结果处理。
 
 ## 保存和重新加载
 
-保存 `editor.read.value()` 返回的完整值。`meta.authored` 由文档 codec 管理；不要编辑它，也不要把 proposal metadata 复制到 node 中。
+保存 `editor.read.value()` 返回的完整值。待处理审阅 mark 位于每个 node 的 `authored` 属性中，审阅记录位于文档的 `records` 中；两者都交由编辑器管理。
 
 ```tsx
 const savedDocument = editor.read.value();
 const savedComments = editor.plugin(CommentsPlugin).api.toJSON();
 ```
 
-按同一个应用版本和对话代次原子保存文档与 `CommentsJSON`。加载前验证关联，并使用相同的内容插件。只保存 `children` 会丢失 authored record。
+按同一个应用版本和对话代次原子保存文档与 `CommentsJSON`。加载前验证关联，并使用相同的内容插件。只保存 `children` 会丢失审阅记录。
 
 创建新 editor，将文档传给 `initialValue`，并配置 `CommentsPlugin.configure({ initialState: { initialComments: savedComments } })`。本地 undo stack 从空开始。文档保留每个 change 的作者和 ID，使回复仍可定位同一建议。将 `userId` 设置为当前作者；加载其他作者的建议不需要切换身份或重放编辑。历史预览和恢复请参阅[当前对话与历史目标的关联](/cn/docs/comment#历史版本)。
 
-选择显式的[导出投影](/cn/docs/authored-changes#导出显式投影)。HTML 与 Markdown
-只携带可见的 `accepted` 或 `proposed` content。Plate 需要恢复完整 review record
-时保存 authored JSON；需要 Word revision 时使用 DOCX `review` export。
+选择显式的[导出投影](/cn/docs/authored-changes#导出显式投影)。HTML 与 Markdown 只携带可见的 `accepted` 或 `proposed` content。Plate 需要恢复审阅时保存 authored JSON；需要 Word revision 时使用 DOCX `review` export。
 
 ## Headless 用法
 
@@ -277,7 +271,7 @@ const editor = createEditor({
 editor.plugin(BaseSuggestionPlugin).api.setMode('suggesting');
 ```
 
-普通建议 range 提供 `data-editor-authored-change`、`data-editor-authored-kind` 和 `data-editor-authored-status`。保留片段提供 `data-editor-authored-change` 和 `data-editor-retained`。通过 plugin 的 `render.contentAttributes` 为这些属性配置样式。静态 preset 可以为 `BaseSuggestionPlugin` 配置服务端安全的属性对象；`SuggestionKit` 提供交互编辑器的默认样式。
+带标记的文本和元素提供 `data-editor-authored-change`、`data-editor-authored-kind`、`data-editor-authored-author`、`data-editor-authored-groups` 和 `data-editor-authored-color`。除 `color` 外，每个属性都是以空格分隔的列表；`color` 是该元素所绘制卡片的调色板槽位，取值 0 到 6。待处理删除的 `kind` 包含 `delete`。通过 plugin 的 `render.contentAttributes` 为这些属性配置样式。静态 preset 可以为 `BaseSuggestionPlugin` 配置服务端安全的属性对象；`SuggestionKit` 提供交互编辑器的默认样式。
 
 ## Discussion 审阅
 
@@ -315,11 +309,11 @@ if (result.status === 'applied') {
 
 ### `suggestion.api.setMode(mode)`
 
-通过 `editor.plugin(SuggestionPlugin)` 或 `editor.plugin(BaseSuggestionPlugin)` 设置后续输入是 proposal 还是直接编辑。两个模式都保留 markup projection 及其待处理审阅 UI。
+通过 `editor.plugin(SuggestionPlugin)` 或 `editor.plugin(BaseSuggestionPlugin)` 设置后续输入是 proposal 还是直接编辑。它设置 view 的 intent，即 `'propose'` 或 `'edit'`；两者都显示待处理的插入和删除。
 
 ### `suggestion.read.mode()`
 
-读取该 editor view 的 `'suggesting'` 或 `'editing'` 模式。
+`propose` view 读取为 `'suggesting'`，`edit` view 或 preview 读取为 `'editing'`。
 
 ### React hooks
 
@@ -327,7 +321,8 @@ if (result.status === 'applied') {
 | --- | --- |
 | `useSuggestionMode()` | 精确挂载 view 的 `'suggesting' \| 'editing'` 模式。 |
 | `useSuggestionChanges(path)` | 接触 `path` 处区块的原生 `AuthoredChange` 记录。 |
-| `useActiveSuggestion()` | View 局部的 `activeId` 和 `setActiveId` 函数。 |
+| `useSuggestionGroups(blockKey)` | 与该 key 对应顶层区块相交的审阅卡片摘要。 |
+| `useActiveSuggestion()` | View 局部活动卡片的 `activeId` 和 `setActiveId` 函数。 |
 
 ### `SuggestionKit`
 

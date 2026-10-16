@@ -131,12 +131,12 @@ export const replaceChildren = <
 
           if (!anchorPath || !focusPath) return null;
 
-          return SelectionApi.nodes(
-            [first, ...paths.slice(1)],
-            selection.root === undefined
-              ? { anchorPath, focusPath }
-              : { anchorPath, focusPath, root: selection.root }
-          );
+          return SelectionApi.nodes([first, ...paths.slice(1)], {
+            anchorPath,
+            focusPath,
+            mode: selection.mode,
+            ...(selection.root === undefined ? {} : { root: selection.root }),
+          });
         })()
       : undefined
     : SelectionApi.isText(selection) &&

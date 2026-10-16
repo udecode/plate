@@ -1,12 +1,7 @@
-import {
-  type Location,
-  LocationApi,
-  PathApi,
-  type Point,
-  PointApi,
-  type PointEntry,
-} from '..';
 import { isObject } from '../utils/is-object';
+import { type Location, LocationApi } from './location';
+import { PathApi } from './path';
+import { type Point, PointApi, type PointEntry } from './point';
 
 /**
  * `Range` objects are a set of points that refer to a specific span of a

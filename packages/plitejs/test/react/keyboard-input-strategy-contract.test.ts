@@ -4,6 +4,7 @@ import {
   type Descendant,
   defineEditorSchema,
   schema,
+  SelectionApi,
 } from 'plitejs';
 import { Hotkeys } from 'plitejs/dom';
 import { history } from 'plitejs/history';
@@ -40,6 +41,7 @@ import {
   writePliteViewSelection,
 } from '../../src/react/view-selection';
 import { isSelectAllHotkey } from '../../src/react/viewport-commands';
+import { getEditorLiveSelection } from '../../src/testing';
 
 type ApplyEditableKeyDownOptions = Parameters<
   typeof applyRuntimeEditableKeyDown
@@ -1864,6 +1866,213 @@ describe('keyboard input strategy', () => {
     }
   });
 
+  it.each([
+    ['ArrowLeft', [2], { offset: 35, path: [0, 0] }],
+    ['ArrowRight', [0], { offset: 0, path: [2, 0] }],
+  ] as const)(
+    'skips skip-policy hidden ranges when %s leaves a block selection',
+    (key, selectedPath, expected) => {
+      runBlockExitAcrossHiddenRanges(key, selectedPath, expected, false);
+    }
+  );
+
+  it.each([
+    ['ArrowLeft', [2], { offset: 35, path: [0, 0] }],
+    ['ArrowRight', [0], { offset: 0, path: [2, 0] }],
+  ] as const)(
+    'skips skip-policy hidden ranges under a model boundary when %s leaves a block selection',
+    (key, selectedPath, expected) => {
+      runBlockExitAcrossHiddenRanges(key, selectedPath, expected, true);
+    }
+  );
+
+  const runBlockExitAcrossHiddenRanges = (
+    key: string,
+    selectedPath: readonly number[],
+    expected: { offset: number; path: readonly number[] },
+    withModelParent: boolean
+  ) => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[...selectedPath]], {
+        mode: 'block',
+      }),
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'Intro visible before hidden blocks.' }],
+        },
+        {
+          type: 'accordion-block',
+          children: [
+            {
+              type: 'paragraph',
+              children: [{ text: 'Accordion secret alpha' }],
+            },
+            {
+              type: 'paragraph',
+              children: [{ text: 'Accordion secret beta' }],
+            },
+          ],
+        },
+        {
+          type: 'paragraph',
+          children: [{ text: 'Next visible paragraph.' }],
+        },
+      ],
+    }) as ReactEditorType;
+    const event = reactKeyEvent(keyEvent(key));
+    const hasEditableTarget = vi
+      .spyOn(ReactEditor, 'hasEditableTarget')
+      .mockReturnValue(true);
+    const isComposing = vi
+      .spyOn(ReactEditor, 'isComposing')
+      .mockReturnValue(false);
+
+    getTestRuntime(editor).domCoverage.registerBoundary({
+      anchor: { type: 'placeholder' },
+      boundaryId: 'closed-accordion',
+      copyPolicy: 'model',
+      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 1] }],
+      coveredRuntimeRanges: [],
+      ownerPath: [],
+      ownerNodeKey: null,
+      reason: 'app-hidden',
+      selectionPolicy: 'skip',
+      state: 'intentionally-hidden',
+      version: 1,
+    });
+    if (withModelParent) {
+      getTestRuntime(editor).domCoverage.registerBoundary({
+        anchor: { type: 'placeholder' },
+        boundaryId: 'a-model-parent',
+        copyPolicy: 'model',
+        coveredPathRanges: [{ anchor: [1], focus: [1] }],
+        coveredRuntimeRanges: [],
+        ownerPath: [],
+        ownerNodeKey: null,
+        reason: 'app-hidden',
+        selectionPolicy: 'model',
+        state: 'intentionally-hidden',
+        version: 1,
+      });
+    }
+
+    try {
+      const result = applyEditableKeyDown({
+        androidInputManagerRef: { current: null },
+        editor,
+        event,
+        forceRender: vi.fn(),
+        inputController: {} as any,
+        readOnly: false,
+        viewportRuntime: null,
+        setComposing: vi.fn(),
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
+      });
+
+      expect(result.handled).toBe(true);
+      expect(editor.read((state) => state.selection())).toEqual({
+        anchor: expected,
+        focus: expected,
+      });
+    } finally {
+      getTestRuntime(editor).domCoverage.destroy();
+      hasEditableTarget.mockRestore();
+      isComposing.mockRestore();
+    }
+  };
+
+  it.each([
+    ['ArrowLeft', 1, 0],
+    ['ArrowRight', 0, 1],
+  ] as const)(
+    'keeps a block selection when %s would only reach skip-policy hidden text',
+    (key, selectedIndex, hiddenIndex) => {
+      const blockSelection = SelectionApi.nodes([[selectedIndex]], {
+        mode: 'block',
+      });
+      const editor = (
+        hiddenIndex === 0
+          ? createEditor({
+              initialSelection: blockSelection,
+              initialValue: [
+                {
+                  type: 'accordion-block',
+                  children: [
+                    {
+                      type: 'paragraph',
+                      children: [{ text: 'Accordion secret' }],
+                    },
+                  ],
+                },
+                { type: 'paragraph', children: [{ text: 'Visible.' }] },
+              ],
+            })
+          : createEditor({
+              initialSelection: blockSelection,
+              initialValue: [
+                { type: 'paragraph', children: [{ text: 'Visible.' }] },
+                {
+                  type: 'accordion-block',
+                  children: [
+                    {
+                      type: 'paragraph',
+                      children: [{ text: 'Accordion secret' }],
+                    },
+                  ],
+                },
+              ],
+            })
+      ) as ReactEditorType;
+      const event = reactKeyEvent(keyEvent(key));
+      const hasEditableTarget = vi
+        .spyOn(ReactEditor, 'hasEditableTarget')
+        .mockReturnValue(true);
+      const isComposing = vi
+        .spyOn(ReactEditor, 'isComposing')
+        .mockReturnValue(false);
+
+      getTestRuntime(editor).domCoverage.registerBoundary({
+        anchor: { type: 'placeholder' },
+        boundaryId: 'closed-accordion',
+        copyPolicy: 'model',
+        coveredPathRanges: [
+          { anchor: [hiddenIndex, 0], focus: [hiddenIndex, 0] },
+        ],
+        coveredRuntimeRanges: [],
+        ownerPath: [],
+        ownerNodeKey: null,
+        reason: 'app-hidden',
+        selectionPolicy: 'skip',
+        state: 'intentionally-hidden',
+        version: 1,
+      });
+
+      try {
+        const result = applyEditableKeyDown({
+          androidInputManagerRef: { current: null },
+          editor,
+          event,
+          forceRender: vi.fn(),
+          inputController: {} as any,
+          readOnly: false,
+          viewportRuntime: null,
+          setComposing: vi.fn(),
+          setExplicitViewportBackedSelection: vi.fn(),
+          viewportBackedSelection: false,
+        });
+
+        expect(result.handled).toBe(true);
+        expect(getEditorLiveSelection(editor)).toEqual(blockSelection);
+      } finally {
+        getTestRuntime(editor).domCoverage.destroy();
+        hasEditableTarget.mockRestore();
+        isComposing.mockRestore();
+      }
+    }
+  );
+
   it('extends to the next visible character when extending forward across skip-policy hidden ranges', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
@@ -2870,6 +3079,7 @@ describe('keyboard input strategy', () => {
               anchorPath: [0],
               focusPath: [0],
               kind: 'node',
+              mode: 'block',
               paths: [[0]],
             },
           },

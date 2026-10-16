@@ -1,11 +1,13 @@
 import {
   BaseParagraphPlugin,
   createEditor,
+  createEditorView,
   definePlugin,
   editorCommands,
   schema,
   SelectionApi,
 } from '../../../core';
+import { BaseHorizontalRulePlugin } from '../../basic-nodes/lib/BaseBlockPlugins';
 import { BaseTablePlugin } from '../../table/lib/BaseTablePlugin';
 import { BaseDetailsPlugin } from './BaseDetailsPlugin';
 
@@ -130,7 +132,7 @@ describe('BaseDetailsPlugin', () => {
     } else {
       editor
         .plugin(BaseDetailsPlugin)
-        .update.unwrap({ at: SelectionApi.nodes([[0, 1]]) });
+        .update.unwrap({ at: SelectionApi.nodes([[0, 1]], { mode: 'block' }) });
     }
     expect(editor.read.children()).toMatchObject([
       {
@@ -331,16 +333,16 @@ describe('BaseDetailsPlugin', () => {
       const editor = createNoteEditor([value[1]]);
       editor.update.selection.set({ path: [0, 0, 0], offset: 0 });
 
-      editor
-        .plugin(BaseDetailsPlugin)
-        .update.unwrap({ at: SelectionApi.nodes([[0]], { root: 'note' }) });
+      editor.plugin(BaseDetailsPlugin).update.unwrap({
+        at: SelectionApi.nodes([[0]], { mode: 'block', root: 'note' }),
+      });
       expect(editor.read.children()).toMatchObject(main);
       expect(editor.read.root('note')).toMatchObject([value[1]]);
     });
 
     it.each([
-      ['container', SelectionApi.nodes([[0]], { root: 'note' })],
-      ['body', SelectionApi.nodes([[0, 1]], { root: 'note' })],
+      ['container', SelectionApi.nodes([[0]], { mode: 'block', root: 'note' })],
+      ['body', SelectionApi.nodes([[0, 1]], { mode: 'block', root: 'note' })],
       [
         'body through a range only its focus roots',
         {
@@ -375,6 +377,24 @@ describe('BaseDetailsPlugin', () => {
         });
       }
     );
+
+    it('opens and selects a Details inserted after a note block from the main root', () => {
+      const editor = createNoteEditor([value[1]]);
+      const note = createEditorView(editor, { root: 'note' });
+      const after = note.key([0]);
+      const details = editor.plugin(BaseDetailsPlugin);
+      editor.update.selection.set({ path: [0, 0, 0], offset: 0 });
+
+      expect(after).toBeDefined();
+      details.update.insert({}, { after: after!, select: true });
+
+      const key = note.key([1]);
+      expect(note.read.children()[1]).toMatchObject({ type: 'details' });
+      expect(key && details.store.get('isOpen', key)).toBe(true);
+      expect(editor.read.selection()).toMatchObject({
+        anchor: { path: [1, 0, 0], offset: 0, root: 'note' },
+      });
+    });
   });
 
   it('preserves the cell selection when clearing a table inside closed Details', () => {
@@ -405,7 +425,7 @@ describe('BaseDetailsPlugin', () => {
         },
       ],
     });
-    const target = SelectionApi.nodes([[0, 1, 0, 0]]);
+    const target = SelectionApi.nodes([[0, 1, 0, 0]], { mode: 'block' });
     editor.update.selection.set(target);
     editor.update((tx) =>
       tx.command(editorCommands.deleteFragment, {
@@ -462,7 +482,7 @@ describe('BaseDetailsPlugin', () => {
       value[1],
     ];
     const editor = createEditor({ plugins: [BaseDetailsPlugin], initialValue });
-    editor.update.selection.set(SelectionApi.nodes([[1]]));
+    editor.update.selection.set(SelectionApi.nodes([[1]], { mode: 'block' }));
     editor.update.text.deleteBackward({ unit: 'character' });
     expect(editor.read.selection()).toMatchObject({
       anchor: { path: [0, 0, 0], offset: 5 },
@@ -643,6 +663,39 @@ describe('BaseDetailsPlugin', () => {
       ],
       type: 'details',
     });
+  });
+
+  it('splits a title over a selection or around an inserted block into a body paragraph', () => {
+    const titled = (focus: number) =>
+      createEditor({
+        plugins: [BaseDetailsPlugin, BaseHorizontalRulePlugin],
+        selection: {
+          anchor: { offset: 1, path: [0, 0, 0] },
+          focus: { offset: focus, path: [0, 0, 0] },
+          kind: 'text',
+        },
+        initialValue: value,
+      });
+    const entered = titled(3);
+    const inserted = titled(1);
+
+    entered.update.break.insert();
+    inserted.update.nodes.insert({
+      children: [{ text: '' }],
+      type: 'horizontalRule',
+    });
+
+    expect(entered.read.children()[0].children).toEqual([
+      { children: [{ text: 'T' }], type: 'summary' },
+      { children: [{ text: 'le' }], type: 'paragraph' },
+      { children: [{ text: 'Body' }], type: 'paragraph' },
+    ]);
+    expect(inserted.read.children()[0].children).toEqual([
+      { children: [{ text: 'T' }], type: 'summary' },
+      { children: [{ text: '' }], type: 'horizontalRule' },
+      { children: [{ text: 'itle' }], type: 'paragraph' },
+      { children: [{ text: 'Body' }], type: 'paragraph' },
+    ]);
   });
 
   it('exits from the final empty body without deleting it', () => {

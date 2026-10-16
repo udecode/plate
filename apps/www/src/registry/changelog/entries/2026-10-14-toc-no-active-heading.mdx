@@ -1,0 +1,14 @@
+---
+id: 2026-10-14-toc-no-active-heading
+date: 2026-10-14
+status: draft
+kind: behavior
+summary: 'Show TOC selection instead of the active heading'
+change: { 'type': 'source', 'date': '2026-10-14', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-14-toc-keep-rows-unhighlighted-while-5b5b875d","kind":"behavior","migrationNotes":[]} -->
+
+- **`toc`**: Remove the active-heading highlight and its scroll observer from `TocElement`, so every row keeps the same muted style. A selected TOC block gets the same tinted background as a selected block equation.

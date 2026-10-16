@@ -1,5 +1,4 @@
-import type { NodeList } from '../../core/change/document-index';
-import type { JsonNode } from '../../core/change/tokens';
+import type { SparseNodes } from '../../core/change/document-index';
 import { normalizeSetValues } from '../../core/change/transform';
 import { property, schema, target } from '../../core/schema-definition';
 import type { EditorJsonValue } from '../../interfaces/json';
@@ -290,7 +289,7 @@ export const withRestsOn = <T extends Readonly<Record<string, unknown>>>(
 type MarkOwners = Map<string, string>;
 
 const visitMarks = (
-  nodes: NodeList<unknown>,
+  nodes: SparseNodes<unknown>,
   parent: Path,
   owners: MarkOwners,
   checked: WeakSet<object>,
@@ -375,7 +374,7 @@ export const createAuthoredMarksValidator = () => {
   return {
     authorOf: (change: string) => owners.get(change) ?? null,
     validate: (
-      children: NodeList<unknown>,
+      children: SparseNodes<unknown>,
       restsOn: (ctx: string, path: Path) => void
     ) => visitMarks(children, [], owners, checked, restsOn),
   };

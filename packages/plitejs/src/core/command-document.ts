@@ -15,7 +15,7 @@ import {
   type RootChange,
 } from './change/root-change';
 import { getEditorRuntimeOwner } from './editor-runtime';
-import { countFrameWork } from './frame-work';
+import { countCoreWork } from './work';
 
 /**
  * How positions of the stored document correspond to positions of the
@@ -86,16 +86,21 @@ export type EditorCommandDocument = Readonly<{
   /**
    * Runs once a frame's recording commits, with what the frame's commands
    * wrote and the stored document and selection the recording left, both
-   * through the canonical pass, so a test build can check one against the
-   * other.
+   * through the canonical pass. The stored document projects to what the
+   * commands wrote, so the command document may take one as the other; a
+   * test build checks that they agree.
    */
-  checkRecorded?: (input: EditorFrameRecording) => void;
+  recorded?: (input: EditorFrameRecording) => void;
   project: (value: EditorDocumentValue) => CommandProjection | null;
 }>;
 
 /** @internal */
 export type EditorFrameRecording = Readonly<{
+  /** The commands' change from `projection.value` to `frame.value`. */
+  change: DocumentChange;
   frame: EditorDocumentState;
+  /** The document the commands decided on. */
+  projection: CommandProjection;
   root: string;
   stored: EditorDocumentState;
 }>;
@@ -120,6 +125,8 @@ export const projectionMapOf = (change: DocumentChange): CommandProjectionMap =>
       let after = 0;
 
       for (let pair = 0; pair < sections.length; pair += 2) {
+        countCoreWork('sectionsWalked');
+
         const inserted = sections[pair + 1];
         const length = inserted < 0 ? sections[pair] : inserted;
 
@@ -133,7 +140,7 @@ export const projectionMapOf = (change: DocumentChange): CommandProjectionMap =>
       return null;
     },
     change: () => {
-      countFrameWork('projectionChanges');
+      countCoreWork('projectionChanges');
 
       return change;
     },
@@ -143,6 +150,8 @@ export const projectionMapOf = (change: DocumentChange): CommandProjectionMap =>
       let before = 0;
 
       for (let pair = 0; pair < sections.length; pair += 2) {
+        countCoreWork('sectionsWalked');
+
         const length = sections[pair];
 
         if (

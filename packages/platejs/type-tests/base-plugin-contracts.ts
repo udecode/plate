@@ -170,7 +170,7 @@ const constructorInferenceEditor = createEditor({
 });
 const constructorApiResult: 2 =
   constructorInferenceEditor.api.constructorInference.value();
-const constructorUpdateResult: 3 =
+const constructorUpdateResult: 3 | undefined =
   constructorInferenceEditor.update.constructorInference.run();
 
 void constructorApiResult;
@@ -1132,9 +1132,10 @@ const unifiedListEditor = createEditor({
 });
 const unifiedListRead: string =
   unifiedListEditor.read.unifiedList.getPrevious('bulleted');
-const unifiedListUpdate: string = unifiedListEditor.update.unifiedList.toggle({
-  type: 'numbered',
-});
+const unifiedListUpdate: string | undefined =
+  unifiedListEditor.update.unifiedList.toggle({
+    type: 'numbered',
+  });
 unifiedListEditor.update((tx) => {
   const activeRead: string = tx.unifiedList.getPrevious('bulleted');
 
@@ -1491,7 +1492,7 @@ const extendedFullBaseSelector: boolean = extendedFullEditor
 const extendedFullExtraSelector: 3 = extendedFullEditor
   .plugin(ExtendedFullPlugin)
   .store.get('extraSelector');
-const extendedFullExtraUpdate: 'base-update:update' =
+const extendedFullExtraUpdate: 'base-update:update' | undefined =
   extendedFullEditor.update.extendFull.extraUpdate('update');
 
 basePlateEditor.api.callout.setVariant('info');

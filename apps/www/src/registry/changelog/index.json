@@ -2,6 +2,131 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-16-code-on-sparse-block-selection",
+      "href": "/registry/changelog/2026-10-16-code-on-sparse-block-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show the Structure group in Turn into and offer Code for a block selection that skips blocks",
+      "change": {
+        "type": "source",
+        "date": "2026-10-16",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["turn-into-toolbar-button", "toolbar"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-15-inline-combobox-hide-on-close",
+      "href": "/registry/changelog/2026-10-15-inline-combobox-hide-on-close.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Hide the inline combobox popup as soon as it closes",
+      "change": {
+        "type": "source",
+        "date": "2026-10-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["inline-combobox"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-15-quote-on-details-title",
+      "href": "/registry/changelog/2026-10-15-quote-on-details-title.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep list formatting when Quote cannot apply",
+      "change": {
+        "type": "source",
+        "date": "2026-10-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["turn-into-toolbar-button", "block-menu"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-15-slash-keeps-query-on-refusal",
+      "href": "/registry/changelog/2026-10-15-slash-keeps-query-on-refusal.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the slash query when a chosen block cannot be inserted",
+      "change": {
+        "type": "source",
+        "date": "2026-10-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["slash"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-15-upload-refusal-toast",
+      "href": "/registry/changelog/2026-10-15-upload-refusal-toast.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Explain why an upload was refused",
+      "change": {
+        "type": "source",
+        "date": "2026-10-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["upload"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-14-block-void-selection",
+      "href": "/registry/changelog/2026-10-14-block-void-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show caret and block selection on void and media blocks",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "code-drawing",
+        "excalidraw",
+        "upload",
+        "toc",
+        "math",
+        "horizontal-rule",
+        "media-image",
+        "media-file",
+        "media-audio",
+        "media-video",
+        "media-embed",
+        "mention",
+        "tag",
+        "footnote",
+        "dnd",
+        "block-menu"
+      ],
+      "entries": 5,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-14-details-block-conversion",
       "href": "/registry/changelog/2026-10-14-details-block-conversion.json",
       "status": "draft",
@@ -106,6 +231,24 @@
         "status": "unresolved"
       },
       "targets": ["editor-plugins"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-14-toc-no-active-heading",
+      "href": "/registry/changelog/2026-10-14-toc-no-active-heading.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Show TOC selection instead of the active heading",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["toc"],
       "entries": 1,
       "diagnostics": []
     },

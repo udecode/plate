@@ -277,6 +277,7 @@ const getVerticalNavigationTarget = ({
   getMountedViewEditor,
   owners,
   point,
+  askExternalViews,
   preferredX,
 }: {
   currentRoot: RootKey;
@@ -289,6 +290,7 @@ const getVerticalNavigationTarget = ({
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   owners: ContentRootOwner[];
   point: Point;
+  askExternalViews?: boolean;
   preferredX?: number;
 }): ContentRootNavigationTarget | null => {
   const activeOwner = getActiveContentRootOwner?.(currentRoot);
@@ -347,12 +349,11 @@ const getVerticalNavigationTarget = ({
     const targetPoint =
       sourceEditor && targetEditor
         ? resolveVerticalNavigationPoint({
-            currentRoot,
             direction,
             fallbackPoint: exitPoint,
-            point,
             preferredX,
-            sourceEditor,
+            askExternalViews,
+            source: { editor: sourceEditor, point, root: currentRoot },
             targetEditor,
             targetRoot: ownerForCurrentRoot.ownerRoot,
           })
@@ -418,12 +419,11 @@ const getVerticalNavigationTarget = ({
     const targetPoint =
       fallbackTarget && sourceEditor && targetEditor
         ? resolveVerticalNavigationPoint({
-            currentRoot,
             direction,
             fallbackPoint: fallbackTarget.point,
-            point,
             preferredX,
-            sourceEditor,
+            askExternalViews,
+            source: { editor: sourceEditor, point, root: currentRoot },
             targetEditor,
             targetRoot: owner.childRoot,
           })
@@ -1001,6 +1001,7 @@ const getContentRootMovementTarget = ({
   getMountedViewEditor,
   owners,
   point,
+  askExternalViews,
   preferredX,
 }: {
   action: Extract<ContentRootViewSelectionAction, { kind: 'move' }>;
@@ -1016,6 +1017,7 @@ const getContentRootMovementTarget = ({
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   owners: ContentRootOwner[];
   point: Point;
+  askExternalViews?: boolean;
   preferredX?: number;
 }): ContentRootNavigationTarget | null => {
   const getCurrentRootOwner = (root: RootKey) =>
@@ -1034,6 +1036,7 @@ const getContentRootMovementTarget = ({
           owners,
           point,
           preferredX,
+          askExternalViews,
         })
       : action.kind === 'move'
         ? getHorizontalNavigationTarget({
@@ -1108,6 +1111,7 @@ export const getContentRootNavigationTarget = ({
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
   isRTL,
+  askExternalViews,
   preferredX,
   selection,
 }: {
@@ -1119,6 +1123,7 @@ export const getContentRootNavigationTarget = ({
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   isRTL: boolean;
+  askExternalViews?: boolean;
   preferredX?: number;
   selection: Range | null;
 }): ContentRootNavigationTarget | null => {
@@ -1193,6 +1198,7 @@ export const getContentRootNavigationTarget = ({
     owners,
     point,
     preferredX,
+    askExternalViews,
   });
 };
 

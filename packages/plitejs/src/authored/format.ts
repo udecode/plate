@@ -20,6 +20,7 @@ import type {
   AuthoredProjectionRefusal,
 } from './types';
 
+/** `proposed` accepts every pending change; `accepted` rejects every one. */
 export type AuthoredFormatProjection = 'accepted' | 'proposed';
 
 /**
@@ -119,22 +120,13 @@ export type AuthoredLocationMap = Readonly<{
   range: (range: Range) => Range | null;
 }>;
 
-/**
- * Map locations of one root of a stored document onto a projection through
- * `change`, the stored document's change to it. Each map returns null for
- * content the projection does not keep.
- */
-export const authoredLocationMap = (
-  document: JsonEditorValue,
-  projected: JsonEditorValue,
-  change: DocumentChange,
+/** Each map returns null for content the projection does not keep. */
+export const locationMapOver = (
+  beforeIndex: DocumentIndex,
+  afterIndex: DocumentIndex,
+  position: (from: number, assoc: -1 | 1) => number | null,
   root: string
 ): AuthoredLocationMap => {
-  const rootChange = getInternalDocumentRootChange(change, root);
-  const beforeIndex = DocumentIndex.fromValue(valueRoot(document, root));
-  const afterIndex = DocumentIndex.fromValue(valueRoot(projected, root));
-  const position = (from: number, assoc: -1 | 1) =>
-    rootChange ? rootChange.mapPos(from, assoc) : from;
   const point = (at: Point, assoc: -1 | 1): Point | null => {
     const mapped = position(beforeIndex.positionAt(at), assoc);
     const landed = mapped === null ? null : afterIndex.pointAt(mapped, assoc);
@@ -165,6 +157,22 @@ export const authoredLocationMap = (
         : { anchor: from, focus: to };
     },
   };
+};
+
+export const authoredLocationMap = (
+  document: JsonEditorValue,
+  projected: JsonEditorValue,
+  change: DocumentChange,
+  root: string
+): AuthoredLocationMap => {
+  const rootChange = getInternalDocumentRootChange(change, root);
+
+  return locationMapOver(
+    DocumentIndex.fromValue(valueRoot(document, root)),
+    DocumentIndex.fromValue(valueRoot(projected, root)),
+    (from, assoc) => (rootChange ? rootChange.mapPos(from, assoc) : from),
+    root
+  );
 };
 
 /**

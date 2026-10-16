@@ -12,6 +12,7 @@ import type { AnyBasePlugin, EditableProps } from '../../lib';
 import { getPluginNodeClass } from '../../lib';
 import { EditorText } from '../components/plate-nodes';
 import type { Editor } from '../editor/Editor';
+import { useRedrawWithBlock } from '../internal/block-redraws';
 import { usePlateRenderContext } from '../internal/plate-context';
 import {
   setDOMTextSyncRendererCapability,
@@ -147,6 +148,7 @@ export const pipeRenderText = (
   }) => {
     const { attributes: initialAttributes, ...props } = nodeProps;
     const { editor, wrap } = usePlateRenderContext(modelEditor);
+    useRedrawWithBlock();
     let attributes = initialAttributes;
     let { children } = props;
     const readOnly = editor.read.view.isReadOnly();

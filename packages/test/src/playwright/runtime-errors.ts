@@ -9,6 +9,7 @@ export const DEFAULT_RUNTIME_ERROR_PATTERNS: readonly string[] = [
 
 const NEXT_DATA_ACCESS_CONTROL_ERROR =
   /Fetch API cannot load http:\/\/(?:localhost|127\.0\.0\.1):\d+\/_next\/data\//;
+const URL_PATTERN = /https?:\/\/[^\s)'"]+/g;
 
 /** Recorder returned by runtime-error capture helpers. */
 export type BrowserRuntimeErrorRecorder = {
@@ -18,15 +19,30 @@ export type BrowserRuntimeErrorRecorder = {
   stop: () => void;
 };
 
-const isIgnoredRuntimeError = (text: string) =>
+const getOrigin = (url: string) => {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return null;
+  }
+};
+
+const isThirdPartyError = (text: string, pageOrigin: string | null) => {
+  const origins = Array.from(text.matchAll(URL_PATTERN), ([url]) =>
+    getOrigin(url)
+  );
+
+  return (
+    pageOrigin !== null &&
+    origins.length > 0 &&
+    origins.every((origin) => origin !== null && origin !== pageOrigin)
+  );
+};
+
+const isIgnoredRuntimeError = (text: string, pageOrigin: string | null) =>
   (NEXT_DATA_ACCESS_CONTROL_ERROR.test(text) &&
     text.includes('due to access control checks.')) ||
-  (text.includes("Permission policy 'Fullscreen' check failed") &&
-    text.includes('https://player.vimeo.com')) ||
-  (text.includes('SecurityError: Document.cookie getter: Forbidden') &&
-    text.includes('https://player.vimeo.com')) ||
-  (text.includes('error loading dynamically imported module') &&
-    text.includes('https://player.vimeo.com'));
+  isThirdPartyError(text, pageOrigin);
 
 /** Start recording browser runtime errors for a Playwright page. */
 export const recordBrowserRuntimeErrors = (
@@ -39,17 +55,19 @@ export const recordBrowserRuntimeErrors = (
 ): BrowserRuntimeErrorRecorder => {
   const patterns = options.patterns ?? DEFAULT_RUNTIME_ERROR_PATTERNS;
   const errors: string[] = [];
+  const isIgnored = (text: string) =>
+    !options.strict && isIgnoredRuntimeError(text, getOrigin(page.url()));
   const onPageError = (error: Error) => {
     const text = error.stack ?? error.message;
 
-    if (options.strict || !isIgnoredRuntimeError(text)) {
+    if (!isIgnored(text)) {
       errors.push(text);
     }
   };
   const onConsole = (message: ConsoleMessage) => {
     const text = message.text();
 
-    if (!options.strict && isIgnoredRuntimeError(text)) {
+    if (isIgnored(text)) {
       return;
     }
 

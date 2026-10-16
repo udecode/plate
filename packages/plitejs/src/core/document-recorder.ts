@@ -59,16 +59,18 @@ export type EditorDocumentRecorder = (
 /** @internal */
 export type EditorDraftGuardPhase = 'plain' | 'recorded';
 
+export type PositionMap = (
+  root: string,
+  position: number,
+  assoc: -1 | 1
+) => number | null;
+
 /**
  * A command frame's draft: `mapPosition` maps a position of `stored` to what
  * the frame wrote.
  */
 export type DraftGuardFrame = Readonly<{
-  mapPosition: (
-    root: string,
-    position: number,
-    association: 'backward' | 'forward'
-  ) => number | null;
+  mapPosition: PositionMap;
   stored: EditorDocumentValue;
 }>;
 

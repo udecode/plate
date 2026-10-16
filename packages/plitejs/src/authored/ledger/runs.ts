@@ -1,8 +1,5 @@
-import {
-  DocumentChange,
-  getInternalDocumentRootChange,
-} from '../../core/change/document-change';
-import { deepFreeze } from '../../core/change/json';
+import { getInternalDocumentRootChange } from '../../core/change/document-change';
+import { deepFreeze, jsonEqual } from '../../core/change/json';
 import {
   type DocumentSetPropertyResolver,
   RootChange,
@@ -12,14 +9,18 @@ import {
   type JsonNode,
   PreparedTokenSlice,
 } from '../../core/change/tokens';
+import type { RecordSetVersion } from '../../core/record-store';
+import type { RootPart } from '../../core/representation';
+import { survivalUnder } from '../../core/survival';
 import { getDefined } from '../../internal/get-defined';
-import { marksOf, type ReviewFacts } from '../facts/facts';
+import type { ReviewFacts } from '../facts/facts';
+import { incarnationOf } from '../facts/records';
+import type { AuthoredFormatProjection } from '../format';
 import {
   acceptedChange,
-  characterAlignedChange,
+  decidedContentChange,
   tokenLength,
 } from '../tree/alignment';
-import { incarnationOf } from '../facts/records';
 import {
   type AuthoredMark,
   readAuthoredMarks,
@@ -30,20 +31,13 @@ import {
   type AuthoredResolveSchema,
   followsOf,
   hasBoundaryMark,
+  isTextBlock,
   resolveAuthoredChildren,
 } from '../tree/resolve';
 import { countLedgerWork } from './work';
 
-/** Proposed accepts every pending change; accepted rejects every one. */
-export type ReviewMode = 'accepted' | 'proposed';
-
-/**
- * What a mode makes of top-level blocks: those it leaves alone, those it
- * removes whole, and the rest, which the kernel resolves in runs.
- */
 export type BlockFacts = Readonly<{
-  /** No review member anywhere inside. */
-  bare: boolean;
+  unmarked: boolean;
   /**
    * The pending joins blocks inside follow, and the joins blocks inside hold,
    * by incarnation: a follower lands after its join's line wherever the join
@@ -51,20 +45,26 @@ export type BlockFacts = Readonly<{
    */
   follows: readonly string[];
   joins: readonly string[];
-  /** Its first line carries a join or split, so it decides with the blocks before it. */
+  /** A join or split can land on its first line, so it decides with the blocks before it. */
   opensWithStructure: boolean;
-  /** Accepting every change removes it whole and it carries no boundary. */
+  /**
+   * Whether the mode keeps one of its lines. A join reaches back over lines
+   * the mode drops, so it passes over a block that keeps none.
+   */
+  keepsLine: Readonly<Record<AuthoredFormatProjection, boolean>>;
+  /** It carries an insertion claim of its own, so it holds no prefix slot at the start. */
+  inserted: boolean;
   removedProposed: boolean;
 }>;
 
 const FACTS = new WeakMap<JsonNode, BlockFacts>();
 
-const bare = (node: JsonNode): boolean => {
+const unmarked = (node: JsonNode): boolean => {
   countLedgerWork('visitedNodes');
 
   return (
     readMembers(node).length === 0 &&
-    (typeof node.text === 'string' || (node.children ?? []).every(bare))
+    (typeof node.text === 'string' || (node.children ?? []).every(unmarked))
   );
 };
 
@@ -86,16 +86,33 @@ const keysIn = (
   ];
 };
 
+// A line with review marks can vanish in one mode, and an unwrap lifts the
+// lines after it, so a join behind marked lines can still open the block.
 const opensWithStructure = (node: JsonNode): boolean => {
-  for (let current: JsonNode | undefined = node; current;) {
-    countLedgerWork('visitedNodes');
-    if (hasBoundaryMark(current)) return true;
-    if (typeof current.text === 'string') return false;
-    current = current.children?.[0];
+  countLedgerWork('visitedNodes');
+  if (hasBoundaryMark(node)) return true;
+  if (typeof node.text === 'string') return false;
+  for (const child of node.children ?? []) {
+    if (opensWithStructure(child)) return true;
+    if (unmarked(child)) return false;
   }
 
   return false;
 };
+
+const SURVIVAL = {
+  accepted: survivalUnder<JsonNode>((node) =>
+    readAuthoredMarks(node).some((mark) => mark.kind === 'insert')
+  ),
+  proposed: proposedSurvival,
+};
+
+const keepsLine = (node: JsonNode, mode: AuthoredFormatProjection): boolean =>
+  isTextBlock(node)
+    ? SURVIVAL[mode].survives(node)
+    : (node.children ?? []).some(
+        (child) => typeof child.text !== 'string' && keepsLine(child, mode)
+      );
 
 /** @internal */
 export const blockFactsOf = (node: JsonNode): BlockFacts => {
@@ -104,12 +121,12 @@ export const blockFactsOf = (node: JsonNode): BlockFacts => {
   if (!facts) {
     countLedgerWork('blockFacts');
 
-    const isBare = bare(node);
+    const isUnmarked = unmarked(node);
 
-    facts = isBare
-      ? BARE
+    facts = isUnmarked
+      ? UNMARKED
       : {
-          bare: false,
+          unmarked: false,
           follows: [...new Set(keysIn(node, followsOf))],
           joins: [
             ...new Set(
@@ -118,6 +135,13 @@ export const blockFactsOf = (node: JsonNode): BlockFacts => {
               )
             ),
           ],
+          inserted: readAuthoredMarks(node).some(
+            (mark) => mark.kind === 'insert'
+          ),
+          keepsLine: {
+            accepted: keepsLine(node, 'accepted'),
+            proposed: keepsLine(node, 'proposed'),
+          },
           opensWithStructure: opensWithStructure(node),
           removedProposed:
             !proposedSurvival.survives(node) && !hasBoundaryMark(node),
@@ -128,27 +152,32 @@ export const blockFactsOf = (node: JsonNode): BlockFacts => {
   return facts;
 };
 
-const BARE: BlockFacts = Object.freeze({
-  bare: true,
+const UNMARKED: BlockFacts = Object.freeze({
+  unmarked: true,
   follows: [],
+  inserted: false,
   joins: [],
+  keepsLine: { accepted: true, proposed: true },
   opensWithStructure: false,
   removedProposed: false,
 });
 
-/** Whether `mode` removes the block whole without the kernel. */
-export const removesBlock = (mode: ReviewMode, facts: BlockFacts) =>
-  mode === 'proposed' && facts.removedProposed;
+export const removesBlock = (
+  mode: AuthoredFormatProjection,
+  facts: BlockFacts
+) => mode === 'proposed' && facts.removedProposed;
 
-/** Blocks that resolve together, and what the mode makes of them. */
 export type Run = Readonly<{
-  /** The blocks the mode keeps in their place. */
+  /** On a run the commands wrote, built on its first read. */
   change: RootChange | null;
+  /** Whether the run's output differs from its stored nodes, known without building `change`. */
+  changed: boolean;
   nodes: readonly JsonNode[];
   output: readonly JsonNode[];
-  /** Token lengths of the stored blocks and of the output. */
   outputLength: number;
+  part: RootPart;
   storedLength: number;
+  verdicts: RecordSetVersion;
 }>;
 
 const deleting = (
@@ -176,6 +205,9 @@ const deleting = (
   return RootChange.fromSections(sections, data);
 };
 
+const samePart = (left: RootPart, right: RootPart) =>
+  left.head === right.head && left.min === right.min;
+
 const deepCount = (node: JsonNode): number =>
   1 + (node.children ?? []).reduce((sum, child) => sum + deepCount(child), 0);
 
@@ -185,13 +217,13 @@ const lengthOf = (nodes: readonly JsonNode[]) =>
 export type RunContext = Readonly<{
   facts: ReviewFacts;
   isSetValued: DocumentSetPropertyResolver;
-  mode: ReviewMode;
+  mode: AuthoredFormatProjection;
   root: string;
   schema: AuthoredResolveSchema | null;
+  /** The verdict set's version `facts` reads. */
+  verdicts: RecordSetVersion;
 }>;
 
-// The run-local change from the kept blocks to what the mode makes of them,
-// aligned as a decision aligns: by structure, then by characters.
 const localChange = (
   kept: readonly JsonNode[],
   output: readonly JsonNode[],
@@ -202,50 +234,155 @@ const localChange = (
   const change =
     context.mode === 'proposed'
       ? acceptedChange(stored, decided, { isSetValued: context.isSetValued })
-      : (characterAlignedChange(stored, decided, {
-          joins: (node) =>
-            marksOf(node, context.facts).some((mark) => mark.kind === 'split'),
-          removes: (node) =>
-            marksOf(node, context.facts).some(
-              (mark) => mark.kind === 'insert'
-            ),
-        }) ??
-        DocumentChange.between(stored, decided, {
-          isSetValued: context.isSetValued,
-        }));
+      : decidedContentChange(stored, decided, {
+          facts: context.facts,
+          outcomes: 'reject',
+        });
 
   return change.empty
     ? null
     : (getInternalDocumentRootChange(change, 'main') ?? null);
 };
 
+/** A tail run of one block the mode removes whole, which needs no kernel. */
+export const removedRun = (node: JsonNode, context: RunContext): Run => {
+  const storedLength = tokenLength(node);
+
+  return {
+    change: deleting(storedLength, [[0, storedLength]]),
+    changed: true,
+    nodes: [node],
+    output: [],
+    outputLength: 0,
+    part: { head: false, min: 0 },
+    storedLength,
+    verdicts: context.verdicts,
+  };
+};
+
 /**
- * Resolve one run through the kernel: blocks the mode removes whole become a
- * deletion, and the kept blocks resolve together.
+ * Resolve one run through the kernel as `part` of its root. In a tail that
+ * fills none of the minimum, blocks the mode removes whole become a
+ * deletion, and the kept blocks resolve together. A head keeps every block,
+ * since a removed one still decides whether a prefix slot is vacated, and so
+ * does a run that fills the minimum, which completes even when no block
+ * survives.
  */
 export const resolveRun = (
   nodes: readonly JsonNode[],
   context: RunContext,
   cache: WeakMap<JsonNode, Run>,
-  whole = false
+  part: RootPart
 ): Run => {
-  const cached = whole ? undefined : cache.get(getDefined(nodes[0]));
+  const cached = cache.get(getDefined(nodes[0]));
 
   if (
-    cached?.nodes.length === nodes.length &&
+    cached &&
+    cached.verdicts === context.verdicts &&
+    samePart(cached.part, part) &&
+    cached.nodes.length === nodes.length &&
     cached.nodes.every((node, index) => node === nodes[index])
   ) {
     return cached;
   }
 
   countLedgerWork('resolvedRuns');
+  if (part.head) countLedgerWork('headRuns');
+  if (part.min > 0) countLedgerWork('filledRuns');
   countLedgerWork(
     'resolvedNodes',
     nodes.reduce((sum, node) => sum + deepCount(node), 0)
   );
 
+  const input = inputOf(nodes, context, part);
+  const { kept, tail } = input;
+  const output =
+    kept.length === 0 ||
+    (tail &&
+      context.mode === 'proposed' &&
+      !kept.some(proposedSurvival.survives))
+      ? []
+      : deepFreeze(
+          resolveAuthoredChildren(
+            kept,
+            () => (context.mode === 'proposed' ? 'accept' : 'reject'),
+            context.schema,
+            context.root,
+            { facts: context.facts, part }
+          )
+        ).children;
+  const change = changeOf(input, output, context);
+  const run: Run = {
+    change,
+    changed: !!change,
+    nodes,
+    output,
+    outputLength: lengthOf(output),
+    part,
+    storedLength: input.storedLength,
+    verdicts: context.verdicts,
+  };
+
+  cache.set(getDefined(nodes[0]), run);
+
+  return run;
+};
+
+/**
+ * A run whose output the frame's commands wrote, which its stored nodes
+ * project to, so the kernel need not resolve it.
+ */
+export const writtenRun = (
+  nodes: readonly JsonNode[],
+  output: readonly JsonNode[],
+  context: RunContext,
+  cache: WeakMap<JsonNode, Run>,
+  part: RootPart
+): Run => {
+  countLedgerWork('writtenRuns');
+  countLedgerWork(
+    'writtenNodes',
+    nodes.reduce((sum, node) => sum + deepCount(node), 0)
+  );
+
+  const input = inputOf(nodes, context, part);
+  const changed =
+    input.ranges.length > 0 ||
+    output.length !== input.kept.length ||
+    output.some((node, index) => !jsonEqual(node, input.kept[index]));
+  let change: RootChange | null = null;
+  const run: Run = {
+    get change() {
+      if (changed) {
+        change ??=
+          changeOf(input, output, context) ??
+          RootChange.empty(input.storedLength);
+      }
+
+      return change;
+    },
+    changed,
+    nodes,
+    output,
+    outputLength: lengthOf(output),
+    part,
+    storedLength: input.storedLength,
+    verdicts: context.verdicts,
+  };
+
+  cache.set(getDefined(nodes[0]), run);
+
+  return run;
+};
+
+const inputOf = (
+  nodes: readonly JsonNode[],
+  context: RunContext,
+  part: RootPart
+) => {
+  const tail = !part.head && part.min === 0;
   const removed = (node: JsonNode) =>
-    !whole && removesBlock(context.mode, blockFactsOf(node));
+    tail && removesBlock(context.mode, blockFactsOf(node));
   const kept = nodes.filter((node) => !removed(node));
   const ranges: Array<[number, number]> = [];
   let storedLength = 0;
@@ -262,38 +399,19 @@ export const resolveRun = (
     storedLength += length;
   }
 
-  const output =
-    kept.length === 0 ||
-    (!whole &&
-      context.mode === 'proposed' &&
-      !kept.some(proposedSurvival.survives))
-      ? []
-      : deepFreeze(
-          resolveAuthoredChildren(
-            kept,
-            () => (context.mode === 'proposed' ? 'accept' : 'reject'),
-            context.schema,
-            context.root,
-            { facts: context.facts }
-          )
-        ).children;
-  let change = kept.length > 0 ? localChange(kept, output, context) : null;
+  return { kept, ranges, storedLength, tail };
+};
 
-  if (ranges.length > 0) {
-    const removal = deleting(storedLength, ranges);
+const changeOf = (
+  { kept, ranges, storedLength }: ReturnType<typeof inputOf>,
+  output: readonly JsonNode[],
+  context: RunContext
+) => {
+  const change = kept.length > 0 ? localChange(kept, output, context) : null;
 
-    change = change ? removal.compose(change) : removal;
-  }
+  if (ranges.length === 0) return change;
 
-  const run: Run = {
-    change,
-    nodes,
-    output,
-    outputLength: lengthOf(output),
-    storedLength,
-  };
+  const removal = deleting(storedLength, ranges);
 
-  if (!whole) cache.set(getDefined(nodes[0]), run);
-
-  return run;
+  return change ? removal.compose(change) : removal;
 };

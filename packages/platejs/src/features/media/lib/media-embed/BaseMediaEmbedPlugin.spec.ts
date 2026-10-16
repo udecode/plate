@@ -68,7 +68,7 @@ describe('BaseMediaEmbedPlugin', () => {
   it('encodes safe iframes and rejects unsafe iframe URLs', () => {
     const safe = createEditor({
       plugins: [BaseMediaEmbedPlugin],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [{ text: 'Embed caption' }],

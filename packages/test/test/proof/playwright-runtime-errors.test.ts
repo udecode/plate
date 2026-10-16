@@ -18,6 +18,7 @@ const createPage = () => {
       on: (event: PageEvent, listener: (value: unknown) => void) => {
         listeners.set(event, listener);
       },
+      url: () => 'http://127.0.0.1:3102/examples/plite/embeds',
     } as unknown as Parameters<typeof recordBrowserRuntimeErrors>[0],
   };
 };
@@ -98,10 +99,20 @@ describe('Playwright runtime errors', () => {
     recorder.assertNone();
   });
 
-  test('ignores Vimeo cookie access denied by its sandbox', () => {
+  test('ignores errors thrown only by third-party frames', () => {
     const { emit, page } = createPage();
     const recorder = recordBrowserRuntimeErrors(page);
+    const turnstile =
+      'TypeError: W[bk(...)] is not a function\n' +
+      '    at https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/b/turnstile/f/av0/rch/1y0ou/0x4AAAAAAAbaszMygKLnGbeo/auto/fbE/new/normal?lang=auto:1:48468\n' +
+      '    at https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/b/turnstile/f/av0/rch/1y0ou/0x4AAAAAAAbaszMygKLnGbeo/auto/fbE/new/normal?lang=auto:1:149140';
 
+    emit(
+      'pageerror',
+      Object.assign(new Error('W[bk(...)] is not a function'), {
+        stack: turnstile,
+      })
+    );
     emit(
       'pageerror',
       new Error(
@@ -113,7 +124,7 @@ describe('Playwright runtime errors', () => {
     recorder.assertNone();
   });
 
-  test('keeps the same cookie error from first-party pages', () => {
+  test('keeps errors thrown by the page itself', () => {
     const { emit, page } = createPage();
     const recorder = recordBrowserRuntimeErrors(page);
 
@@ -123,7 +134,16 @@ describe('Playwright runtime errors', () => {
         "SecurityError: Document.cookie getter: Forbidden in a sandboxed document without the 'allow-same-origin' flag."
       )
     );
+    emit(
+      'pageerror',
+      Object.assign(new Error('getFlatTreeParentElement is not defined'), {
+        stack:
+          'ReferenceError: getFlatTreeParentElement is not defined\n' +
+          '    at http://127.0.0.1:3102/_next/static/chunks/07ny7dx4ixl0f.js:1:691007\n' +
+          '    at onMouseMoveCapture (http://127.0.0.1:3102/_next/static/chunks/2geglbgjevq3q.js:1:237084)',
+      })
+    );
 
-    expect(recorder.errors).toHaveLength(1);
+    expect(recorder.errors).toHaveLength(2);
   });
 });

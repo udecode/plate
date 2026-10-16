@@ -138,6 +138,83 @@ describe('element-owned root lifecycle', () => {
     );
   });
 
+  it('drops a shared root with its last owner only in a closed schema', () => {
+    const value = {
+      children: [
+        paragraph('body'),
+        portal('shared-portal', 'shared:1'),
+        paragraph('tail'),
+      ],
+      roots: { 'shared:1': [paragraph('shared')] },
+    };
+    const OpenSchema = defineEditorSchema('schema:content-root-open', {
+      ...ContentRootSchema.schema,
+      unknown: 'preserve',
+    });
+
+    assert.deepEqual(
+      [ContentRootSchema, OpenSchema].map((plugin) => {
+        const editor = createEditor({ initialValue: value, plugins: [plugin] });
+
+        editor.update((tx) => {
+          tx.selection.set(
+            SelectionApi.text({
+              anchor: { offset: 2, path: [0, 0] },
+              focus: { offset: 2, path: [2, 0] },
+            })
+          );
+          tx.fragment.delete();
+        });
+
+        return editor.read((state) => state.value());
+      }),
+      [
+        { children: [paragraph('boil')] },
+        {
+          children: [paragraph('boil')],
+          roots: { 'shared:1': [paragraph('shared')] },
+        },
+      ]
+    );
+  });
+
+  it('drops the roots nested in a root that goes with its owner', () => {
+    const editor = createContentRootEditor(
+      [paragraph('body'), portal('exclusive-portal', 'outer')],
+      {
+        inner: [paragraph('deep')],
+        outer: [portal('exclusive-portal', 'inner')],
+      }
+    );
+
+    editor.update((tx) => tx.nodes.remove({ at: [1] }));
+
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      { children: [paragraph('body')] }
+    );
+  });
+
+  it('drops a nested root when a root that reuses a dropped name goes', () => {
+    const editor = createContentRootEditor(
+      [paragraph('body'), portal('exclusive-portal', 'reused')],
+      { reused: [paragraph('first')] }
+    );
+
+    editor.update((tx) => tx.nodes.remove({ at: [1] }));
+    editor.update((tx) => {
+      tx.roots.create('reused:nested', [paragraph('deep')]);
+      tx.roots.create('reused', [portal('exclusive-portal', 'reused:nested')]);
+      tx.nodes.insert(portal('exclusive-portal', 'reused'), { at: [1] });
+    });
+    editor.update((tx) => tx.nodes.remove({ at: [1] }));
+
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      { children: [paragraph('body')] }
+    );
+  });
+
   it('cascades an exclusive root when its owner is removed after an edit inside it', () => {
     const editor = createContentRootEditor(
       [paragraph('body'), portal('exclusive-portal', 'exclusive:1')],
@@ -240,7 +317,9 @@ describe('element-owned root lifecycle', () => {
     );
 
     editor.update((tx) => {
-      tx.blocks.duplicate({ at: SelectionApi.nodes([[0], [1]]) });
+      tx.blocks.duplicate({
+        at: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
+      });
     });
 
     assert.deepEqual(editor.read.children(), [

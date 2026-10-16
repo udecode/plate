@@ -13,7 +13,12 @@ import {
 import { mapCanonicalRepresentationPoint } from '../core/representation';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
-import { type Location, LocationApi, SelectionApi } from '../interfaces';
+import {
+  type Element,
+  type Location,
+  LocationApi,
+  SelectionApi,
+} from '../interfaces';
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import {
   after as editorAfter,
@@ -123,15 +128,34 @@ const getSplitProperties = (
   editor: Editor,
   node: Node,
   path: Path,
-  root: string
+  root: string,
+  keepType: boolean
 ) =>
   NodeApi.isText(node)
     ? {
         ...getEditorSchema(editor).textPropertiesForSplitAt(node, path, root),
       }
     : NodeApi.isElement(node)
-      ? getEditorSchema(editor).elementPropertiesForSplitAt(node, path, root)
+      ? keepType
+        ? getEditorSchema(editor).elementPropertiesForSplitAt(node, path, root)
+        : getElementSplitProperties(editor, node, path, root)
       : NodeApi.extractProps(node);
+
+const getElementSplitProperties = (
+  editor: Editor,
+  node: Element,
+  path: Path,
+  root: string
+) => {
+  const schema = getEditorSchema(editor);
+  const props = schema.elementPropertiesForSplitAt(node, path, root);
+  const placed = schema.placeElementAt(
+    { ...props, children: node.children, type: node.type },
+    { at: PathApi.next(path), root }
+  );
+
+  return placed ? NodeApi.extractProps(placed) : props;
+};
 
 const ensureStartPointAfterHighestSplit = (
   editor: Editor,
@@ -164,9 +188,10 @@ const ensureStartPointAfterHighestSplit = (
   return null;
 };
 
-export const splitNodes = ((
+const runSplitNodes = (
   editor: Editor,
-  options: NodeSplitNodesOptions = {}
+  options: NodeSplitNodesOptions,
+  keepType: boolean
 ) => {
   runEditorTransaction(editor, (tx) => {
     profileCoreDuration('split-nodes-transaction', () => {
@@ -229,7 +254,7 @@ export const splitNodes = ((
                 root,
                 path,
                 getDefined(options.position),
-                getSplitProperties(editor, node, path, root)
+                getSplitProperties(editor, node, path, root, keepType)
               )
             );
 
@@ -393,12 +418,19 @@ export const splitNodes = ((
               !editorIsEdge(editor, point, path)
             ) {
               split = true;
+              const startsParentNewHalf = path.length > highestPath.length;
               applyBuiltDocumentChange(editor, (builder, root) =>
                 builder.splitNode(
                   root,
                   path,
                   position,
-                  getSplitProperties(editor, node, path, root)
+                  getSplitProperties(
+                    editor,
+                    node,
+                    path,
+                    root,
+                    keepType || startsParentNewHalf
+                  )
                 )
               );
               didSplitDescendant = true;
@@ -455,4 +487,15 @@ export const splitNodes = ((
       }
     });
   });
-}) as NodeMutationMethods['splitNodes'];
+};
+
+export const splitNodes = ((
+  editor: Editor,
+  options: NodeSplitNodesOptions = {}
+) =>
+  runSplitNodes(editor, options, false)) as NodeMutationMethods['splitNodes'];
+
+export const splitNodesKeepingType = (
+  editor: Editor,
+  options: NodeSplitNodesOptions
+) => runSplitNodes(editor, options, true);

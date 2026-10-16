@@ -28,6 +28,7 @@ import {
   ParagraphPlugin,
   ScriptPlugin,
   StrikethroughPlugin,
+  TextAlignPlugin,
   UnderlinePlugin,
   EditorContent,
   EditorRoot,
@@ -279,6 +280,7 @@ type ScenarioId =
   | 'plate-core-element-id'
   | 'plate-core-element-id-seeded'
   | 'plate-basic'
+  | 'plate-basic-aligned'
   | 'plate-code-only';
 
 type BenchmarkPlugins = EditorPerfPluginSetId;
@@ -561,6 +563,15 @@ const SCENARIOS: Scenario[] = [
     label: 'Plate basic plugins',
     elementId: false,
     plugins: 'basic',
+  },
+  {
+    description:
+      'Plate basic plugins plus TextAlignPlugin, whose injected node props render every block through the injected-props path.',
+    id: 'plate-basic-aligned',
+    kind: 'plate',
+    label: 'Plate basic plugins with alignment',
+    elementId: false,
+    plugins: 'basic-aligned',
   },
   {
     description:
@@ -1642,7 +1653,7 @@ function getCoreMountValue({
 }
 
 function getScenarioPlugins(plugins: BenchmarkPlugins): any[] {
-  if (plugins === 'basic') {
+  if (plugins === 'basic' || plugins === 'basic-aligned') {
     return [
       BlockquotePlugin,
       HeadingPlugin,
@@ -1654,6 +1665,7 @@ function getScenarioPlugins(plugins: BenchmarkPlugins): any[] {
       StrikethroughPlugin,
       ScriptPlugin,
       UnderlinePlugin,
+      ...(plugins === 'basic-aligned' ? [TextAlignPlugin] : []),
     ];
   }
 

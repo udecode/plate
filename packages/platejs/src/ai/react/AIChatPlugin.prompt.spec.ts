@@ -24,7 +24,7 @@ describe('AIChatPlugin getPrompt', () => {
 
   it('passes editor selection state into function prompts', () => {
     const editor = createEditor();
-    editor.update.selection.set(SelectionApi.nodes([[0]]));
+    editor.update.selection.set(SelectionApi.nodes([[0]], { mode: 'block' }));
     let received: unknown;
 
     expect(
@@ -45,7 +45,7 @@ describe('AIChatPlugin getPrompt', () => {
 
   it('prefers node selection over generic selection', () => {
     const editor = createEditor();
-    editor.update.selection.set(SelectionApi.nodes([[0]]));
+    editor.update.selection.set(SelectionApi.nodes([[0]], { mode: 'block' }));
 
     expect(
       editor.plugin(AIChatPlugin).read.prompt({
@@ -61,7 +61,7 @@ describe('AIChatPlugin getPrompt', () => {
   it('keeps empty node selection distinct from range expansion', () => {
     const editor = createProductEditor({
       plugins: [BaseParagraphPlugin, AIChatPlugin],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     let received: unknown;

@@ -351,6 +351,143 @@ it.each(['leaf', 'text'] as const)(
   }
 );
 
+it('renames the card a decision merges in a block the decision does not write', async () => {
+  const editor = createEditor({
+    initialValue: [
+      {
+        authored: [
+          { at: 1, author: 'carol', change: 'carol:1', kind: 'insert' },
+        ],
+        children: [
+          { text: 'One' },
+          {
+            authored: [
+              { at: 3, author: 'bob', change: 'bob:1', kind: 'insert' },
+            ],
+            text: '!',
+          },
+        ],
+        type: 'paragraph',
+      },
+      {
+        authored: [
+          { at: 2, author: 'carol', change: 'carol:2', kind: 'insert' },
+        ],
+        children: [{ text: 'Two' }],
+        type: 'paragraph',
+      },
+    ],
+    plugins: [SuggestionPlugin],
+    userId: 'alice',
+  });
+  const mounted = render(
+    <EditorRoot editor={editor}>
+      <EditorContent />
+    </EditorRoot>
+  );
+  const cardOfTwo = () =>
+    mounted.container
+      .querySelector('[data-editor-authored-change="carol:2"]')
+      ?.getAttribute('data-editor-authored-groups');
+
+  await waitFor(() => expect(cardOfTwo()).toBe('carol:2'));
+  await act(async () => {
+    editor.update.authored.decide({
+      action: 'accept',
+      changes: [editor.read.authored.change('bob:1')!],
+    });
+  });
+
+  expect(cardOfTwo()).toBe('carol:1');
+  mounted.unmount();
+});
+
+const mountCard = async (userId: string) => {
+  const pathsByBlock = new Map<number, string[]>();
+  const RenderCount = definePlugin('renderCount', {
+    inject: {
+      nodeProps: {
+        transformProps: ({ path }) => {
+          if (path) {
+            pathsByBlock.set(path[0], [
+              ...(pathsByBlock.get(path[0]) ?? []),
+              String(path),
+            ]);
+          }
+          return {};
+        },
+      },
+    },
+  });
+  const editor = createEditor({
+    initialValue: Array.from({ length: 1000 }, (_, index) => ({
+      authored: [
+        {
+          at: index + 1,
+          author: 'alice',
+          change: `alice:${index}`,
+          kind: 'insert',
+        },
+      ],
+      children: [{ text: `proposed ${index}` }],
+      type: 'paragraph',
+    })),
+    plugins: [SuggestionPlugin, RenderCount],
+    userId,
+  });
+
+  editor.plugin(SuggestionPlugin).api.setMode('suggesting');
+  const mounted = render(
+    <EditorRoot editor={editor}>
+      <EditorContent />
+    </EditorRoot>
+  );
+
+  await waitFor(() => expect(pathsByBlock.has(999)).toBe(true));
+  pathsByBlock.clear();
+
+  return { editor, mounted, pathsByBlock };
+};
+
+it("renders only the edited block when a card's author types at its end", async () => {
+  const { editor, mounted, pathsByBlock } = await mountCard('alice');
+
+  await act(async () => {
+    editor.update((tx) => {
+      tx.text.insert('!', {
+        at: { offset: 'proposed 999'.length, path: [999, 0] },
+      });
+    });
+  });
+
+  expect([...pathsByBlock.keys()]).toEqual([999]);
+  mounted.unmount();
+});
+
+it('renders once the part of a card that another author’s key renames', async () => {
+  const { editor, mounted, pathsByBlock } = await mountCard('bob');
+
+  await act(async () => {
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { offset: 3, path: [500, 0] } });
+    });
+  });
+
+  expect(pathsByBlock.has(500)).toBe(true);
+  expect(
+    [...pathsByBlock]
+      .filter(([block]) => block !== 500)
+      .map(([block, paths]) => [block, [...paths].sort().join(' ')])
+      .sort(([left], [right]) => Number(left) - Number(right))
+  ).toEqual(
+    Array.from({ length: 499 }, (_, index) => [
+      501 + index,
+      `${501 + index} ${501 + index},0`,
+    ])
+  );
+  mounted.unmount();
+});
+
 it('paints nothing on text a rejected replacement gives back', async () => {
   const editor = createEditor({
     initialValue: [
@@ -387,4 +524,44 @@ it('paints nothing on text a rejected replacement gives back', async () => {
   ).toBeNull();
   expect(JSON.stringify(editor.read.children())).toContain('"kind":"held"');
   mounted.unmount();
+});
+
+it('reports stored changes to the callbacks of an accepted preview root', () => {
+  const editor = createEditor({
+    initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+    plugins: [SuggestionPlugin],
+    userId: 'alice',
+  });
+  const changes: string[] = [];
+
+  render(
+    <EditorRoot
+      editor={editor}
+      authored={{ preview: 'accepted' }}
+      suppressInstanceWarning
+      onSelectionChange={() => changes.push('selection')}
+      onValueChange={({ value }) =>
+        changes.push(`value:${JSON.stringify(value.children)}`)
+      }
+    >
+      <EditorContent />
+    </EditorRoot>
+  );
+  act(() => {
+    editor.update((tx) => {
+      tx.authored.propose();
+      tx.text.insert(' proposal', { at: { offset: 4, path: [0, 0] } });
+    });
+  });
+  act(() => {
+    editor.update.selection.set({
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    });
+  });
+
+  expect(changes).toEqual([
+    `value:${JSON.stringify(editor.read.value().children)}`,
+    'selection',
+  ]);
 });

@@ -16,7 +16,7 @@ export function HrElement(
   props: EditorElementProps<typeof HorizontalRulePlugin>
 ) {
   const readOnly = useEditorReadOnly();
-  const selected = useElementSelected();
+  const selected = useElementSelected({ mode: 'text' });
   const focused = useEditorFocused();
 
   return (

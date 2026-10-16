@@ -23,7 +23,9 @@ Create one component-owned editor. A change of `id`, of the user that `userId`
 names or of an entry in the optional dependency list creates a replacement
 editor from that render's options; other option changes keep the current
 editor. A missing, empty or `'local'` `userId` all name the local user. Pass `enabled: false`
-while the session that supplies `userId` loads.
+while the session that supplies `userId` loads. Plugins take outside
+resources, such as a Yjs document, when React commits the component, and give
+them back when it unmounts, the editor is replaced or `enabled` turns off.
 
 The replacement editor starts from the options you pass, so capture the old
 editor's document and comments before you switch users:
@@ -53,8 +55,9 @@ const switchUser = (nextUserId: string) => {
 
 A comment change still pending at the switch is missing from the new editor,
 and saving the new editor's comments without a revision check can undo it in
-storage, restoring a removed thread or message. A new editor cannot bind a
-`rootName` in a `Y.Doc` that the old editor still holds.
+storage, restoring a removed thread or message. The old editor lets go of its
+Yjs document when React commits the new one, so the new editor binds the same
+`rootName` in the same `Y.Doc`.
 
 #### `useEditor(): Editor`
 
@@ -326,17 +329,25 @@ not mounted.
 #### `useElementSelected(options?: UseElementSelectedOptions): boolean`
 
 Subscribe to whether the current element, or an explicit element path,
-matches the current selection. The default `intersects` mode includes text
-selection inside the element. Use `{ mode: 'collapsed' }` for a collapsed
-selection and `{ mode: 'node' }` only when the selection is a `NodeSelection`
-whose path exactly matches the element. Node-focused asset rings and toolbars
-should use `node`; caption or descendant editing UI should use `intersects`.
-Pass `{ at: path }` to watch an explicit path.
+matches the current selection. Pass `{ at: path }` to watch an explicit path.
+
+| Mode | True when |
+| --- | --- |
+| `intersects` (default) | Any selection reaches the element, including text inside it and a node selection of it or its ancestor |
+| `collapsed` | A collapsed selection reaches the element |
+| `text` | A text selection reaches the element; any node selection is `false` |
+| `node` | A node selection, block or object, holds the element's exact path |
+| `object` | An object selection holds the element itself |
+
+Asset rings and toolbars use `object`, so a block selection of the same
+element paints only the shared block highlight. Caret-entry rings on voids and
+inline elements use `text`, so they stay off under a selected parent block.
+Caption or descendant editing UI uses `intersects`.
 
 ```ts
 type UseElementSelectedOptions = {
-  at?: Path | null;
-  mode?: "intersects" | "collapsed" | "node";
+  at?: NodeKey | Path | null;
+  mode?: "intersects" | "collapsed" | "node" | "object" | "text";
 };
 ```
 

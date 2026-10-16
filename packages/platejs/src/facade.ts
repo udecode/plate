@@ -32,6 +32,7 @@ export {
 
 export type {
   Anchor,
+  BlockInsertOptions as PliteBlockInsertOptions,
   DefinitionOf,
   TransferApi,
   TransferPlugin as RuntimeTransferPlugin,
@@ -116,6 +117,7 @@ export type {
   NodeOf,
   NodeRemoveNodesOptions,
   NodeSelection,
+  NodeSelectionMode,
   NodeSetNodesOptions,
   NodeTarget,
   NodeTypeSelector,
@@ -201,6 +203,7 @@ export type {
 } from 'plitejs/internal';
 export {
   canPlaceBlocksAtPath,
+  placeElementAt,
   containsCompleteEditorSchema,
   getCompiledEditorSchemaFromApi,
   getEditorCommitSnapshot,

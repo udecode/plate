@@ -160,7 +160,7 @@ editor.plugin(BlockquotePlugin).update.wrap();
 
 ### `editor.plugin(BlockquotePlugin).update.toggle()`
 
-Wraps the current block or selection in a blockquote. If the selection is already inside a blockquote, it unwraps the quoted blocks.
+Wraps the current block or selection in a blockquote. If the selection is already inside a blockquote, it unwraps the quoted blocks. Returns `false` and changes nothing when the schema refuses the quote, as it does on a Details title.
 
 ```tsx
 editor.plugin(BlockquotePlugin).update.toggle();

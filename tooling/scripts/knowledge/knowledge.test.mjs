@@ -376,3 +376,34 @@ test('a fenced example on a plate-notes page is not indexed as a lesson', () => 
     ['Keep the caret']
   );
 });
+
+test('a test hash changes only when that test’s own source changes', () => {
+  const hashes = (text) =>
+    loadIndex(tree({ 'packages/x/src/a.spec.ts': text })).tests.map(
+      (each) => each.hash
+    );
+  const file = (outside, body) =>
+    `const x = ${outside};\n${testCall('first')}it('second', () => { ${body} });\n`;
+  const base = hashes(file(1, 'a();'));
+  const changed = (text) => hashes(text).map((hash, at) => hash !== base[at]);
+
+  assert.deepEqual(
+    { outside: changed(file(2, 'a();')), second: changed(file(1, 'b();')) },
+    { outside: [false, false], second: [false, true] }
+  );
+});
+
+test('a test hash changes with whitespace inside a string or a line break after a comment', () => {
+  const hash = (body) =>
+    loadIndex(
+      tree({ 'packages/x/src/a.spec.ts': `it('t', () => {\n${body}\n});\n` })
+    ).tests[0].hash;
+
+  assert.deepEqual(
+    {
+      comment: hash('// note\na();') === hash('// note a();'),
+      string: hash("a('a b');") === hash("a('a  b');"),
+    },
+    { comment: false, string: false }
+  );
+});

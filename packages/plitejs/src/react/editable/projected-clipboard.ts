@@ -140,6 +140,7 @@ export const getProjectedViewSelectionSlice = (
         return first
           ? state.slice.get({
               at: SelectionApi.nodes([first, ...rest], {
+                mode: 'block',
                 root: segment.root === 'main' ? undefined : segment.root,
               }),
             })

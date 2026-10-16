@@ -3,7 +3,7 @@ import {
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 const EDITOR_ROOT = '.editor-editor[contenteditable="true"]';
 const HUGE_CODE_BLOCK_INDEX = 2;
@@ -374,6 +374,204 @@ test('code-block: CodeMirror preserves code editing, IME, and remote updates', a
       .poll(() => editor.get.modelBlockText(blockIndex))
       .toBe(beforeReadOnly);
 
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+const readCaret = (page: Page) =>
+  page.evaluate(() => {
+    const selection = document.getSelection();
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+    const rect = range?.getBoundingClientRect();
+    const scroller = document
+      .querySelector('[data-code-block-codemirror-input]')
+      ?.closest('.cm-editor')
+      ?.querySelector('.cm-scroller')
+      ?.getBoundingClientRect();
+
+    return rect
+      ? {
+          inScroller:
+            !!scroller &&
+            rect.top >= scroller.top &&
+            rect.bottom <= scroller.bottom,
+          x: rect.left,
+        }
+      : null;
+  });
+
+const distanceBeyondNearestCaret = (page: Page, goalX: number) =>
+  page.evaluate((goal) => {
+    const selection = document.getSelection();
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+    const caret = range?.getBoundingClientRect();
+    const node = range?.startContainer;
+    const element =
+      node?.nodeType === 1 ? (node as Element) : node?.parentElement;
+    const line =
+      element?.closest('.cm-line') ??
+      element?.closest('[data-editor-node="element"]');
+    if (!caret || !line) return Number.POSITIVE_INFINITY;
+    const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
+    const probe = document.createRange();
+    let best = Number.POSITIVE_INFINITY;
+    for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+      for (let offset = 0; offset <= (text as Text).length; offset++) {
+        probe.setStart(text, offset);
+        probe.setEnd(text, offset);
+        const rect = probe.getClientRects()[0];
+        if (rect && Math.abs(rect.top - caret.top) < 2) {
+          best = Math.min(best, Math.abs(rect.left - goal));
+        }
+      }
+    }
+    return Math.abs(caret.left - goal) - best;
+  }, goalX);
+
+test('code-block: vertical arrows keep the caret column across CodeMirror', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.goto(ROUTE, { waitUntil: 'commit' });
+    const editor = createBrowserEditorHarness(
+      page,
+      'code-block:vertical-column',
+      page.locator(EDITOR_ROOT).first()
+    );
+    await editor.ready({ editor: 'visible', text: 'Huge Code Block' });
+    const input = page.locator('[data-code-block-codemirror-input]');
+    const codePath = [HUGE_CODE_BLOCK_INDEX, 0];
+    const code = await editor.get.modelBlockText(HUGE_CODE_BLOCK_INDEX);
+    const lastLineStart = code!.lastIndexOf('\n') + 1;
+    const focusOffset = async () => {
+      const selection = await editor.get.selection();
+      return selection?.focus.offset ?? -1;
+    };
+    const expectTypedAtCaret = async (blockIndex: number) => {
+      const before = await editor.get.modelBlockText(blockIndex);
+      const offset = await focusOffset();
+      await page.keyboard.type('Z');
+      await expect
+        .poll(() => editor.get.modelBlockText(blockIndex))
+        .toBe(`${before!.slice(0, offset)}Z${before!.slice(offset)}`);
+      await page.keyboard.press('Backspace');
+      await expect
+        .poll(() => editor.get.modelBlockText(blockIndex))
+        .toBe(before);
+    };
+
+    await test.step("Entering going down lands on the code's first line under the caret", async () => {
+      await editor.selection.collapse({
+        path: [HUGE_CODE_BLOCK_INDEX - 1, 0],
+        offset: 13,
+      });
+      await editor.focus();
+      const paragraphAbove = await readCaret(page);
+      await page.keyboard.press('ArrowDown');
+      await expect(input).toBeFocused();
+      await expect
+        .poll(async () => distanceBeyondNearestCaret(page, paragraphAbove!.x))
+        .toBeLessThan(0.5);
+      expect(await focusOffset()).toBeGreaterThan(0);
+      expect(await focusOffset()).toBeLessThanOrEqual(code!.indexOf('\n'));
+      await expectTypedAtCaret(HUGE_CODE_BLOCK_INDEX);
+    });
+
+    await test.step('Leaving going up lands in the paragraph under the code caret', async () => {
+      await page.keyboard.press('ArrowRight');
+      await page.keyboard.press('ArrowRight');
+      const firstCodeLine = await readCaret(page);
+      await page.keyboard.press('ArrowUp');
+      await expect(input).not.toBeFocused();
+      await expect
+        .poll(async () => distanceBeyondNearestCaret(page, firstCodeLine!.x))
+        .toBeLessThan(0.5);
+      await expectTypedAtCaret(HUGE_CODE_BLOCK_INDEX - 1);
+    });
+
+    await test.step('Entering going up lands on the unrendered last line, scrolled into view', async () => {
+      await editor.selection.collapse({
+        path: [HUGE_CODE_BLOCK_INDEX + 1, 0],
+        offset: 12,
+      });
+      await editor.focus();
+      const paragraphBelow = await readCaret(page);
+      await page.keyboard.press('ArrowUp');
+      await expect(input).toBeFocused();
+      await expect
+        .poll(async () => (await focusOffset()) > lastLineStart)
+        .toBe(true);
+      await expect
+        .poll(async () => {
+          const caret = await readCaret(page);
+          return caret?.inScroller;
+        })
+        .toBe(true);
+      expect(
+        await distanceBeyondNearestCaret(page, paragraphBelow!.x)
+      ).toBeLessThan(0.5);
+      await expectTypedAtCaret(HUGE_CODE_BLOCK_INDEX);
+    });
+
+    await test.step('Leaving going down lands in the paragraph under the code caret', async () => {
+      const lastCodeLine = await readCaret(page);
+      await page.keyboard.press('ArrowDown');
+      await expect(input).not.toBeFocused();
+      await expect
+        .poll(async () => distanceBeyondNearestCaret(page, lastCodeLine!.x))
+        .toBeLessThan(0.5);
+      await expectTypedAtCaret(HUGE_CODE_BLOCK_INDEX + 1);
+    });
+
+    await test.step("A short first line keeps the longer line's column on the way out", async () => {
+      await editor.selection.collapse({ path: codePath, offset: 0 });
+      await editor.focus();
+      await expect(input).toBeFocused();
+      await page.keyboard.type('ab');
+      await page.keyboard.press('Enter');
+      for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowRight');
+      const longLine = await readCaret(page);
+      await page.keyboard.press('ArrowUp');
+      await expect.poll(focusOffset).toBe(2);
+      await page.keyboard.press('ArrowUp');
+      await expect(input).not.toBeFocused();
+      await expect
+        .poll(async () => distanceBeyondNearestCaret(page, longLine!.x))
+        .toBeLessThan(0.5);
+    });
+
+    await test.step("Entering onto the short first line keeps the paragraph's column below it", async () => {
+      const paragraphColumn = await readCaret(page);
+      await page.keyboard.press('ArrowDown');
+      await expect(input).toBeFocused();
+      await expect.poll(focusOffset).toBe(2);
+      await page.keyboard.press('ArrowDown');
+      await expect
+        .poll(async () => distanceBeyondNearestCaret(page, paragraphColumn!.x))
+        .toBeLessThan(0.5);
+      await expectTypedAtCaret(HUGE_CODE_BLOCK_INDEX);
+    });
+
+    await test.step("ArrowLeft right after entering still leaves at the paragraph's end", async () => {
+      const above = await editor.get.modelBlockText(HUGE_CODE_BLOCK_INDEX - 1);
+      await editor.selection.collapse({
+        path: [HUGE_CODE_BLOCK_INDEX - 1, 0],
+        offset: 0,
+      });
+      await editor.focus();
+      await page.keyboard.press('ArrowDown');
+      await expect(input).toBeFocused();
+      await expect.poll(focusOffset).toBe(0);
+      await page.keyboard.press('ArrowLeft');
+      await expect(input).not.toBeFocused();
+      await editor.assert.selection({
+        anchor: { path: [HUGE_CODE_BLOCK_INDEX - 1, 0], offset: above!.length },
+        focus: { path: [HUGE_CODE_BLOCK_INDEX - 1, 0], offset: above!.length },
+      });
+    });
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

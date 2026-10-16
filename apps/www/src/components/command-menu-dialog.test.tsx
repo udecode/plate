@@ -83,6 +83,7 @@ describe('CommandMenuDialog search ordering', () => {
     try {
       const view = render(
         <CommandMenuDialog
+          isPlateDocsHref={() => true}
           navItems={[]}
           open
           sidebarNav={[
@@ -136,6 +137,7 @@ describe('CommandMenuDialog search ordering', () => {
 
     const view = render(
       <CommandMenuDialog
+        isPlateDocsHref={() => true}
         navItems={[
           {
             href: '/docs/static',
@@ -180,6 +182,7 @@ describe('CommandMenuDialog search ordering', () => {
     const onOpenChange = mock(() => {});
     const view = render(
       <CommandMenuDialog
+        isPlateDocsHref={() => true}
         navItems={[]}
         open
         sidebarNav={[]}
@@ -206,6 +209,7 @@ describe('CommandMenuDialog search ordering', () => {
 
     const view = render(
       <CommandMenuDialog
+        isPlateDocsHref={() => true}
         navItems={[
           {
             href: '/docs/list',
@@ -257,6 +261,7 @@ describe('CommandMenuDialog search ordering', () => {
 
     view.rerender(
       <CommandMenuDialog
+        isPlateDocsHref={() => true}
         navItems={[
           {
             href: '/docs/list',

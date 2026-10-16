@@ -12,7 +12,8 @@ docs:
 
 ## 功能特性
 
-- 通过手柄拖拽区块。选中的区块，或列表项及其嵌套项，会一起移动。
+- 通过手柄拖拽区块。选中的区块，或列表项及其嵌套项，会一起移动，放下后保持区块选择。
+- 点击或右键点击手柄会区块选中其区块，包括点击选中的图片，此时区块高亮取代图片的选中边框和工具栏。
 - 每个视图在放置位置的边缘绘制一条放置指示线。
 - 在同一文档内拖拽会移动区块，拖到另一个编辑器会复制区块。按住 Option（macOS）或 Ctrl（其他平台）可改为复制。
 - 点击手柄可使用“上移”“下移”和“剪切”。`Mod+Shift+ArrowUp` 和 `Mod+Shift+ArrowDown` 移动光标所在的区块。
@@ -188,7 +189,7 @@ editor.api.transfer.move({ announce: 'Moved down', to: 'next' });
 
 传入另一个编辑器作为 `from`，即可从该编辑器移动或复制。在相互独立的编辑器之间，移动总是复制。
 
-复制到某个 `point` 的文本会像粘贴一样落在该处。[`editorReads.slice.landing`](/docs/clipboard) 决定落地内容，因此复制的列表项采用落点所在列表项的层级。复制到区块边缘的区块保持各自的层级。
+移动或复制到某个 `point` 的文本会像粘贴一样落在该处。[`editorReads.slice.landing`](/docs/clipboard) 决定落地内容，因此列表项采用落点所在列表项的层级。若落地会改变被移动内容的文本或标记，或改变其携带的区块的类型或属性（声明了 `landing: 'rebase'` 或 `'adopt'` 的元素属性除外），移动以 `lossy` 拒绝。移动不检查被移动文本在落点处并入的区块及其外层区块，但会检查它携带的其他所有区块，包括空的最后一个区块。封闭区块（例如标题）不会并入任何区块。移动落在空区块中时，被移动的区块可以继承被替换区块的属性。复制或移动到区块边缘的区块保持各自的层级，并采用 [`editorReads.transfer.adopt`](#塑造落地区块) 给出的属性，例如旁边的列表。
 
 `to` 也接受区块的一侧 `{ key, side: 'start' | 'end' }`。当某个功能（例如分栏插件）构建侧边放置时，区块会落到它旁边。侧边只接受同一文档内的移动；复制会以 `policy` 拒绝。像手柄菜单一样，在提供操作之前先检查：
 
@@ -218,6 +219,46 @@ export const PinnedPlugin = definePlugin('pinned', {
 输入还包含源视图（`from`）、`intent`（`move` 或 `copy`）、`payload` 以及文档之间的 `relation`。第二个参数是目标视图。
 
 若要移动边缘，例如越过列表项的嵌套项，用读取中间件包裹 `editorReads.transfer.landing` 并返回另一个边缘，或返回 `next()` 保持原边缘。被移动的边缘必须映射到它自身；随后由 schema 和否决检查最终边缘。
+
+### 塑造落地区块
+
+区块副本或被移动的区块可以通过 `editorReads.transfer.adopt` 从落点获取属性，正如 List 让落地的列表项加入旁边的列表。该读取在 `editorReads.transfer.landing` 之后运行，返回补丁。拖拽在最终边缘上运行它一次；键盘移动在每个接受未打补丁区块的相邻边缘上运行它，直到某个边缘接受打过补丁的区块。每个补丁给出 `payload.nodes` 内的路径以及要在该处设置的属性，`undefined` 表示移除该属性。它的输入与否决的输入字段相同，`payload` 总是区块载荷；`input.intent` 区分复制与移动。它设置的每个属性都要以 `landing: 'adopt'` 声明，并用 `.extend()` 扩展插件，让读取中间件看到该声明：
+
+```tsx
+import { editorReads, PLUGINS, property, schema, target } from 'platejs';
+import { definePlugin } from 'platejs/react';
+
+export const GroupPlugin = definePlugin('group', {
+  schema: ({ targetElementTypes }) => ({
+    properties: {
+      group: schema.elementProperty(property.string(), {
+        landing: 'adopt',
+        target: target.types(targetElementTypes),
+      }),
+    },
+  }),
+  targetPlugins: [PLUGINS.paragraph],
+}).extend(() => ({
+  readMiddleware: ({ around }) => [
+    around(editorReads.transfer.adopt, ({ input, next }) => {
+      const [node] = input.target;
+
+      if (typeof node.group !== 'string') return next();
+
+      return [
+        ...next(),
+        ...input.payload.nodes.flatMap((dropped, index) =>
+          'type' in dropped && dropped.type === node.type
+            ? [{ at: [index], properties: { group: node.group } }]
+            : []
+        ),
+      ];
+    }),
+  ],
+}));
+```
+
+若补丁设置的属性未被该节点类型以 `landing: 'adopt'` 声明，或作用于 `type`、内容根，或位于 payload 之外，整个传输会以 `policy` 拒绝，因此示例只修补落地的段落。移动保留其区块及其键。Plite 在同一次更新中把补丁设置到被移动的区块上，因此一次撤销即可还原两者。把属性设为 `null` 的移动补丁以 `policy` 拒绝。schema 和否决判断打过补丁的区块。放置指示器也会运行该读取，每个候选边缘一次，因此它只绘制放置会接受的边缘。
 
 ### 在区块旁构建
 
@@ -260,7 +301,7 @@ around(editorReads.transfer.side, ({ input, next }) =>
         要移动的区块，以 `from` 中的键表示。**默认值：** 选中的区块，或包含选区的区块。
       </APISubListItem>
       <APISubListItem parent="input" name="range" type="Range" optional>
-        要移动的文本，代替区块。
+        要移动的文本，代替区块。移动携带的正是删除该范围会移除的内容：开始或结束于行内 void（例如提及）内部的范围会带走该 void；把位于区块开头的结束点退回到前一个区块之后，若范围仍有边缘位于其他不可编辑元素内部，则以 `lossy` 拒绝；而删除后不移除任何内容的范围会以 `no-op` 拒绝。
       </APISubListItem>
       <APISubListItem parent="input" name="from" type="Editor" optional>
         源编辑器或视图。**默认值：** 执行转移的编辑器。

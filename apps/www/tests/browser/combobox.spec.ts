@@ -31,12 +31,17 @@ for (const activation of ['Enter', 'click'] as const) {
       const root = page.locator(EDITOR_ROOT).first();
       const editor = createBrowserEditorHarness(page, 'slash:suggesting', root);
       await editor.ready({ editor: 'visible', text: 'Collaborative Editing' });
-      await page.getByRole('button', { name: 'Editing', exact: true }).click();
+      await page
+        .getByRole('button', { name: 'Editing mode: Editing', exact: true })
+        .click();
       await page
         .getByRole('menuitemradio', { name: 'Suggestion', exact: true })
         .click();
       await expect(
-        page.getByRole('button', { name: 'Suggestion', exact: true })
+        page.getByRole('button', {
+          name: 'Editing mode: Suggestion',
+          exact: true,
+        })
       ).toBeVisible();
       await editor.selection.collapse({
         path: [1, 4],
@@ -375,6 +380,66 @@ test('combobox:moving past the typed query closes the popup', async ({
     await page.keyboard.press('Enter');
     await editor.assert.modelBlockText(0, '/Slash Command');
     await editor.assert.modelBlockText(1, '');
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('combobox:a slash pick under reduced motion paints no popup frame after Enter', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const { root } = await openDemo(
+      page,
+      '/blocks/slash-command-demo',
+      'Slash Command'
+    );
+
+    await page.keyboard.type('/quote');
+    await expect(
+      page.getByRole('option', { exact: true, name: 'Blockquote' })
+    ).toBeVisible();
+    const listboxFrames = await page.evaluateHandle(() => {
+      const probe = { afterKey: -1, frames: [] as string[] };
+
+      window.addEventListener(
+        'keydown',
+        () => {
+          probe.afterKey = probe.frames.length;
+        },
+        { capture: true, once: true }
+      );
+      const sample = () => {
+        const shown = Array.from(
+          document.querySelectorAll('[role="listbox"]')
+        ).find((list) => list.getBoundingClientRect().height > 0);
+
+        probe.frames.push(shown?.textContent ?? '');
+        requestAnimationFrame(sample);
+      };
+
+      requestAnimationFrame(sample);
+
+      return probe;
+    });
+    await page.keyboard.press('Enter');
+
+    await expect(root.locator('blockquote')).toHaveCount(1);
+    await expect
+      .poll(() =>
+        listboxFrames.evaluate(({ afterKey, frames }) =>
+          afterKey < 0 ? 0 : frames.length - afterKey
+        )
+      )
+      .toBeGreaterThanOrEqual(10);
+    const shownFramesAfterKey = await listboxFrames.evaluate(
+      ({ afterKey, frames }) => frames.slice(afterKey).filter(Boolean)
+    );
+    expect(shownFramesAfterKey).toEqual([]);
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

@@ -1,9 +1,9 @@
 ---
 title: Version History
-description: Retain author history and compare saved document revisions.
+description: Save document revisions, compare them, and restore one.
 ---
 
-This example installs native authored changes with `retainHistory: true`. Edit as Alice or Bob, revert an accepted contribution, or save two revisions to inspect their structural comparison.
+This example saves snapshots of the editor's document as revisions. Edit the text, save a revision to compare it with the previous one, or restore any saved revision.
 
 For application revision previews and restores with comments, see [Comments and versions](/docs/comment#document-history-and-versions).
 
@@ -17,47 +17,39 @@ For application revision previews and restores with comments, see [Comments and 
 
 ## Usage
 
-| Piece | Owner | Role |
-| --- | --- | --- |
-| `AuthoredPlugin.configure({ initialState: { retainHistory: true } })` | `platejs/authored` | Captures accepted edits with stable author and change identities and retains their edit bodies. The editor reads the option once, when it is created. |
-| `userId` | application | Names the author of each accepted edit; an editor without one writes as the local user. |
-| `read.authored.changes(...)` | native authored reads | Returns accepted history as cursor-paged `AuthoredChange` records. |
-| `update.authored.revert(...)` | native authored updates | Creates a compensating contribution for the selected retained change. |
-| `compare(...)` | `platejs/diff` | Compares two immutable saved revisions without changing the editor. |
-| `Diff` | copied Plate UI | Shows comparison groups, effects, filters, and navigation. |
-| `BasicMarksKit` | copied Plate UI | Provides normal rich-text marks for the editable document. |
-
-## Retained history flow
-
-1. The editor starts with `authored` and `retainHistory: true`.
-2. The author selector changes the identity returned for later transactions.
-3. Ordinary accepted edits create attributed records.
-4. The history list reads accepted changes by stable ID and revision.
-5. **Revert** captures a snapshot-bound selection and calls `update.authored.revert(...)`.
-6. The new compensating change belongs to the current author; the original record remains intact.
-
-A revert can be blocked by dependent work or become unavailable when the required retained content has expired. Local undo and redo remain separate interaction history. Use native `decide(...)` to accept or reject pending review proposals.
+- `editor.read.value()` captures the complete document as one revision.
+- `tx.value.replace(revision)` restores a saved revision as one undoable update.
+- `compare(...)` from `platejs/diff` compares two immutable saved revisions without changing the editor.
+- The copied `Diff` component shows comparison groups, effects, filters, and navigation.
+- The copied `BasicMarksKit` provides rich-text marks for the editable document.
 
 ## Compare saved revisions
 
-The demo captures an initial snapshot. Edit the document and select **Save revision** to compare the two latest snapshots. Saving another revision starts a new comparison; an obsolete comparison is cancelled. The comparison is read-only. To turn a validated comparison into a pending proposal, use [`proposeAuthoredComparison(...)`](/docs/authored-changes#import-a-compared-revision).
+The demo captures an initial snapshot. Edit the document and select **Save revision** to compare the two latest snapshots. Saving another revision starts a new comparison and cancels the obsolete one. The comparison is read-only. To turn a validated comparison into a pending proposal, use [`proposeAuthoredComparison(...)`](/docs/authored-changes#import-a-compared-revision).
 
-## Persist the history
+## Restore a revision
 
-Save `editor.read.value()` as one document. The authored envelope includes accepted content, causal records, decisions, and the retained bodies selected by policy.
+**Restore** replaces the document with that saved revision in one update:
+
+```tsx
+editor.update((tx) => tx.value.replace(revision));
+```
+
+The saved revisions stay in application state, so restoring one keeps the others.
+
+## Persist revisions
+
+Save each `editor.read.value()` snapshot as one document. To load a revision into a fresh editor, pass it as `initialValue`:
 
 ```tsx
 const saved = editor.read.value();
 
 const reloaded = createEditor({
-  plugins: [
-    AuthoredPlugin.configure({ initialState: { retainHistory: true } }),
-  ],
+  plugins: BasicMarksKit,
   initialValue: saved,
-  userId: session.user.id,
 });
 ```
 
-The fresh editor starts with empty local undo and redo stacks. Retained authored contributions remain in the saved document. If the document has comments, save `CommentsJSON` through `comments.toJSON()` with the same revision and load it through `initialComments`; document undo does not rewind the discussion.
+The fresh editor starts with empty local undo and redo stacks. If the document has comments, save `CommentsJSON` through `comments.toJSON()` with the same revision and load it through `initialComments`; document undo does not rewind the discussion.
 
-See [Authored Changes](/docs/authored-changes) for review views, decision results, collaboration, and format projections.
+See [Authored Changes](/docs/authored-changes) to propose and review changes instead of replacing the document.

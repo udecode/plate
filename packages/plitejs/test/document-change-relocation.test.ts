@@ -16,6 +16,14 @@ const paragraph = (text: string) => ({
   type: 'paragraph',
 });
 
+const relocationsBetween = (before: JsonEditorValue, after: JsonEditorValue) =>
+  getDocumentChangeRelocations(
+    DocumentChange.between(before, after),
+    'main',
+    DocumentIndex.fromValue(before.children),
+    DocumentIndex.fromValue(after.children)
+  );
+
 describe('DocumentChange relocations', () => {
   it('reads an exact move without reconstructing the after document', () => {
     const alpha = paragraph('alpha');
@@ -61,9 +69,7 @@ describe('DocumentChange relocations', () => {
         stable,
       ],
     };
-    const change = DocumentChange.between(before, after);
-
-    assert.deepEqual(getDocumentChangeRelocations(change, before), [
+    assert.deepEqual(relocationsBetween(before, after), [
       { path: [0], root: null, targetPath: [0, 0] },
       { path: [1], root: null, targetPath: [1, 0] },
     ]);
@@ -78,9 +84,7 @@ describe('DocumentChange relocations', () => {
     const after: JsonEditorValue = {
       children: [{ children: [section], type: 'quote' }],
     };
-    const change = DocumentChange.between(before, after);
-
-    assert.deepEqual(getDocumentChangeRelocations(change, before), [
+    assert.deepEqual(relocationsBetween(before, after), [
       { path: [0], root: null, targetPath: [0, 0] },
     ]);
   });
@@ -96,8 +100,6 @@ describe('DocumentChange relocations', () => {
         { children: [duplicate], type: 'quote' },
       ],
     };
-    const change = DocumentChange.between(before, after);
-
-    assert.deepEqual(getDocumentChangeRelocations(change, before), []);
+    assert.deepEqual(relocationsBetween(before, after), []);
   });
 });

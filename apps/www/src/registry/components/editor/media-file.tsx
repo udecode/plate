@@ -19,7 +19,7 @@ import { MediaToolbar } from './media-toolbar';
 export function FileElement(props: EditorElementProps<typeof FilePlugin>) {
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
-  const selected = useElementSelected({ mode: 'node' });
+  const selected = useElementSelected({ mode: 'object' });
 
   return (
     <MediaToolbar
@@ -30,14 +30,7 @@ export function FileElement(props: EditorElementProps<typeof FilePlugin>) {
       selected={selected}
       placement="top"
     >
-      <EditorElement
-        {...props}
-        attributes={{
-          ...props.attributes,
-          'data-node-selection-highlight': 'self',
-        }}
-        className="rounded-sm"
-      >
+      <EditorElement {...props} className="rounded-sm">
         <figure className="group relative m-0 [&>figcaption]:text-left">
           <div className="py-1" contentEditable={false}>
             <a

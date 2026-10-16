@@ -202,6 +202,8 @@ Rules:
   package script and argument forwarding are verified in the plan;
 ## Source-first package checks
 
+A type probe compiles through `node tooling/scripts/type-probe.mjs [--tree <checkout or worktree>] [--package <name>] [--tsc <compiler>] <probe.ts>...`. It extends that package's tsconfig in the tree, prints each probe's errors and exits 1 when a probe has one. It exits 2 when it has no result to give: a bad argument, a missing file, or a compiler that did not run or did not read every probe. A runner that compiles many cases, such as a call-shape matrix or a mutation sweep, calls it instead of spawning `tsc` itself, so a compiler that never ran cannot pass as a probe with no errors.
+
 A throwaway probe that claims source behavior prints which package files it loaded, so a run that loaded `dist` cannot pass as source proof. Run it from the package directory and pass each preload its `bunfig.toml` lists under `[test]`, such as `bun --preload ../../config/plite-source-aliases.ts <abs path>` from `packages/platejs`. Bun applies `[test]` preloads only to `bun test`, so a plain `bun run` resolves dependency packages such as `plitejs` from `dist`. Import by absolute path as `AGENTS.md` says, and print the `require.cache` keys under `/packages/` that the import added, dependency packages included. A scratch file outside the repository cannot resolve bare package names, so it imports by path. A probe with JSX lives in the run directory, because Bun resolves the JSX runtime it injects from the probe's own folder, which no import path can redirect. A probe that needs a DOM and runs without a preload that registers one, such as `tooling/config/bunTestSetup.ts`, calls `GlobalRegistrator.register()` from `@happy-dom/global-registrator` first and then loads React DOM and the code under test with `await import(...)`. Static imports run before any statement, so a probe that loads Plite before the DOM exists runs its layout effects as passive effects and proves nothing about them.
 
 A `plitejs` React probe runs under Vitest instead, from a config in the run directory that merges `packages/plitejs/vitest.config.mjs`. The config imports `vitest/config` by the absolute path that `readlink -f packages/plitejs/node_modules/vitest` prints, followed by `/dist/config.js`. It sets `test.dir` to its own directory and `include` to the probe files. Run it from `packages/plitejs` as `pnpm exec vitest run --config <config> --reporter=verbose --silent=false`. The jsdom variant reuses `test/react/vitest-setup.ts`. A claim about DOM behavior that jsdom does not implement, such as visibility, `inert`, `showModal()`, slot assignment, layout or scrolling, needs the Chromium variant. That variant adds `test.browser` with a headless `chromium` instance and `provider: playwright()`, imported from the `@vitest/browser-playwright` that `packages/test` resolves. It also sets `server.fs.allow` to the repository and `resolve.dedupe` to `react`, `react-dom` and `@testing-library/react`, and uses its own setup file, which calls `installBrowserHandle()` and runs `cleanup()` in a global `afterEach`.
@@ -235,10 +237,14 @@ A typecheck that reports TS6305, a referenced project's output not built, checke
 
 Use root `pnpm lint:fix` when the affected lint scope needs that command.
 `pnpm typecheck` checks root packages from source; `pnpm build` builds all
-packages only when needed. `bun run test` is the fast aggregate test lane;
-`pnpm check` is the CI gate for required handoff proof, not the default
-iteration command. `pnpm check --list` names its steps, and `pnpm check <step>`
-runs one. A proof runs a gate as `pnpm check <step>`, whose `run` is the
+packages only when needed. `bun run test` is the fast aggregate test lane,
+and `pnpm check` is the handoff check, not the default iteration command. It
+skips only its `www-build` step, the production build, which CI runs as
+`pnpm check --build`. Pass `--build` locally only when the change can break the
+build itself, such as a Next config, bundler, server-rendering or prerender
+change.
+`pnpm check --list` names its steps, and `pnpm check <step>` runs one. A proof
+runs a gate as `pnpm check <step>`, whose `run` is the
 read-only check, never the package script of the same name, which may be that
 step's `fix` writer.
 
@@ -360,8 +366,9 @@ browser mode, first search the log for `Vite unexpectedly reloaded a test`.
 That line means Vite re-optimized dependencies mid-run, so rerun the command or
 list the dependencies in `optimizeDeps.include` instead of reinstalling.
 
-Reinstall removes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`
-and `tsconfig.tsbuildinfo`, then runs `pnpm install`. A changed/disappeared failure
-supports install corruption; an unchanged failure returns to ordinary diagnosis.
+Reinstall removes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`,
+the per-port dev caches `apps/www/.next-*` and `tsconfig.tsbuildinfo`, then runs
+`pnpm install`. A changed/disappeared failure supports install corruption; an
+unchanged failure returns to ordinary diagnosis.
 Do not use reinstall to avoid fixing source errors or keep retrying unchanged
 failures.

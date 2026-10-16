@@ -7,6 +7,7 @@ import {
   type TreeIndexChildren,
   type TreeIndexNode,
 } from '../resolved-token-cursor';
+import { countCoreWork } from '../work';
 import { cloneFrozen, cloneJson, type JsonRecord } from './json';
 import { lazyRootOf, type Roots } from './lazy-root';
 import {
@@ -60,6 +61,10 @@ export type DecodeFrame = {
 };
 
 export type ChangedOutputRange = readonly [number, number];
+
+export type SparseNodes<T = JsonNode> = Readonly<{
+  forEach: (visit: (node: T, index: number) => void) => void;
+}>;
 
 export type NodeList<T = JsonNode> = Readonly<{
   at: (index: number) => T | undefined;
@@ -436,6 +441,9 @@ export const rootIndexOf = <K extends string>(source: Roots<K>, key: K) =>
 
 export const NO_NODES: NodeList<never> = Object.freeze([]);
 
+export const childAtPathIndex = <T>(list: NodeList<T>, index: number) =>
+  Number.isInteger(index) && index >= 0 ? list.at(index) : undefined;
+
 /**
  * An array an index built reads as that index's node list, so a root keeps
  * one identity whether a value holds it lazily or as that array.
@@ -465,6 +473,7 @@ export class DocumentIndex {
     tokens?: PreparedTokenSlice,
     value?: readonly JsonNode[]
   ) {
+    if (value) countCoreWork('indexedNodes', value.length);
     this.length = tree.totalLength;
     this.tokenCache = tokens;
     this.tree = tree;
@@ -491,10 +500,16 @@ export class DocumentIndex {
    */
   get value(): readonly JsonNode[] {
     if (!this.valueCache) {
+      countCoreWork('wholeReadNodes', this.tree.size);
       this.valueCache = this.tree.map((entry) => entry.node);
       DocumentIndex.remember(this);
     }
 
+    return this.valueCache;
+  }
+
+  /** @internal */
+  get builtValue(): readonly JsonNode[] | undefined {
     return this.valueCache;
   }
 
@@ -636,20 +651,19 @@ export class DocumentIndex {
         });
       },
       length: tree.size,
-      slice: (from = 0, to = tree.size) =>
-        tree.slice(from, to).map((entry) => entry.node),
+      slice: (from = 0, to = tree.size) => {
+        if (from <= 0 && to >= tree.size && tree.size > 0) {
+          countCoreWork('wholeReadNodes', tree.size);
+        }
+
+        return tree.slice(from, to).map((entry) => entry.node);
+      },
     });
 
     return this.nodeList;
   }
 
-  /**
-   * Where this index's top-level nodes and `other`'s differ, as
-   * `[from, to, otherFrom, otherTo]` in order, without walking the nodes two
-   * versions of one document share.
-   *
-   * @internal
-   */
+  /** @internal */
   changedChildren(other: DocumentIndex) {
     return this.tree.changedRanges(
       other.tree,

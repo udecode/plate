@@ -252,7 +252,8 @@ Asset focus and caption editing are separate selection states:
 
 | Selection | Behavior |
 | --- | --- |
-| Plate `NodeSelection` at the media path | Focuses the asset and shows its selection ring while an empty caption stays hidden, lets the forward arrow or `ArrowDown` enter a caption the page shows, and lets Delete remove the media node. |
+| Object `NodeSelection` at the media path, from clicking or arrowing onto the asset or focusing its native controls | Focuses the asset and shows its selection ring and media toolbar while an empty caption stays hidden, lets the forward arrow or `ArrowDown` enter a caption the page shows, and lets Delete remove the media node. |
+| Block `NodeSelection` holding the media, from a marquee drag, the drag handle, Block Menu or block arrow keys | Paints the shared blue block highlight with no ring or toolbar; arrow keys move past the media instead of entering its caption. |
 | Plate `TextSelection` inside the media children | Edits the caption; the backward arrow or `ArrowUp` at its start returns focus to the asset. |
 
 In left-to-right text, `ArrowRight` from the text before a media block selects
@@ -413,8 +414,8 @@ remain live. Moving the draft preserves authority. Removal, retagging,
 whole-document replacement, retry, or plugin cleanup aborts it. Read-only mode
 blocks new submissions but does not cancel a request that already committed.
 
-`UploadFailure` distinguishes admission, configuration, upload, and URL-result
-failures. Upload failures retain the SDK error as `unknown`; an invalid or
+`UploadFailure` distinguishes admission, configuration, placement, upload, and
+URL-result failures. Upload failures retain the SDK error as `unknown`; an invalid or
 throwing `getUrl` is a result failure. The task snapshot uses the SDK's
 `AggregateProgress` (`loaded`, `total`, `fraction`) rather than a percent value.
 
@@ -437,7 +438,9 @@ throwing `getUrl` is a result failure. The task snapshot uses the SDK's
 
 Slot mode reuses the first draft and inserts any additional files next to it.
 The first file must resolve to the slot's `kind`. Every mode validates the
-whole batch before changing the document.
+whole batch before changing the document. When the drafts do not fit where
+they would land, such as in a parent at its child limit, the batch inserts
+nothing and `onError` gets a `does-not-fit` placement failure.
 
 ### `editor.plugin(BaseImagePlugin).update.insert`
 
@@ -504,8 +507,9 @@ const inserted = await editor.plugin(BaseImagePlugin).api.insertUrl(
 ```
 
 `getUrlFromDialog` is an application function returning a URL, `null`, or a promise
-of either. Options accept the insertion `at` location, `after` source block,
-`replaceEmpty`, `caption` and `select`. With `replaceEmpty: true`, the captured
+of either. Options take `caption`, `select` and one placement: an insertion
+`at` location, an `after` source block or a `before` block. `replaceEmpty`
+works only with `after` or no placement. With `replaceEmpty: true`, the captured
 source is replaced only if it is still empty when the URL resolves. Moves and
 intervening text edits preserve the source identity and content.
 The application owns the URL dialog and selects the media plugin.

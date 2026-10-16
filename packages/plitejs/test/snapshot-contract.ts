@@ -1321,7 +1321,7 @@ it('insertBreak preserves a node selection without inventing an aggregate target
     { type: 'paragraph', children: [{ text: 'middle' }] },
     { type: 'paragraph', children: [{ text: 'three' }] },
   ];
-  const selection = SelectionApi.nodes([[0], [2]]);
+  const selection = SelectionApi.nodes([[0], [2]], { mode: 'block' });
   const editor = createEditor({
     initialSelection: selection,
     initialValue: children,

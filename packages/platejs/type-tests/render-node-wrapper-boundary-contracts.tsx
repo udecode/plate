@@ -123,7 +123,8 @@ const adaptedWrapper: RenderNodeWrapper<typeof AdaptedWrapperPlugin> = ({
   element,
 }) => {
   const adaptedTone: string | undefined = element.adaptedTone;
-  const dependencyResult: true = editor.update.baseWrapperDependency.run();
+  const dependencyResult: true | undefined =
+    editor.update.baseWrapperDependency.run();
 
   void adaptedTone;
   void dependencyResult;

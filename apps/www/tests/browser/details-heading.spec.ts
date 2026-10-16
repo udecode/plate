@@ -2,6 +2,7 @@ import { expect, type Locator, test } from '@playwright/test';
 
 import type { PliteBrowserHandleElement } from '../../../../packages/plitejs/src/react/editable/browser-handle';
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
+import { editorRoot, read } from './details-fixture';
 
 const readDetails = (root: Locator, title: string) =>
   root.evaluate((element: PliteBrowserHandleElement, targetTitle) => {
@@ -48,9 +49,7 @@ for (const route of ['details-demo', 'playground']) {
     await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
     try {
       await page.goto(`/blocks/${route}`);
-      const root = page
-        .locator('[data-editor="true"][contenteditable="true"]')
-        .first();
+      const root = editorRoot(page);
       await root
         .getByRole('button', { name: 'Expand details', exact: true })
         .first()
@@ -69,10 +68,7 @@ for (const route of ['details-demo', 'playground']) {
       );
       const before = await details.textContent();
       await summary.click({ clickCount: 3 });
-      const selectionBefore = await root.evaluate(
-        (element: PliteBrowserHandleElement) =>
-          element.__EDITOR_BROWSER_HANDLE__!.getSelection()
-      );
+      const { model: selectionBefore } = await read(root);
       await page
         .getByRole('button', { name: 'Turn into: Text', exact: true })
         .last()
@@ -91,18 +87,10 @@ for (const route of ['details-demo', 'playground']) {
       ).toHaveValue('24');
       await expect(details).toHaveText(before!);
       await expect
-        .poll(() =>
-          root.evaluate((element: PliteBrowserHandleElement) =>
-            element.__EDITOR_BROWSER_HANDLE__!.getSelection()
-          )
-        )
+        .poll(() => read(root).then(({ model }) => model))
         .toEqual(selectionBefore);
       await expect
-        .poll(() =>
-          root.evaluate((element: PliteBrowserHandleElement) =>
-            element.__EDITOR_BROWSER_HANDLE__!.getDOMSelection()
-          )
-        )
+        .poll(() => read(root).then(({ dom }) => dom))
         .toEqual(selectionBefore);
       const readSummary = async () => {
         const node = await readDetails(root, title);
@@ -208,9 +196,7 @@ test('details-demo centers the toggle chevron on a heading title line', async ({
   const errors = recordBrowserRuntimeErrors(page);
   try {
     await page.goto('/blocks/details-demo');
-    const root = page
-      .locator('[data-editor="true"][contenteditable="true"]')
-      .first();
+    const root = editorRoot(page);
     await waitForHandle(root);
     const name = 'Why use semantic Details?';
     const details = root
@@ -265,9 +251,7 @@ for (const shortcut of ['ControlOrMeta+Alt+0', 'ControlOrMeta+Shift+0']) {
     const errors = recordBrowserRuntimeErrors(page);
     try {
       await page.goto('/blocks/details-demo');
-      const root = page
-        .locator('[data-editor="true"][contenteditable="true"]')
-        .first();
+      const root = editorRoot(page);
       const name = 'Why use semantic Details?';
       await waitForHandle(root);
       const key = await root

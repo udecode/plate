@@ -19,9 +19,21 @@ import {
 } from '../../core/change/tokens';
 import { deriveValue } from '../../core/record-store';
 import { survivalUnder } from '../../core/survival';
-import { AUTHORED_MARKS_KEY, readAuthoredMarks } from './marks';
+import { marksOf, type ReviewFacts } from '../facts/facts';
+import {
+  AUTHORED_MARKS_KEY,
+  type AuthoredMark,
+  isAuthoredSetValued,
+  readAuthoredMarks,
+} from './marks';
 import { proposedSurvival } from './proposed';
-import { acceptedOwnShape, hasJoinMark, isTextBlock } from './resolve';
+import {
+  acceptedOwnShape,
+  hasJoinMark,
+  isTextBlock,
+  mergesUp,
+  removes,
+} from './resolve';
 
 export type AlignmentOptions = Readonly<{
   isSetValued?: DocumentSetPropertyResolver;
@@ -191,7 +203,7 @@ const structuralChange = (
 
 const liveCharacters = (
   tokens: PreparedTokenSlice,
-  removes: (node: unknown) => boolean = (node) =>
+  removed: (node: unknown) => boolean = (node) =>
     readAuthoredMarks(node).some((mark) => mark.kind === 'delete')
 ) => {
   const positions: number[] = [];
@@ -200,7 +212,7 @@ const liveCharacters = (
 
   tokens.tokens.forEach((token, index) => {
     if (token.kind === 'open' && token.nodeKind === 'text') {
-      live = !removes(token.props);
+      live = !removed(token.props);
     } else if (token.kind === 'text' && live) {
       for (let at = 0; at < token.text.length; at += 1) {
         positions.push(tokens.offsets[index] + at);
@@ -472,6 +484,52 @@ export const structuralAcceptedChange = (
 
   return change && createInternalDocumentChange(new Map([['main', change]]));
 };
+
+type Outcome = 'accept' | 'reject';
+
+export type Decision = Readonly<{
+  facts: ReviewFacts;
+  outcomes: Outcome | ReadonlyMap<string, Outcome>;
+}>;
+
+/**
+ * The change from stored content to `decided`, the same content with each
+ * pending change taken by `decision`, when it aligns: structural when the
+ * walk reproduces it, else by characters, so a caret after a letter typed at
+ * a pending join stays after it and every kept letter keeps its place.
+ */
+export const decidedAlignment = (
+  stored: JsonEditorValue,
+  decided: JsonEditorValue,
+  { facts, outcomes }: Decision
+): DocumentChange | null => {
+  const outcomeOf = (mark: AuthoredMark) =>
+    typeof outcomes === 'string' ? outcomes : outcomes.get(mark.change);
+  // The structural walk models accepting, and a rejected move's two equal
+  // copies can let it reproduce the result through the wrong one.
+  const rejects =
+    typeof outcomes === 'string'
+      ? outcomes === 'reject'
+      : [...outcomes.values()].includes('reject');
+
+  return (
+    (rejects ? null : structuralAcceptedChange(stored, decided)) ??
+    characterAlignedChange(stored, decided, {
+      joins: (node) =>
+        marksOf(node, facts).some((mark) => mergesUp(mark, outcomeOf(mark))),
+      removes: (node) =>
+        marksOf(node, facts).some((mark) => removes(mark, outcomeOf(mark))),
+    })
+  );
+};
+
+export const decidedContentChange = (
+  stored: JsonEditorValue,
+  decided: JsonEditorValue,
+  decision: Decision
+): DocumentChange =>
+  decidedAlignment(stored, decided, decision) ??
+  DocumentChange.between(stored, decided, { isSetValued: isAuthoredSetValued });
 
 /**
  * The change from a stored document to its accepted form: structural when the walk

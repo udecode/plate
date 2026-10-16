@@ -3,6 +3,7 @@ import type { LinkProps } from 'next/link';
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
 
+import { ExperimentalBadge } from '@/components/experimental-badge';
 import {
   Sidebar,
   SidebarContent,
@@ -12,12 +13,12 @@ import { cn } from '@/lib/utils';
 
 import {
   getExampleDefinition,
-  isNewPliteExamplePath,
+  getPliteExampleStatus,
   NON_HIDDEN_EXAMPLES,
 } from './plite-example-registry';
 
 const PLITE_DOCS_HREF = {
-  pathname: '/docs',
+  pathname: '/docs/plite',
 } satisfies LinkProps<string>['href'];
 const PLITE_EXAMPLES_HREF = {
   pathname: '/examples/plite',
@@ -178,7 +179,7 @@ function PliteExamplesNavLinks({
       <div className="flex min-w-0 flex-col gap-1">
         {NON_HIDDEN_EXAMPLES.map(([name, slug]) => {
           const isActive = activeExample === slug;
-          const isNewExample = isNewPliteExamplePath(slug);
+          const status = getPliteExampleStatus(slug);
 
           return (
             <Link
@@ -194,7 +195,13 @@ function PliteExamplesNavLinks({
               key={slug}
             >
               <span className="min-w-0 flex-1 truncate">{name}</span>
-              {isNewExample ? (
+              {status === 'experimental' ? (
+                <ExperimentalBadge
+                  compact
+                  data-editor-example-experimental={slug}
+                />
+              ) : null}
+              {status === 'new' ? (
                 <span
                   className="flex size-2 shrink-0 rounded-full bg-blue-500"
                   data-editor-example-new-dot={slug}

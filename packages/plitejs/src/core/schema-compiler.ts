@@ -20,6 +20,7 @@ import type {
   SchemaElementProperty,
   SchemaProperty,
   SchemaPropertyKey,
+  SchemaPropertyLandingPolicy,
   SchemaTarget,
 } from '../interfaces/schema';
 import { failInvariant } from '../internal/fail-invariant';
@@ -280,7 +281,11 @@ export class EditorSchemaCompileError extends Error {
 }
 
 export type CompiledSchemaConstructionPlan =
-  | Readonly<{ kind: 'element'; type: string }>
+  | Readonly<{
+      kind: 'element';
+      properties?: Readonly<Record<string, EditorJsonValue>>;
+      type: string;
+    }>
   | Readonly<{ kind: 'text' }>;
 
 export type CompiledSchemaContentPrefixSlot = Readonly<{
@@ -356,6 +361,7 @@ export type CompiledSchemaProperty = Readonly<{
   lifecycle: Readonly<{
     copy: 'drop' | 'preserve';
     inclusive: boolean | null;
+    landing?: Exclude<SchemaPropertyLandingPolicy, 'preserve'>;
     split: 'drop' | 'preserve';
     typeChange: 'drop' | 'preserve-if-allowed';
   }>;
@@ -927,7 +933,16 @@ const collectSchemaKeyDiagnostics = (
     if (!content) return;
     visitContentRule(content.allowed, owner, `${path}.allowed`);
     if (content.default && content.default !== 'text') {
-      check(content.default, ['type'], owner, `${path}.default`);
+      const entry = check(
+        content.default,
+        ['properties', 'type'],
+        owner,
+        `${path}.default`
+      );
+
+      if (entry?.properties !== undefined) {
+        object(entry.properties, owner, `${path}.default.properties`);
+      }
     }
     if (content.prefix !== undefined) {
       array(content.prefix, owner, `${path}.prefix`)?.forEach((slot, index) => {
@@ -1167,6 +1182,7 @@ const collectSchemaKeyDiagnostics = (
               : [
                   'copy',
                   'key',
+                  'landing',
                   'placement',
                   'role',
                   'split',
@@ -1592,6 +1608,7 @@ const remapSchemaContent = (
     ...(content.default && content.default !== 'text'
       ? {
           default: Object.freeze({
+            ...content.default,
             type: remapSchemaType(content.default.type, renames),
           }),
         }
@@ -1838,6 +1855,7 @@ const prepareEditorSchemaRecords = (
           const promotedProperty = Object.freeze({
             copy: 'preserve' as const,
             key,
+            landing: 'preserve' as const,
             placement: 'element' as const,
             role: 'content' as const,
             split: 'preserve' as const,
@@ -2365,7 +2383,13 @@ const compileContent = (
         source.path
       );
     }
-    defaultPlan = Object.freeze({ kind: 'element', type: value.default.type });
+    defaultPlan = Object.freeze({
+      kind: 'element',
+      ...(value.default.properties
+        ? { properties: Object.freeze({ ...value.default.properties }) }
+        : {}),
+      type: value.default.type,
+    });
   } else if (min > 0) {
     const candidateCount = allowed.types.size + (allowed.allowsText ? 1 : 0);
 
@@ -4151,8 +4175,9 @@ const compileEditorSchemaInternal = (
     key: SchemaPropertyKey,
     placement: 'element' | 'text',
     target: SchemaTarget | null,
-    lifecycle: Omit<CompiledSchemaProperty['lifecycle'], 'copy'> & {
+    lifecycle: Omit<CompiledSchemaProperty['lifecycle'], 'copy' | 'landing'> & {
       copy?: unknown;
+      landing?: unknown;
     },
     source: Source<SchemaProperty | PropertyValueDescriptor>,
     exclusiveGroupIds: readonly string[] = []
@@ -4180,6 +4205,21 @@ const compileEditorSchemaInternal = (
       );
     }
     const copy = rawCopy === 'drop' ? 'drop' : 'preserve';
+    const rawLanding = lifecycle.landing ?? 'preserve';
+
+    if (
+      rawLanding !== 'adopt' &&
+      rawLanding !== 'preserve' &&
+      rawLanding !== 'rebase'
+    ) {
+      compileFailure(
+        'invalid-property-landing',
+        `Schema property at ${source.path} has invalid landing policy.`,
+        [source],
+        source.path
+      );
+    }
+
     if (copy === 'drop' && descriptor.required) {
       compileFailure(
         'invalid-property-copy',
@@ -4206,7 +4246,15 @@ const compileEditorSchemaInternal = (
         )
       ),
       key: clonedKey,
-      lifecycle: Object.freeze({ ...lifecycle, copy }),
+      lifecycle: Object.freeze({
+        copy,
+        inclusive: lifecycle.inclusive,
+        ...(rawLanding === 'adopt' || rawLanding === 'rebase'
+          ? { landing: rawLanding }
+          : {}),
+        split: lifecycle.split,
+        typeChange: lifecycle.typeChange,
+      }),
       merge: descriptor.kind === 'set' ? 'set' : 'replace',
       owner: source.pluginName,
       placement,
@@ -4272,6 +4320,7 @@ const compileEditorSchemaInternal = (
           Object.freeze({
             copy: property.copy,
             inclusive: null,
+            landing: property.landing,
             split: property.split,
             typeChange: property.typeChange,
           }),
@@ -5532,7 +5581,9 @@ const isContractEntryArray = (
 const isContractConstructionPlan = (value: unknown) =>
   isRecord(value) &&
   (value.kind === 'text' ||
-    (value.kind === 'element' && typeof value.type === 'string'));
+    (value.kind === 'element' &&
+      typeof value.type === 'string' &&
+      (value.properties === undefined || isRecord(value.properties))));
 
 const isContractContentProgram = (value: unknown): boolean =>
   isRecord(value) &&
@@ -5749,6 +5800,9 @@ const isContractDescriptor = (
   return true;
 };
 
+const isContractLanding = (value: unknown) =>
+  value === undefined || value === 'adopt' || value === 'rebase';
+
 const isContractProperty = (value: unknown) =>
   isRecord(value) &&
   isContractDescriptor(value.descriptor) &&
@@ -5762,6 +5816,7 @@ const isContractProperty = (value: unknown) =>
   (value.lifecycle.copy === 'drop' || value.lifecycle.copy === 'preserve') &&
   (value.lifecycle.inclusive === null ||
     typeof value.lifecycle.inclusive === 'boolean') &&
+  isContractLanding(value.lifecycle.landing) &&
   (value.lifecycle.split === 'drop' || value.lifecycle.split === 'preserve') &&
   (value.lifecycle.typeChange === 'drop' ||
     value.lifecycle.typeChange === 'preserve-if-allowed') &&
@@ -5786,6 +5841,7 @@ const isContractLifecycle = (value: unknown) =>
   isRecord(value) &&
   (value.copy === 'drop' || value.copy === 'preserve') &&
   (value.inclusive === null || typeof value.inclusive === 'boolean') &&
+  isContractLanding(value.landing) &&
   (value.split === 'drop' || value.split === 'preserve') &&
   (value.typeChange === 'drop' || value.typeChange === 'preserve-if-allowed');
 

@@ -242,6 +242,10 @@ portals do not expose that map. Behavior and aggregate-property portals omit
 `schema`.
 Boolean text properties use
 `property.boolean({ default: false, omitDefault: true })`.
+An element property's `landing` option, `'preserve' | 'rebase' | 'adopt'`
+with `preserve` by default, says whether where content lands may change it;
+a text drag that moves may change only `rebase` and `adopt` properties, and
+`editorReads.transfer.adopt` may set only `adopt` ones.
 Inside `update`, `tx.nodes.set(props, options)` accepts a typed property patch,
 while `unset(key, options)` removes exact properties. Aliases use the exact
 authored property handle's key in a computed patch. Prefix families and
@@ -360,7 +364,7 @@ import { SuggestionPlugin } from 'platejs/suggestion/react';
 SuggestionPlugin.configure({
   render: {
     contentAttributes: {
-      className: '[&_[data-editor-retained=delete]]:line-through',
+      className: '[&_[data-editor-authored-kind~=delete]]:line-through',
     },
   },
 });
@@ -484,12 +488,27 @@ Renders after a node's children inside its primary component.
   Typed middleware over declared Plate `editorReads` descriptors.
 
   `editorReads.slice.landing` shapes what a paste lands after command handlers
-  delegate to the default replacement, on the command's current draft. Its input
-  has the handlers' slice as `source`, what fits `maxLength` as `slice`, and
-  the `target` the editor resolved. A target is `empty` for a caret in an empty
-  block, or `context` with the block where the paste starts. The read returns the
-  `slice` to fit and may add `replaceEmpty`, whole blocks that replace an
-  `empty` target. The editor checks that proposal against the schema and
+  delegate to the default replacement. Its `state` reads the command's current
+  draft in the root the paste lands in, so a path in `target.block` resolves
+  there. Its input has the handlers' slice as
+  `source`, what fits `maxLength` as `slice`, the `target` the editor
+  resolved, and an `intent` of `copy` for a paste or a copied text drop, or
+  `move` for a text drag that moves. A move refuses with `lossy` when the read
+  changes the moved text or marks, or the type or properties of a block the
+  move carries, except properties declared `landing: 'rebase'` or `'adopt'`.
+  It does not check the block the moved text joins at the drop point or the
+  blocks that contain it, and it checks every other block the move carries, an
+  empty last block included. A closed block, such as a title, joins nothing, and
+  in an empty block the moved block may take properties from the block it
+  replaces.
+  The text the paste replaces does not count toward the limit. A
+  target is `empty` for a caret in an empty block, or `context` with the block
+  where the paste starts. When the paste replaces selected blocks whole, that
+  is the innermost block where the first selected block starts, such as a
+  quote's first paragraph. The read returns the `slice` to fit. The
+  editor cuts it the same way, to what fits `maxLength` after crediting the
+  replaced text. The read may also add `replaceEmpty`, whole blocks
+  that replace an `empty` target. The editor checks that proposal against the schema and
   `maxLength`, and fits `slice` when the proposal does not fit. The first
   replacing block keeps all of the target's properties when its type matches,
   what the schema allows when it is a text block of another type, and none when
@@ -500,6 +519,11 @@ Renders after a node's children inside its primary component.
   `state.slice.fit` do not run it. Import the descriptor and the
   `SliceLanding`, `SliceLandingInput` and `SliceLandingTarget` types from
   `platejs`.
+
+  `editorReads.transfer.adopt` returns the properties a block copy or move
+  takes where it lands, as `TransferPatch` entries; the
+  [Drag and drop page](/docs/dnd#shape-dropped-blocks) has an example. Its
+  `TransferAdoptInput` and `TransferPatch` types also come from `platejs`.
 </APIItem>
 
 <APIItem name="commands" type="PluginDefinitionInput['commands']">
@@ -527,17 +551,26 @@ Renders after a node's children inside its primary component.
 </APIItem>
 
 <APIItem name="activate" type="PluginDefinitionInput['activate']">
-  Runs early and owns synchronous resources. Register
-  `context.beforePublish(callback)` for validation or resource initialization
-  that needs the final document candidate. Its signature is
+  Runs early and owns synchronous in-memory resources. Register
+  `context.beforePublish(callback)` for validation that needs the final
+  document candidate. Its signature is
   `beforePublish: (callback: () => void) => void`. The callback runs before
   publication becomes permanent, during both editor construction and dynamic
   plugin changes. It must be synchronous and must not write to the document.
   Throwing vetoes publication and rolls back the candidate.
 
-  Register resource cleanup with `context.onCleanup(...)`, including resources
-  acquired in `beforePublish`. Cleanup belongs to the activation and runs on
-  rollback, removal, or replacement.
+  Take a resource outside the editor, such as a listener on a shared document,
+  with `context.acquire(take)`. Its signature is
+  `acquire: (take: () => (context: { reason: 'remove' | 'replace' | 'rollback' }) => void) => void`.
+  `take` runs after every plugin's `beforePublish` passes and returns the
+  function that lets the resource go. A throwing `take` rolls back the
+  candidate. An editor from `useCreateEditor` takes nothing until React
+  commits its component, because a render can be thrown away.
+
+  Register in-memory cleanup with `context.onCleanup(...)`. Cleanup belongs to
+  the activation and runs on rollback, removal, or replacement, after the
+  activation's releases. `editor.destroy()` releases and cleans up every
+  plugin.
 
   Use `context.afterPublish(...)` for nonthrowing observation of published
   state. Callback errors are reported; they cannot veto or roll back publication.

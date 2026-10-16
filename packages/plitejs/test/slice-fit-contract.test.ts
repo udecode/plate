@@ -181,7 +181,7 @@ describe('required document prefix', () => {
             level: node.type === 'heading' ? 3 : 2,
           }),
           {
-            at: SelectionApi.nodes([[0], [1, 0]]),
+            at: SelectionApi.nodes([[0], [1, 0]], { mode: 'block' }),
           }
         ),
         false
@@ -196,7 +196,7 @@ describe('required document prefix', () => {
             level: NodeApi.string(node) === 'Before' ? 2 : 3,
           }),
           {
-            at: SelectionApi.nodes([[0], [1, 2]]),
+            at: SelectionApi.nodes([[0], [1, 2]], { mode: 'block' }),
           }
         ),
         true
@@ -1075,7 +1075,9 @@ describe('contextual schema slice fitting', () => {
         focus: { offset: 4, path: [1, 0] },
       },
     });
-    const owner = source.read.slice.get({ at: SelectionApi.nodes([[1]]) });
+    const owner = source.read.slice.get({
+      at: SelectionApi.nodes([[1]], { mode: 'block' }),
+    });
     const across = source.read.slice.get({
       at: {
         anchor: { offset: 2, path: [0, 0] },
@@ -1142,7 +1144,7 @@ describe('contextual schema slice fitting', () => {
     const replacementTarget = createEditor({
       plugins: [ObjectSchema],
       initialValue: [paragraph('before'), media, paragraph('after')],
-      initialSelection: SelectionApi.nodes([[1]]),
+      initialSelection: SelectionApi.nodes([[1]], { mode: 'block' }),
     });
 
     replacementTarget.update.slice.replace(
@@ -3555,7 +3557,7 @@ describe('node selection replacement', () => {
   it('refuses a raw replacement while a node selection is current', () => {
     const before = [paragraph('aa'), paragraph('b')];
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: before,
     });
     let replaced = true;
@@ -3598,7 +3600,7 @@ describe('closed object placement [EDIT-CLIPBOARD-BLOCK-TYPE-001]', () => {
     const editor = createEditor({
       plugins: [CodeSchema, history()],
       initialValue: before,
-      initialSelection: SelectionApi.nodes([[0, 0]]),
+      initialSelection: SelectionApi.nodes([[0, 0]], { mode: 'block' }),
     });
 
     assert.equal(
@@ -4077,4 +4079,160 @@ describe('closed object placement [EDIT-CLIPBOARD-BLOCK-TYPE-001]', () => {
       );
     });
   }
+});
+
+describe('open slice ending in another text block', () => {
+  const ContainerSchema = defineEditorSchema('schema:open-slice-end-context', {
+    elements: {
+      blockquote: {
+        content: schema.content.group('flow', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        groups: ['flow'],
+      } as const,
+      caption: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      } as const,
+      card: {
+        content: schema.content.prefix(
+          [{ element: 'caption' }],
+          schema.content.group('flow', { default: { type: 'paragraph' } })
+        ),
+        groups: ['flow'],
+      } as const,
+      cell: {
+        content: schema.content.group('flow', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      } as const,
+      heading: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        groups: ['flow'],
+        properties: { level: property.number() },
+      } as const,
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        groups: ['flow'],
+      } as const,
+      row: { content: schema.content.type('cell', { min: 1 }) } as const,
+      table: {
+        content: schema.content.type('row', { min: 1 }),
+        groups: ['flow'],
+      } as const,
+    },
+    groups: { flow: {} as const },
+    root: schema.content.group('flow', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+  });
+  const heading = (text: string) => ({
+    children: [{ text }],
+    level: 2,
+    type: 'heading',
+  });
+  const caption = (text: string) => ({ children: [{ text }], type: 'caption' });
+  const land = (
+    initialValue: Descendant[],
+    content: Descendant[],
+    anchor: { offset: number; path: number[] },
+    focus = anchor
+  ) => {
+    const editor = createEditor({ plugins: [ContainerSchema], initialValue });
+
+    editor.update((tx) => {
+      assert.equal(
+        tx.slice.replace(
+          ContentSlice.fromJSON({ content, openEnd: 1, openStart: 1 }),
+          { at: { anchor, focus } }
+        ),
+        true
+      );
+    });
+
+    return editor.read.children();
+  };
+
+  it('keeps a quote whole when the slice ends in a heading', () => {
+    assert.deepEqual(
+      land(
+        [
+          {
+            children: [paragraph('Title'), paragraph('Body')],
+            type: 'blockquote',
+          },
+        ],
+        [paragraph('X'), heading('Y')],
+        { offset: 5, path: [0, 0, 0] }
+      ),
+      [
+        {
+          children: [paragraph('TitleX'), heading('Y'), paragraph('Body')],
+          type: 'blockquote',
+        },
+      ]
+    );
+  });
+
+  it('keeps a caption and its body in one card', () => {
+    const card = [
+      { children: [caption('Title'), paragraph('Body')], type: 'card' },
+    ];
+
+    assert.deepEqual(
+      land(card, [paragraph('X'), paragraph('Y')], {
+        offset: 5,
+        path: [0, 0, 0],
+      }),
+      [
+        {
+          children: [caption('TitleX'), paragraph('Y'), paragraph('Body')],
+          type: 'card',
+        },
+      ]
+    );
+    assert.deepEqual(
+      land(
+        card,
+        [paragraph('X'), paragraph('Y')],
+        { offset: 0, path: [0, 0, 0] },
+        { offset: 5, path: [0, 0, 0] }
+      ),
+      [
+        {
+          children: [caption('X'), paragraph('Y'), paragraph('Body')],
+          type: 'card',
+        },
+      ]
+    );
+  });
+
+  it('keeps a table cell whole', () => {
+    const table = (...cells: Descendant[][]) => [
+      {
+        children: [
+          {
+            children: cells.map((children) => ({ children, type: 'cell' })),
+            type: 'row',
+          },
+        ],
+        type: 'table',
+      },
+    ];
+
+    assert.deepEqual(
+      land(
+        table([paragraph('Cell'), paragraph('More')], [paragraph('Two')]),
+        [paragraph('X'), heading('Y')],
+        { offset: 4, path: [0, 0, 0, 0, 0] }
+      ),
+      table(
+        [paragraph('CellX'), heading('Y'), paragraph('More')],
+        [paragraph('Two')]
+      )
+    );
+  });
 });

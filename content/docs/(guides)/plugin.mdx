@@ -227,6 +227,15 @@ one atomic property patch,
 so every key and value comes from the plugin's shallow schema contract. An
 alias uses the exact author handle key as a computed object key.
 
+An element property's `landing` option says whether where content lands may
+change it. It defaults to `preserve`. Declare `rebase` for a value relative to
+where content lands, such as Indent's `indent`, and `adopt` for a value the
+landing site supplies, such as List's `listId`. A text drag that moves lands
+only when its landing read changes nothing but `rebase` and `adopt`
+properties, and the
+[`editorReads.transfer.adopt`](/docs/dnd#shape-dropped-blocks) read of a
+block copy or move may set only `adopt` ones. Text properties have no `landing` option.
+
 A paragraph node affected by the plugin looks like this:
 
 ```ts showLineNumbers {3}

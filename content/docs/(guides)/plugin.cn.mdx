@@ -215,6 +215,8 @@ const TextAlignPlugin = definePlugin("textAlign", {
 插件 update 传入一个原子 property patch，因此每个 key 和 value 都从插件的 shallow
 schema contract 推断。Alias 使用精确 author handle 的 key 作为 computed object key。
 
+元素属性的 `landing` 选项说明内容的落点能否改变它，默认为 `preserve`。对相对于落点的值（例如 Indent 的 `indent`）声明 `rebase`，对由落点提供的值（例如 List 的 `listId`）声明 `adopt`。移动文本的拖拽只有在其落地读取只改变 `rebase` 和 `adopt` 属性时才会落地，区块副本或被移动区块的 [`editorReads.transfer.adopt`](/cn/docs/dnd#塑造落地区块) 只能设置 `adopt` 属性。文本属性没有 `landing` 选项。
+
 受该插件影响的段落节点如下：
 
 ```ts showLineNumbers {3}

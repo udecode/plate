@@ -30,11 +30,12 @@ mock.module('platejs/react', () => ({
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
     useEditorSelectorMock(selector),
   useElement: () => ({ children: [{ text: '' }], type: 'image' }),
-  useElementSelected: () => {
+  useElementSelected: ({ mode }: { mode?: string } = {}) => {
     const selection = selectionMock();
 
     return (
       selection?.kind === 'node' &&
+      (mode !== 'object' || selection.mode === 'object') &&
       selection.paths?.some((path: number[]) => path[0] === 0)
     );
   },
@@ -111,11 +112,12 @@ describe('ImageElement', () => {
     );
   };
 
-  it('uses NodeSelection for the asset ring and toolbar', async () => {
+  it('uses an object pick for the asset ring and toolbar', async () => {
     selectionMock.mockReturnValue({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
       kind: 'node',
+      mode: 'object',
       paths: [[0]],
     });
 
@@ -130,11 +132,29 @@ describe('ImageElement', () => {
     expect(view.getAllByTestId('caption-content')).toHaveLength(1);
   });
 
+  it('leaves a block pick to the shared highlight', async () => {
+    selectionMock.mockReturnValue({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+      kind: 'node',
+      mode: 'block',
+      paths: [[0]],
+    });
+
+    const view = await renderImage();
+
+    expect(view.container.querySelector('img')?.className).not.toContain(
+      'ring-2'
+    );
+    expect(view.getByTestId('media-toolbar').dataset.selected).toBe('false');
+  });
+
   it('keeps an empty caption hidden while the asset is selected', async () => {
     selectionMock.mockReturnValue({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
       kind: 'node',
+      mode: 'object',
       paths: [[0]],
     });
 

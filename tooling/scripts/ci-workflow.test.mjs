@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readdir, readFile } from 'node:fs/promises';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 const ciWorkflowPath = new URL(
   '../../.github/workflows/ci.yml',
@@ -89,11 +91,40 @@ test('pnpm check is the only gate the CI job runs', async () => {
   assert.equal(packageJson.scripts.check, 'node tooling/scripts/check.mjs');
   assert.deepEqual(
     gates,
-    ['pnpm check'],
-    'ci.yml gates only through pnpm check; add a new gate as a step in tooling/scripts/check.mjs.'
+    ['pnpm check --build'],
+    'ci.yml gates only through pnpm check --build, which adds the production build; add a new gate as a step in tooling/scripts/check.mjs.'
   );
   assert.match(workflow, /\$\{\{ github\.workspace \}\}\/\.turbo/u);
   assert.match(workflow, /restore-keys:/u);
+});
+
+test('pnpm check runs the production build only with --build or by name', async () => {
+  const { selectSteps } = await import('./check.mjs');
+  const names = (args) => selectSteps(args).map((step) => step.name);
+
+  assert.equal(names([]).includes('www-build'), false);
+  assert.equal(names(['--build']).includes('www-build'), true);
+  assert.deepEqual(names(['www-build']), ['www-build']);
+  assert.deepEqual(
+    names(['www', '--build']),
+    ['www', 'www-build'],
+    '--build adds the production build to named steps'
+  );
+});
+
+test('pnpm check refuses --write with --build instead of dropping the build', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      fileURLToPath(new URL('check.mjs', import.meta.url)),
+      '--write',
+      '--build',
+    ],
+    { encoding: 'utf-8' }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /--build runs a step with no writer/u);
 });
 
 test('every check script is a pnpm check step or says why it stays manual', async () => {

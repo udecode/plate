@@ -8,6 +8,8 @@ import type {
   EditorViewOptions,
 } from '../interfaces/editor';
 import type { EditorJsonValue } from '../interfaces/json';
+import type { NodeKey } from '../interfaces/editor';
+import type { Location } from '../interfaces/location';
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
@@ -61,21 +63,29 @@ export type AuthoredChangeDetails = Readonly<{
 }>;
 
 /**
- * Adjacent changes by one author that one card shows, such as a deletion and
- * the insertion that replaces it. `rank` orders the group among pending
- * groups by creation, so paint and cards give it the same color.
+ * Adjacent pending changes by one author that one card shows, such as a
+ * deletion and the insertion that replaces it. Its id is its oldest change by
+ * creation time, then id, so every peer and reload names it alike; the id
+ * moves when the card splits or merges, or when that change leaves it.
+ * `revision` changes when a change joins or leaves the card or a member's
+ * revision changes.
  */
 export type AuthoredChangeGroup = Readonly<{
   authorId: string;
-  changes: readonly AuthoredChange[];
+  changeCount: number;
+  createdAt: number;
   id: string;
-  rank: number;
+  revision: number;
 }>;
 
 export type AuthoredQuery = Readonly<{
+  /** Only changes touching this place of the stored document. */
+  at?: Location | NodeKey;
   authorId?: string;
   cursor?: string;
   from?: number;
+  /** Only the changes of the card holding this change. */
+  group?: string;
   limit?: number;
   to?: number;
 }>;
@@ -85,10 +95,36 @@ export type AuthoredPage = Readonly<{
   items: readonly AuthoredChange[];
 }>;
 
-export type AuthoredDecision = Readonly<{
-  action: 'accept' | 'reject';
-  changes: readonly AuthoredChange[];
+/**
+ * What one commit changed in the review, shared by every listener of a view.
+ */
+export type AuthoredChangesDelta = Readonly<{
+  /**
+   * Blocks of the view holding a change whose card id changed, which the
+   * commit may not have written.
+   */
+  blocks: readonly NodeKey[];
+  /** Pending changes that began or whose revision changed. */
+  changed: readonly string[];
+  /** Cards whose summary changed, that began or that ended, by id. */
+  groups: readonly string[];
+  /** Changes no longer pending. */
+  removed: readonly string[];
 }>;
+
+/**
+ * The changes or cards to decide, as they were read. A card decides every
+ * change it holds now, and reads as stale once its id or revision moved.
+ */
+export type AuthoredDecision =
+  | Readonly<{
+      action: 'accept' | 'reject';
+      changes: readonly AuthoredChange[];
+    }>
+  | Readonly<{
+      action: 'accept' | 'reject';
+      groups: readonly AuthoredChangeGroup[];
+    }>;
 
 /**
  * `stale` names changes whose marks changed or went since they were read;

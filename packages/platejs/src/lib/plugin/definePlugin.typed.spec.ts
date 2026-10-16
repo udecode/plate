@@ -449,7 +449,9 @@ const assertTypedAuthoringContext = () => {
 
   fullSchemaEditor.api.fullSchemaConstructor.value() satisfies 1;
   fullSchemaEditor.read.fullSchemaConstructor.ready() satisfies true;
-  fullSchemaEditor.update.fullSchemaConstructor.run() satisfies 'done';
+  fullSchemaEditor.update.fullSchemaConstructor.run() satisfies
+    | 'done'
+    | undefined;
 
   const BasePlugin = defineHeadlessPlugin('baseInitialContext', {
     api: ({ editor, plugin, store }) => ({

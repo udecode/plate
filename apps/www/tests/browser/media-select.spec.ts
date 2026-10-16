@@ -66,6 +66,7 @@ test('a click selects a file, and Preview or a double-click opens it', async ({
     await link.click();
     await expect.poll(modelSelection).toMatchObject({
       kind: 'node',
+      mode: 'object',
       paths: [[index]],
     });
 
@@ -113,6 +114,7 @@ for (const [type, figure] of [
       await page.keyboard.press('ArrowUp');
       await expect.poll(modelSelection).toMatchObject({
         kind: 'node',
+        mode: 'object',
         paths: [[index]],
       });
       await expect(caption).toBeHidden();
@@ -155,6 +157,7 @@ for (const type of ['audio', 'video']) {
       await player.click({ position: { x: 20, y: box.height - 18 } });
       await expect.poll(modelSelection).toMatchObject({
         kind: 'node',
+        mode: 'object',
         paths: [[index]],
       });
       await expect(root).toBeFocused();
@@ -198,6 +201,7 @@ for (const [type, figure] of [
       await page.mouse.click(box.x + box.width / 2, box.y + 2);
       await expect.poll(modelSelection).toMatchObject({
         kind: 'node',
+        mode: 'object',
         paths: [[index]],
       });
       await expect(media.locator('figcaption')).toBeHidden();

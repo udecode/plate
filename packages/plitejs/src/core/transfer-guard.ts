@@ -1,15 +1,15 @@
-import type { AnyEditor, RootKey } from '../interfaces/editor';
+import type { AnyEditor, ContentSlice, RootKey } from '../interfaces/editor';
 import { ElementApi, type Element } from '../interfaces/element';
 import { NodeApi, type Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
-import { DocumentChange } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import type { DocumentIndex } from './change/document-index';
 import {
   type DraftGuardFrame,
   registerEditorDraftGuard,
 } from './document-recorder';
+import type { DraftSpan, DraftTrack } from './draft-track';
 import { type JsonValue, TransferRefusalError } from './landing';
 import type { TransferDiagnostic } from './transfer-types';
 
@@ -59,7 +59,7 @@ export const sameContent = (
     ...bProps
   } = b as Element & { childRoots?: Record<string, string> };
 
-  if (JSON.stringify(aProps) !== JSON.stringify(bProps)) return false;
+  if (stable(aProps) !== stable(bProps)) return false;
   if (aChildren.length !== bChildren.length) return false;
 
   const aRootNames = Object.keys(aChildRoots ?? {}).sort();
@@ -119,94 +119,204 @@ export const textTokens = (fragment: readonly Descendant[]) => {
   return tokens.join('\u0000');
 };
 
+export const stable = (value: unknown): string =>
+  JSON.stringify(value, (_key, item: unknown) =>
+    item && typeof item === 'object' && !Array.isArray(item)
+      ? Object.fromEntries(
+          Object.entries(item).sort(([left], [right]) =>
+            left.localeCompare(right)
+          )
+        )
+      : item
+  );
+
+type LandedKind = (element: Element) => 'block' | 'inline' | 'void';
+
+type FollowsDrop = (
+  element: Element,
+  ancestors: readonly Element[]
+) => (key: string) => boolean;
+
+type PayloadItem =
+  | string
+  | Readonly<{ ancestors: readonly Element[]; element: Element }>;
+
+export type MovedPayload = Readonly<{
+  carried: number;
+  followsDrop: FollowsDrop;
+  head: Element | null;
+  items: readonly PayloadItem[];
+  kind: LandedKind;
+  replaced: Element | null;
+}>;
+
+const headChain = (nodes: readonly Descendant[], kind: LandedKind) => {
+  const chain: Element[] = [];
+  let node = nodes[0];
+
+  while (node && ElementApi.isElement(node) && kind(node) === 'block') {
+    chain.push(node);
+    node = node.children[0];
+  }
+
+  return chain;
+};
+
+const openPrefix = (slice: ContentSlice, chain: readonly Element[]) => {
+  let nodes = slice.content;
+  let count = 0;
+
+  while (
+    count < slice.openStart &&
+    count < chain.length &&
+    nodes[0] === chain[count]
+  ) {
+    nodes = chain[count].children;
+    count += 1;
+  }
+
+  return count;
+};
+
+const payloadItems = (
+  nodes: readonly Descendant[],
+  exempt: ReadonlySet<Element>
+) => {
+  const items: PayloadItem[] = [];
+  const visit = (
+    list: readonly Descendant[],
+    ancestors: readonly Element[]
+  ) => {
+    for (const node of list) {
+      if (NodeApi.isText(node)) {
+        if (node.text !== '') items.push(stable(node));
+        continue;
+      }
+
+      const shown = !exempt.has(node);
+
+      if (shown) items.push({ ancestors, element: node });
+      visit(node.children, [node, ...ancestors]);
+      if (shown) items.push('</>');
+    }
+  };
+
+  visit(nodes, []);
+
+  return items;
+};
+
+const shellOf = (element: Element, skip: (key: string) => boolean) => {
+  const { children: _children, ...props } = element;
+
+  return stable(
+    Object.fromEntries(Object.entries(props).filter(([key]) => !skip(key)))
+  );
+};
+
+export const carryMove = ({
+  followsDrop,
+  kind,
+  moved,
+  replaced,
+  written,
+}: Readonly<{
+  followsDrop: FollowsDrop;
+  kind: LandedKind;
+  moved: ContentSlice;
+  replaced: Element | null;
+  written: ContentSlice;
+}>): MovedPayload | null => {
+  const movedChain = headChain(moved.content, kind);
+  const writtenChain = headChain(written.content, kind);
+  const peeled = movedChain.length - writtenChain.length;
+  const uncarried = peeled + openPrefix(written, writtenChain);
+  const addsShell = uncarried < 0;
+  const losesShell = uncarried > openPrefix(moved, movedChain);
+
+  if (addsShell || losesShell) return null;
+
+  return {
+    carried: movedChain.length - uncarried,
+    followsDrop,
+    head: movedChain[uncarried] ?? null,
+    items: payloadItems(moved.content, new Set(movedChain.slice(0, uncarried))),
+    kind,
+    replaced,
+  };
+};
+
+export const landsMoved = (
+  landed: readonly Descendant[],
+  { carried, followsDrop, head, items, kind, replaced }: MovedPayload
+) => {
+  const landedChain = headChain(landed, kind);
+  const atDrop = landedChain.length - carried;
+
+  if (atDrop < 0) return false;
+
+  const landedHead = landedChain[atDrop] ?? null;
+  const found = payloadItems(landed, new Set(landedChain.slice(0, atDrop)));
+
+  return (
+    found.length === items.length &&
+    found.every((item, index) => {
+      const expected = items[index];
+
+      if (typeof item === 'string' || typeof expected === 'string') {
+        return item === expected;
+      }
+
+      const skip = followsDrop(item.element, item.ancestors);
+      const fromReplacedBlock = (key: string) =>
+        item.element === landedHead &&
+        !!replaced &&
+        !!head &&
+        !(key in head) &&
+        stable(item.element[key]) === stable(replaced[key]);
+
+      return (
+        shellOf(item.element, (key) => skip(key) || fromReplacedBlock(key)) ===
+        shellOf(expected.element, skip)
+      );
+    })
+  );
+};
+
 export const selectionRange = (from: Point, to: Point): Range => ({
   anchor: from,
   focus: to,
 });
 
-export type DraftLanding = Readonly<{
-  children: readonly Descendant[];
-  landed: Readonly<{ paths: readonly Path[] }> | Readonly<{ range: Range }>;
-}>;
+export const trackedRange = (
+  index: DocumentIndex,
+  { from, to }: DraftSpan
+): Range | null => {
+  const start = index.pointAt(from, 1);
+  const end = index.pointAt(to, -1);
 
-type DraftMap = Readonly<{
-  path: (path: Path) => Path | null;
-  point: (point: Point, association?: 'backward' | 'forward') => Point | null;
-}>;
-
-export const mapDraft = (
-  draft: readonly Descendant[],
-  after: readonly Descendant[],
-  frame?: Readonly<{
-    mapPosition: (
-      position: number,
-      association: 'backward' | 'forward'
-    ) => number | null;
-    stored: readonly Descendant[];
-  }>
-): DraftMap => {
-  // A command frame wrote another document than the draft's, so the landing
-  // maps to the stored document and then to what the frame wrote.
-  if (frame) {
-    const toStored = mapDraft(draft, frame.stored);
-    const stored = DocumentIndex.fromValue(frame.stored);
-    const next = DocumentIndex.fromValue(after);
-    const through = frame.mapPosition;
-
-    return {
-      path: (path) => {
-        const at = toStored.path(path);
-        const mapped = at && through(stored.nodeRange(at).from, 'forward');
-        const entry = mapped == null ? null : next.nodeStartingAt(mapped);
-
-        return entry ? [...entry.path] : null;
-      },
-      point: (point, association = 'backward') => {
-        const at = toStored.point(point, association);
-        const mapped = at && through(stored.positionAt(at), association);
-
-        return mapped == null
-          ? null
-          : next.pointAt(mapped, association === 'backward' ? -1 : 1);
-      },
-    };
-  }
-  if (draft === after) {
-    return {
-      path: (path: Path): Path | null => path,
-      point: (point: Point): Point | null => point,
-    };
-  }
-
-  const before = DocumentIndex.fromValue(draft);
-  const next = DocumentIndex.fromValue(after);
-  const change = DocumentChange.between(
-    { children: draft },
-    { children: after }
-  );
-
-  return {
-    path: (path: Path): Path | null => {
-      const mapped = change.mapPosition(before.nodeRange(path).from, {
-        association: 'forward',
-      });
-      const entry = mapped == null ? null : next.nodeStartingAt(mapped);
-
-      return entry ? [...entry.path] : null;
-    },
-    point: (point: Point, association: 'backward' | 'forward' = 'backward') => {
-      const mapped = change.mapPosition(before.positionAt(point), {
-        association,
-      });
-      const mappedPoint =
-        mapped == null
-          ? null
-          : next.pointAt(mapped, association === 'backward' ? -1 : 1);
-
-      return mappedPoint;
-    },
-  };
+  return start && end
+    ? selectionRange(
+        { offset: start.offset, path: [...start.path] },
+        { offset: end.offset, path: [...end.path] }
+      )
+    : null;
 };
+
+export type DraftLanding = Readonly<{
+  kind: 'nodes' | 'range';
+  track: DraftTrack;
+}>;
+
+export const trackedPaths = (
+  index: DocumentIndex,
+  spans: readonly DraftSpan[]
+): Array<Path | null> =>
+  spans.map(({ from, to }) => {
+    const entry = index.nodeStartingAt(from);
+
+    return entry && entry.to === to ? [...entry.path] : null;
+  });
 
 export const guardLanding = (
   editor: AnyEditor,

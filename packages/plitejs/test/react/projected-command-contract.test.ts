@@ -1,4 +1,5 @@
 import {
+  authoredVeto,
   createEditor,
   createEditorView,
   definePlugin,
@@ -379,6 +380,58 @@ describe('projected editable commands', () => {
         authored: { preview: 'proposed' },
       }).read.children()
     ).toEqual([paragraph('A!B')]);
+  });
+
+  it('answers undefined and keeps the view selection when Suggesting refuses a paste over it', () => {
+    const boxes = defineEditorSchema('schema:projected-refused-paste', {
+      elements: {
+        box: {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        },
+        paragraph: schema.element.textBlock(),
+      },
+      id: 'projected-refused-paste',
+      root: schema.content.types(['paragraph', 'box'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const boxVeto = definePlugin('box-veto', {
+      contributions: [
+        authoredVeto.of((element) => (element.type === 'box' ? 'box' : null)),
+      ],
+    });
+    const initialValue = [{ type: 'box', children: [paragraph('AB')] }];
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' }), dom(), boxes, boxVeto],
+      initialValue,
+    });
+    const editor = createEditorView(source, {
+      authored: { intent: 'propose' },
+    }) as unknown as ReactRuntimeEditor;
+    const graph = createPliteViewBoundaryGraph([{ path: [0], root: 'main' }]);
+    const selection = createPliteViewSelection(graph, {
+      anchor: { point: point(undefined, [0, 0, 0], 0) },
+      focus: { point: point(undefined, [0, 0, 0], 1) },
+    });
+    const data = new FakeDataTransfer();
+
+    writePliteViewSelection(editor, selection);
+    data.setData('text/plain', 'x');
+
+    expect(
+      applyEditableCommand({
+        command: { data: data as unknown as DataTransfer, kind: 'insert-data' },
+        editor,
+      })
+    ).toBeUndefined();
+    expect(source.read.children()).toEqual(initialValue);
+    expect(readPliteViewSelection(editor)).toBe(selection);
   });
 
   it('typing over a projected selection replaces the visible span across roots in one commit', () => {

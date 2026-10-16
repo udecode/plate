@@ -1,5 +1,5 @@
 import { isEditorContent } from '../core/content';
-import { NodeApi } from '../interfaces';
+import { LocationApi, NodeApi } from '../interfaces';
 import type { EditorStaticApi } from '../interfaces/editor';
 import { range as editorRange } from '../interfaces/editor';
 import { PathApi } from '../interfaces/path';
@@ -8,9 +8,18 @@ import { nodes } from './nodes';
 
 export const string: EditorStaticApi['string'] = (editor, at, options = {}) => {
   const { content = false, voids = false } = options;
+  let text = '';
+
+  if (LocationApi.isPath(at)) {
+    for (const [node] of nodes(editor, { at, match: NodeApi.isText, voids })) {
+      if (!content || isEditorContent(editor, node)) text += node.text;
+    }
+
+    return text;
+  }
+
   const range = editorRange(editor, at);
   const [start, end] = RangeApi.edges(range);
-  let text = '';
 
   for (const [node, path] of nodes(editor, {
     at: range,

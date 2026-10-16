@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { privatePackageNamePattern } from '../scripts/finalize-plate-declarations.mjs';
 import { lineIdentity, readBaseline } from '../scripts/finding-baseline.mjs';
 
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
@@ -588,6 +589,38 @@ const noRelativePliteSource = {
   },
 };
 
+const noPliteJsdoc = {
+  create(context) {
+    return {
+      Program() {
+        for (const comment of context.sourceCode.getAllComments()) {
+          if (comment.type !== 'Block' || !comment.value.startsWith('*')) {
+            continue;
+          }
+          const match = privatePackageNamePattern.exec(comment.value);
+          if (!match) continue;
+          const mentionStart = comment.range[0] + '/*'.length + match.index;
+          context.report({
+            messageId: 'named',
+            node: { range: [mentionStart, mentionStart + match[0].length] },
+          });
+        }
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'JSDoc in platejs source never names Plite, because the build copies it into the published declarations.',
+    },
+    messages: {
+      named:
+        'This JSDoc names Plite (baselined in this file: {{baselined}}). The platejs build copies JSDoc into its published declarations, where `tooling/scripts/finalize-plate-declarations.mjs` refuses any Plite mention at `pnpm build`. Describe the behavior without naming the private layer.',
+    },
+    type: 'problem',
+  },
+};
+
 const memberName = (node) => {
   if (node?.type !== 'MemberExpression') return null;
   if (!node.computed) return node.property.name;
@@ -1128,6 +1161,7 @@ export default {
       'no-one-off-editor-type',
       noOneOffEditorType
     ),
+    'no-plite-jsdoc': withBaseline('no-plite-jsdoc', noPliteJsdoc),
     'no-raised-test-timeout': withBaseline(
       'no-raised-test-timeout',
       noRaisedTestTimeout

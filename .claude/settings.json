@@ -10,12 +10,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/tooling/scripts/autostage-next.mjs\"",
+            "command": "[ ! -d \"$CLAUDE_PROJECT_DIR\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/autostage-next.mjs\"",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/tooling/scripts/hand-drive.mjs\" --hook",
+            "command": "[ ! -d \"$CLAUDE_PROJECT_DIR\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/hand-drive.mjs\" --hook",
             "timeout": 60
           }
         ]
@@ -27,6 +27,16 @@
           {
             "type": "command",
             "command": "cd \"$CLAUDE_PROJECT_DIR\" && node .agents/pstack/reread.mjs --hook AGENTS.md \"$HOME/.claude/pstack-models.md\" .claude/settings.json",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/head.mjs ] || node .agents/pstack/head.mjs; }",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.agents/skills/cleanup/scripts/scan.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/.agents/skills/cleanup/scripts/scan.mjs\" --brief --repo \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 30
           }
         ]
@@ -53,7 +63,8 @@
     ]
   },
   "enabledPlugins": {
-    "pstack@pstack-claude": true
+    "pstack@pstack-claude": true,
+    "vercel@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "pstack-claude": {

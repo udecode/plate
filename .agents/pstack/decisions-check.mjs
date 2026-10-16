@@ -21,14 +21,36 @@
 //        rows are exempt.
 //        node .agents/pstack/decisions-check.mjs rounds <log>
 //        (exits 1 when the log is at the cap of panel rounds before a build)
-//        node .agents/pstack/decisions-check.mjs chips [<ledger>]
-//        (prints each suggested task still offered or started, and exits 1 naming each
-//        Now task that another live task blocks; <ledger> defaults to
-//        <plans>/suggested-tasks.decisions.tsv)
+//        node .agents/pstack/decisions-check.mjs chips [--fetch] [--session <id>] [<ledger>]
+//        (prints every open suggested task as ready, started, waiting or unmigrated,
+//        its topic and a Do list of one pass, withdrawals, then ledger rows, then cards,
+//        and exits 1 when any pass holds a problem: a card on a task that cannot start,
+//        a wait that can never clear or two open design questions in one topic;
+//        <ledger> defaults to <plans>/suggested-tasks.decisions.tsv,
+//        --fetch refreshes the remote branches that PR waits read, and --session names
+//        this session, so each card it does not hold gets a check item instead of a
+//        withdraw problem; once a session leads, another cards only the tasks it offered)
+//        node .agents/pstack/decisions-check.mjs chips lead --session <id> [<ledger>]
+//        (makes this session the chips lead, the one that cards tasks other sessions
+//        offered; the owner's /chips runs it, and it writes nothing when it already leads)
+//        node .agents/pstack/decisions-check.mjs chips stale [<ledger>]
+//        (prints each open task's age, the paths it writes that were deleted since its offer
+//        or are missing, the commits on its paths since its offer, its closed PR waits and
+//        its card, likeliest stale first)
+//        node .agents/pstack/decisions-check.mjs chips id
+//        (prints a fresh id for a new task)
+//        node .agents/pstack/decisions-check.mjs chips brief <id> [<ledger>]
+//        (prints the prompt a card for that task carries)
+//        node .agents/pstack/decisions-check.mjs chips wait [--session <id>] [--timeout <minutes>] [--every <seconds>] [<ledger>]
+//        (polls the ledger and exits once a task lands, one this session may card turns
+//        ready, with --session a task that session carded starts or another session takes
+//        the lead from it, or at the timeout, 60 minutes by default; it refuses a longer --timeout)
 
-import { appendFileSync, existsSync, readdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
-import { currentLead, leadLabel } from './lead.mjs';
+import { currentLead, leadLabel, maxEffort } from './lead.mjs';
+import { board, briefOf, cardEffortOf, CHIP_STATES, chipsLead, effortOf, chipRowProblems, baseRedProblems, gitMerges, LEAD_PHASE, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -47,127 +69,22 @@ const restartsRoundCount = (line) => {
 };
 const roundsSince = (lines) => lines.slice(lines.findLastIndex(restartsRoundCount) + 1).filter(opens).length;
 
-const LEDGER = 'suggested-tasks.decisions.tsv';
-// Ledgers hold offers made before titles dropped After: and (high), so parsing
-// accepts both and only append refuses a new offer in the old form.
-const CHIP = /^([\w-]+) (?:(Now|After): )?\S/u;
-const OLD_TITLE = /^[\w-]+ After: | \(high\)$/u;
-const CHIP_RESULT = /^(offered|started|landed|dismissed (?:done|superseded|gone|stopped|(dup|replaced) ([\w-]+)))(?:[.:;,]?(?:\s.*)?)?$/u;
-const CHIP_FROM = {
-  started: ['offered', 'started'],
-  landed: ['started'],
-  'dismissed done': ['offered'],
-  'dismissed dup': ['offered'],
-  'dismissed gone': ['offered'],
-  'dismissed replaced': ['offered'],
-  'dismissed stopped': ['started'],
-  'dismissed superseded': ['offered'],
-};
-const CHIP_STATES = ['offered', 'started', 'landed'];
-const NOT_A_PATH = /[\s*?{}`'"]|[^.][.:]$/u;
+const git = gitMerges({ branch: projectConfig().branch });
 
-// Lowercased because macOS volumes are case-insensitive by default, so
-// readme.md and README.md name one file. The kernel follows a symlink before
-// a later .. steps out of it, so the path is not resolve()d until its
-// existing part has been through realpath.
-function writeKey(path) {
-  let base = isAbsolute(path) ? path : `${process.cwd()}/${path}`;
-  const rest = [];
-  while (!existsSync(base)) {
-    rest.unshift(basename(base));
-    base = dirname(base);
-  }
-  return resolve(realpathSync.native(base), ...rest).toLowerCase();
-}
-
-const writesOf = (evidence) =>
-  evidence
-    .match(/\bwrites:\s*([^;]*)/u)?.[1]
-    .split(',')
-    .map((path) => path.trim())
-    .filter(Boolean) ?? [];
-const contains = (outer, inner) => inner.startsWith(outer.endsWith('/') ? outer : `${outer}/`);
-const overlaps = (a, b) => a.some((x) => b.some((y) => x === y || contains(x, y) || contains(y, x)));
-const isLive = (chip) => chip.status === 'offered' || chip.status === 'started';
-const moveOf = (outcome) => (outcome[2] ? `dismissed ${outcome[2]}` : outcome[1]);
-
-function chipProblems([, decision, , evidence, result], chips, where) {
-  const [, id] = decision.match(CHIP) ?? [];
-  if (!id) return [`${where}: a chip row's decision is "<task id> <title>", with Now: before a title that can start now and (xhigh) after one that needs design judgment`];
-  const outcome = result.match(CHIP_RESULT);
-  if (!outcome) return [`${where}: a chip row's result is offered, started, landed, or dismissed with done, superseded, gone, stopped, dup <task id> or replaced <task id>`];
-  const move = moveOf(outcome);
-  const known = chips.get(id);
-  const writes = ['offered', 'started'].includes(move) ? writesOf(evidence) : [];
-  const found = writes.some((path) => NOT_A_PATH.test(path)) || (move === 'offered' && writes.length === 0)
-    ? [`${where}: a chip offer lists the paths the task will write as "writes: <path>, <path>" in its evidence, and a started row lists any it adds, each a repository path or directory, or an absolute path in another checkout, with no whitespace, glob, quote, comma or semicolon`]
-    : [];
-  if (move === 'offered') return known ? [`${where}: ${id} was already offered; a task id is offered once`] : found;
-  if (!known) return [`${where}: ${id} has no offered chip row before this one`];
-  if (known.decision !== decision) found.push(`${where}: ${id} was offered as "${known.decision}", and every later row repeats that decision`);
-  if (!CHIP_FROM[move].includes(known.status)) found.push(`${where}: ${id} is ${known.status}, so it cannot be ${move}`);
-  const added = writes.map(writeKey).filter((key) => !known.keys.includes(key));
-  for (const [other, peer] of chips) {
-    if (other !== id && peer.status === 'started' && overlaps(added, peer.keys)) {
-      found.push(`${where}: ${id} cannot add a path ${other}, also started, writes; leave that path to ${other} and tell the owner`);
-    }
-  }
-  const [, , reason, target] = outcome;
-  const live = reason === 'replaced' ? ['offered'] : ['offered', 'started'];
-  if (target && (target === id || !live.includes(chips.get(target)?.status))) {
-    found.push(`${where}: ${target} must be another task the ledger holds as ${live.join(' or ')}; offer the replacement before this row`);
-  }
-  return found;
-}
-
-const takePlaceOf = (replacement, replaced) => {
-  replacement.order = Math.min(replacement.order, replaced.order);
+let ledgerTasks = null;
+const currentLedger = () => {
+  const path = join(plansDir(), LEDGER);
+  ledgerTasks ??= readTasks(existsSync(path) ? readFileSync(path, 'utf8').split('\n').slice(1) : []);
+  return ledgerTasks;
 };
 
-function recordChip(chips, [phase, decision = '', , evidence = '', result = '']) {
-  const [, id, tag] = phase === 'chip' ? (decision.match(CHIP) ?? []) : [];
-  const outcome = id && result.match(CHIP_RESULT);
-  if (!outcome) return;
-  const move = moveOf(outcome);
-  const chip = chips.get(id);
-  if (move === 'offered') {
-    const writes = writesOf(evidence);
-    if (!chip) chips.set(id, { decision, keys: writes.map(writeKey), order: chips.size, status: move, tag, writes });
-    return;
-  }
-  if (!chip) return;
-  chip.status = move.split(' ')[0];
-  if (move === 'started') {
-    chip.writes = [...new Set([...chip.writes, ...writesOf(evidence)])];
-    chip.keys = chip.writes.map(writeKey);
-  }
-  const target = chips.get(outcome[3]);
-  if (target) takePlaceOf(target, chip);
-}
-
-function nowConflicts(chips, touched) {
-  const live = [...chips].filter(([, chip]) => isLive(chip));
-  const holdsPathsFirst = (peer, chip) => peer.order < chip.order || peer.status === 'started';
-  const inBatch = (id, other) => touched.has(id) || touched.has(other);
-  return live.flatMap(([id, chip]) =>
-    chip.status === 'offered' && chip.tag === 'Now'
-      ? live
-          .filter(([other, peer]) => other !== id && holdsPathsFirst(peer, chip) && inBatch(id, other) && overlaps(chip.keys, peer.keys))
-          .map(([other, peer]) => `${id} is Now, but ${other}, still ${peer.status}, writes an overlapping path; the lead that offered ${id} offers it again as After, waiting for ${other}, and dismisses it as replaced in the same batch${peer.status === 'started' ? `, and a session widening ${other} leaves that path alone and tells the owner` : ''}`)
-      : [],
-  );
-}
-
-function startedOverlaps(chips) {
-  const started = [...chips].filter(([, chip]) => chip.status === 'started');
-  return started.flatMap(([id, chip], at) =>
-    started.slice(at + 1).filter(([, peer]) => overlaps(chip.keys, peer.keys)).map(([other]) => `${id} and ${other} are both started on an overlapping path; the owner runs both`),
-  );
+function projectConfig() {
+  const config = '.agents/pstack.json';
+  return existsSync(config) ? JSON.parse(readFileSync(config, 'utf8')) : {};
 }
 
 function plansDir() {
-  const config = '.agents/pstack.json';
-  return (existsSync(config) && JSON.parse(readFileSync(config, 'utf8')).plans) || 'docs/plans';
+  return projectConfig().plans || 'docs/plans';
 }
 
 function missingPlan(path, line, where) {
@@ -215,9 +132,16 @@ function rowProblems(line, where, opened, chips) {
     }
   }
   if (rest[0] !== 'chip' && CHIP_STATES.includes(status)) found.push(`${where}: an ${status} result belongs only in a chip row`);
-  if (rest[0] === 'chip' && chips) found.push(...chipProblems(rest, chips, where));
+  if (rest[0] === 'chip' && chips) found.push(...chipRowProblems(rest, chips, where));
   const reviewerRow = rest[0].startsWith('review');
   return reviewerRow ? found : [...found, ...missingPaths(rest[3], where)];
+}
+
+function newRowProblems(cells, where, chips, lead) {
+  const found = [];
+  if (cells[0] === LEAD_PHASE && !chips) found.push(`${where}: a ${LEAD_PHASE} row goes in the project's ledger ${join(plansDir(), LEDGER)}; run chips lead --session <id> to write it`);
+  if (cells[0] === LEAD_PHASE && !SESSION.test(cells[1])) found.push(`${where}: a ${LEAD_PHASE} row's decision is the id of the session that leads, the one the runtime's session tool gives it`);
+  return [...found, ...(cells[0] === 'chip' && chips ? newChipRowProblems(cells, chips, where, git, lead) : []), ...baseRedProblems(cells[3], chips ?? currentLedger(), where)];
 }
 
 function appendOnlyLabelProblems(log, row, earlier, where) {
@@ -253,17 +177,17 @@ function problems(path) {
   const committed = committedLines(path);
   let opened = false;
   const chips = resolve(path) === resolve(join(plansDir(), LEDGER)) ? new Map() : null;
-  const touched = new Set();
-  const found = lines.flatMap((line, index) => {
+  return lines.flatMap((line, index) => {
     if (index === 0 || line === '') return [];
     const where = `${path}:${index + 1}`;
     const rowFound = committed.has(line) ? [] : [...rowProblems(line, where, opened, chips), ...missingPlan(path, line, where)];
     opened ||= opens(line);
-    if (chips) recordChip(chips, line.split('\t').slice(1));
-    if (chips && !committed.has(line)) touched.add(line.split('\t')[2]?.match(CHIP)?.[1]);
+    if (chips) {
+      const [ts, ...cells] = line.split('\t');
+      recordRow(chips, cells, ts);
+    }
     return rowFound;
   });
-  return chips ? [...found, ...nowConflicts(chips, touched).map((problem) => `${path}: ${problem}`)] : found;
 }
 
 // The page shows which model and effort wrote each stretch of the log, so a
@@ -285,10 +209,9 @@ function append(path, batch, run) {
   const isWriting = (line) => line.split('\t')[1] === 'writing';
   let written = isWriting(existing.findLast((line) => opens(line) || isWriting(line)) ?? '');
   let rounds = roundsSince(existing);
-  const chips = new Map();
-  for (const line of existing.slice(1)) recordChip(chips, line.split('\t').slice(1));
+  const chips = readTasks(existing.slice(1));
   const ledger = resolve(path) === resolve(join(plansDir(), LEDGER));
-  const touched = new Set();
+  let lead = chipsLead(existing);
   const rows = [];
   const found = [];
   for (const [index, cells] of batch.entries()) {
@@ -303,9 +226,8 @@ function append(path, batch, run) {
       continue;
     }
     const row = [stamp, ...cells].join('\t');
-    if (cells[0] === 'chip' && /^offered\b/u.test(cells[4]) && OLD_TITLE.test(cells[1])) found.push(`${where}: a new title drops After: and (high), which are the defaults; it keeps only Now: and (xhigh)`);
     if (cells[0] === 'chip' && !ledger) found.push(`${where}: chip rows go in the project's ledger ${join(plansDir(), LEDGER)}, because a suggested task outlives the run that offered it`);
-    found.push(...rowProblems(row, where, opened, ledger ? chips : null), ...missingPlan(path, row, where), ...appendOnlyLabelProblems(path, row, [...existing.slice(1).filter(Boolean), ...rows], where));
+    found.push(...rowProblems(row, where, opened, ledger ? chips : null), ...newRowProblems(cells, where, ledger ? chips : null, lead), ...missingPlan(path, row, where), ...appendOnlyLabelProblems(path, row, [...existing.slice(1).filter(Boolean), ...rows], where));
     if (opens(row) && opened && !written) {
       found.push(`${where}: a later round's seats row needs a writing row after the previous seats row: log the round's writing passes under phase writing, or log a writing row that says why none ran`);
     }
@@ -318,11 +240,10 @@ function append(path, batch, run) {
       rounds += 1;
     } else if (isWriting(row)) written = true;
     opened ||= opens(row);
-    recordChip(chips, cells);
-    if (cells[0] === 'chip') touched.add(cells[1].match(CHIP)?.[1]);
+    recordRow(chips, cells, stamp);
+    if (cells[0] === LEAD_PHASE) lead = cells[1];
     rows.push(row);
   }
-  if (ledger) found.push(...nowConflicts(chips, touched).map((problem) => `${path}: ${problem}`));
   if (found.length > 0) return found;
   const added = rows.map((row) => `${row}\n`).join('');
   if (text !== null) {
@@ -352,21 +273,154 @@ if (args[0] === 'rounds') {
   process.exit(rounds >= MAX_ROUNDS ? 1 : 0);
 }
 if (args[0] === 'chips') {
-  const ledger = args[1] ?? join(plansDir(), LEDGER);
-  const chips = new Map();
-  if (existsSync(ledger)) {
-    for (const line of readFileSync(ledger, 'utf8').split('\n').slice(1)) recordChip(chips, line.split('\t').slice(1));
-  } else if (args[1]) {
-    console.error(`no log at ${ledger}`);
+  const fetch = args.includes('--fetch');
+  const at = args.indexOf('--session');
+  const here = at === -1 ? null : (args[at + 1] ?? null);
+  if (at !== -1 && !SESSION.test(here ?? '')) {
+    console.error("--session takes this session's id, the one the runtime's session tool gives it");
     process.exit(2);
   }
-  const live = [...chips.values()].filter(isLive);
-  for (const chip of live) console.info(`${chip.status}\t${chip.decision}\twrites: ${chip.writes.join(', ')}`);
-  if (live.length === 0) console.error(existsSync(ledger) ? `No open suggested tasks in ${ledger}.` : `No ledger at ${ledger} yet; run this from the project root.`);
-  const conflicts = nowConflicts(chips, new Set(chips.keys()));
-  for (const note of startedOverlaps(chips)) console.error(note);
-  if (conflicts.length > 0) console.error(`${conflicts.length} conflict(s):\n${conflicts.join('\n')}`);
-  process.exit(conflicts.length > 0 ? 1 : 0);
+  const option = (name, fallback) => {
+    const index = args.indexOf(name);
+    const value = index === -1 ? fallback : Number(args[index + 1]);
+    if (!(value > 0)) {
+      console.error(`${name} takes a positive number`);
+      process.exit(2);
+    }
+    return value;
+  };
+  const valued = new Set(['--session', '--timeout', '--every'].flatMap((name) => (args.includes(name) ? [args.indexOf(name), args.indexOf(name) + 1] : [])));
+  const rest = args.filter((arg, index) => index > 0 && arg !== '--fetch' && !valued.has(index));
+  if (rest[0] === 'id') {
+    console.info(newId());
+    process.exit(0);
+  }
+  const id = rest[0] === 'brief' ? rest[1] : null;
+  const named = rest[0] === 'brief' ? rest[2] : ['stale', 'wait', 'lead'].includes(rest[0]) ? rest[1] : rest[0];
+  const ledger = named ?? join(plansDir(), LEDGER);
+  if (!existsSync(ledger)) {
+    console.error(named ? `no log at ${ledger}` : `No ledger at ${ledger} yet; run this from the project root.`);
+    process.exit(named ? 2 : 0);
+  }
+  const lines = readFileSync(ledger, 'utf8').split('\n').slice(1);
+  const tasks = readTasks(lines);
+  const lead = chipsLead(lines);
+  if (rest[0] === 'lead') {
+    if (here === null) {
+      console.error('chips lead takes --session <id>, the id the runtime\'s session tool gives this session');
+      process.exit(2);
+    }
+    if (lead === here) {
+      console.info('This session already leads the chips.');
+      process.exit(0);
+    }
+    const found = append(ledger, [[LEAD_PHASE, here, 'the owner typed /chips in this session, so it cards the tasks other sessions offered', `session: ${here}`, 'recorded']], currentLead(basename(ledger)));
+    if (found.length > 0) {
+      console.error(`Row not written:\n${found.join('\n')}`);
+      process.exit(1);
+    }
+    console.info(lead ? `This session leads the chips now. At its next sweep, session ${lead} withdraws its cards on tasks it did not offer.` : 'This session leads the chips now.');
+    process.exit(0);
+  }
+  if (rest[0] === 'stale') {
+    const states = new Map();
+    const prState = (pr) => {
+      if (!states.has(pr)) {
+        try {
+          states.set(pr, execFileSync('gh', ['pr', 'view', String(pr), '--json', 'state', '-q', '.state'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim());
+        } catch {
+          states.set(pr, null);
+        }
+      }
+      return states.get(pr);
+    };
+    const repoOf = (path) => (!isAbsolute(path) ? '.' : existsSync(path) && statSync(path).isDirectory() ? path : dirname(path));
+    const deletedSince = (since, path) => {
+      try {
+        return execFileSync('git', ['-C', repoOf(path), 'log', '-1', '--no-renames', '--diff-filter=D', `--since=${since}`, '--format=%h', '--', path], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() !== '';
+      } catch {
+        return false;
+      }
+    };
+    const commitsSince = (since, paths) => {
+      const seen = new Map();
+      for (const path of paths) {
+        const repo = repoOf(path);
+        try {
+          for (const entry of execFileSync('git', ['-C', repo, 'log', '--no-merges', `--since=${since}`, '--format=%ct%x09%h%x09%s', '--', path], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).split('\n').filter(Boolean)) {
+            const [time, hash, subject] = entry.split('\t');
+            seen.set(hash, { time: Number(time), subject });
+          }
+        } catch {}
+      }
+      return [...seen.values()].sort((a, b) => b.time - a.time).map((commit) => commit.subject);
+    };
+    const rows = staleReport(tasks, offeredAt(lines), { exists: existsSync, deletedSince, commitsSince, prState, now: Date.now() });
+    console.info(rows.length ? `${rows.length} open suggested tasks in ${ledger}, the likeliest stale first:\n${rows.join('\n')}` : `No open suggested tasks in ${ledger}.`);
+    process.exit(0);
+  }
+  if (rest[0] === 'wait') {
+    const branch = projectConfig().branch;
+    const state = () => {
+      const rows = readFileSync(ledger, 'utf8').split('\n').slice(1);
+      const now = readTasks(rows);
+      const view = board(now, gitMerges({ branch }), here, chipsLead(rows));
+      const started = [...now.values()].filter((task) => task.status === 'started' && here !== null && task.session === here);
+      return {
+        lead: view.lead,
+        ready: view.cardable.map((task) => task.id),
+        landed: [...now.values()].filter((task) => task.status === 'landed').map((task) => task.id),
+        started: new Map(started.map((task) => [task.id, `${task.id} in ${task.startedIn ? `session ${task.startedIn}` : 'a session its started row does not name'}, carded at ${cardEffortOf(task, maxEffort())}, brief at ${effortOf(task, maxEffort())}`])),
+      };
+    };
+    const minutes = option('--timeout', 60);
+    if (minutes > 60) {
+      console.error(`--timeout ${minutes} is over the block's one-hour Time budget; chips wait restarts after its hour instead`);
+      process.exit(2);
+    }
+    const start = state();
+    const deadline = Date.now() + minutes * 60_000;
+    while (Date.now() < deadline) {
+      await new Promise((done) => setTimeout(done, option('--every', 30) * 1000));
+      const now = state();
+      if (here !== null && start.lead === here && now.lead !== here) {
+        console.info(`Session ${now.lead} leads the chips now. Run the chips sweep, which lists the cards this session withdraws, and stop waiting.`);
+        process.exit(0);
+      }
+      const turned = now.ready.filter((each) => !start.ready.includes(each));
+      const landedNow = now.landed.filter((each) => !start.landed.includes(each));
+      const startedNow = [...now.started].filter(([each]) => !start.started.has(each)).map(([, text]) => text);
+      if (turned.length || landedNow.length || startedNow.length) {
+        console.info(
+          [
+            landedNow.length ? `Landed: ${landedNow.join(', ')}.` : '',
+            turned.length ? `Ready with no card: ${turned.join(', ')}.` : '',
+            startedNow.length ? `Started: ${startedNow.join('; ')}.` : '',
+            startedNow.length ? "Lower to its brief's effort, with the session tool, each started session above it that still runs at its card's effort, or at yours when the suggest tool took no effort; a session at any other effort is the owner's choice. Then run the chips sweep." : 'Run the chips sweep.',
+          ]
+            .filter(Boolean)
+            .join(' ')
+        );
+        process.exit(0);
+      }
+    }
+    console.info('No task landed, started or turned ready before the timeout; run the sweep, then chips wait again while any task is started or carded.');
+    process.exit(0);
+  }
+  if (rest[0] === 'brief') {
+    const task = tasks.get(id ?? '');
+    if (!task) {
+      console.error(`${id ?? '(no id)'} is not a task in ${ledger}`);
+      process.exit(2);
+    }
+    const { ok, text } = briefOf(tasks, id, ledger, maxEffort());
+    (ok ? console.info : console.error)(text);
+    process.exit(ok ? 0 : 1);
+  }
+  const view = board(tasks, gitMerges({ fetch, branch: projectConfig().branch }), here, lead);
+  console.info(renderBoard(view, ledger, maxEffort()));
+  for (const note of startedOverlaps(tasks)) console.error(note);
+  process.exit(view.problem ? 1 : 0);
 }
 if (args[0] === 'append') {
   const batch =

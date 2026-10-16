@@ -8,6 +8,7 @@ import {
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import { failInvariant } from '../internal/fail-invariant';
 import { inheritNodeKey } from '../utils/node-keys';
+import type { NodeList } from './change/document-index';
 import type { CompiledSchemaContentProgram } from './schema-compiler';
 import type { RepresentationRepairSink } from './slice-fit/fit-report';
 import { areEditorJsonValuesEqual } from './value-codec';
@@ -512,26 +513,8 @@ const canonicalizeRuns = (
   return sameChildren(canonical, children) ? children : canonical;
 };
 
-/**
- * Required prefix slots come first; a slot the caller's change
- * vacated takes a fresh element and its candidate moves past it. After the
- * prefix, an empty stretch that admits a text holds one empty text, which
- * counts toward the minimum, so a default element is built only past it.
- * Defaults are added one canonical unit at a time until the minimum holds.
- * Children that are already complete come back as the same array.
- */
-export const completeContent = ({
-  children,
-  content,
-  dropsFromEmptyText,
-  editing,
-  editor,
-  element,
-  preserveInlineSpacersAdjacentTo,
-  report,
-  schema,
-}: Readonly<{
-  children: readonly Descendant[];
+type CompletionInput = Readonly<{
+  children: NodeList<Descendant>;
   content: CompiledSchemaContentProgram;
   dropsFromEmptyText?: (key: string, value: unknown) => boolean;
   editing?: Readonly<{
@@ -543,8 +526,15 @@ export const completeContent = ({
   preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
   report?: RepresentationRepairSink;
   schema: ContentCompletionSchema;
-}>): ContentCompletion => {
-  const unchanged = { built: [], children };
+}>;
+
+const startCompletion = ({
+  children,
+  content,
+  editing,
+  element,
+  schema,
+}: CompletionInput) => {
   const remainder = content.remainder ?? content;
   const built: Element[] = [];
   const required: Descendant[] = [];
@@ -553,7 +543,7 @@ export const completeContent = ({
   let consumed = 0;
 
   for (const [slot, prefix] of (content.prefix ?? []).entries()) {
-    const candidate = children[consumed];
+    const candidate = children.at(consumed);
     const displaced =
       candidate !== undefined && editing?.vacated(slot, candidate) === true;
 
@@ -562,7 +552,7 @@ export const completeContent = ({
       consumed += 1;
       continue;
     }
-    if (candidate && !displaced && editing) return unchanged;
+    if (candidate && !displaced && editing) return null;
 
     const node = schema.create(prefix.type, prefix.properties);
 
@@ -572,12 +562,61 @@ export const completeContent = ({
     required.push(node);
   }
 
-  const source = children.slice(consumed);
-  const emptyText =
-    source.length === 0 && element && admitsEmptyText(remainder)
+  const remaining = children.length - consumed;
+  const emptyText: Text | null =
+    remaining === 0 && element && admitsEmptyText(remainder)
       ? { text: '' }
       : null;
-  let rest: readonly Descendant[] = emptyText ? [emptyText] : source;
+
+  if (
+    built.length === 0 &&
+    !emptyText &&
+    required.length + remaining >= content.min
+  ) {
+    return null;
+  }
+
+  return { built, builtSlots, consumed, emptyText, inserted, required };
+};
+
+/**
+ * Whether completion returns `children` as they are, read through the prefix
+ * slots and the count only, so a root needs no array.
+ */
+export const holdsContent = (input: CompletionInput) =>
+  startCompletion(input) === null;
+
+/**
+ * Required prefix slots come first; a slot the caller's change
+ * vacated takes a fresh element and its candidate moves past it. After the
+ * prefix, an empty stretch that admits a text holds one empty text, which
+ * counts toward the minimum, so a default element is built only past it.
+ * Defaults are added one canonical unit at a time until the minimum holds.
+ * Children that are already complete come back as the same array.
+ */
+export const completeContent = (
+  input: CompletionInput & Readonly<{ children: readonly Descendant[] }>
+): ContentCompletion => {
+  const {
+    children,
+    content,
+    dropsFromEmptyText,
+    editor,
+    element,
+    preserveInlineSpacersAdjacentTo,
+    report,
+    schema,
+  } = input;
+  const started = startCompletion(input);
+
+  if (!started) return { built: [], children };
+
+  const { built, builtSlots, consumed, emptyText, inserted, required } =
+    started;
+  const remainder = content.remainder ?? content;
+  let rest: readonly Descendant[] = emptyText
+    ? [emptyText]
+    : children.slice(consumed);
   const count = () => required.length + rest.length;
 
   while (count() < content.min) {
@@ -590,7 +629,9 @@ export const completeContent = ({
     }
 
     const unit: Descendant =
-      plan.kind === 'text' ? { text: '' } : schema.create(plan.type, undefined);
+      plan.kind === 'text'
+        ? { text: '' }
+        : schema.create(plan.type, plan.properties);
     const next = element
       ? canonicalizeContentChildren([...rest, unit], remainder, {
           dropsFromEmptyText,
@@ -614,8 +655,6 @@ export const completeContent = ({
     inserted.add(unit);
     rest = next;
   }
-
-  if (built.length === 0 && rest === source) return unchanged;
 
   const completed = [...required, ...rest];
 

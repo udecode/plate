@@ -55,28 +55,25 @@ describe('authored review tree marks', () => {
     );
   });
 
-  it('refuses an Editing deletion that no pending join holds', () => {
-    assert.throws(
-      () =>
-        createEditor({
-          plugins: [createAuthoredPlugin({ authorId: 'alice' })],
-          initialValue: [
-            {
-              type: 'paragraph',
-              children: [
-                {
-                  text: 'gone',
-                  authored: [
-                    { ...mark('delete', 'bob', 1), change: '~edit:bob' },
-                  ],
-                },
-              ],
-            },
-            { type: 'paragraph', children: [{ text: 'next' }] },
-          ],
-        }),
-      /An Editing deletion stays stored only on a line a pending join merges into/
-    );
+  it('keeps the claim of an Editing deletion that no pending join holds', () => {
+    const children = [
+      {
+        type: 'paragraph',
+        children: [
+          {
+            text: 'gone',
+            authored: [{ ...mark('delete', 'bob', 1), change: '~edit:bob' }],
+          },
+        ],
+      },
+      { type: 'paragraph', children: [{ text: 'next' }] },
+    ];
+    const editor = createEditor({
+      plugins: [createAuthoredPlugin({ authorId: 'alice' })],
+      initialValue: children,
+    });
+
+    assert.deepEqual(editor.read.children(), children);
   });
 
   it('loads a replacement whose marks agree and keeps them in the value', () => {

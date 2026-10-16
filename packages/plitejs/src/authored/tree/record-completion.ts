@@ -2,9 +2,10 @@ import {
   createInternalDocumentChange,
   type DocumentChange,
   getInternalDocumentRootChange,
-  valueRoot,
+  valueRootIndex,
+  valueRootNodes,
 } from '../../core/change/document-change';
-import { DocumentIndex } from '../../core/change/document-index';
+import type { DocumentIndex, NodeList } from '../../core/change/document-index';
 import { type JsonRecord, jsonEqual } from '../../core/change/json';
 import {
   RootChange,
@@ -77,12 +78,12 @@ type Placed = Readonly<{
 
 const isText = (node: JsonNode) => typeof node.text === 'string';
 
-const nodeAt = (children: readonly JsonNode[], path: readonly number[]) => {
+const nodeAt = (children: NodeList, path: readonly number[]) => {
   let node: JsonNode | undefined;
   let level = children;
 
   for (const index of path) {
-    node = level[index];
+    node = level.at(index);
     level = node?.children ?? [];
   }
 
@@ -123,7 +124,7 @@ const shapeOf = (nodes: readonly Descendant[]) =>
 const restingChanges = (
   host: JsonNode | null,
   lifted: readonly JsonNode[],
-  children: readonly JsonNode[],
+  children: NodeList,
   isOwn: (mark: Readonly<{ change: string }>) => boolean
 ) => {
   const reshaping = [
@@ -152,8 +153,8 @@ const restingChanges = (
     return [...byChange.values()];
   };
   const deleting: AuthoredMark[] = [];
-  const scan = (level: readonly JsonNode[]) => {
-    for (const child of level) {
+  const scan = (level: NodeList) => {
+    level.forEach((child) => {
       const childMarks = readAuthoredMarks(child);
 
       deleting.push(...childMarks.filter((mark) => mark.kind === 'delete'));
@@ -161,7 +162,7 @@ const restingChanges = (
       if (childMarks.some((mark) => mark.kind === 'unwrap')) {
         scan(child.children ?? []);
       }
-    }
+    });
   };
 
   scan(children);
@@ -182,7 +183,7 @@ const changedHosts = (
   rootChange: RootChange,
   before: DocumentIndex,
   after: DocumentIndex,
-  afterChildren: readonly JsonNode[]
+  afterChildren: NodeList
 ) => {
   const hosts = new Map<
     string,
@@ -261,9 +262,9 @@ export const completeProposed = (
 
     if (!rootChange || rootChange.empty) continue;
 
-    const afterChildren = valueRoot(input.after, root);
-    const beforeChildren = valueRoot(input.before, root);
-    const beforeIndex = DocumentIndex.fromValue(beforeChildren);
+    const afterChildren = valueRootNodes(input.after, root);
+    const beforeChildren = valueRootNodes(input.before, root);
+    const beforeIndex = valueRootIndex(input.before, root);
     const startAfter = (path: readonly number[]) =>
       rootChange.mapPos(beforeIndex.nodeRange(path).from, 1, 'after');
     const edits: Edit[] = [];

@@ -16,7 +16,7 @@ export default defineConfig({
   timeout: 90_000,
   use: { baseURL: nativeImeBaseURL },
   webServer: {
-    command: `PLATE_WWW_PLITE=1 PLATE_WWW_DEV_SOURCE=1 PLATE_WWW_DIST_DIR=.next-native-ime next dev --port ${port}`,
+    command: `PLATE_WWW_PLITE=1 PLATE_WWW_DEV_SOURCE=1 next dev --port ${port}`,
     reuseExistingServer: false,
     timeout: 300_000,
     url: nativeImeBaseURL,

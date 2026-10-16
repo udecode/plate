@@ -276,6 +276,17 @@ const waitForTextBlockMaterialized = async (
     timeoutMs: hugeDocumentReadyTimeout,
   });
 
+const waitForViewSelectionPaint = (editor: BrowserEditorHarness) =>
+  expect
+    .poll(() =>
+      editor.root.evaluate(
+        (element: HTMLElement) =>
+          element.querySelectorAll('[data-editor-view-selection="true"]')
+            .length
+      )
+    )
+    .toBeGreaterThan(0);
+
 const waitForEditorAnimationFrames = async (
   editor: BrowserEditorHarness,
   count = 2
@@ -1831,6 +1842,8 @@ test.describe('huge document example', {
     await page.mouse.move(target.start.x, target.start.y);
     await page.mouse.down();
     await page.mouse.move(target.edge.x, target.edge.y, { steps: 24 });
+    await waitForViewSelectionPaint(editor);
+    await page.mouse.move(target.edge.x - 3, target.edge.y);
 
     const samples: Array<{
       collapsed: boolean | null;

@@ -9,11 +9,8 @@ import * as recordCompletion from '../src/authored/tree/record-completion';
 import * as resolve from '../src/authored/tree/resolve';
 import { DocumentIndex } from '../src/core/change/document-index';
 import * as tokens from '../src/core/change/tokens';
-import {
-  readSequenceWork,
-  resetSequenceWork,
-} from '../src/core/measured-sequence';
 import * as representation from '../src/core/representation';
+import { readCoreWork, resetCoreWork } from '../src/core/work';
 import type { EditorDocumentRecords } from '../src/interfaces/editor';
 
 const real = { ...marks };
@@ -373,10 +370,10 @@ describe('authored review tree work per edit', () => {
       const editor = editorFor(blocks(size, []), 'edit');
 
       typeAtEnd(editor, size);
-      resetSequenceWork();
+      resetCoreWork();
       typeAtEnd(editor, size);
 
-      return readSequenceWork();
+      return readCoreWork();
     });
 
     if (small.copiedSlots === 0) {
@@ -828,6 +825,59 @@ describe('authored review tree work per edit', () => {
     assert.deepEqual(
       large?.map((work) => work.encodedTokens),
       small?.map((work) => work.encodedTokens)
+    );
+  });
+
+  it('resolves no ledger node for Editing and Suggesting Backspaces that join lines across 20 or 1,000 struck lines and then delete, taking the written lines', () => {
+    const resolved = (intent: 'edit' | 'propose', size: number) => {
+      const editor = editorFor(
+        [
+          paragraph({ text: 'live' }),
+          ...Array.from({ length: size }, (_, index) =>
+            struckParagraph(`struck ${index}`, 'bob:struck')
+          ),
+          ...blocks(3, []),
+        ],
+        intent,
+        'alice',
+        Blocks
+      );
+
+      return [0, 1, 2].map((run) => {
+        const before = readLedgerWork();
+
+        editor.update((tx) => {
+          if (run === 0) {
+            const caret = { offset: 0, path: [size + 1, 0] };
+
+            tx.selection.set({ anchor: caret, focus: caret });
+          }
+          tx.command(editorCommands.delete, {
+            direction: 'backward',
+            unit: 'character',
+          });
+        });
+
+        const end = readLedgerWork();
+
+        return [
+          end.resolvedNodes - before.resolvedNodes,
+          end.writtenRuns - before.writtenRuns,
+        ];
+      });
+    };
+
+    // Without what the commands wrote, each Backspace after the join would
+    // resolve the struck run again.
+    assert.deepEqual(
+      (['edit', 'propose'] as const).flatMap((intent) =>
+        [20, 1000].map((size) => resolved(intent, size))
+      ),
+      Array.from({ length: 4 }, () => [
+        [0, 1],
+        [0, 1],
+        [0, 1],
+      ])
     );
   });
 

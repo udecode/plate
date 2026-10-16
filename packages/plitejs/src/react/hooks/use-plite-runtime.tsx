@@ -293,20 +293,6 @@ export function useRequiredPliteRuntimeContext(): PliteRuntimeContextValue {
   return context;
 }
 
-export const useMountedEditorRuntimeOwner = (
-  component: 'EditorRoot',
-  editor: Parameters<typeof getEditorRuntimeOwner>[0] | undefined
-) => {
-  const owner = editor ? getEditorRuntimeOwner(editor) : null;
-  const [mountedOwner] = useState(() => owner);
-
-  if (mountedOwner !== owner) {
-    throw new Error(
-      `[${component}] Cannot replace the editor runtime of a mounted provider. Remount <${component}> with a different React key.`
-    );
-  }
-};
-
 export function EditorRuntimeProvider({
   children,
   editor: runtime,
@@ -772,7 +758,7 @@ type CommandArgs<TCommand extends EditorCommandDescriptor> = [
 /** Typed dispatcher returned for one semantic command descriptor. */
 export type CommandDispatcher<TCommand extends EditorCommandDescriptor> = (
   ...input: CommandArgs<TCommand>
-) => boolean;
+) => boolean | undefined;
 
 /**
  * Bind one semantic command to the mounted editor for a root.

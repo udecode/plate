@@ -40,10 +40,13 @@ describe('state query contract', () => {
     assert.deepEqual(
       editor.read.nodes
         .blocks({
-          at: SelectionApi.nodes([
-            [0, 0],
-            [2, 0],
-          ]),
+          at: SelectionApi.nodes(
+            [
+              [0, 0],
+              [2, 0],
+            ],
+            { mode: 'block' }
+          ),
         })
         .map(([, path]) => path),
       [[0], [2]]

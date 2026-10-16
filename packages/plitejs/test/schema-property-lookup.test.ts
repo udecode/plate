@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { it } from 'node:test';
 
-import { defineEditorSchema, property, schema, target } from 'plitejs';
+import {
+  createEditor,
+  defineEditorSchema,
+  property,
+  schema,
+  target,
+} from 'plitejs';
 
 import {
   compileEditorSchemaContributions,
@@ -60,3 +66,39 @@ for (const placement of ['element', 'text'] as const) {
     assert.equal(lookup('unmatched', 'p'), null);
   });
 }
+
+it('reads whether where content lands decides an element property, preserve by default', () => {
+  const definition = defineEditorSchema('schema:lookup-landing', {
+    id: 'lookup-landing',
+    version: 1,
+    unknown: 'reject',
+    elements: { p: { content: schema.content.text() } },
+    root: schema.content.type('p'),
+    properties: [
+      schema.elementProperty('depth', property.number(), {
+        landing: 'rebase',
+        target: target.type('p'),
+      }),
+      schema.elementProperty('group', property.string(), {
+        landing: 'adopt',
+        target: target.type('p'),
+      }),
+      schema.elementProperty('tone', property.string(), {
+        target: target.type('p'),
+      }),
+    ],
+  });
+  const editor = createEditor({
+    initialValue: [{ type: 'p', children: [{ text: '' }] }],
+    plugins: [definition],
+  });
+
+  assert.deepEqual(
+    ['depth', 'group', 'tone'].map(
+      (key) =>
+        editor.read.schema.property({ key, placement: 'element', type: 'p' })
+          ?.lifecycle.landing
+    ),
+    ['rebase', 'adopt', 'preserve']
+  );
+});

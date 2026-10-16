@@ -1,6 +1,7 @@
 import { dispatchCommand } from '../core/command-registry';
 import { type DeleteCommand, editorCommands } from '../core/editor-commands';
 import {
+  readPoint,
   runEditorTransaction,
   withEditorUpdateRootScope,
 } from '../core/public-state';
@@ -12,7 +13,6 @@ import { removeNodes } from '../transforms-node/remove-nodes';
 import { deleteText } from '../transforms-text/delete-text';
 import type { TextUnit } from '../types/types';
 import type { WithEditorFirstArg } from '../utils/types';
-import { point } from './point';
 
 export const applyDelete = (editor: Editor, command: DeleteCommand) => {
   runEditorTransaction(editor, (tx) => {
@@ -28,16 +28,12 @@ export const applyDelete = (editor: Editor, command: DeleteCommand) => {
 
         if (!firstPath || !lastPath) return;
 
-        const previousPath = PathApi.hasPrevious(firstPath)
-          ? PathApi.previous(firstPath)
-          : null;
-        const nextPath = PathApi.next(lastPath);
-        const previousPoint = previousPath
-          ? point(editor, previousPath, { edge: 'end' })
-          : null;
-        const nextPoint = editor.read.nodes.get(nextPath)
-          ? point(editor, nextPath, { edge: 'start' })
-          : null;
+        const previousPoint = PathApi.hasPrevious(firstPath)
+          ? readPoint(editor, PathApi.previous(firstPath), { edge: 'end' })
+          : undefined;
+        const nextPoint = readPoint(editor, PathApi.next(lastPath), {
+          edge: 'start',
+        });
         const previousAnchor = previousPoint
           ? editor.anchor(previousPoint, {
               association: 'backward',

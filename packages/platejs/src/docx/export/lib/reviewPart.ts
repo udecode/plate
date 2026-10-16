@@ -4,7 +4,9 @@ import { throwIfDocxAborted } from '../../internal/abort';
 import { parseDocxXml } from '../../internal/domParser';
 import {
   REVIEW_PART_NAMESPACE,
+  reviewBindingBookmarks,
   reviewBindingFingerprints,
+  reviewPackageKeys,
   wordAttribute,
   type ReviewPart,
 } from '../../internal/reviewPart';
@@ -78,13 +80,13 @@ const RUN_PROPERTY_OF_MARK: ReadonlyMap<
   string,
   Readonly<{ name: string; value?: string }>
 > = new Map([
-    ['bold', { name: 'b' }],
-    ['italic', { name: 'i' }],
-    ['strikethrough', { name: 'strike' }],
-    ['subscript', { name: 'vertAlign', value: 'subscript' }],
-    ['superscript', { name: 'vertAlign', value: 'superscript' }],
-    ['underline', { name: 'u', value: 'single' }],
-  ]);
+  ['bold', { name: 'b' }],
+  ['italic', { name: 'i' }],
+  ['strikethrough', { name: 'strike' }],
+  ['subscript', { name: 'vertAlign', value: 'subscript' }],
+  ['superscript', { name: 'vertAlign', value: 'superscript' }],
+  ['underline', { name: 'u', value: 'single' }],
+]);
 
 const wordElement = (document: Document, name: string) =>
   document.createElementNS(WORD, `w:${name}`);
@@ -111,7 +113,8 @@ const insertInOrder = (properties: Element, property: Element) => {
     (child) => RUN_PROPERTY_ORDER.indexOf(child.localName) > rank
   );
 
-  properties.insertBefore(property, next ?? null);
+  if (next) next.before(property);
+  else properties.append(property);
 };
 
 // happy-dom parses prefixed attributes, `xml:space` and `w:val` among them,
@@ -119,7 +122,11 @@ const insertInOrder = (properties: Element, property: Element) => {
 const copyAttributes = (from: Element, to: Element) => {
   for (const attribute of Array.from(from.attributes)) {
     if (attribute.namespaceURI) {
-      to.setAttributeNS(attribute.namespaceURI, attribute.name, attribute.value);
+      to.setAttributeNS(
+        attribute.namespaceURI,
+        attribute.name,
+        attribute.value
+      );
     } else {
       to.setAttribute(attribute.name, attribute.value);
     }
@@ -236,9 +243,15 @@ export const addDocxReview = async (
   blob: Blob,
   review: PreparedDocxReview,
   signal?: AbortSignal
-): Promise<Readonly<{ blob: Blob; diagnostics: readonly DocxDiagnostic[] }>> => {
+): Promise<
+  Readonly<{ blob: Blob; diagnostics: readonly DocxDiagnostic[] }>
+> => {
   throwIfDocxAborted(signal);
-  if (review.runs.length === 0 && review.bindings.length === 0) {
+  if (
+    review.runs.length === 0 &&
+    review.bindings.length === 0 &&
+    review.records === undefined
+  ) {
     return { blob, diagnostics: [] };
   }
   const zip = await JSZip.loadAsync(await blob.arrayBuffer());
@@ -268,7 +281,7 @@ export const addDocxReview = async (
   }
   const diagnostics: DocxDiagnostic[] = [];
   const replace = createTextTokenReplacer(document, REVIEW_TOKEN);
-  let bookmarkId =
+  const firstBookmarkId =
     Math.max(
       -1,
       ...elements
@@ -281,10 +294,10 @@ export const addDocxReview = async (
         .filter(Number.isSafeInteger)
     ) + 1;
   const bound = review.bindings.flatMap((binding, index) => {
-    const name = `_PlateReview${index + 1}`;
+    const name = `_ReviewBlock${index + 1}`;
     const [start, end] = bookmarkElements(
       document,
-      String(bookmarkId++),
+      String(firstBookmarkId + index),
       name
     );
 
@@ -302,9 +315,37 @@ export const addDocxReview = async (
 
     return [{ name, nodes: binding.nodes }];
   });
+  const parts = new Map(
+    await Promise.all(
+      Object.values(zip.files)
+        .filter((file) => !file.dir)
+        .map(
+          async (file) => [file.name, await file.async('uint8array')] as const
+        )
+    )
+  );
+  const xmlOf = (path: string) => {
+    const bytes = parts.get(path);
+
+    return (
+      bytes &&
+      parseDocxXml(
+        new TextDecoder().decode(bytes),
+        () => new Error('Generated DOCX XML is invalid.')
+      )
+    );
+  };
   const fingerprints = reviewBindingFingerprints(
-    document,
-    new Set(bound.map(({ name }) => name))
+    reviewBindingBookmarks(document, new Set(bound.map(({ name }) => name))),
+    reviewPackageKeys(
+      document,
+      {
+        numbering: xmlOf('word/numbering.xml'),
+        relationships: xmlOf('word/_rels/document.xml.rels'),
+        styles: xmlOf('word/styles.xml'),
+      },
+      (path) => parts.get(path)
+    )
   );
   const part: ReviewPart = {
     bindings: bound.map(({ name, nodes }) => ({
@@ -320,7 +361,7 @@ export const addDocxReview = async (
     'word/document.xml',
     new XMLSerializer().serializeToString(document)
   );
-  if (part.bindings.length > 0) {
+  if (part.bindings.length > 0 || part.records !== undefined) {
     let item = 1;
 
     while (zip.file(`customXml/item${item}.xml`)) item += 1;
@@ -350,7 +391,7 @@ export const addDocxReview = async (
       addMetadataDeclaration(
         relationships,
         '</Relationships>',
-        `<Relationship Id="${nextRelationshipId(relationships, 'rIdPlateReview')}" Type="${RELATIONSHIPS}/customXml" Target="../customXml/item${item}.xml"/>`
+        `<Relationship Id="${nextRelationshipId(relationships, 'rIdReview')}" Type="${RELATIONSHIPS}/customXml" Target="../customXml/item${item}.xml"/>`
       )
     );
     zip.file(

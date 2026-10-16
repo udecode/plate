@@ -72,7 +72,7 @@ Clipboard paste does not upload embedded images or preserve Word table geometry.
 
 Inside a mounted React control, get that complete editor with
 `useModelEditor()`. `useEditor()` returns the provider-selected mounted command
-view, whose root and authored projection belong to that view.
+view, whose root and authored view belong to that view.
 
 ```bash
 npm install platejs @tanstack/react-virtual mammoth validator
@@ -140,19 +140,21 @@ Exact export admits a closed set of passive package content:
 - AVIF, BMP, GIF, JPEG, PNG, and WebP images reached through internal relationships;
 - hyperlinks whose destination is absolute and meets the navigation floor.
 
-`PAGE` is the only recognized field instruction. Any other part, relationship, markup namespace, field instruction, or XML processing instruction leaves `source` null. That includes unsafe or relative hyperlinks, other external relationships, macros, ActiveX controls, OLE objects, imported HTML chunks, external templates, custom XML data, and SVG or EMF images. A null source does not mean the import lost content; exporting without a source generates the document from editor content.
+`PAGE` is the only recognized field instruction. Any other part, relationship, markup namespace, field instruction, or XML processing instruction leaves `source` null. That includes unsafe or relative hyperlinks, other external relationships, macros, ActiveX controls, OLE objects, imported HTML chunks, external templates, custom XML data other than Plate's review part, and SVG or EMF images. A null source does not mean the import lost content; exporting without a source generates the document from editor content.
 
 `DocxSource` retains the admitted compressed package plus immutable document, comment, schema, and limit correspondence. It does not retain expanded ZIP entries or an editor reference. `dispose()` is idempotent. An export that already acquired the source can finish after disposal; later exports report `source-unavailable` and generate a fresh DOCX.
 
 ### Import comments
 
-The importer returns comment format facts without writing app comment storage. Each `DocxComment` can include a rich Plate `body`, an exact `target.range` in proposed-projection coordinates, Word author and date metadata, a durable ID, a parent ID, and resolved state. Map those records to your app identities explicitly.
+The importer returns comment format facts without writing app comment storage. Each `DocxComment` can include a rich Plate `body`, an exact `target.range` that addresses the returned document, Word author and date metadata, a durable ID, a parent ID, and resolved state. Map those records to your app identities explicitly.
 
 ### Import tracked revisions
 
-Supported Word insertions, deletions, moves, run property changes, and paragraph property changes become authored changes. Revision IDs follow Word source order and structural dependencies; dates remain metadata. A missing or invalid date uses the authored unknown-time value and produces a diagnostic.
+Include `AuthoredPlugin` from `platejs/authored` in `plugins` to keep Word revisions. Supported insertions, deletions, moves, run property changes, and paragraph property changes then become pending authored changes. Each change takes its Word revision's ID, as `docx-<id>`, and its author and date. A missing author or an invalid date produces a `lossy-content` warning, and an invalid date imports as time 0.
 
-If a revision cannot map to the installed schema, the importer keeps the Word-visible proposed content and reports the loss in `diagnostics`.
+Without `AuthoredPlugin`, or when the revisions cannot map to the installed schema, the importer flattens them into the proposed document and reports a `lossy-content` warning.
+
+A file that Plate exported for review also holds Plate's review part. The importer restores each reviewed block whose Word paragraphs are unchanged since export, with its original change IDs and the document's review records. A block whose paragraphs were edited in Word imports from its Word revisions and reports a warning.
 
 ### Import list numbering
 
@@ -197,16 +199,9 @@ export async function downloadEditorDocx() {
 }
 ```
 
-Choose `accepted` to omit pending changes, `proposed` to apply them, or `review` to write Word tracked-change markup. Accepted and proposed exports warn about omitted pending changes and conflicts resolved to one side. A review export with any conflict returns `ok: false` and an `authored-conflict` error because Word revisions cannot represent that state faithfully.
+Choose `accepted` to omit pending changes, `proposed` to apply them, or `review` to write Word tracked-change markup. Accepted and proposed exports warn about the pending changes they decided.
 
-A review file contains what Word displays: text, comments, and tracked revisions with their authors. Importing it restores those revisions as authored changes. Export does not write named roots, document metadata, or exact authored change records, such as their original IDs, to the file. To keep them, save the authored JSON document beside the file, as [Serializing](/docs/serializing) describes:
-
-```tsx
-import { parseAuthoredDocument, projectAuthoredReview } from "platejs/authored";
-
-const json = JSON.stringify(projectAuthoredReview(editor.read.value()).review);
-const document = parseAuthoredDocument(json);
-```
+A review file contains what Word displays: text, comments, and tracked revisions with their authors. It also stores each top-level block that holds a pending change, with the document's review records, in a custom XML part, and binds each block to its Word paragraphs with a bookmark. Importing the file restores the blocks Word left unchanged, as [Import tracked revisions](#import-tracked-revisions) describes. Export does not write named roots or document metadata to the file. To keep them, save `editor.read.value()` as JSON beside the file, as [Serializing](/docs/serializing) describes.
 
 ### Content loss
 
@@ -256,7 +251,7 @@ When regeneration is required, omitted `comments` means that no comments are gen
 
 ### Export comments
 
-Pass comments whose ranges address the editor's proposed projection. Export maps those ranges into accepted or review output before rendering:
+Pass comments whose ranges address the editor's stored document, the value `editor.read.value()` returns. Export maps those ranges into accepted or proposed output before rendering:
 
 ```tsx
 const result = await exportDocx(editor, {
@@ -302,7 +297,7 @@ diagnostic, which counts as lost content under `lossPolicy`.
 | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
 | Paragraphs, headings, supported marks and properties               | Decode through the installed HTML mappings and export through the configured static renderer                |
 | Lists, links, bookmarks, rows, cells, and spans                    | Preserve supported semantic structure; omit Word layout details with diagnostics                            |
-| Tracked revisions                                                  | Preserve supported insert, delete, move, run-property, and paragraph-property changes                       |
+| Tracked revisions                                                  | Preserve supported insert, delete, move, run-property, and paragraph-property changes when `plugins` include `AuthoredPlugin`; otherwise flatten with a `lossy-content` warning |
 | Main-body comments                                                 | Preserve rich bodies, ranges, author/date metadata, durable IDs, replies, and resolved state when present   |
 | Embedded images during import                                      | Omit the resource and return a `resource-omitted` diagnostic                                                |
 | Links and images during export                                     | Write absolute navigation-safe links and PNG, JPEG, GIF, or BMP images; report removed destinations and omitted images |
@@ -378,7 +373,7 @@ exportDocx(
 | Option                  | Type                                     | Description                                        |
 | ----------------------- | ---------------------------------------- | -------------------------------------------------- |
 | `projection`            | `'accepted' \| 'proposed' \| 'review'`   | Required visible document projection               |
-| `comments`              | `readonly DocxComment[]`                 | Comment records in proposed-projection coordinates |
+| `comments`              | `readonly DocxComment[]`                 | Comment records whose ranges address the stored document |
 | `allowRemoteImages`     | `boolean`                                | Fetch remote HTTP(S) images to embed; defaults to `false` |
 | `component`             | `React.ComponentType<EditorStaticProps>` | Optional static editor wrapper                     |
 | `fontFamily`            | `string`                                 | Document body font; rebuilds an unchanged `source` |

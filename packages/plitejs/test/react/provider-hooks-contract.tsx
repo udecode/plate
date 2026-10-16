@@ -11,9 +11,11 @@ import {
   Component,
   type ReactNode,
   startTransition,
+  StrictMode,
   Suspense,
   useLayoutEffect,
 } from 'react';
+import * as Y from 'yjs';
 
 import {
   getLastCommit as editorGetLastCommit,
@@ -51,6 +53,7 @@ import {
   isEditor as editorIsEditor,
   replace as editorReplace,
 } from '../../src/testing';
+import { yjs } from '../../src/yjs';
 
 const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
 
@@ -395,6 +398,22 @@ describe('plite-react provider hooks contract', () => {
     expect(result.current.read((state) => state.lastCommit())).toBe(null);
   });
 
+  test('useEditor binds a Yjs document once under Strict Mode', () => {
+    const doc = new Y.Doc();
+    const { result } = renderHook(
+      () =>
+        useEditor({
+          initialValue,
+          plugins: [yjs({ doc, initialReady: true, seed: true })],
+        }),
+      { wrapper: StrictMode }
+    );
+
+    expect(result.current.api.yjs.admissionStatus()).toEqual({
+      state: 'ready',
+    });
+  });
+
   test('useEditorContext follows a keyed provider remount', () => {
     const editorA = createEditor({ initialValue });
     const editorB = createEditor({ initialValue });
@@ -431,24 +450,28 @@ describe('plite-react provider hooks contract', () => {
     expect(getEditorRuntimeOwner(seen.at(-1)!)).toBe(editorB);
   });
 
-  test('EditorRoot rejects replacing a mounted editor', () => {
+  test('EditorRoot remounts its views when its editor changes', () => {
     const editorA = createEditor({ initialValue });
     const editorB = createEditor({ initialValue });
+    let seen: ReturnType<typeof useEditorContext> | null = null;
+    const Capture = () => {
+      seen = useEditorContext();
+
+      return <Editable />;
+    };
     const rendered = render(
       <EditorRoot editor={editorA}>
-        <Editable />
+        <Capture />
       </EditorRoot>
     );
 
-    expect(() =>
-      rendered.rerender(
-        <EditorRoot editor={editorB}>
-          <Editable />
-        </EditorRoot>
-      )
-    ).toThrow(
-      '[EditorRoot] Cannot replace the editor runtime of a mounted provider. Remount <EditorRoot> with a different React key.'
+    rendered.rerender(
+      <EditorRoot editor={editorB}>
+        <Capture />
+      </EditorRoot>
     );
+
+    expect(getEditorRuntimeOwner(seen!)).toBe(editorB);
   });
 
   test('multiple Editable views preserve the constructor maxLength', () => {

@@ -11,12 +11,14 @@ import { type Path, PathApi } from '../interfaces/path';
 import { type Point, PointApi } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
 import { type NodeSelection, SelectionApi } from '../interfaces/selection';
+import { getDefined } from '../internal/get-defined';
 import { removeNodes } from '../transforms-node';
-import { deleteText } from '../transforms-text';
+import { deleteText, resolveDeletedRange } from '../transforms-text';
 import type { Anchor } from './anchor';
 import { readAuthoredView } from './authored-runtime';
-import { DocumentIndex } from './change/document-index';
+import { ContentSlice as ContentSliceValue } from './content-slice';
 import { isDocumentView } from './document-view-read';
+import { readDraftTrack, trackDraftSpans } from './draft-track';
 import { editorReads } from './editor-reads';
 import {
   getEditorRuntimeOwner,
@@ -24,43 +26,46 @@ import {
   getEditorSchema,
 } from './editor-runtime';
 import { getContentSlice } from './get-content-slice';
-import { getInsertRemainingLength, limitSliceToLength } from './insert-limit';
 import {
+  type Adopted,
+  adoptAt,
   insertionPath,
+  judgeLanding,
   type JsonValue,
   landAt,
+  type Landed,
   landBeside,
   type LandedWrap,
   type LandingRequest,
   refuse,
+  resolveLanding,
   TransferRefusalError,
   transferVeto,
 } from './landing';
 import { definePlugin } from './plugin';
 import { getConfiguredPluginRegistry } from './plugin-registry';
-import { toPublicRoot } from './public-root';
 import {
+  applyTransactionSpec,
   finalizeTransactionRepresentation,
-  measureDraftInsertion,
-  readAtSliceFitTarget,
+  getAppliedSpecLanding,
+  getEditorStateView,
+  getTransactionSnapshot,
   replaceSliceAtBlockBoundary,
-  withCommandSliceFit,
   withDraftMove,
   withEditorUpdateRootScope,
 } from './public-state';
 import { executeEditorRead } from './read-registry';
-import { subscribeEditorRefusals } from './refusal';
 import { EditorSchemaValidationError } from './schema-validation';
 import { screenReaderAnnouncementEffect } from './screen-reader-announcement';
-import {
-  landSlice,
-  prepareEmptyBlockReplacement,
-  resolveSliceLandingTarget,
-} from './slice-landing';
+import { planPaste, writePaste } from './slice-landing';
 import {
   type DraftLanding,
+  carryMove,
   guardLanding,
-  mapDraft,
+  trackedPaths,
+  trackedRange,
+  landsMoved,
+  type MovedPayload,
   nodeAt,
   rootChildren,
   sameContent,
@@ -89,7 +94,12 @@ type NodeSource = Readonly<{
   root: RootKey;
 }>;
 
-type TextSource = Readonly<{ kind: 'text'; range: Range; root: RootKey }>;
+type TextSource = Readonly<{
+  deleted: Range | null;
+  kind: 'text';
+  range: Range;
+  root: RootKey;
+}>;
 
 type Landing =
   | Readonly<{ edge: TransferEdge; kind: 'edge' }>
@@ -105,6 +115,7 @@ type Admission = Readonly<{
   intent: TransferIntent;
   landing: Landing;
   relation: TransferRelation;
+  relocatedAdoption: Adopted | null;
   /** What lands, or `null` when the source nodes themselves move. */
   slice: ContentSlice | null;
   source: NodeSource | TextSource;
@@ -155,7 +166,11 @@ export const expandSource = (from: AnyEditor, paths: readonly Path[]) => {
   const expanded = executeEditorRead(
     from,
     editorReads.transfer.source,
-    { selection: SelectionApi.nodes(paths as [Path, ...Path[]]) },
+    {
+      selection: SelectionApi.nodes(paths as [Path, ...Path[]], {
+        mode: 'block',
+      }),
+    },
     ({ selection }) => selection,
     from
   );
@@ -202,7 +217,12 @@ const resolveSource = (
   if (input.range) {
     if (RangeApi.isCollapsed(input.range)) refuse('source-missing');
 
-    return { kind: 'text', range: input.range, root };
+    return {
+      deleted: resolveDeletedRange(from, input.range),
+      kind: 'text',
+      range: input.range,
+      root,
+    };
   }
 
   const found = input.nodes?.map((key) => from.read.nodes.get(key));
@@ -253,11 +273,26 @@ const checkTextLanding = (
     return;
   }
 
-  const [start, end] = RangeApi.edges(source.range);
+  const [selectedStart, selectedEnd] = RangeApi.edges(source.range);
+  const [deletedStart, deletedEnd] = RangeApi.edges(
+    source.deleted ?? source.range
+  );
 
-  if (PointApi.equals(point, start) || PointApi.equals(point, end)) {
+  if (
+    [selectedStart, selectedEnd, deletedStart, deletedEnd].some((edge) =>
+      PointApi.equals(point, edge)
+    )
+  ) {
     refuse('no-op');
   }
+
+  const start = PointApi.isBefore(deletedStart, selectedStart)
+    ? deletedStart
+    : selectedStart;
+  const end = PointApi.isAfter(deletedEnd, selectedEnd)
+    ? deletedEnd
+    : selectedEnd;
+
   if (PointApi.isAfter(point, start) && PointApi.isBefore(point, end)) {
     refuse('inside-source');
   }
@@ -294,7 +329,7 @@ const resolveStep = (
   request: LandingRequest,
   source: NodeSource | TextSource,
   direction: 'next' | 'previous'
-): TransferEdge => {
+): Landed => {
   if (source.kind !== 'nodes' || source.root !== getEditorRuntimeRoot(editor)) {
     return refuse('policy');
   }
@@ -333,14 +368,23 @@ const resolveStep = (
     if (payload.has(entry[0] as Descendant)) continue;
 
     try {
-      const to = landAt(editor, request, {
+      const resolved = resolveLanding(editor, request, {
         edge: next ? 'after' : 'before',
         key,
       });
-      const landed = editor.read.nodes.path(to.key);
+
+      judgeLanding(editor, request, resolved, null);
+
+      const landed = editor.read.nodes.path(resolved.edge.key);
 
       // A redirect out of the parent leaves this sibling for the next one.
-      if (landed && PathApi.equals(landed.slice(0, -1), parent)) return to;
+      if (landed && PathApi.equals(landed.slice(0, -1), parent)) {
+        const adopted = adoptAt(editor, request, resolved);
+
+        return adopted
+          ? judgeLanding(editor, request, resolved, adopted)
+          : { adopted, edge: resolved.edge };
+      }
       reason = 'policy';
     } catch (error) {
       if (!(error instanceof TransferRefusalError)) throw error;
@@ -401,6 +445,12 @@ const admit = (
       : 'move';
 
   if (editor.read.view.isReadOnly()) refuse('read-only-target');
+  if (source.kind === 'text' && intent === 'move') {
+    const { deleted } = source;
+
+    if (!deleted) refuse('lossy');
+    else if (RangeApi.isCollapsed(deleted)) refuse('no-op');
+  }
 
   const slice =
     source.kind === 'nodes' &&
@@ -410,9 +460,10 @@ const admit = (
       : (slices[intent] ??= getContentSlice(
           from,
           source.kind === 'text'
-            ? source.range
+            ? (intent === 'move' && source.deleted) || source.range
             : SelectionApi.nodes(
-                source.entries.map(([, path]) => path) as [Path, ...Path[]]
+                source.entries.map(([, path]) => path) as [Path, ...Path[]],
+                { mode: 'block' }
               ),
           undefined,
           intent
@@ -420,18 +471,26 @@ const admit = (
   const request = requestOf(from, intent, payload, relation, source, slice);
 
   const admitted = (landing: Landing): Admission => ({
+    relocatedAdoption: null,
     intent,
     landing,
     relation,
     slice,
     source,
   });
+  const admittedEdge = ({ adopted, edge }: Landed): Admission => ({
+    ...admitted({ edge, kind: 'edge' }),
+    relocatedAdoption: slice ? null : adopted,
+    slice:
+      adopted && slice
+        ? ContentSliceValue.withContent(slice, adopted.fit, {
+            open: 'preserve',
+          })
+        : slice,
+  });
 
   if (typeof input.to === 'string') {
-    return admitted({
-      edge: resolveStep(editor, request, source, input.to),
-      kind: 'edge',
-    });
+    return admittedEdge(resolveStep(editor, request, source, input.to));
   }
 
   if ('point' in input.to) {
@@ -458,7 +517,7 @@ const admit = (
     });
   }
 
-  return admitted({ edge: landAt(editor, request, input.to), kind: 'edge' });
+  return admittedEdge(landAt(editor, request, input.to));
 };
 
 const runTransfer = (
@@ -479,7 +538,8 @@ const runTransfer = (
     throw error;
   }
 
-  const { intent, landing, relation, slice, source } = admission;
+  const { intent, landing, relation, relocatedAdoption, slice, source } =
+    admission;
   const copy = intent === 'copy';
   const targetRoot = getEditorRuntimeRoot(editor);
   const before = from.read.value() as JsonValue;
@@ -488,65 +548,93 @@ const runTransfer = (
     landing.kind === 'wrap' && landing.wrap.replaced
       ? [landing.wrap.replaced]
       : [];
-  let expected: readonly Descendant[] = slice
-    ? slice.content
-    : source.kind === 'nodes'
-      ? [
-          ...source.entries.map(([node]) => node),
-          ...carried.map(({ node }) => node),
-        ]
-      : [];
+  let expected: Readonly<{
+    content: readonly Descendant[];
+    moved: MovedPayload | null;
+  }> = {
+    content: slice
+      ? slice.content
+      : source.kind === 'nodes'
+        ? [
+            ...(relocatedAdoption?.payload.nodes ??
+              source.entries.map(([node]) => node)),
+            ...carried.map(({ node }) => node),
+          ]
+        : [],
+    moved: null,
+  };
   const expectedRoots = slice ? slice.roots : before.roots;
   const schema = getEditorSchema(editor);
   const normalize = (node: Descendant, path: Path) =>
     copy ? schema.copyNodeAt(node, path, targetRoot) : node;
   const draft: { current: DraftLanding | null } = { current: null };
+  const runtime = getEditorRuntimeOwner(editor);
+  const trackNodes = (paths: readonly Path[]): DraftLanding => {
+    const snapshot = getDefined(getTransactionSnapshot(runtime));
+    const index = snapshot.builder.getIndex(targetRoot);
+
+    return {
+      kind: 'nodes',
+      track: trackDraftSpans(
+        snapshot,
+        snapshot.builder,
+        targetRoot,
+        paths.map((path) => index.nodeRange(path))
+      ),
+    };
+  };
+  const followsDrop =
+    (element: Element, ancestors: readonly Element[]) => (key: string) =>
+      schema.elementPropertyLanding(element, key, ancestors, targetRoot) !==
+      'preserve';
   const release = guardLanding(
     editor,
     copy,
     draft,
     (drafted, after, frame) => {
       const children = rootChildren(after, targetRoot);
-      const map = mapDraft(
-        drafted.children,
-        children,
-        frame && {
-          mapPosition: (position, association) =>
-            frame.mapPosition(targetRoot, position, association),
-          stored: rootChildren(frame.stored as JsonValue, targetRoot),
-        }
-      );
+      const builder = getTransactionSnapshot(runtime)?.builder;
+      const spans =
+        builder?.value === after
+          ? readDraftTrack(drafted.track, after, frame)
+          : null;
 
-      if ('range' in drafted.landed) {
-        const [start, end] = RangeApi.edges(drafted.landed.range);
-        const landedStart = map.point(start);
-        const landedEnd = map.point(end);
+      if (!builder || !spans) return false;
+      const index = builder.getIndex(targetRoot);
 
-        if (!landedStart || !landedEnd) return false;
+      if (drafted.kind === 'range') {
+        const [span] = spans;
+        const range = span && trackedRange(index, span);
+
+        if (!range) return false;
 
         const fragment = NodeApi.fragment(
           { children } as never,
-          selectionRange(landedStart, landedEnd)
+          range
         ) as Descendant[];
+
+        const { content, moved } = expected;
+
+        if (moved) return landsMoved(fragment, moved);
 
         return (
           textTokens(
             copy ? schema.copyChildren(fragment, targetRoot) : fragment
-          ) === textTokens(expected)
+          ) === textTokens(content)
         );
       }
 
-      const paths = drafted.landed.paths.map((path) => map.path(path));
+      const paths = trackedPaths(index, spans);
 
       return (
-        paths.length === expected.length &&
+        paths.length === expected.content.length &&
         paths.every((path, i) => {
           const node = path ? nodeAt(children, path) : null;
 
           return (
             !!node &&
             sameContent(
-              expected[i],
+              expected.content[i],
               expectedRoots,
               normalize(node, path as Path),
               after.roots
@@ -584,15 +672,10 @@ const runTransfer = (
 
   const asMove = <T>(role: 'landing' | 'source', run: () => T): T =>
     copy ? run() : withDraftMove(getEditorRuntimeOwner(editor), { role }, run);
-  // A policy such as Suggesting's can refuse the whole update, which then
-  // reports instead of throwing.
-  let declined = false;
-  const stopRefusals = subscribeEditorRefusals(editor, () => {
-    declined = true;
-  });
+  let accepted: true | undefined;
 
   try {
-    editor.update((tx) => {
+    accepted = editor.update((tx): true => {
       if (input.announce) {
         tx.effects.emit(screenReaderAnnouncementEffect, input.announce);
       }
@@ -635,15 +718,15 @@ const runTransfer = (
       const selectLanded = (keys: readonly NodeKey[]) => {
         const paths = keys.map(pathOf);
 
-        const nodes = SelectionApi.nodes(paths as [Path, ...Path[]]);
+        const nodes = SelectionApi.nodes(paths as [Path, ...Path[]], {
+          mode: 'block',
+        });
 
         landed = nodes;
-        draft.current = {
-          children: tx.nodes.children(),
-          landed: {
-            paths: [...paths, ...carried.map(({ key }) => pathOf(key))],
-          },
-        };
+        draft.current = trackNodes([
+          ...paths,
+          ...carried.map(({ key }) => pathOf(key)),
+        ]);
         holdNodes(nodes);
         if (select) tx.selection.set(nodes);
       };
@@ -670,7 +753,7 @@ const runTransfer = (
         moveChain(landing.keys, () => slot(payload, 0));
         selectLanded(landing.keys);
 
-        return;
+        return true;
       }
       if (relocate && source.kind === 'nodes' && landing.kind === 'edge') {
         const keys = source.entries.map(
@@ -681,9 +764,17 @@ const runTransfer = (
         moveChain(keys, () =>
           besidePath(pathOf(edge.key), edge.edge, pathOf(keys[0]))
         );
+        for (const { at, properties } of relocatedAdoption?.patches ?? []) {
+          const [index, ...rest] = at;
+
+          tx.nodes.set(properties, {
+            at: [...pathOf(keys[index]), ...rest],
+            voids: true,
+          });
+        }
         selectLanded(keys);
 
-        return;
+        return true;
       }
 
       const removeSource = () => {
@@ -716,80 +807,55 @@ const runTransfer = (
         });
       };
 
+      const landedKind = (element: Element) => {
+        const behavior = schema.getElementBehavior(element);
+
+        return behavior.void ? 'void' : behavior.inline ? 'inline' : 'block';
+      };
       const landAsPaste = (at: Point, copied: ContentSlice) => {
-        const options = { at };
-        const viewRoot = toPublicRoot(targetRoot);
-        const resolved = readAtSliceFitTarget(
+        const plan = planPaste(
           editor,
-          viewRoot,
-          options,
-          (state, location, root) => ({
-            remaining: getInsertRemainingLength(state, { at: location }),
-            target: resolveSliceLandingTarget(state, location, root),
-          })
+          getEditorStateView(editor),
+          { options: { at }, slice: copied },
+          intent
         );
 
-        if (!resolved) return false;
-        const { remaining, target } = resolved;
-        const limited = limitSliceToLength(copied, remaining);
+        if (!plan) return null;
+        if (!copy && (plan.inputCut || plan.landingCut)) refuse('lossy');
 
-        if (limited.content.length === 0 && copied.content.length > 0) {
-          return false;
-        }
-        if (limited !== copied) {
+        const written = writePaste(editor, plan, { landing: true });
+
+        if (!written) return null;
+        if (written.lossy) {
           diagnostics.push({
             impact: 'lossy',
             message: 'Some dragged content does not fit here.',
           });
         }
-        const { replaceEmpty, slice: shaped } = landSlice(editor, {
-          slice: limited,
-          source: copied,
-          target,
-        });
+        applyTransactionSpec(getEditorRuntimeOwner(editor), written.spec);
+        expected = copy
+          ? { content: written.written.content, moved: null }
+          : {
+              ...expected,
+              moved:
+                carryMove({
+                  followsDrop,
+                  kind: landedKind,
+                  moved: copied,
+                  replaced:
+                    written.written === plan.emptyBlockReplacement
+                      ? (plan.site.target.block?.[0] ?? null)
+                      : null,
+                  written: written.written,
+                }) ?? refuse('lossy'),
+            };
 
-        if (target.kind === 'empty' && replaceEmpty) {
-          const replacement = readAtSliceFitTarget(
-            editor,
-            viewRoot,
-            options,
-            (state) =>
-              prepareEmptyBlockReplacement(
-                editor,
-                state,
-                target,
-                replaceEmpty,
-                remaining
-              )
-          );
-
-          if (
-            replacement &&
-            withCommandSliceFit(
-              editor,
-              { remaining, replaceEmptyBlock: true },
-              () => tx.slice.replace(replacement, options)
-            )
-          ) {
-            expected = replacement.content;
-
-            return true;
-          }
-        }
-        expected = shaped.content;
-
-        return withCommandSliceFit(editor, { remaining }, () =>
-          tx.slice.replace(shaped, options)
-        );
+        return written.spec;
       };
 
       if (landing.kind === 'point') {
-        const start = tx.anchor(landing.point, {
+        const drop = tx.anchor(landing.point, {
           association: 'backward',
-          deletion: 'nearest',
-        });
-        const end = tx.anchor(landing.point, {
-          association: 'forward',
           deletion: 'nearest',
         });
 
@@ -800,52 +866,23 @@ const runTransfer = (
         // inside it then maps to the replace's ends.
         finalizeTransactionRepresentation(getEditorRuntimeOwner(editor));
 
-        const point = start.resolve();
-        const placed = measureDraftInsertion(
-          editor,
-          targetRoot,
-          () =>
-            !!point &&
-            !!slice &&
-            (copy
-              ? landAsPaste(point, slice)
-              : asMove('landing', () => tx.slice.replace(slice, { at: point })))
-        );
+        const point = drop.resolve();
+        const spec =
+          point && slice
+            ? asMove('landing', () => landAsPaste(point, slice))
+            : null;
+        const track = (spec && getAppliedSpecLanding(spec)) ?? refuse('schema');
+        const { builder } = getDefined(getTransactionSnapshot(runtime));
+        const [span] = readDraftTrack(track, builder.value) ?? [];
 
-        if (!placed.result) refuse('schema');
-
-        const startPoint = start.resolve();
-        const endPoint = end.resolve();
-
-        if (!startPoint || !endPoint) refuse('schema');
-
-        // The inserted content bounds the landing: point anchors at a text's
-        // edge miss a slice that lands as leaves of its own. An edge between
-        // nodes reads outward, so an inline void at the slice's edge stays in.
-        const index = DocumentIndex.fromValue(tx.nodes.children());
-        const pointAt = (position: number, assoc: -1 | 1, fallback: Point) => {
-          const found = index.pointAt(position, assoc);
-
-          return found
-            ? { ...fallback, offset: found.offset, path: [...found.path] }
-            : fallback;
-        };
-        const { span } = placed;
-
-        landed = span
-          ? selectionRange(
-              pointAt(span.from, -1, startPoint as Point),
-              pointAt(span.to, 1, endPoint as Point)
-            )
-          : selectionRange(startPoint as Point, endPoint as Point);
-        draft.current = {
-          children: tx.nodes.children(),
-          landed: { range: landed },
-        };
+        landed =
+          (span && trackedRange(builder.getIndex(targetRoot), span)) ??
+          refuse('schema');
+        draft.current = { kind: 'range', track };
         hold(landed);
         if (select) tx.selection.set(landed);
 
-        return;
+        return true;
       }
 
       removeSource();
@@ -870,17 +907,21 @@ const runTransfer = (
       }
 
       const first = boundary.at(-1) as number;
-      const paths: Path[] = expected.map((_, i) => [
+      const paths: Path[] = expected.content.map((_, i) => [
         ...boundary.slice(0, -1),
         first + i,
       ]);
 
-      const nodes = SelectionApi.nodes(paths as [Path, ...Path[]]);
+      const nodes = SelectionApi.nodes(paths as [Path, ...Path[]], {
+        mode: 'block',
+      });
 
       landed = nodes;
-      draft.current = { children: tx.nodes.children(), landed: { paths } };
+      draft.current = trackNodes(paths);
       holdNodes(nodes);
       if (select) tx.selection.set(nodes);
+
+      return true;
     });
   } catch (error) {
     releaseHeld(held);
@@ -892,11 +933,10 @@ const runTransfer = (
     }
     throw error;
   } finally {
-    stopRefusals();
     release();
   }
 
-  if (declined) {
+  if (!accepted) {
     releaseHeld(held);
 
     return { reason: 'policy', status: 'refused' };
@@ -965,16 +1005,12 @@ const readHeld = (
     (_, offset): Path => [...parent, from + offset + 1]
   );
 
-  return SelectionApi.nodes([first, ...rest]);
+  return SelectionApi.nodes([first, ...rest], { mode: 'block' });
 };
 
-type CachedCheck = Readonly<{ check: TransferCheck; key: readonly unknown[] }>;
-
-// A dragover over a side strip checks the side, then the edge it falls back
-// to; one slot each keeps them from evicting each other.
 const CHECKS = new WeakMap<
   AnyEditor,
-  { edge?: CachedCheck; side?: CachedCheck }
+  Readonly<{ checks: Map<string, TransferCheck>; key: readonly unknown[] }>
 >();
 
 const checkKey = (
@@ -988,7 +1024,6 @@ const checkKey = (
     from,
     method,
     input.nodes?.join('\u0000') ?? JSON.stringify(input.range ?? null),
-    JSON.stringify(input.to),
     editor.read.runtime.snapshot(),
     from.read.runtime.snapshot(),
     editor.read.view.isReadOnly(),
@@ -1005,12 +1040,13 @@ export const checkTransfer = (
   method: TransferIntent
 ): TransferCheck => {
   const key = checkKey(editor, input, method);
-  const slot =
-    typeof input.to === 'object' && 'side' in input.to ? 'side' : 'edge';
-  const slots = CHECKS.get(editor) ?? {};
-  const cached = slots[slot];
+  const kept = CHECKS.get(editor);
+  const cached =
+    kept && sameKey(kept.key, key) ? kept : { checks: new Map(), key };
+  const to = JSON.stringify(input.to);
+  const known = cached.checks.get(to);
 
-  if (cached && sameKey(cached.key, key)) return cached.check;
+  if (known) return known;
 
   let check: TransferCheck;
 
@@ -1024,8 +1060,8 @@ export const checkTransfer = (
     check = { admitted: false, reason: error.reason };
   }
 
-  slots[slot] = { check, key };
-  CHECKS.set(editor, slots);
+  cached.checks.set(to, check);
+  CHECKS.set(editor, cached);
 
   return check;
 };
@@ -1052,7 +1088,7 @@ export const checkFilesLanding = (
           relation: 'independent',
         },
         to
-      ),
+      ).edge,
     };
   } catch (error) {
     if (!(error instanceof TransferRefusalError)) throw error;
@@ -1064,9 +1100,9 @@ export const checkFilesLanding = (
 /** The `editor.read.transfer` group. */
 export type TransferRead = Readonly<{
   /**
-   * Whether a transfer would be admitted, without running it: the dry run the
-   * drop indicator paints from, for a move. A refusal at commit time, such as
-   * a lossy landing, is not predicted.
+   * Whether a move would be admitted, without running it: the dry run the
+   * drop indicator paints from. A refusal at commit time, such as a lossy
+   * landing, is not predicted.
    */
   check: (input: TransferInput) => TransferCheck;
   /**

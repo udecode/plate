@@ -32,10 +32,12 @@ const sameNodes = (
   left.length === right.length &&
   left.every((node, index) => node === right[index]);
 
-const getSelectedElements = (editor: Editor) =>
-  editor.read.selection
-    .nodes()
-    .flatMap(([node]) => (ElementApi.isElement(node) ? [node] : []));
+const getHighlightedElements = (editor: Editor) =>
+  editor.read.selection.nodeMode() === 'object'
+    ? []
+    : editor.read.selection
+        .nodes()
+        .flatMap(([node]) => (ElementApi.isElement(node) ? [node] : []));
 
 const shouldUpdateSelectionHighlights = (change?: EditorCommit) =>
   !change ||
@@ -129,7 +131,7 @@ export function NodeSelectionHighlight({
 }: NodeSelectionHighlightProps) {
   const editor = useEditor();
   const editable = useEditorEditableElement(editor);
-  const selectedNodes = useEditorSelector(getSelectedElements, {
+  const selectedNodes = useEditorSelector(getHighlightedElements, {
     equalityFn: sameNodes,
     shouldUpdate: shouldUpdateSelectionHighlights,
   });
@@ -394,10 +396,10 @@ const getSelectableEntries = (
 
   if (!firstEntry) return [];
 
-  return SelectionApi.nodes([
-    firstEntry.path,
-    ...restEntries.map(({ path }) => path),
-  ]).paths.flatMap((path) => {
+  return SelectionApi.nodes(
+    [firstEntry.path, ...restEntries.map(({ path }) => path)],
+    { mode: 'block' }
+  ).paths.flatMap((path) => {
     const entry = entries.get(path.join(','));
 
     return entry ? [entry] : [];
@@ -816,18 +818,11 @@ export function NodeSelectionDrag({
       const anchor = selection.anchorPath.at(-1) ?? -1;
       const focus = selection.focusPath.at(-1) ?? -1;
       const focusNode = children[focus];
-      // A table cell selection keeps its own Shift cell extension, and a lone
-      // selected object keeps Plite's plain arrows, such as ArrowDown caption
-      // entry.
-      if (
+      const ownerHandlesArrows =
         !isCandidate(children[anchor]) ||
         !isCandidate(focusNode) ||
-        (!event.shiftKey &&
-          selection.paths.length === 1 &&
-          editor.read.schema.isObject(focusNode))
-      ) {
-        return;
-      }
+        (!event.shiftKey && selection.mode === 'object');
+      if (ownerHandlesArrows) return;
       event.preventDefault();
       event.stopPropagation();
       // A focused contenteditable can recreate its native caret before keyup.

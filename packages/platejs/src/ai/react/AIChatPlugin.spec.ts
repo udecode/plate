@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 
-import { BaseParagraphPlugin, editorCommands } from '../../core';
+import {
+  BaseParagraphPlugin,
+  definePlugin,
+  editorCommands,
+  schema,
+} from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createEditor } from '../../react/core';
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
@@ -141,5 +146,100 @@ describe('AIChatPlugin', () => {
       { children: [{ text: '' }], type: 'paragraph' },
       { children: [{ text: 'occupied' }], type: 'paragraph' },
     ]);
+  });
+
+  it.each(['accept', 'insert below'] as const)(
+    'keeps the answer when %s cannot land below a block in a full parent',
+    (action) => {
+      const FullParentPlugin = definePlugin('aiFullParent', {
+        schema: {
+          element: {
+            blockContent: true,
+            content: schema.content.types(['paragraph'], { max: 1 }),
+          },
+        },
+      });
+      const editor = createEditor({
+        plugins: [
+          BaseParagraphPlugin,
+          BaseAIPlugin,
+          AIChatPlugin,
+          FullParentPlugin,
+        ],
+        userId: 'alice',
+        initialValue: [
+          {
+            children: [{ children: [{ text: 'Only' }], type: 'paragraph' }],
+            type: 'aiFullParent',
+          },
+        ],
+        selection: {
+          kind: 'text',
+          anchor: { path: [0, 0, 0], offset: 4 },
+          focus: { path: [0, 0, 0], offset: 4 },
+        },
+      });
+      const value = editor.read.value();
+      const ai = editor.plugin(AIChatPlugin);
+
+      if (action === 'accept') {
+        ai.store.set({ chatSelection: null, mode: 'insert' });
+        ai.api.setPreview('Answer');
+        ai.api.accept();
+      } else {
+        ai.store.set({
+          chatNodes: [],
+          chatSelection: editor.read.selection(),
+          mode: 'chat',
+        });
+        ai.api.setPreview('Answer');
+        ai.api.insertBelow();
+      }
+
+      expect({
+        preview: ai.store.get('previewValue'),
+        value: editor.read.value(),
+      }).toEqual({
+        preview: [{ children: [{ text: 'Answer' }], type: 'paragraph' }],
+        value,
+      });
+    }
+  );
+
+  it('selects the blocks a length limit lets insert below land', () => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+      userId: 'alice',
+      initialValue: [{ children: [{ text: 'Only' }], type: 'paragraph' }],
+      maxLength: 10,
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 4 },
+        focus: { path: [0, 0], offset: 4 },
+      },
+    });
+    const ai = editor.plugin(AIChatPlugin);
+
+    ai.store.set({
+      chatNodes: [],
+      chatSelection: editor.read.selection(),
+      mode: 'chat',
+    });
+    ai.api.setPreview('Answer\n\nMore');
+    ai.api.insertBelow();
+
+    expect({
+      children: editor.read.children(),
+      selection: editor.read.selection(),
+    }).toMatchObject({
+      children: [
+        { children: [{ text: 'Only' }], type: 'paragraph' },
+        { children: [{ text: 'Answer' }], type: 'paragraph' },
+      ],
+      selection: {
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 6, path: [1, 0] },
+      },
+    });
   });
 });

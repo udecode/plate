@@ -57,11 +57,16 @@ Current priorities:
   and no context selects an editable, so an editor nested in a slot renders its
   own default content. A Plate entrypoint never exports a raw Plite editable
   such as `PagedEditable`.
-- Public docs teach one Plate API. Only the Performance comparison and From
-  Plite to Plate guide (including its translation) name the internal runtime.
-  Contributor runtime references live outside the public docs collection. The
-  boundary covers navigation, search, LLM output, examples and installable docs
-  as well as visible prose.
+- Plate's public docs teach one Plate API. Outside the Plite section, only the
+  Performance comparison and From Plite to Plate guide (including its
+  translation) name the runtime. The Plite section at `/docs/plite` documents
+  `plitejs` for developers who build on it without Plate. It opens from one
+  entry in the Plate sidebar's API section and keeps its own sidebar, pager and
+  search label, so Plate navigation never lists its pages. Installable Plate
+  docs leave it out, because Plate apps import `platejs`. Contributor runtime
+  references live outside the public docs collection. The boundary covers
+  navigation, search, LLM output, examples and installable docs as well as
+  visible prose.
 - DOM output uses `data-editor` and `data-editor-*`. Exact attribute ownership
   protects application attributes sharing the prefix. New serialized output
   uses neutral markers; supported persisted formats retain explicit readers.
@@ -198,7 +203,9 @@ Current priorities:
   narrowing instead of publishing an always-present method family.
 - `platejs` and `platejs/react` call the live editor type `Editor`; package and
   entrypoint establish the layer. React creation uses `useCreateEditor(options,
-  deps?)`. Every Plate constructor and creation hook allocates a new editor and
+  deps?)`, which owns its editor for the component lifetime the way Plite's
+  `useEditor` does, so a remount or a replaced editor binds the same shared
+  document again. Every Plate constructor and creation hook allocates a new editor and
   refuses an `editor` option, and, like Plite's constructors, any other option
   outside its closed set. Static and server output use the same
   constructors. `platejs/static` adds renderers such as `EditorStatic` and
@@ -896,8 +903,14 @@ Current priorities:
   caret in a block that hides what follows it, such as a closed Details title,
   lands after the container that hides it, and an explicit `after` stays
   literal. The hiding feature contributes that anchor; inserting features name
-  no container. An authored `insert` must author `upsert` too when
-  generic construction cannot preserve its structure or domain identity.
+  no container. A block `insert` and `upsert` return `false` with nothing
+  changed when the block does not fit where it would land, and `upsert`
+  returns `true` when it reuses a block, so a slash command keeps its query on
+  a refusal. Block placement takes a block for `after` and `before` and a path
+  for `at`; only inline inserts take a point or `split`. An authored `insert`
+  must author `upsert` too when generic construction cannot preserve its
+  structure or domain identity. A generic element `toggle` returns what
+  `tx.blocks.toggle` returns and collapses the selection only when it applied.
   Default-constructible, schema-compatible text blocks also get `toggle`; text
   blocks with required construction properties and structural plugins author
   `toggle` only for real domain, wrap, conversion, or child semantics. An opt-in

@@ -2,11 +2,11 @@ import type { RuntimePluginReference, Value } from '../../facade';
 import type { GeneratedEditorValue } from '../../internal/editor/generatedEditorTypes';
 import type { EditorApplicationSchema, EditorValueInput } from '../../lib';
 import {
-  assertConstructorOptions,
   buildEditor,
   EDITOR_OPTION_KEYS,
   type EditorOptions as HeadlessEditorOptions,
   type PlatePluginsFromTuple,
+  readConstructorOptions,
   type RuntimePluginsFromTuple,
 } from '../../lib/editor/withPlite';
 import type { Shortcuts, PluginDefinitionInput } from '../plugin';
@@ -173,33 +173,31 @@ export function createEditor<
 >;
 
 export function createEditor(options: unknown = {}): unknown {
+  return createPlateEditor(options, false);
+}
+
+/** @internal */
+export const createDormantPlateEditor = (options: unknown) =>
+  createPlateEditor(options, true);
+
+const createPlateEditor = (options: unknown, dormant: boolean) => {
   const resolvedOptions = options as CreateEditorOptionsForValue<
     Value,
     readonly RuntimePluginReference[],
     EditorApplicationSchema | undefined
   >;
 
-  assertConstructorOptions(resolvedOptions, REACT_EDITOR_OPTION_KEYS);
-  // Named reads keep allocation options that the options object inherits.
   const {
-    id,
-    lifecycleErrorSink,
-    maxLength,
     navigationFeedback,
     plugins = [],
-    readOnly,
     ...rest
-  } = resolvedOptions;
+  } = readConstructorOptions(resolvedOptions, REACT_EDITOR_OPTION_KEYS);
 
   return buildEditor(
     {
       ...rest,
-      id,
-      lifecycleErrorSink,
-      maxLength,
       plugins: [...getPlateCorePlugins({ navigationFeedback }), ...plugins],
-      readOnly,
     },
-    REACT_EDITOR_OPTION_KEYS
+    dormant
   );
-}
+};

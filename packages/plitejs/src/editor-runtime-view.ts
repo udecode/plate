@@ -603,6 +603,11 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
         },
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           isSelectionWithinBlock(scopedState, selection(), options),
+        nodeMode: () => {
+          const current = semanticSelection();
+
+          return SelectionApi.isNode(current) ? current.mode : null;
+        },
         nodes: selectionNodes,
         ranges: selectionRanges,
       })
@@ -684,6 +689,7 @@ const withViewTransaction = <V extends Value>(
             ? SelectionApi.nodes(selectionInput.paths, {
                 anchorPath: selectionInput.anchorPath,
                 focusPath: selectionInput.focusPath,
+                mode: selectionInput.mode,
                 root: viewState.root,
               })
             : RangeApi.isRange(selectionInput)
@@ -776,9 +782,10 @@ const withViewTransaction = <V extends Value>(
         runImplicitSelectionMutation(options, () => {
           transaction.blocks.duplicate(options);
         })) as EditorUpdateTransaction<V, any>['blocks']['duplicate'],
-      insertAfter: (nodes, options) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.blocks.insertAfter(nodes, options)
+      insert: (nodes, options) =>
+        runImplicitSelectionMutation(
+          { at: options?.at ?? options?.after ?? options?.before },
+          () => transaction.blocks.insert(nodes, options)
         ),
       reset: (options) =>
         runImplicitSelectionMutation(options, () =>
@@ -916,6 +923,7 @@ const withViewTransaction = <V extends Value>(
         isValid: (value: unknown) => state.selection.isValid(value),
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           state.selection.isWithinBlock(options),
+        nodeMode: () => state.selection.nodeMode(),
         nodes: state.selection.nodes,
         ranges: () => state.selection.ranges(),
         collapse: (options = {}) =>
@@ -1249,8 +1257,8 @@ const createViewRuntime = <V extends Value>(
         throw new Error('Cannot update a read-only editor view.');
       }
 
-      const runUpdate = () => {
-        withEditorUpdateRoot(editor, viewState.root, () => {
+      const runUpdate = () =>
+        withEditorUpdateRoot(editor, viewState.root, () =>
           baseRuntime.update(
             (transaction, context) =>
               fn(
@@ -1263,21 +1271,23 @@ const createViewRuntime = <V extends Value>(
                 withViewUpdateContext(editor, context, viewState, getViewEditor)
               ),
             updateOptions
-          );
-        });
-      };
+          )
+        );
       const targetRuntime = getViewEditor()
         ? getTargetRuntime(getDefined(getViewEditor()))
         : null;
 
       if (targetRuntime) {
-        withAuthoredUpdateView(editor, getViewEditor() ?? editor, () =>
+        return withAuthoredUpdateView(editor, getViewEditor() ?? editor, () =>
           withEditorTargetRuntime(editor, targetRuntime, runUpdate)
         );
-        return;
       }
 
-      withAuthoredUpdateView(editor, getViewEditor() ?? editor, runUpdate);
+      return withAuthoredUpdateView(
+        editor,
+        getViewEditor() ?? editor,
+        runUpdate
+      );
     },
     void: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.void(...args)),
@@ -1344,11 +1354,11 @@ export const createEditorViewRuntime = <
         throw new Error('Cannot update a read-only editor view.');
       }
 
-      viewRuntime.update(
+      return viewRuntime.update(
         fn as (
           transaction: EditorUpdateTransaction<V, any>,
           context: EditorUpdateContext<Editor<V>>
-        ) => void,
+        ) => ReturnType<typeof fn>,
         { tags: policy.tags }
       );
     },
@@ -1406,6 +1416,7 @@ export const createEditorViewRuntime = <
           plugin: PluginReference
         ) => Readonly<{ api: unknown }>
       )(descriptor)) as unknown as Editor<V, TPlugins>['plugin'],
+    destroy: sourceEditor.destroy,
     id: sourceEditor.id,
     key: createViewKey,
     read: viewRead,

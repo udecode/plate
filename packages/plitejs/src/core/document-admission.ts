@@ -25,6 +25,7 @@ export type DocumentAdmission = Readonly<{
       after: EditorDocumentValue;
       before: EditorDocumentValue;
       change: DocumentChange;
+      editor: Editor;
       indexOf: (root: string) => DocumentIndex;
     }>
   ) => DocumentChange | null;

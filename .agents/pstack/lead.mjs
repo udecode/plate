@@ -98,6 +98,18 @@ export function currentLead(marker, now = Date.now()) {
 
 export const leadLabel = (run) => `${run.model} @${run.effort}`;
 
+export const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
+
+export function maxEffort(root = process.cwd()) {
+  const config = join(root, '.agents/pstack.json');
+  const max = existsSync(config) ? JSON.parse(readFileSync(config, 'utf8')).maxEffort : undefined;
+  if (max === undefined) return null;
+  if (!EFFORTS.includes(max)) throw new Error(`${config}: maxEffort is ${JSON.stringify(max)}, not one of ${EFFORTS.join(', ')}`);
+  return max;
+}
+
+export const capEffort = (effort, max) => (max && EFFORTS.indexOf(effort) > EFFORTS.indexOf(max) ? max : effort);
+
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const run = currentLead('lead.mjs');
   if (!run) {

@@ -73,7 +73,7 @@ const createNodeSelectionEditor = () => {
   const editor = createEditor();
   const element = document.createElement('div');
   const text = document.createTextNode('focus');
-  const selection = SelectionApi.nodes([[0]]);
+  const selection = SelectionApi.nodes([[0]], { mode: 'block' });
 
   element.tabIndex = 0;
   element.append(text);

@@ -340,10 +340,12 @@ const directDependencyName: 'boundaryBranch' =
   BoundaryOwnerPlugin.dependencies[0].name;
 const directApi: 'branch' = editor.api.boundaryBranch.label();
 const directRead: 'branch-ready' = editor.read.boundaryBranch.isReady();
-const directUpdate: number = editor.update.boundaryBranch.increment(1);
+const directUpdate: number | undefined =
+  editor.update.boundaryBranch.increment(1);
 const transitiveApi: 'leaf' = editor.api.boundaryLeaf.label();
 const transitiveRead: boolean = editor.read.boundaryLeaf.isReady();
-const transitiveUpdate: number = editor.update.boundaryLeaf.increment(1);
+const transitiveUpdate: number | undefined =
+  editor.update.boundaryLeaf.increment(1);
 const leafType: 'boundaryLeaf' =
   editor.read.schema.create(BoundaryLeafPlugin).type;
 
@@ -359,12 +361,12 @@ editor.plugin('boundaryLeaf');
 const reactEditor = createEditor({ plugins: [BoundaryReactOwnerPlugin] });
 const reactDirectApi: 'branch' = reactEditor.api.boundaryBranch.label();
 const reactTransitiveApi: 'leaf' = reactEditor.api.boundaryLeaf.label();
-const reactTransitiveUpdate: number =
+const reactTransitiveUpdate: number | undefined =
   reactEditor.update.boundaryLeaf.increment(1);
 const stagedEditor = createHeadlessEditor({ plugins: [BoundaryStagedPlugin] });
 const stagedApi: 'third' = stagedEditor.api.boundaryStaged.third();
 const stagedRead: 3 = stagedEditor.read.boundaryStaged.third();
-const stagedUpdate: 3 = stagedEditor.update.boundaryStaged.third();
+const stagedUpdate: 3 | undefined = stagedEditor.update.boundaryStaged.third();
 const stagedPortal = stagedEditor.plugin(BoundaryStagedPlugin);
 const stagedState: 'ready' = stagedPortal.store.get().third;
 const stagedSelector: number = stagedPortal.store.get('second');

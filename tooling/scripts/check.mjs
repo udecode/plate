@@ -84,9 +84,14 @@ export const steps = [
   {
     // www typecheck and its generators run the plate CLI from packages/cli/dist.
     name: 'www',
-    run: 'pnpm --filter @platejs/cli build && pnpm --filter www typecheck && pnpm build:www:ci',
+    run: 'pnpm --filter @platejs/cli build && pnpm --filter www typecheck',
     write:
       'pnpm --filter @platejs/cli build && pnpm --filter www editor:generate && pnpm --filter www api-reference && pnpm --filter www build:registry',
+  },
+  {
+    name: 'www-build',
+    run: 'pnpm build:www:ci',
+    optIn: true,
   },
 ];
 
@@ -148,6 +153,18 @@ export const manualOnly = {
   'typecheck:watch': 'Watch mode.',
 };
 
+export const selectSteps = (args) => {
+  const writing = args.includes('--write');
+  const building = args.includes('--build');
+  const names = args.filter((arg) => !arg.startsWith('--'));
+  return steps.filter(
+    (step) =>
+      ((names.length === 0 ? !step.optIn : names.includes(step.name)) ||
+        (building && step.optIn)) &&
+      (!writing || step.write)
+  );
+};
+
 const runStep = (step, command, writing) => {
   const started = Date.now();
   const watch = !writing && step.unchangedFiles;
@@ -169,7 +186,11 @@ const main = () => {
   const writing = args.includes('--write');
   const names = args.filter((arg) => !arg.startsWith('--'));
   if (args.includes('--list')) {
-    for (const step of steps) console.info(`${step.name}\t${step.run}`);
+    for (const step of steps) {
+      console.info(
+        `${step.name}\t${step.run}${step.optIn ? '\t(opt-in: --build or by name)' : ''}`
+      );
+    }
     return 0;
   }
   const unknown = names.filter(
@@ -181,12 +202,14 @@ const main = () => {
     );
     return 1;
   }
+  if (writing && args.includes('--build')) {
+    console.error(
+      '[check] --build runs a step with no writer; run it without --write.'
+    );
+    return 1;
+  }
 
-  const selected = steps.filter(
-    (step) =>
-      (names.length === 0 || names.includes(step.name)) &&
-      (!writing || step.write)
-  );
+  const selected = selectSteps(args);
   const group = Boolean(process.env.GITHUB_ACTIONS);
   const results = new Map();
 

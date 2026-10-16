@@ -22,6 +22,7 @@ import {
   valueRootIndex,
 } from './change/document-change';
 import { DocumentIndex, type NodeList } from './change/document-index';
+import { jsonEqual } from './change/json';
 import { RootChange, reconcileChildrenStep } from './change/root-change';
 import type { JsonEditorValue, PreparedTokenSlice } from './change/tokens';
 import {
@@ -32,6 +33,7 @@ import {
   type ContentCompletionSchema,
   completeContent,
   contentKindOf,
+  holdsContent,
   mixedContentWindow,
   textPropertiesEqual,
 } from './content-completion';
@@ -42,6 +44,7 @@ import {
 import { getEditorSchema } from './editor-runtime';
 import { profileCoreDuration } from './profiling';
 import type { CompiledSchemaContentProgram } from './schema-compiler';
+import { EditorSchemaValidationError } from './schema-validation';
 import type { RepresentationRepairSink } from './slice-fit/fit-report';
 
 type RepresentationSchema = ReturnType<typeof getEditorSchema>;
@@ -150,6 +153,16 @@ const completeAt = (
   });
 
 /**
+ * A run of a root's children completed apart from the rest. The head starts
+ * the root and fills its prefix slots. `min` is the share of the root's
+ * minimum the run fills: the minimum appends at the root's end, so only the
+ * run that ends the root fills any, the count the other runs leave.
+ *
+ * @internal
+ */
+export type RootPart = Readonly<{ head: boolean; min: number }>;
+
+/**
  * Canonical children at their element's site, as the canonical pass would
  * give them, and each element completion built. `sources` holds, at each
  * index of `children`, the node before the canonical pass, so a given child
@@ -164,7 +177,8 @@ export const completeChildrenAt = (
   site: readonly Element[],
   children: readonly Descendant[],
   root: string,
-  vacated?: (slot: number, candidate: Descendant) => boolean
+  vacated?: (slot: number, candidate: Descendant) => boolean,
+  part?: RootPart
 ): ContentCompletion & Readonly<{ sources: readonly Descendant[] }> => {
   const completion = completeDirectChildren(
     editor,
@@ -173,7 +187,8 @@ export const completeChildrenAt = (
     root,
     {},
     site.slice(1),
-    vacated
+    vacated,
+    site.length === 0 ? part : undefined
   );
   // As the canonical pass does after completion, so an empty text it builds
   // takes the properties its site declares. The pass maps child for child.
@@ -194,6 +209,17 @@ export const completeChildrenAt = (
   };
 };
 
+const partOf = (
+  content: CompiledSchemaContentProgram | null | undefined,
+  part: RootPart | undefined
+) => {
+  if (!content || !part) return content;
+
+  const { prefix, ...rest } = content;
+
+  return { ...rest, min: part.min, ...(part.head && prefix ? { prefix } : {}) };
+};
+
 const canonicalizeDirectChildren = (
   editor: Editor,
   parent: Editor | Element,
@@ -212,13 +238,14 @@ const completeDirectChildren = (
   root: string,
   options: CanonicalizeOptions,
   ancestors: readonly Element[],
-  vacated?: (slot: number, candidate: Descendant) => boolean
+  vacated?: (slot: number, candidate: Descendant) => boolean,
+  part?: RootPart
 ): ContentCompletion => {
   const schema = options.schema ?? resolveRepresentationSchema(editor);
   const element = ElementApi.isElement(parent);
   const contentSpec = element
     ? schema.getElementContent(parent.type)
-    : schema.getRootContent(root, options.document);
+    : partOf(schema.getRootContent(root, options.document), part);
   const { report } = options;
   const children =
     element || contentSpec?.allowsText
@@ -335,12 +362,14 @@ const canonicalizeNode = (
 };
 
 /**
- * One top-level node through `fitRootChildren`'s pass, without completing its
- * root.
+ * Fits one imported top-level block as fitting the whole document would:
+ * `fitRootChildren`'s pass, then its element's content grammar. The root is
+ * never completed, so the caller checks where the block sits. Throws when the
+ * content cannot fit.
  *
  * @internal
  */
-export const canonicalizeTopLevelNode = (
+export const fitImportedBlock = (
   editor: Editor,
   node: Descendant,
   root: string
@@ -353,8 +382,24 @@ export const canonicalizeTopLevelNode = (
     [],
     false
   );
+  const block = getDefined(canonical);
 
-  return getDefined(canonical);
+  if (!ElementApi.isElement(block) || !schema.getElementContent(block.type)) {
+    return block;
+  }
+
+  const children = schema.fitContent(ContentSliceValue.closed(block.children), {
+    parent: block,
+    root,
+  });
+
+  if (children === null) {
+    throw new EditorSchemaValidationError(
+      `Editor element "${block.type}" cannot fit its imported content.`
+    );
+  }
+
+  return jsonEqual(children, block.children) ? block : { ...block, children };
 };
 
 /** Full-root canonicalization for explicit snapshot replacement/maintenance. */
@@ -464,7 +509,8 @@ const getTextOffsetWithin = (
   editor: Editor,
   children: readonly Descendant[],
   ancestorPath: readonly number[],
-  point: Point
+  point: Point,
+  edgeWidth: 0 | 1
 ): number | null => {
   const ancestor = getDescendant(children, ancestorPath);
 
@@ -494,8 +540,11 @@ const getTextOffsetWithin = (
         continue;
       }
 
-      if (resolveRepresentationSchema(editor).isVoid(node)) continue;
-      if (visit(node.children, nodePath)) return true;
+      const isVoid = resolveRepresentationSchema(editor).isVoid(node);
+
+      offset += edgeWidth;
+      if (!isVoid && visit(node.children, nodePath)) return true;
+      offset += edgeWidth;
     }
 
     return false;
@@ -511,7 +560,8 @@ const getPointAtTextOffset = (
   children: readonly Descendant[],
   ancestorPath: readonly number[],
   targetOffset: number,
-  association: -1 | 1
+  association: -1 | 1,
+  edgeWidth: 0 | 1
 ): Point | null => {
   const ancestor = getDescendant(children, ancestorPath);
 
@@ -519,6 +569,7 @@ const getPointAtTextOffset = (
 
   let offset = 0;
   let previous: Point | null = null;
+  let endingAt: Point | null = null;
   const visit = (
     nodes: readonly Descendant[],
     path: readonly number[]
@@ -530,7 +581,19 @@ const getPointAtTextOffset = (
       if (TextApi.isText(node)) {
         const end = offset + node.text.length;
 
-        if (targetOffset < end || (targetOffset === end && association < 0)) {
+        if (edgeWidth) {
+          if (offset <= targetOffset && targetOffset <= end) {
+            const point = { offset: targetOffset - offset, path: nodePath };
+
+            if (association < 0 || targetOffset < end || offset === end) {
+              return point;
+            }
+            endingAt = point;
+          }
+        } else if (
+          targetOffset < end ||
+          (targetOffset === end && association < 0)
+        ) {
           return {
             offset: Math.max(0, targetOffset - offset),
             path: nodePath,
@@ -542,16 +605,19 @@ const getPointAtTextOffset = (
         continue;
       }
 
-      if (resolveRepresentationSchema(editor).isVoid(node)) continue;
-      const nested = visit(node.children, nodePath);
+      const isVoid = resolveRepresentationSchema(editor).isVoid(node);
+
+      offset += edgeWidth;
+      const nested = isVoid ? null : visit(node.children, nodePath);
 
       if (nested) return nested;
+      offset += edgeWidth;
     }
 
     return null;
   };
 
-  return visit(ancestor.children, ancestorPath) ?? previous;
+  return visit(ancestor.children, ancestorPath) ?? endingAt ?? previous;
 };
 
 /**
@@ -566,8 +632,10 @@ export const mapCanonicalRepresentationPoint = (
   change: DocumentChange,
   root: string,
   point: Point,
-  association: -1 | 1
+  association: -1 | 1,
+  options: Readonly<{ countInlineEdges?: true }> = {}
 ): Point | null => {
+  const edgeWidth = options.countInlineEdges ? 1 : 0;
   const beforeChildren = beforeDocument.value as readonly Descendant[];
   const afterChildren = afterDocument.value as readonly Descendant[];
 
@@ -587,7 +655,8 @@ export const mapCanonicalRepresentationPoint = (
       editor,
       beforeChildren,
       ancestorPath,
-      point
+      point,
+      edgeWidth
     );
 
     if (textOffset === null) continue;
@@ -609,7 +678,8 @@ export const mapCanonicalRepresentationPoint = (
       afterChildren,
       mappedAncestor.path,
       textOffset,
-      association
+      association,
+      edgeWidth
     );
 
     if (mapped) return mapped;
@@ -886,6 +956,18 @@ const isTextOnlyRepresentationChange = (
   return changed && textOnly;
 };
 
+const holdsAfter = (
+  nodes: NodeList<Descendant>,
+  node: Descendant,
+  from: number
+) => {
+  for (let index = from; index < nodes.length; index += 1) {
+    if (nodes.at(index) === node) return true;
+  }
+
+  return false;
+};
+
 const replaceCanonicalChildWindow = (
   draft: CanonicalRootDraft,
   editor: Editor,
@@ -1078,11 +1160,9 @@ const replaceCanonicalChildWindow = (
 
   if (!contentSpec) return;
 
-  const current = (
-    path.length === 0
-      ? draft.document.value
-      : (draft.document.node(path) as Element).children
-  ) as readonly Descendant[];
+  const children =
+    path.length === 0 ? null : (draft.document.node(path) as Element).children;
+  const nodes = children ?? (draft.document.nodes as NodeList<Descendant>);
   const previousParent = beforeDocument
     ? path.length === 0
       ? null
@@ -1091,13 +1171,12 @@ const replaceCanonicalChildWindow = (
   const previousChildren =
     beforeDocument && options.displacement !== 'none'
       ? path.length === 0
-        ? (beforeDocument.value as readonly Descendant[])
+        ? (beforeDocument.nodes as NodeList<Descendant>)
         : previousParent && ElementApi.isElement(previousParent)
           ? previousParent.children
           : null
       : null;
-  const { children: completed } = completeContent({
-    children: current,
+  const completion = {
     content: contentSpec,
     dropsFromEmptyText,
     editor,
@@ -1108,12 +1187,20 @@ const replaceCanonicalChildWindow = (
       ? {
           editing: {
             vacated: (slot: number, child: Descendant) =>
-              current.length < previousChildren.length &&
-              previousChildren[slot] !== child &&
-              previousChildren.includes(child, slot + 1),
+              nodes.length < previousChildren.length &&
+              previousChildren.at(slot) !== child &&
+              holdsAfter(previousChildren, child, slot + 1),
           },
         }
       : {}),
+  };
+
+  if (holdsContent({ ...completion, children: nodes })) return;
+
+  const current = children ?? (draft.document.value as readonly Descendant[]);
+  const { children: completed } = completeContent({
+    ...completion,
+    children: current,
   });
 
   if (completed === current) return;

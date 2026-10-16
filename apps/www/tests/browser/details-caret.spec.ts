@@ -1,28 +1,17 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-import type { PliteBrowserHandleElement } from '../../../../packages/plitejs/src/react/editable/browser-handle';
 import {
   startBrowserNativeEventTrace,
   takeBrowserNativeEventTrace,
 } from '../../../../packages/test/src/playwright/native-event-trace';
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
-
-const selection = (root: Locator) =>
-  root.evaluate((element: PliteBrowserHandleElement) => ({
-    model: element.__EDITOR_BROWSER_HANDLE__?.getSelection(),
-    dom: element.__EDITOR_BROWSER_HANDLE__?.getDOMSelection(),
-    focused: document.activeElement === element,
-    text: window.getSelection()?.toString(),
-  }));
-const value = (root: Locator) =>
-  root.evaluate(
-    (element: PliteBrowserHandleElement) =>
-      element.__EDITOR_BROWSER_HANDLE__?.getValue().children
-  );
-const caret = (path: number[], offset: number) => ({
-  anchor: { path, offset },
-  focus: { path, offset },
-});
+import {
+  caret,
+  editorRoot,
+  read,
+  readValue,
+  textPath,
+} from './details-fixture';
 
 for (const route of ['details-demo', 'playground']) {
   for (const action of [
@@ -40,9 +29,7 @@ for (const route of ['details-demo', 'playground']) {
       const errors = recordBrowserRuntimeErrors(page);
       await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
       await page.goto(`/blocks/${route}`);
-      const root = page
-        .locator('[data-editor="true"][contenteditable="true"]')
-        .first();
+      const root = editorRoot(page);
       if (action === 'NestedBackspace') {
         await root
           .getByRole('button', { name: 'Expand details', exact: true })
@@ -59,12 +46,7 @@ for (const route of ['details-demo', 'playground']) {
             : 'Expand to explore Details';
       const summary = page.getByText(title, { exact: true });
       await expect(summary).toBeVisible();
-      const path = (await summary
-        .locator('xpath=ancestor::*[@data-editor-node="element"][1]')
-        .getAttribute('data-editor-path'))!
-        .split(',')
-        .map(Number)
-        .concat(0);
+      const path = await textPath(summary);
       const detailsPath = path.slice(0, -2);
       const following = [
         ...detailsPath.slice(0, -1),
@@ -74,12 +56,12 @@ for (const route of ['details-demo', 'playground']) {
       await summary.click({ position: { x: 30, y: 10 } });
       await page.keyboard.press('End');
       await expect
-        .poll(() => selection(root))
+        .poll(() => read(root))
         .toMatchObject({
           model: caret(path, title.length),
           dom: caret(path, title.length),
         });
-      let before = await value(root);
+      let before = await readValue(root);
       await startBrowserNativeEventTrace(root);
       try {
         if (
@@ -89,7 +71,7 @@ for (const route of ['details-demo', 'playground']) {
         ) {
           await page.keyboard.press('Enter');
           await expect
-            .poll(() => selection(root))
+            .poll(() => read(root))
             .toMatchObject({
               model: caret(following, 0),
               dom: caret(following, 0),
@@ -97,13 +79,13 @@ for (const route of ['details-demo', 'playground']) {
           if (action === 'Backspace' && route === 'playground') {
             await page.keyboard.press('Backspace');
             await expect
-              .poll(() => selection(root))
+              .poll(() => read(root))
               .toMatchObject({
                 model: caret(following, 0),
                 dom: caret(following, 0),
               });
           }
-          if (action !== 'NestedBackspace') before = await value(root);
+          if (action !== 'NestedBackspace') before = await readValue(root);
         }
         if (action === 'DeleteParagraph') {
           const followingText =
@@ -114,7 +96,7 @@ for (const route of ['details-demo', 'playground']) {
             await page.keyboard.press('Shift+ArrowRight');
           }
           await expect
-            .poll(() => selection(root))
+            .poll(() => read(root))
             .toMatchObject({
               model: { anchor: { path: following, offset: 0 } },
               dom: { focus: { path: following } },
@@ -143,7 +125,7 @@ for (const route of ['details-demo', 'playground']) {
                     focus: { path, offset: title.length - 1 },
                   };
         await expect
-          .poll(() => selection(root))
+          .poll(() => read(root))
           .toMatchObject({
             model: expected,
             dom: action.startsWith('Shift')
@@ -161,17 +143,17 @@ for (const route of ['details-demo', 'playground']) {
               : {}),
           });
         if (action === 'DeleteParagraph') {
-          const after = await value(root);
+          const after = await readValue(root);
           expect(after?.[path[0]]).toEqual(before?.[path[0]]);
           before = after;
         } else {
-          expect(await value(root)).toEqual(before);
+          expect(await readValue(root)).toEqual(before);
         }
         await page.screenshot({ path: info.outputPath('caret.png') });
         if (action.endsWith('Backspace') || action === 'DeleteParagraph') {
           await page.keyboard.type('XYZ', { delay: 60 });
           await expect
-            .poll(() => selection(root))
+            .poll(() => read(root))
             .toMatchObject({
               model: caret(path, title.length + 3),
               dom: caret(path, title.length + 3),
@@ -181,13 +163,13 @@ for (const route of ['details-demo', 'playground']) {
           ).toBeVisible();
           await page.screenshot({ path: info.outputPath('typed.png') });
           await page.keyboard.press('ControlOrMeta+z');
-          await expect.poll(() => value(root)).toEqual(before);
+          await expect.poll(() => readValue(root)).toEqual(before);
         } else if (action.startsWith('Shift')) {
           await page.keyboard.type('XYZ', { delay: 60 });
-          const typed = await selection(root);
+          const typed = await read(root);
           expect(typed.model).not.toBeNull();
           await expect
-            .poll(() => selection(root))
+            .poll(() => read(root))
             .toMatchObject({
               model: typed.model,
               dom: typed.model,
@@ -195,7 +177,7 @@ for (const route of ['details-demo', 'playground']) {
             });
           await expect(page.getByText(/XYZ/).first()).toBeVisible();
           await page.keyboard.press('ControlOrMeta+z');
-          await expect.poll(() => value(root)).toEqual(before);
+          await expect.poll(() => readValue(root)).toEqual(before);
         }
         errors.assertNone();
       } finally {

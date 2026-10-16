@@ -14,6 +14,7 @@ export type {
   TransferRead,
 } from './core/transfer';
 export type {
+  TransferAdoptInput,
   TransferCheck,
   TransferDiagnostic,
   TransferEdge,
@@ -21,6 +22,8 @@ export type {
   TransferIntent,
   TransferLandingInput,
   TransferOutcome,
+  TransferPatch,
+  TransferPatchProperties,
   TransferPayload,
   TransferRefusalReason,
   TransferRelation,
@@ -116,6 +119,7 @@ export {
   isEditor,
 } from './interfaces/editor';
 export type {
+  BlockInsertOptions,
   CompatibleEditorCommand,
   CreateEditorOptions,
   Editor,
@@ -127,6 +131,7 @@ export type {
   EditorCommandContinuation,
   EditorCommandDescriptor,
   EditorCommandDispatch,
+  EditorDirectCommandDispatch,
   EditorCommandHandler,
   EditorCommandInput,
   EditorCommandPlace,

@@ -108,7 +108,7 @@ Read from source at `../ckeditor5` `14e73cc31b`, `../tiptap` `91c51be53c`, `../l
 - `projectFormatDocument` in `packages/platejs/src/lib/editor/withPlite.ts` owns the rule. It returns a document without authored metadata unchanged, throws the shared `TypeError` unless `projection` is `accepted` or `proposed`, then requires the authored plugin and calls its document capability, `project(document, 'accepted' | 'proposed')`.
 - The editor methods reach it through `projectPlateFormatDocument`, and detached conversion through `withPlateFormatCompilation`'s `readDocument(document, projection, read)`, which hands `read` the projected document and its diagnostics. No format keeps its own check or `proposed` fallback.
 - A detached serializer cannot read an authored document without the rule. An editor-side export, such as HTML, plain text or static HTML, calls `projectPlateFormatDocument` before it builds a view by convention.
-- `exportDocx` projects on its own through `projectAuthoredDocument` and `projectAuthoredReview`, because its `review` projection writes Word revisions, and it requires `projection` on every call.
+- `exportDocx` projects on its own, because its `review` projection writes Word revisions from the stored document's review marks through `createReviewProjection` (`packages/platejs/src/docx/export/lib/reviewProjection.tsx`); `accepted` and `proposed` go through `projectAuthoredDocument`. It requires `projection` on every call.
 
 ## Open work
 

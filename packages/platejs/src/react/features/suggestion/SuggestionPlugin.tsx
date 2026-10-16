@@ -37,7 +37,7 @@ const suggestionReactAdapter: SuggestionReactAdapter = {
         return;
       }
       store?.setActiveId(
-        element.getAttribute('data-editor-authored-change')?.split(' ')[0] ??
+        element.getAttribute('data-editor-authored-groups')?.split(' ')[0] ||
           null
       );
     },

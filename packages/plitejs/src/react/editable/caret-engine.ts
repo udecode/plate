@@ -4,6 +4,7 @@ import {
   type EditorUpdatePolicyFor,
   type MoveUnit,
   NodeApi,
+  type NodeSelection,
   type Path,
   PathApi,
   type Point,
@@ -500,6 +501,33 @@ const getObjectOwnerForwardTarget = (
         getSelectableOwnerNodeSelection(editor, path));
 };
 
+const isObjectPath = (editor: ReactRuntimeEditor, path: Path) =>
+  editor.read((state) => {
+    const node = state.nodes.get(path)?.[0];
+
+    return node ? state.schema.isObject(node) : false;
+  });
+
+const getNodeSelectionExitTarget = (
+  editor: ReactRuntimeEditor,
+  selection: NodeSelection,
+  reverse: boolean
+) => {
+  if (!reverse) {
+    return getStepPastTarget(
+      editor,
+      selection.paths.at(-1) ?? selection.paths[0]
+    );
+  }
+
+  const point = editor.read((state) => state.points.before(selection.paths[0]));
+
+  return point
+    ? (getObjectReverseEntryTarget(editor, point) ??
+        SelectionApi.text({ anchor: point, focus: point }))
+    : null;
+};
+
 export const getSelectableOwnerVerticalNavigationTarget = ({
   editor,
   event,
@@ -524,49 +552,43 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
 
   if (SelectionApi.isNode(selection)) {
     const firstPath = selection.paths[0];
-    const lastPath = selection.paths.at(-1);
-    const entersObjectCaption =
+    const lastPath = selection.paths.at(-1) ?? firstPath;
+
+    if (
       event.key === 'ArrowDown' &&
-      selection.paths.length === 1 &&
-      lastPath &&
-      getSelectableOwnerNodeSelection(editor, lastPath) &&
-      editor.read((state) => {
-        const owner = state.nodes.get(lastPath)?.[0];
-
-        return owner ? state.schema.isObject(owner) : false;
-      });
-
-    if (entersObjectCaption && lastPath) {
+      selection.mode === 'object' &&
+      isObjectPath(editor, lastPath)
+    ) {
       return getObjectOwnerForwardTarget(editor, lastPath);
     }
 
-    if (event.key === 'ArrowUp') {
-      const point = editor.read(
-        (state) =>
-          state.points.before(firstPath) ?? state.points.start(firstPath)
-      );
-
-      return point
-        ? (getObjectReverseEntryTarget(editor, point) ??
-            SelectionApi.text({ anchor: point, focus: point }))
-        : null;
-    }
-
-    if (!lastPath) return null;
-
-    const end = editor.read((state) => state.points.end(lastPath));
-
-    return (
-      getStepPastTarget(editor, lastPath) ??
-      (end ? SelectionApi.text({ anchor: end, focus: end }) : null)
+    const exit = getNodeSelectionExitTarget(
+      editor,
+      selection,
+      event.key === 'ArrowUp'
     );
+
+    if (exit) return exit;
+
+    const edge = editor.read((state) =>
+      event.key === 'ArrowUp'
+        ? state.points.start(firstPath)
+        : state.points.end(lastPath)
+    );
+
+    if (!edge) return null;
+
+    return event.key === 'ArrowUp'
+      ? (getObjectReverseEntryTarget(editor, edge) ??
+          SelectionApi.text({ anchor: edge, focus: edge }))
+      : SelectionApi.text({ anchor: edge, focus: edge });
   }
 
   if (!SelectionApi.isText(selection) || !RangeApi.isCollapsed(selection)) {
     return null;
   }
 
-  const getAdjacentOwner = (reverse: boolean) => {
+  const getAdjacentTarget = (reverse: boolean) => {
     const adjacent = editor.read((state) => {
       const block = state.nodes.block({ at: selection.focus });
       const edge =
@@ -585,12 +607,27 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
 
     if (!adjacent) return null;
 
-    const owner = getSelectableOwnerAncestorNodeSelection(
+    const ancestorOwner = getSelectableOwnerAncestorNodeSelection(
       editor,
       adjacent.point
     );
+    const owner =
+      ancestorOwner && !PathApi.equals(ancestorOwner.path, adjacent.blockPath)
+        ? ancestorOwner
+        : null;
+    // Browsers do not move a native caret into a nested editing host, so text
+    // under a 'model' coverage boundary, such as an external text view, is
+    // entered by setting the model selection.
+    const modelSelectedText =
+      !owner &&
+      getMountedEditableDOMRuntime(editor)
+        ?.domCoverage.getBoundariesForRange({
+          anchor: adjacent.point,
+          focus: adjacent.point,
+        })
+        .some(({ selectionPolicy }) => selectionPolicy === 'model');
 
-    if (!owner || PathApi.equals(owner.path, adjacent.blockPath)) return null;
+    if (!owner && !modelSelectedText) return null;
 
     if (!PointApi.equals(selection.focus, adjacent.edge)) {
       try {
@@ -614,6 +651,13 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
       } catch {
         return null;
       }
+    }
+
+    if (!owner) {
+      return SelectionApi.text({
+        anchor: adjacent.point,
+        focus: adjacent.point,
+      });
     }
 
     if (reverse) {
@@ -659,7 +703,7 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
   };
 
   if (event.key === 'ArrowDown') {
-    return getAdjacentOwner(false);
+    return getAdjacentTarget(false);
   }
 
   const owner = getSelectableOwnerAncestorNodeSelection(
@@ -667,7 +711,7 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
     selection.focus
   );
 
-  if (!owner) return getAdjacentOwner(true);
+  if (!owner) return getAdjacentTarget(true);
 
   if (PointApi.equals(selection.focus, owner.start)) {
     return owner.selection;
@@ -762,18 +806,12 @@ export const getSelectableOwnerHorizontalNavigationTarget = ({
   if (SelectionApi.isNode(selection)) {
     const path = selection.paths[0];
 
-    if (
-      selection.paths.length !== 1 ||
-      !path ||
-      !getSelectableOwnerNodeSelection(editor, path) ||
-      !editor.read((state) => {
-        const node = state.nodes.get(path)?.[0];
-
-        return node ? state.schema.isObject(node) : false;
-      })
-    ) {
-      return null;
+    if (selection.mode === 'block') {
+      return (
+        getNodeSelectionExitTarget(editor, selection, reverse) ?? selection
+      );
     }
+    if (!isObjectPath(editor, path)) return null;
 
     if (!reverse) return getObjectOwnerForwardTarget(editor, path);
 
@@ -836,6 +874,28 @@ export const getSelectableOwnerHorizontalNavigationTarget = ({
     : null;
 };
 
+const getVisibleOwnerTarget = (
+  coverage: DOMCoverageSession | undefined,
+  target: Selection,
+  reverse: boolean
+) => {
+  if (!SelectionApi.isText(target)) return target;
+
+  const boundary = coverage
+    ?.getBoundariesForRange(target)
+    .find(({ selectionPolicy }) => selectionPolicy === 'skip');
+
+  if (!boundary) return target;
+
+  const outside = coverage?.getPointOutsideBoundary(boundary, target.focus, {
+    reverse,
+  });
+
+  return outside
+    ? SelectionApi.text({ anchor: outside, focus: outside })
+    : null;
+};
+
 export const applyEditableCaretMovement = ({
   domPhaseScheduler,
   editor,
@@ -872,10 +932,32 @@ export const applyEditableCaretMovement = ({
 
   if (selectableOwnerTarget) {
     event.preventDefault();
+    const target = getVisibleOwnerTarget(
+      coverage,
+      selectableOwnerTarget,
+      nativeEvent.key === 'ArrowUp' ||
+        (nativeEvent.key !== 'ArrowDown' &&
+          getHorizontalModelReverse(editor, event, selection))
+    );
+
+    if (!target) return caretMovementHandled();
+    const landing =
+      (nativeEvent.key === 'ArrowDown' || nativeEvent.key === 'ArrowUp') &&
+      preferredX !== undefined &&
+      SelectionApi.isText(target) &&
+      RangeApi.isCollapsed(target)
+        ? runtime?.externalText.verticalEntryPoint(
+            target.focus,
+            nativeEvent.key === 'ArrowDown' ? 'start' : 'end',
+            preferredX
+          )
+        : null;
     writePliteViewSelection(editor, null);
     getMountedEditableDOMRuntime(editor)?.clearModelSelectionDOMPreference();
     dispatchCommand(editor, editorCommands.select, {
-      target: selectableOwnerTarget,
+      target: landing
+        ? SelectionApi.text({ anchor: landing, focus: landing })
+        : target,
     });
 
     return caretMovementHandled();

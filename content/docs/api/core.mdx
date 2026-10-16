@@ -8,17 +8,24 @@ description: Editor creation, plugins, and React hooks from platejs.
 ### `BlockInsertOptions`
 
 Placement options for feature commands that insert whole blocks. Import the
-type from `platejs` when declaring a public command boundary.
+type from `platejs` when declaring a public command boundary. It takes one of
+`at`, `after` and `before`, and `replaceEmpty` only with `after` or no
+placement. The type refuses other combinations, and passing one throws.
 
-- `at`: an explicit insertion location.
-- `before`: a live block key; omit `at` and `after` when using it.
-- `after`: a live source block target; omit `at` when using it. Without `at`
-  and `after`, the insert lands after the caret's block, or after the container
-  that hides what follows it, such as a closed Details for its title.
-- `replaceEmpty`: replace the empty, writable source text block when inserting
-  after it. Structural and atomic blocks, and an empty block that is not block
+- `at`: the path to insert at, a slot among its parent's children.
+- `before`: the block to insert before.
+- `after`: the block to insert after. Without `at`, `after` and `before`, the
+  insert lands after the caret's block, or after the container that hides what
+  follows it, such as a closed Details for its title.
+- `replaceEmpty`: replace the empty, writable source text block the blocks land
+  after. Structural and atomic blocks, and an empty block that is not block
   content, such as a Details title, remain intact.
 - `select`: select the inserted content.
+
+A block insert command returns `false` and changes nothing when the block does
+not fit where it would land, such as in a parent that already holds as many
+children as it allows. An upsert returns `true` when it reuses a matching empty
+block.
 
 ### `createEditor`
 

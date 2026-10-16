@@ -8,6 +8,7 @@ export type DocsCategory = 'api' | 'component' | 'example' | 'guide' | 'plugin';
 
 type DocsMetaOverlayItem = {
   description?: string;
+  experimental?: true;
   keywords?: string[];
   label?: string | string[];
   title?: string;
@@ -112,6 +113,10 @@ function unwrapSingleUntitledGroup(items: SidebarNavItem[]) {
   return items;
 }
 
+export function getSidebarSectionCategory(title: string | undefined) {
+  return title ? categorySidebarSections[title] : undefined;
+}
+
 export function getSidebarCategoryItems(title: string | undefined) {
   if (!title) return undefined;
 
@@ -123,7 +128,7 @@ export function getSidebarCategoryItems(title: string | undefined) {
     )?.items;
   }
 
-  const category = categorySidebarSections[title];
+  const category = getSidebarSectionCategory(title);
 
   if (!category) return undefined;
 

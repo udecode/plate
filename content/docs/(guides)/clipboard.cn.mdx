@@ -61,10 +61,15 @@ Headless command 从 `ContentSlice` 开始，不让 `DataTransfer` 离开 DOM bo
 
 命令处理器委托之后，`editorReads.slice.landing` 决定粘贴落地的内容。输入中的
 `source` 是处理器给出的切片，`slice` 是符合 `maxLength` 的部分，`target` 是解析出的
-目标。空块中的折叠光标得到 `empty`，其他情况得到 `context`，并带有粘贴起点所在的块。
-返回要落地的 `slice`，也可以加上 `replaceEmpty`，用整块内容替换 `empty` 目标。
+目标。粘贴替换掉的文本不计入限制。空块中的折叠光标得到 `empty`，其他情况得到
+`context`，并带有粘贴起点所在的块。粘贴到选中的块上时会整块替换这些块，
+`context` 中的块是第一个选中块起点处最内层的块，例如引用块中的第一个段落。
+读取的 `state` 读取粘贴落入的根，例如图注所在的根，
+所以 `target.block` 中的路径属于该根。返回要落地的 `slice`，也可以加上
+`replaceEmpty`，用整块内容替换 `empty` 目标。Plate 会用同样的方式截断返回的
+`slice`：扣除被替换的文本后，截到符合 `maxLength` 的部分。
 
-复制文本的拖拽（例如来自另一个编辑器或只读视图）会在放下的位置通过同一个读取落地，但不运行命令处理器。
+文本拖拽会在放下的位置通过同一个读取落地，但不运行命令处理器。粘贴或复制文本的拖拽（例如来自另一个编辑器或只读视图）的输入 `intent` 为 `copy`，在同一文档内移动文本的拖拽为 `move`。移动携带的正是删除其范围会移除的内容；当删除不会移除任何内容时（例如范围只包含一个空行），移动以 `no-op` 拒绝。当 `maxLength` 会截断移动，或落地会改变被移动内容的文本或标记，或改变其携带的区块的类型或属性（声明为 `landing: 'rebase'` 或 `'adopt'` 的元素属性除外，例如列表项的层级或所属列表）时，移动以 `lossy` 拒绝且不做任何改变。移动不检查被移动文本在落点处并入的区块及其外层区块，但会检查它携带的其他所有区块，包括空的最后一个区块。封闭区块（例如标题）不会并入任何区块。移动落在空区块中时，被移动的区块可以继承被替换区块的属性。
 
 ```ts
 import { definePlugin, editorReads } from 'platejs';
@@ -303,7 +308,7 @@ plain text 并不能恢复 HTML 丢失的内容。
 
 只会调用接收 paste 的 editor surface，且仅在其仍挂载时调用。`onPaste` 或
 `domCommands.insertData` handler 不经内置 format 处理 paste 时、drop 时，以及单独
-调用 `editor.api.dom.clipboard.insertData`（返回 boolean）时都不会调用
+调用 `editor.api.dom.clipboard.insertData`（内容插入时返回 `true`，没有可用 format 时返回 `false`，编辑器拒绝 update 时返回 `undefined`）时都不会调用
 `onPasteResult`。在 paste 期间通过 `insertData` 插入的 `onPaste` handler 会收到该次
 插入的结果。
 

@@ -742,7 +742,7 @@ describe('BaseTablePlugin', () => {
   it('encodes table structure and presentation with standard HTML', () => {
     const editor = createTestTableEditor({
       plugins: [BaseTablePlugin],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [

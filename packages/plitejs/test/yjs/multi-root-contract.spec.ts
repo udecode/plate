@@ -13,7 +13,10 @@ import {
   schema,
 } from '../../src/index';
 import type { AnyEditor } from '../../src/interfaces/editor';
-import { readPliteValueFromYjs } from '../../src/yjs/core/document';
+import {
+  createYjsNode,
+  readPliteValueFromYjs,
+} from '../../src/yjs/core/document';
 import { yjs } from '../../src/yjs/core/plugin';
 import {
   createYjsTestEditor,
@@ -170,6 +173,42 @@ describe('plitejs/yjs multi-root document contract', () => {
         .map((entry) => 'changedRanges' in entry),
       [true, true]
     );
+
+    cleanup();
+  });
+
+  it('reconciles only the named root whose import fell back', () => {
+    const doc = new Y.Doc();
+    const editor = createYjsTestEditor({
+      children: [paragraph('Body')],
+      roots: { header: [paragraph('Header')] },
+    });
+    const cleanup = editor.install(
+      yjs({ doc, initialReady: true, seed: true })
+    );
+    const header = doc.getMap<Y.XmlElement>('document:roots').get('header')!;
+    const main = editor.read.children();
+    const seen = readEditorYjsState(editor).trace().length;
+
+    doc.transact(() => {
+      header.setAttribute('provider:metadata', 'opaque');
+      header.insert(1, [createYjsNode(paragraph('Remote'))]);
+    });
+
+    assert.equal(editor.read.children(), main);
+    assert.deepEqual(editor.read.root('header'), [
+      paragraph('Header'),
+      paragraph('Remote'),
+    ]);
+    assert.deepEqual(readEditorYjsState(editor).trace().slice(seen), [
+      {
+        changedChildren: 1,
+        fallback: 'remote-event-root-attributes',
+        importKind: 'full-diff-fallback',
+        mode: 'remote-reconcile',
+        root: 'header',
+      },
+    ]);
 
     cleanup();
   });

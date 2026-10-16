@@ -16,6 +16,28 @@ describe('useCreateEditor', () => {
 
     expect(disabled).toBeNull();
   });
+
+  it('creates the editor from options the options object inherits', () => {
+    const created = renderHook(() =>
+      useCreateEditor(
+        Object.create({
+          id: 'inherited',
+          initialValue: [{ children: [{ text: 'One' }], type: 'paragraph' }],
+          userId: 'ada',
+        })
+      )
+    ).result.current;
+    const disabled = renderHook(() =>
+      useCreateEditor(Object.create({ enabled: false }))
+    ).result.current;
+
+    expect({
+      disabled,
+      id: created?.id,
+      text: created?.read.text.string([]),
+      userId: created?.userId,
+    }).toEqual({ disabled: null, id: 'inherited', text: 'One', userId: 'ada' });
+  });
 });
 
 describe('useCreateEditor identity', () => {
@@ -29,6 +51,21 @@ describe('useCreateEditor identity', () => {
     const first = result.current;
 
     rerender({ id: 'second' });
+
+    expect({ same: result.current === first, id: result.current.id }).toEqual({
+      same: false,
+      id: 'second',
+    });
+  });
+
+  it('creates a new editor when an inherited id changes', () => {
+    const { rerender, result } = renderHook(
+      (options) => useCreateEditor(options),
+      { initialProps: Object.create({ id: 'first', initialValue }) }
+    );
+    const first = result.current;
+
+    rerender(Object.create({ id: 'second', initialValue }));
 
     expect({ same: result.current === first, id: result.current.id }).toEqual({
       same: false,

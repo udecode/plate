@@ -720,7 +720,7 @@ describe('Base media plugin contracts', () => {
     };
     const editor = createEditor({
       plugins: [plugin],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [node],
     });
     const data = new DataTransfer();
@@ -749,7 +749,7 @@ describe('Base media plugin contracts', () => {
   it('encodes a visible image and caption with standard media attributes', () => {
     const editor = createEditor({
       plugins: [BaseImagePlugin],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           alt: 'Plate',

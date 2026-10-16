@@ -160,10 +160,11 @@ describe('root interaction controller', () => {
     }
   });
 
-  test('stops drag autoscroll when the scrolled frame cannot resolve a range', () => {
+  test('keeps drag autoscroll when the scrolled frame cannot resolve a range', () => {
     const scroller = createScrollableElement();
     const previousElementFromPoint = document.elementFromPoint;
     const resolveEventRange = vi.fn(() => null);
+    const update = vi.fn();
     const startRange = {
       kind: 'text' as const,
       anchor: { offset: 0, path: [0, 0] },
@@ -187,6 +188,7 @@ describe('root interaction controller', () => {
             resolveEventRange,
           },
         },
+        update,
       } as unknown as RootInteractionEditor,
       releaseCleanup: null,
       root: 'main',
@@ -203,8 +205,9 @@ describe('root interaction controller', () => {
       delete (document as Partial<Document>).elementFromPoint;
     }
 
-    expect(continued).toBe(false);
+    expect(continued).toBe(true);
     expect(scroller.scrollTop).toBeGreaterThan(0);
+    expect(update).not.toHaveBeenCalled();
     expect(resolveEventRange).toHaveBeenCalledWith(
       expect.objectContaining({
         clientX: 50,

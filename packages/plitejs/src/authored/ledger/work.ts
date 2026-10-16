@@ -5,39 +5,57 @@
  * @internal
  */
 export type LedgerWork = {
-  /** Blocks whose facts were computed, each block object once. */
   blockFacts: number;
-  /** Change book entries a sync added to or took from. */
   bookEntries: number;
-  /** Composed projection changes built because a reader asked for one. */
+  /** Pairs of neighboring changes the card sequence checked for touching. */
+  cardPairs: number;
+  /** Card members publication walked after a member's card id changed. */
+  cardWalks: number;
   composedChanges: number;
-  /** Group lists derived from the book. */
+  /** Context records followed to list a context's members. */
+  contextHops: number;
+  contextsMinted: number;
+  diffedCommits: number;
+  /** Review facts built for a document. */
+  documentFacts: number;
+  filledRuns: number;
   groups: number;
-  /** Nodes inside runs the kernel resolved. */
+  headRuns: number;
   resolvedNodes: number;
-  /** Runs the kernel resolved. */
   resolvedRuns: number;
-  /** Structures rebuilt from a whole root, at load or for a value they share nothing with. */
   rebuilds: number;
-  /** Nodes read to compute block facts or to find a window's edges. */
+  /** Nodes the settle pass read. */
+  settledNodes: number;
+  /** Verdict lookups, whether or not the document holds any verdict. */
+  verdictLookups: number;
   visitedNodes: number;
-  /** Roots resolved whole because no run alone could complete them. */
-  wholeResolves: number;
-  /** Blocks a sync derived again. */
   windowSlots: number;
+  writtenNodes: number;
+  writtenRuns: number;
 };
 
 const work: LedgerWork = {
   blockFacts: 0,
   bookEntries: 0,
+  cardPairs: 0,
+  cardWalks: 0,
   composedChanges: 0,
+  contextHops: 0,
+  contextsMinted: 0,
+  diffedCommits: 0,
+  documentFacts: 0,
+  filledRuns: 0,
   groups: 0,
+  headRuns: 0,
   rebuilds: 0,
   resolvedNodes: 0,
   resolvedRuns: 0,
+  settledNodes: 0,
+  verdictLookups: 0,
   visitedNodes: 0,
-  wholeResolves: 0,
   windowSlots: 0,
+  writtenNodes: 0,
+  writtenRuns: 0,
 };
 
 /** @internal */

@@ -14,7 +14,8 @@ import { mdxComponents } from '@/components/mdx-components';
 import { MdxProvider } from '@/components/mdx-provider';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
-import { getPagerForDoc } from '@/lib/docs-page-tree';
+import { getDocsSidebar, getPagerForDoc } from '@/lib/docs-page-tree';
+import { selectDocsSidebar } from '@/lib/docs-sidebar';
 import { registryExampleSlug } from '@/lib/docs-routes';
 import { getDocsNavMeta, slugToCategory } from '@/lib/docs-nav-metadata';
 import { getPlateLLMPageMarkdownFromPage } from '@/lib/llm';
@@ -141,11 +142,14 @@ export async function generateDocMetadata(
   let title: string;
   let description: string | undefined;
   let slug: string;
+  let nestedRootTitle: string | undefined;
 
-    if (doc) {
-      slug = localizeDocsUrl(doc.url, locale);
-      ({ title } = doc.data);
+  if (doc) {
+    slug = localizeDocsUrl(doc.url, locale);
+    ({ title } = doc.data);
     description = doc.data.description ?? getDocsNavMeta(slug)?.description;
+    nestedRootTitle = selectDocsSidebar(getDocsSidebar(locale), doc.url).nested
+      ?.title;
   } else {
     const resolvedParams = await props.params;
     const slugParam = resolvedParams.slug;
@@ -176,7 +180,9 @@ export async function generateDocMetadata(
       type: 'article',
       url: absoluteUrl(slug),
     },
-    title,
+    title: nestedRootTitle
+      ? { absolute: `${title} - ${nestedRootTitle}` }
+      : title,
     twitter: {
       card: 'summary_large_image',
       creator: '@udecode',
@@ -277,6 +283,7 @@ async function DocPageContent({
         doc={{
           ...file.meta,
           docs,
+          experimental: getDocsNavMeta(slug)?.experimental,
           slug,
         }}
         neighbours={neighbours}
@@ -325,18 +332,25 @@ async function DocPageContent({
   const toc = await getTableOfContents(raw);
   const neighbours = getPagerForDoc({ slug: doc.url }, locale);
   const docUrl = `https://platejs.org${localizedDocUrl}`;
+  const sidebar = getDocsSidebar(locale);
 
   return (
     <DocContent
       category={category}
       doc={{
         description,
-        copyMarkdown: await getPlateLLMPageMarkdownFromPage({
-          docUrl,
-          page: doc,
-          textKind: 'raw',
-        }),
+        copyPage: {
+          markdown: await getPlateLLMPageMarkdownFromPage({
+            docUrl,
+            page: doc,
+            textKind: 'raw',
+          }),
+          product:
+            selectDocsSidebar(sidebar, doc.url).nested?.title ??
+            sidebar.main.title,
+        },
         docs: frontmatterData.docs,
+        experimental: getDocsNavMeta(localizedDocUrl)?.experimental,
         links: frontmatterData.links,
         slug: localizedDocUrl,
         sourcePath: doc.path,

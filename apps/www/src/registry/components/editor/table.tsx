@@ -367,7 +367,7 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
             className={cn(
               'mr-0 ml-px table h-px table-fixed border-collapse',
               blockSelected &&
-                '[&_:is(td,th)[data-editor-node-key]]:before:z-10 [&_:is(td,th)[data-editor-node-key]]:before:bg-brand/[.13]',
+                '[&_:is(td,th)[data-editor-node-key]]:before:z-10 [&_:is(td,th)[data-editor-node-key]]:before:bg-(--node-selection-tint)',
               hasExpandedCellSelection && '[&_*::selection]:bg-transparent'
             )}
             style={tableStyle}

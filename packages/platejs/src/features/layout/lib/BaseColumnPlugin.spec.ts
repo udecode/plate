@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   BaseParagraphPlugin,
   createEditor as createRuntimeEditor,
+  createEditorView,
   definePlugin,
   type Element,
   ElementApi,
@@ -15,6 +16,8 @@ import {
   ColumnItemPlugin,
   ColumnPlugin,
 } from '../../../react/features/layout/ColumnPlugin';
+import { BaseBlockquotePlugin } from '../../basic-nodes/lib/BaseBlockPlugins';
+import { BaseDetailsPlugin } from '../../details/lib/BaseDetailsPlugin';
 import { BaseIndentPlugin } from '../../indent';
 import { BaseListPlugin, ListType } from '../../list/lib/BaseListPlugin';
 import {
@@ -1101,4 +1104,91 @@ describe('column side drop', () => {
       })
     ).toEqual({ reason: 'policy', status: 'refused' });
   });
+});
+
+it('changes nothing when Columns cannot replace a Details title', () => {
+  const initialValue = [
+    {
+      children: [
+        { children: [{ text: 'Title' }], type: 'summary' },
+        { children: [{ text: 'Body' }], type: 'paragraph' },
+      ],
+      type: 'details',
+    },
+  ];
+  const editor = createRuntimeEditor({
+    initialValue,
+    plugins: [BaseParagraphPlugin, BaseColumnPlugin, BaseDetailsPlugin],
+    selection: {
+      anchor: { offset: 2, path: [0, 0, 0] },
+      focus: { offset: 2, path: [0, 0, 0] },
+      kind: 'text',
+    },
+  });
+
+  editor.plugin(BaseColumnPlugin).update.toggle();
+
+  assert.deepEqual(editor.read.children(), initialValue);
+});
+
+it('converts a quote line in a named view while the main root starts with a Details', () => {
+  const HeaderHolder = definePlugin('testHeaderHolder', {
+    schema: {
+      element: {
+        blockContent: true,
+        contentRoots: {
+          header: {
+            content: schema.content.any(
+              [
+                schema.content.type(PLUGINS.blockquote).allowed,
+                schema.content.type(PLUGINS.paragraph).allowed,
+              ],
+              { default: { type: PLUGINS.paragraph }, min: 1 }
+            ),
+            ownership: 'exclusive',
+          },
+        },
+        void: 'block',
+      },
+    },
+  });
+  const editor = createRuntimeEditor({
+    initialValue: {
+      children: [
+        {
+          children: [
+            { children: [{ text: 'Title' }], type: 'summary' },
+            { children: [{ text: 'Body' }], type: 'paragraph' },
+          ],
+          type: 'details',
+        },
+        {
+          childRoots: { header: 'header' },
+          children: [{ text: '' }],
+          type: 'testHeaderHolder',
+        },
+      ],
+      roots: {
+        header: [
+          {
+            children: [{ children: [{ text: 'Q' }], type: 'paragraph' }],
+            type: 'blockquote',
+          },
+        ],
+      },
+    },
+    plugins: [
+      BaseParagraphPlugin,
+      BaseBlockquotePlugin,
+      BaseColumnPlugin,
+      BaseDetailsPlugin,
+      HeaderHolder,
+    ],
+  });
+  const header = createEditorView(editor, { root: 'header' });
+
+  header.plugin(BaseColumnPlugin).update.toggle({ at: [0, 0] });
+
+  assert.deepEqual(NodeApi.string(header.read.nodes.get([0, 0, 0])![0]), 'Q');
+  assert.equal(header.read.nodes.get([0, 0])![0].type, PLUGINS.columnGroup);
 });

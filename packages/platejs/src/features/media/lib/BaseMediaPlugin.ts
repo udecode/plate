@@ -208,42 +208,42 @@ export function defineMediaPlugin(
 
     return {
       api: ({ editor, update }) => ({
-        insertUrl: async (getUrl, { at, after, caption, ...options } = {}) => {
+        insertUrl: async (getUrl, { caption, ...options } = {}) => {
           const atAnchor =
-            at === undefined
+            options.at === undefined
               ? undefined
-              : editor.anchor(at, {
+              : editor.anchor(options.at, {
                   association: 'forward',
                   deletion: 'nearest',
                 });
           const block =
-            at === undefined
-              ? editor.read.nodes.block({ at: after })?.[0]
+            options.at === undefined
+              ? editor.read.nodes.block({ at: options.before ?? options.after })
               : undefined;
+          const key = block && editor.key(block[0]);
 
-          if (!atAnchor && !block) return false;
+          if (!atAnchor && !key) return false;
 
           try {
             const url = await getUrl();
 
             if (!url) return false;
+            if (options.at !== undefined) {
+              const at = atAnchor?.resolve();
 
-            const resolvedAt = atAnchor?.resolve();
-            const blockPath = block ? editor.read.nodes.path(block) : undefined;
-
-            if ((atAnchor && !resolvedAt) || (block && !blockPath)) {
-              return false;
+              return at
+                ? update.insert({ caption, url }, { ...options, at }) === true
+                : false;
             }
+            if (!key || !editor.read.nodes.get(key)) return false;
 
-            if (resolvedAt) {
-              return update.insert(
+            return (
+              update.insert(
                 { caption, url },
-                { ...options, at: resolvedAt }
-              );
-            }
-            return update.insert(
-              { caption, url },
-              { ...options, after: block }
+                options.before === undefined
+                  ? { ...options, after: key }
+                  : { ...options, before: key }
+              ) === true
             );
           } finally {
             atAnchor?.release();
@@ -334,13 +334,11 @@ export function defineMediaPlugin(
           input: MediaInsertInput,
           options: BlockInsertOptions | BlockUpsertOptions = {}
         ) => {
-          const resolvedOptions = options as BlockInsertOptions;
-
           if (
             !tx.selection() &&
-            resolvedOptions.at === undefined &&
-            resolvedOptions.after === undefined &&
-            resolvedOptions.before === undefined
+            options.at === undefined &&
+            options.after === undefined &&
+            options.before === undefined
           ) {
             return false;
           }
@@ -358,36 +356,19 @@ export function defineMediaPlugin(
                   : [{ text: '' }],
             type,
           };
-          const insert = (insertOptions: BlockInsertOptions) => {
-            if (
-              insertOptions.at === undefined ||
-              insertOptions.after !== undefined
-            ) {
-              return !!tx.blocks.insertAfter(element, {
-                ...insertOptions,
-                at: insertOptions.after,
-              });
-            }
-
-            tx.nodes.insert(element, insertOptions);
-            return !!tx.nodes.path(element);
-          };
-
-          return (
-            applyBlockInsertion({
-              editor,
-              insert,
-              matches: (block) =>
-                block.type === type &&
-                block.url === element.url &&
-                block.provider === element.provider &&
-                block.sourceUrl === element.sourceUrl,
-              mode,
-              onReuse: () => true,
-              options,
-              tx,
-            }) ?? true
-          );
+          return applyBlockInsertion({
+            editor,
+            insert: (insertOptions) =>
+              tx.blocks.insert(element, insertOptions) !== undefined,
+            matches: (block) =>
+              block.type === type &&
+              block.url === element.url &&
+              block.provider === element.provider &&
+              block.sourceUrl === element.sourceUrl,
+            mode,
+            options,
+            tx,
+          });
         };
 
         return {

@@ -10,8 +10,8 @@ description: 保存完整 Plate document，并与 text、HTML、Markdown 或 DOC
 
 | 任务 | Surface |
 | --- | --- |
-| 持久化完整 editor document | `editor.read.value()` |
-| 持久化完整 proposal 与 decision | `projectAuthoredReview` 与 `parseAuthoredDocument` |
+| 持久化完整 editor document，包括待处理 proposal | `editor.read.value()` |
+| 导出 clean accepted 或 proposed document | `platejs/authored` 的 `projectAuthoredDocument` |
 | 转换 semantic HTML | `platejs/html`；Node parsing 使用 `platejs/html/server` |
 | 转换 Markdown | `platejs/markdown` |
 | 导入或导出 Word | `platejs/docx/import` 与 `platejs/docx/export` |
@@ -35,21 +35,23 @@ await saveDocument({ document, schema });
 只保存 `children` 会丢失 root 与 metadata。Stored document 需要版本迁移时，
 同时持久化 application schema identity。发布到 editor 前，先验证迁移后的数据。
 
-完整 authored review state 是 canonical JSON-compatible model data：
+保存的 value 也包含 authored 审阅：每个 node 的待处理审阅 mark 位于其
+`authored` 属性中，审阅记录位于 document 的 `records` 中。把它加载到安装了
+`AuthoredPlugin` 的 editor 时，会恢复待处理 proposal。需要保存 clean document
+时，先投影：
 
 ```ts
-import { parseAuthoredDocument, projectAuthoredReview } from 'platejs/authored';
+import { projectAuthoredDocument } from 'platejs/authored';
 
-const snapshot = projectAuthoredReview(editor.read.value());
-const json = JSON.stringify(snapshot.review);
-const document = parseAuthoredDocument(json);
+const accepted = projectAuthoredDocument(editor.read.value(), {
+  projection: 'accepted',
+});
 ```
 
-HTML、Markdown 与 DOCX 不会把 authored document 隐藏在输出中。
-安装了 authored changes 的 editor 中的 document 即使还没有 proposal 也带有
-authored metadata。它的每个 HTML、Markdown、plain text 与 static HTML export
-都要求 `projection` 为 `'accepted'` 或 `'proposed'`，否则抛出 `TypeError`。
-没有 authored metadata 的 document 不需要 projection。
+HTML 与 Markdown 不携带审阅。对含有待处理 change 的 document 执行 HTML、
+Markdown、plain text 与 static HTML export 时，`projection` 必须为
+`'accepted'` 或 `'proposed'`，否则抛出 `TypeError`。没有待处理 change 的
+document 不需要 projection。
 
 ## 序列化 plain text
 
@@ -128,9 +130,9 @@ const result = await exportDocx(editor, {
 live editor 的组件是编辑 UI，所以把应用的 static kit 作为 `presentation` 传入来
 绘制文件。
 
-Word 文件包含可见的 Word 文档、comment 与 tracked revision。另一个 Plate editor
-需要恢复命名根、metadata 或精确的 authored change 记录时，把 Plate JSON 与文件
-一起保存。
+Word 文件包含可见的 Word 文档、comment 与 tracked revision。`review` export
+还会在 custom XML part 中保存被审阅的 block 和审阅记录，Plate 导入时会恢复它们。另一个
+Plate editor 需要恢复命名根或 metadata 时，把 Plate JSON 与文件一起保存。
 
 Cancellation、package limit、comment 与 retained source 参阅 [DOCX](/docs/docx)。
 

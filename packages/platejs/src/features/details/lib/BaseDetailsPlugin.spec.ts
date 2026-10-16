@@ -10,10 +10,19 @@ import {
 import { createEditorView } from '../../../facade';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import {
+  BaseBlockquotePlugin,
+  BaseHorizontalRulePlugin,
+  HorizontalRuleRules,
+} from '../../basic-nodes/lib/BaseBlockPlugins';
+import {
   BaseHeadingPlugin,
   HeadingRules,
 } from '../../basic-nodes/lib/BaseHeadingPlugins';
-import { BaseBoldPlugin } from '../../basic-nodes/lib/BaseMarkPlugins';
+import {
+  BaseBoldPlugin,
+  BaseCodePlugin,
+} from '../../basic-nodes/lib/BaseMarkPlugins';
+import { BaseCodeBlockPlugin } from '../../code-block/lib/BaseCodeBlockPlugin';
 import { BaseLinkPlugin } from '../../link/lib/BaseLinkPlugin';
 import {
   BaseDetailsPlugin,
@@ -21,6 +30,11 @@ import {
 } from './BaseDetailsPlugin';
 
 const plugins = [BaseParagraphPlugin, BaseDetailsPlugin] as const;
+const paragraph = (text: string) => ({
+  children: [{ text }],
+  type: 'paragraph',
+});
+const summary = (text: string) => ({ children: [{ text }], type: 'summary' });
 const BaseInlinePlugin = definePlugin('testInline', {
   schema: {
     element: {
@@ -473,7 +487,7 @@ describe('BaseDetailsPlugin', () => {
   it('round-trips fixed Details and Summary HTML without persisted UI state', () => {
     const editor = createEditor({
       plugins,
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [
@@ -569,7 +583,7 @@ describe('BaseDetailsPlugin', () => {
   it('moves a body node selection to Summary before closing', () => {
     const editor = createEditor({
       plugins,
-      selection: SelectionApi.nodes([[0, 1]]),
+      selection: SelectionApi.nodes([[0, 1]], { mode: 'block' }),
       initialValue: [
         {
           children: [
@@ -623,7 +637,7 @@ describe('BaseDetailsPlugin', () => {
   it('wraps selected text blocks as Summary and direct body content', () => {
     const editor = createEditor({
       plugins,
-      selection: SelectionApi.nodes([[0], [1]]),
+      selection: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
       initialValue: [
         { children: [{ text: 'Title' }], type: 'paragraph' },
         { children: [{ text: 'Body' }], type: 'paragraph' },
@@ -649,7 +663,7 @@ describe('BaseDetailsPlugin', () => {
   it('wraps a text block with inline content as Summary', () => {
     const editor = createEditor({
       plugins: [...plugins, BaseInlinePlugin],
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [
@@ -689,7 +703,7 @@ describe('BaseDetailsPlugin', () => {
   it('adds an empty Summary when the first wrapped block is structural', () => {
     const editor = createEditor({
       plugins,
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [
@@ -723,7 +737,7 @@ describe('BaseDetailsPlugin', () => {
   it('unwraps Summary as a default text block before direct body blocks', () => {
     const editor = createEditor({
       plugins,
-      selection: SelectionApi.nodes([[0]]),
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [
         {
           children: [
@@ -746,32 +760,148 @@ describe('BaseDetailsPlugin', () => {
     ]);
   });
 
-  it('repairs Summary ordering and uniqueness without dropping inline content', () => {
-    const editor = createEditor({
-      plugins,
+  it('refuses loading a title that is not the first child, or a second title', () => {
+    for (const children of [
+      [paragraph('Body'), summary('Title')],
+      [summary('Title'), paragraph('Body'), summary('Extra')],
+    ]) {
+      expect(() =>
+        createEditor({
+          plugins,
+          initialValue: [{ children, type: 'details' }],
+        })
+      ).toThrow('cannot contain');
+    }
+  });
+});
+
+describe('Details title slot', () => {
+  const titled = () =>
+    createEditor({
+      plugins: [
+        ...plugins,
+        BaseBlockquotePlugin,
+        BaseHorizontalRulePlugin.configure({
+          inputRules: [HorizontalRuleRules.markdown()],
+        }),
+      ],
       initialValue: [
-        {
-          children: [
-            { children: [{ text: 'Body' }], type: 'paragraph' },
-            { children: [{ text: 'Title' }], type: 'summary' },
-            { children: [{ text: 'Extra' }], type: 'summary' },
-          ],
-          type: 'details',
-        },
+        { children: [summary('Title'), paragraph('Body')], type: 'details' },
+        paragraph('After'),
+      ],
+      selection: {
+        anchor: { offset: 5, path: [0, 0, 0] },
+        focus: { offset: 5, path: [0, 0, 0] },
+        kind: 'text',
+      },
+    });
+
+  it('keeps a title in place when a block change cannot apply there', () => {
+    for (const change of [
+      (editor: ReturnType<typeof titled>) =>
+        editor.plugin(BaseParagraphPlugin).update.toggle(),
+      (editor: ReturnType<typeof titled>) =>
+        editor.plugin(BaseBlockquotePlugin).update.toggle(),
+      (editor: ReturnType<typeof titled>) =>
+        editor.update.blocks.set({ type: 'paragraph' }),
+    ]) {
+      const editor = titled();
+      const key = editor.key([0, 0]);
+
+      change(editor);
+
+      expect(editor.read.children()[0].children[0].type).toBe('summary');
+      expect(editor.key([0, 0])).toBe(key);
+      expect(editor.read.children()[0].children).toHaveLength(2);
+    }
+  });
+
+  it('keeps three typed dashes as title text', () => {
+    const editor = titled();
+
+    editor.update.text.delete({
+      at: {
+        anchor: { offset: 0, path: [0, 0, 0] },
+        focus: { offset: 5, path: [0, 0, 0] },
+        kind: 'text',
+      },
+    });
+    for (const dash of '---') editor.update.text.insert(dash);
+
+    expect(editor.read.children()).toEqual([
+      { children: [summary('---'), paragraph('Body')], type: 'details' },
+      paragraph('After'),
+    ]);
+  });
+
+  it('reads the first HTML summary as the title and later ones as body blocks', () => {
+    const editor = createEditor({
+      plugins: [
+        ...plugins,
+        BaseBoldPlugin,
+        BaseCodePlugin,
+        BaseCodeBlockPlugin,
+        BaseHeadingPlugin,
       ],
     });
 
-    editor.update.value.repair();
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        '<details><p>B</p><summary>T</summary><summary style="font-family:Consolas"><b>X</b></summary><summary><h2>Y</h2></summary></details>'
+      )
+    ).toEqual([
+      {
+        children: [
+          summary('T'),
+          paragraph('B'),
+          {
+            children: [{ bold: true, code: true, text: 'X' }],
+            type: 'paragraph',
+          },
+          { children: [{ text: 'Y' }], level: 2, type: 'heading' },
+        ],
+        type: 'details',
+      },
+    ]);
+  });
 
-    expect(editor.read.children()[0]).toMatchObject({
-      children: [
-        { children: [{ text: 'Title' }], type: 'summary' },
-        { children: [{ text: 'Body' }], type: 'paragraph' },
-        {
-          children: [{ text: 'Extra' }],
-          type: 'paragraph',
-        },
-      ],
+  it('fills a picked title with the first block pasted over it', () => {
+    const editor = titled();
+    const data = new DataTransfer();
+
+    editor.update.selection.set(
+      SelectionApi.nodes([[0, 0]], { mode: 'block' })
+    );
+    data.setData('text/html', '<p>X</p><p>Y</p>');
+    editor.api.dom.clipboard.insertData(data);
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [summary('X'), paragraph('Y'), paragraph('Body')],
+        type: 'details',
+      },
+      paragraph('After'),
+    ]);
+  });
+
+  it('joins a copied title to the body line it is pasted at', () => {
+    const editor = titled();
+    const data = new DataTransfer();
+
+    editor.update.selection.set(
+      SelectionApi.nodes([[0, 0]], { mode: 'block' })
+    );
+    editor.api.dom.clipboard.writeSelection(data);
+    editor.update.selection.set({
+      anchor: { offset: 4, path: [0, 1, 0] },
+      focus: { offset: 4, path: [0, 1, 0] },
+      kind: 'text',
+    });
+    editor.api.dom.clipboard.insertData(data);
+
+    expect(editor.read.children()[0]).toEqual({
+      children: [summary('Title'), paragraph('BodyTitle')],
       type: 'details',
     });
   });
@@ -827,7 +957,7 @@ describe('details transfer landing', () => {
         nodes: [editor.key([0, 0])!],
         to: { edge: 'after', key: editor.key([0, 1])! },
       })
-    ).toEqual({ reason: 'policy', status: 'refused' });
+    ).toEqual({ reason: 'schema', status: 'refused' });
     expect(detailsTexts(editor)).toEqual(['sum', 'body']);
   });
 });

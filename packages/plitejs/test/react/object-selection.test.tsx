@@ -170,6 +170,7 @@ describe('object element selection', () => {
       anchorPath: [2],
       focusPath: [2],
       kind: 'node',
+      mode: 'object',
       paths: [[2]],
     });
     expect(document.activeElement).toBe(editable);
@@ -218,6 +219,7 @@ describe('object element selection', () => {
       anchorPath: [2],
       focusPath: [2],
       kind: 'node',
+      mode: 'object',
       paths: [[2]],
     });
     expect(document.activeElement).toBe(editable);
@@ -258,6 +260,7 @@ describe('object element selection', () => {
       anchorPath: [2],
       focusPath: [2],
       kind: 'node',
+      mode: 'object',
       paths: [[2]],
     });
 
@@ -272,6 +275,7 @@ describe('object element selection', () => {
       anchorPath: [2],
       focusPath: [2],
       kind: 'node',
+      mode: 'object',
       paths: [[2]],
     });
 
@@ -286,7 +290,9 @@ describe('object element selection', () => {
     const { editable, editor } = renderSelectableOwnerEditor();
 
     await act(async () => {
-      editor.update.selection.set(SelectionApi.nodes([[0], [1]]));
+      editor.update.selection.set(
+        SelectionApi.nodes([[0], [1]], { mode: 'block' })
+      );
     });
     await act(async () => {
       fireEvent.keyDown(editable, { key: 'ArrowDown' });
@@ -296,6 +302,7 @@ describe('object element selection', () => {
       anchorPath: [2],
       focusPath: [2],
       kind: 'node',
+      mode: 'object',
       paths: [[2]],
     });
   });
@@ -322,6 +329,7 @@ describe('object element selection', () => {
         anchorPath: [2],
         focusPath: [2],
         kind: 'node',
+        mode: 'object',
         paths: [[2]],
       });
 
@@ -340,6 +348,7 @@ describe('object element selection', () => {
         anchorPath: [2],
         focusPath: [2],
         kind: 'node',
+        mode: 'object',
         paths: [[2]],
       });
 
@@ -349,6 +358,128 @@ describe('object element selection', () => {
       expect(editor.read.selection()).toEqual({
         anchor: beforeEnd,
         focus: beforeEnd,
+      });
+    } finally {
+      style.remove();
+    }
+  });
+
+  test('a block pick of one object leaves it with arrows instead of entering it', async () => {
+    const { editable, editor } = renderSelectableOwnerEditor();
+    const afterStart = { offset: 0, path: [3, 0] };
+    const press = async (key: string) => {
+      await act(async () => {
+        fireEvent.keyDown(editable, { key });
+      });
+    };
+
+    await act(async () => {
+      editor.update.selection.setNodes([[2]]);
+    });
+    await press('ArrowDown');
+    expect(editor.read.selection()).toEqual({
+      anchor: afterStart,
+      focus: afterStart,
+    });
+
+    await act(async () => {
+      editor.update.selection.setNodes([[2]]);
+    });
+    await press('ArrowRight');
+    expect(editor.read.selection()).toEqual({
+      anchor: afterStart,
+      focus: afterStart,
+    });
+
+    await act(async () => {
+      editor.update.selection.setNodes([[2]]);
+    });
+    await press('ArrowLeft');
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 6, path: [1, 0] },
+      focus: { offset: 6, path: [1, 0] },
+    });
+
+    await act(async () => {
+      editor.update.selection.setNodes([[2]], { mode: 'object' });
+    });
+    await press('ArrowDown');
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [2, 0] },
+      focus: { offset: 0, path: [2, 0] },
+    });
+  });
+
+  test('horizontal arrows on a block pick pick a neighboring object and stop at the document edge', async () => {
+    const { editable, editor } = renderSelectableOwnerEditor();
+    const press = async (key: string) => {
+      await act(async () => {
+        fireEvent.keyDown(editable, { key });
+      });
+    };
+
+    await act(async () => {
+      editor.update.selection.setNodes([[0], [1]]);
+    });
+    await press('ArrowRight');
+    expect(getEditorLiveSelection(editor)).toEqual({
+      anchorPath: [2],
+      focusPath: [2],
+      kind: 'node',
+      mode: 'object',
+      paths: [[2]],
+    });
+
+    await act(async () => {
+      editor.update.selection.setNodes([[0], [1]]);
+    });
+    await press('ArrowLeft');
+    expect(getEditorLiveSelection(editor)).toEqual({
+      anchorPath: [0],
+      focusPath: [1],
+      kind: 'node',
+      mode: 'block',
+      paths: [[0], [1]],
+    });
+
+    await press('a');
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    });
+  });
+
+  test('RTL block picks leave in reading direction', async () => {
+    const { editable, editor } = renderSelectableOwnerEditor();
+    const style = document.createElement('style');
+
+    style.textContent = '[data-editor] p { direction: rtl; }';
+    document.head.append(style);
+
+    try {
+      await act(async () => {
+        editor.update.selection.setNodes([[1]]);
+      });
+      await act(async () => {
+        fireEvent.keyDown(editable, { key: 'ArrowLeft' });
+      });
+      expect(getEditorLiveSelection(editor)).toEqual({
+        anchorPath: [2],
+        focusPath: [2],
+        kind: 'node',
+        mode: 'object',
+        paths: [[2]],
+      });
+
+      await act(async () => {
+        editor.update.selection.setNodes([[1]]);
+      });
+      await act(async () => {
+        fireEvent.keyDown(editable, { key: 'ArrowRight' });
+      });
+      expect(editor.read.selection()).toEqual({
+        anchor: { offset: 5, path: [0, 0] },
+        focus: { offset: 5, path: [0, 0] },
       });
     } finally {
       style.remove();
@@ -391,6 +522,7 @@ describe('object element selection', () => {
       anchorPath: [2],
       focusPath: [2],
       kind: 'node',
+      mode: 'object',
       paths: [[2]],
     });
   });
@@ -420,6 +552,7 @@ describe('object element selection', () => {
       anchorPath: [2],
       focusPath: [2],
       kind: 'node',
+      mode: 'object',
       paths: [[2]],
     });
 
@@ -507,6 +640,7 @@ describe('object element selection', () => {
       anchorPath: [1],
       focusPath: [2],
       kind: 'node',
+      mode: 'block',
       paths: [[1], [2]],
     });
   });
@@ -609,6 +743,7 @@ describe('object element selection', () => {
       anchorPath: [1],
       focusPath: [2],
       kind: 'node',
+      mode: 'block',
       paths: [[1], [2]],
     });
   });

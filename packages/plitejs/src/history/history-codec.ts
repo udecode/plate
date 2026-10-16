@@ -187,13 +187,12 @@ const decodeBatch = <V extends Value>(
   });
 
   const hasPrimaryRoot = (selection: typeof selectionAfter): boolean =>
-    SelectionApi.isNode(selection)
-      ? selection.root === MAIN_ROOT_KEY
-      : Boolean(
-          selection &&
-          (selection.anchor.root === MAIN_ROOT_KEY ||
-            selection.focus.root === MAIN_ROOT_KEY)
-        );
+    !SelectionApi.isNode(selection) &&
+    Boolean(
+      selection &&
+      (selection.anchor.root === MAIN_ROOT_KEY ||
+        selection.focus.root === MAIN_ROOT_KEY)
+    );
 
   if (hasPrimaryRoot(selectionAfter) || hasPrimaryRoot(selectionBefore)) {
     throw new Error('Invalid history batch JSON.');

@@ -126,8 +126,23 @@ donor checkout as proof after the transplant.
 - Ordered required child positions and their literal property values belong to
   the compiled content grammar, including construction, admission, fitting and
   saved identity. App corrections do not maintain a second document shape.
+- A block that Plite derives from another, such as a split's tail at the
+  highest split level, each plain-text paste line after the first, or a
+  duplicate, takes the type its new position allows. It keeps the source's
+  type when the parent admits it there; otherwise it becomes that slot's
+  default text block with the source's children and the properties a type
+  change keeps, unless the slot fixes them, so Enter in a required title
+  starts the body. Its text keeps its properties, so one the new type does
+  not allow makes commit admission reject the write. When no default fits,
+  a split keeps the source shape and commit admission rejects it, and every
+  other producer changes nothing. Below the highest level a tail keeps its
+  type, because its parent splits next. `tx.nodes.set`, `wrap` and
+  `unwrap` split with the source's type.
 - Required child positions use `schema.content.prefix` followed by one ordinary
-  remainder. A complete schema declares `root: SchemaContent` directly and its
+  remainder. An element default and a prefix slot both carry the element's
+  fixed values in `properties`. Every child Plite builds from either one gets
+  them, and so does every block that reset converts to that default. A default
+  takes no key but `type` and `properties`. A complete schema declares `root: SchemaContent` directly and its
   named `roots` map each name directly to `SchemaContent`; an omitted `elements`
   means `{}`, an omitted `unknown` means "reject", and open vocabulary requires
   an explicit "preserve". `schema.element.textBlock()` is the standard editable
@@ -172,7 +187,11 @@ donor checkout as proof after the transplant.
   descriptor or a compatible source ancestor, so a same-name object is not an
   interchangeable token.
 - React creation and context retrieval are separate jobs. `useEditor(options,
-deps?)` owns one editor for a component lifetime. `useEditorContext()` and
+deps?)` owns one editor for a component lifetime. Render builds it dormant.
+  Its plugins activate in memory and take nothing outside the editor until
+  React commits the component. A real unmount or a `deps` change gives back
+  what they took and destroys the editor. An editor from `createEditor`
+  is live when it returns and ends with `editor.destroy()`. `useEditorContext()` and
   `useOptionalEditorContext()` retrieve the mounted contract without caller
   generics, and selector hooks infer only their selected result. Exact
   plugin capabilities come from `editor.plugin(Plugin)`. `pnpm check
@@ -180,10 +199,18 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   hook or `createEditor` exported from a client entrypoint, in the forms its
   tests run.
 - Each editor constructor, `createEditor` and `useEditor`, takes a closed
-  option set. An unknown option written in the call fails to compile and names
-  the key, though the options type is inferred. At runtime the constructor
-  throws a `TypeError` that names the first string key outside the set, own or
-  inherited, without reading a value. `useEditor` checks on every render.
+  option set. An unknown option written in the call's options literal fails to
+  compile and names the key, even when TypeScript infers the options type. A
+  computed key typed `string` with no known key beside it, a key named after an
+  `Object` member such as `toString`, an explicit options type that admits the
+  key, and options held in a variable, built by a spread or typed by a type
+  parameter meet only the runtime check. At runtime the constructor throws a
+  `TypeError` that names the first string key outside the set, own or
+  inherited, without reading a value. `useEditor` checks on every render. A
+  constructor that splits its options reads each option in its set wherever
+  the options object holds it. An inherited option, a class getter and an own
+  non-enumerable option build the same editor as that option written in the
+  call.
 - A DOM-scope hook accepts only the DOM capabilities it reads, and an
   identity-only registry uses object keys. Neither requires an erased mutable
   `Editor`, whose unrelated write variance can reject a correctly inferred
@@ -191,7 +218,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   casting callers.
 - A public `EditorRoot` requires an editor and owns one independent mounted
   view. Its root, authored, and read-only inputs configure that view through the
-  existing view owner. Replacing the editor requires a keyed remount; changing
+  existing view owner. Replacing the editor remounts its views; changing
   the root retires queued work and commands from the prior view before
   descendants observe the next one. Nested same-document roots may share the
   nearest private provider while retaining independent mounted views. An
@@ -298,7 +325,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   exist in the inferred `api.yjs` only when their inputs are supplied. Live
   admission and awareness state never become replayable `read` methods or
   transaction updates; each `(Y.Doc, rootName)` has one binding owner while
-  mounted views retain exact selection projection.
+  mounted views retain exact selection projection. The binding takes its
+  document when its editor goes live and frees it when the editor is released, so a
+  remount or a replaced editor binds the same document again. Before that, its
+  status answers waiting and its cursors answer none.
 - Plite owns the complete editor selection model. It supports text selection
   and one built-in directional `NodeSelection`; plugins cannot add selection
   kinds or parallel selection state. Feature owners write exact nodes and
@@ -330,6 +360,14 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   `read.value()` holds them in `records` beside the content. Code outside the authored
   owner reads a node's pending claims through `reviewOf` instead of parsing
   `authored`.
+  Review reads take a place. `read.groups({ at })` returns every card touching
+  it, and `read.changes({ at })` pages the changes there in document order, so
+  no read walks every pending change. A card is the adjacent pending changes of
+  one author, named by its oldest pending change, so every peer and reload
+  names it alike. Plite stores no color; Plate derives one from that name. A
+  decision takes the changes or cards it read and refuses one that moved since.
+  `api.subscribeChanges` hands each view one frozen delta per commit that
+  changes the review.
   A view either writes, with intent `edit` or `propose`, or previews the
   document with every pending change accepted (`proposed`) or rejected
   (`accepted`) and takes no writes. View state never becomes another saved
@@ -369,10 +407,17 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   comparison and one native import path, never annotated-node diff tags or a
   matcher re-run during conflict resolution.
 - `NodeSelection` stores canonical exact membership as `paths`, directional
-  `anchorPath` and `focusPath`, and an optional explicit root. Mapping,
-  persistence, history, marks, slices, and collaboration preserve that state.
-  React and UI code may control or render selection but never own another
-  selected-node store.
+  `anchorPath` and `focusPath`, an optional explicit root, and a required
+  `mode`: `block` for block gestures or `object` for selecting one selectable
+  object or atom that is not void. The constructor requires the mode, so a
+  rebuild cannot drop it. Mapping keeps `object` only while that node keeps its
+  object role. Mapping, persistence, history, marks, slices, and collaboration
+  preserve that state; a remote collaboration import that replaces a local node
+  selection with a range is open work in
+  `docs/plans/2026-10-15-node-selection-mode.md`. React and UI code may control
+  or render selection but never own another selected-node store, and they read
+  the mode by name (`selection.nodeMode()`, `useElementSelected({ mode })`)
+  instead of guessing it from the count or schema.
 - The callable `selection()` is the sole singular read and returns a plain
   `Range` or `null`. It never exposes selection-kind tags or feature payloads.
   `selection.ranges()` is the sole plural projection, and `selection.nodes()`
@@ -391,7 +436,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   authored order. Lift, unwrap, and named-root operations must preserve a
   backward, forward, or collapsed selection instead of reconstructing a
   forward range from sorted endpoints.
-- Schema owns block classification. `nodes.block()` reads the nearest block;
+- Schema owns block classification. `nodes.block()` reads the nearest block
+  in the target's own root, and nothing when the target names no node; its
+  path is local to that root, so a caller in another root acts on the block
+  through its key;
   `nodes.blocks()` reads every relevant block and defaults to the active text or
   exact node selection. `selection.nodes()` never accepts traversal filters.
   Semantic block mutations live under `tx.blocks`; generic structural changes
@@ -410,11 +458,32 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   commands keep their policy guards and delegate this structural mutation
   instead of replacing a node with a handcrafted default. `unset` names
   properties to remove when the default does not set them, as toggle-off does.
+  A property the type change preserves keeps its value, and its generator does
+  not run. A block already of the default type keeps the values its schema
+  cannot fill.
   Reset checks every target before writing and returns `false` with nothing
-  changed when a default is not allowed at one target's position; the update
-  does not roll back, so a caller that composes reset with other edits checks
-  the result first. It takes no type or mode option, and no feature publishes a
-  reset alias for it.
+  changed when one target has no default it can become: its parent or root
+  declares no element default, the default lacks a required property nothing
+  supplies, its type change leaves the target's content without one, or the
+  default is not allowed at the target's position. Any other failure to build a
+  default throws. The update does not roll back, so a caller that composes reset
+  with other edits checks the result first. It takes no type or mode option, and
+  no feature publishes a reset alias for it.
+- `tx.blocks.insert(blocks, { after?, before?, at? })` is the one block
+  insert. `after` and `before` name a block and `at` is a path; it takes no
+  point, range or `split`, because a block insert lands between blocks. Its
+  option type is a union that admits one placement, and `replaceEmpty` only
+  with `after` or the selection default; a call that passes more throws. It
+  checks the landing parent's content after the length limit and returns
+  `undefined` with nothing changed when the blocks do not fit or a named target
+  does not resolve; an `at` with no such slot throws. Otherwise it returns the
+  keys of the top-level blocks that landed, in order. A path is local to one
+  root, and each non-empty block of a batch the length limit cuts lands as a
+  copy of the node passed in, while a key resolves its block from any root.
+  Callers act on what landed through those keys. Any other block that is live
+  in another root lands under its source's key, so its returned key can resolve
+  to the source. Like reset, it does not roll back the update, so a composing
+  caller checks the result.
 - The default block that Enter on a block void or `tx.break.exit` creates is
   its landing parent's default for the landing index, or the root's for a
   top-level position. The compiled content grammar builds and admits it in the
@@ -484,9 +553,15 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   runtime resources stay in factory closures or honest host owners. `validate`
   checks assembled context without a configuration argument. `validate` and
   `activate` run early. Activation registers synchronous final-candidate
-  validation or resource initialization with `beforePublish`; document writes
-  are forbidden, and throwing vetoes publication. Resources remain
-  activation-owned through `onCleanup`, including rollback cleanup.
+  validation with `beforePublish`; document writes are forbidden, and throwing
+  vetoes publication. A plugin takes a resource outside the editor, such as a
+  shared document or a listener on it, with `acquire(take)`. Every take runs
+  after the last `beforePublish` passes, and only on a live editor. The release
+  it returns runs before the plugin's cleanups on removal, replacement,
+  rollback, unmount or `editor.destroy()`. A throwing take rolls the publication
+  back.
+  In-memory resources remain activation-owned through `onCleanup`, including
+  rollback cleanup.
   `afterPublish` is nonthrowing observation of published state, not a veto. Any
   externally owned runtime resource stays in host factory arguments; a plugin
   observes it but never mirrors its connect, disconnect, replacement or
@@ -536,12 +611,16 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   only consumer is that handler is deleted rather than published for the handler
   to call. Semantic commands derive ordinary values through the existing read
   owner before adding a generic dependency or cache graph.
-- A paste's landing composes through `editorReads.slice.landing`. The default
-  replacement command resolves the target, limits the slice to `maxLength` once
-  and runs the read once on the command's current draft after handlers
-  delegate. A terminal handler bypasses it. Raw transaction replacement and
-  detached fitting do not run command policy. One-shot view slice and fragment
-  replacement keep semantic command dispatch.
+- A paste's or text drop's landing composes through `editorReads.slice.landing`,
+  whose input names its `intent`, `copy` or `move`. The default
+  replacement command resolves one site after it places the caret: the root,
+  the placed range or the selected blocks, and a budget that credits only the
+  text the write replaces. It limits the slice to that budget, runs the read
+  once after handlers delegate on the command's current draft in the site's
+  root, and cuts the read's output to the same budget. A terminal handler
+  bypasses it. Raw transaction replacement and detached fitting do not run
+  command policy. One-shot view slice and fragment replacement keep semantic
+  command dispatch.
 - Plite owns whole-block replacement of an empty target. A landing read can
   propose blocks for an `empty` target and never names another block. Plite
   honors the proposal only on its own resolution and refuses one the budget
@@ -549,8 +628,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   type change allows for another text type, and none as an object or void.
   Plite admits the whole sequence at the parent, fits it at the block's bounds
   and discards the block's key. Otherwise it fits the landing slice under the
-  same budget. Slice and fragment replacement take a location, and a selected
-  node is replaced through the current selection.
+  same budget. Slice and fragment replacement take a location. A paste over
+  selected blocks replaces them whole through the current selection and credits
+  all their text, and a selection that holds an inline node pastes at that
+  node's range.
 - Command `handle` interceptors are conditional fallbacks: returning `false`
   continues to the next handler or descriptor default. Command `around`
   interceptors own the invocation unless they explicitly call `next()` or
@@ -595,16 +676,37 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
 - Fitted placements and prepared keys stay private to transaction specs, and
   retained root provenance survives history and rebase.
 - `editor.api.transfer` is the one move and copy action for drags, custom
-  drivers and keyboard moves. A move inside one document commits its whole
+  drivers and keyboard moves. A text move lands through the paste landing with
+  intent `move`, and carries exactly what deleting its range removes: a range
+  that starts or ends inside an inline void takes the void, a range that
+  still has an edge inside any other non-editable element once an end at a
+  block's start is pulled back refuses, and a range whose deletion removes
+  nothing moves nothing. A copy carries its range as given. The
+  paste landing reports the range it wrote, and the guard reads that range
+  through the update's own steps, corrections and command frames included, so
+  a correction that deletes the landing reads as a deleted landing whatever
+  identical text sits beside it. A move inside one document commits its whole
   landed content or nothing: a guard after corrections refuses a landing that
-  differs from the payload. Independent editors, read-only views and document
-  views copy, and a copy follows paste, landing what fits and reporting the
-  loss.
+  changes the payload's text or marks, or the type or properties of a block it
+  carries, other than element properties declared `landing: 'rebase'` or
+  `'adopt'`. The
+  guard skips only the block the moved text joins at the drop point and the
+  blocks that contain it, and checks every other block the move carries, an
+  empty last block included. A closed block, such as a title, joins nothing,
+  and in an empty block the moved block may take the empty block's
+  properties. The schema contract and fingerprint carry `landing` only where a
+  property declares one of them. Independent editors, read-only views and
+  document views copy, and a copy follows paste, landing what fits and
+  reporting the loss.
 - A block lands wherever the compiled schema places it, at any depth. Placement
   checks the target's children as they will be after the transfer, for the nodes
   that actually land. A feature narrows it with a `transferVeto`, and a landing
-  read only redirects an edge. Without a compiled content program, nested edges
-  refuse. Hover and drop resolve the same edge. A redirected edge maps to
+  read only redirects an edge. A block copy's or block move's `transfer.adopt`
+  read sets only `adopt` properties, once, on the final edge. A move keeps its
+  nodes and their keys, since Plite sets the patches on them in the same
+  update. A move patch may not set `null`. Placement and vetoes judge the patched
+  blocks at hover and at drop alike. Without a compiled content program,
+  nested edges refuse. Hover and drop resolve the same edge. A redirected edge maps to
   itself, and every feature veto runs on the final edge, so no feature skips
   another feature's veto.
 - A block's side is a landing only when a feature describes what to build there.
@@ -656,6 +758,8 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   monotonically: lifecycle callbacks cannot edit the mounted view or canonical
   editor, an older callback cannot overwrite newer delivered state, and bounded
   failure recovery reads the latest canonical state without a replay queue.
+  A view answers layout questions, such as which offset lies under a caret's
+  column, and never picks the selection: Plite asks, then writes it.
 - Runtime-owned DOM, such as a void's hidden spacer or an inline void's hidden anchor, is rendered by the runtime and never passed through app renderers. A renderer API that asks authors for hidden editor structure is wrong unless it is an explicit escape hatch. Block and inline voids keep separate primitives with one ownership rule: the app renders visible content and the runtime renders the hidden editor children.
 - An embedded editor that owns syntax parsing omits the duplicated syntax
   provider when every view uses it. When native and external views mix, the
@@ -683,6 +787,16 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   belongs before publication; observers that run after an `EditorCommit`
   exists report failure through `lifecycleErrorSink` and cannot make the
   committed update appear rejected.
+- An update call answers what landed. `editor.update(fn)` returns the
+  callback's value, and a call that opens its own update, such as a direct
+  method, `editor.update.command` or a plugin portal, returns its method's
+  answer. When the editor refuses the update, everything
+  rolls back, one refusal publishes, and the call answers `undefined`. That
+  stays distinct from a method's `false`, which declines without mutating. A
+  `tx` method answers for its draft, which the whole update can still refuse.
+  A refused paste ends there and tries no other format, because the refusal
+  answers the write rather than the format. An `api` service that opens an
+  update maps `undefined` into its own explicit outcome.
 - Document state, authored projection, persistent anchors, plugin
   configuration, and local history prepare inside the same rejection boundary
   and publish before commit observers. Native edit grouping has one history

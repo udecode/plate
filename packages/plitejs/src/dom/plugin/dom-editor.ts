@@ -266,8 +266,8 @@ export interface DOMDragApi {
   /** Publish this view's drop indicator for a target, or clear it. */
   indicate: (target: DOMDropTarget | null) => void;
   /**
-   * Start a block drag: select what a transfer of `node` carries, open the
-   * drag session and return inert previews for the drag image. A read-only
+   * Start a block drag: block-select what a transfer of `node` carries, open
+   * the drag session and return inert previews for the drag image. A read-only
    * view starts a copy-only drag.
    */
   start: (
@@ -281,17 +281,17 @@ export interface DOMEditorClipboardCapability<V extends Value = Value> {
   /**
    * Insert data from a `DataTransfer` into the editor.
    */
-  insertData: (data: DataTransfer) => boolean;
+  insertData: (data: DataTransfer) => boolean | undefined;
 
   /**
    * Insert fragment data from a `DataTransfer` into the editor.
    */
-  insertFragmentData: (data: DataTransfer) => boolean;
+  insertFragmentData: (data: DataTransfer) => boolean | undefined;
 
   /**
    * Insert text data from a `DataTransfer` into the editor.
    */
-  insertTextData: (data: DataTransfer) => boolean;
+  insertTextData: (data: DataTransfer) => boolean | undefined;
 
   /** Read an exact editor slice and distinguish absence from invalid data. */
   readSlice: (
@@ -352,7 +352,7 @@ export interface DOMEditorClipboardInterface {
   insertData: <V extends Value, TPlugins extends readonly unknown[]>(
     editor: DOMEditor<V, TPlugins>,
     data: DataTransfer
-  ) => boolean;
+  ) => boolean | undefined;
 
   /**
    * Insert fragment data from a `DataTransfer` into the editor.
@@ -360,7 +360,7 @@ export interface DOMEditorClipboardInterface {
   insertFragmentData: <V extends Value, TPlugins extends readonly unknown[]>(
     editor: DOMEditor<V, TPlugins>,
     data: DataTransfer
-  ) => boolean;
+  ) => boolean | undefined;
 
   /**
    * Insert text data from a `DataTransfer` into the editor.
@@ -368,7 +368,7 @@ export interface DOMEditorClipboardInterface {
   insertTextData: <V extends Value, TPlugins extends readonly unknown[]>(
     editor: DOMEditor<V, TPlugins>,
     data: DataTransfer
-  ) => boolean;
+  ) => boolean | undefined;
 
   /**
    * Write the currently selected fragment to a `DataTransfer`.
@@ -2734,7 +2734,7 @@ export const createDOMEditorCapability = <
   };
   const runClipboardInsert = (
     data: DataTransfer,
-    fallback: (data: DataTransfer) => boolean
+    fallback: (data: DataTransfer) => boolean | undefined
   ) => {
     const transaction = getActiveEditorTransaction(editor);
 

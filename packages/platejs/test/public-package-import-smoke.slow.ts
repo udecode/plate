@@ -96,6 +96,7 @@ const exactPublicPackageRuntimeExportExpectations = {
   'plitejs/annotations': ['createAnnotationStore'],
   'plitejs/authored': [
     'authored',
+    'authoredRecords',
     'createAuthoredPlugin',
     'projectAuthoredDocument',
     'projectAuthoredRange',

@@ -105,6 +105,10 @@ const QuotePlugin = definePlugin('quote', {
 
 QuotePlugin.extend({ shortcuts: { toggle: { keys: 'mod+shift+q' } } });
 
+const TagPlugin = definePlugin('tag', {
+  schema: { element: { void: 'inline' } },
+});
+
 const CalloutPlugin = definePlugin('calloutCapability', {
   schema: {
     element: {
@@ -122,6 +126,7 @@ const EditorPlugins = [
   MentionPlugin,
   ToolbarPlugin,
   QuotePlugin,
+  TagPlugin,
 ] as const;
 
 interface BodyText extends Text {
@@ -160,6 +165,12 @@ type GeneratedEditorPlugins = typeof EditorPlugins &
         properties: { citation?: string };
         toggle: true;
         type: 'quote';
+      };
+      tag: {
+        block: false;
+        construction: {};
+        properties: {};
+        type: 'tag';
       };
     };
     schema: { plugins: {}; properties: {} };
@@ -220,7 +231,7 @@ exactEditor.update((tx) => {
   tx.layout.setDensity(1);
   tx.paragraph.set({ align: 'right' });
   tx.quote.remove();
-  tx.quote.insert(
+  tx.tag.insert(
     {},
     {
       split: {
@@ -247,9 +258,32 @@ exactEditor.update((tx) => {
 exactEditor.update.paragraph.insert({ align: 'left' });
 exactEditor.update.paragraph.upsert({ align: 'left' });
 exactEditor.update.paragraph.toggle();
-exactEditor.update.quote.insert();
-exactEditor.update.quote.upsert();
-exactEditor.update.quote.insert(
+const quoteInserted: boolean | undefined = exactEditor.update.quote.insert(
+  {},
+  { at: [1] }
+);
+const quoteUpserted: boolean | undefined = exactEditor.update.quote.upsert();
+const updateAnswer: boolean | undefined = exactEditor.update((tx) =>
+  tx.quote.upsert()
+);
+// @ts-expect-error an update answers undefined when the editor refuses it
+const updateLanded: boolean = exactEditor.update((tx) => tx.quote.upsert());
+// @ts-expect-error a block insert takes a path, not a point inside a block
+exactEditor.update.quote.insert({}, { at: { offset: 0, path: [0, 0] } });
+const insertRange = {
+  anchor: { offset: 0, path: [0, 0] },
+  focus: { offset: 1, path: [0, 0] },
+};
+// @ts-expect-error a block insert takes a path, not a range
+exactEditor.update.quote.insert({}, { at: insertRange });
+// @ts-expect-error a block insert lands beside blocks and splits nothing
+exactEditor.update.quote.insert({}, { split: { type: QuotePlugin } });
+// @ts-expect-error a block upsert lands beside blocks and splits nothing
+exactEditor.update.quote.upsert({}, { split: { type: QuotePlugin } });
+exactEditor.update.tag.insert({}, { at: { offset: 0, path: [0, 0] } });
+// @ts-expect-error an inline insert lands at a point, not beside a block
+exactEditor.update.tag.insert({}, { after: [0] });
+exactEditor.update.tag.insert(
   {},
   {
     split: {
@@ -270,9 +304,15 @@ const mathEditor = createEditor({
 const GeneratedInlinePlugin = definePlugin('generatedInline', {
   schema: { element: { void: 'inline' } },
 });
-const generatedInlineEditor = createEditor({
-  plugins: [GeneratedInlinePlugin],
+const FactoryInlinePlugin = definePlugin('factoryInline', {
+  schema: () => ({ element: { inline: true } }),
 });
+const generatedInlineEditor = createEditor({
+  plugins: [GeneratedInlinePlugin, FactoryInlinePlugin],
+});
+generatedInlineEditor
+  .plugin(FactoryInlinePlugin)
+  .update.insert({}, { at: { offset: 0, path: [0, 0] } }) satisfies void;
 
 mathEditor.update((tx) => {
   tx.plugin(BaseEquationPlugin).upsert();
@@ -308,7 +348,7 @@ const BooleanMarkPlugin = definePlugin('booleanMark', {
 });
 declare const broadPlateEditor: Editor;
 
-exactEditor.update.quote.insert(
+exactEditor.update.tag.insert(
   {},
   {
     split: {
@@ -317,7 +357,7 @@ exactEditor.update.quote.insert(
     },
   }
 );
-exactEditor.update.quote.insert(
+exactEditor.update.tag.insert(
   {},
   {
     split: {
@@ -472,6 +512,10 @@ void exactEditorPluginNames;
 void isDense;
 void layoutVariant;
 void mentionTrigger;
+void quoteInserted;
+void quoteUpserted;
+void updateAnswer;
+void updateLanded;
 void rawValueStaysBroad;
 void toolbarDescription;
 

@@ -90,6 +90,23 @@ describe('plitejs/yjs record sets', () => {
     b.cleanup();
   });
 
+  it('applies a remote record whose id names an object property', () => {
+    const a = createPeer(new Y.Doc(), true);
+    const b = joinPeer(a);
+
+    a.editor.update((tx) =>
+      tx.records.put('contexts', '__proto__', { by: 'a' })
+    );
+    sync(a, b);
+
+    assert.deepEqual(b.editor.read.value().records, {
+      contexts: JSON.parse('{"__proto__":{"by":"a"}}'),
+    });
+
+    a.cleanup();
+    b.cleanup();
+  });
+
   it('undoes only the undoing peer record and keeps retained sets', () => {
     const a = createPeer(new Y.Doc(), true);
     const b = joinPeer(a);

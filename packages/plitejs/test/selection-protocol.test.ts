@@ -127,7 +127,7 @@ describe('selection protocol', () => {
   });
 
   it('keeps node selections out of the DOM range protocol', () => {
-    const selection = SelectionApi.nodes([[1]]);
+    const selection = SelectionApi.nodes([[1]], { mode: 'block' });
     const editor = createEditor({
       initialSelection: selection,
       initialValue,
@@ -142,7 +142,7 @@ describe('selection protocol', () => {
 
   it('keeps exact empty-node membership separate from range expansion', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]]),
+      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
@@ -154,7 +154,7 @@ describe('selection protocol', () => {
 
   it('queries matching descendants inside every selected node', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0], [1]]),
+      initialSelection: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
       initialValue,
     });
 
@@ -172,6 +172,7 @@ describe('selection protocol', () => {
   it('canonicalizes and persists one or many node paths with one runtime shape', () => {
     const aggregate = range([0, 0], 0, [1, 0], 1);
     const selection = SelectionApi.nodes([[1], [0, 0], [0], [1]], {
+      mode: 'block',
       anchorPath: [1],
       focusPath: [0],
     });
@@ -186,25 +187,29 @@ describe('selection protocol', () => {
     assert.equal('path' in selection, false);
     assert.equal('anchor' in selection, false);
     assert.equal('focus' in selection, false);
-    assert.deepEqual(SelectionApi.nodes([[1]]), {
+    assert.deepEqual(SelectionApi.nodes([[1]], { mode: 'block' }), {
       anchorPath: [1],
       focusPath: [1],
       kind: 'node',
+      mode: 'block',
       paths: [[1]],
     });
     assert.deepEqual(editor.read.selection(), range([1, 0], 1, [0, 0], 0));
     assert.equal(SelectionApi.root(selection), undefined);
     assert.equal(
-      SelectionApi.root(SelectionApi.nodes([[1]], { root: 'header' })),
+      SelectionApi.root(
+        SelectionApi.nodes([[1]], { mode: 'block', root: 'header' })
+      ),
       'header'
     );
     assert.throws(
-      () => SelectionApi.nodes([[1]], { root: 'main' }),
+      () => SelectionApi.nodes([[1]], { mode: 'block', root: 'main' }),
       /Omit root/
     );
     assert.throws(
       () =>
         SelectionApi.nodes([[0], [1]], {
+          mode: 'block',
           anchorPath: [2],
           focusPath: [1],
         }),
@@ -213,7 +218,7 @@ describe('selection protocol', () => {
     assert.deepEqual(encodeEditorSelection(editor, selection), {
       kind: 'node',
       value: selection,
-      version: 4,
+      version: 5,
     });
     assert.deepEqual(
       decodeEditorSelection(editor, {
@@ -221,7 +226,7 @@ describe('selection protocol', () => {
         value: { ...aggregate, kind: 'node', path: [1] },
         version: 1,
       }),
-      SelectionApi.nodes([[1]])
+      SelectionApi.nodes([[1]], { mode: 'block' })
     );
     assert.deepEqual(
       decodeEditorSelection(editor, {
@@ -229,7 +234,7 @@ describe('selection protocol', () => {
         value: { ...aggregate, kind: 'node', paths: [[1], [0]] },
         version: 2,
       }),
-      SelectionApi.nodes([[0], [1]])
+      SelectionApi.nodes([[0], [1]], { mode: 'block' })
     );
     assert.deepEqual(
       decodeEditorSelection(editor, {
@@ -237,7 +242,7 @@ describe('selection protocol', () => {
         value: { kind: 'node', paths: [[1], [0]] },
         version: 3,
       }),
-      SelectionApi.nodes([[0], [1]])
+      SelectionApi.nodes([[0], [1]], { mode: 'block' })
     );
     assert.throws(
       () =>
@@ -246,12 +251,110 @@ describe('selection protocol', () => {
           value: { ...aggregate, kind: 'node', paths: [[1], [0]] },
           version: 4,
         }),
-      /Invalid node editor selection/
+      /Invalid legacy node editor selection/
+    );
+  });
+
+  it('stores how a node selection was made', () => {
+    const objectSchema = defineEditorSchema('schema:selection-mode', {
+      elements: {
+        media: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          object: true,
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      id: 'selection-mode',
+      root: schema.content.types(['media', 'paragraph'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = createEditor({
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'before' }] },
+        { type: 'media', children: [{ text: 'caption' }] },
+      ],
+      plugins: [objectSchema],
+    });
+    const object = SelectionApi.nodes([[1], [1, 0]], { mode: 'object' });
+
+    assert.deepEqual(object, {
+      anchorPath: [1],
+      focusPath: [1],
+      kind: 'node',
+      mode: 'object',
+      paths: [[1]],
+    });
+    assert.throws(
+      () => SelectionApi.nodes([[1]], {} as never),
+      /mode must be 'block' or 'object'/
+    );
+    assert.throws(
+      () => SelectionApi.nodes([[0], [1]], { mode: 'object' }),
+      /exactly one path/
+    );
+    assert.equal(
+      SelectionApi.isNode({
+        anchorPath: [1],
+        focusPath: [1],
+        kind: 'node',
+        paths: [[1]],
+      }),
+      false
+    );
+    assert.equal(
+      SelectionApi.isNode({
+        anchorPath: [0],
+        focusPath: [1],
+        kind: 'node',
+        mode: 'object',
+        paths: [[0], [1]],
+      }),
+      false
+    );
+
+    const encoded = encodeEditorSelection(editor, object);
+
+    assert.deepEqual(encoded, { kind: 'node', value: object, version: 5 });
+    assert.deepEqual(decodeEditorSelection(editor, encoded), object);
+    assert.deepEqual(
+      decodeEditorSelection(editor, {
+        kind: 'node',
+        value: { anchorPath: [1], focusPath: [1], kind: 'node', paths: [[1]] },
+        version: 4,
+      }),
+      SelectionApi.nodes([[1]], { mode: 'block' })
+    );
+
+    editor.update.selection.set(object);
+    assert.equal(editor.read.selection.nodeMode(), 'object');
+    editor.update.selection.setNodes([[1]]);
+    assert.equal(editor.read.selection.nodeMode(), 'block');
+    editor.update.selection.set({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+    assert.equal(editor.read.selection.nodeMode(), null);
+    assert.throws(
+      () =>
+        editor.update.selection.set(
+          SelectionApi.nodes([[0]], { mode: 'object' })
+        ),
+      /object node selection must target one selectable object/
+    );
+    assert.throws(
+      () => editor.update.selection.setNodes([[0]], { mode: 'object' }),
+      /object node selection must target one selectable object/
     );
   });
 
   it('projects, slices, and maps every selected node path', () => {
-    const selection = SelectionApi.nodes([[0], [1]]);
+    const selection = SelectionApi.nodes([[0], [1]], { mode: 'block' });
     const editor = createEditor({
       initialSelection: selection,
       initialValue,
@@ -300,6 +403,7 @@ describe('selection protocol', () => {
     const create = () =>
       createEditor({
         initialSelection: SelectionApi.nodes([[0], [1], [2]], {
+          mode: 'block',
           anchorPath: [2],
           focusPath: [0],
         }),
@@ -318,6 +422,7 @@ describe('selection protocol', () => {
     assert.deepEqual(
       getEditorLiveSelection(withoutFocus),
       SelectionApi.nodes([[0], [1]], {
+        mode: 'block',
         anchorPath: [1],
         focusPath: [0],
       })
@@ -325,6 +430,7 @@ describe('selection protocol', () => {
     assert.deepEqual(
       getEditorLiveSelection(withoutAnchor),
       SelectionApi.nodes([[0], [1]], {
+        mode: 'block',
         anchorPath: [1],
         focusPath: [0],
       })
@@ -333,7 +439,7 @@ describe('selection protocol', () => {
 
   it('uses exact node projections instead of the aggregate range for membership', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0], [2]]),
+      initialSelection: SelectionApi.nodes([[0], [2]], { mode: 'block' }),
       initialValue: [
         initialValue[0],
         { children: [{ text: 'middle' }], type: 'paragraph' },
@@ -351,7 +457,10 @@ describe('selection protocol', () => {
   });
 
   it('reads a node selection from its named root as one closed exact-owner slice', () => {
-    const selection = SelectionApi.nodes([[0]], { root: 'header' });
+    const selection = SelectionApi.nodes([[0]], {
+      mode: 'block',
+      root: 'header',
+    });
     const header = {
       children: [{ text: 'header' }],
       type: 'paragraph' as const,
@@ -380,6 +489,7 @@ describe('selection protocol', () => {
       anchorPath: sharedPath,
       focusPath: [1],
       kind: 'node',
+      mode: 'block',
       paths: [sharedPath, [1]],
     } satisfies NodeSelection;
     const editor = createEditor({
@@ -414,7 +524,7 @@ describe('selection protocol', () => {
 
   it('replaces a node selection when setting a plain range', () => {
     const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0], [1]]),
+      initialSelection: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
       initialValue,
     });
     const next = range([1, 0], 1, [1, 0], 1);
@@ -427,6 +537,7 @@ describe('selection protocol', () => {
   it('maps directional node selection when replaceChildren reuses selected nodes', () => {
     const editor = createEditor({
       initialSelection: SelectionApi.nodes([[0], [1]], {
+        mode: 'block',
         anchorPath: [1],
         focusPath: [0],
       }),
@@ -443,6 +554,7 @@ describe('selection protocol', () => {
     assert.deepEqual(
       getEditorLiveSelection(editor),
       SelectionApi.nodes([[1], [2]], {
+        mode: 'block',
         anchorPath: [2],
         focusPath: [1],
       })
@@ -460,7 +572,9 @@ describe('selection protocol', () => {
       true
     );
     assert.equal(
-      editor.read.selection.isValid(SelectionApi.nodes([[0], [1]])),
+      editor.read.selection.isValid(
+        SelectionApi.nodes([[0], [1]], { mode: 'block' })
+      ),
       true
     );
     assert.equal(
@@ -472,7 +586,7 @@ describe('selection protocol', () => {
     );
     assert.equal(
       editor.read.selection.isValid({
-        ...SelectionApi.nodes([[0], [1]]),
+        ...SelectionApi.nodes([[0], [1]], { mode: 'block' }),
         focusPath: [9],
       }),
       false
@@ -514,13 +628,16 @@ describe('selection protocol', () => {
     assert.throws(() => {
       editor.update((tx) => {
         tx.selection.set({
-          ...SelectionApi.nodes([[0]]),
+          ...SelectionApi.nodes([[0]], { mode: 'block' }),
           marks: { bold: true },
         } as never);
       });
     }, /Only collapsed text selections can carry insertion marks/);
 
-    const encoded = encodeEditorSelection(editor, SelectionApi.nodes([[0]]));
+    const encoded = encodeEditorSelection(
+      editor,
+      SelectionApi.nodes([[0]], { mode: 'block' })
+    );
 
     assert.ok(encoded);
     assert.throws(

@@ -1,5 +1,5 @@
 ---
-description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, before calling a failure pre-existing or unrelated, before running a base or HEAD control, including an evidence probe or browser control run during an API review or investigation, before claiming a fix works, and before closing any change with a browser-visible result.
+description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, before calling a failure pre-existing or unrelated, before running a base or HEAD control, including an evidence probe or browser control run during an API review or investigation, before claiming a fix works, before closing any change with a browser-visible result, and to prepare a round of hands-on beta testing, a sweep round, or decide what follows one.
 argument-hint: '[package | route | cli | collaboration | testing audit] <target>'
 name: verify
 metadata:
@@ -116,7 +116,7 @@ gotchas from the source and existing proof. A file count is discovery only.
 | Plate copied UI | `apps/www/src/registry/`; `apps/www/src/app/(blocks)/blocks/[name]/page.tsx` | Use the actual registered block, preferring its `-demo` route when present. Preserve a reporter-named docs/route target. |
 | Public package behavior | Package exports and `tooling/entrypoints/entrypoint-dag.mjs`; `tooling/entrypoints/entrypoint-turbo.mjs` derives partition tests | Use each partition's type/test script for its public contract. The managed `/runtime-entrypoints` fixture proves client exports; `pnpm plite:release:packages` proves packed headless/SSR imports and declarations. Include exported assets such as `platejs/math/katex.css`. |
 | Optional schema CLI | `packages/cli/src/bin.ts`, `packages/cli/src/deps`, existing `packages/cli/test` fixtures | Run the built `plate` command in a disposable project; verify generated artifacts, subsequent check mode and untouched input. Ordinary editor setup never requires this CLI. |
-| Docs and registry outputs | `content/docs`, `apps/www/src/lib/source.ts`, docs app routes and `apps/www/package.json` scripts; Plate Docs | Derive source routes through `apps/www/src/lib/docs-routes.ts`, which `check-docs-source-parity.mts` and `hand-drive.mjs scope` share, parse frontmatter titles, inspect rendered bodies and read back generated results. Record locale fallbacks and custom app-page overrides separately. |
+| Docs and registry outputs | `content/docs`, `apps/www/src/lib/source.ts`, docs app routes and `apps/www/package.json` scripts; Plate Docs. Two functions list the docs pages. `generateDocStaticParams` in `apps/www/src/app/(app)/docs/[[...slug]]/doc-page.tsx` adds the component and example pages from `getRegistryStaticParams` to the Fumadocs pages. `readSources` in `tooling/scripts/docs-sources.mjs`, which `hand-drive.mjs` and `page-health.mjs` import, lists the `content/docs` MDX files through `git ls-files`, and reads registry metadata and Plite example loaders. `healthRoutes` in `tooling/scripts/page-health.mjs` adds the docs app pages, English and Chinese, and the release pages of older majors to those lists and gives every route the page check opens | Take a page list or count from those two functions. `apps/www/src/lib/docs-routes.ts` only converts one source path to its URL for `check-docs-source-parity.mts` and `hand-drive.mjs scope`, and lists no pages. Parse frontmatter titles, inspect rendered bodies and read back generated results. Record locale fallbacks, such as `/cn/docs` serving an English page that has no `.cn.mdx`, and custom app-page overrides separately. |
 | Regression cases | Existing executable tests plus current source/report provenance | Replay the exact reporter interaction under the [completion boundary](#completion-boundary); select applicable [interaction oracles](./references/regression-oracles.md). |
 | Performance | Benchmark's current target inventory and executable runners | Resolve the measured owner through Benchmark; preserve workload, source identity, correctness and baseline/candidate comparability. |
 
@@ -156,11 +156,12 @@ its `exit N` line; after an interruption or resume, only those logs count.
   then generates and serves dynamic docs. When the tree must not change, such
   as during a proof or a panel freeze, run
   `PLATE_WWW_DYNAMIC_DOCS=1 next dev --port <port>` from `apps/www` with the
-  same env and its own `PLATE_WWW_DIST_DIR`. Set `PLATE_WWW_DEV_SOURCE=1` by
+  same env. Set `PLATE_WWW_DEV_SOURCE=1` by
   default when the tree changes a package the page renders, so the server
-  serves source instead of built output. If an existing server holds `.next/dev/lock`, use a
-  separate available output directory through the existing configuration;
-  the current `PLATE_WWW_PLITE=1` option selects `.next-plite`.
+  serves source instead of built output. A dev server keeps its cache in
+  `.next-<port>`, or `.next-plite-<port>` with `PLATE_WWW_PLITE=1`, so a rerun
+  on the same port reuses it; when a server already holds that port, pick
+  another port, and leave `PLATE_WWW_DIST_DIR` unset.
 - Plite examples for interactive source proof:
   `pnpm --filter plite exec next dev --port 3298`.
 - Existing managed Plite browser proof:
@@ -224,30 +225,15 @@ browser. Exact Chrome/profile/clipboard/download/print/native claims require
 that browser and profile; use native app/OS control when necessary. Old plugin
 names in preserved recipes describe these capabilities, not installed tools.
 Never invent a callable API or substitute a clean profile for a named one.
-Type key by key whenever the claim depends on what typing triggers, such as
-Markdown autoformat, a hotkey, a mark toggle or a `/` or `@` menu. Direct text
-insertion skips those handlers. The key-by-key operation is
-`pressSequentially` in Codex's browser, `type` in Claude in Chrome, and `key`
-with one space-separated token per character in Claude Code's built-in
-browser, such as `# space h i`. That browser's `type` inserts the whole string
-as one `insertText`.
-Send a shifted character as itself (`*`, `A`, `?`). For `shift+8` the built-in
-browser inserts nothing and Claude in Chrome inserts `8`. Claude in Chrome
-takes keys only after one real click into the page. Confirm the active mark
-before typing, then read back both the inserted text and its rendered marks
-after the update.
-
-Both Claude browsers throttle a page nobody is looking at. A hidden built-in
-pane runs one or two animation frames a second while `visibilityState` still
-says `visible`, and a Claude in Chrome tab that reports `hidden` runs none.
-Before a claim that depends on frames or observers, such as virtualization,
-scroll anchoring, a floating toolbar's position, drag autoscroll or
-type-to-paint, count `requestAnimationFrame` callbacks over one second in the
-page. Below 30, ask the owner to show the pane (Cmd+Shift+B) or bring Chrome
-to the front, or leave that claim to a Playwright spec, whose Chromium runs
-without background throttling. The built-in browser has no native clipboard,
-and Cmd+C and Cmd+V fire no `copy` or `paste` event there. Drive a native copy
-or paste in Claude in Chrome, or through the `'native'` clipboard spec below.
+Type into an editor key by key whenever the claim depends on what typing
+triggers, such as Markdown autoformat, a hotkey, a mark toggle or a `/` or `@`
+menu, with the key-by-key operation `.agents/pstack/rules/browser.md` names
+for each browser. Confirm the active mark before typing, then read back both
+the inserted text and its rendered marks after the update. Before a claim that
+depends on frames, such as virtualization, scroll anchoring, a floating
+toolbar's position, drag autoscroll or type-to-paint, run that file's frame
+check. A native copy or paste goes to Claude in Chrome or to the `'native'`
+clipboard spec below.
 
 Existing repository Playwright specs are executable proof owners. Run them
 through their package runner. Do not build a parallel Puppeteer, raw CDP or
@@ -331,6 +317,14 @@ Read a screenshot of every cell; nothing checks that you did. Each drift the dri
 old code. The Stop hook in Claude Code and Codex refuses the first stop while a
 cell is open; the owner's message that starts with "skip drive" waives the edits
 made before it.
+
+## Tester pass
+
+A sweep is a series of rounds in which a person tests every beta page by hand
+beside its reference page. Read [the tester pass](./references/tester-pass.md)
+in full before preparing a round, writing its round plan, or deciding what
+follows a round. It holds the session, the six moves, the browser rotation, the
+find note, the rechecks and the round loop.
 
 ## Evidence
 

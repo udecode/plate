@@ -1,0 +1,22 @@
+---
+id: 2026-10-14-block-void-selection
+date: 2026-10-14
+status: draft
+kind: fix
+summary: 'Show caret and block selection on void and media blocks'
+change: { 'type': 'source', 'date': '2026-10-14', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-14-code-drawing-selection-block-void-components-6e6bb845","kind":"fix","migrationNotes":[]} -->
+
+- **`code-drawing`**, **`excalidraw`**, **`upload`**: Mark a block entered with the caret with a ring on code drawings and Excalidraw canvases and a tinted background on upload placeholders.
+
+- **`toc`**, **`math`**, **`horizontal-rule`**, **`code-drawing`**, **`excalidraw`**, **`upload`**: Leave a block selection to the blue block highlight instead of adding the caret-entry style.
+
+- **`media-image`**, **`media-file`**, **`media-audio`**, **`media-video`**, **`media-embed`**: Show the media ring and toolbar only when the media node is clicked or arrowed into; a block selection shows the blue block highlight instead, even when it holds only that media node.
+
+- **`mention`**, **`tag`**, **`footnote`**: Keep the inline focus style off mentions, tags and footnote references inside a block selection.
+
+- **`dnd`**, **`block-menu`**: Turn a selected media node into a block selection when its drag handle is clicked or its block menu opens.

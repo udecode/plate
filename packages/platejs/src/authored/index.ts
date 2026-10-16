@@ -5,6 +5,7 @@ export {
   type AuthoredChange,
   type AuthoredChangeDetails,
   type AuthoredChangeGroup,
+  type AuthoredChangesDelta,
   type AuthoredChangeKind,
   type AuthoredChangePart,
   type AuthoredComparisonImportResult,

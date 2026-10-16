@@ -92,6 +92,164 @@ describe('AIChatPlugin submit', () => {
     }
   );
 
+  it('keeps an object pick through show, hide, submit and reload', () => {
+    const ObjectPlugin = definePlugin('aiObject', {
+      schema: { element: schema.element.textBlock({ object: true }) },
+    });
+    const sendMessage = mock();
+    const editor = createProductEditor({
+      plugins: [BaseParagraphPlugin, ObjectPlugin, BaseAIPlugin, AIChatPlugin],
+      userId: 'alice',
+      initialValue: [
+        { children: [{ text: 'caption' }], type: 'aiObject' },
+        { children: [{ text: 'two' }], type: 'paragraph' },
+      ],
+    });
+    const ai = editor.plugin(AIChatPlugin);
+    const regenerate = mock(async () => {});
+
+    ai.store.set({
+      chat: {
+        clear: mock(),
+        messages: [],
+        regenerate,
+        sendMessage,
+        status: 'ready' as const,
+        stop: mock(),
+      },
+    });
+    const objectPick = SelectionApi.nodes([[0]], { mode: 'object' });
+
+    editor.update.selection.set(objectPick);
+    ai.api.show();
+    editor.update.selection.set({ path: [1, 0], offset: 1 });
+    ai.api.hide();
+    expect(editor.read.runtime.snapshot().selection).toEqual(objectPick);
+
+    ai.api.show();
+    ai.api.submit('rewrite');
+    expect(sendMessage.mock.calls[0][1].body.ctx.nodeSelection).toEqual({
+      anchorPath: [0],
+      focusPath: [0],
+      mode: 'object',
+      paths: [[0]],
+    });
+
+    editor.update.selection.set({ path: [1, 0], offset: 1 });
+    ai.api.reload();
+    expect(editor.read.runtime.snapshot().selection).toEqual(objectPick);
+    expect(
+      (regenerate.mock.calls[0] as unknown as [{ body: { ctx: any } }])[0].body
+        .ctx.nodeSelection.mode
+    ).toBe('object');
+  });
+
+  it('restores a block pick when the picked object lost its object role', () => {
+    const ObjectPlugin = definePlugin('aiObject', {
+      schema: { element: schema.element.textBlock({ object: true }) },
+    });
+    const editor = createProductEditor({
+      plugins: [BaseParagraphPlugin, ObjectPlugin, BaseAIPlugin, AIChatPlugin],
+      userId: 'alice',
+      initialValue: [
+        { children: [{ text: 'caption' }], type: 'aiObject' },
+        { children: [{ text: 'two' }], type: 'paragraph' },
+      ],
+    });
+    const ai = editor.plugin(AIChatPlugin);
+
+    editor.update.selection.set(SelectionApi.nodes([[0]], { mode: 'object' }));
+    ai.api.show();
+    editor.update.nodes.set({ type: 'paragraph' }, { at: [0] });
+    editor.update.selection.set({ path: [1, 0], offset: 1 });
+    ai.api.hide();
+
+    expect(editor.read.runtime.snapshot().selection).toEqual(
+      SelectionApi.nodes([[0]], { mode: 'block' })
+    );
+  });
+
+  it('restores an object pick through an editor view', () => {
+    const ObjectPlugin = definePlugin('aiObject', {
+      schema: { element: schema.element.textBlock({ object: true }) },
+    });
+    const editor = createProductEditor({
+      plugins: [BaseParagraphPlugin, ObjectPlugin, BaseAIPlugin, AIChatPlugin],
+      userId: 'alice',
+      initialValue: [
+        { children: [{ text: 'caption' }], type: 'aiObject' },
+        { children: [{ text: 'two' }], type: 'paragraph' },
+      ],
+    });
+    const view = createEditorView(editor);
+    const objectPick = SelectionApi.nodes([[0]], { mode: 'object' });
+
+    view.update.selection.set(objectPick);
+    view.plugin(AIChatPlugin).api.show();
+    view.update.selection.set({ path: [1, 0], offset: 1 });
+    view.plugin(AIChatPlugin).api.hide();
+
+    expect(editor.read.runtime.snapshot().selection).toEqual(objectPick);
+  });
+
+  it('checks the role of a named-root object pick in its own root', () => {
+    const ObjectPlugin = definePlugin('aiObject', {
+      schema: { element: schema.element.textBlock({ object: true }) },
+    });
+    const RootHolderPlugin = definePlugin('aiRootHolder', {
+      schema: {
+        element: {
+          blockContent: true,
+          contentRoots: {
+            body: {
+              content: schema.content.types(['aiObject', 'paragraph'], {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          void: 'block',
+        },
+      },
+    });
+    const editor = createProductEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        ObjectPlugin,
+        RootHolderPlugin,
+        BaseAIPlugin,
+        AIChatPlugin,
+      ],
+      userId: 'alice',
+      initialValue: {
+        children: [
+          { children: [{ text: 'main' }], type: 'aiObject' },
+          {
+            childRoots: { body: 'header' },
+            children: [{ text: '' }],
+            type: 'aiRootHolder',
+          },
+        ],
+        roots: {
+          header: [{ children: [{ text: 'header' }], type: 'aiObject' }],
+        },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+
+    editor.update.selection.set(
+      SelectionApi.nodes([[0]], { mode: 'object', root: 'header' })
+    );
+    editor.plugin(AIChatPlugin).api.show();
+    header.update.nodes.set({ type: 'paragraph' }, { at: [0] });
+    editor.plugin(AIChatPlugin).api.hide();
+
+    expect(editor.read.runtime.snapshot().selection).toEqual(
+      SelectionApi.nodes([[0]], { mode: 'block', root: 'header' })
+    );
+  });
+
   it('does not retry or replace a deleted text target with its successor', () => {
     const editor = createEditor(mock());
     const ai = editor.plugin(AIChatPlugin);
@@ -149,6 +307,7 @@ describe('AIChatPlugin submit', () => {
       const ai = editor.plugin(AIChatPlugin);
       editor.update.selection.set(
         SelectionApi.nodes([[0], [2]], {
+          mode: 'block',
           anchorPath: [2],
           focusPath: [0],
         })
@@ -171,13 +330,13 @@ describe('AIChatPlugin submit', () => {
     const sendMessage = mock();
     const editor = createEditor(sendMessage);
     const ai = editor.plugin(AIChatPlugin);
-    editor.update.selection.set(SelectionApi.nodes([[1]]));
+    editor.update.selection.set(SelectionApi.nodes([[1]], { mode: 'block' }));
     ai.api.show();
     editor.update.nodes.insert(
       { type: 'paragraph', children: [{ text: 'before' }] },
       { at: [0] }
     );
-    editor.update.selection.set(SelectionApi.nodes([[0]]));
+    editor.update.selection.set(SelectionApi.nodes([[0]], { mode: 'block' }));
 
     ai.api.submit('edit');
     expect(sendMessage).toHaveBeenCalledWith(
@@ -185,7 +344,12 @@ describe('AIChatPlugin submit', () => {
       expect.objectContaining({
         body: {
           ctx: expect.objectContaining({
-            nodeSelection: { anchorPath: [2], focusPath: [2], paths: [[2]] },
+            nodeSelection: {
+              anchorPath: [2],
+              focusPath: [2],
+              mode: 'block',
+              paths: [[2]],
+            },
             refs: { blocks: [{ path: [2], ref: 'b1' }], tableCells: [] },
           }),
         },
@@ -283,7 +447,7 @@ describe('AIChatPlugin submit', () => {
         { type: 'paragraph', children: [{ text: 'one' }] },
         { type: 'heading', level: 2, children: [{ text: 'two' }] },
       ],
-      selection: SelectionApi.nodes([[0], [1]]),
+      selection: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
     });
     const ai = editor.plugin(AIChatPlugin);
     ai.api.submit('generate');
@@ -325,7 +489,7 @@ describe('AIChatPlugin submit', () => {
       { children: [{ text: 'two' }], type: 'paragraph' },
     ]);
 
-    editor.update.selection.set(SelectionApi.nodes([[0]]));
+    editor.update.selection.set(SelectionApi.nodes([[0]], { mode: 'block' }));
 
     editor.plugin(AIChatPlugin).api.submit('draft');
 
@@ -339,6 +503,7 @@ describe('AIChatPlugin submit', () => {
             nodeSelection: {
               anchorPath: [0],
               focusPath: [0],
+              mode: 'block',
               paths: [[0]],
             },
             selection: {
@@ -357,6 +522,7 @@ describe('AIChatPlugin submit', () => {
     const selectedNodeKeys = new Set([editor.key([0])!, editor.key([1])!]);
     editor.update.selection.set(
       SelectionApi.nodes([[0], [1]], {
+        mode: 'block',
         anchorPath: [1],
         focusPath: [0],
       })
@@ -385,6 +551,7 @@ describe('AIChatPlugin submit', () => {
             nodeSelection: {
               anchorPath: [1],
               focusPath: [0],
+              mode: 'block',
               paths: [[0], [1]],
             },
             refs: {
@@ -444,6 +611,7 @@ describe('AIChatPlugin submit', () => {
     editor.plugin(AIChatPlugin).store.set({ chat });
     editor.update.selection.set(
       SelectionApi.nodes([[0], [1]], {
+        mode: 'block',
         anchorPath: [1],
         focusPath: [0],
       })
@@ -457,6 +625,7 @@ describe('AIChatPlugin submit', () => {
           nodeSelection: {
             anchorPath: [1],
             focusPath: [0],
+            mode: 'block',
             paths: [[0], [1]],
           },
         }),
@@ -491,7 +660,7 @@ describe('AIChatPlugin submit', () => {
         RootHolderPlugin,
       ],
       userId: 'alice',
-      selection: SelectionApi.nodes([[0]], { root: 'header' }),
+      selection: SelectionApi.nodes([[0]], { mode: 'block', root: 'header' }),
       initialValue: {
         children: [
           {
@@ -522,6 +691,7 @@ describe('AIChatPlugin submit', () => {
             nodeSelection: {
               anchorPath: [0],
               focusPath: [0],
+              mode: 'block',
               paths: [[0]],
             },
             refs: {

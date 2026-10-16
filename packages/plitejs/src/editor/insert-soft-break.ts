@@ -1,6 +1,5 @@
 import { dispatchCommand } from '../core/command-registry';
 import { editorCommands } from '../core/editor-commands';
-import { limitTextInsert } from '../core/insert-limit';
 import type { EditorStaticApi } from '../interfaces/editor';
 import { breakAtSelectedBlockVoid } from './block-void-break';
 import { applyInsertTextCommand } from './insert-text';
@@ -12,9 +11,7 @@ export const applyInsertSoftBreak: EditorStaticApi['insertSoftBreak'] = (
     return;
   }
 
-  const text = limitTextInsert(editor, '\n', undefined);
-
-  if (text) applyInsertTextCommand(editor, text);
+  applyInsertTextCommand(editor, '\n');
 };
 
 export const insertSoftBreak: EditorStaticApi['insertSoftBreak'] = (editor) => {

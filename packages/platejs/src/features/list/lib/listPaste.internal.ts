@@ -55,7 +55,7 @@ const copiesWholeItems = (source: ContentSlice) => {
 
 export const landListPaste = (
   state: EditorCoreStateView,
-  { source, target }: SliceLandingInput,
+  { intent, source, target }: SliceLandingInput,
   landed: SliceLanding,
   {
     headingType,
@@ -64,11 +64,12 @@ export const landListPaste = (
 ): SliceLanding => {
   const { slice } = landed;
   const { content: blocks, wrappers } = peelOpenWrappers(slice);
+  const placement = intent === 'move' ? 'move' : 'paste';
   const kept = landListContent(
     state,
     blocks,
     { block: target.block?.[0], kind: 'kept' },
-    { headingType, placement: 'paste' }
+    { headingType, placement }
   );
   const fallback =
     kept === blocks
@@ -81,7 +82,6 @@ export const landListPaste = (
 
   if (
     target.kind !== 'empty' ||
-    target.root !== undefined ||
     (target.block[0].type !== paragraphType &&
       target.block[0].type !== headingType) ||
     !copiesWholeItems(source)
@@ -96,7 +96,7 @@ export const landListPaste = (
         state,
         blocks,
         { kind: 'line', line: [line, path] },
-        { headingType, placement: 'paste' }
+        { headingType, placement }
       );
   const [head, ...rest] = content;
   const openStart = slice.openStart - wrappers.length;

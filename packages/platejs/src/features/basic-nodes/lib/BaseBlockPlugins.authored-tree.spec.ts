@@ -1,10 +1,9 @@
 import { editorCommands, type EditorUpdateTransaction } from 'plitejs';
 import { createAuthoredPlugin } from 'plitejs/authored';
 
-import { authoredTestApi } from '../../../authored/__tests__/authoredTestApi';
-
 import { createDataTransfer } from '#platejs-test-internal';
 
+import { authoredTestApi } from '../../../authored/__tests__/authoredTestApi';
 import { BaseParagraphPlugin, createEditor } from '../../../core';
 import {
   BaseBlockquotePlugin,
@@ -91,24 +90,30 @@ const make = (value: readonly unknown[], intent: Intent | 'plain') =>
     plugins: intent === 'plain' ? [...kit] : [...kit, proofOf(intent)],
   });
 type Editor = ReturnType<typeof make>;
+type Saved = readonly unknown[] | ReturnType<Editor['read']['value']>;
 
-const changesOf = (value: readonly unknown[], author?: string) => {
+const childrenOf = (value: Saved) =>
+  'children' in value ? value.children : value;
+const isEditingWrite = (change: string) => change.startsWith('~edit:');
+const changesOf = (value: Saved, author?: string) => {
   const changes = new Set<string>();
   const visit = (node: Node) => {
     for (const { change } of (node.authored ?? []) as Array<{
-      change: string;
+      change?: string;
     }>) {
-      changes.add(change);
+      if (change) changes.add(change);
     }
     (node.children as Node[] | undefined)?.forEach(visit);
   };
 
-  (value as Node[]).forEach(visit);
+  (childrenOf(value) as Node[]).forEach(visit);
 
-  return [...changes].filter((c) => !author || c.startsWith(`${author}:`));
+  return [...changes].filter(
+    (c) => !isEditingWrite(c) && (!author || c.startsWith(`${author}:`))
+  );
 };
 const decided = (
-  value: readonly unknown[],
+  value: Saved,
   action: 'accept' | 'reject',
   author?: string
 ) => {
@@ -130,6 +135,18 @@ const unmarked = (value: readonly unknown[]): unknown =>
     JSON.stringify(value, (key, field) =>
       key === 'authored' ? undefined : field
     )
+  );
+const pending = (value: readonly unknown[]): unknown =>
+  JSON.parse(
+    JSON.stringify(value, (key, field) => {
+      if (key !== 'authored') return field;
+
+      const claims = (field as Array<{ kind: string }>).filter(
+        (member) => member.kind !== 'held'
+      );
+
+      return claims.length > 0 ? claims : undefined;
+    })
   );
 const selectionOf = (at: At) => {
   const [anchor, focus] =
@@ -231,13 +248,15 @@ const law = (c: Case) => {
       const editor = make(c.start, intent);
 
       drive(editor, c.at, c.run, 'review');
-      const raw = editor.read.children();
+      const raw = editor.read.value();
 
       expect(unmarked(decided(raw, 'accept'))).toEqual(c.accepted);
-      expect(joinCount(raw)).toBeLessThanOrEqual(1);
+      expect(joinCount(childrenOf(raw))).toBeLessThanOrEqual(1);
       if (intent === 'propose') {
-        expect(decided(raw, 'reject')).toEqual(decided(c.start, 'reject'));
-        expect(decided(raw, 'reject', 'bob')).toEqual(c.start);
+        expect(pending(decided(raw, 'reject'))).toEqual(
+          pending(decided(c.start, 'reject'))
+        );
+        expect(pending(decided(raw, 'reject', 'bob'))).toEqual(c.start);
         expect(changesOf(raw, 'bob').length).toBeLessThanOrEqual(1);
       } else {
         const restored = textOf({
@@ -251,7 +270,7 @@ const law = (c: Case) => {
 
       type('Z')(plain, 'plain');
       type('Z')(editor, 'review');
-      expect(unmarked(decided(editor.read.children(), 'accept'))).toEqual(
+      expect(unmarked(decided(editor.read.value(), 'accept'))).toEqual(
         unmarked(plain.read.children())
       );
     });

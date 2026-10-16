@@ -288,14 +288,8 @@ export const textareaAdapter: ExternalTextAdapter = {
         controller.abort();
         input.remove();
       },
-      focus({ edge } = {}) {
+      focus() {
         if (current.selection) writeSelection(current.selection);
-        else if (edge) {
-          writeSelection({
-            anchor: edge === 'end' ? input.value.length : 0,
-            focus: edge === 'end' ? input.value.length : 0,
-          });
-        }
         input.focus({ preventScroll: true });
       },
       update({ changes, state: next }) {

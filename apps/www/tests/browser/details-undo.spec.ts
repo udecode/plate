@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-import type { PliteBrowserHandleElement } from '../../../../packages/plitejs/src/react/editable/browser-handle';
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
+import { editorRoot, read, readValue } from './details-fixture';
 
 for (const route of ['details-demo', 'playground']) {
   test(`${route} restores expanded nested Details through unwrap undo and redo`, async ({
@@ -11,9 +11,7 @@ for (const route of ['details-demo', 'playground']) {
     await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
     try {
       await page.goto(`/blocks/${route}`);
-      const root = page
-        .locator('[data-editor="true"][contenteditable="true"]')
-        .first();
+      const root = editorRoot(page);
       const title =
         route === 'details-demo'
           ? 'Can Details be nested?'
@@ -35,16 +33,9 @@ for (const route of ['details-demo', 'playground']) {
         .click();
       await summary.click();
       await page.keyboard.press('Home');
-      const value = () =>
-        root.evaluate(
-          (element: PliteBrowserHandleElement) =>
-            element.__EDITOR_BROWSER_HANDLE__!.getValue().children
-        );
+      const value = () => readValue(root);
       const before = await value();
-      const beforeSelection = await root.evaluate(
-        (element: PliteBrowserHandleElement) =>
-          element.__EDITOR_BROWSER_HANDLE__!.getSelection()
-      );
+      const { model: beforeSelection } = await read(root);
       const innerKey = await inner.getAttribute('data-editor-node-key');
       await page.keyboard.press('Backspace');
       await expect(inner).toHaveCount(0);
@@ -60,18 +51,10 @@ for (const route of ['details-demo', 'playground']) {
         await expect(inner.locator('.editor-paragraph').first()).toBeVisible();
         await expect(inner).toHaveAttribute('data-editor-node-key', innerKey!);
         await expect
-          .poll(() =>
-            root.evaluate((element: PliteBrowserHandleElement) =>
-              element.__EDITOR_BROWSER_HANDLE__!.getSelection()
-            )
-          )
+          .poll(() => read(root).then(({ model }) => model))
           .toEqual(beforeSelection);
         await expect
-          .poll(() =>
-            root.evaluate((element: PliteBrowserHandleElement) =>
-              element.__EDITOR_BROWSER_HANDLE__!.getDOMSelection()
-            )
-          )
+          .poll(() => read(root).then(({ dom }) => dom))
           .toEqual(beforeSelection);
         if (cycle === 0) {
           await page.screenshot({

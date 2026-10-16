@@ -1,13 +1,10 @@
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { act, render, waitFor } from '@testing-library/react';
-import * as React from 'react';
 
 import { findDOMRootRuntime } from '../../../../../packages/plitejs/src/dom/internal';
 import { basicBlocksValue } from './values/basic-blocks-value';
 import { basicMarksValue } from './values/basic-marks-value';
 import { imageValue } from './values/media-value';
-
-Object.assign(globalThis, { React });
 
 it('/blocks/multiple-editors-demo binds each independent editor to its complete document and isolates editing and undo', async () => {
   window.location.href = 'http://localhost:3297/blocks/multiple-editors-demo';

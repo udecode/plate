@@ -12,6 +12,7 @@ import {
 } from '../../core/record-store';
 import type { EditorDocumentRecords } from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
+import { countLedgerWork } from '../ledger/work';
 import {
   type AuthoredMark,
   AuthoredMarkError,
@@ -186,6 +187,23 @@ export const assertRecordWrites = (store: RecordStore, ops: RecordOps) => {
       assertChainEnds(record, get, ended);
     }
     written.forEach(assertContentId);
+
+    const dropped = new Set(
+      [...contexts].flatMap(([ctx, json]) => (json === null ? [ctx] : []))
+    );
+
+    if (dropped.size > 0) {
+      for (const [ctx] of getRecordEntries(store, CONTEXTS)) {
+        const base = readContext(store, ctx)?.base;
+
+        if (base != null && dropped.has(base)) {
+          throw new AuthoredMarkError(
+            `Review context ${base} was dropped while context ${ctx} rests on it.`,
+            []
+          );
+        }
+      }
+    }
   }
   for (const [id, json] of verdicts ?? []) {
     if (json !== null) assertVerdict(id, json);
@@ -220,8 +238,16 @@ const RECORD_FACTS = new WeakMap<object, RecordFacts>();
 
 const NO_RECORD_FACTS: RecordFacts = Object.freeze({
   contexts: Object.freeze({ get: () => undefined, has: () => false }),
-  decides: () => false,
-  hasVerdict: () => false,
+  decides: () => {
+    countLedgerWork('verdictLookups');
+
+    return false;
+  },
+  hasVerdict: () => {
+    countLedgerWork('verdictLookups');
+
+    return false;
+  },
   hasVerdicts: false,
 });
 
@@ -241,14 +267,24 @@ const recordFactsOf = (store: RecordStore): RecordFacts => {
         get: (ctx: string) => readContext(store, ctx),
         has: (ctx: string) => getRecord(store, CONTEXTS, ctx) !== undefined,
       }),
-      decides: (change: string) =>
-        hasRecordWithPrefix(store, VERDICTS, changeVerdictProbeOf(change)),
-      hasVerdict: (incarnation: string, verdict?: Verdict) =>
-        hasRecordWithPrefix(
+      decides: (change: string) => {
+        countLedgerWork('verdictLookups');
+
+        return hasRecordWithPrefix(
+          store,
+          VERDICTS,
+          changeVerdictProbeOf(change)
+        );
+      },
+      hasVerdict: (incarnation: string, verdict?: Verdict) => {
+        countLedgerWork('verdictLookups');
+
+        return hasRecordWithPrefix(
           store,
           VERDICTS,
           verdictProbeOf(incarnation, verdict)
-        ),
+        );
+      },
       hasVerdicts: getRecordCount(store, VERDICTS) > 0,
     });
     RECORD_FACTS.set(store, facts);
@@ -293,28 +329,6 @@ const carriedInsertions = (
   }
 };
 
-const insertedIncarnationsIn = (
-  records: RecordFacts,
-  content: ReadonlyArray<NodeList<unknown>>
-) => {
-  const inserting = new Set<string>();
-  const visit = (nodes: NodeList<unknown>) => {
-    nodes.forEach((node) => {
-      carriedInsertions(node, records, (incarnation) =>
-        inserting.add(incarnation)
-      );
-
-      const { children } = node as { children?: unknown };
-
-      if (Array.isArray(children)) visit(children);
-    });
-  };
-
-  content.forEach(visit);
-
-  return inserting;
-};
-
 const DOCUMENT_FACTS = new WeakMap<
   NodeList<unknown>,
   Readonly<{
@@ -339,11 +353,14 @@ export const factsOf = (value: Value): ReviewFacts => {
     return cached.facts;
   }
 
-  let inserted: ReadonlySet<string> | null = null;
+  countLedgerWork('documentFacts');
+
+  let inserted: NodesPerIncarnation | null = null;
+  // Admission keeps each admitted document's counts, so this reads them
+  // instead of the document.
   const facts: ReviewFacts = Object.freeze({
     ...records,
-    insertedIncarnations: () =>
-      (inserted ??= insertedIncarnationsIn(records, content)),
+    insertedIncarnations: () => (inserted ??= insertionsOf(value).counts),
   });
 
   DOCUMENT_FACTS.set(main, { content, facts, records });
@@ -476,6 +493,7 @@ const membersIn = (facts: ContextLookup, ctx: string): readonly MarkBase[] => {
       current =
         current.base === null ? undefined : facts.contexts.get(current.base)
     ) {
+      countLedgerWork('contextHops');
       chain.push(current.member);
     }
     members = Object.freeze(chain.reverse());
@@ -496,7 +514,10 @@ export const contextFor = (
   for (const member of members) {
     const record = contextRecordOf(ctx, member);
 
-    if (!facts.contexts.has(record.ctx)) records.push(record);
+    if (!facts.contexts.has(record.ctx)) {
+      countLedgerWork('contextsMinted');
+      records.push(record);
+    }
     ({ ctx } = record);
   }
 

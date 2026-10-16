@@ -29,6 +29,7 @@ import {
   resetEditorCommitPublicationQueue,
   publishEditorCommitInVersionOrder,
 } from '../../core/commit-publication';
+import { startOwnedEditor } from '../../core/editor-owner';
 import { PliteContentRootOwnerContext } from '../context';
 import {
   DecorationContext,
@@ -69,7 +70,6 @@ import {
   createReactRuntimeViewEditor,
   EditorRuntimeProvider,
   useRequiredPliteRuntimeContext,
-  useMountedEditorRuntimeOwner,
   useOptionalPliteRuntimeContext,
 } from '../hooks/use-plite-runtime';
 import { useRuntimeFocusState } from '../hooks/use-runtime-focus-state';
@@ -195,14 +195,36 @@ type EditorRuntimeViewProps<E extends ReactEditorType<any, any>> = {
   root?: NamedRootKey;
 };
 
-/**
- * Provide one mounted editor runtime to React descendants.
- *
- * Remount this provider with a different React key before replacing its editor
- * runtime. Named root views may change within the same runtime.
- */
+const RUNTIME_KEYS = new WeakMap<object, string>();
+let nextRuntimeKey = 0;
 
+const getRuntimeKey = (editor: unknown) => {
+  if (!isEditor(editor)) return undefined;
+
+  const owner = getEditorRuntimeOwner(editor);
+  let key = RUNTIME_KEYS.get(owner);
+
+  if (key === undefined) {
+    key = `runtime-${(nextRuntimeKey += 1)}`;
+    RUNTIME_KEYS.set(owner, key);
+  }
+
+  return key;
+};
+
+/**
+ * Provide one mounted editor runtime to React descendants. Passing an editor
+ * with another runtime remounts everything below. Named root views may change
+ * within the same runtime.
+ */
 export const EditorRoot = <
+  E extends ReactEditorType<any, any>,
+  const TRoot extends RootKey = RootKey,
+>(
+  props: EditorRootProps<E, TRoot>
+) => <EditorRootContent key={getRuntimeKey(props.editor)} {...props} />;
+
+const EditorRootContent = <
   E extends ReactEditorType<any, any>,
   const TRoot extends RootKey = RootKey,
 >(
@@ -210,8 +232,6 @@ export const EditorRoot = <
 ) => {
   const runtimeContext = useOptionalPliteRuntimeContext();
   const { editor, ...viewProps } = props;
-
-  useMountedEditorRuntimeOwner('EditorRoot', editor);
 
   if (props.root === 'main') {
     throw new Error('Omit root to render the primary document.');
@@ -316,14 +336,6 @@ export const EditorRuntimeView = <
     () => registerViewEditor(reactEditor, viewRoot),
     [reactEditor, registerViewEditor, viewRoot]
   );
-  usePliteChangeCallbacks({
-    editor: reactEditor,
-    onChange,
-    onCommit,
-    onSelectionChange,
-    onValueChange,
-    root: viewRoot,
-  });
   const hasViewSelection = usePliteViewSelectionPresence(reactEditor);
   const viewSelectionDecoration = useMemo(
     () =>
@@ -347,6 +359,14 @@ export const EditorRuntimeView = <
   const registerDecorationSource = useDecorationRegistrar(decorationManager);
   return (
     <EditorSelectorContext value={selectorContext}>
+      <FirstChildViewStart
+        editor={reactEditor}
+        onChange={onChange}
+        onCommit={onCommit}
+        onSelectionChange={onSelectionChange}
+        onValueChange={onValueChange}
+        root={viewRoot}
+      />
       <DecorationContext value={decorationManager}>
         <DecorationRegistrationContext value={registerDecorationSource}>
           <DecorationSourcesContext
@@ -375,14 +395,7 @@ export const EditorRuntimeView = <
   );
 };
 
-const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
-  editor,
-  onChange,
-  onCommit,
-  onSelectionChange,
-  onValueChange,
-  root,
-}: {
+type ChangeCallbacksInput<E extends ReactEditorType<any, any>> = {
   editor: E;
   onChange: ReturnType<typeof useEditorSelectorContext>['onChange'];
   onCommit?: (context: EditorCommitContext<E>) => void;
@@ -395,7 +408,27 @@ const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
     context: EditorCommitContext<E> & { value: ValueOf<E> }
   ) => void;
   root: RootKey;
-}) => {
+};
+
+const FirstChildViewStart = <E extends ReactEditorType<any, any>>(
+  props: ChangeCallbacksInput<E>
+) => {
+  usePliteChangeCallbacks(props);
+  useIsomorphicLayoutEffect(() => {
+    startOwnedEditor(props.editor);
+  }, [props.editor]);
+
+  return null;
+};
+
+const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
+  editor,
+  onChange,
+  onCommit,
+  onSelectionChange,
+  onValueChange,
+  root,
+}: ChangeCallbacksInput<E>) => {
   const changeCallbacks = useMemo(
     () => ({ onCommit, onSelectionChange, onValueChange }),
     [onCommit, onSelectionChange, onValueChange]
@@ -414,13 +447,21 @@ const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
   const [commitPublicationQueue] = useState(() =>
     createEditorCommitPublicationQueue<ValueOf<E>>(editorBaseline.commitVersion)
   );
+  const [queueBaselineRef] = useState<{
+    current: typeof editorBaseline | null;
+  }>(() => ({ current: null }));
 
   useIsomorphicLayoutEffect(() => {
-    lastSnapshotRef.current = editorBaseline.snapshot;
-    resetEditorCommitPublicationQueue(
-      commitPublicationQueue,
-      editorBaseline.commitVersion
-    );
+    // Strict Mode and Activity reconnect this effect; a commit it already
+    // delivered must not be delivered again.
+    if (queueBaselineRef.current !== editorBaseline) {
+      queueBaselineRef.current = editorBaseline;
+      lastSnapshotRef.current = editorBaseline.snapshot;
+      resetEditorCommitPublicationQueue(
+        commitPublicationQueue,
+        editorBaseline.commitVersion
+      );
+    }
 
     const publishContextChange = (
       commit: EditorCommit,

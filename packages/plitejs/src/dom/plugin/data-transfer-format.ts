@@ -27,7 +27,10 @@ import {
 } from '../../core/command-registry';
 import { createDetachedContentSlice } from '../../core/content-slice';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
-import { getCompiledEditorSchemaFromApi } from '../../core/editor-schema';
+import {
+  getCompiledEditorSchemaFromApi,
+  getInternalEditorSchemaFromApi,
+} from '../../core/editor-schema';
 import { importContentSlice } from '../../core/import-content-slice';
 import { reportEditorLifecycleError } from '../../core/plugin';
 import { definePluginPoint } from '../../core/plugin-point';
@@ -295,7 +298,17 @@ const createPlainTextLineBlocks = <V extends Value>(
     state,
     lines,
     (line) => {
-      if (built) return built;
+      if (built) {
+        const placed =
+          line === 0
+            ? built
+            : getInternalEditorSchemaFromApi(state.schema).placeElementAt(
+                built,
+                { at: [...parentPath, index + line], root }
+              );
+
+        if (placed) return placed;
+      }
       // A type with required construction properties, such as a heading
       // level, cannot be built by type alone. The first line merges into
       // `block`, so it copies `block`; each later line takes the default child
@@ -1068,13 +1081,15 @@ export const insertDataTransfer = <V extends Value>(
   if (spec === false) return false;
   const transaction = getActiveEditorTransaction(editor);
 
-  if (transaction) {
-    applyTransactionSpec(editor, spec);
-  } else {
-    editor.update({ tags: 'paste' }, () => {
+  if (!transaction) {
+    return editor.update({ tags: 'paste' }, () => {
       applyTransactionSpec(editor, spec);
+
+      return true;
     });
   }
+
+  applyTransactionSpec(editor, spec);
 
   return true;
 };

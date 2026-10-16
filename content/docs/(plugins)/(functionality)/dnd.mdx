@@ -14,7 +14,8 @@ docs:
 
 ## Features
 
-- Drag a block by its handle. The selected blocks, or a list item with its nested items, move together.
+- Drag a block by its handle. The selected blocks, or a list item with its nested items, move together, and the landed blocks stay block-selected.
+- Clicking or right-clicking a handle block-selects its blocks, including a clicked image, so the block highlight replaces the image's ring and toolbar.
 - Each view paints one drop indicator at the edge where the drop lands.
 - A drag moves blocks within one document and copies them into another editor. Hold Option on macOS, or Ctrl elsewhere, to copy instead.
 - Click a handle for Move up, Move down and Cut. `Mod+Shift+ArrowUp` and `Mod+Shift+ArrowDown` move the blocks around the caret.
@@ -190,7 +191,7 @@ editor.api.transfer.move({ announce: 'Moved down', to: 'next' });
 
 Pass `from` with another editor to move or copy from it. Between independent editors a move always copies.
 
-Text copied to a `point` lands there as a paste would. [`editorReads.slice.landing`](/docs/clipboard#where-a-paste-lands) shapes it, so copied list items take the depth of the item they land in. Blocks copied to an edge keep their own depths.
+Text moved or copied to a `point` lands there as a paste would. [`editorReads.slice.landing`](/docs/clipboard#where-a-paste-lands) shapes it, so list items take the depth of the item they land in. A move refuses with `lossy` when landing it would change its text or marks, or the type or properties of a block it carries, other than element properties declared `landing: 'rebase'` or `'adopt'`. It does not check the block the moved text joins at the drop point or the blocks that contain it, and it checks every other block the move carries, an empty last block included. A closed block, such as a title, joins nothing. In an empty block, the moved block may take properties from the block it replaces. Blocks copied or moved to an edge keep their own depths and take the properties [`editorReads.transfer.adopt`](#shape-dropped-blocks) gives them, such as the list beside them.
 
 `to` also accepts a block's side, `{ key, side: 'start' | 'end' }`, which places the blocks beside it when a feature builds side landings, such as the Column plugin. A side takes only a move inside one document; a copy refuses with `policy`. Ask before offering the action, as the handle menu does:
 
@@ -220,6 +221,46 @@ export const PinnedPlugin = definePlugin('pinned', {
 The input also carries the source view (`from`), the `intent` (`move` or `copy`), the `payload` and the documents' `relation`. The second argument is the target view.
 
 To move an edge instead, such as past a list item's nested items, wrap `editorReads.transfer.landing` in read middleware and return another edge, or `next()` to keep it. A moved edge must map to itself; the schema and the vetoes then check the final edge.
+
+### Shape dropped blocks
+
+A block copy or move can take properties from where it lands through `editorReads.transfer.adopt`, as List puts dropped items in the list beside them. The read runs after `editorReads.transfer.landing` and returns patches. A drag runs it once, on its final edge. A keyboard move runs it on each sibling edge that admits the blocks unpatched, until one admits the patched blocks. Each patch names a path inside `payload.nodes` and the properties to set there, and `undefined` removes a property. Its input has the same fields as a veto's, with a block `payload`; `input.intent` tells a copy from a move. Declare each property it sets with `landing: 'adopt'`, and `.extend()` the plugin so the read middleware sees that declaration:
+
+```tsx
+import { editorReads, PLUGINS, property, schema, target } from 'platejs';
+import { definePlugin } from 'platejs/react';
+
+export const GroupPlugin = definePlugin('group', {
+  schema: ({ targetElementTypes }) => ({
+    properties: {
+      group: schema.elementProperty(property.string(), {
+        landing: 'adopt',
+        target: target.types(targetElementTypes),
+      }),
+    },
+  }),
+  targetPlugins: [PLUGINS.paragraph],
+}).extend(() => ({
+  readMiddleware: ({ around }) => [
+    around(editorReads.transfer.adopt, ({ input, next }) => {
+      const [node] = input.target;
+
+      if (typeof node.group !== 'string') return next();
+
+      return [
+        ...next(),
+        ...input.payload.nodes.flatMap((dropped, index) =>
+          'type' in dropped && dropped.type === node.type
+            ? [{ at: [index], properties: { group: node.group } }]
+            : []
+        ),
+      ];
+    }),
+  ],
+}));
+```
+
+A patch on a property that the node's type does not declare with `landing: 'adopt'`, on `type` or content roots, or outside the payload refuses the whole transfer with `policy`, so the example patches only dropped paragraphs. A move keeps its blocks and their keys. Plite sets the patches on the moved blocks in the same update, so one undo restores both. A move patch that sets `null` refuses with `policy`. The schema and the vetoes judge the patched blocks. The drop indicator runs the read too, once per candidate edge, so it paints only edges the drop admits.
 
 ### Build beside a block
 
@@ -262,7 +303,7 @@ With `target`, the shell takes the target's place and the target moves into that
         Blocks to move, by key in `from`. **Default:** the selected blocks, or the blocks containing the selection.
       </APISubListItem>
       <APISubListItem parent="input" name="range" type="Range" optional>
-        Text to move instead of blocks.
+        Text to move instead of blocks. A move carries what deleting the range removes: a range that starts or ends inside an inline void, such as a mention, takes the void, a range that still has an edge inside any other non-editable element once an end at a block's start is pulled back to the block before refuses with `lossy`, and a range whose deletion removes nothing refuses with `no-op`.
       </APISubListItem>
       <APISubListItem parent="input" name="from" type="Editor" optional>
         Source editor or view. **Default:** the editor running the transfer.

@@ -86,11 +86,11 @@ const assertOnlyKeys = (
   }
 };
 
-const cloneFrozenJson = (
-  value: unknown,
+const cloneFrozenJson = <TValue>(
+  value: TValue,
   owner: string,
   ancestors = new Set<object>()
-): unknown => {
+): TValue => {
   if (
     value === null ||
     typeof value === 'boolean' ||
@@ -123,7 +123,7 @@ const cloneFrozenJson = (
     if (Array.isArray(value)) {
       return Object.freeze(
         Array.from(value, (item) => cloneFrozenJson(item, owner, ancestors))
-      );
+      ) as TValue;
     }
 
     return Object.freeze(
@@ -139,7 +139,7 @@ const cloneFrozenJson = (
             ),
           ])
       )
-    );
+    ) as TValue;
   } finally {
     ancestors.delete(value);
   }
@@ -1076,7 +1076,7 @@ function elementProperty(
   if (key) assertPropertyKey(key);
   assertOnlyKeys(
     options,
-    ['copy', 'role', 'split', 'target', 'typeChange'],
+    ['copy', 'landing', 'role', 'split', 'target', 'typeChange'],
     'schema.elementProperty options'
   );
   assertPropertyCopyPolicy(value, options.copy, 'schema.elementProperty');
@@ -1085,6 +1085,7 @@ function elementProperty(
     {
       copy: options.copy ?? 'preserve',
       ...(key ? { key } : {}),
+      landing: options.landing ?? 'preserve',
       placement: 'element' as const,
       role: options.role ?? 'content',
       split: options.split ?? 'preserve',
@@ -1128,9 +1129,28 @@ const freezeContentDefault = (
 ): SchemaContentDefault | undefined => {
   if (value === undefined || value === 'text') return value;
 
+  assertOnlyKeys(value, ['properties', 'type'], 'Schema content default');
   assertNonEmpty(value.type, 'Schema content default type');
+  if (
+    value.properties !== undefined &&
+    (typeof value.properties !== 'object' ||
+      value.properties === null ||
+      Array.isArray(value.properties))
+  ) {
+    throw new Error('Schema content default properties must be an object.');
+  }
 
-  return Object.freeze({ type: value.type });
+  return Object.freeze({
+    ...(value.properties === undefined
+      ? {}
+      : {
+          properties: cloneFrozenJson(
+            value.properties,
+            'Schema content default properties'
+          ),
+        }),
+    type: value.type,
+  });
 };
 
 const content = <

@@ -1,5 +1,7 @@
 import { frontmatter } from 'fumadocs-core/content/md/frontmatter';
 
+import { getDocsSidebar } from './docs-page-tree';
+import { isMainDocsHref } from './docs-sidebar';
 import { PLATE_DEFAULT_REGISTRY_STYLE } from './plate-registry-styles';
 
 const SITE_URL = 'https://platejs.org';
@@ -43,19 +45,7 @@ const getPageTitle = async (page: PlateLLMPage) => {
   );
 };
 
-export const getPlateLLMPageMarkdown = ({
-  content,
-  docUrl,
-  title,
-}: {
-  content: string;
-  docUrl: string;
-  title: string;
-}) => `# ${title}
-
-Source: ${docUrl}
-
-## Registry URLs
+const PLATE_REGISTRY_MARKDOWN = `## Registry URLs
 
 - Components index: ${PLATE_REGISTRY_URL}/registry.json
 - Docs index: ${PLATE_REGISTRY_URL}/registry-docs.json
@@ -65,7 +55,23 @@ Any \`<ComponentSource name="..." />\` or \`<ComponentPreview name="..." />\` in
 
 ---
 
-${content}`;
+`;
+
+export const getPlateLLMPageMarkdown = ({
+  content,
+  docUrl,
+  includeRegistryUrls,
+  title,
+}: {
+  content: string;
+  docUrl: string;
+  includeRegistryUrls: boolean;
+  title: string;
+}) => `# ${title}
+
+Source: ${docUrl}
+
+${includeRegistryUrls ? PLATE_REGISTRY_MARKDOWN : ''}${content}`;
 
 export const getPlateLLMPageMarkdownFromPage = async ({
   docUrl,
@@ -95,6 +101,7 @@ export const getPlateLLMPageMarkdownFromPage = async ({
   return getPlateLLMPageMarkdown({
     content: processMdxForLLMs(content),
     docUrl: docUrl ?? getAbsoluteUrl(page.url),
+    includeRegistryUrls: isMainDocsHref(getDocsSidebar(), page.url),
     title: await getPageTitle(page),
   });
 };
@@ -106,18 +113,6 @@ export const getPlateLLMFullMarkdown = async (pages: PlateLLMPage[]) => {
 
   return content.join('\n\n');
 };
-
-export const getPlateLLMPromptUrl = ({
-  baseUrl,
-  docUrl,
-}: {
-  baseUrl: string;
-  docUrl: string;
-}) =>
-  `${baseUrl}?${new URLSearchParams({
-    q: `I'm looking at this Plate documentation: ${docUrl}.
-Help me understand how to use it. Be ready to explain concepts, give examples, or help debug based on it.`,
-  })}`;
 
 export const stripMarkdownSuffixFromSlug = (slug: string[] = []) => {
   if (slug.length === 0) return slug;

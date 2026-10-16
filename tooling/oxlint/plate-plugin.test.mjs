@@ -365,6 +365,28 @@ describe('plate oxlint rules', () => {
     valid: [ts('const owner = getEditorRuntimeOwner(editor);')],
   });
 
+  tester.run('no-plite-jsdoc', plugin.rules['no-plite-jsdoc'], {
+    invalid: [
+      {
+        // f5be785501
+        ...plate(
+          "/**\n * Plite's `BlockInsertOptions`, except `after` names one block.\n */\nexport type BlockInsertOptions = {};"
+        ),
+        errors: [{ line: 2, messageId: 'named' }],
+      },
+      {
+        // 5de4d78103
+        ...plate(
+          'type Options = {\n  /** Without one, the editor gets a generated id, such as `plite-editor-1`. */\n  id?: string;\n};'
+        ),
+        errors: [{ line: 2, messageId: 'named' }],
+      },
+    ],
+    valid: [
+      plate('// The Plite bridge stays out of the declarations.\nconst a = 1;'),
+    ],
+  });
+
   tester.run('no-one-off-editor-type', plugin.rules['no-one-off-editor-type'], {
     invalid: [
       {

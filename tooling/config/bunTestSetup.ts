@@ -16,6 +16,24 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator';
 // apps/www/.source unless this is set, and other test files read that output.
 process.env._FUMADOCS_MDX = '1';
 
+const WWW_TSX = /[/\\]apps[/\\]www[/\\]src[/\\].*\.tsx$/;
+const AUTOMATIC_JSX_PRAGMA_ON_FIRST_LINE = '/** @jsxRuntime automatic */ ';
+
+Bun.plugin({
+  name: 'www-automatic-jsx',
+  setup(build) {
+    build.onLoad({ filter: WWW_TSX }, async ({ path }) => {
+      const source = await Bun.file(path).text();
+      return {
+        contents: source.includes('@jsx')
+          ? source
+          : AUTOMATIC_JSX_PRAGMA_ON_FIRST_LINE + source,
+        loader: 'tsx',
+      };
+    });
+  },
+});
+
 const moduleCache = createRequire(import.meta.url).cache;
 
 const moduleExportNames = new Map<

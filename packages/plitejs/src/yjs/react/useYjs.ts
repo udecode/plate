@@ -12,8 +12,8 @@ import {
   type RangeGeometryOwner,
   useRangeGeometryOwner,
 } from '../../react/range-geometry';
-import type { YjsAwarenessAdapter } from '../core/awareness-adapter';
-import { getActiveYjsController } from '../core/controller-registry';
+import type { YjsCursorCache } from '../core/binding';
+import { getActiveYjsBinding } from '../core/controller-registry';
 import type {
   YjsAdmissionStatus,
   YjsBaseApi,
@@ -46,34 +46,35 @@ export const getYjsCursorCache = <
   TCursorData extends Readonly<Record<string, unknown>>,
 >(
   editor: YjsEditorRuntimeCarrier
-): YjsAwarenessAdapter<TCursorData> => {
-  const owner = getEditorRuntimeOwner(editor);
-  const controller = getActiveYjsController<TCursorData>(owner);
+): YjsCursorCache<TCursorData> => {
+  const binding = getActiveYjsBinding<TCursorData>(
+    getEditorRuntimeOwner(editor)
+  );
 
-  if (!controller) {
+  if (!binding) {
     throw new Error('Yjs plugin is not active on this editor.');
   }
 
-  return controller.cursorCache(owner);
+  return binding.cursorCache();
 };
 
 export const createYjsRemoteCursorGeometryOwner = <
   TCursorData extends Readonly<Record<string, unknown>>,
 >(
   editor: YjsEditorRuntimeCarrier,
-  cache: YjsAwarenessAdapter<TCursorData>,
+  cache: YjsCursorCache<TCursorData>,
   clientId: number,
   editableRef: RefObject<HTMLElement | null>
 ): RangeGeometryOwner => {
-  const controller = getActiveYjsController<TCursorData>(
+  const binding = getActiveYjsBinding<TCursorData>(
     getEditorRuntimeOwner(editor)
   );
 
-  if (!controller) {
+  if (!binding) {
     throw new Error('Yjs plugin is not active on this editor.');
   }
 
-  const api = controller.baseApi();
+  const api = binding.baseApi();
 
   return createRangeGeometryOwner(
     getEditorRuntimeOwner(editor),

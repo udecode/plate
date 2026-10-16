@@ -4,7 +4,7 @@ import {
   startBrowserNativeEventTrace,
   takeBrowserNativeEventTrace,
 } from '@platejs/test/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, type Locator, test, type Page } from '@playwright/test';
 import type { EditorDocumentValue } from 'platejs';
 
 const ROUTE = '/blocks/list-demo';
@@ -434,6 +434,62 @@ for (const targetTag of ['p', 'h2']) {
   });
 }
 
+// Playwright's mouse only extends a text selection, so this fires the DOM drag
+// events a native drag would: from the start of the last "Decimal 11" to the
+// end of "Decimal 111", with the copy modifier when `copy` is set.
+const dropOnDecimal111End = (root: Locator, copy: boolean) =>
+  root.evaluate((element, withCopy) => {
+    const apple = /Mac|iPad|iPhone|iPod/.test(navigator.platform);
+    const at = (text: string, nth: number, edge: 'end' | 'start') => {
+      const target = [...element.querySelectorAll('[data-editor-string]')]
+        .filter((candidate) => candidate.textContent === text)
+        .at(nth)!;
+      const rect = target.getBoundingClientRect();
+
+      return {
+        target,
+        x: edge === 'start' ? rect.left + 2 : rect.right - 1,
+        y: rect.top + rect.height / 2,
+      };
+    };
+    const dataTransfer = new DataTransfer();
+    const fire = (
+      type: string,
+      { target, x, y }: ReturnType<typeof at>,
+      modified = false
+    ) =>
+      target.dispatchEvent(
+        new DragEvent(type, {
+          altKey: modified && apple,
+          bubbles: true,
+          cancelable: true,
+          clientX: x,
+          clientY: y,
+          ctrlKey: modified && !apple,
+          dataTransfer,
+        })
+      );
+    const to = at('Decimal 111', 0, 'end');
+
+    fire('dragstart', at('Decimal 11', -1, 'start'));
+    fire('dragover', to, withCopy);
+    fire('drop', to, withCopy);
+    fire('dragend', to, withCopy);
+  }, copy);
+
+const renderedNumbers = (root: Locator) =>
+  root.evaluate((element) =>
+    [...element.querySelectorAll('ol')].map((list) => [
+      list.textContent,
+      list.start,
+    ])
+  );
+
+const romanTwoFamily = {
+  anchor: { offset: 0, path: [12, 0] },
+  focus: { offset: 10, path: [14, 0] },
+};
+
 test('list drop: a copied text drop lands like a paste at the same caret [EDIT-CLIPBOARD-LIST-LANDING-001]', async ({
   browserName,
   page,
@@ -441,10 +497,6 @@ test('list drop: a copied text drop lands like a paste at the same caret [EDIT-C
   test.skip(browserName !== 'chromium', 'Native clipboard permissions');
   expect(testInfo.retry).toBe(0);
 
-  const romanTwoFamily = {
-    anchor: { offset: 0, path: [12, 0] },
-    focus: { offset: 10, path: [14, 0] },
-  };
   const decimal111End = { offset: 11, path: [8, 0] };
   const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
 
@@ -472,46 +524,7 @@ test('list drop: a copied text drop lands like a paste at the same caret [EDIT-C
 
     await dropped.editor.selection.selectDOM(romanTwoFamily);
     await dropped.editor.focus();
-    // Playwright's mouse only extends a text selection, so this fires the DOM
-    // drag events a native drag would.
-    await dropped.root.evaluate((element) => {
-      const apple = /Mac|iPad|iPhone|iPod/.test(navigator.platform);
-      const at = (text: string, nth: number, edge: 'end' | 'start') => {
-        const target = [...element.querySelectorAll('[data-editor-string]')]
-          .filter((candidate) => candidate.textContent === text)
-          .at(nth)!;
-        const rect = target.getBoundingClientRect();
-
-        return {
-          target,
-          x: edge === 'start' ? rect.left + 2 : rect.right - 1,
-          y: rect.top + rect.height / 2,
-        };
-      };
-      const dataTransfer = new DataTransfer();
-      const fire = (
-        type: string,
-        { target, x, y }: ReturnType<typeof at>,
-        copy = false
-      ) =>
-        target.dispatchEvent(
-          new DragEvent(type, {
-            altKey: copy && apple,
-            bubbles: true,
-            cancelable: true,
-            clientX: x,
-            clientY: y,
-            ctrlKey: copy && !apple,
-            dataTransfer,
-          })
-        );
-      const to = at('Decimal 111', 0, 'end');
-
-      fire('dragstart', at('Decimal 11', -1, 'start'));
-      fire('dragover', to, true);
-      fire('drop', to, true);
-      fire('dragend', to, true);
-    });
+    await dropOnDecimal111End(dropped.root, true);
     await expect
       .poll(async () => {
         const value = await dropped.blocks();
@@ -521,6 +534,264 @@ test('list drop: a copied text drop lands like a paste at the same caret [EDIT-C
       .toBe('Decimal 111Roman 2');
 
     expect(await dropped.blocks()).toEqual(paste);
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('list drop: a moved text drop lands its items at the depth a paste gives them [EDIT-CLIPBOARD-LIST-LANDING-001] [EDIT-LIST-DROP-001]', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  try {
+    const moved = await openListDemo(page, 'list-drop:move');
+
+    await moved.editor.selection.selectDOM(romanTwoFamily);
+    await moved.editor.focus();
+    await dropOnDecimal111End(moved.root, false);
+    await expect
+      .poll(async () => {
+        const value = await moved.blocks();
+
+        return value[8].text;
+      })
+      .toBe('Decimal 111Roman 2');
+
+    const movedBlocks = await moved.blocks();
+
+    expect({
+      blocks: movedBlocks.slice(6).map(({ indent, text }) => [text, indent]),
+      numbers: await renderedNumbers(moved.root),
+    }).toEqual({
+      blocks: [
+        ['Roman 1', 1],
+        ['Decimal 11', 2],
+        ['Decimal 111Roman 2', 3],
+        ['Decimal 11', 4],
+        ['Decimal 12', 4],
+        ['Decimal 112', 3],
+        ['Decimal 12', 2],
+        ['Decimal 13', 2],
+        ['Roman 3', 1],
+        ['Roman 4', 1],
+      ],
+      numbers: [
+        ['Roman 1', 1],
+        ['Decimal 11', 1],
+        ['Decimal 111Roman 2', 1],
+        ['Decimal 11', 1],
+        ['Decimal 12', 2],
+        ['Decimal 112', 2],
+        ['Decimal 12', 2],
+        ['Decimal 13', 3],
+        ['Roman 3', 2],
+        ['Roman 4', 3],
+      ],
+    });
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+const dragHandle = async (
+  page: Page,
+  root: Locator,
+  { copy, from, to }: { copy: boolean; from: Locator; to: string }
+) => {
+  const handle = from
+    .locator('xpath=..')
+    .getByRole('button', { name: 'Drag block' });
+
+  await from.hover();
+  await handle.hover();
+
+  const handleBox = await handle.boundingBox();
+  const targetBox = await root
+    .locator('.editor-blockWrapper')
+    .filter({ hasText: new RegExp(`^${to}$`) })
+    .boundingBox();
+  const modifier = await page.evaluate(() =>
+    /Mac|iPad|iPhone|iPod/.test(navigator.platform) ? 'Alt' : 'Control'
+  );
+
+  await page.mouse.move(
+    handleBox!.x + handleBox!.width / 2,
+    handleBox!.y + handleBox!.height / 2
+  );
+  if (copy) await page.keyboard.down(modifier);
+  try {
+    await page.mouse.down();
+    await page.mouse.move(
+      targetBox!.x + targetBox!.width / 2,
+      targetBox!.y + 3,
+      {
+        steps: 12,
+      }
+    );
+    await page.mouse.up();
+  } finally {
+    if (copy) await page.keyboard.up(modifier);
+  }
+};
+
+const copyRomanThreeToTop = async (
+  page: Page,
+  demo: Awaited<ReturnType<typeof openListDemo>>
+) => {
+  await dragHandle(page, demo.root, {
+    copy: true,
+    from: demo.root
+      .locator('.editor-blockWrapper')
+      .filter({ hasText: /^Roman 3$/ }),
+    to: 'Todo 1',
+  });
+  await expect
+    .poll(async () => {
+      const blocks = await demo.blocks();
+
+      return blocks.length;
+    })
+    .toBe(18);
+};
+
+test('list drop: a handle copy dropped away from its list numbers as a list of its own [EDIT-LIST-DROP-001]', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  try {
+    const copied = await openListDemo(page, 'list-drop:handle-copy');
+
+    await copyRomanThreeToTop(page, copied);
+
+    const copiedBlocks = await copied.blocks();
+
+    expect({
+      blocks: copiedBlocks.slice(2, 4).map(({ text }) => text),
+      numbers: await renderedNumbers(copied.root),
+    }).toEqual({
+      blocks: ['Roman 3', 'Todo 1'],
+      numbers: [
+        ['Roman 3', 1],
+        ['Roman 1', 1],
+        ['Decimal 11', 1],
+        ['Decimal 111', 1],
+        ['Decimal 112', 2],
+        ['Decimal 12', 2],
+        ['Decimal 13', 3],
+        ['Roman 2', 2],
+        ['Decimal 11', 1],
+        ['Decimal 12', 2],
+        ['Roman 3', 3],
+        ['Roman 4', 4],
+      ],
+    });
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('list drop: a handle move into another list joins it [EDIT-LIST-DROP-001]', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  try {
+    const moved = await openListDemo(page, 'list-drop:handle-move');
+
+    await copyRomanThreeToTop(page, moved);
+    await dragHandle(page, moved.root, {
+      copy: false,
+      from: moved.root
+        .locator('.editor-blockWrapper')
+        .filter({ hasText: /^Roman 3$/ })
+        .first(),
+      to: 'Roman 2',
+    });
+    await expect
+      .poll(async () => {
+        const blocks = await moved.blocks();
+
+        return blocks[2].text;
+      })
+      .toBe('Todo 1');
+
+    const movedBlocks = await moved.blocks();
+    const texts = movedBlocks.map(({ text }) => text);
+    const landed = texts.indexOf('Roman 2');
+
+    expect({
+      blocks: texts.slice(landed - 2, landed + 1),
+      numbers: await renderedNumbers(moved.root),
+    }).toEqual({
+      blocks: ['Decimal 13', 'Roman 3', 'Roman 2'],
+      numbers: [
+        ['Roman 1', 1],
+        ['Decimal 11', 1],
+        ['Decimal 111', 1],
+        ['Decimal 112', 2],
+        ['Decimal 12', 2],
+        ['Decimal 13', 3],
+        ['Roman 3', 2],
+        ['Roman 2', 3],
+        ['Decimal 11', 1],
+        ['Decimal 12', 2],
+        ['Roman 3', 4],
+        ['Roman 4', 5],
+      ],
+    });
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('list keys: a keyboard move into another list joins it [EDIT-LIST-DROP-001]', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  try {
+    const stepped = await openListDemo(page, 'list-keys:step-move');
+
+    await copyRomanThreeToTop(page, stepped);
+    await stepped.root.getByText('Roman 3', { exact: true }).first().click();
+    await page.keyboard.press('ControlOrMeta+Shift+ArrowDown');
+    await page.keyboard.press('ControlOrMeta+Shift+ArrowDown');
+    await expect
+      .poll(async () => {
+        const blocks = await stepped.blocks();
+
+        return blocks.slice(2, 7).map(({ text }) => text);
+      })
+      .toEqual(['Todo 1', 'Disc 1', 'Disc 2', 'Todo 2', 'Roman 3']);
+
+    expect(await renderedNumbers(stepped.root)).toEqual([
+      ['Roman 3', 1],
+      ['Roman 1', 2],
+      ['Decimal 11', 1],
+      ['Decimal 111', 1],
+      ['Decimal 112', 2],
+      ['Decimal 12', 2],
+      ['Decimal 13', 3],
+      ['Roman 2', 3],
+      ['Decimal 11', 1],
+      ['Decimal 12', 2],
+      ['Roman 3', 4],
+      ['Roman 4', 5],
+    ]);
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

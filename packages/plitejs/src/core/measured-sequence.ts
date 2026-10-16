@@ -1,26 +1,5 @@
 import { getDefined } from '../internal/get-defined';
-
-/**
- * The work sibling sequences do, so a test can check that a key's work follows
- * the edit and not the size of the list it edits.
- *
- * @internal
- */
-export type SequenceWork = {
-  allocatedNodes: number;
-  copiedSlots: number;
-};
-
-const work: SequenceWork = { allocatedNodes: 0, copiedSlots: 0 };
-
-/** @internal */
-export const readSequenceWork = (): Readonly<SequenceWork> => ({ ...work });
-
-/** @internal */
-export const resetSequenceWork = () => {
-  work.allocatedNodes = 0;
-  work.copiedSlots = 0;
-};
+import { coreWork as work } from './work';
 
 /** An item whose `length` the sequence sums, such as a node's token length. */
 export type Measured = { readonly length: number };
@@ -132,7 +111,9 @@ const used = <V>(values: ReadonlyArray<V | undefined>, size: number): V[] => {
   for (let index = 0; index < size; index += 1) {
     result.push(getDefined(values[index]));
   }
-  work.copiedSlots += size;
+  // Count WIDTH, the padded size of the node built from these values, so a
+  // key's count follows its path and not how full that path's nodes are.
+  work.copiedSlots += WIDTH;
 
   return result;
 };
@@ -166,7 +147,7 @@ const runs = <V>(values: readonly V[]): V[][] => {
     result.push(values.slice(from, to));
     from = to;
   }
-  work.copiedSlots += values.length;
+  work.copiedSlots += count * WIDTH;
 
   return result;
 };
@@ -640,6 +621,7 @@ export class MeasuredSequence<T extends Measured> {
         for (let local = skip; local < node.size; local += 1) {
           const item = getDefined(node.items[local]);
 
+          work.walkedSlots += 1;
           if (visit(item, index, start) === false) return false;
           index += 1;
           start += item.length;

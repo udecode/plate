@@ -38,26 +38,22 @@ export function Editor() {
 
 ### Authored 视图
 
-为安装了 [authored changes](/docs/authored-changes) 的编辑器传入 `authored`，分别选择输入 intent 和可见 projection：
+为安装了 [authored changes](/docs/authored-changes) 的编辑器传入 `authored`，选择初始 view：
 
 ```tsx
-<EditorRoot
-  editor={editor}
-  authored={{ intent: 'edit', projection: 'markup' }}
->
+<EditorRoot editor={editor} authored={{ intent: 'propose' }}>
   <EditorContent />
 </EditorRoot>
 ```
 
 | `authored` 值 | 行为 |
 | --- | --- |
-| `{ intent: 'edit', projection: 'accepted' }` | 编辑 accepted 内容。 |
-| `{ intent: 'edit', projection: 'markup' }` | 显示审阅标记，并将不依赖待处理内容的编辑直接发布到 accepted 内容。 |
-| `{ intent: 'edit', projection: 'proposed' }` | 显示 proposed 结果，并将不依赖待处理内容的编辑直接发布到 accepted 内容。 |
-| `{ intent: 'propose', projection: 'markup' }` | 将编辑记录为 proposal，并显示保留的审阅内容。 |
-| `{ intent: 'propose', projection: 'proposed' }` | 将编辑记录为 proposal，并显示 proposed 结果。 |
+| `{ intent: 'edit' }` | 显示待处理的插入和删除，并按原样应用编辑。 |
+| `{ intent: 'propose' }` | 显示待处理的插入和删除，并把编辑记录为当前作者的 proposal。 |
+| `{ preview: 'proposed' }` | 显示接受全部待处理 change 后的内容。不接受写入。 |
+| `{ preview: 'accepted' }` | 显示拒绝全部待处理 change 后的内容。不接受写入。 |
 
-每个 `EditorRoot` 独立配置一个 view。修改 intent 或 projection 会更新该 view，但不会重新挂载，也不会接受或拒绝 change。在 editing 的 markup 或 proposed view 中，依赖待处理内容的编辑仍会以当前作者的身份保留为可审阅 change。
+每个 `EditorRoot` 独立配置一个 view。修改该值会更新该 view，但不会重新挂载，也不会接受或拒绝 change。
 
 ## 只读视图
 
@@ -277,8 +273,8 @@ export function FigureElement({
       可读取 Plate store 的 React 子节点。
     </APIItem>
     <APIItem name="authored" type="EditorViewOptions['authored']" optional>
-      设置当前已挂载 authored view 的输入 intent，以及 accepted、proposed 或 markup
-      projection。编辑模式可以继续显示待处理 change；切换 projection 不会接受或拒绝它们。
+      设置当前已挂载的 authored view：`edit` 或 `propose` intent，或不接受写入的
+      `accepted` 或 `proposed` preview。切换 view 不会接受或拒绝待处理 change。
     </APIItem>
     <APIItem name="readOnly" type="boolean" optional>
       提供给内容区域的只读状态。默认为 `editor.read.view.isReadOnly()`。

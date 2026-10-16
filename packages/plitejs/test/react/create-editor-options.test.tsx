@@ -1,7 +1,11 @@
 import { runInNewContext } from 'node:vm';
 
 import { renderHook } from '@testing-library/react';
-import { createEditor as createHeadlessEditor, type Value } from 'plitejs';
+import {
+  createEditor as createHeadlessEditor,
+  SelectionApi,
+  type Value,
+} from 'plitejs';
 import { history } from 'plitejs/history';
 import { createEditor, useEditor } from 'plitejs/react';
 
@@ -11,14 +15,49 @@ const initialValue: Value = [
 const unknownValueMessage =
   'Unknown editor option "value". Use "initialValue" to set the document.';
 
+describe('editor constructors given options the options object inherits', () => {
+  it.each([
+    ['plitejs createEditor', createHeadlessEditor],
+    ['plitejs/react createEditor', createEditor],
+  ])('%s builds the editor from them', (_entry, create) => {
+    const caret = { offset: 1, path: [0, 0] };
+    const editor = create(
+      Object.create({
+        id: 'inherited',
+        initialSelection: SelectionApi.text({ anchor: caret, focus: caret }),
+        initialValue,
+        maxLength: 5,
+      })
+    );
+    const viewOnly = create(
+      Object.create(Object.defineProperty({}, 'readOnly', { value: true }))
+    );
+    const selection = editor.read.selection();
+
+    editor.update.text.insert('abc', { at: { offset: 3, path: [0, 0] } });
+
+    expect({
+      id: editor.id,
+      readOnly: viewOnly.read.view.isReadOnly(),
+      selection,
+      text: editor.read.text.string([]),
+    }).toEqual({
+      id: 'inherited',
+      readOnly: true,
+      selection: { anchor: caret, focus: caret },
+      text: 'Oneab',
+    });
+  });
+});
+
 describe('editor constructors given an option they do not know', () => {
   it.each([
     [
       'plitejs createEditor',
       () =>
+        // @ts-expect-error -- the document goes in initialValue
         createHeadlessEditor({
           plugins: [history()],
-          // @ts-expect-error -- the document goes in initialValue
           value: initialValue,
         }),
     ],
@@ -47,13 +86,22 @@ describe('editor constructors given an option they do not know', () => {
   });
 
   it('plitejs/react useEditor refuses it on a later render', () => {
-    const { rerender } = renderHook((options) => useEditor(options), {
+    const { rerender, result } = renderHook((options) => useEditor(options), {
       initialProps: Object.create({ initialValue }),
     });
+    const children = result.current.read.children();
+    let message: string | undefined;
 
-    expect(() => rerender(Object.create({ value: initialValue }))).toThrow(
-      unknownValueMessage
-    );
+    try {
+      rerender(Object.create({ value: initialValue }));
+    } catch (error) {
+      ({ message } = error as Error);
+    }
+
+    expect({ children, message }).toEqual({
+      children: initialValue,
+      message: unknownValueMessage,
+    });
   });
 
   it('refuses one the options inherit behind a getter without reading it', () => {
@@ -79,6 +127,12 @@ describe('editor constructors given an option they do not know', () => {
       message: unknownValueMessage,
       reads: 0,
     });
+  });
+
+  it('refuses an own one named after a key every object inherits', () => {
+    expect(() =>
+      createHeadlessEditor({ initialValue, toString: () => 'options' })
+    ).toThrow('Unknown editor option "toString".');
   });
 
   it('refuses one inherited from a parent that has no prototype', () => {

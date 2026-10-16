@@ -25,13 +25,13 @@ import {
   useEditor,
   useEditorRootElement,
   useEditorSelector,
-  useEditorViewState,
   usePath,
   usePluginStore,
 } from 'platejs/react';
 import {
   SuggestionPlugin,
   useActiveSuggestion,
+  useSuggestionGroups,
 } from 'platejs/suggestion/react';
 import * as React from 'react';
 
@@ -71,17 +71,13 @@ type DiscussionItem =
       threadIds: readonly string[];
     }>;
 
-type DiscussionGroup = Readonly<{
-  blockIndex: number;
-  blockKey: NodeKey;
-  items: readonly DiscussionItem[];
-}>;
+type CommentItem = Extract<DiscussionItem, { kind: 'comment' }>;
+
+type SuggestionItem = Extract<DiscussionItem, { kind: 'suggestion' }>;
 
 type DiscussionBlockSnapshot = Readonly<{
   active: boolean;
-  hasComments: boolean;
-  hasSuggestions: boolean;
-  totalCount: number;
+  comments: number;
 }>;
 
 type DiscussionTarget = Readonly<{
@@ -96,9 +92,7 @@ type DiscussionSnapshot = Readonly<{
 
 const EMPTY_BLOCK_SNAPSHOT: DiscussionBlockSnapshot = Object.freeze({
   active: false,
-  hasComments: false,
-  hasSuggestions: false,
-  totalCount: 0,
+  comments: 0,
 });
 const EMPTY_DISCUSSION_SNAPSHOT: DiscussionSnapshot = Object.freeze({
   revision: 0,
@@ -112,6 +106,58 @@ const sortDiscussionItems = (items: readonly DiscussionItem[]) =>
   );
 
 const NO_GROUPS: readonly AuthoredChangeGroup[] = Object.freeze([]);
+const NO_THREADS: ReadonlyMap<string, readonly string[]> = new Map();
+
+const sameGroups = (
+  left: readonly AuthoredChangeGroup[] | null,
+  right: readonly AuthoredChangeGroup[]
+) =>
+  left?.length === right.length &&
+  left.every(
+    (group, index) =>
+      group.id === right[index]?.id && group.revision === right[index].revision
+  );
+
+const suggestionItemOf = (
+  editor: RuntimeEditor,
+  threads: ReadonlyMap<string, readonly string[]>,
+  group: AuthoredChangeGroup
+): SuggestionItem => {
+  const { read } = editor.plugin(AuthoredPlugin);
+
+  return {
+    createdAt: new Date(group.createdAt),
+    group,
+    id: group.id,
+    kind: 'suggestion',
+    range:
+      read.changes({ group: group.id, limit: 1 }).items[0]?.ranges[0] ?? null,
+    threadIds: [...threads].flatMap(([changeId, ids]) =>
+      read.groupOf(changeId)?.id === group.id ? ids : []
+    ),
+  };
+};
+
+const blockThreadCount = (
+  editor: RuntimeEditor,
+  threads: ReadonlyMap<string, readonly string[]>,
+  blockIndex: number
+) => {
+  const { read } = editor.plugin(AuthoredPlugin);
+  let count = 0;
+
+  for (let cursor: string | undefined; threads.size > 0;) {
+    const page = read.changes({ at: [blockIndex], cursor, limit: 200 });
+
+    for (const change of page.items) {
+      count += threads.get(change.id)?.length ?? 0;
+    }
+    if (!page.cursor) break;
+    ({ cursor } = page);
+  }
+
+  return count;
+};
 
 const blockIndicesOf = (ranges: readonly Range[]) => [
   ...new Set(
@@ -130,36 +176,19 @@ const blockIndicesOf = (ranges: readonly Range[]) => [
 const sameBlockSnapshot = (
   left: DiscussionBlockSnapshot | undefined,
   right: DiscussionBlockSnapshot
-) =>
-  left?.active === right.active &&
-  left.hasComments === right.hasComments &&
-  left.hasSuggestions === right.hasSuggestions &&
-  left.totalCount === right.totalCount;
+) => left?.active === right.active && left.comments === right.comments;
 
 const createDiscussionStore = () => {
   const listeners = new Set<() => void>();
   const blockListeners = new Map<NodeKey, Set<() => void>>();
   const blockTriggers = new Map<NodeKey, HTMLElement>();
   const blockSnapshots = new Map<NodeKey, DiscussionBlockSnapshot>();
-  let commentBlocks = new Map<
-    NodeKey,
-    Readonly<{
-      blockIndex: number;
-      items: ReadonlyArray<Extract<DiscussionItem, { kind: 'comment' }>>;
-    }>
-  >();
-  let commentsById = new Map<
-    string,
-    Extract<DiscussionItem, { kind: 'comment' }>
-  >();
+  const threadListeners = new Set<() => void>();
+  let commentBlocks = new Map<NodeKey, readonly CommentItem[]>();
+  let commentsById = new Map<string, CommentItem>();
   let notifyQueued = false;
   let prepareSelection: (() => void) | null = null;
-  let suggestionBlocks = new Map<
-    NodeKey,
-    Readonly<{ blockIndex: number; groups: AuthoredChangeGroup[] }>
-  >();
-  let groupsByChange = new Map<string, AuthoredChangeGroup>();
-  let suggestionThreads = new Map<string, readonly string[]>();
+  let suggestionThreads = NO_THREADS;
   let snapshot = EMPTY_DISCUSSION_SNAPSHOT;
 
   const notifyBlocks = (keys: ReadonlySet<NodeKey>) => {
@@ -179,56 +208,13 @@ const createDiscussionStore = () => {
       });
     });
   };
-  const suggestionItem = (
-    group: AuthoredChangeGroup
-  ): Extract<DiscussionItem, { kind: 'suggestion' }> => ({
-    createdAt: new Date(
-      Math.min(...group.changes.map((change) => change.createdAt))
-    ),
-    group,
-    id: group.id,
-    kind: 'suggestion',
-    range: group.changes[0]?.ranges[0] ?? null,
-    threadIds: group.changes.flatMap(
-      (change) => suggestionThreads.get(change.id) ?? []
-    ),
-  });
-  const getGroup = (blockKey: NodeKey): DiscussionGroup | undefined => {
-    const comments = commentBlocks.get(blockKey);
-    const suggestions = suggestionBlocks.get(blockKey);
-    const items: DiscussionItem[] = [
-      ...(comments?.items ?? []),
-      ...(suggestions?.groups.map(suggestionItem) ?? []),
-    ];
-
-    if (items.length === 0) return undefined;
-
-    return {
-      blockIndex: suggestions?.blockIndex ?? comments?.blockIndex ?? 0,
-      blockKey,
-      items: sortDiscussionItems(items),
-    };
-  };
   const readBlockSnapshot = (blockKey: NodeKey): DiscussionBlockSnapshot => {
-    const group = getGroup(blockKey);
-    if (!group) return EMPTY_BLOCK_SNAPSHOT;
+    const active = snapshot.target?.blockKey === blockKey;
+    const comments = commentBlocks.get(blockKey)?.length ?? 0;
 
-    return {
-      active: snapshot.target?.blockKey === blockKey,
-      hasComments: group.items.some(
-        (item) =>
-          item.kind === 'comment' ||
-          (item.kind === 'suggestion' && item.threadIds.length > 0)
-      ),
-      hasSuggestions: group.items.some(({ kind }) => kind === 'suggestion'),
-      totalCount: group.items.reduce(
-        (count, item) =>
-          count + 1 + (item.kind === 'suggestion' ? item.threadIds.length : 0),
-        0
-      ),
-    };
+    return active || comments > 0 ? { active, comments } : EMPTY_BLOCK_SNAPSHOT;
   };
-  const publishBlocks = (keys: ReadonlySet<NodeKey>) => {
+  const publishBlockSnapshots = (keys: ReadonlySet<NodeKey>) => {
     const changedKeys = new Set<NodeKey>();
 
     keys.forEach((key) => {
@@ -241,40 +227,19 @@ const createDiscussionStore = () => {
       if (previous !== next) changedKeys.add(key);
     });
     notifyBlocks(changedKeys);
-    snapshot = {
-      revision: snapshot.revision + 1,
-      target:
-        snapshot.target && !getGroup(snapshot.target.blockKey)
-          ? null
-          : snapshot.target,
-    };
-    notify();
   };
   const publishTarget = (target: DiscussionTarget | null) => {
     if (snapshot.target === target) return;
 
-    const changedKeys = new Set<NodeKey>();
-    const previousKey = snapshot.target?.blockKey;
-    const nextKey = target?.blockKey;
+    const keys = new Set<NodeKey>();
 
-    if (previousKey) changedKeys.add(previousKey);
-    if (nextKey) changedKeys.add(nextKey);
-
-    changedKeys.forEach((key) => {
-      const current = blockSnapshots.get(key);
-
-      if (!current) return;
-
-      blockSnapshots.set(key, {
-        ...current,
-        active: key === nextKey,
-      });
-    });
+    if (snapshot.target) keys.add(snapshot.target.blockKey);
+    if (target) keys.add(target.blockKey);
     snapshot = { ...snapshot, target };
     listeners.forEach((listener) => {
       listener();
     });
-    notifyBlocks(changedKeys);
+    publishBlockSnapshots(keys);
   };
 
   return {
@@ -290,51 +255,19 @@ const createDiscussionStore = () => {
     getComment(id: string) {
       return commentsById.get(id) ?? null;
     },
-    getGroup,
-    getSnapshot: () => snapshot,
-    getSuggestion(id: string) {
-      const group = groupsByChange.get(id);
-
-      return group ? suggestionItem(group) : null;
+    getComments(blockKey: NodeKey) {
+      return commentBlocks.get(blockKey) ?? [];
     },
+    getSnapshot: () => snapshot,
+    getThreads: () => suggestionThreads,
     selectBlock(blockKey: NodeKey, anchor: HTMLElement) {
-      if (!getGroup(blockKey) || !prepareSelection) return;
+      if (!prepareSelection) return;
 
       prepareSelection();
 
       publishTarget(
         snapshot.target?.blockKey === blockKey ? null : { anchor, blockKey }
       );
-    },
-    setSuggestions(
-      currentEditor: RuntimeEditor,
-      groups: readonly AuthoredChangeGroup[]
-    ) {
-      const previousKeys = new Set(suggestionBlocks.keys());
-      const nextBlocks = new Map<
-        NodeKey,
-        { blockIndex: number; groups: AuthoredChangeGroup[] }
-      >();
-
-      groupsByChange = new Map(
-        groups.flatMap((group) =>
-          group.changes.map((change) => [change.id, group] as const)
-        )
-      );
-      groups.forEach((group) => {
-        blockIndicesOf(
-          group.changes.flatMap((change) => change.ranges)
-        ).forEach((blockIndex) => {
-          const blockKey = currentEditor.key([blockIndex]);
-          if (!blockKey) return;
-          const block = nextBlocks.get(blockKey);
-
-          if (block) block.groups.push(group);
-          else nextBlocks.set(blockKey, { blockIndex, groups: [group] });
-        });
-      });
-      suggestionBlocks = nextBlocks;
-      publishBlocks(new Set([...previousKeys, ...suggestionBlocks.keys()]));
     },
     subscribe: (listener: () => void) => {
       listeners.add(listener);
@@ -352,6 +285,11 @@ const createDiscussionStore = () => {
         if (keyListeners.size === 0) blockListeners.delete(key);
       };
     },
+    subscribeThreads: (listener: () => void) => {
+      threadListeners.add(listener);
+
+      return () => threadListeners.delete(listener);
+    },
     setPrepareSelection(next: typeof prepareSelection) {
       prepareSelection = next;
     },
@@ -364,17 +302,12 @@ const createDiscussionStore = () => {
     },
     update(
       currentEditor: RuntimeEditor,
-      items: ReadonlyArray<Extract<DiscussionItem, { kind: 'comment' }>>,
+      items: readonly CommentItem[],
       threads: ReadonlyMap<string, readonly string[]>
     ) {
       const previousKeys = new Set(commentBlocks.keys());
-      const nextBlocks = new Map<
-        NodeKey,
-        {
-          blockIndex: number;
-          items: Array<Extract<DiscussionItem, { kind: 'comment' }>>;
-        }
-      >();
+      const nextBlocks = new Map<NodeKey, CommentItem[]>();
+
       commentsById = new Map(items.map((item) => [item.id, item]));
       items.forEach((item) => {
         item.blockIndices.forEach((blockIndex) => {
@@ -382,19 +315,20 @@ const createDiscussionStore = () => {
           if (!blockKey) return;
           const block = nextBlocks.get(blockKey);
 
-          if (block) block.items.push(item);
-          else nextBlocks.set(blockKey, { blockIndex, items: [item] });
+          if (block) block.push(item);
+          else nextBlocks.set(blockKey, [item]);
         });
       });
       commentBlocks = nextBlocks;
       suggestionThreads = new Map(threads);
-      publishBlocks(
-        new Set([
-          ...previousKeys,
-          ...commentBlocks.keys(),
-          ...suggestionBlocks.keys(),
-        ])
+      threadListeners.forEach((listener) => {
+        listener();
+      });
+      publishBlockSnapshots(
+        new Set([...previousKeys, ...commentBlocks.keys()])
       );
+      snapshot = { ...snapshot, revision: snapshot.revision + 1 };
+      notify();
     },
   };
 };
@@ -402,6 +336,8 @@ const createDiscussionStore = () => {
 type DiscussionStore = ReturnType<typeof createDiscussionStore>;
 
 const DiscussionContext = React.createContext<DiscussionStore | null>(null);
+
+const SuggestionsInstalledContext = React.createContext(false);
 
 const useDiscussionStore = () => {
   const store = React.useContext(DiscussionContext);
@@ -415,31 +351,7 @@ const useDiscussionController = () => {
   const editor = useEditor();
   const { api: comments } = useEditor().plugin(CommentsPlugin);
   const visibleThreadIds = useVisibleCommentThreadIds();
-  const authoredView = useEditorViewState(editor, () => {
-    const authored = editor.plugin(AuthoredPlugin);
-    if (!authored.installed) return null;
-    const view = authored.read.view();
-    return 'intent' in view ? view.intent : view.preview;
-  });
-  const groups = useEditorSelector(
-    (current) => {
-      const authored = current.plugin(AuthoredPlugin);
-
-      return authored.installed && current.plugin(SuggestionPlugin).installed
-        ? authored.read.groups()
-        : NO_GROUPS;
-    },
-    {
-      shouldUpdate: (commit) =>
-        !commit ||
-        commit.changed.hasAny('document') ||
-        commit.changed.hasAny('state'),
-    }
-  );
   const [store] = React.useState(createDiscussionStore);
-  React.useEffect(() => {
-    store.setSuggestions(editor, groups);
-  }, [authoredView, editor, groups, store]);
   React.useEffect(() => {
     const { api } = editor.plugin(CommentsPlugin);
     const locate = (id: string, thread = comments.getThread(id)) => {
@@ -458,8 +370,7 @@ const useDiscussionController = () => {
     };
     const publish = () => {
       const suggestionThreads = new Map<string, string[]>();
-      const commentItems: Array<Extract<DiscussionItem, { kind: 'comment' }>> =
-        [];
+      const commentItems: CommentItem[] = [];
       const visible = new Set(visibleThreadIds);
 
       comments.getThreads().forEach((thread) => {
@@ -492,8 +403,19 @@ const useDiscussionController = () => {
 
 function DiscussionRoot({ children }: WrapRootProps) {
   const store = useDiscussionController();
+  const suggestions = useEditorSelector(
+    (current) =>
+      current.plugin(AuthoredPlugin).installed &&
+      current.plugin(SuggestionPlugin).installed
+  );
 
-  return <DiscussionContext value={store}>{children}</DiscussionContext>;
+  return (
+    <DiscussionContext value={store}>
+      <SuggestionsInstalledContext value={suggestions}>
+        {children}
+      </SuggestionsInstalledContext>
+    </DiscussionContext>
+  );
 }
 
 function DiscussionCard({
@@ -638,7 +560,7 @@ const describeSuggestionPart = (
 };
 
 const describeSuggestion = (
-  details: readonly (AuthoredChangeDetails | null)[],
+  details: ReadonlyArray<AuthoredChangeDetails | null>,
   fallback: AuthoredChange['kind']
 ) => {
   const parts = details.flatMap((detail) => detail?.parts ?? []);
@@ -694,19 +616,35 @@ function SuggestionDiscussionCard({
   const editor = useEditor();
   const { api: comments } = useEditor().plugin(CommentsPlugin);
   const user = useCommentUser(group.authorId);
-  const groupKey = group.changes
-    .map((change) => `${change.id}:${change.revision}`)
-    .join(',');
+  const groupKey = `${group.id}:${group.revision}`;
   const [outcomeState, setOutcomeState] = React.useState<{
     groupKey: string;
     result: AuthoredResult;
   } | null>(null);
   const outcome =
     outcomeState?.groupKey === groupKey ? outcomeState.result : null;
+  const [shownState, setShownState] = React.useState({
+    count: DISCUSSION_PAGE_SIZE,
+    groupId: group.id,
+  });
+  const shown =
+    shownState.groupId === group.id ? shownState.count : DISCUSSION_PAGE_SIZE;
   const authored = editor.plugin(AuthoredPlugin);
+  // Each render reads the card's changes from its first page, so no cursor
+  // outlives a commit.
+  const changes: AuthoredChange[] = [];
+
+  for (let cursor: string | undefined; changes.length < shown;) {
+    const page = authored.read.changes({ cursor, group: group.id, limit: 200 });
+
+    changes.push(...page.items);
+    if (!page.cursor) break;
+    ({ cursor } = page);
+  }
+
   const descriptions = describeSuggestion(
-    group.changes.map((change) => authored.read.details(change.id)),
-    group.changes[0]?.kind ?? 'mixed'
+    changes.slice(0, shown).map((change) => authored.read.details(change.id)),
+    changes[0]?.kind ?? 'mixed'
   );
   const setOutcome = (result: AuthoredResult) =>
     setOutcomeState({ groupKey, result });
@@ -719,10 +657,12 @@ function SuggestionDiscussionCard({
       const change = authored.read.change(id);
       return change ? [change] : [];
     });
-    const result = authored.update.decide({
-      action,
-      changes: [...group.changes, ...relatedChanges],
-    });
+    const result = authored.update.decide([
+      { action, groups: [group] },
+      ...(relatedChanges.length > 0
+        ? [{ action, changes: relatedChanges }]
+        : []),
+    ]);
 
     if (result.status === 'applied' || result.status === 'unchanged') {
       onDecisionApplied();
@@ -805,6 +745,22 @@ function SuggestionDiscussionCard({
             {description}
           </p>
         ))}
+        {group.changeCount > shown && (
+          <Button
+            className="self-start"
+            onClick={() =>
+              setShownState({
+                count: shown + DISCUSSION_PAGE_SIZE,
+                groupId: group.id,
+              })
+            }
+            size="sm"
+            variant="ghost"
+          >
+            Show {Math.min(DISCUSSION_PAGE_SIZE, group.changeCount - shown)}{' '}
+            more changes
+          </Button>
+        )}
         {outcomeMessage && (
           <div className="flex flex-col items-start gap-2" role="alert">
             <p>{outcomeMessage}</p>
@@ -880,11 +836,43 @@ function DiscussionBlock({
 }: RenderNodeWrapperProps<typeof CommentsPlugin>) {
   const path = usePath();
   const blockKey = editor.key(path);
+  const suggestions = React.useContext(SuggestionsInstalledContext);
 
   if (!blockKey) return children;
 
+  return suggestions ? (
+    <SuggestionDiscussionBlock blockIndex={path[0] ?? 0} blockKey={blockKey}>
+      {children}
+    </SuggestionDiscussionBlock>
+  ) : (
+    <DiscussionBlockContent blockKey={blockKey} cards={0} threads={0}>
+      {children}
+    </DiscussionBlockContent>
+  );
+}
+
+function SuggestionDiscussionBlock({
+  blockIndex,
+  blockKey,
+  children,
+}: React.PropsWithChildren<{ blockIndex: number; blockKey: NodeKey }>) {
+  const editor = useEditor();
+  const store = useDiscussionStore();
+  const cards = useSuggestionGroups(blockKey);
+  const threads = React.useSyncExternalStore(
+    store.subscribeThreads,
+    store.getThreads,
+    store.getThreads
+  );
+
   return (
-    <DiscussionBlockContent blockKey={blockKey}>
+    <DiscussionBlockContent
+      blockKey={blockKey}
+      cards={cards.length}
+      threads={
+        cards.length > 0 ? blockThreadCount(editor, threads, blockIndex) : 0
+      }
+    >
       {children}
     </DiscussionBlockContent>
   );
@@ -892,8 +880,14 @@ function DiscussionBlock({
 
 function DiscussionBlockContent({
   blockKey,
+  cards,
   children,
-}: React.PropsWithChildren<{ blockKey: NodeKey }>) {
+  threads,
+}: React.PropsWithChildren<{
+  blockKey: NodeKey;
+  cards: number;
+  threads: number;
+}>) {
   const store = useDiscussionStore();
   const subscribe = React.useCallback(
     (listener: () => void) => store.subscribeBlock(blockKey, listener),
@@ -912,13 +906,15 @@ function DiscussionBlockContent({
   );
 
   const isActive = block.active;
+  const hasComments = block.comments > 0 || threads > 0;
+  const totalCount = block.comments + cards + threads;
   const Icon =
-    block.hasComments && block.hasSuggestions
+    hasComments && cards > 0
       ? MessagesSquareIcon
-      : block.hasSuggestions
+      : cards > 0
         ? PencilLineIcon
         : MessageSquareTextIcon;
-  const itemLabel = block.totalCount === 1 ? 'item' : 'items';
+  const itemLabel = totalCount === 1 ? 'item' : 'items';
 
   return (
     <div className="flex w-full justify-between">
@@ -927,11 +923,11 @@ function DiscussionBlockContent({
         className="relative left-0 size-0 select-none"
         contentEditable={false}
       >
-        {block.totalCount > 0 && (
+        {totalCount > 0 && (
           <Button
             aria-expanded={isActive}
             aria-label={`${isActive ? 'Close' : 'Open'} ${
-              block.totalCount
+              totalCount
             } discussion ${itemLabel} for this block`}
             className="mt-1 ml-1 flex h-6 gap-1 !px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
             contentEditable={false}
@@ -951,7 +947,7 @@ function DiscussionBlockContent({
             <span
               aria-hidden="true"
               className="text-xs font-semibold after:content-[attr(data-count)]"
-              data-count={block.totalCount}
+              data-count={totalCount}
             />
           </Button>
         )}
@@ -984,29 +980,61 @@ function DiscussionPopover({
   const pending = usePendingComment();
   const activeCommentIds = usePluginStore(CommentsPlugin, 'activeIds');
   const activeOrder = new Map(activeCommentIds.map((id, index) => [id, index]));
+  const suggestions = React.useContext(SuggestionsInstalledContext);
+  const targetKey = snapshot.target?.blockKey ?? null;
+  const threads = React.useSyncExternalStore(
+    store.subscribeThreads,
+    store.getThreads,
+    store.getThreads
+  );
+  // Open cards read their summaries after each commit, so the revision a
+  // decision sends stays current when another block changes the card.
+  const activeGroups = useEditorSelector(
+    (current) => {
+      const group =
+        suggestions && activeSuggestionId
+          ? current.plugin(AuthoredPlugin).read.groupOf(activeSuggestionId)
+          : null;
+
+      return group ? [group] : NO_GROUPS;
+    },
+    { equalityFn: sameGroups }
+  );
+  const targetGroups = useEditorSelector(
+    (current) => {
+      // Under a preview, the stored block at the same index holds the cards.
+      const index =
+        suggestions && targetKey
+          ? current.read.nodes.path(targetKey)?.[0]
+          : undefined;
+
+      return index === undefined
+        ? NO_GROUPS
+        : current.plugin(AuthoredPlugin).read.groups({ at: [index] });
+    },
+    { equalityFn: sameGroups }
+  );
   const activeItems: DiscussionItem[] = [
     ...activeCommentIds.flatMap((id) => {
       const item = store.getComment(id);
 
       return item ? [item] : [];
     }),
-    ...(activeSuggestionId
-      ? (() => {
-          const item = store.getSuggestion(activeSuggestionId);
-
-          return item ? [item] : [];
-        })()
-      : []),
+    ...activeGroups.map((group) => suggestionItemOf(editor, threads, group)),
   ].toSorted(
     (left, right) =>
       (activeOrder.get(left.id) ?? activeCommentIds.length) -
       (activeOrder.get(right.id) ?? activeCommentIds.length)
   );
-  const targetGroup = snapshot.target
-    ? store.getGroup(snapshot.target.blockKey)
-    : undefined;
+  const targetItems = targetKey
+    ? sortDiscussionItems([
+        ...store.getComments(targetKey),
+        ...targetGroups.map((group) =>
+          suggestionItemOf(editor, threads, group)
+        ),
+      ])
+    : [];
   const target = !pending && activeItems.length === 0 ? snapshot.target : null;
-  const targetKey = snapshot.target?.blockKey ?? null;
   const [pagination, setPagination] = React.useState<{
     count: number;
     targetKey: NodeKey | null;
@@ -1015,12 +1043,10 @@ function DiscussionPopover({
     pagination.targetKey === targetKey
       ? pagination.count
       : DISCUSSION_PAGE_SIZE;
-  const targetItems = targetGroup?.items ?? [];
   const shownItems =
     activeItems.length > 0 ? activeItems : targetItems.slice(0, visibleCount);
   const activeSuggestionRange = activeItems.find(
-    (item): item is Extract<DiscussionItem, { kind: 'suggestion' }> =>
-      item.kind === 'suggestion'
+    (item): item is SuggestionItem => item.kind === 'suggestion'
   )?.range;
   const { api } = editor.plugin(CommentsPlugin);
   const commentRange = (() => {
@@ -1085,7 +1111,8 @@ function DiscussionPopover({
   }, [anchorBlockKey, anchorRangeJson, editor, rootElement, store]);
   const anchorElement = target?.anchor ?? (anchorRange ? virtualAnchor : null);
   const open = Boolean(
-    anchorElement && (pending || activeItems.length > 0 || targetGroup)
+    anchorElement &&
+    (pending || activeItems.length > 0 || targetItems.length > 0)
   );
   const openRef = React.useRef(open);
   const [placedPending, setPlacedPending] =
@@ -1096,10 +1123,13 @@ function DiscussionPopover({
   }, [open]);
 
   React.useEffect(() => {
-    if (snapshot.target && (pending || activeItems.length > 0)) {
+    if (
+      snapshot.target &&
+      (pending || activeItems.length > 0 || targetItems.length === 0)
+    ) {
       store.clearTarget();
     }
-  }, [activeItems.length, pending, snapshot.target, store]);
+  }, [activeItems.length, pending, snapshot.target, store, targetItems.length]);
 
   return (
     <div data-discussion-root="">
@@ -1269,9 +1299,8 @@ function Discussion({ editableRef }: EditableSiblingProps) {
     store.getSnapshot,
     store.getSnapshot
   );
-  const suggestionsInstalled = useEditorSelector(
-    (current) => current.plugin(SuggestionPlugin).installed
-  );
+  const suggestionsInstalled = React.useContext(SuggestionsInstalledContext);
+
   return suggestionsInstalled ? (
     <SuggestionDiscussion editableRef={editableRef} snapshot={snapshot} />
   ) : (

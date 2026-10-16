@@ -35,7 +35,7 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
   const path = usePath();
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
-  const selected = useElementSelected({ mode: 'node' });
+  const selected = useElementSelected({ mode: 'object' });
   const { provider, url: unsafeUrl } = props.element;
   const textAlign =
     'textAlign' in props.element &&
@@ -70,14 +70,7 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
       plugin={VideoPlugin}
       selected={selected}
     >
-      <EditorElement
-        {...props}
-        attributes={{
-          ...props.attributes,
-          'data-node-selection-highlight': 'self',
-        }}
-        className="py-2.5"
-      >
+      <EditorElement {...props} className="py-2.5">
         <figure className="relative m-0 cursor-default hover:[&_.editor-media-resize-handle]:after:opacity-100">
           <div contentEditable={false}>
             <Resizable
@@ -158,7 +151,9 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
                         // The native controls take focus once a click ends, so
                         // arrow keys would drive the player. Select the video
                         // and give the keyboard back to the editor.
-                        editor.update.selection.setNodes([props.element]);
+                        editor.update.selection.setNodes([props.element], {
+                          mode: 'object',
+                        });
                         editor.api.dom.focus();
                       }}
                     />

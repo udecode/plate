@@ -462,6 +462,7 @@ export const createTableNodeSelection = (
   return SelectionApi.nodes([first, ...paths.slice(1)], {
     anchorPath,
     focusPath,
+    mode: 'block',
     ...(view.root === undefined ? {} : { root: view.root }),
   });
 };

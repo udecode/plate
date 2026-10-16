@@ -8,6 +8,7 @@ import type {
   SnapshotIndex,
 } from '../interfaces/editor';
 import type { EditorJsonValue } from '../interfaces/json';
+import type { Node } from '../interfaces/node';
 import { PathApi, type Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
@@ -26,6 +27,7 @@ import {
 } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
+import { isRootChangeRangeReplaced } from './change/root-change';
 import type { JsonEditorValue } from './change/tokens';
 import { getEditorSchema } from './editor-runtime';
 import type { InternalEditorSchemaApi } from './editor-schema';
@@ -120,6 +122,19 @@ const rawNodeAt = (
 
 const pointRoot = (point: Point, fallback: RootKey) => point.root ?? fallback;
 
+export const isObjectSelectionTarget = (
+  schema: Pick<
+    ReturnType<typeof getEditorSchema>,
+    'isAtom' | 'isObject' | 'isSelectable' | 'isVoid'
+  >,
+  node: unknown
+) =>
+  isRecord(node) &&
+  Array.isArray(node.children) &&
+  !schema.isVoid(node as Node) &&
+  schema.isSelectable(node as Node) &&
+  (schema.isObject(node as Node) || schema.isAtom(node as Node));
+
 const publicPoint = (
   point: Point,
   root: RootKey,
@@ -198,7 +213,10 @@ const NODE_SELECTION_PERSISTENCE = {
         throw new Error('Invalid legacy node editor selection.');
       }
 
-      return SelectionApi.nodes([path], getLegacyNodeSelectionOptions(range));
+      return SelectionApi.nodes([path], {
+        ...getLegacyNodeSelectionOptions(range),
+        mode: 'block',
+      });
     },
     2(value) {
       if (
@@ -220,10 +238,10 @@ const NODE_SELECTION_PERSISTENCE = {
         throw new Error('Invalid legacy node editor selection.');
       }
 
-      return SelectionApi.nodes(
-        paths as [Path, ...Path[]],
-        getLegacyNodeSelectionOptions(range)
-      );
+      return SelectionApi.nodes(paths as [Path, ...Path[]], {
+        ...getLegacyNodeSelectionOptions(range),
+        mode: 'block',
+      });
     },
     3(value) {
       if (
@@ -241,11 +259,29 @@ const NODE_SELECTION_PERSISTENCE = {
 
       return SelectionApi.nodes(
         value.paths as [Path, ...Path[]],
-        value.root === undefined ? {} : { root: value.root }
+        value.root === undefined
+          ? { mode: 'block' }
+          : { mode: 'block', root: value.root }
       );
     },
+    4(value) {
+      if (
+        !isRecord(value) ||
+        Object.hasOwn(value, 'mode') ||
+        !SelectionApi.isNode({ ...value, mode: 'block' })
+      ) {
+        throw new Error('Invalid legacy node editor selection.');
+      }
+
+      return SelectionApi.nodes(value.paths as [Path, ...Path[]], {
+        anchorPath: value.anchorPath as Path,
+        focusPath: value.focusPath as Path,
+        mode: 'block',
+        ...(value.root === undefined ? {} : { root: value.root as string }),
+      });
+    },
   },
-  version: 4,
+  version: 5,
 } satisfies EditorValuePersistence<SelectionValue>;
 
 const getSelectionPersistence = (kind: string) => {
@@ -500,16 +536,15 @@ const createMapContext = (
     const beforeDocument = valueRootIndex(before, root);
     const afterDocument = valueRootIndex(after, root);
     const nodeRange = beforeDocument.nodeRange(path);
-    let nodeWasRemoved = false;
+    const rootChange = getInternalDocumentRootChange(change, root);
 
-    getInternalDocumentRootChange(change, root)?.iterChangedRanges(
-      (from, to) => {
-        if (from <= nodeRange.from && to >= nodeRange.to) {
-          nodeWasRemoved = true;
-        }
-      }
-    );
-    if (options.deletion === 'drop' && nodeWasRemoved) return null;
+    if (
+      options.deletion === 'drop' &&
+      rootChange &&
+      isRootChangeRangeReplaced(rootChange, nodeRange.from, nodeRange.to)
+    ) {
+      return null;
+    }
 
     const association = options.association === 'backward' ? -1 : 1;
     const position = nodeRange.from;
@@ -684,6 +719,19 @@ export const assertSelectionSupported = (
   const root = SelectionApi.root(selection) ?? fallbackRoot;
 
   const jsonDocumentValue = documentValue as JsonEditorValue;
+
+  if (
+    SelectionApi.isNode(selection) &&
+    selection.mode === 'object' &&
+    !isObjectSelectionTarget(
+      selectionSchema(editor),
+      rawNodeAt(valueRootIndex(jsonDocumentValue, root), selection.paths[0])
+    )
+  ) {
+    throw new Error(
+      'An object node selection must target one selectable object or atom that is not void.'
+    );
+  }
   const ranges = getSelectionRanges(editor, selection, documentValue);
 
   for (const range of ranges) {
@@ -775,10 +823,10 @@ export const mapSelectionWithContext = (
 
     const rootOptions =
       context.root === undefined ? ({} as const) : { root: context.root };
-    const canonical = SelectionApi.nodes(
-      [first, ...paths.slice(1)],
-      rootOptions
-    );
+    const canonical = SelectionApi.nodes([first, ...paths.slice(1)], {
+      mode: 'block',
+      ...rootOptions,
+    });
     const backward =
       PathApi.compare(selection.anchorPath, selection.focusPath) > 0;
     const firstPath = canonical.paths[0];
@@ -810,6 +858,7 @@ export const mapSelectionWithContext = (
       SelectionApi.nodes(canonical.paths, {
         anchorPath,
         focusPath,
+        mode: selection.mode,
         ...rootOptions,
       })
     );
@@ -887,12 +936,26 @@ export const mapSelectionThroughChange = (
   }
 
   const mapped = mapSelectionWithContext(selection, context, options);
+  const result =
+    SelectionApi.isNode(mapped) &&
+    mapped.mode === 'object' &&
+    !isObjectSelectionTarget(
+      selectionSchema(editor),
+      rawNodeAt(valueRootIndex(after, root), mapped.paths[0])
+    )
+      ? SelectionApi.nodes(mapped.paths, {
+          anchorPath: mapped.anchorPath,
+          focusPath: mapped.focusPath,
+          mode: 'block',
+          ...(mapped.root === undefined ? {} : { root: mapped.root }),
+        })
+      : mapped;
 
-  if (mapped) {
-    assertSelectionSupported(editor, mapped, after, root);
+  if (result) {
+    assertSelectionSupported(editor, result, after, root);
   }
 
-  return mapped;
+  return result;
 };
 
 const detachedSelectionContext = (schema: InternalEditorSchemaApi) =>

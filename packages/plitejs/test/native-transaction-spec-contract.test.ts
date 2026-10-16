@@ -145,6 +145,27 @@ describe('native transaction spec contract', () => {
     ]);
   });
 
+  it('keeps the keys a draft reads for nodes it wrote through acceptance', () => {
+    const editor = createTextEditor();
+    const paragraphKey = editor.key([0]);
+    let drafted: Array<ReturnType<typeof editor.key>> = [];
+    const spec = editor.read((state) =>
+      state.transaction((tx) => {
+        tx.text.insert('!');
+        tx.nodes.wrap({ type: 'quote', children: [] }, { at: [0] });
+        const [quote] = tx.nodes.get([0], { type: 'quote' })!;
+        const [paragraph] = tx.nodes.get([0, 0], { type: 'paragraph' })!;
+
+        drafted = [tx.key(quote), tx.key(paragraph)];
+      })
+    );
+
+    editor.update(() => applyTransactionSpec(editor, spec));
+
+    assert.deepEqual(drafted, [editor.key([0]), paragraphKey]);
+    assert.equal(editor.key([0, 0]), paragraphKey);
+  });
+
   it('carries afterCommit handlers through spec extension and runs them once', () => {
     const events: string[] = [];
     const callbackPlugin = definePlugin('specCallback', {

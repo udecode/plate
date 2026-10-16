@@ -11,6 +11,7 @@ import {
   PathApi,
   type Point,
   property,
+  SelectionApi,
   schema,
 } from 'plitejs';
 
@@ -1009,6 +1010,50 @@ it('mirrors the legacy string oracle rows', () => {
 
   assert.equal(editorString(editor, [0]), '');
   assert.equal(editorString(editor, [0], { voids: true }), 'onetwo');
+});
+
+it('reads a node selection with the void and read-only rules of a path', () => {
+  const editor = createPliteEditor({
+    initialSelection: SelectionApi.nodes([[0], [1]], { mode: 'block' }),
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'a' },
+          { type: 'mention', children: [{ text: 'M' }] },
+          { text: 'b' },
+        ],
+      },
+      { type: 'locked', children: [{ text: 'L' }] },
+    ],
+    plugins: [
+      defineEditorSchema('schema:query-contract-node-string', {
+        elements: {
+          locked: { content: schema.content.text(), readOnly: true },
+          mention: { void: 'inline' },
+          paragraph: {
+            content: schema.content.any(
+              [schema.content.text(), schema.content.type('mention')],
+              { default: 'text', min: 1 }
+            ),
+          },
+        },
+        root: schema.content.types(['paragraph', 'locked'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+      }),
+    ],
+  });
+
+  assert.deepEqual(
+    [
+      editor.read.text.string(),
+      editor.read.text.string(undefined, { voids: true }),
+    ],
+    ['ab', 'aMbL']
+  );
 });
 
 it('mirrors the legacy has*/is* editor predicate oracle rows', () => {

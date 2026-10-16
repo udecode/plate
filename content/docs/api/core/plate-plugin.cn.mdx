@@ -224,6 +224,7 @@ Plate 用于向任何节点组件注入 props 的属性。
 property；consumer portal 不公开该映射。Behavior 和 aggregate-property portal
 不包含 `schema`。
 布尔文本属性使用 `property.boolean({ default: false, omitDefault: true })`。
+元素属性的 `landing` 选项为 `'preserve' | 'rebase' | 'adopt'`，默认 `preserve`，说明内容的落点能否改变它；移动文本的拖拽只能改变 `rebase` 和 `adopt` 属性，`editorReads.transfer.adopt` 只能设置 `adopt` 属性。
 在 `update` 中，`tx.nodes.set(props, options)` 接受 typed property patch，
 `unset(key, options)` 删除 exact property。Alias 在 computed patch 中使用精确的
 authored property handle key。Prefix family 和 cross-node behavior 使用语义
@@ -338,7 +339,7 @@ import { SuggestionPlugin } from 'platejs/suggestion/react';
 SuggestionPlugin.configure({
   render: {
     contentAttributes: {
-      className: '[&_[data-editor-retained=delete]]:line-through',
+      className: '[&_[data-editor-authored-kind~=delete]]:line-through',
     },
   },
 });
@@ -454,11 +455,14 @@ component 或 slot。
 <APIItem name="readMiddleware" type="PluginReadMiddlewareFactory">
   基于已声明 Plate `editorReads` descriptor 的类型化 middleware。
 
-  命令处理器委托默认替换实现后，`editorReads.slice.landing` 在当前命令草稿上
-  决定粘贴落地的内容。输入中的 `source` 是处理器给出的切片，`slice` 是符合
-  `maxLength` 的部分，`target` 是编辑器解析出的目标。空块中的折叠光标得到
-  `empty`，其他情况得到 `context`，并带有粘贴起点所在的块。读取返回要适配的
-  `slice`，也可以加上 `replaceEmpty`，用整块内容替换 `empty` 目标。编辑器会按
+  命令处理器委托默认替换实现后，`editorReads.slice.landing` 决定粘贴落地的内容。
+  它的 `state` 读取当前命令草稿中粘贴落入的根，所以 `target.block` 中的路径属于该根。
+  输入中的 `source` 是处理器给出的切片，`slice` 是符合 `maxLength` 的部分，`target` 是编辑器解析出的目标，`intent` 在粘贴或复制文本的拖拽时为 `copy`，在移动文本的拖拽时为 `move`。读取改变了被移动内容的文本或标记，或移动携带的区块的类型或属性（声明为 `landing: 'rebase'` 或 `'adopt'` 的属性除外）时，移动以 `lossy` 拒绝。移动不检查被移动文本在落点处并入的区块及其外层区块，但会检查它携带的其他所有区块，包括空的最后一个区块。封闭区块（例如标题）不会并入任何区块；移动落在空区块中时，被移动的区块可以继承被替换区块的属性。粘贴替换
+  掉的文本不计入限制。空块中的折叠光标得到 `empty`，其他情况得到 `context`，并带有
+  粘贴起点所在的块；粘贴整块替换选中的块时，这个块是第一个选中块起点处最内层的块，
+  例如引用块中的第一个段落。读取返回要适配的
+  `slice`，编辑器会用同样的方式截断它：扣除被替换的文本后，截到符合 `maxLength` 的
+  部分。读取也可以加上 `replaceEmpty`，用整块内容替换 `empty` 目标。编辑器会按
   schema 和 `maxLength` 检查这个提议，放不下时改为适配 `slice`。替换内容的第一个块
   在类型相同时保留目标的全部属性，文本块换类型时保留 schema 允许的属性，对象块或
   void 块不保留任何属性，并去掉 `omitTargetProperties`。
@@ -467,6 +471,10 @@ component 或 slot。
   原始 `tx.slice.replace`、`tx.fragment.replace` 和 `state.slice.fit` 不运行它。
   descriptor 与 `SliceLanding`、`SliceLandingInput`、`SliceLandingTarget` 类型
   都从 `platejs` 导入。
+
+  `editorReads.transfer.adopt` 以 `TransferPatch` 条目返回区块副本或被移动区块
+  在落点获取的属性；[拖放页面](/cn/docs/dnd#塑造落地区块)有示例。它的 `TransferAdoptInput`
+  和 `TransferPatch` 类型同样从 `platejs` 导入。
 </APIItem>
 
 <APIItem name="commands" type="PluginDefinitionInput['commands']">
@@ -492,14 +500,22 @@ component 或 slot。
 </APIItem>
 
 <APIItem name="activate" type="PluginDefinitionInput['activate']">
-  在早期运行并管理同步资源。需要最终文档候选值的验证或资源初始化，通过
+  在早期运行并管理同步的内存资源。需要最终文档候选值的验证通过
   `context.beforePublish(callback)` 注册，其签名为
   `beforePublish: (callback: () => void) => void`。回调在编辑器构造和动态插件
   变更中、发布不可回退之前执行。它必须同步运行，且不能写入文档。
   抛出异常会否决发布并回滚候选值。
 
-  通过 `context.onCleanup(...)` 注册资源清理，包括在 `beforePublish` 中获取的
-  资源。清理由 activation 管理，在回滚、移除或替换时执行。
+  编辑器之外的资源，例如共享文档上的监听器，通过 `context.acquire(take)` 获取，
+  其签名为
+  `acquire: (take: () => (context: { reason: 'remove' | 'replace' | 'rollback' }) => void) => void`。
+  `take` 在所有插件的 `beforePublish` 通过后执行，并返回释放该资源的函数。
+  `take` 抛出异常会回滚候选值。`useCreateEditor` 创建的编辑器在 React 提交其
+  组件之前不获取任何资源，因为一次渲染可能被丢弃。
+
+  通过 `context.onCleanup(...)` 注册内存资源清理。清理由 activation 管理，在
+  回滚、移除或替换时、该 activation 的释放函数之后执行。`editor.destroy()` 会
+  释放并清理所有插件。
 
   `context.afterPublish(...)` 用于不抛出异常的发布后观察。回调错误会被报告，
   不能否决或回滚发布。

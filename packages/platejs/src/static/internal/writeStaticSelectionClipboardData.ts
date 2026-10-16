@@ -284,7 +284,9 @@ const getStaticSelectionPayload = (
     if (item.kind === 'node') {
       flushRun();
       const slice = getView(item.root).read((state) =>
-        state.slice.get({ at: SelectionApi.nodes([item.path]) })
+        state.slice.get({
+          at: SelectionApi.nodes([item.path], { mode: 'block' }),
+        })
       );
 
       if (slice.content.length === 0) return null;

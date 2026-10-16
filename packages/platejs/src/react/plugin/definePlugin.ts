@@ -348,17 +348,15 @@ export function definePlugin<
 >(
   name: N,
   definition: Readonly<Record<TKeys, unknown>> &
-    ('schema' extends TKeys
-      ? Readonly<{
-          schema: PluginConstructorSchemaInput<
-            N,
-            PluginConstructorDependencies<TKeys, D>,
-            PluginConstructorState<TKeys, TInitialStateInput>,
-            TTargetPlugins,
-            TSchema
-          >;
-        }>
-      : Readonly<{ schema?: never }>) &
+    Readonly<{
+      schema?: PluginConstructorSchemaInput<
+        N,
+        PluginConstructorDependencies<TKeys, D>,
+        PluginConstructorState<TKeys, TInitialStateInput>,
+        TTargetPlugins,
+        TSchema
+      >;
+    }> &
     PluginConstructorRestInput<
       TKeys,
       N,

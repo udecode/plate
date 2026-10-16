@@ -118,14 +118,24 @@ export function NavItemCard({
 
 export function NavItemsGrid({
   category,
+  roots,
   showFilter = true,
 }: {
   category: string;
+  roots?: SidebarNavItem[];
   showFilter?: boolean;
 }) {
   const [filter, setFilter] = useState('');
   const locale = useLocale();
-  const items = useDedupeNavItems(getDocsCategoryGroups(category));
+  const groups = useDedupeNavItems(getDocsCategoryGroups(category));
+  const lastGroup = groups.at(-1);
+  const items =
+    lastGroup && roots?.length
+      ? [
+          ...groups.slice(0, -1),
+          { ...lastGroup, items: [...(lastGroup.items ?? []), ...roots] },
+        ]
+      : groups;
 
   const filteredItems = showFilter
     ? items

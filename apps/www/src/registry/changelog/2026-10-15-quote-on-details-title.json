@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-15-quote-on-details-title",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-15-quote-on-details-title.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-15",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep list formatting when Quote cannot apply",
+  "targets": [
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-15-turn-into-toolbar-keep-list-fields-when-2fbf531b",
+      "kind": "fix",
+      "summary": "Leave selected list items unchanged when Quote cannot apply, such as on a Details title, instead of removing their list formatting.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["turn-into-toolbar-button", "block-menu"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-15",
+          "entry": "2026-10-15-quote-on-details-title",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

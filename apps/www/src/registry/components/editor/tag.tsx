@@ -92,7 +92,7 @@ function ConfiguredTagLink({
 
 export function TagElement(props: EditorElementProps<typeof TagPlugin>) {
   const { editor, element } = props;
-  const selected = useElementSelected();
+  const selected = useElementSelected({ mode: 'text' });
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
 

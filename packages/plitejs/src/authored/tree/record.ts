@@ -242,6 +242,21 @@ const BOUNDARY_KINDS: ReadonlySet<AuthoredMember['kind']> = new Set([
   'wrap',
 ]);
 
+const reviewed = (token: JsonToken) =>
+  token.kind === 'open' && readMembers(token.props).length > 0;
+
+const struckWhole = (node: JsonNode): boolean => {
+  const members = readMembers(node);
+
+  return (
+    members.length > 0 &&
+    members.every(
+      (member) => member.kind === 'delete' && !isEditingChange(member.change)
+    ) &&
+    (node.children ?? []).every(struckWhole)
+  );
+};
+
 const bareContextAt = (index: DocumentIndex, position: number) =>
   index
     .openContextAt(position)
@@ -859,18 +874,22 @@ class RootRecorder {
   }
 
   record(groups: readonly Group[]) {
-    const plain = new Set(
-      groups.filter(
-        (group) => group.kind === 'replace' && this.settlesPlain(group)
-      )
+    const plain = new Map(
+      groups.flatMap((group) => {
+        const removals =
+          group.kind === 'replace' ? this.plainRemovals(group) : null;
+
+        return removals ? [[group, removals] as const] : [];
+      })
     );
 
     if (this.options.origin !== 'move' || !this.recordNodeMove(groups)) {
       for (const group of groups) {
         if (group.kind === 'replace') {
           const start = this.ops.length;
+          const removals = plain.get(group);
 
-          if (plain.has(group)) this.writePlain(group);
+          if (removals) this.writePlain(group, removals);
           else this.recordGroup(group);
           this.followJoin(group, start);
           continue;
@@ -900,6 +919,88 @@ class RootRecorder {
         group.kind === 'replace' ? plain.has(group) : !group.data
       ),
     };
+  }
+
+  /**
+   * The ranges an Editing write removes outright when accepting the claims it
+   * would record for this group gives, under every outcome of the pending
+   * changes, the plain group or the plain group with the blocks other changes
+   * strike whole left in place. Null when it gives neither.
+   */
+  private plainRemovals(group: Extract<Group, { kind: 'replace' }>) {
+    if (this.settlesPlain(group)) {
+      return group.removed > 0
+        ? [[group.before, group.before + group.removed] as const]
+        : [];
+    }
+
+    return this.removalKeepingStruck(group);
+  }
+
+  /**
+   * A removal of whole blocks whose every block either holds nothing pending
+   * but insertions, so it goes in every outcome, or is struck whole by other
+   * changes, which still decide it. A pending join goes only with the whole
+   * root, so no follower outside the removal loses its join.
+   */
+  private removalKeepingStruck({
+    before,
+    plainFrom,
+    plainRemoved,
+    removed,
+    slice,
+  }: Extract<Group, { kind: 'replace' }>) {
+    const { changeId, frameIndex, moveRole, origin } = this.options;
+    const to = before + removed;
+    const first = this.index.childBoundaryAt(before);
+    const last = this.index.childBoundaryAt(to);
+    const topLevel = (index: DocumentIndex, position: number) =>
+      index.childBoundaryAt(position)?.parentPath.length === 0;
+
+    if (
+      !isEditingChange(changeId) ||
+      moveRole !== null ||
+      origin === 'move' ||
+      origin === 'wrap' ||
+      origin === 'unwrap' ||
+      removed === 0 ||
+      first?.parentPath.length !== 0 ||
+      last?.parentPath.length !== 0 ||
+      (frameIndex &&
+        !(
+          topLevel(frameIndex, plainFrom) &&
+          topLevel(frameIndex, plainFrom + plainRemoved)
+        )) ||
+      slice.tokens.some(reviewed)
+    ) {
+      return null;
+    }
+
+    const whole = before === 0 && to === this.index.length;
+    const goes = (node: JsonNode): boolean =>
+      readMembers(node).every(
+        (member) =>
+          member.kind === 'insert' ||
+          member.kind === 'in' ||
+          (whole && member.kind === 'join')
+      ) && (node.children ?? []).every(goes);
+    const removals: Array<readonly [number, number]> = [];
+
+    for (let rank = first.index; rank < last.index; rank += 1) {
+      const node = getDefined(this.index.child(rank));
+      const { from, to: end } = this.index.nodeRange([rank]);
+
+      if (struckWhole(node)) continue;
+      if (!goes(node)) return null;
+
+      const previous = removals.at(-1);
+
+      if (previous?.[1] === from) {
+        removals[removals.length - 1] = [previous[0], end];
+      } else removals.push([from, end]);
+    }
+
+    return removals;
   }
 
   /**
@@ -949,9 +1050,6 @@ class RootRecorder {
       return false;
     }
 
-    const reviewed = (token: JsonToken) =>
-      token.kind === 'open' && readMembers(token.props).length > 0;
-
     if (
       slice.tokens.some(reviewed) ||
       this.index.slice(before, to).tokens.some(reviewed)
@@ -1000,23 +1098,30 @@ class RootRecorder {
     });
   }
 
-  private writePlain({
-    after,
-    before,
-    removed,
-    slice,
-  }: Extract<Group, { kind: 'replace' }>) {
+  private writePlain(
+    { after, before, removed, slice }: Extract<Group, { kind: 'replace' }>,
+    removals: ReadonlyArray<readonly [number, number]>
+  ) {
     const to = before + removed;
+    const last = removals.at(-1);
+    // Written where the removal that ends at `to` starts, the slice and that
+    // removal are one replacement.
+    const at = last?.[1] === to ? last[0] : to;
 
-    if (removed > 0) this.ops.push({ from: before, kind: 'remove', to });
+    for (const [from, end] of removals) {
+      this.ops.push({ from, kind: 'remove', to: end });
+    }
     if (slice.length > 0) {
-      this.ops.push({ at: to, kind: 'insert', tokens: slice.tokens });
+      this.ops.push({ at, kind: 'insert', tokens: slice.tokens });
       this.pieces.push({
         afterFrom: after,
         afterTo: after + slice.length,
-        at: to,
+        at,
         kind: 'inserted',
-        offsets: Array.from({ length: slice.length + 1 }, (_, at) => at),
+        offsets: Array.from(
+          { length: slice.length + 1 },
+          (_, offset) => offset
+        ),
       });
     }
     if (removed > 0) this.pushRemoved(after, before, to);
@@ -1104,7 +1209,8 @@ class RootRecorder {
         before + removed,
         before + removed,
         trail,
-        after + depth + inner
+        after + depth + inner,
+        { closesWrap: true }
       );
       return;
     }
@@ -1734,7 +1840,8 @@ class RootRecorder {
     from: number,
     to: number,
     inserted: PreparedTokenSlice,
-    after: number
+    after: number,
+    { closesWrap = false }: Readonly<{ closesWrap?: boolean }> = {}
   ) {
     const startContext = this.contextAt(from);
     const landing = this.options.moveRole === 'landing';
@@ -1765,6 +1872,7 @@ class RootRecorder {
     this.recordInsertion({
       after,
       at: to,
+      closesWrap,
       contexts: struck.contexts,
       inserted,
       landing,
@@ -2286,6 +2394,7 @@ class RootRecorder {
     input: Readonly<{
       after: number;
       at: number;
+      closesWrap?: boolean;
       contexts: readonly Context[];
       inserted: PreparedTokenSlice;
       landing: boolean;
@@ -2477,9 +2586,9 @@ class RootRecorder {
       }
     };
     const [first] = local;
-    const splitsFill = first?.kind === 'close';
+    const splitsFill = first?.kind === 'close' && !input.closesWrap;
 
-    if (first?.kind === 'close') fillAt(first.nodeKind === 'text', true);
+    if (splitsFill) fillAt(first.nodeKind === 'text', true);
 
     const unfill = () => {
       if (filled === 0) return;
@@ -2711,12 +2820,13 @@ class RootRecorder {
 
     if (!suggested && moved.length === 0) return null;
 
-    const { at, author, change } = this.options.markOf('split');
+    const { at, author, change, inc } = this.options.markOf('split');
     const cut = suggested
       ? {
           at,
           author,
           change,
+          ...(inc === undefined ? {} : { inc }),
           cut: this.options.createTagId(),
           kind: 'split' as const,
         }

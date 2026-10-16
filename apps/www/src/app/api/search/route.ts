@@ -2,6 +2,8 @@ import { frontmatter } from 'fumadocs-core/content/md/frontmatter';
 import { structure } from 'fumadocs-core/mdx-plugins';
 import { createFromSource } from 'fumadocs-core/search/server';
 
+import { getDocsSidebar } from '@/lib/docs-page-tree';
+import { type DocsSidebar, selectDocsSidebar } from '@/lib/docs-sidebar';
 import { source } from '@/lib/source';
 import { hrefWithLocale } from '@/lib/withLocale';
 
@@ -47,13 +49,25 @@ const getSearchFrontmatter = async (page: SearchPage) => {
   return data as SearchPageFrontmatter;
 };
 
+let searchDocsSidebar: DocsSidebar | undefined;
+
+const getSearchDocsSidebar = () => {
+  searchDocsSidebar ??= getDocsSidebar();
+
+  return searchDocsSidebar;
+};
+
 const buildSearchIndex = async (page: SearchPage) => {
   const [frontmatterData, markdown] = await Promise.all([
     getSearchFrontmatter(page),
     getSearchMarkdown(page),
   ]);
 
+  const rootTitle = selectDocsSidebar(getSearchDocsSidebar(), page.url).nested
+    ?.title;
+
   return {
+    breadcrumbs: rootTitle ? [rootTitle] : undefined,
     description: page.data.description ?? frontmatterData.description,
     id: page.url,
     structuredData: structure(markdown),

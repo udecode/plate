@@ -374,15 +374,15 @@ export const migratePlateV54Suggestions = (
     );
   }
 
-  const markOf = (
-    data: LegacySuggestionData,
-    kind: 'delete' | 'insert' | 'join' | 'split'
-  ): AuthoredMark => ({
-    at: data.createdAt,
-    author: data.userId,
-    change: data.id,
-    kind,
-  });
+  const markOf = (data: LegacySuggestionData): AuthoredMark => {
+    const base = { at: data.createdAt, author: data.userId, change: data.id };
+
+    if (data.type === 'insert') {
+      return { ...base, kind: data.isLineBreak ? 'split' : 'insert' };
+    }
+
+    return { ...base, kind: data.isLineBreak ? 'join' : 'delete' };
+  };
   // Inserted and removed content marks everything inside it, as recording
   // does; property updates mark only their own node.
   const reviewNode = (
@@ -395,7 +395,7 @@ export const migratePlateV54Suggestions = (
     let carried = inherited;
 
     if (data && !data.isLineBreak && data.type !== 'update') {
-      const mark = markOf(data, data.type === 'insert' ? 'insert' : 'delete');
+      const mark = markOf(data);
 
       if (!marks.some((own) => own.change === mark.change)) marks.push(mark);
       carried = marks;
@@ -440,7 +440,7 @@ export const migratePlateV54Suggestions = (
       if (!data?.isLineBreak || !next) return;
       next.authored = [
         ...((next.authored as AuthoredMark[] | undefined) ?? []),
-        markOf(data, data.type === 'insert' ? 'split' : 'join'),
+        markOf(data),
       ];
     });
 

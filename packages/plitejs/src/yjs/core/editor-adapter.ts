@@ -1,3 +1,5 @@
+import { valueRootNodes } from '../../core/change/document-change';
+import type { NodeList } from '../../core/change/document-index';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
 import { runTrustedUpdate } from '../../core/public-state';
 import type {
@@ -6,8 +8,8 @@ import type {
   EditorDocumentValue,
   EditorSelection,
   EditorUpdatePolicy,
-  Element,
   JsonEditorValue,
+  Path,
   Range,
   Selection,
 } from '../../index';
@@ -29,7 +31,6 @@ export type YjsEditorAdapter = {
     children: readonly Descendant[]
   ) => readonly Descendant[];
   readonly canonicalizeDocument: (value: JsonEditorValue) => JsonEditorValue;
-  readonly canonicalizeNode: (root: string, node: Descendant) => Descendant;
   readonly importing: () => boolean;
   readonly readChildren: (root: string) => readonly Descendant[];
   readonly readValue: () => EditorDocumentValue;
@@ -54,57 +55,45 @@ export const YjsUpdatePolicy = Object.freeze({
   } satisfies EditorUpdatePolicy),
 });
 
-const SELECTION_ROOT_TYPE = 'root';
+/** Reads the top-level node through `at`, so a lazy root builds no array. */
+const nodeAtImportPath = (children: NodeList<Descendant>, path: Path) => {
+  const top = path[0] === undefined ? undefined : children.at(path[0]);
+
+  return top === undefined || path.length === 1
+    ? top
+    : NodeApi.getIf(top, path.slice(1));
+};
 
 const sanitizeImportSelection = (
-  children: readonly Descendant[],
+  children: NodeList<Descendant>,
   selection: Range | Selection
 ): EditorSelection | null => {
   if (selection === null) {
     return null;
   }
   if (SelectionApi.isNode(selection)) {
-    const root: Element = {
-      children,
-      type: SELECTION_ROOT_TYPE,
-    };
-
-    return selection.paths.every((path) => NodeApi.getIf(root, path))
-      ? SelectionApi.nodes(
-          selection.paths,
-          selection.root === undefined
-            ? {
-                anchorPath: selection.anchorPath,
-                focusPath: selection.focusPath,
-              }
-            : {
-                anchorPath: selection.anchorPath,
-                focusPath: selection.focusPath,
-                root: selection.root,
-              }
-        )
+    return selection.paths.every((path) => nodeAtImportPath(children, path))
+      ? SelectionApi.nodes(selection.paths, {
+          anchorPath: selection.anchorPath,
+          focusPath: selection.focusPath,
+          mode: selection.mode,
+          ...(selection.root === undefined ? {} : { root: selection.root }),
+        })
       : null;
   }
   if ('kind' in selection && selection.kind !== 'text') return null;
 
-  // Selection validation is read-only; avoid a second shallow copy of large
-  // remote imports before the actual replace payload is copied.
-  const root: Element = {
-    children,
-    type: SELECTION_ROOT_TYPE,
-  };
-
-  return isValidImportSelectionPoint(root, selection.anchor) &&
-    isValidImportSelectionPoint(root, selection.focus)
+  return isValidImportSelectionPoint(children, selection.anchor) &&
+    isValidImportSelectionPoint(children, selection.focus)
     ? SelectionApi.text(selection)
     : null;
 };
 
 const isValidImportSelectionPoint = (
-  root: Element,
+  children: NodeList<Descendant>,
   point: Range['anchor']
 ): boolean => {
-  const node = NodeApi.getIf(root, point.path);
+  const node = nodeAtImportPath(children, point.path);
 
   return (
     node !== undefined &&
@@ -126,26 +115,6 @@ export const createYjsEditorAdapter = (
 
     return root === 'main' ? value.children : (value.roots?.[root] ?? []);
   };
-  const canonicalizeNode = (root: string, node: Descendant): Descendant => {
-    const input =
-      root === 'main'
-        ? { children: [node] }
-        : { children: [], roots: { [root]: [node] } };
-    const document = editor.read.schema.fitDocument(
-      input as EditorDocumentValue
-    );
-    const children =
-      root === 'main' ? document.children : (document.roots?.[root] ?? []);
-
-    if (children.length !== 1 || children[0] === undefined) {
-      throw new Error(
-        'A Yjs top-level node must canonicalize to one editor node.'
-      );
-    }
-
-    return children[0];
-  };
-
   const applyRemote: YjsEditorAdapter['applyRemote'] = ({
     replacement,
     change,
@@ -153,23 +122,22 @@ export const createYjsEditorAdapter = (
     records,
     selection,
   }) => {
-    const currentValue = editor.read.value();
-    const nextValue =
-      replacement ?? (change ? change.apply(currentValue) : currentValue);
-    const editorRoot =
-      selection === undefined ||
-      selection === null ||
-      (!SelectionApi.isNode(selection) && !RangeApi.isRange(selection))
-        ? normalizeRootKey(editor.read.view.root())
-        : normalizeRootKey(SelectionApi.root(selection));
-    const nextChildren =
-      editorRoot === 'main'
-        ? nextValue.children
-        : (nextValue.roots?.[editorRoot] ?? []);
-    const nextSelection = sanitizeImportSelection(
-      nextChildren,
-      selection ?? null
-    );
+    let nextSelection: EditorSelection | null = null;
+
+    if (selection !== undefined && selection !== null) {
+      const currentValue = editor.read.value();
+      const nextValue =
+        replacement ?? (change ? change.apply(currentValue) : currentValue);
+      const editorRoot =
+        !SelectionApi.isNode(selection) && !RangeApi.isRange(selection)
+          ? normalizeRootKey(editor.read.view.root())
+          : normalizeRootKey(SelectionApi.root(selection));
+
+      nextSelection = sanitizeImportSelection(
+        valueRootNodes(nextValue, editorRoot) as NodeList<Descendant>,
+        selection
+      );
+    }
 
     importing = true;
 
@@ -203,7 +171,6 @@ export const createYjsEditorAdapter = (
     canonicalize,
     canonicalizeDocument: (value) =>
       editor.read.schema.fitDocument(value as unknown as EditorDocumentValue),
-    canonicalizeNode,
     importing: () => importing,
     readChildren,
     readValue,

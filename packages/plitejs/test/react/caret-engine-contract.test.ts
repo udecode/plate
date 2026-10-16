@@ -79,7 +79,7 @@ test.each([
         { children: [{ text: 'two' }], type: 'paragraph' },
         { children: [{ text: 'three' }], type: 'paragraph' },
       ],
-      selection: SelectionApi.nodes([[1], [2]]),
+      selection: SelectionApi.nodes([[1], [2]], { mode: 'block' }),
     });
 
     const runtime = new EditableDOMRuntime({ editor });

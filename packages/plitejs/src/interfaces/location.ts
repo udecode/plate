@@ -1,11 +1,6 @@
-import {
-  type Path,
-  PathApi,
-  type Point,
-  PointApi,
-  type Range,
-  RangeApi,
-} from '..';
+import { type Path, PathApi } from './path';
+import { type Point, PointApi } from './point';
+import { type Range, RangeApi } from './range';
 
 /**
  * The `Location` interface is a union of the ways to refer to a specific

@@ -151,7 +151,9 @@ collaboration.
 
 Use `ownership: "shared"` when several owners intentionally project the same
 root, as with synced blocks. Shared aliases stay attached to one root; removing
-even the last owner preserves that root. Use `ownership: "exclusive"` for
+even the last owner preserves that root. A schema with `unknown: "reject"`
+cannot hold a root that no element owns, so there the root goes with its last
+owner. Use `ownership: "exclusive"` for
 a separately mounted document that belongs to exactly one element, such as an
 element-owned annotation surface. Moving an owner preserves its root key.
 Removing, retargeting, or changing the type of an exclusive owner removes the

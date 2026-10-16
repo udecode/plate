@@ -1,6 +1,6 @@
 # Drag and drop
 
-Page: https://claude.ai/artifact/Fo9ckoasEpCPgbVtztPc4j
+Page: https://claude.ai/artifact/CYzConr7Z3AdVJGgyqZM4u
 
 Block drag and drop in Plite and Plate. `node tooling/scripts/review-ledger.mjs show dnd` prints the scope's full review and plan history.
 
@@ -145,7 +145,54 @@ The Editable drop passes a resolved block target through, side or edge, instead 
   : null
 ```
 
-The Public API pairs in `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `docs/plans/2026-10-02-dnd-schema-derived-landing.md` and `docs/plans/2026-10-06-dnd-side-drop-columns.md` show the call each of these replaced or added.
+A plugin marks the properties that follow where content lands. `rebase` lets a text landing change one, such as a depth, and `adopt` also lets a block copy take it from where it lands, such as a list.
+
+```ts
+// packages/platejs/src/features/list/lib/BaseListPlugin.ts
+listId: schema.elementProperty(property.string(), {
+  landing: 'adopt',
+  target: target.types(targetElementTypes),
+  typeChange: 'preserve-if-allowed',
+}),
+```
+
+The paste landing read now says whether it lands a copy or a move, so List keeps moved items in their own list.
+
+```ts
+// packages/platejs/src/features/list/lib/listPaste.internal.ts
+const placement = intent === 'move' ? 'move' : 'paste';
+const kept = landListContent(
+  state,
+  blocks,
+  { block: target.block?.[0], kind: 'kept' },
+  { headingType, placement }
+);
+```
+
+A plugin can set its `adopt` properties on copied blocks, based on where a drag drops them. List uses this to give the copies a list.
+
+```ts
+// packages/platejs/src/features/list/lib/BaseListPlugin.ts
+around(editorReads.transfer.adopt, ({ editor, input, next, state }) =>
+  adoptListBlocks(state, input, next(), {
+    headingType: getHeadingType(editor),
+  })
+),
+```
+
+The Public API pairs in `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `docs/plans/2026-10-02-dnd-schema-derived-landing.md`, `docs/plans/2026-10-06-dnd-side-drop-columns.md` and `docs/plans/2026-10-15-list-drag-landing.md` show the call each of these replaced or added.
+
+A text move lands what deleting its range removes, so a range that ends at a later line's start lands only its text.
+
+```ts
+// packages/plitejs/test/transfer-contract.test.ts
+[
+  "ends at a block's start, landing only its text and keeping that block once",
+  endChecked(),
+  textRange([0, 0], [1, 0]),
+  [paragraph(''), { ...paragraph('cd'), checked: true }, paragraph('eabf')],
+],
+```
 
 ## What other editors do
 
@@ -188,6 +235,30 @@ The same landing review found that only BlockNote builds columns from a side dro
 | ProseMirror, Tiptap, ProseKit, Lexical, Slate fork, CKEditor 5 (read, not run) | None | None | not applicable | `docs/plite/research/2026-10-02-dnd-landing-policy/editors.tsv` |
 | Notion (not read) | The side strip of any block, shown as a vertical bar, as in the user's screenshot | Columns around both blocks | not in the sources | The user's screenshot, 2026-10-06 |
 | Plate Plus, `../plate-pro` at `9ecc0bb85` (read, not run) | None. `block-draggable.tsx` drags columns by handle only | None | not applicable | `../plate-pro/src/registry/ui/block-draggable.tsx:32` |
+
+The list drag review read four editors in local source, without running them. Every editor lands a text drag-move as a delete followed by its paste path, and every editor with nested lists makes a dropped item join the list it lands in or start a new one. Their lists are trees, so nesting decides membership, and none of them settles a flat list's identity. Word and Google Docs, the spec's authorities for list identity, were not run.
+
+| Editor | Text drag that moves | Hook that reshapes dropped content | Dropped list item's list |
+| --- | --- | --- | --- |
+| ProseMirror view `ca4c78e` | Deletes the source, then `replaceRange` at the drop point, as a paste fits | `transformPasted`, the paste hook, runs on internal drags, moves and copies alike | The list the fit puts it in, or a new list the fit wraps it in |
+| Tiptap `91c51be53` | ProseMirror's drop | ProseMirror's | As ProseMirror |
+| Lexical `dd5c41b13` | Removes the dragged range, then inserts through `$insertDataTransferForRichText`, the paste path | The paste path's import hooks | A `ListItemNode` needs a `ListNode` parent, so it joins the list it lands in or gets a new one |
+| Slate `945a484df` | Deletes the dragged range, then `insertData`, the paste call | `insertData` overrides | No list model in core |
+| Notion (not read) | not read | not read | Positional numbering: a dropped numbered block numbers with the run it lands in |
+
+Source: `docs/plans/artifacts/2026-10-15-list-drag-landing/prior-art.md`.
+
+The move guard review read the same four editors' paste paths for what checks a move after it lands. None compares what landed with what moved, so none refuses a move a paste hook changed (inferred from those paste paths; no editor was run).
+
+| Editor | What a move lands | Check after the landing |
+| --- | --- | --- |
+| ProseMirror | The source is deleted, then `replaceRange` fits the dragged slice, after `transformPasted` | None |
+| Tiptap | ProseMirror's drop | None |
+| Lexical | The range is removed, then `$insertDataTransferForRichText`, the paste path, inserts it | None |
+| Slate | The range is deleted, then `insertData`, the paste call, inserts it | None |
+| Plite | The paste plan with intent `move`, then a guard after corrections | Text and marks, and every block the move carries, an empty last block included, except the block the moved text joins at the drop point and the blocks that hold it |
+
+Source: `docs/plans/artifacts/2026-10-15-move-landing-guard/prior-art.md`.
 
 ## Layer and owner
 
@@ -234,8 +305,16 @@ The same landing review found that only BlockNote builds columns from a side dro
 | "Move beside" handle actions | Plate copied registry | `apps/www/src/registry/components/editor/dnd.tsx` | WCAG 2.2 SC 2.5.7 single-pointer path, shown only when `check` admits |
 | Scroll refresh of the drop line during a block drag | Plite | `plitejs`, `src/dom/utils/drag-session.ts` for the listener's lifetime, `src/react/editable/clipboard-input-strategy.ts` for the last dragover | The session already owns every transient drag listener and its cleanup |
 | Outside side zones beside top-level blocks | Plite | `plitejs`, `src/dom/plugin/dom-drag.ts` | The mounted view owns geometry; Column still decides what a side builds |
+| Element properties declare `landing: 'rebase'` or `'adopt'` | Plite | `plitejs` root entry, `src/core/schema-definition.ts`, `src/core/schema-compiler.ts` | Each property's owner knows whether where content lands decides it |
+| The landing read's input carries `intent` | Plite | `plitejs` root entry, `src/core/slice-landing-types.ts`, `src/core/slice-landing.ts` | A landing hook must tell a move from a copy to keep moved identity |
+| A text move lands through the paste plan | Plite | `plitejs` root entry, `src/core/transfer.ts` | Transfer owns the move; the paste plan owns landing mechanics |
+| A move may change only declared properties | Plite | `plitejs` root entry, `src/core/transfer-guard.ts` | The guard owns "refuse rather than lose" |
+| `editorReads.transfer.adopt` and its patch types | Plite | `plitejs` root entry, `src/core/editor-reads.ts`, `src/core/transfer-types.ts`, `src/index.ts` | A neutral read inside admission; Plite checks patches against the declarations before placement and vetoes |
+| The hover check cache keeps one result per edge | Plite | `plitejs` root entry, `src/core/transfer.ts` | Hover checks several candidate edges per dragover, and one slot made them evict each other |
+| List and Indent declare their positional properties | Plate | `platejs` core entry, `src/features/list/lib/BaseListPlugin.ts`, `src/features/indent/lib/BaseIndentPlugin.ts` | The properties' owners |
+| List identity for moved text and dropped block copies | Plate | `platejs` core entry, `src/features/list/lib/` | List policy stays in Plate |
 
-Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md` and `landing plan` is `docs/plans/2026-10-02-dnd-schema-derived-landing.md`. `README` is `docs/plite/research/2026-10-02-dnd-library-choice/README.md`. The records are in `docs/research/review-records/`: `interrogation record` is `2026-10-01-dnd-transfer-interrogation.json`, `repair record` is `2026-10-02-dnd-transfer-consolidation-review-repair-execution.json` and `library record` is `2026-10-02-dnd-library-choice.json`.
+Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md` and `landing plan` is `docs/plans/2026-10-02-dnd-schema-derived-landing.md`. The last eight rows come from `docs/plans/2026-10-15-list-drag-landing.md`. `README` is `docs/plite/research/2026-10-02-dnd-library-choice/README.md`. The records are in `docs/research/review-records/`: `interrogation record` is `2026-10-01-dnd-transfer-interrogation.json`, `repair record` is `2026-10-02-dnd-transfer-consolidation-review-repair-execution.json` and `library record` is `2026-10-02-dnd-library-choice.json`.
 
 ## Hard cuts and app migration
 
@@ -344,14 +423,41 @@ Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landi
 | Undo after a side drop | One undo entry restores the original blocks and keys | `transfer-contract.test.ts`; www `dnd.spec.ts` | `side drop plan` probe P1 |
 | Selection after a side drop | The landed blocks are node-selected, as for any move | `transfer-contract.test.ts` | `transfer.ts` `landed` |
 | Non-drag beside | "Move beside" handle actions, by click and keyboard | www `dnd.spec.ts`, Playwright Chromium; no screen reader run | `side drop plan` Phase 1 |
-| Hover cost with strips | A copy or file drag runs no strip check. A move's strip check refuses fast when nothing builds a side, and the check cache keeps a side slot and an edge slot, so a pointer resting in a strip adds no uncached admission after the first dragover and no rect reads | Benchmark dragover p95 in four cohorts, with and without Column; admissions counted only in the geometry test, not in the browser | `side drop plan` Phase 2 |
+| Hover cost with strips | A copy or file drag runs no strip check. A move's strip check refuses fast when nothing builds a side, and the check cache keeps one result per checked target, so a pointer resting in a strip adds no uncached admission after the first dragover and no rect reads | Benchmark dragover p95 in four cohorts, with and without Column; admissions counted only in the geometry test, not in the browser | `side drop plan` Phase 2 |
 | Collaboration | A wrap keeps local keys. Concurrent remote text edits survived in a plain schema for both this commit and a remove-then-insert control, so no test claims the commit shape protects them | none; probe P5 recorded as partial | `side drop plan` probe P5 |
 | Outside side zones | A block dropped in the padding beside a top-level block lands beside it, once the pointer is 20 px past where the drag started on that side, so a straight drag from a handle in the padding lands above or below | `dom-drag-geometry.test.ts`; www `dnd.spec.ts` in three engines, five runs each | `side zones plan` Step 3; `origin plan` |
 | Marquee beside side zones | A pointerdown in the padding still starts block selection | www `dnd.spec.ts` `dnd:block-selection-from-side-padding`, three engines, five runs each | `side zones plan` Step 3 |
+| Text drag that moves list items | Items land at the drop item's depth and keep their own list unless they join the drop item's; the emptied source blocks leave as today | List spec case A and the Word-continued case; Chromium dispatched drag on `/blocks/list-demo` | `list drag plan` |
+| Text drag that moves plain text | Unchanged, because the default landing hook returns the slice as given | Existing transfer contract cases, which pass unchanged with the move-as-paste spike, and again on the final patch | `list drag plan` |
+| Text drag whose landing would change an undeclared property | Refuses and changes nothing | Raw Plite refusal cases | `list drag plan` |
+| Undo after a move or a copy | One step, as before | The new contract and List cases undo once | `list drag plan` |
+| Block drag that copies list items | Copies keep their depth and join the list beside them or start their own | List spec cases C, D2, E and the nested, head and long-family cases; Chromium handle drag with the copy modifier on `/blocks/list-demo` with rendered numbers | `list drag plan` |
+| Hover indicator | Paints only edges the drop admits; for a block copy or move it runs the adopt hook once per edge | Existing hover cases, the title-role refusal case and the work-count case for a copy and a move | `list drag plan`, `list move plan` |
+| Block drag that moves | A block moved beside another list of its kind joins it; one moved inside its own list, or beside no list of its kind, keeps its list and starts | List spec move cases; Chromium handle drag on `/blocks/list-demo` with rendered numbers | `list move plan` |
+| Keyboard move into another list | A step that lands beside another list of its kind joins it; stepping back past a paragraph rejoins its old list, while a step back out of a list right next to its own stays in the list it joined | List spec step cases; Chromium `Mod+Shift+ArrowDown` on `/blocks/list-demo` with rendered numbers | `list move plan` |
+| Text drag whose landing changes the block that holds the range's end, empty or not, or a block containing it | Refuses and changes nothing | Step 1's raw Plite cases, through a landing read and through a correction | `move guard plan` Step 1 |
+| Text drag whose range ends at the start of a block the source merges away, from inside a block or from a block's end | Lands, with that block's settings around the drop point's following text. Before, such a range refused when a whole block sat between its ends (F3) | Step 1's controls; probes F3 and A2 (`proof/p1-d3-probes-a1.log`, `proof/p1-v5-probes-a1.log`) | `move guard plan` Step 1 |
+| Text drag or Option-drag copy whose range starts at a block's end or ends at a block's start | The returned range and the selection after the drop start at the end of the drop point's text block, or end at the start of the block that holds the drop point's following text | Step 1's copy-range and empty-edge cases; the copy run (`docs/plans/artifacts/2026-10-15-move-landing-guard/proof/v7/oracle-copies.log`) | `move guard plan` Step 1 |
+| Text drag or Option-drag copy with an end at a link's edge | The returned range and the selection cover the link the landing wrote, and stop outside a link the drop splits | Step 1's link cases; the copy run | `move guard plan` Step 1 |
+| Option-drag copy that starts at a block's end or ends at a block's start | Lands without saying that some content does not fit (486 copies in the copy run). A copy that holds no characters and ends at a link's start, dropped at the end of a link's text, now says it (14 copies), though it lands the same | Step 1's copy cases compare the whole outcome; the copy run | `move guard plan` Step 1 |
+| Text drag of whole list items out of a quote into an empty paragraph | Lands at the drop's depth; one undo restores the source | Step 2's List case | `move guard plan` Step 2 |
+| Delete, Backspace, cut or typing over a selection across blocks, with an empty block right after the block the selection ends in | The empty block stays. Before, the delete removed it, and a text drop into it landed in the block above (C9) | Step 1's raw `deleteText` and move cases | t_057f43b6 |
+| Delete or a text move whose selection ends inside an inline void, such as a mention, at the start of a later block | The void goes with the selection, and the blocks merge. Before, the delete kept the void and the move landed a second copy | Step 1's cases; the void sweep rerun | t_8b0aa6dc |
+| Delete or a text move whose selection starts or ends inside an inline void across blocks | The blocks merge after the void goes. Before, they stayed apart | Step 1's cases | t_8b0aa6dc |
+| Text move whose selection starts at a block's start and ends at a later block's start | Only the text moves; the start block stays, emptied, and the end block keeps its settings once. Before, the move landed a second copy of the end block's settings | Step 2's rewritten case | t_6ef9e292 |
+| Text move whose landing a correction deletes beside identical text | Refuses and changes nothing, on a plain editor and in Editing and Suggesting views | Step 3's cases | t_33ab69a9 |
+| Text move that carries no characters, such as a line break between closed titles or a link's opening edge | Lands the document the final bytes of `move guard plan` landed, adding an empty title or an empty link. Its returned range now covers what it added, where those bytes returned a point inside the original link | Step 3's cases from diff round 1 of `move guard plan` | t_45a9856d |
+| Forward Delete at a line's end, before an empty line and then another author's pending empty line | One empty line goes. Before, both went | Step 1's authored law in `authored-tree-commands.test.ts` | t_057f43b6 |
+| Text move dropped at either edge of what its deletion removes, such as right after a mention its selection ends inside | Refuses as `no-op`. Before, it reported a move and changed nothing, or landed a second mention or empty block | Step 1's case; the oracle | t_8b0aa6dc |
+| Text move whose deletion removes nothing, such as a selection of only an empty line | Refuses as `no-op`. Before, it added a line break or an empty link at the drop, or reported a move and changed nothing | Step 2's case; the oracle | t_6ef9e292 |
+| Text move whose selection ends at a link's opening edge | Moves the text before the link. Before, it also landed an empty copy of the link | The oracle | t_8b0aa6dc |
+| Text move from one block to the start of the line after a nested quote, dropped inside a line's text | Refuses as `schema`, as pasting the same text there does. Before, it landed and kept a second copy of the end block | The oracle | t_6ef9e292 |
+| Text move whose selection still has an edge inside a non-editable element other than an inline void, such as a read-only block, a read-only inline or an atom, once an end at a line's start is pulled back | Refuses as `lossy` and changes nothing. Before, it lost the block's other text, copied a character or the atom's text, or turned the drop line into a heading | `transfer-contract.test.ts` read-only block cases for a start and an end edge; `d2-cases` | panel rounds 2 and 3 |
+| Delete across blocks with an edge inside a block void nested in a container, or inside a read-only inline that is not a void | The blocks stay apart and the inline stays, as at `dc4e679307`. The build's first merge rule had merged them | `delete-contract.ts` nested block void and read-only inline cases | panel rounds 1 to 3 |
 
 Playwright WebKit is not Safari, and synthetic `DragEvent` cases prove event handling, not OS drag negotiation (`plan` Proof). The www specs, homepage e2e, registry build, create-install and benchmark ran before the round 2 repairs (`repair record`).
 
-Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landing plan` is `docs/plans/2026-10-02-dnd-schema-derived-landing.md`, `side drop plan` is `docs/plans/2026-10-06-dnd-side-drop-columns.md`, `side zones plan` is `docs/plans/2026-10-07-dnd-side-zones-and-scroll.md` and `origin plan` is `docs/plans/2026-10-07-dnd-left-zone-from-drag-origin.md`. The records are in `docs/research/review-records/`: `execution record` is `2026-10-02-dnd-transfer-consolidation-execution.json`, `repair record` is `2026-10-02-dnd-transfer-consolidation-review-repair-execution.json` and `ownership record` is `2026-10-01-dnd-native-transfer-ownership.json`. `README` is `docs/plite/research/2026-10-02-dnd-library-choice/README.md`.
+Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landing plan` is `docs/plans/2026-10-02-dnd-schema-derived-landing.md`, `side drop plan` is `docs/plans/2026-10-06-dnd-side-drop-columns.md`, `side zones plan` is `docs/plans/2026-10-07-dnd-side-zones-and-scroll.md`, `origin plan` is `docs/plans/2026-10-07-dnd-left-zone-from-drag-origin.md`, `list drag plan` is `docs/plans/2026-10-15-list-drag-landing.md`, `move guard plan` is `docs/plans/2026-10-15-move-landing-guard.md` and `list move plan` is `docs/plans/2026-10-15-list-move-landing.md`. The records are in `docs/research/review-records/`: `execution record` is `2026-10-02-dnd-transfer-consolidation-execution.json`, `repair record` is `2026-10-02-dnd-transfer-consolidation-review-repair-execution.json` and `ownership record` is `2026-10-01-dnd-native-transfer-ownership.json`. `README` is `docs/plite/research/2026-10-02-dnd-library-choice/README.md`. `text move plan` is `docs/plans/2026-10-15-text-move-landing.md`.
 
 ## Main changes
 
@@ -374,12 +480,22 @@ Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landi
 - **`landAt` judges every block a wrap moves.** Identity skips the contiguity no-op for a side. The target moves alone. A target whose `editorReads.transfer.source` expansion holds more than itself, such as a list item with deeper items, refuses `policy`. A target that is a payload entry or an ancestor of one refuses `inside-source`. Placement checks the filled shell in the anchor's parent, removing the payload's indices there and, for a new group, the target's index. It then checks each slot's content. Vetoes run once for the payload. For a new group they run again for the target, with `payload` as `{ kind: 'nodes', nodes: [target], parentKeys: [its parent's key] }`, `from` as the view, `intent: 'move'`, `relation: 'document'`, and the anchor's `target` and `edge`. Both runs set `wrap`. The draft guard expects the target and the payload in their slots.
 - **`runTransfer` commits a wrap inside its one update.** It inserts the shell at the anchor edge, moves the target into its slot for a new group, then moves the payload into its slot. A side admits only a payload that relocates by `tx.nodes.move`, the transfer's no-slice case. A copy, a cross-editor drop, a read-only source and a cross-root move on a side refuse `policy`.
 - **The DOM driver finds side strips without schema knowledge.** Only the innermost block under the pointer has a strip, at its inline end only: the drift gate showed a start strip catches a straight drag down. The strip runs only for a move; without a `transfer.side` contributor its check refuses at once. It is the outer `min(24px, width / 4)` of that block's rect, excluding its top and bottom quarters, where y edges and container bands win. The block's computed `direction` decides which physical side is its end.
-- **The check cache keeps two slots.** `checkTransfer` caches one side check and one edge check per editor, so a strip's side check and the edge fallback stop evicting each other.
+- **The check cache keeps one result per target.** `checkTransfer` caches each checked side or edge per editor until the document, either view's read-only state or the plugin configuration changes, so a dragover's candidate edges and a strip's side check stop evicting each other.
 - **The drop line re-resolves on scroll.** While a block drag session is active, a capture `scroll` listener on the document re-runs `resolveDOMDropTarget` for the last view that handled a dragover, with that dragover's pointer and copy intent, at most once per animation frame. The session's `release` removes it, and a view drops its repaint on `dragleave`. The repaint runs through the DOM phase scheduler under one key, so a frame resolves once. The resolver hit-tests with `elementFromPoint` on this path, because the old event target may have scrolled away. Autoscroll then needs no reorder, because its scroll fires the same listener.
 - **Block drags pass through interactive elements.** `applyEditableDragOver` and `applyEditableDrop` skip the `isInteractiveInternalTarget` refusal when the session is a block drag. Text and file drags keep it.
 - **Top-level blocks get outside side zones.** When the pointer is outside the root's content column, the resolver tests the anchor's padding zones before the edge loop. The anchor is the root-level block `probeAt` already finds. Each zone covers the block's full height and counts once the pointer is 20 px past where the drag started on that side, so a straight drag from a handle in the padding stays above or below. Its side is `end` or `start` by the block's computed direction. A zone that does not admit falls through to the edge loop, as the inner strip does. Blocks inside a column, cell, quote or details get no outside zone.
 - **A padding side zone is measured from the drag's start.** `drag.start` records the pointer's x, kept until the session settles because `takeDragSession` removes the session before the drop resolves its target. Without a recorded start, as for a custom driver, the whole padding counts.
-- **A copied text drop lands as a paste.** `runTransfer` in `packages/plitejs/src/core/transfer.ts` sends a copy to a `point` through `readAtSliceFitTarget`, `limitSliceToLength`, `landSlice`, the `replaceEmpty` attempt and `withCommandSliceFit`, in the order the `replaceSlice` command runs them, without command handlers. The landing guard checks the content that actually landed, and a copy the length limit cuts reports a `lossy` diagnostic itself. A move to a point and every edge or wrap landing keep their paths.
+- **A copied text drop lands as a paste.** `runTransfer` in `packages/plitejs/src/core/transfer.ts` sends a copy to a `point` through `readAtSliceFitTarget`, `limitSliceToLength`, `landSlice`, the `replaceEmpty` attempt and `withCommandSliceFit`, in the order the `replaceSlice` command runs them, without command handlers. The landing guard checks the content that actually landed, and a copy the length limit cuts reports a `lossy` diagnostic itself. Every edge or wrap landing keeps its path.
+- **A text move lands as a paste.** `runTransfer` sends a text move to a point through the same paste plan with `intent: 'move'`, inside the move's landing role, after the source range is removed. The move guard in `packages/plitejs/src/core/transfer-guard.ts` then refuses any change to the moved content other than to properties declared `landing: 'rebase'` or `'adopt'`.
+- **Admission runs the adopt read for a block copy or move.** `landAt` in `packages/plitejs/src/core/landing.ts` resolves the edge, then `adoptAt` asks `editorReads.transfer.adopt` for patches and checks each against the declarations before `judgeLanding` runs placement and vetoes on the adopted blocks. A move patch that sets `null` refuses with `policy`, because `tx.nodes.set` removes a `null` property. A keyboard step does the same in `resolveStep`. Hover and drop share that admission, and the check cache limits it to once per edge.
+- **List keeps moved items in their list and places dropped copies.** `landListContent` in `packages/platejs/src/features/list/lib/listPaste.internal.ts` keeps moved items' ids unless they join the drop item's compatible list. `adoptListBlocks` in `listIdentity.internal.ts` joins at most one copied list to the list beside the drop edge, checking the item before it, after it, then the item it lands under, and gives every other copied list a fresh id.
+- **A move's guard compares what landed with what moved.** `carryMove` in `packages/plitejs/src/core/transfer-guard.ts` runs once, right after a text move lands. It lines up the moved slice and the slice the fit wrote by their head chains, and exempts the shells the source keeps that the landing read peeled or the fit merged. On every plain guard pass, `landsMoved` lines the landed fragment up the same way, skips the block the head merged into and the blocks that hold it, and compares each other landed block with its moved block. It skips the properties declared to follow the drop where the block landed. `LandingShape` and `landingTokens` go.
+- **`deleteText` decides what a text move carries.** `resolveDeletedRange` in `packages/plitejs/src/transforms-text/delete-text.ts` returns the range a delete removes, and `runTransfer` slices that range, so a hanging range moves as its unhung range and an inline void the range enters goes with it. It returns `null` when an edge stays inside another non-editable element, and the move refuses. `deleteText` merges after nudging an edge only out of an inline void and sizes its structural cleanup by the top-level blocks the merge removed.
+- **The landing reports where it wrote, and the guard follows it.** The fitter in `packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts` reports where the slice's own tokens land when the move asks. `packages/plitejs/src/core/draft-track.ts` carries those positions through later draft steps, the recorder's commit and a command frame's commit, and the guard in `packages/plitejs/src/core/transfer-guard.ts` reads the landed range or each landed block from that track. `landedRange`, `openEdge`, `outsideInlines`, `mapDraft` and `measureDraftInsertion` go.
+- **List joins a copied list by the item at the join's depth.** `adoptListBlocks` in `packages/platejs/src/features/list/lib/listIdentity.internal.ts` checks the kind of the copied item at the join's depth nearest the drop edge, not the first copied item.
+- **A relocating move sets its patches on its own nodes.** After `moveChain`, `runTransfer` in `packages/plitejs/src/core/transfer.ts` sets each patch on the moved node it addresses, by key plus the patch's inner path, through read-only ancestors, in the same update. The move guard expects the patched nodes and compares their properties whatever the key order, in `transfer-guard.ts`. A move into another root lands the patched slice, as a copy does.
+- **List joins a moved list only to another list.** `adoptListBlocks` in `packages/platejs/src/features/list/lib/listIdentity.internal.ts` skips the moving nodes in its walk, returns no patch when the move stays in its root and the block beside the gap on either side is an item of the moved list's own list, and gives unjoined moved lists no fresh id. A copy reads the item after the gap only when the item before it does not join.
+- **Adoption counts its copying.** `adoptAt` in `packages/plitejs/src/core/landing.ts` adds the child entries it copies along each patch path to `landingMetrics.copiedEntries`, which the work case reads. It catches repeated child-array copies, not other work per patch.
 
 ## Open findings
 
@@ -389,7 +505,6 @@ Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landi
 - **A closed details with only a summary.** A drop after its summary lands in its hidden body, because coverage has no empty range: a reversed `from 1, to 0` range is flipped and covers the summary itself. Owner: Plite DOM coverage (`packages/plitejs/src/dom/plugin/dom-coverage.ts`), tracked in the `landing plan` decision log.
 - **Inserting after an empty summary.** A command insertion after an empty details summary still replaces it, because `isReplaceableEmptyBlock` does not check block content. Owner: Plate block insertion (`packages/platejs/src/internal/plugin/blockInsertion.ts`), tracked in the `landing plan` decision log.
 - **Empty-anchor replacement on file drops.** A drop after an empty block-content block replaces it through Upload's `replaceEmpty`, outside `canPlaceAt`, so an empty block in a prefix slot can be replaced. Owner: Plite transfer (`packages/plitejs/src/core/landing.ts`) with Plate Upload, tracked in the `landing plan` decision log (panel round 1).
-- **Per-dragover check cache.** `checkTransfer` keeps one entry per editor, and a dragover checks two or more edges, so it misses on every dragover. Owner: Plite DOM (`packages/plitejs/src/dom/plugin/dom-drag.ts`), tracked in the `landing plan` decision log (panel round 1).
 - **Collapse and unmounted landings.** The collapse refusal runs only in DOM hover, on the edge before the redirect, and a redirect to an unmounted block accepts a drop with no indicator. Owner: Plite DOM, tracked in the `landing plan` decision log (panel round 1).
 - **Coverage lookups inside one container.** The coverage index buckets boundaries by top-level block, so a dragover inside one large container reads all of its boundaries. Owner: Plite DOM coverage (`packages/plitejs/src/dom/plugin/dom-coverage.ts`), tracked in the `landing plan` decision log (panel round 1).
 - **Non-list blocks between list items.** A paragraph dropped after a parent item splits it from its deeper items, as before this plan. Owner: Plate List, tracked in the `landing plan` decision log (panel round 1).
@@ -407,7 +522,7 @@ Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landi
 
 ## Open work
 
-Each item is tracked here; `side drop plan` is `docs/plans/2026-10-06-dnd-side-drop-columns.md` and `list landing plan` is `docs/plans/2026-10-14-transfer-list-landing.md`.
+Each item is tracked here; `side drop plan` is `docs/plans/2026-10-06-dnd-side-drop-columns.md`, `list landing plan` is `docs/plans/2026-10-14-transfer-list-landing.md`, `list drag plan` is `docs/plans/2026-10-15-list-drag-landing.md` and `move guard plan` is `docs/plans/2026-10-15-move-landing-guard.md`. `text move plan` is `docs/plans/2026-10-15-text-move-landing.md`.
 
 - **Side-drop proof gaps.** The side drop shipped with ten steps only partly proven: no cross-root side test, no x-axis geometry case, no browser count of admissions, no browser case for the menu in an editor without Column, no Vision forward test, and most mutation controls ran on bytes before the last restructure. The docs check was red at HEAD when it closed. From the `side drop plan` Close. owner: zbeyens. stop: each gap gets its case, or zbeyens accepts the gap.
 - **Emptied-column cleanup.** Dragging the last block out of a column leaves a padded empty column, and a group never drops below two columns. A cleanup at transfer time loses a concurrent remote insert into the removed column. In Plate Column, the `layout` review scope. owner: zbeyens. stop: the `layout` review decides the cleanup, or zbeyens drops it.
@@ -419,6 +534,12 @@ Each item is tracked here; `side drop plan` is `docs/plans/2026-10-06-dnd-side-d
 - **Side-landing veto coverage.** Table, Details and Upload have no side-landing cases. Their vetoes are safe today only because Column's side read admits roots and columns alone. In Plite transfer. owner: zbeyens. stop: each veto gets a side case, or a second side contributor lands first and adds them.
 - **Production-path benchmark.** Rerun the four side-strip dragover cohorts on a production build with a budget sized to the baseline and a planted-slowdown control. owner: zbeyens. stop: the rerun lands in the `side drop plan` decision log.
 - **One landing helper.** Move the read, trim, land, replace and fit steps into `packages/plitejs/src/core/slice-landing.ts`, so the `replaceSlice` command and `runTransfer` call one function, give `editorReads.slice.landing` and `SliceLandingInput.source` their JSDoc, and share the `lossy` message that `landAsPaste` repeats from `transfer-guard.ts`. Tracked as task_db3cd1c2 in `docs/plans/suggested-tasks.decisions.tsv`; from the `list landing plan`. owner: zbeyens. stop: the helper lands, or zbeyens dismisses the task.
-- **Text moves and block copies in one editor.** A text move to a point still inserts the slice raw, so moved list items keep their depths. An Option-drag block copy keeps the source's list id, so the copies renumber with the originals. Tracked as task_46ac463d in `docs/plans/suggested-tasks.decisions.tsv`; from the `list landing plan`. owner: zbeyens. stop: zbeyens decides both, or dismisses the task.
+- **List drag review warnings left for later.** A property declared both `copy: 'drop'` and `landing: 'adopt'` makes a copy report a false loss; no schema declares that pair. Only the forward join requires a list item at the copy's edge, and a keyboard step judges a copy or a move both before and after adoption, so a veto or required property that reads an adopted value refuses a step that a drag to the same edge lands; no List veto or schema rule reads one. From the `list drag plan`. owner: zbeyens. stop: a session takes them, or zbeyens drops them.
+- **List drag side findings.** These predate the `list drag plan`. `tx.blocks.duplicate` copies `listRestart`, so duplicating a restarted item numbers 1, 1. The hover check cache key leaves out the source editor's configuration revision. The public `editor.read.transfer.check` always asks for a move, so a custom driver cannot dry-run a copy. A list's start lives on its first item, so deleting, cutting or moving that item leaves the rest counting from 1. Lists inside a copied object's content roots keep their source ids, on paste and block copy alike. owner: zbeyens. stop: a session takes them, or zbeyens drops them.
 - **The vision line.** `docs/vision/plite.md` does not yet say that a copied text drop runs the landing read without command handlers. From the `list landing plan`. owner: zbeyens. stop: the line lands, or zbeyens drops it.
 - **A shared drag helper.** The dispatched drag in `apps/www/tests/browser/list-keys.spec.ts` belongs in `packages/test` once a second spec needs it. From the `list landing plan`. owner: zbeyens. stop: a second spec needs it, or zbeyens drops it.
+- **What a text move carries at a whole line, the last line and a link's edges.** A whole-line selection leaves its block empty where Delete removes it, a move to the document's last line carries that line's settings, a move over only a link's opening edge lands an empty link, a drop at a link's closing edge leaves an empty link, and a cut of a hanging range carries the end block's shell. From the `text move plan`. owner: zbeyens. tracked: suggested task t_c95ad786. stop: t_c95ad786 lands, or zbeyens drops it.
+- **A paste that ends open inside a nested quote mid-line refuses as `schema`.** A text move from one block to the start of the line after a nested quote refuses there too. From the `text move plan`. owner: zbeyens. tracked: suggested task t_1b4352d1. stop: t_1b4352d1 lands, or zbeyens drops it.
+- **The guard does not check after a recorder's final rewrite.** An internal recorder whose last rewrite deletes the landing commits, as before. From the `text move plan`. owner: zbeyens. tracked: suggested task t_ece8e967. stop: t_ece8e967 lands, or zbeyens drops it.
+- **The review-tree alignment's join-close drop has no test.** The authored case that reached it now keeps the empty line. From the `text move plan`. owner: zbeyens. tracked: suggested task t_3050b578. stop: t_3050b578 lands, or zbeyens drops it.
+- **Moves a paste lands inside a new wrapper.** The guard refuses them, though the law forbids only changing a carried block. From the `move guard plan`. owner: zbeyens. stop: a Plate kit or Plite example lands a text move inside a created wrapper, or zbeyens accepts the refusal.

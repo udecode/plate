@@ -1175,6 +1175,71 @@ describe('editor schema', () => {
     );
   });
 
+  it("keeps a content default's properties wherever it builds that default", () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'section',
+          children: [{ type: 'paragraph', children: [{ text: 'body' }] }],
+        },
+      ],
+      plugins: [
+        defineEditorSchema('schema:content-default-properties', {
+          elements: {
+            heading: {
+              content: schema.content.text(),
+              properties: { level: property.number({ required: true }) },
+            },
+            paragraph: { content: schema.content.text() },
+            section: {
+              content: schema.content.types(['heading', 'paragraph'], {
+                default: { properties: { level: 2 }, type: 'heading' },
+                min: 1,
+              }),
+            },
+          },
+          root: schema.content.type('section'),
+        }),
+      ],
+    });
+    const emptyHeading = {
+      children: [{ text: '' }],
+      level: 2,
+      type: 'heading',
+    };
+    let reset: boolean | undefined;
+
+    assert.deepEqual(editor.read.schema.element('section')?.content?.default, {
+      properties: { level: 2 },
+      type: 'heading',
+    });
+    assert.deepEqual(editor.read.schema.create('section'), {
+      children: [emptyHeading],
+      type: 'section',
+    });
+    assert.deepEqual(
+      editor.read.schema.createDefaultChild({ at: [0, 1] }),
+      emptyHeading
+    );
+    editor.update((tx) => {
+      reset = tx.blocks.reset({ at: [0, 0] });
+    });
+    assert.equal(reset, true);
+    assert.deepEqual(editor.read.children(), [
+      {
+        children: [{ children: [{ text: 'body' }], level: 2, type: 'heading' }],
+        type: 'section',
+      },
+    ]);
+    assert.throws(
+      () =>
+        schema.content.types(['heading', 'paragraph'], {
+          default: { level: 2, type: 'heading' } as never,
+        }),
+      /level/
+    );
+  });
+
   it('enforces explicit nested content grammar in derived schemas', () => {
     const valid = [
       {
