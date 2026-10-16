@@ -16,6 +16,7 @@ export const MODELS = { claude: 'opus', codex: 'gpt-6.1-sol' };
 export const otherRuntime = (env = process.env) => (env.CLAUDECODE ? 'codex' : 'claude');
 
 const DASHED_WORD = /^-\S+$/u;
+const TIME_BUDGET_SECONDS = 3600;
 const VALUE_FLAGS = new Map([
   ['--to', 'to'],
   ['--timeout', 'timeout'],
@@ -24,6 +25,7 @@ const VALUE_FLAGS = new Map([
   ['--computer-use', 'events'],
   ['--chrome-profile', 'chromeProfile'],
   ['--prompt-file', 'promptFile'],
+  ['--prompt', 'prompt'],
 ]);
 
 // Each child runs in its own process group, which outlives this process, so
@@ -52,7 +54,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900,
   const managed = runtime === 'codex' && !bypass && !reach && managedCodexConfig();
   if (managed) return { runtime, ok: false, text: `${managed} would still load over the command line; refusing to run` };
   const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : reach ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : cwd;
-  if (reach) prompt = `Your working directory is a scratch folder you may write. The project is ${cwd}: read it by absolute path and never write it.\n\n${prompt}`;
+  if (reach) prompt = `Your working directory is a scratch folder you may write. The project is ${cwd}: read it by absolute path and never write it.\n\n${prompt}\n\nPut your whole answer in your final message. Nobody reads the files you write in the scratch folder.`;
   let launch = { args: bypass ? [] : reach ? [...NO_EXEC_RULES, '--skip-git-repo-check', '-c', 'web_search="live"'] : userConfig ? NO_EXEC_RULES : ISOLATED_CODEX_ARGS };
   if (computerUse) {
     launch = await browserLaunch({ cwd: runCwd, chromeProfile: computerUse.chromeProfile });
@@ -130,26 +132,31 @@ async function main(argv) {
   let isolated = false;
   let bypass = false;
   let reach = false;
+  let stress = false;
   let help = false;
   let refusal;
-  let prompt = '';
+  const positional = [];
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     const key = VALUE_FLAGS.get(arg);
     const next = argv[index + 1];
-    if (key && next !== undefined && !DASHED_WORD.test(next)) values[key] = argv[++index];
+    if (key && key in values) refusal ??= `${arg} given twice`;
+    else if (key && next !== undefined && !DASHED_WORD.test(next)) values[key] = argv[++index];
     else if (key) refusal ??= `${arg} needs a value`;
     else if (['--write', '--events', '--resume'].includes(arg)) retired = arg;
     else if (arg === '--ignore-user-config') isolated = true;
     else if (arg === '--bypass') bypass = true;
     else if (arg === '--reach') reach = true;
+    else if (arg === '--stress') stress = true;
     else if (arg === '--help' || arg === '-h') help = true;
     else if (DASHED_WORD.test(arg)) refusal ??= `unknown flag ${arg}`;
-    else prompt = arg;
+    else positional.push(arg);
   }
   const { to = otherRuntime(), model, effort, events, chromeProfile, promptFile } = values;
+  const sources = [...positional, values.prompt, promptFile].filter((source) => source !== undefined);
+  let prompt = sources[0] ?? '';
   const timeout = Number(values.timeout ?? 900);
-  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] [--reach | --bypass | --computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | <prompt>)';
+  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] [--stress] [--reach | --bypass | --computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
   if (help) {
     console.info(usage);
     return 0;
@@ -175,9 +182,17 @@ async function main(argv) {
     console.error(`--ignore-user-config and --computer-use conflict\n${usage}`);
     return 2;
   }
+  if (sources.length > 1) {
+    console.error(`give one prompt: a positional prompt, --prompt or --prompt-file\n${usage}`);
+    return 2;
+  }
   if (promptFile) prompt = readFileSync(promptFile, 'utf8');
   if (!prompt.trim() || !['claude', 'codex'].includes(to) || !(timeout > 0)) {
     console.error(usage);
+    return 2;
+  }
+  if (!stress && timeout > TIME_BUDGET_SECONDS) {
+    console.error(`--timeout ${timeout} is over the ${TIME_BUDGET_SECONDS}-second time budget; split the task, or run it from a suggested task's session with --stress\n${usage}`);
     return 2;
   }
   if ((events || chromeProfile) && (to !== 'codex' || !events || !chromeProfile)) {
