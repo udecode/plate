@@ -564,7 +564,7 @@
               "titleCn": "Media"
             },
             {
-              "description": "A menu for switching between editor modes.",
+              "description": "A menu for switching between editor modes and deciding every suggestion.",
               "href": "/docs/components/mode-toolbar-button",
               "title": "Mode Toolbar Button",
               "titleCn": "Mode Toolbar Button"
@@ -2594,7 +2594,7 @@
         "titleCn": "Media"
       },
       "/docs/components/mode-toolbar-button": {
-        "description": "A menu for switching between editor modes.",
+        "description": "A menu for switching between editor modes and deciding every suggestion.",
         "title": "Mode Toolbar Button",
         "titleCn": "Mode Toolbar Button"
       },

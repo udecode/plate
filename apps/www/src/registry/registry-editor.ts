@@ -478,8 +478,9 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs'],
-    description: 'A menu for switching between editor modes.',
+    dependencies: ['platejs', 'sonner'],
+    description:
+      'A menu for switching between editor modes and deciding every suggestion.',
     files: [
       {
         path: 'components/editor/mode-toolbar-button.tsx',

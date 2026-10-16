@@ -1,7 +1,14 @@
 'use client';
 
-import { EyeIcon, PencilLineIcon, PenIcon } from 'lucide-react';
+import {
+  CheckIcon,
+  EyeIcon,
+  PencilLineIcon,
+  PenIcon,
+  XIcon,
+} from 'lucide-react';
 import { setEditorReadOnly } from 'platejs';
+import { type AuthoredChange, AuthoredPlugin } from 'platejs/authored';
 import {
   useEditor,
   useEditorSelector,
@@ -9,12 +16,16 @@ import {
 } from 'platejs/react';
 import { SuggestionPlugin, useSuggestionMode } from 'platejs/suggestion/react';
 import * as React from 'react';
+import { toast } from 'sonner';
 
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/registry/components/editor/dropdown-menu';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
@@ -132,7 +143,62 @@ function ModeToolbarButtonContent({
             </DropdownMenuRadioItem>
           )}
         </DropdownMenuRadioGroup>
+
+        {suggestionsInstalled && <DecideAllItems readOnly={readOnly} />}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function DecideAllItems({ readOnly }: { readOnly: boolean }) {
+  const editor = useEditor();
+  const pending = useEditorSelector(
+    (current) =>
+      current.plugin(AuthoredPlugin).read.changes({ limit: 1 }).items.length > 0
+  );
+  const decideAll = (action: 'accept' | 'reject') => {
+    const authored = editor.plugin(AuthoredPlugin);
+    const changes: AuthoredChange[] = [];
+
+    for (let cursor: string | undefined; ;) {
+      const page = authored.read.changes({ cursor, limit: 200 });
+
+      changes.push(...page.items);
+      if (!page.cursor) break;
+      ({ cursor } = page);
+    }
+
+    // Deciding every pending change together is never blocked.
+    if (authored.update.decide({ action, changes }).status === 'invalid') {
+      toast.error(
+        `${action === 'accept' ? 'Accepting' : 'Rejecting'} every suggestion would leave the document invalid, so nothing changed.`
+      );
+    }
+  };
+
+  return (
+    <>
+      <DropdownMenuSeparator />
+      <DropdownMenuGroup>
+        <DropdownMenuItem
+          className="*:[svg]:text-muted-foreground"
+          disabled={readOnly || !pending}
+          finalFocus={() => editor.api.dom.focus()}
+          onSelect={() => decideAll('accept')}
+        >
+          <CheckIcon />
+          Accept all suggestions
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="*:[svg]:text-muted-foreground"
+          disabled={readOnly || !pending}
+          finalFocus={() => editor.api.dom.focus()}
+          onSelect={() => decideAll('reject')}
+        >
+          <XIcon />
+          Reject all suggestions
+        </DropdownMenuItem>
+      </DropdownMenuGroup>
+    </>
   );
 }

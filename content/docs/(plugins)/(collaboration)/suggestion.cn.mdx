@@ -14,7 +14,7 @@ docs:
 
 <ComponentPreview name="suggestion-demo" height="360px" />
 
-示例默认使用建议模式，并包含一条插入建议和一条删除建议。打开段落旁的讨论按钮来接受或拒绝其卡片，再尝试撤销和重做。切换到编辑模式后，待处理修改仍然可见，而普通编辑会直接应用；在建议模式下输入可提议修改。
+示例默认使用建议模式，并包含一条插入建议和一条删除建议。打开段落旁的讨论按钮来接受或拒绝其卡片，或在模式菜单中选择 **Accept all suggestions** 或 **Reject all suggestions**，再尝试撤销和重做。切换到编辑模式后，待处理修改仍然可见，而普通编辑会直接应用；在建议模式下输入可提议修改。
 
 在被划掉的文本中输入时，待处理删除会在新文本两侧拆开。建议模式下，新文本是一条独立的插入建议；编辑模式下，它直接应用。在编辑模式下删除被划掉的文本时，这些文本仍归属于其待处理删除。
 
@@ -236,6 +236,29 @@ if (change) {
 ```
 
 使用 `action: 'reject'` 拒绝 change。请检查 `result.status`：其他编辑可能使 change 变为 `stale`；需要同时决定其他 change 的决定返回 `blocked`。要决定整张卡片，请传入 `{ action, groups: [card] }`。[Authored Changes](/cn/docs/authored-changes#审阅-change)介绍分页、卡片、预览和结果处理。
+
+### 决定全部建议
+
+要接受或拒绝全部待处理建议，请读取 change 的每一页，然后在一次调用中决定它们：
+
+```tsx
+import { type AuthoredChange, AuthoredPlugin } from 'platejs/authored';
+
+const authored = editor.plugin(AuthoredPlugin);
+const changes: AuthoredChange[] = [];
+
+for (let cursor: string | undefined; ; ) {
+  const page = authored.read.changes({ cursor, limit: 200 });
+
+  changes.push(...page.items);
+  if (!page.cursor) break;
+  ({ cursor } = page);
+}
+
+const result = authored.update.decide({ action: 'accept', changes });
+```
+
+一次调用会同时决定所有 change，因此不会返回 `blocked`。应用成功时，它得到的文档与按任意顺序逐个决定这些 change 相同，其中每个返回 `blocked` 的步骤都会加入其 `with` 列出的 change。一次撤销会恢复它决定的每个 change。请在同一个事件处理函数中读取并决定，因为两者之间的编辑可能使 change 变为 `stale`。当 schema 拒绝决定后的文档时，结果为 `invalid`，且不会有任何修改。复制的 `ModeToolbarButton` 在其菜单中以 **Accept all suggestions** 和 **Reject all suggestions** 提供此操作。
 
 ## 保存和重新加载
 

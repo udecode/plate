@@ -1,5 +1,5 @@
 {
-  "generation": "6afd85a70bd2dfbae6624cd94fc1c4431223b92eb8633620d05a8954e527804c",
+  "generation": "00fd0f4b28d87914a5e41eb0127da0d598c8f5948d575b5d767711cc350050c5",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -907,10 +907,11 @@
         {
           "dependencies": [
             "platejs",
+            "sonner",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
-          "description": "A menu for switching between editor modes.",
+          "description": "A menu for switching between editor modes and deciding every suggestion.",
           "files": [
             {
               "path": "components/editor/mode-toolbar-button.tsx",
@@ -7761,10 +7762,11 @@
         {
           "dependencies": [
             "platejs",
+            "sonner",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
-          "description": "A menu for switching between editor modes.",
+          "description": "A menu for switching between editor modes and deciding every suggestion.",
           "files": [
             {
               "path": "components/editor/mode-toolbar-button.tsx",

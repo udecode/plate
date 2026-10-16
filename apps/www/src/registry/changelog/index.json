@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-17-accept-all-suggestions",
+      "href": "/registry/changelog/2026-10-17-accept-all-suggestions.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Accept or reject every suggestion from the mode menu",
+      "change": {
+        "type": "source",
+        "date": "2026-10-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["mode-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-16-code-block-diagrams",
       "href": "/registry/changelog/2026-10-16-code-block-diagrams.json",
       "status": "draft",
