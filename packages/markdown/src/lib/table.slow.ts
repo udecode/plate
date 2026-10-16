@@ -661,7 +661,9 @@ describe('markdown tables', () => {
           }
         )
       )
-    ).toEqual([{ children: [{ text: '<ul><li>a</li></ul>' }], type: 'p' }]);
+    ).toEqual([
+      { children: [{ rawHtml: true, text: '<ul><li>a</li></ul>' }], type: 'p' },
+    ]);
   });
 
   it('keeps html link destinations in table-cell list items', () => {
@@ -690,7 +692,9 @@ describe('markdown tables', () => {
 
     expect(getFirstCellChildren(deserializeMd(editor, input))).toEqual([
       {
-        children: [{ text: '<ul><li><p>one</p><p>two</p></li></ul>' }],
+        children: [
+          { rawHtml: true, text: '<ul><li><p>one</p><p>two</p></li></ul>' },
+        ],
         type: 'p',
       },
     ]);
