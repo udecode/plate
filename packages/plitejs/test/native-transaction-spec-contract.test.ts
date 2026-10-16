@@ -153,8 +153,8 @@ describe('native transaction spec contract', () => {
       state.transaction((tx) => {
         tx.text.insert('!');
         tx.nodes.wrap({ type: 'quote', children: [] }, { at: [0] });
-        const [quote] = tx.nodes.get([0])!;
-        const [paragraph] = tx.nodes.get([0, 0])!;
+        const [quote] = tx.nodes.get([0], { type: 'quote' })!;
+        const [paragraph] = tx.nodes.get([0, 0], { type: 'paragraph' })!;
 
         drafted = [tx.key(quote), tx.key(paragraph)];
       })

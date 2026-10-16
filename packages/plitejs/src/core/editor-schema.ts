@@ -735,7 +735,7 @@ const isDeepFrozenNode = (node: Descendant): boolean => {
 // rebound validator compiles a new schema even when its identity is equal.
 const VALIDATED_ROOT_NODES = new WeakMap<object, WeakMap<object, RootKey>>();
 const SCHEMA_HAS_COPY_TRANSFORMS = new WeakMap<CompiledEditorSchema, boolean>();
-const EMPTY_INDEXED_DOCUMENT = DocumentIndex.fromValue(Object.freeze([]));
+const emptyIndexedDocument = () => DocumentIndex.fromValue(Object.freeze([]));
 const rootNodes = (document: DocumentIndex) =>
   document.nodes as NodeList<Descendant>;
 
@@ -1395,7 +1395,7 @@ export const createEditorSchema = <V extends Value = Value>(
           root,
           getInternalDocumentRootChange(change, root),
           beforeDocument,
-          EMPTY_INDEXED_DOCUMENT
+          emptyIndexedDocument()
         );
 
         for (const childRoot of index.dirtyChildRoots) {
@@ -1406,7 +1406,7 @@ export const createEditorSchema = <V extends Value = Value>(
       const countOwners = (
         indexes: ReadonlyMap<RootKey, ElementOwnedRootIndex>,
         childRoot: string,
-        ownership?: 'exclusive'
+        ownership: 'any' | 'exclusive'
       ) => {
         let count = 0;
 
@@ -1415,7 +1415,7 @@ export const createEditorSchema = <V extends Value = Value>(
             index,
             childRoot
           )) {
-            if (!ownership || binding.ownership === ownership) {
+            if (ownership === 'any' || binding.ownership === ownership) {
               count += binding.count;
             }
           }
@@ -1424,15 +1424,17 @@ export const createEditorSchema = <V extends Value = Value>(
         return count;
       };
 
+      const orphanedWith = schema.unknown === 'reject' ? 'any' : 'exclusive';
+
       return Object.freeze(
         [...candidates]
           .filter(
             (root): root is NamedRootKey =>
               root !== 'main' &&
               Object.hasOwn(afterRoots, root) &&
-              countOwners(afterIndexes, root) === 0 &&
+              countOwners(afterIndexes, root, 'any') === 0 &&
               (tracked.has(root) ||
-                countOwners(beforeIndexes, root, 'exclusive') > 0)
+                countOwners(beforeIndexes, root, orphanedWith) > 0)
           )
           .sort()
       );
@@ -4385,7 +4387,7 @@ export const createEditorSchema = <V extends Value = Value>(
         const beforeDocument =
           indexedBefore.get(root) ??
           beforeRoots[root] ??
-          EMPTY_INDEXED_DOCUMENT;
+          emptyIndexedDocument();
         const rootChange = getInternalDocumentRootChange(change, root);
         const index = touchedRoots.has(root)
           ? rebaseElementOwnedRootIndex(
@@ -4417,13 +4419,13 @@ export const createEditorSchema = <V extends Value = Value>(
         const beforeDocument =
           indexedBefore.get(root) ??
           beforeRoots[root] ??
-          EMPTY_INDEXED_DOCUMENT;
+          emptyIndexedDocument();
         const index = rebaseElementOwnedRootIndex(
           schema,
           root,
           getInternalDocumentRootChange(change, root),
           beforeDocument,
-          EMPTY_INDEXED_DOCUMENT
+          emptyIndexedDocument()
         );
 
         const childRoots =
@@ -4628,7 +4630,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
       const children = rootNodes(afterDocument);
       const beforeDocument =
-        indexedBefore.get(root) ?? beforeRoots[root] ?? EMPTY_INDEXED_DOCUMENT;
+        indexedBefore.get(root) ?? beforeRoots[root] ?? emptyIndexedDocument();
       const rootChange = getInternalDocumentRootChange(change, root);
       const ownPaths = new Map<string, readonly number[]>();
       const recursivePaths = new Map<string, readonly number[]>();

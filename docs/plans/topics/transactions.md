@@ -1,6 +1,6 @@
 # Atomic updates and document changes
 
-Page: https://claude.ai/artifact/1gmj9dkmNiLTMRn1FPiHkR
+Page: https://claude.ai/artifact/D17heqLZLTZZRkwSZC5aky
 
 The ledger asks what becomes observable when updates commit, nest, fail or repair content, and which overlapping mutation authorities can disappear. An update publishes once. Updates never nest, a failed author throws its draft away, and every update author must return synchronously. One guard in `public-state.ts` enforces that, and `synchronous-transaction-authors.test.ts` covers 14 entry forms. A plugin's update methods run inside that update, and small markers in `tx-only.ts` tell the runtime how to treat a method: usable only inside an open update, or where its location arguments land when a command runs on another document. Every direct call refuses a plugin's reads, because the transaction guard knows where each member came from.
 
@@ -119,6 +119,58 @@ export type BlockUpsertOptions = Exclude<BlockInsertOptions, { at: Path }> & {
 };
 ```
 
+A spec builder reads a key the same way an update does, including for a node the draft just wrote. A typed `nodes.get` read hands `key` an element.
+
+```ts
+// packages/plitejs/test/native-transaction-spec-contract.test.ts
+const spec = editor.read((state) =>
+  state.transaction((tx) => {
+    tx.text.insert('!');
+    tx.nodes.wrap({ type: 'quote', children: [] }, { at: [0] });
+    const [quote] = tx.nodes.get([0], { type: 'quote' })!;
+    const [paragraph] = tx.nodes.get([0, 0], { type: 'paragraph' })!;
+
+    drafted = [tx.key(quote), tx.key(paragraph)];
+  })
+);
+```
+
+The spec builder types `key` with its own doc comment, which says when a prepared key goes live, and keeps `plugins` out.
+
+```ts
+// packages/plitejs/src/interfaces/editor.ts
+> = Omit<EditorCoreUpdateTransaction<V, EditorSelection>, 'plugins' | 'key'> &
+  Readonly<{
+    /**
+     * Return the key for a node or location in this draft. A node the draft
+     * created carries a prepared key, which becomes its live key when the
+     * editor adopts this draft.
+     */
+    key: EditorKeyApi;
+    plugin: EditorTransactionPluginPortal<
+```
+
+In a closed schema, removing the last owner of a shared root removes the root at commit, and a root nested in a removed root goes with it. An open schema keeps a shared root after its last owner.
+
+```ts
+// packages/plitejs/test/content-root-lifecycle-contract.test.ts, closed schema
+editor.update((tx) => {
+  tx.selection.set(acrossTheOwner);
+  tx.fragment.delete();
+});
+// commits; "shared:1" is gone with its last owner
+```
+
+A raw slice write whose content names a content root returns false when the schema would reject the result.
+
+```ts
+// packages/plitejs/test/slice-roots-contract.test.ts
+editor.update((tx) => {
+  result = tx.slice.replace(ContentSlice.closed([rootOwner('body:1')]), { at });
+});
+// result is false and the document is unchanged
+```
+
 ## Main changes
 
 - `packages/plitejs/src/core/public-state.ts` owns the update: one publish, the synchronous-author guard, the guarded `tx` groups and the command frame. The guard answers whether each plugin member came from the update group, and the command frame keeps a callable method's members.
@@ -129,6 +181,9 @@ export type BlockUpsertOptions = Exclude<BlockInsertOptions, { at: Path }> & {
 - `insertBlocks` in `packages/plitejs/src/core/public-state.ts` reads the key of each landed top-level block from its slot, in the landing root, before it removes an empty source, and returns them. A landing that wrote nothing returns `undefined`.
 - AI chat's insert below selects the returned keys, and its insert after a block ends the caret at the last returned key.
 - Media's `insertUrl` captures the key of the block it resolves before the URL wait, checks that key is still live, and passes the caller's options through whole, so a target in another root works and a conflicting placement throws once its block resolves.
+- In a schema with `unknown: 'reject'`, commit drops a shared content root with its last owner, as it already drops an exclusive one (`getOrphanedElementOwnedRoots` in `packages/plitejs/src/core/editor-schema.ts`). An open schema keeps it.
+- `finalizeWithoutOrphanedRoots` in `public-state.ts` repeats its orphan pass until none drops, so roots owned inside a dropped root go too, and each deleted root gets a fresh empty owner index.
+- A raw `tx.slice.replace` whose content names a content root takes the checked spec path that carried roots already take (`writeSliceAtRange`, `namesContentRoot` in `content-slice-roots.ts`), so it returns false where commit would have thrown.
 
 ## What other editors do
 
@@ -143,6 +198,16 @@ This page's 2026-10-13 review read the Lexical (`dd5c41b13`), Slate (`945a484df`
 | Plite | `txOnly` brands the type, and every direct call refuses it at runtime | Each command or method declares where its locations land on the review tree's proposed document |
 
 The 2026-10-15 placement review read the same Slate, Lexical, ProseMirror and Tiptap checkouts. None takes more than one placement for an insert, and none returns a coordinate that is wrong outside one tree. Lexical's insert hands back the inserted node, the closest model to Plite's returned keys.
+
+The 2026-10-16 spec key review read the Lexical (`dd5c41b13`), Slate (`945a484df`), ProseMirror (`prosemirror-state` `ffad5d9`, `prosemirror-transform` `662b7a9`) and Tiptap (`91c51be53`) checkouts and ran none of them. None has a pure transaction builder that hands out node identity, because none but Lexical has a live node identity at all.
+
+| Editor | Node identity | Built ahead of time, then applied |
+| --- | --- | --- |
+| Lexical | `getKey()` on every node, stable across the writable copies an update makes (`packages/lexical/src/LexicalNode.ts:1008`) | No; an update runs against the live state |
+| ProseMirror | None; positions, remapped through `tr.mapping` | A `Transaction` is a `Transform` built off a state and dispatched later (`prosemirror-state` `src/transaction.ts:42`) |
+| Slate | None; paths | No |
+| Tiptap | None; ProseMirror positions | Commands build on ProseMirror's `Transaction` |
+| Plite | `NodeKey` through `editor.key`, `state.key`, an update's `tx.key` and a spec builder's `tx.key` | A `TransactionSpec`, whose builder reads draft keys |
 
 ## Open work
 
@@ -170,4 +235,11 @@ The 2026-10-15 placement review read the same Slate, Lexical, ProseMirror and Ti
 - Media's `insertUrl` rejects a conflicting placement only after the URL dialog, because checking first would copy Plite's placement rules. owner: the owner. stop: Plite exports its placement check.
 - The no-placement check repeats in `applyBlockInsertion`, table, Media, code block and the generated insert. owner: the owner. stop: a refactor of `applyBlockInsertion`.
 - The registry JSON under `apps/www/public/r/` still shows the old insert docs and `TableInsertPlacement`. owner: the owner. stop: the checkout's next `build:registry` or `pnpm check`.
+- A checked slice write, a paste or a raw `tx.slice.replace` naming a root, drops a root whose owner it covers at its own step, so a later step in the same update that puts that owner back throws at commit. owner: the owner, through suggested task `t_2fb99e63`. stop: that task lands or is dropped.
+- A closed schema now drops a shared root with its last owner, so a collaborator who still shows that root loses it on merge, as an exclusive root already does. No collaboration test covers it. owner: zbeyens. stop: the next Yjs content-root review.
+- The root-name check that raw slice writes run has no cost verdict. Two paired runs were inconclusive on a host above load 36, and the large cohort scored 1.123 against a line of 1.10 with same-code noise of 0.199. owner: zbeyens. stop: a run of `docs/plans/artifacts/2026-10-16-raw-root-writes/probes/raw-slice-cost.config.json` on a host under load 36, after its base, same and planted worktrees are recreated as `build/plant.mjs` and the config's paths say; a conclusive miss moves the check behind the schema's own root-type set.
 - The platejs test partitions, the plitejs typecheck and the public types smoke fail at base. owner: the owner, through suggested task `t_54844d26`. stop: that task lands. The package build fails at base on a plitejs JSDoc that names Plite. owner: the owner, through suggested task `t_1436558e`. stop: that task lands.
+- The Vision's promise that acceptance adopts a prepared key holds only when the draft is adopted, and replay may re-derive keys; this change lets every Plite spec author read those keys. Keys read inside `createEditor`'s internal `initialize` builder never survive, because the editor re-keys that document; only `plitejs/internal` exports it, and Plate's one caller ignores its `tx`. owner: the owner, through suggested task `t_3041aa10`, which this run folds the finding into. stop: that task lands or is dropped.
+- Plate types the `tx` of its commands and input rules as an update transaction, though they run on spec drafts, so those types promise `command` and `txOnly` controls the runtime withholds. owner: the owner, through suggested task `t_b75959c5`. stop: that task lands or is dropped.
+- `replaceBlocksAtSite` in `packages/plitejs/src/core/public-state.ts` receives the spec builder but reads keys through `getStateView(editor).key`, which `tx.key` can now replace. Suggested task `t_b78aada2`, started in another session, is moving that paste resolver code. owner: the owner. stop: `t_b78aada2` lands, then the next change to `replaceBlocksAtSite`.
+- Six `editor.read.key(...)` calls in Plite's contract tests fail the test typecheck, because `editor.read` leaves out `key` and `editor.key` is the direct reader. owner: the owner, through suggested task `t_d4703034`. stop: that task lands or is dropped.

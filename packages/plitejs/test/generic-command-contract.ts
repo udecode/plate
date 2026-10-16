@@ -4,6 +4,7 @@ import {
   txOnly,
   type Editor,
   type EditorTransactionSpecBuilder,
+  type NodeKey,
   type Value,
 } from 'plitejs';
 
@@ -93,6 +94,11 @@ definePlugin('special-handler', {
 
       return state.transaction((tx) => {
         tx.special.value();
+        const first: NodeKey | null = tx.key([0]);
+        // @ts-expect-error pure specs do not expose the plugins group
+        void tx.plugins;
+
+        void first;
       });
     }),
   ],

@@ -21,9 +21,9 @@ pstack calls these modes too. Where a pstack step files a tracked issue, a follo
 
 ## Sweep
 
-1. Run `chips --session <id>` and `chips stale`. The stale report lists each open task with its age, the paths it writes that were deleted since its offer or are missing, the commits on its paths since its offer, its closed PR waits and its card, the likeliest stale first.
+1. When the owner typed `/chips`, run `chips lead --session <id>` first, which makes this session the chips lead, as chips.md's Lead says; a quick sweep skips it. Then run `chips --session <id>` and `chips stale`. The stale report lists each open task with its age, the paths it writes that were deleted since its offer or are missing, the commits on its paths since its offer, its closed PR waits and its card, the likeliest stale first.
 2. Apply the pass the Do list shows, together with the run's own rows that chips.md's Sweep lists, in one `append --from <file>` batch:
-   - Withdrawal pass: call the dismiss tool on each card it names, then log the row the tool's report decides, as each item says.
+   - Withdrawal pass: call the dismiss tool on each card it names, then log the row the tool's report decides, as each item says. That includes each card this session withdraws because another session leads the chips.
    - Ledger pass: log each row it names.
    - Card pass: leave it to step 5.
    - Check items: look each session up with the session tool. Log `uncarded` with a card item's `card:` when the tool reports its session archived or gone. For a started task whose rows name no session, find it as the item says and log `started` with its `session:`. When the tool reports a started task's session archived, read its last report with the tool, then log `landed` when a commit holds the change or that report says the session delivered it, with `patch:` when it names one. When that report hands back a patch it never applied, land the patch as chips.md's Landing says and log `landed` with `patch:`. Log `dismissed stopped` only when that report hands back no patch and neither this checkout nor the session's own worktree holds an uncommitted edit on the task's paths. Otherwise, or when the tool cannot find the session, the task stays started, and step 6 says why.
@@ -50,7 +50,7 @@ pstack calls these modes too. Where a pstack step files a tracked issue, a follo
 2. Pick the row as chips.md's Offer says:
    - When the finding belongs to an offered task's question and that task holds no card, log a `folded` row on it with what the finding adds.
    - When it belongs to the question of a started task or of one that holds a card, offer a new task in that topic with `waits: task:<id>`. `chips` merges it into a carded task once the card is withdrawn.
-   - Otherwise offer a new task with an id from `chips id`, a plain imperative title, `(xhigh)` only where chips.md's Title rule gives it, and its `writes:`, `topic:`, `kind:`, `waits:` and `owns:`. Its `waits:` include `run:<plan>` for each active plan whose files it writes, as Sweep step 5 finds them. Reuse a topic the board lists when the finding answers its question. A new topic names one owner question, never an area.
+   - Otherwise offer a new task with an id from `chips id`, a plain imperative title, `(xhigh)` only where chips.md's Title rule gives it, and its `writes:`, `topic:`, `kind:`, `waits:`, `owns:` and `session:`, this session's id, so this session can card it at its close wherever the chips lead is. Its `waits:` include `run:<plan>` for each active plan whose files it writes, as Sweep step 5 finds them. Reuse a topic the board lists when the finding answers its question. A new topic names one owner question, never an area.
 3. Append it with `append <plans>/suggested-tasks.decisions.tsv chip "<id> <title>" "<finding>" "<tokens>" <result>`. When `append` refuses the row, its message names the route; follow it.
 4. Leave the card to the next sweep.
 

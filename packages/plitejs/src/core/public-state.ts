@@ -212,7 +212,10 @@ import { createEditorCommit } from './commit';
 import { isEditorContent } from './content';
 import { landTextWrite } from './content-landing';
 import { ContentSlice } from './content-slice';
-import { rewriteContentRootReferences } from './content-slice-roots';
+import {
+  namesContentRoot,
+  rewriteContentRootReferences,
+} from './content-slice-roots';
 import {
   type AdmittedDocument,
   admitEditorDocument,
@@ -3934,25 +3937,28 @@ const writeSliceAtRange = <V extends Value>(
       },
     });
 
-  if (options.rootsPrepared || !slice.roots) {
-    const fitted = fit();
-    const [landing] = landings;
+  if (
+    !options.rootsPrepared &&
+    (slice.roots || namesContentRoot(editor, slice.content))
+  ) {
+    const spec = createCheckedSliceSpec(editor, () => {
+      materializeContentSliceRoots(editor, slice);
 
-    if (fitted && landing) options.landed?.(landing);
+      return fit();
+    });
 
-    return fitted;
+    if (!spec) return false;
+    applyTransactionSpec(editor, spec);
+
+    return true;
   }
 
-  const spec = createCheckedSliceSpec(editor, () => {
-    materializeContentSliceRoots(editor, slice);
+  const fitted = fit();
+  const [landing] = landings;
 
-    return fit();
-  });
+  if (fitted && landing) options.landed?.(landing);
 
-  if (!spec) return false;
-  applyTransactionSpec(editor, spec);
-
-  return true;
+  return fitted;
 };
 
 const createCheckedSliceSpec = (
@@ -7709,7 +7715,7 @@ export const finalizeTransactionRepresentation = (editor: Editor) => {
   return step;
 };
 
-const reconcileExclusiveElementOwnedRoots = (editor: Editor) => {
+const dropOrphanedRootsOnce = (editor: Editor) => {
   const snapshot = getTransactionSnapshot(editor);
 
   if (!snapshot) return false;
@@ -7743,12 +7749,18 @@ const reconcileExclusiveElementOwnedRoots = (editor: Editor) => {
   return changed;
 };
 
+const dropOrphanedRoots = (editor: Editor) => {
+  let dropped = false;
+
+  while (dropOrphanedRootsOnce(editor)) dropped = true;
+
+  return dropped;
+};
+
 const finalizeWithoutOrphanedRoots = (editor: Editor) => {
-  reconcileExclusiveElementOwnedRoots(editor);
+  dropOrphanedRoots(editor);
   finalizeTransactionRepresentation(editor);
-  if (reconcileExclusiveElementOwnedRoots(editor)) {
-    finalizeTransactionRepresentation(editor);
-  }
+  if (dropOrphanedRoots(editor)) finalizeTransactionRepresentation(editor);
 };
 
 const finalizeTransactionSpecContext = (

@@ -1,0 +1,18 @@
+---
+id: 2026-10-16-code-on-sparse-block-selection
+date: 2026-10-16
+status: draft
+kind: fix
+summary: 'Show the Structure group in Turn into and offer Code for a block selection that skips blocks'
+change: { 'type': 'source', 'date': '2026-10-16', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-16-turn-into-toolbar-offer-code-block-selection-8dee4da4","kind":"fix","migrationNotes":[]} -->
+
+- **`turn-into-toolbar-button`**: Enable Code in the Turn into menu for a block selection that skips blocks. Each run of adjacent selected blocks becomes its own code block, and the blocks between them stay unchanged.
+
+<!-- entry: {"id":"2026-10-16-toolbar-show-checkbox-menu-groups","kind":"fix","migrationNotes":[]} -->
+
+- **`toolbar`**: Show a `ToolbarMenuGroup` whose items are all checkboxes, such as the Turn into menu's Structure group.

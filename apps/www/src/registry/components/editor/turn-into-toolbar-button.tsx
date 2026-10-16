@@ -234,7 +234,7 @@ const getStructuralState = (editor: Editor): StructuralState => {
         code.installed &&
         !codeMixed &&
         !holdsTitleAndMore &&
-        isContiguousSiblingRun(entries),
+        (selectedEntries.length > 0 || isContiguousSiblingRun(entries)),
     },
     columns: {
       active: columnActive,

@@ -87,6 +87,59 @@ describe('slice content roots', () => {
     );
   });
 
+  it('refuses a raw slice write that names an exclusive root another block owns', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [rootOwner('body:1'), paragraph('aa')],
+        roots: { 'body:1': [paragraph('Body')] },
+      },
+      plugins: [LandingSchema],
+    });
+    let result: boolean | undefined;
+
+    editor.update((tx) => {
+      result = tx.slice.replace(ContentSlice.closed([rootOwner('body:1')]), {
+        at: {
+          anchor: { offset: 0, path: [1, 0] },
+          focus: { offset: 2, path: [1, 0] },
+        },
+      });
+    });
+
+    assert.deepEqual(
+      [result, editor.read.value()],
+      [
+        false,
+        {
+          children: [rootOwner('body:1'), paragraph('aa')],
+          roots: { 'body:1': [paragraph('Body')] },
+        },
+      ]
+    );
+  });
+
+  it('refuses a raw slice write that names a root the document lacks', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('aa')],
+      plugins: [LandingSchema],
+    });
+    let result: boolean | undefined;
+
+    editor.update((tx) => {
+      result = tx.slice.replace(ContentSlice.closed([rootOwner('missing')]), {
+        at: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 2, path: [0, 0] },
+        },
+      });
+    });
+
+    assert.deepEqual(
+      [result, editor.read.value()],
+      [false, { children: [paragraph('aa')] }]
+    );
+  });
+
   it('drops an exclusive root an earlier step orphaned when a slice write lands', () => {
     const editor = createEditor({
       initialValue: {

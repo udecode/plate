@@ -8,6 +8,11 @@ import { capEffort } from './lead.mjs';
 import { landed, stateOf } from './status.mjs';
 
 export const LEDGER = 'suggested-tasks.decisions.tsv';
+// A ledger row with this phase names the session the owner last typed /chips
+// in, the one session that cards tasks other sessions offered.
+export const LEAD_PHASE = 'chips-lead';
+
+export const chipsLead = (lines) => lines.findLast((line) => line.split('\t')[1] === LEAD_PHASE)?.split('\t')[2] ?? null;
 
 const FROM = {
   started: ['offered', 'started'],
@@ -150,7 +155,7 @@ const mergeInto = (kept, task, tasks) => {
   if (needsJudgment(task)) kept.effort = 'xhigh';
 };
 
-export function recordRow(tasks, cells) {
+export function recordRow(tasks, cells, ts = null) {
   const row = parseRow(cells);
   if (!row) return;
   const task = tasks.get(row.id);
@@ -174,10 +179,12 @@ export function recordRow(tasks, cells) {
       owns: given.owns ?? [],
       card: given.card ?? null,
       session: given.card ? (given.session ?? null) : null,
+      offeredIn: given.session ?? null,
       startedIn: null,
       effort: null,
       fast: given.fast === 'yes',
       patch: null,
+      landedAt: null,
       reviewed: false,
       findings: [row.why],
       covers: [],
@@ -205,6 +212,7 @@ export function recordRow(tasks, cells) {
   if (row.move === 'landed') {
     task.status = 'landed';
     task.patch = given.patch ?? null;
+    task.landedAt = ts;
   }
   if (row.move === 'reviewed') task.reviewed = true;
   if (row.move === 'carded') {
@@ -241,7 +249,11 @@ export function recordRow(tasks, cells) {
 
 export function readTasks(lines) {
   const tasks = new Map();
-  for (const line of lines) if (line.trim()) recordRow(tasks, line.split('\t').slice(1));
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const [ts, ...cells] = line.split('\t');
+    recordRow(tasks, cells, ts);
+  }
   return tasks;
 }
 
@@ -324,7 +336,7 @@ export function chipRowProblems(cells, before, where) {
   return found;
 }
 
-export function newChipRowProblems(cells, before, where, git) {
+export function newChipRowProblems(cells, before, where, git, lead = null) {
   const [, decision, , evidence] = cells;
   const row = parseRow(cells);
   if (!row) return [];
@@ -369,8 +381,10 @@ export function newChipRowProblems(cells, before, where, git) {
   if (move === 'updated' && given.topic && own?.topic === null && given.waits === undefined) found.push(`${where}: ${id} has no topic yet, so this row migrates it; name its waits too, as waits: none when it has none`);
   if (move === 'landed' && given.patch && !existsSync(given.patch)) found.push(`${where}: patch: ${given.patch} does not exist; save the patch you applied there first, under the checkout's plans artifacts`);
   if (move === 'carded' && before.get(id)?.card) found.push(`${where}: ${id} already has card ${before.get(id).card}; log uncarded with card: ${before.get(id).card} once that card is withdrawn or its session has ended, then card it again`);
-  if (move === 'offered' && given.session && !given.card) found.push(`${where}: an offer names session: only beside card:, the card it records`);
   if (given.card && !given.session && ['carded', 'offered'].includes(move)) found.push(`${where}: a card names the session that holds it as "session: <id>", the id the runtime's session tool gives this session`);
+  if (move === 'carded' && lead && given.session && given.session !== lead && before.get(id)?.offeredIn !== given.session) {
+    found.push(`${where}: session ${lead} leads the chips, so only it or the session that offered ${id} cards it; withdraw this card, as chips.md's Limits says, and leave ${id} to session ${lead}`);
+  }
   if (own && ['uncarded', 'dismissed declined'].includes(move) && (given.card ?? null) !== own.card) {
     if (move === 'uncarded' && !own.card) found.push(`${where}: ${id} has no card to withdraw`);
     else if (!given.card) found.push(`${where}: ${id} holds card ${own.card}; name it as card: ${own.card}`);
@@ -456,7 +470,15 @@ export function gitMerges({ fetch = false, branch } = {}) {
       return paths;
     }
   };
-  return { merged, dirty, note };
+  const committedSince = (path, since) => {
+    if (!since) return false;
+    try {
+      return git('log', '-1', '--format=%h', `--since=${since}`, 'HEAD', '--', path)[0] !== '';
+    } catch {
+      return false;
+    }
+  };
+  return { merged, dirty, committedSince, note };
 }
 
 const cyclicEdges = (tasks) => {
@@ -485,13 +507,14 @@ const loopsBack = (from, origin, tasks, seen = new Set()) => {
 export const patchPaths = (text) => [...new Set([...text.matchAll(/^diff --git a\/(\S+) b\/(\S+)$/gmu)].flatMap((match) => [match[1], match[2]]))];
 
 // A new card session starts from the branch's last commit, so a task waiting on
-// a landed patch starts only once the checkout's copy of each patched path is
-// committed.
+// a landed patch starts only once each patched path is committed. A path still
+// dirty counts as committed when a commit after the landed row touched it,
+// because the dirt is a later task's edit on top of the landed work.
 function uncommitted(task, git) {
   if (!existsSync(task.patch)) return { text: `task:${task.id} landed, but its patch ${task.patch} is gone, so nothing shows its paths are committed`, stuck: true };
   const paths = patchPaths(readFileSync(task.patch, 'utf8'));
-  const dirty = git.dirty(paths);
-  return dirty.length ? { text: `task:${task.id} landed, waiting for a commit of ${dirty.join(', ')}` } : null;
+  const waiting = git.dirty(paths).filter((path) => !git.committedSince(path, task.landedAt));
+  return waiting.length ? { text: `task:${task.id} landed, waiting for a commit of ${waiting.join(', ')}` } : null;
 }
 
 function waitBlocker(wait, origin, tasks, git) {
@@ -585,7 +608,9 @@ export function startedOverlaps(tasks) {
   );
 }
 
-export function board(tasks, git, here = null) {
+// Before any session leads, every session cards; after, a session that does
+// not lead cards only the tasks it offered and withdraws its other cards.
+export function board(tasks, git, here = null, lead = null) {
   const open = [...tasks.values()].filter(isOpen).sort(byOrder);
   const started = open.filter((task) => task.status === 'started');
   const offered = open.filter((task) => task.status === 'offered');
@@ -635,9 +660,16 @@ export function board(tasks, git, here = null) {
         ? `check session ${task.startedIn}, which started ${task.id}: when the session tool reports it archived, log landed when a commit holds its change or its last report says it landed the change, with patch: when it names one; when that report hands back a patch it never applied, land that patch as chips brief's footer says and log landed with patch:; and log dismissed stopped when it hands back no patch and neither this checkout nor its worktree holds an uncommitted edit on its paths`
         : `find the session that started ${task.id} with the session tool, archived sessions included, as the one whose transcript opens with its card prompt, and log started with session: <its id>; when the search finds none, ${task.id} stays started`,
     }));
-  const withdrawals = waiting
-    .filter(({ task }) => task.card && !elsewhere(task))
-    .map(({ task, blockers }) => ({ kind: 'problem', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: ${blockers[0]}; ${withdrawn(task.card)} once it is withdrawn or its session has ended` }));
+  const leads = here === null || lead === null || lead === here;
+  const mayCard = (task) => leads || task.offeredIn === here;
+  const withdrawals = [
+    ...waiting
+      .filter(({ task }) => task.card && !elsewhere(task))
+      .map(({ task, blockers }) => ({ kind: 'problem', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: ${blockers[0]}; ${withdrawn(task.card)} once it is withdrawn or its session has ended` })),
+    ...ready
+      .filter((task) => task.card && !elsewhere(task) && !mayCard(task))
+      .map((task) => ({ kind: 'cede', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: session ${lead} leads the chips now; ${withdrawn(task.card)}, and session ${lead} cards it again` })),
+  ];
   const rows = [
     ...waiting.flatMap(({ task, stuck }) => stuck.map((blocker) => ({ kind: 'problem', ids: [task.id], text: `fix ${task.id}'s wait: ${blocker}; log updated with the waits it has now` }))),
     ...[...topics.values()]
@@ -650,8 +682,8 @@ export function board(tasks, git, here = null) {
   const owed = [...tasks.values()].filter((task) => task.status === 'landed' && fastOf(task) && !task.reviewed).sort(byOrder);
   rows.push(...reviewItems(tasks, owed));
   const merge = mergeItem(offered, tasks, git);
-  const cards = ready
-    .filter((task) => !task.card)
+  const cardable = ready.filter((task) => !task.card && mayCard(task));
+  const cards = cardable
     .map((task) => {
       const shared = sharesWith(task, open);
       const hint = shared.length ? `, starting with ${shared.join(', ')}, which ${shared.length === 1 ? 'writes' : 'write'} its paths` : '';
@@ -668,7 +700,7 @@ export function board(tasks, git, here = null) {
   ];
   const [pass, items] = passes.find(([, each]) => each.length > 0) ?? [null, []];
   const problem = [...withdrawals, ...rows].some((item) => item.kind === 'problem');
-  return { open, ready, started, waiting, unmigrated, lost, owed, topics: [...topics.values()], todo: [...items, ...checks, ...runs], pass, problem, here, note: git.note };
+  return { open, ready, cardable, started, waiting, unmigrated, lost, owed, topics: [...topics.values()], todo: [...items, ...checks, ...runs], pass, problem, here, lead, note: git.note };
 }
 
 // Fast work stays owed until a review task covers it, so a declined or
@@ -713,6 +745,9 @@ const line = (task, extra = '') => `  ${task.id}  ${displayTitle(task)}${task.to
 export function renderBoard(view, ledger, max = null) {
   if (view.open.length === 0 && view.lost.length === 0 && view.owed.length === 0) return `No open suggested tasks in ${ledger}.`;
   const out = [`${view.open.length} open suggested tasks in ${ledger}. ${view.note}`, 'A session a card started works from chips brief <its task id>, because its task can change after the card.'];
+  if (view.lead && view.lead === view.here) out.push('This session leads the chips, so it cards every task that can start.');
+  else if (view.lead && view.here) out.push(`Session ${view.lead} leads the chips, so this session cards only the tasks it offered and withdraws its cards on the rest.`);
+  else if (view.lead) out.push(`Session ${view.lead} leads the chips.`);
   const section = (title, rows) => {
     if (rows.length > 0) out.push('', `${title} (${rows.length})`, ...rows);
   };

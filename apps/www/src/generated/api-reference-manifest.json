@@ -4058,7 +4058,7 @@
           "name": "EditorTransactionSpecBuilder",
           "route": null,
           "runtime": false,
-          "signature": "type EditorTransactionSpecBuilder<V extends Value = Value, TPlugins extends readonly unknown[] = readonly []> = Omit<EditorCoreUpdateTransaction<V, EditorSelection>, 'plugins' | 'key'> & Readonly<{\n  plugin: EditorTransactionPluginPortal<V, PluginUpdateMethods<EditorInstalledTransactionGroups<V, TPlugins>>>;\n}> & PluginUpdateMethods<EditorInstalledTransactionGroups<V, TPlugins>> & EditorSelectionCapability<EditorSelection>;",
+          "signature": "type EditorTransactionSpecBuilder<V extends Value = Value, TPlugins extends readonly unknown[] = readonly []> = Omit<EditorCoreUpdateTransaction<V, EditorSelection>, 'plugins' | 'key'> & Readonly<{\n  /**\n   * Return the key for a node or location in this draft. A node the draft\n   * created carries a prepared key, which becomes its live key when the\n   * editor adopts this draft.\n   */\n  key: EditorKeyApi;\n  plugin: EditorTransactionPluginPortal<V, PluginUpdateMethods<EditorInstalledTransactionGroups<V, TPlugins>>>;\n}> & PluginUpdateMethods<EditorInstalledTransactionGroups<V, TPlugins>> & EditorSelectionCapability<EditorSelection>;",
           "source": null,
           "typeParameters": [
             "V extends Value = Value",

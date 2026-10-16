@@ -114,6 +114,8 @@ function reread(dir, files, { quiet = false } = {}) {
   });
 }
 
+const shellWord = (word) => (/^[\w./@:=+-]+$/u.test(word) ? word : `'${word.replaceAll("'", "'\\''")}'`);
+
 const args = process.argv.slice(2);
 if (args[0] === '--hook') {
   const { session_id: session, source, transcript_path: transcript } = JSON.parse(readFileSync(0, 'utf8') || '{}');
@@ -124,7 +126,8 @@ if (args[0] === '--hook') {
   // predates this compaction, even when its compact_boundary record lags.
   const skills = source === 'compact' && transcript ? loadedSkills(transcript) : [];
   const reload = skills.length > 0 ? [`reload: ${skills.join(', ')}. The compaction restored only the first 20,000 characters of these skills; as the Long runs rule says, reload through the Skill tool each one whose mode you are running before your next step.`] : [];
-  console.log([...reread(dir, args.slice(1), { quiet: freshContext }), ...reload, `Instruction snapshots: node .agents/pstack/reread.mjs --dir ${dir} <files> compares against them before each gate.`].join('\n'));
+  const command = args.length > 1 ? [`Instruction snapshots: run node .agents/pstack/reread.mjs --dir ${[dir, ...args.slice(1)].map(shellWord).join(' ')} before each gate to compare against them.`] : [];
+  console.log([...reread(dir, args.slice(1), { quiet: freshContext }), ...reload, ...command].join('\n'));
 } else if (args[0] === '--dir' && args[1] && args.length > 2) {
   console.log(reread(args[1], args.slice(2)).join('\n'));
 } else {

@@ -1835,6 +1835,12 @@ export type EditorTransactionSpecBuilder<
   TPlugins extends readonly unknown[] = readonly [],
 > = Omit<EditorCoreUpdateTransaction<V, EditorSelection>, 'plugins' | 'key'> &
   Readonly<{
+    /**
+     * Return the key for a node or location in this draft. A node the draft
+     * created carries a prepared key, which becomes its live key when the
+     * editor adopts this draft.
+     */
+    key: EditorKeyApi;
     plugin: EditorTransactionPluginPortal<
       V,
       PluginUpdateMethods<EditorInstalledTransactionGroups<V, TPlugins>>

@@ -3,6 +3,21 @@ import { ElementApi } from '../interfaces/element';
 import type { Descendant } from '../interfaces/node';
 import { getEditorSchema } from './editor-runtime';
 
+export const namesContentRoot = (
+  editor: Editor,
+  children: readonly Descendant[]
+): boolean => {
+  const schema = getEditorSchema(editor);
+  const visit = (nodes: readonly Descendant[]): boolean =>
+    nodes.some(
+      (node) =>
+        ElementApi.isElement(node) &&
+        (schema.getElementOwnedRoots(node).length > 0 || visit(node.children))
+    );
+
+  return schema.hasContentRoots() && visit(children);
+};
+
 export const rewriteContentRootReferences = (
   editor: Editor,
   children: readonly Descendant[],

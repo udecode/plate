@@ -24,6 +24,7 @@ const VALUE_FLAGS = new Map([
   ['--computer-use', 'events'],
   ['--chrome-profile', 'chromeProfile'],
   ['--prompt-file', 'promptFile'],
+  ['--prompt', 'prompt'],
 ]);
 
 // Each child runs in its own process group, which outlives this process, so
@@ -52,7 +53,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900,
   const managed = runtime === 'codex' && !bypass && !reach && managedCodexConfig();
   if (managed) return { runtime, ok: false, text: `${managed} would still load over the command line; refusing to run` };
   const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : reach ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : cwd;
-  if (reach) prompt = `Your working directory is a scratch folder you may write. The project is ${cwd}: read it by absolute path and never write it.\n\n${prompt}`;
+  if (reach) prompt = `Your working directory is a scratch folder you may write. The project is ${cwd}: read it by absolute path and never write it.\n\n${prompt}\n\nPut your whole answer in your final message. Nobody reads the files you write in the scratch folder.`;
   let launch = { args: bypass ? [] : reach ? [...NO_EXEC_RULES, '--skip-git-repo-check', '-c', 'web_search="live"'] : userConfig ? NO_EXEC_RULES : ISOLATED_CODEX_ARGS };
   if (computerUse) {
     launch = await browserLaunch({ cwd: runCwd, chromeProfile: computerUse.chromeProfile });
@@ -132,12 +133,13 @@ async function main(argv) {
   let reach = false;
   let help = false;
   let refusal;
-  let prompt = '';
+  const positional = [];
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     const key = VALUE_FLAGS.get(arg);
     const next = argv[index + 1];
-    if (key && next !== undefined && !DASHED_WORD.test(next)) values[key] = argv[++index];
+    if (key && key in values) refusal ??= `${arg} given twice`;
+    else if (key && next !== undefined && !DASHED_WORD.test(next)) values[key] = argv[++index];
     else if (key) refusal ??= `${arg} needs a value`;
     else if (['--write', '--events', '--resume'].includes(arg)) retired = arg;
     else if (arg === '--ignore-user-config') isolated = true;
@@ -145,11 +147,13 @@ async function main(argv) {
     else if (arg === '--reach') reach = true;
     else if (arg === '--help' || arg === '-h') help = true;
     else if (DASHED_WORD.test(arg)) refusal ??= `unknown flag ${arg}`;
-    else prompt = arg;
+    else positional.push(arg);
   }
   const { to = otherRuntime(), model, effort, events, chromeProfile, promptFile } = values;
+  const sources = [...positional, values.prompt, promptFile].filter((source) => source !== undefined);
+  let prompt = sources[0] ?? '';
   const timeout = Number(values.timeout ?? 900);
-  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] [--reach | --bypass | --computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | <prompt>)';
+  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] [--reach | --bypass | --computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
   if (help) {
     console.info(usage);
     return 0;
@@ -173,6 +177,10 @@ async function main(argv) {
   }
   if (isolated && events) {
     console.error(`--ignore-user-config and --computer-use conflict\n${usage}`);
+    return 2;
+  }
+  if (sources.length > 1) {
+    console.error(`give one prompt: a positional prompt, --prompt or --prompt-file\n${usage}`);
     return 2;
   }
   if (promptFile) prompt = readFileSync(promptFile, 'utf8');

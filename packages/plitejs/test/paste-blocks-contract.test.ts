@@ -378,38 +378,26 @@ describe('paste over selected blocks', () => {
     assert.deepEqual([result, after], [false, before]);
   });
 
-  it('refuses a paste over the only owner of a shared root', () => {
-    const { after, before, result } = pasteOutcome(
-      createEditor({
-        initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
-        initialValue: {
-          children: [rootOwner('body:1'), paragraph('aa')],
-          roots: { 'body:1': [paragraph('Body')] },
-        },
-        plugins: [SharedPortalSchema],
-      }),
-      ContentSlice.closed([paragraph('x')])
-    );
-
-    assert.deepEqual([result, after], [false, before]);
-  });
-
-  it('drops the exclusive root of the only owner a paste replaces', () => {
-    const editor = createEditor({
-      initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
-      initialValue: {
-        children: [rootOwner('body:1'), paragraph('aa')],
-        roots: { 'body:1': [paragraph('Body')] },
-      },
-      plugins: [LandingSchema],
-    });
+  it('drops the root of the only owner a paste replaces in a closed schema', () => {
+    const landed = [true, { children: [paragraph('x'), paragraph('aa')] }];
 
     assert.deepEqual(
-      [
-        editor.update.slice.replace(ContentSlice.closed([paragraph('x')])),
-        editor.read.value(),
-      ],
-      [true, { children: [paragraph('x'), paragraph('aa')] }]
+      [SharedPortalSchema, LandingSchema].map((plugin) => {
+        const editor = createEditor({
+          initialSelection: SelectionApi.nodes([[0]], { mode: 'block' }),
+          initialValue: {
+            children: [rootOwner('body:1'), paragraph('aa')],
+            roots: { 'body:1': [paragraph('Body')] },
+          },
+          plugins: [plugin],
+        });
+
+        return [
+          editor.update.slice.replace(ContentSlice.closed([paragraph('x')])),
+          editor.read.value(),
+        ];
+      }),
+      [landed, landed]
     );
   });
 

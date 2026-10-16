@@ -207,3 +207,19 @@ for (const item of [
     }
   });
 }
+
+test('playground: show the Structure group in the Turn into menu', async ({
+  page,
+}) => {
+  await page.goto('/blocks/playground');
+  await editorRoot(page)
+    .locator('[data-editor-string]', { hasText: 'Rich Content Editing' })
+    .click();
+  await page
+    .getByRole('button', { name: /^Turn into:/ })
+    .first()
+    .click();
+  await expect(
+    page.getByRole('menuitemcheckbox', { name: 'Code', exact: true })
+  ).toBeVisible();
+});

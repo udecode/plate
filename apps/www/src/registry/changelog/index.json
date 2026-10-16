@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-16-code-on-sparse-block-selection",
+      "href": "/registry/changelog/2026-10-16-code-on-sparse-block-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show the Structure group in Turn into and offer Code for a block selection that skips blocks",
+      "change": {
+        "type": "source",
+        "date": "2026-10-16",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["turn-into-toolbar-button", "toolbar"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-15-inline-combobox-hide-on-close",
       "href": "/registry/changelog/2026-10-15-inline-combobox-hide-on-close.json",
       "status": "draft",

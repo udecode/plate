@@ -393,13 +393,6 @@ describe('turn into menu behavior', () => {
     expect(
       (
         view.getByRole('menuitemcheckbox', {
-          name: 'Code',
-        }) as HTMLButtonElement
-      ).disabled
-    ).toBe(true);
-    expect(
-      (
-        view.getByRole('menuitemcheckbox', {
           name: '3 columns',
         }) as HTMLButtonElement
       ).disabled
@@ -425,6 +418,19 @@ describe('turn into menu behavior', () => {
       currentEditor.api.history.undo();
     });
     expect(currentEditor.read.children()).toEqual(before);
+  });
+
+  it('codes each block of a sparse block selection and leaves the block between them', async () => {
+    const middle = currentEditor.read.children()[1];
+    const view = await renderTurnInto();
+
+    fireEvent.click(view.getByRole('menuitemcheckbox', { name: 'Code' }));
+
+    expect(currentEditor.read.children()).toMatchObject([
+      { children: [{ text: 'one' }], type: 'codeBlock' },
+      middle,
+      { children: [{ text: 'three' }], type: 'codeBlock' },
+    ]);
   });
 
   it('uses the schema reset for exact list-to-text conversion', async () => {
