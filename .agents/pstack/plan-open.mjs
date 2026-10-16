@@ -12,19 +12,20 @@
 // A closed box fails when it cites a run-directory file whose latest partial, open,
 // gap, blocked or inconclusive row in the plan's decision log (proof: <path>) has no
 // later fixed, proven or verified row, unless the latest accepted row after it names
-// a word: that the plan's Defaults still offers. A decision log that does not parse fails.
+// a word: that the plan's Defaults still offers. A closed box that says pre-acceptance
+// on its line or a line indented under it, outside code spans, link targets and paths,
+// gets no such exception. A decision log that does not parse fails.
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { committedLines, defaultsWords, isAcceptingWord, landed, proofKey, proofStates, recordsExit, runPaths } from './status.mjs';
+import { CLOSED_BOX, committedLines, defaultsWords, isAcceptingWord, landed, markdownLines, OPEN_BOX, proofKey, proofStates, recordsExit, runPaths } from './status.mjs';
 
-const OPEN_BOX = /^\s*(?:(?:[-*+]|\d+\.)\s+)+\[ \]/u;
-const CLOSED_BOX = /^\s*(?:(?:[-*+]|\d+\.)\s+)+\[[xX]\]/u;
 const ITEM = /^\s*(?:[-*+]|\d+\.)\s+/u;
 const PLACEHOLDER = /\b(?:TODO|TBD|FIXME)\b/u;
 const FINDINGS = /^#{1,6}\s+.*\b(?:deferred|open (?:items|findings|questions|work)|follow-?ups?|known gaps|gaps|residual)\b/iu;
 // A path or command in backticks, a link, a URL, a commit or an explicit skip.
 const ARTIFACT = /`[^`]*[/.\s][^`]*`|\]\([^)]+\)|https?:\/\/|\b[0-9a-f]{7,40}\b|\bskip:/u;
+const PRE_ACCEPTANCE = /\bpre-acceptance\b/iu;
 const GATES = /^(?:#{1,6}\s+)?(?:Start|Completion) Gates:?$/iu;
 const UNRESOLVED = /^(?:|pending|tbd|todo|\{\{.*\}\})$/iu;
 const cells = (row) => row.trim().replace(/^\||\|$/gu, '').split('|').map((cell) => cell.trim());
@@ -55,10 +56,21 @@ function proofsOf(log, found) {
   return proofStates(rows.slice(1).map((row) => row.split('\t')), plansDir());
 }
 
+const proseOf = (text) =>
+  text
+    .replace(/`[^`]*`|\]\([^)]*\)/gu, ' ')
+    .replace(/[*_]/gu, '')
+    .split(/\s+/u)
+    .filter((token) => !token.includes('/'))
+    .join(' ');
+
 function notPassedCitations(text, states, words) {
+  const probe = PRE_ACCEPTANCE.test(proseOf(text));
   return runPaths(text, plansDir()).flatMap((cited) => {
     const state = states.get(proofKey(cited));
-    if (!state || state.passed || isAcceptingWord(state.word, words)) return [];
+    if (!state || state.passed) return [];
+    if (probe) return [`cites ${cited}, whose latest labeled verdict is not passed, and a pre-acceptance probe stays open until it passes: rerun the proof, move a context citation to the decision log, or reopen the box and leave the decision open with its next probe named; a final rerun names the probe by its step instead`];
+    if (isAcceptingWord(state.word, words)) return [];
     return [`cites ${cited}, whose latest labeled verdict is not passed: rerun the proof, log an accepted row with its proof: and a Defaults word:, or move a context citation to the decision log`];
   });
 }
@@ -79,31 +91,15 @@ function openLines(path) {
     }
     closedBox = null;
   };
-  let fenced = false;
-  let commented = false;
   let findings = false;
   let findingsLevel = 0;
   let gate = null;
-  for (const [index, raw] of text.split('\n').entries()) {
-    if (/^\s*(?:```|~~~)/u.test(raw)) {
+  for (const { fence, hidden, index, line, raw } of markdownLines(text)) {
+    if (fence) {
       checkClosedBox();
-      fenced = !fenced;
       continue;
     }
-    if (fenced) continue;
-    let line = raw;
-    if (commented) {
-      const end = line.indexOf('-->');
-      if (end === -1) continue;
-      commented = false;
-      line = line.slice(end + 3);
-    }
-    line = line.replace(/<!--.*?-->/gu, '');
-    const start = line.indexOf('<!--');
-    if (start !== -1) {
-      commented = true;
-      line = line.slice(0, start);
-    }
+    if (hidden) continue;
     if (closedBox && line.trim() && raw.search(/\S/u) > closedBox.indent && !OPEN_BOX.test(line) && !CLOSED_BOX.test(line)) {
       closedBox.text += ` ${line.trim()}`;
       if (!committed.has(raw)) closedBox.fresh += ` ${line.trim()}`;

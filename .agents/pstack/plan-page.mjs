@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
 // Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check]
+//        node .agents/pstack/plan-page.mjs <plan.md> --pr [--into <body.md>]
+//        node .agents/pstack/plan-page.mjs <plan.md> --comment <author sha> [--into <comment.md>] [--against <description.md>]
 //        node .agents/pstack/plan-page.mjs --index
 
 import { execFileSync } from 'node:child_process';
@@ -203,6 +205,7 @@ const ROLES = [
   [/^main changes$/i, 'main'],
   [/^defaults$/i, 'picked'],
   [/^teach$/i, 'teach'],
+  [/^on top of the pr$/i, 'ontop'],
   [/^close$/i, 'close'],
   [/^(scope|steps|evidence|proof|claims|asks|verification|notes|panel gate)$/i, 'details'],
 ];
@@ -236,6 +239,7 @@ function pageConfig(root) {
             lead: listOf(meta, 'page-lead'),
             pairs: listOf(meta, 'page-pairs'),
             require: listOf(meta, 'page-require'),
+            pr: listOf(meta, 'page-pr'),
           };
         })
     : [];
@@ -255,10 +259,15 @@ function pageSections(playbooks, name, where) {
   }
   const union = (key, list) => [...new Set(list.flatMap((entry) => entry[key]))];
   const lower = (list) => list.map((title) => title.toLowerCase());
+  for (const entry of playbooks) {
+    const stray = entry.pr.find((title) => !lower(entry.lead).includes(title.toLowerCase()));
+    if (stray) throw new Error(`.agents/playbooks/${entry.name}.md lists ${stray} on its page-pr line; the PR body shows only page-lead sections, so add it to page-lead or drop it`);
+  }
   return {
     lead: lower(union('lead', named ? [named, ...playbooks.filter((entry) => entry !== named)] : playbooks)),
     pairs: ['public api', ...lower(union('pairs', playbooks))],
     require: named ? named.require : union('require', playbooks),
+    pr: lower(named ? named.pr : union('pr', playbooks)),
   };
 }
 
@@ -664,9 +673,15 @@ function picksHtml(lines) {
     for (index += 2; index < lines.length && /^\s*\|/.test(lines[index]); index += 1) rows.push(splitRow(lines[index]));
     const list = (group) =>
       `<ul class="picks">${group
-        .map(([decision = '', pick = '', alternative = '', word = '']) =>
-          `<li><strong>${inline(clause(decision))}.</strong> ${inline(clause(pick))}. <span class="alt">Other option: ${inline(clause(alternative))}. Say <code>${escapeHtml(word.replace(/`/g, '').trim())}</code> to switch.</span></li>`
-        )
+        .map(([decision = '', pick = '', alternative = '', word = '']) => {
+          const say = word.replace(/`/g, '').trim();
+          const alts = alternative
+            .split(';')
+            .map(clause)
+            .filter(Boolean)
+            .map((option, index) => `<li class="alt">${inline(option)} (alt)${index === 0 && say ? ` · say <code>${escapeHtml(say)}</code>` : ''}</li>`);
+          return `<li>${inline(clause(decision))}<ul><li><strong>${inline(clause(pick))}</strong></li>${alts.join('')}</ul></li>`;
+        })
         .join('')}</ul>`;
     const impact = impactColumn(head);
     if (impact < 0) {
@@ -736,6 +751,9 @@ function assertDemo(plan, where) {
 function inlineShotHtml(label, path, base) {
   const file = resolve(base, path);
   const caption = label ? label[0].toUpperCase() + label.slice(1) : '';
+  if (/^https?:\/\//.test(path)) {
+    return `<figure class="shot missing"><figcaption>${escapeHtml(caption ? `${caption}: ` : '')}<a href="${escapeHtml(path)}">${escapeHtml(path)}</a></figcaption></figure>`;
+  }
   const type = SHOT_TYPES[extname(file).toLowerCase()];
   if (!type || !existsSync(file)) {
     return `<figure class="shot missing"><figcaption>${escapeHtml(caption ? `${caption}: ` : '')}<code>${escapeHtml(path)}</code> ${type ? 'is not on this machine' : 'is not an image'}</figcaption></figure>`;
@@ -1054,27 +1072,62 @@ function statusHtml(status, limit = Infinity) {
 
 const modelHue = (name) => (/opus|claude|sonnet|haiku|fable/i.test(name) ? 'orange' : /astra/i.test(name) ? 'teal' : /sol\b/i.test(name) ? 'cyan' : /gpt|codex/i.test(name) ? 'blue' : 'indigo');
 
+// Rows written before the seats format wrap the model in labels and notes, so a seat's name is the first word left once they go.
+const seatName = (seat) =>
+  seat
+    .replace(/\([^)]*\)?/g, '')
+    .replace(/@\w+/, '')
+    .replace(/\bmissing\b/i, '')
+    .replace(/^.*:\s+/, '')
+    .replace(/^codex:/i, '')
+    .trim()
+    .split(/\s+/)[0];
+
+const seatList = (seats) =>
+  seats
+    .split(/,\s*(?![^(]*\))/)
+    .map((seat) => ({ name: seatName(seat), effort: seat.match(/@(\w+)/)?.[1] ?? '', missing: /\bmissing\b/i.test(seat) }))
+    .filter((seat) => seat.name);
+
+const seatChip = ({ name, effort, missing }, count = 1) =>
+  `<span class="seat hue-${modelHue(name)}${missing ? ' missing' : ''}">${escapeHtml(name)}${effort ? ` <span class="effort">${escapeHtml(effort)}</span>` : ''}${missing ? ' <span class="effort">missing</span>' : ''}${count > 1 ? ` <span class="effort">×${count}</span>` : ''}</span>`;
+
 function seatsHtml(seats) {
-  return `<span class="seats">${seats
-    .split(/,\s*/)
-    .filter(Boolean)
-    .map((seat) => {
-      const missing = /\bmissing\b/i.test(seat);
-      const effort = seat.match(/@(\w+)/)?.[1];
-      const name = seat.replace(/@\w+/, '').replace(/\bmissing\b/i, '').replace(/^codex:/i, '').trim();
-      return `<span class="seat hue-${modelHue(name)}${missing ? ' missing' : ''}">${escapeHtml(name)}${effort ? ` <span class="effort">${escapeHtml(effort)}</span>` : ''}${missing ? ' <span class="effort">missing</span>' : ''}</span>`;
-    })
+  return `<span class="seats">${seatList(seats)
+    .map((seat) => seatChip(seat))
     .join('')}</span>`;
 }
 
-const roundTagHtml = (round, seats, suffix = '') => `<span class="round-tag"><span class="badge hue-indigo">Review round ${round}</span>${suffix}${seats ? seatsHtml(seats) : ''}</span>`;
-
-// Each lead row names the model and effort the session that wrote the rows after it ran at.
-function leadTagHtml(planPath) {
-  const leads = logRowsOf(planPath).flatMap((row) => (row.phase === 'lead' ? [row.decision] : []));
-  const runs = leads.filter((label, index) => label !== leads[index - 1]);
-  return runs.length ? `<span class="round-tag"><span class="badge hue-grey">Lead</span>${seatsHtml(runs.join(', '))}</span>` : '';
+// Each panel round counts toward the lead whose row precedes it in the log, so a rerun shows which session reviewed what.
+function leadSeats(entries) {
+  const byLead = new Map();
+  for (const entry of entries) {
+    let lead = '';
+    for (const row of logRowsOf(entry.path)) {
+      if (row.phase === 'lead') lead = row.decision;
+      if (!byLead.has(lead)) byLead.set(lead, new Map());
+      if (row.phase !== 'panel' || !SEATS.test(row.decision)) continue;
+      const seats = byLead.get(lead);
+      for (const seat of seatList(row.decision.replace(SEATS, ''))) {
+        const key = `${seat.name}@${seat.effort}${seat.missing ? ' missing' : ''}`;
+        seats.set(key, { seat, count: (seats.get(key)?.count ?? 0) + 1 });
+      }
+    }
+  }
+  return [...byLead]
+    .filter(([lead, seats]) => lead || seats.size)
+    .map(([lead, seats]) => ({ lead: lead ? seatList(lead)[0] : null, seats: [...seats.values()] }));
 }
+
+const leadSeatsHtml = (entries) =>
+  leadSeats(entries)
+    .map(
+      ({ lead, seats }) =>
+        `${lead ? `<span class="round-tag"><span class="badge hue-grey">Lead</span><span class="seats">${seatChip(lead)}</span></span>` : ''}${seats.length ? `<span class="round-tag"><span class="badge hue-indigo">Reviews</span><span class="seats">${seats.map(({ seat, count }) => seatChip(seat, count)).join('')}</span></span>` : ''}`
+    )
+    .join('');
+
+const roundTagHtml = (round, seats, suffix = '') => `<span class="round-tag"><span class="badge hue-indigo">Review round ${round}</span>${suffix}${seats ? seatsHtml(seats) : ''}</span>`;
 
 const SEVERITY_HUES = { critical: 'red', warning: 'amber', nit: 'blue' };
 const RESULT_HUES = { accepted: 'green', applied: 'green', fixed: 'green', verified: 'green', proven: 'green', kept: 'green', dismissed: 'grey', skipped: 'grey', superseded: 'grey', recorded: 'teal', decided: 'teal', corrected: 'teal', reverted: 'pink', deferred: 'amber', partial: 'amber', inconclusive: 'amber', open: 'red', gap: 'red', blocked: 'red' };
@@ -1167,7 +1220,33 @@ function flowRailHtml(stages) {
     .join('<li class="arrow" aria-hidden="true">→</li>')}</ol>`;
 }
 
-const flowHtml = (entry, status, playbooks) => `<div class="flow">${flowRailHtml(flowOf(entry, status, playbooks))}</div>`;
+// A plan that lists the plans it carries shows their work on its own rail: a stage ran when any of them ran it.
+function mergedFlow(entries, status, playbooks) {
+  const [leader, ...carried] = entries;
+  const base = flowOf(leader, status, playbooks);
+  if (!carried.length) return base;
+  const flows = carried.map((entry) => flowOf(entry, entry.plan.meta.status ?? 'unknown', playbooks));
+  const steps = entries.flatMap((entry) => stepChecks(entry.plan));
+  return base.map((stage) => {
+    const same = [stage, ...flows.flatMap((flow) => flow.filter((other) => other.label === stage.label))];
+    const ran = same.some((other) => other.ran);
+    return {
+      ...stage,
+      ran,
+      state: ran ? 'done' : stage.state,
+      tools: [...new Set(same.flatMap((other) => other.tools ?? []))],
+      rounds: same.reduce((sum, other) => sum + (other.rounds ?? 0), 0),
+      meta: stage.label === 'Build' && steps.length ? `${steps.filter(Boolean).length}/${steps.length}` : stage.meta,
+    };
+  });
+}
+
+function carriedPlans(entry, root) {
+  const paths = listOf(entry.plan.meta, 'plans').map((path) => resolve(dirname(entry.path), path));
+  const absent = paths.find((path) => !existsSync(path));
+  if (absent) throw new Error(`${relative(root, entry.path)} lists ${relative(root, absent)} on its Plans: line, but that plan does not exist`);
+  return paths.map((path) => ({ path, plan: parsePlan(readFileSync(path, 'utf-8')) }));
+}
 
 function askHtml(ask, index) {
   const style = `--c: var(--c-${ATTENTION[levelOf(ask)][1]})`;
@@ -1262,7 +1341,7 @@ function parsePlan(source) {
   const lead = [];
   const sections = [];
   for (const line of lines) {
-    const field = line.match(/^(Status|Page|Topic|Playbook):\s*(.*)$/);
+    const field = line.match(/^(Status|Page|Topic|Playbook|Plans):\s*(.*)$/);
     if (field && sections.length === 0) {
       meta[field[1].toLowerCase()] = field[2].trim();
       fields[field[1].toLowerCase()] = field[2].trim();
@@ -1334,12 +1413,14 @@ function rail(planPath) {
   const { root, repoPath, playbooks, doc, leader } = leadOf(planPath);
   const status = leader.plan.meta.status ?? 'unknown';
   let reason = null;
+  let entries = [leader];
   try {
     page(planPath);
+    entries = [leader, ...carriedPlans(leader, root)];
   } catch (error) {
     reason = error.message;
   }
-  const steps = stepChecks(leader.plan);
+  const steps = entries.flatMap((entry) => stepChecks(entry.plan));
   return {
     requestedPlan: repoPath,
     leadingPlan: relative(root, leader.path),
@@ -1348,7 +1429,7 @@ function rail(planPath) {
     valid: !reason,
     ...(reason ? { reason } : {}),
     steps: { checked: steps.filter(Boolean).length, total: steps.length },
-    stages: flowOf(leader, status, playbooks).map(({ label, state, meta, tools, rounds }) => ({
+    stages: mergedFlow(entries, status, playbooks).map(({ label, state, meta, tools, rounds }) => ({
       label,
       state,
       ...(meta ? { meta } : {}),
@@ -1357,6 +1438,11 @@ function rail(planPath) {
     })),
   };
 }
+
+// One section order for a page with a brief and for the PR body; each output renders a part its own way or leaves it out.
+const BRIEF_ORDER = ['teach', 'ontop', 'demo', 'moved', 'needs', 'picked', 'api', 'lead', 'main', 'idea', 'verification', 'scope', 'plans'];
+const isOpenWork = (section) => sameText(section.title) === 'open work';
+const isVerification = (section) => sameText(section.title) === 'verification';
 
 function page(planPath, { folded = false } = {}) {
   const { plan, root, repoPath, playbooks, topic, plansDir, subject, subjectPath, doc, iterations, newestOpenIteration, leader, missingSubject } = leadOf(planPath);
@@ -1473,11 +1559,10 @@ function page(planPath, { folded = false } = {}) {
   const paneled = reviewed.filter(({ rounds }) => rounds.some((entry) => entry.kind === 'panel'));
   const tagged = paneled.find(({ entry }) => entry.path === leader.path) ?? paneled[0];
   const latest = tagged?.rounds.findLast((entry) => entry.kind === 'panel');
-  const taggedTitle = doc !== plan && tagged && tagged.entry.path !== leader.path ? ` for ${inline(tagged.entry.plan.title || basename(tagged.entry.path, '.md'))}` : '';
-  const reviewTag = latest
-    ? roundTagHtml(latest.round, latest.seats, taggedTitle)
+  // The header's seats cover the leading plan, so only a round on another iteration keeps its own tag.
+  const reviewTag = latest && tagged.entry.path !== leader.path
+    ? roundTagHtml(latest.round, latest.seats, ` for ${inline(tagged.entry.plan.title || basename(tagged.entry.path, '.md'))}`)
     : '';
-  const leadTag = leadTagHtml(leader.path);
   const roundsHtml = (rounds, heading) =>
     rounds
       .map(
@@ -1502,14 +1587,18 @@ function page(planPath, { folded = false } = {}) {
     .slice(0, 16)
     .replace('T', ' ');
   const shownStatus = leader.plan.meta.status ?? status;
+  const carried = carriedPlans(leader, root);
+  const entries = [leader, ...carried];
+  const headerFlow = `<div class="flow">${flowRailHtml(mergedFlow(entries, shownStatus, playbooks))}</div>`;
+  const carriedTag = carried.length
+    ? `<span>Plans ${carried.map((entry) => `<strong>${inline(entry.plan.title || basename(entry.path, '.md'))}</strong>`).join(', ')}</span>`
+    : '';
   const sentence = shownStatus.trim();
   const statusLine = sentence ? `<p class="status-line">${inline(sentence[0].toUpperCase() + sentence.slice(1))}</p>` : '';
   const title = escapeHtml(doc.title || basename(planPath, '.md'));
   const where = subjectPath ? relative(root, subjectPath) : repoPath;
   const brief = briefOf(leader.plan);
   const briefMain = () => {
-    const round = reviewed.find(({ entry }) => entry.path === leader.path)?.rounds.findLast((entry) => entry.kind === 'panel');
-    const roundTag = round ? roundTagHtml(round.round, round.seats) : '';
     const asking = needs || olderNeeds.length ? needsSection(needs?.lines ?? [], olderNeeds) : '';
     const answers = brief
       .map((answer) => ({ answer, index: BRIEF.findIndex((question) => sameText(question) === sameText(answer.question)) }))
@@ -1519,32 +1608,38 @@ function page(planPath, { folded = false } = {}) {
     const source = leader.plan;
     const planLead = byRole('lead', source);
     const currentLead = doc === source ? [] : byRole('lead').filter((section) => !planLead.some((own) => sameText(own.title) === sameText(section.title)));
-    const changes = [
-      ...byRole('api', source).map((section) => sectionHtml(section)),
-      ...[...planLead, ...currentLead]
-        .sort((a, b) => lead.indexOf(a.title.toLowerCase()) - lead.indexOf(b.title.toLowerCase()))
-        .map((section) => sectionHtml(section, 'plan', currentLead.includes(section) ? 'current' : '')),
-      ...byRole('main', source).map((section) => sectionHtml(section)),
-      ...byRole('idea', source).map((section) => sectionHtml(section)),
-    ].join('\n  ');
-    const files = [leader.path, subjectPath]
+    const files = [leader.path, subjectPath, ...carried.map((entry) => entry.path)]
       .filter(Boolean)
-      .map((path) => `<code>${escapeHtml(relative(root, path))}</code>`)
-      .join(' and ');
+      .map((path) => `<code>${escapeHtml(relative(root, path))}</code>`);
+    const parts = {
+      teach: () => byRole('teach', source).map((section) => teachHtml(section, dirname(leader.path))),
+      ontop: () => byRole('ontop', source).map((section) => sectionHtml(section)),
+      demo: () => byRole('demo', source).map((section) => demoHtml(section, dirname(leader.path))),
+      needs: () => [asking],
+      picked: () => byRole('picked', source).map((section) => pickedHtml(section)),
+      api: () => byRole('api', source).map((section) => sectionHtml(section)),
+      lead: () =>
+        [...planLead, ...currentLead]
+          .sort((a, b) => lead.indexOf(a.title.toLowerCase()) - lead.indexOf(b.title.toLowerCase()))
+          .map((section) => sectionHtml(section, 'plan', currentLead.includes(section) ? 'current' : '')),
+      main: () => byRole('main', source).map((section) => sectionHtml(section)),
+      idea: () => byRole('idea', source).filter((section) => !isOpenWork(section)).map((section) => sectionHtml(section)),
+      // Proof stays in the plan file while work runs; a finished plan shows how far it is proven.
+      verification: () => (finished(shownStatus) ? byRole('details', source).filter(isVerification).map((section) => sectionHtml(section)) : []),
+      scope: () => byRole('idea', source).filter(isOpenWork).map((section) => sectionHtml(section)),
+      plans: () => [`<p class="source">Proof, steps, history and review rounds are in ${listed(files)}.</p>`],
+    };
     return `<main>
   <header>
     <h1>${title}</h1>
-    ${flowHtml(leader, shownStatus, playbooks)}
+    ${headerFlow}
     ${statusLine}
-    <div class="meta">${delta ? `<span>Plan <strong>${inline(focus.title || basename(newestOpenIteration.path, '.md'))}</strong></span>` : ''}${leadTag}${roundTag}<span>Updated ${updated} UTC</span></div>
+    <div class="meta">${delta ? `<span>Plan <strong>${inline(focus.title || basename(newestOpenIteration.path, '.md'))}</strong></span>` : ''}${carriedTag}${leadSeatsHtml(entries)}<span>Updated ${updated} UTC</span></div>
   </header>
   <section class="brief card">${answers}</section>
-  ${byRole('teach', source).map((section) => teachHtml(section, dirname(leader.path))).join('')}
-  ${byRole('demo', source).map((section) => demoHtml(section, dirname(leader.path))).join('')}
-  ${asking}
-  ${byRole('picked', source).map((section) => pickedHtml(section)).join('')}
-  ${changes}
-  <p class="source">Proof, steps, history and review rounds are in ${files}.</p>
+  ${BRIEF_ORDER.flatMap((key) => parts[key]?.() ?? [])
+    .filter(Boolean)
+    .join('\n  ')}
 </main>`;
   };
 
@@ -1554,9 +1649,9 @@ ${PAGE_HEAD}
 ${withViewer(brief ? briefMain() : `<main>
   <header>
     <h1>${title}</h1>
-    ${flowHtml(leader, shownStatus, playbooks)}
+    ${headerFlow}
     ${statusLine}
-    <div class="meta"><code>${escapeHtml(where)}</code>${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${leadTag}${reviewTag}<span>Updated ${updated} UTC</span></div>
+    <div class="meta"><code>${escapeHtml(where)}</code>${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${carriedTag}${leadSeatsHtml(entries)}${reviewTag}<span>Updated ${updated} UTC</span></div>
   </header>
   ${(own ? byRole('demo', own) : []).map((section) => demoHtml(section, dirname(planPath))).join('')}
   ${needs || olderNeeds.length ? needsSection(needs?.lines ?? [], olderNeeds) : ''}${close ? sectionHtml(close, 'panel') : ''}
@@ -1570,7 +1665,7 @@ ${withViewer(brief ? briefMain() : `<main>
         .join('\n  ')
     : ''}
   ${doc.lead.some((line) => line.trim()) ? `<section class="plan">${blocksHtml(doc.lead)}</section>` : ''}
-  ${byRole('idea')
+  ${[...byRole('ontop'), ...byRole('idea')]
     .map((section) => sectionHtml(section))
     .join('\n  ')}
   ${iterationList}
@@ -1590,6 +1685,290 @@ document.querySelectorAll('.diff code').forEach((element) => window.hljs?.highli
 </script>
 `;
   return { html, name: subject ? join('topics', subject) : basename(planPath, '.md') };
+}
+
+const PR_START = '<!-- plan-page:start -->';
+const PR_END = '<!-- plan-page:end -->';
+const FRAME_NOTE = /^<!-- frame: (\S+) -->$/;
+
+const seatMd = ({ name, effort, missing }) => `\`${name}\`${effort ? ` \`${effort}\`` : ''}${missing ? ' missing' : ''}`;
+
+function githubOf(root) {
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    const repo = git('remote', 'get-url', 'origin').match(/github\.com[:/]([^/]+\/[^/]+?)(?:\.git)?$/)?.[1];
+    return repo ? { repo, sha: git('rev-parse', 'HEAD') } : null;
+  } catch {
+    // A checkout without a GitHub origin or a commit links plans by path instead.
+    return null;
+  }
+}
+
+function blobLinker(github, root) {
+  if (!github) return null;
+  // A plan the commit does not hold, such as an uncommitted one, would link to a 404, so it is named by path.
+  return (path) => {
+    const where = relative(root, path);
+    try {
+      execFileSync('git', ['cat-file', '-e', `${github.sha}:${where}`], { cwd: root, stdio: 'ignore' });
+      return `https://github.com/${github.repo}/blob/${github.sha}/${where}`;
+    } catch {
+      return null;
+    }
+  };
+}
+
+const PATH_NOTE = /^\s*(?:\/\/|#|<!--)/;
+
+function unifiedDiff(before, after) {
+  // Each fence opens with its path note; one copy of the after note says where the change lives.
+  const [beforeHead, ...beforeRest] = before.split('\n');
+  const [afterHead, ...afterRest] = after.split('\n');
+  if (PATH_NOTE.test(beforeHead) && PATH_NOTE.test(afterHead)) return [` ${afterHead}`, ...unifiedDiff(beforeRest.join('\n'), afterRest.join('\n'))];
+  if (!before.trim()) return after.split('\n').map((line) => `+${line}`);
+  if (!after.trim()) return before.split('\n').map((line) => `-${line}`);
+  const out = [];
+  let removed = [];
+  let added = [];
+  for (const [left, right] of lineDiff(before, after)) {
+    if (left?.kind === 'same') {
+      out.push(...removed, ...added, ` ${left.text}`);
+      removed = [];
+      added = [];
+      continue;
+    }
+    if (left) removed.push(`-${left.text}`);
+    if (right) added.push(`+${right.text}`);
+  }
+  return [...out, ...removed, ...added];
+}
+
+function sectionMd(lines, paired) {
+  const out = [];
+  for (let index = 0; index < lines.length; ) {
+    if (!isFence(lines[index])) {
+      out.push(lines[index]);
+      index += 1;
+      continue;
+    }
+    const pair = readFencePair(lines, index);
+    const end = paired && pair.after ? pair.next : pair.first.next;
+    if (paired && pair.after) out.push('```diff', ...unifiedDiff(pair.first.body, pair.after.body), '```');
+    else out.push(...lines.slice(index, end));
+    index = end;
+  }
+  return out;
+}
+
+function picksMd(lines) {
+  const out = [];
+  for (let index = 0; index < lines.length; ) {
+    const head = /^\s*\|/.test(lines[index]) && TABLE_RULE.test(lines[index + 1] ?? '') ? splitRow(lines[index]) : null;
+    if (!head || !isDefaultsHead(head)) {
+      out.push(lines[index]);
+      index += 1;
+      continue;
+    }
+    const rows = [];
+    for (index += 2; index < lines.length && /^\s*\|/.test(lines[index]); index += 1) rows.push(splitRow(lines[index]));
+    // The attention tag rates a pick for the owner, not for a reviewer.
+    const plain = (cell) => clause(cell.replace(/\s*\((?:safe|look|answer)\)\s*$/iu, ''));
+    const list = (group) =>
+      group.flatMap(([decision = '', pick = '', alternative = '']) => [
+        `- ${clause(decision)}`,
+        `  - **${plain(pick)}**`,
+        ...alternative.split(';').map(clause).filter(Boolean).map((option) => `  - ${option} (alt)`),
+      ]);
+    const impact = impactColumn(head);
+    if (impact < 0) {
+      out.push(...list(rows));
+      continue;
+    }
+    // A reviewer weighs the big calls; smaller ones stay in the plan.
+    out.push(...list(rows.filter((row) => headCell(row[impact] ?? '') === 'big')));
+  }
+  return out;
+}
+
+// A local frame goes up through `gh --attach`, which rewrites its reference; the note keeps the uploaded link for the next sync.
+function frameMd(label, path, base, root, uploaded, attach) {
+  const caption = label ? label[0].toUpperCase() + label.slice(1) : '';
+  if (/^https?:\/\//.test(path)) {
+    const image = SHOT_TYPES[extname(new URL(path).pathname).toLowerCase()];
+    return [caption, image ? `![${label}](${path})` : path].filter(Boolean);
+  }
+  const file = `./${relative(root, resolve(base, path))}`;
+  const known = uploaded.get(file);
+  if (!known) attach.add(file);
+  return [caption, `<!-- frame: ${file} -->\n${known ?? `![${label}](${file})`}`].filter(Boolean);
+}
+
+function uploadedFrames(body) {
+  const lines = body.split('\n');
+  const frames = new Map();
+  lines.forEach((line, index) => {
+    const note = line.match(FRAME_NOTE);
+    if (note && /https?:\/\//.test(lines[index + 1] ?? '')) frames.set(note[1], lines[index + 1]);
+  });
+  return frames;
+}
+
+const CHECK_STAGES = ['Design', 'Plan review', 'Code review', 'Verify', 'Audit'];
+
+// Every PR runs the same rail, so the body names only what varies: the playbooks and the checks that did not run.
+function prProcess(entries, playbooks) {
+  const flow = mergedFlow(entries, entries[0].plan.meta.status ?? 'unknown', playbooks);
+  const named = [...new Set(entries.map((entry) => entry.plan.meta.playbook).filter(Boolean))];
+  const skipped = CHECK_STAGES.filter((label) => !flow.some((stage) => stage.label === label && stage.ran));
+  return [
+    named.length ? `${named.map((name) => `\`${name}\``).join(', ')}` : '',
+    skipped.length ? `not run: ${skipped.join(', ').toLowerCase()}` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
+const prModels = (entries) =>
+  leadSeats(entries).flatMap(({ lead, seats }) => [
+    lead ? `- \`${[lead.name, lead.effort].filter(Boolean).join(' ')}\`` : '- Lead not logged',
+    ...seats.map(({ seat, count }) => `  - ${seatMd(seat)}${count > 1 ? ` ×${count}` : ''}`),
+  ]);
+
+// With since, the body is a comment on someone else's PR about the commits after theirs; against is the PR's description.
+function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
+  page(planPath);
+  const { plan, root, playbooks } = leadOf(planPath);
+  const where = relative(root, planPath);
+  const flag = since ? '--comment' : '--pr';
+  const output = since ? 'PR comment' : 'PR body';
+  if (since) {
+    try {
+      execFileSync('git', ['cat-file', '-e', `${since}^{commit}`], { cwd: root, stdio: 'ignore' });
+    } catch {
+      throw new Error(`--comment names ${since}, which is not a commit in this checkout; fetch the PR's head and pass the author's last commit before yours`);
+    }
+    // The compare link runs from the author's commit to this checkout's head, so the checkout must hold the pushed PR head.
+    try {
+      execFileSync('git', ['merge-base', '--is-ancestor', since, 'HEAD'], { cwd: root, stdio: 'ignore' });
+    } catch {
+      throw new Error(`--comment names ${since}, which this checkout's HEAD does not contain; render from a checkout at the PR's pushed head`);
+    }
+  }
+  if (!briefOf(plan)) throw new Error(`${where} needs a ## Brief before ${flag}, because the ${output} opens with its Changes and Risks`);
+  assertBrief(plan, where);
+  assertTeach(plan, where);
+  assertPlain(plan, where);
+  if (/\bPR\s*#?\d+/i.test(plan.title)) throw new Error(`${where} is titled "${plan.title}"; the ${output} links its plan by title, so name the change instead of the PR`);
+  const selfReference = briefOf(plan).find(({ lines }) => /\bPR\s*#?\d+/i.test(lines.join(' ')));
+  if (selfReference) throw new Error(`## Brief in ${where} names a PR number in "${selfReference.question}"; the ${output} opens with the brief, so say what changes for a reviewer instead`);
+  // A brief still in the future tense was written before the build, not rewritten for the reviewer.
+  const promised = briefOf(plan).find(({ question, lines }) => sameText(question) === sameText(BRIEF[0]) && /\bwill\b/i.test(lines.join(' ')));
+  if (promised) throw new Error(`## Brief in ${where} answers "${promised.question}" with "will"; at PR time say what the PR changes, for a reviewer`);
+  const self = { path: planPath, plan };
+  const carried = carriedPlans(self, root);
+  const entries = [self, ...carried];
+  // A PR plan is often written by another playbook than the plans it carries, so each plan's playbook adds the sections it names.
+  const pr = [
+    ...new Set(
+      entries.flatMap(({ path, plan: each }) => {
+        const name = each.meta.playbook;
+        const known = !name || PSTACK_PLAYBOOKS.includes(name) || playbooks.some((entry) => entry.name === name);
+        return pageSections(playbooks, known ? name : null, relative(root, path)).pr;
+      })
+    ),
+  ];
+  const { lead, pairs } = pageSections(playbooks, plan.meta.playbook, where);
+  const sections = (role) => plan.sections.filter((section) => roleOf(section, lead) === role && section.lines.some((line) => line.trim()));
+  const base = dirname(planPath);
+  const uploaded = uploadedFrames(existing);
+  const attach = new Set();
+  const github = githubOf(root);
+  const blob = blobLinker(github, root);
+  const link = (entry) => {
+    const title = entry.plan.title || basename(entry.path, '.md');
+    const url = blob?.(entry.path);
+    return url ? `[${title}](${url})` : `${title} (\`${relative(root, entry.path)}\`)`;
+  };
+  // A clip the description already shows is not shown again, and neither is a step whose clips all are.
+  const repeated = (path) => Boolean(against) && /^https?:\/\//.test(path) && against.includes(path);
+  const frames = (text) =>
+    [...text.matchAll(SHOT)].filter(([, , path]) => !repeated(path)).flatMap(([, label, path]) => ['', ...frameMd(label, path, base, root, uploaded, attach).flatMap((part) => [part, ''])]);
+  const fresh = (step) => {
+    const paths = [...step.matchAll(SHOT)].map(([, , path]) => path);
+    return !paths.length || !paths.every(repeated);
+  };
+  const brief = briefOf(plan).map(({ question, lines }) => {
+    const index = BRIEF.findIndex((asked) => sameText(asked) === sameText(question));
+    const body = lines.join('\n').trim().split('\n');
+    // Changes opens the body as its summary; GitHub's Caution box already titles the risks.
+    return index === 0 ? [...body, ''] : ['> [!CAUTION]', ...body.map((line) => (line.trim() ? `> ${line}` : '>')), ''];
+  });
+  const titled = (title, lines) => (lines.some((line) => line.trim()) ? [`## ${title}`, '', ...lines, ''] : []);
+  const filled = (section) => (section?.lines.some((line) => line.trim()) ? section : null);
+  const process = prProcess(entries, playbooks);
+  const models = prModels(entries);
+  if (models.length) models[0] = [models[0], process].filter(Boolean).join(' · ');
+  else if (process) models.push(process);
+  // A reviewer needs what the PR leaves out, not who tracks it or where its run files sit.
+  const followUps = (lines) =>
+    lines.map((line) => {
+      const item = line.match(/^(\s*[-*+]\s+)(.*)$/);
+      if (!item) return line;
+      const head = item[2].replace(/\s+owner:.*$/iu, '').replace(/,?\s*`[^`]*docs\/plans\/artifacts\/[^`]*`/gu, '').split(/(?<=\.)\s/u)[0];
+      return `${item[1]}${head}`;
+    });
+  const parts = {
+    teach: () =>
+      sections('teach').flatMap((section) =>
+        titled('How it works', section.lines.flatMap((line) => (line.match(SHOT) && !line.replace(SHOT, '').trim() ? frames(line) : [line])))
+      ),
+    demo: () =>
+      sections('demo').flatMap((section) => {
+        const { intro, steps } = demoSteps(section.lines);
+        return titled('Demo', [...intro, ...steps.filter(fresh).flatMap((step, index) => [`${index + 1}. ${step.replace(SHOT, '').replace(/\s+/g, ' ').trim()}`, ...frames(step), ''])]);
+      }),
+    ontop: () => sections('ontop').flatMap((section) => titled(section.title, section.lines)),
+    // Without a Demo, the first Main changes items say what moved.
+    moved: () =>
+      sections('demo').length ? [] : titled('What changed', sections('main').flatMap((section) => section.lines.filter((line) => /^[-*+]\s/.test(line)).slice(0, 3))),
+    needs: () => sections('needs').flatMap((section) => titled('Open questions', section.lines)),
+    picked: () => titled('Decisions', sections('picked').flatMap((section) => picksMd(section.lines)).filter((line) => line.trim())),
+    api: () => sections('api').flatMap((section) => titled(section.title, sectionMd(section.lines, true))),
+    // The playbook names the sections a reviewer judges the design by; a PR plan without one shows each carried plan's.
+    lead: () =>
+      [...pr]
+        .sort((a, b) => lead.indexOf(a) - lead.indexOf(b))
+        .flatMap((title) => {
+          const own = filled(sectionNamed(plan, title));
+          if (own) return titled(own.title, sectionMd(own.lines, pairs.includes(title)));
+          const theirs = carried.flatMap((entry) => {
+            const section = filled(sectionNamed(entry.plan, title));
+            return section ? [{ entry, section }] : [];
+          });
+          if (!theirs.length) return [];
+          return titled(
+            theirs[0].section.title,
+            theirs.flatMap(({ entry, section }) => [`### ${entry.plan.title || basename(entry.path, '.md')}`, '', ...sectionMd(section.lines, pairs.includes(title)), ''])
+          );
+        }),
+    verification: () => sections('details').filter(isVerification).flatMap((section) => titled('Verification', section.lines)),
+    scope: () => sections('idea').filter(isOpenWork).flatMap((section) => titled('Out of scope', followUps(section.lines))),
+    plans: () => titled('Plans', entries.map((entry) => `- ${link(entry)}`)),
+  };
+  // The compare view is exactly the commits after the author's, so the comment never pastes code a reviewer can open there.
+  const range = since && (github ? [`[My commits after yours](https://github.com/${github.repo}/compare/${since}...${github.sha})`, ''] : [`My commits after \`${since}\``, '']);
+  const region = [PR_START, ...models, '', ...(range || []), ...brief.flat(), ...BRIEF_ORDER.flatMap((key) => parts[key]?.() ?? []), PR_END]
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n');
+  const start = existing.indexOf(PR_START);
+  const end = existing.indexOf(PR_END);
+  const body =
+    start >= 0 && end > start
+      ? `${existing.slice(0, start)}${region}${existing.slice(end + PR_END.length)}`
+      : existing.trim()
+        ? `${region}\n\n${existing.trimStart()}`
+        : `${region}\n`;
+  return { body, attach: [...attach], name: `${basename(planPath, '.md')}${since ? '.comment' : '.pr'}` };
 }
 
 const firstParagraph = (lines) => {
@@ -1713,11 +2092,39 @@ if (args.includes('--index')) {
   }
   process.exit(0);
 }
-const target = args.find((arg) => !arg.startsWith('--'));
+const valueOf = (flag) => (args.indexOf(flag) >= 0 ? (args[args.indexOf(flag) + 1] ?? '') : null);
+const into = valueOf('--into');
+const since = valueOf('--comment');
+const against = valueOf('--against');
+const valued = new Set(['--into', '--comment', '--against'].flatMap((flag) => (args.indexOf(flag) >= 0 ? [args.indexOf(flag) + 1] : [])));
+const flags = args.filter((_, index) => !valued.has(index));
+const target = flags.find((arg) => !arg.startsWith('--'));
 const planPath = target && resolve(target);
-if (!planPath || !existsSync(planPath) || args.some((arg) => arg.startsWith('--') && !['--folded', '--check', '--rail'].includes(arg))) {
-  console.error('Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check] | <plan.md> --rail | --index');
+if (
+  !planPath ||
+  !existsSync(planPath) ||
+  flags.some((arg) => arg.startsWith('--') && !['--folded', '--check', '--rail', '--pr', '--into', '--comment', '--against'].includes(arg)) ||
+  (flags.includes('--pr') && since !== null) ||
+  (since !== null && (!since || since.startsWith('--'))) ||
+  [into, against].some((path) => path !== null && (!path || !existsSync(path))) ||
+  (into !== null && !flags.includes('--pr') && since === null) ||
+  (against !== null && since === null)
+) {
+  console.error('Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check] | <plan.md> --pr [--into <body.md>] | <plan.md> --comment <author sha> [--into <comment.md>] [--against <description.md>] | <plan.md> --rail | --index');
   process.exit(2);
+}
+if (flags.includes('--pr') || since !== null) {
+  try {
+    const { body, attach, name } = prBody(planPath, into ? readFileSync(into, 'utf-8') : '', { since, against: against ? readFileSync(against, 'utf-8') : '' });
+    const out = join(dirname(planPath), 'artifacts', `${name}.md`);
+    mkdirSync(dirname(out), { recursive: true });
+    writeFileSync(out, body);
+    console.info([out, ...attach.map((file) => `--attach ${file}`)].join('\n'));
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
+  process.exit(0);
 }
 if (args.includes('--rail')) {
   try {

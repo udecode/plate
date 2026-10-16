@@ -37,6 +37,7 @@ primary metrics only when their cost is the question.
 Repair measurement identity, stale builds, fixture parity, sample counts,
 aggregation and missing guards before product code. A pre-acceptance prototype
 proves a design choice only. Rerun the same contract on final production bytes
-after the last repair. Use `pstack:benchmark-checklist` before accepting or
+after the last repair. A rerun that cannot fit the block's one-hour Time budget
+goes to a suggested task, as that rule says. Use `pstack:benchmark-checklist` before accepting or
 reporting a measured result. Keep inconclusive decisions open with the next
 probe; never replace a measured gate with an asymptotic argument.

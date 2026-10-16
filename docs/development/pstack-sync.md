@@ -3,7 +3,7 @@
 The source is the live plate-2 checkout captured in
 [pstack-source.json](pstack-source.json). Source file hashes include local
 content rather than assuming a commit captures it. Both runtimes discover the
-same 23 skill names. Eight installed skills retain their source bytes and lock
+same 25 skill names. Ten installed skills retain their source bytes and lock
 provenance. Fifteen local rule owners generate the remaining skills.
 Every omitted local support file is listed with its reason in
 [pstack-omissions.json](pstack-omissions.json). Retained references cover security

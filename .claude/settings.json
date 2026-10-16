@@ -30,7 +30,7 @@
       "source": {
         "source": "github",
         "repo": "michael-denyer/pstack-claude",
-        "ref": "v0.9.82"
+        "ref": "v0.9.88"
       }
     }
   }
