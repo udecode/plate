@@ -136,8 +136,10 @@ const groupInlineChildrenIntoParagraphs = (
   ];
 };
 
+const MDX_COMMENT_REGEX = /^\/\*([\s\S]*)\*\/$/;
+
 const toHtmlComment = (value: string | undefined) => {
-  const match = /^\/\*([\s\S]*)\*\/$/.exec((value ?? '').trim());
+  const match = MDX_COMMENT_REGEX.exec((value ?? '').trim());
   return match ? `<!--${match[1]}-->` : null;
 };
 

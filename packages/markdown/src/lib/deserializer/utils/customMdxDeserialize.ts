@@ -27,6 +27,8 @@ const FLOW_TYPES = new Set([
   'thematicBreak',
 ]);
 
+const TRAILING_NEWLINE_REGEX = /\n$/;
+
 const markdownStringifier = unified().use(remarkStringify).use(remarkMdx);
 
 const serializeUnknownMdxChild = (child: any): string => {
@@ -45,7 +47,9 @@ const serializeUnknownMdxChild = (child: any): string => {
     type: 'root',
   };
 
-  return markdownStringifier.stringify(root as any).replace(/\n$/, '');
+  return markdownStringifier
+    .stringify(root as any)
+    .replace(TRAILING_NEWLINE_REGEX, '');
 };
 
 const serializeUnknownMdxAttributes = (attributes?: any[]) => {
