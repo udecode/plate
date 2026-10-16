@@ -19,6 +19,12 @@ describe('raw html', () => {
     expect(roundTrip(input)).toBe(input);
   });
 
+  it('keeps blank lines around markdown inside a block tag', () => {
+    expect(
+      roundTrip('<details>\n<summary>S</summary>\n\n- a\n- b\n\n</details>\n')
+    ).toBe('<details>\n\n<summary>S</summary>\n\n* a\n* b\n\n</details>\n');
+  });
+
   it('keeps html as html after a second round trip', () => {
     const once = roundTrip('a <b>bold</b> c\n');
     expect(roundTrip(once)).toBe('a <b>bold</b> c\n');

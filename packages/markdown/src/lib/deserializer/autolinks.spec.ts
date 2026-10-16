@@ -93,7 +93,7 @@ it('normalizes later HTML after failed quoted code inside JSX', () => {
       children: [
         {
           rawHtml: true,
-          text: '<div>\n`<Foo title=">`\ntext<br />after\n</div>',
+          text: '<div>\n\n`<Foo title=">`\n\ntext<br />after\n\n</div>',
         },
       ],
     },

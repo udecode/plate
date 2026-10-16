@@ -85,13 +85,22 @@ const serializeUnknownMdxNode = (
     return `${openTag} />`;
   }
 
-  const inner = mdastNode.children
-    .map(serializeUnknownMdxChild)
-    .join(mdastNode.type === 'mdxJsxFlowElement' ? '\n' : '');
-
   if (mdastNode.type === 'mdxJsxFlowElement') {
-    return `${openTag}>\n${inner}\n</${mdastNode.name}>`;
+    // CommonMark ends an HTML block at a blank line, so Markdown blocks inside
+    // a block tag need blank lines around them to stay Markdown.
+    const separator = mdastNode.children.some(
+      (child) => child.type !== 'html' && FLOW_TYPES.has(child.type)
+    )
+      ? '\n\n'
+      : '\n';
+    const inner = mdastNode.children
+      .map(serializeUnknownMdxChild)
+      .join(separator);
+
+    return `${openTag}>${separator}${inner}${separator}</${mdastNode.name}>`;
   }
+
+  const inner = mdastNode.children.map(serializeUnknownMdxChild).join('');
 
   return `${openTag}>${inner}</${mdastNode.name}>`;
 };
