@@ -14,8 +14,9 @@ import { dirname, join, resolve } from 'node:path';
 import { globSync, isDynamicPattern } from 'tinyglobby';
 
 import {
+  findGitVisibleTestFiles,
   TEST_FILE_PATTERNS,
-  TEST_IGNORE_PATTERNS,
+  TEST_FAST_IGNORE_PATTERNS,
 } from '../config/test-suites.mjs';
 
 const VALUE_FLAGS = new Set([
@@ -78,11 +79,10 @@ for (let i = 0; i < rawArgs.length; i++) {
   pathFilters.push(arg);
 }
 
-const allFastFiles = globSync(TEST_FILE_PATTERNS, {
-  cwd: process.cwd(),
-  ignore: TEST_IGNORE_PATTERNS,
-  onlyFiles: true,
-}).sort();
+const allFastFiles = findGitVisibleTestFiles(
+  TEST_FILE_PATTERNS,
+  TEST_FAST_IGNORE_PATTERNS
+);
 
 const normalizeFilter = (value) =>
   value
@@ -97,7 +97,7 @@ for (const filter of pathFilters.map(normalizeFilter)) {
   if (isDynamicPattern(filter)) {
     for (const match of globSync(filter, {
       cwd: process.cwd(),
-      ignore: TEST_IGNORE_PATTERNS,
+      ignore: TEST_FAST_IGNORE_PATTERNS,
       onlyFiles: true,
     })) {
       dynamicMatches.add(match);
@@ -165,10 +165,15 @@ const stripArgWithValue = (args, flag) => {
   return nextArgs;
 };
 
-const runFiles = (files, args) =>
-  spawnSync(process.execPath, ['test', ...args, ...files], {
+// Bun treats a bare path as a substring filter over file paths and runs every
+// match; a `./` prefix makes it an exact path.
+const runFiles = (files, args) => {
+  const explicitPaths = files.map((file) => `./${file}`);
+
+  return spawnSync(process.execPath, ['test', ...args, ...explicitPaths], {
     stdio: 'inherit',
   });
+};
 
 const resolveLocalImport = (fromFile, specifier) => {
   if (!specifier.startsWith('.')) return;

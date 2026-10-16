@@ -1,3 +1,7 @@
+import { execFileSync } from 'node:child_process';
+
+import { globSync } from 'tinyglobby';
+
 export const TEST_FILE_PATTERNS = [
   'apps/**/*.spec.{ts,tsx}',
   'packages/**/*.spec.{ts,tsx}',
@@ -7,6 +11,7 @@ export const TEST_FILE_PATTERNS = [
 export const TEST_SLOW_FILE_PATTERNS = [
   'apps/**/*.slow.{ts,tsx}',
   'packages/**/*.slow.{ts,tsx}',
+  'tooling/scripts/**/*.slow.test.mjs',
 ];
 
 export const TEST_DEFERRED_FILE_PATTERNS = [
@@ -20,6 +25,25 @@ export const TEST_IGNORE_PATTERNS = [
   '.next/**',
   '**/__deferred__/**',
 ];
+
+export const TEST_FAST_IGNORE_PATTERNS = [
+  ...TEST_IGNORE_PATTERNS,
+  'tooling/scripts/**/*.slow.test.mjs',
+];
+
+export const findGitVisibleTestFiles = (patterns, ignore) => {
+  const visibleFiles = new Set(
+    execFileSync(
+      'git',
+      ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+      { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }
+    ).split('\0')
+  );
+
+  return globSync(patterns, { cwd: process.cwd(), ignore, onlyFiles: true })
+    .filter((file) => visibleFiles.has(file))
+    .sort();
+};
 
 const isCI = !!process.env.CI;
 

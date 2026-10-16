@@ -1,5 +1,14 @@
 # @platejs/markdown
 
+## 53.3.17
+
+### Patch Changes
+
+- [#5159](https://github.com/udecode/plate/pull/5159) by [@SahinurDEV](https://github.com/SahinurDEV) – Fix email autolinks losing later Markdown content when MDX is configured on Plate's default Markdown parser. Keep ordinary link and image URLs and existing JSX formatting when parsing autolinks.
+
+- [#5141](https://github.com/udecode/plate/pull/5141) by [@zbeyens](https://github.com/zbeyens) –
+  - Apply `disallowedNodes` to HTML and MDX elements by the key of their deserialize rule, so with `remark-mdx`, `disallowedNodes: ['a']` also removes `<a href>`.
+
 ## 53.3.15
 
 ### Patch Changes

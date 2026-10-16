@@ -1,7 +1,7 @@
 [
   {
     "changelogUrl": "https://github.com/udecode/plate/blob/d142cfb5b9358d97b3ec67448e7e00be41f067a4/packages/plate/CHANGELOG.md",
-    "content": "`@platejs/core`\n\n### Breaking Changes\n\n- Prepare v54 beta prerelease versioning. ([#5031](https://github.com/udecode/plate/pull/5031))\n\n`@platejs/slate`\n\n### Breaking Changes\n\n- Prepare v54 beta prerelease versioning for Slate. ([#5031](https://github.com/udecode/plate/pull/5031))\n\n[`v53.3.16...v54.0.0-beta.0`](https://github.com/udecode/plate/compare/v53.3.16...v54.0.0-beta.0) · By [@felixfeng33](https://github.com/felixfeng33)",
+    "content": "`@platejs/core`\n\n### Breaking Changes\n\n- Prepare v54 beta prerelease versioning. ([#5031](https://github.com/udecode/plate/pull/5031))\n\n`@platejs/slate`\n\n### Breaking Changes\n\n- Prepare v54 beta prerelease versioning for Slate. ([#5031](https://github.com/udecode/plate/pull/5031))\n\n[`v53.3.17...v54.0.0-beta.0`](https://github.com/udecode/plate/compare/v53.3.17...v54.0.0-beta.0) · By [@felixfeng33](https://github.com/felixfeng33)",
     "contributors": [
       {
         "url": "https://github.com/felixfeng33",
@@ -15,6 +15,31 @@
     "type": "major",
     "versionPackagePrUrl": "https://github.com/udecode/plate/pull/5033",
     "url": "https://github.com/udecode/plate/releases/tag/v54.0.0-beta.0"
+  },
+  {
+    "changelogUrl": "https://github.com/udecode/plate/blob/e024e6fe1bf30aed26b3818d0a3bd6444f06f3db/packages/ai/CHANGELOG.md",
+    "content": "`@platejs/ai`\n\n### Bug Fixes\n\n- Updated `@platejs/markdown`.\n\n`@platejs/docx-io`\n\n### Bug Fixes\n\n- Fix `<br>` export: Word for Mac no longer labels it as a text wrapping break, and Word no longer stretches the justified line that ends with it, a setting that applies to the whole document. ([#5161](https://github.com/udecode/plate/pull/5161))\n\n- Fix DOCX export losing marks on text that carries several marks (for example bold and italic) and leaking a mark onto the text that follows it ([#5150](https://github.com/udecode/plate/pull/5150))\n\n`@platejs/markdown`\n\n### Bug Fixes\n\n- Fix email autolinks losing later Markdown content when MDX is configured on Plate's default Markdown parser. Keep ordinary link and image URLs and existing JSX formatting when parsing autolinks. ([#5159](https://github.com/udecode/plate/pull/5159))\n\n-   - Apply `disallowedNodes` to HTML and MDX elements by the key of their deserialize rule, so with `remark-mdx`, `disallowedNodes: ['a']` also removes `<a href>`. ([#5141](https://github.com/udecode/plate/pull/5141))\n\n[`v53.3.16...v53.3.17`](https://github.com/udecode/plate/compare/v53.3.16...v53.3.17) · By [@vincent69001](https://github.com/vincent69001), [@SahinurDEV](https://github.com/SahinurDEV), [@zbeyens](https://github.com/zbeyens)",
+    "contributors": [
+      {
+        "url": "https://github.com/vincent69001",
+        "username": "@vincent69001"
+      },
+      {
+        "url": "https://github.com/SahinurDEV",
+        "username": "@SahinurDEV"
+      },
+      {
+        "url": "https://github.com/zbeyens",
+        "username": "@zbeyens"
+      }
+    ],
+    "date": "2026-10-14",
+    "packageTag": "@platejs/ai@53.3.17",
+    "tag": "v53.3.17",
+    "title": "v53.3.17",
+    "type": "patch",
+    "versionPackagePrUrl": "https://github.com/udecode/plate/pull/5163",
+    "url": "https://github.com/udecode/plate/releases/tag/v53.3.17"
   },
   {
     "changelogUrl": "https://github.com/udecode/plate/blob/67f103ddbf4dc11488d0b6ce3784664c6720a0f7/packages/docx-io/CHANGELOG.md",
