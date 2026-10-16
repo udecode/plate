@@ -1,9 +1,11 @@
 # Agent skills
 
 `AGENTS.md` is the repository instruction source. Claude reads it through
-`CLAUDE.md`; Codex reads it directly. pstack is pinned to v0.9.82 and supplies
+`CLAUDE.md`; Codex reads it directly. pstack is pinned to v0.9.88 and supplies
 the engineering lifecycle. Install the plugin in each runtime and trust its
 session hook. Project skills supplement it with Plate-specific methods.
+`/cleanup` frees disk by removing the agent worktrees and Next.js caches that
+no session or server uses.
 
 `pstack:poteto-mode` selects the playbook for multi-file, design and unexplained
 bug work. Questions and small local edits work directly. The seven project
@@ -18,7 +20,7 @@ Changeset and release-lanes own release notes and explicitly requested releases.
 
 `pnpm run prepare` runs Skiller and copies local rule resources into their
 generated skills. Claude links point to the same skill directories. Run
-`pnpm check:workflow` after generation. It checks the exact 24-name inventory,
+`pnpm check:workflow` after generation. It checks the exact 25-name inventory,
 mirrors, local links, locks and plugin pin. The root check and CI run it too.
 Run the plugin's `skills/poteto-mode/scripts/check-playbooks.mjs` after a
 playbook edit. pstack helpers under `.agents/pstack` are shared copies.

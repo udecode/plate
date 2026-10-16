@@ -44,13 +44,18 @@
 //        node .agents/pstack/decisions-check.mjs chips wait [--session <id>] [--timeout <minutes>] [--every <seconds>] [<ledger>]
 //        (polls the ledger and exits once a task lands, one this session may card turns
 //        ready, with --session a task that session carded starts or another session takes
-//        the lead from it, or at the timeout, 60 minutes by default; it refuses a longer --timeout)
+//        the lead from it, or at --timeout when given; with no --timeout it waits until one of those happens)
+//        node .agents/pstack/decisions-check.mjs chips cleanup --sessions <file> [--session <id>] [<ledger>]
+//        (reads the session tool's list of every session, archived ones included, saved as a
+//        JSON array, and prints the idle card sessions of landed tasks to archive, the worktrees
+//        of archived ones to remove, and a report line with each task's commits; --session
+//        names this session, whose own tasks it skips)
 
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { currentLead, leadLabel, maxEffort } from './lead.mjs';
-import { board, briefOf, cardEffortOf, CHIP_STATES, chipsLead, effortOf, chipRowProblems, baseRedProblems, gitMerges, LEAD_PHASE, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
+import { board, briefOf, cardEffortOf, CHIP_STATES, chipsLead, cleanupOf, effortOf, chipRowProblems, baseRedProblems, gitMerges, LEAD_PHASE, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -137,8 +142,17 @@ function rowProblems(line, where, opened, chips) {
   return reviewerRow ? found : [...found, ...missingPaths(rest[3], where)];
 }
 
+// A card session reads a finding's evidence from this checkout, never from the worktree that wrote it.
+function missingFindingPaths(cells, where) {
+  if (!['offered', 'folded'].includes(statusOf(cells[4]))) return [];
+  return runPaths(cells[2], plansDir())
+    .filter((path) => !existsSync(path) && !markedMissing(cells[2], path))
+    .map((path) => `${where}: the finding cites ${path}, which this checkout lacks; copy it here from the worktree that wrote it, or cite the path it was saved to`);
+}
+
 function newRowProblems(cells, where, chips, lead) {
   const found = [];
+  if (cells[0] === 'chip' && chips) found.push(...missingFindingPaths(cells, where));
   if (cells[0] === LEAD_PHASE && !chips) found.push(`${where}: a ${LEAD_PHASE} row goes in the project's ledger ${join(plansDir(), LEDGER)}; run chips lead --session <id> to write it`);
   if (cells[0] === LEAD_PHASE && !SESSION.test(cells[1])) found.push(`${where}: a ${LEAD_PHASE} row's decision is the id of the session that leads, the one the runtime's session tool gives it`);
   return [...found, ...(cells[0] === 'chip' && chips ? newChipRowProblems(cells, chips, where, git, lead) : []), ...baseRedProblems(cells[3], chips ?? currentLedger(), where)];
@@ -289,14 +303,14 @@ if (args[0] === 'chips') {
     }
     return value;
   };
-  const valued = new Set(['--session', '--timeout', '--every'].flatMap((name) => (args.includes(name) ? [args.indexOf(name), args.indexOf(name) + 1] : [])));
+  const valued = new Set(['--session', '--timeout', '--every', '--sessions'].flatMap((name) => (args.includes(name) ? [args.indexOf(name), args.indexOf(name) + 1] : [])));
   const rest = args.filter((arg, index) => index > 0 && arg !== '--fetch' && !valued.has(index));
   if (rest[0] === 'id') {
     console.info(newId());
     process.exit(0);
   }
   const id = rest[0] === 'brief' ? rest[1] : null;
-  const named = rest[0] === 'brief' ? rest[2] : ['stale', 'wait', 'lead'].includes(rest[0]) ? rest[1] : rest[0];
+  const named = rest[0] === 'brief' ? rest[2] : ['stale', 'wait', 'lead', 'cleanup'].includes(rest[0]) ? rest[1] : rest[0];
   const ledger = named ?? join(plansDir(), LEDGER);
   if (!existsSync(ledger)) {
     console.error(named ? `no log at ${ledger}` : `No ledger at ${ledger} yet; run this from the project root.`);
@@ -320,6 +334,34 @@ if (args[0] === 'chips') {
       process.exit(1);
     }
     console.info(lead ? `This session leads the chips now. At its next sweep, session ${lead} withdraws its cards on tasks it did not offer.` : 'This session leads the chips now.');
+    process.exit(0);
+  }
+  if (rest[0] === 'cleanup') {
+    const file = args.includes('--sessions') ? args[args.indexOf('--sessions') + 1] : null;
+    if (!file || !existsSync(file)) {
+      console.error("chips cleanup takes --sessions <file>, the session tool's list of every session, archived ones included, saved as a JSON array");
+      process.exit(2);
+    }
+    let sessions;
+    try {
+      sessions = JSON.parse(readFileSync(file, 'utf8'));
+    } catch {
+      sessions = null;
+    }
+    if (!Array.isArray(sessions)) {
+      console.error(`${file} does not hold a JSON array of sessions`);
+      process.exit(2);
+    }
+    const { archive, remove, report } = cleanupOf(tasks, sessions, here);
+    if (!report.length) {
+      console.info('Nothing to clean up: no landed task has an idle card session or a worktree left.');
+      process.exit(0);
+    }
+    const out = [];
+    if (archive.length) out.push(`Archive (${archive.length}), with the session tool, each idle card session whose task landed, then save the session list again and rerun chips cleanup:`, ...archive.map((session) => `  ${session.sessionId}  ${session.title}`));
+    if (remove.length) out.push(`Remove (${remove.length}) the worktrees of landed tasks whose sessions are archived:`, `  node .agents/skills/cleanup/scripts/scan.mjs --repo . --remove ${remove.join(' ')}`);
+    out.push(`Report (${report.length}):`, ...report.map((line) => `  ${line}`));
+    console.info(out.join('\n'));
     process.exit(0);
   }
   if (rest[0] === 'stale') {
@@ -373,11 +415,7 @@ if (args[0] === 'chips') {
         started: new Map(started.map((task) => [task.id, `${task.id} in ${task.startedIn ? `session ${task.startedIn}` : 'a session its started row does not name'}, carded at ${cardEffortOf(task, maxEffort())}, brief at ${effortOf(task, maxEffort())}`])),
       };
     };
-    const minutes = option('--timeout', 60);
-    if (minutes > 60) {
-      console.error(`--timeout ${minutes} is over the block's one-hour Time budget; chips wait restarts after its hour instead`);
-      process.exit(2);
-    }
+    const minutes = option('--timeout', Infinity);
     const start = state();
     const deadline = Date.now() + minutes * 60_000;
     while (Date.now() < deadline) {
@@ -413,7 +451,7 @@ if (args[0] === 'chips') {
       console.error(`${id ?? '(no id)'} is not a task in ${ledger}`);
       process.exit(2);
     }
-    const { ok, text } = briefOf(tasks, id, ledger, maxEffort());
+    const { ok, text } = briefOf(tasks, id, ledger, maxEffort(), projectConfig().chips?.codex);
     (ok ? console.info : console.error)(text);
     process.exit(ok ? 0 : 1);
   }

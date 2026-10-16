@@ -3,7 +3,7 @@
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync, realpathSync } from 'node:fs';
-import { basename, dirname, isAbsolute, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
 import { capEffort } from './lead.mjs';
 import { landed, stateOf } from './status.mjs';
 
@@ -45,13 +45,13 @@ const TAKES = {
   updated: ['writes', 'topic', 'kind', 'effort', 'waits', 'owns', 'fast'],
   folded: ['writes', 'kind', 'effort', 'waits', 'owns'],
   started: ['writes', 'session'],
-  landed: ['patch'],
-  carded: ['card', 'session'],
+  landed: ['patch', 'commit'],
+  carded: ['card', 'session', 'codex'],
   uncarded: ['card'],
   'dismissed declined': ['card'],
 };
-const LIST_KEYS = ['writes', 'waits', 'owns'];
-const SCALAR_KEYS = ['topic', 'kind', 'effort', 'fast', 'patch', 'card', 'session'];
+const LIST_KEYS = ['writes', 'waits', 'owns', 'commit'];
+const SCALAR_KEYS = ['topic', 'kind', 'effort', 'fast', 'patch', 'card', 'session', 'codex'];
 const KINDS = ['fix', 'decide', 'review'];
 
 const CHIP = /^([\w-]+) (?:(?:Now|After): )?\S/u;
@@ -89,6 +89,16 @@ export function writeKey(path) {
   }
   return resolve(realpathSync.native(base), ...rest).toLowerCase();
 }
+
+const isCommit = (sha) => {
+  if (!/^[0-9a-f]{7,40}$/u.test(sha)) return false;
+  try {
+    execFileSync('git', ['cat-file', '-e', `${sha}^{commit}`], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 const contains = (outer, inner) => inner.startsWith(outer.endsWith('/') ? outer : `${outer}/`);
 export const overlaps = (a, b) => a.some((x) => b.some((y) => x === y || contains(x, y) || contains(y, x)));
@@ -178,12 +188,14 @@ export function recordRow(tasks, cells, ts = null) {
       waits: given.waits ?? [],
       owns: given.owns ?? [],
       card: given.card ?? null,
+      codex: false,
       session: given.card ? (given.session ?? null) : null,
       offeredIn: given.session ?? null,
       startedIn: null,
       effort: null,
       fast: given.fast === 'yes',
       patch: null,
+      commits: [],
       landedAt: null,
       reviewed: false,
       findings: [row.why],
@@ -212,16 +224,20 @@ export function recordRow(tasks, cells, ts = null) {
   if (row.move === 'landed') {
     task.status = 'landed';
     task.patch = given.patch ?? null;
+    task.commits = given.commit ?? [];
+    task.landedText = `${row.why} ${row.evidence}`;
     task.landedAt = ts;
   }
   if (row.move === 'reviewed') task.reviewed = true;
   if (row.move === 'carded') {
     task.card = given.card ?? null;
+    task.codex = given.codex === 'always';
     task.session = given.session ?? null;
     task.cardEffort = levelOf(task);
   }
   if (row.move === 'uncarded' || row.move === 'reopened' || row.move.startsWith('dismissed')) {
     task.card = null;
+    task.codex = false;
     task.session = null;
     task.cardEffort = null;
   }
@@ -267,6 +283,7 @@ const tokenProblems = (given, where) => {
   for (const wait of given.waits ?? []) if (!WAIT.test(wait)) found.push(`${where}: waits: takes pr:<number>, task:<id> or run:<plan path ending in .md>, comma-separated, or none; "${wait}" is none of them`);
   for (const check of given.owns ?? []) if (!CHECK.test(check)) found.push(`${where}: owns: names each check as one token, such as ci:check`);
   if (given.session !== undefined && !SESSION.test(given.session)) found.push(`${where}: session: names the session id as one token`);
+  if (given.codex !== undefined && given.codex !== 'always') found.push(`${where}: codex: is always, which forces the card session's Codex handoff`);
   return found;
 };
 
@@ -380,6 +397,9 @@ export function newChipRowProblems(cells, before, where, git, lead = null) {
   }
   if (move === 'updated' && given.topic && own?.topic === null && given.waits === undefined) found.push(`${where}: ${id} has no topic yet, so this row migrates it; name its waits too, as waits: none when it has none`);
   if (move === 'landed' && given.patch && !existsSync(given.patch)) found.push(`${where}: patch: ${given.patch} does not exist; save the patch you applied there first, under the checkout's plans artifacts`);
+  for (const sha of move === 'landed' ? (given.commit ?? []) : []) {
+    if (!isCommit(sha)) found.push(`${where}: commit: ${sha} is not a commit in this checkout; name each commit that delivered the task by its hash, after committing it`);
+  }
   if (move === 'carded' && before.get(id)?.card) found.push(`${where}: ${id} already has card ${before.get(id).card}; log uncarded with card: ${before.get(id).card} once that card is withdrawn or its session has ended, then card it again`);
   if (given.card && !given.session && ['carded', 'offered'].includes(move)) found.push(`${where}: a card names the session that holds it as "session: <id>", the id the runtime's session tool gives this session`);
   if (move === 'carded' && lead && given.session && given.session !== lead && before.get(id)?.offeredIn !== given.session) {
@@ -786,22 +806,24 @@ export const effortOf = (task, max) => capEffort(levelOf(task), max);
 // The level the task had when its card landed, which a later effort: row does not change.
 export const cardEffortOf = (task, max) => capEffort(task.cardEffort, max);
 
-export function briefOf(tasks, id, ledger, max = null) {
+// codex is the project's chips.codex setting; "always" forces the Codex handoff on every task.
+export function briefOf(tasks, id, ledger, max = null, codex = null) {
   const task = tasks.get(id);
   const live = follow(id, tasks);
   if (['dup', 'replaced'].includes(task.reason) && live && live !== task) {
     const moved = task.reason === 'dup' ? 'merged into' : 'replaced by';
-    if (live.status === 'offered' && !live.card) return { ok: true, text: `${id} was ${moved} ${live.id}; work from its brief.\n\n${brief(live, ledger, max, tasks)}` };
+    if (live.status === 'offered' && !live.card) return { ok: true, text: `${id} was ${moved} ${live.id}; work from its brief.\n\n${brief(live, ledger, max, tasks, codex)}` };
     const held = live.status === 'offered' ? `has card ${live.card}` : `is ${taskState(live)}`;
     return { ok: false, text: `${id} was ${moved} ${live.id}, which ${held}, so there is nothing to start; tell the owner.` };
   }
-  return isOpen(task) ? { ok: true, text: brief(task, ledger, max, tasks) } : { ok: false, text: `${id} is ${taskState(task)}, so there is nothing to start; tell the owner.` };
+  return isOpen(task) ? { ok: true, text: brief(task, ledger, max, tasks, codex) } : { ok: false, text: `${id} is ${taskState(task)}, so there is nothing to start; tell the owner.` };
 }
 
-function brief(task, ledger, max, tasks) {
+function brief(task, ledger, max, tasks, codex) {
   const root = process.cwd();
   const run = `cd ${root} && node .agents/pstack/decisions-check.mjs`;
   const patch = resolve(root, dirname(ledger), 'artifacts', 'chips', `${task.id}.patch`);
+  const artifacts = relative(root, dirname(dirname(patch)));
   const reviewed = task.waits.map((wait) => follow(wait.match(WAIT)?.[2] ?? '', tasks)).filter(Boolean);
   return [
     displayTitle(task),
@@ -814,6 +836,7 @@ function brief(task, ledger, max, tasks) {
     ...(task.owns.length ? [`Owns: ${task.owns.join(', ')}`] : []),
     `Waited on: ${task.waits.length ? task.waits.join(', ') : 'nothing'}`,
     ...(task.kind === 'decide' ? ['', "This task settles a design question first. Route it through the project playbook that gives a design verdict, or pstack's Investigation playbook where the project has none, then plan any fix."] : []),
+    ...(task.codex || codex === 'always' ? ['', "This task forces the Codex handoff, as the Codex workers rule says: once you have found the cause, or settled the design of a design question, hand Codex the code and its tests whatever the size of the change, then review what it wrote."] : []),
     ...(fastOf(task) ? ['', "This task is marked fast: the owner's start of its card is the word fast for it, as the Fast rule says, so its run spawns no review subagent or seat. A review task in the ledger reviews its change once it lands, so land it with patch: as below."] : []),
     ...(task.kind === 'review'
       ? [
@@ -824,10 +847,49 @@ function brief(task, ledger, max, tasks) {
         ]
       : []),
     '',
-    `When you finish in your own worktree and your project's rules have you hand your diff back rather than commit it, land it yourself: run git add -A in your worktree and save git diff --cached HEAD, which holds new files too, as ${patch}, run git -C ${root} apply --check --whitespace=error-all ${patch}, then git -C ${root} apply ${patch}, which changes only the checkout's working tree and leaves its index alone. When the check fails, copy the checkout's copy of each refused file into your worktree, redo your change on it, rerun your checks and save the patch again. Then log landed with patch: ${patch}, and deliver the patch's paths from ${root} as your project's Delivery rule says, because an applied patch ships nothing: where that rule commits, commit only those paths there; where the owner owns commits, leave them in the working tree. Otherwise land the change as your project's Delivery rule says and log landed. In every report, write each commit you name as a link to that commit on GitHub, https://github.com/<owner>/<repo>/commit/<sha>, with the owner and repository read from ${root}'s origin remote.`,
+    `When you finish in your own worktree and your project's rules have you hand your diff back rather than commit it, land it yourself: run git add -A in your worktree and save git diff --cached HEAD, which holds new files too, as ${patch}, run git -C ${root} apply --check --whitespace=error-all ${patch}, then git -C ${root} apply ${patch}, which changes only the checkout's working tree and leaves its index alone. When the check fails, copy the checkout's copy of each refused file into your worktree, redo your change on it, rerun your checks and save the patch again. Then deliver the patch's paths from ${root} as your project's Delivery rule says, because an applied patch ships nothing: where that rule commits, commit only those paths there; where the owner owns commits, leave them in the working tree. Then log landed with patch: ${patch}, adding commit: <hash>, <hash> for each commit you made, so the lead's report links them. Last, stop each server you started. Merge each run directory you wrote under ${artifacts} in your worktree into the same path in ${root} without overwriting, with mkdir -p <that path> && cp -Rn <your run directory>/. <that path>/, because removing the worktree deletes ignored files and your logged rows cite them. Then run node ${root}/.agents/skills/cleanup/scripts/scan.mjs --landed <your worktree's absolute path>. When it exits 0, every change and ignored file of yours is committed, recreated by an install or build, or in the checkout, so remove your worktree as your final command with git -C ${root} worktree remove --force <your worktree's absolute path> && git -C ${root} worktree list, and check that its list no longer names your worktree. Your next command may fail once because its directory is gone, so use absolute paths after it. When it exits otherwise or the script is missing, keep the worktree and tell the owner what it printed. When you work in the checkout itself, or your project's rules have you commit instead, land the change as your project's Delivery rule says and log landed, with commit: for each commit you made. In every report, write each commit you name as a link to that commit on GitHub, https://github.com/<owner>/<repo>/commit/<sha>, with the owner and repository read from ${root}'s origin remote.`,
     '',
     `Suggested task ${task.id} in ${ledger} of the project checkout ${root}. This prompt can be older than the task, so before anything else run ${run} chips brief ${task.id} and work from what it prints. Run every ledger command from ${root} that way, even when your session opened in its own worktree, because the live ledger is there; make your edits and run your checks in your own worktree. Then run ${run} chips; when it lists this task as neither Ready nor Started, tell the owner what it waits on. Started means the lead already logged your start. Before you write any file, log a started row for it, with writes: naming any path the Writes line above lacks and session: naming this session's id where the runtime's session tool gives one, as .agents/pstack/rules/chips.md says, then run ${run} chips brief ${task.id} again and work from what it prints, because the task can gain work until your started row.`,
   ].join('\n');
 }
 
 export const newId = () => `t_${randomBytes(4).toString('hex')}`;
+
+const realOrSelf = (path) => (existsSync(path) ? realpathSync.native(path) : resolve(path));
+
+function commitUrl() {
+  try {
+    const origin = execFileSync('git', ['remote', 'get-url', 'origin'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    const [, repo] = origin.match(/github\.com[:/](.+?)(?:\.git)?$/u) ?? [];
+    return repo ? (sha) => `https://github.com/${repo}/commit/${sha}` : (sha) => sha;
+  } catch {
+    return (sha) => sha;
+  }
+}
+
+const commitsNamedInProse = (task) => [...new Set(task.landedText.match(/\b[0-9a-f]{7,40}\b/gu) ?? [])].filter(isCommit);
+
+function deliveredBy(task, url) {
+  const named = task.commits.length ? task.commits : commitsNamedInProse(task);
+  if (named.length) return named.map(url).join(', ');
+  return task.patch ? `no commit named, patch ${task.patch}` : 'no commit named';
+}
+
+export function cleanupOf(tasks, sessions, here) {
+  const cardWorktreeRoot = realOrSelf(resolve(process.cwd(), '.claude', 'worktrees'));
+  const isCardSession = (session) => Boolean(session.cwd) && contains(cardWorktreeRoot, realOrSelf(session.cwd));
+  const bySession = new Map(sessions.map((session) => [session.sessionId, session]));
+  const url = commitUrl();
+  const archive = new Map();
+  const remove = new Set();
+  const report = [];
+  for (const task of [...tasks.values()].filter((each) => each.status === 'landed' && each.startedIn && each.startedIn !== here).sort(byOrder)) {
+    const session = bySession.get(task.startedIn);
+    if (!session || session.pinned || !isCardSession(session)) continue;
+    if (session.isArchived ? !existsSync(session.cwd) : session.isRunning) continue;
+    if (session.isArchived) remove.add(session.cwd);
+    else archive.set(session.sessionId, session);
+    report.push(`${task.id} ${displayTitle(task)}: ${deliveredBy(task, url)}`);
+  }
+  return { archive: [...archive.values()], remove: [...remove], report };
+}

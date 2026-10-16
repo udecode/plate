@@ -42,8 +42,8 @@ const names = readdirSync(skillsRoot)
   .sort();
 assert.equal(
   expected.length,
-  24,
-  'Source skill inventory must contain 24 names'
+  25,
+  'Source skill inventory must contain 25 names'
 );
 assert.deepEqual(
   names,
