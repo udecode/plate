@@ -99,4 +99,62 @@ describe('withHistory upstream parity', () => {
 
     expect(editor.history.undos).toHaveLength(2);
   });
+
+  it('keeps normalization in the same undo step inside withoutMerging', () => {
+    const editor = withHistory(
+      createEditor({
+        children: [{ children: [{ text: 'a' }], type: 'p' }],
+      }) as any
+    ) as any;
+    editor.isInline = (element: any) => element.inline === true;
+    const point = { offset: 0, path: [0, 0] };
+
+    editor.tf.withoutMerging(() => {
+      editor.tf.wrapNodes(
+        { children: [], inline: true },
+        { at: { anchor: point, focus: point }, split: true, voids: true }
+      );
+    });
+
+    expect(editor.history.undos).toHaveLength(1);
+
+    while (editor.history.undos.length > 0) {
+      editor.undo();
+    }
+
+    expect(editor.children).toEqual([{ children: [{ text: 'a' }], type: 'p' }]);
+  });
+
+  it('restores a valid selection when undoing a merge into a void inside withoutMerging', () => {
+    const value = [
+      { children: [{ text: 'a' }], type: 'p' },
+      { children: [{ text: '' }], type: 'void', void: true },
+    ];
+    const editor = withHistory(
+      createEditor({ children: structuredClone(value) }) as any
+    ) as any;
+    editor.isVoid = (element: any) => element.void === true;
+    const selection = {
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    };
+    editor.selection = selection;
+
+    editor.tf.withoutMerging(() => {
+      editor.tf.delete({
+        at: { offset: 0, path: [1, 0] },
+        distance: 1,
+        reverse: true,
+        unit: 'character',
+        voids: true,
+      });
+    });
+
+    while (editor.history.undos.length > 0) {
+      editor.undo();
+    }
+
+    expect(editor.children).toEqual(value);
+    expect(editor.selection).toEqual(selection);
+  });
 });
