@@ -154,7 +154,11 @@ const normalizeParagraphLineBreaks = (
       return [child];
     }
 
-    if (text === '' && options.preserveEmptyParagraphs !== false) {
+    if (
+      text === '' &&
+      children.length === 1 &&
+      options.preserveEmptyParagraphs !== false
+    ) {
       return [{ ...child, text: '\u200B' }];
     }
 
