@@ -62,4 +62,4 @@ When plate-2 moves on, the next sync reruns the script. Edits that still apply l
 - [x] `pnpm check` passes. Proof: docs/plans/artifacts/2026-10-17-plate-2-workflow-resync/pnpm-check-a6-a1.log
 - [x] `pnpm lint:fix` on the task's files, run as `biome check --fix` on them because other work shares this checkout.
 - [x] Decision-trail review. skip: fast
-- [ ] Commit and open the PR.
+- [x] Commit and open the PR. Proof: https://github.com/udecode/plate/pull/5186
