@@ -3479,8 +3479,9 @@ Plugin surface:
 - `platejs/footnote` exposes `BaseFootnotePlugin` and `BaseFootnoteDefinitionPlugin`, and `platejs/footnote/react` exposes `FootnotePlugin` and `FootnoteDefinitionPlugin`
 - `editor.update.footnote.insert` inserts a reference, creates a missing definition, and moves focus into the definition body
 - `editor.update.footnote.createDefinition` creates a missing definition for an existing identifier without inserting another reference
-- `editor.read.footnote.nextRef`, `definition`, `definitions`, `definitionText`, `references`, `refs`, `isResolved`, `hasDuplicateDefinitions`, `duplicateDefinitions`, `duplicateRefs` and `isDuplicateDefinition` expose lookup and resolution helpers
-- `editor.api.footnote.focusDefinition` and `editor.api.footnote.focusReference` expose navigation helpers over `editor.update.footnote.selectDefinition` and `selectReference`
+- `editor.read.footnote.nextRef`, `definition`, `definitions`, `definitionText`, `references`, `refs`, `isResolved` and `isDuplicateDefinition` expose lookup and resolution helpers, and `anchor` gives each footnote element its fragment id and the id it links to
+- `editor.api.footnote.focusDefinition` and `editor.api.footnote.focusReference` expose navigation helpers over `editor.update.footnote.selectDefinition` and `selectReference`; in a read-only view they scroll to the target and flash it without moving the selection, and return `true`
+- `BaseFootnoteDefinitionPlugin` declares `slice.endMatter`, so a pasted definition lands after every block already in the document and before the empty paragraph `TrailingBlockPlugin` keeps, while its references land at the caret; a definition saved inside another block stays there, words copied from inside a definition paste as words, and a dragged definition lands where it is dropped
 - toolbar and slash-command entry points are valid app-surface integrations for
   the same insert transform
 - lookup helpers should resolve through one lazy registry-backed index per
@@ -3536,6 +3537,9 @@ note: Obsidian belongs in the adjacent block-reference family, not as proof that
 all footnote navigation should become note-link navigation
 note: successful ref-to-definition jumps should also use the shared
 navigation-feedback primitive
+note: in a read-only view, a plain click or Enter on the reference scrolls the
+definition into view and flashes it, the selection stays, and focus lands on
+the definition's back link; an unresolved reference does nothing there
 
 - `EDIT-FOOTNOTE-DEF-001` `locked`
 
@@ -3571,6 +3575,10 @@ reference instead of editing the definition body
 note: backlink navigation should scroll the target into view and prefer the
 nearest stable insertion point adjacent to the reference instead of opening
 generic edit chrome
+note: in a read-only view, a click or Enter on the backlink scrolls the
+reference into view and flashes it, the selection stays, and focus lands on the
+reference; a definition cited several times opens its picker with focus inside
+it
 note: if the runtime must fall back to atom selection for a footnote reference,
 it should show an explicit selected state and suppress generic formatting
 toolbar chrome

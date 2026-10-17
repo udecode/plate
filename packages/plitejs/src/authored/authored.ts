@@ -148,6 +148,7 @@ import { recordAuthoredSteps } from './tree/record';
 import { completeProposed } from './tree/record-completion';
 import {
   type AuthoredResolveSchema,
+  claimsBreakBefore,
   followsOf,
   projectAuthoredValue,
   isTextBlock,
@@ -1182,6 +1183,7 @@ export const createAuthoredPlugin = (
     contributions: [
       documentAdmissionPoint.of(authoredAdmission),
       authoredDocumentCapabilityPoint.of({
+        claimsBreakBefore,
         project: (document, projection, schema) =>
           projectionRefusal(document, schema) ??
           projectAuthoredDocument(document, { projection }),
@@ -1722,17 +1724,15 @@ export const createAuthoredPlugin = (
                 root,
               })?.(key, value);
             },
-            keepsOnSplit: (props, path, root, key, draftRoot) =>
-              Object.hasOwn(
-                getEditorSchema(editor).elementPropertiesForSplitAt(
-                  // Only the key's lifecycle matters, so an absent value
-                  // stands in as `true`.
-                  elementOf({ ...props, [key]: props[key] ?? true }),
-                  [...path],
+            keepsOnSplit: ({ continuation, path, reviewDraft, source }, root) =>
+              getEditorSchema(editor).elementSplitKeepsAt(
+                elementOf(source),
+                elementOf(continuation),
+                {
+                  children: reviewDraft as readonly Descendant[],
+                  path: [...path],
                   root,
-                  draftRoot as readonly Descendant[]
-                ),
-                key
+                }
               ),
             now: at,
             oneText: (type) => {

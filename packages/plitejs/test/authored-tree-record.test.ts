@@ -73,6 +73,29 @@ const Links = defineEditorSchema('record-links', {
   unknown: 'reject',
   version: 1,
 });
+const TitleThenParagraphs = (typeChange: 'drop' | 'preserve-if-allowed') =>
+  defineEditorSchema(`record-titled-${typeChange}`, {
+    elements: {
+      paragraph: { content: schema.content.text() },
+      title: { content: schema.content.text() },
+    },
+    id: `record-titled-${typeChange}`,
+    properties: [
+      schema.elementProperty('level', property.number(), {
+        target: target.type('title'),
+      }),
+      schema.elementProperty('align', property.string(), {
+        target: target.types(['paragraph', 'title']),
+        typeChange,
+      }),
+    ],
+    root: schema.content.prefix(
+      [{ element: 'title' }],
+      schema.content.types(['paragraph'], { default: { type: 'paragraph' } })
+    ),
+    unknown: 'reject',
+    version: 1,
+  });
 const counter = (author: string) => {
   let count = 0;
 
@@ -398,6 +421,7 @@ describe('authored review tree recording', () => {
       id,
       key: 'color',
       kind: 'format',
+      write: { kind: 'set', value: 'green' },
     });
     const editor = suggesting([
       paragraph({
@@ -777,6 +801,7 @@ describe('authored review tree recording', () => {
             id: 'bob-tag:1',
             key: 'bold',
             kind: 'format',
+            write: { kind: 'set', value: true },
           },
         ],
         bold: true,
@@ -906,6 +931,7 @@ describe('authored review tree recording', () => {
             id: 'bob-tag:2',
             key: 'color',
             kind: 'format',
+            write: { kind: 'set', value: 'blue' },
           },
         ],
         color: 'blue',
@@ -1728,6 +1754,91 @@ describe('authored review tree recording', () => {
     ]);
   });
 
+  it('keeps an Editing delete into a line another author joined off the line before the emptied line', () => {
+    const editor = editing([
+      paragraph({ text: 'xZ' }),
+      paragraph({ text: 'ab' }),
+      { ...paragraph({ text: 'cd' }), authored: [mark('join', 'alice')] },
+    ]);
+
+    editor.update((tx) =>
+      tx.text.delete({
+        at: { anchor: point(0, [1, 0]), focus: point(1, [2, 0]) },
+      })
+    );
+
+    assert.deepEqual(
+      authoredTestApi(editor).project('proposed').value.children,
+      [paragraph({ text: 'xZ' }), paragraph({ text: 'd' })]
+    );
+  });
+
+  it('accepts a Suggesting delete into a line another author joined while the join waits', () => {
+    const editor = suggesting([
+      paragraph({ text: 'xZ' }),
+      paragraph({ text: 'ab' }),
+      { ...paragraph({ text: 'cd' }), authored: [mark('join', 'alice')] },
+    ]);
+
+    editor.update((tx) =>
+      tx.text.delete({
+        at: { anchor: point(0, [1, 0]), focus: point(1, [2, 0]) },
+      })
+    );
+
+    assert.deepEqual(
+      authoredTestApi(editor).decide({ action: 'accept', changes: ['bob:1'] }),
+      { ids: ['bob:1'], status: 'applied' }
+    );
+  });
+
+  it('keeps a Suggesting delete into a line another author split off the line before the emptied line once the split is rejected', () => {
+    const editor = suggesting([
+      paragraph({ text: 'xZ' }),
+      paragraph({ text: 'ab' }),
+      { ...paragraph({ text: 'cd' }), authored: [mark('split', 'alice')] },
+    ]);
+
+    editor.update((tx) =>
+      tx.text.delete({
+        at: { anchor: point(0, [1, 0]), focus: point(1, [2, 0]) },
+      })
+    );
+    authoredTestApi(editor).decide([
+      { action: 'accept', changes: ['bob:1'] },
+      { action: 'reject', changes: ['alice:1'] },
+    ]);
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph({ text: 'xZ' }),
+      paragraph({ text: 'd' }),
+    ]);
+  });
+
+  for (const intent of ['edit', 'propose'] as const) {
+    it(`keeps another author's join of the line a delete empties in ${intent === 'edit' ? 'Editing' : 'Suggesting'}`, () => {
+      const editor = editorFor(
+        [
+          paragraph({ text: 'xZ' }),
+          { ...paragraph({ text: 'ab' }), authored: [mark('join', 'carol')] },
+          paragraph({ text: 'cd' }),
+        ],
+        intent
+      );
+
+      editor.update((tx) =>
+        tx.text.delete({
+          at: { anchor: point(0, [1, 0]), focus: point(1, [2, 0]) },
+        })
+      );
+
+      assert.deepEqual(
+        authoredTestApi(editor).project('proposed').value.children,
+        [paragraph({ text: 'xZd' })]
+      );
+    });
+  }
+
   it('lands Editing text typed in two children of a struck block on the kept text after it, with nothing kept before', () => {
     const editor = editorFor(
       [
@@ -2064,6 +2175,7 @@ describe('authored review tree recording laws', () => {
       id: 'align-1',
       key: 'align',
       kind: 'format',
+      write: { kind: 'set', value: 'center' },
     };
     const bob = editorFor(
       [
@@ -2101,6 +2213,180 @@ describe('authored review tree recording laws', () => {
       ['alice:1', 'bob:1']
     );
   });
+
+  describe('rejecting a pending property change after Enter places the tail in another slot', () => {
+    const bobTag = (key: string, before?: unknown) => ({
+      at: AT,
+      author: 'bob',
+      ...(before === undefined ? {} : { before }),
+      change: 'bob:1',
+      id: `${key}-1`,
+      key,
+      kind: 'format',
+    });
+    const title = (props: Record<string, unknown>) => ({
+      type: 'title',
+      ...props,
+      children: [{ text: 'Title' }],
+    });
+    const enterThenReject = (
+      first: Record<string, unknown>,
+      plugin: unknown,
+      intent: 'edit' | 'propose' = 'edit',
+      body: Record<string, unknown> = paragraph({ text: 'Body' })
+    ) => {
+      const alice = editorFor([first, body], intent, 'alice', [plugin]);
+
+      alice.update((tx) => {
+        tx.selection.set({ anchor: point(2), focus: point(2) });
+        tx.break.insert();
+      });
+
+      const result = authoredTestApi(alice).decide({
+        action: 'reject',
+        changes: ['bob:1'],
+      });
+
+      return { children: alice.read.children(), result };
+    };
+
+    it('rejects a pending level change on the title, in both modes', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { children, result } = enterThenReject(
+          title({ authored: [bobTag('level', 2)], level: 3 }),
+          TitleThenParagraphs('drop'),
+          intent
+        );
+
+        assert.equal(result.status, 'applied', intent);
+        assert.deepEqual(
+          children,
+          [
+            { type: 'title', children: [{ text: 'Ti' }], level: 2 },
+            intent === 'edit'
+              ? paragraph({ text: 'tle' })
+              : {
+                  ...paragraph({ text: 'tle' }),
+                  authored: [mark('split', 'alice')],
+                },
+            paragraph({ text: 'Body' }),
+          ],
+          intent
+        );
+      }
+    });
+
+    it('leaves the tail without a property its type change dropped', () => {
+      const { children, result } = enterThenReject(
+        title({ align: 'center', authored: [bobTag('align', 'left')] }),
+        TitleThenParagraphs('drop')
+      );
+
+      assert.equal(result.status, 'applied');
+      assert.deepEqual(children, [
+        { type: 'title', align: 'left', children: [{ text: 'Ti' }] },
+        paragraph({ text: 'tle' }),
+        paragraph({ text: 'Body' }),
+      ]);
+    });
+
+    it('gives a removed property the type change keeps back to both halves', () => {
+      const { children, result } = enterThenReject(
+        title({ authored: [bobTag('align', 'left')] }),
+        TitleThenParagraphs('preserve-if-allowed')
+      );
+
+      assert.equal(result.status, 'applied');
+      assert.deepEqual(children, [
+        { type: 'title', align: 'left', children: [{ text: 'Ti' }] },
+        { ...paragraph({ text: 'tle' }), align: 'left' },
+        paragraph({ text: 'Body' }),
+      ]);
+    });
+
+    it('leaves the tail its value when its type refuses the value rejecting gives back', () => {
+      const Aligned = defineEditorSchema('record-titled-aligned', {
+        elements: {
+          paragraph: { content: schema.content.text() },
+          title: { content: schema.content.text() },
+        },
+        id: 'record-titled-aligned',
+        properties: [
+          schema.elementProperty(
+            'align',
+            property.enum(['center', 'justify']),
+            {
+              target: target.type('title'),
+              typeChange: 'preserve-if-allowed',
+            }
+          ),
+          schema.elementProperty('align', property.enum(['center', 'left']), {
+            target: target.type('paragraph'),
+          }),
+        ],
+        root: schema.content.prefix(
+          [{ element: 'title' }],
+          schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+          })
+        ),
+        unknown: 'reject',
+        version: 1,
+      });
+      const { children, result } = enterThenReject(
+        title({ align: 'center', authored: [bobTag('align', 'justify')] }),
+        Aligned
+      );
+
+      assert.equal(result.status, 'applied');
+      assert.deepEqual(children, [
+        { type: 'title', align: 'justify', children: [{ text: 'Ti' }] },
+        { ...paragraph({ text: 'tle' }), align: 'center' },
+        paragraph({ text: 'Body' }),
+      ]);
+    });
+
+    it('leaves the tail the value its slot fixes', () => {
+      const Fixed = defineEditorSchema('record-fixed-slot', {
+        elements: { paragraph: { content: schema.content.text() } },
+        id: 'record-fixed-slot',
+        properties: [
+          schema.elementProperty('align', property.string(), {
+            target: target.type('paragraph'),
+          }),
+        ],
+        root: schema.content.prefix(
+          [
+            { element: 'paragraph' },
+            { element: 'paragraph', properties: { align: 'left' } },
+          ],
+          schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+          })
+        ),
+        unknown: 'reject',
+        version: 1,
+      });
+      const { children, result } = enterThenReject(
+        {
+          ...paragraph({ text: 'Title' }),
+          align: 'center',
+          authored: [bobTag('align', 'right')],
+        },
+        Fixed,
+        'edit',
+        { ...paragraph({ text: 'Body' }), align: 'left' }
+      );
+
+      assert.equal(result.status, 'applied');
+      assert.deepEqual(children, [
+        { ...paragraph({ text: 'Ti' }), align: 'right' },
+        { ...paragraph({ text: 'tle' }), align: 'left' },
+        { ...paragraph({ text: 'Body' }), align: 'left' },
+      ]);
+    });
+  });
+
   it('rejects a struck quote another author inserted, with its default child, when every change is rejected', () => {
     const carol = [mark('insert', 'carol', 'carol:0')];
     const alice = [mark('insert', 'alice', 'alice:0')];

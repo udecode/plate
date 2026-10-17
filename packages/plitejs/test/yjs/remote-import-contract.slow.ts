@@ -37,6 +37,10 @@ import {
 import { YjsUpdatePolicy } from '../../src/yjs/core/editor-adapter';
 import { yjs } from '../../src/yjs/core/plugin';
 import {
+  createYjsRunEncoder,
+  writeTextRuns,
+} from '../../src/yjs/core/text-runs';
+import {
   clearYjsTrace,
   connectYjsPeerAndSync,
   createSeededYjsHistoryPeers,
@@ -1406,9 +1410,16 @@ describe('plitejs/yjs remote import contract', () => {
 
     clearYjsTrace(innerTarget10);
     source.doc.transact(() => {
-      text.delete(0, 1);
-      text.insert(text.length, '!');
-      text.format(0, text.length, { bold: true });
+      writeTextRuns(
+        [text],
+        [{ text: 'alpha' }],
+        [{ text: 'lpha!', bold: true }],
+        createYjsRunEncoder(() => false, {
+          ancestors: ['paragraph', 'section'],
+          path: [0, 0],
+          root: null,
+        })
+      );
       sectionNode.setAttribute('tone', 'new');
       sectionNode.delete(1, 1);
       sectionNode.insert(1, [createYjsNode(paragraph('replacement'))]);

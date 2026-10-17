@@ -140,18 +140,22 @@ describe('plitejs/yjs canonical replacement collaboration contract', () => {
     assertCanonicalYjsTrace(peer);
   });
 
-  it('preserves every Yjs text node for a same-width multi-leaf replacement', () => {
+  it('preserves text identity and marks for a same-width multi-leaf replacement', () => {
     const peer = createPeer('b', undefined, multiLeafValue());
 
     const firstText = getYjsNodeAt(peer, [0, 0]);
-    const secondText = getYjsNodeAt(peer, [0, 1]);
 
     clearYjsTrace(peer);
     replaceMultiLeafTextWithFragment(peer);
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alphaLin betaAda']);
+    assert.deepEqual(peer.editor.read.children(), [
+      {
+        type: 'paragraph',
+        children: [{ text: 'alphaLin' }, { bold: true, text: ' betaAda' }],
+      },
+    ]);
     assert.equal(getYjsNodeAt(peer, [0, 0]), firstText);
-    assert.equal(getYjsNodeAt(peer, [0, 1]), secondText);
     assertCanonicalYjsTrace(peer);
   });
 

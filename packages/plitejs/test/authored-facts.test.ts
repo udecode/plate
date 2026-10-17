@@ -855,6 +855,7 @@ describe('authored incarnations', () => {
       change: 'C',
       key: 'bold',
       kind: 'format',
+      write: { kind: 'set', value: true },
     };
     const editor = createEditor({
       initialValue: {
@@ -870,6 +871,7 @@ describe('authored incarnations', () => {
                     before: true,
                     id: 'new',
                     inc: 'ann:next',
+                    write: { kind: 'set', value: false },
                     over: ['old'],
                   },
                 ],
@@ -901,7 +903,11 @@ describe('authored incarnations', () => {
   });
 
   it('starts a new incarnation of a change whose accepted claim a pending fork keeps', () => {
-    const bold = { key: 'bold', kind: 'format' };
+    const bold = {
+      key: 'bold',
+      kind: 'format',
+      write: { kind: 'set', value: true },
+    };
     const editor = createEditor({
       initialValue: {
         children: [

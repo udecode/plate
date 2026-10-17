@@ -2202,8 +2202,11 @@
         "typecheck:partition:core",
         "typecheck:partition:footnote",
         "typecheck:partition:layout",
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-list",
         "typecheck:partition:static",
-        "typecheck:partition:table"
+        "typecheck:partition:table",
+        "typecheck:partition:yjs-react"
       ],
       "inputs": [
         "src/features/footnote/**",

@@ -22,6 +22,9 @@ export type FormatTag = Readonly<{
   kind: 'format';
   /** The key's tips when this was written; absent over the accepted value. */
   over?: readonly string[];
+  write:
+    | Readonly<{ kind: 'remove' }>
+    | Readonly<{ kind: 'set'; value: EditorJsonValue }>;
 }>;
 
 export type LayerOutcome = (tag: FormatTag) => 'accept' | 'keep' | 'reject';
@@ -176,6 +179,14 @@ export const keyTips = (tags: readonly FormatTag[]): readonly string[] => {
   return tags.filter((tag) => !covered.has(tag.id)).map((tag) => tag.id);
 };
 
+export const tipsWrittenValue = (tags: readonly FormatTag[]): LayerValue => {
+  const tipIds = new Set(keyTips(tags));
+  const tips = tags.filter((tag) => tipIds.has(tag.id));
+  if (tips.some((tag) => tag.write.kind === 'remove')) return undefined;
+  const top = smallestId(tips, tags);
+  return top.write.kind === 'set' ? top.write.value : undefined;
+};
+
 /**
  * Decide one key. A suggestion built on another depends on it: accepting a
  * step waits on every pending step below it, rejecting one waits on every
@@ -311,7 +322,7 @@ export const writeLayer = (
     ownInsertion: boolean;
     previous: LayerValue;
     source: 'command' | 'correction';
-    tag: (fields: Pick<FormatTag, 'before' | 'over'>) => FormatTag;
+    tag: (fields: Pick<FormatTag, 'before' | 'over' | 'write'>) => FormatTag;
     tags: readonly FormatTag[];
   }>
 ): readonly FormatTag[] => {
@@ -339,6 +350,9 @@ export const writeLayer = (
     return [
       ...tags.filter((tag) => !run.includes(tag)),
       input.tag({
+        write: absent(input.next)
+          ? { kind: 'remove' }
+          : { kind: 'set', value: input.next },
         ...(first.over ? { over: first.over } : {}),
         ...(absent(first.before) ? {} : { before: first.before }),
       }),
@@ -350,6 +364,9 @@ export const writeLayer = (
   return [
     ...tags,
     input.tag({
+      write: absent(input.next)
+        ? { kind: 'remove' }
+        : { kind: 'set', value: input.next },
       ...(tips.length > 0 ? { over: tips } : {}),
       ...(absent(input.previous) ? {} : { before: input.previous }),
     }),

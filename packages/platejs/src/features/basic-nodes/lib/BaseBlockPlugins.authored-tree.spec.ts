@@ -459,3 +459,25 @@ describe('Plate block rules beside pending suggestions', () => {
     start: [p('a', struck('xyz'), 'b')],
   });
 });
+
+describe('Plate merges beside a pending join', () => {
+  for (const intent of ['edit', 'propose'] as const) {
+    it(`keeps a delete into a line another author joined off the line before the emptied line in ${intent === 'edit' ? 'Editing' : 'Suggesting'}`, () => {
+      const editor = make([p('xZ'), p('ab'), joined(p('cd'))], intent);
+
+      editor.update((tx) =>
+        tx.text.delete({
+          at: {
+            anchor: { offset: 0, path: [1, 0] },
+            focus: { offset: 1, path: [2, 0] },
+          },
+        })
+      );
+
+      expect(unmarked(decided(editor.read.value(), 'accept'))).toEqual([
+        p('xZ'),
+        p('d'),
+      ]);
+    });
+  }
+});

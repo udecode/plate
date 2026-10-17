@@ -731,6 +731,7 @@ describe('authored review tree structure on two clients', () => {
 });
 
 describe('authored review tree concurrency limits on two clients', () => {
+  reviewVerdictRaces(true);
   const text = (value: string) => ({ text: value });
   const deleted = {
     at: AT,
@@ -749,15 +750,15 @@ describe('authored review tree concurrency limits on two clients', () => {
       [whole(paragraph(text('aXb')), deleted), paragraph(text('z'))],
     ],
     [
-      'types inside its text in Suggesting, whose leaf split re-creates the text without the deletion',
+      'types inside its text in Suggesting, which gives the typed text the deletion',
       'propose',
       (tx: any) => tx.text.insert('X', { at: point(1) }),
       [
         {
           ...paragraph(
-            text('a'),
-            { authored: [inserted], text: 'X' },
-            text('b')
+            { authored: [deleted], text: 'a' },
+            { authored: [deleted, inserted], text: 'X' },
+            { authored: [deleted], text: 'b' }
           ),
           authored: [deleted],
         },
@@ -1497,7 +1498,7 @@ describe('authored property tags on several clients', () => {
   }
 });
 
-describe('review verdicts on two clients', () => {
+function reviewVerdictRaces(limits: boolean) {
   const A = { at: AT, author: 'alice', change: 'alice:9', kind: 'insert' };
   const B = { at: AT, author: 'bob', change: 'bob:9', kind: 'insert' };
   const starts = {
@@ -1533,7 +1534,13 @@ describe('review verdicts on two clients', () => {
         { text: 'a' },
         {
           authored: [
-            { ...A, id: 'alice:9:color', key: 'color', kind: 'format' },
+            {
+              ...A,
+              id: 'alice:9:color',
+              key: 'color',
+              kind: 'format',
+              write: { kind: 'set', value: 'red' },
+            },
           ],
           color: 'red',
           text: 'old',
@@ -1667,6 +1674,50 @@ describe('review verdicts on two clients', () => {
     }
   };
 
+  if (limits) {
+    race(
+      'keeps only the typed letters when a reject races typing inside its insertion',
+      ['alice', 'bob'],
+      decide('reject'),
+      typeInside,
+      { flat: ['a', 'Q|insert:alice:9,insert:bob:1', 'b'] }
+    );
+    race(
+      'keeps only the typed new letters when a reject races typing inside its replacement',
+      ['alice', 'bob'],
+      decide('reject'),
+      typeInside,
+      {
+        replacement: [
+          'a',
+          'old|delete:alice:9',
+          'Q|insert:alice:9,insert:bob:1',
+          'b',
+        ],
+      }
+    );
+    race(
+      'keeps the typed letters and unwithdrawn suffix when a withdrawal races typing inside its insertion',
+      ['alice', 'bob'],
+      firstPiece,
+      typeInside,
+      { flat: ['a', 'Q|insert:alice:9,insert:bob:1', 'rs|insert:alice:9', 'b'] }
+    );
+    it('keeps only the typed new letters when typing inside a rejected replacement arrives', () => {
+      const [decider, typer] = peersOf(['alice', 'bob'], starts.replacement());
+      decide('reject')(decider, 'replacement');
+      typeInside(typer, 'replacement');
+      deliver(typer, decider);
+      assert.deepEqual(leaves(decider), [
+        'a',
+        'old|delete:alice:9',
+        'Q|insert:alice:9,insert:bob:1',
+        'b',
+      ]);
+    });
+    return;
+  }
+
   race(
     'accept || typing inside',
     ['alice', 'bob'],
@@ -1683,13 +1734,6 @@ describe('review verdicts on two clients', () => {
     decide('reject'),
     typeInside,
     {
-      flat: [
-        'a',
-        'he|insert:alice:9',
-        'Q|insert:alice:9,insert:bob:1',
-        'rs|insert:alice:9',
-        'b',
-      ],
       nested: [
         'a',
         'he|insert:alice:9',
@@ -1697,22 +1741,6 @@ describe('review verdicts on two clients', () => {
         'r|insert:alice:9',
         'Q|insert:alice:9,insert:bob:1',
         's|insert:alice:9',
-        'b',
-      ],
-    }
-  );
-  race(
-    'reject a replacement || typing inside its new text',
-    ['alice', 'bob'],
-    decide('reject'),
-    typeInside,
-    {
-      replacement: [
-        'a',
-        'old|delete:alice:9',
-        'n|insert:alice:9',
-        'Q|insert:alice:9,insert:bob:1',
-        'ew|insert:alice:9',
         'b',
       ],
     }
@@ -1756,13 +1784,6 @@ describe('review verdicts on two clients', () => {
     }
   );
   race('withdraw || typing inside', ['alice', 'bob'], firstPiece, typeInside, {
-    flat: [
-      'a',
-      'he|insert:alice:9',
-      'Q|insert:alice:9,insert:bob:1',
-      'rs|insert:alice:9',
-      'b',
-    ],
     nested: [
       'a',
       'X|insert:alice:9,insert:bob:9',
@@ -1873,23 +1894,6 @@ describe('review verdicts on two clients', () => {
     });
   }
 
-  it('gives back a rejected replacement when only the typing inside it arrives', () => {
-    const [decider, typer] = peersOf(['alice', 'bob'], starts.replacement());
-
-    decide('reject')(decider, 'replacement');
-    typeInside(typer, 'replacement');
-    deliver(typer, decider);
-    record('reject || typing inside, typing delivered only', leaves(decider));
-    assert.deepEqual(leaves(decider), [
-      'a',
-      'old|delete:alice:9',
-      'n|insert:alice:9',
-      'Q|insert:alice:9,insert:bob:1',
-      'ew|insert:alice:9',
-      'b',
-    ]);
-  });
-
   for (const [removed, remove, expected] of [
     [
       'its text',
@@ -1940,7 +1944,9 @@ describe('review verdicts on two clients', () => {
       });
     });
   }
-});
+}
+
+describe('review verdicts on two clients', () => reviewVerdictRaces(false));
 
 describe('review contexts on two clients', () => {
   it('keeps the context the first key typed in it rests on after that key is undone, while the other client’s text rests on it', () => {

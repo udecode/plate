@@ -122,6 +122,13 @@ export const touches = (left: Occurrence, right: Occurrence) => {
 const isContent = (mark: AuthoredMark) =>
   mark.kind === 'insert' || mark.kind === 'delete';
 
+/** @internal */
+export const continues = (end: Occurrence, first: Occurrence) =>
+  touches(end, first) ||
+  (isContent(end.mark) &&
+    end.root === first.root &&
+    isInside(end.path, first.path));
+
 // Insert and delete marks run through every descendant, so the topmost
 // marked node stands for the content under it.
 const covering = (list: readonly Occurrence[]) => {
@@ -262,6 +269,7 @@ export const blockOccurrencesOf = (
   block: Node,
   read: (node: Node) => readonly AuthoredMark[]
 ) => {
+  const ends = new Map<string, BlockOccurrence>();
   const occurrences = new Map<string, BlockOccurrence[]>();
   let units = 0;
   const walk = (node: Node, path: Path) => {
@@ -271,6 +279,7 @@ export const blockOccurrencesOf = (
 
       list.push(occurrence);
       occurrences.set(mark.change, list);
+      ends.set(mark.change, occurrence);
 
       return occurrence;
     });
@@ -284,12 +293,15 @@ export const blockOccurrencesOf = (
     }
     for (const occurrence of placed) {
       if (!isLineBreak(occurrence.mark)) occurrence.last = units - 1;
+      if (isContent(occurrence.mark)) {
+        ends.set(occurrence.mark.change, occurrence);
+      }
     }
   };
 
   walk(block, []);
 
-  return { occurrences, units };
+  return { ends, occurrences, units };
 };
 
 /** @internal */
@@ -431,7 +443,8 @@ export const readAuthoredDetails = (
     flush();
     if (mark.kind === 'format') {
       parts.push({
-        after: { [mark.key]: node[mark.key] },
+        after:
+          mark.write.kind === 'set' ? { [mark.key]: mark.write.value } : {},
         before: Object.hasOwn(mark, 'before')
           ? { [mark.key]: mark.before }
           : {},
@@ -475,7 +488,18 @@ export const groupAuthoredChanges = (
     const first = list[0];
     const last = list.at(-1);
 
-    return first && last ? [{ change, first, last }] : [];
+    if (!first || !last) return [];
+
+    const end =
+      list.find(
+        (occurrence) =>
+          isContent(occurrence.mark) &&
+          occurrence.root === last.root &&
+          (isInside(occurrence.path, last.path) ||
+            occurrence.path.join(',') === last.path.join(','))
+      ) ?? last;
+
+    return [{ change, first, last: end }];
   });
 
   for (const { change, first, last } of placed.sort((left, right) =>
@@ -486,7 +510,7 @@ export const groupAuthoredChanges = (
     if (
       group &&
       group.changes[0].authorId === change.authorId &&
-      touches(group.last, first)
+      continues(group.last, first)
     ) {
       group.changes.push(change);
       group.last = last;

@@ -74,6 +74,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-17-footnote-links",
+      "href": "/registry/changelog/2026-10-17-footnote-links.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Link footnotes on static pages and jump between them in read-only views",
+      "change": {
+        "type": "source",
+        "date": "2026-10-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["footnote", "footnote-static"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-17-table-handle-stacking",
       "href": "/registry/changelog/2026-10-17-table-handle-stacking.json",
       "status": "draft",

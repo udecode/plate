@@ -6,7 +6,7 @@ import { expect, test } from '@playwright/test';
 
 test.use({ viewport: { width: 1280, height: 180 } });
 
-test('read-only footnotes scroll, flash and focus jump controls without moving the selection', async ({
+test('read-only footnotes scroll, flash and focus jump controls without moving the selection [EDIT-FOOTNOTE-NAV-001] [EDIT-FOOTNOTE-NAV-002]', async ({
   page,
 }, testInfo) => {
   const errors = recordBrowserRuntimeErrors(page, { strict: true });

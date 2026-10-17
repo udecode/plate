@@ -462,6 +462,7 @@ describe('format layers', () => {
       id: 'blue',
       key: 'color',
       kind: 'format' as const,
+      write: { kind: 'set' as const, value: 'blue' },
       over: ['red'],
     };
 

@@ -335,6 +335,7 @@ export type CompiledSchemaElement = Readonly<{
   groups: ReadonlySet<string>;
   propertyIds: ReadonlySet<string>;
   slice: Readonly<{
+    endMatter: boolean;
     preserveContext: boolean;
     replaceWhenCovered: boolean;
   }>;
@@ -1086,7 +1087,7 @@ const collectSchemaKeyDiagnostics = (
       if (element.slice !== undefined) {
         check(
           element.slice,
-          ['preserveContext', 'replaceWhenCovered'],
+          ['endMatter', 'preserveContext', 'replaceWhenCovered'],
           pluginName,
           `${path}.slice`
         );
@@ -4772,6 +4773,21 @@ const compileEditorSchemaInternal = (
       );
     }
     const preserveContext = element.input.slice?.preserveContext ?? false;
+    const endMatter = element.input.slice?.endMatter ?? false;
+
+    if (
+      Object.hasOwn(element.input.slice ?? {}, 'endMatter') &&
+      (element.behavior.inline ||
+        element.behavior.void ||
+        explicitPreserveContext)
+    ) {
+      compileFailure(
+        'invalid-slice-policy',
+        `Schema element "${type}" cannot declare end matter on an inline or void element or beside preserveContext.`,
+        [element.source],
+        `${element.source.path}.slice.endMatter`
+      );
+    }
 
     compiledElements.set(
       type,
@@ -4783,6 +4799,7 @@ const compileEditorSchemaInternal = (
         groups: freezeSet(memberships.get(type) ?? new Set<string>()),
         propertyIds,
         slice: Object.freeze({
+          endMatter,
           preserveContext,
           replaceWhenCovered:
             element.input.slice?.replaceWhenCovered ?? !preserveContext,
@@ -4866,7 +4883,7 @@ const compileEditorSchemaInternal = (
         propertyIds: sortedStrings(element.construction.propertyIds),
       },
       groups: sortedStrings(element.groups),
-      slice: element.slice,
+      slice: contractSlicePolicy(element.slice),
       ...(element.structure ? { structure: element.structure } : {}),
       type,
     })),
@@ -5301,7 +5318,9 @@ export type EditorSchemaContractElement = Readonly<{
   }>;
   groups: readonly string[];
   propertyIds: readonly string[];
-  slice: CompiledSchemaElement['slice'];
+  slice: Readonly<
+    Omit<CompiledSchemaElement['slice'], 'endMatter'> & { endMatter?: boolean }
+  >;
   structure?: EditorSchemaElementStructure;
   type: string;
 }>;
@@ -5444,6 +5463,12 @@ const contractContentRoot = (
     ownership: root.ownership,
   });
 
+const contractSlicePolicy = ({
+  endMatter,
+  ...policy
+}: CompiledSchemaElement['slice']) =>
+  Object.freeze({ ...policy, ...(endMatter ? { endMatter: true } : {}) });
+
 const contractElement = (
   element: CompiledSchemaElement
 ): EditorSchemaContractElement =>
@@ -5459,7 +5484,7 @@ const contractElement = (
     }),
     groups: freezeSortedStrings(element.groups),
     propertyIds: freezeSortedStrings(element.propertyIds),
-    slice: element.slice,
+    slice: contractSlicePolicy(element.slice),
     ...(element.structure ? { structure: element.structure } : {}),
     type: element.type,
   });
@@ -5678,6 +5703,8 @@ const isContractElement = (value: unknown) =>
   isStringArray(value.groups) &&
   isStringArray(value.propertyIds) &&
   isRecord(value.slice) &&
+  (value.slice.endMatter === undefined ||
+    typeof value.slice.endMatter === 'boolean') &&
   typeof value.slice.preserveContext === 'boolean' &&
   typeof value.slice.replaceWhenCovered === 'boolean' &&
   (value.structure === undefined ||
@@ -6431,6 +6458,10 @@ const restoreElement = (
     }),
     groups: freezeSet(element.groups),
     propertyIds: freezeSet(element.propertyIds),
+    slice: Object.freeze({
+      ...element.slice,
+      endMatter: element.slice.endMatter ?? false,
+    }),
     structure: element.structure ?? null,
   });
 

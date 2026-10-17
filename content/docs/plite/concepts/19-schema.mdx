@@ -357,6 +357,41 @@ feature such as a table needs grammar-valid children for a detached parent.
 `fitContent` returns frozen children or `null`; it does not mutate the parent or
 editor.
 
+### End matter
+
+Declare `slice: { endMatter: true }` on a block that belongs after the
+document's body, such as a note. The compiler refuses it on an inline or void
+element and beside `preserveContext`.
+
+```ts
+endnote: {
+  content: schema.content.group("block", {
+    default: { type: "paragraph" },
+    min: 1,
+  }),
+  slice: { endMatter: true },
+},
+```
+
+- A slice write takes the end-matter elements out of the content and writes
+  them, in source order, after the last block of the target's root that is not
+  an empty default block. They never land above the block that receives the
+  rest, or above an empty block the root's schema requires at its place, such
+  as a required title. The rest lands at the target, and the caret ends after
+  it. This covers paste, `fragment.replace`, `slice.replace` and
+  `tx.slice.replace`, which writes the end matter at the root's end even when
+  it passes `at`.
+- When that root does not accept the element as a direct child, the whole
+  slice lands at the target.
+- A copy of words inside an end-matter element gives the words without the
+  element. A copy that covers the element from its start to its end keeps it.
+- A drop lands the element where it is dropped, and `fitContent` returns it
+  among the fitted children.
+- An element already in the document never moves; only written content lands
+  at the end.
+- Declaring `endMatter` changes the schema fingerprint. A schema that declares
+  none keeps its fingerprint.
+
 ## Schema deltas
 
 `state.schema.delta()` reports the semantic difference published with the

@@ -1,5 +1,5 @@
 import { getDefined } from '../../internal/get-defined';
-import { type Occurrence, placeOccurrence, touches } from '../changes';
+import { type BlockOccurrence, continues, placeOccurrence } from '../changes';
 import type { AuthoredChange, AuthoredChangeGroup } from '../types';
 import type { BookSlot, RootBook } from './book';
 import { countLedgerWork } from './work';
@@ -47,12 +47,11 @@ export const SLOT_OLDEST = {
 
 type Place = Readonly<{ book: RootBook; slot: BookSlot }>;
 
-const occurrence = ({ book, slot }: Place, id: string, last: boolean) => {
+const placeIn = ({ book, slot }: Place, local: BlockOccurrence | undefined) => {
   const rank = book.slots.rankOf(slot);
-  const list = getDefined(slot.changes.occurrences.get(id));
 
   return placeOccurrence(
-    getDefined(last ? list.at(-1) : list[0]),
+    getDefined(local),
     book.root,
     rank,
     book.slots.sumBefore(rank, UNITS)
@@ -73,11 +72,12 @@ const startsAfter = (book: RootBook, previous: CardEntry, entry: CardEntry) => {
   }
   countLedgerWork('cardPairs');
 
-  const left: Occurrence = occurrence(previous.last, previous.id, true);
-
-  return !touches(
-    left,
-    occurrence({ book, slot: entry.slot }, entry.id, false)
+  return !continues(
+    placeIn(previous.last, previous.last.slot.changes.ends.get(previous.id)),
+    placeIn(
+      { book, slot: entry.slot },
+      entry.slot.changes.occurrences.get(entry.id)?.[0]
+    )
   );
 };
 

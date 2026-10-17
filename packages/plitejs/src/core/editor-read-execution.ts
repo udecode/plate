@@ -7,10 +7,26 @@ import type {
 import { ElementApi } from '../interfaces/element';
 import type { Descendant, Node, NodeEntry } from '../interfaces/node';
 import { getNodeKeyForNode } from '../utils/node-keys';
+import { authoredDocumentCapabilityPoint } from './authored-document-capability';
 import { ContentSlice } from './content-slice';
 import { editorReads } from './editor-reads';
 import { getEditorRuntimeOwner, getEditorSchema } from './editor-runtime';
+import { getPluginContributions } from './plugin-registry';
 import { executeEditorRead } from './read-registry';
+
+const holdsPendingBreak = (
+  editor: Editor,
+  previous: NodeEntry,
+  current: NodeEntry
+) =>
+  getPluginContributions(
+    getEditorRuntimeOwner(editor),
+    authoredDocumentCapabilityPoint
+  ).some(
+    (authored) =>
+      authored.claimsBreakBefore(previous[0]) ||
+      authored.claimsBreakBefore(current[0])
+  );
 
 export const resolveShouldMergeNodesRemovePrevNode = (
   editor: Editor,
@@ -18,6 +34,7 @@ export const resolveShouldMergeNodesRemovePrevNode = (
   current: NodeEntry,
   applyDefault: () => boolean
 ) =>
+  !holdsPendingBreak(editor, previous, current) &&
   executeEditorRead(
     editor,
     editorReads.nodes.shouldMergeNodesRemovePrevNode,

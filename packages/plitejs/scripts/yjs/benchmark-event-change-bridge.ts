@@ -390,8 +390,14 @@ const propertyContexts = [
     if (result.kind !== 'change') {
       throw new Error('Expected event-native translation');
     }
+    // Bun's strict deep equality never matches a proxied block, so compare
+    // the plain values.
     assert.deepEqual(
-      result.import.change.apply({ children: before }).children,
+      JSON.parse(
+        JSON.stringify(
+          result.import.change.apply({ children: before }).children
+        )
+      ),
       readPliteValueFromYjs(root)
     );
     const ordinary = Object.freeze(

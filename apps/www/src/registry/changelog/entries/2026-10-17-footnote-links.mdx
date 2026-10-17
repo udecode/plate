@@ -1,0 +1,15 @@
+---
+id: 2026-10-17-footnote-links
+date: 2026-10-17
+status: draft
+kind: behavior
+summary: 'Link footnotes on static pages and jump between them in read-only views'
+change: { 'type': 'source', 'date': '2026-10-17', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-17-footnote-link-footnotes-pages-jump-1090e950","kind":"behavior","migrationNotes":[]} -->
+
+- **`footnote`**: In a read-only view, a click or Enter on a footnote mark scrolls to its note and flashes it, and the note's back link jumps back to the mark, with focus on the control you land on. A back link of a note cited several times opens its picker with focus inside it. An unresolved mark does nothing in a read-only view.
+- **`footnote-static`**: Link each mark to its note and each note back to its first mark, with `fnref-` and `fn-` ids, so static pages and exported HTML keep working footnote links.

@@ -12,7 +12,10 @@ import {
   createYjsNodes,
   readPliteValueFromYjs,
 } from '../../src/yjs/core/document';
-import { setYjsNodeAttributes } from '../../src/yjs/core/replacement';
+import {
+  createYjsRunEncoder,
+  writeTextRuns,
+} from '../../src/yjs/core/text-runs';
 
 const internalYjsAttributeKeys = [
   'yjs:hidden',
@@ -39,22 +42,18 @@ describe('plitejs/yjs attribute contract', () => {
     });
   });
 
-  it('preserves uniform object text attributes across separate Yjs delta parts', () => {
+  it('preserves uniform object text attributes across adjacent runs', () => {
     const doc = new Y.Doc();
     const root = doc.get('document', Y.XmlElement);
     const paragraph = new Y.XmlElement('element');
-    const text = new Y.XmlText();
+    const texts = createYjsNodes([
+      { style: { color: 'red' }, text: 'a' },
+      { style: { color: 'red' }, text: 'b' },
+    ]);
 
     setYjsAttribute(paragraph, 'type', 'paragraph');
     root.insert(0, [paragraph]);
-    paragraph.insert(0, [text]);
-    text.applyDelta(
-      [
-        { attributes: { style: { color: 'red' } }, insert: 'a' },
-        { attributes: { style: { color: 'red' } }, insert: 'b' },
-      ],
-      { sanitize: false }
-    );
+    paragraph.insert(0, texts);
 
     assert.deepEqual(readPliteValueFromYjs(root), [
       {
@@ -71,7 +70,7 @@ describe('plitejs/yjs attribute contract', () => {
     const text = new Y.XmlText();
 
     setYjsAttribute(paragraph, 'type', 'paragraph');
-    setYjsAttribute(text, 'bold', true);
+    setYjsAttribute(text, 'bold', [true]);
     root.insert(0, [paragraph]);
     paragraph.insert(0, [text]);
 
@@ -110,10 +109,11 @@ describe('plitejs/yjs attribute contract', () => {
       updates += 1;
     });
 
-    setYjsNodeAttributes(
-      text,
-      { style: { color: 'red' } },
-      { style: { color: 'red' } }
+    writeTextRuns(
+      [text],
+      [{ style: { color: 'red' }, text: 'alpha' }],
+      [{ style: { color: 'red' }, text: 'alpha' }],
+      createYjsRunEncoder(() => false, { ancestors: [], path: [], root: null })
     );
 
     assert.equal(updates, 0);
@@ -135,12 +135,16 @@ describe('plitejs/yjs attribute contract', () => {
     assert.ok(text instanceof Y.XmlText);
     root.insert(0, [text]);
 
-    const attributes = getYjsAttributes(text);
+    const records = Object.entries(getYjsAttributes(text))
+      .filter(([key]) => key.startsWith('yjs:mark:'))
+      .map(([, record]) => record as { k: string });
 
-    assert.equal(Object.hasOwn(attributes, 'commentIds'), false);
     assert.equal(
-      Object.keys(attributes).filter((key) => key.startsWith('yjs:set:'))
-        .length,
+      records.some((record) => record.k === 'commentIds'),
+      false
+    );
+    assert.equal(
+      records.filter((record) => record.k.startsWith('yjs:set:')).length,
       5
     );
     assert.deepEqual(readPliteValueFromYjs(root), [

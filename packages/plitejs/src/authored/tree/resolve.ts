@@ -22,6 +22,7 @@ import { cutsOf, joinRejectedCuts } from './cuts';
 import {
   decideKey,
   type FormatTag,
+  tipsWrittenValue,
   type LayerOutcome,
   type LayerValue,
 } from './layers';
@@ -64,6 +65,12 @@ export type AuthoredResolveSchema = Readonly<{
   ) => Completion<JsonNode>;
   /** Whether `node` can stand in prefix slot `slot` of `root`. */
   fitsPrefix?: (node: JsonNode, slot: number, root: string) => boolean;
+  canonicalizeTextProperties?: (
+    props: JsonRecord,
+    path: readonly number[],
+    root: string,
+    preferredKey: string
+  ) => Readonly<JsonRecord>;
   content: (
     type: string | null,
     root: string
@@ -131,6 +138,13 @@ export const acceptedOwnShape = (
 /** @internal */
 export const hasJoinMark = (node: unknown) =>
   readAuthoredMarks(node).some((mark) => mark.kind === 'join');
+
+/** @internal */
+export const claimsBreakBefore = (node: unknown) =>
+  readAuthoredMarks(node).some(
+    (mark) =>
+      mark.kind === 'join' || (mark.kind === 'split' && mark.cut === undefined)
+  );
 
 /** @internal */
 export const hasBoundaryMark = (node: unknown) =>
@@ -1126,7 +1140,20 @@ export const resolveAuthoredChildren = (
       }
 
       const props = propsOf(node);
-      const formats = decideFormats(props, marks, decisionOf);
+      const formats = decideFormats(
+        props,
+        marks,
+        decisionOf,
+        isText(node)
+          ? (candidate, key) =>
+              schema?.canonicalizeTextProperties?.(
+                candidate,
+                [...path, index],
+                root,
+                key
+              ) ?? candidate
+          : undefined
+      );
 
       for (const change of formats?.waits ?? []) waits.add(change);
 
@@ -1404,7 +1431,7 @@ export const resolveAuthoredChildren = (
       waitOnPrefix(nodes, completion, start, completeHere, slots);
     }
 
-    return completion.children;
+    return mergeTextsWithEqualProps(completion.children);
   };
 
   const top = resolveList(children, null, []);
@@ -1460,7 +1487,8 @@ const CONTENT_AND_ENCLOSURE_KINDS: ReadonlySet<AuthoredMark['kind']> = new Set([
 const decideFormats = (
   props: JsonRecord,
   marks: readonly AuthoredMark[],
-  outcome: LayerOutcome
+  outcome: LayerOutcome,
+  canonicalize?: (props: JsonRecord, key: string) => Readonly<JsonRecord>
 ) => {
   if (!marks.some((mark) => mark.kind === 'format')) return null;
 
@@ -1473,17 +1501,34 @@ const decideFormats = (
   let changed = false;
 
   for (const key of keys) {
-    const decision = decideKey(
-      props[key] as LayerValue,
-      marks.filter(
-        (mark): mark is FormatTag => mark.kind === 'format' && mark.key === key
-      ),
-      outcome
+    const tags = marks.filter(
+      (mark): mark is FormatTag => mark.kind === 'format' && mark.key === key
     );
+    const decision = decideKey(props[key] as LayerValue, tags, outcome);
 
     waits.push(...decision.waits);
     for (const tag of decision.kept) kept.add(tag);
-    if (decision.value.kind !== 'set') continue;
+    if (decision.value.kind !== 'set') {
+      if (
+        decision.waits.length > 0 ||
+        Object.hasOwn(props, key) ||
+        !canonicalize
+      ) {
+        continue;
+      }
+      const value = tipsWrittenValue(tags);
+      if (value === undefined) continue;
+      const candidate = { ...props, [key]: value };
+      const fitted = canonicalize(candidate, key);
+      if (
+        !Object.keys(props).some((sibling) => !Object.hasOwn(fitted, sibling))
+      ) {
+        continue;
+      }
+      next[key] = value;
+      changed = true;
+      continue;
+    }
     changed = true;
     if (decision.value.value === undefined) delete next[key];
     else next[key] = decision.value.value;

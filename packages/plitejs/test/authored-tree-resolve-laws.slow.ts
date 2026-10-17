@@ -42,6 +42,7 @@ const mark = (kind: AuthoredMark['kind'], change: string): AuthoredMark => {
       id: `t-${change}`,
       key: 'bold',
       kind,
+      write: { kind: 'set', value: true },
     };
   }
   if (kind === 'insert' || kind === 'split') {
@@ -86,6 +87,7 @@ const tagsArbitrary = (
             id: `${key}${index}`,
             key,
             kind: 'format',
+            write: { kind: 'set', value: value as never },
             ...(row.before ? { before: value as never } : {}),
             ...(over.length > 0 ? { over } : {}),
           },
@@ -318,6 +320,7 @@ describe('authored review tree decision laws', () => {
           id: 'ta',
           key: 'bold',
           kind: 'format' as const,
+          write: { kind: 'set' as const, value: true },
         },
         {
           at: 1,
@@ -327,6 +330,7 @@ describe('authored review tree decision laws', () => {
           id: 'tb',
           key: 'bold',
           kind: 'format' as const,
+          write: { kind: 'remove' as const },
           over: ['ta'],
         },
       ],

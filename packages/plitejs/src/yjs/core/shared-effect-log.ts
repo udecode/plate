@@ -1,10 +1,12 @@
 import * as Y from 'yjs';
 
+import type { NodeList } from '../../core/change/document-index';
 import {
   assertEditorJsonValue,
   supportsEditorValuePersistenceVersion,
 } from '../../core/value-codec';
 import {
+  type Descendant,
   decodeEditorEffect,
   encodeEditorEffect,
   type EditorEffect,
@@ -13,6 +15,7 @@ import {
   type SerializedEditorEffect,
 } from '../../index';
 import type { EditorJsonValue } from '../../interfaces/json';
+import { readPliteValueFromYjs } from './document';
 import type { YjsEditor } from './editor-types';
 import {
   pointToYjsRelativePosition,
@@ -67,6 +70,7 @@ type YjsSharedEffectAuthority = Readonly<{
 }>;
 
 type YjsSharedEffectLogOptions = Readonly<{
+  children?: () => NodeList<Descendant>;
   editor?: YjsEditor;
   authorityId?: string;
   captureSnapshotEffects: () => readonly EditorEffect[];
@@ -399,6 +403,8 @@ export class YjsSharedEffectLog {
     if (!this.isInternalTransaction(transaction)) this.onCheckpoint();
   };
 
+  private readonly children: () => NodeList<Descendant>;
+
   constructor(
     doc: Y.Doc,
     rootName: string,
@@ -414,6 +420,7 @@ export class YjsSharedEffectLog {
     this.retiredPeers = doc.getMap(`${rootName}:${RETIRED_PEERS_SUFFIX}`);
     this.resolveEffectType = resolveEffectType;
     this.root = root;
+    this.children = options.children ?? (() => readPliteValueFromYjs(root));
     this.authorityId = options.authorityId;
     this.captureSnapshotEffects = options.captureSnapshotEffects;
     this.onCheckpoint = options.onCheckpoint;
@@ -943,7 +950,8 @@ export class YjsSharedEffectLog {
         try {
           return yjsRelativePositionToPoint(
             this.root,
-            Y.createRelativePositionFromJSON(value)
+            Y.createRelativePositionFromJSON(value),
+            this.children()
           );
         } catch {
           return null;
@@ -959,10 +967,14 @@ export class YjsSharedEffectLog {
         }
 
         try {
-          return yjsRelativeRangeToRange(this.root, {
-            anchor: Y.createRelativePositionFromJSON(value.anchor),
-            focus: Y.createRelativePositionFromJSON(value.focus),
-          });
+          return yjsRelativeRangeToRange(
+            this.root,
+            {
+              anchor: Y.createRelativePositionFromJSON(value.anchor),
+              focus: Y.createRelativePositionFromJSON(value.focus),
+            },
+            this.children()
+          );
         } catch {
           return null;
         }
@@ -973,9 +985,15 @@ export class YjsSharedEffectLog {
   private collabEncodeContext() {
     return Object.freeze({
       point: (point: Parameters<typeof pointToYjsRelativePosition>[1]) =>
-        serializeRelativePosition(pointToYjsRelativePosition(this.root, point)),
+        serializeRelativePosition(
+          pointToYjsRelativePosition(this.root, point, this.children())
+        ),
       range: (range: Parameters<typeof rangeToYjsRelativeRange>[1]) => {
-        const relative = rangeToYjsRelativeRange(this.root, range);
+        const relative = rangeToYjsRelativeRange(
+          this.root,
+          range,
+          this.children()
+        );
 
         return Object.freeze({
           anchor: serializeRelativePosition(relative.anchor),

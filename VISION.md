@@ -28,10 +28,10 @@ Existing and proposed APIs, owners, layers and packages must earn their place. C
 
 No cut, plan or review drops these four laws. Each names what enforces it today; a part marked rule-only rests on review, not a script.
 
-1. **Hard cuts over compatibility.** A breaking change or hard cut beats an alias, shim, wrapper or deprecated second name. `plate/no-second-name` enforces it for renames (`CODING_STANDARDS.md`'s Rules and enforcement); the architecture reference's Hard cut, run through the Build playbook, and `best-api`'s hard-cut gate hold the rest, which is rule-only.
+1. **Hard cuts over compatibility.** A breaking change or hard cut beats an alias, shim, wrapper or deprecated second name. `plate/no-second-name` enforces it for renames (`docs/development/enforcement.md`); the architecture reference's Hard cut, run through the Build playbook, and `best-api`'s hard-cut gate hold the rest, which is rule-only.
 2. **Redesign from first principles, then KISS.** Every API or architecture target starts from the current user job and hard laws and takes the simplest target that earns its place, as Next beta above says. `best-api`, the Verdict playbook and the `api-plan` reviews row (`architect`, then a panel) apply it; it is rule-only.
 3. **No infinite roadmap.** Every plan closes, and nothing stays later without an owner and a stop. `.agents/pstack/plan-open.mjs`, which the lead runs before marking a plan Done, refuses an unchecked box, a placeholder and a deferred or open finding without `owner:`; plan closure itself and the stop condition are rule-only.
-4. **Verifiability.** Every claim names the check that proves it. `.agents/pstack/decisions-check.mjs` refuses a fixed, verified or proven decision row without `scope:`, and `CODING_STANDARDS.md`'s Rules and enforcement table names each code rule's enforcer; behavior claims follow `docs/vision/common.md`'s Claim Width, and other claims are rule-only.
+4. **Verifiability.** Every claim names the check that proves it. `.agents/pstack/decisions-check.mjs` refuses a fixed, verified or proven decision row without `scope:`, and `docs/development/enforcement.md` names each code rule's enforcer; behavior claims follow `docs/vision/common.md`'s Claim Width, and other claims are rule-only.
 
 ## Common Essentials
 

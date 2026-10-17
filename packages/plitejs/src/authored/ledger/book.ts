@@ -41,6 +41,7 @@ import { type Slot, SlotTree } from './slots';
 import { countLedgerWork } from './work';
 
 type BlockChanges = Readonly<{
+  ends: ReadonlyMap<string, BlockOccurrence>;
   /**
    * Every incarnation the block names, decided or not: its claims, held
    * deletions, followed joins and its contexts' members. A verdict changes
@@ -81,14 +82,14 @@ const namedBy = (node: unknown, facts: ReviewFacts, named: Set<string>) => {
 const blockChangesOf = (block: JsonNode, facts: ReviewFacts): BlockChanges => {
   const marked = !blockFactsOf(block).unmarked;
   const named = new Set<string>();
-  const { occurrences, units } = blockOccurrencesOf(block, (node) => {
+  const { ends, occurrences, units } = blockOccurrencesOf(block, (node) => {
     if (!marked) return [];
     namedBy(node, facts, named);
 
     return marksOf(node, facts);
   });
 
-  return { incarnations: [...named], occurrences, units };
+  return { ends, incarnations: [...named], occurrences, units };
 };
 
 /** @internal */

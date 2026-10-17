@@ -1,9 +1,10 @@
 import * as Y from 'yjs';
 
+import type { NodeList } from '../../core/change/document-index';
 import { registerEditorViewLifetimeCleanup } from '../../core/editor-view-lifetime';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
-import type { Anchor, Point, Range } from '../../index';
-import { RangeApi } from '../../index';
+import type { Anchor, Descendant, Point, Range } from '../../index';
+import { NodeApi, RangeApi } from '../../index';
 import {
   createYjsAwarenessSelection,
   yjsAwarenessSelectionsEqual,
@@ -12,7 +13,6 @@ import {
   readYjsAwarenessRelativeSelection,
   type YjsAwarenessRelativeSelection,
 } from './awareness-relative-selection';
-import { getYjsLength, getYjsNodeIf } from './document';
 import type { YjsEditor } from './editor-types';
 import { areJsonLikeValuesEqual } from './json-equality';
 import { isRecord } from './record';
@@ -32,6 +32,7 @@ type YjsAwarenessAdapterOptions<TCursorData extends YjsRemoteCursorData> = {
   readonly awareness: YjsAwarenessLike;
   readonly canSyncSelection: () => boolean;
   readonly editor: YjsEditor;
+  readonly childrenFor?: (root: string) => NodeList<Descendant>;
   readonly rootFor: (root: string) => Y.XmlElement | null;
   readonly validateCursorData: (value: unknown) => value is TCursorData;
 };
@@ -155,6 +156,10 @@ export const createYjsAwarenessAdapter = <
   canSyncSelection,
   editor,
   rootFor,
+  childrenFor = (root) =>
+    root === 'main'
+      ? editor.read.children()
+      : (editor.read.value().roots?.[root] ?? []),
   validateCursorData,
 }: YjsAwarenessAdapterOptions<TCursorData>): YjsAwarenessAdapter<TCursorData> => {
   const cursorListeners = new Map<number, Set<() => void>>();
@@ -189,12 +194,19 @@ export const createYjsAwarenessAdapter = <
 
     if (root === null) return false;
 
-    const node = getYjsNodeIf(root, point.path);
-
+    let nodes = childrenFor(normalizeRootKey(point.root));
+    let node: Descendant | undefined;
+    for (const [index, child] of point.path.entries()) {
+      node = nodes.at(child);
+      if (index < point.path.length - 1) {
+        if (!NodeApi.isElement(node)) return false;
+        nodes = node.children;
+      }
+    }
     return (
-      node instanceof Y.XmlText &&
+      NodeApi.isText(node) &&
       point.offset >= 0 &&
-      point.offset <= getYjsLength(node)
+      point.offset <= node.text.length
     );
   };
 
@@ -224,7 +236,11 @@ export const createYjsAwarenessAdapter = <
     position: Y.RelativePosition
   ): Point | null => {
     metrics.endpointConversionCount += 1;
-    const point = yjsRelativePositionToPoint(root, position);
+    const point = yjsRelativePositionToPoint(
+      root,
+      position,
+      childrenFor(rootKey)
+    );
 
     return point ? withRoot(point, rootKey) : null;
   };
@@ -576,7 +592,12 @@ export const createYjsAwarenessAdapter = <
     const nextSelection =
       nextRange === null || root === null
         ? null
-        : createYjsAwarenessSelection(root, rootKey, nextRange);
+        : createYjsAwarenessSelection(
+            root,
+            rootKey,
+            nextRange,
+            childrenFor(rootKey)
+          );
     const currentAwarenessSelection = awareness.getLocalState()?.selection;
 
     if (

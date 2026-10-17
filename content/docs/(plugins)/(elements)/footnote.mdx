@@ -22,6 +22,7 @@ Footnote turns GFM footnote markup (`[^1]` references and `[^1]: text` definitio
 - Keep the first duplicate definition canonical; renumber later duplicates on demand.
 - Navigation helpers that jump between reference and definition with a landed-target flash.
 - HTML export and static pages link each reference to its note, and footnotes copied from GitHub paste as footnotes.
+- Pasted notes land at the end of the document, wherever the caret is.
 
 </PackageInfo>
 
@@ -177,6 +178,17 @@ editor.update((tx) =>
 ```
 
 The transform returns the newly assigned ref string on success, or `false` when the path isn't a duplicate definition or the requested ref is already taken. Pass `ref` to target a specific free ref instead of the next available one.
+
+### Paste notes
+
+A pasted definition lands at the end of the document, after every block already
+there and before the empty paragraph `TrailingBlockPlugin` keeps. Its references
+and the rest of the paste land at the caret, in a table cell, a quote or a list
+item as in a paragraph, and the caret ends after the pasted text. One undo
+removes the whole paste. A definition saved inside another block stays there.
+
+Words copied from inside a note paste as words, without the note. A copy that
+covers a whole note keeps it, and a dragged note lands where it is dropped.
 
 ### Round-trip Markdown
 

@@ -51,7 +51,7 @@ import type {
   EditorSnapshot,
   JsonEditorValue,
 } from '../../index';
-import { DocumentChange } from '../../index';
+import { DocumentChange, RangeApi, SelectionApi } from '../../index';
 import {
   createYjsAwarenessAdapter,
   type YjsAwarenessAdapter,
@@ -89,6 +89,7 @@ import {
   readYjsSchemaEnvelope,
   writeYjsSchemaEnvelope,
 } from './schema-metadata';
+import { rangeToYjsRelativeRange, yjsRelativeRangeToRange } from './selection';
 import {
   type PendingYjsEffect,
   type PreparedYjsSharedEffects,
@@ -302,6 +303,7 @@ export class YjsController<
       {
         authorityId: options.sharedEffectCompaction?.authorityId,
         editor,
+        children: () => this.bindings.get('main')?.bridge.synchronized ?? [],
         captureSnapshotEffects: () => this.captureSharedSnapshotEffects(),
         onCheckpoint: () => {
           this.pendingRemoteEffects = true;
@@ -334,6 +336,8 @@ export class YjsController<
           canSyncSelection: () => this.admissionStatusValue.state === 'ready',
           editor: this.editor,
           rootFor: (root) => this.rootFor(root),
+          childrenFor: (root) =>
+            this.bindings.get(root)?.bridge.synchronized ?? [],
           validateCursorData: (value): value is TCursorData =>
             options.cursorData?.validate(value) ?? isRecord(value),
         })
@@ -901,6 +905,50 @@ export class YjsController<
       fallbackRoots: fallbacks,
     });
     if (shouldSyncSelection) cursorCache.syncSelection();
+    for (const root of changedRoots) {
+      const binding = this.bindings.get(root);
+      const drift = binding?.bridge.drift(
+        childrenOf(after, root),
+        fallbacks.has(root)
+      );
+
+      if (!binding || !drift) continue;
+
+      const selection = this.editor.read.selection();
+      const relative =
+        RangeApi.isRange(selection) &&
+        (SelectionApi.root(selection) ?? 'main') === root
+          ? rangeToYjsRelativeRange(
+              binding.root,
+              selection,
+              childrenOf(after, root)
+            )
+          : null;
+      const mapped = relative
+        ? yjsRelativeRangeToRange(
+            binding.root,
+            relative,
+            childrenOf(drift.change.apply(after), root)
+          )
+        : null;
+
+      scheduleAfterCommitNotification(this.editor, () => {
+        this.editorAdapter.applyRemote({
+          change: drift.change,
+          effects: [],
+          ...(mapped
+            ? {
+                selection: SelectionApi.text({
+                  ...mapped,
+                  ...(root === 'main' ? {} : { root }),
+                }),
+              }
+            : {}),
+        });
+        drift.accept(valueRootIndex(this.editorAdapter.readValue(), root));
+        this.awarenessAdapter?.publishMappedRoots(new Set([root]));
+      });
+    }
   }
 
   assertSchemaIdentity(next: EditorSchemaIdentity): void {
@@ -1458,6 +1506,7 @@ export class YjsController<
       selection: this.currentSelection(),
     });
     binding.bridge.reset(children);
+    binding.bridge.refreshMasks(children);
     const changedRoots = new Set([root]);
 
     this.awarenessAdapter?.publishMappedRoots(changedRoots, {
@@ -1625,6 +1674,9 @@ export class YjsController<
     }
     if (changed?.main ?? true) {
       primary.bridge.reset(this.editorAdapter.readChildren(MAIN_ROOT_KEY));
+      primary.bridge.refreshMasks(
+        this.editorAdapter.readChildren(MAIN_ROOT_KEY)
+      );
     }
 
     const namedRoots = changed?.named ?? new Set(this.roots.keys());
@@ -1646,6 +1698,7 @@ export class YjsController<
         this.bindings.set(root, binding);
       }
       binding.bridge.reset(this.editorAdapter.readChildren(root));
+      binding.bridge.refreshMasks(this.editorAdapter.readChildren(root));
     }
 
     if (!changed) {

@@ -59,6 +59,7 @@ const format = (change: string, at: number) => ({
   id: `${change}:type`,
   key: 'type',
   kind: 'format',
+  write: { kind: 'set', value: 'heading' },
 });
 
 // "Keep old new text more": carol replaces "old" with "new", dave adds " more".
@@ -612,6 +613,43 @@ describe('authored plugin', () => {
       [cards([0]), cards([1])].map((line) => line.map(([id]) => id)),
       [['alice:1'], ['alice:1']]
     );
+  });
+
+  it('keeps one card for one author’s adjacent line insertions and deletions', () => {
+    const { cards, editor } = suggesting(['Before', 'Mid', 'After']);
+    const line = (text: string) => ({
+      children: [{ text }],
+      type: 'paragraph',
+    });
+
+    editor.update((tx) => {
+      tx.nodes.insert(line('One'), { at: [1] });
+    });
+    editor.update((tx) => {
+      tx.nodes.insert(line('Two'), { at: [3] });
+    });
+    editor.update((tx) => {
+      tx.nodes.remove({ at: [2] });
+    });
+
+    assert.deepEqual(
+      [cards([1]), cards([2]), cards([3])],
+      [[['alice:1', 3]], [['alice:1', 3]], [['alice:1', 3]]]
+    );
+  });
+
+  it('keeps one card for a deletion inside one’s own struck line', () => {
+    const { cards, editor } = suggesting(['Before', 'Mid', 'After']);
+
+    editor.update((tx) => {
+      tx.selection.set(caret([1, 0], 3));
+      tx.text.deleteBackward();
+    });
+    editor.update((tx) => {
+      tx.nodes.remove({ at: [1] });
+    });
+
+    assert.deepEqual(cards([1]), [['alice:1', 2]]);
   });
 
   it('puts Enter at the edge of one’s own typing under that typing', () => {

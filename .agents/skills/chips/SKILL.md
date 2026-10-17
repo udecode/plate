@@ -6,7 +6,7 @@ argument-hint: '[offer <finding> | start <id> | drop <id>]'
 
 # Chips
 
-Chips are a project's suggested tasks, the side work outside a run's target, or a measurement that does not fit a run's one-hour budget, that the owner can start in a new session. They live as rows in one ledger per project, and a card in a suggest tool is only a view of one. The law is `.agents/pstack/rules/chips.md`, which sync-pstack renders into every project. Read it in full before this session's first ledger write. This skill runs its modes; it adds no rule of its own.
+Chips are a project's suggested tasks, the side work outside a run's target, or a measurement that does not fit a run's one-hour budget, that the owner can start in a new session. They live as rows in one ledger per project, and a card in a suggest tool is only a view of one. The law is `.agents/pstack/rules/chips.md`, which sync-pstack renders into every project. Read it in full before this session's first ledger write, except in a session a card started, whose brief holds what its own task's rows need. This skill runs its modes; it adds no rule of its own.
 
 Every command below is `node .agents/pstack/decisions-check.mjs <command>`, run from the project's checkout, which a card session that opened in its own worktree names by the path its brief prints. Get this session's id from the runtime's session tool, such as Claude Code desktop's `get_session` with `self`, and pass `--session <id>` to every board read. A runtime with no session tool reads the board without it.
 

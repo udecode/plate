@@ -163,6 +163,7 @@ export const BaseFootnoteDefinitionPlugin = definePlugin(
   {
     schema: ({ plugins }) => ({
       element: {
+        slice: { endMatter: true },
         content: plugins.blockContent({
           default: BaseParagraphPlugin,
           min: 1,

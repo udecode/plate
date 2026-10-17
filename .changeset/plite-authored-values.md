@@ -9,3 +9,4 @@
 - Fix the Yjs bridge reading an insertion with no previous children as a text split
 
 - Preserve restored container identities when undoing an unwrap in authored views
+- Fix a deletion that empties a line next to a pending join or split. The editor keeps the emptied line, so the leftover text no longer merges into the line before and the suggestion stays on the line it was made on

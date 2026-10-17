@@ -6,6 +6,7 @@ import {
   type FormatTag,
   type LayerOutcome,
   type LayerValue,
+  tipsWrittenValue,
 } from '../tree/layers';
 import {
   type AuthoredMark,
@@ -61,7 +62,17 @@ const settleFormats = (
   for (const key of new Set(tags.map((tag) => tag.key))) {
     const onKey = tags.filter((tag) => tag.key === key);
 
-    if (onKey.every((tag) => outcome(tag) === 'keep')) continue;
+    if (onKey.every((tag) => outcome(tag) === 'keep')) {
+      const present = new Set(onKey.map((tag) => tag.id));
+      if (
+        node[key] === undefined &&
+        onKey.some((tag) => tag.over?.some((id) => !present.has(id)))
+      ) {
+        const value = tipsWrittenValue(onKey);
+        if (value !== undefined) props[key] = value;
+      }
+      continue;
+    }
 
     const decision = decideKey(node[key] as LayerValue, onKey, outcome);
 
@@ -91,7 +102,13 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
     ),
     facts
   );
-  let changed = dropped.size > 0;
+  const next: Record<string, unknown> = { ...node };
+  for (const [key, value] of Object.entries(props)) {
+    if (value === undefined) delete next[key];
+    else next[key] = value;
+  }
+  if (!facts.hasVerdicts) return Object.keys(props).length > 0 ? next : node;
+  let changed = dropped.size > 0 || Object.keys(props).length > 0;
   const kept: AuthoredMember[] = [];
   // Editing's claim that its block goes with a pending join stays until the
   // resolver lands that join.
@@ -149,13 +166,6 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
   }
 
   if (!changed && !insertsSettled) return node;
-
-  const next: Record<string, unknown> = { ...node };
-
-  for (const [key, value] of Object.entries(props)) {
-    if (value === undefined) delete next[key];
-    else next[key] = value;
-  }
 
   return insertsSettled
     ? pass.dependencies.props(withMembers(next, kept), [
@@ -236,7 +246,8 @@ export const settleValue = <V extends Value>(
   scope: SettleScope,
   {
     returnsHeld = scope === 'document',
-  }: Readonly<{ returnsHeld?: boolean }> = {}
+    restoreMissingFormats = scope === 'document',
+  }: Readonly<{ returnsHeld?: boolean; restoreMissingFormats?: boolean }> = {}
 ): Readonly<{ reopenedRejections: ReadonlySet<string>; value: V | null }> => {
   const pass: Pass = {
     dependencies: createDependencies(facts),
@@ -251,7 +262,7 @@ export const settleValue = <V extends Value>(
     return outcome === 'pending' ? 'keep' : outcome;
   };
 
-  if (!facts.hasVerdicts) {
+  if (!facts.hasVerdicts && !restoreMissingFormats) {
     return { reopenedRejections: pass.reopenedRejections, value: null };
   }
 
@@ -259,14 +270,18 @@ export const settleValue = <V extends Value>(
     if (scope === 'document') {
       return settleNodes(nodes, {
         ...pass,
-        heldByJoin: heldByPendingJoins(nodes, readAuthoredMarks, decisionOf),
+        heldByJoin: facts.hasVerdicts
+          ? heldByPendingJoins(nodes, readAuthoredMarks, decisionOf)
+          : new Set<Node>(),
       });
     }
 
     const blocks = scope.get(root);
-    const held = [...(blocks ?? [])].map((index) =>
-      heldByJoinsAt(nodes, index, readAuthoredMarks, decisionOf)
-    );
+    const held = facts.hasVerdicts
+      ? [...(blocks ?? [])].map((index) =>
+          heldByJoinsAt(nodes, index, readAuthoredMarks, decisionOf)
+        )
+      : [];
 
     return settleBlocks(
       nodes,

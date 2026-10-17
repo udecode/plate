@@ -22,6 +22,8 @@ export const authoredResolveSchemaOf = (
   if (cached?.schema === schema) return cached.resolve;
 
   const resolve: AuthoredResolveSchema = {
+    canonicalizeTextProperties: (props, path, root, key) =>
+      schema.canonicalizeTextPropertiesAt(props, [...path], root, key),
     complete: (children, site, root, vacated, part) => {
       const completion = completeChildrenAt(
         editor,

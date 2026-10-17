@@ -269,16 +269,29 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       source: Element,
       options: Readonly<{ at: Path; root?: RootKey | undefined }>
     ) => Element | null;
-    /**
-     * `children` reads the ancestors at `path` from that root instead of the
-     * editor's document, for a draft that has moved away from it.
-     */
     elementPropertiesForSplitAt: (
       element: Element,
       path: Path,
-      root?: RootKey,
-      children?: NodeList<Descendant>
+      root?: RootKey
     ) => Readonly<Record<string, unknown>>;
+    /**
+     * Whether the element a split of `source` at `path` continues into,
+     * written as `continuation`, keeps property `key` with `value`: the split
+     * keeps it, the continuation's slot does not fix it and, when placement
+     * changed the continuation's type, the type change keeps it. An
+     * `undefined` value asks about the key alone. `children` is the root
+     * `path` is in, for a draft that has moved away from the editor's
+     * document.
+     */
+    elementSplitKeepsAt: (
+      source: Element,
+      continuation: Element,
+      options: Readonly<{
+        children: NodeList<Descendant>;
+        path: Path;
+        root: RootKey;
+      }>
+    ) => (key: string, value: unknown) => boolean;
     /**
      * `element` as changing its type to `type` at `path` leaves it: `type`
      * set, each of its own properties the change keeps with its validated
@@ -1443,6 +1456,7 @@ export const createEditorSchema = <V extends Value = Value>(
   const getElementSlicePolicy = (element: Element) =>
     getCompiledElement(element)?.slice ??
     Object.freeze({
+      endMatter: false,
       preserveContext: false,
       replaceWhenCovered: true,
     });
@@ -2942,50 +2956,91 @@ export const createEditorSchema = <V extends Value = Value>(
 
   const getElementTargetOptionsAt = (
     path: Path,
-    root: RootKey = 'main',
-    children: NodeList<Descendant> = getDocumentRootNodes(getDocument(), root)
+    root: RootKey = 'main'
   ): RuntimeTargetOptions => ({
-    ancestors: getElementAncestors(children, path),
+    ancestors: getElementAncestors(
+      getDocumentRootNodes(getDocument(), root),
+      path
+    ),
     root,
   });
+
+  const keepsElementPropertyOnSplit = (
+    schema: CompiledEditorSchema,
+    key: string,
+    context: CompiledSchemaTargetContext
+  ) => {
+    if (key === 'type') return true;
+    const property = resolveCompiledSchemaProperty(
+      schema,
+      'element',
+      key,
+      context
+    );
+
+    return property
+      ? property.lifecycle.split === 'preserve'
+      : schema.unknown === 'preserve' &&
+          getCompiledPropertyCandidates(schema, 'element', key).length === 0;
+  };
 
   const elementPropertiesForSplitAt = (
     element: Element,
     path: Path,
-    root: RootKey = 'main',
-    children?: NodeList<Descendant>
+    root: RootKey = 'main'
   ) => {
     const schema = getDeclarativeSchema();
 
     if (!schema) return NodeApi.extractProps(element);
-    const type = getElementType(element) ?? '';
     const context = toCompiledTargetContext(
-      type,
-      getElementTargetOptionsAt(path, root, children)
+      getElementType(element) ?? '',
+      getElementTargetOptionsAt(path, root)
     );
 
     return Object.freeze(
       Object.fromEntries(
-        Object.entries(NodeApi.extractProps(element)).filter(([key]) => {
-          if (key === 'type') return true;
-          const candidates = getCompiledPropertyCandidates(
-            schema,
-            'element',
-            key
-          );
-          const property = resolveCompiledSchemaProperty(
-            schema,
-            'element',
-            key,
-            context
-          );
-
-          return property
-            ? property.lifecycle.split === 'preserve'
-            : candidates.length === 0 && schema.unknown === 'preserve';
-        })
+        Object.entries(NodeApi.extractProps(element)).filter(([key]) =>
+          keepsElementPropertyOnSplit(schema, key, context)
+        )
       )
     );
+  };
+
+  const elementSplitKeepsAt: InternalEditorSchemaApi['elementSplitKeepsAt'] = (
+    source,
+    continuation,
+    { children, path, root }
+  ) => {
+    const schema = getDeclarativeSchema();
+
+    if (!schema) return () => true;
+    const ancestors = getElementAncestors(children, path);
+    const options = { ancestors, root };
+    const [parent] = ancestors;
+    const content = parent
+      ? getCompiledElement(parent)?.content
+      : getRootContent(root);
+    const continuationSlotFixed =
+      content?.prefix?.[getDefined(path.at(-1)) + 1]?.properties ?? {};
+    const from = toCompiledTargetContext(getElementType(source) ?? '', options);
+    const to =
+      continuation.type === source.type
+        ? null
+        : toCompiledTargetContext(getElementType(continuation) ?? '', options);
+
+    return (key, value) => {
+      if (
+        Object.hasOwn(continuationSlotFixed, key) ||
+        !keepsElementPropertyOnSplit(schema, key, from)
+      ) {
+        return false;
+      }
+      if (!to) return true;
+      if (key === 'type') return false;
+      const keep = typeChangeKeep(schema, key, from, to);
+
+      return keep !== null && (value === undefined || keep(value) !== null);
+    };
   };
 
   const elementPropertyLanding: InternalEditorSchemaApi['elementPropertyLanding'] =
@@ -3227,6 +3282,45 @@ export const createEditorSchema = <V extends Value = Value>(
     root: RootKey = 'main'
   ) => textPropertiesForSplit(text, getTextTargetOptionsAt(path, root));
 
+  const typeChangeKeep = (
+    schema: CompiledEditorSchema,
+    key: string,
+    from: CompiledSchemaTargetContext,
+    to: CompiledSchemaTargetContext
+  ): ((value: unknown) => Readonly<{ value: unknown }> | null) | null => {
+    const source = resolveCompiledSchemaProperty(schema, 'element', key, from);
+
+    if (!source) {
+      return schema.unknown === 'preserve' &&
+        getCompiledPropertyCandidates(schema, 'element', key).length === 0
+        ? (value) => ({ value })
+        : null;
+    }
+    if (source.lifecycle.typeChange !== 'preserve-if-allowed') return null;
+    const destination = resolveCompiledSchemaProperty(
+      schema,
+      'element',
+      key,
+      to
+    );
+
+    return destination
+      ? (value) => {
+          try {
+            return {
+              value: validatePropertyValue(
+                `Editor element property "${key}"`,
+                destination.descriptor,
+                value
+              ),
+            };
+          } catch {
+            return null;
+          }
+        }
+      : null;
+  };
+
   const keptElementProperties = (
     schema: CompiledEditorSchema,
     element: Element,
@@ -3236,47 +3330,9 @@ export const createEditorSchema = <V extends Value = Value>(
     Object.fromEntries(
       Object.entries(NodeApi.extractProps(element)).flatMap(([key, value]) => {
         if (key === 'type') return [];
-        const source = resolveCompiledSchemaProperty(
-          schema,
-          'element',
-          key,
-          from
-        );
+        const kept = typeChangeKeep(schema, key, from, to)?.(value);
 
-        if (!source) {
-          return schema.unknown === 'preserve' &&
-            getCompiledPropertyCandidates(schema, 'element', key).length === 0
-            ? [[key, value]]
-            : [];
-        }
-        const destination = resolveCompiledSchemaProperty(
-          schema,
-          'element',
-          key,
-          to
-        );
-
-        if (
-          source.lifecycle.typeChange !== 'preserve-if-allowed' ||
-          !destination
-        ) {
-          return [];
-        }
-
-        try {
-          return [
-            [
-              key,
-              validatePropertyValue(
-                `Editor element property "${key}"`,
-                destination.descriptor,
-                value
-              ),
-            ],
-          ];
-        } catch {
-          return [];
-        }
+        return kept ? [[key, kept.value]] : [];
       })
     );
 
@@ -4927,6 +4983,7 @@ export const createEditorSchema = <V extends Value = Value>(
     elementPropertiesForResetAt,
     placeElementAt: placeDerivedElement,
     elementPropertiesForSplitAt,
+    elementSplitKeepsAt,
     elementForTypeChangeAt,
     elementPropertyLanding,
     assertContentSliceForSchema,

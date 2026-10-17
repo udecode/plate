@@ -2,10 +2,8 @@ import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
   type ContentSlice,
-  type Descendant,
   type Element,
   type Path,
-  type Range,
   ElementApi,
 } from '../../../../core';
 import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
@@ -59,7 +57,8 @@ export type PreparedTablePastePlan = Readonly<{
   kind: 'plan';
   operations: readonly TableOperation[];
   placementGroups: readonly TablePastePlacementGroup[];
-  selection: Range;
+  anchorCell: Path;
+  focusCell: Path;
 }>;
 
 export type TablePastePlacementGroup = Readonly<{
@@ -280,66 +279,14 @@ const cloneUnitCell = (
   ) as MutableCell;
 };
 
-const firstTextPoint = (
-  nodes: readonly Descendant[],
-  path: readonly number[],
-  edge: 'end' | 'start'
-): Readonly<{ offset: number; path: Path }> | null => {
-  const indexes =
-    edge === 'start'
-      ? nodes.map((_, index) => index)
-      : nodes.map((_, index) => index).reverse();
-
-  for (const index of indexes) {
-    const node = nodes[index];
-    const nextPath = path.concat(index);
-
-    if (typeof node.text === 'string') {
-      return Object.freeze({
-        offset: edge === 'start' ? 0 : node.text.length,
-        path: freezePath(nextPath),
-      });
-    }
-
-    if (!Array.isArray(node.children)) continue;
-
-    const point = firstTextPoint(
-      node.children as readonly Descendant[],
-      nextPath,
-      edge
-    );
-
-    if (point) return point;
-  }
-
-  return null;
-};
-
-const pointForPlacement = (
+const cellPathForPlacement = (
   placement: Placement,
   rowChildren: ReadonlyMap<number, readonly TableCellElement[]>,
-  tablePath: Path,
-  edge: 'end' | 'start',
-  root?: string
+  tablePath: Path
 ) => {
-  const children = rowChildren.get(placement.row);
-  const cellIndex = children?.indexOf(placement.cell) ?? -1;
-
-  if (cellIndex < 0) return null;
-
-  const point = firstTextPoint(
-    placement.cell.children,
-    tablePath.concat(placement.row, cellIndex),
-    edge
-  );
-
-  if (!point) return null;
-
-  return Object.freeze({
-    offset: point.offset,
-    path: point.path,
-    ...(root === undefined ? {} : { root }),
-  });
+  const cellIndex =
+    rowChildren.get(placement.row)?.indexOf(placement.cell) ?? -1;
+  return cellIndex < 0 ? null : tablePath.concat(placement.row, cellIndex);
 };
 
 const targetDimensions = (
@@ -402,8 +349,8 @@ const planUnitTablePaste = (
     string,
     Array<TablePastePlacementGroup['placements'][number]>
   >();
-  let anchorPoint: ReturnType<typeof firstTextPoint> = null;
-  let focusPoint: ReturnType<typeof firstTextPoint> = null;
+  let anchorCell: Path | null = null;
+  let focusCell: Path | null = null;
 
   for (let row = bounds.startRow; row < bounds.endRow; row++) {
     for (let col = bounds.startCol; col < bounds.endCol; col++) {
@@ -428,15 +375,15 @@ const planUnitTablePaste = (
       groups.set(groupKey, placements);
 
       if (row === bounds.startRow && col === bounds.startCol) {
-        anchorPoint = firstTextPoint(children, path, 'start');
+        anchorCell = path;
       }
       if (row === bounds.endRow - 1 && col === bounds.endCol - 1) {
-        focusPoint = firstTextPoint(children, path, 'end');
+        focusCell = path;
       }
     }
   }
 
-  if (!anchorPoint || !focusPoint) {
+  if (!anchorCell || !focusCell) {
     return Object.freeze({
       kind: 'invalid-source',
       reason: 'content-rejected',
@@ -454,17 +401,8 @@ const planUnitTablePaste = (
         })
       )
     ),
-    selection: Object.freeze({
-      anchor: Object.freeze({
-        ...anchorPoint,
-        ...(options.root === undefined ? {} : { root: options.root }),
-      }),
-      focus: Object.freeze({
-        ...focusPoint,
-        ...(options.root === undefined ? {} : { root: options.root }),
-      }),
-      kind: 'text' as const,
-    }),
+    anchorCell,
+    focusCell,
   });
 };
 
@@ -767,22 +705,18 @@ export const planPreparedTablePaste = (
     return Object.freeze({ kind: 'invalid-target', reason: 'empty' });
   }
 
-  const anchor = pointForPlacement(
+  const anchorCell = cellPathForPlacement(
     anchorPlacement,
     rowChildren,
-    context.tablePath,
-    'start',
-    options.root
+    context.tablePath
   );
-  const focus = pointForPlacement(
+  const focusCell = cellPathForPlacement(
     focusPlacement,
     rowChildren,
-    context.tablePath,
-    'end',
-    options.root
+    context.tablePath
   );
 
-  if (!anchor || !focus) {
+  if (!anchorCell || !focusCell) {
     return Object.freeze({
       kind: 'invalid-source',
       reason: 'content-rejected',
@@ -820,10 +754,7 @@ export const planPreparedTablePaste = (
     kind: 'plan',
     operations: Object.freeze(operations),
     placementGroups: Object.freeze(resolvedPlacementGroups),
-    selection: Object.freeze({
-      anchor,
-      focus,
-      kind: 'text' as const,
-    }),
+    anchorCell,
+    focusCell,
   });
 };

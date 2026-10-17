@@ -11,6 +11,7 @@ import { ContentSlice as ContentSliceValue } from './content-slice';
 import type { ReplaceSliceCommand } from './editor-commands';
 import { editorReads } from './editor-reads';
 import { getEditorSchema } from './editor-runtime';
+import { getCompiledEditorSchemaFromApi } from './editor-schema';
 import { limitSliceToLength, sliceFitsLength } from './insert-limit';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
@@ -20,6 +21,7 @@ import {
   type SliceFitSite,
 } from './public-state';
 import { executeEditorRead } from './read-registry';
+import { dissolveOpenEndMatter } from './slice-end-matter';
 import type {
   SliceLanding,
   SliceLandingInput,
@@ -27,6 +29,7 @@ import type {
 } from './slice-landing-types';
 
 export type PastePlan = Readonly<{
+  drop?: true;
   emptyBlockReplacement: ContentSlice | null;
   inputCut: boolean;
   landingCut: boolean;
@@ -38,12 +41,21 @@ export const planPaste = (
   editor: Editor,
   state: EditorStateView,
   input: ReplaceSliceCommand,
-  intent: SliceLandingInput['intent']
+  intent: SliceLandingInput['intent'],
+  internal: Readonly<{ drop?: true }> = {}
 ): PastePlan | false => {
   const site = resolveSliceFitSite(editor, state, input.options);
 
   if (!site) return false;
-  const limited = limitSliceToLength(input.slice, site.remainingLength);
+  const dissolve = (slice: ContentSlice) =>
+    internal.drop
+      ? slice
+      : dissolveOpenEndMatter(
+          slice,
+          getCompiledEditorSchemaFromApi(getEditorSchema(editor))
+        );
+  const source = dissolve(input.slice);
+  const limited = limitSliceToLength(source, site.remainingLength);
 
   if (limited.content.length === 0 && input.slice.content.length > 0) {
     return {
@@ -70,9 +82,11 @@ export const planPaste = (
           )
   );
   const { replaceEmpty } = landed;
-  const slice = limitSliceToLength(landed.slice, site.remainingLength);
+  const landingSource = dissolve(landed.slice);
+  const slice = limitSliceToLength(landingSource, site.remainingLength);
 
   return {
+    ...(internal.drop ? { drop: true } : {}),
     emptyBlockReplacement:
       target.kind === 'empty' && replaceEmpty
         ? readAtSliceFitSite(editor, site, (rootState) =>
@@ -85,8 +99,8 @@ export const planPaste = (
             )
           )
         : null,
-    inputCut: limited !== input.slice,
-    landingCut: slice !== landed.slice,
+    inputCut: limited !== source,
+    landingCut: slice !== landingSource,
     site,
     slice:
       slice.content.length === 0 && landed.slice.content.length > 0
@@ -105,6 +119,7 @@ export const writePaste = (
   if (plan.emptyBlockReplacement) {
     const spec = fitSliceAtSite(editor, plan.site, plan.emptyBlockReplacement, {
       ...options,
+      ...(plan.drop ? { drop: true } : {}),
       replaceEmptyBlock: true,
     });
 
@@ -118,7 +133,10 @@ export const writePaste = (
   }
   if (!plan.slice) return false;
 
-  const spec = fitSliceAtSite(editor, plan.site, plan.slice, options);
+  const spec = fitSliceAtSite(editor, plan.site, plan.slice, {
+    ...options,
+    ...(plan.drop ? { drop: true } : {}),
+  });
 
   return (
     spec && {

@@ -306,6 +306,7 @@ describe('authored review tree decisions', () => {
             id: 't1',
             key: 'bold',
             kind: 'format',
+            write: { kind: 'set', value: true },
           },
         ],
         bold: true,
@@ -332,6 +333,7 @@ describe('authored review tree decisions', () => {
             id: 't2',
             key: 'bold',
             kind: 'format',
+            write: { kind: 'remove' },
             over: ['t1'],
           },
         ],
@@ -433,6 +435,7 @@ describe('authored review tree decisions', () => {
       id: 't1',
       key: 'layout',
       kind: 'format',
+      write: { kind: 'set', value: 'wide' },
     };
     const initial = [
       group([column('left'), whole(column('right'), mark('delete'))], {

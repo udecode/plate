@@ -15,7 +15,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
-import { SEATS, SEVERITIES, STAGE_PHASES, STATES, isFence, landed, readFence, reopened, splitRow, stateOf, TABLE_RULE, tablesOf } from './status.mjs';
+import { SEATS, SEVERITIES, STAGE_PHASES, STATES, isFence, isHandOffReview, landed, readFence, reopened, splitRow, stateOf, TABLE_RULE, tablesOf } from './status.mjs';
 
 const PAGE_HEAD = `<meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -335,8 +335,8 @@ const sameText = (text) => text.replace(/\s+/g, ' ').trim().toLowerCase();
 const sameRow = (a, b) => a.length === b.length && a.every((cell, index) => sameText(cell) === sameText(b[index]));
 const sameContent = (text) => text.replace(/\s+/g, ' ').trim();
 const sameCells = (a, b) => a.length === b.length && a.every((cell, index) => sameContent(cell) === sameContent(b[index]));
-const sectionNamed = (doc, title) =>
-  doc.sections.find((section) => section.title.toLowerCase() === title.toLowerCase());
+const sectionsNamed = (doc, title) => doc.sections.filter((section) => section.title.toLowerCase() === title.toLowerCase());
+const sectionNamed = (doc, title) => sectionsNamed(doc, title)[0];
 
 function fencesOf(lines) {
   const fences = [];
@@ -473,16 +473,17 @@ const TIERS = new Map([
 const impactColumn = (head) => head.findIndex((cell) => headCell(cell) === 'impact');
 
 function assertDefaults(plan, where) {
-  const section = sectionNamed(plan, 'Defaults');
-  if (!section?.lines.some((line) => line.trim())) return;
-  const tables = tablesOf(section.lines).filter((table) => isDefaultsHead(table.head));
-  if (!tables.length) {
-    throw new Error(`## Defaults in ${where} needs a table whose columns start with Decision, Pick, Alternative and Word, one row per call made for the owner`);
-  }
-  for (const { head, rows } of tables) {
-    const impact = impactColumn(head);
-    const wrong = impact < 0 ? null : rows.find((row) => !TIERS.has(headCell(row[impact] ?? '')));
-    if (wrong) throw new Error(`## Defaults in ${where} gives "${wrong[0]}" the impact "${wrong[impact] ?? ''}"; write big, small or detail`);
+  for (const section of sectionsNamed(plan, 'Defaults')) {
+    if (!section.lines.some((line) => line.trim())) continue;
+    const tables = tablesOf(section.lines).filter((table) => isDefaultsHead(table.head));
+    if (!tables.length) {
+      throw new Error(`## Defaults in ${where} needs a table whose columns start with Decision, Pick, Alternative and Word, one row per call made for the owner`);
+    }
+    for (const { head, rows } of tables) {
+      const impact = impactColumn(head);
+      const wrong = impact < 0 ? null : rows.find((row) => !TIERS.has(headCell(row[impact] ?? '')));
+      if (wrong) throw new Error(`## Defaults in ${where} gives "${wrong[0]}" the impact "${wrong[impact] ?? ''}"; write big, small or detail`);
+    }
   }
 }
 
@@ -935,23 +936,22 @@ const splitCost = (text) => {
   return at < 0 ? [text.trim(), ''] : [text.slice(0, at).trim(), text.slice(at).replace(/^Cost:\s*/, '').trim()];
 };
 
-function questionGroups(lines, older = []) {
+function questionGroups(sections) {
   const intro = [];
   const groups = [];
-  for (const line of lines) {
-    const heading = line.match(/^###\s+(.*)$/);
-    if (heading) groups.push({ header: heading[1].trim(), lines: [], from: null });
-    else (groups.at(-1)?.lines ?? intro).push(line);
-  }
-  for (const { lines: olderLines, from } of older) {
+  const notes = [];
+  for (const { lines, from = null } of sections) {
+    const note = { from, lines: [] };
+    if (!from && intro.length) intro.push('');
     let own = null;
-    for (const line of olderLines) {
+    for (const line of lines) {
       const heading = line.match(/^###\s+(.*)$/);
       if (heading) groups.push((own = { header: heading[1].trim(), lines: [], from }));
-      else own?.lines.push(line);
+      else (own?.lines ?? (from ? note.lines : intro)).push(line);
     }
+    if (from && note.lines.some((line) => line.trim())) notes.push(note);
   }
-  return { intro, groups };
+  return { intro, groups, notes };
 }
 
 function askOf({ header, lines, from }) {
@@ -1028,18 +1028,18 @@ const PAGE_PARTS = ['Brief', 'Teach', 'Open questions', 'Defaults'];
 
 function assertPlain(plan, where) {
   for (const title of PAGE_PARTS) {
-    const lines = sectionNamed(plan, title)?.lines ?? [];
-    const code = lines.find(isFence)?.trim() ?? lines.join('\n').match(/`[^`\n]+`/)?.[0];
-    if (code) throw new Error(`## ${title} in ${where} holds code ${code}; the page shows this section, so write it in plain words and keep code in the plan's other sections`);
+    for (const { lines } of sectionsNamed(plan, title)) {
+      const code = lines.find(isFence)?.trim() ?? lines.join('\n').match(/`[^`\n]+`/)?.[0];
+      if (code) throw new Error(`## ${title} in ${where} holds code ${code}; the page shows this section, so write it in plain words and keep code in the plan's other sections`);
+    }
   }
 }
 
 const listed = (items) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} and ${items.at(-1)}` : items[0]);
 
 function assertAsks(plan, where) {
-  const section = sectionNamed(plan, 'Open questions');
-  if (!section) return;
-  for (const group of questionGroups(section.lines).groups) {
+  const { groups } = questionGroups(sectionsNamed(plan, 'Open questions'));
+  for (const group of groups) {
     const ask = askOf(group);
     const fix = "write it as the decision memo in the plan-page skill's references/shape.md";
     const missing = missingParts(ask);
@@ -1181,7 +1181,7 @@ function flowOf(entry, status, playbooks) {
     const half = rows.filter((row, index) => STAGE_PHASES.Review.includes(row.phase) && (firstBuild < 0 || index < firstBuild) === beforeBuild);
     return half.filter((row) => SEATS.test(row.decision)).length || (half.length ? 1 : 0);
   };
-  const handOffPhases = new Set(rows.filter((row) => /^review/.test(row.phase)).map((row) => row.phase));
+  const handOffPhases = new Set(rows.filter((row) => isHandOffReview(row.phase)).map((row) => row.phase));
   const steps = stepChecks(entry.plan);
   const stepsDone = steps.filter(Boolean).length;
   const design = [...new Set(of('Design').map((row) => row.phase))];
@@ -1302,16 +1302,17 @@ const ANSWER_SCRIPT = `<script>
 })();
 </script>`;
 
-function needsSection(lines, older = []) {
-  const { intro, groups } = questionGroups(lines, older);
-  if (groups.length === 0) return `<section class="needs"><div class="needs-head"><h2>Needs you</h2></div>${blocksHtml([...lines, ...older.flatMap((source) => source.lines)])}</section>`;
+function needsSection(sections) {
+  const { intro, groups, notes } = questionGroups(sections);
+  const loose = `${blocksHtml(intro)}${notes.map((note) => `<p class="from">from ${inline(note.from)}</p>${blocksHtml(note.lines)}`).join('')}`;
+  if (groups.length === 0) return `<section class="needs"><div class="needs-head"><h2>Needs you</h2></div>${loose}</section>`;
   const asks = groups.map(askOf).sort((a, b) => LEVELS.indexOf(levelOf(a)) - LEVELS.indexOf(levelOf(b)));
   const legend = LEVELS.map((level) => [level, asks.filter((ask) => levelOf(ask) === level).length])
     .filter(([, count]) => count)
     .map(([level, count]) => `<span class="lg" style="--c: var(--c-${ATTENTION[level][1]})">${count} ${ATTENTION[level][0]}</span>`)
     .join('');
   const answerable = asks.some((ask) => ask.options.length);
-  return `<section class="needs" style="--frame: var(--c-${ATTENTION[levelOf(asks[0])][1]})"><div class="needs-head"><h2>Needs you</h2>${legend}</div>${blocksHtml(intro)}${asks.map((ask, index) => askHtml(ask, index)).join('')}${answerable ? '<div class="bar" aria-live="polite"><code></code><button type="button">Copy</button></div>' : ''}</section>${answerable ? ANSWER_SCRIPT : ''}`;
+  return `<section class="needs" style="--frame: var(--c-${ATTENTION[levelOf(asks[0])][1]})"><div class="needs-head"><h2>Needs you</h2>${legend}</div>${loose}${asks.map((ask, index) => askHtml(ask, index)).join('')}${answerable ? '<div class="bar" aria-live="polite"><code></code><button type="button">Copy</button></div>' : ''}</section>${answerable ? ANSWER_SCRIPT : ''}`;
 }
 
 function parsePlan(source) {
@@ -1369,7 +1370,7 @@ function reviewRows(planPath) {
       if (SEATS.test(decision)) round += 1;
       return [{ kind: 'panel', round, decision, result }];
     }
-    return /^review/iu.test(phase) ? [{ kind: 'hand-off', decision, result }] : [];
+    return isHandOffReview(phase) ? [{ kind: 'hand-off', decision, result }] : [];
   });
 }
 
@@ -1442,7 +1443,7 @@ const isOpenWork = (section) => sameText(section.title) === 'open work';
 const isVerification = (section) => sameText(section.title) === 'verification';
 
 function page(planPath, { folded = false } = {}) {
-  const { plan, root, repoPath, playbooks, topic, plansDir, subject, subjectPath, doc, iterations, missingSubject } = contextOf(planPath);
+  const { plan, root, repoPath, playbooks, topic, subject, subjectPath, doc, iterations, missingSubject } = contextOf(planPath);
   if (missingSubject) {
     if (plan.fields.topic) throw new Error(`${repoPath} belongs to topic ${missingSubject.subject}; ${missingSubject.hint}`);
     console.error(`${repoPath} renders its own page until its subject has a file: ${missingSubject.hint}`);
@@ -1457,7 +1458,6 @@ function page(planPath, { folded = false } = {}) {
       );
     }
   }
-  const delta = doc !== plan && isOpen(self);
   // An executed plan stays as written, so a playbook renamed since then falls back to every playbook's sections.
   const known = !plan.meta.playbook || !finished(status) || playbooks.some((entry) => entry.name === plan.meta.playbook);
   const { lead, pairs, require } = pageSections(playbooks, known ? plan.meta.playbook : null, repoPath);
@@ -1510,16 +1510,16 @@ function page(planPath, { folded = false } = {}) {
       .sort((a, b) => lead.indexOf(a.title.toLowerCase()) - lead.indexOf(b.title.toLowerCase()))
       .map((section) => sectionHtml(section, 'panel'))
       .join('\n  ');
-  const [needs] = byRole('needs', plan);
-  const otherNeeds = iterations
-    .filter((entry) => entry.path !== planPath)
-    .map((entry) => ({ lines: byRole('needs', entry.plan)[0]?.lines, from: entry.plan.title || basename(entry.path, '.md') }))
-    .filter((source) => source.lines);
+  const needs = [
+    ...byRole('needs', plan),
+    ...iterations
+      .filter((entry) => entry.path !== planPath)
+      .flatMap((entry) => byRole('needs', entry.plan).map((section) => ({ lines: section.lines, from: entry.plan.title || basename(entry.path, '.md') }))),
+  ];
   const [close] = byRole('close', plan);
   const iterationHtml = ({ path, plan: iteration }) => {
     const iterationStatus = iteration.meta.status ?? 'unknown';
-    const shownAbove = delta && path === planPath;
-    const open = !finished(iterationStatus) && !shownAbove;
+    const open = !finished(iterationStatus);
     const shown = iteration.sections.filter(
       (section) =>
         hasContent(section) &&
@@ -1527,7 +1527,7 @@ function page(planPath, { folded = false } = {}) {
           (open && /^(open questions|defaults)$/i.test(section.title)))
     );
     const head = `${statusHtml(iterationStatus)} <strong>${inline(iteration.title || basename(path, '.md'))}</strong> <code>${escapeHtml(relative(root, path))}</code>`;
-    const body = shownAbove ? '' : shown.map((section) => `<h3>${inline(section.title)}</h3>${blocksHtml(section.lines)}`).join('');
+    const body = shown.map((section) => `<h3>${inline(section.title)}</h3>${blocksHtml(section.lines)}`).join('');
     return body
       ? `<details open class="iteration"><summary>${head}</summary>${body}</details>`
       : `<p class="iteration">${head}</p>`;
@@ -1535,14 +1535,15 @@ function page(planPath, { folded = false } = {}) {
   const iterationList = iterations.length
     ? `<section class="plan"><h2>History <span class="count">${iterations.length}</span></h2>${iterations.map(iterationHtml).join('')}</section>`
     : '';
-  const own = delta || doc === plan ? plan : null;
-  const details = own ? byRole('details', own) : [];
+  const details = doc === plan ? byRole('details', plan) : [];
   const hubPath = subject && topic.hub ? topic.hub.replaceAll('{topic}', subject) : null;
   const hub = hubPath && existsSync(join(root, hubPath)) ? hubPath : null;
+  const brief = briefOf(plan);
   if (hub) {
+    const shown = brief ? [subjectPath, planPath] : [subjectPath];
     for (const required of require) {
-      if (![doc, iterations.find(isOpen)?.plan].some((source) => source && hasContent(sectionNamed(source, required)))) {
-        throw new Error(`${subject} needs ## ${required} in ${relative(root, subjectPath)} or its open plan, because its hub exists and the leading plan's playbook requires it`);
+      if (![doc, brief && plan].some((source) => source && hasContent(sectionNamed(source, required)))) {
+        throw new Error(`${subject} needs ## ${required} in ${shown.map((path) => relative(root, path)).join(' or ')}, the sources its page shows, because its hub exists and page-require names it`);
       }
     }
   }
@@ -1590,9 +1591,8 @@ function page(planPath, { folded = false } = {}) {
   const statusLine = sentence ? `<p class="status-line">${inline(sentence[0].toUpperCase() + sentence.slice(1))}</p>` : '';
   const title = escapeHtml(doc.title || basename(planPath, '.md'));
   const where = subjectPath ? relative(root, subjectPath) : repoPath;
-  const brief = briefOf(plan);
   const briefMain = () => {
-    const asking = needs || otherNeeds.length ? needsSection(needs?.lines ?? [], otherNeeds) : '';
+    const asking = needs.length ? needsSection(needs) : '';
     const answers = brief
       .map((answer) => ({ answer, index: BRIEF.findIndex((question) => sameText(question) === sameText(answer.question)) }))
       .filter(({ index }) => index >= 0)
@@ -1645,17 +1645,15 @@ ${withViewer(brief ? briefMain() : `<main>
     ${statusLine}
     <div class="meta"><code>${escapeHtml(where)}</code>${planTag}${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${carriedTag}${leadSeatsHtml(entries)}${reviewTag}<span>Updated ${updated} UTC</span></div>
   </header>
-  ${(own ? byRole('demo', own) : []).map((section) => demoHtml(section, dirname(planPath))).join('')}
-  ${needs || otherNeeds.length ? needsSection(needs?.lines ?? [], otherNeeds) : ''}${close ? sectionHtml(close, 'panel') : ''}
-  ${(own ? byRole('teach', own) : []).map((section) => teachHtml(section, dirname(planPath))).join('')}
+  ${byRole('demo', plan).map((section) => demoHtml(section, dirname(planPath))).join('')}
+  ${needs.length ? needsSection(needs) : ''}${close ? sectionHtml(close, 'panel') : ''}
+  ${byRole('teach', plan).map((section) => teachHtml(section, dirname(planPath))).join('')}
   ${changeHtml('api')}
   ${changeHtml('lead')}
   ${changeHtml('main')}
-  ${own
-    ? byRole('picked', own)
-        .map((section) => pickedHtml(section))
-        .join('\n  ')
-    : ''}
+  ${byRole('picked', plan)
+    .map((section) => pickedHtml(section))
+    .join('\n  ')}
   ${doc.lead.some((line) => line.trim()) ? `<section class="plan">${blocksHtml(doc.lead)}</section>` : ''}
   ${[...byRole('ontop'), ...byRole('idea')]
     .map((section) => sectionHtml(section))

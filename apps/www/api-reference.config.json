@@ -951,6 +951,7 @@
             "BaseFootnoteDefinitionPlugin",
             "BaseFootnotePlugin",
             "CreateFootnoteDefinitionOptions",
+            "FootnoteAnchor",
             "FootnoteDefinition",
             "FootnoteDefinitionElement",
             "FootnoteElement",

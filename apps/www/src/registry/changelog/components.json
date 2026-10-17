@@ -58,6 +58,22 @@
       "2026-10-10-details-selection",
       "2026-08-29-semantic-details"
     ],
+    "footnote": [
+      "2026-10-17-footnote-links",
+      "2026-10-14-block-void-selection",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-09-navigation-view-feedback",
+      "2026-09-08-inline-combobox-input",
+      "2026-09-07-footnote-target-attributes",
+      "2026-08-25-base-first-registry",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "footnote-static": [
+      "2026-10-17-footnote-links",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
     "code-block-diagram": ["2026-10-16-code-block-diagrams"],
     "code-block-diagram-mermaid": ["2026-10-16-code-block-diagrams"],
     "code-block-diagram-graphviz": ["2026-10-16-code-block-diagrams"],
@@ -274,16 +290,6 @@
     "tag": [
       "2026-10-14-block-void-selection",
       "2026-08-24-fix-tag-link-install",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "footnote": [
-      "2026-10-14-block-void-selection",
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-09-navigation-view-feedback",
-      "2026-09-08-inline-combobox-input",
-      "2026-09-07-footnote-target-attributes",
-      "2026-08-25-base-first-registry",
-      "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
     "excalidraw-demo": [
@@ -1196,10 +1202,6 @@
     "pro-iframe-demo": [
       "2026-08-20-improve-editor-control-accessibility",
       "2025-11-20-biome-ultracite"
-    ],
-    "footnote-static": [
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
     ],
     "code-drawing-static": [
       "2026-08-18-complete-v54-ast-contracts",

@@ -16,11 +16,13 @@ import type { JsonEditorValue } from '../../core/change/tokens';
 import type { DocumentAdmission } from '../../core/document-admission';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { EditorMissingReferenceError } from '../../core/missing-reference';
+import { getActiveEditorUpdateTags } from '../../core/public-state';
 import { getValueRecords, recordOpsBetween } from '../../core/record-store';
 import type { EditorDocumentValue } from '../../interfaces/editor';
 import type { Path } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import { getReviewLedger } from '../ledger/ledger';
+import { rootOf } from '../ledger/roots';
 import {
   AuthoredMarkError,
   createAuthoredMarksValidator,
@@ -241,6 +243,28 @@ export const authoredAdmission: DocumentAdmission = {
     const settled = new Map(
       [...scope].map(([root, at]) => [root, new Set(at)])
     );
+    const restoreMissingFormats =
+      getActiveEditorUpdateTags(editor).includes('collaboration');
+
+    if (!compactedFacts.hasVerdicts && restoreMissingFormats) {
+      for (const root of scope.keys()) {
+        if (!previous.roots.has(root) || !roots.has(root)) continue;
+        const changed = rootOf(before, root).changedChildren(
+          rootOf(compacted, root)
+        );
+        settled.set(
+          root,
+          new Set(
+            changed.flatMap((range) =>
+              Array.from(
+                { length: range[3] - range[2] },
+                (_, offset) => range[2] + offset
+              )
+            )
+          )
+        );
+      }
+    }
 
     if (decided.length > 0) {
       const ledger = getDefined(getReviewLedger(getEditorRuntimeOwner(editor)));
@@ -259,7 +283,10 @@ export const authoredAdmission: DocumentAdmission = {
         compacted,
         { ...compactedFacts, insertedIncarnations: () => inserting },
         settled,
-        { returnsHeld: true }
+        {
+          returnsHeld: true,
+          restoreMissingFormats,
+        }
       ).value ?? compacted;
 
     return admitted === after

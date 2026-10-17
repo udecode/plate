@@ -1,6 +1,7 @@
 import type { SparseNodes } from '../../core/change/document-index';
 import { normalizeSetValues } from '../../core/change/transform';
 import { property, schema, target } from '../../core/schema-definition';
+import { isEditorJsonValue } from '../../core/value-codec';
 import type { EditorJsonValue } from '../../interfaces/json';
 import type { Path } from '../../interfaces/path';
 import { isEditingChange } from '../facts/editing';
@@ -124,6 +125,7 @@ const FORMAT_FIELDS: ReadonlySet<string> = new Set([
   'key',
   'kind',
   'over',
+  'write',
 ]);
 
 const CUT_FIELDS: ReadonlySet<string> = new Set([
@@ -167,7 +169,7 @@ const isCutTag = (value: Readonly<Record<string, unknown>>) =>
   Object.keys(value).every((field) => CUT_FIELDS.has(field));
 
 const isFormatTag = (value: Readonly<Record<string, unknown>>) => {
-  const { id, key, over } = value;
+  const { id, key, over, write } = value;
 
   return (
     typeof id === 'string' &&
@@ -175,6 +177,12 @@ const isFormatTag = (value: Readonly<Record<string, unknown>>) => {
     typeof key === 'string' &&
     key.length > 0 &&
     key !== AUTHORED_MARKS_KEY &&
+    isRecord(write) &&
+    ((write.kind === 'remove' && Object.keys(write).length === 1) ||
+      (write.kind === 'set' &&
+        Object.keys(write).length === 2 &&
+        Object.hasOwn(write, 'value') &&
+        isEditorJsonValue(write.value))) &&
     (over === undefined ||
       (Array.isArray(over) &&
         over.every((item) => typeof item === 'string' && item.length > 0))) &&

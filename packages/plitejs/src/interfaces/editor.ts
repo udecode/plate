@@ -1705,6 +1705,7 @@ export type EditorElementBehavior = Readonly<{
 }>;
 
 export type EditorElementSlicePolicy = Readonly<{
+  endMatter: boolean;
   preserveContext: boolean;
   replaceWhenCovered: boolean;
 }>;

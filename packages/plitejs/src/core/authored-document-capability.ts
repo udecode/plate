@@ -1,4 +1,5 @@
 import type { EditorDocumentValue, PluginPoint } from '../interfaces/editor';
+import type { Node } from '../interfaces/node';
 import { definePluginPoint } from './plugin-point';
 import type { CompiledEditorSchema } from './schema-compiler';
 
@@ -54,8 +55,18 @@ export type AuthoredProjectionRefusal = Readonly<{
   pending: number;
 }>;
 
-/** How an editor with suggestions exports its document with them decided. */
+/**
+ * How an editor with suggestions exports its document with them decided, and
+ * which nodes hold a pending line break.
+ */
 export type NativeAuthoredDocumentCapability = Readonly<{
+  /**
+   * Whether `node` holds a pending join or split of the break before it.
+   * `mergeNodes` merges instead of removing an empty previous node when either
+   * node holds one, because removing it would drop that change or move it to
+   * another line.
+   */
+  claimsBreakBefore: (node: Node) => boolean;
   project: (
     document: EditorDocumentValue,
     projection: 'accepted' | 'proposed',

@@ -1723,7 +1723,9 @@ for (const width of [1280, 390]) {
       });
       await page.keyboard.press('Escape');
       await editor
-        .locator('[data-editor-authored-change="playground3"]')
+        .locator(
+          '[data-editor-node="text"][data-editor-authored-change="playground3"]'
+        )
         .click();
       await expect(popover.locator('[data-comment-thread]')).toHaveCount(1);
       await expect(popover.locator('[data-suggestion-review]')).toHaveCount(1);
@@ -1735,12 +1737,14 @@ for (const width of [1280, 390]) {
       await expect(editor).toContainText('overlapping');
       await expect(
         popover.locator('[data-comment-thread="discussion2"]')
-      ).toBeVisible();
+      ).toHaveCount(0);
       await expect(popover.locator('[data-suggestion-review]')).toHaveCount(0);
       await editor.press(undo);
       await expect(
         editor
-          .locator('[data-editor-authored-change="playground3"]')
+          .locator(
+            '[data-editor-node="text"][data-editor-authored-change="playground3"]'
+          )
           .filter({ hasText: 'overlapping' })
       ).toHaveCount(1);
       await page.keyboard.press('Escape');

@@ -365,7 +365,11 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   no read walks every pending change. A card is the adjacent pending changes of
   one author, named by its oldest pending change, so every peer and reload
   names it alike. A pending join or split stands for the line break it removes
-  or adds, so changes on either side of it are adjacent. A change follows the
+  or adds, so changes on either side of it are adjacent. A change whose last
+  part is, or lies inside, a whole block it inserts or deletes ends where that
+  block ends, so it is adjacent to a change inside that block and to a change
+  to the next block at the same depth, such as another added or struck line.
+  A change follows the
   text, not the undo history. Repeated Backspace within a line grows one
   deletion. Text or a line break written inside or at the edge of one's own
   pending insertion becomes part of it, so rejecting the typing removes the
@@ -626,6 +630,18 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   bypasses it. Raw transaction replacement and detached fitting do not run
   command policy. One-shot view slice and fragment replacement keep semantic
   command dispatch.
+- End matter is schema policy, the one exception to both rules above and to a
+  block landing wherever the compiled schema places it. Every slice write but a
+  drop takes the elements whose schema declares `slice.endMatter` out of its
+  content and writes them, in source order, after the last block of the
+  target's root that is not an empty default block, a raw `tx.slice.replace`
+  with `at` included. They never land above the block that receives the rest,
+  or above an empty block the root's schema requires at its place.
+  Detached `fitContent` leaves them among the fitted children. A copy keeps an
+  end-matter element its range covers whole and dissolves one it only enters,
+  so words copied inside a note paste as words. The contract and fingerprint
+  carry `endMatter` only where an element declares it, and nodes already in the
+  document never move.
 - Plite owns whole-block replacement of an empty target. A landing read can
   propose blocks for an `empty` target and never names another block. Plite
   honors the proposal only on its own resolution and refuses one the budget

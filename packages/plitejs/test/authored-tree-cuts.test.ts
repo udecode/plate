@@ -481,6 +481,7 @@ describe('cuts', () => {
             inc,
             key: 'url',
             kind: 'format',
+            write: { kind: 'set', value: url },
           },
         ],
         url,

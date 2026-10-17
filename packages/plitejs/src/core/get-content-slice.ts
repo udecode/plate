@@ -10,7 +10,9 @@ import { type Range, RangeApi } from '../interfaces/range';
 import { SelectionApi, type NodeSelection } from '../interfaces/selection';
 import { ContentSlice, createContentSliceFromFragment } from './content-slice';
 import { getEditorRuntimeRoot, getEditorSchema } from './editor-runtime';
+import { getCompiledEditorSchemaFromApi } from './editor-schema';
 import { getEditorDocumentRoots } from './public-state';
+import { dissolveOpenEndMatter } from './slice-end-matter';
 
 const getOpenDepth = (editor: Editor, point: Point) => {
   const ancestorPaths = point.path
@@ -122,8 +124,38 @@ export const getContentSlice = <V extends Value>(
   const [start, end] = rangeSelection
     ? RangeApi.edges(rangeSelection)
     : [null, null];
-  const openStart = start ? getOpenDepth(editor, start) : 0;
-  const openEnd = end ? getOpenDepth(editor, end) : 0;
+  let openStart = start ? getOpenDepth(editor, start) : 0;
+  let openEnd = end ? getOpenDepth(editor, end) : 0;
+
+  if (lifecycle === 'copy' && start && end) {
+    const closeCovered = (point: Point, open: number) => {
+      for (let depth = 1; depth <= open; depth++) {
+        const path = point.path.slice(0, depth);
+        const node = NodeApi.get(editor, path);
+
+        if (
+          !ElementApi.isElement(node) ||
+          !schema.getElementSlicePolicy(node).endMatter
+        ) {
+          continue;
+        }
+        const first = editor.read.points.start(path);
+        const last = editor.read.points.end(path);
+
+        if (
+          first &&
+          last &&
+          !PointApi.isAfter(start, first) &&
+          !PointApi.isBefore(end, last)
+        ) {
+          return depth - 1;
+        }
+      }
+      return open;
+    };
+    openStart = closeCovered(start, openStart);
+    openEnd = closeCovered(end, openEnd);
+  }
 
   content = omitOpenBoundaryRoots(editor, content, openStart, 'start');
   content = omitOpenBoundaryRoots(editor, content, openEnd, 'end');
@@ -173,5 +205,13 @@ export const getContentSlice = <V extends Value>(
 
   if (!rangeSelection) return ContentSlice.empty;
 
-  return createContentSliceFromFragment<V>(content, openStart, openEnd, roots);
+  const slice = createContentSliceFromFragment<V>(
+    content,
+    openStart,
+    openEnd,
+    roots
+  );
+  return lifecycle === 'copy'
+    ? dissolveOpenEndMatter(slice, getCompiledEditorSchemaFromApi(schema))
+    : slice;
 };

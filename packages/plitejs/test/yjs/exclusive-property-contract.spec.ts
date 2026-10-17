@@ -328,7 +328,7 @@ describe('plitejs/yjs exclusive property contract', () => {
             proposed(peer.editor, root)
           );
           peer.view.update.text.insert('!', {
-            at: { path: [1, 0], offset: 0 },
+            at: { path: [peer.view.read.children().length - 1, 0], offset: 0 },
           });
           Y.applyUpdate(follower.doc, Y.encodeStateAsUpdate(peer.doc));
           assert.deepEqual(
@@ -354,9 +354,7 @@ describe('plitejs/yjs exclusive property contract', () => {
     }
   }
   for (const mode of ['ordinary', 'edit', 'propose'] as const) {
-    for (const range of mode === 'ordinary'
-      ? (['full'] as const)
-      : (['full', 'overlap'] as const)) {
+    for (const range of ['full', 'overlap'] as const) {
       it(`converges concurrent ${mode} exclusive mark writes on ${range} ranges`, () => {
         const make = (authorId: string, seedUpdate?: Uint8Array) =>
           createYjsPeerWithEditor(

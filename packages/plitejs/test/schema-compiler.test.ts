@@ -1889,14 +1889,17 @@ describe('schema compiler', () => {
     ]);
 
     assert.deepEqual(compiled.elements.byType.get('paragraph')!.slice, {
+      endMatter: false,
       preserveContext: false,
       replaceWhenCovered: true,
     });
     assert.deepEqual(compiled.elements.byType.get('quote')!.slice, {
+      endMatter: false,
       preserveContext: true,
       replaceWhenCovered: false,
     });
     assert.deepEqual(compiled.elements.byType.get('image')!.slice, {
+      endMatter: false,
       preserveContext: false,
       replaceWhenCovered: false,
     });

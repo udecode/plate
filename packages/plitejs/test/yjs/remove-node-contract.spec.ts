@@ -7,7 +7,7 @@ import type { Descendant } from '../../src/index';
 import { setYjsAttribute } from '../../src/yjs/core/attributes';
 import {
   createVirtualYjsMovePlaceholder,
-  createYjsText,
+  createYjsNodes,
   getYjsTextContent,
   hideYjsNode,
   removeYjsChild,
@@ -66,8 +66,8 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
     const doc = new Y.Doc();
     const root = doc.get('document', Y.XmlElement);
     const parent = yParagraph();
-    const wrong = createYjsText('wrong', {});
-    const right = createYjsText('right', {});
+    const [wrong] = createYjsNodes([{ text: 'wrong' }]);
+    const [right] = createYjsNodes([{ text: 'right' }]);
 
     hideYjsNode(wrong);
     hideYjsNode(right);
@@ -92,8 +92,8 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
     const wrong = yParagraph();
     const right = yParagraph();
 
-    wrong.insert(0, [createYjsText('wrong', {})]);
-    right.insert(0, [createYjsText('right', {})]);
+    wrong.insert(0, createYjsNodes([{ text: 'wrong' }]));
+    right.insert(0, createYjsNodes([{ text: 'right' }]));
     hideYjsNode(wrong);
     hideYjsNode(right);
     root.insert(0, [parent]);
@@ -120,13 +120,13 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
     const doc = new Y.Doc();
     const root = doc.get('document', Y.XmlElement);
     const parent = new Y.XmlElement('root');
-    const movedText = createYjsText('right', {});
+    const [movedText] = createYjsNodes([{ text: 'right' }]);
     const wrong = yParagraph();
     const right = yParagraph();
 
     root.insert(0, [parent]);
     parent.insert(0, [movedText]);
-    wrong.insert(0, [createYjsText('wrong', {})]);
+    wrong.insert(0, createYjsNodes([{ text: 'wrong' }]));
     right.insert(0, [createVirtualYjsMovePlaceholder(movedText)]);
     hideYjsNode(wrong);
     hideYjsNode(right);

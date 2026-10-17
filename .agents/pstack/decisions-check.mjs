@@ -56,7 +56,7 @@ import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeF
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { currentLead, leadLabel, maxEffort } from './lead.mjs';
 import { board, briefOf, cardEffortOf, CHIP_STATES, cleanupOf, effortOf, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
-import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
+import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
@@ -138,7 +138,7 @@ function rowProblems(line, where, opened, chips) {
   }
   if (rest[0] !== 'chip' && CHIP_STATES.includes(status)) found.push(`${where}: an ${status} result belongs only in a chip row`);
   if (rest[0] === 'chip' && chips) found.push(...chipRowProblems(rest, chips, where));
-  const reviewerRow = rest[0].startsWith('review');
+  const reviewerRow = isHandOffReview(rest[0]);
   return reviewerRow ? found : [...found, ...missingPaths(rest[3], where)];
 }
 
@@ -168,7 +168,7 @@ function stampTranscript(cells, run) {
 
 function appendOnlyLabelProblems(log, row, earlier, where) {
   const [, phase, , , evidence, result] = row.split('\t');
-  if (phase.startsWith('review')) return [];
+  if (isHandOffReview(phase)) return [];
   const status = statusOf(result);
   if (!NOT_PASSED.includes(status) && status !== 'accepted') return [];
   const labels = proofLabels(evidence, plansDir());
@@ -274,13 +274,12 @@ function append(path, batch, run) {
   return [];
 }
 
-function lastStage(path, rows) {
+function stageMoves(path) {
   const phases = existsSync(path)
     ? readFileSync(path, 'utf8').split('\n').slice(1).filter((line) => line.trim()).map((line) => line.split('\t')[1])
     : [];
-  const covered = phases.slice(0, rows ?? phases.length);
-  const index = covered.findLastIndex((_, at) => stageOfRow(covered, at));
-  return index < 0 ? null : stageOfRow(covered, index);
+  const stages = phases.map((_, index) => stageOfRow(phases, index)).filter(Boolean);
+  return stages.filter((stage, index) => stage !== stages[index - 1]);
 }
 
 const args = process.argv.slice(2);
@@ -463,8 +462,7 @@ if (args[0] === 'append') {
           .filter((line) => line.trim())
           .map((line) => line.split('\t'))
       : [args.slice(2)];
-  const rowsBefore = existsSync(args[1] ?? '') ? readFileSync(args[1], 'utf8').split('\n').slice(1).filter((line) => line.trim()).length : 0;
-  const stageBefore = lastStage(args[1] ?? '', rowsBefore);
+  const before = stageMoves(args[1] ?? '').length;
   const run = currentLead(basename(args[1] ?? ''));
   if (!run) console.error(`No single session transcript holds this command, so ${args[1]} gets no lead row naming the model and effort.`);
   const found = batch.length === 0 ? [`${args[3]} holds no rows`] : append(args[1] ?? '', batch, run);
@@ -474,8 +472,8 @@ if (args[0] === 'append') {
   }
   console.info(batch.length > 1 ? `Appended ${batch.length} rows to ${args[1]}.` : `Appended a row to ${args[1]}.`);
   if (run) console.info(`Lead: ${leadLabel(run)}.`);
-  const stage = lastStage(args[1]);
-  if (stage && stage !== stageBefore) console.info(`Stage: ${stage}. Rename the session and publish the plan's page now, as .agents/pstack/rules/title.md and pages.md say.`);
+  const entered = stageMoves(args[1]).slice(before);
+  if (entered.length) console.info(`Stage: ${entered.join(', then ')}. Rename the session now, as .agents/pstack/rules/title.md says.`);
   process.exit(0);
 }
 const paths =

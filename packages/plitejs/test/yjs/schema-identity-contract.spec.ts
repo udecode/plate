@@ -66,7 +66,7 @@ class TestInitialReadiness implements YjsInitialReadiness {
 }
 
 const FORMAT_2_REFUSAL =
-  'Cannot open a Yjs document written with schema metadata format 2; this editor reads format 3.';
+  'Cannot open a Yjs document written with schema metadata format 2; this editor reads format 4.';
 
 const format2Room = (update: string): Y.Doc => {
   const doc = new Y.Doc();
@@ -325,7 +325,7 @@ describe('plitejs/yjs schema identity contract', () => {
 
     doc
       .getMap(getYjsSchemaMetadataName(rootName))
-      .set('current', { format: 3, identity: null });
+      .set('current', { format: 4, identity: null });
 
     assert.throws(
       () =>
@@ -339,7 +339,7 @@ describe('plitejs/yjs schema identity contract', () => {
 
   it('rejects claimed schema metadata without an identity', () => {
     const metadata = {
-      get: () => ({ format: 3, identity: null }),
+      get: () => ({ format: 4, identity: null }),
     } as unknown as Y.Map<unknown>;
 
     assert.throws(
@@ -352,7 +352,7 @@ describe('plitejs/yjs schema identity contract', () => {
     const extraKey = Symbol('extra');
     const derivedIdentity = { fingerprint: 'schema', kind: 'derived' };
     const envelopeWithSymbol = {
-      format: 3,
+      format: 4,
       identity: null,
       [extraKey]: true,
     };
@@ -369,7 +369,7 @@ describe('plitejs/yjs schema identity contract', () => {
       }
     );
     const exoticEnvelope = Object.assign(Object.create({ inherited: true }), {
-      format: 3,
+      format: 4,
       identity: null,
     });
     const exoticIdentity = Object.assign(Object.create({ inherited: true }), {
@@ -378,10 +378,10 @@ describe('plitejs/yjs schema identity contract', () => {
 
     for (const value of [
       envelopeWithSymbol,
-      { format: 3, identity: identityWithSymbol },
+      { format: 4, identity: identityWithSymbol },
       accessorEnvelope,
       exoticEnvelope,
-      { format: 3, identity: exoticIdentity },
+      { format: 4, identity: exoticIdentity },
     ]) {
       const metadata = {
         get: () => value,
@@ -412,7 +412,7 @@ describe('plitejs/yjs schema identity contract', () => {
     const doc = new Y.Doc();
 
     doc.getMap(getYjsSchemaMetadataName(rootName)).set('current', {
-      format: 3,
+      format: 4,
       identity: {
         fingerprint: 'schema-v0',
         id: 'article',
@@ -441,6 +441,30 @@ describe('plitejs/yjs schema identity contract', () => {
       },
       'the refused room stays byte-identical and emits no update'
     );
+  });
+
+  it('refuses a format 3 room before writing any repair or seed', () => {
+    const doc = new Y.Doc();
+    doc.getMap(getYjsSchemaMetadataName(rootName)).set('current', {
+      format: 3,
+      identity: createEditor().read.schema.identity(),
+    });
+    const before = Y.encodeStateAsUpdate(doc);
+    let updates = 0;
+    doc.on('update', () => {
+      updates += 1;
+    });
+
+    assert.throws(
+      () =>
+        createEditor({
+          plugins: [yjs({ doc, initialReady: true, rootName })],
+          initialValue: [paragraph('local')],
+        }),
+      /written with schema metadata format 3/
+    );
+    assert.equal(updates, 0);
+    assert.deepEqual(Y.encodeStateAsUpdate(doc), before);
   });
 
   it('refuses a format 2 room saved under another explicit root and writes nothing', () => {
@@ -600,7 +624,7 @@ describe('plitejs/yjs schema identity contract', () => {
 
     assert.equal(root.length, 1);
     assert.deepEqual(metadata.get('current'), {
-      format: 3,
+      format: 4,
       identity: editor.read.schema.identity(),
     });
     assert.equal(
@@ -894,7 +918,7 @@ describe('plitejs/yjs schema identity contract', () => {
         revision: expectedPayloadRevision,
       });
       assert.deepEqual(metadata.get('current'), {
-        format: 3,
+        format: 4,
         identity: editor.read.schema.identity(),
       });
       assert.equal(root.length, 1);

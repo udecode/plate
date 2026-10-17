@@ -15,15 +15,10 @@ import {
 import {
   createYjsNode,
   createYjsPropertyContext,
-  createYjsVisibleChildrenReader,
-  getYjsLength,
   getYjsNode,
   getYjsParent,
-  getYjsTextContentFrom,
   getYjsVisibleChildren,
   insertYjsChild,
-  readPliteNodeFromYjs,
-  resolveYjsTextPoint,
   splitVisibleYjsChildren,
   type YjsPropertyContext,
   type YjsPropertyLocation,
@@ -31,6 +26,11 @@ import {
 } from './document';
 import { areJsonLikeValuesEqual } from './json-equality';
 import { nextPath } from './path';
+import {
+  cutTextChain,
+  segmentPliteChildren,
+  segmentYjsChildren,
+} from './text-runs';
 
 type CanonicalSplit = Readonly<{
   elementPath: Path;
@@ -38,6 +38,8 @@ type CanonicalSplit = Readonly<{
   rightText: string;
   textPath: Path;
   textProperties: YjsAttributeRecord;
+  textGroup: number;
+  textOffset: number;
 }>;
 
 const isElement = (node: Descendant | null): node is Element =>
@@ -100,12 +102,27 @@ const findSplitText = (
       continue;
     }
 
+    const segments = segmentPliteChildren(before.children);
+    const textGroup = segments.findIndex(
+      (segment) =>
+        segment.kind === 'text' &&
+        segment.from <= index &&
+        index < segment.from + segment.leaves.length
+    );
+    const group = segments[textGroup];
+    if (group?.kind !== 'text') return null;
     return {
       elementPath,
       elementProperties: nodeProperties(right, 'children'),
       rightText: rightText.text,
       textPath: [...elementPath, index],
       textProperties: nodeProperties(rightText, 'text'),
+      textGroup,
+      textOffset:
+        group.leaves
+          .slice(0, index - group.from)
+          .reduce((sum, leaf) => sum + leaf.text.length, 0) +
+        leftText.text.length,
     };
   }
 
@@ -258,106 +275,29 @@ const createYjsPropertyLocationFromPath = (
   return { ancestors, path: parent, root: schemaRoot };
 };
 
-const splitYjsText = (
-  root: Y.XmlElement,
-  path: Path,
-  position: number,
-  properties: YjsAttributeRecord,
-  isSetValued: YjsSetPropertyResolver,
-  schemaRoot: string | null
-): number => {
-  const readVisibleChildren = createYjsVisibleChildrenReader(root);
-  const point = resolveYjsTextPoint(root, path, position, readVisibleChildren);
-
-  if (point === null) {
-    throw new Error('Cannot lower split because the text boundary is gone.');
-  }
-
-  const children = readVisibleChildren(point.parent);
-  const nextChild = children[point.childIndex + 1];
-  const textLength = getYjsLength(point.text);
-
-  if (point.offset === textLength && nextChild instanceof Y.XmlText) {
-    return point.childIndex + 1;
-  }
-
-  const rightText = getYjsTextContentFrom(point.text, point.offset);
-
-  if (rightText.length > 0) {
-    point.text.delete(point.offset, rightText.length);
-  }
-
-  const rightNode = { ...properties, text: rightText } as Descendant;
-  const right = createYjsNode(
-    rightNode,
-    isSetValued,
-    createYjsPropertyContext(rightNode, {
-      ...createYjsPropertyLocationFromPath(root, path.slice(0, -1), schemaRoot),
-      path: nextPath(path),
-    })
-  );
-
-  if (!(right instanceof Y.XmlText)) {
-    throw new Error('Cannot split Yjs text into an element.');
-  }
-
-  insertYjsChild(root, point.parent, point.childIndex + 1, right);
-
-  return point.childIndex + 1;
-};
-
 export const applyCanonicalSplitToYjs = (
   root: Y.XmlElement,
   split: CanonicalSplit,
   isSetValued: YjsSetPropertyResolver,
   schemaRoot: string | null
 ): Y.XmlElement => {
-  const text = getYjsNode(root, split.textPath);
-
-  if (!(text instanceof Y.XmlText)) {
-    throw new Error('Cannot lower split because the text boundary is gone.');
-  }
-
-  const { index: textIndex, parent: textParent } = getYjsParent(
-    root,
-    split.textPath
-  );
-  const textSiblings = getYjsVisibleChildren(root, textParent);
-  let contiguousTextLength = 0;
-
-  for (let index = textIndex; index < textSiblings.length; index++) {
-    const sibling = textSiblings[index];
-
-    if (!(sibling instanceof Y.XmlText)) break;
-    if (index !== textIndex) {
-      const siblingText = readPliteNodeFromYjs(root, sibling);
-
-      if (
-        !isText(siblingText) ||
-        !areJsonLikeValuesEqual(
-          nodeProperties(siblingText, 'text'),
-          split.textProperties
-        )
-      ) {
-        break;
-      }
-    }
-    contiguousTextLength += getYjsLength(sibling);
-  }
-
-  const physicalElementPosition = splitYjsText(
-    root,
-    split.textPath,
-    contiguousTextLength - split.rightText.length,
-    split.textProperties,
-    isSetValued,
-    schemaRoot
-  );
   const target = getYjsNode(root, split.elementPath);
 
   if (!(target instanceof Y.XmlElement)) {
     throw new Error('Cannot lower split because the element boundary is gone.');
   }
+  const group = segmentYjsChildren(getYjsVisibleChildren(root, target))[
+    split.textGroup
+  ];
+  if (group?.kind !== 'text') {
+    throw new Error('Cannot lower split because the text boundary is gone.');
+  }
+  const physicalElementPosition = cutTextChain(
+    root,
+    target,
+    group.chain,
+    split.textOffset
+  );
 
   const { index, parent } = getYjsParent(root, split.elementPath);
   const rightChildren = splitVisibleYjsChildren(

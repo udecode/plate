@@ -1,39 +1,33 @@
 import * as Y from 'yjs';
 
-import type { Point, Range } from '../../index';
-import { getYjsLength, getYjsNode, getYjsVisiblePath } from './document';
+import type { NodeList } from '../../core/change/document-index';
+import type { Descendant, Point, Range } from '../../index';
+import { readPliteValueFromYjs } from './document';
+import { pliteToYjsTextPosition, yjsToPliteTextPoint } from './text-runs';
 
 export type YjsRelativeRange = {
   readonly anchor: Y.RelativePosition;
   readonly focus: Y.RelativePosition;
 };
 
-const clampTextOffset = (offset: number, length: number): number =>
-  Math.max(0, Math.min(offset, length));
-
 export const pointToYjsRelativePosition = (
   root: Y.XmlElement,
-  point: Point
+  point: Point,
+  children: NodeList<Descendant> = readPliteValueFromYjs(root)
 ): Y.RelativePosition => {
-  const target = getYjsNode(root, point.path);
-
-  if (!(target instanceof Y.XmlText)) {
-    throw new Error('Editor point does not target a Y.XmlText.');
-  }
-
-  const length = getYjsLength(target);
-  const offset = clampTextOffset(point.offset, length);
-
+  const position = pliteToYjsTextPosition(root, children, point);
+  if (!position) throw new Error('Editor point does not target a text group.');
   return Y.createRelativePositionFromTypeIndex(
-    target,
-    offset,
-    offset === length ? -1 : 0
+    position.text,
+    position.index,
+    position.assoc
   );
 };
 
 export const yjsRelativePositionToPoint = (
   root: Y.XmlElement,
-  position: Y.RelativePosition
+  position: Y.RelativePosition,
+  children: NodeList<Descendant> = readPliteValueFromYjs(root)
 ): Point | null => {
   if (root.doc === null) {
     throw new Error('Yjs root must be attached to a Y.Doc.');
@@ -48,24 +42,22 @@ export const yjsRelativePositionToPoint = (
     return null;
   }
 
-  const path = getYjsVisiblePath(root, absolute.type);
-
-  if (path === null) {
-    return null;
-  }
-
-  return {
-    path,
-    offset: clampTextOffset(absolute.index, getYjsLength(absolute.type)),
-  };
+  return yjsToPliteTextPoint(
+    root,
+    children,
+    absolute.type,
+    absolute.index,
+    absolute.assoc
+  );
 };
 
 export const rangeToYjsRelativeRange = (
   root: Y.XmlElement,
-  range: Range
+  range: Range,
+  children: NodeList<Descendant> = readPliteValueFromYjs(root)
 ): YjsRelativeRange => ({
-  anchor: pointToYjsRelativePosition(root, range.anchor),
-  focus: pointToYjsRelativePosition(root, range.focus),
+  anchor: pointToYjsRelativePosition(root, range.anchor, children),
+  focus: pointToYjsRelativePosition(root, range.focus, children),
 });
 
 export const yjsRelativeRangesEqual = (
@@ -77,15 +69,16 @@ export const yjsRelativeRangesEqual = (
 
 export const yjsRelativeRangeToRange = (
   root: Y.XmlElement,
-  range: YjsRelativeRange
+  range: YjsRelativeRange,
+  children: NodeList<Descendant> = readPliteValueFromYjs(root)
 ): Range | null => {
-  const anchor = yjsRelativePositionToPoint(root, range.anchor);
+  const anchor = yjsRelativePositionToPoint(root, range.anchor, children);
 
   if (anchor === null) {
     return null;
   }
 
-  const focus = yjsRelativePositionToPoint(root, range.focus);
+  const focus = yjsRelativePositionToPoint(root, range.focus, children);
 
   if (focus === null) {
     return null;

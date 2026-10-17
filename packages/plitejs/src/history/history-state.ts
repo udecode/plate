@@ -20,10 +20,16 @@ import {
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import { areEditorSchemaIdentitiesEqual } from '../core/schema-compiler';
-import { mapSelectionThroughChange } from '../core/selection-protocol';
 import type { AnyEditor } from '../interfaces/editor';
 import type { Batch, History } from './history';
 import type { HistoryBatchGroup } from './history-merge-policy';
+import {
+  historyReplaySchemaOf,
+  recordHistoryReplay,
+  mapHistoryReplay,
+  mapHistorySelection,
+  type HistoryReplay,
+} from './history-replay';
 
 type HistoryStack = 'redos' | 'undos';
 
@@ -53,6 +59,7 @@ type HistoryBranch<V extends Value> = Readonly<{
   mappings: MappingJournal<V> | null;
   next: HistoryBranch<V> | null;
   recovery: AnchorHistoryRecovery | null;
+  replay: HistoryReplay<EditorDocumentValue<V>>;
 }>;
 
 type ResolvedHistoryEntry<V extends Value> = Readonly<{
@@ -62,6 +69,7 @@ type ResolvedHistoryEntry<V extends Value> = Readonly<{
   group: HistoryBatchGroup | null;
   identity: object;
   recovery: AnchorHistoryRecovery | null;
+  replay: HistoryReplay<EditorDocumentValue<V>>;
 }>;
 
 type PendingHistoryReplay<V extends Value> = Readonly<{
@@ -288,6 +296,7 @@ const freezeBatch = freezeHistoryBatch;
 const branch = <V extends Value>(
   batch: Batch<V>,
   base: EditorDocumentValue<V>,
+  replay: HistoryReplay<EditorDocumentValue<V>>,
   next: HistoryBranch<V> | null,
   mappings: MappingJournal<V> | null = null,
   group: HistoryBatchGroup | null = null,
@@ -298,7 +307,8 @@ const branch = <V extends Value>(
   Object.freeze({
     anchorCeiling,
     base,
-    batch: freezeBatch(batch),
+    batch: freezeBatch({ ...batch, change: replay.change }),
+    replay,
     depth: (next?.depth ?? 0) + 1,
     group,
     identity,
@@ -327,6 +337,7 @@ const clipBranch = <V extends Value>(
     clipped = branch(
       item.batch,
       item.base,
+      item.replay,
       clipped,
       item.mappings,
       item.group,
@@ -343,6 +354,7 @@ const pushBranch = <V extends Value>(
   value: HistoryBranch<V> | null,
   batchValue: Batch<V>,
   base: EditorDocumentValue<V>,
+  replay: HistoryReplay<EditorDocumentValue<V>>,
   maxDepth: number,
   group: HistoryBatchGroup | null = null,
   recovery: AnchorHistoryRecovery | null = null,
@@ -352,6 +364,7 @@ const pushBranch = <V extends Value>(
   branch(
     batchValue,
     base,
+    replay,
     clipBranch(value, maxDepth - 1),
     null,
     group,
@@ -421,26 +434,21 @@ const resolveHead = <V extends Value>(
 
   let batchBase = value.base;
   let batchValue = value.batch;
+  let { replay } = value;
   let { next } = value;
   let { recovery } = value;
 
   for (const mapping of journalEntries(value.mappings)) {
-    const nextBase = batchValue.change.apply(batchBase);
-    const batchChange =
-      mapping.textOnly && isTextOnlyMapping(batchValue.change)
-        ? DocumentChange.between(batchBase, nextBase)
-        : batchValue.change;
-    const mappedFirst = DocumentChange.transform(
-      mapping.change,
-      batchChange,
-      batchBase
+    const nextBase = replay.after;
+    const mapped = mapHistoryReplay(
+      historyReplaySchemaOf(editor),
+      replay,
+      batchBase,
+      mapping
     );
-    const transformed = {
-      a: mappedFirst.b,
-      b: mappedFirst.a,
-    };
     const mappedBatchBase = mapping.after;
-    const mappedNextBase = transformed.b.apply(nextBase);
+    const mappedNextBase = mapped.replay.after;
+    ({ replay } = mapped);
 
     recovery = mapAnchorHistoryRecovery(
       recovery,
@@ -452,40 +460,40 @@ const resolveHead = <V extends Value>(
     recovery = mapAnchorHistoryRecovery(
       recovery,
       'before',
-      transformed.b,
+      mapped.rest,
       nextBase,
       mappedNextBase
     );
 
     batchValue = freezeBatch<V>({
       ...batchValue,
-      change: transformed.a,
+      change: replay.change,
       effects: batchValue.effects.flatMap((effect) => {
-        const mapped = mapEffect(effect, mapping.change);
+        const mappedEffect = mapEffect(effect, mapping.change);
 
-        return mapped ? [mapped] : [];
+        return mappedEffect ? [mappedEffect] : [];
       }),
-      selectionAfter: mapSelectionThroughChange(
+      selectionAfter: mapHistorySelection(
         editor,
         batchValue.selectionAfter,
-        mapping.change,
-        batchBase,
-        mappedBatchBase,
+        replay.direction === 'undo' ? mapping.change : mapped.rest,
+        replay.direction === 'undo' ? batchBase : nextBase,
+        replay.direction === 'undo' ? mappedBatchBase : mappedNextBase,
         batchValue.selectionAfterRoot ?? MAIN_ROOT_KEY
       ),
-      selectionBefore: mapSelectionThroughChange(
+      selectionBefore: mapHistorySelection(
         editor,
         batchValue.selectionBefore,
-        transformed.b,
-        nextBase,
-        mappedNextBase,
+        replay.direction === 'undo' ? mapped.rest : mapping.change,
+        replay.direction === 'undo' ? nextBase : batchBase,
+        replay.direction === 'undo' ? mappedNextBase : mappedBatchBase,
         batchValue.selectionBeforeRoot ?? MAIN_ROOT_KEY
       ),
     });
-    if (!transformed.b.empty) {
+    if (!mapped.rest.empty) {
       next = addMapping<V>(next, {
         after: mappedNextBase,
-        change: transformed.b,
+        change: mapped.rest,
         textOnly: false,
       });
     }
@@ -497,6 +505,7 @@ const resolveHead = <V extends Value>(
   return branch<V>(
     batchValue,
     batchBase,
+    replay,
     next,
     null,
     retainMappedCompositionGroup(value.group),
@@ -534,6 +543,7 @@ const resolveAll = <V extends Value>(
       group: current.group,
       identity: current.identity,
       recovery: current.recovery,
+      replay: current.replay,
     });
     current = current.next;
   }
@@ -545,6 +555,7 @@ const resolveAll = <V extends Value>(
     resolved = branch(
       entry.batch,
       entry.base,
+      entry.replay,
       resolved,
       null,
       entry.group,
@@ -571,6 +582,7 @@ const rebuildBranch = <V extends Value>(
     value = branch(
       entry.batch,
       entry.base,
+      entry.replay,
       value,
       null,
       entry.group,
@@ -813,6 +825,12 @@ export const settlePendingHistoryReplay = <V extends Value>(
   const replayed = Object.freeze({
     ...claimed,
     base: replayBase,
+    replay: recordHistoryReplay(
+      historyReplaySchemaOf(editor),
+      replayBase,
+      input.change,
+      pending.direction === 'undo' ? 'redo' : 'undo'
+    ),
     batch: Object.freeze({
       ...claimed.batch,
       change: input.change,
@@ -842,6 +860,8 @@ export const settlePendingHistoryReplay = <V extends Value>(
 };
 
 const fromBatches = <V extends Value>(
+  editor: Editor<V>,
+  direction: 'undo' | 'redo',
   batches: ReadonlyArray<Batch<V>>,
   base: EditorDocumentValue<V>,
   maxDepth: number
@@ -859,7 +879,17 @@ const fromBatches = <V extends Value>(
 
   let value: HistoryBranch<V> | null = null;
   for (const entry of entries.toReversed()) {
-    value = branch(entry.batch, entry.base, value);
+    value = branch(
+      entry.batch,
+      entry.base,
+      recordHistoryReplay(
+        historyReplaySchemaOf(editor),
+        entry.base,
+        entry.batch.change,
+        direction
+      ),
+      value
+    );
   }
 
   return value;
@@ -976,6 +1006,12 @@ export const writeHistory = <V extends Value>(
       store[stack],
       batchValue,
       current,
+      recordHistoryReplay(
+        historyReplaySchemaOf(editor),
+        current,
+        batchValue.change,
+        stack === 'undos' ? 'undo' : 'redo'
+      ),
       store.maxDepth,
       options.group ?? null,
       options.recovery ?? null,
@@ -1006,6 +1042,12 @@ export const replaceHistoryHead = <V extends Value>(
     [stack]: branch(
       batchValue,
       current,
+      recordHistoryReplay(
+        historyReplaySchemaOf(editor),
+        current,
+        batchValue.change,
+        stack === 'undos' ? 'undo' : 'redo'
+      ),
       resolved.next,
       null,
       options.group ?? null,
@@ -1049,6 +1091,12 @@ export const completeHistoryAction = <V extends Value>(
       store[destination],
       batchValue,
       current,
+      recordHistoryReplay(
+        historyReplaySchemaOf(editor),
+        current,
+        batchValue.change,
+        destination === 'undos' ? 'undo' : 'redo'
+      ),
       store.maxDepth,
       resolved.group,
       resolved.recovery,
@@ -1121,11 +1169,11 @@ export const replaceHistoryState = <V extends Value>(
   const store = getStore(editor);
   const next = Object.freeze({
     ...store,
-    redos: fromBatches(value.redos, current, store.maxDepth),
+    redos: fromBatches(editor, 'redo', value.redos, current, store.maxDepth),
     revision: store.revision + 1,
     schema: value.schema,
     snapshot: null,
-    undos: fromBatches(value.undos, current, store.maxDepth),
+    undos: fromBatches(editor, 'undo', value.undos, current, store.maxDepth),
   });
 
   setStore(editor, next);

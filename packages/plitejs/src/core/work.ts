@@ -38,6 +38,8 @@ export type CoreWork = {
   wholeReadNodes: number;
   /** Yjs children a collaboration binding enumerated. */
   yjsChildrenRead: number;
+  /** Mark records a collaboration binding visits. */
+  yjsMarkRecordsVisited: number;
 };
 
 /**
@@ -63,6 +65,7 @@ export const coreWork: CoreWork = {
   walkedSlots: 0,
   wholeReadNodes: 0,
   yjsChildrenRead: 0,
+  yjsMarkRecordsVisited: 0,
 };
 
 /** @internal */

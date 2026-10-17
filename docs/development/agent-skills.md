@@ -56,6 +56,7 @@ These are optional shortcuts for a specific job, not a sequence to run.
 | Explain behavior, rationale or a complete body of work | `/pstack:how`, `/pstack:why` or `/pstack:teach` |
 | Present existing visual proof | `$walkthrough <completed work>` |
 | Work a public issue, PR or security queue | `$maintainer <scope>` |
+| Draft a review comment on a Slate PR or a Plate `main` PR, with Plate v2's evidence and repro tests | `/review-comment <PR>` |
 | Draft a Plate Beta issue from video or text | `$maintainer issue-draft <video or text>` |
 
 A planning-only request stops at a reviewable plan. Any other request runs to its close. Agents stop only for a production deploy or release, a push to `main`, a force-push to a shared branch, a message to a customer or anyone outside the team, a comment, label or close on a public issue or PR, and deleting data the run did not create. Two kinds of folder are not data and go without asking. A card session deletes its own worktree once its patch lands. `/cleanup` deletes the rest, and only what its scan marks safe: idle Next.js caches no server holds, other than each app's own `.next` build, and worktrees an agent made that no running session or process, and no recent session transcript, uses, after it saves their uncommitted changes as a patch. Every other call they make shows under Picked for you with the word that reverses it, and a call with no clear pick takes its most reversible option. Add "stop at plan", "stop at design" or "stop before ship" to a request to stop sooner.
@@ -75,9 +76,10 @@ Agents load [AGENTS.md](../../AGENTS.md) on every turn. It holds the rules
 every task needs and one line per process that names the rule file to read when
 that process starts, such as [the panel rules](../../.agents/pstack/rules/panel.md)
 or [the plan page rules](../../.agents/pstack/rules/pages.md); the sync renders
-those files into `.agents/pstack/rules/`. Code rules and the rules table live in
+those files into `.agents/pstack/rules/`. Code rules live in
 [CODING_STANDARDS.md](../../CODING_STANDARDS.md), which agents read before they
-write, review or clean up code.
+write, review or clean up code, and the rules table that pairs each rule with its
+enforcer lives in [enforcement.md](enforcement.md).
 
 **Redesign from First Principles governs `next` beta.** Start from current user
 jobs and hard laws. Existing and proposed APIs, owners and abstractions must
@@ -136,7 +138,7 @@ A published page is for reading the latest hand-back and commenting on it. The p
 
 ## Installed skills
 
-These 21 skills live in this checkout's `.agents/skills` directory. pstack's
+These skills live in this checkout's `.agents/skills` directory. pstack's
 skills come from the pinned `pstack@pstack-claude` plugin instead: invoke them
 as `/pstack:<name>`, such as `/pstack:how`, `/pstack:why`, `/pstack:architect`
 or `/pstack:reflect`, and its principle skills load by name when a decision
@@ -157,6 +159,7 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 | [changeset](../../.agents/skills/changeset/SKILL.md) | Write and verify package release changesets, registry changelog entries, and the PR’s managed auto-release choice. |
 | [issue-harvester](../../.agents/skills/issue-harvester/SKILL.md) | Maintain exhaustive Slate/Plate issue-closure ledgers from current issue, PR, test and local proof evidence. |
 | [maintainer](../../.agents/skills/maintainer/SKILL.md) | Triage public Plate/Slate issues, PRs and security queues, then route authorized work and exact public proof. |
+| [review-comment](../../.agents/skills/review-comment/SKILL.md) | Review a Slate PR or a Plate PR based on `main` with Plate v2's research, code and tests, prove each finding on the PR's head, and draft the GitHub review comment. |
 | [plate-docs](../../.agents/skills/plate-docs/SKILL.md) | Write or audit Plate public documentation, page design, examples, installation, MDX and navigation. |
 | [plate-next](../../.agents/skills/plate-next/SKILL.md) | Review a live Plate package, file or API path against the Plate v2 target, or sync one or every live package by repairing its review findings. |
 | [plate-plugins](../../.agents/skills/plate-plugins/SKILL.md) | Build Plate plugins and entrypoints with semantic ownership, inference, scoped capabilities and package proof, and deliver a feature across its package, UI, docs and release. |

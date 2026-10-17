@@ -32,7 +32,7 @@ type ClientId = keyof typeof clientIds;
 
 const paragraphParts = (...texts: readonly string[]): Descendant => ({
   type: 'paragraph',
-  children: texts.map((text) => ({ text })),
+  children: [{ text: texts.join('') }],
 });
 
 const quote = (children: readonly Descendant[]): Descendant => ({

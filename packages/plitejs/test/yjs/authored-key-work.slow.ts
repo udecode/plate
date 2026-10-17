@@ -347,6 +347,74 @@ const cardKeyWork = (arm: CardArm) => {
 };
 
 describe("a key's work follows its edit, not the document", () => {
+  it('visits as many mark records per typed letter after 200 old writes as after 20', () => {
+    const workAt = (history: number) => {
+      const doc = new Y.Doc();
+      const seed = createEditor({ initialValue: [paragraph('z')] });
+      const cleanupSeed = seed.install(
+        yjs({ doc, initialReady: true, seed: true })
+      );
+      for (let old = 0; old < history; old++) {
+        const bold = old % 2 === 0;
+        seed.update((tx) => {
+          tx.selection.set({
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 1 },
+            focus: { path: [0, 0], offset: 1 },
+          });
+          tx.fragment.replace([{ text: 'x', ...(bold ? { bold } : {}) }]);
+        });
+        seed.update((tx) => {
+          tx.selection.set({
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 1 },
+            focus: bold
+              ? { path: [0, 1], offset: 1 }
+              : { path: [0, 0], offset: 2 },
+          });
+          tx.fragment.delete();
+        });
+      }
+      assert.deepEqual(seed.read.children(), [paragraph('z')]);
+      cleanupSeed();
+      const joined = new Y.Doc();
+      send(doc, joined);
+      const editors = [doc, joined].map((document) => {
+        const editor = createEditor({ initialValue: [paragraph('z')] });
+        return {
+          editor,
+          cleanup: editor.install(yjs({ doc: document, initialReady: true })),
+        };
+      });
+      try {
+        return [0, 1, 2].map((letter) => {
+          resetCoreWork();
+          editors[0].editor.update.text.insert('x', {
+            at: { path: [0, 0], offset: letter + 1 },
+          });
+          const local = readCoreWork().yjsMarkRecordsVisited;
+          resetCoreWork();
+          send(doc, joined);
+          const remote = readCoreWork().yjsMarkRecordsVisited;
+          for (const instance of editors) {
+            assert.deepEqual(instance.editor.read.children(), [
+              paragraph(`z${'x'.repeat(letter + 1)}`),
+            ]);
+          }
+          return { local, remote };
+        });
+      } finally {
+        for (const instance of editors) instance.cleanup();
+        doc.destroy();
+        joined.destroy();
+      }
+    };
+    const small = workAt(20);
+    const large = workAt(200);
+    assert.ok(small.every(({ local, remote }) => local > 0 && remote > 0));
+    assert.deepEqual(large, small);
+  });
+
   for (const intent of ['edit', 'propose'] as const) {
     for (const key of [
       'letter',

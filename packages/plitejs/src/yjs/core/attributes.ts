@@ -47,15 +47,6 @@ export const toYjsAttributeRecord = (
   return record;
 };
 
-export const formatYjsTextAttributes = (
-  text: Y.XmlText,
-  index: number,
-  length: number,
-  attributes: YjsAttributeRecord
-): void => {
-  text.format(index, length, attributes);
-};
-
 export const setYjsAttributes = (
   node: YjsNode,
   attributes: YjsAttributeRecord

@@ -817,7 +817,8 @@ const runTransfer = (
           editor,
           getEditorStateView(editor),
           { options: { at }, slice: copied },
-          intent
+          intent,
+          { drop: true }
         );
 
         if (!plan) return null;
@@ -899,7 +900,8 @@ const runTransfer = (
           replaceSliceAtBlockBoundary(
             getEditorRuntimeOwner(editor),
             slice as never,
-            boundary
+            boundary,
+            { drop: true }
           )
         )
       ) {

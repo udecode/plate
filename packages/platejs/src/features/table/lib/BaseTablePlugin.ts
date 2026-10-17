@@ -2635,14 +2635,14 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
               const anchorPath =
                 selectedPaths.find(
                   (path) =>
-                    PathApi.equals(path, plan.selection.anchor.path) ||
-                    PathApi.isAncestor(path, plan.selection.anchor.path)
+                    PathApi.equals(path, plan.anchorCell) ||
+                    PathApi.isAncestor(path, plan.anchorCell)
                 ) ?? selectedPaths[0];
               const focusPath =
                 selectedPaths.find(
                   (path) =>
-                    PathApi.equals(path, plan.selection.focus.path) ||
-                    PathApi.isAncestor(path, plan.selection.focus.path)
+                    PathApi.equals(path, plan.focusCell) ||
+                    PathApi.isAncestor(path, plan.focusCell)
                 ) ?? selectedPaths.at(-1);
 
               if (firstPath && anchorPath && focusPath) {
@@ -2653,7 +2653,10 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
                 });
               }
             } else {
-              tx.selection.set(plan.selection);
+              const anchor = tx.points.start(plan.anchorCell);
+              const focus = tx.points.end(plan.focusCell);
+
+              if (anchor && focus) tx.selection.set({ anchor, focus });
             }
           });
 

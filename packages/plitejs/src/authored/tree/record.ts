@@ -96,14 +96,15 @@ export type AuthoredRecordInput = Readonly<{
   projection?: CommandProjection;
   /** Whether an element with `props` is inline, so a split of it records a cut. */
   isInline: (props: Readonly<JsonRecord>) => boolean;
-  /** Whether a split's continued element keeps property `key` of `props`. */
+  /**
+   * Whether the element a split of `source` continues into, written as
+   * `continuation`, keeps property `key` with `value`; an `undefined` value
+   * asks about the key alone.
+   */
   keepsOnSplit: (
-    props: Readonly<JsonRecord>,
-    path: readonly number[],
-    root: string,
-    key: string,
-    draftRoot: readonly JsonNode[]
-  ) => boolean;
+    split: SplitContinuation,
+    root: string
+  ) => (key: string, value: unknown) => boolean;
   now: number;
   /** Element types that hold exactly one text, which marks must not split. */
   oneText?: (type: string) => boolean;
@@ -139,6 +140,13 @@ type Props = Readonly<JsonRecord>;
  * deletion moved away from, as the selection after Backspace or Delete does.
  */
 type PosMap = (position: number, assoc: -1 | 1, caret?: boolean) => number;
+
+type SplitContinuation = Readonly<{
+  continuation: Props;
+  path: readonly number[];
+  reviewDraft: readonly JsonNode[];
+  source: Props;
+}>;
 
 type Context = Readonly<{
   contentFrom: number;
@@ -739,8 +747,7 @@ export const recordAuthoredSteps = (
           frameIndex: fold.frameIndex,
           isInline: input.isInline,
           isOwn,
-          keepsOnSplit: (props, path, key, draftRoot) =>
-            input.keepsOnSplit(props, path, root, key, draftRoot),
+          keepsOnSplit: (split) => input.keepsOnSplit(split, root),
           leftward: fold.leftward,
           markOf,
           moveRole: step.move?.role ?? null,
@@ -820,11 +827,8 @@ type RecorderOptions = Readonly<{
   isInline: (props: Props) => boolean;
   isOwn: (mark: AuthoredMark) => boolean;
   keepsOnSplit: (
-    props: Props,
-    path: readonly number[],
-    key: string,
-    draftRoot: readonly JsonNode[]
-  ) => boolean;
+    split: SplitContinuation
+  ) => (key: string, value: unknown) => boolean;
   leftward: boolean;
   markOf: (kind: Exclude<AuthoredMark['kind'], 'format'>) => AuthoredMark;
   moveRole: 'landing' | 'source' | null;
@@ -849,6 +853,37 @@ class RootRecorder {
 
   private marks(props: unknown) {
     return this.options.dependencies.marks(props);
+  }
+
+  /**
+   * The keys whose pending writes `continuation`, the element a split of
+   * `continued` wrote, does not inherit: each key it could not hold at the
+   * value `continued` has now, or at the value a write replaced, which
+   * rejecting that write gives back.
+   */
+  private droppedOnSplit(
+    continued: Context,
+    continuation: Props,
+    marks: readonly AuthoredMark[]
+  ) {
+    const formats = marks.filter((mark) => mark.kind === 'format');
+
+    if (formats.length === 0) return null;
+    const keeps = this.options.keepsOnSplit({
+      continuation,
+      path: continued.path,
+      reviewDraft: this.index.value,
+      source: continued.props,
+    });
+
+    return new Set(
+      formats.flatMap((mark) =>
+        keeps(mark.key, continued.props[mark.key]) &&
+        keeps(mark.key, mark.before)
+          ? []
+          : [mark.key]
+      )
+    );
   }
 
   private withMarks(
@@ -2692,24 +2727,20 @@ class RootRecorder {
           trailingLeafProps = this.continuedLeafProps(baseLeaf, token.props);
           continue;
         }
-        // The element a split continues keeps the pending insertion or
-        // deletion of the element it splits, whose existence it shares, and
-        // the pending writes of each property the split keeps.
+        // A continuation keeps the pending insertion or deletion of the
+        // element it continues, whose existence it shares, and the pending
+        // writes of each property it keeps.
         const continued = closedElement ? splitFrom.pop() : undefined;
-        const inherited = continued
-          ? this.marks(continued.props).filter(
-              (mark) =>
-                mark.kind === 'insert' ||
-                mark.kind === 'delete' ||
-                (mark.kind === 'format' &&
-                  this.options.keepsOnSplit(
-                    continued.props,
-                    continued.path,
-                    mark.key,
-                    this.index.value
-                  ))
-            )
-          : [];
+        const marks = continued ? this.marks(continued.props) : [];
+        const dropped = continued
+          ? this.droppedOnSplit(continued, token.props, marks)
+          : null;
+        const inherited = marks.filter(
+          (mark) =>
+            mark.kind === 'insert' ||
+            mark.kind === 'delete' ||
+            (mark.kind === 'format' && !dropped?.has(mark.key))
+        );
         const own = ownElement();
         // Text that survives rejecting one's own insertion needs the split's
         // own claim to come back together.

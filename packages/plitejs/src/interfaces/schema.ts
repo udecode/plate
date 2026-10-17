@@ -382,6 +382,7 @@ export type SchemaElementProperties = Readonly<
 >;
 
 export type SchemaElementSlicePolicy = Readonly<{
+  endMatter?: boolean;
   preserveContext?: boolean;
   replaceWhenCovered?: boolean;
 }>;
@@ -515,6 +516,7 @@ export type EditorSchemaElement = Readonly<{
   groups: readonly string[];
   propertyIds: readonly string[];
   slice: Readonly<{
+    endMatter: boolean;
     preserveContext: boolean;
     replaceWhenCovered: boolean;
   }>;

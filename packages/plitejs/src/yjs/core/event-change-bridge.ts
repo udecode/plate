@@ -26,11 +26,11 @@ import {
 import {
   createVirtualYjsMovePlaceholder,
   createYjsNode,
+  createYjsNodes,
   createYjsPropertyContext,
   createYjsPropertyLocationAt,
   getYjsNodeIf,
   getYjsParent,
-  getYjsTextContent,
   getYjsVisibleChild,
   getYjsVisibleChildren,
   indexYjsPropertyContexts,
@@ -65,8 +65,17 @@ import { lastPathIndex, parentPath, pathsEqual } from './path';
 import {
   canReplaceCompatibleYjsChildren,
   replaceCompatibleYjsChildren,
+  sameSkeleton,
 } from './replacement';
 import { RootProjectionIndex } from './root-projection-index';
+import {
+  createYjsRunEncoder,
+  retainTextChainRange,
+  segmentPliteChildren,
+  segmentYjsChildren,
+  writeTextRuns,
+  type PliteSegment,
+} from './text-runs';
 
 type CapturedYjsDeltaPart = Readonly<{
   delete?: number;
@@ -498,6 +507,100 @@ const findElementTextMerge = (
   return nested;
 };
 
+const textOf = (nodes: readonly Descendant[]): string =>
+  nodes
+    .map((node) => (NodeApi.isText(node) ? node.text : textOf(node.children)))
+    .join('');
+
+const sameSegment = (left: PliteSegment, right: PliteSegment) =>
+  left.kind === 'text'
+    ? right.kind === 'text' && areJsonLikeValuesEqual(left.leaves, right.leaves)
+    : right.kind === 'element' && areJsonLikeValuesEqual(left.node, right.node);
+
+const findInlineTextCut = (
+  before: readonly Descendant[],
+  after: readonly Descendant[],
+  ancestorPath: readonly number[] = []
+): Readonly<{
+  parentPath: readonly number[];
+  group: number;
+  before: readonly Text[];
+  after: readonly Descendant[];
+  from: number;
+  kept: number;
+  leaves: readonly Text[];
+  offset: number;
+}> | null => {
+  const oldSegments = segmentPliteChildren(before);
+  const newSegments = segmentPliteChildren(after);
+  let from = 0;
+  while (
+    from < oldSegments.length &&
+    from < newSegments.length &&
+    sameSegment(oldSegments[from], newSegments[from])
+  ) {
+    from += 1;
+  }
+  let suffix = 0;
+  while (
+    suffix < oldSegments.length - from &&
+    suffix < newSegments.length - from &&
+    sameSegment(
+      oldSegments[oldSegments.length - 1 - suffix],
+      newSegments[newSegments.length - 1 - suffix]
+    )
+  ) {
+    suffix += 1;
+  }
+  const old = oldSegments[from];
+  const next = newSegments.slice(from, newSegments.length - suffix);
+  if (
+    oldSegments.length - from - suffix === 1 &&
+    old?.kind === 'text' &&
+    next.length > 1 &&
+    ancestorPath.length > 0
+  ) {
+    const start = next[0].from;
+    const end = newSegments[newSegments.length - suffix]?.from ?? after.length;
+    const pieces = after.slice(start, end);
+    // The last text piece keeps the leaf's Yjs letters, so a peer's concurrent
+    // append at the leaf's end stays in the kept piece.
+    const last = next.findLast((segment) => segment.kind === 'text');
+    if (last?.kind === 'text' && textOf(pieces) === textOf(old.leaves)) {
+      const kept = last.from - start;
+      return {
+        parentPath: ancestorPath,
+        group: from,
+        before: old.leaves,
+        after: pieces,
+        from: start,
+        kept,
+        leaves: last.leaves,
+        offset: textOf(pieces.slice(0, kept)).length,
+      };
+    }
+  }
+  if (before.length !== after.length) return null;
+  let changed = -1;
+  for (let index = 0; index < before.length; index++) {
+    if (areJsonLikeValuesEqual(before[index], after[index])) continue;
+    if (changed !== -1) return null;
+    changed = index;
+  }
+  const oldNode = before[changed];
+  const newNode = after[changed];
+  return oldNode &&
+    newNode &&
+    NodeApi.isElement(oldNode) &&
+    NodeApi.isElement(newNode) &&
+    nodePropertiesEqual(oldNode, newNode, 'children')
+    ? findInlineTextCut(oldNode.children, newNode.children, [
+        ...ancestorPath,
+        changed,
+      ])
+    : null;
+};
+
 type NestedChildSplice = Readonly<{
   after: readonly Descendant[];
   before: readonly Descendant[];
@@ -582,126 +685,6 @@ const findNestedChildSplice = (
   };
 };
 
-type CollapsedTextLeaves = Readonly<{
-  after: readonly EditorText[];
-  before: readonly EditorText[];
-  keptAs: ReadonlyArray<number | null>;
-  path: readonly number[];
-}>;
-
-type LeafAlignmentStep = Readonly<{
-  cost: number;
-  keptAs: number | null;
-  offset: number;
-  previous: LeafAlignmentStep | null;
-  target: number;
-}>;
-
-/**
- * Of the ways to spell each new leaf from whole old leaves, keep the one that
- * retags the fewest, so the Yjs text that survives is the one the change kept
- * and a peer's concurrent edit inside it is not lost.
- */
-const alignTextLeaves = (
-  before: readonly EditorText[],
-  after: readonly EditorText[]
-): Array<number | null> | null => {
-  let steps = new Map<string, LeafAlignmentStep>([
-    ['0:0', { cost: 0, keptAs: null, offset: 0, previous: null, target: 0 }],
-  ]);
-
-  for (const leaf of before) {
-    const next = new Map<string, LeafAlignmentStep>();
-    const offer = (step: LeafAlignmentStep) => {
-      const key = `${step.target}:${step.offset}`;
-
-      if ((next.get(key)?.cost ?? Number.POSITIVE_INFINITY) > step.cost) {
-        next.set(key, step);
-      }
-    };
-
-    for (const step of steps.values()) {
-      const merged = after[step.target];
-
-      if (merged?.text.startsWith(leaf.text, step.offset)) {
-        const end = step.offset + leaf.text.length;
-        const done = end === merged.text.length;
-
-        offer({
-          cost: step.cost + (nodePropertiesEqual(leaf, merged, 'text') ? 0 : 1),
-          keptAs: step.target,
-          offset: done ? 0 : end,
-          previous: step,
-          target: done ? step.target + 1 : step.target,
-        });
-      }
-      offer({ ...step, keptAs: null, previous: step });
-    }
-    steps = next;
-  }
-
-  let step = steps.get(`${after.length}:0`);
-
-  if (step === undefined) return null;
-
-  const keptAs: Array<number | null> = [];
-
-  while (step.previous !== null) {
-    keptAs.push(step.keptAs);
-    step = step.previous;
-  }
-
-  return keptAs.reverse();
-};
-
-const findCollapsedTextLeaves = (
-  before: readonly Descendant[],
-  after: readonly Descendant[],
-  ancestorPath: readonly number[] = []
-): CollapsedTextLeaves | null => {
-  let changedIndex: number | null = null;
-
-  if (before.length !== after.length) return null;
-
-  for (let index = 0; index < before.length; index++) {
-    if (areJsonLikeValuesEqual(before[index], after[index])) continue;
-    if (changedIndex !== null) return null;
-
-    changedIndex = index;
-  }
-
-  if (changedIndex === null) return null;
-
-  const oldElement = before[changedIndex] ?? null;
-  const newElement = after[changedIndex] ?? null;
-  const path = [...ancestorPath, changedIndex];
-
-  if (
-    !isElement(oldElement) ||
-    !isElement(newElement) ||
-    !nodePropertiesEqual(oldElement, newElement, 'children')
-  ) {
-    return null;
-  }
-  if (
-    !oldElement.children.every((child) => isText(child)) ||
-    !newElement.children.every((child) => isText(child))
-  ) {
-    return findCollapsedTextLeaves(
-      oldElement.children,
-      newElement.children,
-      path
-    );
-  }
-  if (oldElement.children.length <= newElement.children.length) return null;
-
-  const oldLeaves = oldElement.children as EditorText[];
-  const newLeaves = newElement.children as EditorText[];
-  const keptAs = alignTextLeaves(oldLeaves, newLeaves);
-
-  return keptAs && { after: newLeaves, before: oldLeaves, keptAs, path };
-};
-
 const relocationPathKey = (path: readonly number[]): string => path.join('.');
 
 const createYjsNodeWithRelocations = (
@@ -750,92 +733,6 @@ const createYjsNodeWithRelocations = (
   }
 
   return element;
-};
-
-type TextLeafSplit = Readonly<{
-  after: readonly Descendant[];
-  from: number;
-  leaves: ReadonlyArray<
-    Readonly<{
-      afterIndex: number;
-      leaf: EditorText;
-      piece: EditorText;
-      textOffset: number;
-    }>
-  >;
-  parentPath: readonly number[];
-}>;
-
-/**
- * Finds text leaves cut into more children without a text change, as a mark or
- * an inline wrap over part of a leaf does, and picks each leaf's last direct
- * text piece to keep its Yjs text.
- */
-const findTextLeafSplit = (
-  before: readonly Descendant[],
-  after: readonly Descendant[]
-): TextLeafSplit | null => {
-  const splice = findNestedChildSplice(before, after);
-
-  if (
-    splice === null ||
-    splice.before.length === 0 ||
-    splice.after.length <= splice.before.length ||
-    !splice.before.every((node) => isText(node))
-  ) {
-    return null;
-  }
-
-  const starts: number[] = [];
-  let text = '';
-
-  for (const piece of splice.after) {
-    starts.push(text.length);
-    text += NodeApi.string(piece);
-  }
-  if (text !== splice.before.map((leaf) => NodeApi.string(leaf)).join('')) {
-    return null;
-  }
-
-  const leaves: Array<TextLeafSplit['leaves'][number]> = [];
-  let leafStart = 0;
-
-  for (const leaf of splice.before as EditorText[]) {
-    const leafEnd = leafStart + leaf.text.length;
-    let lastPiece: TextLeafSplit['leaves'][number] | null = null;
-
-    for (
-      let index = (leaves.at(-1)?.afterIndex ?? -1) + 1;
-      index < splice.after.length && starts[index] <= leafEnd;
-      index++
-    ) {
-      const piece = splice.after[index];
-
-      if (
-        NodeApi.isText(piece) &&
-        starts[index] >= leafStart &&
-        starts[index] + piece.text.length <= leafEnd
-      ) {
-        lastPiece = {
-          afterIndex: index,
-          leaf,
-          piece,
-          textOffset: starts[index] - leafStart,
-        };
-      }
-    }
-    if (lastPiece === null) return null;
-
-    leaves.push(lastPiece);
-    leafStart = leafEnd;
-  }
-
-  return {
-    after: splice.after,
-    from: splice.from,
-    leaves,
-    parentPath: splice.parentPath,
-  };
 };
 
 type PreparedEventImport = Readonly<{
@@ -1755,6 +1652,8 @@ export class YjsEventChangeBridge {
   private mirror: NodeList<Descendant>;
   private readonly isSetValued: YjsSetPropertyResolver;
   private readonly lengths: TokenLengthIndex;
+  private readonly maskedBlocks = new Set<YjsNode>();
+  private readonly writtenMaskedBlocks = new Set<YjsNode>();
   private ready = false;
   private readonly root: Y.XmlElement;
   private readonly rootIndex = new RootProjectionIndex();
@@ -1796,6 +1695,14 @@ export class YjsEventChangeBridge {
       structureChanged: boolean;
     }>
   ): YjsEventLowerResult {
+    this.writtenMaskedBlocks.clear();
+    for (const node of this.maskedBlocks) {
+      const index = this.rootIndex.indexOf(node);
+
+      if (index !== -1 && this.mirror.at(index) !== expected.at(index)) {
+        this.writtenMaskedBlocks.add(node);
+      }
+    }
     const result = withYjsRootIndex(this.root, this.rootIndex, () =>
       this.lowerAgainstMirror(change, expected, options)
     );
@@ -1829,6 +1736,9 @@ export class YjsEventChangeBridge {
       return { fallback: 'remote-event-mirror-mismatch', kind: 'fallback' };
     }
     if (window === null) return this.lowerRegions(change, expected, []);
+    if (window !== 'many' && sameSkeleton(window.before, window.after)) {
+      return this.lowerRegions(change, expected, []);
+    }
 
     const splitResult =
       window === 'many'
@@ -1852,9 +1762,8 @@ export class YjsEventChangeBridge {
       window === 'many'
         ? null
         : (this.lowerElementBoundarySplit(change, expected, window) ??
-          this.lowerTextLeafSplit(change, expected, window) ??
           this.lowerTextBoundaryMerge(change, expected, window) ??
-          this.lowerCollapsedTextLeaves(change, expected, window) ??
+          this.lowerInlineTextCut(change, expected, window) ??
           this.lowerNestedChildSplice(change, expected, window));
 
     if (detected !== null) return detected;
@@ -2324,89 +2233,83 @@ export class YjsEventChangeBridge {
     return null;
   }
 
-  private lowerCollapsedTextLeaves(
+  private lowerInlineTextCut(
     change: DocumentChange,
     expected: NodeList<Descendant>,
     window: RootWindow
   ): Extract<YjsEventLowerResult, { kind: 'lowered' }> | null {
-    const found = findCollapsedTextLeaves(window.before, window.after);
-
-    if (found === null) return null;
-
-    const collapsed = { ...found, path: shiftPath(found.path, window.from) };
-
-    // The block keeps its Yjs element and each kept leaf its own Yjs text, so
-    // a peer's concurrent edit inside either survives instead of landing in a
-    // replaced copy. A kept text takes its merged leaf's properties, so the
-    // change that caused the merge still reaches peers.
-    const { after, before, keptAs, path } = collapsed;
-    const [topIndex, ...nestedPath] = path as [number, ...number[]];
-    let block = this.rootIndex.at(topIndex);
-
-    for (const index of nestedPath) {
-      block =
-        block instanceof Y.XmlElement
-          ? getYjsVisibleChild(this.root, block, index)
-          : undefined;
-    }
-
-    if (!(block instanceof Y.XmlElement)) return null;
-
-    const yjsTexts = getYjsVisibleChildren(this.root, block);
-
-    if (
-      yjsTexts.length !== before.length ||
-      !yjsTexts.every((node) => node instanceof Y.XmlText)
-    ) {
-      return null;
-    }
-
-    for (const [index, leaf] of before.entries()) {
-      const target = keptAs[index] ?? null;
-
-      if (target === null) continue;
-
-      const next = { ...after[target], text: leaf.text };
-
-      if (areJsonLikeValuesEqual(leaf, next)) continue;
-
-      replaceCompatibleYjsChildren(
-        this.root,
-        [yjsTexts[index]],
-        [leaf],
-        [next],
-        0,
-        this.isSetValued,
-        createYjsPropertyLocationAt(expected, path, this.schemaRoot, target)
-      );
-    }
-    for (let index = before.length - 1; index >= 0; index--) {
-      if (keptAs[index] !== null) continue;
-      if (
-        !removeYjsVirtualPlaceholderChild(
-          this.root,
-          block,
-          index,
-          yjsTexts[index]
-        )
-      ) {
-        removeYjsChild(this.root, block, index, before[index]);
+    const found = findInlineTextCut(window.before, window.after);
+    if (!found) return null;
+    const cut = {
+      ...found,
+      parentPath: shiftPath(found.parentPath, window.from),
+    };
+    const parent = getYjsNodeIf(this.root, [...cut.parentPath]);
+    if (!(parent instanceof Y.XmlElement)) return null;
+    const group = segmentYjsChildren(getYjsVisibleChildren(this.root, parent))[
+      cut.group
+    ];
+    if (group?.kind !== 'text') return null;
+    const keptLength = textOf(cut.leaves).length;
+    const before: Text[] = [];
+    let offset = 0;
+    for (const leaf of cut.before) {
+      const start = Math.max(0, cut.offset - offset);
+      const end = Math.min(leaf.text.length, cut.offset + keptLength - offset);
+      if (end > start) {
+        before.push({ ...leaf, text: leaf.text.slice(start, end) });
       }
+      offset += leaf.text.length;
     }
-
+    // Trim the existing Yjs text rather than re-create it, so a peer's
+    // concurrent edit inside the kept piece survives.
+    retainTextChainRange(group.chain, cut.offset, keptLength);
+    const location = createYjsPropertyLocationAt(
+      expected,
+      [...cut.parentPath],
+      this.schemaRoot
+    );
+    writeTextRuns(
+      group.chain,
+      before.length ? before : [{ text: '' }],
+      cut.leaves,
+      createYjsRunEncoder(this.isSetValued, {
+        ...location,
+        offset: cut.from + cut.kept,
+      })
+    );
+    const prefix = createYjsNodes(
+      cut.after.slice(0, cut.kept),
+      this.isSetValued,
+      { ...location, offset: cut.from }
+    );
+    const suffix = createYjsNodes(
+      cut.after.slice(cut.kept + cut.leaves.length),
+      this.isSetValued,
+      { ...location, offset: cut.from + cut.kept + cut.leaves.length }
+    );
+    suffix.forEach((node, index) =>
+      insertYjsChild(
+        this.root,
+        parent,
+        group.from + group.chain.length + index,
+        node
+      )
+    );
+    prefix.forEach((node, index) =>
+      insertYjsChild(this.root, parent, group.from + index, node)
+    );
+    const topIndex = cut.parentPath[0];
+    const topNode = expected.at(topIndex);
+    const tokenLengthNodes = topNode ? this.lengths.set(topIndex, topNode) : 0;
+    this.ready = this.rootIndex.length === expected.length;
     let changedRanges = 0;
-
     change.iterChangedRanges((root) => {
       if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges += 1;
     });
-
-    const child = expected.at(topIndex);
-    const tokenLengthNodes =
-      child === undefined ? 0 : this.lengths.set(topIndex, child);
-
     return {
       changedRanges,
-      inserted: 0,
+      inserted: prefix.length + suffix.length,
       kind: 'lowered',
       removed: 0,
       start: topIndex,
@@ -2537,136 +2440,6 @@ export class YjsEventChangeBridge {
       start: topIndex,
       strategy: compatible ? 'compatible' : 'range',
       tokenLengthNodes,
-    };
-  }
-
-  private lowerTextLeafSplit(
-    change: DocumentChange,
-    expected: NodeList<Descendant>,
-    window: RootWindow
-  ): Extract<YjsEventLowerResult, { kind: 'lowered' }> | null {
-    const split = inRoot(
-      findTextLeafSplit(window.before, window.after),
-      window.from
-    );
-
-    if (split === null) return null;
-
-    const parent = getYjsNodeIf(this.root, [...split.parentPath]);
-
-    if (!(parent instanceof Y.XmlElement)) return null;
-
-    let siblings: NodeList<Descendant> = this.mirror;
-
-    for (const index of split.parentPath) {
-      const node = siblings.at(index) ?? null;
-
-      if (!isElement(node)) return null;
-
-      siblings = node.children;
-    }
-
-    const visible = getYjsVisibleChildren(this.root, parent);
-    const texts = visible
-      .slice(split.from, split.from + split.leaves.length)
-      .filter((node) => node instanceof Y.XmlText);
-
-    if (
-      visible.length !== siblings.length ||
-      visible.some(
-        (node, index) =>
-          node instanceof Y.XmlText !== isText(siblings.at(index) ?? null)
-      ) ||
-      texts.length !== split.leaves.length ||
-      split.leaves.some(
-        ({ leaf }, index) => getYjsTextContent(texts[index]) !== leaf.text
-      )
-    ) {
-      return null;
-    }
-
-    // Each leaf keeps its Yjs text, trimmed to its kept piece, so a peer's
-    // concurrent edit inside it survives; re-creating the block or the leaf
-    // drops it. Keeping the leaf's last piece keeps a concurrent append at the
-    // leaf's end.
-    const location = createYjsPropertyLocationAt(
-      expected,
-      [...split.parentPath],
-      this.schemaRoot
-    );
-    let inserted = 0;
-    const insertPieces = (at: number, start: number, end: number) => {
-      for (let index = start; index < end; index++) {
-        const node = split.after[index];
-
-        insertYjsChild(
-          this.root,
-          parent,
-          at + index - start,
-          createYjsNode(
-            node,
-            this.isSetValued,
-            createYjsPropertyContext(node, {
-              ...location,
-              path: [...split.parentPath, split.from + index],
-            })
-          )
-        );
-        inserted += 1;
-      }
-    };
-
-    const last = split.leaves.length - 1;
-
-    insertPieces(
-      split.from + last + 1,
-      split.leaves[last].afterIndex + 1,
-      split.after.length
-    );
-
-    for (let leafIndex = last; leafIndex >= 0; leafIndex--) {
-      const { afterIndex, leaf, piece, textOffset } = split.leaves[leafIndex];
-      const text = texts[leafIndex];
-      const end = textOffset + piece.text.length;
-
-      if (end < leaf.text.length) text.delete(end, leaf.text.length - end);
-      if (textOffset > 0) text.delete(0, textOffset);
-
-      replaceCompatibleYjsChildren(
-        this.root,
-        [text],
-        [{ ...leaf, text: piece.text }],
-        [piece],
-        0,
-        this.isSetValued,
-        { ...location, offset: split.from + afterIndex }
-      );
-      insertPieces(
-        split.from + leafIndex,
-        (split.leaves[leafIndex - 1]?.afterIndex ?? -1) + 1,
-        afterIndex
-      );
-    }
-
-    let changedRanges = 0;
-
-    change.iterChangedRanges((root) => {
-      if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges += 1;
-    });
-
-    const topIndex = split.parentPath[0];
-
-    return {
-      changedRanges,
-      inserted,
-      kind: 'lowered',
-      removed: 0,
-      start: topIndex,
-      strategy: 'compatible',
-      tokenLengthNodes: this.lengths.set(
-        topIndex,
-        expected.at(topIndex) ?? failInvariant('Expected value to be defined')
-      ),
     };
   }
 
@@ -2917,6 +2690,101 @@ export class YjsEventChangeBridge {
 
       return this.translate(batch, this.normalize(batch));
     });
+  }
+
+  private readFittedBlock(node: YjsNode): Descendant {
+    const raw = readPliteNodeFromYjs(this.root, node);
+    const fitted = deepFreeze(this.fit.block(raw));
+
+    if (areJsonLikeValuesEqual(raw, fitted)) this.maskedBlocks.delete(node);
+    else this.maskedBlocks.add(node);
+
+    return fitted;
+  }
+
+  refreshMasks(children: NodeList<Descendant>): void {
+    this.maskedBlocks.clear();
+    for (let index = 0; index < this.rootIndex.length; index++) {
+      const node = this.rootIndex.at(index);
+
+      if (
+        node &&
+        (children.length !== this.rootIndex.length ||
+          !areJsonLikeValuesEqual(
+            readPliteNodeFromYjs(this.root, node),
+            children.at(index)
+          ))
+      ) {
+        this.maskedBlocks.add(node);
+      }
+    }
+  }
+
+  drift(
+    expected: NodeList<Descendant>,
+    fallback = false
+  ): PreparedEventImport | null {
+    const values = new Map<number, Descendant>();
+
+    for (const node of fallback
+      ? this.maskedBlocks
+      : this.writtenMaskedBlocks) {
+      const index = this.rootIndex.indexOf(node);
+
+      if (index === -1) {
+        this.maskedBlocks.delete(node);
+        continue;
+      }
+      const fitted = this.readFittedBlock(node);
+
+      if (!areJsonLikeValuesEqual(fitted, expected.at(index))) {
+        values.set(index, fitted);
+      }
+    }
+    this.writtenMaskedBlocks.clear();
+    if (values.size === 0) return null;
+
+    const regions = [...values.keys()]
+      .sort((a, b) => a - b)
+      .map((index) => ({
+        afterFrom: index,
+        afterTo: index + 1,
+        beforeFrom: index,
+        beforeTo: index + 1,
+      }));
+    const prepared = createEventDocumentChange(
+      this.rootKey,
+      expected,
+      (from, to) =>
+        Array.from(
+          { length: to - from },
+          (_, offset) =>
+            values.get(from + offset) ??
+            expected.at(from + offset) ??
+            failInvariant('Expected drift block')
+        ),
+      regions,
+      this.lengths,
+      this.isSetValued
+    );
+    const ticket = this.generation;
+
+    return {
+      ...prepared,
+      accept: (published) => {
+        if (ticket !== this.generation) return;
+
+        const children = published.nodes as NodeList<Descendant>;
+
+        this.setMirror(children);
+        for (const index of values.keys()) {
+          const child = children.at(index);
+
+          if (child) this.lengths.set(index, child);
+        }
+      },
+      readTopLevelNodes: values.size,
+    };
   }
 
   /**
@@ -3274,10 +3142,7 @@ export class YjsEventChangeBridge {
     try {
       for (const node of readNodes) {
         // The editor takes a change's nodes only when they are immutable.
-        readValues.set(
-          node,
-          deepFreeze(this.fit.block(readPliteNodeFromYjs(this.root, node)))
-        );
+        readValues.set(node, this.readFittedBlock(node));
       }
     } catch {
       return { fallback: 'remote-event-read-failed', kind: 'fallback' };

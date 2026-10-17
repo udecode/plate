@@ -1299,7 +1299,8 @@
         ],
         "slice": {
           "preserveContext": false,
-          "replaceWhenCovered": true
+          "replaceWhenCovered": true,
+          "endMatter": true
         },
         "type": "footnoteDefinition"
       },
@@ -3829,10 +3830,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:08da9df3ee4ec1cc",
+  "fingerprint": "fnv1a64:3d46d7c54193857a",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:08da9df3ee4ec1cc",
+    "fingerprint": "fnv1a64:3d46d7c54193857a",
     "kind": "derived"
   },
   "primaryRoot": {

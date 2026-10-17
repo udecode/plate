@@ -127,7 +127,7 @@ export default function RootLayout({
         {!isPliteMode && <TailwindIndicator />}
 
         {!isPliteMode && <GA />}
-        {!isPliteMode && <Toaster />}
+        <Toaster />
         {driveDirectory() && (
           <>
             <DriveBeacon />

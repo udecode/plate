@@ -1,6 +1,7 @@
 import * as Y from 'yjs';
 
-import type { Range } from '../../index';
+import type { NodeList } from '../../core/change/document-index';
+import type { Descendant, Range } from '../../index';
 import {
   isYjsAwarenessSelectionValue,
   readYjsAwarenessRelativeRange,
@@ -16,9 +17,10 @@ import type { YjsAwarenessSelection } from './types';
 export const createYjsAwarenessSelection = (
   root: Y.XmlElement,
   rootKey: string,
-  range: Range
+  range: Range,
+  children?: NodeList<Descendant>
 ): YjsAwarenessSelection => {
-  const relative = rangeToYjsRelativeRange(root, range);
+  const relative = rangeToYjsRelativeRange(root, range, children);
 
   return {
     anchor: Y.relativePositionToJSON(relative.anchor),

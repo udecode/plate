@@ -19,6 +19,7 @@ import {
 import { areJsonLikeValuesEqual } from './json-equality';
 import {
   isReservedYjsKey,
+  isYjsMarkRecordKey,
   YJS_ELEMENT_NODE_NAME,
   YJS_HIDDEN_KEY,
   YJS_NODE_ID_KEY,
@@ -36,6 +37,14 @@ import {
   isYjsSetValueAttribute,
   readYjsSetValueAttributes,
 } from './set-valued-attributes';
+import {
+  cloneYjsText,
+  createYjsRunEncoder,
+  createYjsTextChain,
+  readTextRuns,
+  segmentPliteChildren,
+  segmentYjsChildren,
+} from './text-runs';
 
 type YjsTextDeltaPart = {
   readonly attributes?: Readonly<Record<string, unknown>>;
@@ -44,11 +53,6 @@ type YjsTextDeltaPart = {
 
 const getYjsTextDeltaPartText = (part: YjsTextDeltaPart): string =>
   typeof part.insert === 'string' ? part.insert : '';
-
-const isNonEmptyYjsTextDeltaPart = (
-  part: YjsTextDeltaPart
-): part is YjsTextDeltaPart & { readonly insert: string } =>
-  typeof part.insert === 'string' && part.insert.length > 0;
 
 const VIRTUAL_YJS_CHILD_RAW_INDEX = -1;
 
@@ -197,7 +201,7 @@ const writeYjsNodeId = (node: YjsNode, id: string): string => {
   return id;
 };
 
-const assignFreshYjsNodeId = (node: YjsNode): string =>
+export const assignFreshYjsNodeId = (node: YjsNode): string =>
   writeYjsNodeId(node, createYjsNodeId(nodeIdScope));
 
 const ensureYjsNodeId = (node: YjsNode): string => {
@@ -641,7 +645,9 @@ const isHiddenYjsNode = (node: YjsNode): boolean =>
 const isEmptyAttributeFreeYjsText = (node: YjsNode): boolean =>
   node instanceof Y.XmlText &&
   getYjsLength(node) === 0 &&
-  Object.keys(getYjsAttributes(node)).every((key) => key === YJS_NODE_ID_KEY);
+  Object.keys(getYjsAttributes(node)).every(
+    (key) => key === YJS_NODE_ID_KEY || isYjsMarkRecordKey(key)
+  );
 
 const copyRecordAttributes = (
   target: YjsAttributeRecord,
@@ -1112,31 +1118,6 @@ export const getYjsVisiblePath = (
   return visit(root, new Set());
 };
 
-export const createYjsText = (
-  text: string,
-  attributes: YjsAttributeRecord
-): Y.XmlText => {
-  assertPublicYjsAttributesCanBeSet(attributes);
-
-  return createYjsTextWithAttributes(text, attributes);
-};
-
-const createYjsTextWithAttributes = (
-  text: string,
-  attributes: YjsAttributeRecord
-): Y.XmlText => {
-  const yjsText = new Y.XmlText();
-
-  assignFreshYjsNodeId(yjsText);
-  setYjsAttributes(yjsText, attributes);
-
-  if (text.length > 0) {
-    yjsText.insert(0, text, attributes);
-  }
-
-  return yjsText;
-};
-
 const createYjsNodeAttributes = (
   node: Descendant,
   isSetValued: YjsSetPropertyResolver,
@@ -1173,14 +1154,17 @@ export const createYjsNode = (
   context = createYjsPropertyContext(node, rootPropertyLocation())
 ): YjsNode => {
   if (NodeApi.isText(node)) {
-    const attributes = createYjsNodeAttributes(
-      node,
-      isSetValued,
-      context,
-      'text'
+    return createYjsTextChain(
+      [node],
+      createYjsRunEncoder(isSetValued, {
+        ancestors: context.parent
+          ? [context.parent, ...context.ancestors]
+          : context.ancestors,
+        path: context.path.slice(0, -1),
+        root: context.root,
+        offset: context.path.at(-1) ?? 0,
+      })
     );
-
-    return createYjsTextWithAttributes(String(node.text), attributes);
   }
 
   const attributes = createYjsNodeAttributes(
@@ -1214,34 +1198,25 @@ export const createYjsNodes = (
   nodes: readonly Descendant[],
   isSetValued: YjsSetPropertyResolver = noSetProperties,
   location: YjsPropertyLocation = rootPropertyLocation()
-): YjsNode[] => {
-  const yjsNodes = new Array<YjsNode>(nodes.length);
-
-  let index = 0;
-
-  while (index < nodes.length) {
-    const node = nodes[index];
-
-    if (node === undefined) {
-      throw new Error(
-        'Cannot create Yjs nodes from a sparse editor node array.'
-      );
-    }
-
-    yjsNodes[index] = createYjsNode(
-      node,
-      isSetValued,
-      createYjsPropertyContext(node, {
-        ancestors: location.ancestors,
-        path: [...location.path, (location.offset ?? 0) + index],
-        root: location.root,
-      })
-    );
-    index += 1;
-  }
-
-  return yjsNodes;
-};
+): YjsNode[] =>
+  segmentPliteChildren(nodes).map((segment) =>
+    segment.kind === 'text'
+      ? createYjsTextChain(
+          segment.leaves,
+          createYjsRunEncoder(isSetValued, {
+            ...location,
+            offset: (location.offset ?? 0) + segment.from,
+          })
+        )
+      : createYjsNode(
+          segment.node,
+          isSetValued,
+          createYjsPropertyContext(segment.node, {
+            ...location,
+            path: [...location.path, (location.offset ?? 0) + segment.from],
+          })
+        )
+  );
 
 export const replaceYjsChildren = (
   parent: Y.XmlElement,
@@ -1278,26 +1253,11 @@ export const readPliteValueFromYjs = (
     root,
     resolveNodeById
   );
-  const children = new Array<Descendant>(visibleChildren.length);
-
-  let index = 0;
-
-  while (index < visibleChildren.length) {
-    const node = visibleChildren[index];
-
-    if (node === undefined) {
-      throw new Error(
-        'Cannot read an editor value from a sparse Yjs node array.'
-      );
-    }
-
-    children[index] = readPliteNodeFromYjsWithResolver(
-      root,
-      node,
-      resolveNodeById
-    );
-    index += 1;
-  }
+  const children = segmentYjsChildren(visibleChildren).flatMap((segment) =>
+    segment.kind === 'text'
+      ? readTextRuns(segment.chain)
+      : [readPliteNodeFromYjsWithResolver(root, segment.node, resolveNodeById)]
+  );
 
   return children.length > 0 ? children : [...emptyValue];
 };
@@ -1519,46 +1479,6 @@ const getPublicAttributes = (
   return publicAttributes;
 };
 
-const readYjsTextForPlite = (
-  node: Y.XmlText
-): { readonly attributes: YjsAttributeRecord; readonly text: string } => {
-  if (getYjsLength(node) === 0) {
-    return { attributes: {}, text: '' };
-  }
-
-  const delta = node.toDelta();
-  let attributes: YjsAttributeRecord | undefined;
-  let attributesAreUniform = true;
-  let text = '';
-  let index = 0;
-
-  while (index < delta.length) {
-    const part = delta[index];
-
-    if (part === undefined) {
-      index += 1;
-      continue;
-    }
-
-    text += getYjsTextDeltaPartText(part);
-
-    if (attributesAreUniform && isNonEmptyYjsTextDeltaPart(part)) {
-      const partAttributes = getPublicAttributes(part.attributes);
-
-      if (attributes === undefined) {
-        attributes = partAttributes;
-      } else if (!yjsAttributeRecordsEqual(attributes, partAttributes)) {
-        attributes = {};
-        attributesAreUniform = false;
-      }
-    }
-
-    index += 1;
-  }
-
-  return { attributes: attributes ?? {}, text };
-};
-
 const getPublicYjsAttributes = (node: YjsNode): YjsAttributeRecord =>
   getPublicAttributes(getYjsAttributes(node));
 
@@ -1591,17 +1511,7 @@ const readPliteNodeFromYjsWithResolver = (
   node: YjsNode,
   resolveNodeById: YjsNodeIdResolver
 ): Descendant => {
-  if (node instanceof Y.XmlText) {
-    const attributes = getPublicYjsAttributes(node);
-    const readback = readYjsTextForPlite(node);
-    const editorText: YjsAttributeRecord = {};
-
-    copyRecordAttributes(editorText, attributes);
-    copyRecordAttributes(editorText, readback.attributes);
-    editorText.text = readback.text;
-
-    return editorText as Descendant;
-  }
+  if (node instanceof Y.XmlText) return readTextRuns([node])[0];
 
   const attributes = getPublicYjsElementAttributes(node);
   const type = getYjsElementType(node);
@@ -1610,24 +1520,11 @@ const readPliteNodeFromYjsWithResolver = (
     node,
     resolveNodeById
   );
-  const children = new Array<Descendant>(visibleChildren.length);
-
-  let index = 0;
-
-  while (index < visibleChildren.length) {
-    const child = visibleChildren[index];
-
-    if (child === undefined) {
-      throw new Error('Cannot read element children from a sparse array.');
-    }
-
-    children[index] = readPliteNodeFromYjsWithResolver(
-      root,
-      child,
-      resolveNodeById
-    );
-    index += 1;
-  }
+  const children = segmentYjsChildren(visibleChildren).flatMap((segment) =>
+    segment.kind === 'text'
+      ? readTextRuns(segment.chain)
+      : [readPliteNodeFromYjsWithResolver(root, segment.node, resolveNodeById)]
+  );
 
   const pliteElement: YjsAttributeRecord = {};
 
@@ -1860,18 +1757,7 @@ const cloneYjsNodeWithRoot = (
 
   const attributes = getCloneableYjsAttributes(node);
 
-  if (node instanceof Y.XmlText) {
-    const clone = new Y.XmlText();
-
-    assignFreshYjsNodeId(clone);
-    setYjsAttributes(clone, attributes);
-
-    if (getYjsLength(node) > 0) {
-      clone.applyDelta(node.toDelta(), { sanitize: false });
-    }
-
-    return clone;
-  }
+  if (node instanceof Y.XmlText) return cloneYjsText(node, attributes);
 
   const clone = new Y.XmlElement(YJS_ELEMENT_NODE_NAME);
   const rawChildren = getRawYjsChildren(node);
@@ -2384,18 +2270,6 @@ export const assertPublicYjsAttributeCanBeSet = (key: string): void => {
 
   if (isReservedYjsKey(key)) {
     throw new Error(`Cannot set internal Yjs attribute "${key}".`);
-  }
-};
-
-const assertPublicYjsAttributesCanBeSet = (
-  attributes: Readonly<YjsAttributeRecord>
-): void => {
-  for (const key in attributes) {
-    if (!Object.hasOwn(attributes, key)) {
-      continue;
-    }
-
-    assertPublicYjsAttributeCanBeSet(key);
   }
 };
 
