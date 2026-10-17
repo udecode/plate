@@ -4,7 +4,6 @@ import {
   PathApi,
   type Descendant,
   type EditorUpdateTransaction,
-  type NamedRootKey,
   type NodeKey,
   type Path,
 } from '../../../facade';
@@ -12,7 +11,6 @@ import {
   canReplaceContainers,
   type BlockRelease,
 } from '../../../internal/plugin/blockRelease';
-import { inRoot } from '../../../internal/utils/inRoot';
 import { BaseIndentPlugin } from '../../indent';
 import { listDepth } from './listFamily.internal';
 
@@ -20,9 +18,9 @@ export const planListConversion = (
   editor: Editor,
   tx: EditorUpdateTransaction,
   releases: readonly BlockRelease[],
-  { listType, root }: Readonly<{ listType: string; root?: NamedRootKey }>
+  { listType }: Readonly<{ listType: string }>
 ) => {
-  const keyAt = (path: Path) => tx.key(inRoot(path, root));
+  const keyAt = (path: Path) => tx.key(path);
   const byContainer = new Map(
     releases.map((release) => [keyAt(release.container[1]), release])
   );
@@ -80,7 +78,7 @@ export const planListConversion = (
     }
   }
 
-  if (!canReplaceContainers(tx, fits, root)) return null;
+  if (!canReplaceContainers(tx, fits)) return null;
 
   return new Map([...blocks].map(([key, { depth }]) => [key, depth] as const));
 };

@@ -31,6 +31,7 @@ import type {
   NodeMutationMethods,
   NodeUnwrapNodesOptions,
 } from '../interfaces/transforms/node';
+import { stripLocationRoots } from '../internal/root-location';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { liftNodes } from './lift-nodes';
@@ -130,7 +131,10 @@ export const unwrapNodes = ((
   };
 
   const unwrapSelectedText = (path: Path, selected: Range) => {
-    const overlap = RangeApi.intersection(selected, editorRange(editor, path));
+    const overlap = RangeApi.intersection(
+      stripLocationRoots(selected),
+      stripLocationRoots(editorRange(editor, path))
+    );
 
     if (!overlap || RangeApi.isCollapsed(overlap)) return false;
 

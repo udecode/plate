@@ -4,6 +4,7 @@ import {
   definePlugin,
   type Editor,
   type Node as PliteNode,
+  txLocate,
   type Value,
 } from 'plitejs';
 import {
@@ -51,9 +52,9 @@ const jsonFormat: DataTransferFormat<CustomValue> = {
 const DomPlugin = dom();
 const ImagePlugin = definePlugin('img', {
   update: () => ({
-    insert: ({ url }: { url: string }) => {
+    insert: txLocate(false, ({ url }: { url: string }) => {
       void url;
-    },
+    }),
   }),
 });
 type ImageEditor = Editor<Value, readonly [typeof ImagePlugin]>;

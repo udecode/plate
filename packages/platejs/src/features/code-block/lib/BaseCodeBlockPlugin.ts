@@ -26,7 +26,6 @@ import {
   SelectionApi,
   txLocate,
   locateAt,
-  type NamedRootKey,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
 import { canPlaceBlocksAtPath, isDocumentView } from '../../../facade';
@@ -37,7 +36,6 @@ import {
   canReplaceContainers,
   readBlockReleases,
 } from '../../../internal/plugin/blockRelease';
-import { inRoot } from '../../../internal/utils/inRoot';
 import {
   createBrowserHtmlDocument,
   materializeHtmlAst,
@@ -360,10 +358,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
           return unwrapped;
         };
-        const codeRuns = (
-          blocks: ReadonlyArray<NodeEntry<Element>>,
-          root?: NamedRootKey
-        ) => {
+        const codeRuns = (blocks: ReadonlyArray<NodeEntry<Element>>) => {
           const runs: Array<Array<NodeEntry<Element>>> = [];
 
           for (const entry of blocks) {
@@ -393,7 +388,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
             !runs.every((run, index) =>
               canPlaceBlocksAtPath(tx.schema, run[0][1], [codes[index]], {
                 removing: run.map(([, path]) => path.at(-1) ?? 0),
-                root,
+                root: tx.view.root(),
               })
             )
           ) {
@@ -409,7 +404,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
               failInvariant('A checked code block conversion refused.');
             }
 
-            const key = tx.key(inRoot(at, root));
+            const key = tx.key(at);
 
             if (key) keys.push(key);
             for (const [, path] of run.slice(1).toReversed()) {
@@ -425,7 +420,10 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
           if (first) {
             tx.selection.set(
-              SelectionApi.nodes([first, ...rest], { mode: 'block', root })
+              SelectionApi.nodes([first, ...rest], {
+                mode: 'block',
+                root: tx.view.root(),
+              })
             );
           }
 
@@ -585,17 +583,12 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
             if (!initial) return false;
 
-            const root = SelectionApi.root(initial);
-
-            if (root !== tx.view.root()) return false;
-
             const selected = tx.nodes.blocks({ mode: 'lowest' });
             const releases = readBlockReleases(
               editor,
               tx,
               selected,
-              () => true,
-              root
+              () => true
             );
             const [release] = releases;
 
@@ -610,8 +603,8 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
                 releases.length > 1 ||
                 !startBlock ||
                 !endBlock ||
-                tx.key(inRoot(startBlock[1], root)) !== release.key ||
-                tx.key(inRoot(endBlock[1], root)) !== release.key
+                tx.key(startBlock[1]) !== release.key ||
+                tx.key(endBlock[1]) !== release.key
               ) {
                 return false;
               }
@@ -619,7 +612,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
             if (tx.nodes.some({ type: plugin })) return unwrap();
             if (!release && tx.selection.nodes().length > 0) {
-              return codeRuns(selected, root);
+              return codeRuns(selected);
             }
 
             if (release) {
@@ -631,7 +624,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
                 child === release.block ? code : child
               );
 
-              if (!canReplaceContainers(tx, new Map([[release, fit]]), root)) {
+              if (!canReplaceContainers(tx, new Map([[release, fit]]))) {
                 return false;
               }
 

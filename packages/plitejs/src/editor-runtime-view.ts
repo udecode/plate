@@ -39,6 +39,7 @@ import {
 } from './core/editor-runtime';
 import { getSourcesForChange } from './core/listener-state';
 import { createEditorViewPluginApis, extendEditor } from './core/plugin';
+import { registerPluginRootTransactionBuilder } from './core/plugin-dispatch';
 import {
   getCompiledEditorSchema,
   getPluginRegistry,
@@ -56,6 +57,8 @@ import {
   doesSelectionIntersect,
   getCurrentSelection,
   getCurrentSelectionRoot,
+  getUpdateView,
+  withEditorViewSelectionRead,
   getSelectionNodeEntries,
   getTargetRuntime,
   isSelectionAcrossBlocks,
@@ -214,7 +217,10 @@ const withRootRead = <T>(
   viewState: ViewState,
   fn: () => T
 ): T => {
-  const read = () => withEditorRootChildren(editor, viewState.root, fn);
+  const read = () =>
+    withEditorRootChildren(editor, viewState.root, () =>
+      withEditorViewSelectionRead(editor, viewState.root, fn)
+    );
 
   // A document is already a projection: the source's authored projection and
   // selection do not apply to it.
@@ -269,8 +275,10 @@ const runRootTransform = <T>(
   viewState: ViewState,
   fn: () => T
 ): T =>
-  withEditorUpdateRoot(editor, viewState.root, () =>
-    withEditorUpdateRootChildren(editor, viewState.root, fn)
+  withEditorViewSelectionRead(editor, undefined, () =>
+    withEditorUpdateRoot(editor, viewState.root, () =>
+      withEditorUpdateRootChildren(editor, viewState.root, fn)
+    )
   );
 
 const withViewSelection = (
@@ -302,9 +310,9 @@ const withViewRange = (
 };
 
 const hasViewSelection = (editor: Editor, viewState: ViewState) =>
-  withRootRead(
+  withEditorViewSelectionRead(
     editor,
-    viewState,
+    undefined,
     () =>
       !getCurrentSelection(editor) ||
       getCurrentSelectionRoot(editor) === viewState.root
@@ -1461,3 +1469,14 @@ export const createEditorViewRuntime = <
 
 /** Create a root-scoped editor view while preserving layered capabilities. */
 export const createEditorView: CreateEditorView = createEditorViewRuntime;
+
+registerPluginRootTransactionBuilder((editor, root) => {
+  const view = createEditorViewRuntime(editor, { root: toPublicRoot(root) });
+  const viewState = getDefined(VIEW_STATES.get(getEditorRuntime(view)));
+  return withViewTransaction(
+    editor,
+    getUpdateView(editor),
+    viewState,
+    () => view
+  );
+});

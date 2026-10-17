@@ -52,6 +52,12 @@ caption.read.children(); // the preview document's caption root
 caption.read.view.isReadOnly(); // true
 ```
 
+Plugin update methods run in their target's root, as if called through that
+root's view. A node key, a live node, or a point or range that names its root
+picks the root. A bare path addresses the caller's root, and a call with no
+target runs in the view's own root, or in the caret's root when called on the
+editor.
+
 Read committed state with direct read methods, or with `editor.read(...)` when
 several reads should share one state view.
 

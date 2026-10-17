@@ -32,6 +32,7 @@ import type {
   NodeWrapNodesOptions,
 } from '../interfaces/transforms/node';
 import { getDefined } from '../internal/get-defined';
+import { stripLocationRoots } from '../internal/root-location';
 import { select } from '../transforms-selection/select';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
@@ -177,7 +178,10 @@ export const wrapNodes = ((
     const checksFit = wrapsInline && !hasExplicitSelector;
     const spanIn = (rootPath: Path) => {
       const scope = RangeApi.isRange(target)
-        ? RangeApi.intersection(target, editorRange(editor, rootPath))
+        ? RangeApi.intersection(
+            stripLocationRoots(target),
+            stripLocationRoots(editorRange(editor, rootPath))
+          )
         : target;
 
       if (

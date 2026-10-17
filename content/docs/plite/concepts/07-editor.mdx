@@ -193,7 +193,7 @@ Call `unsubscribe()` with the owning application or view lifetime.
 Here's a small plugin that adds a table namespace:
 
 ```javascript
-import { createEditor, definePlugin } from "plitejs";
+import { createEditor, definePlugin, txLocate } from "plitejs";
 
 const TablesPlugin = definePlugin("tables", {
   read: ({ state }) => ({
@@ -202,7 +202,7 @@ const TablesPlugin = definePlugin("tables", {
     },
   }),
   update: ({ tx }) => ({
-    insertRow(text = "row") {
+    insertRow: txLocate(false, (text = "row") => {
       tx.nodes.insert(
         {
           type: "paragraph",
@@ -210,7 +210,7 @@ const TablesPlugin = definePlugin("tables", {
         },
         { at: [tx.nodes.children().length] }
       );
-    },
+    }),
   }),
 });
 

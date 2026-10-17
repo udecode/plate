@@ -714,7 +714,7 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('keeps implicit view reads on the view root when a sibling root owns selection', () => {
+  it('ignores implicit view reads when a sibling root owns selection', () => {
     const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
@@ -739,15 +739,16 @@ describe('editor runtime/view contract', () => {
       positions: [...state.points.positions()],
     }));
 
-    assert.deepEqual(read.above?.[0], paragraph('header'));
+    assert.equal(read.above, undefined);
+    assert.deepEqual(read.entries, []);
+    assert.deepEqual(read.fragment, []);
     assert.deepEqual(
-      read.entries.map(([node]) => node),
-      [{ text: 'header' }]
-    );
-    assert.deepEqual(read.fragment, ['head']);
-    assert.deepEqual(
-      read.positions.map((point) => point.root),
-      Array.from({ length: 5 }, () => 'header')
+      read.positions,
+      [0, 1, 2, 3, 4, 5, 6].map((offset) => ({
+        path: [0, 0],
+        offset,
+        root: 'header',
+      }))
     );
   });
 

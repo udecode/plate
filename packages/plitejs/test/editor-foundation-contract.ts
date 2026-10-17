@@ -8,6 +8,7 @@ import {
   definePlugin,
   property,
   schema,
+  txLocate,
 } from 'plitejs';
 
 import {
@@ -94,21 +95,21 @@ describe('editor foundation contract', () => {
           imageVoidKind() {
             return tx.schema.element('image')?.behavior.voidKind;
           },
-          colSpanIsDefault(value: unknown) {
-            return Object.is(
+          colSpanIsDefault: txLocate(false, (value: unknown) =>
+            Object.is(
               value,
               tx.schema.property({
                 key: 'colSpan',
                 placement: 'element',
                 type: 'table-cell',
               })?.value.default
-            );
-          },
-          insertRow(text: string) {
+            )
+          ),
+          insertRow: txLocate(false, (text: string) => {
             tx.nodes.insert(paragraph(text), {
               at: [tx.nodes.children().length],
             });
-          },
+          }),
           mentionIsMarkableVoid() {
             return tx.schema.isMarkableVoid({
               type: 'mention',

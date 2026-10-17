@@ -343,6 +343,34 @@ describe('command frame', () => {
     ]);
   });
 
+  it('skips a method whose key names a hidden node when the call also passes a callback', () => {
+    const received: unknown[] = [];
+    const Marker = definePlugin('marker', {
+      update: ({ tx }) => ({
+        mark: txLocate(
+          locateAt(0, 'key'),
+          ({ key }: { key: NodeKey }, done: () => void) => {
+            received.push(key);
+            tx.nodes.set({ marked: true }, { at: key });
+            done();
+          }
+        ),
+      }),
+    });
+    const editor = framedEditor(
+      [paragraph('gone', { hidden: true }), paragraph('a')],
+      { plugins: [Marker] }
+    );
+    const hidden = editor.key([0]);
+    const live = editor.key([1]);
+    const done: unknown[] = [];
+
+    editor.update.marker.mark({ key: hidden }, () => done.push(hidden));
+    editor.update.marker.mark({ key: live }, () => done.push(live));
+
+    assert.deepEqual({ done, received }, { done: [live], received: [live] });
+  });
+
   it('runs a selection-only plugin method on the stored document', () => {
     const Caret = definePlugin('caret', {
       update: ({ tx }) => ({

@@ -6,6 +6,7 @@ import {
   definePlugin,
   SelectionApi,
   type TransactionSpec,
+  txLocate,
 } from 'plitejs';
 
 import { applyTransactionSpec } from '../src/core/public-state';
@@ -170,12 +171,12 @@ describe('native transaction spec contract', () => {
     const events: string[] = [];
     const callbackPlugin = definePlugin('specCallback', {
       update: ({ context, editor, tx }) => ({
-        insert(text: string) {
+        insert: txLocate(false, (text: string) => {
           tx.text.insert(text);
           context.afterCommit(() => {
             events.push(`${text}:${editor.read.text.string([])}`);
           });
-        },
+        }),
       }),
     });
     const editor = createEditor({
@@ -204,10 +205,10 @@ describe('native transaction spec contract', () => {
     const events: string[] = [];
     const callbackPlugin = definePlugin('discardedSpecCallback', {
       update: ({ context, tx }) => ({
-        insert(text: string) {
+        insert: txLocate(false, (text: string) => {
           tx.text.insert(text);
           context.afterCommit(() => events.push(text));
-        },
+        }),
       }),
     });
     const create = () =>

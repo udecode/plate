@@ -1,7 +1,7 @@
 import imageExtensions from 'image-extensions';
 import isUrl from 'is-url';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
-import { definePlugin } from 'plitejs';
+import { definePlugin, txLocate } from 'plitejs';
 import { domCommands } from 'plitejs/dom';
 import {
   Editable,
@@ -155,7 +155,7 @@ const ImagesEditor = ({ exampleCase }: { exampleCase: ImageExampleCase }) => {
 const ImagePlugin = definePlugin('image', {
   schema: { elements: { image: { void: 'block' } } },
   update: ({ context: { afterCommit }, editor, tx }) => ({
-    insertFromClipboard(sources: Array<File | string>) {
+    insertFromClipboard: txLocate(false, (sources: Array<File | string>) => {
       const pendingFiles: Array<
         [NonNullable<ReturnType<typeof tx.key>>, File]
       > = [];
@@ -189,7 +189,7 @@ const ImagePlugin = definePlugin('image', {
           }
         });
       }
-    },
+    }),
   }),
 });
 

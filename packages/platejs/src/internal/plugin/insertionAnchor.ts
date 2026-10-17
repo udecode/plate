@@ -1,26 +1,21 @@
 import {
   definePluginPoint,
   getPluginContributions,
-  SelectionApi,
   type Editor,
   type EditorCoreStateView,
   type Element,
-  type NamedRootKey,
   type NodeEntry,
 } from '../../facade';
-import { inRoot } from '../utils/inRoot';
 
 /**
  * Contribute the block an insert from a block lands after when that block
- * hides what follows it, such as a closed Details for its title. The entry's
- * path is in `root`, the main document when it is omitted.
+ * hides what follows it, such as a closed Details for its title.
  */
 export const insertionAnchor =
   definePluginPoint<
     (
       state: Pick<EditorCoreStateView, 'key' | 'nodes'>,
-      entry: NodeEntry<Element>,
-      root?: NamedRootKey
+      entry: NodeEntry<Element>
     ) => NodeEntry<Element> | null
   >('insertion-anchor');
 
@@ -28,11 +23,10 @@ export const insertionAnchor =
 export const resolveInsertionAnchor = (
   editor: Editor,
   state: Pick<EditorCoreStateView, 'key' | 'nodes'>,
-  entry: NodeEntry<Element>,
-  root?: NamedRootKey
+  entry: NodeEntry<Element>
 ) => {
   for (const anchor of getPluginContributions(editor, insertionAnchor)) {
-    const found = anchor(state, entry, root);
+    const found = anchor(state, entry);
 
     if (found) return found;
   }
@@ -53,10 +47,7 @@ export const getCaretAnchor = (
 
   if (!selection || !caret) return undefined;
 
-  const root = SelectionApi.root(selection);
-  const anchor = resolveInsertionAnchor(editor, state, caret, root);
+  const anchor = resolveInsertionAnchor(editor, state, caret);
 
-  return anchor === caret
-    ? undefined
-    : (state.key(inRoot(anchor[1], root)) ?? undefined);
+  return anchor === caret ? undefined : (state.key(anchor[1]) ?? undefined);
 };

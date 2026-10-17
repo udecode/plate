@@ -29,7 +29,11 @@ export type NodeSelection = Readonly<{
   /** Active exact selected node in the user's selection direction. */
   focusPath: Path;
   kind: 'node';
-  /** Named root containing every selected path. Omit for the primary root. */
+  /**
+   * Named root containing every selected path. Without it, a stored selection
+   * is in the primary root, and a target is in the root of the editor or view
+   * that reads it.
+   */
   root?: NamedRootKey;
 }> &
   (

@@ -22,14 +22,20 @@ export type CoreWork = {
   fallbacks: number;
   /** Nodes an index was built from, out of a whole array. */
   indexedNodes: number;
+  /** Plugin update method calls that reached the dispatcher. */
+  pluginDispatches: number;
   /** Projected roots indexed because the projection gave no index. */
   projectedIndexes: number;
   /** Reads of the whole change from the stored document to the projected. */
   projectionChanges: number;
   /** Roots a collaboration binding reconciled whole by diffing them. */
   reconciles: number;
+  /** Root snapshots built from a root's current children. */
+  rootSnapshots: number;
   /** Change sections read to map a position or compose a change. */
   sectionsWalked: number;
+  /** Snapshot indexes built over a root's children. */
+  snapshotIndexes: number;
   /** Projected roots a frame installs as its snapshot's roots. */
   snapshotRoots: number;
   /** Sequence items a walk visited in order. */
@@ -57,10 +63,13 @@ export const coreWork: CoreWork = {
   copiedSlots: 0,
   fallbacks: 0,
   indexedNodes: 0,
+  pluginDispatches: 0,
   projectedIndexes: 0,
   projectionChanges: 0,
   reconciles: 0,
+  rootSnapshots: 0,
   sectionsWalked: 0,
+  snapshotIndexes: 0,
   snapshotRoots: 0,
   walkedSlots: 0,
   wholeReadNodes: 0,

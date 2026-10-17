@@ -422,11 +422,11 @@ Inserts nodes tagged with the AI mark at the current selection (or `options.targ
 
 ### `editor.update.ai.removeMarks(options?)`
 
-Clears the AI mark from matching nodes.
+Clears the AI mark from matching nodes in `options.at`. Without `at`, it clears the whole root that holds the caret.
 
 ### `editor.update.ai.removeNodes(options?)`
 
-Removes text nodes that are marked as AI-generated.
+Removes text nodes that are marked as AI-generated in `options.at`. Without `at`, it removes them from the whole root that holds the caret.
 
 ### Registry chat preview
 

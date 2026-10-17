@@ -104,8 +104,12 @@ Resolve a node when the path itself matters:
 const path = editor.read.nodes.path(element);
 ```
 
-The read returns `undefined` for an unresolved node. Resolution is scoped to
-the editor root, so nodes from another editor or another root do not resolve.
+The read returns `undefined` for an unresolved node. `nodes.path` is scoped to
+the editor or view root, so it returns `undefined` for a node from another
+editor or another root. As an `at` target, a live node from another root of the
+same editor still resolves, and reads and writes reach it in its own root. A
+`NodeSelection` passed without a `root` means the root of the editor or view
+you call.
 Strict static helpers keep their non-optional contracts and treat a missing
 result as an internal invariant failure.
 
@@ -272,6 +276,16 @@ editor.update((tx) => {
 Use normal node and text transforms for the primary document. See
 [Roots](/docs/roots) for React rendering, root chrome, and
 content roots.
+
+Plugin update methods run in their target's root. A live node, a node key, or
+a point or range that names its root picks that root. A bare path addresses
+the root of the editor or view you call. A call on the editor with no target
+runs in the root that holds the caret.
+
+```ts
+// The caret is in the footer.
+editor.update.indent.increase(); // indents the selected footer blocks
+```
 
 ## Document meta
 
@@ -516,7 +530,8 @@ using `locateAt(index, ...keys)` for an options argument, a method whose
 arguments hold no location with `txLocate(false, method)`, and a method that
 only moves the selection with `txSelection(method)`. [Plugin
 Methods](/docs/plugin-methods#place-locations-under-suggestions) says when
-these declarations apply.
+these declarations apply under suggestions and [which root they run
+in](/docs/plugin-methods#run-in-the-targets-root).
 
 ## Immutable node and location utilities
 

@@ -13,6 +13,7 @@ import {
   SelectionApi,
 } from '../../../core';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
+import { NoteHolder } from '../../details/__tests__/detailsConversionFixture';
 import {
   BaseBlockquotePlugin,
   BaseHorizontalRulePlugin,
@@ -24,6 +25,38 @@ import { BaseHeadingPlugin } from './BaseHeadingPlugins';
 jsxt;
 
 describe('BaseBlockquotePlugin', () => {
+  it('wraps the caret root without editing main', () => {
+    const editor = createEditor({
+      plugins: [BaseBlockquotePlugin, NoteHolder],
+      initialValue: {
+        children: [
+          {
+            type: 'listNoteHolder',
+            childRoots: { body: 'note' },
+            children: [{ text: '' }],
+          },
+        ],
+        roots: { note: [{ type: 'paragraph', children: [{ text: 'Note' }] }] },
+      },
+    });
+    const main = editor.read.children();
+    editor.update.selection.set({ path: [0, 0], offset: 0, root: 'note' });
+
+    editor.plugin(BaseBlockquotePlugin).update.toggle();
+
+    expect({
+      main: editor.read.children(),
+      note: editor.read.root('note'),
+    }).toEqual({
+      main,
+      note: [
+        {
+          type: 'blockquote',
+          children: [{ type: 'paragraph', children: [{ text: 'Note' }] }],
+        },
+      ],
+    });
+  });
   it('declines wrapping a required title without throwing or changing the document', () => {
     const initialValue = [
       { children: [{ text: 'Title' }], level: 1, type: 'heading' },

@@ -7,6 +7,7 @@ import {
   definePlugin,
   type EditorCommit,
   txOnly,
+  txLocate,
 } from 'plitejs';
 import { compilePluginInput, initializePluginEntries } from 'plitejs/internal';
 
@@ -15,9 +16,9 @@ describe('plugin portal', () => {
     const WriterPlugin = definePlugin('writerTransaction', {
       read: ({ state }) => ({ text: () => state.text.string([]) }),
       update: ({ tx }) => ({
-        append(value: string) {
+        append: txLocate(false, (value: string) => {
           tx.text.insert(value, { at: { offset: 4, path: [0, 0] } });
-        },
+        }),
       }),
     });
     const editor = createEditor({

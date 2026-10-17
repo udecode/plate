@@ -10,6 +10,7 @@ import {
   type Node,
   NodeApi,
   type NodeEntry,
+  type NodeSelection,
   type NodeTarget,
   PathApi,
   type BlockInsertOptions,
@@ -18,13 +19,13 @@ import {
   property,
   RangeApi,
   schema,
+  SelectionApi,
   transferVeto,
   txLocate,
   locateAt,
 } from '../../../core';
 import { canPlaceBlocksAtPath } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
-import { rootOf } from '../../../internal/utils/inRoot';
 
 export type MoveMiddleColumnOptions = {
   direction: 'left' | 'right';
@@ -38,7 +39,7 @@ export type SetColumnsOptions = {
 };
 
 export type ToggleColumnGroupOptions = {
-  at?: Location;
+  at?: Location | NodeSelection;
   columns?: number;
   widths?: string[];
 };
@@ -68,22 +69,21 @@ export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
   .extend(({ plugin }) => ({
     update: ({ tx }) => ({
       moveMiddle: txLocate(
-        ([[node, path], options], place) => {
-          const at = place.location(path);
-
-          return at && [[node, at], options];
-        },
+        ([entry, options], place) =>
+          place.location(tx.key(entry[0])) === null ? null : [entry, options],
         (
-          [, path]: NodeEntry<Element>,
+          [target]: NodeEntry<Element>,
           { direction = 'left' }: Partial<MoveMiddleColumnOptions> = {}
         ) => {
           if (direction !== 'left') return undefined;
 
-          const entry = tx.nodes.get(path, { match: ElementApi.isElement });
+          const entry = tx.nodes.get(tx.key(target), {
+            match: ElementApi.isElement,
+          });
 
           if (!entry) return false;
 
-          const [node] = entry;
+          const [node, path] = entry;
           const middleChildNode = NodeApi.get(node, [1]);
 
           if (!NodeApi.isElement(middleChildNode)) return false;
@@ -463,21 +463,34 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
       toggle: txLocate(
         locateAt(0),
         ({ at, columns = 2, widths }: ToggleColumnGroupOptions = {}) => {
-          const entry = tx.nodes.block({ at });
-          const columnGroupEntry = tx.nodes.above({
-            at,
-            type: plugin,
-          });
+          const selection = SelectionApi.isNode(at)
+            ? tx.nodes.toArray({ at })
+            : at === undefined
+              ? tx.selection.nodes()
+              : [];
 
-          if (!entry) return;
+          if (selection.length > 1) return;
 
-          if (columnGroupEntry) {
-            setColumns({ at: columnGroupEntry[1], columns, widths });
+          const [selected] = selection;
+          const [node, path] =
+            selected ??
+            (SelectionApi.isNode(at) ? [] : (tx.nodes.block({ at }) ?? []));
+
+          if (!ElementApi.isElement(node) || !path) return;
+
+          const groupPath = ElementApi.isElementType(node, type)
+            ? path
+            : tx.nodes.above({
+                at: selected || SelectionApi.isNode(at) ? path : at,
+                type: plugin,
+              })?.[1];
+
+          if (groupPath) {
+            setColumns({ at: groupPath, columns, widths });
 
             return;
           }
 
-          const [node, path] = entry;
           const columnWidths = widths ?? columnsToWidths(columns);
           const columnGroup = {
             children: Array.from({ length: columns }, (_, index) => ({
@@ -501,7 +514,7 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
             index === undefined ||
             !canPlaceBlocksAtPath(tx.schema, path, [columnGroup], {
               removing: [index],
-              root: rootOf(tx, at),
+              root: tx.view.root(),
             })
           ) {
             return;

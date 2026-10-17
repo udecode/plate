@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, definePlugin } from 'plitejs';
+import { createEditor, definePlugin, txLocate } from 'plitejs';
 
 import {
   getSnapshot as editorGetSnapshot,
@@ -106,11 +106,11 @@ describe('editor plugin namespaces', () => {
           },
         }),
         update: ({ tx }) => ({
-          insertRow(text = 'row') {
+          insertRow: txLocate(false, (text = 'row') => {
             tx.nodes.insert(paragraph(text), {
               at: [tx.nodes.children().length],
             });
-          },
+          }),
           owner: () => 'update',
         }),
       })

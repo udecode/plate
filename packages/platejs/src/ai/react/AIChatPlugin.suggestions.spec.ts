@@ -807,7 +807,6 @@ describe('AIChatPlugin suggestions', () => {
 
     const snapshots = editor.plugin(AIChatPlugin).store.get('chatNodes');
 
-    expect(snapshots.map(({ root }) => root)).toEqual(['header', 'header']);
     expect(
       snapshots.map(({ nodeKey }) => editor.read.nodes.get(nodeKey)?.[0])
     ).toEqual([...editor.read.root('header')]);
@@ -877,7 +876,6 @@ describe('AIChatPlugin suggestions', () => {
       chatNodes: chatNodes.map((node, index) => ({
         node,
         nodeKey: header.key([index])!,
-        root: 'header',
       })),
     });
     header.plugin(AIChatPlugin).api.setPreview('new');
