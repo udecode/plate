@@ -2,13 +2,15 @@
 // `oxfmt --check` rejects, so `oxfmt` runs again. `oxlint.config.ts` turns
 // type-aware rules off for `ultracite check`, and that command's file count
 // includes Markdown, so the type-aware oxlint run supplies both the typed rules
-// and the count of files lint read.
+// and the count of files lint read. `land.mjs` passes `--allow-ignored`,
+// because a docs-only commit has nothing to lint and must still land.
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 
-const files = process.argv.slice(2);
+const allowIgnored = process.argv.includes('--allow-ignored');
+const files = process.argv.slice(2).filter((arg) => arg !== '--allow-ignored');
 if (files.length === 0) {
-  console.error('Usage: pnpm lint:task <file> [...]');
+  console.error('Usage: pnpm lint:task [--allow-ignored] <file> [...]');
   process.exit(2);
 }
 const missing = files.filter((file) => !existsSync(file));
@@ -45,6 +47,12 @@ const typed = run([
 ]);
 const linted = Number(typed.output.match(/on (\d+) files? with/u)?.[1] ?? 0);
 
+if (linted === 0 && allowIgnored) {
+  console.info(
+    `Lint ignores all ${files.length} paths, so there is nothing to lint.`
+  );
+  process.exit(0);
+}
 if (linted === 0) {
   console.error(
     `Lint ignores all ${files.length} paths, so none of them is lint-clean.`

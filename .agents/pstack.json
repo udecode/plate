@@ -3,7 +3,7 @@
   "branch": "next",
   "protected": "main",
   "delivery": "trunk",
-  "lintFix": "pnpm lint:fix",
+  "lintFix": "pnpm lint:task --allow-ignored",
   "check": "pnpm check",
   "maxEffort": "xhigh",
   "plans": "docs/plans",
@@ -47,7 +47,7 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "1426d473f766a90de11581f541a96ac658dcd22d8bfe77297f36f69cd606df5d",
+    "block": "eda018e4af00134793dd004b1eea003c472fc48799b65735f307cb9e3872cd1c",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-build.md": "7371c8760bd3bf2a18d53e4efe3f0b2a4b814bc2d7da5c01e741e7ee6bc49599",
@@ -75,7 +75,7 @@
       ".agents/pstack/rules/chips.md": "14b9dca13b3ffa927d73c46b351547bc68434521dcc75560cdcacaea983127ac",
       ".agents/pstack/rules/close.md": "c5984a5ff7aef31da6c806dfb59102526ad8aeacb7789a8d09d3af24cf5feae9",
       ".agents/pstack/rules/codex.md": "e1816dc2543a280c0d58b63ba24dc653cbcaeff48d989355b48fd06b35096f28",
-      ".agents/pstack/rules/land.md": "7bdf656aada4de6a0ce6d3e722579b4e7596556429d766d072fbc4840ec23144",
+      ".agents/pstack/rules/land.md": "7ba4a65eb645dd2bd175ae7a570b6c6c2671c2553cafbbcf0b2767cefc8fe55a",
       ".agents/pstack/rules/long-runs.md": "fba63db8ca474ca083c836a066b538f4aa17b88cd5851d700e5263cdbf38724e",
       ".agents/pstack/rules/pages.md": "d6c587a5970290c72a6c1f2649bc5a4d750f25a5903e914568cf4993fb139660",
       ".agents/pstack/rules/panel.md": "5bf6e76aceb69a42709a94f1a642ea5069af8cb504dd91c940692d8a8bab95cc",
