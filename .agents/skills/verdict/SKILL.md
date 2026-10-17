@@ -1,5 +1,5 @@
 ---
-description: Reconcile existing evidence and judge whether a Plate API, architecture or cleanup direction earns further work. Return Stop, Pursue or Defer with the exact next owner.
+description: Reconcile earlier reviews, then judge whether a Plate API or architecture direction earns further work before detailed design or implementation, and write the verdict into the review page.
 argument-hint: '[next | audit <scope> | <proposal, path or plan>]'
 name: verdict
 metadata:
@@ -9,19 +9,6 @@ metadata:
 
 # Verdict
 
-Load `pstack:poteto-mode`, check the project playbooks, then follow
-`.agents/playbooks/verdict.md` over its Investigation base. Read the named
-source, current Vision, earlier relevant findings and the bounded live owner.
-An audit remains read-only unless repairs are requested.
+Handle $ARGUMENTS.
 
-Compare keeping the current design with the strongest justified delete,
-merge, inline, reuse and replacement targets. Use `best-api` for call shape.
-State one Stop, Pursue or Defer verdict, the decisive evidence, user value,
-rejected alternatives and the proof or unanswered question that could change
-the choice. Do not use implementation effort as proof of a good target.
-
-Stop rejects further work under the current requirements. Defer names an
-owner and observable reopening condition. Pursue routes to the Plan playbook;
-a request only for a review ends with that review. Implementation requires
-the active request's authority. Record the verdict on its plan page, with
-exact scope and proof limits, and offer one next item when asked for next.
+Run the Verdict playbook, `.agents/playbooks/verdict.md`, in full: it picks the item, reconciles earlier reviews, compares the design space with the `best-api` lens, gives one Stop, Pursue or Defer verdict from its Verdicts section and writes it into the review page. Load `pstack:poteto-mode` first, follow the steps of the pstack playbook the Verdict playbook `extends` with its deltas applied, and run `check-playbooks.mjs` as `AGENTS.md`'s How work runs says, because this entry skips poteto-mode's routing. Its One item per session section titles the session with the item first, and starts any further item in a new session.

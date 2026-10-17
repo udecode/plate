@@ -1,35 +1,126 @@
 ---
-description: Build or change Plate plugins and packages with semantic ownership, inferred contracts, React adapters and package proof. Use for plugin fields, options, serializers and cross-package features.
+description: Use before adding or changing a plugin's fields or options, and for a feature that spans Slate, Plate, the registry and docs. Builds Plate plugins and packages with semantic ownership, inference and package proof, and delivers a feature across its package, UI, docs and release. Use it also when a change touches a plugin's Markdown or HTML encode or decode mapping or its preserve claims.
 ---
 
 # Plate Plugins
 
-Read `VISION.md`, the current builders in `packages/core/src/lib/plugin` and
-`packages/core/src/react/plugin`, and the nearest real package and type tests.
-Source and public types outrank a copied recipe.
+Build Plate plugins that do not need a later `plate-next` cleanup.
 
-1. Put non-React semantics in `src/lib`. Use `createSlatePlugin` or
-   `createTSlatePlugin` according to the current inferred contract.
-2. Lift a semantic base through `toPlatePlugin` or `toTPlatePlugin` in
-   `src/react`. A React-only plugin needs an independent React job.
-3. Keep one-use behavior with its plugin owner. Extract shared helpers only
-   for real reuse or a distinct contract. Follow the owning package's export
-   and `internal/` conventions; `pnpm brl` generates barrels.
-4. Read current `extendApi`, `extendTransforms`, `overrideEditor`, node,
-   handlers, inject and input-rule signatures before configuring them.
-   Preserve callback inference and validate option defaults in the owner.
-5. Reuse `KEYS` from `packages/utils/src/lib/plate-keys.ts` where the current
-   API requires a shared key. Do not copy key contracts into example glue.
-6. Keep renderer behavior in the React adapter or copied UI. `plate-ui` owns
-   component composition, hooks, providers, subscriptions and kit wiring.
-7. For package boundaries, inspect `package.json` exports, peers, dependencies
-   and consumers. Prove headless imports without React and React imports with
-   their actual peers. Use the existing package generator when appropriate.
-8. Prove runtime behavior through the narrow package test. Builder/inference
-   changes also run core type tests and declaration build. Serializer changes
-   prove round trips, preservation and explicit losses.
+This skill owns plugin authoring mechanics: semantic layer, durable source
+owners, file topology, contextual typing, initial state, option stores,
+`extendApi` and `extendTransforms`, React families, and package-local proof.
+`VISION.md`'s Plugins & Components and Slate Boundary sections set the plugin
+direction; read them instead of a copy here.
 
-For a feature spanning package, React adapter, registry, docs and release,
-put each applicable owner and proof in one plan. Record N/A for a layer with
-no job. Complete package tests, kit dependencies, browser interaction, docs
-examples, English/Chinese teaching and `changeset` before closing that feature.
+## Required Reads
+
+Before authoring or refactoring a plugin, read:
+
+1. [creation-flow.md](./rules/creation-flow.md) for semantic and file ownership;
+2. [typing.md](./rules/typing.md) for inference and public contracts.
+
+Plate foundation builders in `packages/core/src/lib/plugin` and
+`packages/core/src/react/plugin`, and their type tests, outrank precedent.
+
+## Semantic Layer
+
+**Semantic base first, Plate second.**
+
+- If behavior matters without React, author it in `src/lib` with
+  `createSlatePlugin` or `createTSlatePlugin` according to the current
+  inferred contract.
+- Lift an existing semantic base with `toPlatePlugin` or `toTPlatePlugin` only
+  in its live React adapter; do not re-author it with `createPlatePlugin`.
+- Use `createPlatePlugin` directly only for a real React/Plate-native plugin.
+- Keep a plugin base-only when no React layer has an independent job.
+
+Named direct-Plate exceptions:
+
+1. React `render` behavior with no useful semantic base;
+2. DOM/editor-surface plugins with no useful semantic base;
+3. React node-prop or component behavior that has no non-React meaning.
+
+## Owner-First Topology
+
+Colocation is the default.
+
+- Put behavior with exactly one production owner inline in that plugin's
+  `create*Plugin` / `.extend()` chain. This includes one-use `with*`,
+  `decorate*`, normalizers, parsers, commands, corrections, matchers, state,
+  APIs, and transforms.
+
+For copied app/registry source, stop here and follow `plate-ui`; this skill does
+not own copied-item colocation, dependency metadata, or browser proof.
+
+## React And Test Ownership
+
+- `plate-ui` owns component, hook, context, provider, primitive, and React 19
+  shape. This skill only implements that accepted shape inside the package and
+  proves package behavior.
+- React tests live beside the component family or its single semantic
+  controller owner. `verify`'s [testing reference](../verify/references/testing.md)
+  owns spec families, fixtures and inline test construction.
+
+## Package Boundaries
+
+Inspect `package.json` exports, peers, dependencies and consumers before
+changing a package boundary. Keep an always-required implementation library in
+`dependencies`. Use a peer only when the consumer must share the runtime
+instance or the library powers an opt-in capability, and mark it optional only
+when the package stays usable without that capability. Optional peers are not
+a dumping ground for normal dependencies. Import a CommonJS dependency through
+its default import unless its named exports are proven under native Node ESM;
+Bun and bundlers accept named imports that Node rejects. Prove headless imports
+without React and React imports with their actual peers. Create a new package
+with `pnpm gen:package`, and run `pnpm test:manifests` after changing package
+dependencies.
+
+## Feature Delivery → [manifest.md](./references/feature/manifest.md)
+
+Read this reference when one feature must reach registry consumers across its
+package, React adapter, copied UI, docs and release. The Plan playbook copies
+the [template](./references/feature/template.md) into the plan, appends
+Benchmark's performance-observability pack when the Scale proof row is `yes`,
+and the Build playbook closes it with
+`node tooling/scripts/check-plate-feature.mjs <plan>`.
+
+- Headless and registry-only flows are first-class modes, not incomplete full
+  flows. Skip a manifest row only as `no` with a concrete N/A reason.
+
+## Workflow
+
+1. Read `VISION.md` and the current plugin builders.
+2. Decide the semantic layer and durable production, React-family, and test
+   owners before creating files.
+3. Search current Plate foundation builders/type tests and the closest clean package
+   analog. Do not copy a stale file graph. A plugin that wraps a native Slate
+   factory, as `HistoryPlugin` and `YjsPlugin` do, copies every registration of
+   its closest wrapped analog, found by grepping that analog's name across
+   `tooling/` and the lint configuration.
+4. Route reusable public forks to `best-api`; otherwise keep the inferred
+   plugin chain inline.
+5. Define initial state, option stores, `extendApi` and `extendTransforms`
+   methods, relationships and React behavior in their durable owners. Read the
+   current `extendApi`, `extendTransforms`, `overrideEditor`, node, handlers,
+   inject and input-rule signatures before configuring them, and reuse `KEYS`
+   from `packages/utils/src/lib/plate-keys.ts` where the API needs a shared key.
+6. Delete superseded helper/component/hook/spec files and regenerate barrels
+   with `pnpm brl`.
+7. Prove the smallest honest surface:
+   - package typecheck and behavior tests;
+   - Plate foundation type tests when builder/public inference changes;
+   - React tests when React behavior changes;
+   - `pnpm --filter platejs build` when a plugin wraps a native factory,
+     because the declaration build reports TS4094 errors the typecheck skips;
+8. Audit for stale helper names, root option helpers, nested updates, explicit
+   plugin annotations, empty config aliases, top-level plugin `config`,
+   parameter-threaded `editor` / `api` / `tf` helpers, and one-use
+   file taxonomies.
+
+## References
+
+- [creation-flow.md](./rules/creation-flow.md) — semantic and file ownership
+- [typing.md](./rules/typing.md) — contextual inference and contracts
+- [manifest.md](./references/feature/manifest.md) — the Feature Manifest,
+  package boundary contract and flow modes, with its plan
+  [template](./references/feature/template.md)

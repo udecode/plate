@@ -44,4 +44,8 @@ Public comments, reviews, merges and releases require explicit authority.
 The template preset is a smaller consumer-app setup. CI regenerates template
 output from its source. Root maintainer skill count does not include templates.
 
-For migration details and retired command owners, see [pstack sync](pstack-sync.md).
+`node tooling/scripts/sync-workflow-source.mjs --check` confirms the owners
+match the recorded plate-2 commit plus the adaptations. It reads the sibling
+`../plate-2` checkout, so it runs by hand after a sync rather than in CI.
+For the sync, its mapping rules and retired command owners, see
+[pstack sync](pstack-sync.md).

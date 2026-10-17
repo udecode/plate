@@ -93,10 +93,18 @@ Verify changed examples through the existing proof owners below.
 
 ## Select the needed mechanics
 
-Read the nearest current page, its imports, MDX components and route owner.
-Inspect `content/docs/meta.json` only when navigation changes. Keep exact
-signatures in reference, setup in feature pages and cross-package explanations
-in a concept guide. Update the English page and its Chinese twin together.
+| Changed contract | Read |
+| --- | --- |
+| New page, substantial rewrite or a docs gap/topology decision | [Page shapes](./references/lanes.md); select only the matching lane |
+| MDX components, navigation, installation requirements or release routes | [MDX and routes](./references/mdx.md) |
+| Public schema, identity, migration, decoration or renderer examples | [Public API examples](./references/api-examples.md) |
+| Plugin setup, kit/manual paths, format mappings, events or API examples | [Plugin documentation](./references/plugin.md) |
+
+For a gap review, compare the nearest concept guide, public reference and
+feature page before adding a page. Put exact signatures in their reference,
+setup in the feature page, and cross-package explanations in a concept guide.
+Merge duplicated concepts and link to one owner. Read `content/docs/meta.json`
+only when adding, moving, merging or deleting routes or changing navigation.
 
 ## Verify the changed claims
 
@@ -105,9 +113,10 @@ in a concept guide. Update the English page and its Chinese twin together.
 | Prose or link only | Read the edited text and resolve changed links; preserve code and metadata |
 | MDX structure or examples | `pnpm --filter www build:source`; verify symbols, imports and fence content against source |
 | Docs source parity or generated docs | `pnpm --filter www check:docs` |
+| An edit to an English `content/docs` page or the root `meta.json`, where the branch's registry-generation rule allows a local build | `pnpm --filter www build:registry` once after the final prose pass, then `pnpm --filter www build:registry --check`; when an earlier link of `check:docs` or the www typecheck chain is red at `HEAD`, run each later link on its own |
 | New/moved route or navigation | Parse changed metadata and request the exact route; inspect pager/sidebar when they changed |
 | Preview or visible component behavior | Resolve the real demo and use [`verify`](../verify/SKILL.md) on that exact route/state |
-| Registry source | `plate-ui`; CI owns registry generation |
+| Registry source | [Plate UI](../plate-ui/SKILL.md) and the branch's registry-generation rule |
 
 Run applicable checks once after the final prose pass. New source changes or a
 failure can require another pass. An MDX parse does not prove a route, runtime

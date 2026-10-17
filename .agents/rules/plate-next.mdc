@@ -1,19 +1,10 @@
 ---
-description: Review or sync a live Plate package, file or API path against the published Slate-based framework and repair accepted findings.
+description: Review a live Plate package, file or API path against the published Slate-based framework, or sync one or every live package by repairing its review findings.
 argument-hint: '[sync [package] | <package, file or API path>]'
 ---
 
 # Plate Next
 
-Read `VISION.md`, then run the Refactoring playbook's package review method in
-`.agents/playbooks/refactoring.md`. The name is the shared entrypoint; this
-checkout's actual packages and public contracts define the target.
+Handle $ARGUMENTS.
 
-For review, inventory the bounded package, its exports, callers, tests and
-docs. Report defects without editing. For `sync`, repair accepted defects in
-the actual owner, migrate affected callers and prove the result through
-`verify`. A package cleanup must deliver concrete user, API or docs value.
-
-Use `best-api` for a public shape decision, `plate-plugins` for package/plugin
-implementation, `plate-ui` for React or registry choices and `plate-docs` for
-public teaching. Regenerate barrels and skills where applicable.
+Run the Refactoring playbook's Package review and sync section (`.agents/playbooks/refactoring.md`) in full. The target is this checkout's published Slate-based framework, whose existing package contracts and release requirements govern changes; `VISION.md` holds its law.

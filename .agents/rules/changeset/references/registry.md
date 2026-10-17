@@ -118,5 +118,5 @@ Run focused generator coverage after changing the generator, schema, or
 changelog source layout:
 
 ```bash
-bun test ./tooling/scripts/generate-ui-changelog-entries.test.mjs
+bun test tooling/scripts/generate-ui-changelog-entries.test.mjs
 ```

@@ -1,56 +1,125 @@
 # Pstack sync from plate-2
 
-The source is the live plate-2 checkout captured in
-[pstack-source.json](pstack-source.json). Source file hashes include local
-content rather than assuming a commit captures it. Both runtimes discover the
-same 25 skill names. Ten installed skills retain their source bytes and lock
-provenance. Fifteen local rule owners generate the remaining skills.
-Every omitted local support file is listed with its reason in
-[pstack-omissions.json](pstack-omissions.json). Retained references cover security
-closeout, Beta issue drafting, collaboration comparison, test auditing,
-renderer contracts, registry wiring and open-code review.
+The workflow owners come from one commit of the plate-2 checkout:
+`.agents/playbooks`, `.agents/rules` with their resources, the installed
+skills that `skills-lock.json` lists, and the `tooling/scripts` helpers those
+owners run. [pstack-source.json](pstack-source.json) records that commit, the
+25 skill names, a hash of every source file and the skill names an earlier
+migration retired. Ten installed skills keep their source bytes and lock
+provenance. Fifteen rule owners generate the other skills.
 
-The generic block and its close/panel rules are rendered for main-line PR
-delivery from the shared source already used by plate-2. The other shared
-helper bytes come directly from the project. The source's autostaging Stop
-hooks are omitted because they serve its user-owned next checkout. Project
-playbook page sections tied to its review ledger and document model are also
-omitted; ordinary plan pages retain the installed shared shape.
+plate-2 builds Plate on a new editor engine, Plite. This checkout is the
+published Slate-based framework. So the sync copies each owner whole and only
+cuts its new-engine lines or maps them to their Slate equivalent.
+[pstack-adaptations.json](pstack-adaptations.json) lists every source file
+left out, with its reason. [pstack-adaptations.patch](pstack-adaptations.patch)
+holds every line edit.
 
-## Retained methods and adaptations
+## Run a sync
 
-| Owner | Retained method | Plate adaptation or omitted source method |
-| --- | --- | --- |
-| benchmark | Matched cohorts, causal diagnosis, frozen budgets, bad controls, correctness, final replay | Use actual package/app runners; omit Plite lanes and their hard-coded validator |
-| best-api | Concrete calls, deletion comparison, ownership, inference, teaching repair | Preserve stable compatibility; search local teaching without the absent sweep helper |
-| changeset | Release baseline, one package per note, registry notes, auto-release choice | Use core, slate and platejs package names |
-| issue-harvester | All-state history, PR/test provenance, exact coverage, resumable ledgers | Use actual upstream Slate and Plate owners |
-| maintainer | Public intake, duplicate evidence, security closeout, Beta drafting, routing, final-ref proof | Keep the Beta publisher and evidence helpers; omit standalone queue automation and stale sibling-checkout authority |
-| plan-page | Subjects, iterations, Brief/Teach/Demo/Close, local rendering | Copy the installed skill and matching pstack helpers |
-| plate-docs | House style, useful examples, current teaching, locales, MDX proof | Read actual Slate APIs; CI owns registry builds |
-| plate-next | Bounded package review and accepted sync | Review published Plate packages rather than a new editor-engine target |
-| plate-plugins | Semantic base, React lift, inference, ownership, full feature delivery | Use current Slate factories and multi-package exports; omit staged/compiler contracts |
-| plate-ui | Open code, real composition, local UI, explicit kit/dependency wiring | Use registry/ui and current editor plugin kits; omit provider variants absent here |
-| redo | Effort-aware pickup and reuse/redo/recheck | Installed source unchanged |
-| release-lanes | Stable/beta maintenance, promotion, direct authorized sync, published readback | Omit engine-specific release-readiness producer |
-| research | Source inventories, evidence grades, independent harvest, compiled upkeep | Use local research records; omit engine-specific ledger and validator |
-| shadcn | Installed CLI/components method | Installed source unchanged |
-| sync-plate-ui | Three-way hunk comparison, downstream forks, accepted apply | Map current registry metadata and feature packages |
-| sync-shadcn | Exact ranges, fork ownership, accepted slices, baseline accounting, parity | Use authored registry metadata; omit absent create/dependency builder |
-| tanstack-virtual | Installed virtualizer method | Installed source unchanged |
-| test-audit | Contract retention, mutants, canonical tests, support cleanup | Installed source unchanged |
-| vercel-react-best-practices | Selected React tactics | Installed source unchanged |
-| verdict | Stop/Pursue/Defer and one bounded decision | Use local history rather than the absent review-ledger controller |
-| verify | Reporter contract, ownership, source identity, native/visual limits, tests | Use current Bun/package/browser runners; omit schema CLI and Plite proof app |
-| video-transcripts | Recording evidence and transcript helper | Installed source unchanged |
-| walkthrough | Final verified frames and artifact explanation | Installed source unchanged |
+```bash
+node tooling/scripts/sync-workflow-source.mjs --write
+```
+
+`--write` reads `../plate-2` at `HEAD`, or at the commit that `--commit`
+names. It lays down the source bytes, applies the patch, deletes local owner
+files the source lacks and rewrites pstack-source.json. When upstream moved a
+line that a hunk edits, that hunk no longer applies. `--write` still writes
+every other hunk, prints the rejected ones and exits 1. Re-apply those by hand.
+
+```bash
+node tooling/scripts/sync-workflow-source.mjs --report
+```
+
+`--report` lists each line of an adapted Markdown owner that still names the
+new engine, a path this checkout lacks, a package script or `PLATE_*`
+variable that no workspace defines, or a code-shaped name, such as a member
+path, a constant or a `@platejs/*` specifier, that no file outside `.agents`
+and the docs prose spells. The `accept` list in
+pstack-adaptations.json clears the hits that are correct here, each with its
+reason. Fix every other hit in its owner.
+
+```bash
+node tooling/scripts/sync-workflow-source.mjs --record
+node tooling/scripts/sync-workflow-source.mjs --check
+pnpm run prepare
+pnpm check:workflow
+```
+
+`--record` saves the local owner edits as the patch. It refuses a source file
+deleted locally until the file has an `omit` entry. `--check` fails when an
+owner differs from the recorded commit plus the adaptations.
+
+The copied `tooling/scripts` helpers keep their source bytes unless Plate
+needs a fix.
+`biome.jsonc` turns off the four style rules plate-2's copies of
+`proof-worktree.mjs`, `teaching-sweep.mjs` and `trial-power.mjs` break, so the
+patch holds no lint rewrites. It does hold one Plate fix that plate-2 lacks:
+`proof-worktree.mjs` refuses a `--dir` and `--name` whose log lands inside the
+worktree, even through a symlink that does not resolve yet.
+
+## Mapping rules
+
+- Plite as the editor base becomes Slate. `plitejs` becomes `@platejs/slate`
+  or `platejs`.
+- The new plugin API maps to Plate's. `definePlugin` becomes
+  `createSlatePlugin` or `createPlatePlugin`, `toReactPlugin` becomes
+  `toPlatePlugin`, `editor.update.*` becomes `editor.tf.*`,
+  `editor.plugin(Plugin).api` becomes `editor.getApi(Plugin)` and
+  `configure({ component })` becomes `withComponent`.
+- `docs/vision/*.md` becomes the root `VISION.md`. The Redesign from First
+  Principles section of `docs/vision/common.md` becomes the
+  `pstack:principle-redesign-from-first-principles` skill.
+- `docs/research/sources/plate-notes/` becomes `docs/solutions/`. Research
+  runs live in `docs/research/runs/<date>-<topic>/`.
+- The harvest lane `slate-v2` becomes `slate`, the raw Slate checkout at
+  `../slate`.
+- Registry paths follow this checkout. Copied UI lives in
+  `apps/www/src/registry/ui` and kits in
+  `apps/www/src/registry/components/editor`. Metadata lives in
+  `registry-ui.ts`, `registry-kits.ts`, `registry-components.ts` and
+  `registry-examples.ts`, and `registryDependencies` stay authored.
+- Commands follow this checkout: Bun through `pnpm --filter <package> test`,
+  the `tooling/config/bunTestSetup.ts` preload, Biome and ESLint. `pnpm e2e`
+  has no specs here, so browser proof runs through `verify`'s Drive section.
+- The patch cuts these new-engine tools wherever they appear: the hand drive,
+  playtest and tester-pass runners, the entrypoint graph and test partitions,
+  `@platejs/cli`, the `apps/plite` runners, Oxlint, the device lane, the
+  `registry/bases` provider variants, `check:plite*` and the Plite
+  release-readiness producer.
+- The patch also cuts plate-2's review ledger and its front-matter fields.
+  The ledger itself is not engine-specific, but its scopes list plate-2's
+  packages and `review-ledger.mjs` is not ported, so `verdict`'s `next` has
+  no picker here, as before this sync.
+- The patch also cuts plate-2's rules for working `main` PRs in `../plate` and
+  its `next` delivery overrides, because this checkout delivers by commit and
+  PR into `main`.
+
+`plate-ui/rules/component-shape.md`, `plate-ui/rules/registry.md` and
+`sync-plate-ui.mdc` changed in plate-2 only for the new engine, so the patch
+keeps this checkout's text for them.
+
+## Omitted source files
+
+- verify's `cli.md`, `hand-drive.md`, `playtest.md` and `tester-pass.md`
+  drive tools this checkout does not have. verify's Hand drive section keeps
+  the drive's page states, its six moves and its drift rule.
+- benchmark's `autoresearch.md` runs the Plite Autoresearch loop.
+- maintainer's `slate-issue.md` targets `udecode/slate`, the new engine's
+  repository, through Plate PRs to `next`. Here the `slate-issue` mode sends a
+  plain Slate defect upstream instead.
+- plate-plugins' `capabilities.md`, `package-host.md` and
+  `plugin-authoring-audit.md` teach the new plugin API, its staged
+  capabilities and its entrypoint graph. plate-plugins' Package Boundaries
+  section keeps the dependency, peer and CommonJS import rules.
+  `creation-flow.md` and `typing.md` land with their new-engine sections cut.
 
 ## Retired workflow
 
-The source snapshot records every old extra skill name. The user authorized
-their removal, including alternate Claude-only aliases. No old controller is
-kept merely to preserve a second entrypoint. These capability groups have the
-following surviving owners.
+pstack-source.json's `removedSkills` records every skill name an earlier
+migration removed. The user authorized their removal, including alternate
+Claude-only aliases. The workflow keeps no old controller only to preserve a
+second entrypoint. Each retired capability group has this surviving owner.
 
 | Retired capability | Surviving owner |
 | --- | --- |

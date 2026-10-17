@@ -18,8 +18,6 @@ Release notes document user-visible changes: package changesets for published pa
 
 **Forbidden:** `minor` changesets for:
 
-- `@platejs/core`
-- `@platejs/slate`
 - `platejs`
 
 Use `patch` instead. `minor` on those explodes version bumps across dependents.
@@ -53,12 +51,12 @@ Never combine packages in one changeset.
 # Wrong
 ---
 "platejs": patch
-"@platejs/code-block": patch
+"@platejs/ai": patch
 ---
 
 # Correct
 .changeset/plate-fix-types.md
-.changeset/code-block-add-option.md
+.changeset/ai-fix-streaming.md
 ```
 
 ### 3. Always relative to the release baseline, never last commit

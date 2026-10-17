@@ -1,73 +1,328 @@
 ---
-description: Verify Plate packages, browser editor behavior, CLI artifacts, collaboration and tests at their actual owners. Load before selecting, changing or waiving proof, writing tests or claiming a fix works.
-argument-hint: '[package | route | cli | collaboration | testing audit] <target>'
+description: Review implementation ownership and verify Plate packages, editor states and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, before calling a failure pre-existing or unrelated, before running a base or HEAD control, including an evidence probe or browser control run during an API review or investigation, before claiming a fix works, and before closing any change with a browser-visible result.
+argument-hint: '[package | route | collaboration | testing audit] <target>'
 ---
 
 # Verify
 
-The project driver for pstack. State the setup, input, expected result and
-required follow-up before choosing proof. Reporter corrections extend that
-contract. A smaller green case cannot discard an unresolved requirement.
+The driver skill for pstack's Bug fix playbook: implementation acceptance,
+proof selection, runtime readiness, driving and evidence. Its
+[testing reference](./references/testing.md) owns test shape and runners, and
+`verify testing audit` ([testing-audit.md](./references/testing-audit.md))
+searches for uncovered contracts; `test-audit` prunes existing tests.
+Read the [command recipes](./references/commands.md) in full before the first
+probe, base control, mutant or browser run; they list the probe, base-worktree,
+runner and stale-build mistakes this repository has hit.
 
-Read the relevant package scripts and `tooling/config/test-suites.mjs` before
-running commands. Use `pnpm test` for the fast aggregate, focused
-`bun test ./<actual-spec>` for a resolved Bun entrypoint, and the package's
-typecheck for its current graph. Root `pnpm typecheck` builds packages first.
-Check that output names the intended files and actually ran them. "No test
-files found", an unmatched package filter and a cached result prove no fresh
-execution.
+## Completion boundary
 
-For package behavior, inspect exports and real consumers. Separate source
-checks from packed declarations and Node import proof. Rebuild the affected
-dist boundary when the selected consumer resolves it. For a CLI, build the
-actual package, run its `--help` and requested command in a disposable
-consumer, inspect emitted output and confirm the input was preserved.
+State the reported setup, input, expected result and necessary follow-up before
+choosing proof. Keep them in the existing case or plan, not a separate registry.
+Select the smallest test boundary that can observe each required result. A
+model test, detached transform, alternate route, synthetic click or model-set
+selection can diagnose a browser defect without proving its native input,
+focus consumer, paint or event ordering. A standalone demo, block route or
+docs wrapper cannot certify a reporter-named route, even when it renders the
+same component.
+Reporter follow-ups are deltas. A confirmed requirement stays until the
+reporter or accepted product law removes it, and a residual symptom joins the
+original acceptance instead of replacing it. A narrower green test cannot
+discard an original visual, transient, focus, selection, popup, error or
+follow-up requirement. A report that names only a bad state forbids that state
+without choosing its replacement. When several outcomes satisfy it and no
+accepted contract picks one, ask before writing the product test or fix.
 
-For browser behavior, read the actual demo or reporter route under
-`apps/www/src/app` and its registry owner. Start the www app on an owned free
-port through its existing script or `pnpm --filter www exec next dev --port
-<port>` when the script would generate CI-owned output. Bind process cwd,
-source/build identity and URL. A listening port or HTTP 200 is not proof that
-the editor renders correctly.
+For flaky, native, lifecycle, compositor, focus, selection, drag-and-drop or
+device risk, run the final proof five times, warm and without retries. One
+failure keeps the case open. Each run executes the proof command; a cached
+result does not count. A turbo run prints `Cached: N cached, M total`; when the
+claim needs a real run, rerun with `TURBO_FORCE=true`. The command recipes'
+Command Pitfalls list the other outputs that mean a command exited 0 without
+running, with the form that runs.
+In a checkout that other sessions are editing, run the acceptance check in a
+detached worktree at the base commit plus the task's saved patch, and attribute
+each failure from that run. When attributing a chained `a && b && c` step
+against `HEAD`, name the last link
+that actually ran, and run every later link
+directly before claiming it is covered.
 
-Drive through available browser or native app controls after reading their
-documentation. Prefer an existing managed Playwright spec and its runner when
-one covers the case. Do not invent a second browser controller. A standalone
-`/blocks/<id>-demo` route is useful unless the reporter named another route.
-Preserve the named browser/profile, auth state, fixture and interaction.
+Report local verification separately from publication. Accepted implementation
+review and current-checkout proof with known serving-source identity can close
+a local fix; Maintainer's public-claim gates
+own pushed-ref replay. A missing capability limits the claim, not unrelated
+authorized progress.
+## Review the implementation
 
-Inspect model state, rendered DOM, focus owner, native selection and follow-up
-typing where the claim needs them. Capture and open screenshots for paint,
-visibility, layout and animation claims. Synthetic events and mobile viewport
-emulation retain that limited scope. Raw device or OS input needs that device.
-Native focus, selection, drag, paint and React lifecycle risks require five
-warm executions without retries; one failure keeps the case open.
+For a changed implementation, review the final diff, its owning path and
+materially different consumers before accepting verification. Do this before
+expensive final replay; an existing review of the same candidate can satisfy it.
+Keep the review proportional: a direct local correction needs a direct source
+check, not an architecture exercise. Unchanged runtime checks and artifact-only
+verification do not create an implementation review.
 
-Capture runtime errors and fail on unexplained uncaught exceptions even when
-the test runner reports success. Collaboration claims need two clients,
-provider, awareness, disconnect/reconnect and history proof. A fallback stream
-or connection label does not prove the external service worked. When a live
-Potion comparison is needed, read [Potion Yjs Browser Test](references/potion-yjs.md).
-Use it only when the available tool proves per-page network isolation.
+- For layout defects, compare structural layout and CSS before
+  measuring or synchronizing geometry. Fewer changed lines do not justify
+  leaving the wrong ownership in place.
+- Each added effect, observer, subscription, timer, mutable cache or save/restore
+  protocol must earn its place through a current requirement and correct
+  lifetime. Check who owns the mutated state or DOM, which real callers support
+  the assumption, and whether the cause can be removed instead. These mechanisms
+  are not inherently wrong; unexplained compensation is not an accepted fix.
+- Check that proof observes the user invariant. A mocked owner or assertion of
+  the new mechanism can hide the original design error; it cannot alone prove
+  valid ownership or supported composition. Retain meaningful behavior coverage
+  and inspect consumers that differ in placement, availability or lifetime.
 
-Before accepting implementation, inspect the final owner and materially
-different consumers. An effect, observer, timer, cache or save/restore protocol
-needs a real requirement and correct lifetime. Passing tests do not accept
-wrong ownership. Run final proof after writing and review repairs.
+Record the conclusion and decisive source evidence in the existing case, plan
+or handoff. Verified ownership or unnecessary-complexity defects keep local
+completion open even when tests pass. Rework a clear local issue; use Best API
+Review when the correct owner or a compensation protocol remains contested,
+then continue under the caller's existing repair authority.
+A clean design does not replace runtime proof, and passing runtime proof does
+not accept a deficient design.
 
-Keep logs, fingerprints, routes, observed results and screenshots under the
-run's ignored `docs/plans/artifacts/` directory. Separate local candidate proof
-from final pushed-ref claims. Attribute a failure to base only after the same
-command fails the same way in a detached base worktree. Link dependencies and
-copy needed env files there; never swap tracked source in the live checkout.
+## Canonical inventory
 
-For tests, read `.agents/pstack/rules/tests.md`. Use adjacent specs, public
-contracts, literal expected outcomes and compile-only type tests. Restore
-spies, spread real modules when mocking one export, and keep package tests
-independent of app registry imports. `testing audit` inventories uncovered
-contracts through [Testing audit](references/testing-audit.md);
-`test-audit` prunes existing low-value tests.
+Discover the current inventory from these existing owners. Do not create a
+second feature map, assertion registry or manually maintained coverage count.
+`pstack:create-verification-skill` and `pstack:maintain-verification-skill`
+work on this file and that inventory.
+For each selected item record its user entry, setup/action, expected effect and
+gotchas from the source and existing proof. A file count is discovery only.
 
-For recognizable install corruption, run `pnpm run reinstall` once and retry
-the exact command. Stop only processes this run started. Preserve evidence
-before cleaning disposable consumers or fixtures.
+| Surface | Inventory and exact proof owner | User entry and driving recipe |
+| --- | --- | --- |
+| Plate copied UI | `apps/www/src/registry/`; `apps/www/src/app/(blocks)/blocks/[name]/page.tsx` | Use the actual registered block, preferring its `-demo` route when present. Preserve a reporter-named docs/route target. |
+| Public package behavior | Package exports and their real consumers | Use the package's own test and type scripts for its public contract. Separate source checks from packed declarations and Node import proof. |
+| Docs and registry outputs | `content/docs`, `apps/www/src/lib/source.ts`, docs app routes and `apps/www/package.json` scripts; Plate Docs. `generateDocStaticParams` in `apps/www/src/app/(app)/docs/[[...slug]]/doc-page.tsx` adds the component and example pages from `getRegistryStaticParams` to the Fumadocs pages. | Take a page list or count from that function and the `content/docs` MDX files `git ls-files` lists. Parse frontmatter titles, inspect rendered bodies and read back generated results. Record locale fallbacks, such as `/cn/docs` serving an English page that has no `.cn.mdx`, and custom app-page overrides separately. |
+| Regression cases | Existing executable tests plus current source/report provenance | Replay the exact reporter interaction under the [completion boundary](#completion-boundary); select applicable [interaction oracles](./references/regression-oracles.md). |
+| Performance | Benchmark's current target inventory and executable runners | Resolve the measured owner through Benchmark; preserve workload, source identity, correctness and baseline/candidate comparability. |
+
+Maintain Verification Skill defaults to this entire inventory, including each
+current entry within a selected canonical source, not one demonstration per
+table row, when the request is a product-coverage audit. An instruction-only
+workflow audit checks its changed commands and decision paths without claiming
+live product coverage. Only an explicitly scoped request narrows the selected
+product denominator. For product coverage, source inspection and one serial
+live pass are both required.
+Package import coverage is a boundary check, not every editor interaction.
+Use the entrypoint's owned behavior tests and browser recipe for that claim.
+Root `pnpm test` runs the fast suite only; read `tooling/config/test-suites.mjs`
+for the slow and deferred suites.
+
+Registry hooks, libraries, styles and kits need an actual consumer; their
+`component: null` index entries do not provide standalone block previews.
+
+## Launch
+
+Run from the current Plate checkout. Read the relevant package script and
+configuration first; do not reuse ports or source paths from another checkout.
+Use a foreground managed session and retain its handle for cleanup. A proof
+run that can outlast the foreground command limit, such as a multi-engine
+browser matrix, runs in the background with one log per engine that ends in
+its `exit N` line; after an interruption or resume, only those logs count.
+
+- Plate app: `pnpm --filter www dev --port 3297`.
+  This script generates and serves dynamic docs. When the tree must not
+  change, such as during a proof or a panel freeze, run
+  `PLATE_WWW_DYNAMIC_DOCS=1 next dev --port <port>` from `apps/www` with the
+  same env. Set `PLATE_WWW_DEV_SOURCE=1` by
+  default when the tree changes a package the page renders, so the server
+  serves source instead of built output. When a server already holds that
+  port, pick another port.
+- Library-only proof: use the actual affected package test/type script. No app
+  launch is needed unless the claimed behavior depends on rendering or native
+  input. Use the full [command recipes](./references/commands.md).
+
+Next readiness requires its ready output and the exact route answering. A
+process that listens is not proof that the route renders or uses current source.
+If a build/start fails, capture its owner and clean the instance you started.
+Repair only within the active request's authority; never use stubs to certify the product.
+
+## Doctor
+
+For package-resolution or local React corruption signals, use the one-time
+[install recovery](./references/commands.md#local-install-recovery) before
+reopening product diagnosis.
+
+Check the chosen instance before driving and after anything surprising:
+
+1. Bind the command/session, PID, cwd, source/build identity and URL. On macOS,
+   `lsof -a -p <owned-pid> -d cwd -Fn` reads its cwd and
+   `lsof -nP -iTCP:<owned-port> -sTCP:LISTEN` identifies the actual listener.
+   Inspect the child listener when pnpm/Next uses a wrapper process. A listener
+   from another checkout is not yours to stop or use as final proof. For the
+   Plate app, bind the served bytes with an observation only the new code
+   produces, never one the base also shows.
+2. Request the exact local route with `curl --fail --silent --show-error` and
+   inspect it through the available browser control. HTTP success proves
+   reachability only; the browser must show the expected editor/route without
+   a build error or overlay. Check auth and prerequisite state when applicable.
+3. When process health is green but UI state is wedged, reset to known state
+   or relaunch. A failed drive always triggers doctor and cleanup of its
+   residue before another attempt. Preserve the evidence already collected.
+
+Do not certify auth, package freshness or correct state from a port probe.
+Inspect the owning build/export graph; rebuild only the affected built boundary.
+
+## Drive
+
+Use the current runtime's browser or CUA APIs. Inspect their documentation and
+current UI before selecting controls. Ordinary web QA can use the in-app
+browser. Exact Chrome/profile/clipboard/download/print/native claims require
+that browser and profile; use native app/OS control when necessary. Old plugin
+names in preserved recipes describe these capabilities, not installed tools.
+Never invent a callable API or substitute a clean profile for a named one.
+Type into an editor key by key whenever the claim depends on what typing
+triggers, such as Markdown autoformat, a hotkey, a mark toggle or a `/` or `@`
+menu, with the key-by-key operation `.agents/pstack/rules/browser.md` names
+for each browser. Confirm the active mark before typing, then read back both
+the inserted text and its rendered marks after the update. Before a claim that
+depends on frames, such as virtualization, scroll anchoring, a floating
+toolbar's position, drag autoscroll or type-to-paint, run that file's frame
+check. A native copy or paste goes to Claude in Chrome or to the `'native'`
+clipboard spec below.
+
+Existing repository Playwright specs are executable proof owners. Run them
+through their package runner. Do not build a parallel Puppeteer, raw CDP or
+standalone Playwright driver for interactive QA. Browser emulation does not
+prove raw Android/iOS input.
+
+Only Chromium exposes clipboard permissions to automation, and Playwright's
+WebKit build is not Safari; claim Safari behavior only with Safari proof.
+
+For docs, require the parsed heading and rendered body after navigation.
+HTTP success and title metadata can precede streamed content. English and
+Chinese routes, English fallback pages, and custom releases/huge-document app
+pages have distinct route owners; an app override does not execute its MDX.
+When a page embeds a preview, wait for its actual editor or result: the heading
+and `Loading…` placeholder can render before a client schema error replaces the
+page. Record text rendering and the loaded preview separately.
+
+Read the actual consumer before claiming an external service worked:
+
+- Registry `app/api` files are copied installation sources. AI, copilot and
+  media examples can show local fallback output after an API failure. Remote
+  success requires the installed handler, credentials and a real successful
+  response; a blob preview or demo stream is insufficient.
+- `/blocks/slate-to-html` reads `public/tailwind.css`; generate it with
+  `pnpm --filter www build:tw` when missing. Use Chrome for the download,
+  then inspect the saved file. A browser-rendering claim also needs an allowed
+  view of that file; record a URL-policy block as a capability gap.
+- Hocuspocus collaboration needs its configured WebSocket server. A manual
+  connection-status fixture proves that state only. Pro/reference iframe
+  content needs the external route and any access it requires.
+- Mobile viewport and synthetic composition tests retain their proxy scope.
+  Raw Android/iOS or OS IME claims require the actual device/input method.
+
+Read [native editor proof and scenario generation](./references/editor-proof.md)
+for selection, keyboard, pointer, screenshots, undo, geometry or device work.
+Read [the full Potion Yjs reference recipe](./references/potion-yjs.md) only for
+collaboration comparison. Potion proves reference behavior, never a local fix.
+
+## Hand drive
+
+Every change with a browser-visible result gets one hand drive by the agent
+before it closes, even when tests cover it, because a test checks only what it
+asserts. Drive every page that shows the change at desktop width, 1,200 px or
+wider, in light. Add only the states the change can affect:
+
+- 375 px for a layout change that can differ on a phone, such as width,
+  overflow, wrapping or a breakpoint;
+- a tablet width for a breakpoint the change touches;
+- a changed demo's docs preview at its narrowest, through its Mobile toggle or,
+  where the page shows none, its resize handle dragged to the left limit;
+- dark on every page whose colors the change touches;
+- the Chinese pages of an English change that can render differently there,
+  such as one to i18n or to text whose length the layout depends on;
+- each demo whose value holds the changed element, the playground included.
+
+Reload each page after the last edit to its files, do the change's interaction
+and scroll the changed element into view. Read a screenshot of every page and
+state at a legible scale for overflow, clipping, collapsed lists, contrast in
+a dark check and the changed behavior. Build state instead of resetting it,
+follow anything odd at once, and never click to repair focus, because a lost
+caret is itself a find. Watch the caret, the selection paint, focus, where
+menus land and the layout. The moves below are a candidate method that no
+planted-bug trial has settled yet, so apply them to the controls the change
+touches when the plan assigns them:
+
+- **then-type.** Act, then type without clicking: a letter, Backspace, Enter, undo, a letter again.
+- **again-elsewhere.** Repeat the action at a second spot, after Escape and after undo.
+- **other-route.** Reach the same result by the keyboard, the toolbar, the slash menu, the block menu, the browser's own menus, native pickers, plain-text paste and paste from another app.
+- **edge-start.** Start at a block, cell or mark boundary, in an empty block, or beside a void, table or image.
+- **inside-other.** Repeat inside each other block type on the page, and in suggesting or read-only mode.
+- **moved-ground.** Repeat scrolled, inside a scrolled container, in a narrow window, or with content taller than the screen.
+
+A drift is a difference between what the drive shows and what the tests
+assert, such as a sideways scroll a green test never measured. It closes only
+with a test that fails on it at the old code, written at the smallest boundary
+that observes it. Plate has no durable Playwright lane, so a drift only a
+browser shows gets an ad hoc Playwright script in the run directory. Run the
+test through
+`node tooling/scripts/proof-worktree.mjs <worktree path> <old commit> --with <test file> --dir <run directory> --name <name> --expect-fail <the case title> -- <test command>`.
+
+## Evidence
+
+Keep command logs, source/build fingerprints, actual route, host identity,
+input/action, observed result, runtime errors and relevant screenshots under
+`docs/plans/artifacts/<task-slug>/`. Use temporary output locations only when
+the final evidence is copied there before cleanup. Treat a runner's output
+directory and the reports it overwrites, such as Playwright's `test-results`,
+as temporary, and copy a failure's artifacts to the artifact tree when a log
+row or plan first cites them, before the next run of that config. Each base, mutant,
+spike and control run writes its own named log, never a path an earlier run or
+row cites. Preserve originals locally;
+this artifact tree is Git-ignored. Keep concise conclusions and required proof
+summaries in the versioned plan or analysis document. Reusable runners, required
+fixtures and pinned benchmark inputs belong with their source or test owner,
+never inside the artifact tree.
+
+When an edit touches an owner that cases this work selected depend on through production code, a fixture, harness, config, host or behavior, run each of those cases that is already executable before the edit and record its pass or red result as its pre-edit baseline; a pending, N/A or inferred historical result is not a baseline. After the last edit to that owner, rerun those cases, together when they share state or could invalidate one another, so a new failure belongs to the current change; a green from before that last edit is stale.
+
+A requested or started package, browser, root or CI gate that fails keeps the work open until the same gate passes on the final bytes. Calling the failure unrelated does not close it; only the same check failing the same way at `HEAD` in a detached worktree makes it pre-existing, per `AGENTS.md`'s Tests rule. A gate that is already red at base proves only who caused the failure, so a keep or close decision that rests on it also needs a green proof that exercises the changed path on the final bytes.
+
+Every proof command names the cwd, package or app it proves. A managed browser proof command names the doctored URL literally, such as the full `http://localhost:<port>/<route>` its script opens; a host label with the intended port while the runner uses its default URL is a host mismatch. Evidence carries
+forward only while source and build, environment, identity, auth and
+permissions, fixture, URL and state, viewport and artifact are unchanged; a
+matching screenshot alone is insufficient. A plain screenshot is not enough for
+network, CSP, auth, security or browser-runtime claims unless the diagnostic
+path is visible.
+
+Capture the action and resulting state, including follow-up input and side
+effects when the claim needs them. Internal setters or model-only assertions
+cannot replace the actual reporter path. A visual report concerns paint,
+highlighting, visibility, layout, styling, clipping, position or animation.
+Capture and inspect its failing state right after the exact reporter
+interaction before changing product source; a reporter image can establish it.
+After the fix, capture the final state right after the same interaction, open
+the image, inspect the claimed pixels at a legible scale, and record the
+screenshot and what it shows. DOM markers, computed styles, geometry, model
+state, a passing browser test or an uninspected screenshot path cannot close a
+visual claim. Without an image-capable runner the claim stays open as
+visual-unverified. A native paint defect also uses the classified controls in
+the applicable [interaction oracle](./references/regression-oracles.md). Load that reference's
+relevant domain sections for native input, focus, pointer, caret, paint,
+subscription or identity regressions; do not impose every domain on every check.
+A unit or contract run that prints an uncaught error stack is not green even when the runner reports a pass; trace the throw before calling the run green.
+Mock only an already isolated external boundary and label what it cannot prove.
+
+Ordinary scoped proof retains the logs and fingerprints above. For broad
+maintenance, retain one result per inventory entry. Reuse observations across
+profiles without dropping distinct assertions.
+
+## Cleanup
+
+Stop only sessions/processes you started, using the returned session handle or
+verified PID. Never kill by process name or stop another checkout's listener.
+Remove only the run's disposable consumer, fixture edits and temporary state.
+Restore any reference tab's offline/network state. Clean failed attempts too.
+Then confirm every cited evidence file still exists and is readable. Cleanup
+that deletes evidence invalidates the run.
+
+## Helpers and maintenance
+
+Reuse the existing package runners, Benchmark target runner and
+`node .agents/rules/plate-next/scripts/sync-resources.mjs --check`.
+Their commands are above or in the linked full recipes; this skill does not
+wrap them with another controller.
