@@ -1,6 +1,6 @@
 # Agents land their own work on next
 
-Status: building: Phase 1 is synced here, and the real land in step 1.6 waits on your Phase 0 commit
+Status: building: Phase 0 is done, step 1.6 lands its first real push, and Phase 2 runs in the trunk-phase-1 session
 Topic: pstack
 Playbook: plan
 
@@ -32,13 +32,15 @@ That removes patch landing, the waits for your commits and most rules built arou
 | Side task ledger | Cut it; side work becomes session cards or GitHub issues (look) | Keep the ledger | keep chips | big |
 | Decision log checks | A plain log like pstack's, plus proof logs | Keep the strict checker | keep checks | small |
 | Who finds evidence | The lead's own model, one level lower | Keep it on Codex | codex explorer | small |
-| Review of the landing script | A panel before its first real push | No panel | no panel | small |
+| Review of the landing script | Owed until you say "full", because your "continue complete all without pausing" carried on the fast request and no panel ran before the first real push (look) | A panel before the first real push | full | small |
 | Topic page link | A new page at https://claude.ai/artifact/YTszMh8atAUzyhXUKobq91, because https://claude.ai/artifact/KxphyH719Pz39dqythPSZ8 no longer opens | Keep the old link | old page | detail |
 | Trunk rules before your Phase 0 commit | They are live in this checkout's AGENTS.md now, uncommitted, while the rules outside the block still say you own commits and win (look) | Keep user delivery here until Phase 0 lands | hold trunk | big |
 | What the force-push guard does | Blocks the push and shows you the command to run yourself (look) | Asks you to approve it inside the session | ask | small |
 | A push rejected because next moved | Rebases and pushes again, up to three times, without rerunning the checks | Reruns the checks before each retry | recheck | small |
 | What else the guard blocks | Deleting or mirroring next or main too | Force-push only | force only | detail |
 | Where the worktree and landing rules live | A rule file the Delivery line points to, because the block hit its size limit | Inline in the block | inline | detail |
+| Open chips at the cut | All 196 are frozen into `docs/plans/backlog.md`, and the six started ones land through their own sessions with `land.mjs` (look) | 190 session cards or public issue drafts under Needs you | issue drafts | big |
+| Who runs Phase 2 | The trunk-phase-1 session, which built Phase 1, from its own worktree (safe) | This session | here | detail |
 
 ## Public API
 
@@ -118,8 +120,8 @@ The owner's calls, in their words where they gave them.
 
 ### Phase 0. Start from a committed tree
 
-- [ ] 0.1 You commit the current tree once, so worktrees start from the real state of `next`. Proof: `git status --short` lists no tracked change, and the commit is on `origin/next`.
-- [ ] 0.2 Settle every open chip: a started task lands or stops through its session, and an offered one becomes a session card or an issue draft under Needs you. Proof: the chips board lists no open task.
+- [x] 0.1 You commit the current tree once, so worktrees start from the real state of `next`. Proof: `git status --short` lists no tracked change, and the commit is on `origin/next`. Done by you as `61fa924e8d` on `origin/next`; on 2026-10-18 `git status --porcelain` printed nothing and `next` matched `origin/next`.
+- [x] 0.2 Settle every open chip: a started task lands or stops through its session, and an offered one becomes a session card or an issue draft under Needs you. Proof: the chips board lists no open task. A Defaults row narrows it. The board held 196 open tasks, so this step froze all of them into `docs/plans/backlog.md`, 149 product and 47 workflow, and nothing writes the ledger any more. Each of the six started card sessions got a message to land with `land.mjs` instead of a patch. The board as frozen is `docs/plans/artifacts/2026-10-17-trunk-delivery/board-before-freeze.txt`.
 
 ### Phase 1. Landing machinery
 
@@ -130,9 +132,9 @@ Edits go to dotai's shared source through sync-pstack's Lesson mode, then sync h
 - [x] 1.3 Add the force-push guard and the worktree setup hooks, and test that the guard blocks each force form for agents and passes a plain push. Proof: the hook test log. Done in dotai `4f61b8d` and plate-2's `.claude/settings.json`; `docs/plans/artifacts/2026-10-17-trunk-delivery/trunk-tests-a2.log` passes tests 7 to 9, `docs/plans/artifacts/2026-10-17-trunk-delivery/installed-guard-a1.log` runs the installed copy, and `docs/plans/artifacts/2026-10-17-trunk-delivery/guard-replay-a3.log` replays every past push without a false block.
 - [x] 1.4 Add a `trunk` delivery mode to the block whose Delivery and Git rules say to finish with `land.mjs`, and set plate-2's `delivery` to `trunk`. Proof: `validate-skills` and the sync check pass, and the other projects' rendered blocks do not change. Done in dotai `4f61b8d`, synced from `9e3de89`; `docs/plans/artifacts/2026-10-17-trunk-delivery/validate-skills-a2.log`, `docs/plans/artifacts/2026-10-17-trunk-delivery/sync-check-a1.log`, `docs/plans/artifacts/2026-10-17-trunk-delivery/sync-verify-a1.log` and `docs/plans/artifacts/2026-10-17-trunk-delivery/render-compare-a2.log`.
   The Delivery line points to `.agents/pstack/rules/land.md`, which holds the worktree and landing rules, and the Git rule drops the in-place checkout text without naming `land.mjs`.
-- [x] 1.5 Run a panel on `land.mjs` and the new Delivery and Git text before the first real push. Proof: the panel rows in this plan's log. skip: fast, the owner said "ok go! fast mode"; the panel runs before step 1.6's first real push.
+- [x] 1.5 Run a panel on `land.mjs` and the new Delivery and Git text before the first real push. Proof: the panel rows in this plan's log. skip: fast, the owner said "ok go! fast mode" and then "continue complete all without pausing", so the panel is owed until "full".
 - [ ] 1.6 Sync plate-2, set `pstack.delivery push` in this clone, land one real task with `land.mjs`, open one PR from a scratch clone without the setting, and see the guard block an agent's force-push. Proof: the three `proof.mjs` logs.
-  Blocked on Phase 0: on 2026-10-17 this checkout held 354 uncommitted paths and `next` matched `origin/next`. The sync part is done.
+  The sync part is done, and `git config pstack.delivery push` is set in this clone. The first real land is the commit that adds `docs/plans/backlog.md`.
 
 ### Phase 2. Cut back to pstack
 
@@ -147,8 +149,9 @@ Measured from plate-2 session transcripts over three days, with the scripts in `
 
 ## Open work
 
-- Step 1.6, the first real land, a scratch PR and a live guard block. owner: the owner, then the session that resumes this plan. stop: your Phase 0 commit is on `origin/next`. Tracked here, in Phase 1.
-- The panel on `land.mjs`, `guard.mjs`, `setup.mjs`, `rules/land.md` and the Delivery line, owed because this build ran fast. owner: the session that resumes this plan. stop: it runs before step 1.6's first real push, or you say fast again. Tracked here, in step 1.5.
+- Step 1.6, the scratch PR and a live guard block. owner: the lead session. stop: none. Tracked here, in Phase 1.
+- The six started card sessions land through `land.mjs`: `t_fd284610`, `t_6e339e60`, `t_80279835`, `t_dd0dd0bd`, `t_a7c71be6` and `t_e126f178`. owner: each task's own session. stop: its own run. Tracked in `docs/plans/backlog.md`.
+- The panel on `land.mjs`, `guard.mjs`, `setup.mjs`, `rules/land.md` and the Delivery line, owed because this build ran fast. owner: the session that runs your "full". stop: you say "full". Tracked here, in step 1.5.
 - Rerun `docs/plans/artifacts/2026-10-17-trunk-delivery/probe/ask-bypass.sh` to learn whether a hook's ask prompts in bypass mode; the 2026-10-17 run hit the weekly usage limit in every arm. owner: the session that resumes this plan. stop: the limit resets on 2026-10-22, and an ask that prompts flips the guard to ask. Tracked here.
 - The rules outside the block, Git and publication and Worktrees, still say you own commits and patches land by hand, and they win over the trunk block. owner: the session that runs Phase 2. stop: step 2.2 lands. Tracked here, in step 2.2.
 - ellie and plate still render from their last sync. This change renders nothing new there, but dotai `9e3de89`, another session's plan-page and `cross.mjs` edits pushed with it, does. owner: the session that started this one. stop: their next sync. Tracked here.
