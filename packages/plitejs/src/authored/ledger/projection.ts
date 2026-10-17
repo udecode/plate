@@ -6,6 +6,7 @@ import {
   type SectionData,
 } from '../../core/change/root-change';
 import { type JsonNode, PreparedTokenSlice } from '../../core/change/tokens';
+import type { ProjectionBreak } from '../../core/command-document';
 import type { ChangedRange } from '../../core/measured-sequence';
 import { countCoreWork } from '../../core/work';
 import { getDefined } from '../../internal/get-defined';
@@ -15,6 +16,7 @@ import type { AuthoredResolveSchema } from '../tree/resolve';
 import { type BlockLine, type Span, spansOf } from './links';
 import {
   type BlockFacts,
+  canOrder,
   blockFactsOf,
   type Run,
   type RunContext,
@@ -32,7 +34,8 @@ const OUTPUT_BLOCKS = 2;
 const CHANGED_RUNS = 3;
 const KEPT_LINES = 4;
 const PENDING = 5;
-const MEASURES = 6;
+const ORDERED_RUNS = 6;
+const MEASURES = 7;
 
 type BlockSlot = Slot & {
   facts: BlockFacts;
@@ -50,11 +53,13 @@ const measuresOf = (
     changed = false,
     length = 0,
     pending = false,
+    ordered = false,
   }: Readonly<{
     blocks?: number;
     changed?: boolean;
     length?: number;
     pending?: boolean;
+    ordered?: boolean;
   }>
 ) => [
   tokenLength(node),
@@ -63,6 +68,7 @@ const measuresOf = (
   changed ? 1 : 0,
   facts.keepsLine[mode] ? 1 : 0,
   pending ? 1 : 0,
+  ordered ? 1 : 0,
 ];
 
 const isPending = (slot: BlockSlot) => slot.measures[PENDING] === 1;
@@ -146,6 +152,7 @@ const runSlots = (
             blocks: run.output.length,
             changed: run.changed,
             length: run.outputLength,
+            ordered: canOrder(run.nodes, mode),
           }
         : {}
     ),
@@ -305,8 +312,9 @@ const outputOf = (slots: readonly BlockSlot[]) =>
     slot.run ? (slot.offset === 0 ? slot.run.output : []) : [slot.node]
   );
 
-const edgeInsertion = (change: RootChange, end: boolean) => {
-  const { sections } = change;
+const edgeInsertion = (run: Run | null, end: boolean) => {
+  if (run?.order) return run.order.edgeInsertion(end);
+  const sections = run?.change?.sections ?? [];
   const pair = end ? sections.length - 2 : 0;
 
   return pair >= 0 && sections[pair] === 0 && getDefined(sections[pair + 1]) > 0
@@ -909,6 +917,10 @@ export class RootProjection {
     const local = position - this.slots.sumBefore(rank, STORED_LENGTH);
     const start = this.slots.sumBefore(rank, OUTPUT_LENGTH);
 
+    if (slot.run?.order) {
+      return start + slot.run.order.toProjected(local, assoc);
+    }
+
     return slot.run?.change
       ? start + getDefined(slot.run.change.mapPos(local, assoc))
       : start + local;
@@ -927,6 +939,8 @@ export class RootProjection {
     const local = position - this.slots.sumBefore(rank, OUTPUT_LENGTH);
     const start = this.slots.sumBefore(rank, STORED_LENGTH);
 
+    if (slot.run?.order) return start + slot.run.order.toStored(local, assoc);
+
     return slot.run?.change
       ? start +
           getDefined(
@@ -943,7 +957,13 @@ export class RootProjection {
     if (rank >= this.slots.size) return false;
 
     const head = this.headRank(rank);
-    const change = this.slots.at(head).run?.change;
+    const { run } = this.slots.at(head);
+    if (run?.order) {
+      return run.order.hides(
+        position - this.slots.sumBefore(head, STORED_LENGTH)
+      );
+    }
+    const change = run?.change;
     let before = position - this.slots.sumBefore(head, STORED_LENGTH);
 
     if (!change) return false;
@@ -964,37 +984,72 @@ export class RootProjection {
     return false;
   }
 
+  breaks(from: number, to: number): readonly ProjectionBreak[] {
+    const count = this.slots.total(ORDERED_RUNS);
+
+    if (count === 0) return [];
+    const breaks: ProjectionBreak[] = [];
+    const first = this.headRank(
+      Math.min(
+        this.slots.search(OUTPUT_LENGTH, from, true),
+        this.slots.size - 1
+      )
+    );
+
+    for (
+      let index = this.slots.sumBefore(first, ORDERED_RUNS);
+      index < count;
+      index += 1
+    ) {
+      const rank = this.slots.search(ORDERED_RUNS, index, false);
+      const projected = this.slots.sumBefore(rank, OUTPUT_LENGTH);
+      if (projected > to) break;
+      countLedgerWork('breakRuns');
+      const stored = this.slots.sumBefore(rank, STORED_LENGTH);
+      const order = this.slots.at(rank).run?.order;
+
+      for (const entry of order?.breaks ?? []) {
+        const at = projected + entry.at;
+        if (from <= at && at <= to) {
+          breaks.push({
+            at,
+            before: stored + entry.before,
+            after: stored + entry.after,
+          });
+        }
+      }
+    }
+    return breaks;
+  }
+
   added(position: number) {
     if (!this.changed) return null;
 
     const rank = this.slots.search(OUTPUT_LENGTH, position, false);
-
     if (rank >= this.slots.size) return null;
 
     const head = this.headRank(rank);
-    const change = this.slots.at(head).run?.change;
+    const { run } = this.slots.at(head);
     const start = this.slots.sumBefore(head, OUTPUT_LENGTH);
     const local = position - start;
+    const leading = edgeInsertion(run, false);
 
-    if (local === 0 && head > 0 && change && edgeInsertion(change, false) > 0) {
+    if (local === 0 && head > 0 && leading > 0) {
       const previous = this.headRank(head - 1);
-      const back = this.slots.at(previous).run?.change;
-      const trailing = back ? edgeInsertion(back, true) : 0;
+      const trailing = edgeInsertion(this.slots.at(previous).run, true);
 
-      if (trailing > 0) {
-        return {
-          from: start - trailing,
-          to: start + edgeInsertion(change, false),
-        };
-      }
+      if (trailing > 0) return { from: start - trailing, to: start + leading };
     }
+    if (run?.order) {
+      const added = run.order.added(local);
+      return added ? { from: start + added.from, to: start + added.to } : null;
+    }
+    const change = run?.change;
     if (!change) return null;
-
     let after = 0;
 
     for (let pair = 0; pair < change.sections.length; pair += 2) {
       countCoreWork('sectionsWalked');
-
       const inserted = getDefined(change.sections[pair + 1]);
       const length =
         inserted < 0 ? getDefined(change.sections[pair]) : inserted;
@@ -1005,7 +1060,6 @@ export class RootProjection {
       after += length;
       if (after > local) return null;
     }
-
     return null;
   }
 

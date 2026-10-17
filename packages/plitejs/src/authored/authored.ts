@@ -24,6 +24,7 @@ import { copyFields, setLazyRoot } from '../core/change/lazy-root';
 import type { RootChange } from '../core/change/root-change';
 import type { JsonEditorValue, JsonNode } from '../core/change/tokens';
 import {
+  type CommandProjectionMap,
   type EditorFrameRecording,
   registerEditorCommandDocument,
 } from '../core/command-document';
@@ -121,6 +122,7 @@ import {
 } from './facts/records';
 import { projectAuthoredDocument, projectionRefusal } from './format';
 import { createReviewLedger, getReviewLedger } from './ledger/ledger';
+import { blockFactsOf } from './ledger/runs';
 import {
   type AuthoredRefusal,
   constructsValues,
@@ -129,11 +131,7 @@ import {
   unrepresentable,
 } from './refusal';
 import { authoredResolveSchemaOf } from './resolve-schema';
-import {
-  acceptedChange,
-  characterAlignedChange,
-  decidedContentChange,
-} from './tree/alignment';
+import { characterAlignedChange, decidedContentChange } from './tree/alignment';
 import { relinkCuts } from './tree/cuts';
 import { acceptedValues, type FormatTag } from './tree/layers';
 import {
@@ -221,8 +219,8 @@ export type AuthoredPlugin = Plugin<{
       listener: (delta: AuthoredChangesDelta) => void
     ) => () => void;
     /**
-     * Calls the listener with each Suggesting change the editor refused
-     * whole, after it rolled back, and with each view switch it refused.
+     * Calls the listener with each change the editor refused whole, after it
+     * rolled back, and with each view switch it refused.
      */
     subscribeRefusals: (
       listener: (refusal: AuthoredRefusal) => void
@@ -417,7 +415,8 @@ const framedLawCheck = () => {
 const assertFramedLaw = (
   input: EditorFrameRecording,
   schema: AuthoredResolveSchema,
-  selection: boolean
+  selection: boolean,
+  mapAfter: () => CommandProjectionMap
 ) => {
   const { frame, root, stored } = input;
   const written = contentOf(stored.value);
@@ -440,29 +439,30 @@ const assertFramedLaw = (
     return;
   }
 
-  const rootChange = getInternalDocumentRootChange(
-    acceptedChange(written, accepted, { isSetValued: isAuthoredSetValued }),
-    root
-  );
+  const map = mapAfter();
   const index = DocumentIndex.fromValue(valueRoot(accepted, root));
 
   for (const edge of ['anchor', 'focus'] as const) {
     const position = positionOf(written, root, stored.selection[edge]);
-    const mapped = rootChange?.mapPos(position, -1) ?? position;
     const expected = frame.selection[edge];
 
     // A caret at a struck leaf's edge maps between leaves, where it reads as
     // the end of one or the start of the next.
     if (
-      !([-1, 1] as const).some((assoc) => {
-        const point = index.pointAt(mapped, assoc);
+      !(['backward', 'forward'] as const).some((association) =>
+        ([-1, 1] as const).some((assoc) => {
+          const point = index.pointAt(
+            map.toProjected(root, position, association),
+            assoc
+          );
 
-        return (
-          point !== null &&
-          point.offset === expected.offset &&
-          PathApi.equals(point.path, expected.path)
-        );
-      })
+          return (
+            point !== null &&
+            point.offset === expected.offset &&
+            PathApi.equals(point.path, expected.path)
+          );
+        })
+      )
     ) {
       throw new Error(
         `A framed recording does not accept to its commands' ${edge}: ${JSON.stringify(
@@ -676,15 +676,6 @@ const ownFollowed = (node: JsonNode, facts: ReviewFacts): string[] => [
   ...(node.children ?? []).flatMap((child) => ownFollowed(child, facts)),
 ];
 
-const carriesJoin = (
-  node: JsonNode,
-  keys: ReadonlySet<string>,
-  facts: ReviewFacts
-): boolean =>
-  claimsOf(node, facts).some(
-    (mark) => mark.kind === 'join' && keys.has(incarnationOf(mark))
-  ) || (node.children ?? []).some((child) => carriesJoin(child, keys, facts));
-
 /**
  * The run around blocks `from` to `to` of the element at `path`: a
  * line on either side, where a join in the run or a pending join after it
@@ -830,11 +821,25 @@ const acceptOwn = (
           },
         };
   const outcome = (id: string) => (isEditingChange(id) ? 'accept' : 'keep');
-  const own = (kind: AuthoredMark['kind']) => (node: unknown) =>
-    claimsOf(node, facts).some(
-      (mark) => mark.kind === kind && isEditingChange(mark.change)
-    );
-  const settledBy = { joins: own('join'), removes: own('delete') };
+  // An own mark the resolution keeps pending, such as a deletion inside a
+  // line another author's pending join holds, settles nothing.
+  const settledBy = (result: readonly JsonNode[]) => {
+    const kept = new Set<unknown>();
+    const visit = (node: JsonNode) => {
+      for (const member of readMembers(node)) kept.add(member);
+      node.children?.forEach(visit);
+    };
+
+    result.forEach(visit);
+
+    const own = (kind: AuthoredMark['kind']) => (node: unknown) =>
+      claimsOf(node, facts).some(
+        (mark) =>
+          mark.kind === kind && isEditingChange(mark.change) && !kept.has(mark)
+      );
+
+    return { joins: own('join'), removes: own('delete') };
+  };
   const changes = new Map<string, RootChange>();
   const accepted = new Map(indexes);
 
@@ -857,7 +862,7 @@ const acceptOwn = (
 
         if (keys.size > 0) {
           const lines = siblings.flatMap((node, at) =>
-            carriesJoin(node, keys, facts) ? [at] : []
+            blockFactsOf(node).joins.some((key) => keys.has(key)) ? [at] : []
           );
 
           if (lines.length === 0 && run.path.length > 0) {
@@ -881,6 +886,7 @@ const acceptOwn = (
             result: resolveAuthoredChildren(nodes, outcome, null, root, {
               dependencies,
               facts,
+              stores: true,
             }).children,
             run,
           };
@@ -895,7 +901,7 @@ const acceptOwn = (
           outcome,
           null,
           root,
-          { dependencies, facts }
+          { dependencies, facts, stores: true }
         ).children;
 
         // A join or split on the element's first remaining block can land
@@ -960,7 +966,7 @@ const acceptOwn = (
       const stored = { children: nodes } as JsonEditorValue;
       const settled = { children: result } as JsonEditorValue;
       const aligned =
-        characterAlignedChange(stored, settled, settledBy) ??
+        characterAlignedChange(stored, settled, settledBy(result)) ??
         DocumentChange.between(stored, settled, {
           isSetValued: isAuthoredSetValued,
         });
@@ -1100,7 +1106,7 @@ export const createAuthoredPlugin = (
         value,
         (change) => actions.get(change) ?? 'keep',
         authoredResolveSchemaOf(editor),
-        { holdsRejectedDeletions: true }
+        { stores: true }
       );
     } catch (error) {
       if (isRefusal(error)) return { result: { ids, status: 'invalid' } };
@@ -1587,7 +1593,8 @@ export const createAuthoredPlugin = (
               assertFramedLaw(
                 input,
                 authoredResolveSchemaOf(editor),
-                check !== 'content'
+                check !== 'content',
+                () => ledger.projectionMap(input.stored.value, 'proposed')
               );
             }
           },
