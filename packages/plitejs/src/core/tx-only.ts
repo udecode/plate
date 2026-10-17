@@ -3,6 +3,7 @@ import type { Span } from '../interfaces/location';
 import type { NodeSelection } from '../interfaces/selection';
 
 declare const TX_ONLY_METHOD: unique symbol;
+declare const TX_DECLARED_METHOD: unique symbol;
 
 const getRuntimeRegistry = <T extends object>(
   name: string,
@@ -49,6 +50,61 @@ export const isTxOnlyMethod = (
 ): value is TxOnlyMethod<(...args: any[]) => any> =>
   typeof value === 'function' && TX_ONLY_METHODS.has(value);
 
+/**
+ * A plugin update method declared with `txLocate`, `txSelection` or
+ * `txStored`.
+ */
+export type TxDeclaredMethod<TMethod extends (...args: never[]) => unknown> =
+  TMethod & {
+    readonly [TX_DECLARED_METHOD]: true;
+  };
+
+type UndeclaredTxMethodPath<TMethod, TPath extends string> = TMethod extends (
+  ...args: infer TArgs
+) => unknown
+  ? TMethod extends
+      | { readonly [TX_DECLARED_METHOD]: true }
+      | { readonly [TX_ONLY_METHOD]: true }
+    ? never
+    : TArgs extends readonly []
+      ? never
+      : TPath
+  : never;
+
+// One level only: recursing into every nested object reaches plugin types
+// that refer to themselves and exhausts the compiler's instantiation depth.
+type UndeclaredTxMethodPaths<TUpdate> = {
+  [K in keyof TUpdate & string]: TUpdate[K] extends (
+    ...args: never[]
+  ) => unknown
+    ? UndeclaredTxMethodPath<TUpdate[K], K>
+    : TUpdate[K] extends object
+      ? {
+          [J in keyof TUpdate[K] & string]: UndeclaredTxMethodPath<
+            TUpdate[K][J],
+            `${K}.${J}`
+          >;
+        }[keyof TUpdate[K] & string]
+      : never;
+}[keyof TUpdate & string];
+
+/**
+ * Refuses a plugin's update methods when one takes arguments without
+ * `txLocate`, `txSelection` or `txOnly`, because the update throws on such a
+ * call while a command document is registered. Intersect it with the update
+ * factory's return type.
+ */
+export type TxMethodDeclarations<TUpdate> = [
+  UndeclaredTxMethodPaths<TUpdate>,
+] extends [never]
+  ? unknown
+  : Readonly<
+      Record<
+        `${UndeclaredTxMethodPaths<TUpdate>} takes arguments, so declare it with txLocate, txSelection or txOnly`,
+        true
+      >
+    >;
+
 type TxMethodLocate =
   | BivariantLocate<readonly unknown[]>
   | false
@@ -74,10 +130,10 @@ const TX_LOCATES = getRuntimeRegistry(
 export const txLocate = <TMethod extends (...args: never[]) => unknown>(
   locate: NoInfer<BivariantLocate<Parameters<TMethod>>> | false,
   method: TMethod
-): TMethod => {
+): TxDeclaredMethod<TMethod> => {
   TX_LOCATES.set(method, locate);
 
-  return method;
+  return method as TxDeclaredMethod<TMethod>;
 };
 
 type Target = NodeSelection | NodeTarget | Span | null;
@@ -139,10 +195,10 @@ export const locateAt =
  */
 export const txSelection = <TMethod extends (...args: never[]) => unknown>(
   method: TMethod
-): TMethod => {
+): TxDeclaredMethod<TMethod> => {
   TX_LOCATES.set(method, 'selection');
 
-  return method;
+  return method as TxDeclaredMethod<TMethod>;
 };
 
 /**
@@ -152,10 +208,10 @@ export const txSelection = <TMethod extends (...args: never[]) => unknown>(
  */
 export const txStored = <TMethod extends (...args: never[]) => unknown>(
   method: TMethod
-): TMethod => {
+): TxDeclaredMethod<TMethod> => {
   TX_LOCATES.set(method, 'stored');
 
-  return method;
+  return method as TxDeclaredMethod<TMethod>;
 };
 
 /** @internal */

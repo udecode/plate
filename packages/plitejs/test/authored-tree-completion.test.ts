@@ -30,9 +30,8 @@ mock.module(join(import.meta.dir, '../src/core/representation.ts'), () => ({
 const { createEditor, defineEditorSchema, property, schema } =
   await import('plitejs');
 const { createAuthoredPlugin } = await import('../src/authored/authored');
-const { authoredTestApi, expandedChildren } = await import(
-  './support/authored'
-);
+const { authoredTestApi, expandedChildren } =
+  await import('./support/authored');
 const { proposedChildren, proposedHost } =
   await import('../src/authored/tree/proposed');
 

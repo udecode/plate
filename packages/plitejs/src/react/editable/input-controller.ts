@@ -16,6 +16,7 @@ import { getSelection, Hotkeys, isDOMElement, isDOMText } from '../../dom';
 import {
   DOMRootRuntime,
   findDOMRootRuntime,
+  getLineBoundaryKeyboardMove,
   IS_COMPOSING,
 } from '../../dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -364,6 +365,7 @@ export const classifyKeyboardIntent = ({
     Hotkeys.isMoveLineForward(nativeEvent) ||
     Hotkeys.isExtendLineBackward(nativeEvent) ||
     Hotkeys.isExtendLineForward(nativeEvent) ||
+    getLineBoundaryKeyboardMove(nativeEvent) ||
     getDocumentBoundaryKeyboardMove(nativeEvent) ||
     shouldModelOwnPlainVerticalLargeDocumentPlugin({
       viewportRuntime,

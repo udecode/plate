@@ -1,8 +1,8 @@
 # Suggestions and tracked-change review
 
-Page: https://claude.ai/artifact/RHmV8unJBZmh4yntdG4wuZ
+Page: https://claude.ai/artifact/NKfmSN3HXP15YCC757xRc5
 
-Plite's native authored capability owns suggested edits: review marks in the stored document, change identity, review cards, dependencies, the accepted and proposed previews, and atomic accept and reject. Plate owns `BaseSuggestionPlugin` (suggestion mode and decorations), `SuggestionPlugin`, the copied `SuggestionKit` and discussion UI, and `AuthoredPlugin`, which stamps every write with the editor's `userId`. The ledger asks which proposed-edit, accept/reject and attribution policies belong to Suggestions, and which reuse native authored changes (`docs/research/review-scopes/suggestions.json`). Native authored ownership (2026-09-10), plugin-owned content attributes (2026-09-14), the direct replacement of fully selected pending changes (2026-09-22), one fixed user per editor for suggestions, comments and copied UI (2026-10-07), constructors that always create a new editor (2026-10-08) and the review-tree pivot, which keeps pending changes as review marks in the one stored document and groups them into cards (`docs/plans/2026-10-13-review-tree-pivot.md`), have landed, with browser cases in `apps/www/tests/browser/suggestion.spec.ts`. An editor with no `userId` writes as the local user `'local'`. The `EditorRoot authored` view input takes an `edit` or `propose` intent, or an `accepted` or `proposed` preview. `node tooling/scripts/review-ledger.mjs show suggestions` prints the scope's full history.
+Plite's native authored capability owns suggested edits: review marks in the stored document, change identity, review cards, dependencies, the accepted and proposed previews, and atomic accept and reject. Plate owns `BaseSuggestionPlugin` (suggestion mode and decorations), `SuggestionPlugin`, the copied `SuggestionKit` and discussion UI, and `AuthoredPlugin`, which stamps every write with the editor's `userId`. The ledger asks which proposed-edit, accept/reject and attribution policies belong to Suggestions, and which reuse native authored changes (`docs/research/review-scopes/suggestions.json`). Native authored ownership (2026-09-10), plugin-owned content attributes (2026-09-14), the direct replacement of fully selected pending changes (2026-09-22), one fixed user per editor for suggestions, comments and copied UI (2026-10-07), constructors that always create a new editor (2026-10-08) and the review-tree pivot, which keeps pending changes as review marks in the one stored document and groups them into cards (`docs/plans/2026-10-13-review-tree-pivot.md`), and Accept all and Reject all in the copied mode menu (`docs/plans/2026-10-17-suggestions-bulk-resolve.md`), have landed, with browser cases in `apps/www/tests/browser/suggestion.spec.ts`. An editor with no `userId` writes as the local user `'local'`. The `EditorRoot authored` view input takes an `edit` or `propose` intent, or an `accepted` or `proposed` preview. `node tooling/scripts/review-ledger.mjs show suggestions` prints the scope's full history.
 
 ## Public API
 
@@ -106,6 +106,24 @@ Every constructor creates its own editor; a test that built a raw editor first n
 const editor = createReactEditor();
 ```
 
+The copied mode menu decides every pending change in one call. No package call changes.
+
+```tsx
+// apps/www/src/registry/components/editor/mode-toolbar-button.tsx
+const authored = editor.plugin(AuthoredPlugin);
+const changes: AuthoredChange[] = [];
+
+for (let cursor: string | undefined; ;) {
+  const page = authored.read.changes({ cursor, limit: 200 });
+
+  changes.push(...page.items);
+  if (!page.cursor) break;
+  ({ cursor } = page);
+}
+
+const result = authored.update.decide({ action, changes });
+```
+
 ## Main changes
 
 - `packages/plitejs/src/authored/` owns authored identity. `authored({ authorId })` resolves the author once per write transaction and rejects a write without one; reads stay actorless. Its author ID rule leaves through `plitejs/internal` as `isAuthorId`.
@@ -116,6 +134,9 @@ const editor = createReactEditor();
 - The author read warns once per editor through `editor.api.debug.warn`, which is silent in production, when a write or a comment is stamped with the local user while a published plugin is keyed `yjs`, because collaborators would then share one author.
 - `packages/platejs/src/features/comments/BaseCommentsPlugin.ts` stamps thread creation, replies and resolution with the editor's user and keeps the `users` directory that copied UI also uses to name suggestion authors.
 - `useCreateEditor` keys its editor on the normalized `userId` as it keys on `id`.
+- The copied `ModeToolbarButton` (`apps/www/src/registry/components/editor/mode-toolbar-button.tsx`) adds **Accept all suggestions** and **Reject all suggestions** under its modes when `SuggestionPlugin` is installed. Each item pages every pending change through `AuthoredPlugin`'s `read.changes` and decides them in one `update.decide` call, so one undo restores them. Both items are disabled in Viewing mode and when nothing is pending. An `invalid` result shows a `sonner` error and changes nothing.
+- `touches` in `packages/plitejs/src/authored/changes.ts` treats a pending `join` or `split` of blocks, not an inline cut, as covering no unit. It sits right before its block's first unit, so it touches the content that ends right before the block and the content that opens it. The kernel's `groupAuthoredChanges` and the ledger's `startsAfter` share `touches`, so both give the same cards, and a card start still depends only on the change before it.
+- `continuedOwnInsert` in `packages/plitejs/src/authored/tree/record.ts` is the one rule for which of one's own pending insertions a write continues. A write continues the insertion it lands in or one at its edge, looks past the empty leaf a text split leaves, and never looks across a block edge. Text typed into an empty block that one's own pending split opened continues that split's change. A second Enter continues an Enter's change only when that Enter continued one's typing. The block split and the inline cut of one Enter take the change it picks, through `splitOf` and `splitInline`.
 
 ## What other editors do
 
@@ -130,7 +151,22 @@ Read from local checkouts at the commits named; CKEditor 5's users and track-cha
 | y-prosemirror `9200946` | The Yjs client ID; a suggestion document swaps its client ID to attribute edits | No comments | Not modeled | `yjs/y-prosemirror@9200946f0:src/cursor-plugin.js:95-103` |
 | prosemirror-suggest-changes `653fba7` | None; marks carry only a change ID and the app attributes | No comments | Not applicable | `handlewithcarecollective/prosemirror-suggest-changes@653fba70b:src/generateId.ts` |
 
+For bulk accept and reject, read from local checkouts at the commits in the `review_upstreams` of `docs/plans/2026-10-17-suggestions-bulk-resolve.md`, and from the Google Docs and Microsoft Word help pages; Tiptap's and CKEditor's tracked-change engines are commercial and absent, so only their docs were read. Every editor with a full review UI offers both bulk actions, and none of the open implementations proves that a bulk accept matches accepting each change in turn, which Plite's laws do.
+
+| Editor | Bulk accept and reject | How it applies | Where the control sits | Source |
+| --- | --- | --- | --- | --- |
+| prosemirror-suggest-changes `653fba7` | `applySuggestions`, `revertSuggestions`, plus range variants | One transaction that walks the document, then joins block boundaries | Demo buttons above the editor | `handlewithcarecollective/prosemirror-suggest-changes@653fba7:src/commands.ts:301-460`; `demo/main.ts:153-176` |
+| manuscripts track-changes `62f4d19` | No all command; `setChangeStatuses(status, ids)` takes a caller's ID set | One appended transaction, structural changes first, then text sorted by update time | None in the plugin | `Atypon-OpenSource/manuscripts-track-changes-plugin@62f4d19:src/commands.ts:50-66`; `src/changeHelpers/updateChangesStatus.ts:34-109` |
+| BlockNote `1e26f1c` | `applyAllSuggestions`, `revertAllSuggestions`, delegated to `@y/prosemirror` | Not in the checkout | No caller found | `TypeCellOS/BlockNote@1e26f1c:packages/core/src/y/extensions/Suggestions.ts:121-132` |
+| Tiptap Pro (docs `916bd947`) | `acceptAllSuggestions`, `rejectAllSuggestions`, by user and by range | Not documented | Toolbar and above the suggestion list | `ueberdosis/tiptap-docs@916bd947:src/content/tracked-changes/api-reference/commands.mdx:85-148` |
+| CKEditor 5 (docs `14e73cc`) | `acceptAllSuggestions`, `discardAllSuggestions` commands | Not in the checkout | Not confirmed from the checkout | `ckeditor/ckeditor5@14e73cc31b:docs/features/server-side-editor-api.md:227-249` |
+| Lexical `dd5c41b` | None; mark primitives only | Not applicable | None | `facebook/lexical@dd5c41b13:packages/lexical-mark/src/index.ts:28-48` |
+| Google Docs | Accept all, Reject all | Not disclosed | Review suggested edits box, opened from Tools | [Google Docs Help](https://support.google.com/docs/answer/6033474?hl=en) |
+| Microsoft Word | Accept All Changes, Reject All Changes, and the Shown variants per reviewer | Not disclosed | Review tab's Accept and Reject menus | [Microsoft Support](https://support.microsoft.com/en-us/word/training/track-changes-in-word) |
+
 ## Open work
+
+- The copied mode menu's Accept all and Reject all have no Base UI build or browser proof, because the Base editor-ai consumer fails on `dnd.tsx`'s tooltip (found by `docs/plans/2026-10-17-suggestions-bulk-resolve.md`). Tracked as suggested task `t_f70e26df` in `docs/plans/suggested-tasks.decisions.tsv`. owner: zbeyens, who starts or drops that task. stop: `pnpm --filter www test:create-install editor-ai` builds both consumers, or the task is dropped.
 
 - `pnpm check` runs no browser spec over the copied examples, so a new example that cannot type passes CI (found by `docs/plans/2026-10-07-editorkit-missing-user.md`). owner: zbeyens, who decides whether CI runs a typing smoke over registered examples. stop: that decision is recorded here.
 - Comments has no signal that settles once its queued saves are published, so a comment change pending at a user switch is not carried to the new editor (found by the 2026-10-07 suggestions plan panel). owner: zbeyens, who decides whether Comments exposes one. stop: that decision is recorded here.
@@ -142,3 +178,6 @@ Read from local checkouts at the commits named; CKEditor 5's users and track-cha
 - Every unknown option key, such as a typo, falls into the root plugin's definition, untyped (found by plan iteration 3's panels and reviews). The same decision settles typing the root plugin's keys in `buildEditor`, letting React `createEditor` pass its options untouched so every inherited option survives, and folding the per-entry refusals into one check that returns the options it checked. owner: zbeyens, who decides whether Plate constructors take a closed option set. stop: a constructor-options plan records that decision as a Defaults row.
 - With every editor allocated just before construction, the failure-path restores, the empty-document fit, `resolvePlugins`' publication guard and its `clearPluginStores` at entry, and `buildEditor`'s runtime-candidate clear may be dead or duplicated; plan iteration 3's panel found an early compile failure and a root minimum of 0 that reach two of them, and no test fails without the candidate clear. owner: zbeyens, who decides whether a cleanup plan proves each one. stop: that cleanup plan's Close, or the owner dropping the item.
 - `apps/www/src/generated/api-reference-manifest.json` still lists the removed `currentUserId` 3 times (`rg -c currentUserId` on 2026-10-08), because `api-reference:check` fails at HEAD on `HistoryApi` and the manifest regenerates only from built declarations (found by plan iteration 3's reflect). owner: zbeyens, who regenerates it once that check passes. stop: `rg -c currentUserId apps/www/src/generated/api-reference-manifest.json` finds none.
+- Cards around an Enter inside a link still split, as at HEAD, because a cut covers its whole link half and the end cut sorts before its content (found by `docs/plans/2026-10-17-card-grouping.md`). Suggested task t_3fbf4c17 tracks it. owner: zbeyens. stop: t_3fbf4c17 lands or is dropped.
+- Typing, or a second Enter, at the start of a filled line one's own Enter made takes a new change in the same card, and so does a second Enter on the empty line a plain Enter made. The www spec that records the owner's key sequence pins a second Enter before struck text as a change of its own (the `follow` Default of `docs/plans/2026-10-17-card-grouping.md`). owner: zbeyens, who decides whether such a write joins the Enter's change. stop: the owner says follow, or drops it.
+- The recording law "rejecting everything undoes a suggestion" fails at HEAD at seeds -353941099 and 426485304 (found by `docs/plans/2026-10-17-card-grouping.md`). Suggested task t_54844d26 holds both. owner: zbeyens. stop: t_54844d26 lands or is dropped.

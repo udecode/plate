@@ -1,0 +1,31 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "code-block-diagram-plantuml",
+  "title": "Code Block Diagram PlantUML",
+  "description": "Draw PlantUML code blocks through your own PlantUML server.",
+  "dependencies": [
+    "plantuml-encoder"
+  ],
+  "devDependencies": [
+    "@types/plantuml-encoder"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/code-block-diagram.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/code-block-diagram-plantuml.ts",
+      "content": "import type { DiagramRenderer } from '@/registry/components/editor/code-block-diagram';\n\n/**\n * Draws PlantUML through the server your app runs. The source text goes to\n * that server and nowhere else.\n */\nexport const createPlantUmlRenderer = ({\n  server,\n}: {\n  server: string;\n}): DiagramRenderer => {\n  const base = new URL(server).href.replace(/\\/$/, '');\n\n  return {\n    label: 'PlantUML',\n    languages: ['plantuml', 'puml'],\n    render: async (source, { signal }) => {\n      const { default: plantumlEncoder } = await import('plantuml-encoder');\n      const response = await fetch(\n        `${base}/svg/${plantumlEncoder.encode(source)}`,\n        { redirect: 'error', signal }\n      );\n\n      if (!response.ok) {\n        throw new Error(`PlantUML server answered ${response.status}.`);\n      }\n\n      return response.text();\n    },\n  };\n};\n",
+      "type": "registry:component",
+      "target": "@components/editor/code-block-diagram-plantuml.ts"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/code-block#diagrams"
+      }
+    ]
+  },
+  "type": "registry:component"
+}

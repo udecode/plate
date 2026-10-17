@@ -17,8 +17,6 @@
     "../src/ai/react/**/*",
     "../src/authored/**/*",
     "../src/code-block/codemirror/**/*",
-    "../src/code-drawing/**/*",
-    "../src/code-drawing/react/**/*",
     "../src/diff/**/*",
     "../src/dom/**/*",
     "../src/docx/paste/**/*",

@@ -193,7 +193,9 @@ const LineHeightPlugin = definePlugin('lineHeight', {
     },
   },
   update: ({ tx }) => ({
-    set: (value: number) => tx.nodes.set({ lineHeight: value }),
+    set: txLocate(false, (value: number) =>
+      tx.nodes.set({ lineHeight: value })
+    ),
     unset: () => tx.nodes.unset('lineHeight'),
   }),
 });

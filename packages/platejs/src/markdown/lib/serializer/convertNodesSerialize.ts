@@ -6,7 +6,7 @@ import {
   PLUGINS,
 } from '../../../core';
 import type { ListElement } from '../../../features/list';
-import { getListIndent } from '../../../features/list/lib/listIndex.internal';
+import { listItemDepth } from '../../../features/list/lib/listIndex.internal';
 import {
   getMarkdownParagraphType,
   landsMarkdownParagraph,
@@ -170,11 +170,11 @@ const isListContinuation = (
     return false;
   }
   const ownerIndent = node.indent - 1;
-  const owner = run.findLast((block) => getListIndent(block) <= ownerIndent);
+  const owner = run.findLast((block) => listItemDepth(block) <= ownerIndent);
 
   return (
     owner !== undefined &&
-    getListIndent(owner) === ownerIndent &&
+    listItemDepth(owner) === ownerIndent &&
     owner.listType !== undefined
   );
 };

@@ -404,7 +404,6 @@ describe('turn into menu behavior', () => {
         }) as HTMLButtonElement
       ).disabled
     ).toBe(false);
-    expect(view.queryByText('Code Drawing')).toBeNull();
 
     fireEvent.click(view.getByRole('radio', { name: 'Heading 2' }));
 

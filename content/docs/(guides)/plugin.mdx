@@ -172,7 +172,7 @@ const ExamplePlugin = definePlugin("example", {
 You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the `textAlign` CSS property on paragraphs with a `textAlign` property.
 
 ```ts showLineNumbers
-import { PLUGINS, property, schema, target } from "platejs";
+import { PLUGINS, property, schema, target, txLocate } from "platejs";
 
 const TextAlignPlugin = definePlugin("textAlign", {
   formats: ({ defineFormats }) =>
@@ -207,7 +207,9 @@ const TextAlignPlugin = definePlugin("textAlign", {
   }),
   targetPlugins: [PLUGINS.paragraph],
   update: ({ tx }) => ({
-    set: (value: string) => tx.nodes.set({ textAlign: value }),
+    set: txLocate(false, (value: string) =>
+      tx.nodes.set({ textAlign: value })
+    ),
   }),
 });
 ```
@@ -460,8 +462,10 @@ Use `render.useViewElementAttributes` when a plugin needs reactive attributes
 on a sparse set of whole element hosts. Plate mounts one hook program per
 enabled plugin per view and returns `{ key, attributes }[]`. Keep
 `render.attributes` and `inject.nodeProps.transformProps` pure because those
-callbacks run per node. Inline ranges use `decorate`; structural output uses
-components or slots. See the
+callbacks run per node. A text injection that paints only text holding its
+node key sets `inject.nodeProps.textScope: 'nodeKey'`, so it no longer forces
+a React render when typing in other text. Inline ranges use `decorate`;
+structural output uses components or slots. See the
 [Plate Plugin API](/docs/api/core/plate-plugin#properties-attrs-render).
 
 ### HTML document preparation

@@ -43,7 +43,6 @@ const REMOVED_FAMILY_ITEM_NAMES = new Set([
   'callout-node',
   'code-node',
   'code-block-node',
-  'code-drawing-node',
   'column-node',
   'comment-node-static',
   'date-node',

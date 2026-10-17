@@ -32,12 +32,6 @@
       "platejs/code-block/codemirror": [
         "../../packages/platejs/src/code-block/codemirror/index.ts"
       ],
-      "platejs/code-drawing": [
-        "../../packages/platejs/src/code-drawing/index.ts"
-      ],
-      "platejs/code-drawing/react": [
-        "../../packages/platejs/src/code-drawing/react/index.ts"
-      ],
       "platejs/combobox": [
         "../../packages/platejs/src/features/combobox/index.ts"
       ],

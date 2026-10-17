@@ -63,7 +63,6 @@ declare global {
       hblockquote: HyperscriptIntrinsicAttributes;
       hcallout: HyperscriptIntrinsicAttributes;
       hcodeblock: HyperscriptIntrinsicAttributes;
-      hcodedrawing: HyperscriptIntrinsicAttributes;
       hcolumn: HyperscriptIntrinsicAttributes;
       hcolumngroup: HyperscriptIntrinsicAttributes;
       hdate: HyperscriptIntrinsicAttributes;
@@ -112,7 +111,6 @@ export const elements = {
   hblockquote: { type: 'blockquote' },
   hcallout: { type: 'callout' },
   hcodeblock: { type: 'codeBlock' },
-  hcodedrawing: { type: 'codeDrawing' },
   hcolumn: { type: 'column' },
   hcolumngroup: { type: 'columnGroup' },
   hdate: { type: 'date' },
@@ -158,7 +156,6 @@ const createElementWithDefaultText =
 
 const defaultTextElementCreators = {
   haudio: createElementWithDefaultText('audio'),
-  hcodedrawing: createElementWithDefaultText('codeDrawing'),
   hdate: createElementWithDefaultText('date'),
   hfile: createElementWithDefaultText('file'),
   himg: createElementWithDefaultText('image'),

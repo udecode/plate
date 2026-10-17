@@ -22,6 +22,7 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
+import type { TxDeclaredMethod } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { decideUrl, isStoredUrl } from '../../../internal/utils/urlPolicy';
 import {
@@ -111,15 +112,21 @@ type MediaElementPluginDefinition = BasePluginDefinition &
   Readonly<{ schema: Readonly<{ element: SchemaElement }> }>;
 
 type MediaPluginUpdate<C extends MediaElementPluginDefinition> = {
-  insert: (
-    input: MediaInsertInputForPlugin<C['name']>,
-    options?: BlockInsertOptions
-  ) => boolean;
-  setUrl: (input: { element: Element; url: string }) => boolean;
-  upsert: (
-    input: MediaInsertInputForPlugin<C['name']>,
-    options?: BlockUpsertOptions
-  ) => boolean;
+  insert: TxDeclaredMethod<
+    (
+      input: MediaInsertInputForPlugin<C['name']>,
+      options?: BlockInsertOptions
+    ) => boolean
+  >;
+  setUrl: TxDeclaredMethod<
+    (input: { element: Element; url: string }) => boolean
+  >;
+  upsert: TxDeclaredMethod<
+    (
+      input: MediaInsertInputForPlugin<C['name']>,
+      options?: BlockUpsertOptions
+    ) => boolean
+  >;
 };
 
 type MediaPluginApi = {
@@ -152,9 +159,15 @@ type MediaPluginStage = {
       tx: PluginTransaction<MediaElementPluginDefinition>;
     }
   ) => {
-    insert: (input: MediaInsertInput, options?: BlockInsertOptions) => boolean;
-    setUrl: (input: { element: Element; url: string }) => boolean;
-    upsert: (input: MediaInsertInput, options?: BlockUpsertOptions) => boolean;
+    insert: TxDeclaredMethod<
+      (input: MediaInsertInput, options?: BlockInsertOptions) => boolean
+    >;
+    setUrl: TxDeclaredMethod<
+      (input: { element: Element; url: string }) => boolean
+    >;
+    upsert: TxDeclaredMethod<
+      (input: MediaInsertInput, options?: BlockUpsertOptions) => boolean
+    >;
   };
 };
 
@@ -232,18 +245,16 @@ export function defineMediaPlugin(
               const at = atAnchor?.resolve();
 
               return at
-                ? update.insert({ caption, url }, { ...options, at }) === true
+                ? update.insert({ caption, url }, { ...options, at })
                 : false;
             }
             if (!key || !editor.read.nodes.get(key)) return false;
 
-            return (
-              update.insert(
-                { caption, url },
-                options.before === undefined
-                  ? { ...options, after: key }
-                  : { ...options, before: key }
-              ) === true
+            return update.insert(
+              { caption, url },
+              options.before === undefined
+                ? { ...options, after: key }
+                : { ...options, before: key }
             );
           } finally {
             atAnchor?.release();

@@ -392,9 +392,6 @@ importers:
       '@tabler/icons-react':
         specifier: 3.34.0
         version: 3.34.0(react@19.2.8)
-      agentation:
-        specifier: ^3.0.2
-        version: 3.0.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       ai:
         specifier: ^6.0.0
         version: 6.0.116(zod@3.25.61)
@@ -428,6 +425,9 @@ importers:
       files-sdk:
         specifier: 2.6.0
         version: 2.6.0(@aws-sdk/client-s3@3.1136.0)(@aws-sdk/lib-storage@3.1136.0(@aws-sdk/client-s3@3.1136.0))(@aws-sdk/s3-presigned-post@3.1136.0)(@aws-sdk/s3-request-presigner@3.1136.0)(@opentelemetry/api@1.9.0)(ai@6.0.116(zod@3.25.61))(hono@4.12.5)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(openai@5.3.0(ws@8.19.0)(zod@4.1.12))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61)
+      flowchart.js:
+        specifier: ^1.15.0
+        version: 1.18.0
       framer-motion:
         specifier: 12.17.0
         version: 12.17.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -476,6 +476,9 @@ importers:
       lucide-react:
         specifier: 0.514.0
         version: 0.514.0(react@19.2.8)
+      mermaid:
+        specifier: ^11.6.1
+        version: 11.12.3
       nanoid:
         specifier: ^5.1.6
         version: 5.1.6
@@ -491,6 +494,9 @@ importers:
       nuqs:
         specifier: 2.4.3
         version: 2.4.3(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react@19.2.8)
+      plantuml-encoder:
+        specifier: ^1.4.0
+        version: 1.4.0
       platejs:
         specifier: workspace:^
         version: link:../../packages/platejs
@@ -581,6 +587,9 @@ importers:
       use-file-picker:
         specifier: 2.1.2
         version: 2.1.2(react@19.2.8)
+      viz.js:
+        specifier: ^2.1.2
+        version: 2.1.2
       y-webrtc:
         specifier: 10.3.0
         version: 10.3.0(yjs@13.6.30)
@@ -609,12 +618,18 @@ importers:
       '@types/mdast':
         specifier: ^4.0.4
         version: 4.0.4
+      '@types/plantuml-encoder':
+        specifier: ^1.4.2
+        version: 1.4.2
       '@types/react-syntax-highlighter':
         specifier: 15.5.13
         version: 15.5.13
       '@types/unist':
         specifier: ^3.0.3
         version: 3.0.3
+      '@types/viz.js':
+        specifier: ^2.1.5
+        version: 2.1.5
       '@typescript/typescript6':
         specifier: 6.0.2
         version: 6.0.2
@@ -860,18 +875,12 @@ importers:
       '@types/node':
         specifier: 24.12.0
         version: 24.12.0
-      '@types/plantuml-encoder':
-        specifier: ^1.4.2
-        version: 1.4.2
       '@types/react':
         specifier: 19.2.7
         version: 19.2.7
       '@types/use-sync-external-store':
         specifier: 1.5.0
         version: 1.5.0
-      '@types/viz.js':
-        specifier: ^2.1.5
-        version: 2.1.5
       ai:
         specifier: ^6.0.0
         version: 6.0.116(zod@4.4.3)
@@ -893,9 +902,6 @@ importers:
       files-sdk:
         specifier: 2.6.0
         version: 2.6.0(@aws-sdk/client-s3@3.1136.0)(@aws-sdk/lib-storage@3.1136.0(@aws-sdk/client-s3@3.1136.0))(@aws-sdk/s3-presigned-post@3.1136.0)(@aws-sdk/s3-request-presigner@3.1136.0)(@opentelemetry/api@1.9.0)(ai@6.0.116(zod@4.4.3))(hono@4.12.5)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(openai@5.3.0(ws@8.19.0)(zod@4.1.12))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@4.4.3)
-      flowchart.js:
-        specifier: ^1.15.0
-        version: 1.18.0
       html-to-vdom:
         specifier: ^0.7.0
         version: 0.7.0
@@ -917,15 +923,9 @@ importers:
       mammoth:
         specifier: ^1.9.0
         version: 1.11.0
-      mermaid:
-        specifier: ^11.6.1
-        version: 11.12.3
       mime-types:
         specifier: ^2.1.35
         version: 2.1.35
-      plantuml-encoder:
-        specifier: ^1.4.0
-        version: 1.4.0
       react:
         specifier: 19.2.8
         version: 19.2.8
@@ -962,9 +962,6 @@ importers:
       virtual-dom:
         specifier: ^2.1.1
         version: 2.1.1
-      viz.js:
-        specifier: ^2.1.2
-        version: 2.1.2
       xmlbuilder2:
         specifier: ^3.1.1
         version: 3.1.1
@@ -1043,7 +1040,7 @@ importers:
         version: 19.2.8(react@19.2.8)
       vitest:
         specifier: ^4.1.0
-        version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jsdom@20.0.3)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
+        version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
       yjs:
         specifier: 13.6.30
         version: 13.6.30
@@ -1089,7 +1086,7 @@ importers:
         version: 7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
       vitest:
         specifier: ^4.1.0
-        version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jsdom@20.0.3)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
+        version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
 
 packages:
 
@@ -2545,7 +2542,6 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
-      zod: ^3.25 || ^4.0
     peerDependenciesMeta:
       '@cfworker/json-schema':
         optional: true
@@ -6122,17 +6118,6 @@ packages:
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
-
-  agentation@3.0.2:
-    resolution: {integrity: sha512-iGzBxFVTuZEIKzLY6AExSLAQH6i6SwxV4pAu7v7m3X6bInZ7qlZXAwrEqyc4+EfP4gM7z2RXBF6SF4DeH0f2lA==}
-    peerDependencies:
-      react: '>=18.0.0'
-      react-dom: '>=18.0.0'
-    peerDependenciesMeta:
-      react:
-        optional: true
-      react-dom:
-        optional: true
 
   ai@6.0.116:
     resolution: {integrity: sha512-7yM+cTmyRLeNIXwt4Vj+mrrJgVQ9RMIW5WO0ydoLoYkewIvsMcvUmqS4j2RJTUXaF1HphwmSKUMQ/HypNRGOmA==}
@@ -11537,7 +11522,6 @@ packages:
       '@vitest/ui': 4.1.9
       happy-dom: '*'
       jsdom: '*'
-      vite: ^6.0.0 || ^7.0.0 || ^8.0.0
     peerDependenciesMeta:
       '@edge-runtime/vm':
         optional: true
@@ -13693,7 +13677,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@modelcontextprotocol/sdk@1.30.0(zod@3.25.61)':
+  '@modelcontextprotocol/sdk@1.30.0':
     dependencies:
       '@hono/node-server': 1.19.11(hono@4.12.5)
       ajv: 8.18.0
@@ -13710,31 +13694,8 @@ snapshots:
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
       raw-body: 3.0.2
-      zod: 3.25.61
-      zod-to-json-schema: 3.25.1(zod@3.25.61)
-    transitivePeerDependencies:
-      - supports-color
-    optional: true
-
-  '@modelcontextprotocol/sdk@1.30.0(zod@4.4.3)':
-    dependencies:
-      '@hono/node-server': 1.19.11(hono@4.12.5)
-      ajv: 8.18.0
-      ajv-formats: 3.0.1
-      content-type: 1.0.5
-      cors: 2.8.6
-      cross-spawn: 7.0.6
-      eventsource: 3.0.7
-      eventsource-parser: 3.0.6
-      express: 5.2.1
-      express-rate-limit: 8.3.0(express@5.2.1)
-      hono: 4.12.5
-      jose: 6.2.0
-      json-schema-typed: 8.0.2
-      pkce-challenge: 5.0.1
-      raw-body: 3.0.2
-      zod: 4.4.3
-      zod-to-json-schema: 3.25.1(zod@4.4.3)
+      zod: 4.1.12
+      zod-to-json-schema: 3.25.1(zod@4.1.12)
     transitivePeerDependencies:
       - supports-color
     optional: true
@@ -16856,7 +16817,7 @@ snapshots:
       '@vitest/mocker': 4.1.9(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
       playwright: 1.61.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jsdom@20.0.3)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
+      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -16872,7 +16833,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.0
-      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jsdom@20.0.3)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
+      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
       ws: 8.19.0
     transitivePeerDependencies:
       - bufferutil
@@ -17026,11 +16987,6 @@ snapshots:
       - supports-color
 
   agent-base@7.1.4: {}
-
-  agentation@3.0.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
-    optionalDependencies:
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
 
   ai@6.0.116(zod@3.25.61):
     dependencies:
@@ -18675,7 +18631,7 @@ snapshots:
       '@aws-sdk/lib-storage': 3.1136.0(@aws-sdk/client-s3@3.1136.0)
       '@aws-sdk/s3-presigned-post': 3.1136.0
       '@aws-sdk/s3-request-presigner': 3.1136.0
-      '@modelcontextprotocol/sdk': 1.30.0(zod@3.25.61)
+      '@modelcontextprotocol/sdk': 1.30.0
       '@opentelemetry/api': 1.9.0
       ai: 6.0.116(zod@3.25.61)
       hono: 4.12.5
@@ -18702,7 +18658,7 @@ snapshots:
       '@aws-sdk/lib-storage': 3.1136.0(@aws-sdk/client-s3@3.1136.0)
       '@aws-sdk/s3-presigned-post': 3.1136.0
       '@aws-sdk/s3-request-presigner': 3.1136.0
-      '@modelcontextprotocol/sdk': 1.30.0(zod@4.4.3)
+      '@modelcontextprotocol/sdk': 1.30.0
       '@opentelemetry/api': 1.9.0
       ai: 6.0.116(zod@4.4.3)
       hono: 4.12.5
@@ -23356,7 +23312,7 @@ snapshots:
       tsx: 4.20.1
       yaml: 2.9.0
 
-  vitest@4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jsdom@20.0.3)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)):
+  vitest@4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0):
     dependencies:
       '@vitest/expect': 4.1.9
       '@vitest/mocker': 4.1.9(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
@@ -23385,7 +23341,17 @@ snapshots:
       happy-dom: 20.8.3
       jsdom: 20.0.3
     transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
       - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - terser
+      - tsx
+      - yaml
 
   viz.js@2.1.2: {}
 
@@ -23632,9 +23598,9 @@ snapshots:
     dependencies:
       zod: 3.25.61
 
-  zod-to-json-schema@3.25.1(zod@4.4.3):
+  zod-to-json-schema@3.25.1(zod@4.1.12):
     dependencies:
-      zod: 4.4.3
+      zod: 4.1.12
     optional: true
 
   zod@3.25.61: {}

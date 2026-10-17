@@ -108,8 +108,6 @@ describe('insert toolbar commands', () => {
     );
     const view = await renderInsertMenu(currentEditor);
 
-    expect(view.queryByText('Code Drawing')).toBeNull();
-
     fireEvent.click(view.getByRole('button', { name: 'Heading 2' }));
 
     expect(currentEditor.read.children()).toMatchObject([

@@ -1,4 +1,4 @@
-import { definePluginPoint } from 'plitejs';
+import { definePluginPoint } from '../../../facade';
 
 /**
  * Contribute an element type inside which no input rule runs, such as a code

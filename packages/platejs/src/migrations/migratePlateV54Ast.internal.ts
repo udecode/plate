@@ -16,13 +16,6 @@ const getCompiledPlatePlugin = (
   name: string
 ) => target.bindings.find((binding) => binding.name === name);
 
-const CODE_DRAWING_LANGUAGES = new Set([
-  'flowchart',
-  'graphviz',
-  'mermaid',
-  'plantuml',
-]);
-const CODE_DRAWING_VIEWS = new Set(['code', 'preview', 'split']);
 const TEXT_ALIGNMENTS = new Set([
   'center',
   'end',
@@ -34,25 +27,6 @@ const TEXT_ALIGNMENTS = new Set([
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
-
-const legacyCodeDrawingLanguage = (value: unknown) => {
-  if (typeof value !== 'string') return undefined;
-
-  const normalized = value.toLowerCase();
-
-  return CODE_DRAWING_LANGUAGES.has(normalized) ? normalized : undefined;
-};
-
-const legacyCodeDrawingView = (value: unknown) => {
-  if (typeof value !== 'string') return undefined;
-
-  const normalized = value.toLowerCase();
-
-  if (normalized === 'both') return 'split';
-  if (normalized === 'image') return 'preview';
-
-  return CODE_DRAWING_VIEWS.has(normalized) ? normalized : undefined;
-};
 
 type NodeContext = Readonly<{
   ancestors: readonly string[];
@@ -100,7 +74,6 @@ export const migratePlateV54Ast = ({
       .map(resolveElementType)
       .filter((type): type is string => type !== undefined)
   );
-  const codeDrawingType = resolveElementType('codeDrawing');
   const excalidrawType = resolveElementType('excalidraw');
   const equationTypes = new Set(
     ['equation', 'inlineEquation']
@@ -487,56 +460,6 @@ export const migratePlateV54Ast = ({
       !ownsProperty(element.type, 'width', context)
     ) {
       without('width');
-    }
-
-    if (codeDrawingType && element.type === codeDrawingType) {
-      const { data } = properties();
-      const record =
-        typeof data === 'object' && data !== null && !Array.isArray(data)
-          ? (data as Record<string, unknown>)
-          : {};
-
-      const legacyCode = isNonEmptyString(record.code)
-        ? record.code
-        : undefined;
-      const legacyLanguage = legacyCodeDrawingLanguage(record.drawingType);
-      const legacyView = legacyCodeDrawingView(record.drawingMode);
-      const existingCodeValid =
-        typeof properties().code === 'string' &&
-        (legacyCode === undefined || isNonEmptyString(properties().code));
-      const existingLanguageValid = CODE_DRAWING_LANGUAGES.has(
-        String(properties().language)
-      );
-      const existingViewValid = CODE_DRAWING_VIEWS.has(
-        String(properties().view)
-      );
-
-      if (!existingCodeValid && Object.hasOwn(element, 'code')) without('code');
-      if (!existingLanguageValid && Object.hasOwn(element, 'language')) {
-        without('language');
-      }
-      if (!existingViewValid && Object.hasOwn(element, 'view')) without('view');
-
-      if (legacyCode !== undefined) {
-        setMigratedProperty('code', legacyCode, '`data.code`');
-      } else if (!existingCodeValid) {
-        setMigratedProperty('code', '', 'missing Code Drawing code');
-      }
-      if (legacyLanguage !== undefined) {
-        setMigratedProperty('language', legacyLanguage, '`data.drawingType`');
-      } else if (!existingLanguageValid) {
-        setMigratedProperty(
-          'language',
-          'mermaid',
-          'missing Code Drawing language'
-        );
-      }
-      if (legacyView !== undefined) {
-        setMigratedProperty('view', legacyView, '`data.drawingMode`');
-      } else if (!existingViewValid) {
-        setMigratedProperty('view', 'split', 'missing Code Drawing view');
-      }
-      without('data');
     }
 
     if (equationTypes.has(element.type)) {

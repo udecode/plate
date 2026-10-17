@@ -1,7 +1,6 @@
-import { definePluginPoint } from 'plitejs';
-import { getPluginContributions } from 'plitejs/internal';
-
 import {
+  definePluginPoint,
+  getPluginContributions,
   SelectionApi,
   type Editor,
   type EditorCoreStateView,

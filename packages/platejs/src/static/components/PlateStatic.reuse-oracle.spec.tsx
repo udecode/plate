@@ -15,6 +15,10 @@ import {
   type Text,
 } from '../../core';
 import { BaseHeadingPlugin } from '../../features/basic-nodes/lib/BaseHeadingPlugins';
+import {
+  BaseFootnoteDefinitionPlugin,
+  BaseFootnotePlugin,
+} from '../../features/footnote';
 import { BaseListPlugin } from '../../features/list/lib/BaseListPlugin';
 import {
   BaseTableCellPlugin,
@@ -962,6 +966,93 @@ const runOracle = ({
 };
 
 describe('EditorStatic reuse oracle', () => {
+  it('keeps footnote anchors equal to a fresh render after earlier and later edits', () => {
+    function FootnoteElement(
+      props: EditorElementProps<
+        typeof BaseFootnotePlugin | typeof BaseFootnoteDefinitionPlugin
+      >
+    ) {
+      elementRenders += 1;
+      const anchor = props.editor
+        .plugin(BaseFootnotePlugin)
+        .read.anchor({ path: props.path });
+      return (
+        <EditorElement
+          {...props}
+          attributes={{ ...props.attributes, id: anchor?.id }}
+        >
+          {props.children}
+          {anchor?.target && (
+            <a href={`#${anchor.target}`}>{props.element.ref}</a>
+          )}
+        </EditorElement>
+      );
+    }
+    const footnotePlugins = [
+      BaseParagraphPlugin.configure({ component: CountedElement }),
+      BaseFootnotePlugin.configure({ component: FootnoteElement }),
+      BaseFootnoteDefinitionPlugin.configure({ component: FootnoteElement }),
+    ];
+    const editor = createEditor({ plugins: footnotePlugins });
+    const baseline = createEditor({ plugins: footnotePlugins });
+    const reference = {
+      type: 'paragraph',
+      children: [
+        { text: '' },
+        { type: 'footnoteReference', ref: '1', children: [{ text: '' }] },
+        { text: '' },
+      ],
+    };
+    const note = {
+      type: 'footnoteDefinition',
+      ref: '1',
+      children: [{ type: 'paragraph', children: [{ text: 'note' }] }],
+    };
+    let document = { children: [reference, note] };
+    const view = render(<EditorStatic document={document} editor={editor} />);
+    const sequences = [
+      {
+        label: 'citation after the notes',
+        children: [...document.children, structuredClone(reference)],
+        renders: 2,
+      },
+      {
+        label: 'citation before every block',
+        children: [structuredClone(reference), reference, note],
+        renders: 6,
+      },
+      {
+        label: 'note grown at the end',
+        children: [
+          reference,
+          {
+            ...note,
+            children: [
+              { type: 'paragraph', children: [{ text: 'note grown' }] },
+            ],
+          },
+        ],
+        renders: 4,
+      },
+      {
+        label: 'duplicate after the notes',
+        children: [reference, note, structuredClone(note)],
+        renders: 4,
+      },
+    ];
+    for (const step of sequences) {
+      document = { children: step.children };
+      const before = elementRenders;
+      view.rerender(<EditorStatic document={document} editor={editor} />);
+      const renders = elementRenders - before;
+      expect(view.container.innerHTML).toBe(
+        renderFresh(baseline, structuredClone(document))
+      );
+      expect(renders).toBeLessThanOrEqual(step.renders);
+    }
+    view.unmount();
+  });
+
   it.each([
     ['document', 'blocks'],
     ['editor', 'blocks'],

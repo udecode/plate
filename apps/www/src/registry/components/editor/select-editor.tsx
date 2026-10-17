@@ -13,6 +13,7 @@ import {
   type PluginTransaction,
   type Text,
   TextApi,
+  txLocate,
 } from 'platejs';
 import {
   EditorRoot,
@@ -175,7 +176,7 @@ export const SelectTagPlugin = TagPlugin.extend(
         tx.nodes.remove({ at: [], match: isSearchText });
       },
       /** Inserts a chip at the caret, clears the search and moves the caret to the end. */
-      pick: (item: SelectItem) => {
+      pick: txLocate(false, (item: SelectItem) => {
         tx.nodes.insert([
           { children: [{ text: '' }], type, ...toItem(item) },
           { text: '' },
@@ -185,9 +186,9 @@ export const SelectTagPlugin = TagPlugin.extend(
         const end = tx.points.end([]);
 
         if (end) tx.selection.set(end);
-      },
+      }),
       /** Replaces every chip and the search with `items`. */
-      replaceItems: (items: readonly SelectItem[]) => {
+      replaceItems: txLocate(false, (items: readonly SelectItem[]) => {
         const hadSelection = tx.selection() !== null;
 
         tx.value.replace({ children: createValue(type, items) });
@@ -195,7 +196,7 @@ export const SelectTagPlugin = TagPlugin.extend(
         const end = tx.points.end([]);
 
         if (hadSelection && end) tx.selection.set(end);
-      },
+      }),
     }),
   })
 );

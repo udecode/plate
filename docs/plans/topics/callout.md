@@ -64,6 +64,27 @@ The Quote toggle tells its caller whether it changed anything, so a menu can ski
 const quoted = editor.plugin(BlockquotePlugin).update.toggle();
 ```
 
+Inside the packages, Details asks for the real Heading plugin when it releases a title, and asks Heading for the level when it wraps one.
+
+```ts
+// packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts
+const heading = editor.plugin(BaseHeadingPlugin);
+
+return isSummaryHeadingLevel(level) && heading.installed
+  ? { level, type: heading.schema.type }
+  : { type: editor.plugin(BaseParagraphPlugin).schema.type };
+```
+
+Heading finds the Summary plugin by name and reads its type from that plugin, in its level read and in its commands.
+
+```ts
+// packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts
+const summary = getCompiledPlatePlugin(editor, PLUGINS.detailsSummary);
+const summaryType = summary
+  ? editor.plugin(summary).schema.type
+  : undefined;
+```
+
 ## Document shape
 
 Loading a Details with no Summary adds an empty one in front. The renderer reads the result.
@@ -103,6 +124,8 @@ Pasting two paragraphs at the end of a title keeps them in the same section.
 - Code and List conversions of a title read the Details' `blockRelease` contribution, which unwraps that Details and turns the title into the converted block. A closed title's `insertionAnchor` contribution sends an implicit insert after the whole Details.
 - AI types each answer block for its landing position, the Column toggle checks placement before it replaces a block, and `BlockquotePlugin`'s `toggle()` returns whether it applied, so the copied menus clear List only when Quote applied.
 - The paragraph shortcut in `ParagraphPlugin` resets the level, then toggles Paragraph, which the schema refuses on a title.
+- Details finds Heading through `editor.plugin(BaseHeadingPlugin)` and its installed check. A released title takes Heading's type, a wrapped block takes its level from Heading's `read.level`, and `platejs/details` depends on `standard/basic-nodes` in the entrypoint graph.
+- Heading reads the Summary type from the Summary plugin it finds by name, through the same lookup list and upload use, instead of the compiled model's name table.
 - `BaseCalloutPlugin` persists `icon` with a `'💡'` default and a `variant` that no copied component renders.
 
 ## What other editors do
@@ -117,6 +140,15 @@ Read from source, not run: Tiptap `91c51be53c`, ProseMirror transform `662b7a937
 | Slate | No schema; `normalizeNode` repairs | Whatever the app's normalizer does | Plate's current corrections follow this model |
 | BlockNote | A toggle heading is a heading block with `isToggleable` (`packages/core/src/blocks/Heading/block.ts:54`) | The title is the block itself, so a type change turns the whole toggle | Children nest under the block |
 | Notion | Not read this session; its public block API models a toggle heading as a heading with `is_toggleable` | Same as BlockNote | Inferred from its public API, not checked |
+
+How an extension finds an optional peer, read from source, not run: Lexical `dd5c41b131`, Tiptap `91c51be53c`, ProseMirror model `6264de069d` and Slate `945a484df2`. Class-based editors check a peer by its class; name-based editors look it up by name and add types by declaration merging, which Plate's law refuses for lookups.
+
+| Editor | How an extension finds an optional peer | Where its types come from |
+| --- | --- | --- |
+| Lexical | `editor.hasNodes([HeadingNode])`, a check by class (`packages/lexical/src/LexicalEditor.ts:1570`) | The imported class |
+| Tiptap | `getNodeType(name, schema)`, a lookup in `schema.nodes` by name (`packages/core/src/helpers/getNodeType.ts`) | Module augmentation of `Commands` (`packages/extension-heading/src/heading.ts:25`) |
+| ProseMirror | `schema.nodes[name]`, keyed by name (`src/schema.ts:585`) | None; node types are untyped by name |
+| Slate | No plugin registry; plugins compare `element.type` strings | The app's own custom types |
 
 ## Open work
 
@@ -134,3 +166,4 @@ Read from source, not run: Tiptap `91c51be53c`, ProseMirror transform `662b7a937
 - A node selection with no root targets the main root in core, but `rootOf` gives a named view's commands that view's root. List toggle from a named view over such a selection refuses and writes nothing, on base and on this build (`panel-diff-r3/probe/list-node-base.log`). Column and Details commands read the same helper and were not probed. owner: zbeyens. stop: its suggested task runs or the owner drops it.
 - AI `show()` from a named view labels captured main-root nodes with the view's root. On this build the answer's write is then refused and changes nothing, where base empties the title. owner: zbeyens. stop: its suggested task runs or the owner drops it.
 - Inserting a block at an inline boundary of the matched block lands it before that block, as on `next`. owner: zbeyens. stop: its suggested task runs or the owner drops it.
+- Refresh `tooling/entrypoints/platejs-entrypoint-sizes.json` with `pnpm plite:entrypoint-sizes:update` once the platejs build passes; the Details and Heading lookup change moved root `platejs`, `platejs/details`, `platejs/details/react` and `platejs/toc`. owner: zbeyens. stop: `t_dc44fa5c` lands and the refresh runs, or the owner drops it.

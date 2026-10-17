@@ -18,6 +18,7 @@ import {
   type Selection,
   SelectionApi,
   type TextSelection,
+  type TxDeclaredMethod,
   txLocate,
   txOnly,
   type TxOnlyMethod,
@@ -109,7 +110,7 @@ export type HistoryTxApi<V extends Value = Value> = {
   /** Make this transaction start a fresh undo batch. */
   newBatch: HistoryControlTx;
   /** Replace both history branches when the surrounding transaction commits. */
-  restore: (history: History<V>) => void;
+  restore: TxDeclaredMethod<(history: History<V>) => void>;
   /** Do not save this transaction to history. */
   skip: HistoryControlTx;
 };

@@ -14,7 +14,6 @@ export const BaseIndentKit = [
       PLUGINS.image,
       PLUGINS.audio,
       PLUGINS.callout,
-      PLUGINS.codeDrawing,
       PLUGINS.columnGroup,
       PLUGINS.equation,
       PLUGINS.excalidraw,

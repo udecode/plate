@@ -2,6 +2,7 @@ import {
   property,
   schema,
   target,
+  txLocate,
   type SchemaPropertyHandle,
 } from '../../core';
 import type { Editor } from '../editor';
@@ -379,8 +380,9 @@ describe('createPluginContext', () => {
         text: () => state.children()[0].children[0].text,
       }),
       update: ({ tx }) => ({
-        insert: (text: string) =>
-          tx.text.insert(text, { at: { path: [0, 0], offset: 0 } }),
+        insert: txLocate(false, (text: string) =>
+          tx.text.insert(text, { at: { path: [0, 0], offset: 0 } })
+        ),
       }),
     });
     const typedEditor = createEditor({ plugins: [plugin] });
@@ -413,9 +415,9 @@ describe('createPluginContext', () => {
         insertNode: () => {
           insertedBy = 'command';
         },
-        setMode: (nextMode: 'edit' | 'view') => {
+        setMode: txLocate(false, (nextMode: 'edit' | 'view') => {
           mode = nextMode;
-        },
+        }),
       }),
     });
     const typedEditor = createEditor({

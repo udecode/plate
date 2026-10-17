@@ -1,4 +1,4 @@
-import { schema } from '../../core';
+import { schema, txLocate } from '../../core';
 import { defineRuntimePlugin, isRuntimePlugin } from '../../facade';
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import type { NodeComponent } from '../../lib';
@@ -46,8 +46,9 @@ describe('definePlugin', () => {
         label: () => 'native' as const,
       }),
       update: ({ tx }) => ({
-        insert: (text: string) =>
-          tx.text.insert(text, { at: { offset: 0, path: [0, 0] } }),
+        insert: txLocate(false, (text: string) =>
+          tx.text.insert(text, { at: { offset: 0, path: [0, 0] } })
+        ),
       }),
     });
     const editor = createEditor({

@@ -11,6 +11,7 @@ import {
   EditorElement,
   useEditor,
   useEditorFocused,
+  useEditorReadOnly,
   useEditorSelector,
   useElementSelected,
   usePath,
@@ -45,6 +46,17 @@ import {
 } from '@/registry/components/editor/inline-combobox';
 
 const NUMERIC_FOOTNOTE_QUERY = /^\d+$/;
+
+const focusFootnoteControl = (editor: Editor, path?: Path) => {
+  const key = path && editor.key(path);
+
+  if (key) {
+    editor.api.dom
+      .resolveDOMNode(key)
+      ?.querySelector<HTMLButtonElement>('button')
+      ?.focus({ preventScroll: true });
+  }
+};
 
 const getFootnotePreviewLabel = (text?: string) => {
   const normalized = text?.replace(/\s+/g, ' ').trim();
@@ -81,11 +93,13 @@ export function FootnoteReferenceElement(
 ) {
   const { element } = props;
   const path = usePath();
+  const editor = useEditor();
+  const readOnly = useEditorReadOnly();
   const {
     api: footnoteNavigation,
     read: footnoteApi,
     update: footnoteUpdate,
-  } = useEditor().plugin(FootnotePlugin);
+  } = editor.plugin(FootnotePlugin);
   const ref = element.ref ?? '';
   const [hoverOpen, setHoverOpen] = React.useState(false);
   const focused = useEditorFocused();
@@ -141,8 +155,20 @@ export function FootnoteReferenceElement(
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
+              if (
+                readOnly &&
+                isResolved &&
+                footnoteNavigation.focusDefinition({ ref })
+              ) {
+                focusFootnoteControl(
+                  editor,
+                  footnoteApi.definition({ ref })?.[1]
+                );
+              }
             }}
             onMouseDown={(event) => {
+              if (readOnly) return;
+
               if (event.metaKey || event.ctrlKey) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -167,7 +193,7 @@ export function FootnoteReferenceElement(
               </div>
             </div>
           </HoverCardContent>
-        ) : ref ? (
+        ) : ref && (isResolved || !readOnly) ? (
           <HoverCardContent className="w-80">
             <div className="space-y-2">
               {isResolved ? (
@@ -204,11 +230,12 @@ export function FootnoteDefinitionElement(
   const { element } = props;
   const path = usePath();
   const editor = useEditor();
+  const readOnly = useEditorReadOnly();
   const {
     api: footnoteNavigation,
     read: footnoteApi,
     update: footnoteUpdate,
-  } = useEditor().plugin(FootnotePlugin);
+  } = editor.plugin(FootnotePlugin);
   const ref = element.ref ?? '';
   const definitionState = useEditorSelector(() => {
     const isDuplicateDefinition =
@@ -235,6 +262,11 @@ export function FootnoteDefinitionElement(
   const [referencePickerOpen, setReferencePickerOpen] = React.useState(false);
   const referenceItems = definitionState?.referenceItems ?? [];
   const hasMultipleReferences = referenceItems.length > 1;
+  const focusReference = (index = 0) => {
+    if (footnoteNavigation.focusReference({ ref, index }) && readOnly) {
+      focusFootnoteControl(editor, footnoteApi.references({ ref })[index]?.[1]);
+    }
+  };
 
   return (
     <EditorElement
@@ -268,8 +300,17 @@ export function FootnoteDefinitionElement(
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
+                    if (!readOnly) return;
+
+                    if (hasMultipleReferences) {
+                      setReferencePickerOpen((open) => !open);
+                    } else {
+                      focusReference();
+                    }
                   }}
                   onMouseDown={(event) => {
+                    if (readOnly) return;
+
                     event.preventDefault();
                     event.stopPropagation();
 
@@ -296,10 +337,10 @@ export function FootnoteDefinitionElement(
                   event.preventDefault();
                 }}
                 onInitialFocus={(event) => {
-                  event.preventDefault();
+                  if (!readOnly) event.preventDefault();
                 }}
               >
-                <Command>
+                <Command tabIndex={readOnly ? 0 : undefined}>
                   <CommandList>
                     <CommandGroup>
                       {referenceItems.map(
@@ -312,10 +353,7 @@ export function FootnoteDefinitionElement(
                             }}
                             onSelect={() => {
                               setReferencePickerOpen(false);
-                              footnoteNavigation.focusReference({
-                                ref,
-                                index: item.index,
-                              });
+                              focusReference(item.index);
                             }}
                           >
                             <span className="font-mono text-xs text-muted-foreground">
@@ -339,7 +377,7 @@ export function FootnoteDefinitionElement(
             contentEditable={false}
             className="mb-2 flex flex-wrap items-center gap-2"
           >
-            {duplicateReplacementRef && path ? (
+            {!readOnly && duplicateReplacementRef && path ? (
               <Button
                 type="button"
                 variant="outline"

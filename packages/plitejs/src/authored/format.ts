@@ -34,8 +34,7 @@ export const projectionRefusal = (
   schema: CompiledEditorSchema
 ): AuthoredProjectionRefusal | null => {
   if (!constructsValues(schema)) return null;
-  const pending = indexAuthoredChanges(document as JsonEditorValue).changes
-    .size;
+  const pending = indexAuthoredChanges(document).changes.size;
 
   return pending === 0
     ? null

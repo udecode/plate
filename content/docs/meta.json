@@ -155,7 +155,6 @@
     "[Blockquote Element](/docs/components/blockquote)",
     "[Callout Node](/docs/components/callout)",
     "[Code Block Nodes](/docs/components/code-block)",
-    "[Code Drawing Node](/docs/components/code-drawing)",
     "[Code Leaf](/docs/components/code)",
     "[Column Nodes](/docs/components/column)",
     "[Comments UI](/docs/components/comment)",
@@ -199,7 +198,6 @@
     "[Collaboration Demo](/docs/examples/collaboration)",
     "[Table Nomerge Demo](/docs/examples/table-nomerge)",
     "[Excalidraw Demo](/docs/examples/excalidraw)",
-    "[Code Drawing Demo](/docs/examples/code-drawing)",
     "[Single Block Demo](/docs/examples/single-block)",
     "[Find Demo](/docs/examples/find)",
     "[Lint Demo](/docs/examples/lint)",
@@ -566,7 +564,7 @@
               "titleCn": "Media"
             },
             {
-              "description": "A menu for switching between editor modes.",
+              "description": "A menu for switching between editor modes and deciding every suggestion.",
               "href": "/docs/components/mode-toolbar-button",
               "title": "Mode Toolbar Button",
               "titleCn": "Mode Toolbar Button"
@@ -655,12 +653,6 @@
               "href": "/docs/components/code-block",
               "title": "Code Block",
               "titleCn": "Code Block"
-            },
-            {
-              "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-              "href": "/docs/components/code-drawing",
-              "title": "Code Drawing",
-              "titleCn": "Code Drawing"
             },
             {
               "description": "An inline component for code snippets.",
@@ -920,12 +912,6 @@
               "href": "/docs/examples/excalidraw",
               "title": "Excalidraw Demo",
               "titleCn": "Excalidraw"
-            },
-            {
-              "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-              "href": "/docs/examples/code-drawing",
-              "title": "Code Drawing Demo",
-              "titleCn": "Code Drawing"
             },
             {
               "description": "Restrict the editor to a single block.",
@@ -2608,7 +2594,7 @@
         "titleCn": "Media"
       },
       "/docs/components/mode-toolbar-button": {
-        "description": "A menu for switching between editor modes.",
+        "description": "A menu for switching between editor modes and deciding every suggestion.",
         "title": "Mode Toolbar Button",
         "titleCn": "Mode Toolbar Button"
       },
@@ -2680,11 +2666,6 @@
         "description": "A code block with syntax highlighting and language selection.",
         "title": "Code Block",
         "titleCn": "Code Block"
-      },
-      "/docs/components/code-drawing": {
-        "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-        "title": "Code Drawing",
-        "titleCn": "Code Drawing"
       },
       "/docs/components/code": {
         "description": "An inline component for code snippets.",
@@ -2892,11 +2873,6 @@
         "description": "A drawing component powered by Excalidraw.",
         "title": "Excalidraw Demo",
         "titleCn": "Excalidraw"
-      },
-      "/docs/examples/code-drawing": {
-        "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-        "title": "Code Drawing Demo",
-        "titleCn": "Code Drawing"
       },
       "/docs/examples/single-block": {
         "description": "Restrict the editor to a single block.",

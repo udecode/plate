@@ -577,7 +577,11 @@ export const addSection = (
 
   const last = sections.length - 2;
 
-  if (last >= 0 && inserted === -1 && sections[last + 1] === -1) {
+  if (
+    last >= 0 &&
+    (inserted === -1 || inserted === 0) &&
+    sections[last + 1] === inserted
+  ) {
     sections[last] += length;
     return;
   }
@@ -1674,8 +1678,8 @@ export class RootChange {
     sections: readonly number[],
     data: readonly SectionData[]
   ) {
-    this.sections = Object.freeze([...sections]);
-    this.data = Object.freeze([...data]);
+    this.sections = Object.freeze(sections);
+    this.data = Object.freeze(data);
     this.length = this.sections.reduce(
       (length, value, index) => (index % 2 === 0 ? length + value : length),
       0
@@ -1965,7 +1969,7 @@ export class RootChange {
     sections: readonly number[],
     data: readonly SectionData[]
   ) {
-    return new RootChange(sections, data);
+    return new RootChange([...sections], [...data]);
   }
 
   static transform(a: RootChange, b: RootChange) {

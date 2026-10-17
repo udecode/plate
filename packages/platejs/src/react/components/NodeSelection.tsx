@@ -485,10 +485,7 @@ export function NodeSelectionDrag({
       if (gesture.invalid === 'candidates') {
         gesture.candidates = getSelectionCandidates(editor, editable);
         sizeObserver.disconnect();
-        sizeObserver.observe(editable);
-        for (const { target } of gesture.candidates) {
-          sizeObserver.observe(target, { box: 'border-box' });
-        }
+        observeSizes(gesture.candidates);
         gesture.baseEntries = getSelectionEntries(
           editor,
           gesture.baseEntries.map(({ key }) => key)
@@ -622,10 +619,7 @@ export function NodeSelectionDrag({
         attributes: true,
         attributeFilter: ['data-node-selection-target'],
       });
-      sizeObserver.observe(editable);
-      for (const { target } of candidates) {
-        sizeObserver.observe(target, { box: 'border-box' });
-      }
+      observeSizes(candidates);
       editable.focus({ preventScroll: true });
     };
     const moveGesture = (point: { x: number; y: number }) => {
@@ -770,6 +764,12 @@ export function NodeSelectionDrag({
       }
     });
     const sizeObserver = new ownerWindow.ResizeObserver(onGeometryChange);
+    const observeSizes = (candidates: readonly SelectionCandidate[]) => {
+      sizeObserver.observe(editable);
+      for (const { target } of candidates) {
+        sizeObserver.observe(target, { box: 'border-box' });
+      }
+    };
     const clearGesture = () => {
       candidateObserver.disconnect();
       sizeObserver.disconnect();

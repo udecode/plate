@@ -502,4 +502,56 @@ describe('table removal', () => {
       });
     });
   }
+
+  it.each<{ command: 'removeColumn' | 'removeRow'; paths: number[][] }>([
+    {
+      command: 'removeRow',
+      paths: [
+        [0, 0, 0],
+        [0, 0, 1],
+        [0, 0, 2],
+        [0, 2, 0],
+        [0, 2, 1],
+        [0, 2, 2],
+      ],
+    },
+    {
+      command: 'removeColumn',
+      paths: [
+        [0, 0, 0],
+        [0, 0, 2],
+        [0, 1, 0],
+        [0, 1, 2],
+        [0, 2, 0],
+        [0, 2, 2],
+      ],
+    },
+  ])(
+    '$command leaves the table alone for a node selection that skips a line between its ends',
+    ({ command, paths }) => {
+      const editor = createTestTableEditor({
+        plugins: getTestTablePlugins(),
+        initialValue: [
+          {
+            children: ['1', '2', '3'].map((row) => ({
+              children: ['1', '2', '3'].map((column) => ({
+                children: [
+                  { children: [{ text: row + column }], type: 'paragraph' },
+                ],
+                type: 'tableCell',
+              })),
+              type: 'tableRow',
+            })),
+            type: 'table',
+          },
+        ],
+      });
+
+      editor.update.selection.setNodes(paths);
+      const before = editor.read.value();
+
+      expect(editor.update.table[command]()).toBe(false);
+      expect(editor.read.value()).toEqual(before);
+    }
+  );
 });

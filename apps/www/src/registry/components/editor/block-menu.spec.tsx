@@ -225,10 +225,9 @@ describe('block menu commands', () => {
     });
   });
 
-  it('omits unavailable AI and unsupported Code Drawing conversion', async () => {
+  it('omits unavailable AI', async () => {
     const view = await renderBlockMenu(currentEditor);
 
     expect(view.queryByRole('button', { name: 'Ask AI' })).toBeNull();
-    expect(view.queryByText('Code Drawing')).toBeNull();
   });
 });

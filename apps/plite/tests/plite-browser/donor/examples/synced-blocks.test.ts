@@ -3044,6 +3044,35 @@ test.describe('synced blocks example', () => {
     await outer.assert.noDoubleSelectionHighlight();
   });
 
+  test('keeps End on its line before a synced block', async ({
+    page,
+  }, testInfo) => {
+    skipMobileDesktopShortcutProof(testInfo);
+
+    await openExample(page, 'plite/synced-blocks', {
+      ready: { editor: 'visible' },
+    });
+
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
+      page,
+      'synced-blocks-outer',
+      outerEditor
+    );
+    await outer.selection.collapse({ path: [0, 0], offset: 'p1'.length });
+    await focusRoot(outerEditor);
+    await outer.press('End');
+
+    await expect(outerEditor).toBeFocused();
+    await expect
+      .poll(() => outer.selection.get())
+      .toEqual({
+        anchor: { path: [0, 0], offset: 'p1'.length },
+        focus: { path: [0, 0], offset: 'p1'.length },
+      });
+    await expect.poll(() => getViewSelection(outerEditor)).toBe(null);
+  });
+
   test('Cmd+Shift+Arrow extends selection between synced copies and document boundaries', async ({
     page,
   }, testInfo) => {

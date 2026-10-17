@@ -14,7 +14,7 @@ docs:
 
 <ComponentPreview name="suggestion-demo" height="360px" />
 
-The demo starts in Suggestion mode with a proposed insertion and deletion. Open a paragraph's discussion button to accept or reject its card, then try undo and redo. Switch to Editing to keep the pending changes visible while ordinary edits apply directly, or type in Suggestion mode to propose an edit.
+The demo starts in Suggestion mode with a proposed insertion and deletion. Open a paragraph's discussion button to accept or reject its card, or choose **Accept all suggestions** or **Reject all suggestions** in the mode menu, then try undo and redo. Switch to Editing to keep the pending changes visible while ordinary edits apply directly, or type in Suggestion mode to propose an edit.
 
 Typing inside struck text splits the pending deletion around the new text. In Suggestion mode the new text is a proposed insertion of its own; in Editing mode it applies directly. Deleting struck text in Editing mode leaves it to its pending deletion.
 
@@ -236,6 +236,29 @@ if (change) {
 ```
 
 Use `action: 'reject'` to reject the change. Inspect `result.status`: another edit can make the change `stale`, and a decision that needs other changes decided with it returns `blocked`. To decide a whole card, pass `{ action, groups: [card] }`. [Authored Changes](/docs/authored-changes#review-changes) covers paging, cards, previews, and result handling.
+
+### Decide every suggestion
+
+To accept or reject every pending suggestion, read every page of changes and decide them in one call:
+
+```tsx
+import { type AuthoredChange, AuthoredPlugin } from 'platejs/authored';
+
+const authored = editor.plugin(AuthoredPlugin);
+const changes: AuthoredChange[] = [];
+
+for (let cursor: string | undefined; ; ) {
+  const page = authored.read.changes({ cursor, limit: 200 });
+
+  changes.push(...page.items);
+  if (!page.cursor) break;
+  ({ cursor } = page);
+}
+
+const result = authored.update.decide({ action: 'accept', changes });
+```
+
+One call decides every change together, so it never returns `blocked`. When it applies, it leaves the same document as deciding the changes one at a time in any order, where each `blocked` step adds the changes its `with` names. One undo restores every change it decided. Read and decide in the same event handler, because an edit between them can make a change `stale`. When the schema refuses the decided document, the result is `invalid` and nothing changes. The copied `ModeToolbarButton` offers this as **Accept all suggestions** and **Reject all suggestions** in its menu.
 
 ## Save and reload
 

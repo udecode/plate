@@ -58,7 +58,7 @@ editor.update.blocks.reset({ unset: ['level'] });
 
 `setLevel` 为每个选中的块设置等级：Summary 保留原类型，其他块变为 Heading。只要有一个块被 schema 拒绝，它就返回 `false` 且不做任何修改。带 `unset: ['level']` 的 `reset` 会把每个选中的块转换为其父级的默认块，因此标题仍是标题，只去掉等级。`toggle({ level })` 在选中的块已有该等级时移除等级，否则设置等级。请使用这些操作，不要直接修改 Summary 的 `type`。
 
-标题在 HTML 中编码为 `<summary><h2>Title</h2></summary>`，在 Markdown 中编码为 `<summary level="2">Title</summary>`，两者都保留行内格式。HTML 只有在 Heading 是 Summary 唯一的子元素时才读取等级。取消 Details 时，已安装 Heading 插件会把带等级的 Summary 恢复成相同等级的 Heading；否则回到 Paragraph。
+标题在 HTML 和 Markdown 中都编码为 `<summary><h2>Title</h2></summary>`，即 GitHub 渲染的形式，并保留行内格式。两者都只有在 Heading 是 Summary 唯一的内容时才读取等级。Markdown 也读取 `level` 属性，例如 `<summary level="2">Title</summary>`。取消 Details 时，已安装 Heading 插件会把带等级的 Summary 恢复成相同等级的 Heading；否则回到 Paragraph。
 
 ## 使用套件
 

@@ -5,6 +5,8 @@ import {
   definePlugin,
   schema,
   NodeApi,
+  PLUGINS,
+  property,
   SelectionApi,
 } from '../../../core';
 import { createEditorView } from '../../../facade';
@@ -214,6 +216,31 @@ describe('BaseDetailsPlugin', () => {
       type: 'heading',
       level: 2,
       children: [{ text: 'Ti' }],
+    });
+  });
+
+  it('gives a wrapped title no level from a plugin that only shares the heading name', () => {
+    const editor = createEditor({
+      plugins: [
+        ...plugins,
+        definePlugin(PLUGINS.heading, {
+          schema: {
+            element: {
+              ...schema.element.textBlock(),
+              properties: { level: property.number({ required: true }) },
+            },
+          },
+        }),
+      ],
+      initialValue: [
+        { type: 'heading', level: 2, children: [{ text: 'Title' }] },
+      ],
+    });
+    editor.update.selection.set({ path: [0, 0], offset: 2 });
+    editor.update.details.wrap();
+    expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({
+      type: 'summary',
+      children: [{ text: 'Title' }],
     });
   });
 

@@ -11,7 +11,7 @@ const MEASURED_TEXT = 'qwertyuiopasdfghjklz';
 const CASES = [
   { offset: 'This is editable '.length, route: 'find-demo' },
   { offset: 0, route: 'list-demo' },
-  { offset: 0, route: 'code-drawing-demo' },
+  { offset: 0, route: 'code-block-diagram-demo' },
   { offset: 0, route: 'copilot-demo' },
   { offset: 0, route: 'excalidraw-demo' },
 ] as const;

@@ -69,7 +69,10 @@ export const admitDocument = (
   const repaired = admission?.load(document) ?? null;
 
   if (!repaired) {
-    return { change: DocumentChange.empty, document: document as AdmittedDocument };
+    return {
+      change: DocumentChange.empty,
+      document: document as AdmittedDocument,
+    };
   }
 
   // A repair can carry its records beside the value; a shown document holds

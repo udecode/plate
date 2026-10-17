@@ -202,10 +202,7 @@ const NON_ROW_DRAG_AFFORDANCE_LABELS = [
   'Move selected cells',
 ] as const;
 
-const expectCellSelectionDragAffordances = async (
-  page: Page,
-  rowHandleCount: number
-) => {
+const expectCellSelectionDragAffordances = async (page: Page) => {
   for (const label of NON_ROW_DRAG_AFFORDANCE_LABELS) {
     await expect
       .poll(() => visibleButtonCount(page, label), {
@@ -213,12 +210,6 @@ const expectCellSelectionDragAffordances = async (
       })
       .toBe(0);
   }
-
-  await expect
-    .poll(() => visibleButtonCount(page, 'Drag row or open row actions'), {
-      message: `Expected ${rowHandleCount} visible row handles during table cell selection`,
-    })
-    .toBe(rowHandleCount);
 };
 
 test(CLIPBOARD_RECTANGLE_CASE_ID, async ({ page }, testInfo) => {
@@ -702,7 +693,9 @@ test(BLOCK_FORMAT_CASE_ID, async ({ page }, testInfo) => {
       paths: selectedPaths,
     });
 
-    await page.getByRole('button', { exact: true, name: 'Text' }).click();
+    await page
+      .getByRole('button', { exact: true, name: 'Turn into: Text' })
+      .click();
     await page
       .getByRole('menuitemradio', { exact: true, name: 'Bulleted list' })
       .click();
@@ -982,6 +975,22 @@ test(BLOCK_HANDLE_CASE_ID, async ({ page }, testInfo) => {
             element.hasAttribute('data-table-cell-selected')
           ).length
       );
+    const expectRowHandleOnControlColumnHover = async (
+      rowHandleCount: number
+    ) => {
+      await root
+        .locator('table tr')
+        .first()
+        .locator(':scope > td')
+        .first()
+        .hover();
+      await expect
+        .poll(() => visibleButtonCount(page, 'Drag row or open row actions'), {
+          message: `Expected ${rowHandleCount} visible row handles on control column hover during table cell selection`,
+        })
+        .toBe(rowHandleCount);
+      await expect.poll(selectedCellCount).toBe(2);
+    };
 
     await page.evaluate(() => {
       document.addEventListener(
@@ -1005,19 +1014,24 @@ test(BLOCK_HANDLE_CASE_ID, async ({ page }, testInfo) => {
     });
 
     await page.mouse.move(startPoint.x, startPoint.y);
-    await expect.poll(() => visibleButtonCount(page, 'Drag block')).toBe(1);
+    await expect
+      .poll(() => visibleButtonCount(page, 'Drag block'), {
+        message: 'The table and the hovered cell block each show a handle',
+      })
+      .toBe(2);
     await page.mouse.down();
 
     try {
       await page.mouse.move(sameRowEndPoint.x, sameRowEndPoint.y, { steps: 8 });
       await expect.poll(selectedCellCount).toBe(2);
-      await expectCellSelectionDragAffordances(page, 1);
+      await expectCellSelectionDragAffordances(page);
     } finally {
       await page.mouse.up();
     }
 
     await expect.poll(selectedCellCount).toBe(2);
-    await expectCellSelectionDragAffordances(page, 1);
+    await expectCellSelectionDragAffordances(page);
+    await expectRowHandleOnControlColumnHover(1);
 
     await page.mouse.move(startPoint.x, startPoint.y);
     await page.mouse.down();
@@ -1027,7 +1041,7 @@ test(BLOCK_HANDLE_CASE_ID, async ({ page }, testInfo) => {
         steps: 8,
       });
       await expect.poll(selectedCellCount).toBe(2);
-      await expectCellSelectionDragAffordances(page, 0);
+      await expectCellSelectionDragAffordances(page);
       const documentRoot = page.locator('html');
 
       await expect(documentRoot).toHaveAttribute(
@@ -1047,7 +1061,8 @@ test(BLOCK_HANDLE_CASE_ID, async ({ page }, testInfo) => {
     }
 
     await expect.poll(selectedCellCount).toBe(2);
-    await expectCellSelectionDragAffordances(page, 0);
+    await expectCellSelectionDragAffordances(page);
+    await expectRowHandleOnControlColumnHover(0);
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

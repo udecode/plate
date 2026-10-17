@@ -4,11 +4,11 @@ import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
 import { factsOf, marksOf } from './facts/facts';
+import { isCut } from './tree/cuts';
 import { type AuthoredMark, AUTHORED_MARKS_KEY } from './tree/marks';
 import type {
   AuthoredChange,
   AuthoredChangeDetails,
-  AuthoredChangeGroup,
   AuthoredChangeKind,
   AuthoredChangePart,
 } from './types';
@@ -23,7 +23,8 @@ export type Occurrence = Readonly<{
   /**
    * The first and last unit of content under the node, counted in its root.
    * A non-empty text is a unit, and so is an element without one, such as a
-   * mention.
+   * mention. A pending line break covers none: it sits right before the
+   * first unit of its block.
    */
   first: number;
   last: number;
@@ -95,9 +96,11 @@ const isInside = (ancestor: Path, path: Path) =>
   ancestor.length < path.length &&
   ancestor.every((index, depth) => path[depth] === index);
 
+const isLineBreak = (mark: AuthoredMark) =>
+  mark.kind === 'join' || (mark.kind === 'split' && !isCut(mark));
+
 // Content also touches across an inline edge, such as text that runs out of a
-// link, when one end's text sits in the other's parent. It never touches
-// across a block edge.
+// link, when one end's text sits in the other's parent.
 /** @internal */
 export const touches = (left: Occurrence, right: Occurrence) => {
   if (left.root !== right.root) return false;
@@ -108,6 +111,7 @@ export const touches = (left: Occurrence, right: Occurrence) => {
     return true;
   }
   if (right.first !== left.last + 1) return false;
+  if (isLineBreak(left.mark) || isLineBreak(right.mark)) return true;
 
   const [, end] = edgeText(left.node, left.path, true);
   const [, start] = edgeText(right.node, right.path, false);
@@ -262,7 +266,7 @@ export const blockOccurrencesOf = (
   let units = 0;
   const walk = (node: Node, path: Path) => {
     const placed = read(node).map((mark) => {
-      const occurrence = { first: units, last: units, mark, node, path };
+      const occurrence = { first: units, last: units - 1, mark, node, path };
       const list = occurrences.get(mark.change) ?? [];
 
       list.push(occurrence);
@@ -278,7 +282,9 @@ export const blockOccurrencesOf = (
     } else if (node.text) {
       units += 1;
     }
-    for (const occurrence of placed) occurrence.last = units - 1;
+    for (const occurrence of placed) {
+      if (!isLineBreak(occurrence.mark)) occurrence.last = units - 1;
+    }
   };
 
   walk(block, []);

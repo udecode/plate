@@ -38,7 +38,9 @@ export type ReviewProjection = Readonly<{
 
 /** A review export's Word revisions and the stored blocks its part keeps. */
 export type PreparedDocxReview = Readonly<{
-  bindings: readonly Readonly<{ end: string; nodes: Value; start: string }>[];
+  bindings: ReadonlyArray<
+    Readonly<{ end: string; nodes: Value; start: string }>
+  >;
   diagnostics: readonly DocxDiagnostic[];
   html: string;
   records: EditorDocumentRecords | undefined;
@@ -106,7 +108,7 @@ export const createReviewProjection = (
           });
         }
 
-        return plain as Descendant;
+        return plain;
       }
       const structure = marks.find(
         (mark) => mark.kind !== 'insert' && mark.kind !== 'delete'
@@ -117,9 +119,9 @@ export const createReviewProjection = (
       }
 
       return {
-        ...(plain as Descendant),
+        ...plain,
         children: build(node.children, root, path),
-      } as Descendant;
+      };
     });
   const rootValue = (nodes: Descendant[]): Value =>
     nodes.filter((node) => ElementApi.isElement(node));
@@ -191,8 +193,11 @@ export const applyReviewProjection = (
   for (const host of document.querySelectorAll<HTMLElement>(
     '[data-editor-node]'
   )) {
-    const { editorNode = '', editorPath = '', editorRoot = 'main' } =
-      host.dataset;
+    const {
+      editorNode = '',
+      editorPath = '',
+      editorRoot = 'main',
+    } = host.dataset;
 
     hosts.set(renderKey(editorNode, editorRoot, editorPath), host);
     if (editorNode === 'text' && editorRoot === 'main') {
@@ -243,7 +248,8 @@ export const applyReviewProjection = (
     `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
   const bindings = projection.bound.flatMap((index) => {
     const blockTexts = texts.get(index) ?? [];
-    const first = blockTexts[0] ?? hosts.get(renderKey('element', 'main', `${index}`));
+    const first =
+      blockTexts[0] ?? hosts.get(renderKey('element', 'main', `${index}`));
     const last = blockTexts.at(-1) ?? first;
 
     if (!first || !last) {

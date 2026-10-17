@@ -179,11 +179,9 @@ export const measureTrustedTyping = async ({
         };
       };
       const leafCount = (block: readonly number[]) => {
-        let count = 0;
-
-        while (handle?.getNodeKey([...block, count])) count += 1;
-
-        return count;
+        for (let count = 0; ; count += 1) {
+          if (!handle?.getNodeKey([...block, count])) return count;
+        }
       };
       const readModelBlock = (block: readonly number[]) =>
         Array.from(
@@ -204,9 +202,10 @@ export const measureTrustedTyping = async ({
         path: readonly number[];
       }) => {
         const block = point.path.slice(0, -1);
+        const leaf = point.path.at(-1) ?? 0;
         let { offset } = point;
 
-        for (let index = 0; index < point.path[point.path.length - 1]; index++) {
+        for (let index = 0; index < leaf; index++) {
           offset += readModelText([...block, index])?.length ?? 0;
         }
 

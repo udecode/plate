@@ -11,7 +11,6 @@ export const PLUGINS = {
   callout: 'callout',
   code: 'code',
   codeBlock: 'codeBlock',
-  codeDrawing: 'codeDrawing',
   codeSyntax: 'codeSyntax',
   color: 'color',
   column: 'column',

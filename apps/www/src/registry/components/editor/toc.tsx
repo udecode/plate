@@ -1,6 +1,8 @@
 'use client';
 
 import { cva } from 'class-variance-authority';
+import type { NodeKey } from 'platejs';
+import { BaseDetailsPlugin } from 'platejs/details';
 import {
   type EditorElementProps,
   NavigationFeedbackPlugin,
@@ -37,6 +39,30 @@ export function TocElement({
 }) {
   const editor = useEditor();
   const navigation = useEditor().plugin(NavigationFeedbackPlugin);
+  const details = editor.plugin(BaseDetailsPlugin);
+  const openDetailsHolding = (key: NodeKey) => {
+    const path = (details.installed && editor.read.nodes.path(key)) || [];
+    const closedKeys = path.flatMap((childIndex, depth) => {
+      const ancestor = path.slice(0, depth);
+      const isTitle = childIndex === 0;
+      const detailsKey =
+        depth > 0 &&
+        !isTitle &&
+        editor.read.nodes.get(ancestor, { type: BaseDetailsPlugin })
+          ? editor.key(ancestor)
+          : undefined;
+
+      return detailsKey && !details.store.get('openKeys').has(detailsKey)
+        ? [detailsKey]
+        : [];
+    });
+
+    for (const detailsKey of closedKeys) {
+      details.api.setOpen(detailsKey, true);
+    }
+
+    return closedKeys.length > 0;
+  };
   const selected = useElementSelected({ mode: 'text' });
   const headingList = useEditorSelector(
     (innerEditor) => innerEditor.plugin(TocPlugin).read.headings(),
@@ -76,21 +102,19 @@ export function TocElement({
               onClick={(event) => {
                 event.preventDefault();
 
-                const node = editor.read.nodes.get(item.key)?.[0];
+                const navigate = () => {
+                  const entry = editor.read.nodes.get(item.key);
 
-                if (!node) return;
+                  if (!entry) return;
 
-                const element = editor.api.dom.resolveDOMNode(node);
+                  const element = editor.api.dom.resolveDOMNode(entry[0]);
 
-                if (!element) return;
+                  if (!element) return;
 
-                const path = editor.read.nodes.path(item.key);
-
-                if (path) {
                   element.style.scrollMarginTop = `${topOffset}px`;
 
                   if (isScroll) {
-                    editor.api.dom.scrollIntoView(path, {
+                    editor.api.dom.scrollIntoView(entry[1], {
                       behavior: 'smooth',
                       block: 'start',
                       scrollMode: 'always',
@@ -102,6 +126,12 @@ export function TocElement({
                       className: 'rounded-md bg-(--color-highlight)',
                     },
                   });
+                };
+
+                if (openDetailsHolding(item.key)) {
+                  requestAnimationFrame(navigate);
+                } else {
+                  navigate();
                 }
               }}
             >

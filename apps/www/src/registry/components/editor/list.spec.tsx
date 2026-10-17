@@ -139,7 +139,13 @@ describe('ListKit unordered list rendering', () => {
 
     for (const [editor, element] of [
       [interactiveEditor, unorderedElement],
-      [staticImageEditor, { ...unorderedElement, type: PLUGINS.image }],
+      [
+        staticImageEditor,
+        {
+          ...unorderedElement,
+          type: staticImageEditor.plugin(BaseImagePlugin).schema.type,
+        },
+      ],
     ] as const) {
       const { query, transformProps } = getListNodeProps(editor);
       if (!query || !transformProps) {

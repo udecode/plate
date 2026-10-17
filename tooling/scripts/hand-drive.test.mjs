@@ -141,6 +141,24 @@ test('scope asks for every English page that shows an example, at desktop width'
   ]);
 });
 
+test('check covers a docs route that names a section with a visit to its page', () => {
+  const { dir, run } = checkout(
+    [
+      item('widget', 'registry:component', 'components/editor/widget.tsx', {
+        meta: { docs: [{ route: '/docs/widget#usage' }] },
+      }),
+    ],
+    { [DOC]: '# Widget\n' }
+  );
+  writeJsonl(path.join(dir, 'visits.jsonl'), [
+    visit({}),
+    visit({ path: '/docs/components/widget' }),
+  ]);
+  const result = run(['check', WIDGET]);
+
+  assert.equal(result.status, 0, result.stdout);
+});
+
 test('scope gives a component its own demo page, however many pages show it', () => {
   const { run } = checkout(
     [

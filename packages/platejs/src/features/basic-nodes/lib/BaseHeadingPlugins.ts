@@ -10,7 +10,7 @@ import {
   PLUGINS,
   txLocate,
 } from '../../../core';
-import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
+import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -83,10 +83,10 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
   rules,
   read: ({ editor, schema: { type } }) => ({
     level: (node: Element): HeadingLevel | undefined => {
-      const summaryType = getCompiledPlateModelBinding(
-        editor,
-        PLUGINS.detailsSummary
-      )?.elementType;
+      const summary = getCompiledPlatePlugin(editor, PLUGINS.detailsSummary);
+      const summaryType = summary
+        ? editor.plugin(summary).schema.type
+        : undefined;
 
       return (node.type === type ||
         (summaryType !== undefined && node.type === summaryType)) &&
@@ -97,10 +97,10 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
   }),
 }).extend(({ read }) => ({
   update: ({ editor, tx, schema: { type } }) => {
-    const summaryType = getCompiledPlateModelBinding(
-      editor,
-      PLUGINS.detailsSummary
-    )?.elementType;
+    const summary = getCompiledPlatePlugin(editor, PLUGINS.detailsSummary);
+    const summaryType = summary
+      ? editor.plugin(summary).schema.type
+      : undefined;
     const setLevel = txLocate(false, (level: HeadingLevel) => {
       const blocks = tx.nodes.blocks();
 

@@ -1,4 +1,4 @@
-import { property, schema, target } from '../../facade';
+import { property, schema, target, txLocate } from '../../facade';
 import { createEditor } from '../../lib/editor';
 import type { PluginReference } from '../../lib/plugin';
 import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin';
@@ -159,11 +159,11 @@ describe('compilePlateModel', () => {
         },
       },
       update: ({ tx }) => ({
-        insert: (label: string) => {
+        insert: txLocate(false, (label: string) => {
           tx.nodes.insert(tx.schema.create('semanticCard', { label }), {
             at: [0],
           });
-        },
+        }),
       }),
     });
     const editor = createEditor({

@@ -124,25 +124,50 @@ const codeBlockLanguages: Array<{ label: string; value: string }> = [
   { label: 'YAML', value: 'yaml' },
 ];
 
-function getCodeBlockLanguageLabel(lang?: string | null) {
+type CodeBlockLanguageOption = Readonly<{ label: string; value: string }>;
+
+/** What a wrapper such as `withDiagrams` adds to either code-block variant. */
+export type CodeBlockAddon = Readonly<{
+  languageOptions?: readonly CodeBlockLanguageOption[];
+  toolbar?: React.ReactNode;
+  wrapSource?: (source: React.ReactNode) => React.ReactNode;
+}>;
+
+export type CodeBlockElementProps = EditorElementProps<
+  typeof CodeBlockPlugin
+> & {
+  addon?: CodeBlockAddon;
+  showLanguageLabel?: boolean;
+};
+
+/** What `createCodeBlockPlugin` takes: `CodeBlockElement`, `CodeBlockCodeMirrorElement` or a wrapped one. */
+export type CodeBlockComponent = (
+  props: CodeBlockElementProps
+) => React.ReactElement;
+
+function getCodeBlockLanguageLabel(
+  lang: string | null | undefined,
+  addedOptions: readonly CodeBlockLanguageOption[] = []
+) {
   const value = lang?.trim();
 
   if (!value) return null;
 
   return (
-    codeBlockLanguages.find((language) => language.value === value)?.label ??
-    value
+    [...codeBlockLanguages, ...addedOptions].find(
+      (language) => language.value === value
+    )?.label ?? value
   );
 }
 
 export function CodeBlockElement({
+  addon,
   showLanguageLabel = true,
   ...props
-}: EditorElementProps<typeof CodeBlockPlugin> & {
-  showLanguageLabel?: boolean;
-}) {
+}: CodeBlockElementProps) {
   return (
     <CodeBlockContainer
+      addon={addon}
       elementProps={props}
       showLanguageLabel={showLanguageLabel}
     >
@@ -156,18 +181,34 @@ export function CodeBlockElement({
 }
 
 export function CodeBlockContainer({
+  addon,
   children,
   elementProps,
-  languageOptions,
+  languageOptions = codeBlockLanguages,
   showLanguageLabel = true,
 }: {
   children: React.ReactNode;
   elementProps: EditorElementProps<typeof CodeBlockPlugin>;
-  languageOptions?: Array<{ label: string; value: string }>;
+  addon?: CodeBlockAddon;
+  languageOptions?: readonly CodeBlockLanguageOption[];
   showLanguageLabel?: boolean;
 }) {
   const { editor, element, attributes, plugin, ref, slots } = elementProps;
   const readOnly = useEditorReadOnly();
+  const addedOptions = addon?.languageOptions;
+  const options = React.useMemo(
+    () =>
+      addedOptions
+        ? [
+            ...languageOptions,
+            ...addedOptions.filter(
+              (added) =>
+                !languageOptions.some((own) => own.value === added.value)
+            ),
+          ]
+        : languageOptions,
+    [addedOptions, languageOptions]
+  );
 
   return (
     <EditorElement
@@ -179,12 +220,14 @@ export function CodeBlockContainer({
       slots={slots}
     >
       <div className="relative rounded-md bg-muted/50">
-        {children}
+        {addon?.wrapSource ? addon.wrapSource(children) : children}
 
         <div
           className="absolute top-1 right-1 z-10 flex gap-0.5 select-none"
           contentEditable={false}
         >
+          {addon?.toolbar}
+
           {!readOnly && element.language === 'json' && (
             <Button
               size="icon"
@@ -198,7 +241,8 @@ export function CodeBlockContainer({
           )}
 
           <CodeBlockCombobox
-            languageOptions={languageOptions}
+            addedOptions={addedOptions}
+            languageOptions={options}
             showLanguageLabel={showLanguageLabel}
           />
 
@@ -305,11 +349,13 @@ function CodeBlockCopyButton() {
 }
 
 function CodeBlockCombobox({
-  languageOptions = codeBlockLanguages,
+  addedOptions,
+  languageOptions,
   showLanguageLabel,
 }: {
+  languageOptions: readonly CodeBlockLanguageOption[];
   showLanguageLabel: boolean;
-  languageOptions?: Array<{ label: string; value: string }>;
+  addedOptions?: readonly CodeBlockLanguageOption[];
 }) {
   const [open, setOpen] = React.useState(false);
   const readOnly = useEditorReadOnly();
@@ -331,7 +377,12 @@ function CodeBlockCombobox({
   if (readOnly) {
     if (!showLanguageLabel) return null;
 
-    return <CodeBlockLanguageLabel lang={element.language} />;
+    return (
+      <CodeBlockLanguageLabel
+        addedOptions={addedOptions}
+        lang={element.language}
+      />
+    );
   }
 
   return (
@@ -345,7 +396,7 @@ function CodeBlockCombobox({
           aria-expanded={open}
           role="combobox"
         >
-          {getCodeBlockLanguageLabel(value) ?? 'Plain Text'}
+          {getCodeBlockLanguageLabel(value, addedOptions) ?? 'Plain Text'}
         </Button>
       </FloatingPopoverTrigger>
       <FloatingPopoverContent
@@ -401,8 +452,14 @@ function CodeBlockCombobox({
   );
 }
 
-function CodeBlockLanguageLabel({ lang }: { lang?: string | null }) {
-  const label = getCodeBlockLanguageLabel(lang);
+function CodeBlockLanguageLabel({
+  addedOptions,
+  lang,
+}: {
+  addedOptions?: readonly CodeBlockLanguageOption[];
+  lang?: string | null;
+}) {
+  const label = getCodeBlockLanguageLabel(lang, addedOptions);
 
   if (!label) return null;
 
@@ -465,7 +522,7 @@ function CopyButton({
   );
 }
 
-export const createCodeBlockPlugin = (component: typeof CodeBlockElement) =>
+export const createCodeBlockPlugin = (component: CodeBlockComponent) =>
   CodeBlockPlugin.configure({
     component,
     inputRules: [CodeBlockRules.markdown({ on: 'match' })],

@@ -13,7 +13,7 @@ export const V53_FIRST_PARTY_IDENTITIES = [
   { identity: 'callout', kind: 'element-unchanged' },
   { identity: 'code', kind: 'mark-unchanged' },
   { identity: 'code_block', kind: 'element-rename', owner: 'codeBlock' },
-  { identity: 'code_drawing', kind: 'element-rename', owner: 'codeDrawing' },
+  { identity: 'code_drawing', kind: 'element-structural', owner: 'codeBlock' },
   { identity: 'code_line', kind: 'element-rename', owner: 'codeLine' },
   { identity: 'code_syntax', kind: 'transient' },
   { identity: 'column', kind: 'element-unchanged' },

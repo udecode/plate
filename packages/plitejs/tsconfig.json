@@ -15,10 +15,6 @@
       "platejs/code-block/codemirror": [
         "../platejs/src/code-block/codemirror/index.ts"
       ],
-      "platejs/code-drawing": ["../platejs/src/code-drawing/index.ts"],
-      "platejs/code-drawing/react": [
-        "../platejs/src/code-drawing/react/index.ts"
-      ],
       "platejs/combobox": ["../platejs/src/features/combobox/index.ts"],
       "platejs/combobox/react": [
         "../platejs/src/react/features/combobox/index.ts"

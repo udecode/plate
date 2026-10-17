@@ -80,10 +80,19 @@ Hard constraints:
   another, add a differential case on an input the old version got right and
   the new one could get wrong. The old suite and a mutation of the new
   mechanism cannot see a guarantee that only the old mechanism gave.
+- A soundness change to a guard or a landing path, one that decides which
+  inputs are refused, moved or landed, also gets a differential oracle over
+  generated inputs. Run thousands of generated cases through the base and the
+  candidate, each loaded from its own tree as the command recipes' Source-first
+  package checks say. Classify every difference, such as a regression, a
+  miss, a flip or a newly landing case, against the semantic oracle that the
+  [regression oracles](./regression-oracles.md) name for generated cases. In
+  the list landing run it found 205 shape regressions that the hand-written
+  cases had missed.
 - A regression for Node-native module loading, such as a CommonJS dependency imported by name from an ESM entrypoint, loads the built entrypoint through `node`, because `process.execPath` under Bun launches Bun and hides the failure.
 ## Plate foundation Rules
 
-- Bun globals come from `tooling/config/global.d.ts`. Do not import `describe`, `it`, `expect`, `mock`, `spyOn`, or other globals from `bun:test`.
+- Package Bun tests take their globals from the types their package config loads, `tooling/config/global.d.ts` or `bun-types/test-globals`. Do not import `describe`, `it`, `expect`, `mock`, `spyOn`, or other globals from `bun:test` there. `apps/www`'s configs type the globals as Jest's, and loading `global.d.ts` there breaks other www specs, so a www test imports `mock`, `spyOn` and the `expect` of a Bun-only matcher such as `toStartWith` from `bun:test`.
 - Use `*.spec.ts[x]` for the fast lane and `*.slow.ts[x]` for the slow lane.
 - Keep helpers package-local first. Reuse `packages/test` (`@platejs/test`) for
   shared editor/browser contracts; never import a helper from another spec file.
@@ -91,7 +100,7 @@ Hard constraints:
 - A plugin behavior family keeps one colocated `<FooPlugin>.<family>.spec.tsx`; merged helpers merge their specs into it, and no spec mirrors one public method, deleted helper or old filename.
 - Tests declare no local fixture-shape alias or cast to hide weak hyperscript typing; the test-utils owner type is repaired and exported instead.
 - Test setup is not extracted into constants, helpers or factories to work around weak inference; the source typing is fixed so inline construction infers.
-- A spec that spies on a global, a prototype or a shared module export restores it in the same file (`mock.restore()` in `afterEach`, or the spy's `mockRestore()`); a spec that passes alone and fails in the full suite points at leaked spy or module-mock state before product code. A `mock.module` replacement of a `platejs` or `@platejs/*` module spreads the real module into the mock, which `plate/mock-spreads-module` enforces, so the spec keeps linking when the code under test imports a new export. A Bun process keeps every module mock until it exits, and a later mock of a module cannot add exports. So `pnpm test`, `pnpm test:slow`, the `test:partition:*` scripts and the `test` scripts of `platejs`, `plitejs` and `@platejs/test` run each file that calls `mock.module` in its own process, and the shared preload `tooling/config/bunTestSetup.ts` fails a run whose later mock adds an export that the module's exports in that process lack. A raw `bun test <directory>`, or a package `test` script given paths, runs those files in one process, so a lane-wide claim uses one of those scripts without paths, such as `pnpm --filter platejs test:partition:code-drawing`.
+- A spec that spies on a global, a prototype or a shared module export restores it in the same file (`mock.restore()` in `afterEach`, or the spy's `mockRestore()`); a spec that passes alone and fails in the full suite points at leaked spy or module-mock state before product code. A `mock.module` replacement of a `platejs` or `@platejs/*` module spreads the real module into the mock, which `plate/mock-spreads-module` enforces, so the spec keeps linking when the code under test imports a new export. A Bun process keeps every module mock until it exits, and a later mock of a module cannot add exports. So `pnpm test`, `pnpm test:slow`, the `test:partition:*` scripts and the `test` scripts of `platejs`, `plitejs` and `@platejs/test` run each file that calls `mock.module` in its own process, and the shared preload `tooling/config/bunTestSetup.ts` fails a run whose later mock adds an export that the module's exports in that process lack. A raw `bun test <directory>`, or a package `test` script given paths, runs those files in one process, so a lane-wide claim uses one of those scripts without paths, such as `pnpm --filter platejs test:partition:excalidraw`.
 - Put compile-only type contracts in `type-tests/`, not mixed into runtime specs.
 - Titles should describe behavior semantically, not echo raw option names.
 - Prefer explicit assertions over snapshots by default.

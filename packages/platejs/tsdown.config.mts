@@ -37,8 +37,6 @@ export const plateAdditionalEntries = [
   'src/react/features/table/index.ts',
   'src/react/features/toc/index.ts',
   'src/react/virtualized.tsx',
-  'src/code-drawing/index.ts',
-  'src/code-drawing/react/index.ts',
   'src/compiler/index.tsx',
   'src/diff/index.ts',
   'src/docx/paste/index.ts',

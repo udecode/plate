@@ -1,7 +1,9 @@
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import * as React from 'react';
 
+import { NodeApi } from '../../../core';
 import { createTestTableEditor } from '../../../features/table/lib/__tests__/getTestTablePlugins';
+import type { TableElement } from '../../../features/table/lib/BaseTablePlugin';
 import {
   type EditorElementProps,
   EditorContent,
@@ -84,6 +86,11 @@ const mountTable = (
   return { editable, editor, results };
 };
 
+const cellTexts = (editor: ReturnType<typeof mountTable>['editor']) =>
+  (editor.read.children()[0] as TableElement).children.flatMap((row) =>
+    row.children.map((tableCell) => NodeApi.string(tableCell))
+  );
+
 afterEach(() => {
   cleanup();
 });
@@ -120,6 +127,49 @@ describe('TablePlugin clipboard', () => {
     });
 
     expect(data.getData('text/plain')).toBe('X\tA\t\n\tB\tC\n');
+  });
+
+  it('cuts every selected cell of a table with a row-spanned column', () => {
+    const { editable, editor } = mountTable([
+      [cell('a'), cell('b'), { ...cell('c'), rowSpan: 2 }],
+      [cell('d'), cell('e')],
+    ]);
+    const data = new DataTransfer();
+
+    act(() => {
+      fireEvent.cut(editable, { clipboardData: data });
+    });
+
+    expect({
+      cells: cellTexts(editor),
+      plain: data.getData('text/plain'),
+    }).toEqual({
+      cells: ['', '', '', '', ''],
+      plain: 'a\tb\tc\nd\te\t\n',
+    });
+  });
+
+  it('refuses to cut a node selection of diagonal cells', () => {
+    const { editable, editor } = mountTable([
+      [cell('a'), cell('b')],
+      [cell('c'), cell('d')],
+    ]);
+    const data = new DataTransfer();
+
+    act(() => {
+      editor.update.selection.setNodes([
+        [0, 0, 0],
+        [0, 1, 1],
+      ]);
+    });
+    act(() => {
+      fireEvent.cut(editable, { clipboardData: data });
+    });
+
+    expect({
+      cells: cellTexts(editor),
+      plain: data.getData('text/plain'),
+    }).toEqual({ cells: ['a', 'b', 'c', 'd'], plain: '' });
   });
 
   it('reports the fields a paste leaves outside the selected cells', async () => {

@@ -1,4 +1,3 @@
-import { authoredTestApi } from './support/authored';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
@@ -13,6 +12,7 @@ import {
 
 import { createAuthoredPlugin } from '../src/authored/authored';
 import { projectAuthoredFragment } from '../src/authored/tree/resolve';
+import { authoredTestApi } from './support/authored';
 
 const struck = { at: 1, author: 'bob', change: 'bob:1', kind: 'delete' };
 const paragraph = (text: string) => ({
@@ -86,7 +86,11 @@ const ColumnWidths = definePlugin('projection-column-widths', {
 describe('authored review tree projections', () => {
   it('reads correction-derived values unrecomputed in the pure proposed read, and names the container', () => {
     const editor = createEditor({
-      plugins: [Columns, ColumnWidths, createAuthoredPlugin({ authorId: 'bob' })],
+      plugins: [
+        Columns,
+        ColumnWidths,
+        createAuthoredPlugin({ authorId: 'bob' }),
+      ],
       initialValue: [
         {
           type: 'column_group',

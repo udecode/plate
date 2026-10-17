@@ -1,0 +1,14 @@
+---
+id: 2026-10-17-declare-select-editor-update-methods
+date: 2026-10-17
+status: draft
+kind: fix
+summary: 'Declare where select editor update methods place their arguments'
+change: { 'type': 'source', 'date': '2026-10-17', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-17-select-editor-declare-update-methods-8cfe35cd","kind":"fix","migrationNotes":[]} -->
+
+- **`select-editor`**: Wrap `pick` and `replaceItems` in `txLocate(false, …)`, so the plugin compiles against `platejs`'s check for undeclared update methods.

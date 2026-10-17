@@ -22,6 +22,7 @@ jobs:
   ci:
     name: Typecheck, Build
     runs-on: ubuntu-latest
+    if: ${{ vars.SKIP_NEXT_CI != 'true' || github.base_ref != 'next' }}
     strategy:
       fail-fast: false
       matrix:

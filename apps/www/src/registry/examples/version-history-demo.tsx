@@ -15,6 +15,7 @@ import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
 import { Diff } from '@/registry/components/editor/diff';
 
 type Revision = ReturnType<ReturnType<typeof useEditor>['read']['value']>;
+type SavedRevision = Readonly<{ id: number; value: Revision }>;
 
 const initialValue: Value = [
   {
@@ -92,7 +93,7 @@ function RevisionHistory({
   revisions,
 }: {
   onSave: (revision: Revision) => void;
-  revisions: readonly Revision[];
+  revisions: readonly SavedRevision[];
 }) {
   const editor = useEditor();
 
@@ -113,16 +114,12 @@ function RevisionHistory({
         snapshot, or restore any saved revision.
       </p>
       <ol className="space-y-1 text-sm">
-        {revisions.map((revision, index) => (
-          <li
-            className="flex items-center justify-between gap-3"
-            // Revisions are append-only, so a position names one revision.
-            key={index}
-          >
+        {revisions.map(({ id, value }, index) => (
+          <li className="flex items-center justify-between gap-3" key={id}>
             <span>Revision {index + 1}</span>
             <Button
               aria-label={`Restore revision ${index + 1}`}
-              onClick={() => editor.update((tx) => tx.value.replace(revision))}
+              onClick={() => editor.update((tx) => tx.value.replace(value))}
               size="sm"
               variant="ghost"
             >
@@ -133,8 +130,8 @@ function RevisionHistory({
       </ol>
       {revisions.length > 1 && (
         <VersionDiff
-          after={revisions.at(-1)}
-          before={revisions.at(-2)}
+          after={revisions.at(-1)?.value}
+          before={revisions.at(-2)?.value}
           schema={editor.read.schema}
         />
       )}
@@ -147,9 +144,9 @@ export default function VersionHistoryDemo() {
     plugins: BasicMarksKit,
     initialValue,
   });
-  const [revisions, setRevisions] = React.useState<readonly Revision[]>(() => [
-    structuredClone(editor.read.value()),
-  ]);
+  const [revisions, setRevisions] = React.useState<readonly SavedRevision[]>(
+    () => [{ id: 0, value: structuredClone(editor.read.value()) }]
+  );
 
   return (
     <div className="flex flex-col gap-4 p-3">
@@ -157,7 +154,10 @@ export default function VersionHistoryDemo() {
         <EditorContent className="rounded-md border p-3" />
         <RevisionHistory
           onSave={(revision) =>
-            setRevisions((current) => [...current, revision])
+            setRevisions((current) => [
+              ...current,
+              { id: current.length, value: revision },
+            ])
           }
           revisions={revisions}
         />

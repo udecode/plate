@@ -498,7 +498,7 @@ This is the canonical model map for the current feature set. Family sections bel
 | block-editor-native | media embed               | isolating non-void keyboard-selectable media owner | node-selected asset / text-selected caption |
 | block-editor-native | media block               | isolating non-void keyboard-selectable media owner | node-selected asset / text-selected caption |
 | block-editor-native | caption                   | direct inline media children          | `TextSelection`            |
-| block-editor-native | code drawing / excalidraw | block void atom                       | `n/a`                      |
+| block-editor-native | excalidraw                | block void atom                       | `n/a`                      |
 | styling/layout      | block style property      | block non-void property               | `n/a`                      |
 | styling/layout      | style mark                | leaf mark                             | `directional`              |
 | collaboration       | comment                   | leaf metadata mark                    | `outward`                  |
@@ -1811,8 +1811,11 @@ Authority:
 
 Ownership:
 
-- code drawing and Excalidraw are atomic block contracts
+- Excalidraw is an atomic block contract
 - surrounding delete and selection target the block boundary, not phantom text
+  content
+- a code-generated diagram is a code block in a diagram language, so the Code
+  Block family governs its editing; its picture is presentation, not document
   content
 
 Plugin surface:
@@ -2036,6 +2039,11 @@ jump to heading
 note: TOC entries should navigate to their target headings and stay live as the
 heading set changes
 note: TOC navigation should also use the shared navigation-feedback primitive
+note: the TOC lists a Details title that has a heading level as a heading of
+that level, in document order
+note: activating an entry inside a collapsed Details opens every Details whose
+body holds it, then jumps to it; the Details whose title is the entry stays as
+it is
 note: in both editable and readonly documents, plain TOC activation is
 navigation-only
 note: plain TOC activation must not place a caret in the landed heading,
@@ -3264,7 +3272,7 @@ body]]
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: ProseMirror (#570)
 Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0526-0580.md:13-15
-Proof: Plite proves the empty-paragraph clause: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:729` "normalizes select-all Backspace to one empty paragraph" (Ctrl+A and Backspace over a heading and a paragraph leave one empty paragraph with the caret at its start) and `:6095` "cuts and pastes a fully selected heading as a heading", whose paste-back passes only because that example's schema sets `slice.preserveContext` on headings. No Plate test covers it; `apps/www/tests/browser/suggestion.spec.ts:300` "homepage select-all deletion stays editable" asserts one empty block and the caret but not its type. Drift: a model probe on 2026-10-08 (Bun, package source, happy-dom) cut a selected heading and pasted it back as a paragraph, because Plate's headings do not set `slice.preserveContext` and the copied slice stays open; the browser delete path passes `at` (`packages/plitejs/src/react/editable/mutation-controller.ts:886-892`) and leaves an empty paragraph, but `editor.update.fragment.delete()` without `at` leaves an empty heading shell (`packages/plitejs/src/transforms-text/delete-text-whole-blocks.ts:85-126`). Checked 2026-10-08.
+Proof: Plite proves the empty-paragraph clause: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:729` "normalizes select-all Backspace to one empty paragraph" (Ctrl+A and Backspace over a heading and a paragraph leave one empty paragraph with the caret at its start) and `:6095` "cuts and pastes a fully selected heading as a heading", whose paste-back passes only because that example's schema sets `slice.preserveContext` on headings. No Plate test covers it. `apps/www/tests/browser/suggestion.spec.ts:280` "homepage select-all deletion stays editable" deletes in Editing beside another author's pending deletion and asserts one empty live block below that author's struck line, with the caret at its start. It does not check the block's type. Drift: a model probe on 2026-10-08 (Bun, package source, happy-dom) cut a selected heading and pasted it back as a paragraph, because Plate's headings do not set `slice.preserveContext` and the copied slice stays open; the browser delete path passes `at` (`packages/plitejs/src/react/editable/mutation-controller.ts:886-892`) and leaves an empty paragraph, but `editor.update.fragment.delete()` without `at` leaves an empty heading shell (`packages/plitejs/src/transforms-text/delete-text-whole-blocks.ts:85-126`). Checked 2026-10-08.
 
 - `EDIT-SEL-STAB-001` `locked` `⇤`
 

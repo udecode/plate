@@ -206,6 +206,15 @@ export type BaseInjectProps = {
    * @default nodeKey
    */
   styleKey?: string;
+  /**
+   * Text this injection runs on. `'nodeKey'` runs it, `query` and transforms
+   * included, only on text whose node key value is not null or undefined, and
+   * on every text when no node key resolves. `'all'` runs it on every text and
+   * overrides an inherited `'nodeKey'`. Elements are unaffected.
+   *
+   * @default 'all'
+   */
+  textScope?: 'all' | 'nodeKey';
   /** List of supported node values. */
   validNodeValues?: readonly unknown[];
 };

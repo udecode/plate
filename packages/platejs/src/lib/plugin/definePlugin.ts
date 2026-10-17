@@ -5,6 +5,7 @@ import type {
   EditorReadMethodRecord,
   EditorReadMethodTree,
   EditorUpdateContext,
+  TxMethodDeclarations,
 } from '../../facade';
 import type {
   PluginReadState,
@@ -107,7 +108,7 @@ type BasePluginConstructorUpdateFactory<
       >
     >;
   }
-) => TUpdate;
+) => TUpdate & TxMethodDeclarations<NoInfer<TUpdate>>;
 
 type BasePluginShortcutRecord = Record<
   string,

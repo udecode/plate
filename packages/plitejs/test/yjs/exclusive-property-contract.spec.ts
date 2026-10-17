@@ -60,15 +60,14 @@ const proposed = (editor: AnyEditor, root: Root = 'main') =>
 
 // Earlier writes can split the first block into several leaves. A range
 // starts in the leaf after a boundary and ends in the leaf before it.
-const pointAt = (
-  editor: AnyEditor,
-  offset: number,
-  edge: 'end' | 'start'
-) => {
+const pointAt = (editor: AnyEditor, offset: number, edge: 'end' | 'start') => {
   let rest = offset;
 
   for (const [index, leaf] of editor.read.children()[0].children.entries()) {
-    if (rest < leaf.text.length || (edge === 'end' && rest === leaf.text.length)) {
+    if (
+      rest < leaf.text.length ||
+      (edge === 'end' && rest === leaf.text.length)
+    ) {
       return { offset: rest, path: [0, index] };
     }
     rest -= leaf.text.length;

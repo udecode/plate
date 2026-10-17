@@ -21,7 +21,7 @@ publish beta.
 ## Lanes
 
 - `main` publishes stable packages with npm tag `latest`.
-- `next` publishes prerelease packages with npm tag `beta`.
+- `next` publishes prerelease packages with npm tag `beta`. While the repository variable `SKIP_NEXT_CI` is `true`, `release.yml` skips on `next`, so nothing publishes until someone deletes the variable.
 - `.changeset/pre.json` belongs on `next` only.
 - `main` must never publish while `.changeset/pre.json` exists.
 

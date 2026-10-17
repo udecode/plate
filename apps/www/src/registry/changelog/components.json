@@ -1,6 +1,129 @@
 {
   "schemaVersion": 1,
   "components": {
+    "mode-toolbar-button": [
+      "2026-10-17-accept-all-suggestions",
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-12-toolbar-button-names",
+      "2026-10-07-editor-user",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-08-toolbar-control-values",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
+    "dnd": [
+      "2026-10-17-base-dnd-tooltip",
+      "2026-10-17-table-handle-stacking",
+      "2026-10-14-block-void-selection",
+      "2026-10-10-selection-context-menu",
+      "2026-10-08-registry-install-dependencies",
+      "2026-10-07-dnd-translucent-drag-image",
+      "2026-10-06-dnd-move-beside",
+      "2026-10-02-schema-block-handles",
+      "2026-10-01-block-move-actions",
+      "2026-10-01-native-block-drag",
+      "2026-09-08-drag-preparation",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-inline-component-props",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-28-inline-required-value-checks",
+      "2026-08-26-hide-block-drag-handles-during-table-selection",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-24-single-selection-authority",
+      "2026-08-20-demand-driven-dnd",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "select-editor": [
+      "2026-10-17-declare-select-editor-update-methods",
+      "2026-10-12-select-editor-field",
+      "2026-09-07-select-command-bridge",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-09-05-fix-command-custom-children",
+      "2026-09-05-fix-ref-cleanup",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-18-fix-editor-runtime-interactions",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2025-11-20-biome-ultracite"
+    ],
+    "details": [
+      "2026-10-17-details-toggle-font-size",
+      "2026-10-13-details-heading-titles",
+      "2026-10-10-details-selection",
+      "2026-08-29-semantic-details"
+    ],
+    "code-block-diagram": ["2026-10-16-code-block-diagrams"],
+    "code-block-diagram-mermaid": ["2026-10-16-code-block-diagrams"],
+    "code-block-diagram-graphviz": ["2026-10-16-code-block-diagrams"],
+    "code-block-diagram-flowchart": ["2026-10-16-code-block-diagrams"],
+    "code-block-diagram-plantuml": ["2026-10-16-code-block-diagrams"],
+    "code-block": [
+      "2026-10-16-code-block-diagrams",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-09-05-bound-editor-selection-styles",
+      "2026-09-05-code-control-paths",
+      "2026-09-04-code-block-editing-and-syntax",
+      "2026-09-03-code-block-text-flow",
+      "2026-09-01-plugin-decoration-highlights",
+      "2026-08-31-inline-component-props",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "code-block-codemirror": [
+      "2026-10-16-code-block-diagrams",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-11-codemirror-selection",
+      "2026-09-08-codemirror-adapter",
+      "2026-09-04-code-block-editing-and-syntax",
+      "2026-09-03-huge-code-block-demo"
+    ],
+    "insert-toolbar-button": [
+      "2026-10-16-code-block-diagrams",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-08-17-flat-editor-registry",
+      "2026-04-23-redesign-blockquotes-container-blocks",
+      "2026-01-28-add-code-drawing-node",
+      "2025-11-20-biome-ultracite"
+    ],
+    "slash": [
+      "2026-10-16-code-block-diagrams",
+      "2026-10-15-slash-keeps-query-on-refusal",
+      "2026-10-13-details-heading-titles",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-09-08-inline-combobox-input",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "indent": [
+      "2026-10-16-code-block-diagrams",
+      "2026-10-14-details-block-conversion",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "indent-static": [
+      "2026-10-16-code-block-diagrams",
+      "2026-10-14-details-block-conversion",
+      "2026-10-09-export-static-presentation",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "editor-plugins-static": [
+      "2026-10-16-code-block-diagrams",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-19-files-sdk-upload-kit",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-09-09-ai-code-drawing-context",
+      "2026-08-17-flat-editor-registry"
+    ],
     "turn-into-toolbar-button": [
       "2026-10-16-code-on-sparse-block-selection",
       "2026-10-15-quote-on-details-title",
@@ -62,15 +185,6 @@
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
     ],
-    "slash": [
-      "2026-10-15-slash-keeps-query-on-refusal",
-      "2026-10-13-details-heading-titles",
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-09-08-inline-combobox-input",
-      "2026-08-17-flat-editor-registry"
-    ],
     "upload": [
       "2026-10-15-upload-refusal-toast",
       "2026-10-14-block-void-selection",
@@ -96,6 +210,7 @@
     "toc": [
       "2026-10-14-block-void-selection",
       "2026-10-14-toc-no-active-heading",
+      "2026-10-13-details-heading-titles",
       "2026-09-09-navigation-view-feedback",
       "2026-09-07-docx-bookmarks",
       "2026-09-07-toc-observer",
@@ -171,36 +286,6 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
-    "dnd": [
-      "2026-10-14-block-void-selection",
-      "2026-10-10-selection-context-menu",
-      "2026-10-08-registry-install-dependencies",
-      "2026-10-07-dnd-translucent-drag-image",
-      "2026-10-06-dnd-move-beside",
-      "2026-10-02-schema-block-handles",
-      "2026-10-01-block-move-actions",
-      "2026-10-01-native-block-drag",
-      "2026-09-08-drag-preparation",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-inline-component-props",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-28-inline-required-value-checks",
-      "2026-08-26-hide-block-drag-handles-during-table-selection",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-24-single-selection-authority",
-      "2026-08-20-demand-driven-dnd",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "indent": [
-      "2026-10-14-details-block-conversion",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "indent-static": [
-      "2026-10-14-details-block-conversion",
-      "2026-10-09-export-static-presentation",
-      "2026-08-17-flat-editor-registry"
-    ],
     "excalidraw-demo": [
       "2026-10-14-excalidraw-demo-width",
       "2026-08-14-author-editor-runtime",
@@ -222,11 +307,6 @@
       "2026-08-17-automatic-document-migrations",
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
-    ],
-    "details": [
-      "2026-10-13-details-heading-titles",
-      "2026-10-10-details-selection",
-      "2026-08-29-semantic-details"
     ],
     "details-static": [
       "2026-10-13-details-heading-titles",
@@ -411,18 +491,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-04-29-codex-fix-discussion-suggestion-regressions"
     ],
-    "mode-toolbar-button": [
-      "2026-10-13-suggestions-review-tree",
-      "2026-10-12-toolbar-button-names",
-      "2026-10-07-editor-user",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-08-toolbar-control-values",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
-    ],
     "discussion": [
       "2026-10-13-suggestions-review-tree",
       "2026-09-18-comment-discovery",
@@ -559,20 +627,6 @@
       "2026-07-24-collaboration-runtime",
       "2025-11-20-biome-ultracite"
     ],
-    "select-editor": [
-      "2026-10-12-select-editor-field",
-      "2026-09-07-select-command-bridge",
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-09-05-fix-command-custom-children",
-      "2026-09-05-fix-ref-cleanup",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-18-fix-editor-runtime-interactions",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2025-11-20-biome-ultracite"
-    ],
     "list-toolbar-button": [
       "2026-10-12-toolbar-button-names",
       "2026-10-10-list-restart-continue",
@@ -695,27 +749,6 @@
       "2026-09-07-docx-bookmarks",
       "2026-08-17-flat-editor-registry"
     ],
-    "code-block": [
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-09-05-bound-editor-selection-styles",
-      "2026-09-05-code-control-paths",
-      "2026-09-04-code-block-editing-and-syntax",
-      "2026-09-03-code-block-text-flow",
-      "2026-09-01-plugin-decoration-highlights",
-      "2026-08-31-inline-component-props",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "code-block-codemirror": [
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-11-codemirror-selection",
-      "2026-09-08-codemirror-adapter",
-      "2026-09-04-code-block-editing-and-syntax",
-      "2026-09-03-huge-code-block-demo"
-    ],
     "remote-cursor-overlay": [
       "2026-10-08-registry-install-dependencies",
       "2026-09-14-collaboration-plugin-factory",
@@ -811,13 +844,6 @@
       "2026-09-05-bound-editor-selection-styles",
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-26-plugin-store-state"
-    ],
-    "editor-plugins-static": [
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-19-files-sdk-upload-kit",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-09-09-ai-code-drawing-context",
-      "2026-08-17-flat-editor-registry"
     ],
     "discussion-demo": [
       "2026-10-07-editor-user",
@@ -926,14 +952,6 @@
     "line-height-toolbar-button": [
       "2026-09-18-item-focus-block-upsert",
       "2026-08-17-flat-editor-registry"
-    ],
-    "insert-toolbar-button": [
-      "2026-09-18-item-focus-block-upsert",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-08-17-flat-editor-registry",
-      "2026-04-23-redesign-blockquotes-container-blocks",
-      "2026-01-28-add-code-drawing-node",
-      "2025-11-20-biome-ultracite"
     ],
     "align": [
       "2026-09-18-ui-commands-and-installation",

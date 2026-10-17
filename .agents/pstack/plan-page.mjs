@@ -277,7 +277,6 @@ function subjectOf(plan, topic) {
 }
 
 // Newest first by the date a plan's name starts with; a name without one sorts as the oldest.
-// Two iterations from one date order by their logs' latest rows, so the one closed last leads the page whichever plan renders it.
 const latestLogStamp = (path) => {
   const log = path.replace(/\.md$/u, '.decisions.tsv');
   const stamp = existsSync(log) ? readFileSync(log, 'utf-8').trim().split('\n').at(-1).split('\t')[0] : '';
@@ -1388,7 +1387,7 @@ const finished = (status) => stateOf(status) === 'done';
 
 const isOpen = (entry) => !finished(entry.plan.meta.status ?? '');
 
-function leadOf(planPath) {
+function contextOf(planPath) {
   const plan = parsePlan(readFileSync(planPath, 'utf-8'));
   const root = execFileSync('git', ['rev-parse', '--show-toplevel'], {
     cwd: dirname(planPath),
@@ -1404,26 +1403,24 @@ function leadOf(planPath) {
   const subjectPath = subject && namedPath;
   const doc = subjectPath ? parsePlan(readFileSync(subjectPath, 'utf-8')) : plan;
   const iterations = subject ? iterationsOf(plansDir, subject, topic) : [];
-  const newestOpenIteration = doc === plan ? null : (iterations.find(isOpen) ?? null);
-  const leader = doc === plan ? { path: planPath, plan } : (newestOpenIteration ?? iterations[0]);
-  return { plan, root, repoPath, playbooks, topic, plansDir, subject, subjectPath, doc, iterations, newestOpenIteration, leader, missingSubject };
+  return { plan, root, repoPath, playbooks, topic, plansDir, subject, subjectPath, doc, iterations, missingSubject };
 }
 
 function rail(planPath) {
-  const { root, repoPath, playbooks, doc, leader } = leadOf(planPath);
-  const status = leader.plan.meta.status ?? 'unknown';
+  const { plan, root, repoPath, playbooks, doc } = contextOf(planPath);
+  const self = { path: planPath, plan };
+  const status = plan.meta.status ?? 'unknown';
   let reason = null;
-  let entries = [leader];
+  let entries = [self];
   try {
     page(planPath);
-    entries = [leader, ...carriedPlans(leader, root)];
+    entries = [self, ...carriedPlans(self, root)];
   } catch (error) {
     reason = error.message;
   }
   const steps = entries.flatMap((entry) => stepChecks(entry.plan));
   return {
     requestedPlan: repoPath,
-    leadingPlan: relative(root, leader.path),
     page: doc.fields.page ?? null,
     status,
     valid: !reason,
@@ -1445,12 +1442,13 @@ const isOpenWork = (section) => sameText(section.title) === 'open work';
 const isVerification = (section) => sameText(section.title) === 'verification';
 
 function page(planPath, { folded = false } = {}) {
-  const { plan, root, repoPath, playbooks, topic, plansDir, subject, subjectPath, doc, iterations, newestOpenIteration, leader, missingSubject } = leadOf(planPath);
+  const { plan, root, repoPath, playbooks, topic, plansDir, subject, subjectPath, doc, iterations, missingSubject } = contextOf(planPath);
   if (missingSubject) {
     if (plan.fields.topic) throw new Error(`${repoPath} belongs to topic ${missingSubject.subject}; ${missingSubject.hint}`);
     console.error(`${repoPath} renders its own page until its subject has a file: ${missingSubject.hint}`);
   }
   const status = plan.meta.status ?? 'unknown';
+  const self = { path: planPath, plan };
   const subjectWhere = subjectPath && relative(root, subjectPath);
   for (const entry of iterations) {
     if (!stateOf(entry.plan.meta.status ?? '')) {
@@ -1459,19 +1457,16 @@ function page(planPath, { folded = false } = {}) {
       );
     }
   }
-  const focus = newestOpenIteration?.plan;
-  const delta = Boolean(newestOpenIteration);
-  const leaderPlaybook = leader.plan.meta.playbook;
+  const delta = doc !== plan && isOpen(self);
   // An executed plan stays as written, so a playbook renamed since then falls back to every playbook's sections.
-  const known = !leaderPlaybook || !finished(leader.plan.meta.status ?? '') || playbooks.some((entry) => entry.name === leaderPlaybook);
-  const { lead, pairs, require } = pageSections(playbooks, known ? leaderPlaybook : null, relative(root, leader.path));
+  const known = !plan.meta.playbook || !finished(status) || playbooks.some((entry) => entry.name === plan.meta.playbook);
+  const { lead, pairs, require } = pageSections(playbooks, known ? plan.meta.playbook : null, repoPath);
   const isChange = (section) => {
     const role = roleOf(section, lead);
     return ['api', 'lead', 'main'].includes(role) || (role === 'idea' && Boolean(sectionNamed(doc, section.title)));
   };
-  const owesBrief = (entry) => Boolean(briefOf(entry.plan)) || (entry.path === leader.path && Boolean(stateOf(entry.plan.meta.status ?? '')));
-  // Open iterations meet their own rules whichever plan is passed; executed ones stay as written.
-  for (const entry of doc === plan ? [{ path: planPath, plan }] : iterations.filter(isOpen)) {
+  const owesBrief = (entry) => Boolean(briefOf(entry.plan)) || (entry.path === planPath && Boolean(stateOf(entry.plan.meta.status ?? '')));
+  for (const entry of doc === plan ? [self] : iterations.filter(isOpen)) {
     const where = relative(root, entry.path);
     pageSections(playbooks, entry.plan.meta.playbook, where);
     assertPairs(entry.plan.sections, pairs, where);
@@ -1515,15 +1510,16 @@ function page(planPath, { folded = false } = {}) {
       .sort((a, b) => lead.indexOf(a.title.toLowerCase()) - lead.indexOf(b.title.toLowerCase()))
       .map((section) => sectionHtml(section, 'panel'))
       .join('\n  ');
-  const [needs] = byRole('needs', leader.plan);
-  const olderNeeds = iterations
-    .filter((entry) => entry.path !== leader.path)
+  const [needs] = byRole('needs', plan);
+  const otherNeeds = iterations
+    .filter((entry) => entry.path !== planPath)
     .map((entry) => ({ lines: byRole('needs', entry.plan)[0]?.lines, from: entry.plan.title || basename(entry.path, '.md') }))
     .filter((source) => source.lines);
-  const [close] = byRole('close', leader.plan);
+  const [close] = byRole('close', plan);
   const iterationHtml = ({ path, plan: iteration }) => {
     const iterationStatus = iteration.meta.status ?? 'unknown';
-    const open = !finished(iterationStatus) && path !== newestOpenIteration?.path;
+    const shownAbove = delta && path === planPath;
+    const open = !finished(iterationStatus) && !shownAbove;
     const shown = iteration.sections.filter(
       (section) =>
         hasContent(section) &&
@@ -1531,10 +1527,7 @@ function page(planPath, { folded = false } = {}) {
           (open && /^(open questions|defaults)$/i.test(section.title)))
     );
     const head = `${statusHtml(iterationStatus)} <strong>${inline(iteration.title || basename(path, '.md'))}</strong> <code>${escapeHtml(relative(root, path))}</code>`;
-    const body =
-      path === newestOpenIteration?.path
-        ? ''
-        : shown.map((section) => `<h3>${inline(section.title)}</h3>${blocksHtml(section.lines)}`).join('');
+    const body = shownAbove ? '' : shown.map((section) => `<h3>${inline(section.title)}</h3>${blocksHtml(section.lines)}`).join('');
     return body
       ? `<details open class="iteration"><summary>${head}</summary>${body}</details>`
       : `<p class="iteration">${head}</p>`;
@@ -1542,25 +1535,25 @@ function page(planPath, { folded = false } = {}) {
   const iterationList = iterations.length
     ? `<section class="plan"><h2>History <span class="count">${iterations.length}</span></h2>${iterations.map(iterationHtml).join('')}</section>`
     : '';
-  const own = delta ? focus : doc === plan ? plan : null;
+  const own = delta || doc === plan ? plan : null;
   const details = own ? byRole('details', own) : [];
   const hubPath = subject && topic.hub ? topic.hub.replaceAll('{topic}', subject) : null;
   const hub = hubPath && existsSync(join(root, hubPath)) ? hubPath : null;
   if (hub) {
     for (const required of require) {
-      if (![doc, focus].some((source) => source && hasContent(sectionNamed(source, required)))) {
+      if (![doc, iterations.find(isOpen)?.plan].some((source) => source && hasContent(sectionNamed(source, required)))) {
         throw new Error(`${subject} needs ## ${required} in ${relative(root, subjectPath)} or its open plan, because its hub exists and the leading plan's playbook requires it`);
       }
     }
   }
-  const reviewed = (doc === plan ? [{ path: planPath, plan }] : iterations)
+  const reviewed = (doc === plan ? [self] : iterations)
     .map((entry) => ({ entry, rounds: reviewRounds(reviewRows(entry.path)) }))
     .filter(({ rounds }) => rounds.length);
   const paneled = reviewed.filter(({ rounds }) => rounds.some((entry) => entry.kind === 'panel'));
-  const tagged = paneled.find(({ entry }) => entry.path === leader.path) ?? paneled[0];
+  const tagged = paneled.find(({ entry }) => entry.path === planPath) ?? paneled[0];
   const latest = tagged?.rounds.findLast((entry) => entry.kind === 'panel');
   // The header's seats cover the leading plan, so only a round on another iteration keeps its own tag.
-  const reviewTag = latest && tagged.entry.path !== leader.path
+  const reviewTag = latest && tagged.entry.path !== planPath
     ? roundTagHtml(latest.round, latest.seats, ` for ${inline(tagged.entry.plan.title || basename(tagged.entry.path, '.md'))}`)
     : '';
   const roundsHtml = (rounds, heading) =>
@@ -1586,47 +1579,46 @@ function page(planPath, { folded = false } = {}) {
     .toISOString()
     .slice(0, 16)
     .replace('T', ' ');
-  const shownStatus = leader.plan.meta.status ?? status;
-  const carried = carriedPlans(leader, root);
-  const entries = [leader, ...carried];
-  const headerFlow = `<div class="flow">${flowRailHtml(mergedFlow(entries, shownStatus, playbooks))}</div>`;
+  const carried = carriedPlans(self, root);
+  const entries = [self, ...carried];
+  const headerFlow = `<div class="flow">${flowRailHtml(mergedFlow(entries, status, playbooks))}</div>`;
   const carriedTag = carried.length
     ? `<span>Plans ${carried.map((entry) => `<strong>${inline(entry.plan.title || basename(entry.path, '.md'))}</strong>`).join(', ')}</span>`
     : '';
-  const sentence = shownStatus.trim();
+  const planTag = doc !== plan ? `<span>Plan <strong>${inline(plan.title || basename(planPath, '.md'))}</strong></span>` : '';
+  const sentence = status.trim();
   const statusLine = sentence ? `<p class="status-line">${inline(sentence[0].toUpperCase() + sentence.slice(1))}</p>` : '';
   const title = escapeHtml(doc.title || basename(planPath, '.md'));
   const where = subjectPath ? relative(root, subjectPath) : repoPath;
-  const brief = briefOf(leader.plan);
+  const brief = briefOf(plan);
   const briefMain = () => {
-    const asking = needs || olderNeeds.length ? needsSection(needs?.lines ?? [], olderNeeds) : '';
+    const asking = needs || otherNeeds.length ? needsSection(needs?.lines ?? [], otherNeeds) : '';
     const answers = brief
       .map((answer) => ({ answer, index: BRIEF.findIndex((question) => sameText(question) === sameText(answer.question)) }))
       .filter(({ index }) => index >= 0)
       .map(({ answer, index }) => `<div class="qa hue-${BRIEF_HUES[index]}"><h2 title="${escapeHtml(answer.question)}">${BRIEF_LABELS[index]}</h2>${blocksHtml(answer.lines)}</div>`)
       .join('');
-    const source = leader.plan;
-    const planLead = byRole('lead', source);
-    const currentLead = doc === source ? [] : byRole('lead').filter((section) => !planLead.some((own) => sameText(own.title) === sameText(section.title)));
-    const files = [leader.path, subjectPath, ...carried.map((entry) => entry.path)]
+    const planLead = byRole('lead', plan);
+    const currentLead = doc === plan ? [] : byRole('lead').filter((section) => !planLead.some((own) => sameText(own.title) === sameText(section.title)));
+    const files = [planPath, subjectPath, ...carried.map((entry) => entry.path)]
       .filter(Boolean)
       .map((path) => `<code>${escapeHtml(relative(root, path))}</code>`);
     const parts = {
-      teach: () => byRole('teach', source).map((section) => teachHtml(section, dirname(leader.path))),
-      ontop: () => byRole('ontop', source).map((section) => sectionHtml(section)),
-      demo: () => byRole('demo', source).map((section) => demoHtml(section, dirname(leader.path))),
+      teach: () => byRole('teach', plan).map((section) => teachHtml(section, dirname(planPath))),
+      ontop: () => byRole('ontop', plan).map((section) => sectionHtml(section)),
+      demo: () => byRole('demo', plan).map((section) => demoHtml(section, dirname(planPath))),
       needs: () => [asking],
-      picked: () => byRole('picked', source).map((section) => pickedHtml(section)),
-      api: () => byRole('api', source).map((section) => sectionHtml(section)),
+      picked: () => byRole('picked', plan).map((section) => pickedHtml(section)),
+      api: () => byRole('api', plan).map((section) => sectionHtml(section)),
       lead: () =>
         [...planLead, ...currentLead]
           .sort((a, b) => lead.indexOf(a.title.toLowerCase()) - lead.indexOf(b.title.toLowerCase()))
           .map((section) => sectionHtml(section, 'plan', currentLead.includes(section) ? 'current' : '')),
-      main: () => byRole('main', source).map((section) => sectionHtml(section)),
-      idea: () => byRole('idea', source).filter((section) => !isOpenWork(section)).map((section) => sectionHtml(section)),
+      main: () => byRole('main', plan).map((section) => sectionHtml(section)),
+      idea: () => byRole('idea', plan).filter((section) => !isOpenWork(section)).map((section) => sectionHtml(section)),
       // Proof stays in the plan file while work runs; a finished plan shows how far it is proven.
-      verification: () => (finished(shownStatus) ? byRole('details', source).filter(isVerification).map((section) => sectionHtml(section)) : []),
-      scope: () => byRole('idea', source).filter(isOpenWork).map((section) => sectionHtml(section)),
+      verification: () => (finished(status) ? byRole('details', plan).filter(isVerification).map((section) => sectionHtml(section)) : []),
+      scope: () => byRole('idea', plan).filter(isOpenWork).map((section) => sectionHtml(section)),
       plans: () => [`<p class="source">Proof, steps, history and review rounds are in ${listed(files)}.</p>`],
     };
     return `<main>
@@ -1634,7 +1626,7 @@ function page(planPath, { folded = false } = {}) {
     <h1>${title}</h1>
     ${headerFlow}
     ${statusLine}
-    <div class="meta">${delta ? `<span>Plan <strong>${inline(focus.title || basename(newestOpenIteration.path, '.md'))}</strong></span>` : ''}${carriedTag}${leadSeatsHtml(entries)}<span>Updated ${updated} UTC</span></div>
+    <div class="meta">${planTag}${carriedTag}${leadSeatsHtml(entries)}<span>Updated ${updated} UTC</span></div>
   </header>
   <section class="brief card">${answers}</section>
   ${BRIEF_ORDER.flatMap((key) => parts[key]?.() ?? [])
@@ -1651,10 +1643,10 @@ ${withViewer(brief ? briefMain() : `<main>
     <h1>${title}</h1>
     ${headerFlow}
     ${statusLine}
-    <div class="meta"><code>${escapeHtml(where)}</code>${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${carriedTag}${leadSeatsHtml(entries)}${reviewTag}<span>Updated ${updated} UTC</span></div>
+    <div class="meta"><code>${escapeHtml(where)}</code>${planTag}${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${carriedTag}${leadSeatsHtml(entries)}${reviewTag}<span>Updated ${updated} UTC</span></div>
   </header>
   ${(own ? byRole('demo', own) : []).map((section) => demoHtml(section, dirname(planPath))).join('')}
-  ${needs || olderNeeds.length ? needsSection(needs?.lines ?? [], olderNeeds) : ''}${close ? sectionHtml(close, 'panel') : ''}
+  ${needs || otherNeeds.length ? needsSection(needs?.lines ?? [], otherNeeds) : ''}${close ? sectionHtml(close, 'panel') : ''}
   ${(own ? byRole('teach', own) : []).map((section) => teachHtml(section, dirname(planPath))).join('')}
   ${changeHtml('api')}
   ${changeHtml('lead')}
@@ -1837,7 +1829,7 @@ const prModels = (entries) =>
 // With since, the body is a comment on someone else's PR about the commits after theirs; against is the PR's description.
 function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
   page(planPath);
-  const { plan, root, playbooks } = leadOf(planPath);
+  const { plan, root, playbooks } = contextOf(planPath);
   const where = relative(root, planPath);
   const flag = since ? '--comment' : '--pr';
   const output = since ? 'PR comment' : 'PR body';
@@ -2013,7 +2005,7 @@ function topicIndex(root) {
     let refused = null;
     if (iterations[0]) {
       try {
-        const rendered = page(iterations[0].path);
+        const rendered = page((open ?? iterations[0]).path);
         writeFileSync(join(plansDir, 'artifacts', `${rendered.name}.html`), rendered.html);
         local = `${basename(rendered.name)}.html`;
       } catch (error) {

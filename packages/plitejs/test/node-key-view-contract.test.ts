@@ -29,7 +29,10 @@ it('publishes a replacement key unchanged into an existing authored view', () =>
 
   assert.notEqual(replacementKey, originalKey);
   // The struck paragraph keeps its place before the one that replaces it.
-  assert.deepEqual([view.key([0]), view.key([1])], [originalKey, replacementKey]);
+  assert.deepEqual(
+    [view.key([0]), view.key([1])],
+    [originalKey, replacementKey]
+  );
   assert.equal(
     NodeApi.string(view.read.nodes.get(replacementKey!)![0]),
     'after'

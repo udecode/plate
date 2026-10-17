@@ -32,7 +32,6 @@ import {
 } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { BaseCalloutPlugin } from 'platejs/callout';
-import { BaseCodeDrawingPlugin } from 'platejs/code-drawing';
 import { BaseDatePlugin } from 'platejs/date';
 import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
@@ -262,22 +261,6 @@ const groups: Group[] = [
         value: PLUGINS.excalidraw,
         onSelect: (_editor, tx) =>
           tx.plugin(BaseExcalidrawPlugin).upsert({}, { select: true }),
-      },
-      {
-        icon: <Code2 />,
-        isAvailable: (editor) => editor.plugin(BaseCodeDrawingPlugin).installed,
-        keywords: [
-          'code-drawing',
-          'diagram',
-          'plantuml',
-          'graphviz',
-          'flowchart',
-          'mermaid',
-        ],
-        label: 'Code Drawing',
-        value: PLUGINS.codeDrawing,
-        onSelect: (_editor, tx) =>
-          tx.plugin(BaseCodeDrawingPlugin).upsert({}, { select: true }),
       },
     ],
   },

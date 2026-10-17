@@ -16,7 +16,8 @@ export type PersistentMapNode<T> = Readonly<{
 
 const mapHeight = <T>(node: PersistentMapNode<T> | null) => node?.height ?? 0;
 
-export const persistentMapSize = <T>(node: PersistentMapNode<T> | null) => node?.size ?? 0;
+export const persistentMapSize = <T>(node: PersistentMapNode<T> | null) =>
+  node?.size ?? 0;
 
 const mapNode = <T>(
   key: string,
@@ -183,7 +184,7 @@ export const persistentMapDelete = <T>(
 
 /** Build a balanced map from entries already sorted by key, in linear time. */
 export const persistentMapFromSorted = <T>(
-  entries: readonly (readonly [string, T])[],
+  entries: ReadonlyArray<readonly [string, T]>,
   from = 0,
   to = entries.length
 ): PersistentMapNode<T> | null => {
@@ -214,7 +215,7 @@ const isMapEntry = <T>(
   unit: PersistentMapNode<T> | MapEntry<T>
 ): unit is MapEntry<T> => Array.isArray(unit);
 
-const expandMapUnit = <T>(stack: (PersistentMapNode<T> | MapEntry<T>)[]) => {
+const expandMapUnit = <T>(stack: Array<PersistentMapNode<T> | MapEntry<T>>) => {
   const node = stack.pop() as PersistentMapNode<T>;
 
   if (node.right) stack.push(node.right);
@@ -236,8 +237,10 @@ export const persistentMapChanges = <T>(
 
   if (before === after) return changed;
 
-  const left: (PersistentMapNode<T> | MapEntry<T>)[] = before ? [before] : [];
-  const right: (PersistentMapNode<T> | MapEntry<T>)[] = after ? [after] : [];
+  const left: Array<PersistentMapNode<T> | MapEntry<T>> = before
+    ? [before]
+    : [];
+  const right: Array<PersistentMapNode<T> | MapEntry<T>> = after ? [after] : [];
 
   while (left.length > 0 && right.length > 0) {
     const a = getDefined(left.at(-1));

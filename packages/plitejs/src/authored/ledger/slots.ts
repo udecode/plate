@@ -146,7 +146,11 @@ export class SlotTree<S extends Slot, K = never> {
         return;
       }
       if (isLeaf(node)) {
-        for (let local = Math.max(0, from - start); local < node.size && start + local < to; local += 1) {
+        for (
+          let local = Math.max(0, from - start);
+          local < node.size && start + local < to;
+          local += 1
+        ) {
           take(this.ownKey(node.slots[local] as S));
         }
         return;

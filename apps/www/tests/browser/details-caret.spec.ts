@@ -92,9 +92,7 @@ for (const route of ['details-demo', 'playground']) {
             route === 'details-demo'
               ? 'Content after Details remains an ordinary sibling block.'
               : 'Multi-column Layout';
-          for (const _ of followingText) {
-            await page.keyboard.press('Shift+ArrowRight');
-          }
+          await page.keyboard.press('Shift+End');
           await expect
             .poll(() => read(root))
             .toMatchObject({

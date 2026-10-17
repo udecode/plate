@@ -7,7 +7,6 @@ import {
 import {
   decodeEditorEffect,
   encodeEditorEffect,
-  type EditorCommit,
   type EditorEffect,
   type EditorEffectCollabReplay,
   type EditorEffectType,
@@ -529,10 +528,7 @@ export class YjsSharedEffectLog {
     return transaction.origin === this.compactionOrigin;
   }
 
-  prepare(
-    effects: readonly EditorEffect[],
-    commit?: EditorCommit
-  ): PreparedYjsSharedEffects {
+  prepare(effects: readonly EditorEffect[]): PreparedYjsSharedEffects {
     return effects.map((effect) => {
       if (this.resolveEffectType(effect.type.key) !== effect.type) {
         throw new Error(
@@ -550,10 +546,7 @@ export class YjsSharedEffectLog {
 
       if (!transport) return encoded;
 
-      const value = transport.encode(
-        effect.value,
-        this.collabEncodeContext()
-      );
+      const value = transport.encode(effect.value, this.collabEncodeContext());
 
       assertEditorJsonValue(
         value,

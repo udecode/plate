@@ -38,7 +38,7 @@ import {
   editorCommands,
   HistoryPlugin,
 } from '../../core';
-import { placeElementAt } from '../../facade';
+import { canPlaceBlocksAtPath, placeElementAt } from '../../facade';
 import { isListItem } from '../../features/list/lib/listIndex.internal';
 import {
   BaseTableCellPlugin,
@@ -919,7 +919,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     tx: AIActionTransaction,
     nodes: readonly Element[],
     first: Path,
-    root: NamedRootKey | undefined
+    root: NamedRootKey | undefined,
+    // A caller that writes through tx.nodes.insert or tx.nodes.replace passes
+    // the sibling indexes it removes, because neither checks how many children
+    // the parent can hold; tx.blocks.insert and tx.slice.replace refuse alone.
+    removing?: readonly number[]
   ) => {
     const parentPath = PathApi.parent(first);
     const index = first.at(-1) ?? 0;
@@ -935,6 +939,13 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       placed.push(block);
     }
 
+    if (
+      removing &&
+      !canPlaceBlocksAtPath(tx.schema, first, placed, { removing, root })
+    ) {
+      return null;
+    }
+
     return placed;
   };
   const replaceActionBlocks = (
@@ -948,7 +959,18 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     const first = entries[0];
 
     if (!firstKey || !first) return false;
-    const replacingFirst = placeActionBlocks(tx, nodes, first[1], root);
+    const removing = entries.flatMap(([, path]) =>
+      PathApi.equals(PathApi.parent(path), PathApi.parent(first[1]))
+        ? [path.at(-1) ?? 0]
+        : []
+    );
+    const replacingFirst = placeActionBlocks(
+      tx,
+      nodes,
+      first[1],
+      root,
+      removing
+    );
     const keepingRequiredFirst = replacingFirst
       ? null
       : placeActionBlocks(tx, nodes, PathApi.next(first[1]), root);
@@ -1251,7 +1273,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         tx,
         blocks,
         firstPath,
-        commandEditor.read.view.root()
+        commandEditor.read.view.root(),
+        replace ? [firstIndex] : undefined
       );
 
       if (!placed) return;

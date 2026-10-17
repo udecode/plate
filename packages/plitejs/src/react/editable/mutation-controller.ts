@@ -42,7 +42,7 @@ import {
   type EditableSelectionSourceTransition,
   getEditableNativeGroupingInput,
 } from './input-state';
-import { getLineBoundaryPoint } from './line-boundary';
+import { getLineBoundarySelection } from './line-boundary';
 import {
   applyParagraphBreakAfterSelectedBlockVoid,
   createDefaultParagraph,
@@ -337,7 +337,7 @@ const applyProjectedViewSelectionDataCommand = ({
     return true;
   });
 
-  if (!landed) return;
+  if (!landed) return landed;
   savePliteViewSelectionHistoryEntry(editor, {
     redo: null,
     undo: viewSelection,
@@ -491,18 +491,12 @@ const applyRootLocalSelectionMoveCommand = ({
     return true;
   }
 
-  if (
-    command.axis === 'line-boundary' &&
-    (command.extend || RangeApi.isCollapsed(selection))
-  ) {
-    const focus = getLineBoundaryPoint(
-      editor,
-      selection.focus,
-      Boolean(command.reverse)
-    );
-
+  if (command.axis === 'line-boundary') {
     dispatchCommand(editor, editorCommands.select, {
-      target: createRange(command.extend ? selection.anchor : focus, focus),
+      target: getLineBoundarySelection(editor, selection, {
+        extend: Boolean(command.extend),
+        reverse: Boolean(command.reverse),
+      }),
     });
     return true;
   }
@@ -864,6 +858,20 @@ export const applyModelOwnedTextInput = ({
                 if (collapsed) {
                   tx.selection.set(target);
                   if (marks !== undefined) tx.marks.set(marks);
+                  // A composition writes where the browser composed it. The
+                  // insert-text command would move it where a typed letter
+                  // goes, after struck text. An Android commit still runs
+                  // the command so insert handlers see the finished word.
+                  if (
+                    inputType === 'insertFromComposition' &&
+                    !inputController?.state.isReplayingAndroidCommand
+                  ) {
+                    tx.text.insert(
+                      data,
+                      marks !== undefined ? {} : { at: target }
+                    );
+                    return;
+                  }
                 }
                 tx.command(editorCommands.insertText, {
                   ...(collapsed && marks !== undefined

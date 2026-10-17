@@ -75,7 +75,10 @@ const startsAfter = (book: RootBook, previous: CardEntry, entry: CardEntry) => {
 
   const left: Occurrence = occurrence(previous.last, previous.id, true);
 
-  return !touches(left, occurrence({ book, slot: entry.slot }, entry.id, false));
+  return !touches(
+    left,
+    occurrence({ book, slot: entry.slot }, entry.id, false)
+  );
 };
 
 /** @internal */
@@ -87,9 +90,7 @@ const entryAt = (book: RootBook, index: number) => {
   const rank = book.slots.search(ENTRIES, index, false);
 
   return getDefined(
-    book.slots.at(rank).entries[
-      index - book.slots.sumBefore(rank, ENTRIES)
-    ]
+    book.slots.at(rank).entries[index - book.slots.sumBefore(rank, ENTRIES)]
   );
 };
 
@@ -234,8 +235,9 @@ const startAt = (book: RootBook, nth: number) => {
   const list = book.slots.at(rank).entries;
 
   for (const [local, entry] of list.entries()) {
-    if (entry.starts && left-- === 0) {
-      return book.slots.sumBefore(rank, ENTRIES) + local;
+    if (entry.starts) {
+      if (left === 0) return book.slots.sumBefore(rank, ENTRIES) + local;
+      left -= 1;
     }
   }
 
@@ -268,13 +270,11 @@ export const cardRun = (book: RootBook, entry: CardEntry) => {
   const local = entry.slot.entries.indexOf(entry);
   const nth =
     book.slots.sumBefore(rank, STARTS) +
-    entry.slot.entries.slice(0, local + 1).filter((item) => item.starts)
-      .length;
+    entry.slot.entries.slice(0, local + 1).filter((item) => item.starts).length;
 
   return [startAt(book, nth - 1), startAt(book, nth)] as const;
 };
 
-/** Each entry from index `from` to `to`, in order. @internal */
 export function* walkEntries(book: RootBook, from: number, to: number) {
   let index = from;
 
@@ -344,6 +344,7 @@ export const cardOf = (
     changeCount,
     createdAt: oldest.createdAt,
     id: oldest.id,
-    revision: Math.imul((shares % 0x1_00_00_00_00) ^ changeCount, 0x01_00_01_93) >>> 0,
+    revision:
+      Math.imul((shares % 0x1_00_00_00_00) ^ changeCount, 0x01_00_01_93) >>> 0,
   });
 };

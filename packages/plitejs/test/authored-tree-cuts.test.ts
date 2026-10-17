@@ -106,6 +106,11 @@ const editorFor = (
   });
 };
 type Editor = ReturnType<typeof editorFor>;
+type AuthoredRead = {
+  read: {
+    authored: { groups: (input: { at: number[] }) => Array<{ id: string }> };
+  };
+};
 
 const enterIn = (
   tx: EditorUpdateTransaction,
@@ -714,6 +719,49 @@ describe('cuts', () => {
         }).value
       ),
       [['a@u#r1'], ['b@u']]
+    );
+  });
+
+  it('rejects Enter at the edge of one’s own typing in a link with that typing, back to one link', () => {
+    const bob = editorFor([linked(link('ab'))], 'bob');
+
+    bob.update((tx) => {
+      tx.text.insert('xy', { at: { offset: 1, path: [0, 1, 0] } });
+    });
+    enter(bob, [0, 1, 1], 2);
+
+    assert.deepEqual(
+      shape(
+        decide(bob.read.value().children, {
+          action: 'reject',
+          changes: ['bob:1'],
+        }).value
+      ),
+      [['ab@u']]
+    );
+  });
+
+  it('keeps a deletion at the end of a line apart from a later Enter inside a link on the next line', () => {
+    const bob = editorFor(
+      [paragraph({ text: 'ab' }), linked(link('cd'))],
+      'bob'
+    );
+
+    bob.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 2, path: [0, 0] },
+        },
+      });
+    });
+    enter(bob, [1, 1, 0], 1);
+
+    assert.deepEqual(
+      (bob as unknown as AuthoredRead).read.authored
+        .groups({ at: [1] })
+        .map(({ id }) => id),
+      ['bob:2']
     );
   });
 

@@ -2,7 +2,13 @@ import { runInNewContext } from 'node:vm';
 
 import React from 'react';
 
-import { createEditorView, editorCommands, property, schema } from '../../core';
+import {
+  createEditorView,
+  editorCommands,
+  property,
+  schema,
+  txLocate,
+} from '../../core';
 import { BaseBlockquotePlugin } from '../../features/basic-nodes/lib/BaseBlockPlugins';
 import { BaseCalloutPlugin } from '../../features/callout/lib/BaseCalloutPlugin';
 import { createEditor } from '../../lib/editor';
@@ -643,7 +649,7 @@ describe('resolvePlugins', () => {
   });
 
   it('creates a shortcut handler from plugin-specific tx commands', () => {
-    const toggle = mock();
+    const toggle = txLocate(false, mock());
     const editor = createEditor({
       plugins: [
         defineHeadlessPlugin('shortcutTx', {
@@ -757,7 +763,7 @@ describe('resolvePlugins', () => {
   });
 
   it('keeps authored text-block toggle semantics instead of synthesizing the generic command', () => {
-    const toggle = mock();
+    const toggle = txLocate(false, mock());
     const Plugin = defineHeadlessPlugin('shortcutAuthoredTextBlock', {
       schema: { element: schema.element.textBlock() },
       shortcuts: { toggle: { keys: 'mod+k' } },
@@ -796,7 +802,7 @@ describe('resolvePlugins', () => {
   });
 
   it('creates a shortcut handler from a configured owner update', () => {
-    const insert = mock();
+    const insert = txLocate(false, mock());
     const plugin = defineHeadlessPlugin('shortcutRootTx', {
       update: () => ({ insert }),
     });
@@ -816,7 +822,7 @@ describe('resolvePlugins', () => {
   });
 
   it('infers plugin-specific api when update has no matching command', () => {
-    const other = mock();
+    const other = txLocate(false, mock());
     const toggle = mock() as any;
     const editor = createEditor({
       plugins: [
@@ -835,7 +841,7 @@ describe('resolvePlugins', () => {
   });
 
   it('rejects shortcuts with no matching update or api command', () => {
-    const other = mock();
+    const other = txLocate(false, mock());
     const create = () =>
       createEditor({
         plugins: [
@@ -856,7 +862,10 @@ describe('resolvePlugins', () => {
   });
 
   it('does not prevent default when a tx shortcut command returns false', () => {
-    const untab = mock(() => false);
+    const untab = txLocate(
+      false,
+      mock(() => false)
+    );
     const editor = createEditor({
       plugins: [
         defineHeadlessPlugin('shortcutTxFalse', {
@@ -875,7 +884,7 @@ describe('resolvePlugins', () => {
 
   it('requires target only when update and api commands collide', () => {
     const apiToggle = mock();
-    const updateToggle = mock();
+    const updateToggle = txLocate(false, mock());
     const AmbiguousPlugin = defineHeadlessPlugin('shortcutAmbiguous', {
       api: () => ({ toggle: apiToggle }),
     })

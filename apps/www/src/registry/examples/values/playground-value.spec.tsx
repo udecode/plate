@@ -1,19 +1,18 @@
 import { describe, expect, it } from 'bun:test';
 
-import { createEditor } from 'platejs/react';
+import { CodeBlockPlugin, createEditor } from 'platejs/react';
 import { CalloutPlugin } from 'platejs/callout/react';
-import { CodeDrawingPlugin } from 'platejs/code-drawing/react';
 
 import { playgroundValue } from './playground-value';
 
 describe('playgroundValue', () => {
   it('matches its required persisted-node plugins', () => {
     const editor = createEditor({
-      plugins: [CalloutPlugin, CodeDrawingPlugin],
+      plugins: [CalloutPlugin, CodeBlockPlugin],
       initialValue: {
         ...playgroundValue,
         children: playgroundValue.children.filter(
-          (node) => node.type === 'callout' || node.type === 'codeDrawing'
+          (node) => node.type === 'callout' || node.type === 'codeBlock'
         ),
       },
     });
@@ -22,7 +21,11 @@ describe('playgroundValue', () => {
       editor.read.children().find((node) => node.type === 'callout')
     ).toMatchObject({ icon: '💡', variant: 'info' });
     expect(
-      editor.read.children().some((node) => node.type === 'codeDrawing')
+      editor.read
+        .children()
+        .some(
+          (node) => node.type === 'codeBlock' && node.language === 'mermaid'
+        )
     ).toBe(true);
   });
 

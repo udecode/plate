@@ -245,6 +245,14 @@ const BOUNDARY_KINDS: ReadonlySet<AuthoredMember['kind']> = new Set([
 const reviewed = (token: JsonToken) =>
   token.kind === 'open' && readMembers(token.props).length > 0;
 
+/**
+ * The insertion the content belongs to: the last one, since `marks` lists a
+ * node's insertions outer to inner. A block's `follows` insertion is listed
+ * outside that order.
+ */
+const innermostInsert = (marks: readonly AuthoredMark[]) =>
+  marks.findLast((mark) => mark.kind === 'insert');
+
 const struckWhole = (node: JsonNode): boolean => {
   const members = readMembers(node);
 
@@ -2031,12 +2039,13 @@ class RootRecorder {
           (mode === 'delete' || mark.change === changeId) &&
           !reinserted.has(incarnationOf(mark))
       );
-    // Content another author's pending insertion also holds, as a move's copy
-    // of one's own text, stays for that insertion's decision.
-    const withdrawn = (marks: readonly AuthoredMark[]) =>
-      mode === 'delete' &&
-      marks.some((mark) => mark.kind === 'insert' && isOwn(mark)) &&
-      !marks.some((mark) => mark.kind === 'insert' && !isOwn(mark));
+    // Another author's insertion inside one's own, as a move's copy of one's
+    // own text, stays for that insertion's decision.
+    const withdrawn = (marks: readonly AuthoredMark[]) => {
+      const innermost = innermostInsert(marks);
+
+      return mode === 'delete' && innermost !== undefined && isOwn(innermost);
+    };
     // A node is removed outright only when everything inside it is withdrawn too,
     // so another author's pending content inside it stays to be decided.
     const withdrawnThroughout = (open: number, close: number) => {
@@ -2455,7 +2464,7 @@ class RootRecorder {
         ? [own.mark]
         : [
             ...this.containedInsertMarks(stack, at),
-            this.adjacentOwnInsert(stack, at) ?? this.options.markOf('insert'),
+            this.continuedOwnInsert(stack, at) ?? this.options.markOf('insert'),
           ];
     };
     const withInserted = (props: Props, added: readonly AuthoredMark[]) =>
@@ -2709,7 +2718,15 @@ class RootRecorder {
           (continued !== undefined &&
             continued.path.length > 0 &&
             !this.rejectingEmpties(this.index.node(continued.path), own.mark));
-        const rightCuts = this.splitInline(continued, token.props, suggested);
+        const claim =
+          this.continuedOwnInsert(input.contexts, at) ??
+          this.options.markOf('split');
+        const rightCuts = this.splitInline(
+          continued,
+          token.props,
+          suggested,
+          claim
+        );
 
         if (continued && fills.has(continued)) {
           fills.add(getDefined(stack.at(-1)));
@@ -2726,7 +2743,7 @@ class RootRecorder {
               ...(suggested && !rightCuts
                 ? [
                     closedElement
-                      ? this.splitOf(continued)
+                      ? this.splitOf(continued, claim)
                       : this.options.markOf('wrap'),
                   ]
                 : []),
@@ -2805,7 +2822,8 @@ class RootRecorder {
   private splitInline(
     continued: Context | undefined,
     rightProps: Props,
-    suggested: boolean
+    suggested: boolean,
+    claim: AuthoredMark
   ): AuthoredMark[] | null {
     if (
       !continued ||
@@ -2820,7 +2838,7 @@ class RootRecorder {
 
     if (!suggested && moved.length === 0) return null;
 
-    const { at, author, change, inc } = this.options.markOf('split');
+    const { at, author, change, inc } = claim;
     const cut = suggested
       ? {
           at,
@@ -2885,13 +2903,15 @@ class RootRecorder {
     }
 
     const marks = this.marks(leaf.props);
-    const own = marks.find(
-      (mark) => mark.kind === 'insert' && this.options.isOwn(mark)
-    );
+    const innermost = innermostInsert(marks);
+    // Text whose innermost insertion is another author's is theirs, so typing
+    // in it nests a new insertion inside theirs that a delete withdraws, even
+    // in one's own pending element, unless that element is one-text.
+    const foreign = innermost !== undefined && !this.options.isOwn(innermost);
     const struck = marks.some((mark) => mark.kind === 'delete');
 
-    if (own && !struck) return withoutHeld(leaf.props);
-    if (ownElement) {
+    if (innermost && !foreign && !struck) return withoutHeld(leaf.props);
+    if (ownElement && (ownElement.oneText || !foreign)) {
       // Text in one's own pending element carries that element's insert mark,
       // so a late edit is reviewable; a one-text element cannot split.
       const live = marks.filter(
@@ -2914,7 +2934,7 @@ class RootRecorder {
       leaf.props,
       [
         ...kept,
-        this.adjacentOwnInsert([leaf], at) ?? this.options.markOf('insert'),
+        this.continuedOwnInsert([leaf], at) ?? this.options.markOf('insert'),
       ],
       true
     );
@@ -2948,8 +2968,11 @@ class RootRecorder {
     return join ? incarnationOf(join) : marks.map(followsOf).find(Boolean);
   }
 
-  private splitOf(source: Context | undefined): AuthoredMark {
-    const { at, author, change, inc } = this.options.markOf('split');
+  private splitOf(
+    source: Context | undefined,
+    claim: AuthoredMark
+  ): AuthoredMark {
+    const { at, author, change, inc } = claim;
     const follows = source ? this.followedBy(source.props) : undefined;
 
     return {
@@ -2981,14 +3004,13 @@ class RootRecorder {
     return (children ?? []).every((child) => this.rejectingEmpties(child, own));
   }
 
-  /** One's own pending insertion at either edge of an insertion is amended. */
-  private adjacentOwnInsert(stack: readonly Context[], at: number) {
+  private continuedOwnInsert(stack: readonly Context[], at: number) {
     const leaf = stack.at(-1);
     const candidates: Props[] = [];
 
     if (leaf?.kind === 'text') {
+      candidates.push(leaf.props);
       if (at === leaf.contentFrom || at === leaf.contentTo) {
-        candidates.push(leaf.props);
         const neighbor = this.neighborLeaf(
           leaf,
           at === leaf.contentFrom ? -1 : 1
@@ -2997,11 +3019,37 @@ class RootRecorder {
         if (neighbor) candidates.push(neighbor);
       }
     } else {
-      const before = this.index.pointAt(at, -1);
-      const afterPoint = this.index.pointAt(at, 1);
+      const ownSplitOfEmptyBlock =
+        leaf && at === leaf.contentFrom && at === leaf.contentTo
+          ? this.marks(leaf.props).find(
+              (mark) =>
+                mark.kind === 'split' &&
+                !isCut(mark) &&
+                this.options.isOwn(mark)
+            )
+          : undefined;
 
-      for (const point of [before, afterPoint]) {
-        if (point) candidates.push(propsOf(this.index.node(point.path)));
+      if (ownSplitOfEmptyBlock) {
+        const { at: time, author, change, inc } = ownSplitOfEmptyBlock;
+
+        return {
+          at: time,
+          author,
+          change,
+          ...(inc === undefined ? {} : { inc }),
+          kind: 'insert',
+        } satisfies AuthoredMark;
+      }
+      for (const direction of [-1, 1] as const) {
+        const point = this.index.pointAt(at, direction);
+
+        if (
+          point &&
+          (!leaf ||
+            leaf.path.every((index, depth) => point.path[depth] === index))
+        ) {
+          candidates.push(...this.textsBeside(point.path, direction));
+        }
       }
     }
 
@@ -3010,11 +3058,9 @@ class RootRecorder {
 
       if (marks.some((mark) => mark.kind === 'delete')) continue;
 
-      const own = marks.find(
-        (mark) => mark.kind === 'insert' && this.options.isOwn(mark)
-      );
+      const innermost = innermostInsert(marks);
 
-      if (own) return own;
+      if (innermost && this.options.isOwn(innermost)) return innermost;
     }
 
     return null;
@@ -3052,6 +3098,28 @@ class RootRecorder {
     }
 
     return null;
+  }
+
+  /** A split at a text's end leaves an empty leaf for a write to look past. */
+  private textsBeside(path: readonly number[], direction: -1 | 1) {
+    const parentPath = path.slice(0, -1);
+    const siblings = (
+      parentPath.length === 0
+        ? this.index.value
+        : (this.index.node(parentPath) as JsonRecord).children
+    ) as readonly JsonRecord[];
+    const texts: Props[] = [];
+
+    for (
+      let index = path.at(-1) ?? 0;
+      typeof siblings[index]?.text === 'string';
+      index += direction
+    ) {
+      texts.push(propsOf(siblings[index]));
+      if (siblings[index].text !== '') break;
+    }
+
+    return texts;
   }
 
   private neighborLeaf(leaf: Context, direction: -1 | 1): Props | null {

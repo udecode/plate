@@ -1,7 +1,6 @@
 import { createAuthoredPlugin } from 'plitejs/authored';
 
 import { authoredTestApi } from '../../../authored/__tests__/authoredTestApi';
-
 import { createEditor } from '../../../core';
 import { BaseListPlugin } from './BaseListPlugin';
 

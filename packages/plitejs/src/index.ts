@@ -106,7 +106,11 @@ export {
   mapEffect,
 } from './core/transaction-values';
 export { locateAt, txLocate, txOnly, txSelection } from './core/tx-only';
-export type { TxOnlyMethod } from './core/tx-only';
+export type {
+  TxDeclaredMethod,
+  TxMethodDeclarations,
+  TxOnlyMethod,
+} from './core/tx-only';
 export {
   compileEditorSchemaContract,
   createEditor,

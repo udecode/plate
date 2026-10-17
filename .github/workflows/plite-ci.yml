@@ -163,7 +163,7 @@ jobs:
     # Generated Changesets PRs contain release metadata produced by the release
     # workflow. Skip before browser fan-out on every bot synchronization.
     if: >-
-      github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository || !startsWith(github.event.pull_request.head.ref, 'changeset-release/')
+      (vars.SKIP_NEXT_CI != 'true' || github.event_name == 'workflow_dispatch' || (github.ref_name != 'next' && github.base_ref != 'next')) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository || !startsWith(github.event.pull_request.head.ref, 'changeset-release/'))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:

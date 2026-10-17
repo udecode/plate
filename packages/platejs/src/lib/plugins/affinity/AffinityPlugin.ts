@@ -15,6 +15,7 @@ import {
   NodeApi,
   PathApi,
   TextApi,
+  type TxDeclaredMethod,
   txSelection,
 } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
@@ -35,10 +36,9 @@ type EdgeNodeState = Pick<
 >;
 
 export type AffinityPluginUpdate = {
-  setSelection: (
-    edgeNodes: AffinityEdgeNodes,
-    affinity: 'backward' | 'forward'
-  ) => void;
+  setSelection: TxDeclaredMethod<
+    (edgeNodes: AffinityEdgeNodes, affinity: 'backward' | 'forward') => void
+  >;
 };
 
 export const AffinityPlugin = definePlugin('affinity', {

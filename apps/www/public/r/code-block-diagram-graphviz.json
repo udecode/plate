@@ -1,0 +1,34 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "code-block-diagram-graphviz",
+  "title": "Code Block Diagram Graphviz",
+  "description": "Draw Graphviz DOT code blocks.",
+  "dependencies": [
+    "viz.js"
+  ],
+  "devDependencies": [
+    "@types/viz.js"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/code-block-diagram.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/code-block-diagram-graphviz.ts",
+      "content": "import type { DiagramRenderer } from '@/registry/components/editor/code-block-diagram';\n\nexport const graphvizRenderer: DiagramRenderer = {\n  label: 'Graphviz',\n  languages: ['graphviz', 'dot'],\n  render: async (source, { signal }) => {\n    const [{ default: Viz }, workerModule] = await Promise.all([\n      import('viz.js'),\n      import('viz.js/full.render.js'),\n    ]);\n\n    signal.throwIfAborted();\n\n    // A viz.js instance that failed once cannot draw again.\n    const viz = new Viz(\n      'default' in workerModule ? workerModule.default : workerModule\n    );\n\n    return viz.renderString(source, { engine: 'dot', format: 'svg' });\n  },\n};\n",
+      "type": "registry:component",
+      "target": "@components/editor/code-block-diagram-graphviz.ts"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/code-block#diagrams"
+      }
+    ],
+    "examples": [
+      "code-block-diagram-demo"
+    ]
+  },
+  "type": "registry:component"
+}

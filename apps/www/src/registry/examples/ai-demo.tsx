@@ -28,10 +28,7 @@ export default function AIDemo() {
   });
 
   return (
-    <EditorRoot
-      editor={editor}
-      authored={{ intent: 'edit' }}
-    >
+    <EditorRoot editor={editor} authored={{ intent: 'edit' }}>
       <EditorFrame className="h-[650px]">
         <EditorContainer>
           <Editor />

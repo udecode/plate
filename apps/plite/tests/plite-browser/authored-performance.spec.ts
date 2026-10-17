@@ -43,7 +43,7 @@ const percentile = (samples: number[], quantile: number) =>
   ];
 
 type ReviewNode = {
-  authored?: readonly { change: string; kind: string }[];
+  authored?: ReadonlyArray<{ change: string; kind: string }>;
   children?: ReviewNode[];
   text?: string;
 };
@@ -96,7 +96,9 @@ test.describe('native authored typing performance', () => {
           },
         },
       ]);
-      await controls.getByRole('button', { name: 'Suggest', exact: true }).click();
+      await controls
+        .getByRole('button', { name: 'Suggest', exact: true })
+        .click();
       await proposed.root.evaluate(
         (element, [count, key]) => {
           const handle = (
@@ -113,31 +115,28 @@ test.describe('native authored typing performance', () => {
       );
       const mountedMarkup = async () => {
         const struck = readStruck(await proposed.get.modelValue());
-        return proposed.root.evaluate(
-          (root, blocks) => {
-            const paths = [
-              ...root.querySelectorAll(
-                '[data-editor-node="element"][data-editor-path]'
-              ),
-            ]
-              .map((element) => element.getAttribute('data-editor-path'))
-              .filter((path) => /^\d+$/.test(path ?? ''));
-            return {
-              paths,
-              struck: blocks.filter((leaves) => leaves.includes('e[delete]'))
-                .length,
-              placeholders: root.querySelectorAll(
-                '[data-editor-viewport-boundary]'
-              ).length,
-              invalid: blocks.filter(
-                (leaves) =>
-                  leaves.filter((leaf) => leaf?.endsWith('[delete]'))
-                    .length !== 1 || !leaves.includes('e[delete]')
-              ).length,
-            };
-          },
-          struck.blocks
-        );
+        return proposed.root.evaluate((root, blocks) => {
+          const paths = [
+            ...root.querySelectorAll(
+              '[data-editor-node="element"][data-editor-path]'
+            ),
+          ]
+            .map((element) => element.getAttribute('data-editor-path'))
+            .filter((value) => /^\d+$/.test(value ?? ''));
+          return {
+            paths,
+            struck: blocks.filter((leaves) => leaves.includes('e[delete]'))
+              .length,
+            placeholders: root.querySelectorAll(
+              '[data-editor-viewport-boundary]'
+            ).length,
+            invalid: blocks.filter(
+              (leaves) =>
+                leaves.filter((leaf) => leaf?.endsWith('[delete]')).length !==
+                  1 || !leaves.includes('e[delete]')
+            ).length,
+          };
+        }, struck.blocks);
       };
       await expect
         .poll(async () => {
@@ -260,9 +259,7 @@ test.describe('native authored typing performance', () => {
       expect(finalMarkup.paths).toHaveLength(cohort.blocks);
       expect(finalMarkup.placeholders).toBe(0);
       expect(finalMarkup.struck).toBe(finalMarkup.paths.length);
-      const finalProposalIds = readStruck(
-        await proposed.get.modelValue()
-      ).ids;
+      const finalProposalIds = readStruck(await proposed.get.modelValue()).ids;
       expect(
         [...originalProposalIds].every((id) => finalProposalIds.has(id))
       ).toBe(true);

@@ -43,10 +43,7 @@ export default function SuggestionFirstPaintPage() {
 
   return (
     <main>
-      <EditorRoot
-        authored={{ intent: 'propose' }}
-        editor={editor}
-      >
+      <EditorRoot authored={{ intent: 'propose' }} editor={editor}>
         <EditorContent aria-label="Persisted suggestions" />
       </EditorRoot>
     </main>

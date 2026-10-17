@@ -17,8 +17,7 @@ import {
 import { Hotkeys } from '../../dom';
 import {
   DOMRootRuntime,
-  isMoveLineEnd,
-  isMoveLineStart,
+  getLineBoundaryKeyboardMove,
 } from '../../dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
@@ -899,11 +898,14 @@ export const getEditableCommandFromKeyDown = ({
       reverse: documentBoundaryMove.reverse || undefined,
     };
   }
-  if (isMoveLineStart(nativeEvent)) {
-    return { axis: 'line-boundary', kind: 'move-selection', reverse: true };
-  }
-  if (isMoveLineEnd(nativeEvent)) {
-    return { axis: 'line-boundary', kind: 'move-selection' };
+  const lineBoundaryMove = getLineBoundaryKeyboardMove(nativeEvent);
+  if (lineBoundaryMove) {
+    return {
+      axis: 'line-boundary',
+      extend: lineBoundaryMove.extend || undefined,
+      kind: 'move-selection',
+      reverse: lineBoundaryMove.reverse || undefined,
+    };
   }
   if (Hotkeys.isMoveLineBackward(nativeEvent)) {
     return { axis: 'line', kind: 'move-selection', reverse: true };

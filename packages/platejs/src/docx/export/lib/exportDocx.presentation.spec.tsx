@@ -10,6 +10,10 @@ import {
   type Value,
 } from '../../../core';
 import { BaseBlockquotePlugin } from '../../../features/basic-nodes';
+import {
+  BaseFootnotePlugin,
+  BaseFootnoteDefinitionPlugin,
+} from '../../../features/footnote';
 import { BaseListPlugin } from '../../../features/list';
 import { BaseImagePlugin } from '../../../features/media';
 import { BaseParagraphPlugin } from '../../../lib';
@@ -54,6 +58,74 @@ const readPart = async (blob: Blob, part: string) => {
 };
 
 describe('exportDocx presentation', () => {
+  it('keeps footnote labels and note text without dangling Word hyperlinks', async () => {
+    const presentation = [
+      BaseFootnotePlugin.configure({
+        component: ({ children, editor, element, path }) => {
+          const anchor = editor
+            .plugin(BaseFootnotePlugin)
+            .read.anchor({ path });
+          return (
+            <sup>
+              {children}
+              <a id={anchor?.id} href={`#${anchor?.target}`}>
+                [{element.ref}]
+              </a>
+            </sup>
+          );
+        },
+      }),
+      BaseFootnoteDefinitionPlugin.configure({
+        component: ({ children, editor, element, path }) => {
+          const anchor = editor
+            .plugin(BaseFootnotePlugin)
+            .read.anchor({ path });
+          return (
+            <div id={anchor?.id}>
+              <div>{element.ref}</div>
+              <div>{children}</div>
+              {anchor?.target && <a href={`#${anchor.target}`}>↩</a>}
+            </div>
+          );
+        },
+      }),
+    ];
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseFootnotePlugin,
+        BaseFootnoteDefinitionPlugin,
+      ],
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'Claim' },
+            { type: 'footnoteReference', ref: '1', children: [{ text: '' }] },
+            { text: '.' },
+          ],
+        },
+        {
+          type: 'footnoteDefinition',
+          ref: '1',
+          children: [
+            { type: 'paragraph', children: [{ text: 'Source text' }] },
+          ],
+        },
+      ],
+    });
+    const result = await exportDocx(editor, {
+      presentation,
+      projection: 'proposed',
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const xml = await readPart(result.blob, 'word/document.xml');
+    expect(xml).toContain('[1]');
+    expect(xml).toContain('Source text');
+    expect(xml).not.toContain('<w:hyperlink');
+  });
+
   it('writes review revisions through the static presentation', async () => {
     const editor = createEditor({
       plugins: [

@@ -237,7 +237,52 @@ test('details-demo centers the toggle chevron on a heading title line', async ({
       exact: true,
     });
     await expect(heading).toBeVisible();
-    expect(await offset(heading)).toBeLessThanOrEqual(1);
+    await expect.poll(() => offset(heading)).toBeLessThanOrEqual(1);
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
+
+test('playground centers the toggle chevron on a title enlarged by a font size', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.goto('/blocks/playground');
+    const root = editorRoot(page);
+    await waitForHandle(root);
+    const name = 'Expand to explore Details';
+    const details = root
+      .getByText(name, { exact: true })
+      .locator(
+        'xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," editor-details ")][1]'
+      );
+    await details.getByText(name, { exact: true }).click({ clickCount: 3 });
+    const font = page.getByRole('textbox', { name: 'Font size', exact: true });
+    await font.fill('32');
+    await font.press('Enter');
+    const title = details.getByText(name, { exact: true });
+    await expect(title).toHaveCSS('font-size', '32px');
+    const chevron = details
+      .getByRole('button', { name: 'Expand details', exact: true })
+      .locator('svg');
+    const offset = async () => {
+      const line = await title.evaluate((element) => {
+        const [box] = element.getClientRects();
+
+        return box.top + box.height / 2;
+      });
+      const icon = await chevron.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+
+        return box.top + box.height / 2;
+      });
+
+      return Math.abs(icon - line);
+    };
+
+    await expect.poll(offset).toBeLessThanOrEqual(1);
     errors.assertNone();
   } finally {
     errors.stop();

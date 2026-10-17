@@ -62,12 +62,15 @@
     },
     {
       "name": "code-drawing-demo",
-      "files": [
-        "apps/www/src/registry/examples/code-drawing-demo.tsx",
-        "apps/www/src/registry/examples/values/code-drawing-value.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-drawing-demo."
+        }
+      ]
     },
     {
       "name": "excalidraw-demo",

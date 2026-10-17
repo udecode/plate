@@ -11,6 +11,7 @@ import type {
   Element,
   NodeEntry,
   NodeKey,
+  TxMethodDeclarations,
   Path,
   Text,
   Value,
@@ -640,7 +641,7 @@ type PluginStageInput<
         context: EditorUpdateContext;
         tx: PluginTransaction<C>;
       }
-    ) => TUpdate;
+    ) => TUpdate & TxMethodDeclarations<NoInfer<TUpdate>>;
   }>;
 
 type PluginStageCompatibility<

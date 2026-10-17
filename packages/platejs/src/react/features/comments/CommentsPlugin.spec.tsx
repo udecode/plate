@@ -428,18 +428,14 @@ it('keeps five shared conversations attached and painted in independently config
   expect(readPaint(views[1])).toEqual(ids.map(() => projected));
 
   await act(async () => {
-    views[0]
-      .plugin(AuthoredPlugin)
-      .api.setView({ intent: 'edit' });
+    views[0].plugin(AuthoredPlugin).api.setView({ intent: 'edit' });
   });
   expect(mounted.getByTestId('position-0').textContent).toBe('0.1/1:4');
   expect(mounted.getByTestId('position-1').textContent).toBe('0.1/1:4');
   expect(readPaint(views[0])).toEqual(ids.map(() => projected));
   expect(first.idsAt(projected.anchor)).toEqual(ids);
   await act(async () => {
-    views[1]
-      .plugin(AuthoredPlugin)
-      .api.setView({ preview: 'accepted' });
+    views[1].plugin(AuthoredPlugin).api.setView({ preview: 'accepted' });
   });
   expect(mounted.getByTestId('position-1').textContent).toBe('0.0/1:4');
   expect(readPaint(views[1], firstRange.anchor)).toEqual(
@@ -460,9 +456,7 @@ it('keeps five shared conversations attached and painted in independently config
   mounted.unmount();
   stopAttachments();
   stopPaint();
-  views[0]
-    .plugin(AuthoredPlugin)
-    .api.setView({ preview: 'accepted' });
+  views[0].plugin(AuthoredPlugin).api.setView({ preview: 'accepted' });
   await Promise.resolve();
   expect(changed).not.toHaveBeenCalled();
   expect(refresh).not.toHaveBeenCalled();

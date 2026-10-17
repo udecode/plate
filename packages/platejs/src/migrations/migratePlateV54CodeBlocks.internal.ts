@@ -14,6 +14,7 @@ import type {
   DocumentMigrationContext,
   DocumentMigrationTarget,
 } from './documentMigrations';
+import { migratePlateV54ReplacementText } from './migratePlateV54Suggestions.internal';
 
 const getCompiledPlatePlugin = (
   target: DocumentMigrationTarget,
@@ -107,7 +108,13 @@ export const migratePlateV54CodeBlocks = ({
 
       return {
         ...input,
-        children: [{ text: input.children.map(NodeApi.string).join('\n') }],
+        children: [
+          migratePlateV54ReplacementText(
+            input.children,
+            input.children.map(NodeApi.string).join('\n'),
+            location
+          ),
+        ],
       };
     }
 
@@ -174,7 +181,9 @@ export const migratePlateV54CodeBlocks = ({
   }
 
   const migrated = { ...document, children, ...(roots ? { roots } : {}) };
-  const mapPoint = (point: Point) => {
+  // Flattening rewrites only a code block's own children, so a point outside
+  // every converted block keeps its path and offset.
+  const mapPoint = (point: Point): Point => {
     const mapping = pointMappings.get(
       pointMappingKey(point.root ?? MAIN_ROOT_KEY, point.path)
     );
@@ -185,26 +194,18 @@ export const migratePlateV54CodeBlocks = ({
           offset: mapping.offset + point.offset,
           path: mapping.path,
         }
-      : null;
+      : point;
   };
 
   return {
     document: migrated,
-    mapSelection: (selection, mapped) => {
-      if (!RangeApi.isRange(selection)) return mapped;
-
-      const anchor = mapPoint(selection.anchor);
-      const focus = mapPoint(selection.focus);
-
-      if (!mapped && (!anchor || !focus)) return mapped;
-
-      const fallback = RangeApi.isRange(mapped) ? mapped : selection;
-
-      return {
-        ...fallback,
-        anchor: anchor ?? fallback.anchor,
-        focus: focus ?? fallback.focus,
-      };
-    },
+    mapSelection: (selection, mapped) =>
+      RangeApi.isRange(selection)
+        ? {
+            ...selection,
+            anchor: mapPoint(selection.anchor),
+            focus: mapPoint(selection.focus),
+          }
+        : mapped,
   };
 };

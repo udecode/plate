@@ -7,7 +7,6 @@ import { createEditor as createReactEditor } from 'platejs/react';
 import { createPlateRegistry } from '@/registry/registry';
 
 import { deriveRegistryDependencies } from '../../../../scripts/registry-package-dependencies.mts';
-import { BaseCodeDrawingKit } from './code-drawing-static';
 import { FootnoteKit } from './footnote';
 import { BaseFootnoteKit } from './footnote-static';
 import { MarkdownKit } from './markdown';
@@ -24,34 +23,6 @@ describe('MarkdownKit', () => {
     for (const editor of editors) {
       expect(typeof editor.api.markdown.serialize).toBe('function');
     }
-  });
-
-  it('round-trips code drawings through the generated editor Markdown surface', () => {
-    const value = [
-      {
-        code: 'graph TD; A-->B',
-        children: [{ text: '' }],
-        language: 'mermaid',
-        type: 'codeDrawing',
-        view: 'split',
-      },
-    ];
-    const editor = createEditor({
-      plugins: [...BaseCodeDrawingKit, ...MarkdownKit],
-      initialValue: value,
-    });
-
-    const serialized = editor.api.markdown.serialize();
-
-    expect(serialized.ok).toBe(true);
-    if (!serialized.ok) throw new Error(serialized.diagnostics[0].message);
-    const { data: markdown } = serialized;
-    const parsed = editor.api.markdown.parse(markdown);
-
-    expect(markdown).toContain('<codeDrawing');
-    expect(parsed.ok).toBe(true);
-    if (!parsed.ok) throw new Error(parsed.diagnostics[0].message);
-    expect(parsed.document.children).toMatchObject(value);
   });
 
   it('composes without duplicating live Footnote plugins', () => {

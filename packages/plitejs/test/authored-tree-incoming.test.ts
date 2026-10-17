@@ -1,4 +1,3 @@
-import { authoredTestApi, reviewedValue } from './support/authored';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
@@ -18,6 +17,7 @@ import {
 import { dataTransferFormats, dom, writeDOMFragmentData } from 'plitejs/dom';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
+import { authoredTestApi, reviewedValue } from './support/authored';
 
 type Node = Record<string, unknown>;
 

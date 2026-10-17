@@ -74,6 +74,7 @@ import {
   resolveVerticalNavigationPoint,
 } from './content-root-vertical-geometry';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
+import { getLineBoundaryPoint } from './line-boundary';
 import {
   after as editorAfter,
   failInvariant,
@@ -531,8 +532,7 @@ const getRootLocalHorizontalSelectionTarget = ({
 
 const getHorizontalSelectionUnit = (
   axis: ContentRootNavigationAxis
-): 'line' | 'word' | undefined =>
-  axis === 'line' || axis === 'word' ? axis : undefined;
+): 'word' | undefined => (axis === 'word' ? axis : undefined);
 
 const advanceHorizontalBoundarySelectionTarget = ({
   action,
@@ -1025,29 +1025,29 @@ const getContentRootMovementTarget = ({
       ? currentOwner
       : (getActiveContentRootOwner?.(root) ?? null);
   const boundaryTarget =
-    action.kind === 'move' && action.axis === 'vertical'
-      ? getVerticalNavigationTarget({
-          currentRoot,
-          direction: action.direction,
-          editor,
-          getActiveContentRootOwner: getCurrentRootOwner,
-          getContentRootOwnerViewEditor,
-          getMountedViewEditor,
-          owners,
-          point,
-          preferredX,
-          askExternalViews,
-        })
-      : action.kind === 'move'
-        ? getHorizontalNavigationTarget({
+    action.axis === 'line'
+      ? null
+      : action.axis === 'vertical'
+        ? getVerticalNavigationTarget({
+            currentRoot,
+            direction: action.direction,
+            editor,
+            getActiveContentRootOwner: getCurrentRootOwner,
+            getContentRootOwnerViewEditor,
+            getMountedViewEditor,
+            owners,
+            point,
+            preferredX,
+            askExternalViews,
+          })
+        : getHorizontalNavigationTarget({
             currentRoot,
             direction: action.direction,
             editor,
             getActiveContentRootOwner: getCurrentRootOwner,
             owners,
             point,
-          })
-        : null;
+          });
 
   if (boundaryTarget) {
     return advanceBoundaryTarget
@@ -1086,13 +1086,25 @@ const getContentRootMovementTarget = ({
           root: currentRoot,
           sourceEditor,
         })
-      : getRootLocalHorizontalSelectionTarget({
-          direction: action.direction,
-          point,
-          root: currentRoot,
-          sourceEditor,
-          unit: getHorizontalSelectionUnit(action.axis),
-        });
+      : action.axis === 'line'
+        ? {
+            point: rootPlitePoint(
+              getLineBoundaryPoint(
+                sourceEditor,
+                rootPlitePoint(point, currentRoot),
+                action.direction === 'backward'
+              ),
+              currentRoot
+            ),
+            root: currentRoot,
+          }
+        : getRootLocalHorizontalSelectionTarget({
+            direction: action.direction,
+            point,
+            root: currentRoot,
+            sourceEditor,
+            unit: getHorizontalSelectionUnit(action.axis),
+          });
 
   return rootLocalTarget &&
     rootLocalTarget.root === currentRoot &&

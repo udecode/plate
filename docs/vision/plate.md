@@ -355,10 +355,13 @@ Current priorities:
   detach, cleanup, hydration, native behavior and production scale, and add no
   public hook, store, registry or generic channel. Per-node
   `render.attributes` and `inject.nodeProps.transformProps` stay pure and
-  hook-free. Structural product rendering uses components and plugin render
-  slots. Ordinary callers never assemble Decoration sources, attribute stores,
-  providers, publishers, renderer registries, generic target stores, or manual
-  refreshes to install a feature. The `decorate` descriptor returns keyed ranges
+  hook-free. A text injection that paints only text holding its node key
+  declares `inject.nodeProps.textScope: 'nodeKey'`, so it no longer turns off
+  DOM text sync and retained text flow for text without that key. Structural
+  product rendering uses components and plugin render slots. Ordinary callers
+  never assemble Decoration sources, attribute stores, providers, publishers,
+  renderer registries, generic target stores, or manual refreshes to install a
+  feature. The `decorate` descriptor returns keyed ranges
   with render-safe attributes. That projection stays in one feature-owned view
   effect.
 - Comments owns semantic thread records, actions, subscriptions and private

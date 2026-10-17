@@ -256,7 +256,7 @@ const internalCoreCompilerTypeSymbols = new Set([
   'NormalizePluginInput',
 ]);
 const liveRegistryNodeModulePattern =
-  /^(?:@\/registry\/components\/editor\/|\.\/)(?:block-list|blockquote|callout|caption|code|code-block|code-drawing|column|comment|date|details|footnote|heading|highlight|horizontal-rule|kbd|link|math|media-audio|media-embed|media-file|media-image|media-video|mention|paragraph|suggestion|table|toc)$/;
+  /^(?:@\/registry\/components\/editor\/|\.\/)(?:block-list|blockquote|callout|caption|code|code-block|column|comment|date|details|footnote|heading|highlight|horizontal-rule|kbd|link|math|media-audio|media-embed|media-file|media-image|media-video|mention|paragraph|suggestion|table|toc)$/;
 const historicalOrGeneratedSourcePattern =
   /(?:^|\/)(?:generated|historical)(?:\/|$)|^(?:apps\/www\/public|templates)\//;
 const intentionalProductionExtendStageChains = new Map([
@@ -294,7 +294,10 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts',
-    [[['update'], ['commands', 'contributions']], [['decorate', 'on']]],
+    [
+      [['update'], ['commands', 'contributions', 'dataTransferFormats']],
+      [['decorate', 'on']],
+    ],
   ],
   [
     'packages/platejs/src/features/comments/BaseCommentsPlugin.ts',
@@ -302,17 +305,25 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   ['packages/platejs/src/features/date/lib/BaseDatePlugin.ts', [[['update']]]],
   [
+    'packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts',
+    [[['update']]],
+  ],
+  [
     'packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts',
-    [[['corrections']]],
+    [[['corrections', 'shortcuts']]],
+  ],
+  [
+    'packages/platejs/src/features/lint/lib/BaseLintPlugin.ts',
+    [[['activate', 'api', 'decorate', 'on', 'update']]],
   ],
   [
     'packages/platejs/src/features/list/lib/BaseListPlugin.ts',
     [
       [
         ['formats'],
-        ['api', 'read'],
-        ['override', 'update'],
-        ['commands'],
+        ['on', 'read'],
+        ['override', 'shortcuts', 'update'],
+        ['commands', 'contributions', 'readMiddleware'],
         ['corrections'],
       ],
     ],
@@ -322,15 +333,9 @@ const intentionalProductionExtendStageChains = new Map([
     [[['update'], ['commands']]],
   ],
   ['packages/platejs/src/markdown/lib/MarkdownPlugin.ts', [[['api']]]],
-  ['packages/platejs/src/features/toc/lib/BaseTocPlugin.ts', [[['read']]]],
   [
     'packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts',
-    [
-      [
-        ['api', 'contributions', 'corrections', 'selectors', 'update'],
-        ['commands'],
-      ],
-    ],
+    [[['api', 'contributions', 'selectors', 'update'], ['commands']]],
   ],
   [
     'packages/platejs/src/features/find/lib/BaseFindPlugin.ts',
@@ -418,8 +423,8 @@ const intentionalRawSchemaQueryCounts = new Map([
     'packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts',
     8,
   ],
-  ['packages/platejs/src/code-drawing/lib/BaseCodeDrawingPlugin.spec.ts', 3],
   ['packages/platejs/src/internal/plugin/compilePlateModel.spec.ts', 6],
+  ['packages/platejs/src/features/list/lib/listConversion.internal.ts', 1],
   ['packages/platejs/src/lib/editor/withPlite.slow.ts', 2],
   ['packages/platejs/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
   ['packages/platejs/src/lib/plugins/html/HtmlPlugin.ts', 4],
@@ -431,6 +436,7 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/plitejs/test/editor-foundation-contract.ts', 2],
   ['packages/plitejs/test/schema-contract.ts', 10],
   ['packages/plitejs/test/schema-inference-contract.ts', 2],
+  ['packages/plitejs/test/schema-property-lookup.test.ts', 1],
   ['packages/plitejs/test/schema-validation-diagnostics.test.ts', 4],
   ['packages/platejs/src/excalidraw/lib/BaseExcalidrawPlugin.spec.ts', 1],
   ['packages/platejs/src/markdown/lib/internal/markdownAttributes.ts', 2],
@@ -4425,6 +4431,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const staticStringBindings = collectStaticStringBindings(ast);
   const { getBinding, portalBindings, schemaBindings } =
     collectConsumerPluginPortalBindings(ast, staticStringBindings);
+  const moduleSchemaBinding =
+    staticStringBindings.bindingContext.rootScope.bindings.get('schema');
   const localPluginCreatorNames = collectLocalPluginCreatorNames(ast);
   const localPlitePluginCreatorNames = collectLocalPlitePluginCreatorNames(
     ast,
@@ -6393,7 +6401,10 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
       const schemaCall = readCallName(node.callee);
 
-      if (['contribution', 'element', 'group', 'root'].includes(schemaCall)) {
+      if (
+        ['contribution', 'element', 'group', 'root'].includes(schemaCall) &&
+        getBinding('schema', node.callee.object) === moduleSchemaBinding
+      ) {
         report(node, `deleted schema.${schemaCall}(...) wrapper`);
       }
 

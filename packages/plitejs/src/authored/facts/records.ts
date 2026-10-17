@@ -3,7 +3,6 @@ import { canonicalJsonKey } from '../../core/change/transform';
 import { definePlugin } from '../../core/plugin';
 import {
   canonicalRecordJson,
-  getValueRecords,
   NO_RECORD_OPS,
   type RecordOps,
   type RecordStore,

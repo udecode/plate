@@ -22,7 +22,7 @@ const withPluginEditor = <T extends TestEditor>(editor: T) => {
     ...editor.read,
     footnote: {
       definitionText: () => {},
-      hasDuplicateDefinitions: () => false,
+      anchor: () => ({ id: 'fnref-1', target: 'fn-1' }),
       refs: () => [],
       isDuplicateDefinition: () => false,
       isResolved: () => false,
@@ -245,7 +245,6 @@ describe('footnote node rendering', () => {
           read: {
             footnote: {
               definitionText: () => 'Preview',
-              hasDuplicateDefinitions: () => false,
               isResolved: () => true,
             },
           },
@@ -273,7 +272,7 @@ describe('footnote node rendering', () => {
     const view = render(
       <FootnoteReferenceElementStatic
         attributes={{}}
-        editor={{} as any}
+        editor={withPluginEditor({}) as any}
         element={{ children: [{ text: '' }], ref: '1' } as any}
       >
         <span />
@@ -296,7 +295,6 @@ describe('footnote node rendering', () => {
           read: {
             footnote: {
               definitionText: () => 'Preview',
-              hasDuplicateDefinitions: () => false,
               isResolved: () => true,
             },
           },
@@ -331,7 +329,6 @@ describe('footnote node rendering', () => {
           read: {
             footnote: {
               definitionText: () => 'Preview',
-              hasDuplicateDefinitions: () => false,
               isResolved: () => true,
             },
           },
@@ -543,7 +540,6 @@ describe('footnote node rendering', () => {
           read: {
             footnote: {
               definitionText: () => 'Preview',
-              hasDuplicateDefinitions: () => false,
               isResolved: () => true,
             },
           },
@@ -585,7 +581,6 @@ describe('footnote node rendering', () => {
           read: {
             footnote: {
               definitionText: () => 'Preview',
-              hasDuplicateDefinitions: () => false,
               isResolved: () => true,
             },
           },
@@ -620,7 +615,6 @@ describe('footnote node rendering', () => {
           read: {
             footnote: {
               definitionText: () => {},
-              hasDuplicateDefinitions: () => false,
               isResolved: () => false,
             },
           },
@@ -666,7 +660,6 @@ describe('footnote node rendering', () => {
           read: {
             footnote: {
               definitionText: () => {},
-              hasDuplicateDefinitions: () => false,
               isResolved: () => false,
             },
           },
@@ -707,7 +700,6 @@ describe('footnote node rendering', () => {
           read: {
             footnote: {
               definitionText: () => 'Preview',
-              hasDuplicateDefinitions: () => true,
               isResolved: () => true,
             },
           },
@@ -800,7 +792,6 @@ describe('footnote node rendering', () => {
       read: {
         footnote: {
           definitionText: () => state.preview,
-          hasDuplicateDefinitions: () => false,
           isResolved: () => true,
         },
       },

@@ -1610,8 +1610,8 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
    * `content` has no default child for that slot. Omit `root` for the primary
    * root.
    */
-  createDefaultChild: (
-    options: Readonly<{ at: Path; root?: NamedRootKey }>
+  createDefaultChild: <TRoot extends RootKey>(
+    options: Readonly<{ at: Path; root?: NamedRootKey<TRoot> }>
   ) => Descendant | null;
   /** Semantic resources changed by the current configuration publication. */
   delta: () => EditorSchemaDelta | null;

@@ -1331,6 +1331,33 @@ test.describe('Inlines example', {
     await expect(trailingLink).toHaveCount(0);
   });
 
+  test('mouse drag from text into an inline link keeps the dragged range', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'Desktop native drag proof');
+
+    const editor = await openExample(page, 'plite/inlines', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+    const text =
+      'In addition to block nodes, you can create inline nodes. Here is a ';
+    const startOffset = text.length - 'Here is a '.length;
+
+    await editor.selection.dragTextRange({
+      endOffset: 'hyperlink'.length,
+      endText: 'hyperlink',
+      startOffset,
+      text,
+    });
+
+    await editor.assert.selection({
+      anchor: { path: [0, 0], offset: startOffset },
+      focus: { path: [0, 1, 0], offset: 'hyperlink'.length },
+    });
+  });
+
   test('mouse drag undo restores typed plain text replacement', async ({
     page,
   }, testInfo) => {

@@ -48,15 +48,27 @@ const initialValue: Value = [
   },
 ];
 
+const storageKey = () =>
+  `nextjs-value-demo-${new Date().toISOString().split('T')[0]}`;
+
+const subscribe = () => () => {};
+const getServerSnapshot = () => undefined;
+
 export default function MyEditorPage() {
-  const value = React.useMemo(() => {
-    const savedValue = localStorage.getItem(
-      `nextjs-value-demo-${new Date().toISOString().split('T')[0]}`
-    );
+  const savedValue = React.useSyncExternalStore(
+    subscribe,
+    () => localStorage.getItem(storageKey()),
+    getServerSnapshot
+  );
 
-    return savedValue ? JSON.parse(savedValue) : initialValue;
-  }, []);
+  if (savedValue === undefined) return null;
 
+  return (
+    <ValueEditor value={savedValue ? JSON.parse(savedValue) : initialValue} />
+  );
+}
+
+function ValueEditor({ value }: { value: Value }) {
   const editor = useCreateEditor({
     plugins: [
       BoldPlugin,
@@ -71,10 +83,7 @@ export default function MyEditorPage() {
   return (
     <EditorRoot
       onValueChange={({ value: innerValue }) => {
-        localStorage.setItem(
-          `nextjs-value-demo-${new Date().toISOString().split('T')[0]}`,
-          JSON.stringify(innerValue)
-        );
+        localStorage.setItem(storageKey(), JSON.stringify(innerValue));
       }}
       editor={editor}
     >

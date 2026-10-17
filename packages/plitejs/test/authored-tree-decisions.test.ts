@@ -658,7 +658,7 @@ describe('authored review tree decisions on recorded structure', () => {
     );
 
     authoredTestApi(reopen).propose('C', (tx) =>
-      tx.nodes.set({ bold: true } as never, { at: [0, 0] })
+      tx.nodes.set({ bold: true }, { at: [0, 0] })
     );
     const reopened = reopen.read.value();
 

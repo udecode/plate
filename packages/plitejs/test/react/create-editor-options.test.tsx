@@ -17,20 +17,24 @@ const unknownValueMessage =
 
 describe('editor constructors given options the options object inherits', () => {
   it.each([
-    ['plitejs createEditor', createHeadlessEditor],
-    ['plitejs/react createEditor', createEditor],
+    [
+      'plitejs createEditor',
+      (inherited: object) => createHeadlessEditor(Object.create(inherited)),
+    ],
+    [
+      'plitejs/react createEditor',
+      (inherited: object) => createEditor(Object.create(inherited)),
+    ],
   ])('%s builds the editor from them', (_entry, create) => {
     const caret = { offset: 1, path: [0, 0] };
-    const editor = create(
-      Object.create({
-        id: 'inherited',
-        initialSelection: SelectionApi.text({ anchor: caret, focus: caret }),
-        initialValue,
-        maxLength: 5,
-      })
-    );
+    const editor = create({
+      id: 'inherited',
+      initialSelection: SelectionApi.text({ anchor: caret, focus: caret }),
+      initialValue,
+      maxLength: 5,
+    });
     const viewOnly = create(
-      Object.create(Object.defineProperty({}, 'readOnly', { value: true }))
+      Object.defineProperty({}, 'readOnly', { value: true })
     );
     const selection = editor.read.selection();
 

@@ -1138,12 +1138,9 @@ it('converts a quote line in a named view while the main root starts with a Deta
         blockContent: true,
         contentRoots: {
           header: {
-            content: schema.content.any(
-              [
-                schema.content.type(PLUGINS.blockquote).allowed,
-                schema.content.type(PLUGINS.paragraph).allowed,
-              ],
-              { default: { type: PLUGINS.paragraph }, min: 1 }
+            content: schema.content.elements(
+              [BaseBlockquotePlugin, BaseParagraphPlugin],
+              { default: BaseParagraphPlugin, min: 1 }
             ),
             ownership: 'exclusive',
           },

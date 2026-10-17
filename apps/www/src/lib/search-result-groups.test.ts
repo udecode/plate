@@ -28,11 +28,11 @@ describe('getSearchResultGroup', () => {
   it('uses search-index metadata for docs API sections', () => {
     expect(
       getSearchResultGroup({
-        content: '`api.footnote.duplicateDefinitions`',
-        id: 'footnote-api-duplicate-definitions',
+        content: '`editor.read.footnote.definitionText`',
+        id: 'footnote-api-definition-text',
         section: 'docsApi',
         type: 'heading',
-        url: '/docs/footnote#apifootnoteduplicatedefinitions',
+        url: '/docs/footnote#editorreadfootnotedefinitiontext',
       })
     ).toBe('docsApiSections');
   });

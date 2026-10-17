@@ -2,14 +2,14 @@ import type { Descendant } from '../interfaces/node';
 import { MAIN_ROOT_KEY } from '../internal/root-location';
 import { isOwnedJsonValue } from './clone';
 import {
+  type EditorDocumentShapeIssue,
+  readEditorDocument,
+} from './document-shape';
+import {
   EMPTY_RECORD_STORE,
   type RecordStore,
   recordStoreFromJson,
 } from './record-store';
-import {
-  type EditorDocumentShapeIssue,
-  readEditorDocument,
-} from './document-shape';
 import {
   getEditorJsonRecordEntries,
   snapshotEditorJsonValue,

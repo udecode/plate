@@ -1,4 +1,3 @@
-import { Agentation } from 'agentation';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
@@ -44,7 +43,7 @@ export const metadata: Metadata = {
     'React',
     'Next.js',
   ],
-  manifest: `${siteConfig.url}/site.webmanifest`,
+  manifest: '/site.webmanifest',
   metadataBase: new URL(siteConfig.url),
   alternates: {
     types: {
@@ -125,9 +124,6 @@ export default function RootLayout({
           </Providers>
         </NuqsAdapter>
 
-        {process.env.NODE_ENV === 'development' && !isPliteMode && (
-          <Agentation />
-        )}
         {!isPliteMode && <TailwindIndicator />}
 
         {!isPliteMode && <GA />}

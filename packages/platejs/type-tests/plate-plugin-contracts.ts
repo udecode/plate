@@ -1,4 +1,4 @@
-import { type DefinitionOf, txOnly } from 'platejs';
+import { type DefinitionOf, txLocate, txOnly } from 'platejs';
 import {
   createEditor,
   definePlugin,
@@ -386,12 +386,15 @@ const ExplicitPlugin = definePlugin('explicitPlugin', {
 
 const DeclaredPlateTxPlugin = definePlugin('declaredPlateTx', {
   update: () => ({
-    run: (value: 'typed', initialState: { count?: number } = {}) => {
-      const exactValue: 'typed' = value;
-      const exactCount: number | undefined = initialState.count;
+    run: txLocate(
+      false,
+      (value: 'typed', initialState: { count?: number } = {}) => {
+        const exactValue: 'typed' = value;
+        const exactCount: number | undefined = initialState.count;
 
-      return exactValue.length + (exactCount ?? 0);
-    },
+        return exactValue.length + (exactCount ?? 0);
+      }
+    ),
   }),
 });
 
@@ -615,6 +618,19 @@ explicitPluginPortalApi.explicitPlugin.isEnabled();
 
 // @ts-expect-error literal option type must stay stable
 createdPlateEditor.plugin(MentionPlugin).store.get().trigger = '#';
+
+definePlugin('reactUndeclaredUpdateMethod', {
+  // @ts-expect-error A method that takes arguments must declare txLocate, txSelection or txOnly.
+  update: ({ tx }) => ({
+    write: (text: string) => tx.text.insert(text),
+  }),
+});
+definePlugin('reactUndeclaredStageUpdateMethod', {}).extend({
+  // @ts-expect-error An extend stage's method that takes arguments must declare one too.
+  update: ({ tx }) => ({
+    write: (text: string) => tx.text.insert(text),
+  }),
+});
 
 const ReactDirectUpdatePlugin = definePlugin('reactDirectUpdate', {
   update: () => ({

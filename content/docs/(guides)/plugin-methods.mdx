@@ -263,6 +263,11 @@ export const HighlightPlugin = definePlugin('highlight', {
 | `txSelection(method)` | A method that only moves the selection. It runs on the stored document and throws if it changes content. |
 | `txOnly(method)` | A control that only changes the active transaction, such as `tx.history.merge()`. Call it on `tx`. A one-shot call through `editor.update.<plugin>` or a plugin portal throws. |
 
+TypeScript refuses an update method that takes arguments and is wrapped in
+none of `txLocate`, `txSelection` or `txOnly`, so the plugin fails to compile
+instead of throwing on the review tree. A method without parameters needs no
+wrapper.
+
 ## Declare feature format mappings
 
 `formats` describes how one plugin's schema maps to semantic HTML, Markdown,

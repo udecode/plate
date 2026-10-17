@@ -4263,6 +4263,92 @@ describe('plite transforms contract', () => {
     });
   }
 
+  it('liftNodes refuses lifting a required leading slot child', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:lift-required-leading-slot', {
+          elements: {
+            box: {
+              content: schema.content.prefix(
+                [{ element: 'heading' }],
+                schema.content.types(['paragraph'])
+              ),
+            },
+            heading: { content: schema.content.text() },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.types(['box'], { min: 1 }),
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'box',
+          children: [
+            { type: 'heading', children: [{ text: 'Title' }] },
+            { type: 'paragraph', children: [{ text: 'Body' }] },
+          ],
+        },
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.nodes.lift({ at: [0, 0] });
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'box',
+        children: [
+          { type: 'heading', children: [{ text: 'Title' }] },
+          { type: 'paragraph', children: [{ text: 'Body' }] },
+        ],
+      },
+    ]);
+  });
+
+  it('liftNodes leaves the parent unsplit when the grandparent refuses a middle child', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:lift-refused-middle-child', {
+          elements: {
+            box: { content: schema.content.types(['heading', 'paragraph']) },
+            heading: { content: schema.content.text() },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.types(['box', 'paragraph'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'box',
+          children: [
+            { type: 'paragraph', children: [{ text: 'Before' }] },
+            { type: 'heading', children: [{ text: 'Middle' }] },
+            { type: 'paragraph', children: [{ text: 'After' }] },
+          ],
+        },
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.nodes.lift({ at: [0, 1] });
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'box',
+        children: [
+          { type: 'paragraph', children: [{ text: 'Before' }] },
+          { type: 'heading', children: [{ text: 'Middle' }] },
+          { type: 'paragraph', children: [{ text: 'After' }] },
+        ],
+      },
+    ]);
+  });
+
   it('liftNodes preserves a collapsed selection through structural mapping', () => {
     const editor = createEditor({
       initialSelection: collapsedSelection([0, 0, 0], 2),
@@ -4452,6 +4538,22 @@ describe('blocks built for a required position', () => {
 
     assert.deepEqual(editor.read.children(), [
       card(caption('Ti'), divider, paragraph('tle'), paragraph('Body')),
+    ]);
+  });
+
+  it('refuses formatting that splits off the end of a caption', () => {
+    const editor = create();
+
+    assert.throws(
+      () =>
+        editor.update((tx) => {
+          tx.selection.set(textRange(2, 5));
+          tx.nodes.set({ type: 'paragraph' }, { split: true });
+        }),
+      /cannot contain "caption"/
+    );
+    assert.deepEqual(editor.read.children(), [
+      card(caption('Title'), paragraph('Body')),
     ]);
   });
 

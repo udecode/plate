@@ -4,12 +4,19 @@ import { type Descendant, ElementApi, NodeApi, TextApi } from 'platejs';
 import type { AuthoredMark } from 'platejs/authored';
 import type { CommentsJSON } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { createEditor, EditorRoot } from 'platejs/react';
+import { CodeBlockPlugin, createEditor, EditorRoot } from 'platejs/react';
 import * as React from 'react';
 
 import { useLocale } from '@/hooks/useLocale';
 import { getI18nValues } from '@/i18n/getI18nValues';
-import { CodeDrawingKit } from '@/registry/components/editor/code-drawing';
+import {
+  CodeBlockElement,
+  createCodeBlockPlugin,
+} from '@/registry/components/editor/code-block';
+import { withDiagrams } from '@/registry/components/editor/code-block-diagram';
+import { flowchartRenderer } from '@/registry/components/editor/code-block-diagram-flowchart';
+import { graphvizRenderer } from '@/registry/components/editor/code-block-diagram-graphviz';
+import { mermaidRenderer } from '@/registry/components/editor/code-block-diagram-mermaid';
 import { createCommentValue } from '@/registry/components/editor/comment';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
 import {
@@ -21,16 +28,21 @@ import { ExcalidrawKit } from '@/registry/components/editor/excalidraw';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { createBrowserUploadKit } from '@/registry/components/editor/upload/browser';
 
+const diagramCodeBlockPlugin = createCodeBlockPlugin(
+  withDiagrams(CodeBlockElement, {
+    renderers: [mermaidRenderer, graphvizRenderer, flowchartRenderer],
+  })
+);
+
 // A suggestion's review mark on a node and everything inside it, as the
 // authored plugin records an insertion or deletion.
-const marked = <T extends Descendant>(node: T, mark: AuthoredMark): T =>
-  ({
-    ...node,
-    authored: [mark],
-    ...(ElementApi.isElement(node)
-      ? { children: node.children.map((child) => marked(child, mark)) }
-      : {}),
-  }) as T;
+const marked = <T extends Descendant>(node: T, mark: AuthoredMark): T => ({
+  ...node,
+  authored: [mark],
+  ...(ElementApi.isElement(node)
+    ? { children: node.children.map((child) => marked(child, mark)) }
+    : {}),
+});
 
 export default function PlaygroundDemo({ className }: { className?: string }) {
   const locale = useLocale();
@@ -63,7 +75,6 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
     }
 
     const overlapOffset = discussionTail.text.indexOf(overlapText);
-    const suggestionOffset = leadingText.text.length;
 
     const mark = (
       change: string,
@@ -129,7 +140,9 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
     };
 
     const plugins = [
-      ...EditorKit,
+      ...EditorKit.map((plugin) =>
+        plugin.name === CodeBlockPlugin.name ? diagramCodeBlockPlugin : plugin
+      ),
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
@@ -152,7 +165,6 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
           },
         },
       }),
-      ...CodeDrawingKit,
       ...ExcalidrawKit,
       ...(browserUploads?.plugins ?? []),
     ];
@@ -219,8 +231,8 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
         ],
       },
     ];
-    const commented = review.children[3]!.children.indexOf(
-      paragraph.children[3]!
+    const commented = review.children[3].children.indexOf(
+      paragraph.children[3]
     );
     const anchor = current.anchor(
       {

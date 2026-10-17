@@ -1,5 +1,5 @@
 import { BaseListPlugin, createEditor, NodeApi, type Value } from 'platejs';
-import { exportDocx } from 'platejs/docx/export';
+import { type DocxDiagnostic, exportDocx } from 'platejs/docx/export';
 import { importDocx } from 'platejs/docx/import';
 import { MarkdownPlugin } from 'platejs/markdown';
 
@@ -16,8 +16,14 @@ const item = (text: string, listId: string, props: object = {}) => ({
 });
 const note = (text: string) => ({ children: [{ text }], type: 'paragraph' });
 const levels = { '2': { restartAfter: 0, start: 3 } };
+const pathsOf = (diagnostics: readonly DocxDiagnostic[], feature: string) =>
+  diagnostics.flatMap((diagnostic) =>
+    'feature' in diagnostic && diagnostic.feature === feature
+      ? [diagnostic.path]
+      : []
+  );
 
-const original = [
+const original: Value = [
   item('A1', 'a'),
   item('B1', 'b'),
   item('A2', 'a'),
@@ -109,9 +115,7 @@ const roundTrip = async (value: Value = original) => {
 
 describe('DOCX list round trip', () => {
   it('keeps each list, its level rules and its numbers', async () => {
-    expect(describeLists(await roundTrip())).toEqual(
-      describeLists(original as Value)
-    );
+    expect(describeLists(await roundTrip())).toEqual(describeLists(original));
   });
 
   it('reports a marker style its Word level cannot draw', async () => {
@@ -151,11 +155,7 @@ describe('DOCX list round trip', () => {
       projection: 'proposed',
     });
 
-    expect(
-      allowed.diagnostics
-        .filter(({ feature }) => feature === 'list-structure')
-        .map(({ path }) => path)
-    ).toEqual([[1], [2]]);
+    expect(pathsOf(allowed.diagnostics, 'list-structure')).toEqual([[1], [2]]);
     expect(rejected.ok).toBe(false);
   });
 
@@ -165,11 +165,7 @@ describe('DOCX list round trip', () => {
       { lossPolicy: 'allow', projection: 'proposed' }
     );
 
-    return result.diagnostics.flatMap((diagnostic) =>
-      'feature' in diagnostic && diagnostic.feature === 'list-structure'
-        ? [diagnostic.path]
-        : []
-    );
+    return pathsOf(result.diagnostics, 'list-structure');
   };
 
   it.each([
@@ -218,9 +214,7 @@ describe('DOCX list round trip', () => {
       { lossPolicy: 'allow', projection: 'proposed' }
     );
 
-    expect(
-      exported.diagnostics.filter(({ feature }) => feature === 'list-start')
-    ).toEqual([]);
+    expect(pathsOf(exported.diagnostics, 'list-start')).toEqual([]);
   });
 
   const parseMarkdown = (markdown: string) => {
@@ -252,11 +246,7 @@ describe('DOCX list round trip', () => {
       { lossPolicy: 'allow', projection: 'proposed' }
     );
 
-    return result.diagnostics.flatMap((diagnostic) =>
-      'feature' in diagnostic && diagnostic.feature === 'list-start'
-        ? [diagnostic.path]
-        : []
-    );
+    return pathsOf(result.diagnostics, 'list-start');
   };
   const firstLevel = { '1': { start: 3 } };
   const secondLevel = { '2': { start: 3 } };
@@ -315,11 +305,9 @@ describe('DOCX list round trip', () => {
     );
 
     expect(exported.ok).toBe(true);
-    expect(
-      exported.diagnostics
-        .filter(({ feature }) => feature === 'list-start')
-        .map(({ path }) => path)
-    ).toEqual([[original.findIndex((node) => node.listStart !== undefined)]]);
+    expect(pathsOf(exported.diagnostics, 'list-start')).toEqual([
+      [original.findIndex((node) => node.listStart !== undefined)],
+    ]);
   });
 
   it.each([
@@ -367,7 +355,7 @@ describe('DOCX list round trip', () => {
 
   it('numbers an insert into each re-imported list like the original', async () => {
     expect(describeLists(insertIntoEachList(await roundTrip()))).toEqual(
-      describeLists(insertIntoEachList(original as Value))
+      describeLists(insertIntoEachList(original))
     );
   });
 });

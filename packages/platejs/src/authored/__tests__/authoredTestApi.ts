@@ -46,7 +46,7 @@ export const authoredTestApi = (input: object) => {
       ),
     /** Record the writes `run` makes under one change, whatever the intent. */
     propose: (changeId: string, run: (tx: any) => void) => {
-      editor.update((tx: any) => {
+      editor.update((tx) => {
         tx.authored.propose({ changeId });
         run(tx);
       });

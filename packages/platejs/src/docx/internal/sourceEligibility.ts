@@ -312,7 +312,9 @@ const RELATIONSHIPS_BY_OWNER: ReadonlyMap<string, RelationshipVocabulary> =
       new Map([
         [
           `${OFFICE_RELATIONSHIPS}/customXmlProps`,
-          ['application/vnd.openxmlformats-officedocument.customXmlProperties+xml'],
+          [
+            'application/vnd.openxmlformats-officedocument.customXmlProperties+xml',
+          ],
         ],
       ]),
     ],

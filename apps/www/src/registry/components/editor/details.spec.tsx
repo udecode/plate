@@ -17,7 +17,6 @@ mock.module('platejs/react', () => ({
     <div>{children}</div>
   ),
   useEditor: () => useEditorMock(),
-  useEditorSelector: () => undefined,
   usePluginStore: () => usePluginStoreMock(),
 }));
 

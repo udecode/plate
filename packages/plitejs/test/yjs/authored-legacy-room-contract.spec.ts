@@ -3,13 +3,13 @@ import { describe, it } from 'node:test';
 
 import * as Y from 'yjs';
 
+import { createAuthoredPlugin } from '../../src/authored/authored';
 import {
   createEditor,
   defineEffect,
   definePlugin,
   valueCodecs,
 } from '../../src/index';
-import { createAuthoredPlugin } from '../../src/authored/authored';
 import { yjs } from '../../src/yjs/core/plugin';
 import { paragraph } from './support/collaboration';
 

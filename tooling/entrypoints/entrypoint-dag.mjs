@@ -83,7 +83,7 @@ export const publicFeatureDependencies = Object.freeze({
   combobox: [],
   comments: [],
   date: [],
-  details: [],
+  details: ['standard/basic-nodes'],
   upload: ['dom'],
   find: [],
   footnote: ['combobox'],
@@ -265,19 +265,6 @@ export const entrypointDags = {
           ],
         })
       ),
-      'code-drawing': client(
-        directory('code-drawing', ['core'], [], {
-          peerDependencies: [
-            'flowchart.js',
-            'mermaid',
-            'plantuml-encoder',
-            'viz.js',
-          ],
-        })
-      ),
-      'code-drawing/react': client(
-        directory('code-drawing/react', ['code-drawing', 'core', 'react-core'])
-      ),
       diff: headless(
         directory('diff', [], ['plitejs/diff'], {
           peerDependencies: ['diff-match-patch-ts'],
@@ -304,6 +291,7 @@ export const entrypointDags = {
             'standard/code-block',
             'core',
             'docx-internal',
+            'footnote',
             'layout',
             'math',
             'static',
@@ -490,8 +478,6 @@ export const entrypointDags = {
         'ai/react',
         'authored',
         'code-block/codemirror',
-        'code-drawing',
-        'code-drawing/react',
         'compiler',
         'docx/export',
         'docx/import',

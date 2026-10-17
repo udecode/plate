@@ -1,5 +1,5 @@
 {
-  "generation": "a3a397a5799b0b52a66dabcd07a4faa52a55890a132096c4ca96ddcac91eed1c",
+  "generation": "922888583776d707189b69e65a0b5f90f8469820f36eddc2a03ad667d0bfb6ac",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -703,13 +703,9 @@
         {
           "dependencies": [
             "diff-match-patch-ts@^0.6.0",
-            "flowchart.js@^1.15.0",
             "katex@0.16.22",
             "lucide-react",
-            "mermaid@^11.6.1",
-            "plantuml-encoder@^1.4.0",
-            "platejs",
-            "viz.js@^2.1.2"
+            "platejs"
           ],
           "description": "A menu for inserting different types of blocks.",
           "files": [
@@ -911,10 +907,11 @@
         {
           "dependencies": [
             "platejs",
+            "sonner",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
-          "description": "A menu for switching between editor modes.",
+          "description": "A menu for switching between editor modes and deciding every suggestion.",
           "files": [
             {
               "path": "components/editor/mode-toolbar-button.tsx",
@@ -2073,25 +2070,6 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0",
-            "flowchart.js@^1.15.0",
-            "mermaid@^11.6.1",
-            "plantuml-encoder@^1.4.0",
-            "viz.js@^2.1.2"
-          ],
-          "files": [
-            {
-              "path": "components/editor/code-drawing-static.tsx",
-              "type": "registry:component",
-              "target": "@components/editor/code-drawing-static.tsx"
-            }
-          ],
-          "name": "code-drawing-static",
-          "type": "registry:component"
-        },
-        {
-          "dependencies": [
-            "platejs",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -2352,7 +2330,6 @@
             "@plate/basic-marks-static",
             "@plate/callout-static",
             "@plate/code-block-static",
-            "@plate/code-drawing-static",
             "@plate/column-static",
             "@plate/date-static",
             "@plate/details-static",
@@ -2675,45 +2652,154 @@
           ]
         },
         {
-          "dependencies": [
-            "platejs",
-            "lodash",
-            "diff-match-patch-ts@^0.6.0",
-            "flowchart.js@^1.15.0",
-            "lucide-react",
-            "mermaid@^11.6.1",
-            "plantuml-encoder@^1.4.0",
-            "viz.js@^2.1.2"
-          ],
           "files": [
             {
-              "path": "components/editor/code-drawing.tsx",
+              "path": "components/editor/code-block-diagram.tsx",
               "type": "registry:component",
-              "target": "@components/editor/code-drawing.tsx"
+              "target": "@components/editor/code-block-diagram.tsx"
             }
           ],
-          "name": "code-drawing",
+          "name": "code-block-diagram",
           "type": "registry:component",
-          "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-          "title": "Code Drawing",
+          "description": "Draw code blocks in diagram languages, with Code and Both views.",
+          "title": "Code Block Diagram",
           "meta": {
             "docs": [
               {
-                "route": "/docs/code-drawing"
-              },
-              {
-                "route": "https://pro.platejs.org/docs/components/code-drawing"
+                "route": "/docs/code-block#diagrams"
               }
             ],
             "examples": [
-              "code-drawing-demo"
+              "code-block-diagram-demo"
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react",
+            "platejs"
+          ],
           "registryDependencies": [
-            "@plate/floating-popover",
-            "@plate/use-mobile",
-            "button",
-            "select"
+            "@plate/code-block",
+            "button"
+          ]
+        },
+        {
+          "files": [
+            {
+              "path": "components/editor/code-block-diagram-mermaid.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-diagram-mermaid.ts"
+            }
+          ],
+          "name": "code-block-diagram-mermaid",
+          "type": "registry:component",
+          "description": "Draw Mermaid code blocks.",
+          "title": "Code Block Diagram Mermaid",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/code-block#diagrams"
+              }
+            ],
+            "examples": [
+              "code-block-diagram-demo"
+            ]
+          },
+          "dependencies": [
+            "mermaid"
+          ],
+          "registryDependencies": [
+            "@plate/code-block-diagram"
+          ]
+        },
+        {
+          "devDependencies": [
+            "@types/viz.js"
+          ],
+          "files": [
+            {
+              "path": "components/editor/code-block-diagram-graphviz.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-diagram-graphviz.ts"
+            }
+          ],
+          "name": "code-block-diagram-graphviz",
+          "type": "registry:component",
+          "description": "Draw Graphviz DOT code blocks.",
+          "title": "Code Block Diagram Graphviz",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/code-block#diagrams"
+              }
+            ],
+            "examples": [
+              "code-block-diagram-demo"
+            ]
+          },
+          "dependencies": [
+            "viz.js"
+          ],
+          "registryDependencies": [
+            "@plate/code-block-diagram"
+          ]
+        },
+        {
+          "files": [
+            {
+              "path": "components/editor/code-block-diagram-flowchart.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-diagram-flowchart.ts"
+            }
+          ],
+          "name": "code-block-diagram-flowchart",
+          "type": "registry:component",
+          "description": "Draw flowchart.js code blocks.",
+          "title": "Code Block Diagram Flowchart",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/code-block#diagrams"
+              }
+            ],
+            "examples": [
+              "code-block-diagram-demo"
+            ]
+          },
+          "dependencies": [
+            "flowchart.js"
+          ],
+          "registryDependencies": [
+            "@plate/code-block-diagram"
+          ]
+        },
+        {
+          "devDependencies": [
+            "@types/plantuml-encoder"
+          ],
+          "files": [
+            {
+              "path": "components/editor/code-block-diagram-plantuml.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-diagram-plantuml.ts"
+            }
+          ],
+          "name": "code-block-diagram-plantuml",
+          "type": "registry:component",
+          "description": "Draw PlantUML code blocks through your own PlantUML server.",
+          "title": "Code Block Diagram PlantUML",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/code-block#diagrams"
+              }
+            ]
+          },
+          "dependencies": [
+            "plantuml-encoder"
+          ],
+          "registryDependencies": [
+            "@plate/code-block-diagram"
           ]
         },
         {
@@ -3639,15 +3725,11 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "flowchart.js@^1.15.0",
             "katex@0.16.22",
             "lucide-react",
-            "mermaid@^11.6.1",
-            "plantuml-encoder@^1.4.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
-            "unified@^11.0.5",
-            "viz.js@^2.1.2"
+            "unified@^11.0.5"
           ],
           "files": [
             {
@@ -5121,41 +5203,6 @@
           "type": "registry:example"
         },
         {
-          "dependencies": [
-            "@platejs/test"
-          ],
-          "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-          "files": [
-            {
-              "path": "examples/code-drawing-demo.tsx",
-              "type": "registry:example"
-            },
-            {
-              "path": "examples/values/code-drawing-value.tsx",
-              "type": "registry:example"
-            }
-          ],
-          "meta": {
-            "docs": [
-              {
-                "route": "/docs/code-drawing",
-                "title": "Code Drawing"
-              }
-            ],
-            "label": "New",
-            "registry": false
-          },
-          "name": "code-drawing-demo",
-          "registryDependencies": [
-            "@plate/code-drawing",
-            "@plate/editor",
-            "@plate/ai",
-            "@plate/dnd"
-          ],
-          "title": "Code Drawing",
-          "type": "registry:example"
-        },
-        {
           "description": "Restrict the editor to a single block.",
           "files": [
             {
@@ -5679,6 +5726,43 @@
             "@plate/ai",
             "@plate/dnd"
           ],
+          "type": "registry:example"
+        },
+        {
+          "dependencies": [
+            "@platejs/test"
+          ],
+          "description": "Draw Mermaid, Graphviz and Flowchart code blocks below their source.",
+          "files": [
+            {
+              "path": "examples/code-block-diagram-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/code-block-diagram-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/code-block#diagrams",
+                "title": "Code Block"
+              }
+            ],
+            "registry": false
+          },
+          "name": "code-block-diagram-demo",
+          "registryDependencies": [
+            "@plate/code-block-diagram",
+            "@plate/code-block-diagram-mermaid",
+            "@plate/code-block-diagram-graphviz",
+            "@plate/code-block-diagram-flowchart",
+            "@plate/editor",
+            "@plate/ai",
+            "@plate/dnd"
+          ],
+          "title": "Code Block Diagram",
           "type": "registry:example"
         },
         {
@@ -6594,7 +6678,10 @@
           ],
           "name": "playground-demo",
           "registryDependencies": [
-            "@plate/code-drawing",
+            "@plate/code-block-diagram",
+            "@plate/code-block-diagram-mermaid",
+            "@plate/code-block-diagram-graphviz",
+            "@plate/code-block-diagram-flowchart",
             "@plate/comment",
             "@plate/discussion",
             "@plate/editor",
@@ -7471,13 +7558,9 @@
         {
           "dependencies": [
             "diff-match-patch-ts@^0.6.0",
-            "flowchart.js@^1.15.0",
             "katex@0.16.22",
             "lucide-react",
-            "mermaid@^11.6.1",
-            "plantuml-encoder@^1.4.0",
-            "platejs",
-            "viz.js@^2.1.2"
+            "platejs"
           ],
           "description": "A menu for inserting different types of blocks.",
           "files": [
@@ -7679,10 +7762,11 @@
         {
           "dependencies": [
             "platejs",
+            "sonner",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
-          "description": "A menu for switching between editor modes.",
+          "description": "A menu for switching between editor modes and deciding every suggestion.",
           "files": [
             {
               "path": "components/editor/mode-toolbar-button.tsx",
@@ -8835,25 +8919,6 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0",
-            "flowchart.js@^1.15.0",
-            "mermaid@^11.6.1",
-            "plantuml-encoder@^1.4.0",
-            "viz.js@^2.1.2"
-          ],
-          "files": [
-            {
-              "path": "components/editor/code-drawing-static.tsx",
-              "type": "registry:component",
-              "target": "@components/editor/code-drawing-static.tsx"
-            }
-          ],
-          "name": "code-drawing-static",
-          "type": "registry:component"
-        },
-        {
-          "dependencies": [
-            "platejs",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -9114,7 +9179,6 @@
             "@plate/basic-marks-static",
             "@plate/callout-static",
             "@plate/code-block-static",
-            "@plate/code-drawing-static",
             "@plate/column-static",
             "@plate/date-static",
             "@plate/details-static",
@@ -9437,45 +9501,154 @@
           ]
         },
         {
-          "dependencies": [
-            "platejs",
-            "lodash",
-            "diff-match-patch-ts@^0.6.0",
-            "flowchart.js@^1.15.0",
-            "lucide-react",
-            "mermaid@^11.6.1",
-            "plantuml-encoder@^1.4.0",
-            "viz.js@^2.1.2"
-          ],
           "files": [
             {
-              "path": "components/editor/code-drawing.tsx",
+              "path": "components/editor/code-block-diagram.tsx",
               "type": "registry:component",
-              "target": "@components/editor/code-drawing.tsx"
+              "target": "@components/editor/code-block-diagram.tsx"
             }
           ],
-          "name": "code-drawing",
+          "name": "code-block-diagram",
           "type": "registry:component",
-          "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-          "title": "Code Drawing",
+          "description": "Draw code blocks in diagram languages, with Code and Both views.",
+          "title": "Code Block Diagram",
           "meta": {
             "docs": [
               {
-                "route": "/docs/code-drawing"
-              },
-              {
-                "route": "https://pro.platejs.org/docs/components/code-drawing"
+                "route": "/docs/code-block#diagrams"
               }
             ],
             "examples": [
-              "code-drawing-demo"
+              "code-block-diagram-demo"
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react",
+            "platejs"
+          ],
           "registryDependencies": [
-            "@plate/floating-popover",
-            "@plate/use-mobile",
-            "button",
-            "select"
+            "@plate/code-block",
+            "button"
+          ]
+        },
+        {
+          "files": [
+            {
+              "path": "components/editor/code-block-diagram-mermaid.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-diagram-mermaid.ts"
+            }
+          ],
+          "name": "code-block-diagram-mermaid",
+          "type": "registry:component",
+          "description": "Draw Mermaid code blocks.",
+          "title": "Code Block Diagram Mermaid",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/code-block#diagrams"
+              }
+            ],
+            "examples": [
+              "code-block-diagram-demo"
+            ]
+          },
+          "dependencies": [
+            "mermaid"
+          ],
+          "registryDependencies": [
+            "@plate/code-block-diagram"
+          ]
+        },
+        {
+          "devDependencies": [
+            "@types/viz.js"
+          ],
+          "files": [
+            {
+              "path": "components/editor/code-block-diagram-graphviz.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-diagram-graphviz.ts"
+            }
+          ],
+          "name": "code-block-diagram-graphviz",
+          "type": "registry:component",
+          "description": "Draw Graphviz DOT code blocks.",
+          "title": "Code Block Diagram Graphviz",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/code-block#diagrams"
+              }
+            ],
+            "examples": [
+              "code-block-diagram-demo"
+            ]
+          },
+          "dependencies": [
+            "viz.js"
+          ],
+          "registryDependencies": [
+            "@plate/code-block-diagram"
+          ]
+        },
+        {
+          "files": [
+            {
+              "path": "components/editor/code-block-diagram-flowchart.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-diagram-flowchart.ts"
+            }
+          ],
+          "name": "code-block-diagram-flowchart",
+          "type": "registry:component",
+          "description": "Draw flowchart.js code blocks.",
+          "title": "Code Block Diagram Flowchart",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/code-block#diagrams"
+              }
+            ],
+            "examples": [
+              "code-block-diagram-demo"
+            ]
+          },
+          "dependencies": [
+            "flowchart.js"
+          ],
+          "registryDependencies": [
+            "@plate/code-block-diagram"
+          ]
+        },
+        {
+          "devDependencies": [
+            "@types/plantuml-encoder"
+          ],
+          "files": [
+            {
+              "path": "components/editor/code-block-diagram-plantuml.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-diagram-plantuml.ts"
+            }
+          ],
+          "name": "code-block-diagram-plantuml",
+          "type": "registry:component",
+          "description": "Draw PlantUML code blocks through your own PlantUML server.",
+          "title": "Code Block Diagram PlantUML",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/code-block#diagrams"
+              }
+            ]
+          },
+          "dependencies": [
+            "plantuml-encoder"
+          ],
+          "registryDependencies": [
+            "@plate/code-block-diagram"
           ]
         },
         {
@@ -10401,15 +10574,11 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "flowchart.js@^1.15.0",
             "katex@0.16.22",
             "lucide-react",
-            "mermaid@^11.6.1",
-            "plantuml-encoder@^1.4.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
-            "unified@^11.0.5",
-            "viz.js@^2.1.2"
+            "unified@^11.0.5"
           ],
           "files": [
             {
@@ -11883,41 +12052,6 @@
           "type": "registry:example"
         },
         {
-          "dependencies": [
-            "@platejs/test"
-          ],
-          "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-          "files": [
-            {
-              "path": "examples/code-drawing-demo.tsx",
-              "type": "registry:example"
-            },
-            {
-              "path": "examples/values/code-drawing-value.tsx",
-              "type": "registry:example"
-            }
-          ],
-          "meta": {
-            "docs": [
-              {
-                "route": "/docs/code-drawing",
-                "title": "Code Drawing"
-              }
-            ],
-            "label": "New",
-            "registry": false
-          },
-          "name": "code-drawing-demo",
-          "registryDependencies": [
-            "@plate/code-drawing",
-            "@plate/editor",
-            "@plate/ai",
-            "@plate/dnd"
-          ],
-          "title": "Code Drawing",
-          "type": "registry:example"
-        },
-        {
           "description": "Restrict the editor to a single block.",
           "files": [
             {
@@ -12441,6 +12575,43 @@
             "@plate/ai",
             "@plate/dnd"
           ],
+          "type": "registry:example"
+        },
+        {
+          "dependencies": [
+            "@platejs/test"
+          ],
+          "description": "Draw Mermaid, Graphviz and Flowchart code blocks below their source.",
+          "files": [
+            {
+              "path": "examples/code-block-diagram-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/code-block-diagram-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/code-block#diagrams",
+                "title": "Code Block"
+              }
+            ],
+            "registry": false
+          },
+          "name": "code-block-diagram-demo",
+          "registryDependencies": [
+            "@plate/code-block-diagram",
+            "@plate/code-block-diagram-mermaid",
+            "@plate/code-block-diagram-graphviz",
+            "@plate/code-block-diagram-flowchart",
+            "@plate/editor",
+            "@plate/ai",
+            "@plate/dnd"
+          ],
+          "title": "Code Block Diagram",
           "type": "registry:example"
         },
         {
@@ -13356,7 +13527,10 @@
           ],
           "name": "playground-demo",
           "registryDependencies": [
-            "@plate/code-drawing",
+            "@plate/code-block-diagram",
+            "@plate/code-block-diagram-mermaid",
+            "@plate/code-block-diagram-graphviz",
+            "@plate/code-block-diagram-flowchart",
             "@plate/comment",
             "@plate/discussion",
             "@plate/editor",

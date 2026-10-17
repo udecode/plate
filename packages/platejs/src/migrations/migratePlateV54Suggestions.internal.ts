@@ -3,6 +3,8 @@ import type {
   Descendant,
   EditorDocumentValue,
   EditorJsonValue,
+  Element,
+  Text,
 } from '../facade';
 import { ElementApi } from '../facade';
 
@@ -465,3 +467,48 @@ export const migratePlateV54Suggestions = (
     } as EditorDocumentValue,
   });
 };
+
+const reviewMarks = (node: Descendant) =>
+  (Reflect.get(node, 'authored') as readonly AuthoredMark[] | undefined) ?? [];
+const changesContent = (mark: AuthoredMark) => mark.kind !== 'format';
+const covers = (mark: AuthoredMark) =>
+  mark.kind === 'insert' || mark.kind === 'delete';
+const markedText = (text: string, marks: readonly AuthoredMark[]): Text =>
+  marks.length > 0 ? { authored: marks, text } : { text };
+
+/**
+ * The merged text keeps none of the replaced nodes' properties, so it drops
+ * their format suggestions with them.
+ */
+export const migratePlateV54ReplacementText = (
+  nodes: readonly Descendant[],
+  text: string,
+  location: string
+): Text => {
+  let shared: readonly AuthoredMark[] | undefined;
+  const visit = (node: Descendant) => {
+    const marks = reviewMarks(node).filter(changesContent);
+
+    shared ??= marks;
+    if (
+      marks.length !== shared.length ||
+      marks.some(
+        (mark) => !covers(mark) || !shared?.some((own) => jsonEqual(own, mark))
+      )
+    ) {
+      throw new Error(
+        `Plate v54 migration cannot merge the texts at ${location} into one source text without losing their review marks.`
+      );
+    }
+    if (ElementApi.isElement(node)) node.children.forEach(visit);
+  };
+
+  nodes.forEach(visit);
+
+  return markedText(text, shared ?? []);
+};
+
+export const migratePlateV54DrawingCodeText = (
+  drawing: Element,
+  code: string
+): Text => markedText(code, reviewMarks(drawing).filter(covers));

@@ -33,6 +33,7 @@ export const BaseSuggestionPlugin = definePlugin(PLUGINS.suggestion, {
   inject: {
     nodeProps: {
       nodeKey: 'authored',
+      textScope: 'nodeKey',
       transformProps: ({ editor, element, nodeValue, text }) => {
         if (!nodeValue) return {};
 
@@ -46,7 +47,8 @@ export const BaseSuggestionPlugin = definePlugin(PLUGINS.suggestion, {
         // The youngest claim's card paints and opens, so text typed inside
         // another's insertion shows its own card.
         const youngest = marks.reduce((left, right) =>
-          right.at > left.at || (right.at === left.at && right.change > left.change)
+          right.at > left.at ||
+          (right.at === left.at && right.change > left.change)
             ? right
             : left
         );

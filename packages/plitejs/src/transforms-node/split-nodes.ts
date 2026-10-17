@@ -419,6 +419,20 @@ const runSplitNodes = (
             ) {
               split = true;
               const startsParentNewHalf = path.length > highestPath.length;
+
+              if (keepType && !startsParentNewHalf && NodeApi.isElement(node)) {
+                const placed = getEditorSchema(editor).placeElementAt(node, {
+                  at: PathApi.next(path),
+                  root: getActiveUpdateRoot(editor) ?? 'main',
+                });
+
+                if (placed && placed.type !== node.type) {
+                  throw new Error(
+                    `Split destination cannot contain "${node.type}" without changing its type.`
+                  );
+                }
+              }
+
               applyBuiltDocumentChange(editor, (builder, root) =>
                 builder.splitNode(
                   root,

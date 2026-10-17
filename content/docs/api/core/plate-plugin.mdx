@@ -197,7 +197,11 @@ Defines how the plugin injects functionality into other plugins or the editor.
 <APISubList>
 <APISubListItem parent="inject" name="nodeProps" type="Record<string, any>" optional>
 Properties used by Plate to inject props into node components. Queries and
-transforms are pure synchronous functions and cannot call React hooks.
+transforms are pure synchronous functions and cannot call React hooks. A text
+injection with a transform, or one keyed on `text`, runs on every text, so
+typing in any text re-renders it. Set `textScope: 'nodeKey'` to run the injection only on text whose node key
+value is not null or undefined, as `SuggestionPlugin` does. A plugin that
+extends such a plugin and paints other text sets `textScope: 'all'`.
 </APISubListItem>
 
 <APISubListItem parent="inject" name="excludePlugins" type="readonly (PluginReference | string)[]" optional>

@@ -186,9 +186,8 @@ const captureExport = (
   const snapshot = captureExportSnapshot(editor, options.projection);
 
   if (options.projection === 'review') {
-    const review = createReviewProjection(
-      snapshot.stored,
-      (node) => editor.plugin(AuthoredPlugin).read.reviewOf(node)
+    const review = createReviewProjection(snapshot.stored, (node) =>
+      editor.plugin(AuthoredPlugin).read.reviewOf(node)
     );
 
     return Object.freeze({
@@ -630,7 +629,7 @@ export async function exportDocx(
       const written = await addDocxReview(blob, review, signal);
 
       throwIfDocxAborted(signal);
-      blob = written.blob;
+      ({ blob } = written);
       diagnostics.push(...written.diagnostics);
     }
     if (sourceResolution.lease) {

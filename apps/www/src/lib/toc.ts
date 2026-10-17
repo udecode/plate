@@ -1,3 +1,4 @@
+import { remarkHeading } from 'fumadocs-core/mdx-plugins';
 import matter from 'gray-matter';
 import { toc } from 'mdast-util-toc';
 import { remark } from 'remark';
@@ -103,7 +104,10 @@ export type TocItem = {
 };
 
 export async function getTableOfContents(content: string): Promise<TocItem[]> {
-  const result = await remark().use(getToc).process(matter(content).content);
+  const result = await remark()
+    .use(remarkHeading, { generateToc: false })
+    .use(getToc)
+    .process(matter(content).content);
   const nestedResult = result.data as Items;
 
   if (!nestedResult.items) {

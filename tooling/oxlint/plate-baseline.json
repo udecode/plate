@@ -14,15 +14,6 @@
     "apps/www/src/registry/components/editor/code-block.spec.tsx": [
       "mock.module('platejs/react', () => ({"
     ],
-    "apps/www/src/registry/components/editor/code-drawing-static.spec.tsx": [
-      "mock.module('platejs/code-drawing', () => ({",
-      "mock.module('platejs/static', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/code-drawing.spec.tsx": [
-      "mock.module('platejs/code-drawing', () => ({",
-      "mock.module('platejs/code-drawing/react', () => ({",
-      "mock.module('platejs/react', () => ({"
-    ],
     "apps/www/src/registry/components/editor/date-static.spec.tsx": [
       "mock.module('platejs/date', () => ({",
       "mock.module('platejs/static', () => ({"
@@ -233,12 +224,6 @@
       "}, 60_000);",
       "}, 60_000);"
     ],
-    "packages/plitejs/test/authored-changes-contract.test.ts": [
-      "{ timeout: 15_000 },"
-    ],
-    "packages/plitejs/test/authored-positions-contract.test.ts": [
-      "{ timeout: 60_000 },"
-    ],
     "packages/plitejs/test/document-change.test.ts": ["timeout: 20_000,"],
     "packages/plitejs/test/dom/dom-coverage.ts": ["{ timeout: 30_000 },"],
     "packages/plitejs/test/incremental-schema-validation.test.ts": [
@@ -276,9 +261,6 @@
       "import { createEditorSchemaContract } from '../../../plitejs/src/core/schema-compiler';",
       "import { getPluginRegistry } from '../../../plitejs/src/core/plugin-registry';",
       "import type { RuntimePluginContributionInput } from '../../../plitejs/src/interfaces/editor';"
-    ],
-    "packages/platejs/src/react/features/suggestion/SuggestionPlugin.spec.tsx": [
-      "import { DecorationContext } from '../../../../../plitejs/src/react/decoration-context';"
     ]
   },
   "plate/no-schema-placement-copy": {
@@ -320,9 +302,6 @@
     ],
     "packages/platejs/src/react/plugin/PlatePlugin.ts": [
       "export type AnyPlugin = AnyPluginRuntime;"
-    ],
-    "packages/plitejs/src/authored/format.ts": [
-      "export type AuthoredProjectionDiagnostic = NativeAuthoredProjectionDiagnostic;"
     ],
     "packages/plitejs/src/core/schema-contribution-registry.ts": [
       "export type EditorSchemaContributionRegistration ="

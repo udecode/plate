@@ -1,0 +1,31 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "code-block-diagram-flowchart",
+  "title": "Code Block Diagram Flowchart",
+  "description": "Draw flowchart.js code blocks.",
+  "dependencies": [
+    "flowchart.js"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/code-block-diagram.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/code-block-diagram-flowchart.ts",
+      "content": "import type { DiagramRenderer } from '@/registry/components/editor/code-block-diagram';\n\n/** Draws flowchart.js diagrams; flowchart.js draws into a mounted element. */\nexport const flowchartRenderer: DiagramRenderer = {\n  label: 'Flowchart',\n  languages: ['flowchart'],\n  render: async (source, { signal }) => {\n    const { default: flowchart } = await import('flowchart.js');\n\n    signal.throwIfAborted();\n\n    const container = document.createElement('div');\n\n    container.style.display = 'none';\n    document.body.append(container);\n\n    try {\n      flowchart.parse(source).drawSVG(container);\n\n      return container.innerHTML;\n    } finally {\n      container.remove();\n    }\n  },\n};\n",
+      "type": "registry:component",
+      "target": "@components/editor/code-block-diagram-flowchart.ts"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/code-block#diagrams"
+      }
+    ],
+    "examples": [
+      "code-block-diagram-demo"
+    ]
+  },
+  "type": "registry:component"
+}

@@ -34,6 +34,9 @@
       "path": "./docx-internal.json"
     },
     {
+      "path": "./footnote.json"
+    },
+    {
       "path": "./layout.json"
     },
     {

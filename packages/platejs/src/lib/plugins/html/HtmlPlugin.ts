@@ -1781,6 +1781,9 @@ const EMBEDDED_HTML_CONTENT = new Set([
 export const PLATE_HTML_ATTRIBUTES: ReadonlySet<string> = new Set([
   'data-checked',
   'data-code-trailing-newlines',
+  'data-editor-footnote-ref',
+  'data-editor-footnote-definition',
+  'data-editor-footnote-chrome',
   'data-editor-media-provider',
   'data-editor-media-source-url',
   'data-editor-media-url',

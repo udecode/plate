@@ -3,7 +3,6 @@
 import {
   CalendarIcon,
   ChevronRightIcon,
-  Code2,
   Columns3Icon,
   FileCodeIcon,
   FilmIcon,
@@ -34,7 +33,6 @@ import {
   BaseParagraphPlugin,
   PLUGINS,
 } from 'platejs';
-import { BaseCodeDrawingPlugin } from 'platejs/code-drawing';
 import { BaseDatePlugin } from 'platejs/date';
 import { BaseDetailsPlugin } from 'platejs/details';
 import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
@@ -111,7 +109,6 @@ function getGroups(editor: Editor): Group[] {
   const column = editor.plugin(BaseColumnPlugin);
   const equation = editor.plugin(BaseEquationPlugin);
   const excalidraw = editor.plugin(BaseExcalidrawPlugin);
-  const codeDrawing = editor.plugin(BaseCodeDrawingPlugin);
   const link = editor.plugin(linkPlugin);
   const date = editor.plugin(BaseDatePlugin);
   const footnote = editor.plugin(BaseFootnotePlugin);
@@ -413,23 +410,6 @@ function getGroups(editor: Editor): Group[] {
 
         editor.update((tx) => {
           tx.plugin(BaseExcalidrawPlugin).insert({}, { select: true });
-        });
-      },
-    });
-  }
-
-  if (codeDrawing.installed) {
-    advancedBlocks.push({
-      icon: <Code2 />,
-      label: 'Code Drawing',
-      value: PLUGINS.codeDrawing,
-      onSelect: () => {
-        const current = editor.plugin(BaseCodeDrawingPlugin);
-
-        if (!current.installed || editor.read.view.isReadOnly()) return;
-
-        editor.update((tx) => {
-          tx.plugin(BaseCodeDrawingPlugin).insert({}, { select: true });
         });
       },
     });

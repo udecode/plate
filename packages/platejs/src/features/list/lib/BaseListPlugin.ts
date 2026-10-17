@@ -66,7 +66,7 @@ import {
   getDocumentListOrdinal,
   getElementListStyle,
   getHeadingType,
-  getListIndent,
+  listItemDepth,
   isListItem,
   isListLevels,
   isListType,
@@ -227,7 +227,7 @@ const handleListUntab = (
 
   const entries = editor.read.nodes.blocks({ match, mode: 'lowest' });
   const isRootItem = ([node]: NodeEntry<Element>) =>
-    isListItem(node) && getListIndent(node) <= 1;
+    isListItem(node) && listItemDepth(node) <= 1;
 
   if (!entries.some(([node]) => isListItem(node)) || selectsCodeBlock(editor)) {
     return false;
@@ -1380,7 +1380,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
 
         const parent = landingTarget[1].slice(0, -1);
         const siblings = state.nodes.children(parent);
-        const indent = getListIndent(first);
+        const indent = listItemDepth(first);
         const moving = new Set<Descendant>(payload.nodes);
         let index =
           (landingTarget[1].at(-1) as number) + (edge === 'after' ? 1 : 0);

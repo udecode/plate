@@ -5,12 +5,11 @@ import {
 } from './__tests__/createTestEditor';
 
 describe('markdown Details surface', () => {
-  it('preserves a Summary heading level and inline marks through Markdown', () => {
+  it('round-trips a heading title as the heading GitHub renders, with its inline marks', () => {
     const editor = createTestEditor();
-    const value = parseTestMarkdown(
-      editor,
-      '<details>\n\n<summary level="2">**Title** [link](https://example.com)</summary>\n\nBody\n\n</details>'
-    );
+    const input =
+      '<details>\n\n<summary><h2>**Title** [link](https://example.com)</h2></summary>\n\nBody\n\n</details>\n';
+    const value = parseTestMarkdown(editor, input);
     expect(value.children[0]).toMatchObject({
       type: 'details',
       children: [
@@ -31,11 +30,23 @@ describe('markdown Details surface', () => {
         { type: 'paragraph', children: [{ text: 'Body' }] },
       ],
     });
-    const output = serializeTestMarkdown(editor, { document: value });
-    expect(parseTestMarkdown(editor, output.data)).toEqual(value);
+    expect(serializeTestMarkdown(editor, { document: value }).data).toBe(input);
   });
 
-  it('keeps a nested title level through Markdown', () => {
+  it('keeps a title whose heading is not its whole content as text', () => {
+    const editor = createTestEditor();
+    const value = parseTestMarkdown(
+      editor,
+      '<details>\n\n<summary><h2>Title</h2> more</summary>\n\nBody\n\n</details>'
+    );
+
+    expect(value.children[0]).toHaveProperty(['children', 0], {
+      type: 'summary',
+      children: [{ text: '<h2>Title</h2> more' }],
+    });
+  });
+
+  it('reads a nested title level attribute and keeps it through Markdown', () => {
     const editor = createTestEditor();
     const value = parseTestMarkdown(
       editor,

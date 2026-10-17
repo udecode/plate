@@ -424,8 +424,11 @@ test('AI edit renders beside the homepage seeded suggestions', async ({
       focus: { path: [3, 7], offset: 23 },
     });
     expect(
-      ((await editor.get.modelValue()) as { children: Array<{ children: unknown[] }> })
-        .children[3].children[6]
+      (
+        (await editor.get.modelValue()) as {
+          children: Array<{ children: unknown[] }>;
+        }
+      ).children[3].children[6]
     ).toMatchObject({ type: 'link', url: '/docs/comment' });
     await root.press('ControlOrMeta+j');
     await page
@@ -870,7 +873,9 @@ for (const start of ['heading', 'empty paragraph'] as const) {
       await expect(root.locator('[data-editor-ai-preview]')).toHaveText(
         'AI can help turn an initial idea into a clear and useful first draft.'
       );
-      await expect(root.locator('[data-editor-authored-kind="delete"]')).toHaveCount(0);
+      await expect(
+        root.locator('[data-editor-authored-kind="delete"]')
+      ).toHaveCount(0);
       await expect.poll(() => editor.get.modelBlockTexts()).toEqual(before);
       await expect(
         page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
@@ -888,7 +893,9 @@ for (const start of ['heading', 'empty paragraph'] as const) {
       await expect(root.locator('[data-editor-ai-preview]')).toHaveText(
         'AI can help turn an initial idea into a clear and useful first draft.'
       );
-      await expect(root.locator('[data-editor-authored-kind="delete"]')).toHaveCount(0);
+      await expect(
+        root.locator('[data-editor-authored-kind="delete"]')
+      ).toHaveCount(0);
       await page.getByRole('option', { name: 'Discard', exact: true }).click();
       await expect.poll(() => editor.get.modelBlockTexts()).toEqual(before);
 
@@ -913,7 +920,9 @@ for (const start of ['heading', 'empty paragraph'] as const) {
       await expect(root.locator('[data-editor-ai-preview]')).toHaveText(
         'AI can help turn an initial idea into a clear and useful first draft.'
       );
-      await expect(root.locator('[data-editor-authored-kind="delete"]')).toHaveCount(0);
+      await expect(
+        root.locator('[data-editor-authored-kind="delete"]')
+      ).toHaveCount(0);
       await page.screenshot({
         path: testInfo.outputPath('complete-continuation.png'),
       });

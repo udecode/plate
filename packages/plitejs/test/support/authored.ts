@@ -48,9 +48,7 @@ export const reviewRecords = ({
 
 /** A value's records as JSON, whether it holds them as a field or beside it. */
 export const recordsOf = (value: object): EditorDocumentRecords =>
-  recordStoreToJson(
-    getValueRecords(value as Readonly<{ records?: EditorDocumentRecords }>)
-  );
+  recordStoreToJson(getValueRecords(value));
 
 /** The review contexts a document stores, each with its member's fields. */
 export const storedContexts = (value: object) =>
@@ -110,13 +108,13 @@ export const authoredTestApi = (input: AnyEditor) => {
       ),
     project: (projection: 'accepted' | 'proposed') =>
       projectAuthoredValue(
-        editor.read.value() as JsonEditorValue,
+        editor.read.value(),
         projection,
         authoredResolveSchemaOf(editor)
       ),
     /** Record the writes `run` makes under one change, whatever the intent. */
     propose: (changeId: string, run: (tx: any) => void) => {
-      editor.update((tx: any) => {
+      editor.update((tx) => {
         tx.authored.propose({ changeId });
         run(tx);
       });

@@ -2440,6 +2440,40 @@ describe('JSON document change algebra', () => {
     assert.ok(ranges.every((range) => range[0] <= range[1]));
   });
 
+  it('freezes a bounded number of entries per step composing a run of 300 block deletions', () => {
+    const before = DocumentIndex.fromValue(
+      asJsonNodes(
+        Array.from({ length: 302 }, (_, index) => paragraph(`p${index}`))
+      )
+    );
+    let change = removeNodeChange(before, [1]);
+    let after = change.apply(before);
+    const { freeze } = Object;
+    let largestStep = 0;
+
+    for (let index = 1; index < 300; index++) {
+      const removal = removeNodeChange(after, [1]);
+      let frozenEntries = 0;
+
+      Object.freeze = (value: unknown) => {
+        if (Array.isArray(value)) frozenEntries += value.length;
+        return freeze(value);
+      };
+      try {
+        change = change.compose(removal);
+      } finally {
+        Object.freeze = freeze;
+      }
+      largestStep = Math.max(largestStep, frozenEntries);
+      after = removal.apply(after);
+    }
+
+    assert.ok(
+      largestStep <= 16,
+      `one composed deletion froze ${largestStep} array entries`
+    );
+  });
+
   it('freezes at most four entries per deleted token inverting a run of 300 block deletions', () => {
     const before = DocumentIndex.fromValue(
       asJsonNodes(
