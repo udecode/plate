@@ -1,6 +1,6 @@
 # Re-sync Plate's workflow owners from plate-2
 
-Status: building, waiting on the PR
+Status: done, waiting on the PR review
 Playbook: authoring-a-skill
 
 ## Brief
@@ -39,7 +39,7 @@ When plate-2 moves on, the next sync reruns the script. Edits that still apply l
 ## Main changes
 
 - `tooling/scripts/sync-workflow-source.mjs` rebuilds the owners from one plate-2 commit. `--write` lays down the source plus the adaptations, `--record` saves local edits as the patch, `--check` fails on drift and `--report` lists lines still to review.
-- `docs/development/pstack-adaptations.json` and `pstack-adaptations.patch` replace `pstack-omissions.json`. The JSON lists the omitted files with reasons, the renamed tests, the tooling copied with the owners and the report's accepted hits.
+- `docs/development/pstack-adaptations.json` and `pstack-adaptations.patch` replace `pstack-omissions.json`. The JSON lists the omitted files with reasons, the tooling copied with the owners and the report's accepted hits.
 - `pstack-source.json` now records plate-2 `d0209b439a`, a hash of each of the 207 source files and the retired skill names.
 - Sixteen owner files that the last sync left out now land, such as the plate-plugins, plate-docs, research and verify references, with plate-plugins' `typing.md` and `creation-flow.md` cut to Plate's plugin API.
 - verify gains a Hand drive section and plate-plugins a Package Boundaries section, holding the engine-neutral parts of the source files this sync leaves out.
