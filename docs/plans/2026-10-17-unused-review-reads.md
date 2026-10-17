@@ -9,7 +9,7 @@ review_upstreams: [prosemirror-suggest-changes@653fba70ba29ef6ea6af3ad8d60244a58
 
 # Remove the two review reads nothing calls
 
-Status: done; lands on `next` through `land.mjs`
+Status: done; landed on `next` as `249c28301c`
 Page: https://claude.ai/artifact/LEqzR2jWhLTbmirGzhCtWE
 Playbook: plan
 
@@ -284,7 +284,7 @@ Execution playbook: Build (`.agents/playbooks/build.md`).
 
 - A preview view throws on a plain edit, on a proposal and on value repair when the source editor itself is set to a preview. It lets other writes through: a decision with every edit in its update, updates tagged `historic` or `collaboration`, among them undo and redo, remote imports, value repair through a view and, read from source, a plugin install through a view. Suggested task t_f485ac77 in the ledger decides which of them a preview refuses and keeps remote collaboration changes landing. It then rewrites each line in `limits3.tsv`, the recorder's message, the regenerated API reference manifest and the registry output to what its decision picks. owner: zbeyens. stop: t_f485ac77 lands or is dropped.
 - The Codex seats cannot run, because Codex is signed in with a ChatGPT account, which refuses `gpt-6-astra` and `gpt-6.1-sol` (`panel-diff-r2/ping-astra.err`, `panel-diff-r2/ping-sol.err`), so diff panel rounds 2 and 3 each ran three Opus seats and are labelled same-family (round 3: `panel-diff-r3/ping-astra.err`, `panel-diff-r3/ping-sol.err`). Signing Codex in with an API key fixes it: `printenv OPENAI_API_KEY | codex login --with-api-key`. owner: zbeyens. stop: the next panel's Codex pings answer.
-- Checks that fail the same way at the base go to suggested tasks in the ledger: the platejs migrations typecheck (t_086e37a6), five plitejs authored record tests and two authored-review specs (t_cca6f352), three suggestion-page specs (t_1b08869a) and the WebKit playground image spec (t_095b0272). owner: zbeyens. stop: each task lands or is dropped.
+- Checks that fail the same way at the base go to suggested tasks, now listed in `docs/plans/backlog.md`: the platejs migrations typecheck (t_086e37a6), five plitejs authored record tests and two authored-review specs (t_cca6f352), three suggestion-page specs (t_1b08869a) and the WebKit playground image spec (t_095b0272). owner: zbeyens. stop: each task lands or is dropped.
 - Diff panel rounds 2 and 3 were same-family, so the next panel with a Codex seat attacks their picks as invariants: the law lines' remote clause, the narrowed Vision promise and the limit that names examples instead of every path. owner: zbeyens. stop: that panel settles, or t_f485ac77 rewrites the lines.
 - Suggested tasks carry what the run found in shared tooling. t_7766c4eb and t_01e2ce0a run `/pstack:correct` on checkers that cannot fail on their named defect and on decision rows whose proof went stale (row 66). t_f6964925 passes the Claude CLI's error text through `cross.mjs` pings. t_7b084db3 gained this run's post-cap fixes as a finding. owner: zbeyens. stop: each task lands or is dropped.
 
