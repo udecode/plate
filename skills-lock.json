@@ -5,25 +5,25 @@
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/chips/SKILL.md",
-      "computedHash": "fc6a996c048ce76156eac8bc3fa06138e39fa18f833da7ea9faca595354554f5"
+      "computedHash": "0c9eccd706b9f565975e9cdbaaf5e02f6b4cccf475fde7d930ccd3dc38baca32"
     },
     "cleanup": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/cleanup/SKILL.md",
-      "computedHash": "41895d52c7dfa182996dc40bebefce12ff301dd94f776a871ffa69c97f7c1d8f"
+      "computedHash": "ddf7161cf7be082e2e0af6063946d691a1a47ab1ebde363bbee87c08ddb718da"
     },
     "plan-page": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/plan-page/SKILL.md",
-      "computedHash": "f929d42069108416d1b29dea9f030b48b4cba4b3daaf33eb8f4b6c589b6cf824"
+      "computedHash": "907af288e129471370c37fe4a4f08b951e42f278911e0761bb6b6a6afb1da0cd"
     },
     "redo": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/redo/SKILL.md",
-      "computedHash": "912cbf5b72747c9f15740fc7b789109fd357e3d2b94c8340fa40be577050cad4"
+      "computedHash": "a0c624a14a99908c82c72b3cf0dc710e2d21929f47d849ca3573abe493462232"
     },
     "shadcn": {
       "source": "shadcn/ui",
@@ -50,13 +50,13 @@
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/video-transcripts/SKILL.md",
-      "computedHash": "5e92964a809de71e06523d6e73f65af553c535b6e91885d6ca1443784eaf9132"
+      "computedHash": "156e8c855d2146504a7bdb66ff7a14012167fd9c19c5a4d486437851d061ca87"
     },
     "walkthrough": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/walkthrough/SKILL.md",
-      "computedHash": "218885f9d48a0834d03c824215c4644af5da195c65098b443e691a0bb7640bf6"
+      "computedHash": "693e514613dbd1aae21ea48ca430962c93e70adc14d10c0a4f70dc2dc76c8a3a"
     }
   }
 }

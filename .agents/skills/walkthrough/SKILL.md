@@ -6,7 +6,7 @@ description: "Present final screenshots or rendered artifacts as an annotated wa
 # Walkthrough
 
 Explain a completed change with a few annotated visuals. Run this after final
-verification. A walkthrough explains proof; it does not replace proof. Reuse the final verified frames. Do not repeat the browser walk or send messages without explicit authorization.
+verification. A walkthrough explains proof; it does not replace proof. Reuse the final verified frames. Do not repeat the browser walk or send a message to a customer or anyone outside the team without explicit authorization.
 
 ## Honor The Caller Contract
 

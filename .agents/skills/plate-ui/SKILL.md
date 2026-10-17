@@ -1,5 +1,5 @@
 ---
-description: Use before editing Plate React components, hooks, providers, registry UI or kits, including drag, drop, handle menus and indicators. Preserve open code and prove the affected browser behavior.
+description: Use before editing any file under the registry components or kits, or a component's drag, drop, handle menu or indicator UI. Implements Plate React component families, copied registry UI and kit wiring with exact browser proof.
 name: plate-ui
 metadata:
   skiller:
@@ -8,37 +8,148 @@ metadata:
 
 # Plate UI
 
-Start with `shadcn` for its CLI and upstream components. Read the nearest
-current component and package owner before designing a new family.
-Read [Component shape](rules/component-shape.md) for renderer contracts,
-[Registry wiring](rules/registry.md) when changing copied installation
-metadata, and [Shadcn proofing](rules/shadcn-proofing.md) for copied
-component implementation or review.
+Use the `shadcn` skill for CLI, upstream docs, and generic shadcn/ui rules.
+Use `vercel-react-best-practices` for selected implementation tactics.
+`VISION.md`'s Plugins & Components and UI Registry sections set the direction
+for Plate React components. This skill owns the method that applies it:
+component shape, family topology, open-code preservation, the base/live kit
+split, registry wiring and browser proof. Read
+[Component shape](./rules/component-shape.md) for renderer contracts and
+[Shadcn proofing](./rules/shadcn-proofing.md) for copied component
+implementation or review.
 
-The copied UI lives under `apps/www/src/registry/ui`; editor composition and
-kits live under `apps/www/src/registry/components/editor`, including
-`plugins/*-kit.tsx`. Registry metadata lives in `registry-*.ts` beside them.
+## Repo Surfaces
 
-- Keep copied components readable and editable by the consuming application.
-- Put durable editor behavior in its package. Local popover, menu, styling
-  and renderer behavior remain in copied UI unless independent reuse proves
-  a package contract.
-- Use a direct component by default. A shared family controller or private
-  context needs actual sibling coordination. Derive state during render when
-  possible; use event handlers for user actions and subscribe only to rendered
-  editor state.
-- Forward the complete incoming renderer props. Keep live and static renderer
-  setup explicit where their ownership differs. Preserve explicit feature
-  plugins in teaching examples even when a full app kit already includes them.
-- Use the existing `createPlatePlugin`/Slate adapter contracts and inferred
-  editor APIs. Fix weak package typing rather than mirroring it locally.
-- Use stable `data-slot` identities and `data-state` for interaction state.
-  Follow the installed Tailwind version and semantic tokens.
-- Update relevant registry items, feature metadata, examples and dependencies
-  together. A hook, style or kit needs a real installed consumer.
-- `changeset` owns registry changelog entries. CI owns registry build output.
-- `verify` proves the exact reporter route or actual registered demo. Native
-  drag, focus, selection and paint claims require their native interaction.
+- `apps/www/src/registry/ui` — copied editor UI and its live and static node
+  components
+- `apps/www/src/registry/components/editor` — editor composition and kits,
+  including `plugins/*-kit.tsx`
+- `apps/www/src/registry/registry-*.ts` — registry metadata and dependencies
+- `packages/*` — upstream semantic owners; package edits route to
+  `plate-plugins`
 
-Use selected `vercel-react-best-practices` rules for implementation tactics.
-Those rules do not choose public APIs or require an extra provider or hook.
+## Routing Gate
+
+Ownership follows the Domain owners table in `AGENTS.md`.
+
+Continue here whenever a Plate package or registry task makes a React,
+component, hook, provider, store, primitive, or composition decision. Package
+implementation and proof still route to `plate-plugins`; plugin builders,
+schema law, and application typing remain outside this skill.
+
+## Principles
+
+1. **Preserve open code.** A shadcn-derived component should still look like source code a user can own, read, diff, and tweak.
+2. **Registry wiring is part of authorship.** A component is not done until kits, examples, and style deps are coherent.
+3. **Examples teach the install shape.** Do not remove an explicit feature
+   plugin, kit, renderer binding, or dependency merely because an aggregate
+   application editor installed by the `editor-kit` registry item also includes
+   it. Deliberate repetition can make copied code and feature ownership
+   transparent.
+
+## Registry
+
+### Registry Wiring → [registry.md](./rules/registry.md)
+
+- Update `registry-ui.ts`, `registry-kits.ts`, `registry-components.ts` and
+  `registry-examples.ts` together.
+
+### Registry Changelog
+
+- User-visible registry UI, kit, example, metadata, style dependency, copied-code
+  install shape, or generated registry changelog changes need a registry
+  changelog entry or a concrete N/A reason.
+- `changeset`'s registry reference owns the schema, scaffold, generation and
+  verification. Do not duplicate the entry contract here.
+
+## Styling And Vercel Tactics
+
+Use stable kebab-case `data-slot` for component identity and `data-state` for
+interaction and visual state. Keep Tailwind v4 syntax canonical: slash opacity,
+parenthesized CSS variables, suffix `!`, and canonical utilities.
+
+`vercel-react-best-practices` provides selected implementation tactics. It
+does not decide Plate public APIs, extraction, file ownership, or provider
+visibility.
+
+- Load exact rule files for the problem; never import the whole catalog as
+  doctrine.
+- `rerender-split-combined-hooks` may justify splitting internal calculations
+  or effects. It never requires multiple public hooks or files.
+- Context-interface, lifted-state, compound-component, and provider patterns
+  need real independent composition. They do not automatically earn a public
+  provider or store.
+- Performance advice may optimize an accepted Plate shape; it cannot replace
+  this skill's component law.
+
+## Key Patterns
+
+```tsx
+// Good: simple component owns its own renderer behavior directly.
+function ImageElement(props: PlateElementProps<TImageElement>) {
+  const selected = useSelected();
+
+  return <PlateElement {...props} data-selected={selected || undefined} />;
+}
+
+// Good: copied suggestion UI reads its owning plugin's API.
+const suggestionApi = editor.getApi(SuggestionPlugin).suggestion;
+
+// Good: base/live split stays explicit.
+export const BaseFootnoteKit = [
+  BaseFootnoteReferencePlugin.withComponent(FootnoteReferenceElementStatic),
+  BaseFootnoteDefinitionPlugin.withComponent(FootnoteDefinitionElementStatic),
+];
+
+export const FootnoteKit = [
+  FootnoteInputPlugin.withComponent(FootnoteInputElement),
+  FootnoteReferencePlugin.withComponent(FootnoteReferenceElement),
+  FootnoteDefinitionPlugin.withComponent(FootnoteDefinitionElement),
+];
+
+// Good: runtime-neutral policy is shared by both editor presets.
+export const MarkdownKit = [
+  MarkdownPlugin.configure({ options: { remarkPlugins: [remarkGfm] } }),
+];
+
+// Bad: package hook exists only to feed one shadcn component's local UI.
+const state = useSingleComponentOnlyState();
+return <Popover open={state.open}>...</Popover>;
+
+// Bad: React-only package hook that mainly returns renderer glue.
+const { dialogTitle, menuItems, onOpenChange, popoverOpen } =
+  useToolbarMenuState();
+```
+
+## Workflow
+
+1. Start with the `shadcn` skill. Run the normal `shadcn` docs/search workflow first.
+2. Search Plate for the closest analog in `apps/www/src/registry/ui`,
+   `apps/www/src/registry/components/editor` and the relevant `packages/*`.
+3. Decide ownership before writing code: package ownership requires a durable
+   contract independent of the renderer.
+4. Decide the three layers before coding:
+   - semantic core
+   - platform adapter
+   - local open-code UI
+5. Choose the component-family shape before writing state/effects:
+   - direct component by default
+   - one terminal `use<Family>` only for a real semantic controller
+   - one private context only when sibling coordination needs it
+6. Apply the React checks before writing state/effects:
+   - can this be derived during render?
+   - should this stay in an event handler?
+   - am I subscribing to more editor state than the UI actually renders?
+7. Build the component as open code first.
+8. When plugin wiring changes, audit the affected field and its registry peers
+   for local structural mirrors, state `Pick` aliases, callback return
+   annotations, and casts that replace package ownership or contextual
+   inference. Fix the canonical package contract instead of preserving a local
+   adapter.
+9. Extract only the boundaries that pass that ownership test.
+10. Share runtime-neutral kits; wire base/live renderer kits and registry deps
+   only where the renderer ownership actually differs.
+
+## Audit References
+
+- [component-audit.md](./references/component-audit.md) — concrete good patterns and anti-patterns from this repo

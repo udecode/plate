@@ -109,7 +109,7 @@ test('only folders no open session, process or server uses are marked safe', asy
 });
 
 test('a worktree outside the folders agents use is asked about even when an archived session owned it', () => {
-  const facts = { agentMade: false, heldCaches: 0, hoursIdle: 48, invoking: false, locked: null, missing: false, nested: null, processes: 0, repos: 0, scratchHoursQuiet: null, session: { state: null, title: 'done' } };
+  const facts = { agentMade: false, heldCaches: 0, hoursIdle: 48, invoking: false, locked: null, missing: false, nested: null, processes: 0, repos: 0, scratchHoursQuiet: null, session: { state: null, title: 'done' }, unreached: 0 };
   assert.equal(classifyWorktree(facts)[0], 'ask');
   assert.equal(classifyWorktree({ ...facts, agentMade: true })[0], 'safe');
 });
@@ -133,6 +133,14 @@ test('--landed asks about a change the checkout lacks even when its reverse patc
   const f = fixture();
   writeFileSync(join(f.archived, 'dup.txt'), DUP.replace('OLD', 'NEW'));
   assert.equal(landedOf(f.archived), 'ask');
+});
+
+test('--landed passes a change the checkout holds beside another landed patch to the same file', () => {
+  const f = fixture();
+  const card = DUP.replace('head 0', 'HEAD 0');
+  writeFileSync(join(f.archived, 'dup.txt'), card);
+  writeFileSync(join(f.main, 'dup.txt'), card.replace('tail 9', 'TAIL 9'));
+  assert.equal(landedOf(f.archived), 'safe');
 });
 
 test('--landed asks about an ignored file the checkout lacks', () => {
@@ -250,6 +258,7 @@ test('delete removes the safe set and leaves every other folder', () => {
   assert.ok(![f.archived, f.landed, f.unlanded].some((path) => listed.includes(path)), 'git no longer lists the removed worktrees');
   const patchOf = (path) => removed.find((item) => item.path === path).patch;
   assert.equal(patchOf(f.archived), null, 'a clean worktree saves no patch');
+  assert.equal(patchOf(f.landed), null, 'a worktree whose changes the checkout holds saves no patch');
   assert.match(readFileSync(patchOf(f.unlanded), 'utf8'), /^\+three$/mu, 'the uncommitted change is saved before the worktree goes');
   git(f.main, 'checkout', '-q', '--', 'a.txt');
   git(f.main, 'apply', '--check', patchOf(f.unlanded));
@@ -319,6 +328,27 @@ test('--remove keeps the checkout, a locked worktree and one outside the agent f
   assert.match(run.stdout, new RegExp(`KEPT  ${f.archived}  locked: owner keeps it`));
   assert.match(run.stdout, new RegExp(`KEPT  ${f.landed}  it sits outside the folders agents make worktrees in`));
   for (const path of [f.main, f.archived, f.landed]) assert.ok(existsSync(path), `${path} stays`);
+});
+
+test('a worktree holding a commit no ref reaches is asked about by the scan, --landed and --remove until a branch keeps it', () => {
+  const f = fixture();
+  git(f.archived, 'switch', '-q', '--detach');
+  writeFileSync(join(f.archived, 'lost.txt'), 'only here\n');
+  git(f.archived, 'add', 'lost.txt');
+  git(f.archived, 'commit', '-q', '-m', 'made on a detached HEAD');
+  const lost = git(f.archived, 'rev-parse', 'HEAD').trim();
+  const item = () => scan({ repo: f.main, sessions: f.sessions, sizes: false }).items.find((each) => each.path === f.archived);
+  assert.equal(item().verdict, 'ask', 'the commit sits on a detached HEAD');
+  assert.match(item().reason, /1 commit that no branch, tag or remote reaches/u);
+  git(f.archived, 'switch', '-q', 'archived');
+  assert.equal(item().verdict, 'ask', 'only the HEAD history keeps the commit after the switch back');
+  assert.equal(landedOf(f.archived), 'ask');
+  const [kept] = removeLanded({ repo: f.main, worktrees: [f.archived] });
+  assert.equal(kept.removed, false);
+  assert.ok(existsSync(f.archived), 'the worktree stays');
+  git(f.main, 'branch', 'saved', lost);
+  assert.equal(item().verdict, 'safe', 'a branch now keeps the commit');
+  assert.equal(landedOf(f.archived), 'safe');
 });
 
 test('--remove takes only the paths before the next flag', () => {

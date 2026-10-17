@@ -24,18 +24,11 @@ Use this when you want a periodic testing audit, a fresh coverage map, or a new 
 
 ### 1. Refresh Coverage
 
-Read `tooling/config/test-suites.mjs` and the current test runners. Enumerate
-fast and slow specs in scope, recording deferred specs separately. Collect
-fresh coverage with an explicit spec path and a unique output directory per
-isolated execution:
+Run fresh repo coverage with a date-stamped output directory:
 
 ```bash
-bun test ./<resolved-spec-path> --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-YYYY-MM-DDx/<unique-spec-id> --reporter=dots
+bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-YYYY-MM-DDx --reporter=dots
 ```
-
-Union hits by source file before ranking repo-wide coverage. Keep each
-`lcov.info` path and report omitted lanes. A partial or overwritten report
-does not establish complete repo coverage.
 
 Capture:
 
@@ -56,9 +49,9 @@ pnpm test:slowest -- --top 25
 Then scan for stale suite debt:
 
 ```bash
-git grep --untracked -n -E 'describe[.]skip|it[.]skip|test[.]skip|xit[(]|xdescribe[(]' -- packages apps
-git grep --untracked -n -E '^[[:space:]]*//[[:space:]]*(describe|it|test)[(]' -- ':(glob)packages/**/*.spec.ts' ':(glob)packages/**/*.spec.tsx' ':(glob)apps/**/*.spec.ts' ':(glob)apps/**/*.spec.tsx'
-git grep --untracked -n -E "from '.*[.]spec'" -- ':(glob)packages/**/*.spec.ts' ':(glob)packages/**/*.spec.tsx' ':(glob)apps/**/*.spec.ts' ':(glob)apps/**/*.spec.tsx'
+rg -n "describe\\.skip|it\\.skip|test\\.skip|xit\\(|xdescribe\\(" packages apps
+rg -n "^\\s*//\\s*(describe|it|test)\\(" packages apps -g "*.spec.ts" -g "*.spec.tsx"
+rg -n "from '.*\\.spec'" packages apps -g "*.spec.ts" -g "*.spec.tsx"
 ```
 
 Only report debt that is actually worth fixing.
@@ -125,4 +118,5 @@ At that point, tell the user to switch from coverage work to architecture-safety
   - commented-out tests
   - cross-spec imports
   - placeholder titles
+  - non-allowlisted Plate React `createEditor` boundaries
 - Use `bun run test:profile` for the fast suite when deciding whether a spec belongs in the slow lane. `pnpm test:slowest` and `pnpm check` enforce those thresholds.

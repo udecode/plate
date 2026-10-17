@@ -1,0 +1,162 @@
+{
+  "checkout": "plate-2",
+  "markers": [
+    "plite",
+    "slate-v2",
+    "slate v2",
+    "review[- ]?ledger",
+    "document model",
+    "definePlugin",
+    "toReactPlugin",
+    "registry/bases/",
+    "plate v2",
+    "next beta",
+    "\\bv2\\b",
+    "editor\\.update\\.",
+    "editor\\.read\\.",
+    "editor\\.plugin\\(",
+    "EditorElement",
+    "(?<!@)platejs/<feature>",
+    "oxlint",
+    "multi-root",
+    "synced root",
+    "projected selection",
+    "kernel trace",
+    "data-editor-",
+    "@platejs/test/"
+  ],
+  "pnpmBuiltins": [
+    "add",
+    "dlx",
+    "exec",
+    "install",
+    "remove",
+    "why",
+    "list",
+    "outdated",
+    "update",
+    "store",
+    "publish",
+    "pack",
+    "rebuild",
+    "run",
+    "turbo",
+    "tsx",
+    "vitest",
+    "playwright",
+    "biome",
+    "eslint",
+    "tsc",
+    "changeset",
+    "skiller",
+    "shadcn"
+  ],
+  "accept": [
+    {
+      "hit": "^path docs/(editor-issue-harvester|editor-test-harvester|editor-audits|maintainer)(/|$)",
+      "reason": "Output directories that the issue-harvester, research and maintainer skills create on their first run."
+    },
+    {
+      "hit": "^path docs/research/(runs|raw)(/|$)",
+      "reason": "Research run and raw-source directories that the first research run creates."
+    },
+    {
+      "hit": "^path \\.agents/skills/",
+      "reason": "Generated skill mirrors that `pnpm run prepare` writes from the rule sources."
+    },
+    {
+      "hit": "^path apps/www/\\.env\\.local$",
+      "reason": "Untracked local environment file."
+    },
+    {
+      "file": "^\\.agents/rules/research/references/editor-audit\\.md$",
+      "hit": "^path (docs/plans/(prior-)?audit\\.md|packages/slate/src/(api|change|owner|use|lifecycle)(\\.test)?\\.ts|benchmarks/editor/result\\.json)$",
+      "reason": "Example citations in the audit row format."
+    },
+    {
+      "hit": "^path docs/(route|search|support|tests/source)$",
+      "reason": "Prose word pairs joined by a slash, not paths."
+    },
+    {
+      "file": "^\\.agents/rules/sync-shadcn/references/",
+      "hit": "^path apps/v4",
+      "reason": "Paths in the upstream ../shadcn checkout."
+    },
+    {
+      "file": "^\\.agents/rules/benchmark\\.mdc$",
+      "hit": "^engine slate-v2$",
+      "reason": "benchmarks/targets/slate-v2.json is this checkout's real Slate benchmark target registry."
+    },
+    {
+      "hit": "^path (docs/plans/artifacts|apps/www/\\.next|apps/www/public/rd)$",
+      "reason": "Ignored run and build output directories."
+    },
+    {
+      "hit": "^identifier (getMetrics|LayoutCount|RecalcStyleCount|TaskDuration|imeSetComposition|insertCompositionText|setFiles|toBeFocused|takeRecords|isOutdated|resolveDispatcher)$",
+      "reason": "Browser, CDP, Playwright, GitHub and React names that this checkout's code does not spell."
+    },
+    {
+      "file": "^\\.agents/rules/research/references/",
+      "hit": "^identifier (testHarvestCommit|auditedCommit|repoKey|conceptManifest|conceptMatrix|priorCandidates|LICENCE|COPYING)$",
+      "reason": "Fields of the audit and harvest manifests the research skill writes, and license file names in a harvested repository."
+    },
+    {
+      "file": "^\\.agents/rules/issue-harvester\\.mdc$",
+      "hit": "^identifier closureKind$",
+      "reason": "A column header in existing external ledgers."
+    },
+    {
+      "file": "^\\.agents/rules/changeset\\.mdc$",
+      "hit": "^identifier LegacyPlugin$",
+      "reason": "A placeholder name in a changeset example."
+    },
+    {
+      "file": "^\\.agents/rules/verify/references/testing\\.md$",
+      "hit": "^identifier IsNever$",
+      "reason": "A type-test guard that each type test declares beside `IsAny`."
+    },
+    {
+      "file": "^\\.agents/rules/research/references/editor-audit\\.md$",
+      "hit": "^engine multi-root$",
+      "reason": "Features of the external editors the audit compares."
+    },
+    {
+      "file": "^\\.agents/rules/verify/references/commands\\.md$",
+      "hit": "^path tooling/e2e$",
+      "reason": "Names the Playwright test directory that does not exist, to say there is no durable lane."
+    },
+    {
+      "hit": "^identifier data-slate-[a-z-]+$",
+      "reason": "DOM attributes that slate-react sets from node_modules."
+    },
+    {
+      "file": "^\\.agents/rules/plate-plugins/rules/typing\\.md$",
+      "hit": "^identifier (fooSchemaPlugin|FooPluginBase)$",
+      "reason": "Names of the intermediate plugin declarations the rule forbids."
+    }
+  ],
+  "tooling": [
+    "tooling/scripts/proof-worktree.mjs",
+    "tooling/scripts/proof-worktree.test.mjs",
+    "tooling/scripts/trial-power.mjs",
+    "tooling/scripts/trial-power.test.mjs",
+    "tooling/scripts/check-plate-feature.mjs",
+    "tooling/scripts/check-plate-feature.test.mjs",
+    "tooling/scripts/teaching-sweep.mjs",
+    "tooling/scripts/teaching-sweep.test.mjs",
+    "tooling/scripts/type-probe.mjs",
+    "tooling/scripts/type-probe.test.mjs",
+    "tooling/scripts/type-probe.slow.test.mjs"
+  ],
+  "omit": {
+    ".agents/rules/benchmark/references/autoresearch.md": "Runs the Plite Autoresearch loop against the new engine's benchmark targets.",
+    ".agents/rules/maintainer/references/slate-issue.md": "Targets udecode/slate, the new engine's public repository, through Plate PRs to next. This checkout's slate-issue mode sends plain Slate defects upstream.",
+    ".agents/rules/plate-plugins/references/package-host.md": "Describes the platejs/<feature> entrypoint host, its entrypoint DAG and the Oxlint boundary graph, none of which exist here. Its dependency, peer and CommonJS import rules live in plate-plugins.mdc's Package Boundaries section.",
+    ".agents/rules/plate-plugins/references/plugin-authoring-audit.md": "Audits examples written against the new plugin API (definePlugin, toReactPlugin, staged capabilities).",
+    ".agents/rules/plate-plugins/rules/capabilities.md": "Teaches the new engine's inferred staged capabilities and transaction stages.",
+    ".agents/rules/verify/references/cli.md": "Drives the new engine's @platejs/cli package, which this checkout does not ship.",
+    ".agents/rules/verify/references/hand-drive.md": "Drives hand-drive.mjs and the www-drive server, which this checkout does not have. Its page states and drift rule live in verify.mdc's Hand drive section.",
+    ".agents/rules/verify/references/playtest.md": "Runs the playtest.mjs runner and its catalogs, which this checkout does not have.",
+    ".agents/rules/verify/references/tester-pass.md": "Runs the Plate v2 beta tester sweep rounds against the new engine's apps. Its session rules and six moves live in verify.mdc's Hand drive section."
+  }
+}

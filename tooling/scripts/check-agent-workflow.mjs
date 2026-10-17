@@ -37,6 +37,28 @@ const pstackScriptPath = /^\.agents\/pstack\/.+\.mjs$/;
 const workflowGuidePath =
   /^docs\/(editor-behavior|research|slate-v2|slate-v2-draft)\/.+\.md$/;
 const workflowGuideLink = /\]\(([^)]*agent-skills\.md)\)/g;
+const fenceOpen = /^ {0,3}(`{3,}|~{3,})(.*)$/;
+const fenceClose = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
+const proseOf = (text) => {
+  const prose = [];
+  let fence;
+  for (const line of text.split('\n')) {
+    if (fence) {
+      const close = line.match(fenceClose)?.[1];
+      if (close?.[0] === fence[0] && close.length >= fence.length) {
+        fence = undefined;
+      }
+      continue;
+    }
+    const [, open, info] = line.match(fenceOpen) ?? [];
+    if (open && !(open[0] === '`' && info.includes('`'))) {
+      fence = open;
+      continue;
+    }
+    prose.push(line);
+  }
+  return prose.join('\n');
+};
 const names = readdirSync(skillsRoot)
   .filter((name) => existsSync(join(skillsRoot, name, 'SKILL.md')))
   .sort();
@@ -161,7 +183,7 @@ for (const path of localDocs) {
   const generatedPath = path
     .replace(/^\.agents\/rules\/([^/]+)\.mdc$/, '.agents/skills/$1/SKILL.md')
     .replace(/^\.agents\/rules\//, '.agents/skills/');
-  for (const match of text.matchAll(/\]\(([^)]+)\)/g)) {
+  for (const match of proseOf(text).matchAll(/\]\(([^)]+)\)/g)) {
     const target = match[1].split('#')[0];
     if (
       !target ||

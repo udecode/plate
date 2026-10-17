@@ -113,11 +113,13 @@ accepting the design.
 
 ## Workflow maintenance
 
-The local workflow is a Plate adaptation of the plate-2 checkout, recorded in
-`docs/development/pstack-source.json`. The source and this checkout have the
-same 24 skill names. Unsupported engine-specific methods are omitted rather
-than exposed as commands that cannot run here. The disposition is recorded in
-`docs/development/pstack-sync.md`.
+The local workflow is a Plate adaptation of the plate-2 checkout.
+`tooling/scripts/sync-workflow-source.mjs` copies each owner from the commit
+recorded in `docs/development/pstack-source.json` and replays the cuts in
+`docs/development/pstack-adaptations.json` and its patch. The source and this
+checkout have the same 25 skill names. The sync cuts new-engine methods instead
+of exposing commands that cannot run here. `docs/development/pstack-sync.md`
+explains the sync and its mapping rules.
 
 `docs/development/agent-skills.md` explains routing and verification. Update it
 when a workflow gate changes. Root `AGENTS.md` is the instruction source;

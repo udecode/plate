@@ -1,17 +1,9 @@
-# Workflow changes
+# Changing agent instructions, commands or tooling
 
-Preserve each still-needed capability at an explicit owner. Before a cut,
-record its source and the surviving method or the user's authorized deletion.
-Make routes discoverable from AGENTS.md or the skill list, with actual
-arguments, environment, authority and runnable proof in this checkout.
+`AGENTS.md`'s Routing sends a change to agent instructions, commands or tooling here. The pstack block's Improve the workflow mid-task and Agent files rules still apply.
 
-For broad routing or completion changes, compare baseline and revised behavior
-in fresh read-only sessions. Freeze variants and prompts before trials; have
-an independent reader define and grade required outcomes. A routing smoke
-proves selection only, not the product action. State unrun checks as gaps.
+A change keeps every method it touches. Record each capability's old owner and its surviving owner or deletion with proof, because a shorter file is not proof of a better workflow. Check that the route works without hidden context. It must be discoverable from `AGENTS.md` or the skill list, with explicit arguments, named credentials and environment, clear authority, and proof that runs in the owning workspace. Trace an intended request and an adjacent one that should stay outside.
 
-Local rules generate skills through `pnpm run prepare`. Installed skills stay
-unchanged. Shared pstack helpers and rules retain their source provenance;
-general changes belong to the shared source, project adaptations live here.
-Validate local links, skill names, helper syntax and real command paths. Update
-the workflow guide and proof after the final instruction edit.
+Run paired baseline-versus-revised trials in fresh contexts, per pstack's Eval playbook, before adopting a broad change to discovery, method selection or completion behavior; an unrun trial is pending, not passed. Load that playbook before designing the trial. The lead never sees a trial's answer key, the expected items a grader counts, before grading ends. The lead freezes the variants, prompts and grader brief before any arm runs, a separate agent writes the key to a file and replies with only its path, and a separate grader scores against it. A key the lead has seen grades no later variant. Before any arm runs, the lead writes the trial's spec and runs `node tooling/scripts/trial-power.mjs <spec>`, whose header says what the spec holds. For the dry grade, an agent that has not seen the key writes two answers per trial case and per arm from the case, that arm's files and the reason for the change: the right call with what that arm's rules require, and the same answer with only its call changed. It replies with only the file's path, the trial's grader grades every answer against the key, and the lead reads only the pass and fail cells. The key writer gets back only each refused case's id, and after each key revision a fresh agent that has not seen the key writes the reference answers again. A trial runs only once the helper exits 0, and the lead logs the digest it printed in a decision row before any arm runs. The helper's bounds assume each trial case is an independent random draw from the cases the change is about. Nothing yet ensures that, so a keep is evidence for the change, not proof. A trial's result counts only through `--analyze` with that logged digest, and an inconclusive result decides nothing. `sync-pstack smoke` answers prove routing only. A trial that claims a mode's steps survived sends a plain request for each critical finding and changed gate, and reads each candidate's transcript to see what it loaded.
+
+A repository skill holds only Plate-specific method; a generic workflow goes to a global skill or the shared dotai source, and no skill exists only to rename another owner.
