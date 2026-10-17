@@ -269,8 +269,10 @@ The core plugin configuration object. Use `MarkdownPlugin.configure({ options: {
     <APIItem name="allowedNodes" type="PlateType | null">
       Whitelist specific node types (Plate types and Markdown AST types like
       `strong`). Cannot be used with `disallowedNodes`. If set, only listed
-      types are processed. With `remark-mdx`, `mdxJsxTextElement` admits
-      inline HTML and MDX elements and `mdxJsxFlowElement` admits block ones.
+      types are processed, inside marks such as bold, italic and
+      strikethrough too, so list `text` to keep text. With `remark-mdx`,
+      `mdxJsxTextElement` admits inline HTML and MDX elements and
+      `mdxJsxFlowElement` admits block ones.
       An admitted element with a deserialize rule converts without its rule key
       listed. Default: `null` (all allowed).
     </APIItem>
