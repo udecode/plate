@@ -267,6 +267,7 @@ export type EditorTransforms<V extends Value = Value> = {
     props: Partial<NodeProps<N>>,
     options?: SetNodesOptions<V>
   ) => void;
+  setChildren: (children: V) => void;
   /**
    * @experimental
    * Set properties on exact node paths in one logical batch.

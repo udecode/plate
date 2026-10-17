@@ -11,6 +11,7 @@ import {
   applySetNodeBatchOperations,
   buildSetNodeBatchOperations,
 } from '../internal/transforms/setNodesBatch';
+import { rebaseHistory } from '../internal/history/rebaseHistory';
 import { syncLegacyMethods } from '../utils/assignLegacyTransforms';
 
 const cloneRange = (range: TRange | null | undefined) =>
@@ -27,10 +28,11 @@ const cloneRange = (range: TRange | null | undefined) =>
  */
 export const withHistory = <T extends Editor>(editor: T) => {
   const e = editor as Editor & LegacyEditorMethods;
-  const { apply } = e;
+  const { apply, setChildren } = e;
   const normalizing = e as unknown as Pick<Editor['tf'], 'normalize'>;
   const { normalize } = normalizing;
   let isSettled = true;
+  let isReplaying = false;
   e.history = { redos: [], undos: [] };
 
   e.redo = () => {
@@ -40,13 +42,19 @@ export const withHistory = <T extends Editor>(editor: T) => {
     if (redos.length > 0) {
       const batch = redos.at(-1)!;
 
-      e.tf.withoutSaving(() => {
-        e.tf.withoutNormalizing(() => {
-          for (const op of batch.operations) {
-            e.apply(op);
-          }
+      isReplaying = true;
+
+      try {
+        e.tf.withoutSaving(() => {
+          e.tf.withoutNormalizing(() => {
+            for (const op of batch.operations) {
+              e.apply(op);
+            }
+          });
         });
-      });
+      } finally {
+        isReplaying = false;
+      }
 
       const selectionAfter = batch.selectionAfter ?? batch.selectionBefore;
 
@@ -67,21 +75,27 @@ export const withHistory = <T extends Editor>(editor: T) => {
       const batch = undos.at(-1)!;
       const selectionAfter = cloneRange(e.selection);
 
-      e.tf.withoutSaving(() => {
-        e.tf.withoutNormalizing(() => {
-          const inverseOps = batch.operations
-            .map(OperationApi.inverse)
-            .reverse();
+      isReplaying = true;
 
-          for (const op of inverseOps) {
-            e.apply(op);
-          }
+      try {
+        e.tf.withoutSaving(() => {
+          e.tf.withoutNormalizing(() => {
+            const inverseOps = batch.operations
+              .map(OperationApi.inverse)
+              .reverse();
 
-          if (batch.selectionBefore) {
-            e.tf.select(batch.selectionBefore);
-          }
+            for (const op of inverseOps) {
+              e.apply(op);
+            }
+
+            if (batch.selectionBefore) {
+              e.tf.select(batch.selectionBefore);
+            }
+          });
         });
-      });
+      } finally {
+        isReplaying = false;
+      }
 
       e.writeHistory('redos', {
         ...batch,
@@ -140,6 +154,8 @@ export const withHistory = <T extends Editor>(editor: T) => {
       }
 
       history.redos = [];
+    } else if (!isReplaying && op.type !== 'set_selection') {
+      rebaseHistory(history, op);
     }
 
     isSettled = false;
@@ -159,6 +175,21 @@ export const withHistory = <T extends Editor>(editor: T) => {
 
     applySetNodeBatchOperations(e, ops as any);
   };
+
+  if (setChildren) {
+    e.setChildren = (children) => {
+      const previous = e.history.undos.at(-1);
+      const count = previous?.operations.length;
+
+      e.tf.withNewBatch(() => setChildren(children));
+
+      const current = e.history.undos.at(-1);
+
+      if (current !== previous || current?.operations.length !== count) {
+        e.tf.setSplittingOnce(true);
+      }
+    };
+  }
 
   e.writeHistory = (stack: 'redos' | 'undos', batch: any) => {
     e.history[stack].push(batch);
