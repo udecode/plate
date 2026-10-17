@@ -34,6 +34,8 @@ Rules:
   gates through `pnpm check:plite:browser-matrix`.
 - Yjs collaboration soak runners under `tooling/plite/donor/proof/` are manual-only diagnostics: run one only when the user explicitly asks for a soak run, and never add one to `check`, `test`, `test:release-proof` or any automatic agent gate.
 - Run `pnpm plite:browser:install` once when Playwright reports a missing local browser. Proof commands never download browsers implicitly.
+- A session restart or resume kills the session's background commands and its `preview_start` servers, and a `proof.mjs` run killed that way logs no `exit=` line. A proof that must outlive a restart starts from a small Node script that calls `spawn(command, args, { detached: true, stdio: ['ignore', fd, fd] }).unref()`, because `set -m` fails in a non-interactive zsh. The session then waits on that run's last log line.
+- Wait on a long run's final `exit=` line with one background loop or one Monitor filter. A filter on every failing line wakes the session once per failure, and each wake rereads the whole context.
 - run commands from the Plate repo root unless a package-local script requires
   the package cwd;
 - keep docs, skill, runtime, package, benchmark, and Playwright scans rooted in
@@ -300,6 +302,14 @@ helper's clean status, which ignores only its own links, before labeling any
 run as base. A worktree in which a patched build or typecheck ran is never base, even after
 `git apply -R`, because ignored build output such as `dist` and `.source`
 survives; every base control runs in a fresh worktree.
+
+A timing, typing-burst or caret case that fails only on a candidate server
+that has served a long run is not yet a regression. Start a fresh base server
+from a worktree this helper makes with `--install`, and a fresh candidate
+server from a second one with `--install --with <changed file>`. Run the case
+with `--repeat-each=3` on each server, alternating, for two rounds. A case
+that also fails on the fresh base is pre-existing, and it gets a suggested
+task through the `chips` skill's Offer mode.
 
 The helper has four modes for these cases:
 

@@ -4186,6 +4186,10 @@ const landSlice = (
           : RangeApi.end(place.range).path)[0]
       ) + 1
     : 0;
+  const removing =
+    place.kind === 'blocks' && !writesSite
+      ? place.blocks.flatMap(([, path]) => (path.length === 1 ? path : []))
+      : [];
   let boundary = children.length;
 
   while (boundary > notesFloor) {
@@ -4194,7 +4198,10 @@ const landSlice = (
       !NodeApi.isElement(node) ||
       node.type !== trailingType ||
       !isEmptyElement(node, schema.getElementBehavior(node)) ||
-      !schema.canPlaceAt(null, children, endMatter, boundary - 1, { root })
+      !schema.canPlaceAt(null, children, endMatter, boundary - 1, {
+        removing,
+        root,
+      })
     ) {
       break;
     }

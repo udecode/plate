@@ -1,6 +1,6 @@
 # Show the Suggesting refusal message in the www refusal specs
 
-Status: executed: waiting on your commit on next
+Status: executed: the reflect fixes wait on your commit on next
 Page: https://claude.ai/artifact/FjAtr59F8ojGF5ximkT9By
 Playbook: bug-fix
 
@@ -79,7 +79,7 @@ Reversals and deviations first.
 - The failure screenshots of the first suite run and the first base rerun were lost. Playwright empties `test-results` when a run starts, and the copy step died on zsh's read-only `status`. Every log keeps its failure messages.
 - The hand drive found drift-1, which predates the fix. It went to suggested task `t_ba20179f`. The log's drift row says the stray letter stays "until the next edit there redraws it". In the drive it cleared on the next key press in another cell.
 
-What landed: `apps/www/src/app/layout.tsx` mounts `<Toaster />` in every mode. The plate-notes entry in `docs/research/sources/plate-notes/testing-and-proof.md` now says to prove a www spec in the mode its runner serves. Both, with this plan and its log, wait in the working tree on next for your commit.
+What landed: `apps/www/src/app/layout.tsx` mounts `<Toaster />` in every mode. The plate-notes entry in `docs/research/sources/plate-notes/testing-and-proof.md` now says to prove a www spec in the mode its runner serves. You committed both, with this plan and its log, in [`2e865a0bc4`](https://github.com/udecode/plate/commit/2e865a0bc4).
 
 Proof and its limits:
 
@@ -92,7 +92,43 @@ Proof and its limits:
 
 Counts: 5 of 5 steps done.
 
+## Reflect
+
+You asked why I listed the workflow friction instead of fixing it. I read the card rule, which says the carding session fixes each item, as leave to hand them all up. AGENTS.md says to fix a helper or rule when it gets in the way, so that was wrong. One reviewer then read the session through the tooling, judgment and divergent lenses, and I sorted its 23 findings (`reflect/reviewer/reply.md` in the run folder).
+
+Fixed here, waiting on your commit:
+
+- verify: www browser specs run against the runner's Plite mode. A new `www-plite-drive` entry in `.claude/launch.json` starts that server, and the clipboard example points at it.
+- verify: Playwright writes its artifacts into the run folder with `--output`, because it empties `test-results` at the start of every run.
+- verify's command pitfalls: a session restart kills background commands and preview servers, so a proof that must outlive one starts detached. Wait on a run's final `exit=` line, not on each failure.
+- verify: before calling a timing or caret failure a regression, compare fresh base and candidate servers in turns.
+- verify: before starting a whole suite, read what the change does at runtime and whether CI keeps that suite green.
+- Hand drive: for refused input, compare the screen with the model at both ends of the text, and use `www-plite-drive` for pages in the runner's mode.
+- research's maintain mode: a lesson that works around an unchosen defect in this repo's setup also gets that defect fixed or filed.
+- The plate-notes entry now says what I saw about the 3297 server, not flags I guessed.
+
+Filed as suggested tasks:
+
+- `t_80e465e8`: a card session fixes the friction it can reach instead of only reporting it. This is your correction, and it changes shared rules in dotai.
+- `t_3b88ae44`, which I added to: the cleanup scan's landed check counts www dev-server and Playwright output, and a log row appended after landing, as unlanded work.
+- `t_53559d60`: a detached mode for `proof.mjs`.
+- `t_844ded5c`: the www runner refuses a server in the wrong mode.
+- `t_5a9d9236`: the docs tell registry users to mount the Toaster the copied editor UI uses.
+- `t_c2a28ef3`: the typing-burst budgets fail on a fresh base server.
+- `t_7f9094c6`: sort the 33 www Chromium cases that fail at base into tasks, including comment.spec's 12 failures on the `Editing` button.
+
+The three dotai tasks edit shared helpers and rules. They go through sync-pstack's Lesson mode, which needs a panel, a smoke run in every managed project and a push, so each runs as its own task.
+
+Dropped:
+
+- K7 refusing a citation of an untracked plan: the check names the link, and the Stop hook stages new docs, so it clears by itself.
+- Copying evidence before an offer: `append` already refuses and says what to do.
+- Searching known notes before offering a bug: the card session's bug-fix playbook already reads plate-notes first, and one search found the cause.
+- A DOM check at more than one caret position: `t_ba20179f` already covers it.
+- Retuning the benchmark and plate-ui skill descriptions: benchmark's already covers a failing budget, and the plate-ui gap is a docs gap, filed as `t_5a9d9236`.
+
 ## Open work
 
-- The fix, the plate-notes entry, this plan and its log wait on your commit on next. owner: zbeyens. stop: the owner commits them.
+- The reflect fixes wait on your commit on next: `.agents/rules/verify.mdc`, its `commands.md` and `hand-drive.md`, `.agents/rules/research.mdc`, the regenerated skills, `.claude/launch.json`, the plate-notes entry and this plan and its log. owner: zbeyens. stop: the owner commits them.
+- The suggested tasks above. owner: zbeyens. stop: each lands or is dropped.
 - A key refused at the end of a table cell stays on screen while the model keeps the old text. Tracked as suggested task `t_ba20179f`. owner: zbeyens. stop: `t_ba20179f` lands or is dropped.

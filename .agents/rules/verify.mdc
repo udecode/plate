@@ -158,6 +158,13 @@ its `exit N` line; after an interruption or resume, only those logs count.
   `.next-<port>`, or `.next-plite-<port>` with `PLATE_WWW_PLITE=1`, so a rerun
   on the same port reuses it; when a server already holds that port, pick
   another port, and leave `PLATE_WWW_DIST_DIR` unset.
+- www browser specs: with `PLAYWRIGHT_BASE_URL` unset, `test:www-browser:*`
+  starts `pnpm dev:plite` itself, which sets `PLATE_WWW_PLITE=1` and
+  `PLATE_WWW_DEV_SOURCE=1`. A server you start for those specs runs in that
+  mode, such as the `www-plite-drive` entry of `.claude/launch.json`. Plite
+  mode serves a different shell and root layout, so a spec green on a server
+  without the flag, such as 3297, is not green for the runner.
+  `GET /api/plite/ready` returns the server's `plite` and `devSource` flags.
 - Plite examples for interactive source proof:
   `pnpm --filter plite exec next dev --port 3298`.
 - Existing managed Plite browser proof:
@@ -247,7 +254,7 @@ The HTML example has separate native and synthetic event cases in
 `apps/www/tests/browser/clipboard.spec.ts`. Against the doctored www instance:
 
 ```bash
-PLAYWRIGHT_BASE_URL=http://localhost:3297 pnpm --filter www test:www-browser:chromium tests/browser/clipboard.spec.ts
+PLAYWRIGHT_BASE_URL=http://localhost:3653 pnpm --filter www test:www-browser:chromium tests/browser/clipboard.spec.ts
 ```
 
 The same spec runs under `test:www-browser:firefox` and
@@ -340,10 +347,13 @@ what happens to each finding.
 Keep command logs, source/build fingerprints, actual route, host identity,
 input/action, observed result, runtime errors and relevant screenshots under
 `docs/plans/artifacts/<task-slug>/`. Use temporary output locations only when
-the final evidence is copied there before cleanup. Treat a runner's output
-directory and the reports it overwrites, such as Playwright's `test-results`,
-as temporary, and copy a failure's artifacts to the artifact tree when a log
-row or plan first cites them, before the next run of that config. Each base, mutant,
+the final evidence is copied there before cleanup. Point a runner's output
+at the artifact tree, such as Playwright's
+`--output docs/plans/artifacts/<task-slug>/<name>-results`, because
+Playwright empties its `test-results` when a run starts. When a runner cannot
+take an output path, treat its output directory as temporary and copy a
+failure's artifacts to the artifact tree when a log row or plan first cites
+them, before the next run of that config. Each base, mutant,
 spike and control run writes its own named log, never a path an earlier run or
 row cites. A script that syncs later bytes over a proof overlay or folder in
 place leaves every earlier log that cites it pointing at bytes it no longer
@@ -356,7 +366,7 @@ never inside the artifact tree.
 
 When an edit touches an owner that cases this work selected depend on through production code, a fixture, harness, config, host or behavior, run each of those cases that is already executable before the edit and record its pass or red result as its pre-edit baseline; a pending, N/A or inferred historical result is not a baseline. After the last edit to that owner, rerun those cases, together when they share state or could invalidate one another, so a new failure belongs to the current change; a green from before that last edit is stale.
 
-A requested or started package, browser, root or CI gate that fails keeps the work open until the same gate passes on the final bytes. Calling the failure unrelated does not close it; only the same check failing the same way at `HEAD` in a detached worktree makes it pre-existing, per `AGENTS.md`'s Tests rule. A gate that is already red at base proves only who caused the failure, so a keep or close decision that rests on it also needs a green proof that exercises the changed path on the final bytes.
+A requested or started package, browser, root or CI gate that fails keeps the work open until the same gate passes on the final bytes. Calling the failure unrelated does not close it; only the same check failing the same way at `HEAD` in a detached worktree makes it pre-existing, per `AGENTS.md`'s Tests rule. A gate that is already red at base proves only who caused the failure, so a keep or close decision that rests on it also needs a green proof that exercises the changed path on the final bytes. Before you start a whole suite to check a change's reach, read what the change does at runtime and whether CI keeps that suite green, because each red case of a started gate then needs its own base run.
 
 Every proof command names the cwd, package or app it proves. A managed browser proof command names the doctored URL literally, for example `PLAYWRIGHT_BASE_URL=<url>`; a host label with the intended port while the runner uses its default URL is a host mismatch. Evidence carries
 forward only while source and build, environment, identity, auth and

@@ -244,56 +244,62 @@ describe('end matter landing', () => {
     });
   }
 
-  it('lands notes after a required empty title and paragraph', () => {
-    const editor = createEditor({
-      plugins: [
-        defineEditorSchema('endnote-title', {
-          id: 'endnote-title',
-          version: 1,
-          unknown: 'reject',
-          elements: {
-            title: {
-              content: schema.content.text({ min: 1, default: 'text' }),
+  const title = { type: 'title', children: [{ text: '' }] };
+
+  for (const [site, selection, landed] of [
+    [
+      'a caret',
+      caret([2, 0]),
+      [title, paragraph(''), note('N'), paragraph('')],
+    ],
+    [
+      'a selected paragraph',
+      SelectionApi.nodes([[1]], { mode: 'block' }),
+      [title, paragraph(''), note('N')],
+    ],
+  ] as const) {
+    it(`lands notes after a required empty title and paragraph from ${site}`, () => {
+      const editor = createEditor({
+        plugins: [
+          defineEditorSchema('endnote-title', {
+            id: 'endnote-title',
+            version: 1,
+            unknown: 'reject',
+            elements: {
+              title: {
+                content: schema.content.text({ min: 1, default: 'text' }),
+              },
+              paragraph: {
+                content: schema.content.text({ min: 1, default: 'text' }),
+              },
+              endnote: {
+                content: schema.content.types(['paragraph'], {
+                  default: { type: 'paragraph' },
+                  min: 1,
+                }),
+                slice: { endMatter: true },
+              },
             },
-            paragraph: {
-              content: schema.content.text({ min: 1, default: 'text' }),
-            },
-            endnote: {
-              content: schema.content.types(['paragraph'], {
+            root: schema.content.prefix(
+              [{ element: 'title' }, { element: 'paragraph' }],
+              schema.content.types(['paragraph', 'endnote'], {
                 default: { type: 'paragraph' },
                 min: 1,
-              }),
-              slice: { endMatter: true },
-            },
-          },
-          root: schema.content.prefix(
-            [{ element: 'title' }, { element: 'paragraph' }],
-            schema.content.types(['paragraph', 'endnote'], {
-              default: { type: 'paragraph' },
-              min: 1,
-            })
-          ),
-        }),
-      ],
-      initialValue: [
-        { type: 'title', children: [{ text: '' }] },
-        paragraph(''),
-        paragraph(''),
-      ],
-      initialSelection: caret([2, 0]),
+              })
+            ),
+          }),
+        ],
+        initialValue: [title, paragraph(''), paragraph('')],
+        initialSelection: selection,
+      });
+      assert.equal(
+        editor.update.fragment.replace([note('N')]),
+        true,
+        'the notes land after the required title and paragraph'
+      );
+      assert.deepEqual(editor.read.children(), landed);
     });
-    assert.equal(
-      editor.update.fragment.replace([note('N')]),
-      true,
-      'the notes land after the required title and paragraph'
-    );
-    assert.deepEqual(editor.read.children(), [
-      { type: 'title', children: [{ text: '' }] },
-      paragraph(''),
-      note('N'),
-      paragraph(''),
-    ]);
-  });
+  }
 
   it('falls back to the site when the root only accepts notes in a container', () => {
     const editor = createEditor({

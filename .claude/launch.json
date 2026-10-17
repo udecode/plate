@@ -164,6 +164,25 @@
         "3527"
       ],
       "port": 3527
+    },
+    {
+      "name": "www-plite-drive",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DRIVE_DIR=docs/plans/artifacts/drive",
+        "PLATE_WWW_PLITE=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3653"
+      ],
+      "port": 3653
     }
   ]
 }

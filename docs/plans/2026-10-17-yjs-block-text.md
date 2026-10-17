@@ -1,6 +1,6 @@
 # Yjs text with marks beside the letters
 
-Status: waiting on your commit
+Status: done, committed on next at 2e865a0bc4
 Page: https://claude.ai/artifact/T8whvrugcYGuZ4Uq4k49xL
 Playbook: bug-fix
 
