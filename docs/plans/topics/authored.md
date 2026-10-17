@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/9cWhXkwmQrpyrwSVkbZkcM
 
-Plite's native authored capability records who changed what, keeps pending suggestions reviewable, and decides them atomically. The ledger asks which native contract should retain authorship and reversible edits without requiring a particular review UI (`docs/research/review-scopes/authored.json`). Pending changes live in the editor's one stored document as review marks: inserted content carries an insert mark, and struck content stays in place under a delete mark (`packages/plitejs/src/authored/tree/record.ts`). Accepting or rejecting a change rewrites that document (`packages/plitejs/src/authored/tree/resolve.ts`), and the accepted and proposed previews are read-only views of it (`packages/plitejs/src/authored/tree/proposed.ts`). The document's `records` hold the review facts marks cannot show (`packages/plitejs/src/authored/facts/records.ts`), and a ledger reads the marks into changes and cards, a card being one author's adjacent pending changes (`packages/plitejs/src/authored/ledger/cards.ts`). The review-tree pivot (`docs/plans/2026-10-13-review-tree-pivot.md`) replaced the earlier design, in which a second, projected document held pending changes and every write became an operation in a causal graph. Suggestions, AI review and copied review UI build on this capability; `docs/plans/topics/suggestions.md` covers the Plate side. `node tooling/scripts/review-ledger.mjs show authored` prints the scope's full history.
+Plite's native authored capability records who changed what, keeps pending suggestions reviewable, and decides them atomically. The ledger asks which native contract should retain authorship and reversible edits without requiring a particular review UI (`docs/research/review-scopes/authored.json`). Pending changes live in the editor's one stored document as review marks: inserted content carries an insert mark, and struck content stays in place under a delete mark (`packages/plitejs/src/authored/tree/record.ts`). Accepting or rejecting a change rewrites that document (`packages/plitejs/src/authored/tree/resolve.ts`), and the accepted and proposed previews are views of it that throw on a plain edit (`packages/plitejs/src/authored/tree/proposed.ts`). Some other writes still change the document through them, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses. Remote collaboration changes land whatever the view. The document's `records` hold the review facts marks cannot show (`packages/plitejs/src/authored/facts/records.ts`), and a ledger reads the marks into changes and cards, a card being one author's adjacent pending changes (`packages/plitejs/src/authored/ledger/cards.ts`). The review-tree pivot (`docs/plans/2026-10-13-review-tree-pivot.md`) replaced the earlier design, in which a second, projected document held pending changes and every write became an operation in a causal graph. Suggestions, AI review and copied review UI build on this capability; `docs/plans/topics/suggestions.md` covers the Plate side. `node tooling/scripts/review-ledger.mjs show authored` prints the scope's full history.
 
 ## Public API
 
@@ -28,7 +28,7 @@ A mounted view picks its input intent. Both intents show the stored document wit
 <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
 ```
 
-A preview shows every pending change accepted, or every one rejected, and takes no writes.
+A preview shows every pending change accepted, or every one rejected, and throws on a plain edit, but some other writes still change the document through it, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses. Remote collaboration changes land whatever the view.
 
 ```tsx
 // content/docs/(guides)/authored-changes.mdx
@@ -130,8 +130,12 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   changes the review.
   A view either writes, with intent `edit` or `propose`, or previews the
   document with every pending change accepted (`proposed`) or rejected
-  (`accepted`) and takes no writes. View state never becomes another saved
-  document or a global mode. Suggesting records each write under its author,
+  (`accepted`). A preview throws on a plain edit, but some other writes still
+  change the document through it, such as an update that makes a decision,
+  and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a
+  preview refuses. Remote collaboration changes land whatever the view. View
+  state never becomes another saved document or a global mode. Suggesting
+  records each write under its author,
   and a write inside another pending change depends on that change's context, so
   rejecting the outer change removes it too. Editing records the same way and
   accepts the writer's own claims in the same commit. It leaves every other

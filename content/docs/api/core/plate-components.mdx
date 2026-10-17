@@ -50,8 +50,8 @@ For an editor with [authored changes](/docs/authored-changes), pass `authored` t
 | --- | --- |
 | `{ intent: 'edit' }` | Display pending insertions and deletions and apply edits as written. |
 | `{ intent: 'propose' }` | Display pending insertions and deletions and record edits as proposals by the current author. |
-| `{ preview: 'proposed' }` | Display every pending change accepted. Takes no writes. |
-| `{ preview: 'accepted' }` | Display every pending change rejected. Takes no writes. |
+| `{ preview: 'proposed' }` | Display every pending change accepted. Throws on a plain edit, but some other writes still change the document, such as an update that makes a decision, undo and redo, and remote collaboration changes. |
+| `{ preview: 'accepted' }` | Display every pending change rejected. Throws on a plain edit, but some other writes still change the document, such as an update that makes a decision, undo and redo, and remote collaboration changes. |
 
 The prop requires an installed authored capability. Each `EditorRoot` configures its own view, so two views of one document can use different values. Changing the value updates that view without remounting it. Rerendering with an equivalent value preserves mode changes made through its mounted plugin portal. The prop does not change the saved document or accept or reject suggestions.
 
@@ -348,8 +348,10 @@ Root provider for one editor instance.
     </APIItem>
     <APIItem name="authored" type="EditorViewOptions['authored']" optional>
       Sets this mounted authored view: an `edit` or `propose` intent, or an
-      `accepted` or `proposed` preview that takes no writes. Changing the view
-      does not accept or reject pending changes.
+      `accepted` or `proposed` preview, which throws on a plain edit, though
+      some other writes still change the document, such as an update that
+      makes a decision, undo and redo, and remote collaboration changes.
+      Changing the view does not accept or reject pending changes.
     </APIItem>
     <APIItem name="readOnly" type="boolean" optional>
       Read-only state provided to content views. Defaults to `editor.read.view.isReadOnly()`.

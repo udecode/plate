@@ -150,7 +150,7 @@ const authored = editor.plugin(AuthoredPlugin);
 authored.api.setView({ preview: 'proposed' });
 ```
 
-A preview takes no writes, and `read.mode()` reports it as `'editing'`. Switching to a preview does not accept or reject changes. Coordinates can differ between views, so read selections and apply edits through the view that produced them. Call `setMode` to leave the preview.
+A preview throws on a plain edit, but some other writes still change the document, such as an update that makes a decision, undo and redo, and remote collaboration changes. `read.mode()` reports it as `'editing'`. Switching to a preview does not accept or reject changes. Coordinates can differ between views, so read selections and apply edits through the view that produced them. Call `setMode` to leave the preview.
 
 ## Read view state
 

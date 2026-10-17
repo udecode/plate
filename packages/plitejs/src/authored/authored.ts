@@ -186,9 +186,6 @@ type AuthoredRead = {
   ) => readonly AuthoredChangeGroup[];
   /** The card holding a pending change. */
   groupOf: (changeId: string) => AuthoredChangeGroup | null;
-  preview: (
-    decisions: AuthoredDecision | readonly AuthoredDecision[]
-  ) => AuthoredResult;
   /** What review reads on a node of the stored document. */
   reviewOf: (node: unknown) => AuthoredReview;
 };
@@ -1315,10 +1312,7 @@ export const createAuthoredPlugin = (
           const change = getDefined(book.change(id));
 
           return (
-            (query.authorId === undefined ||
-              change.authorId === query.authorId) &&
-            (query.from === undefined || change.createdAt >= query.from) &&
-            (query.to === undefined || change.createdAt <= query.to)
+            query.authorId === undefined || change.authorId === query.authorId
           );
         };
         let start: string | null = null;
@@ -1392,8 +1386,6 @@ export const createAuthoredPlugin = (
 
         return Object.freeze([...cards.values()]);
       },
-      preview: (decisions: AuthoredDecision | readonly AuthoredDecision[]) =>
-        decideOn(editor, storedValue(editor), decisions).result,
       reviewOf: (node: unknown): AuthoredReview => {
         const facts = factsOf(storedValue(editor));
         const marks = marksOf(node, facts);
@@ -1643,7 +1635,7 @@ export const createAuthoredPlugin = (
           const known = factsOf(withStore(before, getValueRecords(after)));
 
           if ('preview' in updateView) {
-            throw new Error('A preview view takes no writes.');
+            throw new Error('A preview view does not take this write.');
           }
 
           // Editing records what Suggesting records, under the writer's

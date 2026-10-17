@@ -61,7 +61,7 @@ export type AuthoredChangeDetails = Readonly<{
 /**
  * Adjacent pending changes by one author that one card shows, such as a
  * deletion and the insertion that replaces it. Its id is its oldest change by
- * creation time, then id, so every peer and reload names it alike; the id
+ * `createdAt`, then id, so every peer and reload names it alike; the id
  * moves when the card splits or merges, or when that change leaves it.
  * `revision` changes when a change joins or leaves the card or a member's
  * revision changes.
@@ -79,11 +79,9 @@ export type AuthoredQuery = Readonly<{
   at?: Location | NodeKey;
   authorId?: string;
   cursor?: string;
-  from?: number;
   /** Only the changes of the card holding this change. */
   group?: string;
   limit?: number;
-  to?: number;
 }>;
 
 export type AuthoredPage = Readonly<{

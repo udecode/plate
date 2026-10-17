@@ -41,7 +41,7 @@ The plan keeps one document. Suggested text stays in place with a small tag that
 
 ## Public API
 
-A mounted view sets how input is recorded. Every editable view shows the review tree; accepted and proposed previews are read-only, and the view type cannot express a suggesting preview.
+A mounted view sets how input is recorded. Every editable view shows the review tree; accepted and proposed previews throw on a plain edit, and the view type cannot express a suggesting preview. Some other writes still change the document through a preview, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses. Remote collaboration changes land whatever the view.
 
 ```tsx before
 // content/docs/(plugins)/(collaboration)/suggestion.mdx
@@ -56,7 +56,7 @@ A mounted view sets how input is recorded. Every editable view shows the review 
 <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
 ```
 
-A read-only preview of the accepted or proposed document is a view input of its own.
+A preview of the accepted or proposed document is a view input of its own. It throws on a plain edit, but some other writes still change the document through it, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses. Remote collaboration changes land whatever the view.
 
 ```tsx before
 ```
@@ -410,7 +410,7 @@ The 2026-10-12 verdict ([2026-10-12-suggestions-complete.md](2026-10-12-suggesti
 | Suggesting inside a code block | Not allowed for now; whole code blocks still work | Replace the whole block, or allow split text in code | replace code blocks | big |
 | A layout left with too few parts, like one column | Pull its content out; never delete it | Refuse the edit that causes it | refuse underfull | detail |
 | Undoing someone's old accepted work | Gone; restore an older saved version instead | Keep that undo | keep revert | big |
-| Where you can edit | Only the review view; previews are read-only | Edit in the previews too | editable previews | small |
+| Where you can edit | Only the review view; previews throw on a plain edit, though some other writes still change the document through them, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses, and remote collaboration changes land whatever the view | Edit in the previews too | editable previews | small |
 | Moved text and new document parts | A move is a delete plus an insert; new parts are never suggestions | Keep tracked moves and suggested parts | keep moves | small |
 | Old saved suggestion data | Refused, since no release ever wrote it | Convert it when loading | convert old docs | small |
 | Old names in the code | Removed in phase 2 | Kept | keep names | detail |
@@ -443,7 +443,7 @@ I agree with the doc's direction and push it a bit further. Here are six answers
 2. **Revert of old accepted work.** Drop it. Restore an older saved version instead.
 3. **Unwritten constraints.** The record shows none. Agents picked accepted-first in September, and no owner ruled on it.
 4. **Saved data.** Cut it. No release ever wrote it.
-5. **Editable views.** Only the review view is editable. Previews are read-only, as in ONLYOFFICE and Google Docs.
+5. **Editable views.** Only the review view is editable. Previews throw on a plain edit, as ONLYOFFICE and Google Docs lock theirs, but some other writes still change the document through them, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses. Remote collaboration changes land whatever the view.
 6. **Moves.** A move is a delete plus an insert, as in Word.
 
 **Changes to the doc**
@@ -536,7 +536,7 @@ The direction is right, and I would push it further than the doc does. My answer
 
 **Saved data.** Hard cut. No published release carries any authored format, and Open work reopens this if one ships first.
 
-**Editable views.** Yes, review views only, with read-only accepted and original previews. OnlyOffice locks co-editing in its Final and Original views, Google Docs accepts writes only in its inline mode, and LibreOffice makes hidden deletions unreachable.
+**Editable views.** Yes, review views only; the accepted and original previews throw on a plain edit, but some other writes still change the document through them, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses, and remote collaboration changes land whatever the view. OnlyOffice locks co-editing in its Final and Original views, Google Docs accepts writes only in its inline mode, and LibreOffice makes hidden deletions unreachable.
 
 **Moves.** Yes, delete plus insert. Word and the ProseMirror suggestion libraries do the same.
 

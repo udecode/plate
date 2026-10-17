@@ -205,7 +205,11 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   the native owner. Changed intent or preview inputs reconfigure that view;
   equal values keep later view-local mode commands. Editing and Suggesting
   both show the review tree with its marks, and suggestion mode controls
-  switch only the intent. A preview view takes no writes, so it has no intent.
+  switch only the intent. A preview view has no intent. It throws on a plain
+  edit, but some other writes still change the document through it, such as
+  an update that makes a decision, and undo and redo; t_f485ac77 (owner
+  zbeyens) decides which of them a preview refuses. Remote collaboration
+  changes land whatever the view.
 
 ## Open work
 
