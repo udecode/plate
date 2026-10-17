@@ -1,6 +1,7 @@
 # Re-sync Plate's workflow owners from plate-2
 
 Status: done, waiting on the PR review
+Page: https://claude.ai/artifact/3KuMNhhf9miev1ZRpF5CNY
 Playbook: authoring-a-skill
 
 ## Brief
