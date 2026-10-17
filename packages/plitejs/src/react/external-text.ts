@@ -76,11 +76,12 @@ export type ExternalTextView<TConfig = undefined> = Readonly<{
   /**
    * The offset nearest client `x` on the view's first (`'start'`) or last
    * (`'end'`) visual line, in the delivered `state.text`; `null` when the view
-   * cannot tell. Plite asks before a vertical arrow enters the view and writes
-   * the selection itself. Read layout only: never dispatch an action, change
-   * the view's text or selection, focus, scroll, or run work the view
-   * deferred, such as a pending layout pass. Actions called during the query
-   * are refused. Omitted, Plite enters at the first or last offset.
+   * cannot tell. The owning editor asks before a vertical arrow enters the
+   * view and writes the selection itself. Read layout only: never dispatch an
+   * action, change the view's text or selection, focus, scroll, or run work
+   * the view deferred, such as a pending layout pass. Actions called during
+   * the query are refused. Omitted, the caret enters at the first or last
+   * offset.
    */
   offsetAt?: (input: { edge: 'end' | 'start'; x: number }) => number | null;
   /** Apply patches and canonical state before returning without dispatching an action. */
