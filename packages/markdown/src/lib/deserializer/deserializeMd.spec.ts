@@ -365,6 +365,67 @@ describe('deserializeMd', () => {
     ]);
   });
 
+  it('applies disallowedNodes to the children of bold, italic and strikethrough', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(
+        editor,
+        'x **[b](https://platejs.org)** _[i](https://platejs.org)_ ~~[s](https://platejs.org)~~ and [m](https://platejs.org)',
+        { disallowedNodes: ['a'] }
+      )
+    ).toEqual([
+      {
+        children: [
+          { text: 'x ' },
+          { text: ' ' },
+          { text: ' ' },
+          { text: ' and ' },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
+  it('applies allowedNodes to the children of bold, italic and strikethrough', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(
+        editor,
+        'x **[b](https://platejs.org) c** _[i](https://platejs.org)_ ~~[s](https://platejs.org)~~',
+        { allowedNodes: ['p', 'text', 'bold', 'italic', 'strikethrough'] }
+      )
+    ).toEqual([
+      {
+        children: [
+          { text: 'x ' },
+          { bold: true, text: ' c' },
+          { text: ' ' },
+          { text: ' ' },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
+  it('applies allowNode to the children of bold, italic and strikethrough', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(
+        editor,
+        'x **[b](https://platejs.org)** _[i](https://platejs.org)_ ~~[s](https://platejs.org)~~',
+        { allowNode: { deserialize: (node) => node.type !== 'a' } }
+      )
+    ).toEqual([
+      {
+        children: [{ text: 'x ' }, { text: ' ' }, { text: ' ' }],
+        type: 'p',
+      },
+    ]);
+  });
+
   it('keeps inline html under an allowlist that admits mdxJsxTextElement', () => {
     const editor = createTestEditor();
 
