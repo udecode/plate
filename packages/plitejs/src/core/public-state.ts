@@ -8957,7 +8957,10 @@ const getTransactionView = (editor: Editor): EditorTransaction => {
       markTransactionSelectionWritten(editor);
       const currentSelection = getCurrentSelection(editor);
 
-      if (SelectionApi.equals(currentSelection, selection)) return;
+      if (SelectionApi.equals(currentSelection, selection)) {
+        syncImplicitTargetToCurrentSelection(editor);
+        return;
+      }
 
       setCurrentSelection(editor, selection);
       syncImplicitTargetToCurrentSelection(editor);

@@ -1,7 +1,5 @@
 import { expect, test } from '@platejs/test/device';
 
-import { caretLeaf } from './device-reads';
-
 test('autocorrect on space in an empty editor replaces the word and keeps typing after it (Slate #5891)', async ({
   device,
 }) => {
@@ -11,21 +9,22 @@ test('autocorrect on space in an empty editor replaces the word and keeps typing
   await device.keyboard.use('en');
   await device.keyboard.type('becuase go');
 
-  await device.knownFailure({
-    desired: 'Because go',
-    issue:
-      'docs/plite/research/2026-10-02-agentic-e2e-testing/issue-drafts/android-gboard-autocorrect-append.md',
-    name: 'autocorrect replaces Becuase before go is typed',
-    observed: 'BecuasegoBecause ',
-    read: () => editor.get.modelText(),
+  await expect.poll(() => editor.get.modelText()).toBe('Because go');
+  await editor.assert.renderedBlockText(0, 'Because go');
+  await editor.assert.selection({
+    anchor: { offset: 10, path: [0, 0] },
+    focus: { offset: 10, path: [0, 0] },
   });
+  await editor.assert.domCaret({ offset: 10, text: 'Because go' });
+  expect(device.keyboard.shown()).toBe(true);
 
-  const typed = await editor.get.modelText();
-
-  await editor.assert.renderedBlockText(0, typed);
-
-  const caret = await caretLeaf(editor);
-
-  expect(caret?.collapsed).toBe(true);
+  await device.keyboard.type('x');
+  await expect.poll(() => editor.get.modelText()).toBe('Because gox');
+  await editor.assert.renderedBlockText(0, 'Because gox');
+  await editor.assert.selection({
+    anchor: { offset: 11, path: [0, 0] },
+    focus: { offset: 11, path: [0, 0] },
+  });
+  await editor.assert.domCaret({ offset: 11, text: 'Because gox' });
   expect(device.keyboard.shown()).toBe(true);
 });

@@ -35,6 +35,7 @@ import {
 } from '../editable/runtime-editor-api';
 import { recordPliteReactRender } from '../render-profiler';
 import { EditableDOMRuntimeContext } from './use-claim-editable-dom-commit';
+import { useRequiredEditorSelectorContext } from './use-editor-selector';
 import { useHydrated } from './use-hydrated';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
@@ -310,13 +311,37 @@ export const getDOMTextRenderRevision = (
   );
 };
 
-const bumpDOMTextRenderRevision = (editor: Editor, nodeKey: NodeKey) => {
+export const bumpDOMTextRenderRevision = (editor: Editor, nodeKey: NodeKey) => {
   const owner = getEditorRuntime(editor);
   const revisions =
     EDITOR_TO_TEXT_RENDER_REVISIONS.get(owner) ?? new Map<NodeKey, number>();
 
   revisions.set(nodeKey, (revisions.get(nodeKey) ?? 0) + 1);
   EDITOR_TO_TEXT_RENDER_REVISIONS.set(owner, revisions);
+};
+
+/** Remounts a line element from the model after the browser removed DOM that React still owns. */
+export const useRebuildLine = (editor: Editor) => {
+  const { invalidate } = useRequiredEditorSelectorContext();
+
+  return useCallback(
+    (lineKey: NodeKey) => {
+      bumpDOMTextRenderRevision(editor, lineKey);
+      invalidate([lineKey]);
+    },
+    [editor, invalidate]
+  );
+};
+
+export const getTextHostOwnerKey = (editor: Editor, textHost: Element) => {
+  const textKey = textHost.getAttribute(
+    'data-editor-node-key'
+  ) as NodeKey | null;
+  const path = textKey ? editorGetPathByNodeKey(editor, textKey) : null;
+
+  return path && path.length > 1
+    ? editorGetNodeKey(editor, path.slice(0, -1))
+    : null;
 };
 
 const parseDOMPath = (value: string | null): Path | null => {

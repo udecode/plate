@@ -166,7 +166,7 @@ export const createEditorHarnessAssertions = ({
       return;
     }
 
-    await expect(placeholder).toHaveCount(0);
+    await expect(placeholder).not.toBeVisible();
   },
   renderedBlockText: async (blockIndex: number, text: string) => {
     await assertRenderedBlockText(root, blockIndex, text);

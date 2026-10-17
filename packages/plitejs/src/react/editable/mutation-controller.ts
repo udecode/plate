@@ -1,4 +1,5 @@
 import {
+  type EditorMarks,
   type EditorUpdateTransaction,
   type Point,
   type Range,
@@ -796,6 +797,7 @@ export const applyModelOwnedTextInput = ({
   editor,
   inputController,
   inputType,
+  marks,
   mergeHistory = false,
   selection,
 }: {
@@ -803,6 +805,7 @@ export const applyModelOwnedTextInput = ({
   editor: Editor;
   inputController?: EditableInputController;
   inputType: string;
+  marks?: EditorMarks | null;
   mergeHistory?: boolean;
   selection?: Range | Selection;
 }): EditableRepairRequest =>
@@ -840,37 +843,40 @@ export const applyModelOwnedTextInput = ({
         }
 
         const insertAtSelection = (target: Range) => {
-          if (RangeApi.isCollapsed(target)) {
+          if (
+            nativeInput ||
+            marks !== undefined ||
+            RangeApi.isCollapsed(target)
+          ) {
             editor.update(
               mergeHistory ? { tags: ['composition'] } : {},
               (tx) => {
                 if (nativeInput) {
                   tx.annotations.set(nativeGroupingInput, nativeInput);
                 }
-                tx.selection.set(target);
-                // A composition writes where the browser composed it. The
-                // insert-text command would move it where a typed letter
-                // goes, after struck text.
-                if (inputType === 'insertFromComposition') {
-                  tx.text.insert(data, { at: target });
-                  return;
+                const collapsed = RangeApi.isCollapsed(target);
+                if (collapsed) {
+                  tx.selection.set(target);
+                  if (marks !== undefined) tx.marks.set(marks);
+                  // A composition writes where the browser composed it. The
+                  // insert-text command would move it where a typed letter
+                  // goes, after struck text. An Android commit still runs
+                  // the command so insert handlers see the finished word.
+                  if (
+                    inputType === 'insertFromComposition' &&
+                    !inputController?.state.isReplayingAndroidCommand
+                  ) {
+                    tx.text.insert(
+                      data,
+                      marks !== undefined ? {} : { at: target }
+                    );
+                    return;
+                  }
                 }
                 tx.command(editorCommands.insertText, {
-                  options: { at: target },
-                  text: data,
-                });
-              }
-            );
-            return;
-          }
-
-          if (nativeInput) {
-            editor.update(
-              mergeHistory ? { tags: ['composition'] } : {},
-              (tx) => {
-                tx.annotations.set(nativeGroupingInput, nativeInput);
-                tx.command(editorCommands.insertText, {
-                  options: { at: target },
+                  ...(collapsed && marks !== undefined
+                    ? {}
+                    : { options: { at: target } }),
                   text: data,
                 });
               }

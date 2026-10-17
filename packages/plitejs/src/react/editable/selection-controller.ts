@@ -38,6 +38,7 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
+import { hasAndroidComposition } from './android-composition';
 import {
   type ContentRootOwner,
   createContentRootViewBoundaryGraph,
@@ -936,7 +937,12 @@ export const resolveEditableImplicitTarget = ({
   const preferModelSelection =
     isEditableModelSelectionPreferred(inputController);
 
-  if (!ReactEditor.editable(editor)) return request.fallback;
+  if (
+    !ReactEditor.editable(editor) ||
+    inputController.state.isReplayingAndroidCommand
+  ) {
+    return request.fallback;
+  }
 
   const root = ReactEditor.findDocumentOrShadowRoot(editor);
   const domSelection = getSelection(root);
@@ -1037,7 +1043,9 @@ export const applyEditableDOMSelectionChange = ({
   state.pendingNativeTextInputRepairSuppressedDOMSelection = false;
 
   if (
-    (!isAndroidDOMHost(editorElement) && ReactEditor.isComposing(editor)) ||
+    (ReactEditor.isComposing(editor) &&
+      (!isAndroidDOMHost(editorElement) ||
+        hasAndroidComposition(inputController))) ||
     state.isDraggingInternally ||
     state.isProjectingSelection ||
     isEditableOutsideFocusBoundarySettling(state)

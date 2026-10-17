@@ -84,9 +84,9 @@ type CommitInput<V extends Value> = Omit<
 };
 
 type EditorCommitSnapshotSource = Readonly<{
-  beforeValue: JsonEditorValue;
+  beforeValue: EditorDocumentValue;
   editor: Editor;
-  value: JsonEditorValue;
+  value: EditorDocumentValue;
 }>;
 
 const EDITOR_COMMIT_SNAPSHOT_SOURCES = new WeakMap<
@@ -171,7 +171,7 @@ export const getEditorCommitSnapshot = <V extends Value>(
 export const getEditorCommitValue = (
   commit: EditorCommit,
   phase: 'after' | 'before' = 'after'
-): JsonEditorValue => {
+): EditorDocumentValue => {
   const source = EDITOR_COMMIT_SNAPSHOT_SOURCES.get(commit);
 
   if (!source) {

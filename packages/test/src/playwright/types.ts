@@ -212,6 +212,7 @@ export type BrowserNativeEventTraceAnomaly = {
 
 /** One recorded native browser event with selection and DOM evidence. */
 export type BrowserNativeEventTraceEntry = {
+  cancelable: boolean;
   /** Viewport x in CSS pixels for pointerdown entries. */
   clientX: number | null;
   /** Viewport y in CSS pixels for pointerdown entries. */

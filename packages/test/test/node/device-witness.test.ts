@@ -6,10 +6,9 @@ import {
   type DeviceWitnessStep,
   judgeDeviceWitness,
 } from '../../src/device/witness';
-import type { BrowserNativeEventTraceEntry } from '../../src/playwright/types';
 
 type Fixture = {
-  events: BrowserNativeEventTraceEntry[];
+  events: Parameters<typeof judgeDeviceWitness>[0]['events'];
   name: string;
   steps: DeviceWitnessStep[];
 };
@@ -30,6 +29,20 @@ const [korean] = JSON.parse(
     'utf-8'
   )
 ) as Fixture[];
+
+const mi6Enter = JSON.parse(
+  readFileSync(
+    new URL('fixtures/device-witness-mi6-enter.json', import.meta.url),
+    'utf-8'
+  )
+) as Fixture;
+
+const japaneseEnter = JSON.parse(
+  readFileSync(
+    new URL('fixtures/device-witness-mi6-japanese-enter.json', import.meta.url),
+    'utf-8'
+  )
+) as Fixture;
 
 const rulesFor = (name: string) => {
   const fixture = fixtures.find((candidate) => candidate.name === name);
@@ -83,6 +96,169 @@ describe('device witness over real emulator traces', () => {
     expect(
       judgeDeviceWitness({ events: korean.events, steps: korean.steps })
     ).toEqual([]);
+  });
+
+  test('accepts MI6 Enter with IME companion keydowns in its gesture window', () => {
+    expect(
+      judgeDeviceWitness({ events: mi6Enter.events, steps: mi6Enter.steps })
+    ).toEqual([]);
+  });
+
+  test('accepts MI6 Japanese composition commit, second Enter and follow-up typing', () => {
+    expect(
+      judgeDeviceWitness({
+        events: japaneseEnter.events,
+        steps: japaneseEnter.steps,
+      })
+    ).toEqual([]);
+  });
+
+  test.each<
+    [
+      string,
+      number,
+      Partial<Fixture['events'][number]> | null,
+      DeviceWitnessRule[],
+    ]
+  >([
+    ['no live composition', 3, null, ['untrusted', 'wrong-key']],
+    ['composition opened in the Enter window', 3, { seq: 23 }, ['wrong-key']],
+    ['another pre-step draft', 20, { data: 'にほ' }, ['wrong-key']],
+    ['an untrusted key', 23, { isTrusted: false }, ['untrusted', 'wrong-key']],
+    ['a non-composing key', 23, { isComposing: false }, ['wrong-key']],
+    ['another key', 23, { key: 'a' }, ['wrong-key']],
+    ['another key code', 23, { keyCode: 13 }, ['wrong-key']],
+    ['a missing key', 23, null, ['missing-key', 'unpaired-input']],
+    ['a missing update', 24, null, ['wrong-key']],
+    [
+      'an untrusted update',
+      24,
+      { isTrusted: false },
+      ['untrusted', 'wrong-key'],
+    ],
+    ['another update draft', 24, { data: 'にほ' }, ['untrusted', 'wrong-key']],
+    ['a missing beforeinput', 25, null, ['unpaired-input', 'wrong-key']],
+    [
+      'an untrusted beforeinput',
+      25,
+      { isTrusted: false },
+      ['untrusted', 'wrong-key'],
+    ],
+    ['a non-composing beforeinput', 25, { isComposing: false }, ['wrong-key']],
+    ['another beforeinput draft', 25, { data: 'にほ' }, ['wrong-key']],
+    [
+      'another beforeinput type',
+      25,
+      { inputType: 'insertText' },
+      ['unpaired-input', 'wrong-key'],
+    ],
+    ['a missing input', 26, null, ['wrong-key']],
+    [
+      'an untrusted input',
+      26,
+      { isTrusted: false },
+      ['untrusted', 'wrong-key'],
+    ],
+    ['a non-composing input', 26, { isComposing: false }, ['wrong-key']],
+    ['another input draft', 26, { data: 'にほ' }, ['wrong-key']],
+    [
+      'another input type',
+      26,
+      { inputType: 'insertText' },
+      ['unpaired-input', 'wrong-key'],
+    ],
+    ['a missing end', 27, null, ['wrong-key']],
+    ['another end draft', 27, { data: 'にほ' }, ['untrusted', 'wrong-key']],
+    [
+      'an Unidentified key after composition ended',
+      28,
+      { isComposing: true, key: 'Unidentified', keyCode: 229 },
+      ['wrong-key'],
+    ],
+    ['a missing content touch', 1, null, ['missing-pointer']],
+  ])('rejects a Japanese Enter trace with %s', (_name, seq, patch, rules) => {
+    const events = japaneseEnter.events.flatMap((event) => {
+      if (event.seq !== seq) return [event];
+      return patch ? [{ ...event, ...patch }] : [];
+    });
+
+    expect(
+      [
+        ...new Set(
+          judgeDeviceWitness({ events, steps: japaneseEnter.steps }).map(
+            (violation) => violation.rule
+          )
+        ),
+      ].sort()
+    ).toEqual(rules);
+  });
+
+  test('rejects a Japanese composition end outside its Enter window', () => {
+    const steps = japaneseEnter.steps.map((step) =>
+      step.seqStart === 23 ? { ...step, seqEnd: 27 } : step
+    );
+
+    expect(
+      judgeDeviceWitness({ events: japaneseEnter.events, steps }).map(
+        (violation) => violation.rule
+      )
+    ).toEqual(['wrong-key', 'outside-window']);
+  });
+
+  test.each<[string, Fixture['events'], DeviceWitnessRule[]]>([
+    [
+      'missing Enter',
+      mi6Enter.events.filter((event) => event.key !== 'Enter'),
+      ['wrong-key', 'wrong-key'],
+    ],
+    [
+      'untrusted Enter',
+      mi6Enter.events.map((event) =>
+        event.key === 'Enter' ? { ...event, isTrusted: false } : event
+      ),
+      ['wrong-key', 'wrong-key', 'untrusted'],
+    ],
+    [
+      'Enter with the IME key code',
+      mi6Enter.events.map((event) =>
+        event.key === 'Enter' ? { ...event, keyCode: 229 } : event
+      ),
+      ['wrong-key', 'wrong-key'],
+    ],
+    [
+      'Enter outside the gesture window',
+      mi6Enter.events.map((event) =>
+        event.key === 'Enter' ? { ...event, seq: 42 } : event
+      ),
+      ['wrong-key', 'wrong-key', 'outside-window'],
+    ],
+    [
+      'a companion with another key code',
+      mi6Enter.events.map((event) =>
+        event.seq === 40 ? { ...event, keyCode: 13 } : event
+      ),
+      ['wrong-key'],
+    ],
+    [
+      'a companion with another key',
+      mi6Enter.events.map((event) =>
+        event.seq === 40 ? { ...event, key: 'a' } : event
+      ),
+      ['wrong-key'],
+    ],
+    [
+      'an untrusted companion',
+      mi6Enter.events.map((event) =>
+        event.seq === 40 ? { ...event, isTrusted: false } : event
+      ),
+      ['untrusted', 'wrong-key'],
+    ],
+  ])('rejects MI6 Enter companions with %s', (_name, events, rules) => {
+    expect(
+      judgeDeviceWitness({ events, steps: mi6Enter.steps }).map(
+        (violation) => violation.rule
+      )
+    ).toEqual(rules);
   });
 
   test('rejects a script compositionend that carries new text', () => {

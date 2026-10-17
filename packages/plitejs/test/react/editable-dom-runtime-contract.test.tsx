@@ -614,7 +614,6 @@ test.each([
     try {
       applyEditableCompositionEnd({
         requestModelSelectionExportAfterRender: vi.fn(),
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController: runtime.inputController,
@@ -729,7 +728,6 @@ test.each(['destroy', 'setRoot'] as const)(
     try {
       applyEditableCompositionEnd({
         requestModelSelectionExportAfterRender: vi.fn(),
-        androidInputManagerRef: { current: null },
         editor,
         event,
         inputController: runtime.inputController,
@@ -845,7 +843,6 @@ test('settleInput commits an ended composition but refuses one still active', ()
 
     applyEditableCompositionEnd({
       requestModelSelectionExportAfterRender: vi.fn(),
-      androidInputManagerRef: { current: null },
       editor,
       event,
       inputController: runtime.inputController,
@@ -937,7 +934,6 @@ test.each(['destroy', 'setRoot'] as const)(
     try {
       applyEditableCompositionEnd({
         requestModelSelectionExportAfterRender: vi.fn(),
-        androidInputManagerRef: { current: null },
         editor,
         event: {
           currentTarget: firstRoot,
@@ -1022,7 +1018,6 @@ test('read-only composition exit preserves sibling-root composition marks', () =
   try {
     applyEditableCompositionEnd({
       requestModelSelectionExportAfterRender: vi.fn(),
-      androidInputManagerRef: { current: null },
       editor,
       event: {
         currentTarget: firstRoot,

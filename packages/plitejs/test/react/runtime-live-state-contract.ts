@@ -1,4 +1,9 @@
-import { createEditor, createEditorView, TextApi } from 'plitejs';
+import {
+  createEditor,
+  createEditorView,
+  editorCommands,
+  TextApi,
+} from 'plitejs';
 
 import {
   readRuntimeNode,
@@ -61,6 +66,35 @@ describe('plite-react runtime live state facade', () => {
     expect(textBinding.path).toEqual([0, 0]);
     expect(TextApi.isText(textBinding.text)).toBe(true);
     expect(textBinding.text?.text).toBe('alpha');
+  });
+
+  test('a range removal keeps parent nodes keyed in a live root view', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [{ type: 'block', children: [{ text: 'body' }] }],
+        roots: { header: [{ type: 'block', children: [{ text: 'abcdef' }] }] },
+      },
+    });
+    const view = createEditorView(editor, { root: 'header' });
+    const key = view.key([0]);
+    view.update((tx) => {
+      tx.command(editorCommands.insertText, {
+        text: '',
+        options: {
+          at: {
+            anchor: { path: [0, 0], offset: 1 },
+            focus: { path: [0, 0], offset: 5 },
+          },
+        },
+      });
+      const draft = tx.nodes.get([0])?.[0];
+      expect(draft && 'children' in draft ? tx.key(draft) : null).toBe(key);
+      expect(tx.text.string([0])).toBe('af');
+    });
+    const parent = readRuntimeNode(view, [0]);
+    expect(parent && 'children' in parent ? view.key(parent) : null).toBe(key);
+    expect(view.read((state) => state.text.string([0]))).toBe('af');
+    expect(editor.read((state) => state.text.string([0]))).toBe('body');
   });
 
   test('publishes runtime selection writes and joins an active transaction', () => {

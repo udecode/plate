@@ -187,30 +187,6 @@ describe('Android input manager phase scheduling', () => {
     expect(EDITOR_TO_SCHEDULE_FLUSH.get(secondEditor)).toBeUndefined();
   });
 
-  it('delays composition completion in the model phase and cancels it on restart', () => {
-    const { scheduleTask, tasks } = createScheduleRecorder();
-    const manager = createRecordedAndroidInputManager(scheduleTask);
-
-    manager.handleCompositionEnd({} as React.CompositionEvent<HTMLDivElement>);
-
-    expect(tasks).toHaveLength(1);
-    expect(tasks[0]).toMatchObject({
-      label: 'android-composition-end',
-      options: {
-        delay: 25,
-        key: 'android-composition-end',
-        timing: 'timeout',
-      },
-      phase: 'model',
-    });
-
-    manager.handleCompositionStart(
-      {} as React.CompositionEvent<HTMLDivElement>
-    );
-
-    expect(tasks[0].cancel).toHaveBeenCalledTimes(1);
-  });
-
   it('coalesces action flush latency in the model phase', () => {
     const { scheduleTask, tasks } = createScheduleRecorder();
     const manager = createRecordedAndroidInputManager(scheduleTask);
@@ -314,24 +290,18 @@ describe('Android input manager phase scheduling', () => {
       scheduleTask,
     });
 
-    manager.handleCompositionStart(
-      {} as React.CompositionEvent<HTMLDivElement>
-    );
-    manager.handleCompositionEnd({} as React.CompositionEvent<HTMLDivElement>);
     EDITOR_TO_PENDING_ACTION.set(editor, { run });
     manager.flush();
     manager.handleKeyDown({} as React.KeyboardEvent<HTMLDivElement>);
 
     expect(manager.isFlushing()).toBe('action');
-    expect(IS_COMPOSING.get(editor)).toBe(true);
     expect(run).toHaveBeenCalledTimes(1);
 
     manager.prepareDOMTeardown();
 
     expect(manager.isFlushing()).toBe(false);
-    expect(IS_COMPOSING.get(editor)).toBe(false);
     expect(manager.hasPendingChanges()).toBe(false);
-    expect(tasks).toHaveLength(3);
+    expect(tasks).toHaveLength(2);
     expect(tasks.every(({ cancel }) => cancel.mock.calls.length === 1)).toBe(
       true
     );
@@ -1198,7 +1168,7 @@ describe('Android input manager stored text diffs', () => {
   });
 });
 
-describe('Android input manager SwiftKey insert-position hint', () => {
+describe('Android input manager typing after a mark placeholder', () => {
   it('keeps selection on the marked inserted leaf after collapsed mark typing', () => {
     vi.useFakeTimers();
 
@@ -1245,60 +1215,6 @@ describe('Android input manager SwiftKey insert-position hint', () => {
       anchor: { path: [0, 1], offset: 1 },
       focus: { path: [0, 1], offset: 1 },
     });
-  });
-
-  it('keeps the mark-placeholder hint through scheduled selection restoration', () => {
-    vi.useFakeTimers();
-
-    const editor = createEditor({
-      initialValue: [paragraph('')],
-    });
-    const scheduleOnDOMSelectionChange = createDebouncedSpy();
-    const onDOMSelectionChange = createDebouncedSpy();
-    const textHost = document.createElement('span');
-    const textNode = document.createTextNode('');
-
-    textHost.setAttribute('data-editor-dom-sync', 'true');
-    textHost.setAttribute('data-editor-node', 'text');
-    textHost.append(textNode);
-
-    vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
-    vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 0]);
-    const resolveRange = vi
-      .spyOn(ReactEditor, 'resolveRange')
-      .mockReturnValue(null);
-
-    const manager = createAndroidInputManager({
-      editor: editor as never,
-      inputController: createInputController(),
-      onDOMSelectionChange,
-      receivedUserInput: { current: true },
-      scheduleOnDOMSelectionChange,
-    });
-
-    editorSelect(editor, range(0));
-    EDITOR_TO_PENDING_INSERTION_MARKS.set(editor, { bold: true });
-    EDITOR_TO_PENDING_DIFFS.set(editor, [
-      {
-        diff: { start: 0, end: 0, text: 'some ' },
-        id: 0,
-        path: [0, 0],
-      },
-    ]);
-
-    manager.flush();
-    expect(editorString(editor, [])).toBe('some ');
-
-    editorSelect(editor, range(5));
-    manager.handleDOMBeforeInput(beforeInputEvent('insertText', 'text'));
-
-    resolveRange.mockReturnValueOnce(range(6, 9));
-    manager.handleDOMBeforeInput(
-      beforeInputEvent('insertCompositionText', 'text', [{} as StaticRange])
-    );
-    manager.flush();
-
-    expect(editorString(editor, [])).toBe('some text');
   });
 });
 

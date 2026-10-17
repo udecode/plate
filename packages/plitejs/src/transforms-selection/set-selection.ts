@@ -75,6 +75,7 @@ export const setSelection: SelectionMutationMethods['setSelection'] = (
   }
 
   if (Object.keys(oldProps).length === 0) {
+    syncImplicitTargetToCurrentSelection(editor);
     return;
   }
 

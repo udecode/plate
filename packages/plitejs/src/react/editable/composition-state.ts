@@ -1,8 +1,9 @@
-import { type CompositionEvent, type RefObject, useEffect } from 'react';
+import { type CompositionEvent, useEffect } from 'react';
 
 import {
   type EditorMarks,
   NodeApi,
+  type NodeKey,
   PointApi,
   type Range,
   RangeApi,
@@ -19,8 +20,14 @@ import {
   isWebKitDOMHost,
 } from '../../dom/internal';
 import { createTypedText } from '../../transforms-text/insert-text';
-import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
+import { getTextHostOwnerKey } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import {
+  ANDROID_COMPOSITION_END_DELAY,
+  hasAndroidComposition,
+  openAndroidComposition,
+  scheduleAndroidCompositionEnd,
+} from './android-composition';
 import {
   getMountedEditableDOMRuntime,
   hasMountedEditableCompositionOwner,
@@ -95,13 +102,7 @@ const getNativeCompositionAnchor = (
   event: CompositionEvent<HTMLDivElement>,
   selection: Range | null
 ) => {
-  if (
-    !selection ||
-    RangeApi.isExpanded(selection) ||
-    readRuntimeText(editor, selection.focus.path)?.text === ''
-  ) {
-    return null;
-  }
+  if (!selection || RangeApi.isExpanded(selection)) return null;
 
   const root = event.currentTarget;
   const domSelection = getSelection(
@@ -129,7 +130,14 @@ const getNativeCompositionAnchor = (
     { exactMatch: false }
   );
 
-  return point && PointApi.equals(point, selection.focus) ? anchor : null;
+  if (!point || !PointApi.equals(point, selection.focus)) return null;
+  if (readRuntimeText(editor, selection.focus.path)?.text !== '') return anchor;
+
+  // Chrome replaces an empty line's line-break placeholder with the preedit,
+  // so only its text host outlives the first composition input.
+  return textHost.querySelector('[data-editor-zero-width="n"]')
+    ? textHost
+    : null;
 };
 
 const isCompositionEventTargetInput = ({
@@ -772,23 +780,23 @@ const removeUnmanagedCompositionTextNodes = ({
 };
 
 export const applyEditableCompositionEnd = ({
-  androidInputManagerRef,
   editor,
   event,
   inputController,
   onCompositionEnd,
   readOnly = false,
+  rebuildCancelledLine,
   requestModelSelectionExportAfterRender,
   runOwnedDOMMutation,
   scheduleTask,
   setComposing,
 }: {
-  androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
   editor: ReactRuntimeEditor;
   event: CompositionEvent<HTMLDivElement>;
   inputController: EditableInputController;
   onCompositionEnd?: EditableCompositionHandler;
   readOnly?: boolean;
+  rebuildCancelledLine?: (lineKey: NodeKey) => void;
   requestModelSelectionExportAfterRender: () => void;
   runOwnedDOMMutation: (callback: () => void) => void;
   scheduleTask: NonNullable<EditableInputController['scheduleTask']>;
@@ -819,8 +827,30 @@ export const applyEditableCompositionEnd = ({
   if (ReactEditor.hasSelectableTarget(editor, event.target)) {
     const wasComposing = ReactEditor.isComposing(editor);
     const runtimeOwnsComposing = inputController.state.isComposing;
+    const nativeAnchor =
+      inputController.domInputRuntime.compositionEpoch?.anchor;
+    const compositionText =
+      getCompositionEventText(event) ??
+      inputController.state.compositionSession?.text;
+    const isCancel =
+      compositionText === '' &&
+      !inputController.state.compositionSession?.modelCommitted;
 
-    androidInputManagerRef.current?.handleCompositionEnd(event);
+    // Chrome drops an empty line's text host when it cancels the preedit, and
+    // React cannot render into a host it no longer has, so the line rebuilds
+    // before onCompositionEnd can commit a render.
+    if (
+      rebuildCancelledLine &&
+      wasComposing &&
+      isCancel &&
+      !isAndroidDOMHost(event) &&
+      isDOMElement(nativeAnchor) &&
+      !event.currentTarget.contains(nativeAnchor)
+    ) {
+      const lineKey = getTextHostOwnerKey(editor, nativeAnchor);
+
+      if (lineKey) rebuildCancelledLine(lineKey);
+    }
 
     const compositionEndIsExternallyOwned =
       isCompositionEventHandled({ event, handler: onCompositionEnd }) ||
@@ -836,6 +866,17 @@ export const applyEditableCompositionEnd = ({
       }
     };
 
+    if (isAndroidDOMHost(event) && hasAndroidComposition(inputController)) {
+      scheduleAndroidCompositionEnd({
+        text: getCompositionEventText(event),
+        delay: ANDROID_COMPOSITION_END_DELAY,
+        editor,
+        inputController,
+        scheduleTask,
+        setComposing,
+      });
+      return;
+    }
     if (isAndroidDOMHost(event) || !wasComposing) {
       clearEditableCompositionRuntimeState(editor);
       inputController.state.compositionSession = null;
@@ -867,9 +908,20 @@ export const applyEditableCompositionEnd = ({
     }
 
     const rootElement = event.currentTarget;
-    const compositionText =
-      getCompositionEventText(event) ??
-      inputController.state.compositionSession?.text;
+
+    // A cancel, such as Escape, ends here rather than in a pending end, which
+    // would take the next keystroke as this composition's final input.
+    if (isCancel) {
+      const failures = createCompositionFailureScope();
+
+      failures.attempt(() => {
+        clearEditableCompositionRuntimeState(editor);
+      });
+      failures.attempt(finishComposing);
+      failures.throwIfAny();
+      return;
+    }
+
     const mergeHistory = shouldMergeEditableCompositionHistory(inputController);
     const target = readRuntimeSelectionRange(editor);
     const targetAnchor =
@@ -967,7 +1019,6 @@ export const applyEditableCompositionEnd = ({
 };
 
 export const applyEditableCompositionStart = ({
-  androidInputManagerRef,
   editor,
   event,
   inputController,
@@ -975,7 +1026,6 @@ export const applyEditableCompositionStart = ({
   readOnly = false,
   setComposing,
 }: {
-  androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
   editor: ReactRuntimeEditor;
   event: CompositionEvent<HTMLDivElement>;
   inputController?: EditableInputController;
@@ -1008,12 +1058,14 @@ export const applyEditableCompositionStart = ({
     inputController?.state.pendingCompositionEnd?.cancel();
     if (inputController) inputController.state.pendingCompositionEnd = null;
     clearEditableCompositionRuntimeState(editor);
-    androidInputManagerRef.current?.handleCompositionStart(event);
 
-    if (
-      isCompositionEventHandled({ event, handler: onCompositionStart }) ||
-      isAndroidDOMHost(event)
-    ) {
+    if (isCompositionEventHandled({ event, handler: onCompositionStart })) {
+      return;
+    }
+    if (isAndroidDOMHost(event)) {
+      if (inputController) {
+        openAndroidComposition({ editor, inputController, setComposing });
+      }
       return;
     }
 
@@ -1101,7 +1153,12 @@ export const applyEditableCompositionUpdate = ({
       if (inputController) {
         inputController.state.activeIntent = 'composition';
       }
-      if (!ReactEditor.isComposing(editor)) {
+      if (isAndroidDOMHost(event)) {
+        // An update after a forced end opens a new run on the committed text.
+        if (inputController) {
+          openAndroidComposition({ editor, inputController, setComposing });
+        }
+      } else if (!ReactEditor.isComposing(editor)) {
         if (inputController) beginEditableCompositionSession(inputController);
         setComposing(true);
       }

@@ -14,6 +14,7 @@ import {
   profilePliteReactDuration,
   recordPliteReactRender,
 } from '../render-profiler';
+import { settleAndroidCompositionBeforeInput } from './android-composition';
 import { getInputEventTargetRanges } from './dom-input-event';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { completeDuplicateEditableEditingEpochCommand } from './editing-epoch-adapter';
@@ -420,6 +421,15 @@ export const useRuntimeBeforeInputEvents = ({
   const handleDOMBeforeInput = useCallback(
     (event: InputEvent) => {
       profilePliteReactDuration('beforeinput-total', () => {
+        const compositionTarget = runtime.isAndroidHost
+          ? settleAndroidCompositionBeforeInput({
+              editor,
+              event,
+              inputController,
+              setComposing,
+            })
+          : null;
+
         const shouldFlushPendingTextInput =
           deferNativeTextInputRepair &&
           shouldFlushPendingNativeTextInputBeforeDOMBeforeInput({
@@ -709,7 +719,10 @@ export const useRuntimeBeforeInputEvents = ({
           }
 
           if (targetEditor && androidInputManagerRef.current) {
-            androidInputManagerRef.current.handleDOMBeforeInput(event);
+            androidInputManagerRef.current.handleDOMBeforeInput(
+              event,
+              compositionTarget
+            );
             return;
           }
 
@@ -818,7 +831,10 @@ export const useRuntimeBeforeInputEvents = ({
           }
 
           if (androidInputManagerRef.current) {
-            androidInputManagerRef.current.handleDOMBeforeInput(event);
+            androidInputManagerRef.current.handleDOMBeforeInput(
+              event,
+              compositionTarget
+            );
             return;
           }
 

@@ -30,6 +30,7 @@ export type EditableDescendantBinding = {
   isInline: boolean;
   isVoid: boolean;
   node: Descendant | null;
+  ownRenderRevision: number;
   path: Path | null;
   renderRevision: number;
   schemaElement: EditorSchemaElement | null;
@@ -83,6 +84,7 @@ export const readEditableDescendantBinding = ({
       isInline: false,
       isVoid: false,
       node: null,
+      ownRenderRevision: 0,
       path: null,
       renderRevision: 0,
       schemaElement: null,
@@ -119,6 +121,9 @@ export const readEditableDescendantBinding = ({
         .filter(Boolean) as NodeKey[]);
   const ownNodeKey = editorGetNodeKey(editor, path);
   const isElement = !isEditableTextNode(descendant);
+  const ownRenderRevision = ownNodeKey
+    ? getDOMTextRenderRevision(editor, [ownNodeKey])
+    : 0;
 
   return {
     childNodeKeys,
@@ -135,11 +140,10 @@ export const readEditableDescendantBinding = ({
     isInline: isElement && editorIsInline(editor, descendant),
     isVoid: isElement && editorIsVoid(editor, descendant),
     node: descendant,
+    ownRenderRevision,
     path,
-    renderRevision: getDOMTextRenderRevision(editor, [
-      ...(ownNodeKey ? [ownNodeKey] : []),
-      ...childNodeKeys,
-    ]),
+    renderRevision:
+      ownRenderRevision + getDOMTextRenderRevision(editor, childNodeKeys),
     schemaElement: isEditableTextNode(descendant)
       ? null
       : editor.read((state) => state.schema.element(descendant.type)),

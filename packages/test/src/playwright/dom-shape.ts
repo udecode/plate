@@ -35,37 +35,43 @@ export const getRenderedBlockDOMShapes = async (
     };
 
     return Array.from(
-      element.querySelectorAll(':scope > [data-editor-node="element"]')
-    ).map((block, index) => {
-      const textContent = normalizeText(block.textContent ?? '');
-      const innerText = normalizeText(
-        block instanceof HTMLElement
-          ? (block.innerText ?? block.textContent ?? '')
-          : (block.textContent ?? '')
-      );
-      const zeroWidthNodes = Array.from(
-        block.querySelectorAll('[data-editor-zero-width]')
-      ).map((zeroWidth, zeroWidthIndex) => ({
-        hasBr: !!zeroWidth.querySelector('br'),
-        hasFEFF: zeroWidth.textContent?.includes('\uFEFF') ?? false,
-        html: zeroWidth.innerHTML,
-        index: zeroWidthIndex,
-        kind: zeroWidth.getAttribute('data-editor-zero-width'),
-        length: zeroWidth.getAttribute('data-editor-length'),
-        textContent: zeroWidth.textContent ?? '',
-      }));
+      element.querySelectorAll(
+        '[data-editor-node="element"][data-editor-path]:not([data-editor-path*=","])'
+      )
+    )
+      .filter(
+        (block) => block.closest('[data-editor-node="value"]') === element
+      )
+      .map((block, index) => {
+        const textContent = normalizeText(block.textContent ?? '');
+        const innerText = normalizeText(
+          block instanceof HTMLElement
+            ? (block.innerText ?? block.textContent ?? '')
+            : (block.textContent ?? '')
+        );
+        const zeroWidthNodes = Array.from(
+          block.querySelectorAll('[data-editor-zero-width]')
+        ).map((zeroWidth, zeroWidthIndex) => ({
+          hasBr: !!zeroWidth.querySelector('br'),
+          hasFEFF: zeroWidth.textContent?.includes('\uFEFF') ?? false,
+          html: zeroWidth.innerHTML,
+          index: zeroWidthIndex,
+          kind: zeroWidth.getAttribute('data-editor-zero-width'),
+          length: zeroWidth.getAttribute('data-editor-length'),
+          textContent: zeroWidth.textContent ?? '',
+        }));
 
-      return {
-        index,
-        innerText,
-        lineBoxCount: countLineBoxes(block),
-        textContent,
-        unexpectedZeroWidthBreaks: zeroWidthNodes.filter(
-          (zeroWidth) => textContent !== '' && zeroWidth.hasBr
-        ),
-        zeroWidthNodes,
-      };
-    });
+        return {
+          index,
+          innerText,
+          lineBoxCount: countLineBoxes(block),
+          textContent,
+          unexpectedZeroWidthBreaks: zeroWidthNodes.filter(
+            (zeroWidth) => textContent !== '' && zeroWidth.hasBr
+          ),
+          zeroWidthNodes,
+        };
+      });
   });
 
 export const getRenderedBlockDOMShape = async (

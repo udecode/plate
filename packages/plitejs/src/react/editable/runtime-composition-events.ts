@@ -1,5 +1,6 @@
 import { type CompositionEvent, useCallback } from 'react';
 
+import { useRebuildLine } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   applyEditableCompositionEnd,
@@ -20,7 +21,6 @@ type CompositionHandler = (
 ) => boolean | void;
 
 export const useRuntimeCompositionEvents = ({
-  androidInputManagerRef,
   editor,
   inputController,
   onCompositionEnd,
@@ -32,7 +32,6 @@ export const useRuntimeCompositionEvents = ({
   setComposing,
   trace,
 }: {
-  androidInputManagerRef: EditableEventRuntime['android']['managerRef'];
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
   onCompositionEnd?: CompositionHandler;
@@ -44,6 +43,7 @@ export const useRuntimeCompositionEvents = ({
   setComposing: EditableEventRuntime['composition']['setComposing'];
   trace: EditableEventRuntime['trace'];
 }) => {
+  const rebuildLine = useRebuildLine(editor);
   const handleCompositionEnd = useCallback(
     (event: CompositionEvent<HTMLDivElement>) => {
       const decision = prepareEditableCompositionKernel({
@@ -60,12 +60,12 @@ export const useRuntimeCompositionEvents = ({
       });
       runtime.runOwnedDOMMutation('composition', () => {
         applyEditableCompositionEnd({
-          androidInputManagerRef,
           editor,
           event,
           inputController,
           onCompositionEnd,
           readOnly,
+          rebuildCancelledLine: rebuildLine,
           requestModelSelectionExportAfterRender,
           runOwnedDOMMutation: (callback) => {
             runtime.runOwnedDOMMutation('composition', callback);
@@ -76,9 +76,9 @@ export const useRuntimeCompositionEvents = ({
       });
     },
     [
-      androidInputManagerRef,
       editor,
       inputController,
+      rebuildLine,
       onCompositionEnd,
       readOnly,
       requestModelSelectionExportAfterRender,
@@ -109,7 +109,6 @@ export const useRuntimeCompositionEvents = ({
       });
       runtime.runOwnedDOMMutation('composition', () => {
         applyEditableCompositionStart({
-          androidInputManagerRef,
           editor,
           event,
           inputController,
@@ -120,7 +119,6 @@ export const useRuntimeCompositionEvents = ({
       });
     },
     [
-      androidInputManagerRef,
       editor,
       inputController,
       onCompositionStart,

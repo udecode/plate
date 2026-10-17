@@ -46,6 +46,10 @@ import {
   writePliteViewSelection,
 } from '../view-selection';
 import { isSelectionViewportBacked } from '../viewport-commands';
+import {
+  type AndroidCompositionEndReason,
+  finishAndroidComposition,
+} from './android-composition';
 import { isRangeAcrossContentRootOwners } from './content-root-owners';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import { ExternalTextRuntime } from './external-text-runtime';
@@ -769,34 +773,50 @@ export class EditableDOMRuntime {
     }
   };
 
+  finishAndroidComposition(reason: AndroidCompositionEndReason) {
+    finishAndroidComposition({
+      editor: this.editorValue,
+      inputController: this.inputController,
+      reason,
+      setComposing: this.setComposing,
+    });
+  }
+
   shouldDeferCompositionSelectionExport() {
     const epoch = this.inputController.domInputRuntime.compositionEpoch;
-    const root = this.rootElement;
+    const anchors = Array.isArray(epoch?.anchor)
+      ? epoch.anchor
+      : [epoch?.anchor];
 
     return !!(
       this.state.isComposing &&
-      !this.isAndroidHost &&
-      isDOMNode(epoch?.anchor) &&
-      root?.contains(epoch.anchor) &&
-      epoch.phase !== 'committing' &&
-      epoch.phase !== 'repairing'
+      anchors.some(
+        (anchor) => isDOMNode(anchor) && this.rootElement?.contains(anchor)
+      ) &&
+      epoch?.phase !== 'committing' &&
+      epoch?.phase !== 'repairing'
     );
   }
 
   isCompositionDOMNodeProtected(node: globalThis.Node) {
     const epoch = this.inputController.domInputRuntime.compositionEpoch;
-    const root = this.rootElement;
+    const anchors = Array.isArray(epoch?.anchor)
+      ? epoch.anchor
+      : [epoch?.anchor];
 
+    if (!this.state.isComposing || !this.rootElement) return false;
     if (
-      !this.state.isComposing ||
-      this.isAndroidHost ||
-      !isDOMNode(epoch?.anchor) ||
-      !root?.contains(epoch.anchor)
+      !anchors.some(
+        (anchor) => isDOMNode(anchor) && this.rootElement?.contains(anchor)
+      )
     ) {
       return false;
     }
 
-    return node.contains(epoch.anchor) || epoch.anchor.contains(node);
+    return anchors.some(
+      (anchor) =>
+        isDOMNode(anchor) && (node.contains(anchor) || anchor.contains(node))
+    );
   }
 
   deferCompositionDOMWrite(node: globalThis.Node, write: () => void) {
@@ -992,6 +1012,9 @@ export class EditableDOMRuntime {
     const { pendingCompositionEnd } = this.state;
 
     if (!this.connected || !root) return false;
+    // Unlike a desktop IME, an Android run can be ended from script: it
+    // commits the composed text and settles like the manager's pending input.
+    this.finishAndroidComposition('settle');
     if (this.state.isComposing && !pendingCompositionEnd) return false;
 
     if (pendingCompositionEnd?.ownership === 'editor') {
@@ -1021,6 +1044,7 @@ export class EditableDOMRuntime {
     if (!getInstalledPlugin(this.editorValue, 'history')) {
       return { reason: 'not-installed', status: 'unavailable' };
     }
+    this.finishAndroidComposition('settle');
     if (this.state.isComposing) {
       return { reason: 'composing', status: 'unavailable' };
     }

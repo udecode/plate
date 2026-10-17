@@ -94,6 +94,48 @@ test('target runtime imports the current DOM selection for implicit editor comma
   expect(scheduledSelectionSync).toBe(1);
 });
 
+test('an Android command replay keeps its own target when Chrome already moved the DOM selection', async () => {
+  const editor = createEditor<Value>({ initialValue });
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: false },
+    state: createEditableInputControllerState(),
+  });
+
+  let rendered!: ReturnType<typeof render>;
+  act(() => {
+    rendered = render(
+      <EditorRoot editor={editor}>
+        <Editable />
+      </EditorRoot>
+    );
+  });
+  const mountedEditor = findMountedEditableDOMRuntime(
+    rendered.container.querySelector('[data-editor]')!
+  )!.editor;
+
+  await act(async () => {
+    editor.update((tx) => {
+      tx.selection.set(fallbackSelection);
+    });
+  });
+
+  domSelectionForText('two');
+  inputController.state.isReplayingAndroidCommand = true;
+
+  const target = resolveEditableImplicitTarget({
+    editor: mountedEditor,
+    inputController,
+    request: {
+      fallback: fallbackSelection,
+      reason: 'implicit-target',
+    },
+    scheduleSelectionSync() {},
+    syncDOMSelectionToEditor() {},
+  });
+
+  expect(target).toEqual(fallbackSelection);
+});
+
 test('Editable target runtime routes implicit block commands to the current DOM selection', async () => {
   const editor = createEditor<Value>({ initialValue });
 

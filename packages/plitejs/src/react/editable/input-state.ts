@@ -118,6 +118,7 @@ export type EditableInputControllerState = {
   isDraggingInternally: boolean;
   isNativeSelectionDragActive: boolean;
   isProjectingSelection: boolean;
+  isReplayingAndroidCommand: boolean;
   isUpdatingSelection: boolean;
   latestElement: DOMElement | null;
   modelSelectionPreference?: ModelSelectionPreference | null;
@@ -294,6 +295,7 @@ export const createEditableInputControllerState = (
       isDraggingInternally: false,
       isNativeSelectionDragActive: false,
       isProjectingSelection: false,
+      isReplayingAndroidCommand: false,
       isUpdatingSelection: false,
       latestElement: null,
       modelSelectionPreference: null,

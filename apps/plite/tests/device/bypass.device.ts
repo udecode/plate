@@ -44,13 +44,33 @@ test('the guarded connection refuses every CDP input replay, and the witness jud
       'shell',
       ...args,
     ]);
-  const insideTap = (replay: () => unknown) =>
-    Promise.all([
+  const insideTap = async (replay: () => unknown) => {
+    const priorTrace = await lane.trace();
+    const before = priorTrace.at(-1)?.seq ?? 0;
+
+    await Promise.all([
       lane.keyboard.tap('h'),
-      new Promise((resolve) => {
-        setTimeout(() => resolve(replay()), 50);
-      }),
+      (async () => {
+        await expect
+          .poll(
+            async () => {
+              const events = await lane.trace();
+
+              return events.some(
+                (entry) =>
+                  entry.seq > before &&
+                  entry.type === 'keydown' &&
+                  entry.isTrusted &&
+                  entry.key === 'Unidentified'
+              );
+            },
+            { intervals: [10] }
+          )
+          .toBe(true);
+        await replay();
+      })(),
     ]);
+  };
 
   await editor.touch.tap({ offset: first.length, path: [0, 0] });
   await lane.keyboard.use('en');

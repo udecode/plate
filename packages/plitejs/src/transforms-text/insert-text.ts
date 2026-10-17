@@ -202,6 +202,8 @@ const getPointTextInsertionPoint = (
 };
 
 const insertTextAtPoint = (editor: Editor, at: Point, text: string) => {
+  if (text.length === 0) return;
+
   applyBuiltDocumentChange(
     editor,
     (builder, root) =>
