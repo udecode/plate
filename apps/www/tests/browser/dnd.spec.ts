@@ -1491,3 +1491,96 @@ test('dnd:block-selection-from-side-padding', async ({ page }, testInfo) => {
     runtimeErrors.stop();
   }
 });
+
+test('dnd:handle-tooltip-follows-its-handle', async ({ page }, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await page.goto('/blocks/dnd-table-demo', { waitUntil: 'commit' });
+    await createBrowserEditorHarness(
+      page,
+      'dnd:handle-tooltip-follows-its-handle',
+      page.locator('.editor-editor')
+    ).ready({ editor: 'visible', text: 'Left one' });
+
+    const nestedColumnBlock = page
+      .locator('.editor-draggable .editor-draggable')
+      .filter({
+        hasText: /^Left one$/,
+      });
+
+    await nestedColumnBlock.hover();
+    await nestedColumnBlock.getByRole('button', { name: 'Drag block' }).hover();
+
+    const tooltip = page.locator('[data-slot="tooltip-content"]');
+
+    await expect(tooltip).toBeVisible();
+    await tooltip.evaluate((element) =>
+      Promise.all(
+        element.getAnimations().map((animation) => animation.finished)
+      )
+    );
+    const open = await tooltip.boundingBox();
+
+    expect(open).not.toBeNull();
+    const tooltipFrames = await page.evaluateHandle(() => {
+      const frames: Array<{ x: number; y: number }> = [];
+      const sample = () => {
+        for (const element of document.querySelectorAll(
+          '[data-slot="tooltip-content"]'
+        )) {
+          if (
+            element.checkVisibility({
+              opacityProperty: true,
+              visibilityProperty: true,
+            })
+          ) {
+            const { x, y } = element.getBoundingClientRect();
+
+            frames.push({ x, y });
+          }
+        }
+        requestAnimationFrame(sample);
+      };
+
+      requestAnimationFrame(sample);
+
+      return frames;
+    });
+    const pastColumnGroupHandle = {
+      x: open!.x + open!.width - 10,
+      y: open!.y + open!.height / 2,
+    };
+
+    await page.mouse.move(pastColumnGroupHandle.x, pastColumnGroupHandle.y, {
+      steps: 8,
+    });
+    const strayFrames = () =>
+      tooltipFrames.evaluate(
+        (sampled, { x, y }) =>
+          sampled.filter(
+            (frame) => Math.abs(frame.x - x) > 20 || Math.abs(frame.y - y) > 20
+          ),
+        open!
+      );
+
+    await expect
+      .poll(async () => {
+        const stray = await strayFrames();
+
+        return (
+          stray.length > 0 ||
+          (await tooltip.filter({ visible: true }).count()) === 0
+        );
+      })
+      .toBe(true);
+    const stray = await strayFrames();
+
+    expect(stray).toEqual([]);
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});

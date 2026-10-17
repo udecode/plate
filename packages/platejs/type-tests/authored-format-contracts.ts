@@ -1,8 +1,4 @@
-import {
-  createEditor,
-  type EditorDocumentValue,
-  type ValueOf,
-} from 'platejs';
+import { createEditor, type EditorDocumentValue, type ValueOf } from 'platejs';
 import {
   AuthoredPlugin,
   projectAuthoredDocument,

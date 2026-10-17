@@ -99,10 +99,7 @@ describe('ExportToolbarButton', () => {
     const click = mock();
     HTMLAnchorElement.prototype.click = click;
     const view = render(
-      <EditorRoot
-        editor={editor}
-        authored={{ preview: 'accepted' }}
-      >
+      <EditorRoot editor={editor} authored={{ preview: 'accepted' }}>
         <ExportToolbarButton />
       </EditorRoot>
     );

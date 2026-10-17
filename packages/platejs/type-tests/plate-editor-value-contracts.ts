@@ -1,4 +1,4 @@
-import type { EditorApplicationSchema } from 'platejs';
+import { type EditorApplicationSchema, txLocate } from 'platejs';
 import { createEditor, definePlugin, type Editor } from 'platejs/react';
 
 import {
@@ -43,9 +43,9 @@ const LayoutPlugin = definePlugin('layout', {
     },
   },
   update: ({ tx }) => ({
-    setDensity: (density: 1 | 2) => {
+    setDensity: txLocate(false, (density: 1 | 2) => {
       tx.nodes.set({ density });
-    },
+    }),
   }),
 });
 
@@ -87,8 +87,10 @@ const SharedPropertyPlugin = definePlugin('sharedProperty', {
   },
   update: ({ tx }) => ({
     setBoolean: () => tx.nodes.set({ sharedProperty: true }),
-    setDynamic: (properties: Readonly<Record<string, string>>) =>
-      tx.nodes.set(properties),
+    setDynamic: txLocate(
+      false,
+      (properties: Readonly<Record<string, string>>) => tx.nodes.set(properties)
+    ),
     setString: () => tx.nodes.set({ sharedProperty: 'value' }),
     setWrongValue: () => {
       // @ts-expect-error one persisted key may have several declared placements, but its value must match one of them

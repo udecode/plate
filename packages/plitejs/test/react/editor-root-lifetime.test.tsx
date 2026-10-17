@@ -141,9 +141,7 @@ test('captures source defaults once and keeps mounted policy independent', async
   expect(mountedEditor).toBe(first);
   expect(first.read.authored.view()).toEqual(accepted);
 
-  await act(async () =>
-    configured.api.authored.setView(proposal)
-  );
+  await act(async () => configured.api.authored.setView(proposal));
   act(() => setEditorReadOnly(configured, true));
   mounted.rerender(tree(2));
   expect(mountedEditor).toBe(first);

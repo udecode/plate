@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
 
 import { createAuthoredPlugin } from 'plitejs/authored';
-
-import { authoredTestApi } from '../../../authored/__tests__/authoredTestApi';
 import { writeDOMFragmentData } from 'plitejs/dom';
 import * as Y from 'yjs';
 
+import { authoredTestApi } from '../../../authored/__tests__/authoredTestApi';
 import { ContentSlice, createEditor } from '../../../core';
 import { YjsPlugin } from '../../../yjs/react';
 import {

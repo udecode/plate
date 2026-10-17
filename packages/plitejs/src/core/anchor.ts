@@ -47,6 +47,7 @@ import {
   subscribeAnchorState,
   registerBoundAnchor,
 } from './anchor-state';
+import { mapToAuthoredView } from './authored-runtime';
 import {
   DocumentChange,
   getInternalDocumentRootChange,
@@ -55,7 +56,6 @@ import {
 import { DocumentIndex, nodeAtPath } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
 import type { JsonEditorValue, JsonNode } from './change/tokens';
-import { mapToAuthoredView } from './authored-runtime';
 import { isDocumentView } from './document-view-read';
 import {
   getEditorRuntime,

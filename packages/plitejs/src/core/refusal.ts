@@ -8,6 +8,7 @@ import { getEditorRuntimeOwner } from './editor-runtime';
  * @internal
  */
 export class EditorRefusalError extends Error {
+  override name = 'EditorRefusalError';
   readonly refusal: unknown;
 
   constructor(refusal: unknown, message: string) {

@@ -4,11 +4,10 @@ import {
   getActiveUpdateRoot,
   runEditorTransaction,
 } from '../core/public-state';
-import { end as editorEnd } from '../editor/end';
 import { node as editorNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import { type Location, LocationApi } from '../interfaces';
-import type { AnyEditor as Editor, Value } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import {
   isBlock as editorIsBlock,
   isEnd as editorIsEnd,
@@ -24,7 +23,8 @@ import {
   type NodeMatchPredicate,
 } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
-import { type Range, RangeApi } from '../interfaces/range';
+import type { Point } from '../interfaces/point';
+import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import type {
   NodeMutationMethods,
@@ -51,40 +51,29 @@ export const NON_SETTABLE_NODE_PROPERTIES: ReadonlySet<string> = new Set([
 const getParentEntry = (editor: unknown, at: Location) =>
   editorParent(editor as Editor, at);
 
-const trimSplitRangeEndAtTextStart = <
-  V extends Value,
-  TPlugins extends readonly unknown[],
->(
-  editor: Editor<V, TPlugins>,
-  range: Range,
-  match: NodeMatchPredicate
-): Range => {
-  const [start, end] = RangeApi.edges(range);
-
+const isUntouchedEdgeText = (
+  editor: Editor,
+  node: Node,
+  path: Path,
+  [start, end]: readonly [Point, Point]
+) => {
+  if (!NodeApi.isText(node) || PathApi.equals(start.path, end.path)) {
+    return false;
+  }
   if (
-    end.offset !== 0 ||
-    PathApi.equals(start.path, end.path) ||
-    !PathApi.hasPrevious(end.path)
+    !(PathApi.equals(path, start.path) && start.offset === node.text.length) &&
+    !(PathApi.equals(path, end.path) && end.offset === 0)
   ) {
-    return range;
+    return false;
   }
 
-  const endNode = NodeApi.get(editor, end.path);
+  const [parentNode] = getParentEntry(editor, path);
 
-  if (!NodeApi.isText(endNode) || !match(endNode, end.path)) {
-    return range;
-  }
-
-  const previousEnd = editorEnd(editor, PathApi.previous(end.path));
-  const trimmedRange = { anchor: start, focus: previousEnd };
-
-  if (RangeApi.isCollapsed(trimmedRange)) {
-    return range;
-  }
-
-  return RangeApi.isBackward(range)
-    ? { anchor: trimmedRange.focus, focus: trimmedRange.anchor }
-    : trimmedRange;
+  // A void's text is empty, so a range edge inside it sits at both its start
+  // and its end; the range still selects the whole void.
+  return !(
+    NodeApi.isElement(parentNode) && getEditorSchema(editor).isVoid(parentNode)
+  );
 };
 
 export const setNodes = ((
@@ -111,6 +100,7 @@ export const setNodes = ((
     let mode = optionMode;
     let split = optionSplit;
     let voids = optionVoids;
+    let splitEdges: readonly [Point, Point] | undefined;
 
     if (!at) {
       return;
@@ -234,8 +224,8 @@ export const setNodes = ((
       });
       at = getDefined(rangeAnchor.release());
 
-      if (optionAt !== undefined && RangeApi.isRange(at)) {
-        at = trimSplitRangeEndAtTextStart(editor, at, match);
+      if (RangeApi.isRange(at)) {
+        splitEdges = RangeApi.edges(at);
       }
 
       if (options.at == null) {
@@ -260,6 +250,9 @@ export const setNodes = ((
 
       // You can't set properties on the editor node.
       if (path.length === 0) {
+        continue;
+      }
+      if (splitEdges && isUntouchedEdgeText(editor, node, path, splitEdges)) {
         continue;
       }
 

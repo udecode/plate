@@ -3,10 +3,14 @@ import type { Paragraph as MdParagraph } from 'mdast';
 import {
   type DefinitionOf,
   HistoryPlugin,
+  type Path,
   type RenderStaticNodeWrapper,
   createEditor,
   definePlugin,
+  locateAt,
+  txLocate,
   txOnly,
+  txSelection,
 } from 'platejs';
 
 import {
@@ -38,7 +42,7 @@ definePlugin('baseReadPluginOwner', {}).extend(baseReadPlugin);
 const MinimalDefinitionPlugin = definePlugin('minimalDefinition', {});
 const ScopedUpdatePolicyPlugin = definePlugin('scopedUpdatePolicy', {
   update: ({ tx }) => ({
-    write: (text: string) => tx.text.insert(text),
+    write: txLocate(false, (text: string) => tx.text.insert(text)),
   }),
 }).extend(({ update }) => ({
   api: () => ({
@@ -60,8 +64,8 @@ const DirectUpdatePlugin = definePlugin('directUpdate', {
   update: ({ tx }) => ({
     callable: Object.assign(() => {}, { child: () => {} }),
     control: txOnly(() => {}),
-    echo: <TValue>(value: TValue) => value,
-    write: (text: string) => tx.text.insert(text),
+    echo: txLocate(false, <TValue>(value: TValue) => value),
+    write: txLocate(false, (text: string) => tx.text.insert(text)),
   }),
 }).extend(({ update }) => ({
   api: () => ({
@@ -92,6 +96,36 @@ directUpdateEditor.update((tx) => {
 });
 
 void directEchoIsInferred;
+
+definePlugin('declaredUpdateMethods', {
+  update: ({ tx }) => ({
+    clear: txLocate(locateAt(0), (_options: { at?: Path } = {}) => {}),
+    group: { write: txLocate(false, (text: string) => tx.text.insert(text)) },
+    reset: () => {},
+    select: txSelection((_offset: number) => {}),
+    write: txLocate(false, (text: string) => tx.text.insert(text)),
+  }),
+});
+definePlugin('undeclaredUpdateMethod', {
+  // @ts-expect-error A method that takes arguments must declare txLocate, txSelection or txOnly.
+  update: ({ tx }) => ({
+    write: (text: string) => tx.text.insert(text),
+  }),
+});
+definePlugin('undeclaredGroupUpdateMethod', {
+  // @ts-expect-error A grouped method that takes arguments must declare one too.
+  update: ({ tx }) => ({
+    group: {
+      write: (text: string) => tx.text.insert(text),
+    },
+  }),
+});
+definePlugin('undeclaredStageUpdateMethod', {}).extend({
+  // @ts-expect-error An extend stage's method that takes arguments must declare one too.
+  update: ({ tx }) => ({
+    write: (text: string) => tx.text.insert(text),
+  }),
+});
 
 type MinimalDefinition = DefinitionOf<typeof MinimalDefinitionPlugin>;
 declare const minimalDefinition: MinimalDefinition;
@@ -1110,8 +1144,11 @@ const UnifiedListPlugin = definePlugin('unifiedList', {
       },
     },
     update: ({ tx }) => ({
-      toggle: (options: { type: 'bulleted' | 'numbered' }) =>
-        `${store.get().prefix}:${tx.unifiedList.getPrevious(options.type)}`,
+      toggle: txLocate(
+        false,
+        (options: { type: 'bulleted' | 'numbered' }) =>
+          `${store.get().prefix}:${tx.unifiedList.getPrevious(options.type)}`
+      ),
     }),
   };
 });
@@ -1213,12 +1250,15 @@ const ShortcutTargetPlugin = definePlugin('shortcutTargetContracts', {
 
 const DeclaredBaseTxPlugin = definePlugin('declaredBaseTx', {
   update: () => ({
-    run: (value: 'typed', initialState: { count?: number } = {}) => {
-      const exactValue: 'typed' = value;
-      const exactCount: number | undefined = initialState.count;
+    run: txLocate(
+      false,
+      (value: 'typed', initialState: { count?: number } = {}) => {
+        const exactValue: 'typed' = value;
+        const exactCount: number | undefined = initialState.count;
 
-      return exactValue.length + (exactCount ?? 0);
-    },
+        return exactValue.length + (exactCount ?? 0);
+      }
+    ),
   }),
 });
 
@@ -1463,8 +1503,10 @@ const ExtendedFullPlugin = definePlugin('extendFull', {
   }),
   selectors: { extraSelector: () => 3 as const },
   update: ({ tx }) => ({
-    extraUpdate: (value: 'update') =>
-      `${tx.extendFull.baseUpdate()}:${value}` as const,
+    extraUpdate: txLocate(
+      false,
+      (value: 'update') => `${tx.extendFull.baseUpdate()}:${value}` as const
+    ),
   }),
 }));
 type ExtendedFullDefinition = DefinitionOf<typeof ExtendedFullPlugin>;

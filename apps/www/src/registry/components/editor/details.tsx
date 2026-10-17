@@ -7,7 +7,6 @@ import {
   type EditorElementProps,
   EditorElement,
   useEditor,
-  useEditorSelector,
   usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
@@ -26,31 +25,20 @@ export function DetailsElement(
   const { api } = useEditor().plugin(BaseDetailsPlugin);
   const open = detailsKey !== undefined && openKeys.has(detailsKey);
   const bodyId = React.useId();
-  const titleLevel = useEditorSelector(
-    (current) => {
-      const path =
-        detailsKey === undefined
-          ? undefined
-          : current.read.nodes.get(detailsKey)?.[1];
-
-      return path
-        ? current.read.nodes.get([...path, 0], {
-            type: DetailsSummaryPlugin,
-          })?.[0].level
-        : undefined;
-    },
-    {
-      shouldUpdate: (change) =>
-        !change ||
-        detailsKey === undefined ||
-        change.changed.hasNodeKey(detailsKey, 'node'),
-    }
-  );
+  const { titleRef, toggleRef } = useToggleOnFirstLine();
 
   return (
     <EditorElement {...props} className="relative my-1 pl-6">
-      <div className="relative -ml-6 pl-6" data-node-selection-target>
-        <DetailsToggleLine level={titleLevel}>
+      <div
+        ref={titleRef}
+        className="relative -ml-6 pl-6"
+        data-node-selection-target
+      >
+        <span
+          ref={toggleRef}
+          className="absolute top-3 -left-0.5 flex h-6 -translate-y-1/2 items-center"
+          contentEditable={false}
+        >
           <Button
             aria-controls={bodyId}
             aria-expanded={open}
@@ -76,7 +64,7 @@ export function DetailsElement(
               data-icon
             />
           </Button>
-        </DetailsToggleLine>
+        </span>
 
         {slots.children({ from: 0, to: 0 })}
       </div>
@@ -104,24 +92,78 @@ export function DetailsElement(
   );
 }
 
-function DetailsToggleLine({
-  children,
-  level,
-}: {
-  children: React.ReactNode;
-  level: EditorElementProps<typeof DetailsSummaryPlugin>['element']['level'];
-}) {
-  return (
-    <span
-      className={cn(
-        level && headingVariants({ level }),
-        'absolute top-0 -left-0.5 m-0 flex h-[1lh] items-center p-0'
-      )}
-      contentEditable={false}
-    >
-      {children}
-    </span>
+/**
+ * Measures the title's text boxes because a heading level or a font-size mark
+ * sets font size on inner elements, which no CSS on the title can read. Writes
+ * `style.top` directly because a state update from a ResizeObserver callback
+ * commits after the frame paints, leaving the toggle off-center for one frame.
+ */
+function useToggleOnFirstLine() {
+  const titleRef = React.useRef<HTMLDivElement>(null);
+  const toggleRef = React.useRef<HTMLSpanElement>(null);
+
+  React.useLayoutEffect(() => {
+    const title = titleRef.current;
+    const toggle = toggleRef.current;
+
+    if (!title || !toggle) return undefined;
+
+    const place = () => {
+      const line = firstLineExtent(title);
+
+      toggle.style.top = line
+        ? `${(line.top + line.bottom) / 2 - title.getBoundingClientRect().top}px`
+        : '';
+    };
+
+    place();
+
+    const observer = new ResizeObserver(place);
+
+    observer.observe(title);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return { titleRef, toggleRef };
+}
+
+function firstLineExtent(container: HTMLElement) {
+  const range = container.ownerDocument.createRange();
+  const walker = container.ownerDocument.createTreeWalker(
+    container,
+    NodeFilter.SHOW_TEXT
   );
+  let line: { bottom: number; top: number } | undefined;
+
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const chrome = node.parentElement?.closest('[contenteditable="false"]');
+
+    if (chrome && container.contains(chrome)) continue;
+
+    range.selectNodeContents(node);
+
+    for (const rect of range.getClientRects()) {
+      if (rect.height === 0) continue;
+      if (!line) {
+        line = { bottom: rect.bottom, top: rect.top };
+        continue;
+      }
+      // Under a tight line height, the text boxes of adjacent lines can
+      // overlap by a pixel or two.
+      if (
+        Math.min(line.bottom, rect.bottom) - Math.max(line.top, rect.top) <=
+        2
+      ) {
+        return line;
+      }
+
+      line.top = Math.min(line.top, rect.top);
+      line.bottom = Math.max(line.bottom, rect.bottom);
+    }
+  }
+
+  return line;
 }
 
 export function DetailsSummaryElement(

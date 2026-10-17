@@ -336,7 +336,7 @@ const applyProjectedViewSelectionDataCommand = ({
     return true;
   });
 
-  if (!landed) return;
+  if (!landed) return landed;
   savePliteViewSelectionHistoryEntry(editor, {
     redo: null,
     undo: viewSelection,

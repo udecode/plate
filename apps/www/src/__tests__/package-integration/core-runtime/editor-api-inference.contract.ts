@@ -18,7 +18,6 @@ type ExpectedEditorApiKeys =
   | 'html'
   | 'image'
   | 'link'
-  | 'list'
   | 'markdown'
   | 'mediaEmbed'
   | 'navigation'

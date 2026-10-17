@@ -97,16 +97,16 @@ export const createDependencies = (
   };
   const throughout = (
     node: JsonNode,
-    added: readonly AuthoredMark[]
+    extra: readonly AuthoredMark[]
   ): JsonNode => {
-    if (added.length === 0) return node;
+    if (extra.length === 0) return node;
 
     const { children, ...rest } = node;
 
     return {
-      ...props(rest, [...marks(node), ...added], true),
+      ...props(rest, [...marks(node), ...extra], true),
       ...(children
-        ? { children: children.map((child) => throughout(child, added)) }
+        ? { children: children.map((child) => throughout(child, extra)) }
         : {}),
     } as JsonNode;
   };

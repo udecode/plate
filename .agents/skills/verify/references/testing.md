@@ -80,10 +80,19 @@ Hard constraints:
   another, add a differential case on an input the old version got right and
   the new one could get wrong. The old suite and a mutation of the new
   mechanism cannot see a guarantee that only the old mechanism gave.
+- A soundness change to a guard or a landing path, one that decides which
+  inputs are refused, moved or landed, also gets a differential oracle over
+  generated inputs. Run thousands of generated cases through the base and the
+  candidate, each loaded from its own tree as the command recipes' Source-first
+  package checks say. Classify every difference, such as a regression, a
+  miss, a flip or a newly landing case, against the semantic oracle that the
+  [regression oracles](./regression-oracles.md) name for generated cases. In
+  the list landing run it found 205 shape regressions that the hand-written
+  cases had missed.
 - A regression for Node-native module loading, such as a CommonJS dependency imported by name from an ESM entrypoint, loads the built entrypoint through `node`, because `process.execPath` under Bun launches Bun and hides the failure.
 ## Plate foundation Rules
 
-- Bun globals come from `tooling/config/global.d.ts`. Do not import `describe`, `it`, `expect`, `mock`, `spyOn`, or other globals from `bun:test`.
+- Package Bun tests take their globals from the types their package config loads, `tooling/config/global.d.ts` or `bun-types/test-globals`. Do not import `describe`, `it`, `expect`, `mock`, `spyOn`, or other globals from `bun:test` there. `apps/www`'s configs type the globals as Jest's, and loading `global.d.ts` there breaks other www specs, so a www test imports `mock`, `spyOn` and the `expect` of a Bun-only matcher such as `toStartWith` from `bun:test`.
 - Use `*.spec.ts[x]` for the fast lane and `*.slow.ts[x]` for the slow lane.
 - Keep helpers package-local first. Reuse `packages/test` (`@platejs/test`) for
   shared editor/browser contracts; never import a helper from another spec file.

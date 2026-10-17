@@ -289,10 +289,7 @@ describe('useEditorHistory', () => {
         return null;
       };
       const wrapper = ({ children }: { children: ReactNode }) => (
-        <EditorRoot
-          authored={{ intent: 'propose' }}
-          editor={editor}
-        >
+        <EditorRoot authored={{ intent: 'propose' }} editor={editor}>
           <Editable aria-label="History editor" />
           <Capture />
           {children}

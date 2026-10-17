@@ -77,7 +77,10 @@ export const findValueSpreads = (configPath, prefix = 'src/') => {
   const found = [];
 
   for (const file of program.getSourceFiles()) {
-    const relative = path.relative(root, file.fileName).split(path.sep).join('/');
+    const relative = path
+      .relative(root, file.fileName)
+      .split(path.sep)
+      .join('/');
 
     if (file.isDeclarationFile || !relative.startsWith(prefix)) continue;
 
@@ -121,5 +124,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
     );
   }
   if (found.length > 0) process.exit(1);
-  console.info('check-value-records: no document value spread drops its records.');
+  console.info(
+    'check-value-records: no document value spread drops its records.'
+  );
 }

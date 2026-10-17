@@ -1,11 +1,13 @@
 import {
   createEditor,
+  createEditorView,
   definePlugin,
   property,
   schema,
   PLUGINS,
 } from '../../../core';
 import { BaseHeadingPlugin } from '../../basic-nodes';
+import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from '../../details';
 import { BaseTocPlugin } from './BaseTocPlugin';
 
 const TestParagraphPlugin = definePlugin(PLUGINS.paragraph, {
@@ -299,6 +301,68 @@ describe('BaseTocPlugin.read.headings', () => {
     expect(queryHeading).toHaveBeenCalledWith(
       expect.objectContaining({ nodes: expect.any(Object) })
     );
+  });
+
+  it('lists leveled Details titles in document order', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseTocPlugin,
+        BaseHeadingPlugin,
+        BaseDetailsPlugin,
+        BaseDetailsSummaryPlugin,
+      ],
+      initialValue: [
+        { children: [{ text: 'Intro' }], level: 1, type: 'heading' },
+        {
+          children: [
+            { children: [{ text: 'Plain title' }], type: 'summary' },
+            { children: [{ text: 'Body' }], type: 'paragraph' },
+          ],
+          type: 'details',
+        },
+        {
+          children: [
+            { children: [{ text: 'Setup' }], level: 2, type: 'summary' },
+            { children: [{ text: 'Inner' }], level: 3, type: 'heading' },
+          ],
+          type: 'details',
+        },
+      ],
+    });
+
+    expect(editor.plugin(BaseTocPlugin).read.headings()).toEqual([
+      { depth: 1, key: editor.key([0])!, title: 'Intro', type: 'heading' },
+      { depth: 2, key: editor.key([2, 0])!, title: 'Setup', type: 'summary' },
+      { depth: 3, key: editor.key([2, 1])!, title: 'Inner', type: 'heading' },
+    ]);
+  });
+
+  it('lists leveled Details titles from a document view', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseTocPlugin,
+        BaseHeadingPlugin,
+        BaseDetailsPlugin,
+        BaseDetailsSummaryPlugin,
+      ],
+    });
+    const view = createEditorView(editor, {
+      document: {
+        children: [
+          {
+            children: [
+              { children: [{ text: 'Setup' }], level: 2, type: 'summary' },
+              { children: [{ text: 'Body' }], type: 'paragraph' },
+            ],
+            type: 'details',
+          },
+        ],
+      },
+    });
+
+    expect(view.plugin(BaseTocPlugin).read.headings()).toEqual([
+      { depth: 2, key: view.key([0, 0])!, title: 'Setup', type: 'summary' },
+    ]);
   });
 
   it('keeps heading identity stable when its path changes', () => {

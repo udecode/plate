@@ -117,18 +117,12 @@ describe('screen-reader announcement live region', () => {
       initialValue: [paragraph('body')],
     });
     const accepted = render(
-      <EditorRoot
-        authored={{ preview: 'accepted' }}
-        editor={editor}
-      >
+      <EditorRoot authored={{ preview: 'accepted' }} editor={editor}>
         <div />
       </EditorRoot>
     );
     const proposed = render(
-      <EditorRoot
-        authored={{ intent: 'propose' }}
-        editor={editor}
-      >
+      <EditorRoot authored={{ intent: 'propose' }} editor={editor}>
         <div />
       </EditorRoot>
     );

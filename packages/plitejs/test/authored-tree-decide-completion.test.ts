@@ -1,4 +1,3 @@
-import { authoredTestApi, expandedChildren } from './support/authored';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
@@ -10,11 +9,10 @@ import {
   target,
 } from 'plitejs';
 
-import {
-  createAuthoredPlugin,
-} from '../src/authored/authored';
+import { createAuthoredPlugin } from '../src/authored/authored';
 import { authoredResolveSchemaOf } from '../src/authored/resolve-schema';
 import { projectAuthoredFragment } from '../src/authored/tree/resolve';
+import { authoredTestApi, expandedChildren } from './support/authored';
 
 type Node = Readonly<{
   authored?: readonly unknown[];
@@ -113,7 +111,11 @@ const suggesting = (
     initialValue: structuredClone(value) as never,
     plugins: [
       plugin,
-      createAuthoredPlugin({ authorId: 'ann', intent: 'propose', now: () => 1 }),
+      createAuthoredPlugin({
+        authorId: 'ann',
+        intent: 'propose',
+        now: () => 1,
+      }),
     ] as never,
   });
 

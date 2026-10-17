@@ -73,14 +73,10 @@ export const deletePathTarget = (
   select: boolean
 ) => {
   const fallbackAnchor = target.fallbackPoint
-    ? createAnchor(
-        editor,
-        target.fallbackPoint,
-        {
-          association: 'backward',
-          deletion: 'nearest',
-        }
-      )
+    ? createAnchor(editor, target.fallbackPoint, {
+        association: 'backward',
+        deletion: 'nearest',
+      })
     : null;
 
   applyBuiltDocumentChange(editor, (builder, root) =>
@@ -206,31 +202,19 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
     PathApi.isCommon(path, plan.end.path)
   );
   const pathAnchors = deleteMatchPaths.map((path) =>
-    createAnchor(
-      editor,
-      path,
-      {
-        association: 'forward',
-        deletion: 'drop',
-      }
-    )
-  );
-  const startAnchor = createAnchor(
-    editor,
-    plan.start,
-    {
-      association: 'backward',
-      deletion: 'nearest',
-    }
-  );
-  const endAnchor = createAnchor(
-    editor,
-    plan.end,
-    {
+    createAnchor(editor, path, {
       association: 'forward',
-      deletion: 'nearest',
-    }
+      deletion: 'drop',
+    })
   );
+  const startAnchor = createAnchor(editor, plan.start, {
+    association: 'backward',
+    deletion: 'nearest',
+  });
+  const endAnchor = createAnchor(editor, plan.end, {
+    association: 'forward',
+    deletion: 'nearest',
+  });
   let removedText = '';
 
   if (!plan.isSingleText && !plan.startNonEditable && !skipStartText) {

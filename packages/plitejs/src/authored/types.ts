@@ -1,14 +1,10 @@
 import type {
-  AuthoredDocumentProjection as CoreDocumentProjection,
-  AuthoredProjectionDiagnostic as CoreProjectionDiagnostic,
-} from '../core/authored-document-capability';
-import type {
   AnyEditor,
   ContentSlice,
   EditorViewOptions,
+  NodeKey,
 } from '../interfaces/editor';
 import type { EditorJsonValue } from '../interfaces/json';
-import type { NodeKey } from '../interfaces/editor';
 import type { Location } from '../interfaces/location';
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
@@ -167,9 +163,8 @@ export type AuthoredOptions = Readonly<{
   authorId: string | ((editor: AnyEditor) => string | null | undefined);
 }>;
 
-export type { AuthoredProjectionRefusal } from '../core/authored-document-capability';
-
-// Declared here rather than re-exported, so the public entrypoint does not
-// hand out the bindings plitejs/internal gives Plate.
-export type AuthoredDocumentProjection = CoreDocumentProjection;
-export type AuthoredProjectionDiagnostic = CoreProjectionDiagnostic;
+export type {
+  AuthoredDocumentProjection,
+  AuthoredProjectionDiagnostic,
+  AuthoredProjectionRefusal,
+} from '../core/authored-document-capability';

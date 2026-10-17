@@ -230,7 +230,7 @@ export default function MyEditorPage() {
 
 ### 处理编辑器值
 
-为了使编辑器内容持久化，让我们集成 `localStorage` 来在客户端保存和加载编辑器的值。
+为了使编辑器内容持久化，让我们集成 `localStorage` 来在客户端保存和加载编辑器的值。`localStorage` 只存在于浏览器中。页面在服务端不渲染内容，水合后通过 `useSyncExternalStore` 读取保存的值，再用它创建编辑器。
 
 ```tsx showLineNumbers title="app/editor/page.tsx"
 'use client';
@@ -281,7 +281,24 @@ const initialValue: Value = [
   },
 ];
 
+const subscribe = () => () => {};
+const getServerSnapshot = () => undefined;
+
 export default function MyEditorPage() {
+  const savedValue = React.useSyncExternalStore(
+    subscribe,
+    () => localStorage.getItem('installation-next-demo'),
+    getServerSnapshot
+  );
+
+  if (savedValue === undefined) return null;
+
+  return (
+    <MyEditor value={savedValue ? JSON.parse(savedValue) : initialValue} />
+  );
+}
+
+function MyEditor({ value }: { value: Value }) {
   const editor = useCreateEditor({
     plugins: [
       BoldPlugin,
@@ -290,10 +307,7 @@ export default function MyEditorPage() {
       HeadingPlugin.configure({ component: HeadingElement }),
       BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
-    initialValue: () => {
-      const savedValue = localStorage.getItem('installation-next-demo');
-      return savedValue ? JSON.parse(savedValue) : initialValue;
-    },
+    initialValue: value,
   });
 
   return (

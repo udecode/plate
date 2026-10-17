@@ -188,12 +188,12 @@ if (option('mode') === 'seed') {
   const changesAt = (at: typeof visibleRange) => {
     const found: unknown[] = [];
 
-    for (let cursor: string | undefined; ; ) {
+    for (let cursor: string | undefined; ;) {
       const page = view.read.authored.changes({ at, cursor, limit: 200 });
 
       found.push(...page.items);
       if (!page.cursor) return found;
-      cursor = page.cursor;
+      ({ cursor } = page);
     }
   };
   const localizedStart = performance.now();

@@ -1823,7 +1823,87 @@ export function check(root, { base = 'HEAD' } = {}) {
     }
   }
   const plans = plansOf(root, ledger);
-  const unignored = unignoredPaths(root);
+  const context = planContext(root, ledger, plans, base, errors);
+  for (const plan of plans) {
+    const problems = planProblems(context, plan);
+    if (plan.conflict) {
+      warnings.push(
+        `${plan.path}: conflicting status labels ${plan.conflict.join(' | ')}`
+      );
+    }
+    if (problems.length) errors.push(`${plan.path}: ${problems.join(', ')}`);
+  }
+  for (const path of (
+    git(root, [
+      'grep',
+      '-l',
+      '--untracked',
+      '-i',
+      '-E',
+      '^(review|verdict|work.?kind)',
+      '--',
+      'docs/plans/*.md',
+    ]) ?? ''
+  )
+    .split('\n')
+    .filter(Boolean)) {
+    const unknown = unknownReviewKeys(read(root, path));
+    if (unknown.length) {
+      errors.push(`${path}: unknown review key ${unknown.join(', ')}`);
+    }
+  }
+  const covered = coverage(root, { ledger });
+  if (covered.unowned.total) {
+    warnings.push(
+      `${covered.unowned.total} unowned source files; run coverage`
+    );
+  }
+  for (const item of covered.dangling) {
+    warnings.push(`${item.scope} entry matches no file: ${item.entry}`);
+  }
+  assert.ok(!errors.length, errors.join('\n'));
+  return {
+    ok: true,
+    scopes: ledger.scopes.size,
+    records: ledger.records.size,
+    pages: ledger.pages.size,
+    ...(warnings.length ? { warnings } : {}),
+  };
+}
+
+/**
+ * Checks only the named plans: their review keys and the per-plan problems
+ * `check` reports. Skips scope, record and queue validation, the coverage
+ * census and every other plan, so a plan can be checked while it is written.
+ */
+export function checkPlans(root, paths, { base = 'HEAD' } = {}) {
+  const ledger = loadLedger(root);
+  const errors = [];
+  const context = planContext(
+    root,
+    ledger,
+    plansOf(root, ledger),
+    base,
+    errors
+  );
+  for (const path of paths) {
+    if (!existsSync(join(root, path))) {
+      errors.push(`${path}: no such plan`);
+      continue;
+    }
+    const plan = associationOf(root, ledger, path);
+    const unknown = unknownReviewKeys(read(root, path));
+    const problems = [
+      ...(unknown.length ? [`unknown review key ${unknown.join(', ')}`] : []),
+      ...(plan ? planProblems(context, plan) : []),
+    ];
+    if (problems.length) errors.push(`${path}: ${problems.join(', ')}`);
+  }
+  assert.ok(!errors.length, errors.join('\n'));
+  return { ok: true, plans: paths.length };
+}
+
+function planContext(root, ledger, plans, base, errors) {
   const baseCommit = git(root, [
     'rev-parse',
     '--verify',
@@ -1847,78 +1927,42 @@ export function check(root, { base = 'HEAD' } = {}) {
         ])?.split('\n')
       )
     : null;
-  const added = (path) => atBase !== null && !atBase.has(path);
-  for (const plan of plans) {
-    const problems = [
-      ...(plan.invalid ? [`invalid ${plan.invalid.join(', ')}`] : []),
-      ...plan.scopes
-        .filter((id) => !ledger.scopes.has(id))
-        .map((id) => `unknown scope ${id}`),
-      ...plan.scopes
-        .filter((id, index) => plan.scopes.indexOf(id) !== index)
-        .map((id) => `repeated scope ${id}`),
-      ...plan.reviewBasis.flatMap((id) => {
-        const reviewed = scopesOfReview(ledger, id);
-        if (!reviewed) return [`unknown review ${id}`];
-        return reviewed.some((scope) => plan.scopes.includes(scope))
-          ? []
-          : [`${id} is not a review of ${plan.scopes.join(', ')}`];
-      }),
-      ...pageProblems(root, unignored, ledger, plans, plan, added),
-    ];
-    if (plan.conflict) {
-      warnings.push(
-        `${plan.path}: conflicting status labels ${plan.conflict.join(' | ')}`
-      );
-    }
-    if (problems.length) errors.push(`${plan.path}: ${problems.join(', ')}`);
-  }
-  for (const path of (
-    git(root, [
-      'grep',
-      '-l',
-      '--untracked',
-      '-i',
-      '-E',
-      '^(review|verdict|work.?kind)',
-      '--',
-      'docs/plans/*.md',
-    ]) ?? ''
-  )
-    .split('\n')
-    .filter(Boolean)) {
-    const unknown = [
-      ...(read(root, path).match(frontmatterPattern)?.[1] ?? '').matchAll(
-        /^([\w-]+):/gm
-      ),
-    ]
-      .map((match) => match[1])
-      .filter(
-        (key) =>
-          /^(review|verdict|work.?kind)/i.test(key) && !reviewKeys.includes(key)
-      );
-    if (unknown.length) {
-      errors.push(`${path}: unknown review key ${unknown.join(', ')}`);
-    }
-  }
-  const covered = coverage(root, { ledger });
-  if (covered.unowned.total) {
-    warnings.push(
-      `${covered.unowned.total} unowned source files; run coverage`
-    );
-  }
-  for (const item of covered.dangling) {
-    warnings.push(`${item.scope} entry matches no file: ${item.entry}`);
-  }
-  assert.ok(!errors.length, errors.join('\n'));
   return {
-    ok: true,
-    scopes: ledger.scopes.size,
-    records: ledger.records.size,
-    pages: ledger.pages.size,
-    ...(warnings.length ? { warnings } : {}),
+    root,
+    ledger,
+    plans,
+    unignored: unignoredPaths(root),
+    added: (path) => atBase !== null && !atBase.has(path),
   };
 }
+
+function planProblems({ root, ledger, plans, unignored, added }, plan) {
+  return [
+    ...(plan.invalid ? [`invalid ${plan.invalid.join(', ')}`] : []),
+    ...plan.scopes
+      .filter((id) => !ledger.scopes.has(id))
+      .map((id) => `unknown scope ${id}`),
+    ...plan.scopes
+      .filter((id, index) => plan.scopes.indexOf(id) !== index)
+      .map((id) => `repeated scope ${id}`),
+    ...plan.reviewBasis.flatMap((id) => {
+      const reviewed = scopesOfReview(ledger, id);
+      if (!reviewed) return [`unknown review ${id}`];
+      return reviewed.some((scope) => plan.scopes.includes(scope))
+        ? []
+        : [`${id} is not a review of ${plan.scopes.join(', ')}`];
+    }),
+    ...pageProblems(root, unignored, ledger, plans, plan, added),
+  ];
+}
+
+const unknownReviewKeys = (text) =>
+  [...(text.match(frontmatterPattern)?.[1] ?? '').matchAll(/^([\w-]+):/gm)]
+    .map((match) => match[1])
+    .filter(
+      (key) =>
+        /^(review|verdict|work.?kind)/i.test(key) && !reviewKeys.includes(key)
+    );
 
 function scopesOfReview(ledger, id) {
   if (ledger.pages.has(id)) return ledger.pages.get(id).scopes;
@@ -2322,7 +2366,7 @@ export function researchRows(root) {
 }
 
 const usage =
-  'Usage: node tooling/scripts/review-ledger.mjs next|status|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check|research <term>';
+  'Usage: node tooling/scripts/review-ledger.mjs next|status|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check [plan...]|research <term>';
 
 export function main(root, args) {
   const [command, argument] = args;
@@ -2334,7 +2378,15 @@ export function main(root, args) {
   if (command === 'show') return show(root, argument);
   if (command === 'coverage') return coverage(root, { prefix: argument ?? '' });
   if (command === 'check') {
-    return check(root, { base: process.env.PLATE_BASELINE_BASE || 'HEAD' });
+    const base = process.env.PLATE_BASELINE_BASE || 'HEAD';
+    const paths = args.slice(1);
+    return paths.length
+      ? checkPlans(
+          root,
+          paths.map((path) => relative(root, resolve(path))),
+          { base }
+        )
+      : check(root, { base });
   }
   if (command === 'research') return searchResearch(root, argument);
   throw new Error(usage);

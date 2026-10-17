@@ -97,7 +97,7 @@ export const isListType = (value: unknown): value is ListType =>
 
 export const isListItem = (node: Element) => isListType(node.listType);
 
-export const getListIndent = (node: Element) =>
+export const listItemDepth = (node: Element) =>
   typeof node.indent === 'number' ? node.indent : 1;
 
 export const normalizeListStyle = (
@@ -130,7 +130,7 @@ export const readListFacts = (element: Element): ListFacts | undefined => {
 
   return {
     id: typeof element.listId === 'string' ? element.listId : DEFAULT_LIST_ID,
-    level: getListIndent(element),
+    level: listItemDepth(element),
     levels: isListLevels(element.listLevels) ? element.listLevels : undefined,
     numbered: element.listType === 'numbered',
     restart: isSafeInteger(element.listRestart)

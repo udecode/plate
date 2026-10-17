@@ -13,11 +13,11 @@ import {
 } from '../../../facade';
 import { inRoot } from '../../../internal/utils/inRoot';
 import { BaseIndentPlugin } from '../../indent';
-import { getListIndent, isListItem } from './listIndex.internal';
+import { listItemDepth, isListItem } from './listIndex.internal';
 
 /** A block's list depth: an omitted indent reads as 1 on a list item and 0 elsewhere. */
 export const listDepth = (node: Element) =>
-  isListItem(node) ? getListIndent(node) : Number(node.indent ?? 0);
+  isListItem(node) ? listItemDepth(node) : Number(node.indent ?? 0);
 
 // Per sibling array and depth, the index of the last sibling deeper than the
 // depth in the unbroken run starting at each asked sibling, or -1 when that

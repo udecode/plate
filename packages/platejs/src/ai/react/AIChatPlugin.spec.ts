@@ -4,6 +4,7 @@ import {
   BaseParagraphPlugin,
   definePlugin,
   editorCommands,
+  NodeApi,
   schema,
 } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
@@ -203,6 +204,73 @@ describe('AIChatPlugin', () => {
         preview: [{ children: [{ text: 'Answer' }], type: 'paragraph' }],
         value,
       });
+    }
+  );
+
+  it.each([
+    [2, 'an empty paragraph'],
+    [1, 'an empty paragraph'],
+    [2, 'a selected block'],
+    [1, 'a selected block'],
+  ] as const)(
+    'lands a %i-block answer over %s in a parent capped at two only when it fits',
+    (blocks, target) => {
+      const fits = blocks === 1;
+      const TwoParentPlugin = definePlugin('aiTwoParent', {
+        schema: {
+          element: {
+            blockContent: true,
+            content: schema.content.types(['paragraph'], { max: 2 }),
+          },
+        },
+      });
+      const text = target === 'an empty paragraph' ? '' : 'Only';
+      const editor = createEditor({
+        plugins: [
+          BaseParagraphPlugin,
+          BaseAIPlugin,
+          AIChatPlugin,
+          TwoParentPlugin,
+        ],
+        userId: 'alice',
+        initialValue: [
+          {
+            children: [
+              { children: [{ text }], type: 'paragraph' },
+              { children: [{ text: 'Sibling' }], type: 'paragraph' },
+            ],
+            type: 'aiTwoParent',
+          },
+        ],
+        selection: {
+          kind: 'text',
+          anchor: { path: [0, 0, 0], offset: 0 },
+          focus: { path: [0, 0, 0], offset: 0 },
+        },
+      });
+      const ai = editor.plugin(AIChatPlugin);
+
+      if (target === 'an empty paragraph') {
+        ai.store.set({ chatSelection: null, mode: 'insert' });
+      } else {
+        editor.update.selection.setNodes([[0, 0]]);
+        ai.api.show();
+        ai.store.set({ mode: 'chat' });
+      }
+      ai.api.setPreview(fits ? 'One' : 'One\n\nTwo');
+      const preview = ai.store.get('previewValue');
+      ai.api.accept();
+
+      expect({
+        preview: ai.store.get('previewValue'),
+        texts: editor.read.nodes
+          .blocks({ at: [] })
+          .map(([node]) => NodeApi.string(node)),
+      }).toEqual(
+        fits
+          ? { preview: [], texts: ['One', 'Sibling'] }
+          : { preview, texts: [text, 'Sibling'] }
+      );
     }
   );
 

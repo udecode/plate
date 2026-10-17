@@ -772,6 +772,8 @@
             "TransferWrap",
             "TransformInputRuleContext",
             "TransformOptions",
+            "TxDeclaredMethod",
+            "TxMethodDeclarations",
             "TxOnlyMethod",
             "UnderlineRules",
             "UnwrapLinkOptions",

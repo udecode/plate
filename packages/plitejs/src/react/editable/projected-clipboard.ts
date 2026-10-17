@@ -105,7 +105,7 @@ export const getProjectedViewSelectionSlice = (
     return null;
   }
 
-  let content: readonly Descendant[] | null = null;
+  let content: Descendant[] | null = null;
   let openStart = 0;
   let openEnd = 0;
   const roots: Record<string, readonly Descendant[]> = {};
@@ -162,9 +162,9 @@ export const getProjectedViewSelectionSlice = (
     const { content: mappedContent } = mapped;
     Object.assign(roots, mapped.roots);
     if (content) {
-      content = [...content, ...mappedContent];
+      content.push(...mappedContent);
     } else {
-      content = mappedContent;
+      content = [...mappedContent];
       openStart = sliceOpenStart;
     }
     openEnd = sliceOpenEnd;

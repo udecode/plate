@@ -10,6 +10,7 @@ import {
   type InsertTextInputRule,
   type MarkInputRuleMatch,
   type TextSubstitutionMatch,
+  txLocate,
 } from 'platejs';
 
 const ListInputRulePlugin = definePlugin('listInputRule', {
@@ -17,7 +18,7 @@ const ListInputRulePlugin = definePlugin('listInputRule', {
   read: () => ({ enabled: () => true }),
   selectors: { isEnabled: (state) => state.enabled },
   update: () => ({
-    toggle: (style: 'decimal' | 'disc') => style,
+    toggle: txLocate(false, (style: 'decimal' | 'disc') => style),
   }),
 });
 

@@ -13,6 +13,7 @@ import {
   type Point,
   getSelectionDOMRange,
   readEditorSelection,
+  type TxDeclaredMethod,
   txLocate,
 } from '../../../facade';
 import { definePlugin } from '../../plugin';
@@ -54,7 +55,9 @@ export type AutoScrollUpdate<TTx extends object = {}> = (
 ) => void;
 
 type AutoScrollPluginUpdate = {
-  autoScroll: (fn: AutoScrollUpdate, options?: AutoScrollOptions) => void;
+  autoScroll: TxDeclaredMethod<
+    (fn: AutoScrollUpdate, options?: AutoScrollOptions) => void
+  >;
 };
 
 export type DomPluginUpdate = AutoScrollPluginUpdate &

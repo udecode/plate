@@ -31,6 +31,7 @@ import type {
   SchemaProperty,
   SchemaTextProperty,
   Text,
+  TxMethodDeclarations,
   Value,
   EditorSchemaSourceProvider,
   RuntimePluginTypeProviderOf,
@@ -1570,7 +1571,7 @@ type BasePluginStageInput<
         context: EditorUpdateContext;
         tx: PluginTransaction<C>;
       }
-    ) => TUpdate;
+    ) => TUpdate & TxMethodDeclarations<NoInfer<TUpdate>>;
   }>;
 
 type BasePluginStageCompatibility<

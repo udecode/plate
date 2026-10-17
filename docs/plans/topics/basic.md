@@ -48,7 +48,7 @@ const arrowsRule = createTextSubstitutionInputRule({
 });
 ```
 
-Inside the packages, list finds the heading through its real plugin; TOC and indent do the same.
+Inside the packages, list finds the heading through its real plugin; TOC, indent and Details do the same.
 
 ```ts
 // packages/platejs/src/features/list/lib/listIndex.internal.ts

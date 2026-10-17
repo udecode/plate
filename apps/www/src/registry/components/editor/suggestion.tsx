@@ -91,11 +91,10 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
   const { activeId } = useActiveSuggestion();
   // The active change's card, read again after each review commit, so the
   // active rule follows the card through a merge or a new oldest change.
-  const activeCard = useEditorSelector(
-    (editor) =>
-      activeId
-        ? (editor.plugin(AuthoredPlugin).read.groupOf(activeId)?.id ?? null)
-        : null
+  const activeCard = useEditorSelector((editor) =>
+    activeId
+      ? (editor.plugin(AuthoredPlugin).read.groupOf(activeId)?.id ?? null)
+      : null
   );
 
   React.useLayoutEffect(() => {
@@ -121,7 +120,9 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
 
   if (activeCard) {
     const color =
-      SUGGESTION_COLORS[suggestionColorOf(activeCard, SUGGESTION_COLORS.length)];
+      SUGGESTION_COLORS[
+        suggestionColorOf(activeCard, SUGGESTION_COLORS.length)
+      ];
 
     rules.push(
       `${scope} [data-editor-authored-groups~="${escapeCssString(
@@ -145,6 +146,7 @@ const REFUSED: Readonly<Record<string, string>> = {
   list: 'lists',
   table: 'tables',
 };
+const refusedPlaces = new Intl.ListFormat('en');
 
 /** Says why Suggesting refused a change, which then applied nothing. */
 function SuggestionRefusals() {
@@ -159,9 +161,7 @@ function SuggestionRefusals() {
 
         toast.error(
           refusal.code === 'veto'
-            ? `Suggesting is off in ${new Intl.ListFormat('en').format(
-                places
-              )} for now. Switch to Editing to change them.`
+            ? `Suggesting is off in ${refusedPlaces.format(places)} for now. Switch to Editing to change them.`
             : refusal.code === 'generated-values'
               ? 'Suggesting is off in this editor.'
               : 'Suggesting cannot record this change yet. Switch to Editing to make it.',

@@ -165,7 +165,7 @@ const ExamplePlugin = definePlugin("example", {
 您可能希望向具有特定属性的任何节点注入类名或 CSS 属性。例如，以下插件为具有 `textAlign` 属性的段落设置 `textAlign` CSS 属性。
 
 ```ts showLineNumbers
-import { PLUGINS, property, schema, target } from "platejs";
+import { PLUGINS, property, schema, target, txLocate } from "platejs";
 
 const TextAlignPlugin = definePlugin("textAlign", {
   formats: ({ defineFormats }) =>
@@ -200,7 +200,9 @@ const TextAlignPlugin = definePlugin("textAlign", {
   }),
   targetPlugins: [PLUGINS.paragraph],
   update: ({ tx }) => ({
-    set: (value: string) => tx.nodes.set({ textAlign: value }),
+    set: txLocate(false, (value: string) =>
+      tx.nodes.set({ textAlign: value })
+    ),
   }),
 });
 ```

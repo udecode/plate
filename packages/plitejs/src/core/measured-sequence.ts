@@ -339,11 +339,11 @@ const differ = <T>(same: (left: T, right: T) => boolean) => {
       return;
     }
 
-    const collect = (branch: Branch<T>, from: number, to: number) => {
+    const collect = (parent: Branch<T>, from: number, to: number) => {
       const items: T[] = [];
 
       for (let child = from; child < to; child += 1) {
-        itemsOf(getDefined(branch.children[child]), items);
+        itemsOf(getDefined(parent.children[child]), items);
       }
 
       return items;

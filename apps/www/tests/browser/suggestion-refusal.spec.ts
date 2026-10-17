@@ -54,11 +54,7 @@ const blockText = (page: Page, index: number) =>
 
 for (const [place, match, words] of [
   ['a table cell', (block: Block) => block.type === 'table', 'tables'],
-  [
-    'a code block',
-    (block: Block) => block.type === 'codeBlock',
-    'code blocks',
-  ],
+  ['a code block', (block: Block) => block.type === 'codeBlock', 'code blocks'],
   ['a list item', (block: Block) => Boolean(block.listType), 'lists'],
 ] as const) {
   test(`refuses typing in ${place} while Suggesting and says why`, async ({
@@ -122,7 +118,8 @@ test('refuses turning a paragraph into a list while Suggesting', async ({
   const { blocks, editor } = await open(page);
   const before = await blocks();
   const index = before.findIndex(
-    (block) => block.type === 'paragraph' && !block.listType && block.children?.[0]?.text
+    (block) =>
+      block.type === 'paragraph' && !block.listType && block.children?.[0]?.text
   );
 
   await editor.selection.select(caret(firstLeaf(before[index], [index])));
@@ -131,7 +128,9 @@ test('refuses turning a paragraph into a list while Suggesting', async ({
   await expect(
     page.getByText('Suggesting is off in lists for now.', { exact: false })
   ).toBeVisible();
-  expect((await blocks())[index].listType).toBeUndefined();
+  const after = await blocks();
+
+  expect(after[index].listType).toBeUndefined();
   errors.assertNone();
 });
 
@@ -141,7 +140,9 @@ test('keeps a paragraph next to a list suggestible', async ({ page }) => {
   const before = await blocks();
   const index = before.findIndex(
     (block, at) =>
-      block.type === 'paragraph' && !block.listType && Boolean(before[at + 1]?.listType)
+      block.type === 'paragraph' &&
+      !block.listType &&
+      Boolean(before[at + 1]?.listType)
   );
 
   expect(index).toBeGreaterThanOrEqual(0);

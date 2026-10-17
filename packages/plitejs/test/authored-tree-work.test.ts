@@ -983,19 +983,24 @@ describe('authored review tree storage', () => {
         tx.text.insert('xy', { at: { offset, path: [0, leaf] } });
       });
       if (sizes.includes(step + 1)) {
-        stored.push(storedAt(editor.read.value() as never));
+        stored.push(storedAt(editor.read.value()));
       }
     }
 
     for (const [index, k] of sizes.entries()) {
-      const { changes, members: count, records } = stored[index];
+      const { changes, members: memberCount, records } = stored[index];
 
       assert.equal(changes, k);
-      assert.ok(count <= 4 * k + 1, `${count} members for k = ${k}`);
+      assert.ok(
+        memberCount <= 4 * k + 1,
+        `${memberCount} members for k = ${k}`
+      );
       assert.ok(records <= k, `${records} records for k = ${k}`);
     }
 
-    const [, , fifty, hundred, twoHundred] = stored.map(({ bytes }) => bytes);
+    const [fifty, hundred, twoHundred] = stored
+      .slice(2)
+      .map(({ bytes }) => bytes);
 
     assert.ok(
       (twoHundred - hundred) / 100 <= ((hundred - fifty) / 50) * 1.1,

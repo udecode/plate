@@ -15,6 +15,7 @@ import { test } from 'node:test';
 
 import {
   check,
+  checkPlans,
   coverage,
   freshness,
   loadLedger,
@@ -1232,4 +1233,29 @@ test('a review page the base commit holds needs no dependents list, and an unkno
     () => check(root, { base: '0'.repeat(40) }),
     /Cannot resolve the base commit/
   );
+});
+
+test("check on a named plan refuses that plan's short review_commit and ignores other plans", (t) => {
+  const { root, put, git } = fixture(t);
+  const write = (commit) =>
+    plan(put, 'docs/plans/2026-09-02-link.md', {
+      scopes: ['link'],
+      basis: [],
+      state: 'planning',
+      commit,
+    });
+  put(
+    'docs/plans/2026-09-01-other.md',
+    '---\nreview_scopes: [missing]\nwork_kind: design\n---\n\n# Plan\n\nStatus: planning\n'
+  );
+  write(headOf(git).slice(0, 10));
+
+  assert.throws(
+    () => checkPlans(root, ['docs/plans/2026-09-02-link.md']),
+    (error) =>
+      /2026-09-02-link\.md: invalid review_commit/.test(error.message) &&
+      !error.message.includes('2026-09-01-other')
+  );
+  write(headOf(git));
+  assert.equal(checkPlans(root, ['docs/plans/2026-09-02-link.md']).ok, true);
 });

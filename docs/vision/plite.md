@@ -364,7 +364,12 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   it, and `read.changes({ at })` pages the changes there in document order, so
   no read walks every pending change. A card is the adjacent pending changes of
   one author, named by its oldest pending change, so every peer and reload
-  names it alike. Plite stores no color; Plate derives one from that name. A
+  names it alike. A pending join or split stands for the line break it removes
+  or adds, so changes on either side of it are adjacent. A change follows the
+  text, not the undo history. Repeated Backspace within a line grows one
+  deletion. Text or a line break written inside or at the edge of one's own
+  pending insertion becomes part of it, so rejecting the typing removes the
+  break too. Plite stores no color; Plate derives one from that name. A
   decision takes the changes or cards it read and refuses one that moved since.
   `api.subscribeChanges` hands each view one frozen delta per commit that
   changes the review.

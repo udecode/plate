@@ -1,6 +1,7 @@
 import { act, render, renderHook } from '@testing-library/react';
 import React from 'react';
 
+import { txLocate } from '../../../core';
 import { TestPlate as EditorRoot } from '../../__tests__/TestPlate';
 import { EditorContent } from '../../components/PlateContent';
 import { createEditor } from '../../editor';
@@ -60,7 +61,7 @@ describe('useEditor plugin portal', () => {
   });
 
   it('infers plugin-owned updates from the descriptor', () => {
-    const duplicate = vi.fn();
+    const duplicate = txLocate(false, vi.fn());
     const BlockPlugin = definePlugin('block', {
       update: () => ({ duplicate }),
     });

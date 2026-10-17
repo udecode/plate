@@ -14,6 +14,50 @@
       "2026-07-26-plugin-store-state",
       "2025-11-20-biome-ultracite"
     ],
+    "dnd": [
+      "2026-10-17-base-dnd-tooltip",
+      "2026-10-17-table-handle-stacking",
+      "2026-10-14-block-void-selection",
+      "2026-10-10-selection-context-menu",
+      "2026-10-08-registry-install-dependencies",
+      "2026-10-07-dnd-translucent-drag-image",
+      "2026-10-06-dnd-move-beside",
+      "2026-10-02-schema-block-handles",
+      "2026-10-01-block-move-actions",
+      "2026-10-01-native-block-drag",
+      "2026-09-08-drag-preparation",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-inline-component-props",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-28-inline-required-value-checks",
+      "2026-08-26-hide-block-drag-handles-during-table-selection",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-24-single-selection-authority",
+      "2026-08-20-demand-driven-dnd",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "select-editor": [
+      "2026-10-17-declare-select-editor-update-methods",
+      "2026-10-12-select-editor-field",
+      "2026-09-07-select-command-bridge",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-09-05-fix-command-custom-children",
+      "2026-09-05-fix-ref-cleanup",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-18-fix-editor-runtime-interactions",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2025-11-20-biome-ultracite"
+    ],
+    "details": [
+      "2026-10-17-details-toggle-font-size",
+      "2026-10-13-details-heading-titles",
+      "2026-10-10-details-selection",
+      "2026-08-29-semantic-details"
+    ],
     "code-block-diagram": ["2026-10-16-code-block-diagrams"],
     "code-block-diagram-mermaid": ["2026-10-16-code-block-diagrams"],
     "code-block-diagram-graphviz": ["2026-10-16-code-block-diagrams"],
@@ -166,6 +210,7 @@
     "toc": [
       "2026-10-14-block-void-selection",
       "2026-10-14-toc-no-active-heading",
+      "2026-10-13-details-heading-titles",
       "2026-09-09-navigation-view-feedback",
       "2026-09-07-docx-bookmarks",
       "2026-09-07-toc-observer",
@@ -241,27 +286,6 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
-    "dnd": [
-      "2026-10-14-block-void-selection",
-      "2026-10-10-selection-context-menu",
-      "2026-10-08-registry-install-dependencies",
-      "2026-10-07-dnd-translucent-drag-image",
-      "2026-10-06-dnd-move-beside",
-      "2026-10-02-schema-block-handles",
-      "2026-10-01-block-move-actions",
-      "2026-10-01-native-block-drag",
-      "2026-09-08-drag-preparation",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-inline-component-props",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-28-inline-required-value-checks",
-      "2026-08-26-hide-block-drag-handles-during-table-selection",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-24-single-selection-authority",
-      "2026-08-20-demand-driven-dnd",
-      "2026-08-17-flat-editor-registry"
-    ],
     "excalidraw-demo": [
       "2026-10-14-excalidraw-demo-width",
       "2026-08-14-author-editor-runtime",
@@ -283,11 +307,6 @@
       "2026-08-17-automatic-document-migrations",
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
-    ],
-    "details": [
-      "2026-10-13-details-heading-titles",
-      "2026-10-10-details-selection",
-      "2026-08-29-semantic-details"
     ],
     "details-static": [
       "2026-10-13-details-heading-titles",
@@ -606,20 +625,6 @@
       "2026-08-31-transient-editor-geometry",
       "2026-07-26-plugin-store-state",
       "2026-07-24-collaboration-runtime",
-      "2025-11-20-biome-ultracite"
-    ],
-    "select-editor": [
-      "2026-10-12-select-editor-field",
-      "2026-09-07-select-command-bridge",
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-09-05-fix-command-custom-children",
-      "2026-09-05-fix-ref-cleanup",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-18-fix-editor-runtime-interactions",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
       "2025-11-20-biome-ultracite"
     ],
     "list-toolbar-button": [

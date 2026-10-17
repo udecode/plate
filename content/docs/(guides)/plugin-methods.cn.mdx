@@ -243,6 +243,10 @@ export const HighlightPlugin = definePlugin('highlight', {
 | `txSelection(method)` | 只移动选区的方法。它在存储文档上运行，修改内容时会抛错。 |
 | `txOnly(method)` | 只改变当前事务的控制方法，例如 `tx.history.merge()`。在 `tx` 上调用它。通过 `editor.update.<plugin>` 或插件门户的一次性调用会抛错。 |
 
+带参数的 update 方法如果没有用 `txLocate`、`txSelection` 或 `txOnly` 包装，
+TypeScript 会拒绝它，插件在编译时报错，而不是在 review tree 上抛错。没有参数的方法
+不需要包装。
+
 ## 声明 feature format mapping
 
 `formats` 描述一个插件的 schema 如何映射到 semantic HTML、Markdown 和

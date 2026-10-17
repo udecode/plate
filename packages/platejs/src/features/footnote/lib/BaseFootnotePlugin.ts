@@ -382,9 +382,7 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       return nextRef;
     };
     const selectDefinition = ({ ref }: { ref: string }) => {
-      const innerDefinition4 = tx
-        .plugin(BaseFootnotePlugin)
-        .definition({ ref });
+      const innerDefinition4 = tx.plugin(plugin.name).definition({ ref });
 
       if (!innerDefinition4) return false;
 

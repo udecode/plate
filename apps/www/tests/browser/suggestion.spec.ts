@@ -575,15 +575,17 @@ test('homepage removes a multi-block selection over struck text in Editing and k
   await expect(collaborative).toHaveCount(0);
   await expect(ai).toHaveCount(0);
   await expect(richContent).toBeVisible();
-  expect((await editor.get.modelBlockTexts()).slice(0, 4)).toEqual([
+  const texts = await editor.get.modelBlockTexts();
+
+  expect(texts.slice(0, 4)).toEqual([
     intro,
     linkLine,
     'mark text for removal',
     'Rich Content Editing',
   ]);
-  expect((await reviewTree(editor))[2]).toBe(
-    '[delete] mark text for removal[delete:bob]'
-  );
+  const tree = await reviewTree(editor);
+
+  expect(tree[2]).toBe('[delete] mark text for removal[delete:bob]');
   await editor.assert.collapsedModelDOMSelection({
     path: [1, 4],
     offset: ' to discover more.'.length,
@@ -617,7 +619,7 @@ test('suggestion demo opens in suggesting mode', async ({ page }) => {
 
 for (const { keys, kind, marker } of [
   {
-    keys: ['End', ...Array(16).fill('ArrowLeft'), 'Enter'],
+    keys: ['End', ...new Array(16).fill('ArrowLeft'), 'Enter'],
     kind: 'split',
     marker: { content: '"¶"', line: 'none' },
   },

@@ -2039,6 +2039,11 @@ jump to heading
 note: TOC entries should navigate to their target headings and stay live as the
 heading set changes
 note: TOC navigation should also use the shared navigation-feedback primitive
+note: the TOC lists a Details title that has a heading level as a heading of
+that level, in document order
+note: activating an entry inside a collapsed Details opens every Details whose
+body holds it, then jumps to it; the Details whose title is the entry stays as
+it is
 note: in both editable and readonly documents, plain TOC activation is
 navigation-only
 note: plain TOC activation must not place a caret in the landed heading,

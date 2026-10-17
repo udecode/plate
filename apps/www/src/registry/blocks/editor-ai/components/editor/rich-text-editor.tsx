@@ -52,10 +52,7 @@ export function RichTextEditor() {
 
   return (
     <TooltipProvider>
-      <EditorRoot
-        editor={editor}
-        authored={{ intent: 'edit' }}
-      >
+      <EditorRoot editor={editor} authored={{ intent: 'edit' }}>
         <EditorFrame>
           <EditorContainer>
             <Editor className="min-w-0" variant="demo" />

@@ -1696,7 +1696,7 @@ for (const width of [1280, 390]) {
         page
           .getByRole('toolbar')
           .first()
-          .getByRole('button', { name: 'Text', exact: true })
+          .getByRole('button', { name: 'Turn into: Text', exact: true })
       ).toBeVisible();
       await expect(trigger).toBeVisible();
       await testInfo.attach(`candidate-${width}-closed`, {

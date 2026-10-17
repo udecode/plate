@@ -17,7 +17,7 @@ import { inRoot } from '../../../internal/utils/inRoot';
 import type { ListType } from './BaseListPlugin';
 import {
   getElementListStyle,
-  getListIndent,
+  listItemDepth,
   isListItem,
   isListLevels,
   type ListLevel,
@@ -102,13 +102,15 @@ const findJoiningListItem = (
   state: NodeReader,
   path: Path,
   next: ListJoinTarget,
-  walk: 'both' | 'previous' = 'both',
-  root?: NamedRootKey
+  {
+    root,
+    walk = 'both',
+  }: Readonly<{ root?: NamedRootKey; walk?: 'both' | 'previous' }> = {}
 ): Element | undefined => {
   const { depth, heading, headingType, listType, matchStyle, style } = next;
   let parent: Element | undefined;
   const sameDepth = (sibling: Element) => {
-    const siblingDepth = getListIndent(sibling);
+    const siblingDepth = listItemDepth(sibling);
 
     if (siblingDepth > depth) return 'skip' as const;
     if (siblingDepth < depth) {
@@ -145,7 +147,7 @@ export const resolveListIdentity = (
   next: ListJoinTarget,
   root?: NamedRootKey
 ): ListIdentity => {
-  const joined = findJoiningListItem(state, path, next, 'both', root);
+  const joined = findJoiningListItem(state, path, next, { root });
 
   return joined ? identityOf(joined) : newListIdentity();
 };
@@ -156,7 +158,7 @@ export const joinInsertedListItem = (
   headingType: string | undefined
 ) => {
   const { listId, listLevels } = resolveListIdentity(tx, path, {
-    depth: getListIndent(node),
+    depth: listItemDepth(node),
     heading: headingType !== undefined && node.type === headingType,
     headingType,
     listType: node.listType as ListType,
@@ -217,7 +219,7 @@ export const landListContent = <N extends Descendant>(
   const into = landing.kind === 'line' ? landing.line[0] : landing.block;
   const land = placement === 'land';
   const move = placement === 'move';
-  const shift = land && into ? getListIndent(into) - 1 : 0;
+  const shift = land && into ? listItemDepth(into) - 1 : 0;
 
   if (heads.size === 0 && shift === 0) return content;
 
@@ -235,14 +237,14 @@ export const landListContent = <N extends Descendant>(
             state,
             landing.line[1],
             {
-              depth: land ? getListIndent(landing.line[0]) : 1,
+              depth: land ? listItemDepth(landing.line[0]) : 1,
               matchStyle: land,
               heading,
               headingType,
               listType,
               style,
             },
-            'previous'
+            { walk: 'previous' }
           )
         : into &&
             isListItem(into) &&
@@ -252,7 +254,7 @@ export const landListContent = <N extends Descendant>(
   }
 
   const joined = anchor && identityOf(anchor);
-  const landingDepth = into && isListItem(into) ? getListIndent(into) : 1;
+  const landingDepth = into && isListItem(into) ? listItemDepth(into) : 1;
   const depths = new Map<Element, number>();
   const ancestors: Array<{ source: number; landed: number }> = [];
 
@@ -263,7 +265,7 @@ export const landListContent = <N extends Descendant>(
         continue;
       }
 
-      const source = getListIndent(node);
+      const source = listItemDepth(node);
 
       let parent = ancestors.at(-1);
 
@@ -297,7 +299,7 @@ export const landListContent = <N extends Descendant>(
         : top &&
             shift !== 0 &&
             (isListItem(node) || typeof node.indent === 'number')
-          ? { indent: getListIndent(node) + shift }
+          ? { indent: listItemDepth(node) + shift }
           : {};
 
     if (!isListItem(node)) return { ...node, ...depth, children };
@@ -318,7 +320,7 @@ export const landListContent = <N extends Descendant>(
           ? identityOf(node)
           : { listId: fresh.get(source), listLevels };
     const levelOffset =
-      depth.indent === undefined ? 0 : depth.indent - getListIndent(node);
+      depth.indent === undefined ? 0 : depth.indent - listItemDepth(node);
     let landedLevels = levels;
 
     if (
@@ -425,7 +427,7 @@ export const adoptListBlocks = (
     [...lists].map(([source, items]) => [
       source,
       items.reduce(
-        (level, { node }) => Math.min(level, getListIndent(node)),
+        (level, { node }) => Math.min(level, listItemDepth(node)),
         Number.POSITIVE_INFINITY
       ),
     ])
@@ -442,7 +444,7 @@ export const adoptListBlocks = (
   const topLevelEdgeItem = (source: string, side: 'end' | 'start') => {
     const items = lists.get(source) ?? [];
     const atTopLevel = ({ node }: CopiedItem) =>
-      getListIndent(node) === levelOf(source);
+      listItemDepth(node) === levelOf(source);
 
     return (
       side === 'start' ? items.find(atTopLevel) : items.findLast(atTopLevel)
@@ -472,9 +474,9 @@ export const adoptListBlocks = (
 
       if (moving.has(sibling)) continue;
       if (!ElementApi.isElement(sibling)) return undefined;
-      if (getListIndent(sibling) <= depth) {
+      if (listItemDepth(sibling) <= depth) {
         return {
-          shallower: getListIndent(sibling) < depth,
+          shallower: listItemDepth(sibling) < depth,
           sibling,
         };
       }
@@ -562,7 +564,7 @@ export const adoptListBlocks = (
       properties: {
         listId,
         listLevels,
-        ...(getListIndent(node) === getListIndent(anchor) &&
+        ...(listItemDepth(node) === listItemDepth(anchor) &&
         node.listType === anchor.listType
           ? { listStyle: anchor.listStyle }
           : {}),
@@ -586,7 +588,7 @@ export const getListRunSiblings = (
   headingType: string | undefined,
   root?: NamedRootKey
 ): Array<NodeEntry<Element>> => {
-  const depth = getListIndent(node);
+  const depth = listItemDepth(node);
   const heading = headingType !== undefined && node.type === headingType;
   const run: Array<NodeEntry<Element>> = [];
   const inRun = (sibling: Element) =>
@@ -615,7 +617,7 @@ export const getListRunSiblings = (
       if (!sibling) break;
 
       const [siblingNode] = sibling;
-      const siblingDepth = getListIndent(siblingNode);
+      const siblingDepth = listItemDepth(siblingNode);
 
       if (siblingDepth > depth) continue;
       if (siblingDepth < depth || !inRun(siblingNode)) break;
@@ -636,13 +638,13 @@ export const findContinuedItem = (
   state: NodeReader,
   [node, path]: NodeEntry<Element>
 ) => {
-  const depth = getListIndent(node);
+  const depth = listItemDepth(node);
   const style = getElementListStyle(node);
 
   return walkSiblings(state, path, 'previous', (candidate) => {
     if (!isListItem(candidate)) return 'skip';
 
-    const candidateDepth = getListIndent(candidate);
+    const candidateDepth = listItemDepth(candidate);
 
     if (candidateDepth < depth) return 'stop';
 
@@ -659,7 +661,7 @@ export const hasNeighborInList = (
   state: NodeReader,
   [node, path]: NodeEntry<Element>
 ) => {
-  const depth = getListIndent(node);
+  const depth = listItemDepth(node);
   const listmate = (sibling: Element) =>
     isListItem(sibling) && sibling.listId === node.listId;
 
@@ -667,7 +669,7 @@ export const hasNeighborInList = (
     walkSiblings(state, path, direction, (sibling) => {
       if (listmate(sibling)) return sibling;
 
-      return getListIndent(sibling) < depth ? 'stop' : 'skip';
+      return listItemDepth(sibling) < depth ? 'stop' : 'skip';
     })
   );
 };
@@ -685,7 +687,7 @@ export const readListPosition = (
   headingType: string | undefined
 ): ListPosition | undefined => {
   const id = target.listId;
-  const depth = getListIndent(target);
+  const depth = listItemDepth(target);
   const heading = headingType !== undefined && target.type === headingType;
   const style = getElementListStyle(target);
   const items: Array<NodeEntry<Element>> = [];
@@ -703,7 +705,7 @@ export const readListPosition = (
           items.push([node, path]);
         } else if (
           index < 0 &&
-          getListIndent(node) === depth &&
+          listItemDepth(node) === depth &&
           compatible(node, 'numbered', style, heading, headingType)
         ) {
           previousCompatible = [node, path];

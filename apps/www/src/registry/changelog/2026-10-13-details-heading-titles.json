@@ -68,6 +68,12 @@
       ],
       "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
+    },
+    {
+      "name": "toc",
+      "files": ["apps/www/src/registry/components/editor/toc.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
     }
   ],
   "entries": [
@@ -132,6 +138,23 @@
       "source": {
         "line": 26,
         "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-13",
+          "entry": "2026-10-13-details-heading-titles",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-17-toc-details-titles",
+      "kind": "fix",
+      "summary": "List each Details title that has a heading level, and open every collapsed Details around a heading or title before jumping to it",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toc"],
+      "source": {
+        "line": 30,
+        "row": 5,
         "legacyRelease": {
           "date": "2026-10-13",
           "entry": "2026-10-13-details-heading-titles",

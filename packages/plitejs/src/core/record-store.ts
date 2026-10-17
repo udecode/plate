@@ -414,8 +414,6 @@ const latestRecordsJson = (store: RecordStore) => {
   return latestJson.json;
 };
 
-type AnyValue = Readonly<{ records?: EditorDocumentRecords }>;
-
 /**
  * `value` with `fields` over it and `ops` applied to its records. A spread
  * alone would drop the records a value carries beside its JSON.
@@ -425,7 +423,7 @@ export const deriveValue = <V extends object>(
   fields: Partial<V>,
   ops: RecordOps = NO_RECORD_OPS
 ): V => {
-  const store = getValueRecords(value as AnyValue);
+  const store = getValueRecords(value);
   const next = copyFields({}, value as Readonly<Record<string, unknown>>, [
     'records',
   ]);

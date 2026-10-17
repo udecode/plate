@@ -4,6 +4,7 @@ import {
   definePlugin as defineHeadlessPlugin,
   type DefinitionOf,
   type InferDependencies,
+  txLocate,
 } from 'platejs';
 import {
   createEditor,
@@ -95,7 +96,7 @@ const BoundaryLeafPlugin = defineHeadlessPlugin('boundaryLeaf', {
     doubled: (state) => state.count * 2,
   },
   update: () => ({
-    increment: (amount: number) => amount + 1,
+    increment: txLocate(false, (amount: number) => amount + 1),
   }),
 });
 
@@ -116,11 +117,11 @@ const BoundaryBranchPlugin = defineHeadlessPlugin('boundaryBranch', {
     isReady: () => 'branch-ready' as const,
   }),
   update: ({ tx }) => ({
-    increment: (amount: number) => {
+    increment: txLocate(false, (amount: number) => {
       tx.boundaryLeaf.increment(amount);
 
       return amount + 2;
-    },
+    }),
   }),
 });
 

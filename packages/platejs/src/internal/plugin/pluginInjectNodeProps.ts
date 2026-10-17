@@ -46,7 +46,7 @@ const getTextInjectionReach = (
 ): TextInjectionReach | undefined => {
   const injectNodeProps = plugin.inject.nodeProps;
 
-  if (!injectNodeProps) return;
+  if (!injectNodeProps) return undefined;
 
   const nodeKey = getInjectNodeKey(editor, plugin);
   const scopeKey = getTextScopeKey(plugin, nodeKey);
@@ -61,6 +61,8 @@ const getTextInjectionReach = (
   if (scopeKey && (hasQuery || hasTransform)) return { key: scopeKey };
   if (hasTransform || nodeKey === 'text') return 'all';
   if (hasQuery && nodeKey) return { key: nodeKey };
+
+  return undefined;
 };
 
 export const createTextInjectionMatcher = (editor: Editor) => {

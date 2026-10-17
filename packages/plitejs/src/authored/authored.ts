@@ -69,7 +69,12 @@ import {
 } from '../core/refusal';
 import { completeChildrenAt, emptyTextDrops } from '../core/representation';
 import { EditorSchemaValidationError } from '../core/schema-validation';
-import { txOnly, type TxOnlyMethod, txStored } from '../core/tx-only';
+import {
+  type TxDeclaredMethod,
+  txOnly,
+  type TxOnlyMethod,
+  txStored,
+} from '../core/tx-only';
 import type {
   AnyEditor as Editor,
   EditorDocumentValue,
@@ -194,9 +199,11 @@ type AuthoredUpdate = {
    * accepted and rejected in one call. A blocked result names the changes to
    * decide with them.
    */
-  decide: (
-    decisions: AuthoredDecision | readonly AuthoredDecision[]
-  ) => AuthoredResult;
+  decide: TxDeclaredMethod<
+    (
+      decisions: AuthoredDecision | readonly AuthoredDecision[]
+    ) => AuthoredResult
+  >;
   /** Record this update's writes under one change, whatever the intent. */
   propose: TxOnlyMethod<(options?: { changeId?: string }) => string>;
 };

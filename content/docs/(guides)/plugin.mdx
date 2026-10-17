@@ -172,7 +172,7 @@ const ExamplePlugin = definePlugin("example", {
 You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the `textAlign` CSS property on paragraphs with a `textAlign` property.
 
 ```ts showLineNumbers
-import { PLUGINS, property, schema, target } from "platejs";
+import { PLUGINS, property, schema, target, txLocate } from "platejs";
 
 const TextAlignPlugin = definePlugin("textAlign", {
   formats: ({ defineFormats }) =>
@@ -207,7 +207,9 @@ const TextAlignPlugin = definePlugin("textAlign", {
   }),
   targetPlugins: [PLUGINS.paragraph],
   update: ({ tx }) => ({
-    set: (value: string) => tx.nodes.set({ textAlign: value }),
+    set: txLocate(false, (value: string) =>
+      tx.nodes.set({ textAlign: value })
+    ),
   }),
 });
 ```

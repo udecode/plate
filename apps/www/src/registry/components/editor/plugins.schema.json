@@ -1049,10 +1049,46 @@
           "allowsUnknownElements": false,
           "defaultPlan": {
             "kind": "element",
-            "type": "summary"
+            "type": "paragraph"
           },
           "max": null,
-          "min": 1
+          "min": 1,
+          "prefix": [
+            {
+              "type": "summary",
+              "properties": {}
+            }
+          ],
+          "remainder": {
+            "allowedElementTypes": [
+              "audio",
+              "blockquote",
+              "callout",
+              "codeBlock",
+              "columnGroup",
+              "details",
+              "equation",
+              "file",
+              "footnoteDefinition",
+              "heading",
+              "horizontalRule",
+              "image",
+              "mediaEmbed",
+              "paragraph",
+              "table",
+              "toc",
+              "upload",
+              "video"
+            ],
+            "allowsText": false,
+            "allowsUnknownElements": false,
+            "defaultPlan": {
+              "kind": "element",
+              "type": "paragraph"
+            },
+            "max": null,
+            "min": 0
+          }
         },
         "contentRoots": [],
         "construction": {
@@ -2346,10 +2382,46 @@
           "allowsUnknownElements": false,
           "defaultPlan": {
             "kind": "element",
-            "type": "summary"
+            "type": "paragraph"
           },
           "max": null,
-          "min": 1
+          "min": 1,
+          "prefix": [
+            {
+              "type": "summary",
+              "properties": {}
+            }
+          ],
+          "remainder": {
+            "allowedElementTypes": [
+              "audio",
+              "blockquote",
+              "callout",
+              "codeBlock",
+              "columnGroup",
+              "details",
+              "equation",
+              "file",
+              "footnoteDefinition",
+              "heading",
+              "horizontalRule",
+              "image",
+              "mediaEmbed",
+              "paragraph",
+              "table",
+              "toc",
+              "upload",
+              "video"
+            ],
+            "allowsText": false,
+            "allowsUnknownElements": false,
+            "defaultPlan": {
+              "kind": "element",
+              "type": "paragraph"
+            },
+            "max": null,
+            "min": 0
+          }
         }
       ],
       [
@@ -2771,7 +2843,7 @@
         "element:details",
         {
           "kind": "element",
-          "type": "summary"
+          "type": "paragraph"
         }
       ],
       [
@@ -3757,10 +3829,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:a0e99ead9554e659",
+  "fingerprint": "fnv1a64:08da9df3ee4ec1cc",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:a0e99ead9554e659",
+    "fingerprint": "fnv1a64:08da9df3ee4ec1cc",
     "kind": "derived"
   },
   "primaryRoot": {

@@ -6,15 +6,16 @@ import {
   SelectionApi,
   type SliceLanding,
   type SliceLandingInput,
+  txLocate,
 } from 'platejs';
 
 import { domCommands } from '../src/dom';
 
 const ImagePlugin = definePlugin('img', {
   update: () => ({
-    insert: ({ url }: { url: string }) => {
+    insert: txLocate(false, ({ url }: { url: string }) => {
       void url;
-    },
+    }),
   }),
 }).extend(() => ({
   commands: ({ around }) => [

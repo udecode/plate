@@ -2464,7 +2464,7 @@ class RootRecorder {
         ? [own.mark]
         : [
             ...this.containedInsertMarks(stack, at),
-            this.adjacentOwnInsert(stack, at) ?? this.options.markOf('insert'),
+            this.continuedOwnInsert(stack, at) ?? this.options.markOf('insert'),
           ];
     };
     const withInserted = (props: Props, added: readonly AuthoredMark[]) =>
@@ -2718,7 +2718,15 @@ class RootRecorder {
           (continued !== undefined &&
             continued.path.length > 0 &&
             !this.rejectingEmpties(this.index.node(continued.path), own.mark));
-        const rightCuts = this.splitInline(continued, token.props, suggested);
+        const claim =
+          this.continuedOwnInsert(input.contexts, at) ??
+          this.options.markOf('split');
+        const rightCuts = this.splitInline(
+          continued,
+          token.props,
+          suggested,
+          claim
+        );
 
         if (continued && fills.has(continued)) {
           fills.add(getDefined(stack.at(-1)));
@@ -2735,7 +2743,7 @@ class RootRecorder {
               ...(suggested && !rightCuts
                 ? [
                     closedElement
-                      ? this.splitOf(continued)
+                      ? this.splitOf(continued, claim)
                       : this.options.markOf('wrap'),
                   ]
                 : []),
@@ -2814,7 +2822,8 @@ class RootRecorder {
   private splitInline(
     continued: Context | undefined,
     rightProps: Props,
-    suggested: boolean
+    suggested: boolean,
+    claim: AuthoredMark
   ): AuthoredMark[] | null {
     if (
       !continued ||
@@ -2829,7 +2838,7 @@ class RootRecorder {
 
     if (!suggested && moved.length === 0) return null;
 
-    const { at, author, change, inc } = this.options.markOf('split');
+    const { at, author, change, inc } = claim;
     const cut = suggested
       ? {
           at,
@@ -2925,7 +2934,7 @@ class RootRecorder {
       leaf.props,
       [
         ...kept,
-        this.adjacentOwnInsert([leaf], at) ?? this.options.markOf('insert'),
+        this.continuedOwnInsert([leaf], at) ?? this.options.markOf('insert'),
       ],
       true
     );
@@ -2959,8 +2968,11 @@ class RootRecorder {
     return join ? incarnationOf(join) : marks.map(followsOf).find(Boolean);
   }
 
-  private splitOf(source: Context | undefined): AuthoredMark {
-    const { at, author, change, inc } = this.options.markOf('split');
+  private splitOf(
+    source: Context | undefined,
+    claim: AuthoredMark
+  ): AuthoredMark {
+    const { at, author, change, inc } = claim;
     const follows = source ? this.followedBy(source.props) : undefined;
 
     return {
@@ -2992,14 +3004,13 @@ class RootRecorder {
     return (children ?? []).every((child) => this.rejectingEmpties(child, own));
   }
 
-  /** One's own pending insertion at either edge of an insertion is amended. */
-  private adjacentOwnInsert(stack: readonly Context[], at: number) {
+  private continuedOwnInsert(stack: readonly Context[], at: number) {
     const leaf = stack.at(-1);
     const candidates: Props[] = [];
 
     if (leaf?.kind === 'text') {
+      candidates.push(leaf.props);
       if (at === leaf.contentFrom || at === leaf.contentTo) {
-        candidates.push(leaf.props);
         const neighbor = this.neighborLeaf(
           leaf,
           at === leaf.contentFrom ? -1 : 1
@@ -3008,11 +3019,37 @@ class RootRecorder {
         if (neighbor) candidates.push(neighbor);
       }
     } else {
-      const before = this.index.pointAt(at, -1);
-      const afterPoint = this.index.pointAt(at, 1);
+      const ownSplitOfEmptyBlock =
+        leaf && at === leaf.contentFrom && at === leaf.contentTo
+          ? this.marks(leaf.props).find(
+              (mark) =>
+                mark.kind === 'split' &&
+                !isCut(mark) &&
+                this.options.isOwn(mark)
+            )
+          : undefined;
 
-      for (const point of [before, afterPoint]) {
-        if (point) candidates.push(propsOf(this.index.node(point.path)));
+      if (ownSplitOfEmptyBlock) {
+        const { at: time, author, change, inc } = ownSplitOfEmptyBlock;
+
+        return {
+          at: time,
+          author,
+          change,
+          ...(inc === undefined ? {} : { inc }),
+          kind: 'insert',
+        } satisfies AuthoredMark;
+      }
+      for (const direction of [-1, 1] as const) {
+        const point = this.index.pointAt(at, direction);
+
+        if (
+          point &&
+          (!leaf ||
+            leaf.path.every((index, depth) => point.path[depth] === index))
+        ) {
+          candidates.push(...this.textsBeside(point.path, direction));
+        }
       }
     }
 
@@ -3061,6 +3098,28 @@ class RootRecorder {
     }
 
     return null;
+  }
+
+  /** A split at a text's end leaves an empty leaf for a write to look past. */
+  private textsBeside(path: readonly number[], direction: -1 | 1) {
+    const parentPath = path.slice(0, -1);
+    const siblings = (
+      parentPath.length === 0
+        ? this.index.value
+        : (this.index.node(parentPath) as JsonRecord).children
+    ) as readonly JsonRecord[];
+    const texts: Props[] = [];
+
+    for (
+      let index = path.at(-1) ?? 0;
+      typeof siblings[index]?.text === 'string';
+      index += direction
+    ) {
+      texts.push(propsOf(siblings[index]));
+      if (siblings[index].text !== '') break;
+    }
+
+    return texts;
   }
 
   private neighborLeaf(leaf: Context, direction: -1 | 1): Props | null {

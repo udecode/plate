@@ -280,6 +280,9 @@ pages have distinct route owners; an app override does not execute its MDX.
 When a page embeds a preview, wait for its actual editor or result: the heading
 and `Loading…` placeholder can render before a client schema error replaces the
 page. Record text rendering and the loaded preview separately.
+Docs MDX is hard-wrapped, so served HTML and the RSC payload break sentences
+across lines. Collapse whitespace in both the response and the sentence before
+searching `curl` output for it; a raw `grep -c` reports 0 for text that is there.
 
 Read the actual consumer before claiming an external service worked:
 
@@ -346,7 +349,10 @@ directory and the reports it overwrites, such as Playwright's `test-results`,
 as temporary, and copy a failure's artifacts to the artifact tree when a log
 row or plan first cites them, before the next run of that config. Each base, mutant,
 spike and control run writes its own named log, never a path an earlier run or
-row cites. Preserve originals locally;
+row cites. A script that syncs later bytes over a proof overlay or folder in
+place leaves every earlier log that cites it pointing at bytes it no longer
+holds. Before such a sync, copy each proof stage read-only with a hash
+manifest of its files, and cite the copy. Preserve originals locally;
 this artifact tree is Git-ignored. Keep concise conclusions and required proof
 summaries in the versioned plan or analysis document. Reusable runners, required
 fixtures and pinned benchmark inputs belong with their source or test owner,

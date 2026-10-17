@@ -1,0 +1,16 @@
+---
+id: 2026-10-17-table-handle-stacking
+date: 2026-10-17
+status: draft
+kind: fix
+summary: 'Keep table row controls under open menus and keep block handles hidden over selected cells'
+change: { 'type': 'source', 'date': '2026-10-17', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-17-dnd-keep-table-controls-under-a239c3c3","kind":"fix","migrationNotes":[]} -->
+
+- **`dnd`**: Keep a table's row controls under menus that open over the table, so a click on a menu item, such as Bulleted list in Turn into, reaches the item.
+<!-- entry: {"id":"2026-10-17-dnd-hide-handles-selected-cells","kind":"fix","migrationNotes":[]} -->
+- **`dnd`**: Keep block handles hidden after a drag across table cells ends, while the cells stay selected.

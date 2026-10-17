@@ -2,6 +2,7 @@ import {
   type DefinitionOf,
   createEditor as createHeadlessEditor,
   definePlugin as defineHeadlessPlugin,
+  txLocate,
 } from 'platejs';
 import {
   createEditor,
@@ -95,11 +96,11 @@ const PortableExplicitPlugin = defineHeadlessPlugin('portableExplicit', {
   }),
   stateFields: [portableStateField],
   update: () => ({
-    mutate: (value: 'update') => {
+    mutate: txLocate(false, (value: 'update') => {
       const exactValue: 'update' = value;
 
       void exactValue;
-    },
+    }),
   }),
 });
 const portableExplicitEditor = createHeadlessEditor({

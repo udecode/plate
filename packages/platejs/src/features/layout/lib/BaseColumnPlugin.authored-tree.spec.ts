@@ -1,7 +1,6 @@
 import { createAuthoredPlugin } from 'plitejs/authored';
 
 import { authoredTestApi } from '../../../authored/__tests__/authoredTestApi';
-
 import { BaseParagraphPlugin, createEditor } from '../../../core';
 import {
   BaseColumnItemPlugin,
@@ -79,9 +78,7 @@ describe('columns beside a pending column deletion', () => {
     const suggest = () => {
       const run = make([group(20, 30, 50)]);
 
-      run.proof.propose('bob:1', (tx) =>
-        tx.nodes.remove({ at: [0, struck] })
-      );
+      run.proof.propose('bob:1', (tx) => tx.nodes.remove({ at: [0, struck] }));
       run.proof.propose('alice:1', (tx) =>
         tx.columnGroup.setColumns({ at: [0], widths: ['30%', '70%'] })
       );
@@ -256,9 +253,7 @@ describe('stacked width suggestions', () => {
     const run = make([group(20, 30, 50)]);
 
     editing.editor.update((tx) => tx.nodes.remove({ at: [0, 2] }));
-    run.proof.propose('alice:1', (tx) =>
-      tx.column.insert({}, { at: [0, 3] })
-    );
+    run.proof.propose('alice:1', (tx) => tx.column.insert({}, { at: [0, 3] }));
     run.editor.update((tx) => tx.nodes.remove({ at: [0, 2] }));
     run.proof.decide({ action: 'reject', changes: ['alice:1'] });
 
@@ -272,9 +267,7 @@ describe('stacked width suggestions', () => {
       run.proof.propose('alice:1', (tx) =>
         tx.column.insert({}, { at: [0, 2] })
       );
-      run.proof.propose('bob:1', (tx) =>
-        tx.column.insert({}, { at: [0, 1] })
-      );
+      run.proof.propose('bob:1', (tx) => tx.column.insert({}, { at: [0, 1] }));
       typeInFirstColumn(run.editor, 0);
 
       return run;
@@ -308,9 +301,7 @@ describe('stacked width suggestions', () => {
     const setup = () => {
       const run = make([group(20, 30, 50)]);
 
-      run.proof.propose('bob:1', (tx) =>
-        tx.nodes.remove({ at: [0, 2] })
-      );
+      run.proof.propose('bob:1', (tx) => tx.nodes.remove({ at: [0, 2] }));
       run.proof.propose('carol:1', (tx) =>
         tx.column.insert({}, { at: [0, 0] })
       );
@@ -377,10 +368,9 @@ describe('moveMiddle beside pending content', () => {
       focus: { offset: 1, path: [0, 1, 0, 0] },
     };
     const moveMiddle = (editor: Editor) =>
-      editor.update.column.moveMiddle(
-        [editor.read.children()[0] as never, [0]],
-        { direction: 'left' }
-      );
+      editor.update.column.moveMiddle([editor.read.children()[0], [0]], {
+        direction: 'left',
+      });
 
     review.proof.propose('bob:1', (tx) => tx.text.delete({ at: middle }));
     moveMiddle(review.editor);
@@ -391,6 +381,8 @@ describe('moveMiddle beside pending content', () => {
     editing.editor.update((tx) => tx.text.delete({ at: middle }));
     moveMiddle(editing.editor);
 
-    expect(review.editor.read.children()).toEqual(editing.editor.read.children());
+    expect(review.editor.read.children()).toEqual(
+      editing.editor.read.children()
+    );
   });
 });

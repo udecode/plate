@@ -74,7 +74,7 @@ const summarize = (samples: number[]) => ({
 });
 
 type ReviewNode = {
-  authored?: readonly { change: string; kind: string }[];
+  authored?: ReadonlyArray<{ change: string; kind: string }>;
   children?: ReviewNode[];
   text?: string;
 };
@@ -202,7 +202,9 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
       },
     ]);
     const loadedRecords = countRecords(await proposed.get.modelValue());
-    await controls.getByRole('button', { name: 'Suggest', exact: true }).click();
+    await controls
+      .getByRole('button', { name: 'Suggest', exact: true })
+      .click();
     if (arm === 'struck') {
       await proposed.root.evaluate(
         (element, [count, key]) => {
@@ -263,10 +265,12 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
     await proposed.selection.collapse({ path: [0, 0], offset: 0 });
     const warmup = 'w'.repeat(contract.sampling.warmupsPerPass);
     await proposed.type(warmup);
-    await expect.poll(() => proposed.get.selection()).toEqual({
-      anchor: { path: [0, 0], offset: warmup.length },
-      focus: { path: [0, 0], offset: warmup.length },
-    });
+    await expect
+      .poll(() => proposed.get.selection())
+      .toEqual({
+        anchor: { path: [0, 0], offset: warmup.length },
+        focus: { path: [0, 0], offset: warmup.length },
+      });
     const measured = 'q'.repeat(contract.sampling.samplesPerPass);
     const result = await measureTrustedTyping({
       page,

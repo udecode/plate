@@ -36,14 +36,13 @@ const diagramCodeBlockPlugin = createCodeBlockPlugin(
 
 // A suggestion's review mark on a node and everything inside it, as the
 // authored plugin records an insertion or deletion.
-const marked = <T extends Descendant>(node: T, mark: AuthoredMark): T =>
-  ({
-    ...node,
-    authored: [mark],
-    ...(ElementApi.isElement(node)
-      ? { children: node.children.map((child) => marked(child, mark)) }
-      : {}),
-  }) as T;
+const marked = <T extends Descendant>(node: T, mark: AuthoredMark): T => ({
+  ...node,
+  authored: [mark],
+  ...(ElementApi.isElement(node)
+    ? { children: node.children.map((child) => marked(child, mark)) }
+    : {}),
+});
 
 export default function PlaygroundDemo({ className }: { className?: string }) {
   const locale = useLocale();
@@ -76,7 +75,6 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
     }
 
     const overlapOffset = discussionTail.text.indexOf(overlapText);
-    const suggestionOffset = leadingText.text.length;
 
     const mark = (
       change: string,
@@ -233,8 +231,8 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
         ],
       },
     ];
-    const commented = review.children[3]!.children.indexOf(
-      paragraph.children[3]!
+    const commented = review.children[3].children.indexOf(
+      paragraph.children[3]
     );
     const anchor = current.anchor(
       {

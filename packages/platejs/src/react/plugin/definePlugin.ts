@@ -1,4 +1,8 @@
-import type { RuntimePluginReference, EditorUpdateContext } from '../../facade';
+import type {
+  RuntimePluginReference,
+  EditorUpdateContext,
+  TxMethodDeclarations,
+} from '../../facade';
 import {
   type AnyBasePlugin,
   type PluginReadState,
@@ -225,7 +229,7 @@ type PluginConstructorUpdateFactory<
       >
     >;
   }
-) => TUpdate;
+) => TUpdate & TxMethodDeclarations<NoInfer<TUpdate>>;
 
 type PluginConstructorStateConsumerInput<
   N extends string,

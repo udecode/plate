@@ -155,10 +155,13 @@ export function HandleActionsMenu({
   );
 }
 
+const hiddenWhenClosed = 'data-closed:hidden data-[state=closed]:hidden';
+
 function Draggable(props: RenderNodeWrapperProps) {
   const { children, editor, element, renderPath } = props;
   const [buttonTop, setButtonTop] = React.useState(0);
   const [actionsOpen, setActionsOpen] = React.useState(false);
+  const [tooltipOpen, setTooltipOpen] = React.useState(false);
   const [besideActions, setBesideActions] = React.useState<
     Array<{ icon: LucideIcon; label: string; run: () => void }>
   >([]);
@@ -240,6 +243,11 @@ function Draggable(props: RenderNodeWrapperProps) {
     setBesideActions(besideOf(keys));
     setActionsOpen(true);
   };
+  const setHovered = (draggable: HTMLElement, hovered: boolean) => {
+    draggable.toggleAttribute('data-hovered', hovered);
+
+    if (!hovered) setTooltipOpen(false);
+  };
 
   return (
     // Only the innermost hovered block shows its handle. The hovered flag is a
@@ -250,24 +258,24 @@ function Draggable(props: RenderNodeWrapperProps) {
       className={cn(
         'editor-draggable relative data-hovered:[&>.editor-gutterLeft]:opacity-100 [&>.editor-blockWrapper>[data-editor-dragging]]:opacity-50',
         // A table keeps its handle while the pointer is anywhere inside it, so
-        // the handles of its cell blocks do not make it flicker.
-        isTable && 'hover:[&>.editor-gutterLeft]:opacity-100',
+        // the handles of its cell blocks do not make it flicker. Its row
+        // control column stacks above this gutter, and isolate keeps that
+        // stacking below menus and toolbars outside the table.
+        isTable && 'isolate hover:[&>.editor-gutterLeft]:opacity-100',
         renderPath.length > 1 &&
           (isTable
             ? 'not-hover:[&>.editor-gutterLeft]:hidden'
             : 'not-data-hovered:[&>.editor-gutterLeft]:hidden')
       )}
       onMouseEnter={() => setButtonTop(calcDragButtonTop(editor, element))}
-      onPointerLeave={(event) => {
-        event.currentTarget.removeAttribute('data-hovered');
-      }}
-      onPointerOver={(event) => {
-        event.currentTarget.toggleAttribute(
-          'data-hovered',
+      onPointerLeave={(event) => setHovered(event.currentTarget, false)}
+      onPointerOver={(event) =>
+        setHovered(
+          event.currentTarget,
           (event.target as globalThis.Element).closest('.editor-draggable') ===
             event.currentTarget
-        );
-      }}
+        )
+      }
     >
       {!hasTableCellSelection && (
         <Gutter
@@ -280,7 +288,7 @@ function Draggable(props: RenderNodeWrapperProps) {
             (nodeSelected || actionsOpen) && 'flex!'
           )}
         >
-          <Tooltip>
+          <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen}>
             <TooltipTrigger asChild>
               <button
                 aria-expanded={actionsOpen}
@@ -299,9 +307,7 @@ function Draggable(props: RenderNodeWrapperProps) {
                 <GripVertical />
               </button>
             </TooltipTrigger>
-            {/* A hidden nested gutter leaves the trigger at 0,0; hide the tooltip
-                there instead of fading it out in the corner. */}
-            <TooltipContent hideWhenDetached>
+            <TooltipContent className={hiddenWhenClosed}>
               Drag to move, click for actions
             </TooltipContent>
           </Tooltip>
@@ -407,17 +413,20 @@ const TableCellSelectionContext = React.createContext(false);
 
 /** One table-selection subscription for every handle in the editor. */
 function DndRoot({ children }: WrapRootProps) {
-  // A selected table node also reports its cells; only a text selection
-  // across cells hides the handles, so a drag's own selection never removes
-  // its source.
+  // A selected table node also reports its cells; only a selection of the
+  // cells themselves, as text or as nodes, hides the handles, so a drag's own
+  // selection never removes its source.
   const hasTableCellSelection = useEditorSelector((editor) => {
     const table = editor.plugin(BaseTablePlugin);
+    const cells = table.installed ? (table.read.selection()?.cells ?? []) : [];
 
-    return (
-      table.installed &&
-      editor.read.selection.nodes().length === 0 &&
-      (table.read.selection()?.cells.length ?? 0) > 1
-    );
+    if (cells.length < 2) return false;
+
+    const cellKeys = new Set(cells.map(([cell]) => editor.key(cell)));
+
+    return editor.read.selection
+      .nodes()
+      .every(([node]) => cellKeys.has(editor.key(node)));
   });
 
   return (

@@ -9,14 +9,14 @@ import { AIChatPlugin } from './AIChatPlugin';
 import { useAIChat } from './useAIChat';
 
 const accepted = (editor: Parameters<typeof createEditorView>[0]) =>
-  projectAuthoredDocument(editor.read.value() as never, {
+  projectAuthoredDocument(editor.read.value(), {
     projection: 'accepted',
   }).document.children;
 
 const proposedText = (editor: Parameters<typeof createEditorView>[0]) =>
-  createEditorView(editor, { authored: { preview: 'proposed' } }).read.text.string(
-    []
-  );
+  createEditorView(editor, {
+    authored: { preview: 'proposed' },
+  }).read.text.string([]);
 
 function controlledTransport() {
   let stream!: ReadableStreamDefaultController<UIMessageChunk>;

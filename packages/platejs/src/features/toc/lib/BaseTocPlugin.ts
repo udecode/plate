@@ -1,5 +1,6 @@
 import {
   definePlugin,
+  ElementApi,
   NodeApi,
   PLUGINS,
   type DefinitionOf,
@@ -25,14 +26,7 @@ export const BaseTocPlugin = definePlugin(PLUGINS.toc, {
       markdown: { tag: type },
     }),
   initialState: (): TocPluginState => ({ queryHeading: null }),
-  render: { readsDocument: true },
-  schema: {
-    element: {
-      void: 'block',
-    },
-  },
-}).extend(({ editor }) => ({
-  read: ({ store, state }) => ({
+  read: ({ editor, store, state }) => ({
     headings: () => {
       const { queryHeading } = store.get();
 
@@ -45,18 +39,15 @@ export const BaseTocPlugin = definePlugin(PLUGINS.toc, {
 
       for (const [node] of state.nodes.entries({
         at: [],
-        type: heading.schema.type,
+        match: ElementApi.isElement,
       })) {
-        const title = NodeApi.string(node);
-        const depth = node.level;
+        const depth = heading.read.level(node);
 
-        if (
-          title &&
-          typeof depth === 'number' &&
-          Number.isInteger(depth) &&
-          depth >= 1 &&
-          depth <= 6
-        ) {
+        if (depth === undefined) continue;
+
+        const title = NodeApi.string(node);
+
+        if (title) {
           headings.push({
             depth,
             key: state.key(node),
@@ -69,6 +60,12 @@ export const BaseTocPlugin = definePlugin(PLUGINS.toc, {
       return headings;
     },
   }),
-}));
+  render: { readsDocument: true },
+  schema: {
+    element: {
+      void: 'block',
+    },
+  },
+});
 
 export type TocDefinition = DefinitionOf<typeof BaseTocPlugin>;

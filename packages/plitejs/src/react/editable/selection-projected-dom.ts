@@ -12,9 +12,7 @@ import { ELEMENT_TO_NODE } from '../../dom/internal';
 import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
-import {
-  type PliteViewBoundaryPoint,
-} from '../view-boundary-graph';
+import type { PliteViewBoundaryPoint } from '../view-boundary-graph';
 import {
   createPliteViewSelection,
   isPliteViewSelectionCollapsed,

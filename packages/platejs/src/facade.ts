@@ -166,6 +166,8 @@ export type {
   TextInsertTextOptions,
   TextOf,
   TransactionSpec,
+  TxDeclaredMethod,
+  TxMethodDeclarations,
   Value,
   ValueOf,
   EditorSchemaSource,

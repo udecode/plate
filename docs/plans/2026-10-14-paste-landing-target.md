@@ -2,9 +2,9 @@
 review_scopes: [clipboard, list]
 review_basis:
 work_kind: implementation
-review_commit: 2591fb926a
+review_commit: 2591fb926aa5ac5ac66169c868f7fe46735499d0
 review_inputs: [packages/plitejs/test/slice-landing-contract.test.ts, packages/plitejs/test/max-length-contract.test.ts, packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx]
-review_upstreams: ['../lexical@dd5c41b13', '../prosemirror-view@ca4c78e', '../slate@945a484df', '../tiptap@91c51be53']
+review_upstreams: ['../lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988', '../prosemirror-view@ca4c78e9b56f1b164c0b3758b59d8748f11b7534', '../slate@945a484df2497e4c448b33f417b0de2a49840032', '../tiptap@91c51be53c4655ef07e29ec489471524debfa0ca']
 ---
 
 # One landing site for every paste
@@ -237,7 +237,7 @@ Reversals and deviations come first.
 
 **Proof and its limits.**
 
-- Step 1's tests fail at `2591fb926a` (10 landing, 8 length and 1 List case) and pass on the final bytes. The step 8 suite set passes on `HEAD` plus the final bytes, except two cases that fail the same way at `HEAD`.
+- Step 1's tests fail at `2591fb926a` (10 landing cases in `packages/plitejs/test/slice-landing-contract.test.ts`, 8 length cases in `packages/plitejs/test/max-length-contract.test.ts` and 1 List case in `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx`) and pass on the final bytes. The step 8 suite set passes on `HEAD` plus the final bytes, except two cases that fail the same way at `HEAD`.
 - Six panel rounds ran with three seats each: three on the plan and three on the diff. All 18 critical findings were applied and none dismissed. Each round-2 and round-3 fix makes its test fail when reverted: 7 of 7 and 4 of 4 mutations were caught.
 - The work counts show no old cohort grows, and a cross-root paste with a landing middleware adds one view and one factory call per read group (`docs/plans/artifacts/2026-10-14-paste-landing-target/build/work-count/work-count-a5.md`).
 - Five Chromium specs pass except one paste-html case, which fails the same way at the base and at `HEAD`. Four native paste drives in Chrome checked the blocks, the caret, typing and undo, and every hand-drive cell is covered.

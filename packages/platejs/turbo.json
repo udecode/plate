@@ -2493,6 +2493,7 @@
         "typecheck:partition:standard-basic-nodes-react",
         "typecheck:partition:standard-link",
         "typecheck:partition:static",
+        "typecheck:partition:suggestion",
         "typecheck:partition:testing"
       ],
       "inputs": [
@@ -2964,6 +2965,7 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:details",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:toc"
       ],
@@ -3695,7 +3697,10 @@
     },
     "typecheck:partition:details": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:standard-basic-nodes"
+      ],
       "inputs": [
         "src/features/details/**",
         "!src/**/*.spec.*",

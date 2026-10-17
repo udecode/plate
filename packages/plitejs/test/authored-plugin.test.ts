@@ -30,9 +30,23 @@ const Blocks = defineEditorSchema('authored-plugin-blocks', {
   version: 1,
 });
 
+const Quotes = defineEditorSchema('authored-plugin-quotes', {
+  elements: {
+    paragraph: schema.element.textBlock(),
+    quote: { content: schema.content.type('paragraph', { min: 1 }) },
+  },
+  id: 'authored-plugin-quotes',
+  root: schema.content.types(['paragraph', 'quote'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
+
 const mark = (
   change: string,
-  kind: 'delete' | 'insert' | 'join',
+  kind: 'delete' | 'insert' | 'join' | 'split',
   at: number,
   author = 'carol'
 ) => ({ at, author, change, kind });
@@ -111,6 +125,38 @@ const caret = (path: number[], offset: number) => ({
   anchor: { offset, path },
   focus: { offset, path },
 });
+
+const suggesting = (lines: readonly unknown[]) => {
+  let count = 0;
+  const editor = createEditor({
+    initialValue: lines.map((line) =>
+      typeof line === 'string'
+        ? { children: [{ text: line }], type: 'paragraph' }
+        : line
+    ) as never,
+    plugins: [
+      Blocks,
+      createAuthoredPlugin({
+        authorId: 'alice',
+        createChangeId: () => `alice:${(count += 1)}`,
+        intent: 'propose',
+        now: () => 1,
+      }),
+    ],
+  });
+  const { read } = editor as unknown as ReturnType<typeof make>['authored'];
+
+  return {
+    cards: (at: number[]): Array<[string, number]> =>
+      read.authored
+        .groups({ at })
+        .map(({ changeCount, id }: { changeCount: number; id: string }) => [
+          id,
+          changeCount,
+        ]),
+    editor,
+  };
+};
 
 describe('authored plugin', () => {
   it('previews each projection without changing the stored document', () => {
@@ -540,6 +586,172 @@ describe('authored plugin', () => {
     });
 
     assert.equal(read.authored.groupOf('carol:2')?.changeCount, 1);
+  });
+
+  it('keeps one card for deletions on both sides of a pending join', () => {
+    const { cards, editor } = suggesting(['abc', 'def']);
+
+    editor.update((tx) => {
+      tx.selection.set(caret([1, 0], 0));
+      tx.text.deleteBackward();
+    });
+    editor.update((tx) => {
+      tx.selection.set(caret([0, 0], 3));
+      tx.text.deleteBackward();
+    });
+    editor.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { offset: 0, path: [1, 0] },
+          focus: { offset: 1, path: [1, 0] },
+        },
+      });
+    });
+
+    assert.deepEqual(
+      [cards([0]), cards([1])].map((line) => line.map(([id]) => id)),
+      [['alice:1'], ['alice:1']]
+    );
+  });
+
+  it('puts Enter at the edge of one’s own typing under that typing', () => {
+    const { cards, editor } = suggesting(['ab']);
+
+    editor.update((tx) => {
+      tx.text.insert('xy', { at: { offset: 2, path: [0, 0] } });
+    });
+    editor.update((tx) => {
+      tx.selection.set(caret([0, 1], 2));
+      tx.break.insert();
+    });
+    editor.update((tx) => {
+      tx.text.insert('zw', { at: { offset: 0, path: [1, 0] } });
+    });
+
+    assert.deepEqual(cards([1]), [['alice:1', 1]]);
+  });
+
+  it('keeps one card for a pending split of a quote and the deletion opening it', () => {
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'top' }], type: 'paragraph' },
+        {
+          authored: [mark('carol:1', 'split', 1)],
+          children: [
+            {
+              children: [
+                { authored: [mark('carol:2', 'delete', 2)], text: 'x' },
+                { text: 'yz' },
+              ],
+              type: 'paragraph',
+            },
+            { children: [{ text: 'w' }], type: 'paragraph' },
+          ],
+          type: 'quote',
+        },
+      ] as never,
+      plugins: [Quotes, createAuthoredPlugin({ authorId: 'bob' })],
+    });
+    const { read } = editor as unknown as ReturnType<typeof make>['authored'];
+
+    assert.deepEqual(
+      read.authored.groups({ at: [1] }).map(({ id }: { id: string }) => id),
+      ['carol:1']
+    );
+  });
+
+  it('puts a second Enter after one’s own typing under that typing', () => {
+    const { cards, editor } = suggesting(['ab']);
+
+    editor.update((tx) => {
+      tx.text.insert('xy', { at: { offset: 2, path: [0, 0] } });
+    });
+    editor.update((tx) => {
+      tx.selection.set(caret([0, 1], 2));
+      tx.break.insert();
+    });
+    editor.update((tx) => {
+      tx.selection.set(caret([1, 0], 0));
+      tx.break.insert();
+    });
+
+    assert.deepEqual(cards([2]), [['alice:1', 1]]);
+  });
+
+  it('keeps a second plain Enter a change of its own in the same card', () => {
+    const { cards, editor } = suggesting(['ab']);
+
+    editor.update((tx) => {
+      tx.selection.set(caret([0, 0], 1));
+      tx.break.insert();
+    });
+    editor.update((tx) => {
+      tx.selection.set(caret([1, 0], 0));
+      tx.break.insert();
+    });
+
+    assert.deepEqual(cards([2]), [['alice:1', 2]]);
+  });
+
+  it('puts Enter at the left edge of one’s own typing under that typing', () => {
+    const { cards, editor } = suggesting([
+      {
+        children: [
+          { authored: [mark('bob:1', 'insert', 1, 'bob')], text: 'ab' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+
+    editor.update((tx) => {
+      tx.text.insert('rs', { at: { offset: 2, path: [0, 0] } });
+    });
+    editor.update((tx) => {
+      tx.selection.set(caret([0, 0], 2));
+      tx.break.insert();
+    });
+
+    assert.deepEqual(cards([1]), [['alice:1', 1]]);
+  });
+
+  it('keeps Enter at the start of a line apart from one’s own typing that ends the line above', () => {
+    const { cards, editor } = suggesting(['ab', 'cd']);
+
+    editor.update((tx) => {
+      tx.text.insert('xy', { at: { offset: 2, path: [0, 0] } });
+    });
+    editor.update((tx) => {
+      tx.selection.set(caret([1, 0], 0));
+      tx.break.insert();
+    });
+
+    assert.deepEqual(
+      [cards([0]), cards([2])],
+      [[['alice:1', 1]], [['alice:2', 1]]]
+    );
+  });
+
+  it('puts a line break pasted inside one’s own typing under that typing', () => {
+    const { cards, editor } = suggesting(['ab']);
+
+    editor.update((tx) => {
+      tx.text.insert('xyz', { at: { offset: 2, path: [0, 0] } });
+    });
+    editor.update((tx) => {
+      tx.slice.replace(
+        ContentSlice.fromJSON({
+          content: [
+            { children: [{ text: 'P' }], type: 'paragraph' },
+            { children: [{ text: 'q' }], type: 'paragraph' },
+          ],
+          openEnd: 1,
+          openStart: 1,
+        }),
+        { at: { offset: 1, path: [0, 1] } }
+      );
+    });
+
+    assert.deepEqual(cards([1]), [['alice:1', 1]]);
   });
 
   it('decides a card as read, and refuses it once a change left it', () => {

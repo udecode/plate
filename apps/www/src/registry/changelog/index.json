@@ -20,6 +20,78 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-17-base-dnd-tooltip",
+      "href": "/registry/changelog/2026-10-17-base-dnd-tooltip.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix the block handle tooltip in Base UI installs",
+      "change": {
+        "type": "source",
+        "date": "2026-10-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["dnd"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-17-declare-select-editor-update-methods",
+      "href": "/registry/changelog/2026-10-17-declare-select-editor-update-methods.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Declare where select editor update methods place their arguments",
+      "change": {
+        "type": "source",
+        "date": "2026-10-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["select-editor"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-17-details-toggle-font-size",
+      "href": "/registry/changelog/2026-10-17-details-toggle-font-size.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Center the Details toggle on a title enlarged by a font size",
+      "change": {
+        "type": "source",
+        "date": "2026-10-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["details"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-17-table-handle-stacking",
+      "href": "/registry/changelog/2026-10-17-table-handle-stacking.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep table row controls under open menus and keep block handles hidden over selected cells",
+      "change": {
+        "type": "source",
+        "date": "2026-10-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["dnd"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-16-code-block-diagrams",
       "href": "/registry/changelog/2026-10-16-code-block-diagrams.json",
       "status": "draft",
@@ -323,9 +395,10 @@
         "turn-into-toolbar-button",
         "block-menu",
         "slash",
-        "font-size-toolbar-button"
+        "font-size-toolbar-button",
+        "toc"
       ],
-      "entries": 4,
+      "entries": 5,
       "diagnostics": []
     },
     {

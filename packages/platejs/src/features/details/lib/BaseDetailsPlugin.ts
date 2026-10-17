@@ -26,9 +26,9 @@ import {
 } from '../../../core';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { blockRelease } from '../../../internal/plugin/blockRelease';
-import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
 import { insertionAnchor } from '../../../internal/plugin/insertionAnchor';
 import { inRoot, rootOf } from '../../../internal/utils/inRoot';
+import { BaseHeadingPlugin, type HeadingLevel } from '../../basic-nodes';
 
 const extraSummaryToMarkedParagraph = (document: Document, extra: Element) => {
   const paragraph = document.createElement('p');
@@ -50,41 +50,25 @@ const getDetailsOfTitle = (
     type,
   }: Readonly<{ path: Path; root?: NamedRootKey; type: string }>
 ) => {
-  const containerPath = PathApi.parent(path);
-  const container =
-    containerPath.length > 0
-      ? state.nodes.get(inRoot(containerPath, root), {
-          match: ElementApi.isElement,
-        })
-      : undefined;
+  if (path.at(-1) !== 0) return undefined;
 
+  const container = state.nodes.parent(inRoot(path, root), { type });
   const title = container?.[0].children[0];
 
-  return container &&
-    title &&
-    ElementApi.isElementType(container[0], type) &&
-    path.at(-1) === 0 &&
-    state.nodes.isContent(title)
-    ? container
-    : undefined;
+  return title && state.nodes.isContent(title) ? container : undefined;
 };
 
-const isSummaryHeadingLevel = (
-  value: unknown
-): value is 1 | 2 | 3 | 4 | 5 | 6 =>
+const isSummaryHeadingLevel = (value: unknown): value is HeadingLevel =>
   typeof value === 'number' &&
   Number.isInteger(value) &&
   value >= 1 &&
   value <= 6;
 
 const getReleasedTitleProps = (editor: Editor, level: unknown) => {
-  const headingType = getCompiledPlateModelBinding(
-    editor,
-    PLUGINS.heading
-  )?.elementType;
+  const heading = editor.plugin(BaseHeadingPlugin);
 
-  return isSummaryHeadingLevel(level) && headingType
-    ? { level, type: headingType }
+  return isSummaryHeadingLevel(level) && heading.installed
+    ? { level, type: heading.schema.type }
     : { type: editor.plugin(BaseParagraphPlugin).schema.type };
 };
 
@@ -150,7 +134,81 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
         },
         match: [{ tag: 'summary' }],
       },
-      markdown: { tag: type },
+      markdown: {
+        tag: type,
+        // GitHub renders a leveled title only as `<summary><h2>…</h2></summary>`.
+        decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
+          const [paragraph, ...rest] = node.children;
+          const phrasing =
+            paragraph?.type === 'paragraph' && rest.length === 0
+              ? paragraph.children
+              : [];
+          const open = phrasing[0];
+          const close = phrasing.at(-1);
+          const level =
+            phrasing.length > 1 && open?.type === 'html'
+              ? Number(/^<h([1-6])>$/i.exec(open.value)?.[1])
+              : undefined;
+          const heading =
+            isSummaryHeadingLevel(level) &&
+            close?.type === 'html' &&
+            close.value.toLowerCase() === `</h${level}>`;
+          const { properties } = readTagAttributes();
+          const children = caption(
+            decode(
+              heading
+                ? [{ children: phrasing.slice(1, -1), type: 'paragraph' }]
+                : node.children
+            )
+          );
+
+          if (!children) {
+            return refuse(`<${type}> content must be one Markdown paragraph.`);
+          }
+
+          const titleLevel = heading ? level : properties.level;
+
+          return {
+            ...(isSummaryHeadingLevel(titleLevel) ? { level: titleLevel } : {}),
+            children: [...children],
+            type,
+          };
+        },
+        encode: ({
+          encodeNodeAttributes,
+          encodePhrasing,
+          node,
+          preserve,
+          readPlainInline,
+        }) => {
+          const content =
+            readPlainInline(node.children) === ''
+              ? []
+              : encodePhrasing(node.children);
+          const phrasing = node.level
+            ? [
+                { type: 'html' as const, value: `<h${node.level}>` },
+                ...content,
+                { type: 'html' as const, value: `</h${node.level}>` },
+              ]
+            : content;
+
+          if (node.level) preserve('level');
+
+          return {
+            attributes: encodeNodeAttributes().filter(
+              (attribute) =>
+                !('name' in attribute && attribute.name === 'level')
+            ),
+            children:
+              phrasing.length > 0
+                ? [{ children: phrasing, type: 'paragraph' }]
+                : [],
+            name: type,
+            type: 'mdxJsxFlowElement',
+          };
+        },
+      },
     }),
 });
 
@@ -348,34 +406,35 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
             }
             const root = rootOf(tx, at);
             const keyAt = (path: Path) => tx.key(inRoot(path, root));
-            const detailsEntries = [
-              ...new Map(
-                sources.flatMap(([node, path]) => {
-                  if (!ElementApi.isElement(node)) return [];
+            const detailsPaths = new Map<NodeKey, Path>();
 
-                  const location = inRoot(path, root);
-                  const entry = ElementApi.isElementType(node, type)
-                    ? tx.nodes.get(location, { type: plugin })
-                    : tx.nodes.above({ at: location, type });
-                  const key = entry && keyAt(entry[1]);
+            for (const [node, path] of sources) {
+              if (!ElementApi.isElement(node)) continue;
 
-                  return entry && key ? [[key, entry] as const] : [];
-                })
-              ),
-            ].toSorted(
-              ([, [, left]], [, [, right]]) =>
-                PathApi.compare(left, right) || left.length - right.length
-            );
+              const location = inRoot(path, root);
+              const entry = ElementApi.isElementType(node, type)
+                ? tx.nodes.get(location, { type: plugin })
+                : tx.nodes.above({ at: location, type });
+              const key = entry && keyAt(entry[1]);
+
+              if (entry && key) detailsPaths.set(key, entry[1]);
+            }
+
             let outer: Path | undefined;
-            const targets = detailsEntries.filter(([, [, path]]) => {
-              if (outer && PathApi.isAncestor(outer, path)) return false;
+            const targets = [...detailsPaths]
+              .toSorted(
+                ([, left], [, right]) =>
+                  PathApi.compare(left, right) || left.length - right.length
+              )
+              .filter(([, path]) => {
+                if (outer && PathApi.isAncestor(outer, path)) return false;
 
-              outer = path;
+                outer = path;
 
-              return true;
-            });
+                return true;
+              });
 
-            for (const [key, [, path]] of targets.toReversed()) {
+            for (const [key, path] of targets.toReversed()) {
               releaseDetails(editor, tx, key, keyAt([...path, 0]) ?? null);
             }
           }
@@ -409,18 +468,13 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
             let paths = blocks.map(([, path]) => path);
 
             if (firstIsTextBlock) {
-              const headingType = getCompiledPlateModelBinding(
-                editor,
-                PLUGINS.heading
-              )?.elementType;
+              const heading = editor.plugin(BaseHeadingPlugin);
+              const level = heading.installed
+                ? heading.read.level(first[0])
+                : undefined;
+
               tx.nodes.set(
-                {
-                  type: summaryType,
-                  ...(first[0].type === headingType &&
-                  isSummaryHeadingLevel(first[0].level)
-                    ? { level: first[0].level }
-                    : {}),
-                },
+                { type: summaryType, ...(level ? { level } : {}) },
                 { at: first[1] }
               );
 

@@ -1,4 +1,8 @@
-import { createEditor as createHeadlessEditor, definePlugin } from 'platejs';
+import {
+  createEditor as createHeadlessEditor,
+  definePlugin,
+  txLocate,
+} from 'platejs';
 import { history } from 'platejs/history';
 import { createEditor, toReactPlugin, useCreateEditor } from 'platejs/react';
 
@@ -156,7 +160,7 @@ const CapabilityCompatibilityPlugin = definePlugin('capabilityCompatibility', {
     isReady: ({ mode }) => mode === 'ready',
   },
   update: () => ({
-    replace: (value: string) => value.length,
+    replace: txLocate(false, (value: string) => value.length),
   }),
 });
 
@@ -178,7 +182,7 @@ CapabilityCompatibilityPlugin.extend({
   },
   update: () => ({
     clear: () => true,
-    replace: (value: unknown) => String(value).length,
+    replace: txLocate(false, (value: unknown) => String(value).length),
   }),
 });
 
@@ -196,7 +200,9 @@ CapabilityCompatibilityPlugin.extend({
 });
 CapabilityCompatibilityPlugin.extend({
   // @ts-expect-error Update overrides cannot narrow inherited parameters.
-  update: () => ({ replace: (value: 'only') => value.length }),
+  update: () => ({
+    replace: txLocate(false, (value: 'only') => value.length),
+  }),
 });
 // @ts-expect-error State overrides must remain assignable to inherited fields.
 CapabilityCompatibilityPlugin.extend({ initialState: { mode: 1 } });
