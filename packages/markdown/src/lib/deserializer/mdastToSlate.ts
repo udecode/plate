@@ -6,6 +6,7 @@ import type { MdRoot } from '../mdast';
 import type { DeserializeMdOptions } from './deserializeMd';
 
 import { convertNodesDeserialize } from './convertNodesDeserialize';
+import { resolveReferences } from './internal/resolveReferences';
 
 export const mdastToSlate = (
   node: Root,
@@ -16,6 +17,8 @@ const buildSlateRoot = (
   root: MdRoot,
   options: DeserializeMdOptions
 ): Descendant[] => {
+  resolveReferences(root as Root);
+
   if (!options.splitLineBreaks) {
     root.children = root.children.map((child) => {
       if (child.type === 'html' && child.value === '<br />') {

@@ -976,6 +976,8 @@ Refer to [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages
 
 **Emoji shortcodes:** Add [`remark-emoji`](https://github.com/rhysd/remark-emoji) to `remarkPlugins` to turn `:fire:` into unicode `🔥` on deserialization and back to unicode on serialization.
 
+**Reference links:** `[text][id]`, `[id][]`, `[id]` and `![alt][id]` deserialize as `a` and `img` nodes with the URL from the matching definition, and serialize back as inline links and images.
+
 **GFM footnotes:** With `remark-gfm` enabled, footnotes deserialize into `footnoteReference` and `footnoteDefinition` nodes. Add the matching [Footnote plugins](/docs/footnote) to render them as real editor nodes instead of falling back to unknown types.
 
 ---
