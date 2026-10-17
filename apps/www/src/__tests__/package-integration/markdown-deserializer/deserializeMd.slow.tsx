@@ -29,7 +29,7 @@ describe('deserializeMd', () => {
         output: (
           <fragment>
             <hp>
-              <htext>{'<!DOCTYPE'}</htext>
+              <htext rawHtml>{'<!DOCTYPE'}</htext>
             </hp>
           </fragment>
         ),

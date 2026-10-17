@@ -877,7 +877,7 @@ Migrating involves mapping `react-markdown` concepts to Plate's architecture.
 
 ## Appendix A: HTML in Markdown
 
-By default, `@platejs/markdown` does **not** process raw HTML tags. Standard Markdown syntax still becomes Plate nodes, but literal HTML like `<div>` is ignored unless you handle it outside Plate or model it as MDX/custom nodes.
+By default, `@platejs/markdown` does **not** process raw HTML tags. Standard Markdown syntax still becomes Plate nodes, but literal HTML like `<div>` or `<!-- comment -->` stays editable source text: a text leaf with `rawHtml: true`, written back to Markdown unchanged. Handle HTML outside Plate or model it as MDX/custom nodes to get real editor nodes.
 
 `MarkdownPlugin` runs `remark-parse`, configured `remarkPlugins`, and Plate conversion rules. It does not run a rehype HTML stage, so `rehype-raw` and `rehype-sanitize` are not `MarkdownPlugin` options.
 
