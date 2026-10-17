@@ -1,9 +1,8 @@
-import { getPluginContributions } from 'plitejs/internal';
-
 import { domCommands } from '../../../dom/plite-dom.internal';
 import {
   type EditorStateView,
   editorCommands,
+  getPluginContributions,
   RangeApi,
 } from '../../../facade';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';

@@ -393,7 +393,13 @@ export const applyEditableClick = ({
       return;
     }
 
-    if (isGeckoDOMHost(event) && event.detail === 1) {
+    // Firefox ends a drag selection with a click whose detail is 1, so only a
+    // collapsed native selection is a caret click.
+    if (
+      isGeckoDOMHost(event) &&
+      event.detail === 1 &&
+      getSelection(ReactEditor.findDocumentOrShadowRoot(editor))?.isCollapsed
+    ) {
       const range = editor.api.dom.resolveEventRange(event.nativeEvent);
       const clickedInline =
         range && RangeApi.isCollapsed(range)

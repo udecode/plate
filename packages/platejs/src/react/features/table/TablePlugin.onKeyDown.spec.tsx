@@ -604,6 +604,50 @@ describe('TablePlugin onKeyDown', () => {
     expect(editor.read.selection.ranges()).toHaveLength(3);
   });
 
+  it('grows a backward node selection of cells from its focus with Shift+Left', () => {
+    const editor = createTableEditor(
+      (
+        <editor>
+          <htable>
+            {['1', '2', '3'].map((row) => (
+              <htr>
+                {['1', '2', '3'].map((column) => (
+                  <htd>
+                    <hp>{row + column}</hp>
+                  </htd>
+                ))}
+              </htr>
+            ))}
+          </htable>
+        </editor>
+      ) as TestEditor
+    );
+
+    editor.update.selection.setNodes(
+      [
+        [0, 1, 1],
+        [0, 1, 2],
+        [0, 2, 1],
+        [0, 2, 2],
+      ],
+      { anchor: [0, 2, 2], focus: [0, 1, 1] }
+    );
+    runKeyDown(editor, createKeyboardEvent('ArrowLeft', 37));
+
+    expect(getEditorLiveSelection(editor)).toMatchObject({
+      anchorPath: [0, 2, 2],
+      focusPath: [0, 1, 0],
+      paths: [
+        [0, 1, 0],
+        [0, 1, 1],
+        [0, 1, 2],
+        [0, 2, 0],
+        [0, 2, 1],
+        [0, 2, 2],
+      ],
+    });
+  });
+
   it('handles IME 229 by collapsing a multi-cell selection once', () => {
     const input = (
       <editor>

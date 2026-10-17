@@ -96,11 +96,9 @@ for (const [name, route] of [
 }
 
 test('playground types and pastes direct edits without changing pending suggestions', async ({
-  context,
   page,
 }) => {
   const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/blocks/playground', { waitUntil: 'commit' });
   const root = page.locator('[data-editor="true"]').first();
   const editor = createBrowserEditorHarness(page, 'playground editing', root);
@@ -122,10 +120,7 @@ test('playground types and pastes direct edits without changing pending suggesti
   await page.keyboard.type('?');
 
   await editor.assert.modelBlockText(0, `${headingText}?`);
-  await page.evaluate(async () => {
-    await navigator.clipboard.writeText('Pasted');
-  });
-  await root.press('ControlOrMeta+V');
+  await editor.clipboard.pasteText('Pasted');
   await editor.assert.modelBlockText(0, `${headingText}?Pasted`);
   await expect(
     authoredText(heading, '[data-editor-authored-kind~="insert"]')
@@ -160,11 +155,9 @@ test('playground title can change to H2 from the toolbar', async ({ page }) => {
 });
 
 test('playground preserves a table pasted over part of its heading', async ({
-  context,
   page,
 }) => {
   const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/blocks/playground', { waitUntil: 'commit' });
   const root = page.locator('[data-editor="true"]').first();
   const editor = createBrowserEditorHarness(
@@ -178,21 +171,10 @@ test('playground preserves a table pasted over part of its heading', async ({
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 3 },
   });
-  await editor.focus();
-  await page.evaluate(async () => {
-    await navigator.clipboard.write([
-      new ClipboardItem({
-        'text/html': new Blob(
-          [
-            '<table><tbody><tr><td><p>Pasted cell</p></td></tr></tbody></table>',
-          ],
-          { type: 'text/html' }
-        ),
-        'text/plain': new Blob(['Pasted cell'], { type: 'text/plain' }),
-      }),
-    ]);
-  });
-  await root.press('ControlOrMeta+V');
+  await editor.clipboard.pasteHtml(
+    '<table><tbody><tr><td><p>Pasted cell</p></td></tr></tbody></table>',
+    'Pasted cell'
+  );
 
   await editor.assert.modelBlockText(0, 'W');
   await editor.assert.modelBlockText(2, 'come to the Plate Playground!');
@@ -405,23 +387,18 @@ test('playground deletes mixed accepted and pending text directly in editing mod
   ]);
   if (!before) throw new Error('Missing paragraph text.');
   const prefix = 'Review and refine content seamlessly. Use ';
+  const startOffset = prefix.length - 'Use '.length;
   await editor.selection.dragTextRange({
     endAffinity: 'after',
     endOffset: 'suggestions'.length,
     endText: 'suggestions',
-    startOffset: prefix.length - 'Use '.length,
+    startOffset,
     text: prefix,
   });
-  await expect
-    .poll(async () => {
-      const selectedText = await editor.get.selectedText();
-
-      return selectedText.replaceAll('\u00A0', '');
-    })
-    .toBe('Use suggestions');
-  const selection = await editor.selection.get();
-  expect(selection).not.toBeNull();
-  expect(selection?.anchor).not.toEqual(selection?.focus);
+  await editor.assert.selection({
+    anchor: { path: [3, 0], offset: startOffset },
+    focus: { path: [3, 2], offset: 0 },
+  });
   await expect(root).toBeFocused();
   await page.keyboard.press('Backspace');
 
@@ -521,6 +498,11 @@ test('homepage removes a multi-block selection over struck text in Editing and k
   page,
 }, testInfo) => {
   const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+  // The deletion pulls the lazy Potion iframe into the viewport, and Firefox
+  // logs potion.platejs.org's obsolete allow-from X-Frame-Options as an error.
+  await page.route('https://potion.platejs.org/**', (route) =>
+    route.fulfill({ body: '', contentType: 'text/html' })
+  );
   await page.setViewportSize({ height: 1000, width: 1440 });
   await page.goto('/', { waitUntil: 'commit' });
   const root = page.locator('[data-editor="true"]').first();
@@ -1562,11 +1544,9 @@ test('keeps ordinary and inserted-only pointer selections native', async ({
 });
 
 test('expands a pointer selection across deleted text boundaries', async ({
-  context,
   page,
 }) => {
   const { editor, root, runtimeErrors } = await openSuggestions(page);
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   const authoredIdentities = await root
     .locator('[data-editor-authored-change]')
     .evaluateAll((elements) =>
@@ -1649,10 +1629,8 @@ test('expands a pointer selection across deleted text boundaries', async ({
     selectedTextLength: 34,
     to: points.suffixFar,
   });
-  await page.keyboard.press('ControlOrMeta+C');
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
-    'this redundant phrase out of the f'
-  );
+  const copied = await editor.clipboard.copyNativeEventPayload();
+  expect(copied.text).toBe('this redundant phrase out of the f');
   await dragAndAssert({
     from: points.prefix,
     selectedTextLength: 20,

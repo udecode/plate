@@ -24,6 +24,7 @@ const WORD_NAMESPACE =
   'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 const XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
 const MEBIBYTE = 1024 * 1024;
+const XML_ROOT_RE = /<(?!\?)([\w:]+)/;
 const measured = process.env.BENCH_MEASURE === '1';
 const resultUrl = new URL(
   'results/plate-docx-revision-import-latest.json',
@@ -244,14 +245,15 @@ const runMeasured = async (fixture: Fixture, spies: WorkSpies) => {
   await timer;
   Bun.gc(true);
   const memoryAfter = process.memoryUsage();
-  const xmlParses = spies.parse.mock.calls
+  const xmlParts = spies.parse.mock.calls
     .slice(before.parse)
-    .filter(([, mime]) => mime === 'application/xml').length;
+    .filter(([, mime]) => mime === 'application/xml')
+    .map(([xml]) => XML_ROOT_RE.exec(String(xml))?.[1]);
   const work = {
     documentDiffs: calls(spies.diff) - before.diff,
     htmlConversions: calls(spies.mammoth) - before.mammoth,
     packageGenerations: calls(spies.generate) - before.generate,
-    xmlParses,
+    xmlParts,
     zipLoads: 1,
   };
 
@@ -259,7 +261,7 @@ const runMeasured = async (fixture: Fixture, spies: WorkSpies) => {
     documentDiffs: 1,
     htmlConversions: 1,
     packageGenerations: 1,
-    xmlParses: 1,
+    xmlParts: ['w:document', 'w:numbering', 'w:styles'],
     zipLoads: 1,
   });
 

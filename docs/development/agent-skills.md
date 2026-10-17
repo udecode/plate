@@ -16,7 +16,7 @@ Plate adds playbooks on top of pstack's in [`.agents/playbooks/`](../../.agents/
 | Next item | "next" | [Verdict](../../.agents/playbooks/verdict.md): `review-ledger.mjs next` and `status` | The open ledger unit, why it is open, its prior work and the release counts |
 | Review | "review <scope>", then "again" or "panel" to iterate | `verdict` | A Stop, Pursue or Defer verdict with the current and proposed call site, and how it reaches each scope that imports the reviewed one |
 | Plan | "plan" | [Plan](../../.agents/playbooks/plan.md), with its architecture reference for API or architecture work | The ready plan and its open questions |
-| Execute | "go" | [Build](../../.agents/playbooks/build.md): every slice without pausing, then `verify`, with a playtest of each editor feature that has a scenario catalog, and the plan's landed `Status:` | The page link, then the next ledger item offered as a one-click task |
+| Execute | "go" | [Build](../../.agents/playbooks/build.md): every slice without pausing, then `verify`, with the specs of each editor feature that has a scenario catalog run in every engine, and the plan's landed `Status:` | The page link, then the next ledger item offered as a one-click task |
 
 Bugs go through [Bug fix](../../.agents/playbooks/bug-fix.md) and finishing a PR or the current tree through [Babysit](../../.agents/playbooks/babysit.md). "review PR <number>" on someone else's PR runs a review-only panel through Babysit and returns findings without editing anything. A structural cleanup runs [Refactoring](../../.agents/playbooks/refactoring.md), and a slowness report runs [Perf issue](../../.agents/playbooks/perf-issue.md) with `benchmark`.
 

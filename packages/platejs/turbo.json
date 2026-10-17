@@ -2024,6 +2024,7 @@
         "typecheck:partition:docx-export",
         "typecheck:partition:docx-import",
         "typecheck:partition:docx-internal",
+        "typecheck:partition:footnote",
         "typecheck:partition:layout",
         "typecheck:partition:math",
         "typecheck:partition:media",
@@ -2201,6 +2202,7 @@
         "typecheck:partition:core",
         "typecheck:partition:footnote",
         "typecheck:partition:layout",
+        "typecheck:partition:static",
         "typecheck:partition:table"
       ],
       "inputs": [
@@ -2246,6 +2248,7 @@
       "dependsOn": [
         "typecheck:partition:core",
         "typecheck:partition:details",
+        "typecheck:partition:footnote",
         "typecheck:partition:html",
         "typecheck:partition:media",
         "typecheck:partition:mention",
@@ -2816,6 +2819,7 @@
         "plitejs#typecheck:partition:react",
         "typecheck:partition:authored",
         "typecheck:partition:core",
+        "typecheck:partition:footnote",
         "typecheck:partition:proxies",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-list",
@@ -3761,6 +3765,7 @@
         "typecheck:partition:callout",
         "typecheck:partition:core",
         "typecheck:partition:docx-internal",
+        "typecheck:partition:footnote",
         "typecheck:partition:layout",
         "typecheck:partition:math",
         "typecheck:partition:standard-basic-nodes",

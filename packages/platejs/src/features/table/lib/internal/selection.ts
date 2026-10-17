@@ -54,9 +54,37 @@ type ReadTableSelectionOptions = Readonly<{
   at?: NodeSelection | NodeTarget;
   cellTypes: readonly string[];
   expansion?: TableSelectionExpansion;
-  selection?: NodeSelection | Range | null;
   tableType: string;
 }>;
+
+type TableSelectionState = Pick<
+  EditorStateView<any, any>,
+  'key' | 'nodes' | 'ranges' | 'runtime' | 'selection' | 'view'
+>;
+
+// The public selection read answers a node selection with its endpoint range,
+// whose anchor and focus lie in the selected nodes that keep its direction.
+const readCurrentNodeSelection = (
+  state: TableSelectionState,
+  range: Range
+): NodeSelection | null => {
+  const [first, ...rest] = state.selection.nodes().map(([, path]) => path);
+
+  if (!first) return null;
+  const paths = [first, ...rest] as const;
+  const selectedAt = (point: Path) =>
+    paths.find(
+      (path) => PathApi.equals(path, point) || PathApi.isAncestor(path, point)
+    ) ?? failInvariant('Expected a node selection endpoint in its nodes');
+  const root = SelectionApi.root(range);
+
+  return SelectionApi.nodes(paths, {
+    anchorPath: selectedAt(range.anchor.path),
+    focusPath: selectedAt(range.focus.path),
+    mode: 'block',
+    ...(root === undefined ? {} : { root }),
+  });
+};
 
 export type TableSelectionViewMetrics = Readonly<{
   cacheHitCount: number;
@@ -198,19 +226,16 @@ const getAnchorsWithinBounds = (
 };
 
 export const readTableSelection = (
-  state: Pick<
-    EditorStateView<any, any>,
-    'key' | 'nodes' | 'ranges' | 'runtime' | 'selection' | 'view'
-  >,
+  state: TableSelectionState,
   {
     at,
     cellTypes,
     expansion = 'span-closure',
-    selection: currentSelection = state.selection(),
     tableType,
   }: ReadTableSelectionOptions
 ): TableSelectionView | null => {
   const snapshot = state.runtime.snapshot();
+  const currentSelection = state.selection();
   const cacheable = !isTransactionState(state);
   const cacheKey =
     cacheable && at === undefined
@@ -240,7 +265,10 @@ export const readTableSelection = (
 
     return view;
   };
-  const requested = at ?? currentSelection;
+  const requested =
+    at ??
+    (currentSelection && readCurrentNodeSelection(state, currentSelection)) ??
+    currentSelection;
   const location =
     requested === undefined ||
     requested === null ||
@@ -287,13 +315,9 @@ export const readTableSelection = (
       if (relative.length === 1) {
         return context.grid.anchorsByRow[relative[0]] ?? [];
       }
-      if (relative.length === 2) {
-        const anchor = context.anchorAtPath(path);
+      const anchor = context.anchorAtPath(path.slice(0, tablePath.length + 2));
 
-        return anchor ? [anchor] : [];
-      }
-
-      return [];
+      return anchor ? [anchor] : [];
     };
     const selected = new Set<TableGridAnchor>();
 

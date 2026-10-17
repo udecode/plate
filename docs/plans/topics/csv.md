@@ -1,6 +1,6 @@
 # CSV and spreadsheet ingress
 
-Page: https://claude.ai/artifact/DJPGknWi38Ff3ou9J6GWmJ
+Page: https://claude.ai/artifact/BxtLXphP9DjedPP5M4AHqj
 
 Plate has no CSV plugin. Spreadsheet copies paste as tables through their HTML, and Table reads tab-separated text pasted onto a rectangular selection of two or more cells, one field per cell. Comma text and CSV stay text. The 2026-10-04 audit's Pursue verdict was adopted by [the 2026-10-14 plan](../2026-10-14-csv-review.md), which deleted `platejs/csv`. The scope's review and plan history prints with `node tooling/scripts/review-ledger.mjs show csv`.
 
@@ -22,16 +22,22 @@ Tab-separated paste and copy have no options and no public call. An app that con
 ## Main changes
 
 - Table's private grammar in `packages/platejs/src/features/table/lib/internal/tabularText.ts` reads and writes tab-separated text. Its writer quotes a field that holds a tab, CR or LF or starts with a quote, and doubles its inner quotes. Its reader takes a quoted field only when the writer would have written it, so every grid the writer writes reads back to itself.
-- `BaseTablePlugin` declares a `text/plain` paste format at priority 30. It claims a paste only with no `text/html`, `text/markdown` or files, a tab in the text, and a complete rectangular selection of two or more cells. It keeps min(rows, selection height) rows and min(widest row, selection width) fields, and reports the non-empty fields it leaves out as one lossy diagnostic. Table reads a node selection as the range between its endpoints, so the format does too.
+- `BaseTablePlugin` declares a `text/plain` paste format at priority 30. It claims a paste only with no `text/html`, `text/markdown` or files, a tab in the text, and a complete rectangular selection of two or more cells. It keeps min(rows, selection height) rows and min(widest row, selection width) fields, and reports the non-empty fields it leaves out as one lossy diagnostic. A node selection counts only when its cells fill that rectangle.
 - Table's React plugin writes only tab-separated `text/plain` when the user copies several cells, beside the editor's own copy and HTML. A merged cell writes an empty field for each slot it spans.
+- `readTableSelection` reads the current selection itself. When the editor holds a node selection, it rebuilds the directed `NodeSelection` from `state.selection.nodes()` and the selected node that holds each endpoint of `state.selection()`. Callers no longer pass a `selection` option, so every Table read, cut, paste, move and command sees the cells that were picked. A block node-selected inside a cell maps to that cell.
+- `removeRow` and `removeColumn` refuse a multi-cell selection whose view is not complete, so a selection that skips a row or column between its ends removes nothing.
+- The Plite view editor's `fragment.delete` lowers to the `deleteFragment` command, as the main editor's already does. Event handlers get the view editor, so a cut now reaches plugin `deleteFragment` handlers, and Table clears the cells it copied instead of removing the cell nodes.
 
 ## Open work
 
 - Table crops HTML, Markdown and fragment pastes onto a smaller selection silently, and a ragged pasted table pads its whole rectangle before cropping. Reporting needs the paste outcome to carry the fitter's loss, a Plite change. owner: zbeyens. stop: a Table clipboard fitting plan, or 2026-11-30.
 - Table's structural plain-text mapping, which copies a table inside a larger selection, joins cells with tabs and turns line breaks into spaces without quoting. owner: zbeyens. stop: a Table plain-text review, or 2026-11-30.
 - Several selected cells and pasted HTML or multi-line text without tabs still repeat the whole content in every cell. owner: zbeyens. stop: the same Table clipboard fitting plan, or 2026-11-30.
-- Table reads a node selection as the range between its endpoints. So a node selection of three cells, or of diagonal cells, can be claimed by the tab-separated format and filled off the selected cells. Cut can clear cells that were not selected. Removing non-adjacent rows deletes the whole table. The fix keeps the anchor and focus paths when it reads the selected nodes, checks completeness in `removeRow` and `removeColumn`, deletes on cut the cells the writer copied, and caches the derived view per state. owner: zbeyens. stop: a Table node-selection plan lands, or 2026-11-30.
-- A node selection that mixes table cells and an outside paragraph pastes into empty table rows. owner: zbeyens. stop: the same Table node-selection plan, or 2026-11-30.
+- A node selection that mixes table cells and an outside paragraph pastes into empty table rows, because Plite's paste removes the selected blocks itself and never asks Table's delete handler (`probe-mixed-node-paste-output.txt` in the 2026-10-17 run directory). owner: zbeyens. stop: `t_96b80fff` lands, or 2026-11-30.
+- A range delete from a paragraph into one table cell removes the whole table, cells outside the range included, at base too. owner: zbeyens. stop: a Table boundary-delete plan, or 2026-11-30.
+- Table, AIChatPlugin and Plite's own `getCurrentNodeSelection` each rebuild the directed node selection, because `state.selection()` returns its range. owner: zbeyens. stop: a public Plite read of the current node selection lands, or 2026-11-30.
+- Other Plite view-editor transaction methods, such as marks, text deletion, breaks and block toggles, may skip their command lowering the way `fragment.delete` did. owner: zbeyens. stop: an audit of view-editor lowering, or 2026-11-30.
+- The node-selection marquee e2e expects a node selection without `mode`. owner: zbeyens. stop: `t_2967500b` lands, or 2026-11-30.
 - The generated API reference manifest still lists `PLUGINS.csv`. owner: zbeyens. stop: the next `pnpm --filter www api-reference` run after the plitejs build passes.
 - `/blocks/installation-next-demo` throws "localStorage is not defined" during server render. owner: zbeyens. stop: that demo reads storage only after mount.
 

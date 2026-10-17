@@ -433,6 +433,32 @@ describe('TablePlugin navigation', () => {
     });
   });
 
+  it('tabs forward from a block node-selected inside a cell', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>11</hp>
+            </htd>
+            <htd>
+              <hp>12</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const editor = createTableEditor(input);
+
+    editor.update.selection.setNodes([[0, 0, 0, 0]]);
+
+    expect(runTableShortcut(editor, 'tab')).toBe(true);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [0, 0, 1, 0, 0] },
+      focus: { offset: 0, path: [0, 0, 1, 0, 0] },
+    });
+  });
+
   it('shift-tabs back to the previous cell', () => {
     const input = (
       <editor>

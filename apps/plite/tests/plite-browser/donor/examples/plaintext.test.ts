@@ -1316,6 +1316,90 @@ test.describe('plaintext example', () => {
     });
   }
 
+  for (const { from, key, to } of [
+    { from: 0, key: 'Shift+End', to: 'Two words'.length },
+    { from: 'Two words'.length, key: 'Shift+Home', to: 0 },
+  ]) {
+    test(`selects to the line edge with ${key}`, async ({
+      page,
+    }, testInfo) => {
+      test.skip(
+        testInfo.project.name === 'mobile',
+        'Desktop line-boundary proof'
+      );
+
+      const editor = await openExample(page, 'plite/plaintext', {
+        ready: {
+          editor: 'visible',
+        },
+      });
+
+      await editor.selection.selectAll();
+      await page.keyboard.insertText('One');
+      await page.keyboard.press('Enter');
+      await page.keyboard.insertText('Two words');
+      await page.keyboard.press('Enter');
+      await page.keyboard.insertText('Three');
+      await editor.selection.collapse({ path: [1, 0], offset: from });
+
+      await page.keyboard.press(key);
+
+      await editor.assert.selection({
+        anchor: { path: [1, 0], offset: from },
+        focus: { path: [1, 0], offset: to },
+      });
+      await editor.assert.domSelection({
+        anchorNodeText: 'Two words',
+        anchorOffset: from,
+        focusNodeText: 'Two words',
+        focusOffset: to,
+      });
+      await page.keyboard.press('Backspace');
+      await editor.assert.blockTexts(['One', 'Three']);
+    });
+  }
+
+  for (const { key, offset } of [
+    { key: 'End', offset: 'One\nTwo'.length },
+    { key: 'Home', offset: 'One\n'.length },
+  ]) {
+    test(`stops ${key} at a line break inside the block`, async ({
+      page,
+    }, testInfo) => {
+      test.skip(
+        testInfo.project.name === 'mobile',
+        'Desktop line-boundary proof'
+      );
+
+      const text = 'One\nTwo\nThree';
+      const editor = await openExample(page, 'plite/plaintext', {
+        ready: {
+          editor: 'visible',
+        },
+      });
+
+      await editor.selection.selectAll();
+      await page.keyboard.insertText('One');
+      await editor.root.press('Shift+Enter');
+      await page.keyboard.insertText('Two');
+      await editor.root.press('Shift+Enter');
+      await page.keyboard.insertText('Three');
+      await editor.assert.blockTexts([text]);
+      await editor.selection.collapse({
+        path: [0, 0],
+        offset: 'One\nT'.length,
+      });
+
+      await page.keyboard.press(key);
+
+      await editor.assert.collapsedModelDOMSelection({
+        offset,
+        path: [0, 0],
+        text,
+      });
+    });
+  }
+
   for (const preparation of ['handle', 'pointer'] as const) {
     for (const boundary of ['start', 'end'] as const) {
       test(`imports native line boundaries after ${preparation} preparation: ${boundary}`, async ({

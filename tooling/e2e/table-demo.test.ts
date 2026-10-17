@@ -66,15 +66,18 @@ const writeClipboard = (page: Page, values: Record<string, string>) =>
     ]);
   }, values);
 
-const copySelectionAndReadFormats = async (page: Page) => {
-  await page.evaluate(() => {
+const copySelectionAndReadFormats = async (
+  page: Page,
+  clipboardEvent: 'copy' | 'cut' = 'copy'
+) => {
+  await page.evaluate((eventName) => {
     const state = window as typeof window & {
       __tableCopyFormats?: Record<string, string> | null;
     };
 
     state.__tableCopyFormats = null;
     document.addEventListener(
-      'copy',
+      eventName,
       (event) => {
         const clipboard = event.clipboardData;
         const values: Record<string, string> = {};
@@ -87,8 +90,10 @@ const copySelectionAndReadFormats = async (page: Page) => {
       },
       { once: true }
     );
-  });
-  await page.keyboard.press('ControlOrMeta+C');
+  }, clipboardEvent);
+  await page.keyboard.press(
+    clipboardEvent === 'cut' ? 'ControlOrMeta+X' : 'ControlOrMeta+C'
+  );
   await expect
     .poll(() =>
       page.evaluate(
@@ -876,6 +881,8 @@ test.describe('table registry demo', () => {
   test.describe('native Chromium clipboard', () => {
     test.describe.configure({ mode: 'serial' });
 
+    const origin = () => new URL(test.info().project.use.baseURL!).origin;
+
     test('pastes tab-separated text into selected table cells', async ({
       browserName,
       context,
@@ -884,7 +891,7 @@ test.describe('table registry demo', () => {
       test.skip(browserName !== 'chromium', 'Native Chromium clipboard proof');
 
       await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
-        origin: 'http://localhost:3000',
+        origin: origin(),
       });
 
       const runtimeErrors = recordBrowserRuntimeErrors(page, {
@@ -941,7 +948,7 @@ test.describe('table registry demo', () => {
       test.skip(browserName !== 'chromium', 'Native Chromium clipboard proof');
 
       await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
-        origin: 'http://localhost:3000',
+        origin: origin(),
       });
 
       const runtimeErrors = recordBrowserRuntimeErrors(page, {
@@ -982,7 +989,7 @@ test.describe('table registry demo', () => {
       test.skip(browserName !== 'chromium', 'Native Chromium clipboard proof');
 
       await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
-        origin: 'http://localhost:3000',
+        origin: origin(),
       });
 
       const runtimeErrors = recordBrowserRuntimeErrors(page, {
@@ -1012,6 +1019,57 @@ test.describe('table registry demo', () => {
       }
     });
 
+    test('cuts the selected cells and keeps the table shape', async ({
+      browserName,
+      context,
+      page,
+    }) => {
+      test.skip(browserName !== 'chromium', 'Native Chromium clipboard proof');
+
+      await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
+        origin: origin(),
+      });
+
+      const runtimeErrors = recordBrowserRuntimeErrors(page, {
+        strict: true,
+      });
+      const editor = getEditor(page);
+      const table = getOriginalTable(page);
+
+      try {
+        await page.goto('/blocks/table-demo');
+        await expect(editor).toHaveCount(1);
+        await expect(table).toHaveCount(1);
+        await selectCellRectangle(page, table, editor, {
+          expectedCount: 4,
+          moves: ['ArrowRight', 'ArrowDown'],
+          startId: 'table-demo-heading-element',
+        });
+
+        const before = await readTableSnapshot(table);
+        const selectedKeys = await table
+          .locator(':is(td, th)[data-table-cell-selected="true"]')
+          .evaluateAll((cells) =>
+            cells.map((cell) => cell.getAttribute('data-editor-node-key'))
+          );
+        const copied = await copySelectionAndReadFormats(page);
+        const cut = await copySelectionAndReadFormats(page, 'cut');
+
+        expect(cut['text/plain']).toBe(copied['text/plain']);
+        await expect
+          .poll(() => readTableSnapshot(table))
+          .toEqual({
+            ...before,
+            cells: before.cells.map((cell) =>
+              selectedKeys.includes(cell.key) ? { ...cell, text: '' } : cell
+            ),
+          });
+        runtimeErrors.assertNone();
+      } finally {
+        runtimeErrors.stop();
+      }
+    });
+
     test('prefers copied exact model over conflicting HTML and plain text', async ({
       browserName,
       context,
@@ -1020,7 +1078,7 @@ test.describe('table registry demo', () => {
       test.skip(browserName !== 'chromium', 'Native Chromium clipboard proof');
 
       await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
-        origin: 'http://localhost:3000',
+        origin: origin(),
       });
 
       const runtimeErrors = recordBrowserRuntimeErrors(page, {
@@ -1082,7 +1140,7 @@ test.describe('table registry demo', () => {
       test.skip(browserName !== 'chromium', 'Native Chromium clipboard proof');
 
       await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
-        origin: 'http://localhost:3000',
+        origin: origin(),
       });
 
       const runtimeErrors = recordBrowserRuntimeErrors(page, {
@@ -1140,7 +1198,7 @@ test.describe('table registry demo', () => {
       test.skip(browserName !== 'chromium', 'Native Chromium clipboard proof');
 
       await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
-        origin: 'http://localhost:3000',
+        origin: origin(),
       });
 
       const runtimeErrors = recordBrowserRuntimeErrors(page, {

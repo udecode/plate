@@ -28,7 +28,12 @@ import {
   groupAuthoredChanges,
   indexAuthoredChanges,
 } from '../src/authored/changes';
-import { compactClaims, expandContexts } from '../src/authored/facts/compact';
+import {
+  carriedIn,
+  compactClaims,
+  expandContexts,
+  outerToInner,
+} from '../src/authored/facts/compact';
 import { factsOf } from '../src/authored/facts/facts';
 import { authoredLocationMap } from '../src/authored/format';
 import { getReviewLedger } from '../src/authored/ledger/ledger';
@@ -1531,14 +1536,15 @@ const undoesSuggestion: RecordedLaw = ({ before, edited, suggested }) => {
   }
   const kept = letterCounts(suggested);
 
+  const carried = carriedIn({ children: before });
+
   for (const [node] of texts(before)) {
-    if (
-      !readAuthoredMarks(node).some(
-        (mark) => mark.kind === 'insert' && mark.author !== 'bob'
-      )
-    ) {
-      continue;
-    }
+    const inserter = outerToInner(
+      readAuthoredMarks(node).filter((mark) => mark.kind === 'insert'),
+      carried
+    ).at(-1)?.author;
+
+    if (inserter === undefined || inserter === 'bob') continue;
     for (const letter of node.text ?? '') {
       assert.ok(
         kept.has(letter),

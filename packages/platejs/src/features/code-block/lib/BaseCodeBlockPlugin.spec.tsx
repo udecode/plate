@@ -1,6 +1,7 @@
-import { createLowlight } from 'lowlight';
 /** @jsxRuntime classic */
 /** @jsx jsxt */
+
+import { createLowlight } from 'lowlight';
 
 import {
   createDataTransfer,

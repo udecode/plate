@@ -1,4 +1,4 @@
-import { BaseParagraphPlugin, createEditor, PLUGINS } from '../core';
+import { BaseParagraphPlugin, createEditor } from '../core';
 import { BaseBlockquotePlugin } from '../features/basic-nodes/lib/BaseBlockPlugins';
 import { BaseHeadingPlugin } from '../features/basic-nodes/lib/BaseHeadingPlugins';
 import { BaseListPlugin } from '../features/list';
@@ -77,8 +77,7 @@ const adjacencyNumbers = (children: readonly Block[]) => {
             isListItem(sibling) &&
             sibling.listType === block.listType &&
             styleOf(sibling) === styleOf(block) &&
-            (sibling.type === PLUGINS.heading) ===
-              (block.type === PLUGINS.heading)
+            (sibling.type === 'heading') === (block.type === 'heading')
           ) {
             ordinal = ordinals[previous] + 1;
           }
@@ -137,7 +136,7 @@ const plain = (value: string, extra: Record<string, unknown> = {}): Block => ({
 });
 const quote = (...children: Block[]): Block => ({
   children,
-  type: PLUGINS.blockquote,
+  type: 'blockquote',
 });
 
 const fixtures: Record<string, Block[]> = {
@@ -164,7 +163,7 @@ const fixtures: Record<string, Block[]> = {
     item('Bullet', { listType: 'bulleted' }),
     item('Two'),
     item('Alpha', { listStyle: 'lower-alpha' }),
-    { ...item('Heading', { level: 1 }), type: PLUGINS.heading },
+    { ...item('Heading', { level: 1 }), type: 'heading' },
     item('Three', { listStyle: 'decimal' }),
   ],
   'starts and restarts': [
@@ -226,7 +225,7 @@ const randomBlock = (next: (bound: number) => number, depth: number): Block => {
 
   return {
     ...item('i', extra),
-    ...(next(12) === 0 ? { level: 1, type: PLUGINS.heading } : {}),
+    ...(next(12) === 0 ? { level: 1, type: 'heading' } : {}),
   };
 };
 

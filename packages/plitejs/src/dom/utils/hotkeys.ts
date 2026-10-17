@@ -36,8 +36,8 @@ const HOTKEYS = {
 const APPLE_HOTKEYS = {
   moveLineBackward: ['opt+up', 'ctrl+a'],
   moveLineForward: ['opt+down', 'ctrl+e'],
-  moveLineStart: 'ctrl+a',
-  moveLineEnd: 'ctrl+e',
+  moveLineStart: ['shift+home', 'ctrl+shift?+a'],
+  moveLineEnd: ['shift+end', 'ctrl+shift?+e'],
   moveWordBackward: 'opt+left',
   moveWordForward: 'opt+right',
   deleteBackward: ['ctrl+backspace', 'ctrl+h'],
@@ -123,7 +123,17 @@ export const Hotkeys = {
   isUndo: create('undo'),
 };
 
-// Kept off `Hotkeys`: its published move-line predicates match these keys too,
-// together with Option+Up and Option+Down, which step past the line's edge.
-export const isMoveLineStart = create('moveLineStart');
-export const isMoveLineEnd = create('moveLineEnd');
+const isMoveLineStart = create('moveLineStart');
+const isMoveLineEnd = create('moveLineEnd');
+
+// Not on `Hotkeys`: its published `isMoveLineBackward` and `isMoveLineForward`
+// match the plain line keys too, plus Option+Up and Option+Down, which step
+// past the line's edge.
+export const getLineBoundaryKeyboardMove = (
+  event: KeyboardEvent
+): { extend: boolean; reverse: boolean } | null => {
+  if (isMoveLineStart(event)) return { extend: event.shiftKey, reverse: true };
+  if (isMoveLineEnd(event)) return { extend: event.shiftKey, reverse: false };
+
+  return null;
+};

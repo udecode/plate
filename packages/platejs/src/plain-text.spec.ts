@@ -253,8 +253,7 @@ describe('serializePlainText', () => {
           blockContent: true,
           contentRoots: {
             body: {
-              content: schema.content.type(BaseParagraphPlugin.name, {
-                default: { type: BaseParagraphPlugin.name },
+              content: schema.content.element(BaseParagraphPlugin, {
                 min: 1,
               }),
               ownership: 'exclusive',
@@ -270,7 +269,7 @@ describe('serializePlainText', () => {
           {
             childRoots: { body: 'body' },
             children: [{ text: '' }],
-            type: RootHolderPlugin.name,
+            type: 'plainTextRootHolder',
           },
         ],
         roots: { body: [numbered('One'), numbered('Two')] },

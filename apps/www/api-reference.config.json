@@ -159,6 +159,7 @@
             "EditorCoreStateView",
             "EditorCoreUpdateMethods",
             "EditorCoreUpdateTransaction",
+            "EditorDirectCommandDispatch",
             "EditorDocumentRange",
             "EditorDocumentRecords",
             "EditorDocumentValue",

@@ -660,6 +660,22 @@ describe('BaseTablePlugin tab-separated paste', () => {
     ]);
   });
 
+  it('leaves a node selection of three cells to the other formats', () => {
+    const editor = createTarget();
+
+    editor.update.selection.setNodes([
+      [0, 0, 0],
+      [0, 0, 1],
+      [0, 1, 0],
+    ]);
+    paste(editor, { 'text/plain': 'w\tx\ny\tz\n' });
+
+    expect(tableText(editor)).toEqual([
+      ['w\txy\tz', 'w\txy\tz'],
+      ['w\txy\tz', 'd'],
+    ]);
+  });
+
   it('inserts tab-separated text as text at a caret in one cell', () => {
     const input = (
       <editor>

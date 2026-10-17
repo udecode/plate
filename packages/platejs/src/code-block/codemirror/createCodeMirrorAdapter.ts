@@ -262,10 +262,12 @@ const readEdgeLineOffset = (
     }
     return null;
   };
-  const first =
-    boundaries.length > 0
-      ? nearestDrawnCandidate(0, -1, boundaries.length)
-      : null;
+  const lastBoundary = boundaries.at(-1);
+
+  if (lastBoundary === undefined) {
+    return estimateOffset(view, line.from, line.text, x);
+  }
+  const first = nearestDrawnCandidate(0, -1, boundaries.length);
 
   if (!first) return estimateOffset(view, line.from, line.text, x);
   const last =
@@ -297,7 +299,7 @@ const readEdgeLineOffset = (
     .reduce((a, b) => (Math.abs(b.left - x) < Math.abs(a.left - x) ? b : a));
   const beyond =
     (x < first.left && boundaries[0] > line.from) ||
-    (x > last.left && boundaries.at(-1) < line.to);
+    (x > last.left && lastBoundary < line.to);
 
   return beyond
     ? estimateOffset(view, line.from, line.text, x)

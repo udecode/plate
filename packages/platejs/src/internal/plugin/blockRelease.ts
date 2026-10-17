@@ -1,9 +1,8 @@
-import { definePluginPoint } from 'plitejs';
-import { getPluginContributions } from 'plitejs/internal';
-
 import {
   canPlaceBlocksAtPath,
+  definePluginPoint,
   ElementApi,
+  getPluginContributions,
   PathApi,
   type Descendant,
   type Editor,

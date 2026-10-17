@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     'React',
     'Next.js',
   ],
-  manifest: `${siteConfig.url}/site.webmanifest`,
+  manifest: '/site.webmanifest',
   metadataBase: new URL(siteConfig.url),
   alternates: {
     types: {

@@ -1189,7 +1189,6 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
         readTableSelection(state, {
           at: options.at,
           cellTypes: [cellType()],
-          selection: state.selection(),
           tableType: type,
         });
       // A known path needs only table topology. Selection views also resolve
@@ -1403,7 +1402,6 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           readTableSelection(tx, {
             at: options.at,
             cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
-            selection: tx.selection(),
             tableType: context.schema.type,
           });
         const applyMutation = (
@@ -1705,6 +1703,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
 
               if (view.anchors.length > 1) {
                 if (
+                  !view.complete ||
                   view.bounds.minRow !== 0 ||
                   view.bounds.maxRow !== view.context.grid.height - 1
                 ) {
@@ -1743,6 +1742,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
 
               if (view.anchors.length > 1) {
                 if (
+                  !view.complete ||
                   view.bounds.minCol !== 0 ||
                   view.bounds.maxCol !== view.context.grid.width - 1
                 ) {
@@ -2229,7 +2229,6 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
       readTableSelection(state, {
         at,
         cellTypes: [cellType],
-        selection: state.selection(),
         tableType: context.schema.type,
       });
 
@@ -2292,7 +2291,6 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
     ) => {
       const view = readTableSelection(state, {
         cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
-        selection: state.selection(),
         tableType: context.schema.type,
       });
 
@@ -2369,7 +2367,6 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           const exact = context.editor.api.dom.clipboard.readSlice(input);
           const view = readTableSelection(state, {
             cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
-            selection: state.selection(),
             tableType: context.schema.type,
           });
           const hasStructuralTarget = (view?.anchors.length ?? 0) > 1;
@@ -2486,19 +2483,15 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           return false;
         }),
         handle(editorCommands.deleteFragment, ({ input, state }) => {
-          const target = input.at ?? state.selection();
-
-          if (!target) return false;
           const view = readTableSelection(state, {
-            at: target,
+            at: input.at,
             cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
-            selection: state.selection(),
             tableType: context.schema.type,
           });
 
           if (
             !view ||
-            (!SelectionApi.isNode(target) && view.cellEntries.length < 2)
+            (!SelectionApi.isNode(input.at) && view.cellEntries.length < 2)
           ) {
             return false;
           }
@@ -2526,7 +2519,6 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
         }),
         around(editorCommands.replaceSlice, ({ input, state, next }) => {
           const { slice } = input;
-          const target = input.options?.at ?? state.selection();
           const rejectTablePaste = (
             diagnostic: TablePasteDiagnostic
           ): false => {
@@ -2541,11 +2533,9 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
             return false;
           };
 
-          if (!target) return next();
           const view = readTableSelection(state, {
-            at: target,
+            at: input.options?.at,
             cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
-            selection: state.selection(),
             tableType: context.schema.type,
           });
 
@@ -2675,25 +2665,12 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
               });
         }),
         around(editorCommands.insertText, ({ state, next }) => {
-          const selection = state.selection();
-          const view = selection
-            ? readTableSelection(state, {
-                at: selection,
-                cellTypes: [
-                  context.editor.plugin(BaseTableCellPlugin).schema.type,
-                ],
-                selection,
-                tableType: context.schema.type,
-              })
-            : null;
+          const view = readTableSelection(state, {
+            cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
+            tableType: context.schema.type,
+          });
 
-          if (
-            !selection ||
-            !view ||
-            (!SelectionApi.isNode(selection) && view.cellEntries.length < 2)
-          ) {
-            return next();
-          }
+          if (!view || view.cellEntries.length < 2) return next();
           const focusPath = view.tablePath.concat(view.focus.path);
           const focus = state.points.start(focusPath);
           const transaction = state.transaction((tx) => {

@@ -291,6 +291,7 @@ export const entrypointDags = {
             'standard/code-block',
             'core',
             'docx-internal',
+            'footnote',
             'layout',
             'math',
             'static',

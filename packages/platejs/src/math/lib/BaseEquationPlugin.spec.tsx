@@ -1,6 +1,7 @@
-import { jsxt, type TestEditor } from '#platejs-test-internal';
 /** @jsxRuntime classic */
 /** @jsx jsxt */
+
+import { jsxt, type TestEditor } from '#platejs-test-internal';
 
 import {
   BaseParagraphPlugin,

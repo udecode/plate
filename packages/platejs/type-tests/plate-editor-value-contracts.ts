@@ -307,7 +307,9 @@ const GeneratedInlinePlugin = definePlugin('generatedInline', {
   schema: { element: { void: 'inline' } },
 });
 const FactoryInlinePlugin = definePlugin('factoryInline', {
-  schema: () => ({ element: { inline: true } }),
+  schema: () => ({
+    element: { content: schema.content.text(), inline: true },
+  }),
 });
 const generatedInlineEditor = createEditor({
   plugins: [GeneratedInlinePlugin, FactoryInlinePlugin],

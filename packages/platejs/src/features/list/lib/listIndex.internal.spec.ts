@@ -1,4 +1,4 @@
-import { BaseParagraphPlugin, createEditor, PLUGINS } from '../../../core';
+import { BaseParagraphPlugin, createEditor } from '../../../core';
 import { BaseBlockquotePlugin } from '../../basic-nodes/lib/BaseBlockPlugins';
 import { BaseHeadingPlugin } from '../../basic-nodes/lib/BaseHeadingPlugins';
 import { BaseBoldPlugin } from '../../basic-nodes/lib/BaseMarkPlugins';
@@ -94,7 +94,7 @@ describe('list numbering by identity', () => {
   it('keeps counting past a heading and a bullet of the same list', () => {
     const editor = editorOf([
       item('One', { listId: 'a' }),
-      { ...item('Heading', { level: 1, listId: 'a' }), type: PLUGINS.heading },
+      { ...item('Heading', { level: 1, listId: 'a' }), type: 'heading' },
       item('Bullet', { listId: 'a', listType: 'bulleted' }),
       item('Three', { listId: 'a' }),
     ]);

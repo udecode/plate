@@ -116,9 +116,13 @@ export const useRuntimeFocusMouseEvents = ({
         !nativePointerFocusRef.current
       ) {
         nativeInternalFocusRef.current = false;
-        // Writing a selection into the editor focuses it in Firefox, which
-        // would pull focus back from an outside target.
-        if (relatedTarget == null || movingWithinEditor) {
+        // Writing a selection into the editor focuses its root, which would
+        // pull focus back from an outside target or another internal control.
+        if (
+          relatedTarget == null ||
+          (movingWithinEditor &&
+            !isInteractiveInternalTarget(editor, relatedTarget))
+        ) {
           syncDOMSelectionToEditor();
         }
       }

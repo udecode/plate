@@ -130,7 +130,7 @@ function rowProblems(line, where, opened, chips) {
     else if (!opened) found.push(`${where}: a panel finding needs a "seats" row before it`);
     if (!/^(applied|dismissed|deferred|open)\b\W+\w/u.test(rest[4])) found.push(`${where}: a panel finding's result starts with "applied", "dismissed", "deferred" or "open" and gives the reason`);
     else if (/^deferred\b/u.test(rest[4])) {
-      if (rest[1].startsWith('critical')) found.push(`${where}: a critical panel finding is applied or dismissed, never deferred`);
+      if (rest[1].startsWith('critical')) found.push(`${where}: a critical panel finding is never deferred: apply it or pivot the run to it, dismiss it on proof that it is no defect or is rare, or, when its own case fails the same way on the run's base, this run neither causes, worsens nor increases exposure to it, it breaks no outcome or property the typed ask states and it shows no requirement of this run's design unmet, log it open with patch: none, owner:, stop: and each line it limits in the result, and proof: none and the base run in the evidence`);
       else if (!/\bowner:\s*\S/u.test(rest[4])) found.push(`${where}: a deferred panel finding names its owner:`);
     } else if (/^open\b/u.test(rest[4]) && !(/\bpatch:\s*\S/u.test(rest[4]) && /\bowner:\s*\S/u.test(rest[4]))) {
       found.push(`${where}: an open panel finding names its patch: and owner:`);
@@ -255,7 +255,7 @@ function append(path, batch, run) {
       found.push(`${where}: a later round's seats row needs a writing row after the previous seats row: log the round's writing passes under phase writing, or log a writing row that says why none ran`);
     }
     if (opens(row) && rounds >= MAX_ROUNDS) {
-      found.push(`${where}: this would be panel round ${rounds + 1} since the last restart, past the cap of ${MAX_ROUNDS}. Stop reviewing: settle each open finding as applied, dismissed with its reason, deferred with its owner when it is not critical, or open with its patch: and owner:, then build. A build row whose decision starts with "built:" and names the files a plan's build changed, with a result that starts applied, fixed, partial, proven, recorded or verified, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again`);
+      found.push(`${where}: this would be panel round ${rounds + 1} since the last restart, past the cap of ${MAX_ROUNDS}. Stop reviewing: settle each open finding as applied, dismissed on its proof, deferred with its owner when it is not critical, or open with its patch:, owner: and stop: when the Panel review rule lets it stay open, pivoting the run for a critical the lead must apply, then build a plan or move a diff to its next gate. A build row whose decision starts with "built:" and names the files a plan's build changed, with a result that starts applied, fixed, partial, proven, recorded or verified, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again`);
     }
     if (restartsRoundCount(row)) rounds = 0;
     if (opens(row)) {
@@ -475,7 +475,7 @@ if (args[0] === 'append') {
   console.info(batch.length > 1 ? `Appended ${batch.length} rows to ${args[1]}.` : `Appended a row to ${args[1]}.`);
   if (run) console.info(`Lead: ${leadLabel(run)}.`);
   const stage = lastStage(args[1]);
-  if (stage && stage !== stageBefore) console.info(`Stage: ${stage}. Rename the session now, as .agents/pstack/rules/title.md says.`);
+  if (stage && stage !== stageBefore) console.info(`Stage: ${stage}. Rename the session and publish the plan's page now, as .agents/pstack/rules/title.md and pages.md say.`);
   process.exit(0);
 }
 const paths =

@@ -1,7 +1,10 @@
 import React from 'react';
 
-import type { RuntimePluginReference, Value } from '../../facade';
-import { createEditorOwner } from '../../internal/editor/editorOwner';
+import {
+  createEditorOwner,
+  type RuntimePluginReference,
+  type Value,
+} from '../../facade';
 import type { EditorApplicationSchema } from '../../lib';
 import { resolveEditorUserId } from '../../lib/editor/editorUser.internal';
 import {

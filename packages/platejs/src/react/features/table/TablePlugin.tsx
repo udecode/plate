@@ -51,7 +51,6 @@ const readInternalSelection = (
     readTableSelection(state, {
       at,
       cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
-      selection: state.selection(),
       tableType: editor.plugin(BaseTablePlugin).schema.type,
     })
   );
@@ -129,7 +128,6 @@ const moveTableSelection = (
     const view = readTableSelection(tx, {
       at,
       cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
-      selection: tx.selection(),
       tableType: editor.plugin(BaseTablePlugin).schema.type,
     });
 
@@ -147,7 +145,6 @@ const moveTableSelection = (
       const expanded = readTableSelection(tx, {
         at: range,
         cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
-        selection: tx.selection(),
         tableType: editor.plugin(BaseTablePlugin).schema.type,
       });
 
@@ -205,7 +202,6 @@ const selectAllTable = (editor: Editor) => {
     const selection = tx.selection();
     const currentView = readTableSelection(tx, {
       cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
-      selection,
       tableType: editor.plugin(BaseTablePlugin).schema.type,
     });
     const tablePath =
@@ -216,9 +212,8 @@ const selectAllTable = (editor: Editor) => {
 
     if (!range) return;
     const allCellsSelected =
-      selection &&
-      SelectionApi.isNode(selection) &&
       !!currentView &&
+      SelectionApi.isNode(currentView.selection) &&
       currentView.anchors.length === currentView.context.grid.anchors.length;
 
     if ((selection && RangeApi.equals(selection, range)) || allCellsSelected) {
@@ -231,7 +226,6 @@ const selectAllTable = (editor: Editor) => {
     const view = readTableSelection(tx, {
       at: range,
       cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
-      selection,
       tableType: editor.plugin(BaseTablePlugin).schema.type,
     });
 
@@ -247,7 +241,6 @@ const tabTable = (editor: Editor, reverse = false) =>
     const selection = tx.selection();
     const view = readTableSelection(tx, {
       cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
-      selection,
       tableType: editor.plugin(BaseTablePlugin).schema.type,
     });
 

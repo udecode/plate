@@ -14,7 +14,6 @@ import {
   type NodeEntry,
   type Path,
   type NodeInsertOptions,
-  type Point,
   txLocate,
   txSelection,
   locateAt,
@@ -22,10 +21,141 @@ import {
 import { selectAfterInline } from '../../../internal/plugin/inlineInsertion';
 import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import type { ComboboxState } from '../../combobox';
+import { getFootnoteTarget } from './internal/getFootnoteTarget';
 
 const NUMERIC_REF_REGEX = /^\d+$/;
 const isNonBlankRef = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
+
+/** The fragment id of a footnote and, when present, its linked fragment id. */
+export type FootnoteAnchor = { id: string; target?: string };
+
+type IndexedFootnote = Element & { ref: string };
+type FootnoteIndex = {
+  anchors: Map<string, FootnoteAnchor>;
+  definitions: Array<NodeEntry<IndexedFootnote>>;
+  definitionsByRef: Map<string, Array<NodeEntry<IndexedFootnote>>>;
+  footnotes: Array<NodeEntry<IndexedFootnote>>;
+  referencesByRef: Map<string, Array<NodeEntry<IndexedFootnote>>>;
+};
+
+const indexes = new WeakMap<
+  readonly Descendant[],
+  Map<string | undefined, Map<string | undefined, FootnoteIndex>>
+>();
+
+const encodeRef = (ref: string) => {
+  let encoded = '';
+
+  for (const character of ref) {
+    const code = character.charCodeAt(0);
+
+    encoded +=
+      character.length === 1 && code >= 0xd8_00 && code <= 0xdf_ff
+        ? [
+            0xe0 | (code >> 12),
+            0x80 | ((code >> 6) & 0x3f),
+            0x80 | (code & 0x3f),
+          ]
+            .map((byte) => `%${byte.toString(16).toUpperCase()}`)
+            .join('')
+        : encodeURIComponent(character);
+  }
+
+  return encoded;
+};
+
+const getFootnoteIndex = (
+  children: readonly Descendant[],
+  referenceType: string | undefined,
+  definitionType: string | undefined
+): FootnoteIndex => {
+  let byReference = indexes.get(children);
+  if (!byReference) {
+    byReference = new Map();
+    indexes.set(children, byReference);
+  }
+  let byDefinition = byReference.get(referenceType);
+  if (!byDefinition) {
+    byDefinition = new Map();
+    byReference.set(referenceType, byDefinition);
+  }
+  const cached = byDefinition.get(definitionType);
+  if (cached) return cached;
+
+  const index: FootnoteIndex = {
+    anchors: new Map(),
+    definitions: [],
+    definitionsByRef: new Map(),
+    footnotes: [],
+    referencesByRef: new Map(),
+  };
+  const walk = (nodes: readonly Descendant[], parent: Path) => {
+    nodes.forEach((node, offset) => {
+      if (!ElementApi.isElement(node)) return;
+      const path = [...parent, offset];
+
+      if (node.type === referenceType || node.type === definitionType) {
+        const footnote = node as IndexedFootnote;
+        const entry: NodeEntry<IndexedFootnote> = [footnote, path];
+        const isDefinition = node.type === definitionType;
+
+        index.footnotes.push(entry);
+        if (isDefinition) index.definitions.push(entry);
+        if (footnote.ref) {
+          const byRef = isDefinition
+            ? index.definitionsByRef
+            : index.referencesByRef;
+          const entries = byRef.get(footnote.ref) ?? [];
+          entries.push(entry);
+          byRef.set(footnote.ref, entries);
+          const encoded = encodeRef(footnote.ref);
+          const id = `${isDefinition ? 'fn' : 'fnref'}-${encoded}${entries.length > 1 ? `:${entries.length}` : ''}`;
+
+          index.anchors.set(path.join(','), {
+            id,
+            ...(!isDefinition || entries.length === 1
+              ? { target: `${isDefinition ? 'fnref' : 'fn'}-${encoded}` }
+              : {}),
+          });
+        }
+      }
+      walk(node.children, path);
+    });
+  };
+  walk(children, []);
+  byDefinition.set(definitionType, index);
+
+  return index;
+};
+
+const getGithubFootnote = (document: Document, href: string | null) => {
+  if (!href) return null;
+  const hash = href.indexOf('#');
+  if (hash === -1) return null;
+  const fragment = href.slice(hash + 1);
+  if (!fragment.startsWith('fn-') && !fragment.startsWith('user-content-fn-')) {
+    return null;
+  }
+  const fragments = [fragment];
+  try {
+    const decoded = decodeURIComponent(fragment);
+    if (decoded !== fragment) fragments.push(decoded);
+  } catch {
+    // A malformed escape can still name an item by its literal id.
+  }
+  for (const id of fragments) {
+    const target =
+      document.getElementById(id) ??
+      document.getElementById(
+        id.startsWith('user-content-')
+          ? id.slice('user-content-'.length)
+          : `user-content-${id}`
+      );
+    if (target) return target;
+  }
+  return null;
+};
 
 /** Enables support for block footnote definitions. */
 export const BaseFootnoteDefinitionPlugin = definePlugin(
@@ -48,6 +178,111 @@ export const BaseFootnoteDefinitionPlugin = definePlugin(
     }),
     formats: ({ defineFormats, schema: { type } }) =>
       defineFormats({
+        html: {
+          priority: 70,
+          match: [
+            {
+              tag: 'div',
+              attributes: { 'data-editor-footnote-definition': true },
+            },
+          ],
+          prepareDocument: ({ document }) => {
+            const labels = new Map<HTMLElement, string>();
+            for (const anchor of document.querySelectorAll(
+              'a[data-footnote-ref]'
+            )) {
+              const target = getGithubFootnote(
+                document,
+                anchor.getAttribute('href')
+              );
+              const label = anchor.textContent?.trim();
+              if (target && label && !labels.has(target)) {
+                labels.set(target, label);
+              }
+            }
+            const used = new Set<string>();
+            for (const section of document.querySelectorAll(
+              'section[data-footnotes]'
+            )) {
+              const definitions: HTMLElement[] = [];
+              for (const list of [...section.children].filter(
+                (child) => child.tagName === 'OL'
+              )) {
+                [...list.children].forEach((item, position) => {
+                  if (item.tagName !== 'LI' || !item.id) return;
+                  const label =
+                    labels.get(item as HTMLElement) ?? `${position + 1}`;
+                  let ref = label;
+                  let suffix = 2;
+                  while (used.has(ref)) {
+                    ref = `${label}-${suffix}`;
+                    suffix += 1;
+                  }
+                  used.add(ref);
+                  const definition = document.createElement('div');
+                  definition.id = item.id;
+                  definition.setAttribute(
+                    'data-editor-footnote-definition',
+                    ref
+                  );
+                  definition.append(...item.childNodes);
+                  definitions.push(definition);
+                });
+              }
+              section.replaceWith(...definitions);
+            }
+            for (const definition of document.querySelectorAll(
+              'div[data-editor-footnote-definition]'
+            )) {
+              for (const chrome of definition.querySelectorAll(
+                '[data-footnote-backref], [data-editor-footnote-chrome]'
+              )) {
+                chrome.remove();
+              }
+            }
+          },
+          decode: ({ element, preserve }) => {
+            const ref = element.getAttribute('data-editor-footnote-definition');
+            if (!isNonBlankRef(ref)) return undefined;
+            preserve('data-editor-footnote-definition');
+            return { ref };
+          },
+          encode: ({ content, document, node, path, preserve, registry }) => {
+            const anchor = getFootnoteIndex(
+              document.children,
+              registry.type(PLUGINS.footnote),
+              type
+            ).anchors.get(path.join(','));
+            if (!anchor) {
+              throw new Error(
+                'Footnote definition is missing from the document index.'
+              );
+            }
+            preserve('ref');
+            return {
+              tag: 'div',
+              attributes: {
+                'data-editor-footnote-definition': node.ref,
+                id: anchor.id,
+              },
+              children: [
+                content,
+                ...(anchor.target
+                  ? [
+                      {
+                        tag: 'a',
+                        attributes: {
+                          'data-editor-footnote-chrome': '',
+                          href: `#${anchor.target}`,
+                        },
+                        children: [{ text: '↩' }],
+                      },
+                    ]
+                  : []),
+              ],
+            };
+          },
+        },
         markdown: {
           node: 'footnoteDefinition',
           decode: ({ decodeNodes, marks, isInline, node, registry }) => {
@@ -133,6 +368,81 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
   }),
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
+      html: {
+        priority: 10,
+        match: [{ tag: 'a', attributes: { 'data-editor-footnote-ref': true } }],
+        prepareDocument: ({ document }) => {
+          for (const anchor of document.querySelectorAll(
+            'a[data-footnote-ref]'
+          )) {
+            const href = anchor.getAttribute('href');
+            const fragment = href?.slice(href.indexOf('#') + 1);
+            if (
+              !href?.includes('#') ||
+              (!fragment?.startsWith('fn-') &&
+                !fragment?.startsWith('user-content-fn-'))
+            ) {
+              continue;
+            }
+            const target = getGithubFootnote(document, href);
+            const ref =
+              target?.getAttribute('data-editor-footnote-definition') ??
+              anchor.textContent?.trim();
+            if (isNonBlankRef(ref)) {
+              anchor.setAttribute('data-editor-footnote-ref', ref);
+            }
+          }
+          for (const sup of document.querySelectorAll('sup')) {
+            const significant = [...sup.childNodes].filter((child) =>
+              child.nodeType === 3
+                ? !!child.textContent?.trim()
+                : child.nodeType === 1 &&
+                  !(child as HTMLElement).hasAttribute('data-editor-spacer')
+            );
+            const anchor = significant[0];
+            if (
+              significant.length === 1 &&
+              anchor?.nodeType === 1 &&
+              (anchor as HTMLElement).matches('a[data-editor-footnote-ref]')
+            ) {
+              sup.replaceWith(anchor);
+            }
+          }
+        },
+        decode: ({ element, preserve }) => {
+          const ref = element.getAttribute('data-editor-footnote-ref');
+          if (!isNonBlankRef(ref)) return undefined;
+          preserve('data-editor-footnote-ref');
+          return { children: [{ text: '' }], ref };
+        },
+        encode: ({ content, document, node, path, preserve, registry }) => {
+          const anchor = getFootnoteIndex(
+            document.children,
+            type,
+            registry.type(BaseFootnoteDefinitionPlugin)
+          ).anchors.get(path.join(','));
+          if (!anchor) {
+            throw new Error(
+              'Footnote reference is missing from the document index.'
+            );
+          }
+          preserve('ref');
+          return {
+            tag: 'sup',
+            children: [
+              {
+                tag: 'a',
+                attributes: {
+                  'data-editor-footnote-ref': node.ref,
+                  href: `#${anchor.target}`,
+                  id: anchor.id,
+                },
+                children: [content, { text: `${node.ref}` }],
+              },
+            ],
+          };
+        },
+      },
       markdown: {
         node: 'footnoteReference',
         decode: ({ node }) => {
@@ -149,67 +459,14 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
         },
       },
     }),
-  read: ({ editor, plugin, schema, state }) => {
-    type Footnote = ElementOf<
-      typeof BaseFootnoteDefinitionPlugin | typeof plugin
-    >;
-
+  read: ({ editor, schema, state }) => {
     const definition = editor.plugin(BaseFootnoteDefinitionPlugin);
     const definitionType = definition.installed
       ? definition.schema.type
       : undefined;
     const referenceType = schema.type;
-    let registry:
-      | {
-          children: readonly Descendant[];
-          definitions: Array<NodeEntry<Footnote>>;
-          definitionsByRef: Map<string, Array<NodeEntry<Footnote>>>;
-          footnotes: Array<NodeEntry<Footnote>>;
-          referencesByRef: Map<string, Array<NodeEntry<Footnote>>>;
-        }
-      | undefined;
-    const getRegistry = () => {
-      const children = state.children();
-
-      if (registry?.children === children) return registry;
-
-      const definitions: Array<NodeEntry<Footnote>> = [];
-      const footnotes: Array<NodeEntry<Footnote>> = [];
-      const definitionsByRef = new Map<string, Array<NodeEntry<Footnote>>>();
-      const referencesByRef = new Map<string, Array<NodeEntry<Footnote>>>();
-
-      for (const entry of state.nodes.toArray({
-        at: [],
-        match: (node): node is Footnote =>
-          ElementApi.isElement(node) &&
-          (node.type === definitionType || node.type === referenceType),
-      })) {
-        const [footnote] = entry;
-
-        footnotes.push(entry);
-        if (footnote.type === definitionType) {
-          definitions.push(entry);
-        }
-        if (!footnote.ref) continue;
-
-        const entries =
-          footnote.type === definitionType ? definitionsByRef : referencesByRef;
-        const matches = entries.get(footnote.ref) ?? [];
-
-        matches.push(entry);
-        entries.set(footnote.ref, matches);
-      }
-
-      registry = {
-        children,
-        definitions,
-        definitionsByRef,
-        footnotes,
-        referencesByRef,
-      };
-
-      return registry;
-    };
+    const getRegistry = () =>
+      getFootnoteIndex(state.children(), referenceType, definitionType);
     const definitions = ({ ref }: { ref?: string } = {}) => {
       const current = getRegistry();
 
@@ -226,6 +483,8 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       getRegistry().referencesByRef.get(ref)?.slice() ?? [];
 
     return {
+      anchor: ({ path }: { path: Path }) =>
+        getRegistry().anchors.get(path.join(',')),
       definition: ({ ref }: { ref: string }) => definitions({ ref })[0],
       definitions,
       definitionText: ({ ref }: { ref: string }) => {
@@ -235,24 +494,6 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
           ? state.text.string(innerDefinition[1])
           : undefined;
       },
-      duplicateDefinitions: ({ ref }: { ref: string }) =>
-        definitions({ ref }).slice(1),
-      duplicateRefs: () => {
-        const counts = new Map<string, number>();
-
-        for (const [innerDefinition2] of definitions()) {
-          if (!innerDefinition2.ref) continue;
-
-          counts.set(
-            innerDefinition2.ref,
-            (counts.get(innerDefinition2.ref) ?? 0) + 1
-          );
-        }
-
-        return [...counts].filter(([, count]) => count > 1).map(([ref]) => ref);
-      },
-      hasDuplicateDefinitions: ({ ref }: { ref: string }) =>
-        definitions({ ref }).length > 1,
       refs: () => [
         ...new Set(
           definitions().flatMap(([innerDefinition3]) =>
@@ -316,34 +557,6 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
     const definitionType = definition.installed
       ? definition.schema.type
       : undefined;
-    const referencePoint = (path: Path) => {
-      const parentEntry = tx.nodes.parent(path, {
-        match: ElementApi.isElement,
-      });
-      let point: Point | undefined;
-
-      if (parentEntry) {
-        const [parent, parentPath] = parentEntry;
-        const childIndex = path.at(-1) ?? -1;
-        const nextSibling = parent.children[childIndex + 1];
-        const previousSibling = parent.children[childIndex - 1];
-
-        if (TextApi.isText(nextSibling)) {
-          point = {
-            offset: 0,
-            path: parentPath.concat([childIndex + 1]),
-          };
-        } else if (TextApi.isText(previousSibling)) {
-          point = {
-            offset: previousSibling.text.length,
-            path: parentPath.concat([childIndex - 1]),
-          };
-        }
-      }
-
-      return point ?? tx.points.start(path.concat([0]));
-    };
-
     const normalizeDuplicateDefinition = ({
       path,
       ref,
@@ -382,17 +595,18 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       return nextRef;
     };
     const selectDefinition = ({ ref }: { ref: string }) => {
-      const innerDefinition4 = tx.plugin(plugin.name).definition({ ref });
+      const target = getFootnoteTarget(
+        tx,
+        tx.plugin(plugin.name).definition({ ref })?.[1],
+        'definition'
+      );
 
-      if (!innerDefinition4) return false;
+      if (!target) return false;
 
-      const point = tx.points.start(innerDefinition4[1]);
-
-      if (!point) return false;
-
+      const { point } = target;
       tx.selection.set({ anchor: point, focus: point });
 
-      return { point, targetPath: innerDefinition4[1] };
+      return target;
     };
     const selectReference = ({
       ref,
@@ -401,17 +615,18 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       ref: string;
       index?: number;
     }) => {
-      const reference = tx.plugin(plugin.name).references({ ref })[index];
+      const target = getFootnoteTarget(
+        tx,
+        tx.plugin(plugin.name).references({ ref })[index]?.[1],
+        'reference'
+      );
 
-      if (!reference) return false;
+      if (!target) return false;
 
-      const point = referencePoint(reference[1]);
-
-      if (!point) return false;
-
+      const { point } = target;
       tx.selection.set({ anchor: point, focus: point });
 
-      return { point, targetPath: reference[1] };
+      return target;
     };
     const createDefinition = ({
       focus = true,

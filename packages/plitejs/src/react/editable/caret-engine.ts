@@ -18,8 +18,7 @@ import { Hotkeys } from '../../dom';
 import {
   type DOMCoverageSession,
   type DOMPhaseScheduler,
-  isMoveLineEnd,
-  isMoveLineStart,
+  getLineBoundaryKeyboardMove,
 } from '../../dom/internal';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
@@ -49,7 +48,7 @@ import {
   getDocumentBoundaryKeyboardMove,
   isPlainVerticalDocumentBoundary,
 } from './input-controller';
-import { getLineBoundaryPoint } from './line-boundary';
+import { getLineBoundarySelection } from './line-boundary';
 import type { EditableRepairRequest } from './mutation-controller';
 import {
   before as editorBefore,
@@ -1098,13 +1097,9 @@ export const applyEditableCaretMovement = ({
     return caretMovementHandled();
   }
 
-  const lineBoundaryReverse = isMoveLineStart(nativeEvent)
-    ? true
-    : isMoveLineEnd(nativeEvent)
-      ? false
-      : null;
+  const lineBoundaryMove = getLineBoundaryKeyboardMove(nativeEvent);
 
-  if (lineBoundaryReverse !== null) {
+  if (lineBoundaryMove) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
       coverage,
@@ -1112,21 +1107,11 @@ export const applyEditableCaretMovement = ({
       editor,
       move: () => {
         dispatchCommand(editor, editorCommands.select, {
-          target: {
-            anchor: getLineBoundaryPoint(
-              editor,
-              selection.anchor,
-              lineBoundaryReverse
-            ),
-            focus: getLineBoundaryPoint(
-              editor,
-              selection.focus,
-              lineBoundaryReverse
-            ),
-          },
+          target: getLineBoundarySelection(editor, selection, lineBoundaryMove),
         });
       },
-      reverse: lineBoundaryReverse,
+      preserveAnchorOnBoundarySkip: lineBoundaryMove.extend,
+      reverse: lineBoundaryMove.reverse,
       selection,
     });
     return caretMovementHandled();

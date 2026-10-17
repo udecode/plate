@@ -41,7 +41,7 @@ import {
   type EditableSelectionSourceTransition,
   getEditableNativeGroupingInput,
 } from './input-state';
-import { getLineBoundaryPoint } from './line-boundary';
+import { getLineBoundarySelection } from './line-boundary';
 import {
   applyParagraphBreakAfterSelectedBlockVoid,
   createDefaultParagraph,
@@ -490,18 +490,12 @@ const applyRootLocalSelectionMoveCommand = ({
     return true;
   }
 
-  if (
-    command.axis === 'line-boundary' &&
-    (command.extend || RangeApi.isCollapsed(selection))
-  ) {
-    const focus = getLineBoundaryPoint(
-      editor,
-      selection.focus,
-      Boolean(command.reverse)
-    );
-
+  if (command.axis === 'line-boundary') {
     dispatchCommand(editor, editorCommands.select, {
-      target: createRange(command.extend ? selection.anchor : focus, focus),
+      target: getLineBoundarySelection(editor, selection, {
+        extend: Boolean(command.extend),
+        reverse: Boolean(command.reverse),
+      }),
     });
     return true;
   }

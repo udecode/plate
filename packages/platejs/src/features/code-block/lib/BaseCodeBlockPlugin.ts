@@ -810,7 +810,9 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           }
         }
 
-        if (isInCodeBlock && text) {
+        const textIsHtmlMarkup = text === input.getData('text/html');
+
+        if (isInCodeBlock && text && !textIsHtmlMarkup) {
           return state.transaction((tx) => {
             tx.text.insert(text);
           });

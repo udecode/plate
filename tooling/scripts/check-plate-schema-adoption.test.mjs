@@ -98,8 +98,18 @@ test('rejects every deleted Plate schema authoring shape', () => {
     `ParagraphPlugin.configure({ render: { node: ParagraphElement } })`,
     `toReactPlugin(BaseParagraphPlugin, { render: { node: ParagraphElement } })`,
     `editor.read.schema.property({ key: 'schemaAdvanced', placement: 'text', type: 'p' })`,
+    `import { schema } from 'platejs'; const read = (block) => schema.element(block.type);`,
   ]) {
     expectRejected(source);
+  }
+});
+
+test("accepts element() on a function's own runtime schema", () => {
+  for (const source of [
+    `import { schema } from 'platejs'; const read = (schema, block) => schema.element(block.type);`,
+    `const read = (editor, block) => { const schema = getEditorSchema(editor); return schema.element(block.type); };`,
+  ]) {
+    expectAccepted(source);
   }
 });
 
@@ -1643,6 +1653,7 @@ test('allows only exact audited production extend stages at their owner path', (
       .extend({
         commands: () => [],
         contributions: [],
+        dataTransferFormats: [],
       });
     definePlugin('highlight', { }).extend({
         decorate: () => [],
@@ -1658,7 +1669,11 @@ test('allows only exact audited production extend stages at their owner path', (
       `
         definePlugin('code', { })
           .extend({ update: () => ({}) })
-          .extend({ commands: () => [], contributions: [] });
+          .extend({
+            commands: () => [],
+            contributions: [],
+            dataTransferFormats: [],
+          });
         definePlugin('highlight', { })
           .extend(() => ({ api: () => ({}) }));
       `,
@@ -1760,9 +1775,13 @@ test('allows only exact audited production extend stages at their owner path', (
   const listOwner = 'packages/platejs/src/features/list/lib/BaseListPlugin.ts';
   const listStages = `definePlugin('list', { })
     .extend(({ defineFormats }) => ({ formats: defineFormats({}) }))
-    .extend(() => ({ api: () => ({}), read: () => ({}) }))
-    .extend(() => ({ override: {}, update: () => ({}) }))
-    .extend(() => ({ commands: () => [] }))
+    .extend(() => ({ on: {}, read: () => ({}) }))
+    .extend(() => ({ override: {}, shortcuts: {}, update: () => ({}) }))
+    .extend(() => ({
+      commands: () => [],
+      contributions: [],
+      readMiddleware: () => ({}),
+    }))
     .extend(() => ({ corrections: [] }))`;
 
   assert.deepEqual(auditPlateSchemaSource(listStages, listOwner), []);
@@ -1807,17 +1826,11 @@ test('allows only exact audited production extend stages at their owner path', (
         .extend(() => ({ commands: () => [], dataTransferFormats: [] }))`,
     ],
     [
-      'packages/platejs/src/features/toc/lib/BaseTocPlugin.ts',
-      `definePlugin('toc', { })
-        .extend(() => ({ read: () => ({}) }))`,
-    ],
-    [
       'packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts',
       `definePlugin('details', { })
         .extend(() => ({
           api: () => ({}),
           contributions: [],
-          corrections: [],
           selectors: {},
           update: () => ({}),
         }))

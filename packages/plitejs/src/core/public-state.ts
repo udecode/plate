@@ -816,6 +816,7 @@ export type TransactionSpecContext = {
   baseRevision: number;
   changed: boolean;
   currentChildrenRoot: string;
+  deferValidation: boolean;
   depth: number;
   documentState: Record<string, unknown> | undefined;
   draftEpoch: number;
@@ -7569,10 +7570,10 @@ export const createTransactionSpecContext = (
   const source =
     parentSnapshot?.builder ??
     createEditorDocumentChangeBuilder(editor, getChangeValue(roots, records));
-  const builder =
-    parentSnapshot || options.deferValidation
-      ? source.fork({ validation: 'defer-to-parent' })
-      : source;
+  const deferValidation = !!parentSnapshot || options.deferValidation === true;
+  const builder = deferValidation
+    ? source.fork({ validation: 'defer-to-parent' })
+    : source;
   const token = { active: true };
   const snapshot: TransactionSnapshot = {
     activeChange: { change: builder.change },
@@ -7618,6 +7619,7 @@ export const createTransactionSpecContext = (
     baseRevision: getMutationVersion(editor),
     changed: false,
     currentChildrenRoot,
+    deferValidation,
     depth: 1,
     documentState: copyDocumentState(getDocumentState(editor)),
     draftEpoch: parent?.draftEpoch ?? 0,
@@ -7850,7 +7852,7 @@ const finalizeTransactionSpecContext = (
   PREPARED_TRANSACTION_SPECS.set(
     spec,
     Object.freeze({
-      deferValidation: context.parentId !== undefined,
+      deferValidation: context.deferValidation,
       discardedNodeKeys: new Set(snapshot.discardedNodeKeys),
       document: snapshot.builder.prepare(changes, { classify: false }),
     })
@@ -10272,6 +10274,7 @@ const createEditorUpdateDraftContext = (
     baseRevision: getMutationVersion(editor),
     changed: false,
     currentChildrenRoot: childrenRoot,
+    deferValidation: false,
     depth: 0,
     documentState: copyDocumentState(documentState),
     draftEpoch: 0,

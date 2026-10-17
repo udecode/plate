@@ -87,6 +87,21 @@ describe('Playwright runtime errors', () => {
     expect(() => recorder.assertNone()).toThrow();
   });
 
+  test('names the resource a failed load could not fetch', () => {
+    const { emit, page } = createPage();
+    const recorder = recordBrowserRuntimeErrors(page, { strict: true });
+
+    emit('console', {
+      location: () => ({ url: 'http://localhost:3000/site.webmanifest' }),
+      text: () => 'Failed to load resource: Could not connect to the server.',
+      type: () => 'error',
+    });
+
+    expect(recorder.errors).toEqual([
+      'Failed to load resource: Could not connect to the server. (http://localhost:3000/site.webmanifest)',
+    ]);
+  });
+
   test('ignores DOM resolution messages logged below error level', () => {
     const { emit, page } = createPage();
     const recorder = recordBrowserRuntimeErrors(page);

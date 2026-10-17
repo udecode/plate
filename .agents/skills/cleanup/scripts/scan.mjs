@@ -25,11 +25,12 @@
 // once the checkout's copy holds its hunks.
 // --remove takes worktrees whose work the caller knows landed and judges none of
 // them: it stops each process working in one, saves the uncommitted changes the
-// checkout lacks as a patch as --delete does and removes it. It keeps a
-// worktree git does not list, a locked one, one outside the folders agents make
-// worktrees in, one holding another worktree, the one it runs in, one holding a
-// commit no branch, tag or remote reaches, one whose processes lsof cannot list
-// and one git refuses to remove, and exits 1 when it keeps any.
+// checkout lacks as a patch as --delete does, saves each commit no branch, tag
+// or remote reaches as a second patch, and removes it. It keeps a worktree git
+// does not list, a locked one, one outside the folders agents make worktrees
+// in, one holding another worktree, the one it runs in, one whose commits git
+// cannot list, one whose processes lsof cannot list and one git refuses to
+// remove, and exits 1 when it keeps any.
 import { execFileSync } from 'node:child_process';
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -353,15 +354,29 @@ function heldCaches(path, worktrees) {
 
 // Removing a worktree deletes its HEAD reflog, so a commit made on a detached
 // HEAD and left behind by a later switch or reset is lost unless a ref reaches it.
+function unreachedList(main, entry, options) {
+  const history = execFileSync('git', ['--no-optional-locks', 'reflog', 'show', '--format=%H', 'HEAD'], { cwd: entry.path, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  const tips = [...new Set([entry.HEAD, ...history.split('\n')].filter(Boolean))];
+  const input = [...tips, '--not', '--branches', '--tags', '--remotes', ''].join('\n');
+  return execFileSync('git', ['--no-optional-locks', 'rev-list', ...options, '--ignore-missing', '--stdin'], { cwd: main, encoding: 'utf8', input, stdio: ['pipe', 'pipe', 'ignore'] });
+}
+
 function unreachedCommits(main, entry) {
   try {
-    const history = execFileSync('git', ['--no-optional-locks', 'reflog', 'show', '--format=%H', 'HEAD'], { cwd: entry.path, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-    const tips = [...new Set([entry.HEAD, ...history.split('\n')].filter(Boolean))];
-    const input = [...tips, '--not', '--branches', '--tags', '--remotes', ''].join('\n');
-    return Number(execFileSync('git', ['--no-optional-locks', 'rev-list', '--count', '--ignore-missing', '--stdin'], { cwd: main, encoding: 'utf8', input, stdio: ['pipe', 'pipe', 'ignore'] }));
+    return Number(unreachedList(main, entry, ['--count']));
   } catch {
     return null;
   }
+}
+
+function saveUnreached(main, entry) {
+  const commits = unreachedList(main, entry, ['--reverse', '--topo-order']).split('\n').filter(Boolean);
+  if (commits.length === 0) return null;
+  const dir = join(git(main, ['rev-parse', '--path-format=absolute', '--git-common-dir']), 'cleanup');
+  mkdirSync(dir, { recursive: true });
+  const file = join(dir, `${basename(entry.path)}-${Date.now().toString(36)}-commits.patch`);
+  writeFileSync(file, commits.map((sha) => git(main, ['format-patch', '-1', '--stdout', '--binary', sha])).join('\n') + '\n');
+  return file;
 }
 
 const cleanupFacts = (main, entry, worktrees) => ({ heldCaches: heldCaches(entry.path, worktrees), repos: nestedRepos(entry.path, statusEntries(entry.path)), unreached: unreachedCommits(main, entry) });
@@ -515,8 +530,7 @@ function removalRefusal(main, listed, path) {
   const nested = nestedIn(path, listed);
   if (nested) return `another worktree lives inside it: ${nested}`;
   if (within(real(process.cwd()), path)) return 'this command runs in it';
-  const unreached = unreachedCommits(main, entry);
-  if (unreached !== 0) return unreachedReason(unreached);
+  if (unreachedCommits(main, entry) === null) return unreachedReason(null);
   return null;
 }
 
@@ -532,8 +546,9 @@ export function removeLanded({ repo, worktrees }) {
     stopProcesses(pids);
     const item = { kind: 'worktree', path };
     try {
+      const commits = saveUnreached(main, listed.find((each) => each.path === path));
       removeFolder(main, item);
-      return { path, removed: true, patch: item.patch ?? null, stopped: pids.length };
+      return { path, removed: true, patch: item.patch ?? null, commits, stopped: pids.length };
     } catch (error) {
       return { path, removed: false, reason: `git refused to remove it: ${String(error.stderr ?? error.message).trim()}`, stopped: pids.length };
     }
@@ -605,7 +620,7 @@ function main(argv) {
     const results = removeLanded({ repo, worktrees: paths });
     for (const result of results) {
       const stopped = result.stopped ? `  stopped ${result.stopped} process${result.stopped === 1 ? '' : 'es'}` : '';
-      console.log(result.removed ? `REMOVED  ${result.path}${result.patch ? `  patch ${result.patch}` : ''}${stopped}` : `KEPT  ${result.path}  ${result.reason}${stopped}`);
+      console.log(result.removed ? `REMOVED  ${result.path}${result.patch ? `  patch ${result.patch}` : ''}${result.commits ? `  commits ${result.commits}` : ''}${stopped}` : `KEPT  ${result.path}  ${result.reason}${stopped}`);
     }
     return results.every((result) => result.removed) ? 0 : 1;
   }

@@ -5,6 +5,10 @@ import { BaseHeadingPlugin } from '../../../features/basic-nodes';
 import { BaseCalloutPlugin } from '../../../features/callout';
 import { BaseCodeBlockPlugin } from '../../../features/code-block';
 import {
+  BaseFootnoteDefinitionPlugin,
+  BaseFootnotePlugin,
+} from '../../../features/footnote';
+import {
   BaseColumnItemPlugin,
   BaseColumnPlugin,
 } from '../../../features/layout';
@@ -29,6 +33,23 @@ const CodeBlockDocx = (
 ) => (
   <EditorElement {...props}>
     <div data-docx-preserve-whitespace="">{props.children}</div>
+  </EditorElement>
+);
+
+const FootnoteReferenceDocx = (
+  props: EditorElementProps<typeof BaseFootnotePlugin>
+) => (
+  <EditorElement {...props} as="sup">
+    {props.children}[{props.element.ref ?? ''}]
+  </EditorElement>
+);
+
+const FootnoteDefinitionDocx = (
+  props: EditorElementProps<typeof BaseFootnoteDefinitionPlugin>
+) => (
+  <EditorElement {...props} as="div">
+    <div>{props.element.ref ?? ''}</div>
+    <div>{props.children}</div>
   </EditorElement>
 );
 
@@ -179,6 +200,8 @@ export const DOCX_STATIC_COMPONENTS: StaticComponentOverrides = Object.freeze({
   [BaseColumnItemPlugin.name]: ColumnItemDocx,
   [BaseColumnPlugin.name]: ColumnDocx,
   [BaseEquationPlugin.name]: EquationDocx,
+  [BaseFootnotePlugin.name]: FootnoteReferenceDocx,
+  [BaseFootnoteDefinitionPlugin.name]: FootnoteDefinitionDocx,
   [BaseHeadingPlugin.name]: HeadingDocx,
   [BaseInlineEquationPlugin.name]: InlineEquationDocx,
   [BaseTocPlugin.name]: TocDocx,

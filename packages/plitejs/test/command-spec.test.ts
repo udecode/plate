@@ -773,6 +773,23 @@ describe('pure command transaction specs', () => {
     assert.equal(rows.length, 19);
   });
 
+  it("dispatches a view editor's one-shot fragment delete as its command", () => {
+    const seen: string[] = [];
+    const view = createEditorView(
+      createTextEditor(({ handle }) => [
+        handle(editorCommands.deleteFragment, ({ state }) => {
+          seen.push(editorCommands.deleteFragment.id);
+
+          return state.transaction(() => {});
+        }),
+      ])
+    );
+
+    view.update.fragment.delete();
+
+    assert.deepEqual(seen, [editorCommands.deleteFragment.id]);
+  });
+
   it('rejects self and mutual command recursion by descriptor identity', () => {
     const self = defineCommand('test.recursion.self');
     const left = defineCommand('test.recursion.left');

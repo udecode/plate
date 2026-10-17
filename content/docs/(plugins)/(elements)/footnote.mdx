@@ -21,6 +21,7 @@ Footnote turns GFM footnote markup (`[^1]` references and `[^1]: text` definitio
 - Recreate a missing definition from an unresolved reference without duplicating.
 - Keep the first duplicate definition canonical; renumber later duplicates on demand.
 - Navigation helpers that jump between reference and definition with a landed-target flash.
+- HTML export and static pages link each reference to its note, and footnotes copied from GitHub paste as footnotes.
 
 </PackageInfo>
 
@@ -131,9 +132,11 @@ editor.update((tx) =>
 ### Navigate between reference and definition
 
 `editor.api.footnote.focusDefinition` and `editor.api.footnote.focusReference`
-move the selection, focus the calling view, scroll the target into view, and
-flash it through [Navigation Feedback](/docs/navigation-feedback). Call them
-from the mounted editor returned by `useEditor()`:
+scroll the target into view and flash it through
+[Navigation Feedback](/docs/navigation-feedback). In an editable view they also
+move the selection to the target and focus the view. In a read-only view the
+selection and focus stay where they are. Call them from the mounted editor
+returned by `useEditor()`:
 
 ```tsx
 editor.api.footnote.focusDefinition({ ref: '3' });
@@ -147,13 +150,19 @@ in document order:
 editor.api.footnote.focusReference({ ref: '3', index: 1 });
 ```
 
-Both commands return `false` for an unresolved target, a read-only view, or an
-unmounted editor. For selection-only changes inside a transaction, use
-`tx.footnote.selectDefinition` or `tx.footnote.selectReference`; each returns the
-resolved `{ targetPath, point }` target or `null`.
+Both commands return `true` after navigating, and `false` for an unresolved
+target or an unmounted editor. For selection-only changes inside a transaction,
+use `tx.footnote.selectDefinition` or `tx.footnote.selectReference`; each
+returns the resolved `{ targetPath, point }` target or `null`.
 
-With `navigationFeedback: false`, footnote navigation still selects, focuses,
-and scrolls to the target without a highlight.
+With `navigationFeedback: false`, footnote navigation still scrolls to the
+target, and selects and focuses it in an editable view, without a highlight.
+
+In a read-only view, the `FootnoteKit` components jump on a plain click or
+Enter. A reference jumps to its note. A note's back link jumps to its reference,
+or opens a picker of its citations when several references share the note; the
+arrow keys move through the picker and Enter jumps. After a jump, focus moves to
+the target's own jump control, so Enter jumps back.
 
 ### Handle duplicate definitions
 
@@ -175,6 +184,36 @@ With `remark-gfm` configured, references serialize as `[^1]` and definitions as
 `[^1]: text`. Refs that Markdown would read as one label, such as `A` and `a`,
 are written as distinct labels. A reference whose definition is missing from the
 output reads back as text and reports a `markdown-unsupported-node` warning.
+
+### Export and paste HTML
+
+`serializeHtml` writes each reference as a link to its note, and each note with
+a back link to its first reference:
+
+```html
+<sup><a data-editor-footnote-ref="1" href="#fn-1" id="fnref-1">1</a></sup>
+<div data-editor-footnote-definition="1" id="fn-1">
+  <p>Source text</p>
+  <a data-editor-footnote-chrome="" href="#fnref-1">↩</a>
+</div>
+```
+
+The first reference to a ref gets the id `fnref-<ref>`, and the nth gets
+`fnref-<ref>:<n>`. The note gets `fn-<ref>`, and a later duplicate gets
+`fn-<ref>:<n>` with no back link. Each id percent-encodes the ref. Pasting the
+HTML back gives the same references and definitions without the back link.
+
+Footnotes copied from a page GitHub rendered, such as a README or a comment,
+paste as references and root definitions with the numbers GitHub shows. A
+citation pasted without its note becomes an unresolved reference.
+
+### Static and Word output
+
+The `BaseFootnoteKit` static components draw each reference as a link to its
+note and give each canonical note a back link to its first reference, with the
+ids `editor.read.footnote.anchor` returns. A reference without a note links to
+the id its note would have. Word export writes the label and the note text
+without links.
 
 ### Customize rendering
 
@@ -338,48 +377,20 @@ Check whether a ref has at least one definition.
 </APIReturns>
 </API>
 
-### `editor.read.footnote.duplicateDefinitions`
+### `editor.read.footnote.anchor`
 
-Get every definition after the first one for a ref, in document order.
+Get the fragment id of the footnote reference or definition at a path, and the
+id it links to. Static components and the HTML encoders use the same ids.
 
-<API name="duplicateDefinitions">
+<API name="anchor">
 <APIParameters>
-  <APIItem name="ref" type="string">
-    Footnote ref.
+  <APIItem name="path" type="number[]">
+    Path of a footnote reference or definition.
   </APIItem>
 </APIParameters>
 <APIReturns>
-  <APIItem name="return" type="NodeEntry<Element>[]">
-    Definition entries past the canonical one.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `editor.read.footnote.duplicateRefs`
-
-List every ref that has more than one definition.
-
-<API name="duplicateRefs">
-<APIReturns>
-  <APIItem name="return" type="string[]">
-    Refs with duplicate definitions.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `editor.read.footnote.hasDuplicateDefinitions`
-
-Check whether a ref has more than one definition.
-
-<API name="hasDuplicateDefinitions">
-<APIParameters>
-  <APIItem name="ref" type="string">
-    Footnote ref.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  <APIItem name="return" type="boolean">
-    `true` when two or more definitions share the ref.
+  <APIItem name="return" type="FootnoteAnchor | undefined">
+    `{ id, target? }`, or `undefined` when no footnote is at `path`. A reference targets its note's id, even when the note is missing. A canonical definition targets its first reference, and a later duplicate has no `target`.
   </APIItem>
 </APIReturns>
 </API>
@@ -450,7 +461,7 @@ Create the missing definition for an existing ref without inserting another refe
 
 ### `editor.api.footnote.focusDefinition`
 
-Jump the selection into the canonical definition body, scroll it into view, and flash it through Navigation Feedback.
+Scroll the canonical definition into view and flash it through Navigation Feedback. In an editable view, also move the selection into the definition body and focus the view.
 
 <API name="focusDefinition">
 <APIParameters>
@@ -460,14 +471,14 @@ Jump the selection into the canonical definition body, scroll it into view, and 
 </APIParameters>
 <APIReturns>
   <APIItem name="return" type="boolean">
-    `false` when the definition is missing or the calling view is read-only or unmounted; `true` after navigation.
+    `false` when the definition is missing or the calling view is unmounted; `true` after navigation, in an editable or a read-only view.
   </APIItem>
 </APIReturns>
 </API>
 
 ### `editor.api.footnote.focusReference`
 
-Jump the selection to the matching reference, scroll it into view, and flash it through Navigation Feedback.
+Scroll the matching reference into view and flash it through Navigation Feedback. In an editable view, also move the selection beside the reference and focus the view.
 
 <API name="focusReference">
 <APIParameters>
@@ -481,7 +492,7 @@ Jump the selection to the matching reference, scroll it into view, and flash it 
 </APIParameters>
 <APIReturns>
   <APIItem name="return" type="boolean">
-    `false` when the reference is missing or the calling view is read-only or unmounted; `true` after navigation.
+    `false` when the reference is missing or the calling view is unmounted; `true` after navigation, in an editable or a read-only view.
   </APIItem>
 </APIReturns>
 </API>

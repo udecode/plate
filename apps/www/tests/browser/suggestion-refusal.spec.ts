@@ -85,8 +85,10 @@ for (const [place, match, words] of [
 }
 
 test('gives back composed text a table cell refuses while Suggesting', async ({
+  browserName,
   page,
 }) => {
+  test.skip(browserName !== 'chromium', 'Chromium composition protocol');
   const errors = recordBrowserRuntimeErrors(page, { strict: true });
   const { blocks, editor } = await open(page);
   const before = await blocks();

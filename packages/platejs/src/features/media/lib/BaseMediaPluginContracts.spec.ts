@@ -260,7 +260,7 @@ describe('Base media plugin contracts', () => {
     });
     const image = {
       children: [{ text: 'hello' }],
-      type: PLUGINS.image,
+      type: 'image',
       url: 'https://platejs.org/example',
     };
     const headedEditor = createEditor({
@@ -269,7 +269,7 @@ describe('Base media plugin contracts', () => {
         root: schema.content.prefix(
           [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
           schema.content.group('block', {
-            default: { type: PLUGINS.paragraph },
+            default: { type: 'paragraph' },
             min: 1,
           })
         ),
@@ -280,7 +280,7 @@ describe('Base media plugin contracts', () => {
         focus: { offset: 2, path: [1, 0] },
       },
       initialValue: [
-        { children: [{ text: 'Title' }], level: 1, type: PLUGINS.heading },
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
         image,
       ],
     });
@@ -297,7 +297,7 @@ describe('Base media plugin contracts', () => {
         anchor: { offset: 2, path: [0, 0, 0] },
         focus: { offset: 2, path: [0, 0, 0] },
       },
-      initialValue: [{ children: [image], type: PLUGINS.blockquote }],
+      initialValue: [{ children: [image], type: 'blockquote' }],
     });
 
     headedEditor.update.break.insert();
@@ -307,14 +307,14 @@ describe('Base media plugin contracts', () => {
       headedEditor.read.children()[2],
       quotedEditor.read.children(),
     ]).toEqual([
-      { children: [{ text: 'llo' }], type: PLUGINS.paragraph },
+      { children: [{ text: 'llo' }], type: 'paragraph' },
       [
         {
           children: [
             { ...image, children: [{ text: 'he' }] },
-            { children: [{ text: 'llo' }], type: PLUGINS.paragraph },
+            { children: [{ text: 'llo' }], type: 'paragraph' },
           ],
-          type: PLUGINS.blockquote,
+          type: 'blockquote',
         },
       ],
     ]);

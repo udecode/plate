@@ -328,9 +328,9 @@ find note, the rechecks and the round loop.
 ## Playtest
 
 A playtest is the agent's own hands-on test of one editor feature against
-its reference editor, beside the feature's specs in every engine. It runs at a
-build's close when the Build playbook says so, and as
-`verify playtest <feature>` any other time. Read
+its reference editor, beside the feature's specs in every engine. A build's
+close runs only its spec runner, when the Build playbook says so; the whole
+pass runs as `verify playtest <feature>`. Read
 [the playtest](./references/playtest.md) in full before a pass or before
 writing a scenario catalog. It holds the catalog, the runner, the drive and
 what happens to each finding.

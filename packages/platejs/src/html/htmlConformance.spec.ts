@@ -39,6 +39,10 @@ import {
 } from '../features/basic-styles';
 import { BaseCodeBlockPlugin } from '../features/code-block';
 import { BaseDetailsPlugin } from '../features/details';
+import {
+  BaseFootnoteDefinitionPlugin,
+  BaseFootnotePlugin,
+} from '../features/footnote';
 import { BaseIndentPlugin } from '../features/indent';
 import { BaseLinkPlugin } from '../features/link';
 import { BaseListPlugin } from '../features/list';
@@ -51,6 +55,7 @@ import {
 import { BaseMentionPlugin } from '../features/mention';
 import { BaseTablePlugin } from '../features/table';
 import { PLATE_HTML_ATTRIBUTES } from '../lib/plugins/html/HtmlPlugin';
+import { parseHtml, serializeHtml } from './index';
 
 /**
  * Round-trip conformance for the first-party HTML mappings. Each fixture
@@ -82,6 +87,8 @@ const plugins = [
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
   BaseFontWeightPlugin,
+  BaseFootnotePlugin,
+  BaseFootnoteDefinitionPlugin,
   BaseHeadingPlugin,
   BaseHighlightPlugin,
   BaseHorizontalRulePlugin,
@@ -123,7 +130,30 @@ const cell = (text: string, properties: Record<string, unknown> = {}) => ({
   type: 'tableCell',
 });
 
+const footnotes: Value = [
+  paragraph(
+    { text: 'Claim' },
+    { type: 'footnoteReference', ref: '1', children: [{ text: '' }] },
+    { text: ' again' },
+    { type: 'footnoteReference', ref: '1', children: [{ text: '' }] },
+    { text: ' missing' },
+    { type: 'footnoteReference', ref: 'x', children: [{ text: '' }] },
+    { text: '.' }
+  ),
+  {
+    type: 'footnoteDefinition',
+    ref: '1',
+    children: [paragraph({ text: 'Source text' })],
+  },
+  {
+    type: 'footnoteDefinition',
+    ref: '1',
+    children: [paragraph({ text: 'Duplicate' })],
+  },
+];
+
 const fixtures: Record<string, Value> = {
+  footnotes,
   'aligned paragraph': [
     { children: [{ text: 'x' }], textAlign: 'center', type: 'paragraph' },
   ],
@@ -728,5 +758,215 @@ describe('HTML round-trip conformance', () => {
     expect(
       audit(createEditor({ plugins: [...plugins, define(false)] }), document)
     ).toEqual({ problems: [], reported: ['0:tone'] });
+  });
+});
+
+// gh api markdown -f mode=markdown.
+const githubMarkdown = {
+  single:
+    '<p>Claim<sup><a href="#fn-1" id="user-content-fnref-1" data-footnote-ref="">1</a></sup>.</p>\n<section data-footnotes="">\n<ol>\n<li id="user-content-fn-1">\n<p>Source text. <a href="#fnref-1" data-footnote-backref="" aria-label="Back to reference 1">↩</a></p>\n</li>\n</ol>\n</section>\n',
+  repeated:
+    '<p>First claim<sup><a href="#fn-1" id="user-content-fnref-1" data-footnote-ref="">1</a></sup> and second claim<sup><a href="#fn-1" id="user-content-fnref-1-2" data-footnote-ref="">1</a></sup>.</p>\n<section data-footnotes="">\n<ol>\n<li id="user-content-fn-1">\n<p>Shared note. <a href="#fnref-1" data-footnote-backref="" aria-label="Back to reference 1">↩</a> <a href="#fnref-1-2" data-footnote-backref="" aria-label="Back to reference 1-2">↩<sup>2</sup></a></p>\n</li>\n</ol>\n</section>\n',
+  blocks:
+    '<p>Claim<sup><a href="#fn-n" id="user-content-fnref-n" data-footnote-ref="">1</a></sup>.</p>\n<section data-footnotes="">\n<ol>\n<li id="user-content-fn-n">\n<p>First paragraph.</p>\n<p>Second paragraph.</p>\n<ul>\n<li>item one</li>\n<li>item two</li>\n</ul>\n<a href="#fnref-n" data-footnote-backref="" aria-label="Back to reference 1">↩</a>\n</li>\n</ol>\n</section>\n',
+};
+// gh api markdown -f mode=gfm.
+const githubGfm = {
+  single:
+    '<p>Claim<sup><a href="#user-content-fn-1-948904608bc87310ca134c9657b0e4e3" id="user-content-fnref-1-948904608bc87310ca134c9657b0e4e3" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>.</p>\n<section data-footnotes="" class="footnotes"><h2 id="footnote-label" class="sr-only">Footnotes</h2>\n<ol>\n<li id="user-content-fn-1-948904608bc87310ca134c9657b0e4e3">\n<p>Source text. <a href="#user-content-fnref-1-948904608bc87310ca134c9657b0e4e3" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>\n</li>\n</ol>\n</section>',
+  repeated:
+    '<p>First claim<sup><a href="#user-content-fn-1-ddf7cf2ca0ae4081b35487a2cf359cda" id="user-content-fnref-1-ddf7cf2ca0ae4081b35487a2cf359cda" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup> and second claim<sup><a href="#user-content-fn-1-ddf7cf2ca0ae4081b35487a2cf359cda" id="user-content-fnref-1-2-ddf7cf2ca0ae4081b35487a2cf359cda" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>.</p>\n<section data-footnotes="" class="footnotes"><h2 id="footnote-label" class="sr-only">Footnotes</h2>\n<ol>\n<li id="user-content-fn-1-ddf7cf2ca0ae4081b35487a2cf359cda">\n<p>Shared note. <a href="#user-content-fnref-1-ddf7cf2ca0ae4081b35487a2cf359cda" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a> <a href="#user-content-fnref-1-2-ddf7cf2ca0ae4081b35487a2cf359cda" data-footnote-backref="" aria-label="Back to reference 1-2" class="data-footnote-backref">↩<sup>2</sup></a></p>\n</li>\n</ol>\n</section>',
+  blocks:
+    '<p>Claim<sup><a href="#user-content-fn-n-f2d6eae73954909d93371a6c2a372a87" id="user-content-fnref-n-f2d6eae73954909d93371a6c2a372a87" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>.</p>\n<section data-footnotes="" class="footnotes"><h2 id="footnote-label" class="sr-only">Footnotes</h2>\n<ol>\n<li id="user-content-fn-n-f2d6eae73954909d93371a6c2a372a87">\n<p>First paragraph.</p>\n<p>Second paragraph.</p>\n<ul>\n<li>item one</li>\n<li>item two</li>\n</ul>\n<a href="#user-content-fnref-n-f2d6eae73954909d93371a6c2a372a87" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a>\n</li>\n</ol>\n</section>',
+};
+
+describe('footnote HTML', () => {
+  it('serializes linked footnotes under the default loss policy and parses them back', () => {
+    const encoded = serializeHtml(
+      { children: footnotes },
+      { plugins, projection: 'accepted' }
+    );
+    expect(encoded).toEqual({
+      ok: true,
+      diagnostics: [],
+      data: '<p>Claim<sup><a data-editor-footnote-ref="1" href="#fn-1" id="fnref-1">1</a></sup> again<sup><a data-editor-footnote-ref="1" href="#fn-1" id="fnref-1:2">1</a></sup> missing<sup><a data-editor-footnote-ref="x" href="#fn-x" id="fnref-x">x</a></sup>.</p><div data-editor-footnote-definition="1" id="fn-1"><p>Source text</p><a data-editor-footnote-chrome="" href="#fnref-1">↩</a></div><div data-editor-footnote-definition="1" id="fn-1:2"><p>Duplicate</p></div>',
+    });
+    if (!encoded.ok) throw new Error('Footnote serialization failed');
+    expect(parseHtml(encoded.data, { plugins })).toMatchObject({
+      ok: true,
+      diagnostics: [],
+      document: { children: footnotes },
+    });
+  });
+
+  it.each([
+    ...Object.entries(githubMarkdown).map(([shape, html]) => ({
+      mode: 'markdown',
+      shape,
+      html,
+    })),
+    ...Object.entries(githubGfm).map(([shape, html]) => ({
+      mode: 'gfm',
+      shape,
+      html,
+    })),
+    ...Object.entries(githubGfm).map(([shape, html]) => ({
+      mode: 'absolute gfm',
+      shape,
+      html: html.replaceAll('href="#', 'href="https://github.com/o/r#'),
+    })),
+  ])(
+    'reads GitHub $mode $shape footnotes without chrome',
+    ({ shape, html }) => {
+      for (const wrapped of [
+        html,
+        `<div class="markdown-body">${html}</div>`,
+        `<article>${html}</article>`,
+      ]) {
+        const result = parseHtml(wrapped, { plugins });
+        expect(result.ok).toBe(true);
+        if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+        expect(result.diagnostics).toEqual([]);
+        const reader = createEditor({
+          plugins,
+          initialValue: result.document.children,
+        });
+        expect(reader.read.footnote.references({ ref: '1' })).toHaveLength(
+          shape === 'repeated' ? 2 : 1
+        );
+        expect(reader.read.footnote.definitions()).toHaveLength(1);
+        expect(reader.read.footnote.definition({ ref: '1' })?.[1]).toEqual([1]);
+        expect(
+          reader.read.footnote.definition({ ref: '1' })?.[0].children
+        ).toMatchObject(
+          shape === 'blocks'
+            ? [
+                paragraph({ text: 'First paragraph.' }),
+                paragraph({ text: 'Second paragraph.' }),
+                {
+                  type: 'paragraph',
+                  listType: 'bulleted',
+                  children: [{ text: 'item one' }],
+                },
+                {
+                  type: 'paragraph',
+                  listType: 'bulleted',
+                  children: [{ text: 'item two' }],
+                },
+              ]
+            : [
+                paragraph({
+                  text: shape === 'single' ? 'Source text. ' : 'Shared note. ',
+                }),
+              ]
+        );
+        expect(
+          reader.read.nodes.toArray({
+            at: [],
+            match: (node) => TextApi.isText(node) && node.script === 'sup',
+          })
+        ).toEqual([]);
+      }
+    }
+  );
+
+  it('pairs two pasted comments whose displayed note numbers coincide', () => {
+    const html =
+      githubGfm.single +
+      githubGfm.single.replaceAll('948904608bc87310ca134c9657b0e4e3', 'second');
+    const result = parseHtml(html, { plugins });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const reader = createEditor({
+      plugins,
+      initialValue: result.document.children,
+    });
+    expect(reader.read.footnote.refs()).toEqual(['1', '1-2']);
+    expect(reader.read.footnote.references({ ref: '1' })[0]?.[1]).toEqual([
+      0, 1,
+    ]);
+    expect(reader.read.footnote.references({ ref: '1-2' })[0]?.[1]).toEqual([
+      2, 1,
+    ]);
+  });
+
+  it.each([
+    ['#fn-missing', '1', '1'],
+    ['https://github.com/o/r#user-content-fn-missing', '1', '1'],
+    ['#fn-%', '2', '2'],
+  ])(
+    'keeps citation %s without its definition unresolved',
+    (href, text, ref) => {
+      const result = parseHtml(
+        `<p><sup><a data-footnote-ref="" href="${href}">${text}</a></sup></p>`,
+        { plugins }
+      );
+      expect(result).toMatchObject({
+        ok: true,
+        document: {
+          children: [
+            paragraph(
+              { text: '' },
+              { type: 'footnoteReference', ref, children: [{ text: '' }] },
+              { text: '' }
+            ),
+          ],
+        },
+      });
+    }
+  );
+
+  it.each([
+    ['foreign marker', '<a data-footnote-ref="" href="#ordinary">1</a>'],
+    ['blank marker', '<a data-editor-footnote-ref=" " href="#fn-1">1</a>'],
+    ['blank GitHub text', '<a data-footnote-ref="" href="#fn-1"> </a>'],
+  ])('leaves a %s to Link', (_name, html) => {
+    const result = parseHtml(`<p>${html}</p>`, {
+      plugins,
+      lossPolicy: 'allow',
+    });
+    expect(result).toMatchObject({
+      ok: true,
+      document: {
+        children: [
+          { children: [{ text: '' }, { type: 'link' }, { text: '' }] },
+        ],
+      },
+    });
+  });
+
+  it('pairs raw malformed and percent-decoded GitHub fragments without throwing', () => {
+    const html =
+      '<p><sup><a data-footnote-ref="" href="#fn-%">2</a></sup><sup><a data-footnote-ref="" href="#fn-a%20b">3</a></sup></p><section data-footnotes=""><ol><li id="user-content-fn-%"><p>raw</p></li><li id="user-content-fn-a b"><p>decoded</p></li></ol></section>';
+    const result = parseHtml(html, { plugins });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const reader = createEditor({
+      plugins,
+      initialValue: result.document.children,
+    });
+    expect(reader.read.footnote.refs()).toEqual(['2', '3']);
+    expect(reader.read.footnote.references({ ref: '2' })).toHaveLength(1);
+    expect(reader.read.footnote.references({ ref: '3' })).toHaveLength(1);
+  });
+
+  it('keeps plain ordered lists and blank definition markers outside footnotes', () => {
+    const result = parseHtml(
+      '<ol><li>ordinary</li></ol><div data-editor-footnote-definition=" "><p>plain</p></div>',
+      { plugins, lossPolicy: 'allow' }
+    );
+    expect(result).toMatchObject({
+      ok: true,
+      document: {
+        children: [
+          {
+            type: 'paragraph',
+            listType: 'numbered',
+            children: [{ text: 'ordinary' }],
+          },
+          paragraph({ text: 'plain' }),
+        ],
+      },
+    });
   });
 });

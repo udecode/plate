@@ -36,7 +36,8 @@ const titleApp = {
   schema: { root: rootOf('title') },
 } as const;
 const NotePlugin = definePlugin('note', {
-  formats: ({ defineFormats }) => defineFormats({ markdown: { tag: 'note' } }),
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({ markdown: { tag: type } }),
   schema: { element: { ...schema.element.textBlock(), type: 'paragraph' } },
 });
 const noteApp = {
@@ -144,10 +145,12 @@ describe('Markdown paragraphs without a paragraph plugin', () => {
   it('refuse an app block persisted as "paragraph" as inline Markdown', () => {
     const editor = createEditor(noteApp);
 
-    expect(childrenOf(editor.api.markdown.parse('<note>a</note>'))).toEqual([
-      { children: [{ text: 'a' }], type: 'paragraph' },
-    ]);
-    expect(editor.api.markdown.parseInline('<note>a</note>')).toMatchObject({
+    expect(
+      childrenOf(editor.api.markdown.parse('<paragraph>a</paragraph>'))
+    ).toEqual([{ children: [{ text: 'a' }], type: 'paragraph' }]);
+    expect(
+      editor.api.markdown.parseInline('<paragraph>a</paragraph>')
+    ).toMatchObject({
       diagnostics: [{ code: 'markdown-inline-blocks' }],
       ok: false,
     });

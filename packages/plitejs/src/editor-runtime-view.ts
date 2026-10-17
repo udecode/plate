@@ -803,10 +803,20 @@ const withViewTransaction = <V extends Value>(
       Object.assign(
         (...args: Parameters<typeof state.fragment>) => state.fragment(...args),
         {
-          delete: (options = {}) =>
-            runImplicitSelectionMutation(options, () => {
-              transaction.fragment.delete(options);
-            }),
+          delete: defineSemanticUpdateMethod<
+            typeof transaction.fragment.delete
+          >(
+            (options = {}) =>
+              runImplicitSelectionMutation(options, () => {
+                transaction.fragment.delete(options);
+              }),
+            (command, [options = {}]) => {
+              command(editorCommands.deleteFragment, {
+                at: options.at,
+                direction: options.direction ?? 'forward',
+              });
+            }
+          ),
           replace: defineSemanticUpdateMethod<
             typeof transaction.fragment.replace
           >(

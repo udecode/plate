@@ -39,6 +39,16 @@ const isThirdPartyError = (text: string, pageOrigin: string | null) => {
   );
 };
 
+// Browsers log a failed resource load without its URL, which only the console
+// location names.
+const getConsoleText = (message: ConsoleMessage) => {
+  const text = message.text();
+
+  return text.startsWith('Failed to load resource')
+    ? `${text} (${message.location().url})`
+    : text;
+};
+
 const isIgnoredRuntimeError = (text: string, pageOrigin: string | null) =>
   (NEXT_DATA_ACCESS_CONTROL_ERROR.test(text) &&
     text.includes('due to access control checks.')) ||
@@ -65,7 +75,7 @@ export const recordBrowserRuntimeErrors = (
     }
   };
   const onConsole = (message: ConsoleMessage) => {
-    const text = message.text();
+    const text = getConsoleText(message);
 
     if (isIgnored(text)) {
       return;
