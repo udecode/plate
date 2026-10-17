@@ -3,6 +3,7 @@ import {
   definePlugin,
   editorCommands,
   type Editor,
+  txLocate,
 } from 'plitejs';
 
 type CustomText = {
@@ -41,21 +42,21 @@ const LinkPlugin = definePlugin('link', {
         tx.nodes.remove({ at: [0] });
       },
     },
-    setHref(href: string) {
+    setHref: txLocate(false, (href: string) => {
       tx.nodes.set({ url: href }, { at: [0] });
-    },
+    }),
   }),
 });
 
 const MediaPlugin = definePlugin('media', {
   update: ({ tx }) => ({
-    insertImage(src: string) {
+    insertImage: txLocate(false, (src: string) => {
       tx.nodes.insert({
         type: 'image',
         src,
         children: [{ text: '' }],
       } satisfies ImageElement);
-    },
+    }),
   }),
 });
 

@@ -8,13 +8,11 @@ import {
   type Editor,
   type EditorUpdateTransaction,
   type Element,
-  type NamedRootKey,
   type NodeEntry,
   type NodeKey,
   type Path,
 } from '../../facade';
 import { failInvariant } from '../failInvariant';
-import { inRoot } from '../utils/inRoot';
 
 /**
  * A container's release of one of its blocks as a plain block, `block`, with
@@ -39,15 +37,13 @@ export type BlockRelease = Readonly<{
 /**
  * Contribute how a container releases one of its blocks, such as a Details
  * releasing its title, so a command that converts that block, such as a list
- * or code block toggle, can convert it without knowing the container. The
- * entry's path is in `root`, the main document when it is omitted.
+ * or code block toggle, can convert it without knowing the container.
  */
 export const blockRelease =
   definePluginPoint<
     (
       tx: EditorUpdateTransaction,
-      entry: NodeEntry<Element>,
-      root?: NamedRootKey
+      entry: NodeEntry<Element>
     ) => BlockRelease | null
   >('block-release');
 
@@ -56,15 +52,14 @@ export const readBlockReleases = (
   editor: Editor,
   tx: EditorUpdateTransaction,
   entries: ReadonlyArray<NodeEntry<Element>>,
-  accept: (block: Element, entry: NodeEntry<Element>) => boolean,
-  root?: NamedRootKey
+  accept: (block: Element, entry: NodeEntry<Element>) => boolean
 ) => {
   const contributions = getPluginContributions(editor, blockRelease);
   const releases = new Map<NodeKey, BlockRelease>();
 
   for (const entry of entries) {
     for (const release of contributions) {
-      const found = release(tx, entry, root);
+      const found = release(tx, entry);
 
       if (found && accept(found.block, entry)) {
         releases.set(found.key, found);
@@ -82,8 +77,7 @@ export const readBlockReleases = (
 
 export const canReplaceContainers = (
   tx: EditorUpdateTransaction,
-  fits: ReadonlyMap<BlockRelease, readonly Descendant[]>,
-  root?: NamedRootKey
+  fits: ReadonlyMap<BlockRelease, readonly Descendant[]>
 ) => {
   const byParent = new Map<
     string,
@@ -110,7 +104,7 @@ export const canReplaceContainers = (
     const removing: number[] = [];
 
     for (let index = first; index <= last; index++) {
-      const sibling = tx.nodes.get(inRoot([...path, index], root), {
+      const sibling = tx.nodes.get([...path, index], {
         match: ElementApi.isElement,
       })?.[0];
 
@@ -120,7 +114,7 @@ export const canReplaceContainers = (
 
     return canPlaceBlocksAtPath(tx.schema, [...path, first], fit, {
       removing,
-      root,
+      root: tx.view.root(),
     });
   });
 };

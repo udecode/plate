@@ -465,11 +465,11 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
 
 ### `editor.update.ai.removeMarks(options?)`
 
-从匹配的节点中清除 AI 标记。
+从 `options.at` 中匹配的节点清除 AI 标记。未传 `at` 时，清除光标所在整个根中的 AI 标记。
 
 ### `editor.update.ai.removeNodes(options?)`
 
-移除标记为 AI 生成的文本节点。
+移除 `options.at` 中标记为 AI 生成的文本节点。未传 `at` 时，从光标所在的整个根中移除它们。
 
 ### 草稿预览
 

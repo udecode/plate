@@ -1,6 +1,7 @@
 import {
   BaseParagraphPlugin,
   createEditor,
+  createEditorView,
   definePlugin,
   ElementApi,
   NodeApi,
@@ -9,7 +10,6 @@ import {
   SelectionApi,
 } from '../../../core';
 import { blockRelease } from '../../../internal/plugin/blockRelease';
-import { inRoot } from '../../../internal/utils/inRoot';
 import { MarkdownPlugin } from '../../../markdown';
 import { BaseHeadingPlugin } from '../../basic-nodes/lib/BaseHeadingPlugins';
 import { BaseCalloutPlugin } from '../../callout';
@@ -22,12 +22,75 @@ import {
   added,
   convertAfterWrite,
   holder,
+  NoteHolder,
   noteEditor,
   section,
 } from '../__tests__/detailsConversionFixture';
 import { BaseDetailsPlugin } from './BaseDetailsPlugin';
 
 describe('Details list conversion', () => {
+  it('converts a rootless node selection in a named view', () => {
+    const editor = noteEditor();
+    const main = editor.read.children();
+    const view = createEditorView(editor, { root: 'note' });
+
+    view.plugin(BaseListPlugin).update.toggle({
+      type: 'bulleted',
+      at: SelectionApi.nodes([[0, 0]], { mode: 'block' }),
+    });
+
+    expect({
+      main: editor.read.children(),
+      note: view.read.children(),
+    }).toMatchObject({
+      main,
+      note: [
+        {
+          type: 'paragraph',
+          listType: 'bulleted',
+          indent: 1,
+          children: [{ text: 'Title' }],
+        },
+        { type: 'paragraph', indent: 2, children: [{ text: 'Body' }] },
+      ],
+    });
+  });
+
+  it('joins an inserted item to the list in the caret root', () => {
+    const editor = createEditor({
+      plugins: [BaseListPlugin, NoteHolder],
+      initialValue: {
+        children: [
+          {
+            type: 'listNoteHolder',
+            childRoots: { body: 'note' },
+            children: [{ text: '' }],
+          },
+        ],
+        roots: {
+          note: [
+            {
+              type: 'paragraph',
+              listType: 'bulleted',
+              listId: 'note-list',
+              indent: 1,
+              children: [{ text: 'Item' }],
+            },
+          ],
+        },
+      },
+    });
+    const main = editor.read.children();
+    editor.update.selection.set({ path: [0, 0], offset: 4, root: 'note' });
+
+    editor.plugin(BaseListPlugin).update.insert({ type: 'bulleted' });
+
+    expect({
+      main: editor.read.children(),
+      ids: editor.read.root('note').map((node) => node.listId),
+    }).toEqual({ main, ids: ['note-list', 'note-list'] });
+  });
+
   it('outdents a converted title with its body', () => {
     const editor = createEditor({
       plugins: [BaseDetailsPlugin, BaseListPlugin],
@@ -460,6 +523,106 @@ describe('Details list conversion', () => {
   );
 });
 
+describe('Details in a named root', () => {
+  const DetailsNote = definePlugin('detailsNote', {
+    schema: {
+      element: {
+        void: 'block',
+        contentRoots: {
+          body: {
+            ownership: 'exclusive',
+            content: schema.content.group('block', {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+          },
+        },
+      },
+    },
+  });
+
+  it.each(['caret', 'nodes'] as const)(
+    'wraps a %s target without editing main',
+    (target) => {
+      const editor = createEditor({
+        plugins: [BaseDetailsPlugin, DetailsNote],
+        initialValue: {
+          children: [
+            {
+              type: 'detailsNote',
+              childRoots: { body: 'note' },
+              children: [{ text: '' }],
+            },
+          ],
+          roots: {
+            note: [{ type: 'paragraph', children: [{ text: 'Title' }] }],
+          },
+        },
+      });
+      const main = editor.read.children();
+      editor.update.selection.set({ path: [0, 0], offset: 0, root: 'note' });
+
+      if (target === 'caret') editor.plugin(BaseDetailsPlugin).update.wrap();
+      else {
+        createEditorView(editor, { root: 'note' })
+          .plugin(BaseDetailsPlugin)
+          .update.wrap({
+            at: SelectionApi.nodes([[0]], { mode: 'block' }),
+          });
+      }
+
+      expect({
+        main: editor.read.children(),
+        note: editor.read.root('note'),
+      }).toEqual({
+        main,
+        note: [
+          section('Title', [{ type: 'paragraph', children: [{ text: '' }] }]),
+        ],
+      });
+    }
+  );
+
+  it('throws from the editor and the view when the caret root cannot hold Details', () => {
+    const ParagraphNote = definePlugin('paragraphNote', {
+      schema: {
+        element: {
+          void: 'block',
+          contentRoots: {
+            body: {
+              ownership: 'exclusive',
+              content: schema.content.type('paragraph', { min: 1 }),
+            },
+          },
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [BaseDetailsPlugin, ParagraphNote],
+      initialValue: {
+        children: [
+          {
+            type: 'paragraphNote',
+            childRoots: { body: 'note' },
+            children: [{ text: '' }],
+          },
+        ],
+        roots: { note: [{ type: 'paragraph', children: [{ text: 'Title' }] }] },
+      },
+    });
+    const before = editor.read.value();
+    editor.update.selection.set({ path: [0, 0], offset: 0, root: 'note' });
+
+    expect(() => editor.plugin(BaseDetailsPlugin).update.wrap()).toThrow();
+    expect(() =>
+      createEditorView(editor, { root: 'note' })
+        .plugin(BaseDetailsPlugin)
+        .update.wrap()
+    ).toThrow();
+    expect(editor.read.value()).toEqual(before);
+  });
+});
+
 describe('a Details title conversion that cannot finish', () => {
   it.each([
     [
@@ -665,16 +828,16 @@ describe('a Details title conversion that cannot finish', () => {
       },
     }).extend(({ schema: { type } }) => ({
       contributions: [
-        blockRelease.of((tx, [node, path], root) => {
+        blockRelease.of((tx, [node, path]) => {
           const containerPath = path.slice(0, -1);
           const container =
             containerPath.length > 0
-              ? tx.nodes.get(inRoot(containerPath, root), {
+              ? tx.nodes.get(containerPath, {
                   match: ElementApi.isElement,
                 })
               : undefined;
-          const box = tx.key(inRoot(containerPath, root));
-          const key = tx.key(inRoot(path, root));
+          const box = tx.key(containerPath);
+          const key = tx.key(path);
 
           if (
             !container ||

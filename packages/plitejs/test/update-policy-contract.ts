@@ -10,6 +10,7 @@ import {
   type EditorUpdateTransaction,
   type EditorUpdateTag,
   txOnly,
+  txLocate,
 } from 'plitejs';
 
 import { replaceEditorValue } from './support/snapshot';
@@ -25,9 +26,9 @@ const historyCapability = definePlugin('history', {
 
 const workflowCapability = definePlugin('workflow', {
   update: ({ tx }) => ({
-    direct(text: string) {
+    direct: txLocate(false, (text: string) => {
       tx.text.insert(text);
-    },
+    }),
     scoped: txOnly((text: string) => {
       tx.text.insert(text);
     }),
@@ -39,9 +40,9 @@ const readingCapability = definePlugin('reading', {
     text: () => state.text.string([]),
   }),
   update: ({ tx }) => ({
-    append(text: string) {
+    append: txLocate(false, (text: string) => {
       tx.text.insert(text);
-    },
+    }),
   }),
 });
 

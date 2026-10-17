@@ -84,8 +84,9 @@ describe('definePlugin', () => {
         text: () => state.text.string([]),
       }),
       update: ({ tx }) => ({
-        insert: (text: string) =>
-          tx.text.insert(text, { at: { offset: 0, path: [0, 0] } }),
+        insert: txLocate(false, (text: string) =>
+          tx.text.insert(text, { at: { offset: 0, path: [0, 0] } })
+        ),
       }),
     });
     const plugin = definePlugin('dependencyOwner', {

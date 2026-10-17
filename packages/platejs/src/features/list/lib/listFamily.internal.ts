@@ -6,12 +6,10 @@ import {
   type EditorCoreStateView,
   type EditorUpdateTransaction,
   type Element,
-  type NamedRootKey,
   type NodeEntry,
   type NodeKey,
   type Path,
 } from '../../../facade';
-import { inRoot } from '../../../internal/utils/inRoot';
 import { BaseIndentPlugin } from '../../indent';
 import { listItemDepth, isListItem } from './listIndex.internal';
 
@@ -101,9 +99,8 @@ type FamilyMember = Readonly<{ key: NodeKey; node: Element; path: Path }>;
  * none of its own.
  */
 export const getListFamilies = (
-  state: Pick<EditorCoreStateView, 'children' | 'key' | 'nodes' | 'root'>,
-  entries: ReadonlyArray<NodeEntry<Element>>,
-  root?: NamedRootKey
+  state: Pick<EditorCoreStateView, 'children' | 'key' | 'nodes'>,
+  entries: ReadonlyArray<NodeEntry<Element>>
 ) => {
   const families: FamilyMember[][] = [];
   const seen = new Set<Descendant>();
@@ -115,22 +112,18 @@ export const getListFamilies = (
     const index = path.at(-1) ?? 0;
     const parent =
       parentPath.length > 0
-        ? state.nodes.get(inRoot(parentPath, root), {
+        ? state.nodes.get(parentPath, {
             match: ElementApi.isElement,
           })?.[0]
         : undefined;
-    const siblings = parent
-      ? parent.children
-      : root === undefined
-        ? state.children()
-        : state.root(root);
+    const siblings = parent ? parent.children : state.children();
     const end = listFamilyEnd(siblings, index);
     const family: FamilyMember[] = [];
 
     for (let member = index; member <= end; member += 1) {
       const sibling = siblings[member];
       const memberPath = [...parentPath, member];
-      const key = state.key(inRoot(memberPath, root));
+      const key = state.key(memberPath);
 
       if (!ElementApi.isElement(sibling) || !key) continue;
       seen.add(sibling);
@@ -165,11 +158,11 @@ export const moveListFamilies = (
   editor: Editor,
   tx: EditorUpdateTransaction,
   entries: ReadonlyArray<NodeEntry<Element>>,
-  { offset, root }: Readonly<{ offset: 1 | -1; root?: NamedRootKey }>
+  { offset }: Readonly<{ offset: 1 | -1 }>
 ) => {
   const { indentMax } = editor.plugin(BaseIndentPlugin).store.get();
 
-  for (const family of getListFamilies(tx, entries, root)) {
+  for (const family of getListFamilies(tx, entries)) {
     if (
       offset > 0 &&
       typeof indentMax === 'number' &&

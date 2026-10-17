@@ -2,6 +2,7 @@ import {
   authoredVeto,
   BaseParagraphPlugin,
   defineInputRule,
+  createEditorView,
   definePlugin,
   editorCommands,
   editorReads,
@@ -38,7 +39,6 @@ import {
   readBlockReleases,
 } from '../../../internal/plugin/blockRelease';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
-import { inRoot, rootOf } from '../../../internal/utils/inRoot';
 import type { MarkdownMappingDiagnosticInput } from '../../../lib/plugin/PluginFormatContext';
 import { traverseHtmlElements } from '../../../lib/plugins/html/htmlDom';
 import { BaseBlockquotePlugin } from '../../basic-nodes';
@@ -201,17 +201,16 @@ const handleListTab = (
 
   if (!selection) return false;
 
-  const entries = editor.read.nodes.blocks({ match, mode: 'lowest' });
+  const root = SelectionApi.root(selection);
+  const view = root ? createEditorView(editor, { root }) : editor;
+  const entries = view.read.nodes.blocks({ match, mode: 'lowest' });
 
-  if (!entries.some(([node]) => isListItem(node)) || selectsCodeBlock(editor)) {
+  if (!entries.some(([node]) => isListItem(node)) || selectsCodeBlock(view)) {
     return false;
   }
 
-  editor.update((tx) => {
-    moveListFamilies(editor, tx, entries, {
-      offset: 1,
-      root: SelectionApi.root(selection),
-    });
+  view.update((tx) => {
+    moveListFamilies(editor, tx, entries, { offset: 1 });
   });
 
   return true;
@@ -225,11 +224,13 @@ const handleListUntab = (
 
   if (!selection) return false;
 
-  const entries = editor.read.nodes.blocks({ match, mode: 'lowest' });
+  const root = SelectionApi.root(selection);
+  const view = root ? createEditorView(editor, { root }) : editor;
+  const entries = view.read.nodes.blocks({ match, mode: 'lowest' });
   const isRootItem = ([node]: NodeEntry<Element>) =>
     isListItem(node) && listItemDepth(node) <= 1;
 
-  if (!entries.some(([node]) => isListItem(node)) || selectsCodeBlock(editor)) {
+  if (!entries.some(([node]) => isListItem(node)) || selectsCodeBlock(view)) {
     return false;
   }
 
@@ -237,7 +238,7 @@ const handleListUntab = (
   const quoteType = quote.installed ? quote.schema.type : undefined;
   const isQuoted = ([, path]: NodeEntry<Element>) =>
     quoteType !== undefined &&
-    !!editor.read.nodes.above({
+    !!view.read.nodes.above({
       at: path,
       match: (node, abovePath) =>
         abovePath.length < path.length &&
@@ -254,9 +255,8 @@ const handleListUntab = (
   );
 
   if (lifted.length > 0 || outdented.length > 0) {
-    editor.update((tx) => {
-      const root = SelectionApi.root(selection);
-      const liftedFamilies = getListFamilies(tx, lifted, root);
+    view.update((tx) => {
+      const liftedFamilies = getListFamilies(tx, lifted);
       const lifting = new Set(
         liftedFamilies.flatMap((family) => family.map(({ node }) => node))
       );
@@ -265,7 +265,7 @@ const handleListUntab = (
         editor,
         tx,
         outdented.filter(([node]) => !lifting.has(node)),
-        { offset: -1, root }
+        { offset: -1 }
       );
       // A lifted root item takes its family out of the quote, each member one
       // level shallower, so the family keeps its shape.
@@ -1025,13 +1025,10 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
 
       return {
         outdent: txLocate(locateAt(0), ({ at }: OutdentListOptions = {}) => {
-          const root = rootOf(tx, at);
           const entries = tx.nodes.blocks({ at, mode: 'lowest' });
-          const keys = entries.flatMap(
-            ([, path]) => tx.key(inRoot(path, root)) ?? []
-          );
+          const keys = entries.flatMap(([, path]) => tx.key(path) ?? []);
 
-          moveListFamilies(editor, tx, entries, { offset: -1, root });
+          moveListFamilies(editor, tx, entries, { offset: -1 });
 
           for (const key of keys) {
             const node = tx.nodes.get(key)?.[0];
@@ -1069,15 +1066,13 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               return false;
             }
 
-            const root = rootOf(tx, at);
-            const keyAt = (path: Path) => tx.key(inRoot(path, root));
+            const keyAt = (path: Path) => tx.key(path);
             const match = getInjectMatch(editor, plugin);
             const releases = readBlockReleases(
               editor,
               tx,
               tx.nodes.blocks({ at, mode: 'lowest' }),
-              (block, [, path]) => match(block, path),
-              root
+              (block, [, path]) => match(block, path)
             );
             const holdsRelease = ([, path]: NodeEntry<Element>) =>
               releases.some(({ container: [, containerPath] }) =>
@@ -1093,7 +1088,6 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               releases.length > 0
                 ? planListConversion(editor, tx, releases, {
                     listType: type,
-                    root,
                   })
                 : new Map<NodeKey, number>();
 
@@ -1118,8 +1112,6 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
 
             if (entries.length === 0) return false;
 
-            // A key finds each block again after the writes in any root, where
-            // a path would read the main document.
             const keyed = (list: ReadonlyArray<NodeEntry<Element>>) =>
               list.flatMap(([node, path]) => {
                 const key = keyAt(path);
@@ -1173,8 +1165,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
                     ...getListRunSiblings(
                       tx,
                       entries[0],
-                      getHeadingType(editor),
-                      root
+                      getHeadingType(editor)
                     ),
                   ]
                 : [...entries];
@@ -1195,19 +1186,14 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               const isBoundary = node === boundary;
 
               if (!isListItem(node)) {
-                identity ??= resolveListIdentity(
-                  tx,
-                  path,
-                  {
-                    depth: indent,
-                    heading:
-                      headingType !== undefined && node.type === headingType,
-                    headingType,
-                    listType: type,
-                    style: normalizedListStyle,
-                  },
-                  root
-                );
+                identity ??= resolveListIdentity(tx, path, {
+                  depth: indent,
+                  heading:
+                    headingType !== undefined && node.type === headingType,
+                  headingType,
+                  listType: type,
+                  style: normalizedListStyle,
+                });
               }
 
               tx.nodes.set(

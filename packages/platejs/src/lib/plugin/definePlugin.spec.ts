@@ -1,4 +1,4 @@
-import { property, txOnly } from '../../core';
+import { property, txLocate, txOnly } from '../../core';
 import { defineRuntimePlugin } from '../../facade';
 import { mergePlugins } from '../../internal/utils/mergePlugins';
 import { createEditor } from '../editor';
@@ -83,7 +83,7 @@ describe('definePlugin', () => {
         childCount: () => state.value().children.length,
       }),
       update: ({ tx }) => ({
-        insert: (text: string) => tx.text.insert(text),
+        insert: txLocate(false, (text: string) => tx.text.insert(text)),
       }),
     });
     const NativePlugin = definePlugin('native', {}).extend(RawPlugin);

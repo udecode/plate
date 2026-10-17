@@ -114,14 +114,24 @@ describe('Code from a Details title', () => {
     });
   });
 
-  it('refuses a named document selection outside its view', () => {
+  it('converts a named document title from the main editor', () => {
     const editor = noteEditor();
-    const before = editor.read.value();
+    const main = editor.read.children();
 
     editor.update.selection.set({ offset: 0, path: [0, 0, 0], root: 'note' });
 
-    expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(false);
-    expect(editor.read.value()).toEqual(before);
+    editor.plugin(BaseCodeBlockPlugin).update.toggle();
+
+    expect({
+      main: editor.read.children(),
+      note: editor.read.root('note'),
+    }).toEqual({
+      main,
+      note: [
+        { type: 'codeBlock', children: [{ text: 'Title' }] },
+        { type: 'paragraph', children: [{ text: 'Body' }] },
+      ],
+    });
   });
 
   it('drops the indent of an indented section, as unwrap does', () => {

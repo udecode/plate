@@ -8,7 +8,6 @@ import {
   ElementApi,
   type ElementOf,
   type Location,
-  type NamedRootKey,
   type NodeKey,
   NodeApi,
   type NodeSelection,
@@ -27,7 +26,6 @@ import {
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { blockRelease } from '../../../internal/plugin/blockRelease';
 import { insertionAnchor } from '../../../internal/plugin/insertionAnchor';
-import { inRoot, rootOf } from '../../../internal/utils/inRoot';
 import { BaseHeadingPlugin, type HeadingLevel } from '../../basic-nodes';
 
 const extraSummaryToMarkedParagraph = (document: Document, extra: Element) => {
@@ -44,15 +42,11 @@ const extraSummaryToMarkedParagraph = (document: Document, extra: Element) => {
 
 const getDetailsOfTitle = (
   state: Pick<EditorCoreStateView, 'nodes'>,
-  {
-    path,
-    root,
-    type,
-  }: Readonly<{ path: Path; root?: NamedRootKey; type: string }>
+  { path, type }: Readonly<{ path: Path; type: string }>
 ) => {
   if (path.at(-1) !== 0) return undefined;
 
-  const container = state.nodes.parent(inRoot(path, root), { type });
+  const container = state.nodes.parent(path, { type });
   const title = container?.[0].children[0];
 
   return title && state.nodes.isContent(title) ? container : undefined;
@@ -249,13 +243,13 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
 })
   .extend(({ editor, plugin, schema: { type }, store }) => ({
     contributions: [
-      blockRelease.of((tx, [node, path], root) => {
-        const container = getDetailsOfTitle(tx, { path, root, type });
+      blockRelease.of((tx, [node, path]) => {
+        const container = getDetailsOfTitle(tx, { path, type });
 
         if (!container) return null;
 
-        const details = tx.key(inRoot(container[1], root));
-        const key = tx.key(inRoot(path, root));
+        const details = tx.key(container[1]);
+        const key = tx.key(path);
 
         if (!details || !key) return null;
 
@@ -271,9 +265,9 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
           key,
         };
       }),
-      insertionAnchor.of((tx, [, path], root) => {
-        const container = getDetailsOfTitle(tx, { path, root, type });
-        const key = container && tx.key(inRoot(container[1], root));
+      insertionAnchor.of((tx, [, path]) => {
+        const container = getDetailsOfTitle(tx, { path, type });
+        const key = container && tx.key(container[1]);
 
         return key && !store.get('openKeys').has(key) ? container : null;
       }),
@@ -404,17 +398,15 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
                 ? tx.nodes.blocks({ at: target, mode: 'lowest' })
                 : [];
             }
-            const root = rootOf(tx, at);
-            const keyAt = (path: Path) => tx.key(inRoot(path, root));
+            const keyAt = (path: Path) => tx.key(path);
             const detailsPaths = new Map<NodeKey, Path>();
 
             for (const [node, path] of sources) {
               if (!ElementApi.isElement(node)) continue;
 
-              const location = inRoot(path, root);
               const entry = ElementApi.isElementType(node, type)
-                ? tx.nodes.get(location, { type: plugin })
-                : tx.nodes.above({ at: location, type });
+                ? tx.nodes.get(path, { type: plugin })
+                : tx.nodes.above({ at: path, type });
               const key = entry && keyAt(entry[1]);
 
               if (entry && key) detailsPaths.set(key, entry[1]);

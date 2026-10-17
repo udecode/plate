@@ -38,6 +38,13 @@ Each root is a normal Plate block array. Rootless transforms, points, and
 selections resolve against the current editor or view root. A root-bound view
 resolves rootless locations against its own root.
 
+A live node or node key reaches its own root from any editor or view. Plugin
+commands follow their target the same way. Given a node from the header, a
+command edits the header. Called with no target, it edits the root that holds
+the caret. Code outside a plugin command that writes by a bare path on the
+editor writes the primary document, so pass a node or use
+`useRootEditor(root)` there.
+
 Persist roots through the full [Document Meta](/docs/document-meta) value
 instead of saving only one mounted root. When an application publishes a
 complete external snapshot, use only `tx.value.replace({ children, roots,

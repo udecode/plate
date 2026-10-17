@@ -31,6 +31,7 @@ import {
   type JsonNode,
 } from './change/tokens';
 import { profileCoreDuration } from './profiling';
+import { countCoreWork } from './work';
 
 const EMPTY_ENTRIES = Object.freeze([]) as ReadonlyArray<
   readonly [NodeKey, Path]
@@ -127,6 +128,7 @@ export const buildSnapshotIndex = (
   children: readonly Descendant[],
   parentPath: Path = []
 ): SnapshotIndex => {
+  countCoreWork('snapshotIndexes');
   const idToPathCache = new Map<NodeKey, Path>();
   const pathToIdCache = new Map<string, NodeKey | null>();
   const elementEntriesByType = new Map<string, ElementPathEntry[]>();

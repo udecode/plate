@@ -10,7 +10,6 @@ import {
   PathApi,
   type Range,
   RangeApi,
-  SelectionApi,
   TextApi,
 } from '../../core';
 import { canPlaceBlocksAtPath } from '../../facade';
@@ -111,7 +110,7 @@ export const wholeTextBlocks = (
 
   return canPlaceBlocksAtPath(state.schema, first[1], nodes, {
     removing: blocks.map(([, path]) => path.at(-1) ?? 0),
-    root: state.view.root() ?? SelectionApi.root(range),
+    root: state.view.root(),
   })
     ? { blocks, nodes }
     : undefined;

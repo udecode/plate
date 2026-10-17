@@ -148,8 +148,12 @@ Resolve a node when the path itself matters:
 const path = editor.read.nodes.path(element);
 ```
 
-The read returns `undefined` for an unresolved node. Resolution is scoped to
-the editor root, so nodes from another editor or another root do not resolve.
+The read returns `undefined` for an unresolved node. `nodes.path` is scoped to
+the editor or view root, so it returns `undefined` for a node from another
+editor or another root. As an `at` target, a live node from another root of the
+same editor still resolves, and reads and writes reach it in its own root. A
+`NodeSelection` passed without a `root` means the root of the editor or view
+you call.
 Strict static helpers keep their non-optional contracts and treat a missing
 result as an internal invariant failure.
 

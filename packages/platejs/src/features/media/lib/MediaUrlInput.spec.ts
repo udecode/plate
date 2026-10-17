@@ -6,6 +6,7 @@ import {
   createEditorView,
   definePlugin,
   schema,
+  txLocate,
 } from '../../../core';
 import { BaseImagePlugin } from './image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from './media-embed/BaseMediaEmbedPlugin';
@@ -199,7 +200,10 @@ it('propagates a rejected resolver without changing the document', async () => {
 });
 
 it('uses the installed insertion override after URL resolution', async () => {
-  const insert = mock(() => false);
+  const insert = txLocate(
+    false,
+    mock(() => false)
+  );
   const plugin = BaseImagePlugin.extend({ update: () => ({ insert }) });
   const editor = createEditor({
     plugins: [plugin],
@@ -215,7 +219,10 @@ it('uses the installed insertion override after URL resolution', async () => {
 });
 
 it('uses the installed insertion override for a captured source block', async () => {
-  const insert = mock(() => false);
+  const insert = txLocate(
+    false,
+    mock(() => false)
+  );
   const plugin = BaseImagePlugin.extend({ update: () => ({ insert }) });
   const editor = createEditor({
     plugins: [plugin],

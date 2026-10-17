@@ -14,10 +14,38 @@ import { createPluginContext } from '../../../lib/plugin/createPluginContext.int
 import { createEditor } from '../../../react/core';
 import { dispatchPlateShortcut } from '../../../react/utils/dispatchPlateShortcut.internal';
 import { BaseBlockquotePlugin } from '../../basic-nodes';
+import { NoteHolder } from '../../details/__tests__/detailsConversionFixture';
 import { BaseListPlugin } from '../../list';
 import { BaseIndentPlugin } from './BaseIndentPlugin';
 
 describe('BaseIndentPlugin', () => {
+  it('increases indent in the caret root without editing main', () => {
+    const editor = createHeadlessEditor({
+      plugins: [BaseIndentPlugin, NoteHolder],
+      initialValue: {
+        children: [
+          {
+            type: 'listNoteHolder',
+            childRoots: { body: 'note' },
+            children: [{ text: '' }],
+          },
+        ],
+        roots: { note: [{ type: 'paragraph', children: [{ text: 'Note' }] }] },
+      },
+    });
+    const main = editor.read.children();
+    editor.update.selection.set({ path: [0, 0], offset: 0, root: 'note' });
+
+    editor.plugin(BaseIndentPlugin).update.increase();
+
+    expect({
+      main: editor.read.children(),
+      note: editor.read.root('note'),
+    }).toEqual({
+      main,
+      note: [{ type: 'paragraph', indent: 1, children: [{ text: 'Note' }] }],
+    });
+  });
   it('accepts non-negative integer levels and rejects fractional indentation', () => {
     const editor = createHeadlessEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin],

@@ -1425,19 +1425,21 @@ describe('plite transforms contract', () => {
     header.update.nodes.replaceChildren([{ text: 'next' }], {
       at: headerNode,
     });
-    runtime.update.nodes.replaceChildren([{ text: 'wrong' }], {
+    runtime.update.nodes.replaceChildren([{ text: 'routed header' }], {
       at: headerNode,
     });
-    header.update.nodes.replaceChildren([{ text: 'wrong' }], { at: bodyNode });
+    header.update.nodes.replaceChildren([{ text: 'routed body' }], {
+      at: bodyNode,
+    });
 
-    assert.deepEqual(runtime.read.children(), [paragraph('body')]);
-    assert.deepEqual(header.read.children(), [paragraph('next')]);
+    assert.deepEqual(runtime.read.children(), [paragraph('routed body')]);
+    assert.deepEqual(header.read.children(), [paragraph('routed header')]);
 
     runtime.update.nodes.replaceChildren([{ text: 'keyed' }], {
       at: headerKey,
     });
 
-    assert.deepEqual(runtime.read.children(), [paragraph('body')]);
+    assert.deepEqual(runtime.read.children(), [paragraph('routed body')]);
     assert.deepEqual(header.read.children(), [paragraph('keyed')]);
   });
 
@@ -1546,7 +1548,7 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('no-ops mutations for detached, foreign, and wrong-root node targets', () => {
+  it('ignores detached and foreign nodes and routes live nodes across roots', () => {
     const editor = createEditor({ initialValue: [paragraph('body')] });
     const foreignEditor = createEditor({
       initialValue: [paragraph('foreign')],
@@ -1569,11 +1571,15 @@ describe('plite transforms contract', () => {
     const [bodyNode] = getNodeEntry(runtime, [0], NodeApi.isElement);
     const [headerNode] = getNodeEntry(header, [0], NodeApi.isElement);
 
-    runtime.update.nodes.set({ tone: 'wrong' }, { at: headerNode });
-    header.update.nodes.set({ tone: 'wrong' }, { at: bodyNode });
+    runtime.update.nodes.set({ tone: 'header' }, { at: headerNode });
+    header.update.nodes.set({ tone: 'body' }, { at: bodyNode });
 
-    assert.deepEqual(runtime.read.children(), [paragraph('body')]);
-    assert.deepEqual(header.read.children(), [paragraph('header')]);
+    assert.deepEqual(runtime.read.children(), [
+      { ...paragraph('body'), tone: 'body' },
+    ]);
+    assert.deepEqual(header.read.children(), [
+      { ...paragraph('header'), tone: 'header' },
+    ]);
   });
 
   it('uses property matchers in node mutations', () => {

@@ -20,8 +20,9 @@ import {
   getInternalDocumentChangeEntries,
   getInternalDocumentRootChange,
   valueRoot,
+  valueRootIndex,
 } from './change/document-change';
-import { DocumentIndex, rootIndexOf } from './change/document-index';
+import { DocumentIndex } from './change/document-index';
 import { copyRoot } from './change/lazy-root';
 import { mapRootChangePositionBackward } from './change/root-change';
 import type { JsonPoint, JsonToken } from './change/tokens';
@@ -52,22 +53,18 @@ import {
   getEditorUpdateRoot,
   getSnapshot,
   getTransactionSnapshot,
+  retainTransactionSnapshotIndex,
   getTransactionSpecContext,
-  getUpdateView,
   type RecordedDraft,
   resolveNodeTargetLocation,
   runEditorDocumentRecorder,
   type TransactionSpecContext,
   withTransactionSpecDraftRead,
+  withEditorUpdateRootScope,
 } from './public-state';
 import { mapSelectionThroughChange } from './selection-protocol';
 import { mapSnapshotIndexThroughChange } from './snapshot-index';
 import { mapEffect } from './transaction-values';
-import {
-  copyTxMethodMarkers,
-  getTxMethodLocate,
-  isTxOnlyMethod,
-} from './tx-only';
 import { countCoreWork } from './work';
 
 /**
@@ -156,7 +153,12 @@ export const probeInEditorCommandFrame = <T>(
       frame,
       stored,
       projected,
-      snapshot.baseRuntimeIndexes[MAIN_ROOT_KEY],
+      (rootName) =>
+        withEditorUpdateRootScope(
+          editor,
+          rootName,
+          () => getSnapshot(editor).index
+        ),
       selection
     );
     snapshot.implicitTarget = null;
@@ -194,107 +196,22 @@ export const runSelectionOnlyInEditorUpdate = <T>(
   return applied;
 };
 
-export const frameUpdateMethods = (
-  editor: Editor,
-  groupName: string,
-  value: unknown,
-  path: readonly string[] = []
-): unknown => {
-  if (typeof value === 'function') {
-    // A tx-only method configures the update it runs in and writes no
-    // content, so it runs there instead of in the command document.
-    if (isTxOnlyMethod(value)) return value;
-
-    const method = value as (...args: unknown[]) => unknown;
-    const name = [groupName, ...path].join('.');
-    const framed = function (this: unknown, ...args: unknown[]) {
-      const locate = getTxMethodLocate(method);
-
-      if (locate === 'stored') return Reflect.apply(method, this, args);
-      if (locate === 'selection') {
-        return runSelectionOnlyInEditorUpdate(
-          editor,
-          `Plugin method "${name}" declares txSelection`,
-          () => Reflect.apply(method, this, args)
-        );
-      }
-
-      if (locate === undefined && args.some((arg) => arg !== undefined)) {
-        throw new Error(
-          `Plugin method "${name}" takes arguments, so it must declare txLocate while a command document is registered.`
-        );
-      }
-
-      let result: unknown;
-      const ran = runInEditorCommandFrame(editor, (place) => {
-        const located = locate ? locate(args, place) : args;
-
-        return () => {
-          if (located === null) return false;
-
-          let owner: unknown = (
-            getUpdateView(editor) as unknown as Record<string, unknown>
-          )[groupName];
-          let member = owner;
-
-          for (const key of path) {
-            owner = member;
-            member = (member as Record<string, unknown>)[key];
-          }
-          result = Reflect.apply(
-            member as (...args: unknown[]) => unknown,
-            owner,
-            located
-          );
-
-          return true;
-        };
-      });
-
-      return ran === null ? Reflect.apply(method, this, args) : result;
-    };
-
-    copyTxMethodMarkers(method, framed);
-
-    return Object.assign(
-      framed,
-      frameUpdateMembers(editor, groupName, method, path)
-    );
-  }
-  if (value && typeof value === 'object') {
-    return frameUpdateMembers(editor, groupName, value, path);
-  }
-
-  return value;
-};
-
-const frameUpdateMembers = (
-  editor: Editor,
-  groupName: string,
-  members: object,
-  path: readonly string[]
-) =>
-  Object.fromEntries(
-    Object.entries(members).map(([key, member]) => [
-      key,
-      frameUpdateMethods(editor, groupName, member, [...path, key]),
-    ])
-  );
-
 const LAST_FRAME_INDEXES = new WeakMap<
   Editor,
-  Readonly<{ index: SnapshotIndex; root: DocumentIndex }>
+  Map<string, Readonly<{ index: SnapshotIndex; root: DocumentIndex }>>
 >();
 
 const frameIndexOf = (
   editor: Editor,
   stored: EditorDocumentValue,
   projected: CommandProjection,
+  rootName: string,
   storedIndex: () => SnapshotIndex
 ) => {
-  const { carried } = projected;
-  const last = LAST_FRAME_INDEXES.get(editor);
-  const root = rootIndexOf(projected.value, 'children');
+  const carried = projected.carried?.get(rootName);
+  const indexes = LAST_FRAME_INDEXES.get(editor) ?? new Map();
+  const last = indexes.get(rootName);
+  const root = valueRootIndex(projected.value, rootName);
   const index =
     last?.root === root
       ? last.index
@@ -302,19 +219,16 @@ const frameIndexOf = (
         ? advanceSnapshotIndex(
             editor,
             carried.from,
-            projectedIndex(projected, MAIN_ROOT_KEY),
+            projectedIndex(projected, rootName),
             carried.change,
             last.index,
             { binding: 'inherited' }
           )
         : mapSnapshotIndexThroughChange(
-            DocumentIndex.fromValue(valueRoot(stored, MAIN_ROOT_KEY)),
-            projectedIndex(projected, MAIN_ROOT_KEY),
+            DocumentIndex.fromValue(valueRoot(stored, rootName)),
+            projectedIndex(projected, rootName),
             getDefined(
-              getInternalDocumentRootChange(
-                projected.map.change(),
-                MAIN_ROOT_KEY
-              )
+              getInternalDocumentRootChange(projected.map.change(), rootName)
             ),
             storedIndex(),
             editor,
@@ -323,7 +237,8 @@ const frameIndexOf = (
             'inherited'
           );
 
-  LAST_FRAME_INDEXES.set(editor, { index, root });
+  indexes.set(rootName, { index, root });
+  LAST_FRAME_INDEXES.set(editor, indexes);
 
   return index;
 };
@@ -337,8 +252,10 @@ export const prepareCommandFrame = (editor: Editor) => {
   const stored = getEditorDocumentValue(editor) as EditorDocumentValue;
   const projected = document?.project(stored);
 
-  if (projected?.map.roots.includes(MAIN_ROOT_KEY)) {
-    frameIndexOf(editor, stored, projected, () => getSnapshot(editor).index);
+  for (const root of projected?.map.roots ?? []) {
+    frameIndexOf(editor, stored, getDefined(projected), root, () =>
+      withEditorUpdateRootScope(editor, root, () => getSnapshot(editor).index)
+    );
   }
 };
 
@@ -358,7 +275,7 @@ const enterFrameDraft = (
   frame: TransactionSpecContext,
   stored: EditorDocumentValue,
   projected: CommandProjection,
-  storedIndex: (() => SnapshotIndex) | undefined,
+  storedIndex: (root: string) => SnapshotIndex,
   selection: Selection
 ) => {
   const { snapshot } = frame;
@@ -371,11 +288,12 @@ const enterFrameDraft = (
   snapshot.rootIndexes = {};
   snapshot.baseRuntimeIndexes = {};
   snapshot.baseSnapshots = {};
-  if (storedIndex && projected.map.roots.includes(MAIN_ROOT_KEY)) {
+  for (const root of projected.map.roots) {
     let mapped: SnapshotIndex | undefined;
-
-    snapshot.baseRuntimeIndexes[MAIN_ROOT_KEY] = () =>
-      (mapped ??= frameIndexOf(editor, stored, projected, storedIndex));
+    snapshot.baseRuntimeIndexes[root] = () =>
+      (mapped ??= frameIndexOf(editor, stored, projected, root, () =>
+        storedIndex(root)
+      ));
   }
   // The accept-all projection of a valid review tree is valid, so the frame
   // adopts it as its validated baseline.
@@ -405,7 +323,6 @@ const createFramePlace = (
   stored: EditorDocumentValue,
   selectionRoot: string
 ) => {
-  const locationRoot = getEditorUpdateRoot(editor);
   const map = (selection: Selection, fallbackRoot: string) =>
     mapSelectionThroughChange(
       editor,
@@ -543,14 +460,14 @@ const createFramePlace = (
 
     const mapped = map(
       SelectionApi.nodes([at], { mode: 'block' }),
-      locationRoot
+      getEditorUpdateRoot(editor)
     );
 
     if (mapped?.kind === 'node') return getDefined(mapped.paths[0]);
 
     const parentPath = at.slice(0, -1);
     const childCount = (value: EditorDocumentValue, parent: Path) => {
-      const children = valueRoot(value, locationRoot);
+      const children = valueRoot(value, getEditorUpdateRoot(editor));
 
       if (parent.length === 0) return children.length;
 
@@ -574,11 +491,11 @@ const createFramePlace = (
     at: NodeTarget | NodeSelection | Span
   ): NodeTarget | NodeSelection | Span | null {
     if (SelectionApi.isNode(at)) {
-      const mapped = map(at, locationRoot);
+      const mapped = map(at, getEditorUpdateRoot(editor));
 
       return mapped?.kind === 'node' ? mapped : null;
     }
-    if (PointApi.isPoint(at)) return caret(at, locationRoot);
+    if (PointApi.isPoint(at)) return caret(at, getEditorUpdateRoot(editor));
     if (LocationApi.isSpan(at)) {
       const from = path(at[0]);
       const to = path(at[1]);
@@ -586,7 +503,7 @@ const createFramePlace = (
       return from && to && [from, to];
     }
     if (RangeApi.isRange(at)) {
-      const placed = span(at, locationRoot);
+      const placed = span(at, getEditorUpdateRoot(editor));
 
       return placed && { ...at, ...placed };
     }
@@ -680,7 +597,8 @@ const effectChange = (
 export const runInEditorCommandFrame = (
   editor: Editor,
   body: EditorFrameBody<boolean>,
-  framedOn?: readonly Descendant[]
+  framedOn?: readonly Descendant[],
+  targetRoot?: () => string
 ): boolean | null => {
   const document = getEditorCommandDocument(editor);
   const recorder = getEditorDocumentRecorder(editor);
@@ -716,137 +634,135 @@ export const runInEditorCommandFrame = (
     ? placed.selection(outer.snapshot.implicitTarget)
     : null;
   const run = body(placed.place);
-  const frame = createTransactionSpecContext(editor);
-  const { snapshot } = frame;
-  let recorded: RecordedDraft | null = null;
-  let written: {
-    change: DocumentChange;
-    frame: EditorDocumentState;
-  } | null = null;
-  let storedToWritten: PositionMap | undefined;
+  const runFramed = () => {
+    const frame = createTransactionSpecContext(editor);
+    const { snapshot } = frame;
+    let recorded: RecordedDraft | null = null;
+    let written: {
+      change: DocumentChange;
+      frame: EditorDocumentState;
+    } | null = null;
+    let storedToWritten: PositionMap | undefined;
 
-  COMMAND_FRAMES.add(editor);
-  try {
-    const outerIndex =
-      outer.snapshot.rootIndexes[MAIN_ROOT_KEY] ??
-      outer.snapshot.baseRuntimeIndexes[MAIN_ROOT_KEY]?.() ??
-      (outer.snapshot.childrenRoot === MAIN_ROOT_KEY
-        ? outer.snapshot.previousSnapshot?.index
-        : undefined);
-
-    enterFrameDraft(
-      editor,
-      frame,
-      stored,
-      projected,
-      outerIndex && (() => outerIndex),
-      selection
-    );
-    if (snapshot.implicitTargetResolved) {
-      snapshot.implicitTarget = target;
-    } else {
-      snapshot.implicitTargetFrame = {
-        context: frame,
-        storedSelection: outer.selection,
-        toFrame: placed.selection,
-      };
-    }
-
-    if (!withTransactionSpecDraftRead(editor, run)) return false;
-    finalizeTransactionRepresentation(editor);
-    const wrote = snapshot.builder.change;
-
-    storedToWritten = (root, position, assoc) => {
-      countCoreWork('adapterMappings');
-      const association = assoc === 1 ? 'forward' : 'backward';
-
-      return wrote.mapPosition(
-        projected.map.toProjected(root, position, association),
-        { association, ...(root === MAIN_ROOT_KEY ? {} : { root }) }
-      );
-    };
-    runEditorDraftGuards(
-      editor,
-      'plain',
-      snapshot.builder.value as EditorDocumentValue,
-      { mapPosition: storedToWritten, stored }
-    );
-
-    if (!wrote.empty || frame.selectionWritten) {
-      recorded = recorder({
-        after: snapshot.builder.value as EditorDocumentValue,
-        before: stored,
-        change: wrote,
-        projection: projected,
-        selection: frame.selection,
-        selectionBefore: outer.selection,
-        selectionBeforeRoot: outer.selectionRoot,
-        selectionRoot: frame.selectionRoot,
-        steps: snapshot.builder.draftSteps,
-        tags: getActiveEditorUpdateTags(editor),
-        update: outer.id,
-      });
-      if (!recorded) {
-        throw new Error('A command frame needs a recorder that records it.');
-      }
-      written = {
-        change: wrote,
-        frame: {
-          selection: frame.selection,
-          value: snapshot.builder.value as EditorDocumentValue,
-        },
-      };
-    }
-    // Effects name places in the frame's document, so they map to the
-    // document the update commits. The state they reduced, like any state the
-    // frame wrote, carries over as written.
-    if (snapshot.effects.length > 0) {
-      const toStored = effectChange(
-        projected,
+    COMMAND_FRAMES.add(editor);
+    try {
+      enterFrameDraft(
+        editor,
+        frame,
         stored,
-        wrote,
-        recorded?.change ?? null
+        projected,
+        (root) => retainTransactionSnapshotIndex(editor, outer.snapshot, root),
+        selection
+      );
+      if (snapshot.implicitTargetResolved) {
+        snapshot.implicitTarget = target;
+      } else {
+        snapshot.implicitTargetFrame = {
+          context: frame,
+          storedSelection: outer.selection,
+          toFrame: placed.selection,
+        };
+      }
+
+      if (!withTransactionSpecDraftRead(editor, run)) return false;
+      finalizeTransactionRepresentation(editor);
+      const wrote = snapshot.builder.change;
+
+      storedToWritten = (root, position, assoc) => {
+        countCoreWork('adapterMappings');
+        const association = assoc === 1 ? 'forward' : 'backward';
+
+        return wrote.mapPosition(
+          projected.map.toProjected(root, position, association),
+          { association, ...(root === MAIN_ROOT_KEY ? {} : { root }) }
+        );
+      };
+      runEditorDraftGuards(
+        editor,
+        'plain',
+        snapshot.builder.value as EditorDocumentValue,
+        { mapPosition: storedToWritten, stored }
       );
 
-      for (const effect of snapshot.effects) {
-        const mapped = mapEffect(effect, toStored);
+      if (!wrote.empty || frame.selectionWritten) {
+        recorded = recorder({
+          after: snapshot.builder.value as EditorDocumentValue,
+          before: stored,
+          change: wrote,
+          projection: projected,
+          selection: frame.selection,
+          selectionBefore: outer.selection,
+          selectionBeforeRoot: outer.selectionRoot,
+          selectionRoot: frame.selectionRoot,
+          steps: snapshot.builder.draftSteps,
+          tags: getActiveEditorUpdateTags(editor),
+          update: outer.id,
+        });
+        if (!recorded) {
+          throw new Error('A command frame needs a recorder that records it.');
+        }
+        written = {
+          change: wrote,
+          frame: {
+            selection: frame.selection,
+            value: snapshot.builder.value as EditorDocumentValue,
+          },
+        };
+      }
+      // Effects name places in the frame's document, so they map to the
+      // document the update commits. The state they reduced, like any state the
+      // frame wrote, carries over as written.
+      if (snapshot.effects.length > 0) {
+        const toStored = effectChange(
+          projected,
+          stored,
+          wrote,
+          recorded?.change ?? null
+        );
 
-        if (mapped) outer.snapshot.effects.push(mapped);
+        for (const effect of snapshot.effects) {
+          const mapped = mapEffect(effect, toStored);
+
+          if (mapped) outer.snapshot.effects.push(mapped);
+        }
+        outer.changed = true;
       }
-      outer.changed = true;
-    }
-    if (snapshot.dirtyStateKeys.size > 0) {
-      outer.documentState = frame.documentState;
-      for (const key of snapshot.dirtyStateKeys) {
-        outer.snapshot.dirtyStateKeys.add(key);
+      if (snapshot.dirtyStateKeys.size > 0) {
+        outer.documentState = frame.documentState;
+        for (const key of snapshot.dirtyStateKeys) {
+          outer.snapshot.dirtyStateKeys.add(key);
+        }
+        outer.changed = true;
       }
-      outer.changed = true;
+      outer.snapshot.afterCommitHandlers.push(...snapshot.afterCommitHandlers);
+      for (const [key, entry] of snapshot.annotations) {
+        outer.snapshot.annotations.set(key, entry);
+      }
+      for (const tag of snapshot.tags) outer.snapshot.tags.add(tag);
+    } finally {
+      COMMAND_FRAMES.delete(editor);
+      disposeTransactionSpecContext(editor, frame);
     }
-    outer.snapshot.afterCommitHandlers.push(...snapshot.afterCommitHandlers);
-    for (const [key, entry] of snapshot.annotations) {
-      outer.snapshot.annotations.set(key, entry);
-    }
-    for (const tag of snapshot.tags) outer.snapshot.tags.add(tag);
-  } finally {
-    COMMAND_FRAMES.delete(editor);
-    disposeTransactionSpecContext(editor, frame);
-  }
-  if (!recorded) return true;
-  commitRecordedDraft(editor, outer, recorded, frame.selectionRoot, {
-    storedToWritten,
-  });
-  outer.changed = true;
-  if (written) {
-    document.recorded?.({
-      ...written,
-      projection: projected,
-      root: frame.selectionRoot,
-      stored: {
-        selection: outer.selection,
-        value: outer.snapshot.builder.value as EditorDocumentValue,
-      },
+    if (!recorded) return true;
+    commitRecordedDraft(editor, outer, recorded, frame.selectionRoot, {
+      storedToWritten,
     });
-  }
+    outer.changed = true;
+    if (written) {
+      document.recorded?.({
+        ...written,
+        projection: projected,
+        root: frame.selectionRoot,
+        stored: {
+          selection: outer.selection,
+          value: outer.snapshot.builder.value as EditorDocumentValue,
+        },
+      });
+    }
 
-  return true;
+    return true;
+  };
+  return targetRoot
+    ? withEditorUpdateRootScope(editor, targetRoot(), runFramed)
+    : runFramed();
 };

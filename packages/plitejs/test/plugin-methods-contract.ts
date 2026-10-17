@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, definePlugin, editorCommands } from 'plitejs';
+import { createEditor, definePlugin, editorCommands, txLocate } from 'plitejs';
 
 import { hasCommandHandler } from '../src/core/command-registry';
 import { getPluginRegistry as editorGetPluginRegistry } from '../src/internal';
@@ -74,9 +74,9 @@ describe('plugin method hard cut', () => {
           mode: () => runtimeMode?.get(),
         }),
         update: () => ({
-          setMode(nextMode: 'text' | 'cell') {
+          setMode: txLocate(false, (nextMode: 'text' | 'cell') => {
             runtimeMode?.set(nextMode);
-          },
+          }),
         }),
       })
     );

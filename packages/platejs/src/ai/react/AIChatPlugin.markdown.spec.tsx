@@ -550,7 +550,6 @@ describe('AIChatPlugin read.markdown', () => {
       if (!cellKey) throw new Error('Expected a named-root table cell key');
 
       expect(result).toContain('<CellRef ref="c1" />');
-      expect(ref?.root).toBe('header');
       expect(ref?.key).toBe(cellKey);
 
       header.plugin(AIChatPlugin).api.submit('Review', { toolName: 'comment' });
