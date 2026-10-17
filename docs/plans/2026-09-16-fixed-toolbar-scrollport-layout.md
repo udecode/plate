@@ -217,7 +217,7 @@ Verification evidence:
 - Read copied editor/fixed-toolbar owners/specs; package container/content slots, slot types/cache, scroll hooks, and Plite padding consumption.
 - Enumerated current container openings, old demo uses, toolbar overrides, grid workarounds, manual examples, and shared toolbar.
 - Read registry metadata, EN/CN docs, multiple-editor test, and exact AI scroll Playwright case.
-- Reconciled with `docs/research/decisions/fixed-toolbar-scroll-ownership.md` and review scope.
+- Reconciled with `2e865a0bc4:docs/research/decisions/fixed-toolbar-scroll-ownership.md` and review scope.
 - Plan validator passed; `node tooling/scripts/review-ledger.mjs check` also passed after regenerating `docs/research/reviews.md`.
 - Focused DOM tests passed separately: fixed toolbar 1/1, editor 3/3, and multiple editors 1/1 with 41 assertions. The two editor specs remain separate because Bun's module mocks leak across files when batched.
 - `pnpm --filter www check:docs`, registry source checking, `pnpm --filter www build:registry`, and disposable Base/Nova plus Radix/Luma builds for `editor-basic` and `editor-ai` passed.

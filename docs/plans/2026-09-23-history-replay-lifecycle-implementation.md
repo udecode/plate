@@ -16,7 +16,7 @@ Source authority:
 
 - [Accepted design](2026-09-23-history-replay-lifecycle-revised.md), especially
   decision rows 1-15, execution slices 1-5 and its proof matrix.
-- [History ownership](../research/decisions/history-ownership.md).
+- History ownership (`2e865a0bc4:docs/research/decisions/history-ownership.md`).
 - TaskHub-22 keeps a blocked entry as the next target; this work does not add a
   skip or discard API.
 

@@ -10,7 +10,7 @@ source_refs:
   - ../raw/tiptap/docs/src/content/content-ai/capabilities/suggestion/features/display-suggestions.mdx
 updated: 2026-04-14
 related:
-  - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
+  - docs/research/history/slate-v2-overlay-architecture-cuts.md
 ---
 
 # Tiptap comments, suggestions, and node-range surfaces

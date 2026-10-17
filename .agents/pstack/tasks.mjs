@@ -702,9 +702,14 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
         .filter((task) => !task.card && task.owner && live !== null && !live.has(task.owner))
         .map((task) => ({ kind: 'adopt', ids: [task.id], text: `take ${task.id}: its owner session ${task.owner} is archived or gone; log updated with session: ${here}` }))
     : [];
-  const withdrawals = waiting
-    .filter(({ task }) => task.card && !elsewhere(task))
-    .map(({ task, blockers }) => ({ kind: 'problem', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: ${blockers[0]}; ${withdrawn(task.card)} once it is withdrawn or its session has ended` }));
+  const withdrawals = [
+    ...waiting
+      .filter(({ task }) => task.card && !elsewhere(task))
+      .map(({ task, blockers }) => ({ kind: 'problem', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: ${blockers[0]}; ${withdrawn(task.card)} once it is withdrawn or its session has ended` })),
+    ...ready
+      .filter((task) => task.card && !elsewhere(task) && task.cardEffort && task.cardEffort !== levelOf(task))
+      .map((task) => ({ kind: 'effort', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: it was offered at ${task.cardEffort} and the task is at ${levelOf(task)} now; ${withdrawn(task.card)} once it is withdrawn or its session has ended, and the card pass offers it again` })),
+  ];
   const rows = [
     ...waiting.flatMap(({ task, stuck }) => stuck.map((blocker) => ({ kind: 'problem', ids: [task.id], text: `fix ${task.id}'s wait: ${blocker}; log updated with the waits it has now` }))),
     ...[...topics.values()]
@@ -823,8 +828,6 @@ const needsJudgment = (task) => levelOf(task) === 'xhigh';
 const fastOf = (task) => task.fast && task.kind === 'fix' && !needsJudgment(task);
 const displayTitle = (task) => (task.title.endsWith(XHIGH) ? task.title.slice(0, -XHIGH.length) : task.title) + (needsJudgment(task) ? XHIGH : '') + (fastOf(task) ? FAST : '');
 export const effortOf = (task, max) => capEffort(levelOf(task), max);
-// The level the task had when its card landed, which a later effort: row does not change.
-export const cardEffortOf = (task, max) => capEffort(task.cardEffort, max);
 
 // codex is the project's chips.codex setting; "always" forces the Codex handoff on every task.
 export function briefOf(tasks, id, ledger, max = null, codex = null) {

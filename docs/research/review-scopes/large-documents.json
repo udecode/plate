@@ -83,7 +83,7 @@
     "docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/virtual-boundaries-probe.json",
     "docs/plans/artifacts/large-documents-api-review/verification.json",
     "docs/plans/artifacts/large-documents-api-review/consumer-census.json",
-    "docs/research/decisions/large-documents-rendering-api.md",
+    "docs/plans/topics/large-documents.md",
     "docs/plans/artifacts/large-documents-api-design/candidates.md",
     "docs/plans/artifacts/large-documents-api-design/owner-manifest.json",
     "docs/plans/artifacts/large-documents-api-design/call-sites.tsx",

@@ -89,7 +89,7 @@ export type DraftStepOrigin =
 
 // Canonical construction or a migration inside a scope is never the edit the
 // scope names.
-const UNSCOPED_ORIGINS: ReadonlySet<DraftStepOrigin> = new Set([
+export const UNSCOPED_ORIGINS: ReadonlySet<DraftStepOrigin> = new Set([
   'canonical',
   'migration',
 ]);
@@ -113,8 +113,8 @@ export type DraftStepMove = Readonly<{
 
 /** @internal */
 export type DraftStep = Readonly<{
-  indexedAfter?: ReadonlyMap<string, DocumentIndex>;
-  indexedBefore?: ReadonlyMap<string, DocumentIndex>;
+  indexedAfter: ReadonlyMap<string, DocumentIndex>;
+  indexedBefore: ReadonlyMap<string, DocumentIndex>;
   change: DocumentChange;
   move: DraftStepMove | null;
   origin: DraftStepOrigin;
@@ -631,6 +631,7 @@ export class ChangeDraft {
         : this.accumulated.compose(classifiedChange, this.source);
       if (!classifiedChange.empty) {
         this.appliedSteps.push({
+          indexedAfter,
           indexedBefore,
           change: classifiedChange,
           move: this.stepMove,
@@ -898,6 +899,7 @@ export class ChangeDraft {
       : this.accumulated.compose(canonicalChange, this.source);
     if (!canonicalChange.empty) {
       this.appliedSteps.push({
+        indexedAfter,
         indexedBefore,
         change: canonicalChange,
         move: this.stepMove,

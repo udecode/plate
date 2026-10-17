@@ -44,7 +44,7 @@ Authoritative docs:
 
 - [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)
 - [editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md)
-- [link-automd-belongs-to-the-link-interaction-lane.md](docs/research/decisions/link-automd-belongs-to-the-link-interaction-lane.md)
+- [link-automd-belongs-to-the-link-interaction-lane.md](2e865a0bc4:docs/research/decisions/link-automd-belongs-to-the-link-interaction-lane.md)
 
 That means this plan does **not** need a new law family first. The law already
 exists. The work is implementation plus queue promotion.

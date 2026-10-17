@@ -9,9 +9,9 @@ source_repos:
   - /Users/zbeyens/git/lexical
   - /Users/zbeyens/git/prosemirror
 depends_on:
-  - docs/research/decisions/plite-data-model-first-react-perfect-runtime.md
-  - docs/research/decisions/plite-read-update-runtime-architecture.md
-  - docs/research/decisions/plite-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md
+  - docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md
+  - docs/research/history/slate-v2-read-update-runtime-architecture.md
+  - docs/research/history/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md
   - docs/research/systems/plite-perfect-plan-steal-reject-defer-map.md
   - docs/solutions/logic-errors/2026-04-24-plite-browser-proof-must-separate-model-owned-handles-root-selection-and-usable-focus.md
 ---

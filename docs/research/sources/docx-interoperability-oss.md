@@ -66,5 +66,5 @@ No third-party source or fixture was copied into Plate, and no converter was
 adopted. Zero upstream tests, issue bodies or PR bodies were executed/read in
 this pass. Official discovery and exact local source settle the bounded
 comparison; performance, native fidelity and proprietary internals remain
-outside its proof. The [conversion decision](../decisions/documents-conversion-fidelity.md)
+outside its proof. The conversion decision (`2e865a0bc4:docs/research/decisions/documents-conversion-fidelity.md`)
 keeps those limits attached to the design handoff.

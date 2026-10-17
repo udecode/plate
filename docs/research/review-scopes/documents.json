@@ -105,7 +105,7 @@
     "bunfig.toml",
     "docs/plans/2026-09-14-docx-canonical-conversion-contract.md",
     "docs/research/sources/docx-interoperability-oss.md",
-    "docs/research/decisions/documents-conversion-fidelity.md",
+    "docs/plans/topics/documents.md",
     "docs/plite/research/2026-09-14-docx-interoperability-oss/source-manifest.json",
     "docs/plite/research/2026-09-14-docx-interoperability-oss/read-log.tsv",
     "docs/plite/research/2026-09-14-docx-interoperability-oss/proof/receipt.json",

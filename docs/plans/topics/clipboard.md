@@ -27,6 +27,18 @@ Rejected, and why:
 | Public supplied-slice export, exact-child or group placement arms | Each had only an internal caller. |
 | Live `NodeKey` allocation during detached spec construction | Correlation reuses prepared transaction identity instead. |
 
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- A whole-payload format reports what a paste leaves out. The initiating
+  editable delivers one result per paste its built-in formats handle; copied UI
+  decides the presentation, and harmless cleanup stays silent.
+- A `DataTransferFormat` decode returns a `ContentSlice` and its encode returns
+  a string, or either returns `null` to delegate to the next format. Per-editor
+  DOM plugin state resolves through its runtime owner, so mounted views read the
+  activation's configuration instead of resolving it again at each caller.
+
 ## What other editors do
 
 Not compared in this scope's reviews; they weighed Plite and Plate owners. The ProseMirror, Lexical and Tiptap pages under `docs/research/sources/` hold slice and paste prior art.

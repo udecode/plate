@@ -5,7 +5,8 @@ components, kits, app-facing docs, product ergonomics, and opinionated UX built
 on top of Plite-first primitives.
 
 Root `VISION.md` is the mandatory first read. This file carries the fuller
-Plate doctrine after the lane is selected.
+Plate doctrine after the lane is selected. A rule that binds one feature lives
+in that feature's subject file, `docs/plans/topics/<scope>.md`, under `## Rules`.
 
 ## Direction
 
@@ -364,61 +365,6 @@ Current priorities:
   feature. The `decorate` descriptor returns keyed ranges
   with render-safe attributes. That projection stays in one feature-owned view
   effect.
-- Comments owns semantic thread records, actions, subscriptions and private
-  native range handles per editor. Applications load
-  `initialState.initialComments` and persist `api.toJSON()` with the exact
-  document revision. The saved envelope separates conversations from opaque
-  range targets; live records retain target identity and `attachment(id)`
-  supplies current coverage or neutral unavailable state. Semantic subscriptions
-  never wake for document mapping. The seed is not a second live store. Database
-  I/O, revision association, CAS and authorization stay with the application
-  through `initialState.mutate`; copied Comment/Discussion UI owns presentation.
-  BaseCommentsPlugin owns semantics and CommentsPlugin adds live interactions.
-  Consumers do not assemble a channel, provider, factory or anchor-binding
-  effect. Reuse Plite Annotation plus plugin Decoration for mapped locations and
-  paint. Body or metadata changes perform zero annotation resolution and zero
-  editor-node refreshes. Independent editors restore their own native handles
-  from the same saved revision. Ordinary reload starts a fresh undo stack; live
-  replacement and changed-baseline collaboration require their own proven
-  transport contract. Activation stores selected IDs; keyed writes retain
-  unrelated records and membership lists. Durable actions serialize per thread
-  and publish only after canonical commit; rejection preserves records and
-  composers. Draft operations stay local. Resolve/Reopen and explicit deletion
-  are independent of document undo. Loading preserves identity, authorship,
-  timestamps and status without replaying user commands. A published
-  conversation remains discoverable when its target has no current-view
-  coverage. Exact live coverage alone owns inline paint, block counts and
-  navigation; cached coordinates and surviving neighbor endpoints never relocate
-  a thread. Bounded copied UI resolves only its mounted page and labels missing
-  coverage neutrally. Document undo may restore target identity, while unrelated
-  later typing cannot inherit it. Document mapping notifies attachment
-  subscribers without rewriting conversations or triggering semantic
-  persistence. Durable comment actions return a typed awaited result, and the
-  package fences late work from a retired owner so it never publishes. Copied
-  Comments UI queries attachments and targets through the event or render slot's
-  exact editor, because one shared conversation can have different coverage in
-  two projected views. Document-level discovery adds no Comments location store,
-  whole-corpus attachment subscription, mandatory Suggestion dependency or
-  generic Editor surface. Replies and edits stay outside document undo too, and
-  a generic checkpoint, live record-replacement API or separate comment undo
-  stack needs an independent supported job.
-- Successful local thread creation joins the one document-history order through
-  a session-only effect after its durable commit. Replay returns a pending
-  history result while the same mutation owner finishes. Replaying that history
-  entry blocks on replies, canonical divergence or rejection, and settles failed
-  when the owner throws, without advancing to the next document change. User
-  records live in the ordinary plugin store, and threads, replies and
-  resolutions record the editor's `userId`. An
-  authoritative full-document import prepares its document, comments, users and
-  required plugin state in a detached candidate editor and swaps the editor
-  owner through a keyed remount; candidate failure preserves the mounted editor,
-  and document, comment and user replacement is never sequenced on the mounted
-  editor. Keeping the editor instance instead needs one owner that publishes or
-  discards every affected runtime resource as a unit, and without that owner the
-  import is rejected before mutation. A successful authoritative
-  import bypasses ordinary mutation and history, clears transient composer
-  state, fences late work from the retired snapshot, and never exposes
-  per-thread replacement.
 - Application replies attached to a document-owned entity use that entity's
   identity and location. Accepting, rejecting, undoing, or restoring the entity
   changes derived visibility, not the application's explicit resolution state.
@@ -428,26 +374,6 @@ Current priorities:
   entity: command, undo, redo and external document updates yield the same
   derived visibility, and mixed presentation stays in its composition owner
   without peer data dependencies or one-consumer presentation props.
-- Suggested-edit semantics come directly from Plite's native authored
-  capability. Plate may provide copied registry presentation, mode controls,
-  discussion composition, and product defaults, but it does not own another
-  suggestion schema, mutation engine, review scan, decision command set, or
-  global input mode. Human and explicitly tracked AI edits use the same authored
-  records and decisions; temporary AI drafts remain outside that lifecycle.
-  Plate attributes every authored write to the editor's `userId`, or to the
-  local user `'local'` when the application passes none, so a solo editor and
-  its AI suggestions need no identity setup. Collaborators pass a stable user,
-  and an editor with a Yjs plugin warns in development the first time it
-  attributes something to the local user. Plite still requires a non-empty
-  author at every write and invents none.
-  Comments keeps its independent thread lifecycle. Load existing suggestions
-  through the complete `initialValue`, records included, preserving
-  authors and change IDs; initialization never replays edits under switched
-  identities. `EditorRoot authored` configures the exact mounted view through
-  the native owner. Changed intent or preview inputs reconfigure that view;
-  equal values keep later view-local mode commands. Editing and Suggesting
-  both show the review tree with its marks, and suggestion mode controls
-  switch only the intent. A preview view takes no writes, so it has no intent.
 - Sibling render slots expose only the lifecycle input owned by their placement:
   the exact Editable ref or the exact container ref. They never inherit the
   host Editable or container DOM props. Register a complete component directly;
@@ -512,15 +438,6 @@ Current priorities:
   through an unrelated feature. Feature-owned DOM attributes that carry node
   keys use the same vocabulary, `key` and never `id`, as `data-editor-node-key`
   does.
-- Autocomplete queries stay ordinary editor text, and a feature declares its
-  trigger and query policy as `ComboboxState` fields in its plugin
-  `initialState`, never as a transient input node, input plugin or trigger
-  command. A popup opens only on a trigger typed in its Editable, tracks that
-  occurrence with a range anchor, previews IME preedit without publishing it,
-  and completes by replacing trigger and query in one refusable transaction.
-  Copied controls own catalogs, filtering, the active option and presentation.
-  Completion rechecks the offered query before it replaces the trigger and query
-  in one refusable transaction.
 - Find keeps its open bar, pending draft, deferred input effect and open and
   close commands in the copied `slots.wrapRoot` composition of each exact
   Editable, never in the model plugin store or a controller hook that every
@@ -532,34 +449,6 @@ Current priorities:
   selection by passing its semantic range to the exact view's
   `editor.api.dom.scrollIntoView` and returning its cancellation function from
   the effect, without querying decoration markers or adding an animation frame.
-- The optional `platejs/upload` feature owns asynchronous file admission through
-  `UploadClient`, the single-file upload capability expressed with Files SDK
-  call and outcome types, not a generic transport contract. A Files SDK client
-  satisfies it structurally; session-local examples and tests may implement only
-  that operation. Its authored draft retains the `upload` schema type and
-  persists only the draft kind. A submit at the selection follows element
-  `insert`'s source policy, so it replaces an empty editable source block and
-  inserts after content or structure. Upload validates and inserts a whole batch
-  atomically, starts transfer after commit, and keeps files, request authority,
-  progress, failures, and object URLs local to each live node key. Completion
-  rechecks that key and kind before atomically replacing the draft with the
-  installed media plugin's completed schema type. Media plugins own those
-  completed schemas and URL normalization; the application owns the gateway,
-  access policy, storage, and durable URL mapping. Removal, retagging, plugin
-  cleanup, and whole-document replacement revoke requests; history never
-  restarts them. Internal slices preserve drafts, while external HTML and static
-  rendering omit unresolved media. The same draft-intent, batch-admission,
-  after-commit transport, key-local resource, recheck and revocation law applies
-  to every asynchronous document-bound asset, and it never becomes a public
-  asynchronous-job framework.
-- `BaseUploadPlugin` from `platejs/upload`, with its React `UploadPlugin` from
-  `platejs/upload/react`, owns the upload lifecycle and takes a compatible
-  client and a synchronous `getUrl` resolver, never a lifecycle named after its
-  SDK. `BaseFilePlugin` from `platejs/media`, with its React `FilePlugin` from
-  `platejs/media/react`, stays the completed generic file node beside image,
-  audio and video. Each draft completes through the editor that its after-commit
-  boundary supplies, so authored and named-root node identity stays in the
-  admitting runtime.
 - `.extend()` widens the exact definition; `.configure()` is terminal and
   non-widening; `toReactPlugin()` is the exact live Base-to-React adapter.
   Factories replace `clone()` and any third copy verb. Repeated fields do not
@@ -709,28 +598,6 @@ Current priorities:
   from the installed plugin graph; do not centralize feature rules in the format
   package or mutable plugin state. Whole-payload MIME declarations belong to
   root `dataTransferFormats`, not semantic `formats` maps.
-- Ordinary Markdown is CommonMark with GFM and math, and extensions never
-  change its meaning. Plate extension elements are registered tags recognized
-  by the runtime's own selective grammar; full MDX is not a Plate dialect.
-  Existing MDX-written Plate output reads through one dialect law: inside a
-  registered block tag, only fenced code is code.
-- The `remarkPlugins` list in `MarkdownPlugin` configuration is the generic
-  extension boundary and makes no MDX promise; a conversion call takes no
-  remark-plugin list of its own.
-- A Plate-owned custom Markdown element tag is persisted schema identity. Its
-  mapping uses the resolved schema type symmetrically for the `tag` selector,
-  decoded element identity, and encoded tag name. Standard MDAST kinds and
-  HTML tag names remain literal. Tag attributes cross a Markdown-owned wire
-  codec selected by schema property kind; the schema validates values. Legacy
-  tags migrate before mapping dispatch; mappings never accept both identities.
-- A Markdown mapping selects one source: `node` for a standard MDAST kind, typed
-  by the MDAST kind map, or `tag` for a registered tag name, with `nestedTags`
-  for tags read only inside it and no public rule-name union. An element
-  declares `markdown: { tag: type }` and a mark declares `{ node }`, `{ tag }`,
-  `{ tag, value }` or `{ tag: 'span', style }`. The callback-free tag mapping is
-  the default: the runtime builds the node from the schema, writes its
-  non-metadata properties except list topology, traverses children by the
-  content model, and `attributes` renames owned properties.
 - Plate documents stay editor-native: `Text` leaves use `text`, elements use
   `type` and `children`, and feature properties stay flat and schema-owned.
   Parameter values never become fake plugin identities. First-party fields use
@@ -1073,26 +940,6 @@ Current priorities:
   public node questions use schema, injection is read from
   `portal.inject.nodeProps`,
   and format mapping uses one `registry` namespace.
-- HTML mappings may prepare only their operation-owned inert document before
-  matching. Whole-payload admission, source cleanup, RTF access, and
-  post-decode repair belong to the browser `DataTransferFormat` lifecycle.
-  Generic mapping hooks do not receive host payloads or live editor state.
-- One plugin keeps all of its HTML matches in a single mapping, and a mapping's
-  target order is membership, not construction intent. A `createsElement`
-  mapping decodes bare content into the schema's default block when that block
-  is one of its targets and writes its output around the HTML of its other
-  targets; on parse, a matched element holding exactly one block its properties
-  apply to decodes onto that block, and a text block they cannot apply to gives
-  the created block its text. On paste, a throwing or schema-invalid candidate
-  is reported through the lifecycle and delegates to the next candidate, while a
-  direct parse call throws.
-- A whole-payload format reports what a paste leaves out. The initiating
-  editable delivers one result per paste its built-in formats handle; copied UI
-  decides the presentation, and harmless cleanup stays silent.
-- A `DataTransferFormat` decode returns a `ContentSlice` and its encode returns
-  a string, or either returns `null` to delegate to the next format. Per-editor
-  DOM plugin state resolves through its runtime owner, so mounted views read the
-  activation's configuration instead of resolving it again at each caller.
 - Multiple callers of one plugin operation reuse its plugin-owned API; they do
   not justify a parallel raw helper. Keep the algorithm in the plugin.
   Standalone functions need a real cross-plugin, cross-layer, or
@@ -1265,12 +1112,6 @@ Current priorities:
   `import`/`export`; `encode`/`decode` is reserved for a typed paired
   representation with explicit direction laws. A complete document is the
   default parse target, while slice and inline carriers keep explicit suffixes.
-- Code-block commands construct schema-valid code nodes directly, preserving
-  their distinct insert/upsert selection policy without exposing an intermediate
-  default type. Optional JSON prettifying belongs to copied UI and edits the
-  canonical text through Plite. Syntax readers do not mutate a caller's
-  highlighter; copied native and static kits register their parser resources
-  before use.
 - Independently placed DOM parts are independent primitives with ordinary DOM
   props such as `className` and `style`. They compose as siblings; a public
   root or `*ClassName` control prop requires a real shared lifecycle or state

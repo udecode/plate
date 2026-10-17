@@ -17,8 +17,8 @@ Pages in this folder:
 
 Decisions:
 
-- [Anchors, annotations and inline paint ownership](../../decisions/2026-09-20-annotations-ownership.md). Plite anchors, annotation store and decoration paint decisions, with a final external validation that summarizes ProseMirror, CodeMirror, Monaco, Lexical, Automerge, Tiptap and Yjs annotation facts.
-- [Collaboration binding, transport and presence ownership](../../decisions/collaboration-ownership.md). Plite/Plate Yjs binding, transport and presence lifetimes, including Yjs causal identity, relative selections and the Hocuspocus provider.
+- Anchors, annotations and inline paint ownership (`2e865a0bc4:docs/research/decisions/2026-09-20-annotations-ownership.md`). Plite anchors, annotation store and decoration paint decisions, with a final external validation that summarizes ProseMirror, CodeMirror, Monaco, Lexical, Automerge, Tiptap and Yjs annotation facts.
+- Collaboration binding, transport and presence ownership (`2e865a0bc4:docs/research/decisions/collaboration-ownership.md`). Plite/Plate Yjs binding, transport and presence lifetimes, including Yjs causal identity, relative selections and the Hocuspocus provider.
 
 Research runs:
 

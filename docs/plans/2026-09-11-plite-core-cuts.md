@@ -2,7 +2,7 @@
 
 Objective:
 Fully adopt the two approved cuts from
-[the core review](../research/decisions/plite-core-ownership.md): remove facets
+the core review (`2e865a0bc4:docs/research/decisions/plite-core-ownership.md`): remove facets
 and public command descriptor `build()`. User authority is `$task full` after
 the completed assessment. Continue implementation and proof in this checkout.
 

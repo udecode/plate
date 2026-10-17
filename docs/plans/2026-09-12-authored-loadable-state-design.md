@@ -21,7 +21,7 @@ Blocked condition:
 An unimplemented representation or incomplete semantic oracle leaves that target provisional; it does not justify an invented pass. Complete this design's evidence/decision rather than silently widening into production implementation.
 
 Source obligations:
-User go; Best API's ideal-first, maximum-cut, scale and output gates; Benchmark embedded-probe methodology; docs/research/decisions/authored-change-ownership.md; current codec, restoreProjection, anchors, retention and collaboration consumers. Preserve the 2026-09-12 authored scalability review.
+User go; Best API's ideal-first, maximum-cut, scale and output gates; Benchmark embedded-probe methodology; 2e865a0bc4:docs/research/decisions/authored-change-ownership.md; current codec, restoreProjection, anchors, retention and collaboration consumers. Preserve the 2026-09-12 authored scalability review.
 
 ## Frozen probe contract
 

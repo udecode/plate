@@ -62,7 +62,7 @@ React must not be the editing engine.
 
 Research decisions already accepted:
 
-- `docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md`
+- `docs/research/history/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md`
 - `docs/research/systems/editor-node-text-mark-dx-landscape.md`
 
 Current Plite code assets to reuse:

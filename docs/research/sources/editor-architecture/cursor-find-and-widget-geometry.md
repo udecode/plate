@@ -31,7 +31,7 @@ related:
 
 # Cursor, Find, and Widget geometry architecture
 
-> Current Plite (checked 2026-10-08): this page reads Plate commit 494d90c4. Plite has since cut the Widget lane and its store (`docs/research/decisions/plite-view-ownership.md:28`), and `packages/plitejs/src` has no widget or projection store. Selection or keyed cursor owners feed exact-mounted-view geometry (`docs/vision/plite.md:597-600`): remote cursor geometry is read per client with `useYjsRemoteCursorGeometry(editor, clientId, { editableRef })` (`packages/plitejs/src/yjs/react/useYjs.ts:181-193`), over an awareness adapter that keeps each cursor's endpoints as `Anchor<Point>` handles (`packages/plitejs/src/yjs/core/awareness-adapter.ts:85-88`). Read the Widget lane, Widget store and projection-store steps below as the 2026-08-30 design.
+> Current Plite (checked 2026-10-08): this page reads Plate commit 494d90c4. Plite has since cut the Widget lane and its store (`2e865a0bc4:docs/research/decisions/plite-view-ownership.md:28`), and `packages/plitejs/src` has no widget or projection store. Selection or keyed cursor owners feed exact-mounted-view geometry (`docs/vision/plite.md:597-600`): remote cursor geometry is read per client with `useYjsRemoteCursorGeometry(editor, clientId, { editableRef })` (`packages/plitejs/src/yjs/react/useYjs.ts:181-193`), over an awareness adapter that keeps each cursor's endpoints as `Anchor<Point>` handles (`packages/plitejs/src/yjs/core/awareness-adapter.ts:85-88`). Read the Widget lane, Widget store and projection-store steps below as the 2026-08-30 design.
 
 ## Question
 

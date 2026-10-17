@@ -772,12 +772,10 @@ const stores = {
     'benchmarks/editor/docs/baselines/*.md',
   ],
   subjects: ['docs/plans/topics/*.md'],
-  decisions: ['docs/research/decisions/*.md'],
   pages: ['docs/research/**/*.md', 'docs/editor-audits/**/*.md'],
   scopes: ['docs/research/review-scopes/*.json'],
 };
 const pageIgnore = [
-  'docs/research/decisions/**',
   'docs/research/raw/**',
   'docs/research/review-records/**',
   `${LESSONS}/**`,
@@ -881,17 +879,15 @@ export function loadIndex(tree) {
   };
   const notes = files(tree, stores.notes).map(page);
   const subjects = files(tree, stores.subjects).map((path) => {
-    const { title, text } = page(path);
+    const subject = page(path);
     return {
-      file: path,
-      title,
+      ...subject,
       lead:
-        text
+        subject.text
           .split('\n\n')
           .find((block) => block && !/^(#|Page:)/.test(block)) ?? '',
     };
   });
-  const decisions = files(tree, stores.decisions).map(page);
   const pages = files(tree, stores.pages, pageIgnore).map(page);
   const scopeIds = files(tree, stores.scopes).map((path) =>
     path
@@ -923,7 +919,6 @@ export function loadIndex(tree) {
     targets,
     notes,
     subjects,
-    decisions,
     pages,
     scopeIds,
     tests,
@@ -1118,7 +1113,6 @@ export function card(index, query, { detail = false } = {}) {
     research: [],
     pages: [],
     subjects: [],
-    decisions: [],
   };
 
   // An issue key alone also searches with its title, so a card finds the law
@@ -1158,14 +1152,17 @@ export function card(index, query, { detail = false } = {}) {
         (row) => [row.run, row.text]
       ),
       pages: ranked(index.pages, groups, (page) => [page.title, page.text]),
-      subjects: ranked(index.subjects, groups, (subject) => [
-        subject.title,
-        subject.lead,
-      ]),
-      decisions: ranked(index.decisions, groups, (page) => [
-        page.title,
-        page.text,
-      ]),
+      // A subject's lead outranks its body, which `ranked` penalizes for length.
+      subjects: union(
+        ranked(index.subjects, groups, (subject) => [
+          `${subject.file} ${subject.title}`,
+          subject.lead,
+        ]),
+        ranked(index.subjects, groups, (subject) => [
+          subject.title,
+          subject.text,
+        ])
+      ),
     };
     const viaTests = { rules: new Set(), issues: new Set() };
     addReachedTags(index, viaTests, found.tests.slice(0, limit));

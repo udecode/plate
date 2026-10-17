@@ -65,6 +65,23 @@ Rejected, and why:
 | A preselected incremental cache, skeleton state, worker or timer | Unproven; any scheduler must first beat the current path from accepted input to settled layout. |
 | Re-exporting raw `PagedEditable` from Plate | Bypassed `EditorContent`'s plugin pipeline, so paged Plate apps lost every plugin component, handler, shortcut and slot. |
 
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- Pagination is view-owned derived geometry, not core editor truth. Its mounted
+  paged component owns live measurement, page surfaces, omission and scroll
+  stability; active caret, selection and composition stay on the native/browser
+  editing path. Independent headless measurement is a separate one-shot job.
+- Pagination owns page omission, page surfaces and direct canvas coordinates.
+  It does not route page layouts or a public vertical offset through the generic
+  top-level block virtualizer. Live configuration belongs to the mounted paged
+  component; public layout reads are current committed snapshots for that exact
+  host, and page boundaries never become document authority.
+- Fragmentation is text, one atomic owner, or all direct element children.
+  Pagination derives source paths and keeps projection and decoration assembly
+  private. Its complete path mounts every document node and page surface.
+
 ## Main changes
 
 - `packages/plitejs/src/pagination/index.ts` owns headless measurement (`measurePages`), the page layout engines and the `NodeFragmentationPlan` contract.

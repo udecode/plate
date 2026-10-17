@@ -29,9 +29,9 @@
   ],
   "evidenceInputs": [
     "docs/research/sources/editor-architecture/candidates.md",
-    "docs/research/decisions/export-fidelity.md",
-    "docs/research/decisions/documents-conversion-fidelity.md",
-    "docs/research/decisions/persistence-ownership.md",
+    "docs/plans/topics/exports.md",
+    "docs/plans/topics/documents.md",
+    "docs/plans/topics/persistence.md",
     "apps/www/src/registry/components/editor/import-toolbar-button.tsx",
     "apps/www/src/registry/components/editor/export-toolbar-button.tsx",
     "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",

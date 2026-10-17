@@ -29,7 +29,7 @@ Artifact: `docs/plite/research/2026-09-14-docx-interoperability-oss/`. Ledgers r
 - Main replayed 123 existing package tests and two historical bug probes. A worker observed 12 additional fixture/demo tests. Do not count its duplicate 123-test run as extra coverage.
 - All ten documents census units are mapped. Other feature reviews, including skipped `diff`, remain independent. Inventory refresh only reconciles current fingerprint observations; it does not refresh unrelated reviews or proof.
 
-Start with the [current decision](../../../research/decisions/documents-conversion-fidelity.md),
+Start with the current decision (`2e865a0bc4:docs/research/decisions/documents-conversion-fidelity.md`),
 [compiled OSS comparison](../../../research/sources/docx-interoperability-oss.md),
 [open questions](../../../research/open-questions/documents-conversion-proof.md),
 and the [final review record](../../../research/review-records/2026-09-14-documents-final-reassessment.json).

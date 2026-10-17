@@ -259,13 +259,13 @@
         },
         "platejs:AuthoredVeto": {
           "aliases": [],
-          "documentation": "The reason Suggesting cannot hold a change that touches `element`, such as\n`'table'`, or null. A feature whose blocks review marks cannot hold yet\ncontributes one, and drops it once they can.",
+          "documentation": "The reason Suggesting cannot hold a change that touches `element`, such as\n`'table'`, or null. A feature whose blocks review marks cannot hold yet\ncontributes one, and drops it once they can.\n\n`touch` is `'content'` when the change edits only what the element holds,\nand `'element'` when it inserts, removes, splits or joins the element or\nedits its properties.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "AuthoredVeto",
           "route": null,
           "runtime": false,
-          "signature": "type AuthoredVeto = (element: Readonly<Record<string, unknown>>) => string | null;",
+          "signature": "type AuthoredVeto = (element: Readonly<Record<string, unknown>>, touch: 'content' | 'element') => string | null;",
           "source": null,
           "typeParameters": []
         },

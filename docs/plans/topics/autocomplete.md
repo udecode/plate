@@ -164,6 +164,20 @@ Rejected, and why:
 | Ariakit's duplicate select, value and hide completion actions | One completion path per option. |
 | Draft transfer between views | Cross-view entry dismisses and restores text. |
 
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- Autocomplete queries stay ordinary editor text, and a feature declares its
+  trigger and query policy as `ComboboxState` fields in its plugin
+  `initialState`, never as a transient input node, input plugin or trigger
+  command. A popup opens only on a trigger typed in its Editable, tracks that
+  occurrence with a range anchor, previews IME preedit without publishing it,
+  and completes by replacing trigger and query in one refusable transaction.
+  Copied controls own catalogs, filtering, the active option and presentation.
+  Completion rechecks the offered query before it replaces the trigger and query
+  in one refusable transaction.
+
 ## Hard cuts and app migration
 
 The ordinary-text adoption deleted the input-node design and left no compatibility path.

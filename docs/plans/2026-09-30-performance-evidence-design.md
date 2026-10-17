@@ -47,7 +47,7 @@ Plan:
 
 Documentation scope:
 - Mode is internal architecture and execution design, using Technical Writing. This is not a public MDX page or installation guide.
-- The nearest retained sibling is [the performance decision](../research/decisions/performance-candidate-reuse.md). Future teaching repairs belong to `benchmarks/editor/README.md`, `research/evidence-source-map.md` and target CLI help/package scripts.
+- The nearest retained sibling is the performance decision (`2e865a0bc4:docs/research/decisions/performance-candidate-reuse.md`). Future teaching repairs belong to `benchmarks/editor/README.md`, `research/evidence-source-map.md` and target CLI help/package scripts.
 - Existing Benchmark doctrine already requires source identity, frozen policies and preserved failures. Repair executable enforcement rather than add another instruction layer.
 
 ## User job and selected cuts

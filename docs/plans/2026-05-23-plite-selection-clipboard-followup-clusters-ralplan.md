@@ -205,7 +205,7 @@ Already reworked cluster 19:
 | System | Source | Mechanism | Avoids | Steal | Reject | Plite target | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | ProseMirror | `docs/research/sources/editor-architecture/scroll-selection-visibility-runtime.md` | Transactions separate selection, update, and scroll intent | stale scroll/caret reveal | post-update selection and scroll proof discipline | integer positions as public model | cluster 20 browser rows should prove post-update selection ownership | partial |
-| Lexical | `docs/research/decisions/plite-data-model-first-react-perfect-runtime.md` | Native events feed an update lifecycle with explicit selection reconciliation | browser timing patches scattered in React handlers | model/native ownership traces and DOM import before native input | class-node/$ helper API | keep Plite data-model first, runtime-owned selection/input lanes | agree |
+| Lexical | `docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md` | Native events feed an update lifecycle with explicit selection reconciliation | browser timing patches scattered in React handlers | model/native ownership traces and DOM import before native input | class-node/$ helper API | keep Plite data-model first, runtime-owned selection/input lanes | agree |
 | Tiptap | `docs/research/sources/editor-architecture/scroll-selection-visibility-runtime.md` | Product command delegates focus/scroll to ProseMirror engine | app commands owning engine truth | simple app-facing boundary only | product wrapper APIs in raw Plite | keep raw Plite unopinionated; Plate can wrap later | partial |
 | React 19.2 | `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md` | External-store subscriptions and background UI primitives | broad render churn during editor interactions | selector-first runtime proof and urgent visible editing | React as editor engine | keep React as projection consumer, not selection truth | agree |
 | Plite clipboard | `docs/plans/2026-05-23-plite-clipboard-fragment-serialization-ralplan.md` | Core model fragment, DOM DataTransfer, React event routing split | product parser leaking into raw Plite | preserve exact inline-void clipboard proof | public raw `editor.clipboard` namespace | cluster 21 is proof preservation plus possible named external fixture | agree |
@@ -299,10 +299,10 @@ Compiled research checked:
 - `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md`
   confirms React should stay the projection/subscription layer. It should not
   become selection truth.
-- `docs/research/decisions/plite-data-model-first-react-perfect-runtime.md`
+- `docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md`
   confirms the current target: Plite data model first, transaction/runtime-owned
   selection and native-input lanes, React as consumer.
-- `docs/research/decisions/clipboard-and-delete-commands-need-explicit-lanes.md`
+- `2e865a0bc4:docs/research/decisions/clipboard-and-delete-commands-need-explicit-lanes.md`
   confirms clipboard and delete behavior should stay explicit lanes, not
   incidental editing side effects.
 

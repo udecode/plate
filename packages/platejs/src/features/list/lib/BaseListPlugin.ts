@@ -1333,10 +1333,10 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
     },
   }))
   .extend(() => ({
-    // Review marks cannot hold list numbering yet, so a list item, or a
-    // block turning into one, refuses Suggesting.
     contributions: [
-      authoredVeto.of((element) => (element.listType ? 'list' : null)),
+      authoredVeto.of((element, touch) =>
+        element.listType && touch !== 'content' ? 'list' : null
+      ),
     ],
     readMiddleware: ({ around }) => [
       around(editorReads.slice.landing, ({ editor, input, next, state }) =>

@@ -1,19 +1,13 @@
 import type { AuthoredVeto } from '../core/authored-veto';
-import type { DraftStep } from '../core/change/builder';
-import {
-  getInternalDocumentChangeEntries,
-  valueRoot,
-} from '../core/change/document-change';
-import { DocumentIndex } from '../core/change/document-index';
+import { type DraftStep, UNSCOPED_ORIGINS } from '../core/change/builder';
+import { getInternalDocumentChangeEntries } from '../core/change/document-change';
+import type { IndexedNodeRange } from '../core/change/document-index';
 import { applyPropertyModifications } from '../core/change/root-change';
-import {
-  type JsonEditorValue,
-  nodeProps,
-  PreparedTokenSlice,
-} from '../core/change/tokens';
+import { nodeProps, PreparedTokenSlice } from '../core/change/tokens';
 import type { PropertyModification } from '../core/change/transform';
 import { EditorRefusalError } from '../core/refusal';
 import type { CompiledEditorSchema } from '../core/schema-compiler';
+import { getDefined } from '../internal/get-defined';
 
 /** Why Suggesting refused a change whole, so nothing of it applied. */
 export type AuthoredRefusal = Readonly<{
@@ -30,34 +24,52 @@ export type AuthoredRefusal = Readonly<{
   reasons: readonly string[];
 }>;
 
-/**
- * The refusal of a Suggesting change whose steps touch an element a veto
- * names: an element open around a write, one a removal overlaps, one the
- * write inserts, or one whose properties it edits, before or after the edit.
- */
+const holds = (entry: IndexedNodeRange, at: number) =>
+  entry.kind === 'element' && entry.from < at && at < entry.to;
+
 export const proposalRefusal = (
   steps: readonly DraftStep[],
-  before: JsonEditorValue,
   vetoes: readonly AuthoredVeto[]
 ): AuthoredRefusal | null => {
   const reasons = new Set<string>();
-  const check = (element: Readonly<Record<string, unknown>>) => {
-    for (const veto of vetoes) {
-      const reason = veto(element);
-
-      if (reason !== null) reasons.add(reason);
-    }
-  };
 
   for (const step of steps) {
-    // A frame's seed and canonical passes are not the writer's edit.
-    if (step.origin === 'canonical' || step.origin === 'migration') continue;
+    if (UNSCOPED_ORIGINS.has(step.origin)) continue;
     for (const [root, change] of getInternalDocumentChangeEntries(
       step.change
     )) {
-      const index =
-        step.indexedBefore?.get(root) ??
-        DocumentIndex.fromValue(valueRoot(before, root));
+      const before = getDefined(step.indexedBefore.get(root));
+      const after = getDefined(step.indexedAfter.get(root));
+      const elements: Array<{
+        props: Readonly<Record<string, unknown>>;
+        touch: 'content' | 'element';
+      }> = [];
+      const checked = new Map<number, (typeof elements)[number]>();
+      const collect = (entry: IndexedNodeRange) => {
+        let element = checked.get(entry.from);
+
+        if (!element) {
+          const open = change.mapPos(entry.from, 1, 'after');
+          const close = change.mapPos(entry.contentTo, 1, 'after');
+          const paired = open === null ? undefined : after.nodeStartingAt(open);
+
+          element = {
+            props: nodeProps(before.node(entry.path)),
+            touch:
+              open !== null &&
+              close !== null &&
+              paired?.kind === 'element' &&
+              paired.from === open &&
+              paired.contentTo === close
+                ? 'content'
+                : 'element',
+          };
+          checked.set(entry.from, element);
+          elements.push(element);
+        }
+
+        return element;
+      };
       let position = 0;
 
       for (let section = 0; section < change.sections.length; section += 2) {
@@ -70,49 +82,53 @@ export const proposalRefusal = (
         if (inserted === -1) continue;
         if (inserted === -2) {
           for (let at = from; at < position; at++) {
-            const entry = index.nodeStartingAt(at);
+            const entry = before.nodeStartingAt(at);
 
-            if (entry?.from !== at || entry.kind !== 'element') continue;
-            const props = nodeProps(index.node(entry.path));
+            if (entry?.from === at && entry.kind === 'element') {
+              const element = collect(entry);
 
-            check(props);
-            check(
-              applyPropertyModifications(
-                props,
-                value as readonly PropertyModification[]
-              )
-            );
+              element.touch = 'element';
+              elements.push({
+                props: applyPropertyModifications(
+                  element.props,
+                  value as readonly PropertyModification[]
+                ),
+                touch: 'element',
+              });
+            }
+            for (const holder of before.openContextAt(at)) {
+              if (holds(holder, at)) collect(holder);
+            }
           }
           continue;
         }
-        // Only what holds the write, not what it merely borders: a write
-        // beside a list stays out of it.
-        for (const entry of index.openContextAt(from)) {
-          if (
-            entry.kind === 'element' &&
-            entry.from < from &&
-            from < entry.to
-          ) {
-            check(nodeProps(index.node(entry.path)));
-          }
+        for (const entry of before.openContextAt(from)) {
+          if (holds(entry, from)) collect(entry);
         }
         if (length > 0) {
-          for (const entry of index.nodeRangesTouching(from, position)) {
+          for (const entry of before.nodeRangesTouching(from, position)) {
             if (
               entry.kind === 'element' &&
               entry.from < position &&
               from < entry.to
             ) {
-              check(nodeProps(index.node(entry.path)));
+              collect(entry);
             }
           }
         }
         if (value instanceof PreparedTokenSlice) {
           for (const token of value.tokens) {
             if (token.kind === 'open' && token.nodeKind === 'element') {
-              check(token.props);
+              elements.push({ props: token.props, touch: 'element' });
             }
           }
+        }
+      }
+      for (const { props, touch } of elements) {
+        for (const veto of vetoes) {
+          const reason = veto(props, touch);
+
+          if (reason !== null) reasons.add(reason);
         }
       }
     }

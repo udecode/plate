@@ -11,7 +11,7 @@ source_refs:
   - ../db/packages/react-db/src/useLiveQuery.ts
 updated: 2026-04-15
 related:
-  - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
+  - docs/research/history/slate-v2-overlay-architecture-cuts.md
 ---
 
 # Service channels and live stores

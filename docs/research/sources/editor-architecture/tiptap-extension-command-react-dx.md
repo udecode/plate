@@ -11,7 +11,7 @@ source_refs:
   - ../raw/tiptap/docs/src/content/guides/create-mark.mdx
   - ../raw/tiptap/repo/packages/core/src/CommandManager.ts
 related:
-  - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
+  - docs/research/history/slate-v2-read-update-runtime-architecture.md
 ---
 
 # Tiptap extension command React DX

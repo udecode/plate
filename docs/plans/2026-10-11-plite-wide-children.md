@@ -46,7 +46,7 @@ Now Plite keeps its own record of the top-level lists it built and trusts that r
 - A wide element's `children` array, such as a table with thousands of rows, is still frozen on every edit inside it. Tracked in `docs/plans/topics/reads.md` Open work. owner: zbeyens. stop: a probe of edits inside a wide element shows the cost material, or the owner drops it.
 - Authored `finishContent` snapshots the document root with `snapshotEditorJsonValue`, which copies and freezes it once per content insert, the same as at base. Tracked in `docs/plans/topics/reads.md` Open work. owner: zbeyens. stop: a content-insert width probe lands a fix, or the owner drops it.
 - `rememberValidatedDocumentRoots` walks every node on each `tx.changes.apply` and `tx.slice.replace`, and `DocumentChange.apply` looks up every top-level node; the change-width session took both on 2026-10-11. Tracked in `docs/plans/topics/reads.md` Open work. owner: zbeyens. stop: that session's plan lands them, or the owner drops them.
-- `docs/research/decisions/model-document-boundary.md:98-100` says a document-bound view reuses cached validation only for "frozen documents Plite produced"; after this change those roots are registered, not frozen. Tracked in `docs/plans/topics/reads.md` Open work. owner: zbeyens. stop: the next edit of that decision record rewords it, or the owner drops it.
+- `2e865a0bc4:docs/research/decisions/model-document-boundary.md:98-100` says a document-bound view reuses cached validation only for "frozen documents Plite produced"; after this change those roots are registered, not frozen. Tracked in `docs/plans/topics/reads.md` Open work. owner: zbeyens. stop: the next edit of that decision record rewords it, or the owner drops it.
 
 ## Reflect
 

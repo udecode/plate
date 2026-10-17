@@ -51,7 +51,7 @@
     "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts",
     "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts",
     "content/docs/(guides)/plugin-methods.mdx",
-    "docs/research/decisions/transactions-synchronous-boundary.md",
+    "docs/plans/topics/transactions.md",
     "docs/plans/artifacts/plite-core-cuts/verification.json",
     "docs/plans/artifacts/plite-core-cuts/production-probe-results.json",
     "docs/plans/artifacts/plite-core-cuts/production-work-counts.json"

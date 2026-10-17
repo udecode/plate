@@ -204,13 +204,13 @@ Out of scope for this skill:
 - `docs/research/log.md:518-527` records the correction that shell islands win
   ready/full-document lanes but lose steady typing/select lanes to legacy
   chunking-on.
-- `docs/research/decisions/plite-overlay-superiority-vs-legacy-and-field.md:94-100`
+- `docs/research/history/slate-v2-overlay-superiority-vs-legacy-and-field.md:94-100`
   warns not to turn overlay superiority into a large-document typing superiority
   claim.
-- `docs/research/decisions/plite-architecture-verdict-after-human-stress-sweep.md:155-175`
+- `docs/research/history/slate-v2-architecture-verdict-after-human-stress-sweep.md:155-175`
   says React 19.2 makes Plite serious, not automatically better than
   ProseMirror/Lexical/VS Code.
-- `docs/research/decisions/plite-architecture-verdict-after-human-stress-sweep.md:193-214`
+- `docs/research/history/slate-v2-architecture-verdict-after-human-stress-sweep.md:193-214`
   says regression freedom still needs wider operation-family coverage, Plate/Yjs
   migration rows, real devices, and legacy browser parity.
 

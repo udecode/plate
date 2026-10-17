@@ -164,10 +164,7 @@ describe('footnote paste end matter', () => {
               ],
             });
           } else {
-            expect(editor.read.selection()).toEqual({
-              anchor: { path: [0, 0, 0, 0, 0], offset: 0 },
-              focus: { path: [0, 0, 0, 0, 0], offset: 1 },
-            });
+            expect(editor.read.selection()).toEqual(range([0, 0, 0, 0, 0], 1));
           }
         });
       }

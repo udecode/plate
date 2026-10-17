@@ -24,7 +24,7 @@ What landed, uncommitted in the working tree:
 - `remarkEscapeDollars` and its wiring in `packages/platejs/src/markdown/lib/internal/markdownConversion.ts`.
 - The test "keeps a dollar sign before an escaped character as text" in `packages/platejs/src/markdown/lib/mathSurface.spec.ts`.
 - `.changeset/markdown-dollar-escape.md` (`platejs` patch).
-- The Open work list in `docs/research/decisions/markdown-conversion.md` drops the item.
+- The Open work list in `2e865a0bc4:docs/research/decisions/markdown-conversion.md` drops the item.
 
 Proof and its limits:
 

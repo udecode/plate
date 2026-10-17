@@ -51,7 +51,7 @@ Work Checklist:
 
 Constraints:
 
-The governing [audit](../research/decisions/registry-ui-ownership.md) accounts
+The governing audit (`2e865a0bc4:docs/research/decisions/registry-ui-ownership.md`) accounts
 for ten semantic units and 60 census groups. Preserve independent features,
 app-owned arrays, distinct live/static aggregates, optional fixed-toolbar
 placement, exact mounted-view floating/block UI and feature-owned integration.

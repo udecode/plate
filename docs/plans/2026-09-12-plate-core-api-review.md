@@ -425,7 +425,7 @@ review obligations. This does not block local assessment.
 
 ## Result and proof
 
-[Current decision](../research/decisions/plate-core-ownership.md): two expected
+Current decision (`2e865a0bc4:docs/research/decisions/plate-core-ownership.md`): two expected
 questions, two reviewed, zero excluded questions and zero unresolved verdicts.
 Both verdicts are Pursue, with the identity contract ranked first. The seven
 Plate API and eleven distribution census groups bind source observations; they

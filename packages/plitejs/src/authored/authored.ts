@@ -1672,7 +1672,7 @@ export const createAuthoredPlugin = (
               (constructsValues(getCompiledEditorSchema(editor))
                 ? GENERATED_VALUES_REFUSAL
                 : vetoes.length > 0
-                  ? proposalRefusal(steps, input.before, vetoes)
+                  ? proposalRefusal(steps, vetoes)
                   : null);
 
             if (refusal) {

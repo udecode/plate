@@ -154,7 +154,7 @@ The first exact editor-comparison lookup returned no existing semantic scope. Th
 
 This review retains the pinned historical specialist findings from the old candidate page and the narrower Wordgard change/mapping lessons. It supersedes the candidate page's unsupported universal rankings. The September Wordgard performance run remains historical; its results were not carried forward as current timing proof. The retained and changed claims are inspectable against the earlier file in git and this run's source ledger.
 
-The [schema](../research/schema.md) separates review judgment from adoption. The [candidate source](../research/sources/editor-architecture/candidates.md), [research result](../plite/research/2026-10-13-editor-comparison/README.md) and [decision](../research/decisions/editor-comparison-set.md) are the current documentation owners.
+The [schema](../research/schema.md) separates review judgment from adoption. The [candidate source](../research/sources/editor-architecture/candidates.md), [research result](../plite/research/2026-10-13-editor-comparison/README.md) and decision (`2e865a0bc4:docs/research/decisions/editor-comparison-set.md`) are the current documentation owners.
 
 ## Proof and limits
 

@@ -45,6 +45,22 @@ Rejected, and why:
 | Async backend loading | Loading, error and hydration ownership for an optional label. |
 | A model-global virtualization store | Two views can have different coverage and scroll. |
 
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- Ordinary `Editable` mounts the complete document DOM. DOM omission is an
+  explicit mounted-view choice through the dedicated virtualized React
+  component; it never activates from document size, a threshold, or an
+  automatic strategy. The virtualized package entrypoint owns its optional
+  engine and exposes only block estimate and overscan tuning.
+- A virtualized view starts with one deterministic bounded window and retains
+  selected or requested targets. Its document, history and collaboration state
+  stay canonical while native find, accessibility traversal, printing and DOM
+  integrations can observe only mounted content. Product support requires
+  explicit browser, IME and device proof for the claimed matrix. Degraded
+  huge-document modes stay degraded until native behavior is proved.
+
 ## What other editors do
 
 Not compared in this scope's reviews; TanStack is the adopted measured-list backend.

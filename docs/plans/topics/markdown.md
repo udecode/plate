@@ -30,6 +30,33 @@ Rejected, and why:
 
 The prototype gates: 648 of 652 CommonMark 0.31.2 examples gave identical mdast (the other four use the registered `<del>`), 20,000 fuzz strings and 1,000 legacy prefixes threw nothing, and 13 of 13 legacy MDX documents read identically.
 
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- Ordinary Markdown is CommonMark with GFM and math, and extensions never
+  change its meaning. Plate extension elements are registered tags recognized
+  by the runtime's own selective grammar; full MDX is not a Plate dialect.
+  Existing MDX-written Plate output reads through one dialect law: inside a
+  registered block tag, only fenced code is code.
+- The `remarkPlugins` list in `MarkdownPlugin` configuration is the generic
+  extension boundary and makes no MDX promise; a conversion call takes no
+  remark-plugin list of its own.
+- A Plate-owned custom Markdown element tag is persisted schema identity. Its
+  mapping uses the resolved schema type symmetrically for the `tag` selector,
+  decoded element identity, and encoded tag name. Standard MDAST kinds and
+  HTML tag names remain literal. Tag attributes cross a Markdown-owned wire
+  codec selected by schema property kind; the schema validates values. Legacy
+  tags migrate before mapping dispatch; mappings never accept both identities.
+- A Markdown mapping selects one source: `node` for a standard MDAST kind, typed
+  by the MDAST kind map, or `tag` for a registered tag name, with `nestedTags`
+  for tags read only inside it and no public rule-name union. An element
+  declares `markdown: { tag: type }` and a mark declares `{ node }`, `{ tag }`,
+  `{ tag, value }` or `{ tag: 'span', style }`. The callback-free tag mapping is
+  the default: the runtime builds the node from the schema, writes its
+  non-metadata properties except list topology, traverses children by the
+  content model, and `attributes` renames owned properties.
+
 ## What other editors do
 
 Not compared in these reviews; CommonMark, GFM and micromark are the adopted grammar and tokenizer.

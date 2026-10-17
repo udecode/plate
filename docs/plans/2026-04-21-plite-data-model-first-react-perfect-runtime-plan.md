@@ -1196,7 +1196,7 @@ Actions:
   - `/Users/zbeyens/git/plate-2/docs/plite/replacement-gates-scoreboard.md`
   - `/Users/zbeyens/git/plate-2/docs/plite/release-readiness-decision.md`
   - `/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md`
-  - `/Users/zbeyens/git/plate-2/docs/research/decisions/plite-data-model-first-react-perfect-runtime.md`
+  - `docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md`
   - `/Users/zbeyens/git/plate-2/active goal state`
 
 Commands:

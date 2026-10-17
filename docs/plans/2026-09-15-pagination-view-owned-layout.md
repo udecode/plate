@@ -10,7 +10,7 @@ recorded below without absorbing those owners.
 Objective:
 Complete the user's pagination design and adoption plan: own live layout in the
 paged view, remove false page-break authority, and make fragmentation explicit.
-The source acceptance is the [pagination audit](../research/decisions/pagination-ownership.md).
+The source acceptance is the pagination audit (`2e865a0bc4:docs/research/decisions/pagination-ownership.md`).
 
 Completion threshold:
 Resolve public call sites and ownership, challenge the larger deletion, record

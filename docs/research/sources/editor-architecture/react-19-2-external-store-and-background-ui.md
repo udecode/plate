@@ -15,7 +15,7 @@ source_refs:
 updated: 2026-04-28
 related:
   - c70bacbd4a:docs/research/systems/slate-v2-overlay-architecture.md
-  - docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md
+  - docs/research/history/slate-v2-react-19-2-perf-architecture-vs-field.md
 ---
 
 # React 19.2 external-store and background-ui primitives

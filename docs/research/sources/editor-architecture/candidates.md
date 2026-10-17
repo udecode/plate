@@ -84,4 +84,4 @@ The following source-pinned findings remain historical specialist evidence. Thei
 
 Star counts and activity route investigation. They do not establish architecture quality, measured speed or correctness. Test source shows a scenario and its oracle, not a passing result in this run.
 
-Before adoption, choose the native Plate or Plite owner and use its actual proof. A runtime change needs the owning design and verification workflow. A scale claim also needs a measured Benchmark packet. The [comparison decision](../../decisions/editor-comparison-set.md) records what this research accepts and rejects.
+Before adoption, choose the native Plate or Plite owner and use its actual proof. A runtime change needs the owning design and verification workflow. A scale claim also needs a measured Benchmark packet. The comparison decision (`2e865a0bc4:docs/research/decisions/editor-comparison-set.md`) records what this research accepts and rejects.

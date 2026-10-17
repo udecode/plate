@@ -52,10 +52,12 @@ const blockText = (page: Page, index: number) =>
     .first()
     .textContent();
 
-for (const [place, match, words] of [
-  ['a table cell', (block: Block) => block.type === 'table', 'tables'],
-  ['a code block', (block: Block) => block.type === 'codeBlock', 'code blocks'],
-  ['a list item', (block: Block) => Boolean(block.listType), 'lists'],
+const refusalToast = (page: Page) =>
+  page.locator('[data-sonner-toast][data-type="error"]');
+
+for (const [place, match] of [
+  ['a table cell', (block: Block) => block.type === 'table'],
+  ['a code block', (block: Block) => block.type === 'codeBlock'],
 ] as const) {
   test(`refuses typing in ${place} while Suggesting and says why`, async ({
     page,
@@ -72,11 +74,7 @@ for (const [place, match, words] of [
     await editor.selection.select(caret(leaf));
     await page.keyboard.type('X');
 
-    await expect(
-      page.getByText(`Suggesting is off in ${words} for now.`, {
-        exact: false,
-      })
-    ).toBeVisible();
+    await expect(refusalToast(page)).toBeVisible();
     await expect.poll(blocks).toEqual(before);
     await expect.poll(() => blockText(page, index)).toBe(text);
     expect(await editor.selection.get()).toMatchObject(caret(leaf));
@@ -127,9 +125,7 @@ test('refuses turning a paragraph into a list while Suggesting', async ({
   await editor.selection.select(caret(firstLeaf(before[index], [index])));
   await page.keyboard.type('- ');
 
-  await expect(
-    page.getByText('Suggesting is off in lists for now.', { exact: false })
-  ).toBeVisible();
+  await expect(refusalToast(page)).toBeVisible();
   const after = await blocks();
 
   expect(after[index].listType).toBeUndefined();
@@ -160,9 +156,48 @@ test('keeps a paragraph next to a list suggestible', async ({ page }) => {
       { hasText: 'Z' }
     )
   ).toBeVisible();
-  await expect(
-    page.getByText('Suggesting is off', { exact: false })
-  ).toHaveCount(0);
+  await expect(refusalToast(page)).toHaveCount(0);
+  errors.assertNone();
+});
+
+test('records typing at the end of a list item while Suggesting and refuses Enter there', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
+  const { blocks, editor, root } = await open(page);
+  const before = await blocks();
+  const index = before.findIndex((block) => block.listType === 'bulleted');
+
+  expect(index).toBeGreaterThanOrEqual(0);
+  const leaf = firstLeaf(before[index], [index]);
+  const text = before[index].children![0].text!;
+  const inserted = root.locator(
+    '[data-editor-node="text"][data-editor-authored-kind="insert"]'
+  );
+
+  await editor.selection.select(caret(leaf, text.length));
+  await page.keyboard.type(' now');
+
+  await expect(inserted.filter({ hasText: 'now' })).toBeVisible();
+  await expect.poll(() => blockText(page, index)).toBe(`${text} now`);
+  await expect(refusalToast(page)).toHaveCount(0);
+  const typed = await blocks();
+  const selection = await editor.selection.get();
+
+  await page.keyboard.press('Enter');
+
+  await expect(refusalToast(page)).toBeVisible();
+  await expect.poll(blocks).toEqual(typed);
+  expect(await editor.selection.get()).toEqual(selection);
+
+  await page.keyboard.type('new');
+
+  await expect.poll(() => blockText(page, index)).toBe(`${text} nownew`);
+  await expect(inserted.filter({ hasText: 'new' })).toBeVisible();
+  const after = await blocks();
+
+  expect(after).toHaveLength(before.length);
+  expect(after[index].listType).toBe('bulleted');
   errors.assertNone();
 });
 
@@ -177,9 +212,7 @@ test('refuses select all then Backspace or typing in the playground, applying no
   await root.press('ControlOrMeta+a');
   await root.press('Backspace');
 
-  await expect(
-    page.getByText('Suggesting is off in', { exact: false })
-  ).toBeVisible();
+  await expect(refusalToast(page)).toBeVisible();
   await expect.poll(blocks).toEqual(before);
 
   await page.keyboard.type('Q');

@@ -103,7 +103,7 @@ undo/redo, but never checks the editor mode or AI paint while streaming. The
 default-mode correction explicitly retained the temporary proposal view; that
 assumption contradicts the user's requirement and is reopened.
 
-Review: [AI preview ownership](../research/decisions/ai-preview-ownership.md),
+Review: AI preview ownership (`2e865a0bc4:docs/research/decisions/ai-preview-ownership.md`),
 recorded as `2026-09-16-ai-preview-ownership`. The initial review selected one
 temporary draft under the existing AI feature and normal commands at apply,
 provisionally pending the probe below. A timed Chrome

@@ -80,7 +80,7 @@ sequenceDiagram
 | Mounted dispatcher | `packages/plitejs/src/react/editable/editable-dom-runtime.ts` |
 | Initiators | `keyboard-input-strategy.ts:484-495,614-626,882-892`; `mutation-history.ts:8-61`; `use-plite-history.ts:155-210`; `external-text-runtime.ts:898-915`; `browser-handle.ts:748-756,902-910` |
 | Comments owner | `packages/platejs/src/features/comments/BaseCommentsPlugin.ts` |
-| Rationale | `docs/plans/2026-09-23-history-replay-lifecycle-revised.md` (F1-F10, rows 1-15), `docs/research/decisions/history-ownership.md:20-93` |
+| Rationale | `docs/plans/2026-09-23-history-replay-lifecycle-revised.md` (F1-F10, rows 1-15), `2e865a0bc4:docs/research/decisions/history-ownership.md:20-93` |
 
 ### Gotchas
 

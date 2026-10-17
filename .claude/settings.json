@@ -36,8 +36,25 @@
           },
           {
             "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/setup.mjs ] || node .agents/pstack/setup.mjs --install 'pnpm install --offline'; }",
+            "timeout": 600
+          },
+          {
+            "type": "command",
             "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.agents/skills/cleanup/scripts/scan.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/.agents/skills/cleanup/scripts/scan.mjs\" --brief --repo \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.agents/pstack/guard.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/.agents/pstack/guard.mjs\"",
+            "timeout": 10
           }
         ]
       }

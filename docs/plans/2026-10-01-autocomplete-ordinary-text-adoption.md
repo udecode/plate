@@ -378,7 +378,7 @@ Fold the cut into the existing unreleased v54 converter and historical v53 manif
 
 A selection point inside a removed input maps through a semantic `mapSelection` step to the end of its restored text. The generic backward mapper would land before the trigger, so Phase 1 proves this mapping directly. Following sibling paths and coalesced text offsets rebase through the existing migration owner. A restored query never opens a popup, because only a typed trigger opens one.
 
-Use `defineDocumentMigrations`/`migrateDocument` before create or replace. Do not add runtime schema sniffing, aliases, hidden correction rules or a registry migration helper. Same-version fingerprint drift still fails closed. An application that already persisted an older v54 draft needs a lineage cutover from the persistence/release owner before admission. This plan does not allocate v55 or migrate active Yjs rooms/offline history; those app cutovers stay open, owner: persistence/release, tracked in [the decision page's open gates](../research/decisions/autocomplete-ownership.md#open-gates). Unsaved native-input query text cannot be recovered and is a disclosed limit.
+Use `defineDocumentMigrations`/`migrateDocument` before create or replace. Do not add runtime schema sniffing, aliases, hidden correction rules or a registry migration helper. Same-version fingerprint drift still fails closed. An application that already persisted an older v54 draft needs a lineage cutover from the persistence/release owner before admission. This plan does not allocate v55 or migrate active Yjs rooms/offline history; those app cutovers stay open, owner: persistence/release, tracked in the decision page's open gates (`2e865a0bc4:docs/research/decisions/autocomplete-ownership.md`). Unsaved native-input query text cannot be recovered and is a disclosed limit.
 
 ### Challenge delta
 
@@ -408,7 +408,7 @@ Build corrected these plan claims against source and recorded each in the decisi
 - A query that starts with whitespace ends the occurrence. Without that rule, typing `Page 1 / 2` kept the slash popup open on " 2" with "Heading 2" active, and Enter converted the block.
 - The callback type is `(tx) => false | void`. A block-body callback with no `return` infers `void`, which TypeScript does not assign to `false | undefined`. `async` callbacks still fail to type-check.
 - Home and End stay caret keys. Only Enter, Tab, ArrowUp, ArrowDown and Escape reach the popup.
-- Plate receives no keys typed inside an owned content root, and no first-party plugin declares one. Popups open only in the Editable's own root; content-root autocomplete is a gap, owner: Plite native input, tracked in [the decision page's open gates](../research/decisions/autocomplete-ownership.md#open-gates).
+- Plate receives no keys typed inside an owned content root, and no first-party plugin declares one. Popups open only in the Editable's own root; content-root autocomplete is a gap, owner: Plite native input, tracked in the decision page's open gates (`2e865a0bc4:docs/research/decisions/autocomplete-ownership.md`).
 - `settleInput()` flushes a pending composition end and Android input; it does not end an active composition. While an IME composes, option pointer-down is not prevented, so the blur ends the composition natively before the click completes.
 - Footnote `insert` drops its `trigger` parameter, which only the removed input UI used. Emoji search drops its 100 ms debounce.
 - Copilot keeps its auto-trigger while a popup is open. It fires only on a typed space at a block end, and its Tab and Escape shortcuts lose to the popup's claimed keys. Standing it down would need an editor-wide popup signal, which this design cut. A space inside a multiword mention query at a block end can therefore request a Copilot suggestion that shows beside the popup until the next edit rejects it.
@@ -471,7 +471,7 @@ Proven by the cases above:
 - the footnote create option allocating its ref in the transaction, and the caret after a reference inserted at a text start;
 - migration of stored inputs with the selection inside an input.
 
-The remaining gates live with their owners in [the decision page's open gates](../research/decisions/autocomplete-ownership.md#open-gates), because this plan is closed:
+The remaining gates live with their owners in the decision page's open gates (`2e865a0bc4:docs/research/decisions/autocomplete-ownership.md`), because this plan is closed:
 
 - Physical desktop and mobile IME, Android taps during composition and WebKit's confirming Enter on a real IME; Playwright's WebKit exposes no composition protocol, so no emulated WebKit proof exists. Owner: input/Verify, tracked there.
 - Under emulated Android, a blur that commits a composition leaves Plite's caret past the committed text, so a tap during composition refuses; the cause is unattributed because the tree held another session's uncommitted IME work. Owner: Plite native input, tracked there.

@@ -941,7 +941,9 @@ function questionGroups(sections) {
   const groups = [];
   const notes = [];
   for (const { lines, from = null } of sections) {
-    const note = { from, lines: [] };
+    const last = notes.at(-1);
+    const note = from && last?.from === from ? last : { from, lines: [] };
+    if (note === last) note.lines.push('');
     if (!from && intro.length) intro.push('');
     let own = null;
     for (const line of lines) {
@@ -949,7 +951,7 @@ function questionGroups(sections) {
       if (heading) groups.push((own = { header: heading[1].trim(), lines: [], from }));
       else (own?.lines ?? (from ? note.lines : intro)).push(line);
     }
-    if (from && note.lines.some((line) => line.trim())) notes.push(note);
+    if (from && note !== last && note.lines.some((line) => line.trim())) notes.push(note);
   }
   return { intro, groups, notes };
 }
@@ -1304,15 +1306,15 @@ const ANSWER_SCRIPT = `<script>
 
 function needsSection(sections) {
   const { intro, groups, notes } = questionGroups(sections);
-  const loose = `${blocksHtml(intro)}${notes.map((note) => `<p class="from">from ${inline(note.from)}</p>${blocksHtml(note.lines)}`).join('')}`;
-  if (groups.length === 0) return `<section class="needs"><div class="needs-head"><h2>Needs you</h2></div>${loose}</section>`;
+  const others = notes.map((note) => `<p class="from">from ${inline(note.from)}</p>${blocksHtml(note.lines)}`).join('');
+  if (groups.length === 0) return `<section class="needs"><div class="needs-head"><h2>Needs you</h2></div>${blocksHtml(intro)}${others}</section>`;
   const asks = groups.map(askOf).sort((a, b) => LEVELS.indexOf(levelOf(a)) - LEVELS.indexOf(levelOf(b)));
   const legend = LEVELS.map((level) => [level, asks.filter((ask) => levelOf(ask) === level).length])
     .filter(([, count]) => count)
     .map(([level, count]) => `<span class="lg" style="--c: var(--c-${ATTENTION[level][1]})">${count} ${ATTENTION[level][0]}</span>`)
     .join('');
   const answerable = asks.some((ask) => ask.options.length);
-  return `<section class="needs" style="--frame: var(--c-${ATTENTION[levelOf(asks[0])][1]})"><div class="needs-head"><h2>Needs you</h2>${legend}</div>${loose}${asks.map((ask, index) => askHtml(ask, index)).join('')}${answerable ? '<div class="bar" aria-live="polite"><code></code><button type="button">Copy</button></div>' : ''}</section>${answerable ? ANSWER_SCRIPT : ''}`;
+  return `<section class="needs" style="--frame: var(--c-${ATTENTION[levelOf(asks[0])][1]})"><div class="needs-head"><h2>Needs you</h2>${legend}</div>${blocksHtml(intro)}${asks.map((ask, index) => askHtml(ask, index)).join('')}${others}${answerable ? '<div class="bar" aria-live="polite"><code></code><button type="button">Copy</button></div>' : ''}</section>${answerable ? ANSWER_SCRIPT : ''}`;
 }
 
 function parsePlan(source) {
@@ -1510,12 +1512,18 @@ function page(planPath, { folded = false } = {}) {
       .sort((a, b) => lead.indexOf(a.title.toLowerCase()) - lead.indexOf(b.title.toLowerCase()))
       .map((section) => sectionHtml(section, 'panel'))
       .join('\n  ');
-  const needs = [
+  // A page with a brief shows no History, and an ask that is not a decision lives only in its plan's Status line.
+  const needsOf = (withStatus) => [
     ...byRole('needs', plan),
     ...iterations
       .filter((entry) => entry.path !== planPath)
-      .flatMap((entry) => byRole('needs', entry.plan).map((section) => ({ lines: section.lines, from: entry.plan.title || basename(entry.path, '.md') }))),
+      .flatMap((entry) => {
+        const status = entry.plan.meta.status ?? '';
+        const waits = withStatus && !finished(status) ? [[status[0].toUpperCase() + status.slice(1)]] : [];
+        return [...waits, ...byRole('needs', entry.plan).map((section) => section.lines)].map((lines) => ({ lines, from: entry.plan.title || basename(entry.path, '.md') }));
+      }),
   ];
+  const needs = needsOf(false);
   const [close] = byRole('close', plan);
   const iterationHtml = ({ path, plan: iteration }) => {
     const iterationStatus = iteration.meta.status ?? 'unknown';
@@ -1592,7 +1600,8 @@ function page(planPath, { folded = false } = {}) {
   const title = escapeHtml(doc.title || basename(planPath, '.md'));
   const where = subjectPath ? relative(root, subjectPath) : repoPath;
   const briefMain = () => {
-    const asking = needs.length ? needsSection(needs) : '';
+    const asks = needsOf(true);
+    const asking = asks.length ? needsSection(asks) : '';
     const answers = brief
       .map((answer) => ({ answer, index: BRIEF.findIndex((question) => sameText(question) === sameText(answer.question)) }))
       .filter(({ index }) => index >= 0)

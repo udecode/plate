@@ -215,7 +215,7 @@ Callers that break or change:
 - `benchmarks/editor/benchmarks/plite-history-depth-benchmark.ts` drops `await`; its `undoResolutionMs` then times the synchronous call.
 - 101 `await` sites at HEAD and the sweep's `void` sites. Tests that wait on a comment or session replay read `result.settled`. A leftover `await` on a comment undo gets `pending` and fails its assertion, so the test run finds a missed site.
 - Public docs: `content/docs/(guides)/history.mdx` and `content/docs/api/react-hooks.mdx` with their `.cn.mdx` twins; the Plite reference pages `docs/plite/reference/public-docs/libraries/plite-history/history-editor.mdx`, `plite-history/history.mdx` and `plite-react/hooks.mdx`; and the subject page's Public API.
-- Doctrine and rules: `docs/vision/plite.md` ("resolves an awaited outcome"); `docs/research/decisions/history-ownership.md`, including its "Do not restore synchronous replay" sentence; `.agents/rules/best-api.mdc`, whose replay rule teaches an awaited result; and the `EDIT-COMMENT-HISTORY-PENDING-001` row in `docs/editor-behavior/editor-protocol-matrix.md`.
+- Doctrine and rules: `docs/vision/plite.md` ("resolves an awaited outcome"); `2e865a0bc4:docs/research/decisions/history-ownership.md`, including its "Do not restore synchronous replay" sentence; `.agents/rules/best-api.mdc`, whose replay rule teaches an awaited result; and the `EDIT-COMMENT-HISTORY-PENDING-001` row in `docs/editor-behavior/editor-protocol-matrix.md`.
 
 Removed nouns and where their behavior goes:
 

@@ -18,7 +18,7 @@ Source authority:
 
 - [Accepted design](2026-09-24-exports-authored-capture-and-conflict-fidelity.md),
   especially its hard laws, conflict policy, adoption slices and proof matrix.
-- [Export fidelity decision](../research/decisions/export-fidelity.md).
+- Export fidelity decision (`2e865a0bc4:docs/research/decisions/export-fidelity.md`).
 
 Completion threshold:
 

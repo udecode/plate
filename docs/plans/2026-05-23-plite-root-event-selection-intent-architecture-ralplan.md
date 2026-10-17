@@ -102,10 +102,10 @@ Regression pressure:
 
 Research pressure:
 
-- `docs/research/decisions/plite-data-model-first-react-perfect-runtime.md:37-45` keeps Plite data-model-first while making the runtime explicit.
+- `docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md:37-45` keeps Plite data-model-first while making the runtime explicit.
 - `docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md:73-83` supports one DOM bridge owner.
 - `docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md:108-122` supports lifecycle metadata on edits instead of implicit event timing.
-- `docs/research/decisions/plite-react-19-2-perf-architecture-vs-field.md:100-112` says the winning shape is below React, not another React trick.
+- `docs/research/history/slate-v2-react-19-2-perf-architecture-vs-field.md:100-112` says the winning shape is below React, not another React trick.
 
 ## Chosen Architecture
 

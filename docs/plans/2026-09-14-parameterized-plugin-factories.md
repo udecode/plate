@@ -513,8 +513,8 @@ is the replacement for that helper.
 - Append one immutable Plate Next doctrine version when fingerprinted doctrine
   changes, run `pnpm install`, validate generated mirrors, and do not advance
   package attestations without their required checks.
-- Update `docs/research/decisions/plate-core-ownership.md` and
-  `docs/research/decisions/collaboration-ownership.md` to the implemented call
+- Update `2e865a0bc4:docs/research/decisions/plate-core-ownership.md` and
+  `2e865a0bc4:docs/research/decisions/collaboration-ownership.md` to the implemented call
   shape. Record one implementation/proof review record and regenerate the
   canonical review index/dashboard so `plate-api` adoption and proof states
   reflect actual evidence.

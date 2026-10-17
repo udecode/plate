@@ -6,7 +6,7 @@ User authorization: “Ok go all” accepts the reviewed neutral public naming a
 Plate-only documentation direction. Execute locally through verification.
 No commit, push or publication is requested.
 
-Decisions: [neutral naming](../research/decisions/editor-public-naming.md) and
+Decisions: neutral naming (`2e865a0bc4:docs/research/decisions/editor-public-naming.md`) and
 [documentation audit](2026-09-12-plate-public-docs-audit.md). Keep the earlier
 audit evidence and immutable reviews as history; this file owns adoption.
 

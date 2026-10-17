@@ -47,9 +47,9 @@
     "packages/platejs/src/features/table/lib/BaseTablePlugin.ts",
     "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts",
     "packages/platejs/src/plain-text.ts",
-    "docs/research/decisions/markdown-conversion.md",
-    "docs/research/decisions/import-fidelity.md",
-    "docs/research/decisions/export-fidelity.md"
+    "docs/plans/topics/markdown.md",
+    "docs/plans/topics/imports.md",
+    "docs/plans/topics/exports.md"
   ],
   "relatedScopes": [
     "markdown",

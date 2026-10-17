@@ -9,7 +9,7 @@ related:
   - docs/plans/2026-04-22-plite-core-api-runtime-perfection-plan.md
   - docs/plite/final-api-hard-cuts-status.md
   - docs/plite/references/architecture-contract.md
-  - docs/research/decisions/plite-data-model-first-react-perfect-runtime.md
+  - docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md
   - docs/solutions/logic-errors/2026-04-22-slate-react-model-owned-insert-must-repair-dom-caret.md
 ---
 

@@ -234,8 +234,8 @@ Every step names its proof. The build runs in two phases, each ending with a kee
   Done: three rounds, the cap, in `artifacts/2026-10-11-list-first-principles/panel-diff-1/` to `panel-diff-3/`.
 - [x] `pnpm lint:task` on this task's files, and the `pnpm check` steps the edits reach.
   Done: `artifacts/2026-10-11-ai-list-landing/final/lint-task-checkout-a1.log` and the `pnpm check` steps gate below.
-- [x] Close, fold into `docs/plans/topics/list.md`, update `docs/research/decisions/list-ownership.md` through `research`, and run the decision-trail review when a rule triggers it.
-  Done: this Close, the fold into `docs/plans/topics/list.md`, `docs/research/decisions/list-ownership.md`, and the review in `artifacts/2026-10-11-ai-list-landing/trail/answer-codex.txt`.
+- [x] Close, fold into `docs/plans/topics/list.md`, update `2e865a0bc4:docs/research/decisions/list-ownership.md` through `research`, and run the decision-trail review when a rule triggers it.
+  Done: this Close, the fold into `docs/plans/topics/list.md`, `2e865a0bc4:docs/research/decisions/list-ownership.md`, and the review in `artifacts/2026-10-11-ai-list-landing/trail/answer-codex.txt`.
 
 ## Start Gates
 

@@ -11,7 +11,7 @@ source_refs:
   - ../lexical/packages/lexical-react/src/useLexicalSubscription.tsx
 updated: 2026-04-15
 related:
-  - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
+  - docs/research/history/slate-v2-overlay-architecture-cuts.md
 ---
 
 # Lexical mark/store/decorator split

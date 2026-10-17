@@ -47,12 +47,12 @@ Pages in this folder:
 
 Decisions:
 
-- [Clipboard and delete commands need explicit lanes](../../decisions/clipboard-and-delete-commands-need-explicit-lanes.md). Plate protocol-matrix decision for clipboard and delete lanes, based on Typora's evidence.
-- [Current kit autoformat normalization split](../../decisions/current-kit-autoformat-normalization-split.md). Plate autoformat-kit decision; it implicitly claims that Typora and Milkdown do not do immediate code-fence or horizontal-rule shorthand.
-- [Links, images, and HTML share a source-entry surface](../../decisions/links-images-and-html-share-a-source-entry-surface.md). Plate decision to treat links, images and HTML as one source-entry family, based on Typora's behavior.
-- [Media authoring follows the image path-policy family](../../decisions/media-authoring-follows-the-image-path-policy-family.md). Plate media-authoring decision, based on Typora's documented media path rules.
-- [Strict mode and auto pair need independent packaging decisions](../../decisions/strict-mode-and-auto-pair-need-independent-packaging.md). Plate packaging decision for strict mode and auto pair, based on how Typora treats both.
-- [Typora is the primary markdown-native UX authority](../../decisions/typora-is-primary-markdown-native-ux-authority.md). Names Typora as the primary reference pool for Plate's markdown-first editing feel, narrowed to the spec's per-surface authority, and states its limits.
+- Clipboard and delete commands need explicit lanes (`2e865a0bc4:docs/research/decisions/clipboard-and-delete-commands-need-explicit-lanes.md`). Plate protocol-matrix decision for clipboard and delete lanes, based on Typora's evidence.
+- Current kit autoformat normalization split (`2e865a0bc4:docs/research/decisions/current-kit-autoformat-normalization-split.md`). Plate autoformat-kit decision; it implicitly claims that Typora and Milkdown do not do immediate code-fence or horizontal-rule shorthand.
+- Links, images, and HTML share a source-entry surface (`2e865a0bc4:docs/research/decisions/links-images-and-html-share-a-source-entry-surface.md`). Plate decision to treat links, images and HTML as one source-entry family, based on Typora's behavior.
+- Media authoring follows the image path-policy family (`2e865a0bc4:docs/research/decisions/media-authoring-follows-the-image-path-policy-family.md`). Plate media-authoring decision, based on Typora's documented media path rules.
+- Strict mode and auto pair need independent packaging decisions (`2e865a0bc4:docs/research/decisions/strict-mode-and-auto-pair-need-independent-packaging.md`). Plate packaging decision for strict mode and auto pair, based on how Typora treats both.
+- Typora is the primary markdown-native UX authority (`2e865a0bc4:docs/research/decisions/typora-is-primary-markdown-native-ux-authority.md`). Names Typora as the primary reference pool for Plate's markdown-first editing feel, narrowed to the spec's per-surface authority, and states its limits.
 
 Other pages:
 

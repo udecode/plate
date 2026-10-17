@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/BSNn3ZMB8v9PG9KQf351Gi
 
-The two distributions and what each one's public entrypoints expose. `plitejs` is the raw editor that proof apps import, and `platejs` is the product framework that Plate apps install. The ledger asks which independently consumed entrypoints justify their distribution boundary, and which facades or optional-dependency boundaries can disappear. Three earlier changes landed: the entrypoint categories and optional-peer subpaths (2026-08-28), facade dogfooding, so only exact bridge modules in `packages/platejs` import `plitejs` (2026-08-30), and the hidden `getCorePlugins` helper (2026-09-12 review, commit `e0c1500b95`). Both 2026-08 executions were recovered on 2026-09-18 with historical, unbound proof. The 2026-10-04 audit's Pursue was built on 2026-10-06 in `docs/plans/2026-10-05-distribution-review.md`. Framework hooks and carrier types live only on `plitejs/internal`, which shares no binding with any public entrypoint, and a guard in `pnpm check` fails when one leaks back. Its decision page is `docs/research/decisions/plate-core-ownership.md`.
+The two distributions and what each one's public entrypoints expose. `plitejs` is the raw editor that proof apps import, and `platejs` is the product framework that Plate apps install. The ledger asks which independently consumed entrypoints justify their distribution boundary, and which facades or optional-dependency boundaries can disappear. Three earlier changes landed: the entrypoint categories and optional-peer subpaths (2026-08-28), facade dogfooding, so only exact bridge modules in `packages/platejs` import `plitejs` (2026-08-30), and the hidden `getCorePlugins` helper (2026-09-12 review, commit `e0c1500b95`). Both 2026-08 executions were recovered on 2026-09-18 with historical, unbound proof. The 2026-10-04 audit's Pursue was built on 2026-10-06 in `docs/plans/2026-10-05-distribution-review.md`. Framework hooks and carrier types live only on `plitejs/internal`, which shares no binding with any public entrypoint, and a guard in `pnpm check` fails when one leaks back. `node tooling/scripts/review-ledger.mjs show distribution` prints the scope's history; plugin identity lives in [plate-api](plate-api.md).
 
 ## Public API
 
@@ -64,6 +64,17 @@ With the tagged `plitejs` values behind `plitejs/internal`, Plite is stricter th
 | Both renderer capability setters, their keys and their readers get one owner | Plite | `plitejs/react`, `packages/plitejs/src/react/dom-text-sync.ts` | Raw renderers use both setters (`cross-editor-adapters.mjs:57,76-78`, `react-text-flow-browser-matrix.mjs:62-68`), and Plate already imports `plitejs/react` from `react-core` |
 | Plate imports hooks only from the bridge | Plate | `platejs` `core` partition (`packages/platejs/src/facade.ts`, which the DAG lets import `plitejs/internal`) | The facade is the exact bridge leaf `VISION.md:45` allows |
 | The bridge guard | Tooling | `tooling/scripts/check-plite-bridge.mjs` on `@typescript/typescript6`, its own `plite-bridge` step in `tooling/scripts/check.mjs` | The TypeScript 6 checker resolves export stars, aliases and declaration tags exactly; the census on it runs in about 1.3 seconds over both packages |
+
+Each entrypoint class keeps its consumer: app-owned live and static kit arrays with no package preset, a headless root that never constructs React, independently consumed optional feature subpaths, the optional compiler and CLI, and the raw distribution with its exact facade exceptions. Automatic core plugins stay private to editor construction; `isNominalPluginDescriptor` stays because CLI generation and migration validation read it.
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| Merging all exports into one root | Loses optional dependency isolation. |
+| Splitting every feature into its own npm package, or a `/basic` taxonomy | Another distribution concept with no consumer. |
+| Moving reusable framework behavior into copied kits | Recreates a shared implementation in callers. |
+| Publishing `getCorePlugins` or the `@internal` hooks on public roots | No independent caller; apps would reproduce framework membership. |
 
 ## Main changes
 

@@ -77,7 +77,7 @@ Chosen option: add Plite-owned post-commit view effects and stable editor comman
 ### Existing Research
 
 - `docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md`: ProseMirror validates transaction discipline, centralized DOM selection import/export, and decorations as view data.
-- `docs/research/decisions/plite-react-19-2-perf-architecture-vs-field.md`: Plite is React-native and stronger than legacy Plite, but still needs explicit invalidation and redraw proof before claiming field-best perf.
+- `docs/research/history/slate-v2-react-19-2-perf-architecture-vs-field.md`: Plite is React-native and stronger than legacy Plite, but still needs explicit invalidation and redraw proof before claiming field-best perf.
 - `docs/analysis/editor-architecture-candidates.md`: ProseMirror remains the tier-1 architecture comparison target; Pretext/Premirror remains the future layout lane.
 
 ## Ecosystem Strategy Synthesis

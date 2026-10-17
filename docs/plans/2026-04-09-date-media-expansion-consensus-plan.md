@@ -40,7 +40,7 @@ grounded in current law, research, and runtime.
   [docs/research/open-questions/date-mdx-payload-contract.md](docs/research/open-questions/date-mdx-payload-contract.md).
 - The media decision says richer media should start from authoring/path-policy
   and trust boundaries, not only new provider fields, in
-  [docs/research/decisions/media-authoring-follows-the-image-path-policy-family.md](docs/research/decisions/media-authoring-follows-the-image-path-policy-family.md).
+  [2e865a0bc4:docs/research/decisions/media-authoring-follows-the-image-path-policy-family.md](2e865a0bc4:docs/research/decisions/media-authoring-follows-the-image-path-policy-family.md).
 - Current runtime still stores date values as `new Date().toDateString()` in
   [packages/date/src/lib/transforms/insertDate.ts](packages/date/src/lib/transforms/insertDate.ts)
   and the demo renderers write `toDateString()` back from the calendar in

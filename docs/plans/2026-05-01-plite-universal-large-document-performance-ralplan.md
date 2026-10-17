@@ -303,9 +303,9 @@ Research and external review:
   `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md`.
 - Source-scoped overlay invalidation is already accepted as the next overlay
   perf extension:
-  `docs/research/decisions/plite-source-scoped-overlay-invalidation.md`.
+  `docs/research/history/slate-v2-source-scoped-overlay-invalidation.md`.
 - Collaborative annotations should use external channels by default:
-  `docs/research/decisions/plite-collaborative-annotation-channels.md`.
+  `docs/research/history/slate-v2-collaborative-annotation-channels.md`.
 - GPT Pro review agreed with the two-tier direction and added sharper proof
   thresholds; answer captured in the 2026-05-01 chat turn.
 

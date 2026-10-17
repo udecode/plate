@@ -857,7 +857,7 @@ Do not rely on chat history.
     - `packages/plite/test/transaction-contract.ts`
     - `packages/plite/test/surface-contract.ts`
     - `Plate repo root/.changeset/slate-commit-metadata.md`
-    - `docs/research/decisions/plite-data-model-first-react-perfect-runtime.md`
+    - `docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md`
   - Evidence:
     - `bun test ./packages/plite/test/transaction-contract.ts --bail 1`
       passed, `13` tests

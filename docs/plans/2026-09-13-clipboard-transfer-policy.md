@@ -48,7 +48,7 @@ None. The quiet-host benchmark passed on 2026-09-14 and the observed
 `next dev --port 3000` server was restarted afterward.
 
 Sources:
-- [Clipboard review](../research/decisions/clipboard-content-fitting.md)
+- Clipboard review (`2e865a0bc4:docs/research/decisions/clipboard-content-fitting.md`)
 - [Task workflow](../../.agents/rules/task/references/workflow.md)
 - [Complex decisions](../../.agents/rules/task/references/complex-work.md)
 - [Best API](../../.agents/skills/best-api/SKILL.md)

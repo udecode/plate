@@ -63,6 +63,15 @@ const result = authored.update.decide([
 ]);
 ```
 
+A feature contributes a veto for blocks that review marks cannot hold yet, and Suggesting refuses each write that touches such a block. The veto's second input says whether the write changes only what the block holds. So the list veto lets typed and formatted text in an item record as suggestions, and refuses Enter, indenting and joins.
+
+```ts
+// packages/platejs/src/features/list/lib/BaseListPlugin.ts
+authoredVeto.of((element, touch) =>
+  element.listType && touch !== 'content' ? 'list' : null
+),
+```
+
 Exports pick a projection explicitly.
 
 ```tsx
@@ -87,6 +96,67 @@ Rejected, and why:
 | Reducing every saved operation on open | Made opening depend on history the saved state already held. |
 | An opaque live-state mirror | Stored 44.25 MB, was slower than replay, and either replayed to validate both or admitted inconsistent text. |
 | A second projected document with a causal operation graph | Replaced by review marks on the one stored document ([review-tree pivot](../2026-10-13-review-tree-pivot.md)). |
+
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- Authored changes are one optional native document capability. The stored
+  document is the review tree. Pending insertions and deletions stay in place,
+  and each node carries its own claims. Text written inside another pending
+  change carries one `in` member that names an immutable context record
+  listing the changes it depends on. Context records live in the
+  `authored-contexts` record set, and one verdict per decided incarnation
+  lives in `authored-verdicts`. Every collaborator shares both sets, and
+  `read.value()` holds them in `records` beside the content. Code outside the authored
+  owner reads a node's pending claims through `reviewOf` instead of parsing
+  `authored`.
+  Review reads take a place. `read.groups({ at })` returns every card touching
+  it, and `read.changes({ at })` pages the changes there in document order, so
+  no read walks every pending change. A card is the adjacent pending changes of
+  one author, named by its oldest pending change, so every peer and reload
+  names it alike. A pending join or split stands for the line break it removes
+  or adds, so changes on either side of it are adjacent. A change whose last
+  part is, or lies inside, a whole block it inserts or deletes ends where that
+  block ends, so it is adjacent to a change inside that block and to a change
+  to the next block at the same depth, such as another added or struck line.
+  A change follows the
+  text, not the undo history. Repeated Backspace within a line grows one
+  deletion. Text or a line break written inside or at the edge of one's own
+  pending insertion becomes part of it, so rejecting the typing removes the
+  break too. Plite stores no color; Plate derives one from that name. A
+  decision takes the changes or cards it read and refuses one that moved since.
+  `api.subscribeChanges` hands each view one frozen delta per commit that
+  changes the review.
+  A view either writes, with intent `edit` or `propose`, or previews the
+  document with every pending change accepted (`proposed`) or rejected
+  (`accepted`) and takes no writes. View state never becomes another saved
+  document or a global mode. Suggesting records each write under its author,
+  and a write inside another pending change depends on that change's context, so
+  rejecting the outer change removes it too. Editing records the same way and
+  accepts the writer's own claims in the same commit. It leaves every other
+  author's claims pending, so text it writes inside another author's pending
+  insertion joins that insertion. A decision removes the decided claims and
+  appends a verdict for each incarnation it decides in one transaction.
+  Admission settles any claim that a peer's late edit brings in after the
+  verdict.
+  Undo is local inverse history. It restores document facts, decisions
+  included, and proposes nothing.
+  On the review tree, commands and plugin update methods decide on the
+  proposed projection, the document with every pending change accepted, and
+  the recorder lifts their result back into authored changes. A command or method whose input holds a stored location declares
+  where each location lands in that document, that it holds none, or that it
+  only moves the selection. An undeclared one throws on the review tree. Point
+  stepping has no option that skips hidden content, because commands on the
+  review tree never see it.
+  Persistence saves the whole `read.value()`, records included. Every
+  document passes one admission owner before anyone reads it. Admission
+  validates claims and context references, compacts stacked legacy insertions
+  into contexts and settles claims against verdicts. Loading never replays
+  edits. `projectAuthoredDocument` returns one accepted or proposed document
+  with its pending count and diagnostics.
+- Changing authored input intent creates no document or history change, and a
+  composition finishes under the intent it started with.
 
 ## Main changes
 

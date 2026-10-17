@@ -77,7 +77,7 @@ Verification evidence:
 - Fresh immutable review:
   `docs/research/review-records/2026-09-17-table-direction-model-revalidation.json`.
 - Reconciled current decision:
-  `docs/research/decisions/table-ownership.md`.
+  `2e865a0bc4:docs/research/decisions/table-ownership.md`.
 - Matching predecessor fingerprints from
   `node tooling/scripts/review-ledger.mjs lookup table`.
 - Four bounded skeptical reviews independently challenged selection, resize,

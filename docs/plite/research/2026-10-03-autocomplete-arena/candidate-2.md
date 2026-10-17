@@ -224,7 +224,7 @@ For a typed commit from this mount with no open occurrence, the host makes one c
 
 The built owner's per-Editable subscriptions (commit, view state, four DOM events, document `focusin`; O:405-420) and per-render `syncAria` (H:111-114) go away; the host listens for `focusin` only while open. With an occurrence, a keystroke costs two anchor resolves, one region read, one `accepts` call and, while composing, one DOM read. Attributes change only when their values do.
 
-All of this is predicted, not measured. Acceptance needs the node-read count and the frozen key-to-paint contract (`docs/research/decisions/autocomplete-ownership.md:222-235`) through Benchmark.
+All of this is predicted, not measured. Acceptance needs the node-read count and the frozen key-to-paint contract (`2e865a0bc4:docs/research/decisions/autocomplete-ownership.md:222-235`) through Benchmark.
 
 ## Public API compared with the built code
 

@@ -16,7 +16,7 @@ Completion threshold:
 
 Source-linked public decisions, complete implementation of the accepted 21-method contract and content/selection laws, package/UI/docs/doctrine adoption, and passing required source, package, browser and frozen runtime proof. Publication remains outside this request. Historical failed runtime controls remain evidence; only a passing final-source packet can close the runtime gate.
 
-Acceptance sources: [Task workflow](../../.agents/rules/task/references/workflow.md), [Best API](../../.agents/skills/best-api/SKILL.md), [Plate Plan](../../.agents/skills/plate-plan/SKILL.md), and the [final table review](../research/decisions/table-ownership.md). The user's “go” accepts that review's proposed Task design/plan step.
+Acceptance sources: [Task workflow](../../.agents/rules/task/references/workflow.md), [Best API](../../.agents/skills/best-api/SKILL.md), [Plate Plan](../../.agents/skills/plate-plan/SKILL.md), and the final table review (`2e865a0bc4:docs/research/decisions/table-ownership.md`). The user's “go” accepts that review's proposed Task design/plan step.
 
 Constraints:
 
@@ -74,7 +74,7 @@ The [AST inventory](artifacts/2026-09-17-table-design/inventory.json) records al
 
 | Evidence | Result and limit |
 | --- | --- |
-| [Prior final review](../research/decisions/table-ownership.md) and [original failure probe](artifacts/2026-09-16-table-api-review/probe-result.json) | Seven reproduced/source-compared API defects, plus the bounded 14-member feature census. Reused, not presented as newly fixed. |
+| Prior final review (`2e865a0bc4:docs/research/decisions/table-ownership.md`) and [original failure probe](artifacts/2026-09-16-table-api-review/probe-result.json) | Seven reproduced/source-compared API defects, plus the bounded 14-member feature census. Reused, not presented as newly fixed. |
 | [Command contract/probe](artifacts/2026-09-17-table-design/commands/contract.md), [baseline](artifacts/2026-09-17-table-design/commands/baseline.json), [candidate](artifacts/2026-09-17-table-design/commands/candidate.json) | Eight cases each: fallback, rejection, explicit delegation, input rewriting, direct candidate, rejected continuation rollback, invalid delegated result and read-only. Candidate rejection makes zero downstream calls; explicit delegation remains one/native-equivalent. Source transformed only in the disposable process. |
 | [Complete call-shape feasibility](artifacts/2026-09-17-table-design/types/call-shape.ts), [config](artifacts/2026-09-17-table-design/types/tsconfig.json), [log](artifacts/2026-09-17-table-design/types/typecheck.log) | Source-first TypeScript passes all 21 proposed methods, four options, structural target unions, XOR insertion placement, nullable reads, boolean updates, nonempty resize variants, `tx.plugin(descriptor/name)`, and negative calls. This proves descriptor inference and the exact proposed call shape, not the future production implementation. |
 | [Selection/paint investigation](artifacts/2026-09-17-table-design/view/recommendation.md) | Reproduced diagonal membership inflation and shared-index authored cache contamination. Real React/source comparison rejected the existing view-attribute host as a replacement at large/stress sizes. Happy DOM/development React, not native paint proof. |

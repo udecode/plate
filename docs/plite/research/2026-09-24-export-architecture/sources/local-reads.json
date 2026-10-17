@@ -344,7 +344,7 @@
     },
     {
       "id": "prior-exports-decision",
-      "path": "docs/research/decisions/export-fidelity.md",
+      "path": "2e865a0bc4:docs/research/decisions/export-fidelity.md",
       "lines": [
         [
           1,
@@ -357,7 +357,7 @@
     },
     {
       "id": "prior-docx-decision",
-      "path": "docs/research/decisions/documents-conversion-fidelity.md",
+      "path": "2e865a0bc4:docs/research/decisions/documents-conversion-fidelity.md",
       "lines": [
         [
           1,

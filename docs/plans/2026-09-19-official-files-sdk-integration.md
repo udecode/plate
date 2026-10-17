@@ -546,7 +546,7 @@ Final planning validation uses:
 
 ```sh
 node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-09-19-official-files-sdk-integration.md
-git diff --check -- docs/plans/2026-09-19-official-files-sdk-integration.md docs/research/decisions/uploads-ownership.md
+git diff --check -- docs/plans/2026-09-19-official-files-sdk-integration.md 2e865a0bc4:docs/research/decisions/uploads-ownership.md
 node tooling/scripts/review-ledger.mjs render
 node tooling/scripts/review-ledger.mjs check
 ```

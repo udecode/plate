@@ -70,7 +70,7 @@ Plite Plan state:
 
 ## Answer path membership at the commit
 
-The [reads review](../research/decisions/reads-demand-driven-invalidation.md)
+The reads review (`2e865a0bc4:docs/research/decisions/reads-demand-driven-invalidation.md`)
 owns the accepted first-principles comparison. Keep the existing
 `commit.changed.hasNodeKey(key, 'path')` call. For each changed root:
 

@@ -695,10 +695,10 @@ export const recordAuthoredSteps = (
       step.change
     )) {
       const fold = foldOf(root);
-      const plain = step.indexedBefore?.get(root);
+      const plain = getDefined(step.indexedBefore.get(root));
       // A fitted slice writes anew the open tokens of the blocks it lands in.
       const rootChange =
-        plain && step.origin === 'slice'
+        step.origin === 'slice'
           ? written.alignOpens(plain, bothUnclaimed)
           : written;
 

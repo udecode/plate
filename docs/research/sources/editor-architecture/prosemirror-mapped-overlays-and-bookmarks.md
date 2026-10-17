@@ -9,7 +9,7 @@ source_refs:
   - ../prosemirror/history/src/history.ts
 updated: 2026-04-15
 related:
-  - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
+  - docs/research/history/slate-v2-overlay-architecture-cuts.md
 ---
 
 # ProseMirror mapped overlays and bookmarks

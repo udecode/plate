@@ -36,10 +36,10 @@ job and every included format can truthfully satisfy its contract.
 
 Reconcile this existing work before opening new branches of research:
 
-- `docs/research/decisions/import-fidelity.md`
-- `docs/research/decisions/export-fidelity.md`
-- `docs/research/decisions/documents-conversion-fidelity.md`
-- `docs/research/decisions/persistence-ownership.md`
+- `2e865a0bc4:docs/research/decisions/import-fidelity.md`
+- `2e865a0bc4:docs/research/decisions/export-fidelity.md`
+- `2e865a0bc4:docs/research/decisions/documents-conversion-fidelity.md`
+- `2e865a0bc4:docs/research/decisions/persistence-ownership.md`
 - `docs/research/review-records/2026-09-25-imports-document-slice-loss-contract.json`
 - `docs/analysis/editor-architecture-candidates.md`
 - `docs/plite/research/2026-09-25-document-codec-architecture/README.md`

@@ -108,6 +108,39 @@ Rejected, and why:
 | A runtime environment switch choosing the storage provider | One explicit provider recipe per app. |
 | The `PlaceholderPlugin`, single-file `api.upload` plus batch `insertMedia` split, and caller-visible `replaceMedia` | Split count semantics let a three-image limit accept four, and bare-path completion wrote into the main root. |
 
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- The optional `platejs/upload` feature owns asynchronous file admission through
+  `UploadClient`, the single-file upload capability expressed with Files SDK
+  call and outcome types, not a generic transport contract. A Files SDK client
+  satisfies it structurally; session-local examples and tests may implement only
+  that operation. Its authored draft retains the `upload` schema type and
+  persists only the draft kind. A submit at the selection follows element
+  `insert`'s source policy, so it replaces an empty editable source block and
+  inserts after content or structure. Upload validates and inserts a whole batch
+  atomically, starts transfer after commit, and keeps files, request authority,
+  progress, failures, and object URLs local to each live node key. Completion
+  rechecks that key and kind before atomically replacing the draft with the
+  installed media plugin's completed schema type. Media plugins own those
+  completed schemas and URL normalization; the application owns the gateway,
+  access policy, storage, and durable URL mapping. Removal, retagging, plugin
+  cleanup, and whole-document replacement revoke requests; history never
+  restarts them. Internal slices preserve drafts, while external HTML and static
+  rendering omit unresolved media. The same draft-intent, batch-admission,
+  after-commit transport, key-local resource, recheck and revocation law applies
+  to every asynchronous document-bound asset, and it never becomes a public
+  asynchronous-job framework.
+- `BaseUploadPlugin` from `platejs/upload`, with its React `UploadPlugin` from
+  `platejs/upload/react`, owns the upload lifecycle and takes a compatible
+  client and a synchronous `getUrl` resolver, never a lifecycle named after its
+  SDK. `BaseFilePlugin` from `platejs/media`, with its React `FilePlugin` from
+  `platejs/media/react`, stays the completed generic file node beside image,
+  audio and video. Each draft completes through the editor that its after-commit
+  boundary supplies, so authored and named-root node identity stays in the
+  admitting runtime.
+
 ## Main changes
 
 - `BaseUploadPlugin` keys each task by draft `NodeKey` and admitting view, starts transfer after commit, and completes through the installed media descriptor, so authored and named-root identity stays in the admitting runtime.

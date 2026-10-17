@@ -18,9 +18,9 @@ Add BlockSuite, Blok and experimental OpenDoc by job. Keep active BlockNote. Mar
 ## Earlier evidence inspected
 
 - `docs/research/sources/editor-architecture/candidates.md`.
-- `docs/research/decisions/large-documents-dom-coverage.md`.
-- `docs/research/decisions/pagination-ownership.md`.
-- `docs/research/decisions/collaboration-ownership.md`.
+- `2e865a0bc4:docs/research/decisions/large-documents-dom-coverage.md`.
+- `2e865a0bc4:docs/research/decisions/pagination-ownership.md`.
+- `2e865a0bc4:docs/research/decisions/collaboration-ownership.md`.
 
 ## Provenance and closure
 

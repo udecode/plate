@@ -41,10 +41,6 @@
 //        (prints a fresh id for a new task)
 //        node .agents/pstack/decisions-check.mjs chips brief <id> [<ledger>]
 //        (prints the prompt a card for that task carries)
-//        node .agents/pstack/decisions-check.mjs chips wait [--session <id>] [--timeout <minutes>] [--every <seconds>] [<ledger>]
-//        (polls the ledger and exits once a task lands, one this session may card turns
-//        ready, or with --session a task that session carded starts, or at --timeout when
-//        given; with no --timeout it waits until one of those happens)
 //        node .agents/pstack/decisions-check.mjs chips cleanup --sessions <file> [--session <id>] [<ledger>]
 //        (reads the session tool's list of every session, archived ones included, saved as a
 //        JSON array, and prints the idle card sessions of landed tasks to archive, the worktrees
@@ -55,7 +51,7 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { currentLead, leadLabel, maxEffort } from './lead.mjs';
-import { board, briefOf, cardEffortOf, CHIP_STATES, cleanupOf, effortOf, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
+import { board, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -301,23 +297,14 @@ if (args[0] === 'chips') {
     console.error("--session takes this session's id, the one the runtime's session tool gives it");
     process.exit(2);
   }
-  const option = (name, fallback) => {
-    const index = args.indexOf(name);
-    const value = index === -1 ? fallback : Number(args[index + 1]);
-    if (!(value > 0)) {
-      console.error(`${name} takes a positive number`);
-      process.exit(2);
-    }
-    return value;
-  };
-  const valued = new Set(['--session', '--timeout', '--every', '--sessions'].flatMap((name) => (args.includes(name) ? [args.indexOf(name), args.indexOf(name) + 1] : [])));
+  const valued = new Set(['--session', '--sessions'].flatMap((name) => (args.includes(name) ? [args.indexOf(name), args.indexOf(name) + 1] : [])));
   const rest = args.filter((arg, index) => index > 0 && arg !== '--fetch' && !valued.has(index));
   if (rest[0] === 'id') {
     console.info(newId());
     process.exit(0);
   }
   const id = rest[0] === 'brief' ? rest[1] : null;
-  const named = rest[0] === 'brief' ? rest[2] : ['stale', 'wait', 'all', 'cleanup'].includes(rest[0]) ? rest[1] : rest[0];
+  const named = rest[0] === 'brief' ? rest[2] : ['stale', 'all', 'cleanup'].includes(rest[0]) ? rest[1] : rest[0];
   const ledger = named ?? join(plansDir(), LEDGER);
   if (!existsSync(ledger)) {
     console.error(named ? `no log at ${ledger}` : `No ledger at ${ledger} yet; run this from the project root.`);
@@ -398,45 +385,6 @@ if (args[0] === 'chips') {
     };
     const rows = staleReport(tasks, offeredAt(lines), { exists: existsSync, deletedSince, commitsSince, prState, now: Date.now() });
     console.info(rows.length ? `${rows.length} open suggested tasks in ${ledger}, the likeliest stale first:\n${rows.join('\n')}` : `No open suggested tasks in ${ledger}.`);
-    process.exit(0);
-  }
-  if (rest[0] === 'wait') {
-    const branch = projectConfig().branch;
-    const state = () => {
-      const rows = readFileSync(ledger, 'utf8').split('\n').slice(1);
-      const now = readTasks(rows);
-      const view = board(now, gitMerges({ branch }), here, owning);
-      const started = [...now.values()].filter((task) => task.status === 'started' && here !== null && task.session === here);
-      return {
-        ready: view.cardable.map((task) => task.id),
-        landed: [...now.values()].filter((task) => task.status === 'landed').map((task) => task.id),
-        started: new Map(started.map((task) => [task.id, `${task.id} in ${task.startedIn ? `session ${task.startedIn}` : 'a session its started row does not name'}, carded at ${cardEffortOf(task, maxEffort())}, brief at ${effortOf(task, maxEffort())}`])),
-      };
-    };
-    const minutes = option('--timeout', Infinity);
-    const start = state();
-    const deadline = Date.now() + minutes * 60_000;
-    while (Date.now() < deadline) {
-      await new Promise((done) => setTimeout(done, option('--every', 30) * 1000));
-      const now = state();
-      const turned = now.ready.filter((each) => !start.ready.includes(each));
-      const landedNow = now.landed.filter((each) => !start.landed.includes(each));
-      const startedNow = [...now.started].filter(([each]) => !start.started.has(each)).map(([, text]) => text);
-      if (turned.length || landedNow.length || startedNow.length) {
-        console.info(
-          [
-            landedNow.length ? `Landed: ${landedNow.join(', ')}.` : '',
-            turned.length ? `Ready with no card: ${turned.join(', ')}.` : '',
-            startedNow.length ? `Started: ${startedNow.join('; ')}.` : '',
-            startedNow.length ? "Lower to its brief's effort, with the session tool, each started session above it that still runs at its card's effort, or at yours when the suggest tool took no effort; a session at any other effort is the owner's choice. Then run the chips sweep." : 'Run the chips sweep.',
-          ]
-            .filter(Boolean)
-            .join(' ')
-        );
-        process.exit(0);
-      }
-    }
-    console.info('No task landed, started or turned ready before the timeout; run the sweep, then chips wait again while any task is started or carded.');
     process.exit(0);
   }
   if (rest[0] === 'brief') {

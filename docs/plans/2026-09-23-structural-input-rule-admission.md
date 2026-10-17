@@ -29,7 +29,7 @@ Constraints:
 
 Boundaries:
 
-- Source of truth: the [editing decision](../research/decisions/editing-command-ownership.md), [Plate rule doctrine](../vision/plate.md), [Plite schema/command doctrine](../vision/plite.md), and live source above.
+- Source of truth: the editing decision (`2e865a0bc4:docs/research/decisions/editing-command-ownership.md`), [Plate rule doctrine](../vision/plate.md), [Plite schema/command doctrine](../vision/plite.md), and live source above.
 - This plan may edit only planning and feature-history records. Product code, docs, browser verification, Git publication, and external research are outside this design turn.
 - External editor comparison is not needed: the unsettled question is the actual Plate/Plite transaction and command contract, not a missing external behavior law.
 

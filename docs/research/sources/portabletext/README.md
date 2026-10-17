@@ -22,7 +22,7 @@ Pages in this folder:
 
 Decisions:
 
-- [Arthrod discussion says the semantic document model belongs above Slate](../../decisions/arthrod.md). Proposes a Plate semantic document model above Slate v2, comparing Portable Text and ProseMirror schemas.
+- [Arthrod discussion says the semantic document model belongs above Slate](../../history/arthrod.md). Proposes a Plate semantic document model above Slate v2, comparing Portable Text and ProseMirror schemas.
 
 Research runs:
 

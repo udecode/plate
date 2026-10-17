@@ -32,9 +32,9 @@ Pages in this folder:
 
 Decisions:
 
-- [Current kit autoformat normalization split](../../decisions/current-kit-autoformat-normalization-split.md). Plate autoformat-kit decision; it implicitly claims that Typora and Milkdown do not do immediate code-fence or horizontal-rule shorthand.
-- [Milkdown is the primary open-source cross-check](../../decisions/milkdown-is-the-primary-open-source-cross-check.md). Names Milkdown as Plate's main open-source cross-check reference for markdown behavior.
-- [Milkdown tests beat docs for behavior](../../decisions/milkdown-tests-beat-docs-for-behavior.md). Research-method decision that Milkdown's tests outrank its docs for behavior evidence.
+- Current kit autoformat normalization split (`2e865a0bc4:docs/research/decisions/current-kit-autoformat-normalization-split.md`). Plate autoformat-kit decision; it implicitly claims that Typora and Milkdown do not do immediate code-fence or horizontal-rule shorthand.
+- Milkdown is the primary open-source cross-check (`2e865a0bc4:docs/research/decisions/milkdown-is-the-primary-open-source-cross-check.md`). Names Milkdown as Plate's main open-source cross-check reference for markdown behavior.
+- Milkdown tests beat docs for behavior (`2e865a0bc4:docs/research/decisions/milkdown-tests-beat-docs-for-behavior.md`). Research-method decision that Milkdown's tests outrank its docs for behavior evidence.
 
 Research runs:
 

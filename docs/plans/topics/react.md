@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/FKHi7cBVsLj8aTZjDDdUr7
 
-How Plite mounts one editor's independent views in React and lets controls read state and run commands against the right mounted root. The ledger asks for the smallest React integration for canonical editor state, rendering and component lifetime. The 2026-09-12 Pursue landed: the public `Runtime` handle, `useRuntime` and the setup-only types are gone, and `EditorRoot` takes a required `editor` plus a root and authored view inputs. The 2026-09-30 content-root work kept that mount grammar, added no public provider or location carrier, and closed with local typecheck, Plite React tests and a Chromium static and AI matrix. None of that proof is bound to a ledger receipt. The 2026-10-04 audit found four context-only hooks still taking caller-chosen `V` and `TPlugins` generics, which `docs/vision/plite.md` forbids. The 2026-10-06 build removed them, cut `useActiveEditor`, `useActiveRoot`, `useRootEffect` and `RootEditor`, kept `useCommand` without caller types, and added `pnpm check hook-generics` so a third return of the shape fails CI in the forms its tests run. The element hooks, the creation hooks and functions and the context selector still break the same law and wait in Open work. Its law is in `docs/research/decisions/plite-view-ownership.md`.
+How Plite mounts one editor's independent views in React and lets controls read state and run commands against the right mounted root. The ledger asks for the smallest React integration for canonical editor state, rendering and component lifetime. The 2026-09-12 Pursue landed: the public `Runtime` handle, `useRuntime` and the setup-only types are gone, and `EditorRoot` takes a required `editor` plus a root and authored view inputs. The 2026-09-30 content-root work kept that mount grammar, added no public provider or location carrier, and closed with local typecheck, Plite React tests and a Chromium static and AI matrix. None of that proof is bound to a ledger receipt. The 2026-10-04 audit found four context-only hooks still taking caller-chosen `V` and `TPlugins` generics, which `docs/vision/plite.md` forbids. The 2026-10-06 build removed them, cut `useActiveEditor`, `useActiveRoot`, `useRootEffect` and `RootEditor`, kept `useCommand` without caller types, and added `pnpm check hook-generics` so a third return of the shape fails CI in the forms its tests run. The element hooks, the creation hooks and functions and the context selector still break the same law and wait in Open work. `node tooling/scripts/review-ledger.mjs show react` prints the scope's history.
 
 ## Public API
 
@@ -123,6 +123,19 @@ The explorer read slate-yjs, y-prosemirror, Lexical and Tiptap at the revisions 
 | `EditorRoot` remounts its inner component by runtime identity, and the inner component's first child subscribes the change callbacks, then starts the editor, in its layout effect | Plite | `plitejs/react` | Descendant layout effects run before the owner hook's, so a view would otherwise act on a dormant editor; Plate's root already self-keys |
 | `useCreateEditor` wires the same handle | Plate | `platejs/react` | Plate inherits the Plite lifetime instead of copying it |
 | Yjs claim, listeners and admission in `acquire` | Plite | `plitejs/yjs` | The binding is the plugin that holds outside resources |
+
+Shared document authority stays below React and mounted effects and registration inside it; Plate's passive `EditorProvider` binds controls without creating a view, and Plate's document-wide callbacks and plugin render contributions are adapter jobs, not a root-scoped raw callback.
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| The public `Runtime`, `useRuntime` and `RuntimeValue` | A peer handle that copied the editor's API and a second setup vocabulary; `EditorRoot` already hosts ordinary and multiple-root views. |
+| Optional editor and root props on the mount | Admitted combinations the runtime rejected. |
+| A public React runtime or view manager | `createEditorView` already exists. |
+| Deleting every context owner | Out-of-editor controls and document callbacks would rebuild scope. |
+| A global React store, or one document per Editable | Loses independence or shared roots. |
+| Caller-chosen `V` and `TPlugins` generics on context hooks | Let callers manufacture the editor's types, which `docs/vision/plite.md` forbids. |
 
 ## Native behavior and proof
 

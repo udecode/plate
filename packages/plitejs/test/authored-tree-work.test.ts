@@ -137,8 +137,10 @@ mock.module(join(import.meta.dir, '../src/core/change/tokens.ts'), () => ({
 }));
 
 const {
+  authoredVeto,
   createEditor,
   defineEditorSchema,
+  definePlugin,
   editorCommands,
   property,
   schema,
@@ -203,12 +205,16 @@ const editorFor = (
   value: readonly Node[],
   intent: 'edit' | 'propose',
   author = 'alice',
-  content: typeof Inline | typeof Blocks = Inline
+  content: typeof Inline | typeof Blocks = Inline,
+  veto?: Parameters<typeof authoredVeto.of>[0]
 ) =>
   createEditor({
     initialValue: value as never,
     plugins: [
       content,
+      definePlugin('work-veto', {
+        contributions: veto ? [authoredVeto.of(veto)] : [],
+      }),
       createAuthoredPlugin({
         authorId: author,
         createChangeId: () => `${author}:${(count += 1)}`,
@@ -556,6 +562,53 @@ describe('authored review tree work per edit', () => {
 
     assert.deepEqual(large, small);
   });
+
+  for (const [name, edit] of [
+    ['typing', typeAtEnd],
+    [
+      'a whole-leaf bold toggle',
+      (editor: Editor, size: number, run: number) =>
+        editor.update((tx) => {
+          const path = [size - 1, 0];
+
+          tx.selection.set({
+            anchor: { offset: 0, path },
+            focus: { offset: 4, path },
+          });
+          if (run % 2 === 0) tx.marks.add('bold', true);
+          else tx.marks.remove('bold');
+        }),
+    ],
+  ] as const) {
+    it(`does as much work for Suggesting ${name} inside a list item at 2,000 blocks as at 100`, () => {
+      const calls = new Map<number, number>();
+      const editors = new Map<number, Editor>();
+      const [small, large] = atBothSizes((size) => {
+        const editor = editorFor(
+          blocks(size - 1, [
+            { ...paragraph({ text: 'item' }), listType: 'disc' },
+          ]),
+          'propose',
+          'alice',
+          Inline,
+          (element, touch) => {
+            calls.set(size, (calls.get(size) ?? 0) + 1);
+
+            return element.listType && touch !== 'content' ? 'list' : null;
+          }
+        );
+
+        editors.set(size, editor);
+
+        return editor;
+      }, edit);
+
+      assert.ok((calls.get(100) ?? 0) > 0);
+      assert.equal(calls.get(2000), calls.get(100));
+      assert.ok(editors.get(2000)!.read.authored.changes().items.length > 0);
+      assert.deepEqual(large, small);
+    });
+  }
 
   it('does as much work for a Suggesting bold toggle at 2,000 blocks as at 100', () => {
     const [small, large] = atBothSizes(

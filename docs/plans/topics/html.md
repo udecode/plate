@@ -134,6 +134,24 @@ Rejected, and why:
 | A zustand store factory on `platejs/static` | No static job. |
 | A universal codec, location carrier or new view manager | The content-root defects were view-composition and delivery bugs, not a missing API. |
 
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- HTML mappings may prepare only their operation-owned inert document before
+  matching. Whole-payload admission, source cleanup, RTF access, and
+  post-decode repair belong to the browser `DataTransferFormat` lifecycle.
+  Generic mapping hooks do not receive host payloads or live editor state.
+- One plugin keeps all of its HTML matches in a single mapping, and a mapping's
+  target order is membership, not construction intent. A `createsElement`
+  mapping decodes bare content into the schema's default block when that block
+  is one of its targets and writes its output around the HTML of its other
+  targets; on parse, a matched element holding exactly one block its properties
+  apply to decodes onto that block, and a text block they cannot apply to gives
+  the created block its text. On paste, a throwing or schema-invalid candidate
+  is reported through the lifecycle and delegates to the next candidate, while a
+  direct parse call throws.
+
 ## Main changes
 
 - The export toolbar passes the live model editor with `presentation: BaseEditorKit`, so static dispatch draws the static kit's components while projection, settings and comments come from the live editor.

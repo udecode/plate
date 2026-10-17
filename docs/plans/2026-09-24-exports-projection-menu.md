@@ -11,7 +11,7 @@ work_kind: implementation
 Status: Complete
 
 Objective:
-Adopt `docs/research/decisions/export-fidelity.md` in the copied export menu:
+Adopt `2e865a0bc4:docs/research/decisions/export-fidelity.md` in the copied export menu:
 one explicit clean projection for HTML, Markdown and Word, a separate
 review-preserving Word export, no raster PDF/image, and an app-owned HTML
 stylesheet without the platejs.org dependency.

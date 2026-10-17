@@ -102,7 +102,6 @@ function scopeLines(scope, detail) {
       : [
           'head: none, so read the history, plans and candidates below before calling it untouched',
         ]),
-    ...(scope.decision ? [`decision: ${scope.decision}`] : []),
     ...listed(
       'related',
       scope.related,
@@ -195,11 +194,6 @@ const sections = [
     key: 'subjects',
     label: 'SUBJECTS',
     line: (subject) => `${subject.title}  (${subject.file})`,
-  },
-  {
-    key: 'decisions',
-    label: 'DECISION PAGES',
-    line: (page) => `${page.title}  (${page.file})`,
   },
 ];
 

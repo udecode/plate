@@ -31,7 +31,7 @@ a new OSS PDF engine is deferred.
 
 Read the [complete direction and 12-unit audit](shards/001-direction.md), then
 the [immutable review](../../../research/review-records/2026-09-24-exports-first-principles-architecture.json).
-The [current decision](../../../research/decisions/export-fidelity.md) reconciles
+The current decision (`2e865a0bc4:docs/research/decisions/export-fidelity.md`) reconciles
 this direction with the completed capture repair. Proposed APIs are illustrative.
 
 ## Evidence and stopping point

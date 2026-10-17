@@ -41,7 +41,7 @@ Initial evidence:
 The model scope has one historical July record with unknown source/model provenance. Its bounded census observation matches, while unrelated global inventory has drifted. The previous question also covered reads and updates; this review keeps the current narrower document/identity question and treats those neighboring laws as constraints.
 
 Verification evidence:
-[Pursue decision and full comparison](../research/decisions/model-document-boundary.md). [Matching immutable review](../research/review-records/2026-09-11-model-document-boundary.json). [Verification receipt](artifacts/model-api-review/verification.json).
+Pursue decision and full comparison (`2e865a0bc4:docs/research/decisions/model-document-boundary.md`). [Matching immutable review](../research/review-records/2026-09-11-model-document-boundary.json). [Verification receipt](artifacts/model-api-review/verification.json).
 
 The selected repair removes competing document-shape admission rules in Plite while retaining the existing public calls, JSON tree, schema compiler, runtime NodeKey and optional persisted IDs. The common guard must validate container shapes without changing the input; fitting/defaults, full schema assertion, migration/lineage and Plate's nonempty-root policy retain their distinct jobs. No product change was made.
 

@@ -34,7 +34,7 @@
 - Pursue removing raw-source rewriting, destructive inline stripping and
   unused block-ID transport. Repair typed dispatch, reference handling,
   serializer content loss and open-slice diagnostics.
-- [Decision](decisions/markdown-conversion.md) records direction only. No
+- Decision (`2e865a0bc4:docs/research/decisions/markdown-conversion.md`) records direction only. No
   product implementation, full typecheck, browser or performance certification.
 
 ## [2026-09-22] review | Code commands and highlighter ownership
@@ -63,7 +63,7 @@
   singular insertion and orphan examples, plus the `maxLength` and selection
   direction repairs. Coverage remains 33/33 with two explicit deferrals.
 
-See [the corrected decision](decisions/editing-command-ownership.md), the
+See the corrected decision (`2e865a0bc4:docs/research/decisions/editing-command-ownership.md`), the
 fresh September 21, 2026 challenge retaining declarative input rules and requiring atomic rule attempts, and the
 [immutable final review](review-records/2026-09-21-editing-command-final-pass.json).
 
@@ -81,7 +81,7 @@ fresh September 21, 2026 challenge retaining declarative input rules and requiri
   gated. No product implementation, native replay or candidate performance
   acceptance is established. Task design plan owns the remaining coupled work.
 
-See [the decision](decisions/editing-command-ownership.md) and
+See the decision (`2e865a0bc4:docs/research/decisions/editing-command-ownership.md`) and
 [the immutable review](review-records/2026-09-21-editing-command-and-structural-ownership.json).
 
 ## [2026-09-21] final review | Anchors and annotations
@@ -97,7 +97,7 @@ See [the decision](decisions/editing-command-ownership.md) and
   and anchor save/restore law. Existing 107 core and 64 React results and the
   deletion probe remain source-matching; no candidate runtime was executed.
 
-See [the corrected decision](decisions/2026-09-20-annotations-ownership.md) and
+See the corrected decision (`2e865a0bc4:docs/research/decisions/2026-09-20-annotations-ownership.md`) and
 [the immutable final review](review-records/2026-09-21-annotations-final-pass.json).
 
 ## [2026-09-20] review | Anchors and annotations
@@ -113,7 +113,7 @@ See [the corrected decision](decisions/2026-09-20-annotations-ownership.md) and
 - 107 core and 64 React cases pass. These establish the baseline; no candidate
   runtime, browser interaction or comparative performance is accepted.
 
-See [the decision](decisions/2026-09-20-annotations-ownership.md) and
+See the decision (`2e865a0bc4:docs/research/decisions/2026-09-20-annotations-ownership.md`) and
 [the immutable review](review-records/2026-09-20-annotations-contract-and-consumers.json).
 
 ## [2026-09-17] review | Registry composition and installation
@@ -129,7 +129,7 @@ See [the decision](decisions/2026-09-20-annotations-ownership.md) and
 - Product implementation is outside this review. The next owner is Task design
   plan for the complete UI composition/installation question.
 
-See [the decision](decisions/registry-ui-ownership.md) and
+See the decision (`2e865a0bc4:docs/research/decisions/registry-ui-ownership.md`) and
 [the immutable review](review-records/2026-09-17-ui-source-and-command-ownership.json).
 
 ## [2026-09-17] review | Comments in independent mounted views
@@ -145,7 +145,7 @@ See [the decision](decisions/registry-ui-ownership.md) and
 - Implementation and final browser/scale proof remain in progress; this
   review does not replace the preserved failed browser and timing receipts.
 
-See [the decision](decisions/comments-data-ownership.md),
+See the decision (`2e865a0bc4:docs/research/decisions/comments-data-ownership.md`),
 the execution plan (`docs/plans/2026-09-16-comments-history-api.md`), and
 [the immutable review](review-records/2026-09-17-comments-mounted-view-ownership.json).
 
@@ -160,7 +160,7 @@ the execution plan (`docs/plans/2026-09-16-comments-history-api.md`), and
   followed by joint visibility, typing, selection, history and persistence
   proof. No product code or runtime acceptance in this review.
 
-See [the decision](decisions/suggestion-review-semantics.md) and
+See the decision (`2e865a0bc4:docs/research/decisions/suggestion-review-semantics.md`) and
 [the immutable review](review-records/2026-09-17-suggestions-editing-visibility.json).
 
 ## [2026-09-14] review | Suggestion initialization ownership
@@ -174,7 +174,7 @@ See [the decision](decisions/suggestion-review-semantics.md) and
 - This bounded source review reaffirms native authored and optional-plugin
   ownership. It adds no implementation, browser or performance certification.
 
-See [the decision](decisions/suggestion-review-semantics.md) and
+See the decision (`2e865a0bc4:docs/research/decisions/suggestion-review-semantics.md`) and
 [the immutable review](review-records/2026-09-14-suggestions-initialization.json).
 
 ## [2026-09-14] review | Collaboration lifetime ownership
@@ -189,7 +189,7 @@ See [the decision](decisions/suggestion-review-semantics.md) and
 - Task design/planning owns the coupled configuration, readiness, lifetime,
   adoption and proof decisions. No product implementation in this review.
 
-See [the decision](decisions/collaboration-ownership.md),
+See the decision (`2e865a0bc4:docs/research/decisions/collaboration-ownership.md`),
 the September 14, 2026 proof results—69 Plite and eight Plate contract tests passed, with two diagnostic cases reproducing effects from discarded or aborted transactions—and
 [the immutable review](review-records/2026-09-14-collaboration-lifetime-ownership.json).
 
@@ -212,7 +212,7 @@ the September 14, 2026 proof results—69 Plite and eight Plate contract tests p
 See the corrected September 13, 2026 audit conclusion: 44 selected families, comprising 37 Google-facing and seven platform/lifecycle families, with no complete Google Docs parity certified,
 the September 13, 2026 crosswalk mapping all 48 Google Docs request members and all earlier F01–F32 contracts to those 44 families,
 the September 13, 2026 challenge synthesis correcting the earlier 32-family claim while retaining native authored ownership and requiring global targets, provenance and stale/partial outcomes,
-[the decision](decisions/suggestion-review-semantics.md), and
+the decision (`2e865a0bc4:docs/research/decisions/suggestion-review-semantics.md`), and
 [the correcting review](review-records/2026-09-13-suggestions-omission-audit.json).
 
 ## [2026-09-13] review | Google Docs suggesting behavior and Plate coverage
@@ -232,7 +232,7 @@ the September 13, 2026 challenge synthesis correcting the earlier 32-family clai
   This audit changed research artifacts only; no implementation or test run.
 
 See the September 13, 2026 audit conclusion: pursue a complete semantic review contract over native authored changes across 44 selected families, without claiming complete Google Docs parity,
-[the decision](decisions/suggestion-review-semantics.md), and
+the decision (`2e865a0bc4:docs/research/decisions/suggestion-review-semantics.md`), and
 [the immutable review](review-records/2026-09-13-suggestions-google-docs-audit.json).
 
 ## [2026-09-12] design | Directly loadable authored state
@@ -271,7 +271,7 @@ the September 12, 2026 disposable probe conclusion: three fresh-process interlea
   owns the current-state/retention contract, with Benchmark required before
   accepting the runtime representation. No product edit or fourth trial ran.
 
-See [the decision](decisions/authored-change-ownership.md) and
+See the decision (`2e865a0bc4:docs/research/decisions/authored-change-ownership.md`) and
 [immutable review](review-records/2026-09-12-authored-scalability.json).
 
 ## [2026-09-12] research | Large-document contract and native lifetime
@@ -292,7 +292,7 @@ See [the decision](decisions/authored-change-ownership.md) and
   P0–P4 prototype gates and S1–S7 adoption without implementing the API.
 
 See the research run (`docs/plite/research/2026-09-11-large-documents-contract/README.md`),
-[current contract](decisions/large-documents-rendering-api.md) and
+current contract (`2e865a0bc4:docs/research/decisions/large-documents-rendering-api.md`) and
 Task plan (`docs/plans/2026-09-11-large-documents-api-review.md`).
 
 ## [2026-09-11] design | Explicit DOM omission
@@ -310,7 +310,7 @@ Task plan (`docs/plans/2026-09-11-large-documents-api-review.md`).
   changed during the run window. Further scale, native, geometry and package
   acceptance requires the named source-stable disposable comparison.
 
-See [the design](decisions/large-documents-rendering-api.md) and
+See the design (`2e865a0bc4:docs/research/decisions/large-documents-rendering-api.md`) and
 the September 11, 2026 inconclusive probe result: 100-block capture was diagnostic only because source changed, 1,001 blocks stopped at the source gate, and 10,000 blocks were not run; runtime acceptance remained false.
 
 ## [2026-09-11] review | Large documents and partial DOM coverage
@@ -325,7 +325,7 @@ the September 11, 2026 inconclusive probe result: 100-block capture was diagnost
   proof is claimed. The earlier E19 hidden-key deletion is already implemented.
 - Recorded the immutable assessment; adoption and browser proof stay separate.
 
-See [the decision](decisions/large-documents-dom-coverage.md) and
+See the decision (`2e865a0bc4:docs/research/decisions/large-documents-dom-coverage.md`) and
 the September 11, 2026 assessment results: 112 tests passed in five files; a 1,001-block auto document still mounted only 32 top-level blocks after 750 ms, leaving native coverage incomplete.
 
 ## [2026-09-11] adoption | Plite core cuts
@@ -360,7 +360,7 @@ the September 11, 2026 receipt conclusion: scoped core, React and history checks
   measured facet map/entry work. It does not establish a consistent speedup,
   native/browser parity or completed product adoption.
 
-See [the decision](decisions/plite-core-ownership.md) and
+See the decision (`2e865a0bc4:docs/research/decisions/plite-core-ownership.md`) and
 the September 11, 2026 assessment receipt: all four questions reviewed, 180 current tests and 159 deletion-prototype tests passed; no browser, native-device, collaboration-transport or release proof was claimed.
 
 ## [2026-09-11] maintain | core architecture review groups
@@ -538,7 +538,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
   policy:
   [media-authoring-and-path-policy.md](docs/research/sources/typora/media-authoring-and-path-policy.md)
 - promoted one decision from that evidence:
-  [media-authoring-follows-the-image-path-policy-family.md](docs/research/decisions/media-authoring-follows-the-image-path-policy-family.md)
+  [media-authoring-follows-the-image-path-policy-family.md](2e865a0bc4:docs/research/decisions/media-authoring-follows-the-image-path-policy-family.md)
 - opened one explicit unresolved question for the thinner date lane:
   `ba095aaaf5:docs/research/open-questions/date-mdx-payload-contract.md`
 - updated the research index and Typora source entrypoint to include the new
@@ -588,7 +588,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 - compiled a new Milkdown source summary for executable autoformat input lanes:
   [input-autoformat-lanes.md](docs/research/sources/milkdown/input-autoformat-lanes.md)
 - accepted one decision for family modeling:
-  [autoformat-families-are-input-assist-surfaces.md](decisions/autoformat-families-are-input-assist-surfaces.md)
+  autoformat-families-are-input-assist-surfaces.md (`2e865a0bc4:docs/research/decisions/autoformat-families-are-input-assist-surfaces.md`)
 - opened one explicit unresolved question for thinner symbol-substitution
   authority:
   [text-substitution-autoformat-authority.md](52625e85025313eebd4eeb9be2254249ded58676:docs/research/open-questions/text-substitution-autoformat-authority.md)
@@ -596,9 +596,9 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 ## [2026-04-10] maintain | autoformat authority closure follow-up
 
 - accepted a boundary decision for `[text](url)` automd:
-  [link-automd-belongs-to-the-link-interaction-lane.md](docs/research/decisions/link-automd-belongs-to-the-link-interaction-lane.md)
+  [link-automd-belongs-to-the-link-interaction-lane.md](2e865a0bc4:docs/research/decisions/link-automd-belongs-to-the-link-interaction-lane.md)
 - accepted a normalization split for current autoformat-kit quirks:
-  [current-kit-autoformat-normalization-split.md](docs/research/decisions/current-kit-autoformat-normalization-split.md)
+  [current-kit-autoformat-normalization-split.md](2e865a0bc4:docs/research/decisions/current-kit-autoformat-normalization-split.md)
 - tightened the text-substitution authority open question with a usable current
   split between mainstream typographic norms and thinner local symbol-table
   contract
@@ -613,7 +613,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 - created a new cross-corpus system map:
   `5fdfdf3ce9:docs/research/systems/editor-architecture-landscape.md`
 - created a normalized decision page for the overlay-plan cuts:
-  [slate-v2-overlay-architecture-cuts.md](docs/research/decisions/slate-v2-overlay-architecture-cuts.md)
+  [slate-v2-overlay-architecture-cuts.md](docs/research/history/slate-v2-overlay-architecture-cuts.md)
 - added entity pages for the core candidate set actually used in the overlay
   research:
   ProseMirror, Lexical, Tiptap, Premirror, Pretext, Slate, edix,
@@ -646,7 +646,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
   `5fdfdf3ce9:docs/research/systems/editor-architecture-landscape.md`
   with the current Slate v2 position in the candidate field
 - added
-  [slate-v2-overlay-superiority-vs-legacy-and-field.md](docs/research/decisions/slate-v2-overlay-superiority-vs-legacy-and-field.md)
+  [slate-v2-overlay-superiority-vs-legacy-and-field.md](docs/research/history/slate-v2-overlay-superiority-vs-legacy-and-field.md)
   to state the durable “better than legacy Slate, aligned with the best ideas
   from the field, but not universally better than every engine” decision
 
@@ -664,7 +664,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
   does not by itself prove blanket superiority over ProseMirror, Lexical, or
   VS Code
 - added the explicit decision page:
-  [slate-v2-react-19-2-perf-architecture-vs-field.md](docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md)
+  [slate-v2-react-19-2-perf-architecture-vs-field.md](docs/research/history/slate-v2-react-19-2-perf-architecture-vs-field.md)
 
 ## [2026-04-15] full | source-scoped overlay invalidation extension
 
@@ -674,7 +674,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 - added the concept page:
   [source-scoped-overlay-invalidation.md](52625e85025313eebd4eeb9be2254249ded58676:docs/research/concepts/source-scoped-overlay-invalidation.md)
 - added the decision page:
-  [slate-v2-source-scoped-overlay-invalidation.md](docs/research/decisions/slate-v2-source-scoped-overlay-invalidation.md)
+  [slate-v2-source-scoped-overlay-invalidation.md](docs/research/history/slate-v2-source-scoped-overlay-invalidation.md)
 - extended the decoration roadmap with Waves 9-11 as the active next-step
   perfection tranche rather than another examples/docs polish pass
 
@@ -685,7 +685,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 - inspected strongest local clone evidence across ProseMirror, Lexical, VS Code,
   Pretext/Premirror, TanStack DB, EditContext, and local Slate v2
 - added the decision page:
-  [slate-v2-data-model-first-react-perfect-runtime.md](docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md)
+  [slate-v2-data-model-first-react-perfect-runtime.md](docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md)
 - accepted the revised target:
   data-model-first core, operation/collaboration-friendly model,
   transaction-first local execution, renderer-optimized live read APIs, and
@@ -698,7 +698,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 ## [2026-04-24] maintain | Slate v2 post-closure architecture review
 
 - added a post-closure architecture decision:
-  [slate-v2-post-closure-architecture-review.md](docs/research/decisions/slate-v2-post-closure-architecture-review.md)
+  [slate-v2-post-closure-architecture-review.md](docs/research/history/slate-v2-post-closure-architecture-review.md)
 - accepted that the architecture direction remains right:
   Slate model + operations, `editor.read` / `editor.update`, transaction and
   DOM-selection authority, extension methods, React 19.2 live-read runtime, and
@@ -728,7 +728,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 - added a cross-corpus synthesis page:
   [plugin-input-rule-doc-pattern-landscape.md](52625e85025313eebd4eeb9be2254249ded58676:docs/research/systems/plugin-input-rule-doc-pattern-landscape.md)
 - accepted one doc-structure decision for Plate:
-  [plugin-input-rules-guide-should-lead-with-runtime-first-then-feature-owners-then-api-reference.md](docs/research/decisions/plugin-input-rules-guide-should-lead-with-runtime-first-then-feature-owners-then-api-reference.md)
+  [plugin-input-rules-guide-should-lead-with-runtime-first-then-feature-owners-then-api-reference.md](2e865a0bc4:docs/research/decisions/plugin-input-rules-guide-should-lead-with-runtime-first-then-feature-owners-then-api-reference.md)
 - updated the research index with the new docs IA lane
 
 ## [2026-04-23] maintain | editor architecture raw availability check
@@ -761,7 +761,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
   - [prosemirror-transaction-view-dom-runtime.md](docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md)
   - [tiptap-extension-command-react-dx.md](docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md)
 - accepted the read/update lifecycle decision:
-  [slate-v2-read-update-runtime-architecture.md](docs/research/decisions/slate-v2-read-update-runtime-architecture.md)
+  [slate-v2-read-update-runtime-architecture.md](docs/research/history/slate-v2-read-update-runtime-architecture.md)
 - updated `f49b996094:docs/research/index.md` and
   [sources/editor-architecture/README.md](docs/research/sources/editor-architecture/README.md)
 
@@ -772,7 +772,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 - added the system map:
   slate-v2-perfect-plan-steal-reject-defer-map.md (`c70bacbd4a:docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md`)
 - accepted the sharper architecture decision:
-  [slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md](docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md)
+  [slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md](docs/research/history/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md)
 - updated `f49b996094:docs/research/index.md` with the new system and decision
 
 ## [2026-04-23] maintain | Slate v2 perfect architecture pause review
@@ -803,7 +803,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
   battle-tested yet because the sweep still found a multiline paste regression,
   a route-map crash, and an unfixed `mentions` invalid DOM nesting warning
 - added:
-  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md)
+  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/history/slate-v2-architecture-verdict-after-human-stress-sweep.md)
 
 ## [2026-04-27] full | node text mark render DX architecture
 
@@ -819,7 +819,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 - added the system map:
   [editor-node-text-mark-dx-landscape.md](52625e85025313eebd4eeb9be2254249ded58676:docs/research/systems/editor-node-text-mark-dx-landscape.md)
 - accepted the node DX decision:
-  [editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md](docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md)
+  [editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md](docs/research/history/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md)
 - updated `8b98598b98:docs/research/index.md` and
   [sources/editor-architecture/README.md](docs/research/sources/editor-architecture/README.md)
 
@@ -836,7 +836,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
   absolute, regression-free, or battle-tested without runtime ownership
   extraction, Plate/Yjs migration proof, longer soak, and real-device coverage
 - updated:
-  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md)
+  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/history/slate-v2-architecture-verdict-after-human-stress-sweep.md)
 
 ## [2026-04-27] maintain | Slate v2 architecture verdict after selector/live-read hard cut
 
@@ -854,7 +854,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
   `Editable`, broad hot React subscriptions shrink further, Plate/Yjs adapter
   rows exist, and raw-device proof covers mobile claims
 - updated:
-  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md)
+  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/history/slate-v2-architecture-verdict-after-human-stress-sweep.md)
 
 ## [2026-04-27] maintain | Slate v2 architecture verdict after live runtime review
 
@@ -871,14 +871,14 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
   ownership shrinks `Editable` further and generated browser parity runs the
   same operation-family scenarios against legacy `../slate` and v2 examples
 - updated:
-  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md)
+  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/history/slate-v2-architecture-verdict-after-human-stress-sweep.md)
 
 ## [2026-04-28] maintain | Slate v2 root-runtime verdict refresh
 
 - refreshed the Slate v2 architecture verdict after the root runtime selector
   guard lane completed
 - updated
-  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md)
+  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/history/slate-v2-architecture-verdict-after-human-stress-sweep.md)
   so it no longer treats `EditableDOMRoot` root policy ownership as the top
   current blocker
 - recorded the new remaining priority: runtime-owned public void shells,
@@ -893,7 +893,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 - checked the local official Lexical, ProseMirror, and Tiptap clones plus the
   compiled read/update evidence pages
 - accepted the API decision:
-  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
+  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/history/slate-v2-state-tx-public-api-and-extension-namespaces.md)
 - updated `4c0e00a201:docs/research/index.md` with the new decision page
 
 ## [2026-04-28] maintain | Slate v2 React 19.2 evidence refresh
@@ -910,11 +910,11 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 ## [2026-04-28] maintain | Slate v2 state/tx decision drift cleanup
 
 - found stale wording in
-  [slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md](docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md)
+  [slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md](docs/research/history/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md)
   that still described primitive `editor.*` methods as the power API inside
   `editor.update`
 - marked the newer
-  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
+  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/history/slate-v2-state-tx-public-api-and-extension-namespaces.md)
   decision as the current authority for public naming and extension namespaces
 - kept the older page accepted for the broader steal/reject/defer conclusion,
   but stopped it from being used as evidence for flat editor method DX
@@ -922,7 +922,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 ## [2026-04-28] maintain | Slate v2 state/tx live-source refresh
 
 - refreshed
-  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
+  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/history/slate-v2-state-tx-public-api-and-extension-namespaces.md)
   against live `Plate repo root` source, tests, docs, and examples
 - recorded the current split:
   `state` / `tx` exists and is tested, but author-facing docs and examples still
@@ -935,7 +935,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 ## [2026-04-28] maintain | Slate v2 node-DX command example cleanup
 
 - refreshed
-  [editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md](docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md)
+  [editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md](docs/research/history/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md)
   during the whole-rewrite review Pass 2
 - updated its extension command example to use
   `editor.update((tx) => tx.nodes.insert(...))`
@@ -958,33 +958,33 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 ## [2026-04-29] maintain | Slate v2 Editor namespace hard-cut review
 
 - corrected
-  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md)
+  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/history/slate-v2-architecture-verdict-after-human-stress-sweep.md)
   so it no longer describes primitive editor methods inside `editor.update` as
   the current public power API
 - corrected
-  [slate-v2-read-update-runtime-architecture.md](docs/research/decisions/slate-v2-read-update-runtime-architecture.md)
+  [slate-v2-read-update-runtime-architecture.md](docs/research/history/slate-v2-read-update-runtime-architecture.md)
   so its public target uses grouped `state` / `tx` methods instead of flat
   primitive editor methods inside lifecycle callbacks
 - kept
-  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
+  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/history/slate-v2-state-tx-public-api-and-extension-namespaces.md)
   as the current naming authority for public reads, writes, and extension
   namespaces
 
 ## [2026-04-29] maintain | Slate v2 Editor namespace Pass 3 refresh
 
 - refreshed
-  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
+  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/history/slate-v2-state-tx-public-api-and-extension-namespaces.md)
   for the public `Editor` value hard-cut decision
 - recorded `tx.value.replace(input)` as the public whole-document replacement
   target and called out that live `Plate repo root` still needs to implement it
 - updated
-  [slate-v2-read-update-runtime-architecture.md](docs/research/decisions/slate-v2-read-update-runtime-architecture.md)
+  [slate-v2-read-update-runtime-architecture.md](docs/research/history/slate-v2-read-update-runtime-architecture.md)
   so its public API target includes transaction-owned value replacement
 
 ## [2026-04-30] maintain | collaborative annotation channel decision
 
 - added a Slate v2 annotation-channel decision:
-  [slate-v2-collaborative-annotation-channels.md](docs/research/decisions/slate-v2-collaborative-annotation-channels.md)
+  [slate-v2-collaborative-annotation-channels.md](docs/research/history/slate-v2-collaborative-annotation-channels.md)
 - accepted external annotation channels as the raw Slate default for
   comment-only collaboration, with document-embedded ids left as an adapter or
   product choice
@@ -1055,7 +1055,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 ## [2026-09-11] review | reads and demand-driven invalidation
 
 - Recorded Pursue for commit-owned precise membership and demand-sensitive
-  subscription dispatch in [the reads decision](decisions/reads-demand-driven-invalidation.md).
+  subscription dispatch in the reads decision (`2e865a0bc4:docs/research/decisions/reads-demand-driven-invalidation.md`).
 - Retained the live read/snapshot distinction and the earlier generic-selector
   rewrite defer. A fresh primary-root probe compares current aggregate path
   work against direct and memoized membership; 56 focused tests pass.
@@ -1065,7 +1065,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 
 - Recorded all five questions in `plite-view`: Pursue for geometry and React;
   Stop for selection, native input and accessibility. The
-  [compiled decision](decisions/plite-view-ownership.md) recommends direct-domain
+  compiled decision (`2e865a0bc4:docs/research/decisions/plite-view-ownership.md`) recommends direct-domain
   geometry and removal of the public Runtime forwarding handle.
 - Reconsidered August's retained Widget abstraction and superseded the July
   React vocabulary proposal; preserved private exact-view, input, selection and
@@ -1082,14 +1082,14 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 
 - Compiled seven current DOCX source families and explicit corpus dispositions: 67 selected current external files, exact revisions/hashes/licenses, zero issue/PR bodies, no upstream execution. SuperDoc current v2 serializer remains an explicit proprietary-engine evidence gap.
 - Mapped all 10 documents census units and reconciled September 8 boundary work. Main replayed 123 existing package tests; a worker observed 12 additional fixture/demo tests. Two new historical probes confirmed stale sidecar authority and mixed export snapshots.
-- [Decision](decisions/documents-conversion-fidelity.md): Pursue Task design/planning; direct OOXML versus repaired HTML remains a candidate comparison. Product code, doctrine and public docs remain unchanged. Raw run (`docs/plite/research/2026-09-14-docx-interoperability-oss/README.md`), [source synthesis](sources/docx-interoperability-oss.md), [open questions](52625e85025313eebd4eeb9be2254249ded58676:docs/research/open-questions/documents-conversion-proof.md).
+- Decision (`2e865a0bc4:docs/research/decisions/documents-conversion-fidelity.md`): Pursue Task design/planning; direct OOXML versus repaired HTML remains a candidate comparison. Product code, doctrine and public docs remain unchanged. Raw run (`docs/plite/research/2026-09-14-docx-interoperability-oss/README.md`), [source synthesis](sources/docx-interoperability-oss.md), [open questions](52625e85025313eebd4eeb9be2254249ded58676:docs/research/open-questions/documents-conversion-proof.md).
 
 - Post-record freshness: concurrent edits changed shared authored EN guidance and Plate doctrine. Relevant sections were reread and still support the review; the immutable snapshot remains flagged stale rather than being overwritten. DOCX source still matches. See the run’s `post-record-freshness.json`.
 
 ## [2026-09-15] review | external text ownership
 
 - Assessed all 11 `external-text` census units and related authored consumers.
-  [Decision](decisions/external-text-ownership.md): Pursue removal of deferred
+  Decision (`2e865a0bc4:docs/research/decisions/external-text-ownership.md`): Pursue removal of deferred
   canonical feedback in the CodeMirror adapter; retain the public slot,
   versioned actions and document/view ownership split.
 - The mounted probe displays `agoodd` against canonical `Ragood`. An in-memory
@@ -1105,7 +1105,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 
 - Reviewed all 14 table census members plus the separately fingerprinted React
   owner; retained one independent table review.
-- [Current decision](decisions/table-ownership.md) pursues complete-content and
+- Current decision (`2e865a0bc4:docs/research/decisions/table-ownership.md`) pursues complete-content and
   canonical transaction authority, explicit targets and selection identity.
   [Immutable assessment](review-records/2026-09-16-table-canonical-edits.json)
   records alternatives, source identities and provisional runtime cuts.
@@ -1118,7 +1118,7 @@ implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger
 
 ## 2026-09-18 — Comments attachment and discovery review
 
-- [Decision](decisions/comments-data-ownership.md) preserves independent
+- Decision (`2e865a0bc4:docs/research/decisions/comments-data-ownership.md`) preserves independent
   conversations and native targets while rejecting stale block placement and
   an always-mounted unavailable-thread list. The target is one on-demand
   document comments surface beside the existing Floating Discussion workflow.

@@ -1,6 +1,6 @@
 [
   {
-    "path": "docs/research/decisions/dnd-ownership.md",
+    "path": "docs/plans/topics/dnd.md",
     "scopes": [
       "dnd"
     ],
@@ -2508,7 +2508,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/ai-preview-ownership.md",
+    "path": "docs/plans/topics/ai.md",
     "scopes": [
       "ai",
       "fixed-toolbar-scroll"
@@ -2519,7 +2519,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/authored-change-ownership.md",
+    "path": "docs/plans/topics/authored.md",
     "scopes": [
       "ai",
       "authored",
@@ -2531,9 +2531,10 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/clipboard-and-delete-commands-need-explicit-lanes.md",
+    "path": "docs/editor-behavior/markdown-editing-spec.md",
     "scopes": [
-      "clipboard"
+      "clipboard",
+      "editing"
     ],
     "kind": "decision",
     "disposition": "historical",
@@ -2541,7 +2542,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/clipboard-content-fitting.md",
+    "path": "docs/plans/topics/clipboard.md",
     "scopes": [
       "clipboard",
       "documents"
@@ -2552,7 +2553,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/code-text-ownership.md",
+    "path": "docs/plans/topics/code.md",
     "scopes": [
       "code",
       "external-text"
@@ -2563,7 +2564,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/collaboration-ownership.md",
+    "path": "docs/plans/topics/collaboration.md",
     "scopes": [
       "collaboration",
       "history",
@@ -2575,7 +2576,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/comments-data-ownership.md",
+    "path": "docs/plans/topics/comments.md",
     "scopes": [
       "comments"
     ],
@@ -2585,7 +2586,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/documents-conversion-fidelity.md",
+    "path": "docs/plans/topics/documents.md",
     "scopes": [
       "documents"
     ],
@@ -2595,7 +2596,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/editor-public-naming.md",
+    "path": "docs/plans/topics/editor-public-naming.md",
     "scopes": [
       "editor-public-naming"
     ],
@@ -2605,7 +2606,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/external-text-ownership.md",
+    "path": "docs/plans/topics/external-text.md",
     "scopes": [
       "external-text"
     ],
@@ -2615,7 +2616,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/fixed-toolbar-scroll-ownership.md",
+    "path": "docs/plans/topics/fixed-toolbar-scroll.md",
     "scopes": [
       "fixed-toolbar-scroll"
     ],
@@ -2625,7 +2626,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/generated-contract-boundary.md",
+    "path": "docs/plans/topics/compiler.md",
     "scopes": [
       "compiler"
     ],
@@ -2635,7 +2636,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/history-ownership.md",
+    "path": "docs/plans/topics/history.md",
     "scopes": [
       "history"
     ],
@@ -2645,7 +2646,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/large-documents-dom-coverage.md",
+    "path": "docs/plans/topics/large-documents.md",
     "scopes": [
       "large-documents"
     ],
@@ -2655,17 +2656,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/large-documents-rendering-api.md",
-    "scopes": [
-      "large-documents"
-    ],
-    "kind": "decision",
-    "disposition": "active",
-    "rationale": "# Explicit DOM omission and large-document rendering Status: **implementation complete; stable-snapshot closure pending**. The dedicated entrypoints, mounted-view runtime and pagination-owned page window are installed in production source. Final cross-browser recording must use one unchanged checkout snapshot. The durable target is one explicit omission permission, one native view owner, and separate spatial owners for ordinary flow and paginated",
-    "reviewBasis": []
-  },
-  {
-    "path": "docs/research/decisions/model-document-boundary.md",
+    "path": "docs/plans/topics/model.md",
     "scopes": [
       "model"
     ],
@@ -2675,7 +2666,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/pagination-ownership.md",
+    "path": "docs/plans/topics/pagination.md",
     "scopes": [
       "pagination"
     ],
@@ -2685,7 +2676,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/performance-candidate-reuse.md",
+    "path": "docs/plans/topics/performance.md",
     "scopes": [
       "performance"
     ],
@@ -2695,7 +2686,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/persistence-ownership.md",
+    "path": "docs/plans/topics/persistence.md",
     "scopes": [
       "persistence"
     ],
@@ -2705,7 +2696,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/plate-core-ownership.md",
+    "path": "docs/plans/topics/distribution.md",
     "scopes": [
       "compiler",
       "distribution",
@@ -2717,7 +2708,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/plite-core-ownership.md",
+    "path": "docs/plans/topics/commands.md",
     "scopes": [
       "commands",
       "react",
@@ -2731,7 +2722,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/plite-view-ownership.md",
+    "path": "docs/plans/topics/accessibility.md",
     "scopes": [
       "accessibility",
       "external-text",
@@ -2747,7 +2738,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/reads-demand-driven-invalidation.md",
+    "path": "docs/plans/topics/reads.md",
     "scopes": [
       "reads"
     ],
@@ -2757,7 +2748,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/registry-ui-ownership.md",
+    "path": "docs/plans/topics/ui.md",
     "scopes": [
       "ui"
     ],
@@ -2767,18 +2758,18 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/slate-v2-read-update-runtime-architecture.md",
+    "path": "docs/research/history/slate-v2-read-update-runtime-architecture.md",
     "scopes": [
       "reads",
       "transactions"
     ],
-    "kind": "decision",
+    "kind": "history",
     "disposition": "historical",
     "rationale": "# Slate v2 should use read/update as the public runtime lifecycle ## Decision Slate v2 should expose: ```ts editor.read(fn) editor.update(fn, options?) ``` as the public runtime lifecycle. `tx.resolveTarget()` remains internal. It is not normal plugin/app DX. ## Why The strongest cross-editor evidence points to the same discipline: - Lexical uses read/update lifecycle and dirty reconciliation. - ProseMirror uses transactions plus centralized DOM ",
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/structural-comparison.md",
+    "path": "docs/plans/topics/diff.md",
     "scopes": [
       "diff"
     ],
@@ -2788,7 +2779,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/suggestion-review-semantics.md",
+    "path": "docs/plans/topics/suggestions.md",
     "scopes": [
       "suggestions"
     ],
@@ -2798,7 +2789,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/table-ownership.md",
+    "path": "docs/plans/topics/table.md",
     "scopes": [
       "table"
     ],
@@ -2808,7 +2799,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/transactions-synchronous-boundary.md",
+    "path": "docs/plans/topics/transactions.md",
     "scopes": [
       "history",
       "transactions"
@@ -2839,7 +2830,7 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/decisions/editing-command-ownership.md",
+    "path": "docs/plans/topics/editing.md",
     "scopes": [
       "editing"
     ],
@@ -2873,24 +2864,6 @@
     "kind": "report",
     "disposition": "historical",
     "rationale": "Inspected one-execution-model and feature policy/promotion law; prospective structural helpers remain candidates."
-  },
-  {
-    "path": "docs/research/decisions/current-kit-autoformat-normalization-split.md",
-    "scopes": [
-      "editing"
-    ],
-    "kind": "decision",
-    "disposition": "historical",
-    "rationale": "Inspected historical Enter-owned fence/HR target; current kits still choose match-triggered completion."
-  },
-  {
-    "path": "docs/research/decisions/autoformat-families-are-input-assist-surfaces.md",
-    "scopes": [
-      "editing"
-    ],
-    "kind": "decision",
-    "disposition": "historical",
-    "rationale": "Inspected independent block/mark/substitution jobs; input assists are not parser law or an automatic packaging unit."
   },
   {
     "path": "docs/plans/2026-09-02-remove-code-line-model.md",
