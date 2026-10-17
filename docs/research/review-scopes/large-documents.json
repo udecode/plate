@@ -133,6 +133,5 @@
     "pagination",
     "exports",
     "performance"
-  ],
-  "decision": "docs/research/decisions/large-documents-rendering-api.md"
+  ]
 }

@@ -107,6 +107,5 @@
     "history",
     "collaboration",
     "compiler"
-  ],
-  "decision": "docs/research/decisions/persistence-ownership.md"
+  ]
 }

@@ -103,7 +103,6 @@
     "table",
     "exports"
   ],
-  "decision": "docs/research/decisions/pagination-ownership.md",
   "historyCandidates": [
     "docs/plans/2026-08-30-rename-page-layout-entrypoints-to-pagination.md",
     "docs/plans/2026-06-02-pagination-virtualized-stability-perf.md",

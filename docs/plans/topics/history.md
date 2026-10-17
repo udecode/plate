@@ -122,6 +122,34 @@ The 2026-10-05 review read eleven editors and VS Code in local source at the rev
 
 Products: whether Google Docs, Notion, Figma, Linear or Confluence undo a comment with Cmd+Z is unverified; their help pages do not say. Survey data: `docs/research/probes/2026-10-05-history-replay-result/survey.tsv`.
 
+## Layer and owner
+
+Undo preserves local intent, skipped and remote changes, atomic document updates, schema and effects, exact selection and root ownership, native composition grouping and editor and view retirement. A fallible local effect whose durable mutation lives outside the document is local, effect-only, non-mergeable and excluded from persisted History JSON; replay claims the branch head before returning, and a blocked result leaves that head eligible. A permanently blocked head stays in place and the next undo targets the newer eligible batch.
+
+| Responsibility | Decision |
+| --- | --- |
+| Replay | `editor.api.history.undo()` and `redo()`, each one complete update with an explicit outcome. |
+| Edit policy | `editor.update({ history })` for the outer caller; `tx.history.skip()`, `merge()` and `newBatch()` for nested helpers. |
+| Availability | `hasUndo()` and `hasRedo()` keep controls off full branch materialization; the callable snapshot serves inspection and `History.toJSON` persistence. |
+| Grouping | One core grouping clock; React emits native session, path and root annotations but owns no idle timer. |
+| Mounted replay | One exact mounted owner settles pending input, transfers projected-selection metadata and restores focus. |
+| Effect authoring | `defineEffect({ history: 'push' \| 'skip' \| { replay } })`; a shared effect accepts only `'push'` or `'skip'`. |
+| Plate | `HistoryPlugin.configure({ initialState })` is an adapter whose live getters feed Plite's history options; it owns no second stack. |
+| Yjs and authored history | Remote imports use `history-skip`; authored selective reversal keeps its own attribution and conflict semantics. |
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| Transaction-local `tx.history.undo()` | Two undos in one update threw on the same published head, and an edit after undo was absorbed into historic replay. |
+| An always-Promise `undo()` | A document batch has applied when the call returns; every caller paid a `void` or `await`, and a throwing owner behind `void` became an unhandled rejection. |
+| Separate sync and async undo methods, or a sync-or-Promise union | One result with a `pending` variant covers the one replay that waits. |
+| `history: 'session'` with a sibling `historyReplay` callback | TypeScript accepted both invalid halves. |
+| A Comments history stack, auto-skipping blocked entries or settling before the owner finishes | Each loses order or the external mutation's truth. |
+| Snapshot undo, or Yjs or authored history everywhere | Loses skipped and remote changes, domain effects and identity, or the raw offline job. |
+| A history backend, session manager or generic transactional plugin-state protocol | Conflates lifetimes; no second consumer needs the identity bridge. |
+| `initialState`, a store or `.configure()` in Plite, or plain `history(options)` in Plate | A second configuration model, or a snapshot of construction-time values. |
+
 ## Main changes
 
 - `packages/plitejs/src/history/history-plugin.ts` owns replay. A document batch applies in one synchronous update and returns its outcome. A batch carrying a `history: { replay }` effect claims the branch head, publishes `pending` and calls its owner. A result without a callable `then` settles in the call; a thenable returns `pending` with a `settled` that never rejects. An owner or settle failure after the claim settles `failed`, keeps the entry, clears `pending` and reports once through `reportEditorLifecycleError`.

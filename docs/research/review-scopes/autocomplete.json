@@ -59,7 +59,6 @@
     "slash",
     "accessibility"
   ],
-  "decision": "docs/research/decisions/autocomplete-ownership.md",
   "historyCandidates": [
     "docs/plans/5087-mention-drag-regression.md",
     "docs/plans/4778-inline-combobox-point-ref.md",

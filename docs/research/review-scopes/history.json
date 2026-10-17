@@ -93,6 +93,5 @@
     "authored",
     "persistence",
     "collaboration"
-  ],
-  "decision": "docs/research/decisions/history-ownership.md"
+  ]
 }

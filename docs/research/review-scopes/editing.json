@@ -107,7 +107,6 @@
     "native",
     "styles"
   ],
-  "decision": "docs/research/decisions/editing-command-ownership.md",
   "historyCandidates": [
     "docs/plans/4900-ai-streaming-history.md",
     "docs/plans/4875-version-history-demo-broken.md",

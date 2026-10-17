@@ -167,8 +167,24 @@ For bulk accept and reject, read from local checkouts at the commits in the `rev
 | Google Docs | Accept all, Reject all | Not disclosed | Review suggested edits box, opened from Tools | [Google Docs Help](https://support.google.com/docs/answer/6033474?hl=en) |
 | Microsoft Word | Accept All Changes, Reject All Changes, and the Shown variants per reviewer | Not disclosed | Review tab's Accept and Reject menus | [Microsoft Support](https://support.microsoft.com/en-us/word/training/track-changes-in-word) |
 
+## Layer and owner
+
+Plite owns authored identity, retained content, properties, dependencies, views and atomic decisions; ordinary feature commands own valid schema changes; Plate owns descriptions, markers, navigation and review interaction; applications own access policy. Write intent and displayed content are separate: an editing view keeps pending changes visible and editable, and ordinary typing never accepts pending work. A visible replacement that fully contains every affected pending change resolves them and publishes the replacement in one undoable transaction; when a retained fragment or dependency reaches outside the selection, the editor keeps the selection and content. Saved suggestions load as a prepared authored document through `initialValue`, with threads through `initialState.initialThreads`. Suggestion paint reaches the content root through plugin-owned `render.contentAttributes`, so generic Editor skins hold no suggestion or comment selectors.
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| Toggling presets, accepting proposals to display them, CSS-only restoration or save-switch-restore input handlers | None keeps direct editing and visible suggestions together. |
+| A parallel suggestion store or `initialState.suggestions` | Accepted content, retained content, attribution and decisions load together. |
+| Seeding fixtures by replaying edits under switched identities on mount | Relocates the problem; fixtures are prepared outside the mounted lifecycle. |
+| `SuggestionPlugin` configuration for view intent | An editor-wide default that needs hidden precedence or a plugin-to-view protocol; `EditorRoot authored` owns the view. |
+| Restoring `main`'s independent suggestion mutation engine | Boolean mark rejection, paragraph-only splits and incomplete structural and clipboard proof. |
+| Parallel accept and reject aliases or a cast protocol such as `getSuggestionEditor` | Native authored reads, decisions and inferred plugin composition already serve them. |
+
 ## Open work
 
+- No family of the 44 Google Docs suggestion families is certified at full parity; real list and table commands, closed review history, withdrawal and partial publication failure are the gaps. owner: the next `suggestions` review. stop: a family's browser lifecycle proof.
 - The copied mode menu's Accept all and Reject all have no Base UI build or browser proof, because the Base editor-ai consumer fails on `dnd.tsx`'s tooltip (found by `docs/plans/2026-10-17-suggestions-bulk-resolve.md`). Tracked as suggested task `t_f70e26df` in `docs/plans/suggested-tasks.decisions.tsv`. owner: zbeyens, who starts or drops that task. stop: `pnpm --filter www test:create-install editor-ai` builds both consumers, or the task is dropped.
 
 - `pnpm check` runs no browser spec over the copied examples, so a new example that cannot type passes CI (found by `docs/plans/2026-10-07-editorkit-missing-user.md`). owner: zbeyens, who decides whether CI runs a typing smoke over registered examples. stop: that decision is recorded here.

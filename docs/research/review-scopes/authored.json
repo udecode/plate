@@ -70,7 +70,6 @@
     "diff",
     "collaboration"
   ],
-  "decision": "docs/research/decisions/authored-change-ownership.md",
   "historyCandidates": [
     "docs/plans/5086-seeded-removal-suggestion-crash-regression.md",
     "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md",

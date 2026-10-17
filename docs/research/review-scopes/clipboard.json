@@ -99,6 +99,5 @@
     "authored",
     "history",
     "collaboration"
-  ],
-  "decision": "docs/research/decisions/clipboard-content-fitting.md"
+  ]
 }

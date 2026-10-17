@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/T2iAWr25Th5E7Voiitcmvu
 
-What belongs to persisted media content, captions and display, and which application behavior should stay outside the node? Image, file, audio, video and embed blocks are Plite object-role blocks: the media body is one selectable object, and the caption is ordinary editable text in the block's own children, in the same document. Plate media owns URL policy and caption Enter, and the copied registry UI owns the caption's placeholder and when it shows. Plite's generic caret engine owns the arrow-key stops: the media owner is a stop before its caption, and ArrowUp at the caption start returns to the owner. Since 2026-10-13 the engine reads the page for two facts. A caption is a caret stop only while the page draws it, apart from one backward stop in a mounted empty caption, and left and right follow the direction of the block that holds the caret. Model, clipboard and browser proof for the object design landed on 2026-09-22 (`docs/research/decisions/media-object-content.md`), and `apps/www/tests/browser/media-caption.spec.ts` covers caption traversal, hidden captions and mixed direction in Chromium and WebKit.
+What belongs to persisted media content, captions and display, and which application behavior should stay outside the node? Image, file, audio, video and embed blocks are Plite object-role blocks: the media body is one selectable object, and the caption is ordinary editable text in the block's own children, in the same document. Plate media owns URL policy and caption Enter, and the copied registry UI owns the caption's placeholder and when it shows. Plite's generic caret engine owns the arrow-key stops: the media owner is a stop before its caption, and ArrowUp at the caption start returns to the owner. Since 2026-10-13 the engine reads the page for two facts. A caption is a caret stop only while the page draws it, apart from one backward stop in a mounted empty caption, and left and right follow the direction of the block that holds the caret. Model, clipboard and browser proof for the object design landed on 2026-09-22 ([object elements design](../2026-09-21-object-elements-with-editable-children.md)), and `apps/www/tests/browser/media-caption.spec.ts` covers caption traversal, hidden captions and mixed direction in Chromium and WebKit.
 
 ## Public API
 
@@ -71,6 +71,28 @@ if (
 - Plite's caret engine (`packages/plitejs/src/react/editable/caret-engine.ts`) owns the arrow-key stops around an object. A child text is a stop only while no element from it up to its owner computes `display: none` or `content-visibility: hidden` and it does not compute `visibility: hidden`. A backward horizontal move keeps one stop in a mounted empty child. Left, right and the collapse of a selection read the computed direction of the lowest block holding the caret, or of the selected object.
 - Plate media (`packages/platejs/src/features/media/lib/BaseMediaPlugin.ts`) owns URL normalization against each role's floor and caption Enter.
 - The copied `Caption` (`apps/www/src/registry/components/editor/caption.tsx`) owns the placeholder and hides an empty caption unless its media is active.
+
+## Layer and owner
+
+An image stays meaningful content when its caption is empty: its body selects, copies, moves and deletes as a whole, while a text selection in its caption keeps text semantics.
+
+| Responsibility | Decision |
+| --- | --- |
+| Object role | Plite's neutral schema fact, `schema.element.textBlock({ object: true })`, compiled as `object: boolean` and read with `schema.isObject(node)`. Block-only, non-void, non-atom, selectable and structurally isolating; selection-shaped transfer stays open for descendant text. Whole-node selection transfers the owner. |
+| `atom` | A separate fact: descendants are not traversable. |
+| Owner selection | Derives privately from object or atom semantics. |
+| Caption deletion | A fully selected caption stays child text; Delete clears it and leaves the caret in the caption, and Undo keeps the owner. |
+| Type conversion | Schema-default block reset, with compatible-property preservation. |
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| `isolating + keyboardSelectable` flags | `replaceEmpty` removed an empty-caption image, and three caption characters exported as an image; `keyboardSelectable` is deleted. |
+| `atom` for media | Collapsed caption traversal. |
+| A persisted caption node, nested editor, separate root or generic object plugin | No independent job; one document with ordinary children serves it. |
+| A public intrinsic-content axis | Waits for a non-object consumer. |
+| A media-specific navigation plugin or public flag | The generic caret engine owns the stops. |
 
 ## What other editors do
 

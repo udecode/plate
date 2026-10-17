@@ -90,6 +90,5 @@
     "native",
     "accessibility",
     "table"
-  ],
-  "decision": "docs/research/decisions/plite-view-ownership.md"
+  ]
 }

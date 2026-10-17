@@ -86,6 +86,5 @@
     "react",
     "external-text",
     "collaboration"
-  ],
-  "decision": "docs/research/decisions/plite-core-ownership.md"
+  ]
 }

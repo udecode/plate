@@ -80,6 +80,5 @@
     "react",
     "geometry",
     "html"
-  ],
-  "decision": "docs/research/decisions/plite-view-ownership.md"
+  ]
 }

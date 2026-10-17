@@ -91,7 +91,6 @@
     "comments",
     "geometry"
   ],
-  "decision": "docs/research/decisions/2026-09-20-annotations-ownership.md",
   "historyCandidates": [
     "docs/plans/4527-ai-menu-streaming-anchor-undefined.md",
     "docs/plans/2026-09-03-plite-comment-anchor-edit-and-history.md",

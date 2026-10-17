@@ -86,6 +86,5 @@
     "native",
     "history",
     "authored"
-  ],
-  "decision": "docs/research/decisions/external-text-ownership.md"
+  ]
 }

@@ -67,7 +67,6 @@
     "markdown",
     "streaming"
   ],
-  "decision": "docs/research/decisions/performance-candidate-reuse.md",
   "historyCandidates": [
     "docs/plans/5066-benchmark-native-typing-regression.md",
     "docs/plans/5064-homepage-heading-enter-latency-benchmark.md",

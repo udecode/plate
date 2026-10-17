@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/6gb4zfU1Ys6mqJpDReA4c5
 
-The Plite document model: the JSON tree a document holds, the top-level fields each entry point admits, and the three identities, runtime `NodeKey`, optional persisted element ID and schema fingerprint. Its law lives in `docs/research/decisions/model-document-boundary.md`.
+The Plite document model: the JSON tree a document holds, the top-level fields each entry point admits, and the three identities, runtime `NodeKey`, optional persisted element ID and schema fingerprint. One private Plite document-shape owner gives construction, assertion, fitting and replacement the same container contract, and each entry point admits fields by input kind where the caller's raw object is still visible: a document admits `children`, `meta` and `roots`, a direct snapshot also `selection`, and the persisted envelope `document`, `schema` and `selection`. Application data belongs in `meta`. `assertDocument` validates and narrows without modifying; construction and import may still fit and fill schema defaults ([admission plan](../2026-10-03-model-document-admission.md), [September patch](../2026-09-11-model-document-boundary-patch.md)). `node tooling/scripts/review-ledger.mjs show model` prints the full history.
 
 ## Public API
 
@@ -100,6 +100,25 @@ Every load path reads the stored document. An application that saved a field at 
 ```json
 { "children": [{ "type": "paragraph", "children": [{ "text": "Hello" }] }], "meta": { "title": "Draft" } }
 ```
+
+## Layer and owner
+
+| Responsibility | Decision |
+| --- | --- |
+| Container contract | Plite, `packages/plitejs/src/core/document-shape.ts`; Plate migrations and construction call `readDocumentRecord` through `plitejs/internal`. |
+| Migration steps | See only document fields; `FromDocument` and `ToDocument` are closed, a legacy top-level field arrives in a typed `legacy` channel, and completion refuses a field no step lifted. The v54 suggestions step keeps fitting mid-chain. |
+| Identities | Runtime `NodeKey` is opaque and never serialized; persisted element IDs are optional and stay with `ElementIdPlugin`, whose `read.id` is the persistence-boundary conversion; the schema fingerprint identifies document semantics, with application lineage kept apart. |
+| Plate | Its nonempty-root product policy and the application migration adapter. |
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| A public validated-document wrapper, parser family or validation mode | Existing JSON and assertion APIs already express the jobs. |
+| One universal persisted node ID | Live keys, persisted element IDs and fingerprints have different lifetimes and consumers; authored lineage, Yjs and prepared keys need text-level or transport identity an element ID cannot give. |
+| Validation in Plate or the codecs | Raw editors and other imports keep the hole. |
+| An ID-indexed public store or class-based AST | Solves admission no better than one boundary check. |
+| Silently dropping unknown top-level keys | Silent loss is the failure the comparison shows most; the cost is that a new top-level field needs a doctrine change and a migration. |
 
 ## Main changes
 

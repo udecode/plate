@@ -8,13 +8,22 @@
     "score": 5,
     "reason": "The owner requested a broad refresh of the external editor comparison."
   },
-  "owners": ["docs/research/sources/editor-architecture/candidates.md"],
+  "owners": [
+    "docs/research/sources/editor-architecture/candidates.md"
+  ],
   "members": [],
   "consumers": [],
   "proof": [],
   "gaps": "This is a source-research question. Runtime, performance and device acceptance require a separately scoped adoption or measurement.",
-  "evidenceInputs": ["docs/research/schema.md"],
-  "relatedScopes": ["model", "plate-api", "performance", "pagination", "proof"],
-  "decision": "docs/research/decisions/editor-comparison-set.md",
+  "evidenceInputs": [
+    "docs/research/schema.md"
+  ],
+  "relatedScopes": [
+    "model",
+    "plate-api",
+    "performance",
+    "pagination",
+    "proof"
+  ],
   "historyCandidates": []
 }

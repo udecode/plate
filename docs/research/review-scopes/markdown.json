@@ -152,7 +152,6 @@
     "imports",
     "exports"
   ],
-  "decision": "docs/research/decisions/markdown-conversion.md",
   "historyCandidates": [
     "docs/plans/4898-blockquote-markdown-first.md",
     "docs/plans/4485-markdown-empty-list-deserialization-error.md",

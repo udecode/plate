@@ -142,7 +142,6 @@
     "authored",
     "comments"
   ],
-  "decision": "docs/research/decisions/documents-conversion-fidelity.md",
   "historyCandidates": [
     "docs/plans/4889-csv-papaparse-vitest.md",
     "docs/plans/2026-09-08-docx-entrypoints-and-plugin-ownership.md",

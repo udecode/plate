@@ -124,6 +124,15 @@ For creating the editor a static render draws with, Lexical and BlockNote ship a
 | Editing presentation and its kit | Copied registry `foo.tsx` items, composed in `plugins.ts` |
 | Static presentation and its kit | Copied registry `foo-static.tsx` items, composed in `plugins-static.ts` as `BaseEditorKit`, which export also receives as `presentation` |
 | Export menu, file shell, download and toasts | Copied `export-toolbar-button.tsx` |
+| Static content roots | The scoped editor serves render and decoration callbacks. A path carries no root and a view addresses its own root; a static root reader is replaced when the view's authored mode or read-only state changes and reused otherwise ([content-root execution](../2026-09-30-content-root-locations-execution.md)). |
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| `createStaticEditor`, `StaticEditor`, `CreateStaticEditorOptions`, `useStaticEditor` | Pure aliases of `createEditor` since 2026-09-15; Vision rules out branded editor variants. Cut by the [html review](../2026-10-13-html-review.md). |
+| A zustand store factory on `platejs/static` | No static job. |
+| A universal codec, location carrier or new view manager | The content-root defects were view-composition and delivery bugs, not a missing API. |
 
 ## Main changes
 

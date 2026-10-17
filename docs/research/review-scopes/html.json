@@ -41,7 +41,6 @@
     "react",
     "exports"
   ],
-  "decision": "docs/research/decisions/html-rendering.md",
   "historyCandidates": [
     "docs/plans/2026-07-26-plate-next-html-plugin-colocation.md",
     "docs/plans/2026-07-24-c05-html-codec-vertical.md",

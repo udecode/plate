@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/X2TpUgz6JwrqLGB8ahiEub
 
-Pagination gives a Plate document measured pages. It covers live paged editing with custom page chrome, fragmentation and optional page omission, and one-shot headless measurement for previews and export inputs. The ledger asks which document and measurement contracts determine pages, and which layout authority can be removed or reused (`docs/research/review-scopes/pagination.json`). Plite owns the paged view: `PagedEditable` owns live layout, page surfaces and omission, `measurePages` is the headless path, fragmentation is `text`, `atomic` or `direct-children`, and page-break persistence is deleted (`docs/plans/2026-09-15-pagination-view-owned-layout.md`). A Plate app renders pages through `PagedEditorContent` from `platejs/pagination/react`, which runs `EditorContent`'s pipeline with `PagedEditable` as its editable, so plugin components, handlers, shortcuts and slots work on pages; the Plate facade does not export the raw `PagedEditable` (`docs/plans/2026-10-06-pagination-review.md`). The decision page is `docs/research/decisions/pagination-ownership.md`.
+Pagination gives a Plate document measured pages. It covers live paged editing with custom page chrome, fragmentation and optional page omission, and one-shot headless measurement for previews and export inputs. The ledger asks which document and measurement contracts determine pages, and which layout authority can be removed or reused (`docs/research/review-scopes/pagination.json`). Plite owns the paged view: `PagedEditable` owns live layout, page surfaces and omission, `measurePages` is the headless path, fragmentation is `text`, `atomic` or `direct-children`, and page-break persistence is deleted (`docs/plans/2026-09-15-pagination-view-owned-layout.md`). A Plate app renders pages through `PagedEditorContent` from `platejs/pagination/react`, which runs `EditorContent`'s pipeline with `PagedEditable` as its editable, so plugin components, handlers, shortcuts and slots work on pages; the Plate facade does not export the raw `PagedEditable` (`docs/plans/2026-10-06-pagination-review.md`). `node tooling/scripts/review-ledger.mjs show pagination` prints the reviews.
 
 ## Public API
 
@@ -31,7 +31,7 @@ import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 ## What other editors do
 
-From `docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md`, a 2026-05-25 reading of local Pretext and Tiptap docs checkouts and one Pretext article, without running either. Its recommendation of authoritative page-break snapshots was later rejected by `docs/research/decisions/pagination-ownership.md`, whose probe showed stored breaks never enter layout.
+From `docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md`, a 2026-05-25 reading of local Pretext and Tiptap docs checkouts and one Pretext article, without running either. Its recommendation of authoritative page-break snapshots was later rejected by the [view-owned layout plan](../2026-09-15-pagination-view-owned-layout.md), whose probe showed stored breaks never enter layout; its caution about measurement-profile drift stands.
 
 | Library | What it does with pages | Limit the comparison recorded |
 | --- | --- | --- |
@@ -49,6 +49,21 @@ From `docs/research/sources/editor-architecture/pretext-pagination-page-virtuali
 | The paged view keeps one editable host, drops stale placements after an error, lets its canvas keys win, renders one container per measured run and settles with inline inputs | Plite | `plitejs/pagination/react`, with the run projection in `pagination/react.tsx` | Plite behaviors that break raw Plite apps too; Plate adds no CSS |
 | Element placement lands on the outermost box that holds only that element, and projected text is positioned against its real containing box | Plite | `plitejs/react` (`editable-text-blocks.tsx`) with `plitejs/pagination/react`, in its own placement module | A neutral placement law; no renderer author forwards anything |
 | `PagedEditorContent` | Plate | `platejs/pagination/react`, with new edges to `react-core` and `pagination` in `tooling/entrypoints/entrypoint-dag.mjs` and its own partition | Keeps Pretext out of `platejs/react` |
+
+Canonical content, history and collaboration stay with the editor, and visual page boundaries never split document nodes. `NodeFragmentationPlan` is `text`, `atomic` with one size, or `direct-children` with an ordered size per direct element child; pagination derives every path and key from one snapshot, so duplicate, foreign, reordered and missing partitions cannot be written, and it rejects invalid sizes, text siblings and length mismatch. `usePageLayout(editableRef)` reads only a committed layout for that exact host and otherwise returns null. Page paint uses one private surface-composite decoration store that wakes only changed keys, and font observation is ref-counted per host document. Plate and app renderers own schema-specific fragmentation sizes and visual policy.
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| Page-break persistence (`pageBreaks`, `PageBreakSnapshot` and its codec) | Layout composed pages before reading the stored breaks: a 48 px reader accepted a 24 px writer's breaks and still produced 22 pages to its 11, an empty snapshot was accepted too, and the writer committed on every refresh. A product needing authoritative breaks owns them in an explicit export operation. |
+| A public live controller (`useLayout`) apps assemble with projection and decoration publishing | Editing mechanics belong to the paged view. |
+| Overlapping text, box and unit forms with `avoid`, `line`, `page` and `row` split values | Unit pagination never read the split value; a 1600 px image overflowed the same way under `avoid` and `page`. |
+| A pagination session, store plugin, provider stack or authority token | No independent job; editor state, commit subscriptions and DOM coverage serve it. |
+| Semantic page nodes or independent editor and history stores | Violate the visual-layout job. |
+| A map-valued React context for page paint | Re-rendered every consumer. |
+| A preselected incremental cache, skeleton state, worker or timer | Unproven; any scheduler must first beat the current path from accepted input to settled layout. |
+| Re-exporting raw `PagedEditable` from Plate | Bypassed `EditorContent`'s plugin pipeline, so paged Plate apps lost every plugin component, handler, shortcut and slot. |
 
 ## Main changes
 

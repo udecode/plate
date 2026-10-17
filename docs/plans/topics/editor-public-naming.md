@@ -122,6 +122,19 @@ A document bound without a `rootName` lives under `document`, and its schema env
 | Copied UI values: emoji storage keys, download names, demo room, demo comments; the unused `prism.css` | Plate | `apps/www/src/registry`; `apps/www/public` | The registry owns the copied UI |
 | The guard | Tooling | `tooling/oxlint/plate-plugin.mjs`, `oxlint.config.ts` | The repository's `plate/*` lint law owns static checks |
 
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| Plate-only neutral re-export aliases | Two public vocabularies and recurring facade and declaration reconciliation; the shared source is renamed instead. |
+| Replacing every brand prefix with `Editor` | Keeps public internals and hides provider, model and view collisions; ordinary domain nouns such as `Selection`, `NodeKey` and `definePlugin` state the job. |
+| Keeping `<Plate>` and `<Plite>` as root components | The import already names the product; `EditorRoot` states the role. |
+| `Editor`, `EditorProvider`, `EditableRoot` or `EditableContent` for the root and content | `Editor` collides with the model type and the copied composition; `EditorProvider` is the passive scope that creates no view; `Editable*` adds an editability term the read-only surface does not have. |
+| A configurable attribute prefix, dual emission or a DOM registry | Coordination and runtime work for a naming problem. |
+| Private bindings in place of every DOM attribute | External controls, styles, DOM repair and clipboard HTML read the literal hooks. |
+| Treating every `data-editor-*` mutation as runtime-owned | Would classify application attributes as repair work; the DOM owner keeps its exact private list, and resolution still checks the registered mount. |
+| Readers for the old branded clipboard, authored, mention and media formats | Not a supported input domain; a fallback would be a second dialect. |
+
 ## Hard cuts and app migration
 
 Each cut has no alias and no old reader. `pstack:blast-radius` runs before the first edit and adds any caller this list misses.

@@ -106,7 +106,6 @@
     "accessibility",
     "html"
   ],
-  "decision": "docs/research/decisions/media-object-content.md",
   "historyCandidates": [
     "docs/plans/4803-update-upload-history.md",
     "docs/plans/2026-08-26-media-caption-block-reset-api.md",

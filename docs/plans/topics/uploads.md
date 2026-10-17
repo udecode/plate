@@ -94,6 +94,20 @@ Sources: `ueberdosis/tiptap@91c51be53c4655ef07e29ec489471524debfa0ca:packages/ex
 | Draft, progress and preview UI | Copied `upload.tsx` |
 | Storage, gateway access and durable URLs | Copied `upload-browser`, `upload-r2` and `upload-s3` recipes over `lib/files.ts` |
 
+A user picks files, sees their reserved places and progress, keeps editing, and can retry, cancel, undo or remove an upload. Completion changes only the intended live node, secondary roots included, through its root-aware `NodeKey` and the installed media descriptor's schema type. Invalid input leaves the document unchanged and invalid results stay visible as failures. A file, controller, progress, error or preview URL is a local resource; the document holds only draft intent, so reload or collaboration never invents a request. The plugin consumes the Files SDK's single-file `UploadClient` operation with the SDK's own types, and a synchronous `getUrl(UploadOutcome)` maps the outcome to a stable application address.
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| An app-written generic transport API or mirrored storage facade | The owner chose one supported SDK over replaceability; no other job survived. |
+| Per-media pending nodes with optional `url` | Spreads the draft state across four media schemas, renderers and codecs without removing it. |
+| Inserting only after upload completes, or a transient overlay | Loses reserved position, movement and undo while transport runs. |
+| Requests owned by React, or duplicated per media plugin | Breaks the remount law and shared batch admission. |
+| A general job scheduler in Plite, or a session framework | The bug was Plate discarding an identity Plite already had. |
+| A runtime environment switch choosing the storage provider | One explicit provider recipe per app. |
+| The `PlaceholderPlugin`, single-file `api.upload` plus batch `insertMedia` split, and caller-visible `replaceMedia` | Split count semantics let a three-image limit accept four, and bare-path completion wrote into the main root. |
+
 ## Main changes
 
 - `BaseUploadPlugin` keys each task by draft `NodeKey` and admitting view, starts transfer after commit, and completes through the installed media descriptor, so authored and named-root identity stays in the admitting runtime.
@@ -105,6 +119,8 @@ Sources: `ueberdosis/tiptap@91c51be53c4655ef07e29ec489471524debfa0ca:packages/ex
 
 ## Open work
 
+- Live S3, multipart, browser-native progress, a deployed route with real application session policy, native file drag outside Chromium and Firefox and WebKit are unproven; R2 ran live against a private bucket. owner: zbeyens. stop: a deployed provider run.
+- The gateway must deny explicit-key writes in `authorize` and recheck write access for proxy PUT; Files SDK 2.6.0 serializes an app-thrown `FilesError` denial as 500, so a fixed release with verified 401 and 403 behavior, or an app response boundary, gates gateway publication. owner: zbeyens. stop: that release or boundary lands with a route test.
 - Decide whether the Editable should draw the drop line itself, so an editor without the copied DnD kit shows where files and blocks land; `docs/vision/plate.md` line 1133 gives the line to the kit today, and the in-flight `layout` plan is changing `dnd.tsx`. owner: zbeyens. stop: the next `dnd` review, or 2026-11-30.
 - A drop whose full file count no longer fits the edge shown during hover can land at another edge or be refused; only a browser that hides the count during `dragover` reaches it. owner: zbeyens. stop: a report of a misplaced file drop, or 2026-11-30.
 - The hover and drop checks use `file`-kind stand-ins while `submit` creates each draft with its own kind, already tracked in `docs/plans/2026-10-02-dnd-schema-derived-landing.md`. Under a schema that constrains upload draft kind by position, a real Chromium drop throws `EditorSchemaValidationError` out of the handler as an uncaught page error, loses the drop and skips `onError` (`docs/plans/artifacts/2026-10-09-uploads-review/probes/kind-prefix-browser-a3.log`). No schema in this repository does that, as of 2026-10-10; the fix checks the real kinds before insertion. owner: zbeyens. stop: the first schema that constrains upload draft kind, or 2026-11-30.

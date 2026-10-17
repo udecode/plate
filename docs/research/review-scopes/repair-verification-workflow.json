@@ -27,7 +27,6 @@
   "relatedScopes": [
     "proof"
   ],
-  "decision": "docs/plans/2026-09-16-patch-consolidation.md",
   "historyCandidates": [
     "docs/plans/2026-08-26-regression-proof-escalation-repair.md",
     "docs/plans/2026-09-06-maintain-verify-plate.md"

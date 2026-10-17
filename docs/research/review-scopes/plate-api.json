@@ -85,6 +85,5 @@
     "commands",
     "state",
     "ui"
-  ],
-  "decision": "docs/research/decisions/plate-core-ownership.md"
+  ]
 }

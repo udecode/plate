@@ -69,7 +69,6 @@
     "plate-api",
     "compiler"
   ],
-  "decision": "docs/research/decisions/plite-core-ownership.md",
   "historyCandidates": [
     "docs/plans/2026-08-31-fix-ai-generated-mdx-blockquote-schema.md",
     "docs/plans/2026-08-14-remove-registry-schema-lineage.md",

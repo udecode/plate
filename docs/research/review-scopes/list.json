@@ -85,7 +85,6 @@
     "clipboard",
     "styles"
   ],
-  "decision": "docs/research/decisions/list-ownership.md",
   "historyCandidates": [
     "docs/plans/4985-ordered-list-heading-paragraph-numbering.md",
     "docs/plans/4649-liststart-setvalue.md",

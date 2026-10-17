@@ -112,7 +112,6 @@
     "runtime",
     "schema"
   ],
-  "decision": "docs/research/decisions/model-document-boundary.md",
   "historyCandidates": [
     "docs/plans/2026-08-15-hard-cut-caller-selected-read-update-generics.md",
     "docs/plans/2026-08-04-cut-redundant-plugin-read-update-methods.md",

@@ -19,24 +19,9 @@ source_refs:
 updated: YYYY-MM-DD
 ```
 
-### `decisions/*`
-
-Required frontmatter:
-
-```yaml
-title: ...
-type: decision
-status: proposed | accepted | superseded
-updated: YYYY-MM-DD
-source_refs:
-  - ...
-related:
-  - ...
-```
-
 ### Open questions
 
-An open question has no page of its own: it sits on the decision or area page it blocks, naming its owner and the evidence that would close it.
+An open question has no page of its own: it sits in the subject file or area page it blocks, naming its owner and the evidence that would close it.
 
 ## Field Meanings
 
@@ -88,7 +73,6 @@ Stable scope ids identify the user question across package and symbol renames. P
   "proof": ["packages/platejs/src/features/table/lib/BaseTablePlugin.apply.spec.tsx"],
   "evidenceInputs": ["apps/www/playwright.config.ts"],
   "relatedScopes": ["clipboard", "geometry"],
-  "decision": "docs/research/decisions/table-ownership.md",
   "historyCandidates": ["docs/plans/5065-fix-table-tab-navigation.md"]
 }
 ```
@@ -171,7 +155,7 @@ Nothing below is stored.
 
 `review-documents.json` lists inspected documents with `path`, `scopes`, `kind` (`plan`, `decision`, `lesson`, `specification`, `report`, `history`), `disposition` (`active`, `historical`, `superseded`, `candidate`, `rejected`) and `rationale`. Historical plans can add `reviewBasis` and `workKind`. Record why the content answers the scope before associating it. Uninspected matches stay `candidate` or in a scope's `historyCandidates`; inspected false matches are `rejected` with the reason, so a later lookup stops suggesting them.
 
-Decision pages under `decisions/` hold the compiled conclusion in prose. The ledger does not read them; `lookup` and `show` give the current review, a page or a legacy record.
+A scope's subject file, `docs/plans/topics/<scope>.md`, holds its current conclusion in prose: its decisions with their rejected alternatives, its public calls, what other editors do and its open work. Each review page or plan on the scope is an iteration that folds into it when it closes. `lookup` names the subject file as `subject` but never reads it, so a fold never makes a review stale.
 
 ### Legacy records
 

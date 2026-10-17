@@ -101,6 +101,5 @@
     "transactions",
     "react",
     "performance"
-  ],
-  "decision": "docs/research/decisions/reads-demand-driven-invalidation.md"
+  ]
 }

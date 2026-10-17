@@ -22,7 +22,7 @@ It covers a PR in `ianstormtaylor/slate` or a `udecode/plate` PR whose `baseRefN
 2. **Gather the Plate v2 evidence.** Search with `git grep --untracked`, as `AGENTS.md`'s Source authority says. For each lane, record what v2 decided, what it rejected and why, with the path:
    - Mentions: the PR and each linked issue, written as `<repo>#<n>` or `<owner>/<repo>/(issues|pull)/<n>`, anywhere in the repository; the bare number in `docs/editor-issue-harvester/slate/` for a Slate issue; and `pnpm kb slate#<n>` or `pnpm kb plate#<n>` for the tests tagged with the issue.
    - Doctrine: `VISION.md`, then `docs/vision/plite.md` for a Slate PR or `docs/vision/plate.md` for a Plate PR.
-   - Decisions and subjects: the job's words in `docs/research/decisions/`, `docs/plans/topics/` and `docs/editor-behavior/markdown-editing-spec.md`. Read each match's verdict paragraph and its alternatives table.
+   - Decisions and subjects: the job's words in `docs/plans/topics/` and `docs/editor-behavior/markdown-editing-spec.md`. Read each match's verdict paragraph and its alternatives table.
    - Code and docs: v2's owner of the same job in `packages/plitejs` or `packages/platejs`, its tests, and the page in `content/docs` that teaches it.
 
    Done when every lane has an answer or a recorded miss, and you can say in one sentence what v2 does for this job. When v2 has nothing on the job, the comment says so instead of borrowing a nearby decision.

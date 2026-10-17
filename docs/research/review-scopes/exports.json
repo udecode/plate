@@ -67,6 +67,5 @@
     "pagination",
     "media"
   ],
-  "decision": "docs/research/decisions/export-fidelity.md",
   "gaps": "Source-only architecture comparison: no new runtime, native-viewer or benchmark evidence. Detached frozen conversion configuration, inference, configured overrides and named roots need design. Structural plain-text feature mappings are not specified. Direct DOCX versus semantic HTML remains provisional pending matched fidelity and complete-operation measurement. OSS PDF engine selection is deferred. Earlier bound proof is retained for its exact cases."
 }

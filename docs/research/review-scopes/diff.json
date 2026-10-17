@@ -39,7 +39,6 @@
     "suggestions",
     "persistence"
   ],
-  "decision": "docs/research/decisions/structural-comparison.md",
   "historyCandidates": [
     "docs/plans/2026-09-10-structural-document-diff.md",
     "docs/plans/2026-09-05-shared-workflow-diff-audit.md",

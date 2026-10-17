@@ -101,6 +101,5 @@
     "history",
     "persistence",
     "clipboard"
-  ],
-  "decision": "docs/research/decisions/uploads-ownership.md"
+  ]
 }

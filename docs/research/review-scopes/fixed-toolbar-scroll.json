@@ -37,6 +37,5 @@
     "ui",
     "geometry",
     "ai"
-  ],
-  "decision": "docs/research/decisions/fixed-toolbar-scroll-ownership.md"
+  ]
 }

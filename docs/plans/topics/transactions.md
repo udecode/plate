@@ -225,6 +225,30 @@ try {
   });
 ```
 
+## Layer and owner
+
+One draft and change owner and one commit boundary serve every entrance. Commands also need a non-publishing preparation phase: an input rule builds a prefix, evaluates downstream behavior against it, and discards or continues it, and Media's break handler extends the downstream spec before publication.
+
+```text
+synchronous update or command author
+  → existing draft and canonical change
+  → commit publication
+  → observers and afterCommit
+```
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| An async transaction API | Draft lifetime, concurrency and rebase obligations with no requirement; async work finishes before a fresh synchronous update. |
+| Deleting the direct and configured update forms | They enter the same boundary; deleting them adds callback ceremony. |
+| Deleting prepared specs and running every command live | Loses non-publishing evaluation, discarded prefixes and downstream composition. |
+| Merging `DocumentChange`, `TransactionSpec` and `Commit` | A change transforms and maps, a spec adds revision-bound selection, effects and tags, a commit records an observed revision. |
+| The synchronous guard in Plate | Raw Plite, descriptor portals and headless builders shared the defect. |
+| Replacing every update with a prepared command | Immediate updates also stage extension publication and after-commit work. |
+
+Before the guard, an extension method or command builder that inserted `!`, awaited, then inserted `?` published `one!` and then failed, a partial operation ([synchronous authors plan](../2026-09-11-synchronous-transaction-authors.md)).
+
 ## Main changes
 
 - `packages/plitejs/src/core/public-state.ts` owns the update: one publish, the synchronous-author guard, the guarded `tx` groups and the command frame. The guard answers whether each plugin member came from the update group, and the command frame keeps a callable method's members.

@@ -57,6 +57,5 @@
     "persistence",
     "clipboard",
     "csv"
-  ],
-  "decision": "docs/research/decisions/import-fidelity.md"
+  ]
 }

@@ -60,6 +60,5 @@
   "relatedScopes": [
     "plate-api",
     "distribution"
-  ],
-  "decision": "docs/research/decisions/editor-public-naming.md"
+  ]
 }

@@ -48,7 +48,6 @@
     "runtime",
     "authored"
   ],
-  "decision": "docs/research/decisions/collaboration-ownership.md",
   "historyCandidates": [
     "docs/plans/4140-use-editor-selection-yjs.md",
     "docs/plans/2026-09-04-yjs-cursor-presentation.md",

@@ -52,6 +52,5 @@
     "accessibility",
     "pagination",
     "ui"
-  ],
-  "decision": "docs/research/decisions/plite-view-ownership.md"
+  ]
 }

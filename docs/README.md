@@ -17,7 +17,9 @@ and matching executable evidence establish implemented behavior. A design
 decision selects a target; it does not establish adoption or passing proof.
 
 The [research schema](research/schema.md) defines the storage and command
-contract. Current conclusions live in [decision pages](research/decisions/).
+contract. Each scope's current conclusions live in its subject file under
+[plans/topics](plans/topics/), and every review or plan on it is an iteration
+that folds into that file when it closes.
 Review pages under `docs/plans` carry each verdict in front matter, and the
 [legacy records](research/review-records/) keep the reviews and executions
 recorded before the front-matter cutover as history. `lookup` and `show` derive

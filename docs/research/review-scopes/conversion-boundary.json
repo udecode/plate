@@ -89,6 +89,5 @@
     "exports",
     "documents",
     "clipboard"
-  ],
-  "decision": "docs/research/decisions/conversion-boundary.md"
+  ]
 }

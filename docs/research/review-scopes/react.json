@@ -119,7 +119,6 @@
     "large-documents",
     "annotations"
   ],
-  "decision": "docs/research/decisions/plite-view-ownership.md",
   "historyCandidates": [
     "docs/plans/2026-09-10-react-selection-mutation-benchmark.md",
     "docs/plans/2026-09-10-react-selection-capture-isolated-benchmark.md",

@@ -105,6 +105,5 @@
     "comments",
     "collaboration",
     "diff"
-  ],
-  "decision": "docs/research/decisions/suggestion-review-semantics.md"
+  ]
 }

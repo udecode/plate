@@ -101,7 +101,6 @@
     "editing",
     "dnd"
   ],
-  "decision": "docs/research/decisions/table-ownership.md",
   "historyCandidates": [
     "docs/plans/5065-fix-table-tab-navigation.md",
     "docs/plans/5064-fix-homepage-table-grid-enter-crash.md",

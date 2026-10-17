@@ -70,6 +70,24 @@ Exports pick a projection explicitly.
 const markdown = editor.api.markdown.serialize({ projection: "proposed" });
 ```
 
+## Layer and owner
+
+| Responsibility | Decision |
+| --- | --- |
+| Plite | Contribution identity, retained content, positions, atomic review decisions and the accepted and proposed views. |
+| Plate | Review workflow and presentation. |
+| Applications | The ordinary `initialValue` and `editor.read.value()` calls; there is no public authored loader, cache, trusted-input mode, worker protocol or background replay controller. Authentication and access policy stay outside the engine. |
+| Writer identity | Every non-empty write through the capability needs a current author ID, accepted edits included, so accepted and proposed writes share one path. A resolver may return `null` while an editor only reads; the first write validates a non-empty ID. Plite never invents an anonymous or system author. |
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| Accepted edits bypassing the authored path | A second mutation authority, and pending changes without complete facts. |
+| Reducing every saved operation on open | Made opening depend on history the saved state already held. |
+| An opaque live-state mirror | Stored 44.25 MB, was slower than replay, and either replayed to validate both or admitted inconsistent text. |
+| A second projected document with a causal operation graph | Replaced by review marks on the one stored document ([review-tree pivot](../2026-10-13-review-tree-pivot.md)). |
+
 ## Main changes
 
 - `packages/plitejs/src/authored/tree/` turns each write into review marks on the stored document (`record.ts`, `record-completion.ts`), decides changes by rewriting that document (`resolve.ts`) and builds the previews (`proposed.ts`). `cuts.ts` reads the cut marks of pending splits and joins the fragments of a rejected one, and `layers.ts` decides pending property writes.

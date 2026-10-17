@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/Hhh2fhr8dV7dzN2LcybthK
 
-Mention, slash, emoji and footnote autocomplete in Plate. The query is ordinary editor text after a typed trigger. A popup belongs to the Editable where the trigger was typed, filters on live IME preedit, and replaces the trigger and query with one completion that undoes in one step. The scope's review and plan history prints with `node tooling/scripts/review-ledger.mjs show autocomplete`.
+Mention, slash, emoji and footnote autocomplete in Plate. The query is ordinary editor text after a typed trigger. A popup belongs to the Editable where the trigger was typed, filters on live IME preedit, and replaces the trigger and query with one completion that undoes in one step. The 2026-10-04 audit kept that owner and named Phase 1b of the [occurrence host plan](../2026-10-03-autocomplete-occurrence-host.md), a Plite typed-text report, as the remaining target: it closes the hard-law-5 string-paste violation and stops Plate reading private Plite commit tags. The plan's gated Phase 2 host adds core plugin grammar with no measured gain over the repaired owner. The scope's review and plan history prints with `node tooling/scripts/review-ledger.mjs show autocomplete`.
 
 ## Public API
 
@@ -152,6 +152,18 @@ Sources: shards are under `docs/plite/research/2026-10-02-autocomplete-query-rep
 | Stored input migration | Plate | `platejs`, `src/migrations/migratePlateV54Inputs.internal.ts` | Old input nodes cross a detached migration |
 | Catalogs, filtering, active option and presentation | Plate copied registry | `apps/www/src/registry/components/editor/inline-combobox.tsx` and the four feature files | Copied UI owns product presentation |
 
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| Returning to the native input element | Loses the query on undo and leaves author-locked input nodes in shared documents; the screen-reader gap it closed is repaired on the editor root instead. A real screen-reader run is the one result that could reopen it. |
+| Isolating the query outside the document, as Atlassian does | Needs custom history steps and shows no Android proof. |
+| An editor-global autocomplete manager, results service or promoted option catalogs | Each popup's policy and catalog belong to its feature; one owner per mounted Editable is enough. |
+| Consolidating into InputRules | Widens static dispatch and explicit-target semantics and moves a separate completion job. |
+| A `combobox()` plugin contribution | Each feature plugin's `ComboboxState` in `initialState` already holds the policy. |
+| Ariakit's duplicate select, value and hide completion actions | One completion path per option. |
+| Draft transfer between views | Cross-view entry dismisses and restores text. |
+
 ## Hard cuts and app migration
 
 The ordinary-text adoption deleted the input-node design and left no compatibility path.
@@ -195,10 +207,8 @@ The ordinary-text adoption deleted the input-node design and left no compatibili
 
 ## Open work
 
-Unless an item says otherwise, the decision page's open gates, `docs/research/decisions/autocomplete-ownership.md#open-gates`, track it.
-
 - Physical desktop and mobile IME, Android taps during composition and WebKit's confirming Enter on a real IME. Owner: input/Verify.
-- A blur that commits a composition under emulated Android leaves Plite's caret past the committed text, so a tap during composition refuses. Owner: Plite native input.
+- A blur that commits a composition under emulated Android leaves Plite's caret past the committed text, so a tap during composition refuses. Repro: on `/blocks/mention-demo` type `ab`, send `Input.imeSetComposition` with `cd`, click outside, and read the model selection, offset 6 instead of 4; it reproduces without any combobox. Real Gboard on the `Pixel_9_API_36_Play` emulator committed each letter as `insertText` and did not reproduce it, so a tap during a composition, a composing keyboard and a physical phone stay unproven. Owner: Plite native input.
 - Native-owner review of the public `ReactApi.settleInput()`, and autocomplete in owned content roots. Owner: Plite native input.
 - A Plite query for which Editable holds a shared selection, to replace the DOM check in `isAnotherEditorFocused`. Owner: Plite native input.
 - Browser cases for two views of one document, a live Copilot model beside Mention and screen-reader navigation. Owner: Plate React.
@@ -206,7 +216,7 @@ Unless an item says otherwise, the decision page's open gates, `docs/research/de
 - An Android keyboard-clipboard paste opens a popup, against hard law 5, because it arrives as `insertText` with no paste signal. Owner: Plite native input, tracked here.
 - No screen reader has run over the popups: VoiceOver on macOS and NVDA on Windows. Owner: Verify, tracked here.
 - Migration of named roots and of inputs with meaningful children, a lineage cutover for older v54 drafts, a v55 allocation, and active Yjs rooms and offline history. Owner: persistence/release.
-- Production-build timing for the key-to-paint contract. The October 4 calibrated run on a loaded machine was partial: candidate medians stayed within -0.5 to +1.15 ms, inside the A/A noise, but no run met the full keep rule; rerun it on an idle machine with the scratch `bench/run-final.sh` lanes, and rerun the known-bad control on the final harness with it. Owner: Benchmark.
+- Production-build timing for the key-to-paint contract: one 2,000-character paragraph of alternating bold and plain runs, 100 real keystrokes at its end paced at 100 ms, five warm runs with and without the four kits mounted; the kits-mounted p95 stays within 10% and 1 ms of the kits-off p95. The October 4 calibrated run on a loaded machine was partial: candidate medians stayed within -0.5 to +1.15 ms, inside the A/A noise, but no run met the full keep rule; rerun it on an idle machine with the scratch `bench/run-final.sh` lanes, and rerun the known-bad control on the final harness with it. Owner: Benchmark.
 - An opus panel seat run through `cross.mjs` cannot take the session's effort, so it runs at Claude's default until `~/.claude/pstack-models.md` names an explicit level. Owner: the owner.
 - Android pending diffs are keyed by editor, so two Editables of one view can flush each other's typed diff, and the typed-text report then names the Editable that flushed. Owner: Plite native input, tracked here.
 - `readTextToCaret` casts `root.getRootNode()` where `getDOMInputRepairTarget` guards it; one guarded read should serve both. Owner: Plite DOM, tracked here.

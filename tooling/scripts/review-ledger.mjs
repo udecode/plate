@@ -13,6 +13,7 @@ export const recordsDir = 'docs/research/review-records';
 export const groupsPath = 'docs/research/review-groups.json';
 export const documentsPath = 'docs/research/review-documents.json';
 export const legacyPath = 'docs/research/review-legacy.json';
+export const subjectOf = (id) => `docs/plans/topics/${id}.md`;
 
 export const census = {
   roots: [
@@ -543,7 +544,7 @@ function entriesFor(scopes, scopeIds, inputs, own) {
       .map((input) => input.slice(1))
   );
   const skipped = new Set(
-    [own, ...scopeIds.map((id) => scopes.get(id)?.decision)].filter(
+    [own, ...scopeIds.map(subjectOf)].filter(
       (path) => path && !added.includes(path)
     )
   );
@@ -1231,7 +1232,9 @@ function compact(ledger, tree, plans, scope) {
       })),
       unowned: bounded(dependents.unowned, 5),
     },
-    decision: scope.decision ?? null,
+    subject: existsSync(join(tree.root, subjectOf(scope.id)))
+      ? subjectOf(scope.id)
+      : null,
     scopeFile: `${scopesDir}/${scope.id}.json`,
     detail: `node tooling/scripts/review-ledger.mjs lookup ${scope.id} --detail`,
   };

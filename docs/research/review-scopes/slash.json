@@ -34,6 +34,5 @@
     "autocomplete",
     "ui",
     "editing"
-  ],
-  "decision": "docs/research/decisions/slash-command-ownership.md"
+  ]
 }

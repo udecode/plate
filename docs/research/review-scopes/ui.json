@@ -161,7 +161,6 @@
     "exports",
     "distribution"
   ],
-  "decision": "docs/research/decisions/registry-ui-ownership.md",
   "historyCandidates": [
     "docs/plans/5112-resolve-comment-floating-toolbar-regression.md",
     "docs/plans/5085-toolbar-focus-execution.md",

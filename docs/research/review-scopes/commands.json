@@ -60,6 +60,5 @@
     "editing",
     "ui",
     "native"
-  ],
-  "decision": "docs/research/decisions/plite-core-ownership.md"
+  ]
 }

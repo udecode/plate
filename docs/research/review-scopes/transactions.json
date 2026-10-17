@@ -73,6 +73,5 @@
     "model",
     "history",
     "authored"
-  ],
-  "decision": "docs/research/decisions/transactions-synchronous-boundary.md"
+  ]
 }

@@ -77,7 +77,6 @@
     "persistence",
     "ui"
   ],
-  "decision": "docs/research/decisions/plate-core-ownership.md",
   "historyCandidates": [
     "docs/plans/2026-09-08-docx-entrypoints-and-plugin-ownership.md",
     "docs/plans/2026-09-03-hard-cut-plate-migrations-after-v54.md",

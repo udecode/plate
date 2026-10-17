@@ -1,0 +1,6 @@
+ts	phase	decision	why	evidence	result
+2026-10-17T13:04:41Z	lead	claude-opus-5-5 @high	read from the session transcript, since an agent cannot see its own effort	transcript dfc8403c-e709-43f8-81f7-b6d9f42cc1ad.jsonl	recorded claude session
+2026-10-17T13:04:41Z	plan	Pick the subject file as each scope one home	plan-page already folds iterations into subjects, and decision pages are a second write path; 5 shared pages span 13 scopes	proof: none	decided, docs/plans/topics/<scope>.md
+2026-10-17T13:04:41Z	plan	Keep every doc store	owner asked whether they are used; recent-plan refs: probes 17, plite/research 24, review-records 39, decisions 44	proof: none	decided, no store is deleted
+2026-10-17T13:04:41Z	plan	Keep the behavior spec as one file	its ownership order binds families together and kb parses one file	proof: none	decided, subject files cite spec IDs
+2026-10-17T13:04:41Z	plan	Skip paired trials and panels	owner said fast	proof: none	decided, fast mode

@@ -100,7 +100,6 @@
     "ui",
     "uploads"
   ],
-  "decision": "docs/research/decisions/dnd-ownership.md",
   "historyCandidates": [
     "docs/plans/2026-09-07-ai-dnd-root-slots.md",
     "docs/plans/2026-09-06-kit-owned-ai-and-dnd-lifetimes.md",

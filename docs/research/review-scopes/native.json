@@ -91,7 +91,6 @@
     "history",
     "external-text"
   ],
-  "decision": "docs/research/decisions/plite-view-ownership.md",
   "historyCandidates": [
     "docs/plans/5113-ship-native-selection-autoscroll-fix.md",
     "docs/plans/5113-selection-drag-scrolling-regression.md",

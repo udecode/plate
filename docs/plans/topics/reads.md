@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/488sqQGdGBVvhgnubqfSmv
 
-Plite's read and observe surface: how app code reads one coherent document at its committed or draft lifetime, and how it observes each published commit. The ledger asks which canonical read and snapshot owner can replace repeated traversals or duplicate subscriptions without changing observable state. Two earlier targets have landed in source: commit-owned per-key path membership with demand-gated selector dispatch (2026-09-11), and copy-on-branch snapshot-index provenance with a regression test (2026-09-16). Their plan's whole-checkout gates and the www native burst-timing budget never passed. The 2026-10-04 audit found one gap left, two public subscriptions that delivered the same per-commit payload. The 2026-10-05 build cut `editor.subscribe`, so `editor.subscribeCommit` is the one public way to observe a commit. Its law lives in `docs/research/decisions/reads-demand-driven-invalidation.md`.
+Plite's read and observe surface: how app code reads one coherent document at its committed or draft lifetime, and how it observes each published commit. The ledger asks which canonical read and snapshot owner can replace repeated traversals or duplicate subscriptions without changing observable state. Two earlier targets have landed in source: commit-owned per-key path membership with demand-gated selector dispatch (2026-09-11), and copy-on-branch snapshot-index provenance with a regression test (2026-09-16). Their plan's whole-checkout gates and the www native burst-timing budget never passed. The 2026-10-04 audit found one gap left, two public subscriptions that delivered the same per-commit payload. The 2026-10-05 build cut `editor.subscribe`, so `editor.subscribeCommit` is the one public way to observe a commit. A read observes one coherent document or root at the active draft or committed lifetime; retained snapshots keep their old values and node-key locations; subscriptions publish synchronously and tell model changes from mounted DOM needs. A single-key membership query never derives unrelated changes, and complete change sets are enumerated only for consumers that need them ([invalidation plan](../2026-09-11-demand-driven-commit-invalidation.md)). `node tooling/scripts/review-ledger.mjs show reads` prints the full history.
 
 ## Public API
 
@@ -52,6 +52,17 @@ Where an editor needs code to run earlier than app listeners, it gives that code
 | The provider calls the runtime subscription directly instead of a public method that forwarded to it | Plite | `plitejs/react`, importing `getEditorRuntime` through `packages/plitejs/src/react/editable/runtime-editor-api.ts` | The React partition may import the root partition under `tooling/entrypoints/entrypoint-dag.mjs`, and `getEditorRuntime` is reachable there |
 | The snapshot listener and commit source types are internal | Plite | `plitejs` root partition, not exported from `packages/plitejs/src/index.ts` | Only internal listener plumbing takes them |
 
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| Observed-read handles, automatic tracking or signals | Node identity and commit queries already express the dependency; a dependency graph adds lifetime rules without fixing the owner defect. |
+| Merging snapshots with live read views | Historical values and live transaction reads have distinct jobs. |
+| Folding the snapshot index into the token index | Token changes and retained key locations differ; moving key mapping does not remove it. |
+| Moving all subscription logic into core | React keeps DOM-sync suppression and view retirement. |
+| Replacing the generic selector store | The 2026-09-09 E06 Defer holds; the probe isolated commit queries only. |
+| An uncached single-key reader | Lost repeated dense reads, 1.31 ms against 0.17 ms at 8,192 watchers, so memoization stays on the commit. |
+
 ## Main changes
 
 - `packages/plitejs/src/core/commit.ts` answers per-key path membership from presence plus old-path identity, memoized per commit, so one unchanged-key query does not derive the whole shifted path set.
@@ -84,4 +95,3 @@ Where an editor needs code to run earlier than app listeners, it gives that code
 - A wide element's `children` array, such as a table with thousands of rows, is still frozen on every edit inside it. owner: zbeyens, tracked here. stop: a probe of edits inside a wide element shows the cost material, or the owner drops it.
 - Authored `finishContent` snapshots the document root with `snapshotEditorJsonValue`, which copies and freezes it once per content insert. owner: zbeyens, tracked here. stop: a content-insert width probe lands a fix, or the owner drops it.
 - `rememberValidatedDocumentRoots` walks every node on each `tx.changes.apply` and `tx.slice.replace`, and `DocumentChange.apply` looks up every top-level node; the change-width session took both on 2026-10-11. owner: zbeyens, tracked here. stop: that session's plan lands them, or the owner drops them.
-- `docs/research/decisions/model-document-boundary.md:98-100` says a document-bound view reuses cached validation only for "frozen documents Plite produced"; edited roots are now registered, not frozen. owner: zbeyens, tracked here. stop: the next edit of that decision record rewords it, or the owner drops it.

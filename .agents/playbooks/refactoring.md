@@ -61,7 +61,7 @@ Inspect at least five candidate areas unless the prompt names a smaller surface.
 1. **Deletion:** deleting it makes complexity disappear (shallow) or spreads it across callers (earning its keep).
 2. **Navigation:** the files, owners and proof commands an agent touches to understand or fix one behavior.
 3. **Interface depth:** callers learn less while behavior and proof become more local.
-4. **VISION fit:** a cleanup outside `VISION.md`, or missing reusable taste, first records that taste in the smallest Vision owner; an unresolved call shape routes to `best-api`.
+4. **VISION fit:** a cleanup outside `VISION.md`, or missing reusable taste, first records that taste in its smallest owner, the scope's subject file when it binds one scope; an unresolved call shape routes to `best-api`.
 
 A candidate whose owner runs per node, plugin, subscriber, listener, render, query or DOM unit gets Benchmark's embedded probe with the performance pack before ranking; a behavior-neutral label does not prove scale neutrality.
 

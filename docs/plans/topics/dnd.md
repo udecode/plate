@@ -314,6 +314,18 @@ Source: `docs/plans/artifacts/2026-10-15-move-landing-guard/prior-art.md`.
 | List and Indent declare their positional properties | Plate | `platejs` core entry, `src/features/list/lib/BaseListPlugin.ts`, `src/features/indent/lib/BaseIndentPlugin.ts` | The properties' owners |
 | List identity for moved text and dropped block copies | Plate | `platejs` core entry, `src/features/list/lib/` | List policy stays in Plate |
 
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| Keeping React DnD, or adopting modern dnd-kit | Neither earns default adoption: one HTML5 backend per window, a window `dragover` on every drag, and payload types that disagreed with Plate's. |
+| A Plate-side second transfer, move and settlement protocol | Turned copy into move, deleted read-only sources and attached a transferred content owner to a colliding target root. |
+| A Plate-side two-view fix comparing runtime owner and root | Lost copy intent, skipped the source view's permission and moved an unrelated block; Plite owns document identity. |
+| Root-only landing with per-feature widening middleware | Column and Table repeated near-identical widening and blockquote, details and footnote content got no drop; the schema decides. |
+| Stale sources degrading to copy, and lossy moves degrading to copy | A move resolves live keys at drop and refuses when its source is gone or its landing is lossy. |
+| Cross-editor moves with coupled undo | Independent editors copy, so no third holder keeps the content. |
+| A session manager or backend framework for custom drivers | A custom driver calls `resolveDropTarget` and `transfer`. |
+
 Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md` and `landing plan` is `docs/plans/2026-10-02-dnd-schema-derived-landing.md`. The last eight rows come from `docs/plans/2026-10-15-list-drag-landing.md`. `README` is `docs/plite/research/2026-10-02-dnd-library-choice/README.md`. The records are in `docs/research/review-records/`: `interrogation record` is `2026-10-01-dnd-transfer-interrogation.json`, `repair record` is `2026-10-02-dnd-transfer-consolidation-review-repair-execution.json` and `library record` is `2026-10-02-dnd-library-choice.json`.
 
 ## Hard cuts and app migration
@@ -389,7 +401,7 @@ Repo callers updated in phase 3: `plate-dnd-cross-editor.tsx`, `lifetime-browser
 | Insert after an empty details summary | not in the sources | A command insertion still replaces the summary; a file drop lands beside it | not recorded | `landing plan` Open findings |
 | Details summary placement | not in the sources | Paste and insert can put a summary after the first child; a transfer keeps it first | not recorded | `landing plan` Open findings |
 
-Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landing plan` is `docs/plans/2026-10-02-dnd-schema-derived-landing.md` and `side drop plan` is `docs/plans/2026-10-06-dnd-side-drop-columns.md`. `dnd-ownership.md` is `docs/research/decisions/dnd-ownership.md`. `README` is `docs/plite/research/2026-10-02-dnd-library-choice/README.md`.
+Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landing plan` is `docs/plans/2026-10-02-dnd-schema-derived-landing.md` and `side drop plan` is `docs/plans/2026-10-06-dnd-side-drop-columns.md`. `dnd-ownership.md` is the retired decision page, read with `git show 2e865a0bc4:docs/research/decisions/dnd-ownership.md`. `README` is `docs/plite/research/2026-10-02-dnd-library-choice/README.md`.
 
 ## Native behavior and proof
 
@@ -525,6 +537,7 @@ Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landi
 Each item is tracked here; `side drop plan` is `docs/plans/2026-10-06-dnd-side-drop-columns.md`, `list landing plan` is `docs/plans/2026-10-14-transfer-list-landing.md`, `list drag plan` is `docs/plans/2026-10-15-list-drag-landing.md` and `move guard plan` is `docs/plans/2026-10-15-move-landing-guard.md`. `text move plan` is `docs/plans/2026-10-15-text-move-landing.md`.
 
 - **Side-drop proof gaps.** The side drop shipped with ten steps only partly proven: no cross-root side test, no x-axis geometry case, no browser count of admissions, no browser case for the menu in an editor without Column, no Vision forward test, and most mutation controls ran on bytes before the last restructure. The docs check was red at HEAD when it closed. From the `side drop plan` Close. owner: zbeyens. stop: each gap gets its case, or zbeyens accepts the gap.
+- **Pragmatic Drag and Drop.** A private PDD driver is deferred until it deletes responsibility: a candidate must keep native text, one nested-view recipient, iframe mounting and same-window custom MIME before its production cost is compared with native. owner: Benchmark. stop: that bounded experiment runs, or zbeyens drops it.
 - **Emptied-column cleanup.** Dragging the last block out of a column leaves a padded empty column, and a group never drops below two columns. A cleanup at transfer time loses a concurrent remote insert into the removed column. In Plate Column, the `layout` review scope. owner: zbeyens. stop: the `layout` review decides the cleanup, or zbeyens drops it.
 - **List's landing redirect returns owner keys.** `BaseListPlugin.ts` returns `state.key(...)`, the mechanism that made the side read refuse from a view editor. Inferred, not reproduced. In Plite transfer read state (`packages/plitejs/src/core/landing.ts`). owner: zbeyens. stop: a view-editor case reproduces or clears it.
 - **Read middleware handlers get no contextual return type.** Column's side read needs `as const` on its edge literals because `PluginReadContext.around` (`packages/plitejs/src/interfaces/editor.ts`) does not type the handler's return. owner: zbeyens. stop: the read typing infers the return, or zbeyens drops it.

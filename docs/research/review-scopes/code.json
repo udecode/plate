@@ -87,7 +87,6 @@
     "large-documents",
     "performance"
   ],
-  "decision": "docs/research/decisions/code-text-ownership.md",
   "historyCandidates": [
     "docs/plans/4613-code-block-paste-must-not-autolink.md",
     "docs/plans/4520-code-block-format-highlight.md",

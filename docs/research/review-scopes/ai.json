@@ -104,7 +104,6 @@
     "comments",
     "ui"
   ],
-  "decision": "docs/research/decisions/ai-preview-ownership.md",
   "historyCandidates": [
     "docs/plans/4900-ai-streaming-history.md",
     "docs/plans/4527-ai-menu-streaming-anchor-undefined.md",

@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/WEzA582D2wBjBdtc7jZgRT
 
-How Plate's copied registry UI installs into an app and who owns kit membership, install metadata and menu and toolbar policy. The ledger asks for the smallest copied composition contract that keeps kit membership, installation metadata and toolbar policy explicit. The 2026-09-18 Pursue landed. The registry's `transforms.ts` is gone, Base and Radix dropdown items carry item-scoped `finalFocus`, and feature plugins own typed insert and upsert through one private `blockInsertion` policy. Its slash-ui-actions proof ran then and is historical now. The 2026-10-04 review (`2026-10-04-ui-audit-2`) found one gap left, authored `registryDependencies` that mixed import facts with install intent, and `docs/plans/2026-10-08-ui-review.md` closed it. The build now derives every registry edge and package version that copied imports need, and authored lists hold only install policy: styles, companions, bundles, providers and owner picks. Its proof is shadcn's own resolver run over every published item in all 16 styles, with no new app built, because a separate `dnd.tsx` tooltip error stopped the first one. Its law is `docs/vision/plate.md`, the registry install bullet that starts "Derive required package and registry-item dependencies", and `docs/research/decisions/registry-ui-ownership.md`.
+How Plate's copied registry UI installs into an app and who owns kit membership, install metadata and menu and toolbar policy. The ledger asks for the smallest copied composition contract that keeps kit membership, installation metadata and toolbar policy explicit. The 2026-09-18 Pursue landed. The registry's `transforms.ts` is gone, Base and Radix dropdown items carry item-scoped `finalFocus`, and feature plugins own typed insert and upsert through one private `blockInsertion` policy. Its slash-ui-actions proof ran then and is historical now. The 2026-10-04 review (`2026-10-04-ui-audit-2`) found one gap left, authored `registryDependencies` that mixed import facts with install intent, and `docs/plans/2026-10-08-ui-review.md` closed it. The build now derives every registry edge and package version that copied imports need, and authored lists hold only install policy: styles, companions, bundles, providers and owner picks. Its proof is shadcn's own resolver run over every published item in all 16 styles, with no new app built, because a separate `dnd.tsx` tooltip error stopped the first one. Its law is `docs/vision/plate.md`, the registry install bullet that starts "Derive required package and registry-item dependencies", and the owners below.
 
 ## Public API
 
@@ -21,6 +21,30 @@ A registry author declares each copied item in `registry-features.ts`; the build
   name: 'slash',
   type: 'registry:component',
 ```
+
+## Layer and owner
+
+| Responsibility | Decision |
+| --- | --- |
+| Plugin membership and order | App source: plain `EditorKit` and `BaseEditorKit` arrays, with `Editor`, `EditorStatic` and frame and scrollport kept apart. |
+| Neutral feature policy | One server-safe Align kit and one LineHeight kit; Font is not a third case, because live Font sets a black default its static counterpart does not. |
+| Presentation and eligibility | Copied JSX: labels, icons, grouping, membership and async surface policy. |
+| Edits | Feature operations: typed `insert` always creates, `upsert` reuses a matching empty source; Insert uses `insert`, Slash uses `upsert` for blocks and `insert` for inlines. |
+| Menu focus | Item-scoped `finalFocus` in the Base and Radix adapters; only a successful closing selection arms it, `false` suppresses it, and content-level `onFinalFocus` is the fallback. |
+| Toolbars | `FixedToolbarPlugin` and `FixedToolbarKit` stay as optional placement beside ordinary JSX; floating toolbar and block menu render inside the exact mounted view. |
+| Installation | Registry tooling derives required facts, keeps explicit bundles and compiles `r`, `rd`, sparse overlays, the manifest and hashes as one generation. |
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| Open-ended string action dispatch | Unsupported values fell through to paragraph conversion. |
+| Caller-owned close-focus handshakes through mutable refs | Item-scoped intent replaces them. |
+| A universal feature or command catalog | No discovery or dynamic registration job. |
+| Merging every kit into one package preset, or generating runtime kits from registry metadata | Loses app policy and static import safety, or lets installation choose editor semantics. |
+| Deleting the whole catalog | Routes, targets, style variables and no-file bundles are authored decisions. |
+| Separate registry build modes | Both wrote `src/__registry__/overlays`, and `rd` responses returned production dependencies. |
+| The raw Plite hovering-toolbar hook migration | Failed 2 of 12 p95 cohorts; manual geometry stays. |
 
 ## Main changes
 

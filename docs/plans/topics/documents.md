@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/SxNXgniwmjam3P6VxYPfit
 
-DOCX file import, DOCX file export and Word clipboard paste in `platejs`. The ledger asks which document conversion laws the three share, and where fidelity limits must be explicit (`docs/research/review-scopes/documents.json`). `importDocx` returns one document or a failure, `exportDocx` captures one editor snapshot under an explicit authored projection, every loss is a structured diagnostic, an opt-in `DocxSource` gives exact or safely overlaid re-export, output passes a safety gate, and `WordPastePlugin` owns paste. A Word file carries only what Word displays: text, comments and tracked revisions. Exact review state persists as canonical authored JSON beside the file. An edited source-aware export keeps custom properties and one-section headers and footers from the source, and reports every other source part it leaves out. The 2026-10-06 build's acceptance and benchmark receipts are in `docs/plans/2026-10-06-documents-review.md`'s Close; the decision page, `docs/research/decisions/documents-conversion-fidelity.md`, holds the older September receipts, which this page did not rerun.
+DOCX file import, DOCX file export and Word clipboard paste in `platejs`. The ledger asks which document conversion laws the three share, and where fidelity limits must be explicit (`docs/research/review-scopes/documents.json`). `importDocx` returns one document or a failure, `exportDocx` captures one editor snapshot under an explicit authored projection, every loss is a structured diagnostic, an opt-in `DocxSource` gives exact or safely overlaid re-export, output passes a safety gate, and `WordPastePlugin` owns paste. A Word file carries only what Word displays: text, comments and tracked revisions. Exact review state persists as canonical authored JSON beside the file. An edited source-aware export keeps custom properties and one-section headers and footers from the source, and reports every other source part it leaves out. The 2026-10-06 build's acceptance and benchmark receipts are in `docs/plans/2026-10-06-documents-review.md`'s Close. The September retained-source proof passed 146 focused DOCX package tests, packed-consumer checks, a Chromium file-picker and download flow, and a LibreOffice render, resave and reimport of an edited overlay; this page did not rerun it.
 
 ## Public API
 
@@ -112,6 +112,20 @@ Word keeps customXml data parts, per Microsoft's add-in documentation. ISO 29500
 | Task state in Word comes from the task item's `data-checked` and becomes its list marker | Plate, with the copied static list | `platejs/docx/export` (`internal/xml-builder.ts`, `internal/docx-document.ts`) and copied `block-list-static.tsx` | The list owner keeps the marker and the indent together, and `data-checked` is the attribute the list plugin's HTML codec already writes |
 | Word's default colors, fonts and sizes live in the app's copied stylesheet | Copied registry | copied `docx-export.tsx`, selecting the Word components by their `editor-<plugin>` class | Finishes the 2026-09-04 rule that the package ships no Word visual preset |
 
+The file path is a bounded hybrid: direct OOXML inspection owns package limits, revisions, comments and relationships, and one configured Plate codec pass owns the application schema. `DocxSource` keeps the admitted Blob and a private immutable baseline outside editor and document state; the app owns its lifetime. Exact bytes return only for a matching schema identity, an unchanged review document and projection, unchanged comments and no metadata or layout override. Word paste images and table geometry stay omitted until a destination-policy comparison shows which payloads are safe.
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| `exportAuthoredToDocx` beside `exportToDocx` | Two operations for one job, with a second serializer reading live state after an await. |
+| `ImportDocxResult.nodes` beside `document` | Competing truths; the copied action dropped authored state, comments and warnings, and a failed decode could replace the document with nothing. |
+| `ImportDocxOptions.rtf` | RTF is clipboard payload, owned by Word paste. |
+| `DocxPlugin` as the name of the paste adapter | It transforms clipboard HTML and RTF, not files; now `WordPastePlugin`. |
+| A native sidecar, `nativeState`, `authoredTrust` and `editor/authored.json` | Restored only from byte-identical packages and leaked edited-out text through source-aware export. |
+| A `DocxSession`, universal document engine or Office abstraction | Plate already owns transactions, selection, comments, schema and persistence; DOCX, paste, CSV and pagination keep separate jobs. |
+| Whole-ZIP passthrough | Generated owners stay authoritative, and copied graphs must stay reachable and validated. |
+
 ## Main changes
 
 - `packages/platejs/src/docx/import/lib/importDocx.ts` owns detached import: package limits, revisions, comments, cancellation and the one-pass Plate codec. It reads no Plate state from the package.
@@ -157,4 +171,6 @@ Word keeps customXml data parts, per Microsoft's add-in documentation. ISO 29500
 - The DOCX file is zipped without compression (`generateAsync` passes no `compression`), so each separate list's 2.6 KB numbering definition lands in the file as is. owner: zbeyens, tracked here. stop: the writer deflates the package or shares list definitions, or the owner drops it.
 - `getIndentLevel` in the DOCX writer repeats the indent plugin's 24px default offset and the root list indent of 1 as literals; naming them needs an export from the indent plugin. owner: zbeyens, tracked here. stop: the indent plugin exports its default offset, or the owner drops it.
 - DOCX import's source retention parses package XML with the global `DOMParser` after import starts, against the realm law in `docs/plans/2026-09-25-document-conversion-contracts.md`. With `retainSource: true`, swapping `DOMParser` after entry makes retention give up with `source-unavailable`, at base and after `docs/plans/2026-10-12-docx-dom-parser.md`. The fix passes the captured `parseXml` through `retainDocxSource` and `findDocxSourceViolations` into `readContentTypes` and `readRelationships`. owner: zbeyens, tracked here. stop: the next change to DOCX import's source retention, or 2026-11-12.
+- A direct OOXML adapter for file semantics, revisions, ranges, numbering and roots is the strongest replacement candidate. owner: the next documents review. stop: a matched prototype proves behavior and complete-operation cost.
+- Microsoft Word, imported body media, Word-equivalent layout, visible named-root mapping and hard cancellation inside synchronous third-party codecs are uncertified; body edits still discard unknown body XML. owner: the next documents review. stop: a Word run or a mapping plan.
 - `pnpm lint` is red at `6fa1169c5e` on link work outside DOCX (`link.tsx` console calls, `link-url-policy.spec.ts` and four unformatted files), so `docs/plans/2026-10-12-docx-dom-parser.md` accepted its lint gate as partial under its Defaults word "wait for full lint". owner: zbeyens, tracked here. stop: `pnpm lint` passes at `HEAD`.

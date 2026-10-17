@@ -58,6 +58,5 @@
     "exports",
     "documents",
     "clipboard"
-  ],
-  "decision": "docs/research/decisions/format-mapping-authoring.md"
+  ]
 }
