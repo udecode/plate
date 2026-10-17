@@ -26,22 +26,6 @@ on:
       - opened
       - synchronize
       - reopened
-    paths:
-      - 'packages/**'
-      - 'tooling/**'
-      - 'package.json'
-      - '.github/actions/**'
-      - '.github/workflows/**'
-      - 'pnpm-workspace.yaml'
-      - 'pnpm-lock.yaml'
-      - 'biome.jsonc'
-      - 'eslint*'
-      - 'bunfig.toml'
-      - 'tsconfig.json'
-      - 'turbo.json'
-      - 'config'
-      - 'scripts'
-      - 'patches'
 
   workflow_dispatch:
 
@@ -73,28 +57,41 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
 
+      - name: 🔎 Skip a PR that changes no code
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'pull_request' }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          changed="$(git diff --name-only "$BASE_SHA" HEAD)"
+          if grep -qE '^(packages/|tooling/|package\.json$|\.github/(actions|workflows)/|pnpm-workspace\.yaml$|pnpm-lock\.yaml$|biome\.jsonc$|eslint|bunfig\.toml$|tsconfig\.json$|turbo\.json$|config$|scripts$|patches$)' <<<"$changed"; then
+            echo "Code changed; running CI."
+          else
+            echo "No code changed; skipping the CI steps."
+            echo "SKIP_CI=true" >> "$GITHUB_ENV"
+          fi
+
       - name: ✅ Skip generated release PR
         if: ${{ env.GENERATED_RELEASE_PR == 'true' }}
         run: echo "Generated Changesets release PR; release workflow validates package output."
 
       - name: Setup Node.js
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && env.SKIP_CI != 'true' }}
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Install bun
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && env.SKIP_CI != 'true' }}
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
       - name: 📥 Monorepo install
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && env.SKIP_CI != 'true' }}
         uses: ./.github/actions/pnpm-install
 
       - name: Check generated agent workflow drift
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && env.SKIP_CI != 'true' }}
         run: |
           if [[ -n "$(git status --porcelain --untracked-files=all -- AGENTS.md CLAUDE.md .agents .claude/skills .claude/settings.json .codex/config.toml skills-lock.json)" ]]; then
             git status --short -- AGENTS.md CLAUDE.md .agents .claude/skills .claude/settings.json .codex/config.toml skills-lock.json
@@ -103,7 +100,7 @@ jobs:
           fi
 
       - name: ♻️ Restore packages cache
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && env.SKIP_CI != 'true' }}
         uses: actions/cache@v4
         with:
           path: |
@@ -112,11 +109,11 @@ jobs:
           key: packages-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: 🧱 Generate barrels
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && env.SKIP_CI != 'true' }}
         run: pnpm brl
 
       - name: 🔍 Detect barrel changes
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && env.SKIP_CI != 'true' }}
         id: barrel-changes
         run: |
           if [[ -n "$(git status --porcelain --untracked-files=all -- packages)" ]]; then
@@ -127,27 +124,27 @@ jobs:
           fi
 
       - name: ❌ Fail on barrel drift in PR
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'pull_request' && steps.barrel-changes.outputs.changed == 'true' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && env.SKIP_CI != 'true' && github.event_name == 'pull_request' && steps.barrel-changes.outputs.changed == 'true' }}
         run: |
           echo "pnpm brl produced changes. Commit the generated barrel updates."
           exit 1
 
       - name: ✅ Check push
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'push' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && env.SKIP_CI != 'true' && github.event_name == 'push' }}
         run: bun run check:push
 
       - name: ✅ Check PR
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && env.SKIP_CI != 'true' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') }}
         run: bun check
 
       - name: 🔧 Configure git
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'push' && steps.barrel-changes.outputs.changed == 'true' && github.repository == 'udecode/plate' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && env.SKIP_CI != 'true' && github.event_name == 'push' && steps.barrel-changes.outputs.changed == 'true' && github.repository == 'udecode/plate' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: ⬆️ Push barrel updates
-        if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'push' && steps.barrel-changes.outputs.changed == 'true' && github.repository == 'udecode/plate' }}
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' && env.SKIP_CI != 'true' && github.event_name == 'push' && steps.barrel-changes.outputs.changed == 'true' && github.repository == 'udecode/plate' }}
         run: |
           git add packages
           git commit -m "chore: sync barrels [skip ci] [skip release]"
