@@ -25,7 +25,7 @@ describe('markdownToSlateNodesSafely', () => {
             children: [{ text: 'ok' }],
             type: 'callout',
           },
-          { text: '<callout>' },
+          { rawHtml: true, text: '<callout>' },
         ],
         type: 'p',
       },
@@ -40,6 +40,7 @@ describe('markdownToSlateNodesSafely', () => {
         children: [
           { bold: true, text: 'bold' },
           {
+            rawHtml: true,
             text: '<u>',
           },
         ],
@@ -55,7 +56,7 @@ describe('markdownToSlateNodesSafely', () => {
       {
         children: [
           { text: 'plain' },
-          { text: '<u>' },
+          { rawHtml: true, text: '<u>' },
           { text: ' ' },
           { bold: true, text: 'bold' },
         ],
@@ -69,7 +70,7 @@ describe('markdownToSlateNodesSafely', () => {
 
     expect(markdownToSlateNodesSafely(editor, '<u>')).toEqual([
       {
-        children: [{ text: '<u>' }],
+        children: [{ rawHtml: true, text: '<u>' }],
         type: 'p',
       },
     ]);
@@ -107,7 +108,7 @@ describe('markdownToSlateNodesSafely', () => {
             children: [{ text: 'member' }],
             type: 'member',
           },
-          { text: '<u>' },
+          { rawHtml: true, text: '<u>' },
         ],
         type: 'p',
       },
@@ -123,7 +124,7 @@ describe('markdownToSlateNodesSafely', () => {
         type: 'hr',
       },
       {
-        children: [{ text: '<u>' }],
+        children: [{ rawHtml: true, text: '<u>' }],
         type: 'p',
       },
     ]);

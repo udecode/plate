@@ -1,6 +1,9 @@
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
 import { getPluginKey, getPluginType, KEYS } from 'platejs';
+import remarkMdx from 'remark-mdx';
+import remarkStringify from 'remark-stringify';
+import { unified } from 'unified';
 
 import type { MdDecoration } from '../../types';
 import type { DeserializeMdOptions } from '../deserializeMd';
@@ -13,6 +16,21 @@ const MDX_ATTR_NAME_TO_HTML_ATTR: Record<string, string> = {
   htmlFor: 'for',
 };
 
+const FLOW_TYPES = new Set([
+  'blockquote',
+  'code',
+  'heading',
+  'html',
+  'list',
+  'paragraph',
+  'table',
+  'thematicBreak',
+]);
+
+const TRAILING_NEWLINE_REGEX = /\n$/;
+
+const markdownStringifier = unified().use(remarkStringify).use(remarkMdx);
+
 const serializeUnknownMdxChild = (child: any): string => {
   if (
     child?.type === 'mdxJsxTextElement' ||
@@ -21,15 +39,17 @@ const serializeUnknownMdxChild = (child: any): string => {
     return serializeUnknownMdxNode(child);
   }
 
-  if ('value' in (child ?? {})) {
-    return child.value ?? '';
-  }
+  if (!child?.type) return '';
 
-  if (Array.isArray(child?.children)) {
-    return child.children.map(serializeUnknownMdxChild).join('');
-  }
+  const isPhrasing = !FLOW_TYPES.has(child.type);
+  const root = {
+    children: isPhrasing ? [{ children: [child], type: 'paragraph' }] : [child],
+    type: 'root',
+  };
 
-  return '';
+  return markdownStringifier
+    .stringify(root as any)
+    .replace(TRAILING_NEWLINE_REGEX, '');
 };
 
 const serializeUnknownMdxAttributes = (attributes?: any[]) => {
@@ -65,13 +85,22 @@ const serializeUnknownMdxNode = (
     return `${openTag} />`;
   }
 
-  const inner = mdastNode.children
-    .map(serializeUnknownMdxChild)
-    .join(mdastNode.type === 'mdxJsxFlowElement' ? '\n' : '');
-
   if (mdastNode.type === 'mdxJsxFlowElement') {
-    return `${openTag}>\n${inner}\n</${mdastNode.name}>`;
+    // CommonMark ends an HTML block at a blank line, so Markdown blocks inside
+    // a block tag need blank lines around them to stay Markdown.
+    const separator = mdastNode.children.some(
+      (child) => child.type !== 'html' && FLOW_TYPES.has(child.type)
+    )
+      ? '\n\n'
+      : '\n';
+    const inner = mdastNode.children
+      .map(serializeUnknownMdxChild)
+      .join(separator);
+
+    return `${openTag}>${separator}${inner}${separator}</${mdastNode.name}>`;
   }
+
+  const inner = mdastNode.children.map(serializeUnknownMdxChild).join('');
 
   return `${openTag}>${inner}</${mdastNode.name}>`;
 };
@@ -105,10 +134,11 @@ export const customMdxDeserialize = (
     );
   }
 
-  // Default fallback: preserve tag structure as text
+  // Default fallback: preserve tag structure as raw HTML text
   if (mdastNode.type === 'mdxJsxTextElement') {
     return [
       {
+        rawHtml: true,
         text: serializeUnknownMdxNode(mdastNode),
       },
     ];
@@ -119,6 +149,7 @@ export const customMdxDeserialize = (
       {
         children: [
           {
+            rawHtml: true,
             text: serializeUnknownMdxNode(mdastNode),
           },
         ],

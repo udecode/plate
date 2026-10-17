@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { Agentation } from 'agentation';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 
@@ -121,7 +120,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </Providers>
         </NuqsAdapter>
 
-        {process.env.NODE_ENV === 'development' && <Agentation />}
         <TailwindIndicator />
 
         <GA />

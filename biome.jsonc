@@ -133,6 +133,26 @@
       }
     },
     {
+      "includes": [
+        "tooling/scripts/proof-worktree.mjs",
+        "tooling/scripts/teaching-sweep.mjs",
+        "tooling/scripts/trial-power.mjs",
+        "tooling/scripts/trial-power.test.mjs"
+      ],
+      "linter": {
+        "rules": {
+          "performance": {
+            "useTopLevelRegex": "off"
+          },
+          "style": {
+            "useForOf": "off",
+            "useNumberNamespace": "off",
+            "useNumericSeparators": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["packages/**"],
       "linter": {
         "rules": {

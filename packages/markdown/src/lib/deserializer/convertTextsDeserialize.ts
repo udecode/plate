@@ -6,6 +6,7 @@ import type { DeserializeMdOptions } from './deserializeMd';
 
 import { mdastToPlate } from '../types';
 import { buildSlateNode } from './convertNodesDeserialize';
+import { shouldDeserializeNode } from './internal/shouldDeserializeNode';
 
 export const convertTextsDeserialize = (
   mdastNode: MdDelete | MdEmphasis | MdStrong,
@@ -16,6 +17,8 @@ export const convertTextsDeserialize = (
     const key = mdastToPlate(options.editor!, mdastNode.type);
     const type = getPluginType(options.editor!, key);
 
-    acc.push(...buildSlateNode(n, { ...deco, [type]: true }, options));
+    if (shouldDeserializeNode(n, options)) {
+      acc.push(...buildSlateNode(n, { ...deco, [type]: true }, options));
+    }
     return acc;
   }, []);

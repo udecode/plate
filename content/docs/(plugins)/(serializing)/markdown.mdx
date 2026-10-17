@@ -269,8 +269,10 @@ The core plugin configuration object. Use `MarkdownPlugin.configure({ options: {
     <APIItem name="allowedNodes" type="PlateType | null">
       Whitelist specific node types (Plate types and Markdown AST types like
       `strong`). Cannot be used with `disallowedNodes`. If set, only listed
-      types are processed. With `remark-mdx`, `mdxJsxTextElement` admits
-      inline HTML and MDX elements and `mdxJsxFlowElement` admits block ones.
+      types are processed, inside marks such as bold, italic and
+      strikethrough too, so list `text` to keep text. With `remark-mdx`,
+      `mdxJsxTextElement` admits inline HTML and MDX elements and
+      `mdxJsxFlowElement` admits block ones.
       An admitted element with a deserialize rule converts without its rule key
       listed. Default: `null` (all allowed).
     </APIItem>
@@ -875,7 +877,7 @@ Migrating involves mapping `react-markdown` concepts to Plate's architecture.
 
 ## Appendix A: HTML in Markdown
 
-By default, `@platejs/markdown` does **not** process raw HTML tags. Standard Markdown syntax still becomes Plate nodes, but literal HTML like `<div>` is ignored unless you handle it outside Plate or model it as MDX/custom nodes.
+By default, `@platejs/markdown` does **not** process raw HTML tags. Standard Markdown syntax still becomes Plate nodes, but literal HTML like `<div>` or `<!-- comment -->` stays editable source text: a text leaf with `rawHtml: true`, written back to Markdown unchanged. Handle HTML outside Plate or model it as MDX/custom nodes to get real editor nodes.
 
 `MarkdownPlugin` runs `remark-parse`, configured `remarkPlugins`, and Plate conversion rules. It does not run a rehype HTML stage, so `rehype-raw` and `rehype-sanitize` are not `MarkdownPlugin` options.
 
@@ -973,6 +975,8 @@ Refer to [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages
 \* List conversion depends on `ListPlugin` detection.
 
 **Emoji shortcodes:** Add [`remark-emoji`](https://github.com/rhysd/remark-emoji) to `remarkPlugins` to turn `:fire:` into unicode `🔥` on deserialization and back to unicode on serialization.
+
+**Reference links:** `[text][id]`, `[id][]`, `[id]` and `![alt][id]` deserialize as `a` and `img` nodes with the URL from the matching definition, and serialize back as inline links and images.
 
 **GFM footnotes:** With `remark-gfm` enabled, footnotes deserialize into `footnoteReference` and `footnoteDefinition` nodes. Add the matching [Footnote plugins](/docs/footnote) to render them as real editor nodes instead of falling back to unknown types.
 

@@ -9,13 +9,16 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { browserLaunch } from './codex-browser.mjs';
 import { ISOLATED_CODEX_ARGS, managedCodexConfig, NO_EXEC_RULES } from './codex-isolation.mjs';
-import { claudeSessionRun } from './lead.mjs';
+import { capEffort, claudeSessionRun, maxEffort } from './lead.mjs';
 
 export const MODELS = { claude: 'opus', codex: 'gpt-6.1-sol' };
 
 export const otherRuntime = (env = process.env) => (env.CLAUDECODE ? 'codex' : 'claude');
 
 const DASHED_WORD = /^-\S+$/u;
+const TIME_BUDGET_SECONDS = 3600;
+// A --bypass run is a Codex worker writing code, and stopping a long fix wastes its work.
+const CODING_BUDGET_SECONDS = 21_600;
 const VALUE_FLAGS = new Map([
   ['--to', 'to'],
   ['--timeout', 'timeout'],
@@ -24,6 +27,7 @@ const VALUE_FLAGS = new Map([
   ['--computer-use', 'events'],
   ['--chrome-profile', 'chromeProfile'],
   ['--prompt-file', 'promptFile'],
+  ['--prompt', 'prompt'],
 ]);
 
 // Each child runs in its own process group, which outlives this process, so
@@ -46,11 +50,14 @@ const stopOnSignals = () => {
 // A child that ignores SIGTERM, or leaves a descendant holding its pipes, is
 // killed and abandoned at the deadline.
 // A project hook, such as a Stop hook that stages files, would still write from a read-only run.
-export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse } = {}) {
-  const managed = runtime === 'codex' && managedCodexConfig();
+export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false } = {}) {
+  const max = maxEffort(cwd);
+  effort = capEffort(effort ?? max, max);
+  const managed = runtime === 'codex' && !bypass && !reach && managedCodexConfig();
   if (managed) return { runtime, ok: false, text: `${managed} would still load over the command line; refusing to run` };
-  const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : cwd;
-  let launch = { args: userConfig ? NO_EXEC_RULES : ISOLATED_CODEX_ARGS };
+  const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : reach ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : cwd;
+  if (reach) prompt = `Your working directory is a scratch folder you may write. The project is ${cwd}: read it by absolute path and never write it.\n\n${prompt}\n\nPut your whole answer in your final message. Nobody reads the files you write in the scratch folder.`;
+  let launch = { args: bypass ? [] : reach ? [...NO_EXEC_RULES, '--skip-git-repo-check', '-c', 'web_search="live"'] : userConfig ? NO_EXEC_RULES : ISOLATED_CODEX_ARGS };
   if (computerUse) {
     launch = await browserLaunch({ cwd: runCwd, chromeProfile: computerUse.chromeProfile });
     if (launch.refusal) return { runtime, ok: false, text: `refusing the browser lane: ${launch.refusal}` };
@@ -70,16 +77,16 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900,
             '-m',
             model,
             ...(effort ? ['-c', `model_reasoning_effort=${effort}`] : []),
-            ...(hooks ? [] : ['--disable', 'hooks']),
-            '--sandbox',
-            'read-only',
+            ...(hooks || bypass ? [] : ['--disable', 'hooks']),
+            ...(bypass ? ['--dangerously-bypass-approvals-and-sandbox'] : reach ? ['--sandbox', 'workspace-write', '-c', 'sandbox_workspace_write.network_access=true'] : ['--sandbox', 'read-only']),
             '-o',
             answerFile,
             '--',
             prompt,
           ],
         ];
-  const { CLAUDECODE: _, ...env } = process.env;
+  // A Codex Desktop parent exports its permission profile, which outranks --sandbox in a run that loads the user's config.
+  const { CLAUDECODE: _, CODEX_PERMISSION_PROFILE: __, ...env } = process.env;
   return new Promise((resolve) => {
     let settled = false;
     const timers = [];
@@ -125,24 +132,33 @@ async function main(argv) {
   const values = {};
   let retired;
   let isolated = false;
+  let bypass = false;
+  let reach = false;
+  let stress = false;
   let help = false;
   let refusal;
-  let prompt = '';
+  const positional = [];
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     const key = VALUE_FLAGS.get(arg);
     const next = argv[index + 1];
-    if (key && next !== undefined && !DASHED_WORD.test(next)) values[key] = argv[++index];
+    if (key && key in values) refusal ??= `${arg} given twice`;
+    else if (key && next !== undefined && !DASHED_WORD.test(next)) values[key] = argv[++index];
     else if (key) refusal ??= `${arg} needs a value`;
     else if (['--write', '--events', '--resume'].includes(arg)) retired = arg;
     else if (arg === '--ignore-user-config') isolated = true;
+    else if (arg === '--bypass') bypass = true;
+    else if (arg === '--reach') reach = true;
+    else if (arg === '--stress') stress = true;
     else if (arg === '--help' || arg === '-h') help = true;
     else if (DASHED_WORD.test(arg)) refusal ??= `unknown flag ${arg}`;
-    else prompt = arg;
+    else positional.push(arg);
   }
   const { to = otherRuntime(), model, effort, events, chromeProfile, promptFile } = values;
+  const sources = [...positional, values.prompt, promptFile].filter((source) => source !== undefined);
+  let prompt = sources[0] ?? '';
   const timeout = Number(values.timeout ?? 900);
-  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] [--computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | <prompt>)';
+  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] [--stress] [--reach | --bypass | --computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
   if (help) {
     console.info(usage);
     return 0;
@@ -152,11 +168,24 @@ async function main(argv) {
     return 2;
   }
   if (retired) {
-    console.error(`${retired} is retired: cross.mjs runs Codex read-only\n${usage}`);
+    console.error(`${retired} is retired: cross.mjs runs Codex read-only, or with no sandbox under --bypass\n${usage}`);
+    return 2;
+  }
+  if (bypass && reach) {
+    console.error(`--bypass and --reach conflict\n${usage}`);
+    return 2;
+  }
+  const lane = bypass ? '--bypass' : reach ? '--reach' : null;
+  if (lane && (to !== 'codex' || isolated || events)) {
+    console.error(`${lane} runs only --to codex, without --ignore-user-config or --computer-use\n${usage}`);
     return 2;
   }
   if (isolated && events) {
     console.error(`--ignore-user-config and --computer-use conflict\n${usage}`);
+    return 2;
+  }
+  if (sources.length > 1) {
+    console.error(`give one prompt: a positional prompt, --prompt or --prompt-file\n${usage}`);
     return 2;
   }
   if (promptFile) prompt = readFileSync(promptFile, 'utf8');
@@ -164,11 +193,19 @@ async function main(argv) {
     console.error(usage);
     return 2;
   }
+  if (!stress && bypass && timeout > CODING_BUDGET_SECONDS) {
+    console.error(`--timeout ${timeout} is over the ${CODING_BUDGET_SECONDS}-second budget of a --bypass coding run; split the task, or run it from a suggested task's session with --stress\n${usage}`);
+    return 2;
+  }
+  if (!stress && !bypass && timeout > TIME_BUDGET_SECONDS) {
+    console.error(`--timeout ${timeout} is over the ${TIME_BUDGET_SECONDS}-second time budget; split the task, or run it from a suggested task's session with --stress\n${usage}`);
+    return 2;
+  }
   if ((events || chromeProfile) && (to !== 'codex' || !events || !chromeProfile)) {
     console.error(`--computer-use and --chrome-profile go together, and only --to codex\n${usage}`);
     return 2;
   }
-  const answer = await ask(to, prompt, { timeout, model, effort, computerUse: events && { events, chromeProfile } });
+  const answer = await ask(to, prompt, { timeout, model, effort, bypass, reach, computerUse: events && { events, chromeProfile } });
   (answer.ok ? console.info : console.error)(answer.text);
   if (answer.seat) console.error(`seat: ${answer.seat}`);
   return answer.ok ? 0 : 1;

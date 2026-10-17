@@ -197,6 +197,8 @@ if bash "$script_dir/publish-issue.sh" \
   exit 1
 fi
 
+# Publisher behavior is checked above. General skill discovery/source checks
+# belong to the project skill validator, not literal prose assertions here.
 for old_recorder_path in \
   "$skill_dir/assets/shot-plan.example.json" \
   "$skill_dir/references/shot-plan.md" \

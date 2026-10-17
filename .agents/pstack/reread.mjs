@@ -9,13 +9,16 @@
 // under <plans>/artifacts/reread/<session_id> and prints the directory to pass
 // as --dir. On a startup or clear session it stays silent about first reads,
 // which only seed the snapshots, and about missing files. After a compaction
-// it also prints a reload: line naming each skill the transcript loaded.
+// it also prints a reload: line naming each loaded skill that Claude Code's
+// compaction restore cut short; it restores shorter skills in full.
 
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const BLOCK_START = /^\s*(?:[-*+]\s|\d+\.\s|#|\||>|```|~~~)/u;
 const ONE_LINE = /^\s*(?:#|\||```|~~~)/u;
+// Claude Code's compaction restores each invoked skill up to this many characters.
+const RESTORED_SKILL_CHARS = 20_000;
 
 function paragraphs(text) {
   const blocks = [];
@@ -69,16 +72,20 @@ function loadedSkills(transcript) {
       }
     });
   const byUuid = new Map(records.map((record) => [record.uuid, record]));
-  const names = records.flatMap((record) => {
-    if (record.type !== 'user' || !record.isMeta) return [];
+  const longest = new Map();
+  for (const record of records) {
+    if (record.type !== 'user' || !record.isMeta) continue;
     let source = byUuid.get(record.parentUuid);
     while (source?.type === 'attachment') source = byUuid.get(source.parentUuid);
-    if (source?.toolUseResult?.success && typeof source.toolUseResult.commandName === 'string') return [source.toolUseResult.commandName];
     const content = source?.message?.content;
     const typed = typeof content === 'string' && content.trimStart().startsWith('<command-') && content.match(/<command-name>\/?([^<\s]+)<\/command-name>/u);
-    return typed ? [typed[1]] : [];
-  });
-  return [...new Set(names)];
+    const name = source?.toolUseResult?.success && typeof source.toolUseResult.commandName === 'string' ? source.toolUseResult.commandName : typed?.[1];
+    if (!name) continue;
+    const body = record.message?.content;
+    const length = typeof body === 'string' ? body.length : (body ?? []).reduce((sum, part) => sum + (part.text?.length ?? 0), 0);
+    longest.set(name, Math.max(longest.get(name) ?? 0, length));
+  }
+  return [...longest].filter(([, length]) => length > RESTORED_SKILL_CHARS).map(([name]) => name);
 }
 
 function plansDir() {
@@ -107,6 +114,8 @@ function reread(dir, files, { quiet = false } = {}) {
   });
 }
 
+const shellWord = (word) => (/^[\w./@:=+-]+$/u.test(word) ? word : `'${word.replaceAll("'", "'\\''")}'`);
+
 const args = process.argv.slice(2);
 if (args[0] === '--hook') {
   const { session_id: session, source, transcript_path: transcript } = JSON.parse(readFileSync(0, 'utf8') || '{}');
@@ -116,8 +125,9 @@ if (args[0] === '--hook') {
   // The hook runs before the next turn, so every skill load in the transcript
   // predates this compaction, even when its compact_boundary record lags.
   const skills = source === 'compact' && transcript ? loadedSkills(transcript) : [];
-  const reload = skills.length > 0 ? [`reload: ${skills.join(', ')}. These skills loaded before the compaction; as the Long runs rule says, reload through the Skill tool each one whose mode you are running before your next step.`] : [];
-  console.log([...reread(dir, args.slice(1), { quiet: freshContext }), ...reload, `Instruction snapshots: node .agents/pstack/reread.mjs --dir ${dir} <files> compares against them before each gate.`].join('\n'));
+  const reload = skills.length > 0 ? [`reload: ${skills.join(', ')}. The compaction restored only the first 20,000 characters of these skills; as the Long runs rule says, reload through the Skill tool each one whose mode you are running before your next step.`] : [];
+  const command = args.length > 1 ? [`Instruction snapshots: run node .agents/pstack/reread.mjs --dir ${[dir, ...args.slice(1)].map(shellWord).join(' ')} before each gate to compare against them.`] : [];
+  console.log([...reread(dir, args.slice(1), { quiet: freshContext }), ...reload, ...command].join('\n'));
 } else if (args[0] === '--dir' && args[1] && args.length > 2) {
   console.log(reread(args[1], args.slice(2)).join('\n'));
 } else {

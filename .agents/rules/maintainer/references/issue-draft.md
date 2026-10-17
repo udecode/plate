@@ -11,8 +11,9 @@ analysis, necessary evidence uploads, creation and read-back in one run.
 - Use this mode only for Plate `next` branch and Beta release testing.
 - Target `udecode/plate`. Stop and route to another issue workflow when the
   report targets `main`, a stable release, or another repository.
-- In a two-video Beta report, allow the `main` recording only as the normal
-  comparison baseline; the reported bug still targets the current `next` lane.
+- In a two-video Beta report, the baseline recording comes from `main`, the
+  Slate site, the stable Plate site or another editor; the reported bug still
+  targets the current `next` lane.
 - Treat the testing lane as confirmed Beta context even when the exact `next`
   commit or Beta package version is unknown. Record unknown build details as
   `NOT_ENOUGH_INFO`; do not downgrade the report to a generic bug.
@@ -53,24 +54,28 @@ analysis, necessary evidence uploads, creation and read-back in one run.
 
 ### Two videos
 
-1. Run `scripts/prepare-video-evidence.sh` for each video with a fresh, empty
-   output directory. Never reuse a prior recording's evidence directory.
+1. Run `scripts/prepare-video-evidence.sh` for each video.
 2. If `video-transcripts` is available, load it and generate one normalized
    transcript per video. Otherwise inspect the generated metadata, contact
    sheets, and relevant frames; state that audio/timeline transcription was
    unavailable.
 3. Treat exactly two supplied recordings as the standard Beta comparison: one
-   records normal behavior on `main`; the other records the current bug on `next`.
-4. Establish the file-to-branch mapping with a simple evidence pass. First use
-   explicit user labels or verified branch/build metadata. When those are
-   absent, compare the behavior: the recording that works normally is the
-   likely `main` baseline, and the recording showing the reported regression is
-   the likely current `next` build. Record this as an inference rather than a
-   verified build fact.
+   records normal behavior on the baseline, which is `main`, the Slate site,
+   the stable Plate site or another editor; the other records the current bug
+   on `next`. The baseline keeps its source as its label.
+4. Establish the file-to-source mapping with a simple evidence pass. First use
+   explicit user labels, verified branch/build metadata or a site address the
+   recording shows. When those are absent, compare the behavior: the recording
+   that works normally is the likely baseline, and the recording showing the
+   reported regression is the likely current `next` build. Record this as an
+   inference rather than a verified build fact.
 5. If the behavior is ambiguous, both recordings appear normal/broken, or the
    evidence otherwise cannot distinguish them reliably, ask exactly one
-   focused question: which file is from `main`, and which is from `next`?
-6. Use `main — normal behavior (expected baseline)` and
+   focused question: which file is the baseline, and which source does it
+   show (`main`, Slate, stable Plate or the other editor's name), and which file
+   is from `next`?
+6. Use `<source> — normal behavior (expected baseline)`, where `<source>` is
+   `main`, `Slate`, `stable Plate` or the other editor's name, and
    `next — current Beta bug (actual behavior)` as the attachment roles. Do not
    replace these with camera or composition descriptions such as wide,
    close-up, overview, detail, zoomed, or full-screen.
@@ -109,7 +114,8 @@ Keep observed facts separate from inference. Record:
 - expected behavior and its authority
 - actual behavior and visible error text
 - reproducibility: always, intermittent, or unknown
-- video timestamps, verified `main`/`next` role, and public evidence URLs
+- video timestamps, verified baseline source and `next` role, and public
+  evidence URLs
 - caveats and missing facts
 
 Search open and closed issues for a duplicate before publishing. A similar
@@ -137,8 +143,7 @@ For Plate issue evidence, prefer 10–30 seconds:
 4. Show pointer trail, click ripple, drag arrow/distance, and scroll direction.
 5. Hold the failure state long enough to read.
 
-After recording, choose a fresh output directory. Reusing one can mix old
-frames with the current recording.
+After recording:
 
 ```bash
 bash .agents/skills/maintainer/scripts/prepare-video-evidence.sh \

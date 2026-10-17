@@ -28,6 +28,9 @@ const cloneRange = (range: TRange | null | undefined) =>
 export const withHistory = <T extends Editor>(editor: T) => {
   const e = editor as Editor & LegacyEditorMethods;
   const { apply } = e;
+  const normalizing = e as unknown as Pick<Editor['tf'], 'normalize'>;
+  const { normalize } = normalizing;
+  let isSettled = true;
   e.history = { redos: [], undos: [] };
 
   e.redo = () => {
@@ -103,11 +106,20 @@ export const withHistory = <T extends Editor>(editor: T) => {
       if (merge == null) {
         if (lastBatch == null) {
           merge = false;
-        } else if (operations.length > 0) {
+        } else if (lastOp && operations.includes(lastOp)) {
           merge = true;
         } else {
           merge = shouldMerge(op, lastOp);
         }
+      }
+      if (
+        !merge &&
+        !isSettled &&
+        lastBatch &&
+        lastOp &&
+        operations.includes(lastOp)
+      ) {
+        merge = true;
       }
       if (e.api.isSplittingOnce()) {
         merge = false;
@@ -130,7 +142,16 @@ export const withHistory = <T extends Editor>(editor: T) => {
       history.redos = [];
     }
 
+    isSettled = false;
     apply(op);
+  };
+
+  normalizing.normalize = (options) => {
+    normalize(options);
+
+    if (e.api.isNormalizing()) {
+      isSettled = true;
+    }
   };
 
   e.setNodesBatch = (updates: NodeBatchUpdate[]) => {

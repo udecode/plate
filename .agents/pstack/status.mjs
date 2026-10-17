@@ -118,21 +118,30 @@ export const STATUSES = [
   'accepted',
   'applied',
   'blocked',
+  'carded',
   'corrected',
   'decided',
   'deferred',
   'dismissed',
   'fixed',
+  'folded',
   'gap',
   'inconclusive',
   'kept',
+  'landed',
+  'offered',
   'open',
   'partial',
   'proven',
   'recorded',
+  'reopened',
+  'reviewed',
   'reverted',
   'skipped',
+  'started',
   'superseded',
+  'uncarded',
+  'updated',
   'verified',
 ];
 export const PROVEN = ['fixed', 'proven', 'verified'];
@@ -147,6 +156,63 @@ export function parseFence(line) {
   return { marker: match[1], lang: words[0] ?? '', tag };
 }
 export const isFence = (line) => parseFence(line) !== null;
+
+export const OPEN_BOX = /^\s*(?:(?:[-*+]|\d+\.)\s+)+\[ \]/u;
+export const CLOSED_BOX = /^\s*(?:(?:[-*+]|\d+\.)\s+)+\[[xX]\]/u;
+
+function codeSpanEnd(raw, at) {
+  const ticks = raw.slice(at).match(/^`+/u)[0].length;
+  const start = at + ticks;
+  const close = [...raw.slice(start).matchAll(/`+/gu)].find((run) => run[0].length === ticks);
+  return close ? start + close.index + ticks : start;
+}
+
+function uncomment(raw, commented) {
+  let line = '';
+  let at = 0;
+  while (at < raw.length) {
+    if (commented) {
+      const end = raw.indexOf('-->', at);
+      if (end === -1) break;
+      commented = false;
+      at = end + 3;
+    } else if (raw.startsWith('<!--', at)) {
+      commented = true;
+      at += 4;
+    } else if (raw[at] === '`') {
+      const end = codeSpanEnd(raw, at);
+      line += raw.slice(at, end);
+      at = end;
+    } else {
+      line += raw[at];
+      at += 1;
+    }
+  }
+  return { line, commented };
+}
+
+// Each line of a Markdown file with its HTML comments cut out. A fence line
+// comes back with `fence`, and a line inside a fence or a comment with `hidden`.
+export function markdownLines(markdown) {
+  const lines = [];
+  let fenced = false;
+  let commented = false;
+  for (const [index, raw] of markdown.split('\n').entries()) {
+    if (!commented && /^\s*(?:```|~~~)/u.test(raw)) {
+      fenced = !fenced;
+      lines.push({ fence: true, index, line: '', raw });
+      continue;
+    }
+    if (fenced) {
+      lines.push({ hidden: true, index, line: '', raw });
+      continue;
+    }
+    const next = uncomment(raw, commented);
+    lines.push(commented && next.commented ? { hidden: true, index, line: '', raw } : { index, line: next.line, raw });
+    commented = next.commented;
+  }
+  return lines;
+}
 
 export function readFence(lines, start) {
   const { marker, lang, tag } = parseFence(lines[start]);

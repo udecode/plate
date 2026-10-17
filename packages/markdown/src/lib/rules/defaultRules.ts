@@ -136,12 +136,23 @@ const groupInlineChildrenIntoParagraphs = (
   ];
 };
 
+const MDX_COMMENT_REGEX = /^\/\*([\s\S]*)\*\/$/;
+
+const toHtmlComment = (value: string | undefined) => {
+  const match = MDX_COMMENT_REGEX.exec((value ?? '').trim());
+  return match ? `<!--${match[1]}-->` : null;
+};
+
 const normalizeParagraphLineBreaks = (
   children: Descendant[],
   options: { preserveEmptyParagraphs?: boolean }
 ) =>
   children.flatMap((child): Descendant[] => {
     const text = (child as { text?: unknown }).text;
+
+    if ((child as { rawHtml?: unknown }).rawHtml) {
+      return [child];
+    }
 
     if (
       text === '' &&
@@ -506,9 +517,26 @@ export const defaultRules: MdRules = {
     serialize: () => ({ type: 'thematicBreak' }),
   },
   html: {
-    deserialize: (mdastNode, _deco, _options) => ({
-      text: (mdastNode.value || '').replaceAll('<br />', '\n'),
-    }),
+    deserialize: (mdastNode, _deco, _options) =>
+      mdastNode.value === '<br />'
+        ? { text: '\n' }
+        : { rawHtml: true, text: mdastNode.value || '' },
+  },
+  mdxFlowExpression: {
+    deserialize: (mdastNode, _deco, options) => {
+      const comment = toHtmlComment(mdastNode.value);
+      if (comment === null) return [];
+      return {
+        children: [{ rawHtml: true, text: comment }],
+        type: getPluginType(options.editor!, KEYS.p),
+      };
+    },
+  },
+  mdxTextExpression: {
+    deserialize: (mdastNode) => {
+      const comment = toHtmlComment(mdastNode.value);
+      return comment === null ? [] : { rawHtml: true, text: comment };
+    },
   },
   img: {
     deserialize: (mdastNode, _deco, options) => {

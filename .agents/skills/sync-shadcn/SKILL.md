@@ -1,6 +1,6 @@
 ---
-description: Sync upstream shadcn docs or registry protocol into Plate with exact source ranges, preserved forks, accepted apply rows and complete baseline accounting.
-argument-hint: '[status | apply | dashboard | review | parity <surface> | <range>]'
+description: Sync upstream shadcn docs into Plate with source inventory, fork-aware apply and baseline accounting, or match shadcn's registry and install protocol source by source.
+argument-hint: '[status | apply | dashboard | review | parity <surface> | <range or surface>]'
 name: sync-shadcn
 metadata:
   skiller:
@@ -9,33 +9,40 @@ metadata:
 
 # Sync Shadcn
 
-Read `docs/sync/shadcn/status.json` and `decisions.md` when present, the exact
-upstream local checkout and its revision, and the named Plate files. Bootstrap
-missing sync state from evidence; never invent a last-applied baseline.
+Handle $ARGUMENTS. Read the complete [sync policy](./references/policy.md), then
+the selected mode below. pstack's poteto-mode owns lifecycle and existing
+authority, the lead writes every change, and a plan takes the plan-page shape;
+this skill owns upstream range accounting, Plate forks, slice decisions and sync
+state.
 
-Planning is default. An explicit planning-only request stops at a reviewable
-plan. Existing implementation authority carries through readiness. Scope a
-named request to its range; an unscoped sync accounts for the complete range.
+Plate's docs app is a forked product. Upstream owns the Fumadocs/shadcn docs
+architecture; Plate owns editor content, demos, registry, API MDX, CN docs,
+MCP, Plate Plus hooks, GA and intentional forks. Keep that ownership explicit.
 
-Compare base, current upstream and local files. Classify each relevant hunk as
-upstream-only, local-only, equivalent, conflicting, renamed, deleted or unknown
-base. Preserve Plate-owned editor content, demos, registry, API MDX, Chinese
-docs, MCP, Plus hooks and analytics. Upstream owns its generic docs machinery.
+## Modes
 
-`status` reports freshness, accounted range and next work without mutation.
-`review` revalidates a plan against both current revisions. `dashboard` presents
-unresolved structured rows through the existing board script. `apply` changes
-only accepted rows after recomputing their classification. Keep target forks
-and named omissions explicit; no whole-file overwrite from title similarity.
+| Request | Complete method |
+| --- | --- |
+| No command, a range or a named surface | [Planning and implementation handoff](./references/planning.md) |
+| `status` | [Incremental status and discovery](./references/status.md) |
+| `apply` | [Accepted slice application](./references/apply.md) |
+| `dashboard` | [Review board](./references/dashboard.md) |
+| `review` | [Re-audit the current plan](./references/review.md) |
+| `parity <surface>`, or a request to mirror shadcn | [Registry and install protocol parity](./references/parity.md) |
 
-`parity` compares the real registry/install request, response, metadata and
-CLI behavior source by source. Prove declared dependency and alias behavior
-through an installed consumer. This checkout's authored registry metadata is
-the owner; do not assume an absent dependency-derivation builder.
+Named scope constrains the inventory. An unscoped sync inventories the whole
+tracked range. Read `docs/sync/shadcn/status.json` and `decisions.md` before
+classifying current source. Record exact upstream SHAs and every relevant row.
 
-Record each source row, its Plate home, decision, proof and remaining gap.
-Advance the synced baseline only after every row in that range is accounted
-for and applicable checks pass. Partial slices retain the earlier baseline.
-Run `plate-docs` for public docs, `plate-ui` for copied UI, `verify` for routes
-and consumers, and `changeset` for registry release notes. CI owns registry
-build output. Downstream application UI sync belongs to `sync-plate-ui`.
+Planning is the default. Explicit planning-only work stops at the reviewable
+plan. Already-authorized implementation continues when readiness is resolved;
+do not ask for a second invocation. The full policy defines the narrow
+micro-overlap rule; it never overrides an explicit read-only request.
+
+Apply and revalidate only accepted rows. Preserve source-owned forks and real
+route proof. Advance `lastSyncedCommit` only after complete range accounting
+and applicable verification. A partial slice cannot claim the whole range.
+
+All procedures, examples, inventory shapes, commands and prompts live in the
+linked mode references. Read them in full when selected. Do not replace them
+with the entrypoint summary or create a parallel sync ledger.
