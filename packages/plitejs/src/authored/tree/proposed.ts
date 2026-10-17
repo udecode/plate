@@ -169,9 +169,9 @@ export const proposedChildren = (
 
     return null;
   };
-  // As Editing's merge does, an empty target goes and the joining block keeps
-  // its own type.
-  const empty = (target: JoinTarget) => {
+  // As Editing's merge does, an empty target gives its place to the joining
+  // block, which keeps its own type.
+  const empty = (target: JoinTarget, joining: ProposedChild) => {
     const { entry } = target;
 
     for (let at = reachableBlocks.length - 1; at >= 0; at -= 1) {
@@ -180,10 +180,7 @@ export const proposedChildren = (
       }
     }
     if (entry === null) return;
-    out.splice(entry, 1);
-    for (const other of new Set(reachableBlocks.map((block) => block.target))) {
-      if (other.entry !== null && other.entry > entry) other.entry -= 1;
-    }
+    out[entry] = joining;
   };
   // A later join reaches past a block only when that block goes with a join.
   const known = () => {
@@ -228,7 +225,12 @@ export const proposedChildren = (
           reachableBlocks.push({ path: childPath, target });
           continue;
         }
-        empty(target);
+        empty(target, { node: child, path: childPath });
+        reachableBlocks.push({
+          path: childPath,
+          target: { blocks: [child], entry: target.entry, keeps },
+        });
+        continue;
       }
 
       out.push({ node: child, path: childPath });
@@ -294,7 +296,7 @@ export const proposedChildren = (
       !target.keeps &&
       !proposedKeepsContentAtJoin(target.blocks, joining.node)
     ) {
-      empty(target);
+      empty(target, joining);
     }
   };
   const readJoinedIntoHost = (host: Node) => {

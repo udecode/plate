@@ -1,13 +1,45 @@
+import { describe, expect, it, mock } from 'bun:test';
+
+import { render } from '@testing-library/react';
+import { editorCommands } from 'platejs';
 import { AuthoredPlugin, projectAuthoredDocument } from 'platejs/authored';
-import { createEditor } from 'platejs/react';
+import { createEditor, EditorContent, EditorRoot } from 'platejs/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
 
 import { AIKit } from './ai';
 import { SuggestionKit } from './suggestion';
 
+const toastErrorMock = mock();
+
+mock.module('sonner', () => ({
+  toast: { error: toastErrorMock },
+}));
+
 const value = [
   { children: [{ text: 'Accepted' }], type: 'paragraph' },
 ] as const;
+
+const joinAroundMovedLine = [
+  { children: [{ text: 'cd' }], type: 'paragraph' },
+  {
+    authored: [
+      {
+        at: 1,
+        author: 'erin',
+        change: '~edit:erin',
+        follows: JSON.stringify(['carol:1', 1]),
+        kind: 'insert',
+      },
+    ],
+    children: [{ text: 'ab' }],
+    type: 'paragraph',
+  },
+  {
+    authored: [{ at: 1, author: 'carol', change: 'carol:1', kind: 'join' }],
+    children: [{ text: 'ef' }],
+    type: 'paragraph',
+  },
+];
 
 describe('SuggestionKit', () => {
   it('shares one authored extension identity with AIKit', () => {
@@ -49,6 +81,35 @@ describe('SuggestionKit', () => {
     expect(authored.read.changes().items).toEqual([
       expect.objectContaining({ authorId: 'alice', kind: 'insert' }),
     ]);
+  });
+
+  it('tells an Editing writer to decide the suggestion a refused change sits beside', () => {
+    toastErrorMock.mockClear();
+    const editor = createEditor({
+      initialValue: joinAroundMovedLine,
+      plugins: SuggestionKit,
+      userId: 'alice',
+    });
+
+    render(
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
+    );
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { offset: 1, path: [2, 0] },
+        focus: { offset: 1, path: [2, 0] },
+      });
+      tx.command(editorCommands.insertBreak);
+    });
+
+    expect(editor.read.children()).toEqual(joinAroundMovedLine);
+    expect(toastErrorMock).toHaveBeenCalledTimes(1);
+    expect(toastErrorMock).toHaveBeenCalledWith(
+      'Editing cannot record this change next to a pending suggestion yet. Accept or reject that suggestion first.',
+      { id: 'suggestion-refusal' }
+    );
   });
 
   it('keeps presentation optional', () => {

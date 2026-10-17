@@ -1313,14 +1313,8 @@ const decided = (
  */
 const acceptsLikePlainEditor =
   (counts: { plain: number }): RecordedLaw =>
-  ({ before, command, edited, history, suggested }) => {
-    // A limit, as in the command law: a write over another author's
-    // pending move is not settled.
-    const plain = history.some(({ command: earlier }) =>
-      ['moveNode', 'transferNode', 'transferText'].includes(earlier.kind)
-    )
-      ? null
-      : onProposed(before, command);
+  ({ before, command, edited, suggested }) => {
+    const plain = onProposed(before, command);
 
     if (plain) {
       counts.plain += 1;
@@ -1654,21 +1648,17 @@ type LedgerStep =
   | Readonly<{
       intent: 'edit' | 'propose';
       kind: 'framed';
+      mustApply?: true;
       step: CommandStep;
     }>
   | Readonly<{ kind: 'redo' | 'undo' }>
   | Readonly<{ action: 'accept' | 'reject'; kind: 'decide' }>;
 
-// Commands settle only over a history whose writes the recorder settles: no
-// content moved, and no pending unwrap from Suggesting.
 const settles = ({
   command,
   intent,
 }: Readonly<{ command: Command; intent: 'edit' | 'propose' }>) =>
-  (command.kind !== 'unwrap' || intent !== 'propose') &&
-  command.kind !== 'moveNode' &&
-  command.kind !== 'transferNode' &&
-  command.kind !== 'transferText';
+  command.kind !== 'unwrap' || intent !== 'propose';
 
 const ledgerStepArbitrary: fc.Arbitrary<LedgerStep> = fc.oneof(
   {
@@ -1734,8 +1724,86 @@ type LedgerRoot = Readonly<{
   ) => readonly Node[] | LedgerValue;
 }>;
 
+const movedBetweenJoin = (
+  step: CommandStep,
+  intent: 'edit' | 'propose' = 'edit'
+): [readonly Node[], readonly Edit[], number, readonly LedgerStep[]] => [
+  [
+    { children: [{ text: 'ab' }], type: 'paragraph' },
+    {
+      children: [
+        { children: [{ text: 'cd' }], type: 'paragraph' },
+        { children: [{ text: 'ef' }], type: 'paragraph' },
+      ],
+      type: 'quote',
+    },
+  ],
+  [
+    {
+      author: 'alice',
+      command: { at: 'e', direction: 'backward', kind: 'delete' },
+      intent: 'propose',
+    },
+  ],
+  0,
+  [
+    {
+      command: { at: 'a', edge: 'before', kind: 'moveNode', to: 'f' },
+      intent: 'edit',
+      kind: 'command',
+    },
+    { intent, kind: 'framed', mustApply: true, step },
+  ],
+];
+
 const MAIN_ROOT: LedgerRoot = {
   examples: {
+    "Alice's two cards become one once the letter between them goes": [
+      [{ children: [{ text: 'ab' }], type: 'paragraph' }],
+      [
+        {
+          author: 'alice',
+          command: { at: 'a', kind: 'type', side: 1 },
+          intent: 'propose',
+        },
+        {
+          author: 'alice',
+          command: { at: 'b', kind: 'type', side: 1 },
+          intent: 'propose',
+        },
+      ],
+      0,
+      [
+        {
+          command: { at: 'b', direction: 'forward', kind: 'delete' },
+          intent: 'edit',
+          kind: 'command',
+        },
+      ],
+    ],
+    'B3 Backspace merges a moved line into the joined line': movedBetweenJoin({
+      at: { letter: 'a', side: 0 },
+      direction: 'backward',
+      kind: 'delete',
+      unit: 'character',
+    }),
+    'B4 a range deletion merges the joined line with a moved line':
+      movedBetweenJoin({
+        direction: 'backward',
+        from: { letter: 'd', side: 0 },
+        kind: 'fragment',
+        to: { letter: 'b', side: 0 },
+      }),
+    'J1 a Suggesting line deletion crosses the joined text around a moved line':
+      movedBetweenJoin(
+        {
+          at: { letter: 'f', side: 0 },
+          direction: 'backward',
+          kind: 'delete',
+          unit: 'line',
+        },
+        'propose'
+      ),
     'a line split off a joined line, moved above its join with a line between':
       [
         [
@@ -1871,6 +1939,51 @@ const OTHER_ROOTS: Readonly<Record<string, LedgerRoot>> = {
     ],
   },
   named: {
+    examples: {
+      'Enter keeps the caret in the new empty leaf': [
+        [
+          { type: 'paragraph', children: [{ text: 'ab' }] },
+          {
+            type: 'quote',
+            children: [
+              { type: 'paragraph', children: [{ text: 'cd' }] },
+              { type: 'paragraph', children: [{ text: 'ef' }] },
+            ],
+          },
+        ],
+        [
+          {
+            author: 'alice',
+            command: { at: 'a', kind: 'nest', side: 0 },
+            intent: 'propose',
+          },
+          {
+            author: 'alice',
+            command: { at: 'a', kind: 'nest', side: 0 },
+            intent: 'propose',
+          },
+        ],
+        0,
+        [
+          {
+            command: { from: 'd', kind: 'deleteRange', to: 'f' },
+            intent: 'propose',
+            kind: 'command',
+          },
+          {
+            command: { from: 'a', kind: 'deleteRange', to: 'c' },
+            intent: 'edit',
+            kind: 'command',
+          },
+          {
+            intent: 'edit',
+            kind: 'framed',
+            mustApply: true,
+            step: { at: { letter: 'f', side: 1 }, kind: 'break' },
+          },
+        ],
+      ],
+    },
     padding: 2,
     plugin: defineEditorSchema('recording-laws-named', {
       elements: quoteElements,
@@ -1926,7 +2039,7 @@ const locationsOf = (nodes: readonly Node[]) => {
   return { letters, paths };
 };
 
-const COMPARED = { deltas: 0, diffed: 0, letters: 0, renames: 0 };
+const COMPARED = { deltas: 0, diffed: 0, letters: 0, moved: 0, renames: 0 };
 
 const LAST_FRAMES = new WeakMap<
   Editor,
@@ -1934,6 +2047,7 @@ const LAST_FRAMES = new WeakMap<
     length: number;
     map: CommandProjectionMap;
     reference: CommandProjectionMap;
+    keeps: (position: number) => boolean;
   }>
 >();
 
@@ -1973,6 +2087,7 @@ const assertLedger = (editor: Editor, label: string) => {
   const last = LAST_FRAMES.get(editor);
 
   for (let position = 0; position <= (last?.length ?? -1); position += 1) {
+    if (!last?.keeps(position)) continue;
     for (const association of ['backward', 'forward'] as const) {
       assert.equal(
         last?.map.toProjected('main', position, association),
@@ -1986,6 +2101,10 @@ const assertLedger = (editor: Editor, label: string) => {
       length: DocumentIndex.fromValue(valueRoot(stored, 'main')).length,
       map: frame.map,
       reference: projectionMapOf(frame.map.change()),
+      keeps:
+        frame.map.breaks('main', 0, Infinity).length > 0
+          ? keptBy(getInternalDocumentRootChange(frame.map.change(), 'main'))
+          : () => true,
     });
   } else {
     LAST_FRAMES.delete(editor);
@@ -2071,7 +2190,13 @@ const assertLedger = (editor: Editor, label: string) => {
         after.value,
         `${label}: the ${mode} change gives the preview of ${root}`
       );
+      const ordered = map.breaks(root, 0, Infinity).length > 0;
+      const kept = ordered ? keptBy(rootChange) : () => true;
+      const projectedKept =
+        ordered && rootChange ? keptBy(rootChange.invert(before)) : () => true;
+
       for (let position = 0; position <= before.length; position += 1) {
+        if (!kept(position)) continue;
         for (const association of ['backward', 'forward'] as const) {
           assert.equal(
             map.toProjected(root, position, association),
@@ -2086,6 +2211,7 @@ const assertLedger = (editor: Editor, label: string) => {
         );
       }
       for (let position = 0; position <= after.length; position += 1) {
+        if (!projectedKept(position)) continue;
         for (const assoc of [-1, 1] as const) {
           assert.equal(
             map.toStored(root, position, assoc),
@@ -2100,11 +2226,55 @@ const assertLedger = (editor: Editor, label: string) => {
         );
       }
 
+      if (ordered) {
+        const expanded = valueRoot(expandContexts(stored), root);
+        const lines = textBlocks(after.value);
+
+        for (const point of locationsOf(expanded).letters) {
+          const position = before.positionAt(point);
+
+          if (kept(position) || map.hides(root, position)) continue;
+          COMPARED.moved += 1;
+          const expected = acceptedSpot(expanded, point, 'caret');
+
+          for (const assoc of [-1, 1] as const) {
+            const mapped = map.toProjected(
+              root,
+              position,
+              assoc < 0 ? 'backward' : 'forward'
+            );
+            const landed = getDefined(after.pointAt(mapped, assoc));
+            const parent = landed.path.slice(0, -1);
+            const block = lines.findIndex((line) =>
+              PathApi.equals(line.path, parent)
+            );
+            const offset = (after.node(parent).children ?? [])
+              .slice(0, getDefined(landed.path.at(-1)))
+              .reduce(
+                (sum, leaf) => sum + (leaf.text?.length ?? 0),
+                landed.offset
+              );
+
+            assert.deepEqual(
+              { block, offset },
+              expected,
+              `${label}: moved ${root} point ${JSON.stringify(point)} follows its marker ${assoc}`
+            );
+            assert.equal(
+              map.toStored(root, mapped, assoc),
+              position,
+              `${label}: moved ${root} point maps back ${assoc}`
+            );
+          }
+        }
+      }
+
       const actual = ledger.locationMap(stored, mode, root);
       const own = authoredLocationMap(stored, preview, change, root);
       const { letters, paths } = locationsOf(valueRoot(stored, root));
 
       for (const path of paths) {
+        if (!kept(before.nodeRange(path).from)) continue;
         assert.deepEqual(
           actual.path(path),
           own.path(path),
@@ -2117,6 +2287,7 @@ const assertLedger = (editor: Editor, label: string) => {
       const keeps = keptBy(getInternalDocumentRootChange(alignment, root));
 
       for (const letter of letters) {
+        if (!kept(before.positionAt(letter))) continue;
         for (const assoc of [-1, 1] as const) {
           assert.deepEqual(
             actual.point(letter, assoc),
@@ -2322,14 +2493,6 @@ const ledgerSteps = (shape: LedgerRoot, numRuns: number) => {
               actor.api.authored.setView({ intent: step.intent });
               run(actor, step.command, 'XYZWV'[index % 5]);
             } else if (step.kind === 'framed') {
-              if (
-                [...recorded, ...plan.slice(0, index)].some(
-                  (edit) => 'command' in edit && !settles(edit)
-                )
-              ) {
-                continue;
-              }
-
               const point = ({ letter, side }: Caret) => {
                 const found = locate(actor, letter);
 
@@ -2340,20 +2503,30 @@ const ledgerSteps = (shape: LedgerRoot, numRuns: number) => {
                   ? [point(step.step.from), point(step.step.to)]
                   : [point(step.step.at), point(step.step.at)];
 
+              if (step.mustApply) {
+                assert.ok(
+                  anchor && focus,
+                  `required frame has no selection: ${label}`
+                );
+              }
               if (anchor && focus) {
-                const lawCheck = process.env.PLITE_LAW_CHECK;
+                const refusals: string[] = [];
+                const unsubscribe = actor.api.authored.subscribeRefusals(
+                  ({ code }) => refusals.push(code)
+                );
 
                 actor.api.authored.setView({ intent: step.intent });
-                // The framed law has its own property. Its selection check
-                // still fails on a caret the commands left in place before a
-                // struck leaf, which the ledger law does not read.
-                process.env.PLITE_LAW_CHECK = 'content';
                 try {
                   runStep(actor, { anchor, focus }, step.step);
                 } finally {
-                  if (lawCheck === undefined) {
-                    delete process.env.PLITE_LAW_CHECK;
-                  } else process.env.PLITE_LAW_CHECK = lawCheck;
+                  unsubscribe();
+                }
+                if (step.mustApply) {
+                  assert.deepEqual(
+                    refusals,
+                    [],
+                    `required frame refused: ${label}`
+                  );
                 }
               }
             } else if (step.kind === 'decide') {
@@ -2369,7 +2542,12 @@ const ledgerSteps = (shape: LedgerRoot, numRuns: number) => {
               leader.api.history[step.kind]();
             }
           } catch (error) {
-            if (isRefusal(error)) continue;
+            if (
+              isRefusal(error) &&
+              !(step.kind === 'framed' && step.mustApply)
+            ) {
+              continue;
+            }
             throw error;
           }
           assertLedger(leader, `step ${index} ${label}`);
@@ -2642,6 +2820,7 @@ describe('authored review tree recording laws', () => {
 
       assert.ok(steps > 400, `only ${steps} steps compared`);
       console.info(`ledger seed ${LEDGER_SEED}: compared`, COMPARED);
+      assert.ok(COMPARED.moved > 0, 'no points inside moved content compared');
       assert.ok(
         COMPARED.letters > 4000,
         `only ${COMPARED.letters} kept letters compared`
@@ -2698,8 +2877,7 @@ describe('authored review tree recording laws', () => {
           documentArbitrary,
           // Limits: a pending unwrap comes only from a write outside commands,
           // as Plate's keys record lifting a line out of a quote as a move, and
-          // commands that cross its wrapper's edge are not settled. Commands
-          // over a history that moves content are not settled either.
+          // commands that cross its wrapper's edge are not settled.
           historyArbitrary.map((edits) => edits.filter(settles)),
           stepArbitrary,
           fc.constantFrom('edit' as const, 'propose' as const),

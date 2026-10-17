@@ -259,6 +259,104 @@ describe('authored review tree decisions', () => {
     });
   });
 
+  describe('a joining line whose target holds no text', () => {
+    const joining = (text: string) => ({
+      ...paragraph({ text }),
+      authored: [mark('join', 'alice')],
+    });
+
+    it('takes the target’s place, before a line moved between them', () => {
+      const moved = {
+        ...paragraph({ text: 'ef' }),
+        authored: [
+          {
+            ...mark('insert', 'carol'),
+            follows: JSON.stringify(['alice:1', AT]),
+          },
+        ],
+      };
+
+      assert.deepEqual(
+        resolveAuthoredChildren(
+          [paragraph({ text: '' }), moved, joining('cd')],
+          () => 'accept'
+        ).children,
+        [paragraph({ text: 'cd' }), paragraph({ text: 'ef' })]
+      );
+    });
+
+    it('appears once when the target it replaces took an emptied target’s place', () => {
+      const inserted = (text: string) => ({
+        authored: [mark('insert', 'alice')],
+        text,
+      });
+
+      assert.deepEqual(
+        resolveAuthoredChildren(
+          [
+            paragraph(inserted('O')),
+            { ...paragraph(inserted('o')), authored: [mark('split', 'alice')] },
+            { ...paragraph({ text: 'ef' }), authored: [mark('split')] },
+          ],
+          () => 'reject'
+        ).children,
+        [paragraph({ text: 'ef' })]
+      );
+    });
+
+    it('lands a line moved before it after the line that takes its place when a later join empties it too', () => {
+      const moved = {
+        ...paragraph({ text: 'gh' }),
+        authored: [
+          {
+            ...mark('insert', 'carol'),
+            follows: JSON.stringify(['alice:1', AT]),
+          },
+        ],
+      };
+
+      assert.deepEqual(
+        resolveAuthoredChildren(
+          [
+            paragraph({ text: '' }),
+            moved,
+            joining(''),
+            {
+              ...paragraph({ text: 'ef' }),
+              authored: [mark('join', 'alice', 'alice:2')],
+            },
+          ],
+          () => 'accept'
+        ).children,
+        [paragraph({ text: 'ef' }), paragraph({ text: 'gh' })]
+      );
+    });
+
+    it('takes the target’s place inside the quote that holds it', () => {
+      const lines = [
+        {
+          type: 'quote',
+          children: [paragraph({ text: 'ab' }), paragraph({ text: '' })],
+        },
+        joining('gh'),
+      ];
+
+      assert.deepEqual(
+        resolveAuthoredChildren(lines, accept('alice:1')).children,
+        [
+          {
+            type: 'quote',
+            children: [paragraph({ text: 'ab' }), paragraph({ text: 'gh' })],
+          },
+        ]
+      );
+      assert.deepEqual(
+        resolveAuthoredChildren(lines, reject('alice:1')).children,
+        [lines[0], paragraph({ text: 'gh' })]
+      );
+    });
+  });
+
   it('merges an accepted join into the previous block', () => {
     const join = [
       paragraph({ text: 'ab' }),

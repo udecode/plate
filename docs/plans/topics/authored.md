@@ -90,10 +90,10 @@ Rejected, and why:
 
 ## Main changes
 
-- `packages/plitejs/src/authored/tree/` turns each write into review marks on the stored document (`record.ts`, `record-completion.ts`), decides changes by rewriting that document (`resolve.ts`) and builds the previews (`proposed.ts`). `cuts.ts` reads the cut marks of pending splits and joins the fragments of a rejected one, and `layers.ts` decides pending property writes.
+- `packages/plitejs/src/authored/tree/` turns each write into review marks on the stored document (`record.ts`, `record-completion.ts`), decides changes by rewriting that document (`resolve.ts`) and builds the previews (`proposed.ts`). `cuts.ts` reads the cut marks of pending splits and joins the fragments of a rejected one, and `layers.ts` decides pending property writes. The resolver lands a join whose target holds no live content in the target's place, with the target's followers after it, and reports the nodes it lands out of stored order. Projections leave out the `held` member, which only the resolutions written back to storage keep. The recorder splits a frame step that crosses a break, a place where the view shows two stored pieces side by side, into sub-steps that each map in stored order. It refuses a crossing it cannot split, a block merge whose right line holds or ends at a break, a block inserted beside a moved line and a removal mapped backward, and stores nothing for them (`docs/plans/2026-10-17-command-law-moved-content.md`).
 - `packages/plitejs/src/authored/facts/` owns the review records saved in the document's `records` and admits them when a document loads or a peer sends them (`records.ts`, `admission.ts`).
-- `packages/plitejs/src/authored/ledger/` reads the marks into changes and cards and keeps them per top-level block, so a read or a change delta costs work in proportion to the edit, not the document (`ledger.ts`, `cards.ts`, `work.ts`).
-- `packages/plitejs/src/authored/authored.ts` is the plugin, with its views, its reads, `update.decide`, `api.subscribeChanges` and `api.subscribeRefusals`.
+- `packages/plitejs/src/authored/ledger/` reads the marks into changes and cards and keeps them per top-level block, so a read or a change delta costs work in proportion to the edit, not the document (`ledger.ts`, `cards.ts`, `work.ts`). A run whose blocks store a line moved between a join's halves before the joined line maps positions through a run order read from the resolver's landing, and the frame map reports its breaks (`order.ts`).
+- `packages/plitejs/src/authored/authored.ts` is the plugin, with its views, its reads, `update.decide`, `api.subscribeChanges` and `api.subscribeRefusals`. A refusal reaches an Editing write too, as `unrepresentable`, and the suggestion kit's toast asks that writer to accept or reject the pending suggestion first.
 - The Yjs binding carries review marks as node properties in the shared tree, and review records in one shared map per record set that peers merge by id (`packages/plitejs/src/yjs/core/controller.ts`).
 - `packages/platejs/src/authored/AuthoredPlugin.ts` stamps writes with the editor's `userId` and takes no options. `BaseSuggestionPlugin` maps Editing and Suggesting to view intents and writes the `data-editor-authored-*` attributes, and `useSuggestionGroups(blockKey)` reads the cards touching a block (`packages/platejs/src/react/features/suggestion/useSuggestion.ts`).
 
@@ -111,3 +111,19 @@ Read from local checkouts and vendor docs on 2026-10-08. Every editor that lets 
 | Word (OOXML) | Same tree, `w:del` around `w:delText` runs | Inserts split a deletion in the format | Accept or reject commands | Deleted text has its own element, so a plain text reader skips it |
 | Google Docs (API) | One index space; runs carry suggested deletion IDs | Not documented | Accept or reject by ID | Preview modes for accepted and original content; only the inline mode is valid for writes |
 | CKEditor 5 (commercial, docs only) | Model markers over in-tree content | Not documented | Accept and discard commands | Accepted data is built in a temporary editor |
+
+## Open work
+
+- Where Enter, block merges and an inserted block land among a pending join's moved lines, which the recorder refuses today, and where accepting puts a moved line that the joins after it merge into, which it drops as before. owner: zbeyens; stop: t_bdec706b lands or is dropped; tracked: the suggested-task ledger.
+- A moved line's place after its join when another join on it is decided alone. owner: zbeyens; stop: t_a9d89ef3 lands or is dropped; tracked: the suggested-task ledger.
+- A mark applied across the whole of a pending join's joined line. owner: zbeyens; stop: t_9bd5d71a lands or is dropped; tracked: the suggested-task ledger.
+- Other authors' pending claims on a lowered merge's landed copy. owner: zbeyens; stop: t_e623a723 lands or is dropped; tracked: the suggested-task ledger.
+- What a text drag over a line moved between a pending join's halves moves. owner: zbeyens; stop: t_7765642d lands or is dropped; tracked: the suggested-task ledger.
+- Rejecting one's own split in a pending join's target. owner: zbeyens; stop: t_3b905704 lands or is dropped; tracked: the suggested-task ledger.
+- The caret after a link when Backspace merges a line into one that ends in a link. owner: zbeyens; stop: t_b483ab66 lands or is dropped; tracked: the suggested-task ledger.
+- A token cursor query for the elements strictly open at a position. owner: zbeyens; stop: t_4b8c1202 lands or is dropped; tracked: the suggested-task ledger.
+- The recording law that throws "Only a block follows a join". owner: zbeyens; stop: t_04797f74 lands or is dropped; tracked: the suggested-task ledger.
+- The ledger laws at seeds 207, 101 and 20261015 over moved content, which next's own ledger failure stops before any framed step. owner: zbeyens; stop: t_5706461c lands or is dropped; tracked: the suggested-task ledger.
+- Which intent a refused change ran in, so the toast names the right mode for a proposal forced from Editing. owner: zbeyens; stop: t_4b729b20 lands or is dropped; tracked: the suggested-task ledger.
+- This subject's page, which the renderer refuses while it shows a fold of an open plan. owner: zbeyens; stop: t_d4caeb74 lands or is dropped; tracked: the suggested-task ledger.
+- Exact node placement, undo keys and anchors near moved lines, and own acceptance's change when it reorders, which stay coarse. owner: zbeyens; stop: a recording law fails on one, which offers its task; tracked: `docs/plans/2026-10-17-command-law-moved-content.md`.

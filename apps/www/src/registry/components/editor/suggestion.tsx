@@ -148,28 +148,28 @@ const REFUSED: Readonly<Record<string, string>> = {
 };
 const refusedPlaces = new Intl.ListFormat('en');
 
-/** Says why Suggesting refused a change, which then applied nothing. */
 function SuggestionRefusals() {
   const editor = useEditor();
 
-  React.useEffect(
-    () =>
-      editor.plugin(AuthoredPlugin).api.subscribeRefusals((refusal) => {
-        const places = refusal.reasons.map(
-          (reason) => REFUSED[reason] ?? reason
-        );
+  React.useEffect(() => {
+    const authored = editor.plugin(AuthoredPlugin);
 
-        toast.error(
-          refusal.code === 'veto'
-            ? `Suggesting is off in ${refusedPlaces.format(places)} for now. Switch to Editing to change them.`
-            : refusal.code === 'generated-values'
-              ? 'Suggesting is off in this editor.'
+    return authored.api.subscribeRefusals((refusal) => {
+      const view = authored.read.view();
+      const places = refusal.reasons.map((reason) => REFUSED[reason] ?? reason);
+
+      toast.error(
+        refusal.code === 'veto'
+          ? `Suggesting is off in ${refusedPlaces.format(places)} for now. Switch to Editing to change them.`
+          : refusal.code === 'generated-values'
+            ? 'Suggesting is off in this editor.'
+            : 'intent' in view && view.intent === 'edit'
+              ? 'Editing cannot record this change next to a pending suggestion yet. Accept or reject that suggestion first.'
               : 'Suggesting cannot record this change yet. Switch to Editing to make it.',
-          { id: 'suggestion-refusal' }
-        );
-      }),
-    [editor]
-  );
+        { id: 'suggestion-refusal' }
+      );
+    });
+  }, [editor]);
 
   return null;
 }
