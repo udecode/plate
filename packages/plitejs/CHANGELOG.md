@@ -1,5 +1,595 @@
 # plite
 
+## 1.0.0-beta.0
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Compare schema-valid document revisions with `compare`, then resolve three-way conflicts with `resolveComparison`. Results keep exact canonical changes, content correspondence, grouped effects, and explicit diagnostics. Use `proposeAuthoredComparison` to publish a validated result as one native pending proposal.
+
+  Install `diff-match-patch-ts` when importing `plitejs/diff`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Use Plite hyperscript primitives for typed Plate fixtures, preserve custom factory exports, and correct clipboard mock writes. Remove the unused `getHtmlDocument` wrapper; call `DOMParser` directly in DOM-facing tests. Pass `Map<string, string>` directly to `createDataTransfer` instead of importing `DataTransferDataMap`. Emit `hth` fixtures as `tableCell` nodes with `header: true`. Replace rank-specific heading JSX fixtures with one heading element and level.
+
+- [#5115](https://github.com/udecode/plate/pull/5115) by [@zbeyens](https://github.com/zbeyens) – Keep stable element renderers independent from sibling path shifts. Element components resolve event-time paths from their element and opt into `usePath()` only when output depends on live position. Plite node refs restore the live runtime path after any external React render so moved text DOM cannot retain stale coordinates. Node wrappers receive `renderPath` as a render-snapshot path for cheap depth and ancestor decisions without a live subscription. Descriptor wrappers can reject ineligible nodes before Plate composes plugin context or mounts their component.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add immutable `TransactionSpec` and versioned `DocumentChange` APIs for atomic, serializable updates, with explicit primary and named-root changes and no public primary-root sentinel
+  - Compile closed schemas from plugin `schema` declarations with shared `property.*` laws, structural content fitting, stable identity, and typed element, group, root, and property queries
+  - Declare independently meaningful blocks with editable children using `object: true`; compiled objects are selectable, isolating, and non-empty, while child text selection remains open for transfer and generic split cannot clone the owner
+  - Define literal string domains with `property.enum(...)`
+  - Avoid redundant editable renders when a controlled read-only prop already determines the effective input policy
+  - Bind structural slice fitting to each compiled schema revision through one private, immutable fitter artifact
+  - Publish derived schema identities as `{ kind: 'derived', fingerprint }` and application-named lineage as `{ kind: 'named', id, version, fingerprint }`; fingerprints cover compiled semantics only
+  - Accept persisted complete-document envelopes with exact schema identity at the root editor boundary and reject them from scoped editor views
+  - Report schema failures through `EditorSchemaValidationError` with root, path, node, property, and contributor provenance
+  - Add immutable `{ content, openStart, openEnd, roots? }` `ContentSlice` values with complete referenced root graphs, contextual `state.slice` fitting, closed `fragment.replace`, open `slice.replace`, and detached-parent `fitContent`
+  - Carry element-owned named roots through content slices, enforce one owner for exclusive roots, preserve shared aliases and cycles, namespace cross-source collisions deterministically, and apply owner/root cleanup, cut, undo, and redo atomically
+  - Reconfigure plugin slots and install dynamic plugins atomically, requiring an explicit document migration when the candidate schema rejects the current document
+  - Activate candidate plugins against isolated state, publish the complete plugin set atomically, and restore every document, field, anchor, and registry fact when activation fails
+  - Initialize final-document resources with activation-owned `beforePublish` callbacks; synchronous failures roll back before publication, while `afterPublish` observes committed state
+  - Define semantic commands with `defineCommand` and register pure `false | TransactionSpec` handlers through plugin `commands: ({ handle, around }) => [...]` factories
+  - Let host input runtimes probe pure command handlers without publishing, so pass-through policy preserves native input and material policy fails closed
+  - Dispatch command-backed updates through immutable transaction specs, including plugin-aware `state.transaction(...)` builders and `tx.command`
+  - Execute update callbacks, plugin writes and transaction-spec callbacks synchronously; reject thenable results before publishing a commit or returning a spec
+  - Expose frozen snapshot identities through `snapshot.index.entries()`, `keyAt()`, and `pathOf()` with bounded lazy structural mapping
+  - Project detached complete documents with the pure `projectAuthoredDocument` and `projectAuthoredRange` helpers. A projection returns the `accepted` or `proposed` document, its diagnostics and the number of pending changes it decided, and `projectAuthoredRange` maps a range of the stored document onto a projection.
+  - Keep Editing writes direct when normalization touches adjacent pending structure; only writes to pending content become reviewable.
+  - Give every live descendant, including text, an editor-scoped `NodeKey`. Read it with `editor.key(nodeOrLocation)`, resolve it with `editor.read.nodes.path(nodeKey)`, and pass it to generic `NodeTarget` reads and updates. Node keys are unique across one editor's roots and carry private runtime ownership, so a key from another editor fails closed even when public editor IDs and local allocation order match. Path lookup stays scoped to the current editor or view root. Pass `root` to `tx.nodes.replaceChildren` to replace children at a path in a named root. Node keys never enter values, slices, history, or collaboration payloads.
+  - Keep schema-bound initialization and common structural transforms local to the changed document region, reducing large-document startup and edit latency.
+  - Render transient inline paint through ordered `<Plite decorations>` sources that observe once, read by node, and return keyed render-safe attributes. Keep durable annotations and out-of-flow widgets as separate lifetimes.
+  - Read resolved annotations by `NodeKey` with `getAnnotationsAt(nodeKey)`. Annotation change subscribers receive exact `ids`, affected `nodeKeys`, and an `editor`, `external`, `refresh`, or `annotation` reason so consumers can invalidate only changed content.
+  - Create framework-owned annotation stores through `plitejs/annotations`. React components keep hook-owned lifecycle through `usePliteAnnotationStore`; `plitejs/react` does not expose the imperative constructor.
+  - Preserve exact `property.*` descriptor inference in packed declarations and reject declaration artifacts whose generic `Readonly` arguments were erased.
+  - Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands
+  - Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling
+  - Support text selection and one directional exact `NodeSelection` with canonical `paths`, `anchorPath`, `focusPath`, and an optional named root. Preserve node selection through mapping, history, collaboration, marks, and slices without plugin-defined selection kinds.
+  - Validate unknown selection values against the built-in selection shapes and current document through `editor.read.selection.isValid(value)`
+  - Track persistent Path, Point, and Range values with `editor.anchor`; use auto-released `tx.anchor` handles for locations needed only inside one update or transaction builder
+  - Resolve one retained anchor in another view of the same model and root with `anchor.resolve(view)`. Annotation indexes follow their exact view and observe the editor only while subscribed; passive reads stay current without retaining subscriptions.
+  - Default bare public editor, read, update, transaction, and view types to the core-only plugin tuple. Use the explicit internal `AnyEditor` boundary when runtime infrastructure intentionally erases installed capabilities.
+  - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
+  - Build plugin read method trees once per published configuration, keep their methods live across document commits and transaction drafts, and reject document-derived read data properties
+  - Infer update callback transactions exclusively from the editor's installed plugins, infer command dispatch from the command descriptor, and return `unknown` when a schema property is addressed by a raw string instead of a typed property handle
+  - Select plugin transaction methods inside an active update through `tx.plugin(pluginOrName)`, using descriptors for exact installed identity or names for package-decoupled lookup without opening a nested update
+  - Type node-property mutations as atomic `nodes.set(props, options)` patches and removals as `nodes.unset(key, options)`. Use exact schema-property handle keys as computed object keys for aliases. Prefix handles cannot address one property.
+  - Keep forced correction targets distinct by draft path before runtime node keys are published, so initialization repairs every matching node inside the same atomic bootstrap spec without emitting a commit.
+  - Add schema property copy policy and generated construction/canonical presence. Plugin-authored property keys are invariant; closed applications may retarget a property but cannot alias its storage key.
+  - Name installed plugin namespace projections `EditorInstalledReadGroups` and `EditorInstalledUpdateGroups`
+  - Keep state-backed read methods available inside active and speculative transactions without exposing them as one-shot editor updates
+  - Add document replacement, block-relative insertion, live location targets, structural type selectors, function-only node predicates, and explicit selection predicates
+  - Export the `documentReplacement` annotation so package-owned resources can revoke authority on equal-content whole-document replacement.
+  - Read the nearest schema block with `nodes.block()` and every relevant block with `nodes.blocks()`. `nodes.block()` returns `undefined` when its target names no node. Mutate semantic blocks through `blocks.duplicate`, `blocks.insert`, `blocks.set`, and props-first `blocks.toggle`; keep generic structural lifting under `nodes.lift`.
+  - Insert blocks after or before a block, or at a path, with `blocks.insert`. Its options take one placement, and `replaceEmpty` only with `after` or no placement. It returns the keys of the top-level blocks that landed, in order, or `undefined` with nothing changed when the blocks do not fit their landing parent, such as a parent at its child limit.
+  - Reset targeted blocks to their immediate parent or document-root schema default with `blocks.reset({ at?, unset? })`, preserving children, selection, live node keys, and lifecycle-approved properties without regenerating them. `unset` removes named properties the default does not set. Reset checks every target first and returns `false` with nothing changed when a target has no default it can become: its parent or root declares no element default or declares text, the default lacks a required property nothing supplies, its type change leaves the block's content without one, or the default is not allowed at the target's position. Turning blocks off with `blocks.toggle` resets them the same way.
+  - Apply a different property patch to each selected block with `blocks.set((node) => patch)`. Every patch is checked before any is written, and `blocks.set` returns `false` when one is refused or nothing changes.
+  - Infer node read and mutation targets from `type` selectors or type-guard `match` predicates. Remove caller-selected node result generics and shallow object matchers. Keep `at` independent from the selected node type, and put insertion split-target selection under `split: { type, match }`.
+  - Replace the complete serializable document solely through `tx.value.replace({ children, roots, meta, selection })`; remove omitted roots, reset omitted persisted meta, and clear omitted selection
+  - Add explicit document repair and mutually exclusive mark toggles
+  - Declare mutually exclusive property groups in schema so toggles, canonicalization, history, and collaboration share one invariant
+  - Resolve plugin dependencies and conflicts by descriptor, install required dependencies transitively with reference-counted cleanup, and expose typed dependency APIs through `editor.plugin(descriptor).api`
+  - Apply a root transaction policy to one descriptor-owned update through `editor.plugin(descriptor).update(policy).method()`
+  - Let host layers project additional transaction-view capabilities through private Plite internals without expanding raw Plite's public transaction API
+  - Keep root Plite dependency references shallow and non-generic as `{ name, enabled? }`. Plate plugin references carry the same sole `name` identity. Keep name-keyed capability/provider inference private, without recursively encoding exact dependency ancestry. Static portals prove name and capability equivalence; runtime portals prove exact installed descriptor identity.
+  - Add descriptor-owned typed plugin contributions for package-specific contribution channels
+  - Define package-owned contribution channels with `definePluginPoint(...)` and collect ordered values through `context.getContributions(...)`
+  - Intercept core-owned pure reads through descriptor-based plugin `read` middleware, with transaction-draft state, single delegation, and complete generator cleanup
+  - Group prefixless change callbacks under `on`; declare owner-local methods through `read` and `update`, core read wrappers through `readMiddleware`, candidate validation through `validate`, and descriptor collections as `stateFields`, `effectTypes`, and `facetProviders`
+  - Infer one exact definition from every `definePlugin(name, definition)` author object, carry that sole public definition generic through `Plugin<D>`, omit undeclared fields from the inferred descriptor, and expose `DefinitionOf<typeof Plugin>` as the public definition extractor
+  - Use `definePlugin(name, definition)` and `defineEditorSchema(name, definition)` as the only plugin/schema descriptor factories. Descriptors are nominal, immutable values; installing the same descriptor twice is idempotent, while divergent same-name descriptors reject.
+  - Return the public `Editor` directly from `createEditor()`. Create root-scoped views with `createEditorView(editor, options)` and add live capabilities with `editor.install(plugin)`; layered editors retain their complete caller capabilities through root-scoped views, while raw Plite editors infer their installed plugin tuple. No public runtime wrapper or live `.extend()` API exists.
+  - Expose `PluginTypeProvider` as the public value-sensitive capability bridge and keep higher-kinded encoding, normalized installed capabilities, and transitive dependency expansion private
+  - Infer descriptor-owned element shapes with `ElementOf<typeof Plugin>`; remove the two-owner `SchemaElementOf` and `SchemaElementShapeOf` extractors
+  - Keep immutable author inputs in the descriptor factory closure instead of an plugin `config` channel
+  - Construct missing root and nested content only from authored `SchemaContent.default` declarations; remove the separate default-block option and implicit paragraph fallback. An element default can also set properties, such as `{ type: 'heading', properties: { level: 2 } }`, and a default with any other key throws
+  - Accept document `maxLength` only when creating the editor
+  - Resolve functional plugin APIs against each editor view root and preserve the complete root-scoped read surface, including exported selection slices
+  - Declare every plugin API through an `api` factory, including context-free API objects; contextual factories receive one `{ editor, root, getContributions }` object
+  - Keep merge, selectability, and exported-slice policy on typed `editorReads` descriptors instead of plugin-specific root hooks
+  - Read the active plain model range through `selection()`, exact selected nodes through `selection.nodes()`, and every exact range through `selection.ranges()`
+  - Initialize editors synchronously through `initialValue` or an editor-context callback and publish non-cancellable commit contexts with the resulting immutable snapshot
+  - Derive complete raw-schema identity when `id` and `version` are omitted, and expose a non-null derived or named identity from `editor.read.schema.identity()`
+  - Freeze pure descriptor namespaces and preserve exact custom property values and defaults from inline `validate` predicates paired with a positive-integer `validationVersion`
+  - Reject values without a string `type` from `ElementApi.isElement` and transitive `NodeApi` predicates
+  - Address compiled element and property identity through nominal `SchemaElementHandle` and `SchemaPropertyHandle` values. Property handles retain persisted key, placement, compiled id, and inferred value type.
+  - Compile deterministic closed-application overrides before relationships. Element type, content, groups, and property targets may change; ambiguous overrides reject instead of using source order.
+  - Serialize deterministic schema contracts, classify structural diffs, and restore validator-backed runtime schemas from committed contracts. Contract readers recompute the structural fingerprint from authoritative content, and restoration rejects any derived table that differs from the source contributions.
+
+  **Migration:** Replace `@platejs/slate` with `plitejs` and migrate Slate transforms and operations to `editor.read`, `editor.update`, or active transaction APIs. Replace `defineExtension({ name, ...definition })` with `definePlugin(name, definition)`, pass a name to `defineEditorSchema`, call `createEditorView(editor, options)` with the editor itself, and replace live `editor.extend(extension)` with `editor.install(plugin)`. Register state fields through a nominal plugin's `stateFields` collection instead of passing field handles as plugins. Replace calls such as `nodes.find<Foo>({ match: { type: 'foo' } })` with `nodes.find({ type: fooHandle, match: (foo, path) => ... })`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Remove `editor.subscribe`, the `subscribe` and `subscribeCommit` helpers from `plitejs/testing` and `plitejs/internal`, and the `SnapshotListener` and `EditorCommitSource` type exports. Observe commits with `editor.subscribeCommit((commit, snapshot) => ...)`, which receives the published snapshot as its second argument.
+
+  **Migration:** Swap the listener's arguments:
+
+  ```ts
+  // Before
+  editor.subscribe((snapshot, commit) => save(snapshot));
+
+  // After
+  editor.subscribeCommit((commit, snapshot) => save(snapshot));
+  ```
+
+  A commit listener can run before a mounted editor updates its DOM, so read rendered DOM from a React effect.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Use explicit versioned persistence, browser data transfer, and schema-fitting contracts.
+
+  `EditorValuePersistence<TValue, TEncoded>` directly owns `decode`, `encode`, its positive `version`, and optional `legacyDecoders`. Clipboard and drag/drop integrations register `DataTransferFormat` values: `decode` returns a `ContentSlice` and `encode` returns a string, or `null` to delegate to the next format. A format that throws is reported to `lifecycleErrorSink` and negotiation continues. Schema fitting returns deterministic repair reports and validates detached slices before insertion.
+
+  **Migration:** Replace `HostCodec` and host-codec helpers with `DataTransferFormat` and data-transfer format helpers. Declare `decode`, `encode`, `version`, and `legacyDecoders` directly on `persist` instead of wrapping a value codec.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add prioritized schema-bound host codecs that claim exact schema declarations through `owns` and parse or serialize immutable `ContentSlice` values through read-only state
+  - Isolate codec query, parse, and serialize failures through the lifecycle error sink while preserving fallback order
+  - Preserve open slice edges and every transitively referenced element-owned root in native clipboard payloads
+  - Own every public `DataTransfer` contract outside headless Plite, including typed `domCommands.insertData` command interception and exact `readSlice` / `writeSlice` transport
+  - Intercept `domCommands.insertData` through plugin `commands`; return a pure transaction spec when the plugin owns the payload or `next()` to continue the internal slice, host-codec, and plain-text path
+  - Publish clipboard operations under the DOM-owned `editor.api.dom.clipboard` namespace
+  - Select default editing-action event phases through one host-facts policy, retaining only the proven Korean iOS Backspace exception
+  - Add root-scoped coordinate, caret, visual-line, and rectangle geometry APIs
+  - Schedule focus, selection, scrolling, and standalone host work through cancellable root-addressed DOM phases
+  - Cancel stale focus retries when another editor in the same document or shadow root takes focus ownership
+  - Resolve stale DOM path mappings through lifecycle reads and typed domain errors
+  - Resolve a mounted native element from a Plite node or its live `NodeKey`, returning `null` for foreign, removed, and unmounted keys
+  - Serialize node selections as closed exact-owner slices, including reachable secondary roots
+  - Resolve iframe and shadow-root input, selection, and shortcut behavior from each browser realm
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add validated versioned history serialization and atomic restoration for canonical changes, selection state, and registered effects
+  - Persist compiled schema identity, reject mismatched snapshots before batch decoding, and reset incompatible branches during atomic schema migration
+  - Require a non-null derived or named schema identity in memory and in History JSON format 4, and reject older envelope formats
+  - Publish immutable lazy-mapped branches with configurable depth
+  - Store fitted slice replacements as one canonical undo/redo batch
+  - Rebase saved selections through skipped changes against each batch's source and target documents
+  - Canonicalize text-only inverse batches before mapping skipped text changes so concurrent boundary inserts survive undo and redo
+  - Restore history selections against the editor view root that owns the batch
+  - Expose undo and redo as document-wide `editor.api.history` services that return `applied`, `empty`, `blocked`, `busy`, or `failed` in the call, or `pending` with a `settled` promise that never rejects while an effect owner finishes
+  - Expose `editor.read.history.hasUndo()`, `hasRedo()`, and `pending()` for availability and live-session replay state, while retaining `editor.read.history()` for full immutable branch inspection
+  - Keep editing and remote collaboration live while an effect-only session replay awaits its external owner, then settle the claimed entry in call order
+  - Define fallible local replay effects with one `history: { replay }` value
+  - Dispatch mounted undo and redo through void-returning `useEditorHistory` controls, and report final outcomes to the initiating `Editable` through `onHistoryReplay`
+  - Report a failed replay through `createEditor({ lifecycleErrorSink })`; with no sink, report it through `reportError`, or `console.error` where `reportError` does not exist
+  - Keep transaction history controls limited to grouping, skipping, and restoration; replay is rejected from active reads and updates
+  - Prepare history, authored state, anchors, plugin configuration, and document changes before publishing one coherent commit
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `plitejs/pagination`. `measurePages` measures an editor into pages with `createPretextPageLayoutEngine` or `createEstimatedPageLayoutEngine`, and `pageSettingsCodec` persists page settings.
+
+  Add `PagedEditable`, `usePageLayout` and `usePageLayoutFragments` to `plitejs/pagination/react`, which render one editable on measured pages with page chrome, named roots and optional page virtualization.
+
+  Keep the headless root install independent from React. Install `@chenglou/pretext` when importing `plitejs/pagination` or `plitejs/pagination/react`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add Plite React integration with strict editor and element hooks, typed `usePliteCommand` dispatch, latest-value selectors, revision-based external view data, provider-lifetime `onCommit` observation, and read-only state for shell components outside a `<Plite>` root.
+
+  - Preserve focused-root selection across child editors, read-only sibling views, and lifecycle target changes
+  - Coordinate DOM reads, writes, selection repair, Android input latency, and external mutation recovery through one bounded scheduler per mounted root
+  - Keep printable single-character typing native for internally proven live leaf pipelines and pass-through command middleware; use model input for unknown custom renderers and material commands
+  - Invalidate explicit runtime-state chrome selectors synchronously while preserving equality and commit-filter suppression
+  - Run public keydown handlers before built-in editor commands so a handled event can override undo, redo, Enter, and other runtime commands
+  - Remount unsynchronized custom text shells after structural history repair while retaining derived projected DOM text sync for safe renderers
+  - Re-export the model-owned caret after composition repair renders only while the focused snapshot version and selection remain current
+  - Refresh expanded Blink selections after document changes so formatting updates cannot retain stale painted highlight geometry
+  - Keep `NodeSelection` model-only with no native browser range, and expose exact node selection through `useElementSelected({ mode: 'node' })`
+  - Let selectable object owners receive node focus from non-editable chrome, enter editable children with ArrowDown while the page draws them, and regain owner focus with ArrowUp at the leading boundary
+  - Skip object children the page hides during arrow-key movement in both directions
+  - Isolate optional decoration, annotation, widget, and render-callback failures
+  - Preserve inline decorated-range data in projection slices
+  - Infer React editor values from complete installed schemas and expose typed interactive content-root slots
+  - Keep `useEditor()` non-generic and let selector hooks infer only their result; resolve exact plugin capabilities through `editor.plugin(Plugin)`
+  - Preserve complete element-owned root graphs through projected clipboard serialization and insertion, including shared aliases, cycles, and deterministic cross-source collisions
+  - Resolve projected clipboard ranges against the canonical runtime so root-scoped editor views copy and cut their own model content
+  - Cancel superseded delayed focus restoration when undo or redo crosses roots
+  - Install the exact DOM descriptor through `react({ dom })` and consume its clipboard and input-runtime services without name-based runtime lookup
+  - Install the default DOM descriptor when `createReactEditor()` is called directly; keep `react({ dom })` as the low-level custom DOM composition surface
+  - Hydrate separate server and client editor runtimes with deterministic local node tokens, then publish full runtime-owned keys after mounting
+  - Route keyboard default-action ownership through the DOM host-facts selector
+  - Write each transaction announcement into at most one of the editor's live regions, however many views of it are mounted
+  - Keep placeholder and drop-cursor presentation in applications while retaining structural DOM, geometry, and selection behavior in Plite React
+  - Resolve physical left/right caret and word movement through the DOM visual-point API in the direction of the block that holds the caret, preserving affinity across mixed-direction text
+  - Collapse an expanded selection with left or right according to the direction of the block that holds the caret
+  - Remove view-level `Editable` maximum-length configuration; set `maxLength` when creating the editor
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Connect raw editors to Yjs with `plitejs/yjs`, including provider lifecycle, shared effects, named roots, schema identity and collaborative undo.
+  - Read provider state and typed remote cursors from `plitejs/yjs/react`.
+  - Observe resolved remote cursor changes with `state.yjs.subscribeRemoteCursors(listener)` without subscribing to unrelated awareness updates.
+  - Compile detached schema facts with `compileEditorSchemaContract(editor, plugins)` on an empty, unchanged raw editor; keep compiled maps and collaboration bookkeeping private.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Use one nominal `Plugin` descriptor family across Plite and Plate. Author plugins with `definePlugin`, install them through the `plugins` option, and open their exact typed portal with `editor.plugin(Plugin)`. Plate keeps its product compiler while preserving the original descriptor through headless and React authoring stages; dependencies, conflicts, ancestry, editor-local configuration, stores, rollback, retained portals, and view capabilities resolve from that shared identity.
+
+  **Migration:** Replace `defineExtension` with `definePlugin`, `extensions` with `plugins`, `editor.extension(Plugin)` with `editor.plugin(Plugin)`, `EditorExtension` with `Plugin`, and `EditorExtensionTypeProvider` with `PluginTypeProvider`. Replace Plate's `defineBasePlugin` and `definePlatePlugin` factories with `definePlugin`. The v54 CLI migration emits one mixed `EditorKit` plugin tuple.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep one-or-many `NodeSelection` model-only while the editable retains focus and the native browser selection stays empty. `useEditorSelection()` returns the active plain `Range | null` without exposing the tagged semantic selection payload. `useElementSelected({ mode: 'object' })` is true only for the element an object selection holds, and `useElementSelected({ mode: 'text' })` only for a text selection that touches the element. Clicking an object node makes an object selection; plain `←` and `→` on a block selection move the caret out of it.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Use `editor.update.selection.setNodes(targets, { anchor, focus, mode })` or `tx.selection.setNodes(targets, { anchor, focus, mode })` for directional one-or-many node selection. `NodeSelection` stores canonical `paths`, exact `anchorPath` and `focusPath`, and `mode`: `'block'` (the default) for a block selection, or `'object'` for one selected object node such as an image. `SelectionApi.nodes(paths, { mode })` constructs detached values and requires `mode`. Read it with `editor.read.selection.nodeMode()`.
+
+  Read the active plain directed `Range` with `editor.read.selection()`, `state.selection()`, or `tx.selection()`. Use `selection.ranges()` for every exact range and `selection.nodes()` for exact selected-node membership. The public `primaryRange()` and `replacementRange()` projections are not part of the selection surface.
+
+  Apply marks and block formatting across the content of every selected node container.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Expose exact mounted-editor geometry for transient selection UI.
+
+  `plitejs/react` exposes `useSelectionGeometry`, `usePliteWidgetGeometry`, and `usePliteWidgetIds`. Widget descriptors use `target` with `selection`, `node`, or `annotation` targets; resolved widgets expose `available`; widget stores expose their owning `editor`.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix deleting your own suggested text inside another author's pending insertion, which left it behind as a struck deletion. The text is now removed and the other author's insertion is whole again.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add explicit external-text adapters for exact-one-Text elements while keeping canonical text, selection, history, composition, decorations, and collaboration in Plite
+  - Validate external text projections once per mounted view batch and deliver the current selection before focus
+  - Keep nested text editors synchronized with their mounted view's read-only mode
+  - Keep the caret's column when ArrowUp or ArrowDown moves into or out of an external text view: a view may answer `offsetAt({ edge, x })` with the offset under that column, and `navigateOut` takes the caret's goal `x` for vertical exits only
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep pointer-drag selections stable over ignored editor chrome and allow them to contract toward their starting point
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep projected cross-root selection highlights synchronized through drag completion.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve clickable trailing soft-break lines in editable blocks
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add pure complete-document authored projection and range-mapping APIs.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Restore the insertion caret after accepted drops, including text copied from an embedded editor, so subsequent typing edits the drop target and preserves the source.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Cancel pending focus requests when explicitly blurring an editor.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve adjacent text when deleting non-selectable inline voids with Backspace or Delete.
+
+- [#5115](https://github.com/udecode/plate/pull/5115) by [@zbeyens](https://github.com/zbeyens) – Keep inline voids on the current text line when they replace an empty block placeholder.
+
+- [#5115](https://github.com/udecode/plate/pull/5115) by [@zbeyens](https://github.com/zbeyens) – Keep block DnD ownership inside its React DnD adapter so native inline drags reach Plite's move transaction. Compose fitted slice replacement through a detached transaction spec so delete-and-reinsert moves publish atomically. Allow draggable inline voids, such as mentions, to move with native drag-and-drop and serialize through HTML clipboard data.
+
+  Define mention Markdown conversion on the mention plugin. Conditional mention properties cannot replace decoded children or resolved schema identity.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Group adjacent same-author deletions into one authored change across backward, forward, range, and paragraph-boundary editing.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Infer custom creator and element tags from `createHyperscript` options, initialize editor fixtures atomically, and keep JSX development metadata out of document values.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix `nodes.lift` throwing when the schema does not allow the lifted block at its new position, such as a required title. The lift now leaves that block where it is.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Land text dragged to a point as a paste lands, whether the drag moves or copies. A move refuses with `lossy` and changes nothing when `maxLength` would cut it, or when landing would change its text, its marks, or the type or properties of a block it carries, other than element properties declared to follow the drop. It does not check the block the moved text joins at the drop point or the blocks that contain it, and it checks every other block the move carries, an empty last block included
+  - Return and select a range that includes the line break when text dragged to a point starts at a block's end or ends at a block's start
+  - Add the `landing` option to element properties: `'preserve'` by default, `'rebase'` for a value relative to where content lands, such as a depth, and `'adopt'` for a value the landing site supplies, such as a list
+  - Add `intent: 'copy' | 'move'` to `SliceLandingInput`, so an `editorReads.slice.landing` middleware can tell a moved slice from a pasted or copied one
+  - Add `editorReads.transfer.adopt` with its `TransferAdoptInput`, `TransferPatch` and `TransferPatchProperties` types. A block copy or block move, by drag or keyboard, takes the properties it returns on the edge where it lands, and the drop indicator checks the same patched blocks. A move keeps its blocks and their keys and stays one undo step. A patch on a property not declared `landing: 'adopt'`, or a move patch that sets `null`, refuses with `policy`
+
+- [#5168](https://github.com/udecode/plate/pull/5168) by [@natamox](https://github.com/natamox) – Keep copied object blocks intact when pasting into an empty block inside a container.
+
+  Replace selected blocks whole when pasting over them, and cut the paste to `maxLength` instead of throwing. A paste the schema would reject, such as one naming a content root the document lacks or giving an exclusive root a second owner, returns `false` and leaves the document unchanged.
+
+  Leave void and read-only element text out of `text.string` over a node selection unless `voids: true`, as for other targets, so typing or pasting over a selected void stays within `maxLength`.
+
+  Join pasted text with its neighbors in a named root that declares no content rules, as in the main document.
+
+  Add `editorReads.slice.landing` with its `SliceLanding`, `SliceLandingInput` and `SliceLandingTarget` types. After paste handlers delegate, a plugin can shape the slice a paste lands, reading the root the paste lands in, and propose whole blocks for an empty target block; the editor checks that proposal against the schema and `maxLength`. Keep command handling in editor views.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Convert persisted documents explicitly at the storage boundary. Define one immutable target with `defineDocumentMigrations({ plugins, schema, sourceFingerprints, steps })`, then call `migrateDocument(input, { migrations, source? })`. The result contains `{ output, applied, source }`; save or load `output` directly.
+
+  Plate editors accept current-schema input only. Remove editor `migrations`, plugin `prepareDocument`, `migrateElementIds`, root migration imports, and public v53 manifest imports. Import migration APIs from `platejs/migrations`. Raw documents require `source: number | 'current'`; persisted envelopes carry their own exact schema identity.
+
+  A migration step's `document` holds only `children`, `meta` and `roots`. Read any other stored top-level field from the step's `legacy` record and lift it into `meta`; `migrateDocument` refuses a field no step lifted.
+
+  ```ts
+  2: ({ document, legacy: { title, ...legacy } }) => ({
+    document:
+      title === undefined
+        ? document
+        : { ...document, meta: { ...document.meta, title } },
+    legacy,
+  }),
+  ```
+
+  `plate migrate run` uses the same detached converter. Pass `--from <version|current>` for raw files; with it, the command reads every file as a raw document, so run persisted envelopes without it.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Restore persistent `nearest` anchors to their exact before and after locations through saved undo and redo history
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Bound Anchor dispatch, range projection, commit queries, and overlay updates to affected content. Keep composed decoration reads local to the requested node and DOM task scheduling linear in queued tasks. Add the `presence` change query for added and removed node identities without computing path changes.
+
+  Reuse immutable document indexes without rescanning cached roots. Fit incoming Yjs nodes through the existing schema API without opening a detached live-document transaction per node.
+
+  Build snapshot element catalogs only when requested. Apply multi-leaf text changes with one shared-ancestor publication per canonical change.
+
+  Resolve Yjs schema property contexts only within affected regions.
+
+  Map replacement identities through canonical changes without comparing every source node's text with every target node.
+
+  Preserve whole-node deletion and retained sibling identities when canonical changes round-trip through JSON.
+
+  Preserve selected text and direction through formatting splits and merges by retaining characters in canonical changes.
+
+  Construct splits directly from their local close/open boundary without diffing the whole document.
+
+  Read canonical values without revalidating immutable root arrays, and collect slice-owned roots without serializing unrelated document state.
+
+  Avoid model identity lookup when editor DOM is unmounted. Skip copy-property traversal for schemas whose properties all survive copying.
+
+  Ignore deferred content-root focus after a later model or projected selection supersedes it.
+
+  Publish a selected-void cut and its final caret in one transaction.
+
+  Reuse identical endpoint mappings within one change and repeated range projections within an immutable snapshot while preserving independent Anchor values.
+
+  Reuse mapped output membership indexes and unchanged bucket ordering when only projected values change.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Read review cards with `read.authored.groups({ at })`. A card groups one author's adjacent pending changes, and its summary holds `id`, `authorId`, `createdAt`, `changeCount` and `revision`. A card's id is its oldest change, so every peer and every reload gives it the same id. `read.authored.groupOf(changeId)` returns the card that holds a change
+  - Page pending changes in document order with `read.authored.changes({ at, authorId, from, to, group, cursor, limit })`, 50 at a time by default and at most 200
+  - Decide changes or cards as they were read with `update.authored.decide({ action, changes })` or `{ action, groups }`, and pass several decisions to decide them together. A decision returns `applied`, `unchanged`, `stale`, `invalid`, or `blocked` with the changes it needs in `with`
+  - `api.authored.subscribeChanges` passes one frozen `{ blocks, changed, groups, removed }` delta for each commit that changes the review, and `api.authored.subscribeRefusals` reports each proposal write or view switch the editor refused
+  - A view is `{ intent: 'edit' | 'propose' }`, or a `{ preview: 'accepted' | 'proposed' }` that takes no writes
+  - Typing or pasting inside struck text lands after it, as in a plain editor. An IME composition inside struck text splits the pending deletion around the composed text. A `propose` view records the new text as an insertion
+  - Pending review marks live in each node's `authored` property and review records in the document's `records`. Every loaded value and commit passes admission, which compacts and checks them, so saving `read.value()` keeps the review
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `editor.read.nodes.isContent(node)`, also on `tx.nodes`. It answers false for a node that a capability keeps in the document but out of its content, such as text a pending suggestion deletes. Code that derives a value from children can skip that node and still write at each child's real path
+  - The authored review tree records each suggested property write as its own tag on that property, linked to the tags it was written over, so deciding stacked or concurrent suggestions on one property gives the same result in every allowed order
+  - The authored review tree records an Enter inside a link or another inline element as a cut on both halves, and rejecting the Enter joins the halves back into one element
+  - A suggestion that leaves an element short of its required content records what an edit would build there, as struck content kept in place or as an insertion, and a decision builds what is still missing at the element's final place
+  - Fix the Yjs bridge reading an insertion with no previous children as a text split
+
+  - Preserve restored container identities when undoing an unwrap in authored views
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Make `Editable autoFocus` establish its native caret before the first keyboard input.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix block void caret rendering and selected-void deletion
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix `onBlur` not running, and the editor still reporting itself focused, after a click outside it right after typing
+  - Fix the editor taking focus back after it blurs right after End, Enter or Backspace
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `tx.break.exit({ before?, match? })` to leave the nearest structure around the selected block and insert the default block its parent declares there. A void, an object or a text block that declares `ownsExit` is a structure of its own, so exit lands beside it and stays in its container; any other block leaves the nearest container whose parent can hold a text block. When the block that owns its exit cannot get a plain text block beside it, exit leaves its container instead. Once exit stops at a container, it returns `false` and changes nothing when that container's parent declares no default block, has no room for it, cannot fill a required property of the default, or would leave the caret without text. `match` limits which levels exit may leave, the selected block included when it owns its exit
+  - Add `ownsExit` to block text element schemas, through `schema.element.textBlock({ ownsExit: true })` or the element declaration. `EditorElementBehavior.ownsExit` and `EditorSchemaElement.behavior.ownsExit` report whether the element owns its exit, which every void and object does, as does a text block that declares it. Declaring it on an inline, void, object or container element fails schema compilation. A schema that never declares it keeps its fingerprint
+  - Fix Enter on a block void throwing when the default block beside it needs a required property or holds no text; it changes nothing instead
+  - Report the `missing-property` diagnostic code when a schema-built element lacks a required property
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Validate imported canonical changes against the existing immutable baseline without rescanning unchanged document content. Preserve full validation when cancellation restores content with a different root identity.
+
+  Route multi-key React subscriptions through indexed listeners, deduplicate notifications, and prevent repeated cleanup from deleting replacement subscriptions.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Speed up `tx.changes.apply` and `tx.slice.replace` in documents with many top-level blocks.
+
+- [#5165](https://github.com/udecode/plate/pull/5165) by [@sin6626](https://github.com/sin6626) – Synchronize control-driven caret changes after a native pointer selection.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `state.schema.createDefaultChild({ at, root? })` to build the default block that the parent at `at` declares for that slot, reading the parent and its ancestors the way `state.schema.copy` does; a container without declared content, such as one the schema does not declare, takes the root's default for the root slot that holds it
+  - Typing or pasting plain text over picked blocks builds each new block as the default its container declares for that slot, and changes nothing instead of throwing when the container has no room for it
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Give a block that a split, a block inserted mid-text, a plain-text paste line, a duplicate or blocks pasted over picked blocks create the type its new position allows, keeping its preserved properties unless the slot fixes them. Under a `schema.content.prefix` title, Enter in the title starts a body paragraph instead of throwing at commit
+  - Keep a pasted slice that ends in a different text block, such as a quoted line followed by a paragraph, inside the quote, caption or table cell it lands at
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Refuse a top-level document field other than `children`, `meta` and `roots` instead of dropping or accepting it. `createEditor({ initialValue })`, `editor.read.schema.assertDocument`, `fitDocument`, persisted envelopes and `createEditorView(editor, { document })` all refuse it. `value.replace` also admits `selection`; a root-bound view's `value.replace` admits only `children` and `selection`; and a `plugins.reconfigure` or `install` `migrate` callback returns only `children` and `roots`. Store application data in `meta`.
+
+  A document view validates a caller's document on every `createEditorView` call and a document returned by `editor.read.value()` once.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `editor.api.dom.resolveVisualPoint(point, { direction, unit, affinity })` for browser-native horizontal caret resolution in mixed-direction text.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix `tx.key(node)` throwing inside a command or input rule for a node the same change already edited, wrapped or split
+  - Fix a node losing its key when a command or input rule edits it and then moves it
+  - Keep the key a command or input rule reads for a node it creates, such as a wrapper or the new half of a split, after the change lands
+  - Add `key` to `EditorTransactionSpecBuilder`, so `tx.key` type-checks inside `state.transaction` and `state.transaction.extend`
+
+- [#5165](https://github.com/udecode/plate/pull/5165) by [@sin6626](https://github.com/sin6626) – Scroll a custom pointer drag one step with `editor.api.dom.drag.autoScroll({ x, y })`, which returns the pixels scrolled, and read the part of an element the user can see with `editor.api.dom.visibleRect(element)`.
+
+  Text selection and block drags near an edge scroll the innermost scroller whose visible edge is under the pointer, including a scroller taller than the window or cut off by an outer scroller, and scroll down near the bottom of a short visible strip.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Throw a `TypeError` that names any option `createEditor` or `useEditor` does not take, such as `value` for `initialValue`, whether the options object holds it or inherits it. `useEditor` checks the options of every render
+  - Read each option `createEditor` and `useEditor` from `plitejs/react` take wherever the options object holds it, so an option that a parent object or a class getter defines builds the editor as the same option written in the call does
+  - Fail to compile when a `createEditor` or `useEditor` call writes an unknown option in its options object, with or without `plugins`; the error names the option. An options object passed from a variable, and a key every object has, such as `toString`, still meet only the runtime check
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Give an emptied element whose content admits text one empty text, whether its characters were deleted, its only text node was removed or `editor.read.schema.create` built it; content that admits only blocks may still be empty
+  - Load `createEditor({ initialValue })` in canonical form, adding the empty text an element needs and merging and spacing texts as an edit would
+  - Refuse an applied document change that leaves an element whose content admits text with no children, with an `EditorSchemaValidationError`
+  - Keep an emptied line's formatting in the selection's pending marks instead of on its empty text, so typing at the caret keeps the formatting, and the line is plain once the caret leaves or the document reloads
+  - Report the formatting an empty line or inline spacer drops with the `omit-empty-text-property` fit repair, which HTML, Markdown and DOCX imports read as lossless
+  - Build required content once, at the element's site, for edits, schema construction, loading and authored decisions, and fail to compile a content rule whose `min` no content reaches within its `max`, such as `schema.content.text({ min: 2 })`
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix the editable's `onFocus` not running when focus arrives while the editor is writing its selection, or right after a press outside the editor. Focus that arrives in either case now also marks the editor focused and restores its caret, so a popover that hands focus back after a button click no longer leaves the caret where an edit made meanwhile moved it.
+
+  Fix a blurred editor taking focus back. A selection change while the editor is not focused, such as an edit made in `onBlur`, no longer writes the page selection or scrolls; focusing the editor applies it.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `setRetainedTextFlowRendererCapability` to `plitejs/react`. It marks a custom `renderLeaf` or `renderText` as safe to skip during retained text flow, beside `setDOMTextSyncRendererCapability`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `history({ newBatchDelay })` with a 500 ms default so one core history owner groups compatible edits across input sources. Explicit `merge()` and `newBatch()` decisions remain authoritative.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Skip unchanged DOM path and node-key attribute writes during editor synchronization. Preserve path bindings and repair stale attributes while avoiding unnecessary mutation observer work.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep native IME preedit and commits at the caret beside inline links and custom text renderers. Preserve cross-block replacement content and deferred decoration updates when composition moves between paragraphs.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep the live canonical selection visible when focus moves to a control marked with `data-plite-keep-selection-visible`. Style expanded and collapsed inactive selections through the neutral Plite data attributes.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - With no `match` or `type`, `tx.nodes.wrap` with an inline element over a range wraps only where the element that would hold the wrapper accepts it and the wrapper accepts the nodes it would move. When it can wrap nowhere in the range, it returns `false` without changing the document instead of throwing at commit. With `split`, it runs from the first character or inline void the range holds to the last. An inline element the range only touches at its edge stays out. The range also stops short of a read-only inline at either end, though an inline element around one can still move into the wrapper whole. A block whose part of the range holds none gets no wrapper. That wrap ignores `voids`, so it never wraps anything inside a void or read-only element. A wrap with `match` or `type` keeps its edge handling and gets no fit check.
+  - `tx.nodes.wrap` whose matches nest, as `mode: 'all'` allows, puts the wrapper around the outer match, even when that match holds text outside the range. Before, the wrap threw, or with `split` inserted an empty wrapper.
+  - `tx.nodes.unwrap({ split: true })` unwraps only the selected part of an inline element that holds text, such as a link, and the whole element at a caret or an explicit point
+  - `tx.nodes.unwrap` returns whether it changed the document
+
+- [#5165](https://github.com/udecode/plate/pull/5165) by [@sin6626](https://github.com/sin6626) –
+
+  - Speed up deleting many adjacent blocks in one update: building its undo step now takes time linear in the removed content instead of quadratic
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix Home and End moving the caret to another line when it is already at the start or end of its line, such as in an empty line. Control+A and Control+E on macOS get the same fix.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Resolve DOM operations through the active mounted surface when several Editables share an editor. Retiring one surface preserves node and point resolution in the surviving focused surface. DOM-scope hooks follow focus changes and mounted-view retirement.
+
+  Cancel pending scrolling with the cleanup function returned by `editor.api.dom.scrollIntoView(target, options)`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add native block drag: `editor.api.dom.drag.start` and `drag.indicate`, `editor.api.dom.resolveDropTarget`, the `useDropIndicator` hook and the Editable `onDropResult` callback. A drag moves blocks within a document and copies them between editors.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix explicit path scrolling so requested top margins survive selection restoration and rerenders
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `acquire(take)` to plugin activation for resources outside the editor, and `editor.destroy()` to end an editor
+
+  - Run each `take` after every plugin's `beforePublish` passes; a throwing `take` rolls the publication back
+  - Run the release `take` returns before the plugin's cleanups, on removal, replacement, rollback, unmount and `editor.destroy()`
+  - Throw from `update` and `install` after `editor.destroy()`
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix a popover input rendered by an element losing focus on its first key. `Editable` ignores React events that bubble from a portal outside its DOM, including those reaching `on*` handlers passed to `Editable`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Prevent post-commit observer failures from making committed editor updates throw.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix `tx.selection.set` throwing "Invalid text editor selection" when it sets a range while the caret holds pending marks, such as after toggling bold with nothing selected. The range now drops the pending marks.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Remove a shared content root with its last owner when the schema sets `unknown: 'reject'`, so deleting the last block that shows it no longer throws. An open schema keeps the root.
+
+  Remove the content roots owned inside a removed root along with it, instead of throwing or leaving them behind when the update commits.
+
+  Return `false` from `tx.slice.replace` when the slice names a content root the schema would reject at that point, such as an exclusive root another block owns or a root the document lacks, instead of throwing when the update commits.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Copy text dragged between independent editors with the source content present at drop, and honor copy intent within one editor. Keep the source when the drop is refused or the source becomes read-only during the drag.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve active text marks during IME composition
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Remount the views of an `EditorRoot` when its `editor` prop changes, so replacing the editor needs no `key`
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve the active editable across deferred focus cleanup, repeated content-root view replacement, and cross-root history traversal.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `editor.api.react.settleInput()` to commit pending native input, such as a finished composition, into the model before reading it; it returns `false` while a composition is still active.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Return the callback's value from `editor.update(fn)` and `editor.update(policy, fn)`, or `undefined` when the editor refuses the update
+  - Return `undefined` instead of `true` from a direct update method, `editor.update.command`, a plugin portal, `useCommand`'s dispatcher and `editor.api.dom.clipboard.insertData`, `insertFragmentData` and `insertTextData` when the editor refuses their update, such as a Suggesting write it cannot record. `false` still means nothing applied
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Allow typing inside text a pending deletion strikes. The deletion splits around the new text, which Suggesting records as an insertion and Editing applies directly, and rejecting the deletion restores the original content.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix a scroll made right after typing or a re-render snapping back on the next frame
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix an editor keeping every earlier document snapshot and its node index in memory. Memory grew with every edit, and with pending suggestions it grew by about the size of the document on each one.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – `editor.read.text.string` copies only the requested part of a text leaf, so reading a short range at the end of a long leaf no longer copies the whole leaf prefix.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Drop the properties a schema drops on copy, such as review marks, from typed text
+  - Drop them from pasted or dropped content too, in every root it carries, whether it arrives as an editor envelope, an HTML fragment attribute or a registered data-transfer format
+  - Land `transfer.move` for a text range across differently marked leaves, a text range between roots, and a whole formatted leaf moved to its paragraph's start, which it refused as lossy
+  - Write only the changed children to Yjs for a structural edit inside a block, instead of re-creating the whole top-level block
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep text-flow DOM bindings local to each mounted editor view so shared editors resolve text points without document scans, including multi-record flows and surviving view teardown.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `editor.api.transfer` with `move` and `copy`, plus `editor.read.transfer.nodes`. A block lands wherever the target's schema accepts it, at any depth. A move inside one document lands its whole content or nothing in one undo step, a copy between editors follows paste, and `to: 'next' | 'previous'` steps blocks past a sibling inside their parent. Plugins redirect a landing edge through `editorReads.transfer.landing` and refuse landings with `transferVeto`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix typing over a selection that spans editor roots throwing "Cannot resolve token range" when the selection starts at a text leaf it deletes whole, such as a bold word.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `editor.api.react.subscribeTypedText` and `editor.api.dom.textToCaret`.
+
+  - `subscribeTypedText` reports the text each mounted Editable inserts at the caret by typing, with the Editable's root element and the inserted model range. Paste, drop, yank, replacement text, history replay and remote edits report nothing. On Android, a keyboard paste sent as `insertText` reports as typed, and a pending input that merges typed and pasted text reports nothing.
+  - `textToCaret` reads the text the mounted view shows from a model point to the DOM caret, including IME preedit the model has not received.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Give a `useEditor` editor its component's lifetime. Its plugins take outside resources, such as a Yjs document, when React commits the component, and give them back when it unmounts or `deps` replace the editor, so a remount, a Strict Mode rehearsal or a `deps` change binds the same `Y.Doc` again instead of throwing "already has an independent binding".
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - With the caret in a block void, insert the void's parent's declared default block after it on Enter and Shift+Enter, instead of the root's default, and change nothing when the parent cannot hold another block
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `installBrowserHandle()` to `plitejs/react`; `Editable` exposes the browser test handle and keeps the kernel trace only after it runs, so production bundles drop both. Read the handle under `BROWSER_HANDLE_KEY` from `plitejs/testing`
+
+  **Migration:** Call `installBrowserHandle()` once in the test or development entry that mounts editors for `@platejs/test`:
+
+  ```ts
+  import { installBrowserHandle } from "plitejs/react";
+
+  installBrowserHandle();
+  ```
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `locate` and `selection: true` to `defineCommand`, and `txLocate`, `locateAt` and `txSelection` for plugin update methods. They declare where the locations a command or method takes land when it runs on the document with every pending suggestion accepted; `place.location` from the new `EditorCommandPlace` type maps each one.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Create a view from another view with `createEditorView(view, { root })`: it reads the requested root, or the primary root when `root` is omitted, and keeps the source view's document, read-only state and authored mode
+  - Paint a decoration only in the root it addresses: a range without roots belongs to the view that read it, and a range naming another root paints nothing
+  - Paint the editor's decoration sources inside element-owned content roots, and keep those roots in the owner's authored mode when it changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `createEditorView(editor, { document })`: a read-only view that reads an immutable document through the editor's schema and plugins, including plugin reads and APIs, without editing the editor; plugin code that reads the source editor while the view reads throws. An anchor resolves in a document view only on the nodes that document shares with the editor, and a document view reports no authored changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add an `at` path to `NodeApi.findTextRanges` options, which searches only that node and its descendants and keeps range paths from the root.
+  - Accept a transaction or state view as the `findTextRanges` root. It joins text across inline elements and honors `content: true` there, as it does on the editor.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `report(diagnostic)` to the DataTransfer decode context so formats can report what a pasted payload leaves out, as `{ impact: 'lossless' | 'lossy', message }`.
+  - Add `Editable.onPasteResult`. It receives `{ inserted, diagnostics }` once for each paste that the editable's built-in formats handle: after the paste commits, or when no format can insert it. It is not called for pastes that `onPaste` or a plugin command handles without the built-in formats, or after the editable unmounts; an `onPaste` handler that inserts through `insertData` during the paste gets that insertion's result.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Make updates on large documents cost in proportion to the change, including updates made with `history: 'skip'` and edits after a whole-document replacement
+  - Speed up text edits in documents with thousands of top-level blocks in JavaScriptCore, the engine in Safari and Bun (measured in Bun)
+  - Stop freezing the top-level array that `editor.read.children()` returns after an edit. It is still read-only, and the next edit throws after a write that changes its length
+  - Speed up the first saved edit after many history-skipped updates, such as a streamed AI response
+  - Stop undo from replacing unrelated content after a history-skipped edit elsewhere in the document
+  - Validate a document that shares frozen blocks with an earlier validated one in proportion to its new blocks, such as each preview of a streamed response
+  - Look up plugins on editor views without rebuilding the editor's plugin configuration on every call
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add side landings: `editor.api.transfer.move({ nodes, to: { key, side: 'end' } })` places blocks beside a block when a plugin describes what to build through the `editorReads.transfer.side` read, and refuses with `policy` otherwise. A side takes only a move inside one document.
+  - Add `editor.read.transfer.check(input)`, the dry run the drop indicator paints from.
+  - Pass `wrap` to `transferVeto` contributions for a side landing, whose blocks land inside the built shell.
+  - `editor.api.dom.resolveDropTarget` returns `{ key, side }` while a move's pointer rests in a block's inline-end strip, or in the editor's side padding beside a top-level block, and a plugin builds side landings; narrow with `'edge' in target` before reading `edge`. Padding counts once the pointer is 20px past where the drag started, so a straight drag down from a drag handle still lands above or below.
+  - Fix the drop indicator staying at its old position while content scrolls under a held block drag.
+  - Fix a block drag over a button or other control inside the editor painting no drop indicator and ignoring the drop.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep a forward anchor at the insertion point after content pasted into a block that contains an inline element.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Make Enter, word deletion and a Backspace that joins two lines cost the same however long the document is. In a 20,000-block document, Enter and word deletion each took tens of milliseconds and joining two lines took over a second.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep emptied text-flow paragraphs mounted with a caret anchor so their line height, navigation, and subsequent typing remain intact.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep native text selection and browser-owned autoscroll active while dragging outside the editor
+
+- [#5115](https://github.com/udecode/plate/pull/5115) by [@zbeyens](https://github.com/zbeyens) – Compile React package output for React 19 and use its built-in Compiler runtime.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Reset headings to the default text block when a delete command removes their remaining content. Keep snapshot-index provenance independent when authored history advances accepted and projected document branches.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Respect scroll padding when keeping the editor selection visible.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Tighten schema authoring and runtime contracts. Complete schemas use direct root content with closed defaults, `schema.element.textBlock()` preserves exact option inference, unvalidated JSON properties stay generic, property metadata is placement-owned, and external validation uses narrowing assertions. Rename the runtime constructor and markable-void predicate to `create` and `isMarkableVoid`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Serialize one-or-many node selections as exact selected-node slices.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve exact one-or-many node selections through history serialization, undo, and redo.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Support canonical one-or-many editor node selections in test helpers.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix `tx.slice.replace` throwing `EditorSchemaValidationError` when the slice would give a parent more children than its schema `max` allows. It now returns `false` and leaves the document unchanged.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix `nodes.set` with `split: true` moving the end of a block whose slot fixes its type, such as a required title, into the next position as the new type. The update now throws, as it already did for the start or middle of that block.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix rapid WebKit text insertion after splitting content in virtualized editors
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix retained range targets so atomic replacements inherit their identity while later unrelated typing stays detached across undo, redo, and reload. Keep Editing-mode changes direct unless the complete edit targets one pending suggestion, including mixed ranges and edits merely adjacent to deleted suggestions.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Show a visible caret when clicking or navigating within suggested deletions, and let pointer selections expand across deleted-text boundaries. Track retained text positions through layout, selection, and focus changes without making deleted content editable.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Cancel an author's own proposed content when they remove or restore it, and show only the remaining text, formatting, structure, or move in suggestion reviews. Preserve cancellation through undo, redo, persistence, and collaboration, including edits spanning multiple proposals.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep a collaborator's concurrent typing when another peer wraps part of a text in an inline element, such as a link, or marks part of it.
+
 ## 0.124.1
 
 ### Patch Changes
@@ -35,8 +625,7 @@
 
 ### Minor Changes
 
-- [#5982](https://github.com/ianstormtaylor/slate/pull/5982) [`dd4a77b3`](https://github.com/ianstormtaylor/slate/commit/dd4a77b3c5bb5d2d3cd6a62f49d6f318d30d6727) Thanks [@nabbydude](https://github.com/nabbydude)! - Add `Node.isEditor`, `Node.isElement`, and `Node.isText` as alternative type guards for when we already know the object is a node. Use these new functions instead of `Editor.isEditor`, `Element.isElement`, and `Text.isText` whenever possible, the classic functions are only necessary for typechecking an entirely unknown object.
-  ===
+- # [#5982](https://github.com/ianstormtaylor/slate/pull/5982) [`dd4a77b3`](https://github.com/ianstormtaylor/slate/commit/dd4a77b3c5bb5d2d3cd6a62f49d6f318d30d6727) Thanks [@nabbydude](https://github.com/nabbydude)! - Add `Node.isEditor`, `Node.isElement`, and `Node.isText` as alternative type guards for when we already know the object is a node. Use these new functions instead of `Editor.isEditor`, `Element.isElement`, and `Text.isText` whenever possible, the classic functions are only necessary for typechecking an entirely unknown object.
 
 ## 0.120.0
 
