@@ -60,7 +60,7 @@
       ".agents/pstack/decisions-check.mjs": "eb9c69cf55c6b39589e04e56d0cf5f62830269142335963cd37f2302bf8e4c73",
       ".agents/pstack/levels.mjs": "5de83d2f1f7590d1f464137e9a43279246705d60e956b58cc3655fe9621b5498",
       ".agents/pstack/page-stop.mjs": "dbe341605ec9fb9d8465f8c403867af6473eda8b2996649d93967cf0ff62a64f",
-      ".agents/pstack/plan-page.mjs": "acce9a79228ba0ebea7a63f14e9273c12e3660a39d9cb6d2850298cb54336fc9",
+      ".agents/pstack/plan-page.mjs": "1f331bfe9f58ffdddaedd01f07d33aafea9dbd19279208cbf3b0c49269f100dc",
       ".agents/pstack/status.mjs": "eb66de88cdf526ea780c01a149e383467d8a7bb1cbdb0530b428be268be54c76",
       ".agents/pstack/tasks.mjs": "adc70b1bb82a4ebe1bb3cc2587525998825768c66bc1d1027a0c7fe81f0c4944",
       ".agents/pstack/guard.mjs": "758c1ddf95c6f81f1ea7615b232f92e8565ce662049d1f4c393df97d2b5d5ed9",
@@ -78,7 +78,7 @@
       ".agents/pstack/rules/time.md": "d8b71c88e04580ad18936d5c96cc07a22f28c889fbe807ec4370b6a66fa0923b",
       ".agents/pstack/rules/title.md": "1d5152a96964564d66224b484e34127d1e64b1b21783a46385350751583ff821"
     },
-    "source": "af4cf9ed81a19138d20db9d18cf2c860405df28f"
+    "source": "1e2e092495a7e70430c1541bb00beaadbc918d09"
   },
   "pageTopic": {
     "field": "review_scopes",

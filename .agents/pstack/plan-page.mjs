@@ -2261,7 +2261,7 @@ async function viewerMain(api, { hljs: hljsSource }) {
       const holder = node(entry.folded ? 'details' : 'div', 'entry');
       holder.id = entry.id;
       holder.dataset.key = entry.key;
-      holder.append(node(entry.folded ? 'summary' : 'p', 'entry-head', `session${entry.session.slice(0, 8)} · ${entry.stage ?? entry.state} · published ${when(entry.at)}`));
+      holder.append(node(entry.folded ? 'summary' : 'p', 'entry-head', `session ${entry.session.slice(0, 8)} ·${entry.stage ?? entry.state} · published ${when(entry.at)}`));
       bodies.append(holder);
       return holder;
     });

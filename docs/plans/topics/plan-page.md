@@ -1,6 +1,6 @@
 # Plan page
 
-Page: https://claude.ai/artifact/QLPuWXTpAuCKDdhm6jX34Z
+Page: https://claude.ai/artifact/XrSoiwxSJ5mPKpw4KMp192
 
 How a plan and its subject become one page per subject: the files agents write under `docs/plans`, the renderer that checks and draws them, and where each project names its own review sections. Every plan for the page shape is one iteration of this subject; earlier iterations live under the `pstack` subject.
 
@@ -60,6 +60,8 @@ page-require: What other editors do
 - A page whose leading plan has a brief shows the rail, the five answers, Needs you, Picked for you, the Public API pairs, the playbook's review sections and Main changes, with nothing folded. A review section the plan lacks comes from the subject, marked current, and one line names the files that keep the proof, steps, history and review rounds. The renderer refuses code in backticks in an open plan's brief, Open questions or Defaults. A page without a brief shows its whole record with every section open.
 - An agent reads a page from its rendered file or its plan and subject files, never from the published page, and only a page whose work is still active is published again. Ellie's workflow guide lives at `docs/development/agent-workflow.md` and plate-2's at `docs/development/agent-skills.md`.
 - plate-2's feature, benchmark and regression plan templates carry a brief skeleton.
+- A published subject page is a set of files. The page file lists the runs that published to it, and each run keeps its own header, body and pictures in files beside it, so a publish sends only the page file and that run's files. The browser builds the page from them: a strip of every run's stage under the title, the plan of the newest hand-back first, and each plan's runs newest first under `#run-<plan slug>`.
+- In Claude Code every publish goes through `page-stop.mjs`: `stage <plan>` at every stage change and `stop <plan>` at a hand-back, which takes the next hand-back number on the list and prints the reply link. After a refused publish the lead reruns it with `--base` on the page the tool saved, and `--new` makes a new page when the link no longer opens. Local, Codex and PR renders still show only the checkout's own plan.
 
 ## Hard cuts and app migration
 
@@ -87,4 +89,6 @@ page-require: What other editors do
 - Decision logs written before the stage phases show some rail stages as skipped although that work ran, such as writing passes logged under `build`. owner: Ziad, tracked here.
 - The page is proven on desktop in both themes and at 375px in Chromium's phone emulation, not in a real phone browser. owner: Ziad, tracked here.
 - The plain-words check finds code only in backticks, so a bare code name such as facilityId passes; a Claude smoke named it on 2026-10-05. owner: Ziad, tracked here.
+- Until every plate-2 and Ellie worktree rebases onto the per-run page helpers, an old helper's whole-page publish hides other runs on that subject's page. A crash mid-publish leaves a stale stage line until the next publish. owner: the owner. stop: the last old-helper worktree rebased.
+- Look at the plan-page page while signed in: the runs strip, a body with its picture, a `#run-<slug>` link opening its run, and a half-typed answer surviving a stage publish. owner: the owner. stop: that look, or the first comment about the page.
 - Three open plans that other sessions held during the two-row migration still ask the older brief questions and refuse to render: plate-2's `docs/plans/2026-10-05-plate-beside-pstack.md`, which also stops the 16 other plans on the pstack page, plate-2's `docs/plans/2026-10-05-reads-review.md` and Ellie's `docs/plans/2026-10-05-mvp-next.md`. plate-2's `docs/plans/2026-10-05-markdown-remark-find-replace-benchmark.md` still lacks an Attention line. owner: the sessions that hold them, tracked here.
