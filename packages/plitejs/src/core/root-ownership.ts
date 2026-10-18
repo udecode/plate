@@ -566,7 +566,8 @@ export const orphanedValueRoots = (
   schema: CompiledEditorSchema,
   before: RootsOf,
   after: RootsOf,
-  changedRoots: ReadonlyMap<RootKey, RootChange | undefined>
+  changedRoots: ReadonlyMap<RootKey, RootChange | undefined>,
+  tracked: ReadonlySet<string> = new Set()
 ) => {
   const side = (value: RootsOf) => ({
     read: (root: RootKey) => {
@@ -603,7 +604,7 @@ export const orphanedValueRoots = (
     before: from.read,
     beforeRoots: from.roots,
     changedRoots: changes,
-    tracked: new Set(),
+    tracked,
   });
 };
 

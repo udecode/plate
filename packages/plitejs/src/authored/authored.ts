@@ -8,6 +8,7 @@ import { type DraftStep, UNSCOPED_ORIGINS } from '../core/change/builder';
 import {
   createInternalDocumentChange,
   DocumentChange,
+  filterDocumentChangeRoots,
   getInternalDocumentChangeEntries,
   getInternalDocumentChangeRanges,
   getInternalDocumentChangeRecords,
@@ -1756,6 +1757,25 @@ export const createAuthoredPlugin = (
                     (root) => !byName.has(root)
                   )
                 );
+          // Neither net set names these roots, yet the recorder can keep their
+          // owner, such as a struck paragraph whose pending retype makes it the
+          // pasted card, so each records as created and follows its owner.
+          const createdThenDeleted = new Set(
+            steps.flatMap((step) =>
+              [...step.change.createRoots].filter(
+                (root) =>
+                  !contentChange.createRoots.has(root) && !before.roots?.[root]
+              )
+            )
+          );
+          const createRoots =
+            createdThenDeleted.size === 0
+              ? contentChange.createRoots
+              : new Set([...contentChange.createRoots, ...createdThenDeleted]);
+          const withdrawable =
+            createdThenDeleted.size === 0
+              ? followed
+              : new Set([...followed, ...createdThenDeleted]);
 
           if (!editing) {
             // Vetoes keep a person's Suggesting out of blocks review marks
@@ -1810,7 +1830,7 @@ export const createAuthoredPlugin = (
           const recorded = recordAuthoredSteps({
             before,
             changeId,
-            createRoots: contentChange.createRoots,
+            createRoots,
             createTagId,
             deleteRoots: byName,
             dependencies,
@@ -1910,13 +1930,14 @@ export const createAuthoredPlugin = (
             return withValueRecords(next, beforeRecords) as typeof before;
           };
           const withdrawn =
-            followed.size > 0
+            withdrawable.size > 0
               ? orphanedValueRoots(
                   getCompiledEditorSchema(editor),
                   before,
                   valueWith(kept, recorded.indexedAfter),
-                  changedRootsOf(recorded.change)
-                ).filter((root) => followed.has(root))
+                  changedRootsOf(recorded.change),
+                  createdThenDeleted
+                ).filter((root) => withdrawable.has(root))
               : [];
           const roots =
             withdrawn.length > 0
@@ -1924,14 +1945,27 @@ export const createAuthoredPlugin = (
               : kept;
           const valueOf = (indexes: ReadonlyMap<string, DocumentIndex>) =>
             valueWith(roots, indexes);
-          const recordedChange =
-            withdrawn.length > 0
-              ? recorded.change.compose(
-                  createInternalDocumentChange(new Map(), {
-                    deleteRoots: withdrawn,
-                  })
+          const unborn = withdrawn.filter((root) =>
+            createdThenDeleted.has(root)
+          );
+          const deleted = withdrawn.filter(
+            (root) => !createdThenDeleted.has(root)
+          );
+          const born =
+            unborn.length > 0
+              ? filterDocumentChangeRoots(
+                  recorded.change,
+                  (root) => !unborn.includes(root)
                 )
               : recorded.change;
+          const recordedChange =
+            deleted.length > 0
+              ? born.compose(
+                  createInternalDocumentChange(new Map(), {
+                    deleteRoots: deleted,
+                  })
+                )
+              : born;
           const written = valueOf(recorded.indexedAfter);
           const relink = relinkCuts(
             recordedChange,

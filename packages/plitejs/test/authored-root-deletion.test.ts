@@ -546,6 +546,66 @@ describe('Suggesting deletes a block that owns a content root', () => {
           assert.deepEqual(refusals, []);
           assert.deepEqual(marked(editor).roots, ['b1']);
         });
+
+        it('one update that pastes a card into an empty paragraph and then removes it strikes the paragraph, and rejecting brings it back', () => {
+          const value = initial(unknown, {
+            children: [card('b1'), p('aa'), p('')],
+            roots: { b1: [p('Body')] },
+          });
+          const { editor, refusals } = make({
+            selection: SelectionApi.text({
+              anchor: { offset: 0, path: [2, 0] },
+              focus: { offset: 0, path: [2, 0] },
+            }),
+            unknown,
+            value,
+          });
+
+          editor.update((tx) => {
+            tx.slice.replace(carried());
+            tx.nodes.remove({ at: [2] });
+          });
+
+          assert.deepEqual(refusals, []);
+          assert.deepEqual(marked(editor).main[2], [
+            'card',
+            'format:bob:1',
+            'format:bob:1',
+            'delete:bob:1',
+            { body: 'b2:copy' },
+          ]);
+
+          decideAll(editor, 'reject', 'bob:1');
+          assert.deepEqual(valueOf(editor), value);
+        });
+
+        it('Editing the same paste and removal in one update removes the paragraph and leaves no root', () => {
+          const { editor, refusals } = make({
+            intent: 'edit',
+            selection: SelectionApi.text({
+              anchor: { offset: 0, path: [2, 0] },
+              focus: { offset: 0, path: [2, 0] },
+            }),
+            unknown,
+            value: initial(unknown, {
+              children: [card('b1'), p('aa'), p('')],
+              roots: { b1: [p('Body')] },
+            }),
+          });
+
+          editor.update((tx) => {
+            tx.slice.replace(carried());
+            tx.nodes.remove({ at: [2] });
+          });
+
+          assert.deepEqual(refusals, []);
+          const { main, roots } = marked(editor);
+
+          assert.deepEqual(
+            { blocks: main.map((node: unknown[]) => node[0]), roots },
+            { blocks: ['card', 'paragraph'], roots: ['b1'] }
+          );
+        });
       });
     }
   }
