@@ -404,12 +404,12 @@ export const migratePlateV54Suggestions = (
     }
     if (data?.type === 'update') {
       const before = data.properties ?? {};
-      const keys = new Set([
-        ...Object.keys(before),
-        ...Object.keys(data.newProperties ?? {}),
-      ]);
+      const after = data.newProperties ?? {};
+      const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
 
       for (const key of [...keys].toSorted()) {
+        const value = after[key];
+
         marks.push({
           at: data.createdAt,
           author: data.userId,
@@ -418,6 +418,10 @@ export const migratePlateV54Suggestions = (
           id: `${data.id}:${key}`,
           key,
           kind: 'format',
+          write:
+            value === undefined || value === null
+              ? { kind: 'remove' }
+              : { kind: 'set', value },
         });
       }
     }

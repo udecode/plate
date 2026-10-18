@@ -1210,6 +1210,7 @@ const level = (author: string, change: string, at: number) => ({
   id: `${change}:level`,
   key: 'level',
   kind: 'format',
+  write: { kind: 'set', value: 2 },
 });
 
 const openReview = async (
@@ -1301,6 +1302,7 @@ const LEVELS_AROUND_BOLD = [
             id: 'bob:1:bold',
             key: 'bold',
             kind: 'format',
+            write: { kind: 'set', value: true },
           },
         ],
         bold: true,
