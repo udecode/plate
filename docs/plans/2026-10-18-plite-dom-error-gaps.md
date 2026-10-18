@@ -190,6 +190,7 @@ A history handler that throws after an undo or redo now reaches the sink with a 
   - A range with both ends in one omitted child reports once, and ten more commits report nothing.
   - A parent whose property changes on each of ten frames, with the selection in its omitted child, reports once after the changes stop. A sibling of the omitted child that gets a text insert on each of ten frames reports once, during the inserts, because a text edit does not rebind the parent.
   - A covered child, a composition in progress, an unmount before the second look, an editor removed from the document without unmounting and a Suspense fallback that renders a content boundary report nothing.
+  - An omitted child whose editor leaves the document before the first look, or between the looks, and comes back with no commit reports once.
   - In the stale-DOM window one commit after a text insert, nothing reports. A plain text insert never nominates, because the stale text still has DOM by key and the text-flow resolver clamps the offset to the old text (`dom-text-flow-index.ts:369-373`). An insert that splits a new leaf at the end, with the selection in it, also reports nothing, because the parent's record still holds the node from before the split, which lacks the new key. The row asserts which of the two checks stopped it. If the new leaf has DOM by key at once, the row says so.
   - A view editor, such as a pagination view, reports its omitted child once.
   - A development grandchild omission reports once, against the child's renderer.
@@ -216,7 +217,7 @@ A history handler that throws after an undo or redo now reaches the sink with a 
 | Hand drive | done: 19 cells on the final bytes, and `hand-drive.mjs check` covers each one |
 | Playtest scope | done: the suggestions spec runner adds no failure in three engines; each case red on the tree fails the same at HEAD and base, or passed on the rerun |
 | `pstack:thermos` per slice | skip: the `api-build` and `push` rows already owe a panel on the diff |
-| Panel on the diff | done: two rounds, each round's fixes tested and given their writing passes |
+| Panel on the diff | done: three rounds, the cap; each round's fixes tested and given their writing passes |
 | `pnpm check` steps | done: 12 of 21 static steps pass and the nine red ones fail the same way at base; every failing test in the test steps and in `plite-test` also fails at base, once the detached-root fix is in |
 | Land through `land.mjs` | done: one squashed commit on `origin/next` |
 
@@ -247,19 +248,47 @@ Deviations come first.
 - The playtest's spec runner ran after the diff panel instead of before it, because its scope check was still open at the panel.
 - `pnpm check` caught two files the format check refused and a stale API reference manifest after the panel. The format fix changes line wrapping only, and the regenerated manifest also refreshes six entries `origin/next` had left stale.
 - `plite-test` stops at the migrations type error that `origin/next` carried at the merge base, before its package tests run. Its package link ran again with `--continue`, at HEAD and at base, so every test partition whose dependencies pass ran.
-- That run found one failure only at HEAD. A ListPlugin test removes its hydrated editor from the page without unmounting it, and the monitor's looks then reported a dropped child in the next test, because no probe in a detached root has DOM. The monitor now skips a root that is not in the document. A production row that removes the editor before its looks fails before the fix and passes after, and the ListPlugin partition passes five runs in a row.
+- That run found one failure only at HEAD. A ListPlugin test removes its hydrated editor from the page without unmounting it, and the monitor then reported a dropped child in the next test. Its DOM check found no DOM in any root outside the document. The first fix skipped such a root. It landed after the diff panel's last round with no review of its own, though the reviews list's `push` row requires one. The reflect after the land found that gap, so a third diff round reviewed the change.
+- Round 3 found that skipping a detached root also lost a true report. An editor that left the document during its looks and came back with no commit never reported its dropped child. The DOM check now looks for the probe's DOM inside its own root, attached or not, and the skip is gone. So a healthy detached editor reports nothing, and a dropped child reports once whether or not its editor is in the document. Round 3 used the last round the cap allows, so its fix had no review after it.
 
-What landed is this plan's one commit on `origin/next`, which `land.mjs` squashed and rebased. Runtime code calls only soft DOM lookups, and `plate/no-strict-dom-lookup` refuses a strict one in Plite and Plate package source. The two coverage lookups return `null` when nothing answers, and `resolveDocumentOrShadowRoot` joins `DOMEditor` and `editor.api.dom`. A lifecycle error with no sink goes to the browser's error event as one error that names its source, and history handler errors reach the sink with an `observer` phase. A renderer that drops an editable child reports to the sink in every build. Each error the old console default hid is fixed at its cause. Markdown drops and reports content no writer handles, and pagination reports a missing plan once.
+What landed is this plan's commit on `origin/next`, which `land.mjs` squashed and rebased, and a second commit with round 3's fix. Runtime code calls only soft DOM lookups, and `plate/no-strict-dom-lookup` refuses a strict one in Plite and Plate package source. The two coverage lookups return `null` when nothing answers, and `resolveDocumentOrShadowRoot` joins `DOMEditor` and `editor.api.dom`. A lifecycle error with no sink goes to the browser's error event as one error that names its source, and history handler errors reach the sink with an `observer` phase. A renderer that drops an editable child reports to the sink in every build. Each error the old console default hid is fixed at its cause. Markdown drops and reports content no writer handles, and pagination reports a missing plan once.
 
 Proof, from each log row's scope:
 
 - Red first, then green, for each slice: slice 2 in `slice2/base-*-a1.log` and the codec mutant `slice2/mutant-codec-strict-window-a1.log`; slice 1 in `slice1/red-*-a1.log` and `slice1/green-*-a1.log`; the hidden errors in `slice1b/*-before-a*.log` and `slice1b/*-after-a1.log`; slice 3's 16 vitest rows and its omitted-child browser row at base in `slice3/base-vitest-rows-a2.log` and `slice3/base-browser-rows-a1.log`, both browser rows five warm runs in `slice3/browser-rows-warm-*-a3.log`, and the late-portal row failing under the mutant in `slice3/mutant-browser-rows-a3.log`.
 - The guard ran over 1377 files (`lead/oxlint-strict-lookups-all-src-a2.log`), and `panel-diff-r2/strict-rule-ways-a1.log` tries every way past it. A key in a variable, a reflective read and a strict lookup hoisted under another name still pass, as the Guard limits default says.
-- The diff panel ran two rounds, and all three seats answered both. Round 1 had three critical findings. Two got a fix with a red-then-green test, and one was dismissed with a mutation that fails both loading rows. Round 2 found no critical, and each of its warnings got a fix with a test that fails first (`panel-diff-r2/markdown-spec-before-a1.log`, `markdown-spec-final-a1.log`).
+- The diff panel ran three rounds, and all three seats answered each one. Round 1 had three critical findings. Two got a fix with a red-then-green test, and one was dismissed with a mutation that fails both loading rows. Round 2 found no critical, and each of its warnings got a fix with a test that fails first (`panel-diff-r2/markdown-spec-before-a1.log`, `markdown-spec-final-a1.log`).
+- Round 3 reviewed only the change made after round 2. Astra and Sol raised its one critical finding, and Opus raised it as a warning. Both detach-and-return rows fail on the landed guard and pass on the fix (`panel-diff-r3/reattach-*-landed-a1.log`, `reattach-rows-fixed-a1.log`). With only the DOM check reverted to need a connected root, the healthy detached row reports again (`healthy-detached-row-connected-lookup-a1.log`). The monitor files pass 36 of 36, the ListPlugin partition passes 35 of 35 in five runs in a row, and the two Plite Chromium render-contract rows pass.
 - On the final tree in Chromium, the Plite suite passes 748 cases in the 59 files besides `huge-document.test.ts`, which passes 7 of 8 with its undo case red at base too, and the two render-contract rows pass five warm runs. The www suite fails 35 of 601 against 38 at base, and its one failure outside the base set fails the same way 4 of 5 times at base.
 - The playtest's suggestions spec runner adds no failure in three engines (`playtest/specs-a1.md`). Each case red on the tree either fails the same way at HEAD and base, where `origin/next` has since fixed five of them, or passed on the rerun at HEAD and base.
 - In `pnpm check`, 12 of 21 static steps pass, and the nine red ones list the same findings at base (`final/check-static-a1.log`, `final/base-check-static-a1.log`). Of the test steps, `bench-targets` passes, and every case `test`, `test-slow` and `cli-test` fail also fails at base (`final/check-tests-a1.log`, `final/base-check-tests-a1.log`). `plite-test`'s package link with `--continue` fails 13 tests at HEAD, and base fails all 13 plus 7 more (`final/plite-test-continue-head-a2.log`, `final/plite-test-continue-base-a1.log`).
 - The hand drive covered 19 desktop cells on the final bytes and read each changed docs sentence back in English and Chinese, and `hand-drive.mjs check` covers every cell (`final/hand-drive-check-a1.log`).
+
+The reflect after the land applied no lesson. It offered each accepted one as a suggested task:
+
+- t_8ac5303b, single-command forms of the compound commands the app refuses in a worktree session.
+- t_25686d8c, a second ping before a failed seat stops the run, after the owner corrected a wrong `codex login` diagnosis.
+- t_08bb9e40, a run directory the Write tool can reach.
+- t_ed4501cf, teaching that Bun fails a test whose code calls `reportError`.
+- t_f20cd302, regenerating registry output when a land's rebase conflicts on it.
+- t_b4dcfc67, routing "would you improve X from Y" questions to verdict.
+- t_d5c59a88, refusing a land whose code changed after the last panel round.
+- t_9cdaf517, how a frozen load limit works on a shared host.
+- t_41dc9ac0, refusing an edit to a logged decision row.
+- A fold into t_7cbd98de, finding the lead of an append that a script runs.
+
+The missed review of the guard ran as round 3. The reflect rejected these findings because a rule or task already covers them:
+
+- the inline `node -e` ban;
+- base attribution and `TURBO_FORCE` in verify;
+- encoding a removed suppression, which no-comments already asks;
+- the Extraction rule's evidence seat;
+- the same-family panel rule;
+- the app's own merge advice;
+- the changeset, which already names the `reportError` default;
+- the spec typecheck (t_d957b48c) and the drive server (t_d6957617).
+
+It rejected four as too vague or unproven: duplicate helpers after a merge, stale errors in the console tool, scoped skill names, and finding a leaking test first.
 
 The request had five asks, and all five are done. The four gaps landed, and the commit-window probe ran before the build, as Proof above shows. No ask was skipped.
 
@@ -268,6 +297,8 @@ The request had five asks, and all five are done. The four gaps landed, and the 
 - t_cbbb1ad9 Rerun the bind-record cost protocol on a quiet host. owner: zbeyens. Tracked in the suggested-task ledger. stop: that task lands or is dropped. A miss sends the record design to `architect`.
 - t_ce2c85a6 Split resolveDOMPointInRoot's node-cache write from its lookup. owner: zbeyens. Tracked in the suggested-task ledger. stop: that task lands or is dropped.
 - t_d6957617 Start the hand drive's www-drive server in the session's worktree. owner: zbeyens. Tracked in the suggested-task ledger. stop: that task lands or is dropped.
+- t_bd6b6f64 Keep a detached editor's element bindings until their ref cleanup runs. Until it lands, a dropped child reports nothing when a structural commit arrives while its editor is out of the document. owner: zbeyens. Tracked in the suggested-task ledger. stop: that task lands or is dropped.
+- t_7d471401 Unmount the hydrated editor in ListPlugin's hydrate row. owner: zbeyens. Tracked in the suggested-task ledger. stop: that task lands or is dropped.
 - The `dom-lookup-names` verdict on the two coverage lookups with no production caller and the strict root lookup's name. owner: zbeyens. Tracked in the review ledger scope `docs/research/review-scopes/dom-lookup-names.json`. stop: its verdict is written.
 - t_f8e9a646 Make a subscriber's DOM range read the text one commit after an insert. owner: zbeyens. Tracked in the suggested-task ledger, card task_9920ae68. stop: that task lands or is dropped.
 - Suite cases red at base: t_e2d741f4 (huge-document undo), t_30d86df2 (richtext drag undo), t_c1908482 (kernel authority audit) and t_7f9094c6 (www Chromium base failures). owner: zbeyens. Tracked in the suggested-task ledger. stop: each task lands or is dropped.

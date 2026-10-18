@@ -840,6 +840,35 @@ test('an editor removed from the document before its looks reports nothing', asy
   expect(renderElementReports(reports)).toEqual([]);
 });
 
+test('an omitted child whose editor leaves the document after the first look and comes back reports once', async () => {
+  const { editor, reports } = createRecordingEditor();
+  const rendered = mountFocused(editor);
+
+  await waitLooks();
+  await insertAndSelect(editor, shell());
+  await waitLooks(1);
+  rendered.container.remove();
+  await waitLooks();
+  document.body.append(rendered.container);
+  await waitLooks();
+
+  expect(renderElementReports(reports)).toEqual([shellReport()]);
+});
+
+test('an omitted child whose editor leaves the document before the first look and comes back reports once', async () => {
+  const { editor, reports } = createRecordingEditor();
+  const rendered = mountFocused(editor);
+
+  await waitLooks();
+  await insertAndSelect(editor, shell());
+  rendered.container.remove();
+  await waitLooks();
+  document.body.append(rendered.container);
+  await waitLooks();
+
+  expect(renderElementReports(reports)).toEqual([shellReport()]);
+});
+
 test('a Suspense fallback that renders a content boundary reports nothing', async () => {
   const { editor, reports } = createRecordingEditor();
   const never = new Promise<never>(() => {});

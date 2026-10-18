@@ -43,12 +43,12 @@ export const hasProbeDOM = (
   probe: Point,
   root: HTMLElement | null
 ) => {
-  const nodeKey = root?.isConnected ? getNodeKey(editor, probe.path) : null;
+  const nodeKey = root ? getNodeKey(editor, probe.path) : null;
 
   if (!root || !nodeKey) return false;
 
   const inRoot = (element: HTMLElement | null | undefined) =>
-    !!element?.isConnected && element.closest('[data-editor="true"]') === root;
+    element?.closest('[data-editor="true"]') === root;
   const node = editor.read((state) => state.nodes.get(probe.path))?.[0];
   const domKey = EDITOR_TO_RUNTIME_ID_TO_KEY.get(editor)?.get(nodeKey);
 
@@ -243,7 +243,7 @@ export class RenderContractMonitor {
     const { editor, rootElement } = this.runtime;
 
     if (
-      !rootElement?.isConnected ||
+      !rootElement ||
       this.runtime.domCoverage.getBoundaryForPoint(probe) ||
       hasProbeDOM(editor, probe, rootElement)
     ) {
