@@ -118,6 +118,7 @@ const valuesFixture = [
             id: 'bob-bold',
             key: 'bold',
             kind: 'format',
+            write: { kind: 'set', value: true },
           },
         ],
         bold: true,
