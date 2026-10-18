@@ -111,13 +111,15 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
       },
     },
   },
-  update: ({ schema: pluginSchema, tx }) => {
+  update: ({ editor, plugin, schema: pluginSchema, tx }) => {
     const change = (offset: number, { nodes }: IndentChangeOptions = {}) => {
       const { match, mode = 'lowest', ...nodeOptions } = nodes ?? {};
+      const injectMatch = getInjectMatch(editor, plugin);
       const entries = tx.nodes.blocks({
         ...nodeOptions,
         mode,
-        match: (node, path) => !match || match(node, path),
+        match: (node, path) =>
+          injectMatch(node, path) && (!match || match(node, path)),
       });
 
       for (const [node, path] of entries) {

@@ -14,6 +14,7 @@ import { createPluginContext } from '../../../lib/plugin/createPluginContext.int
 import { createEditor } from '../../../react/core';
 import { dispatchPlateShortcut } from '../../../react/utils/dispatchPlateShortcut.internal';
 import { BaseBlockquotePlugin } from '../../basic-nodes';
+import { BaseDetailsPlugin } from '../../details';
 import { NoteHolder } from '../../details/__tests__/detailsConversionFixture';
 import { BaseListPlugin } from '../../list';
 import { BaseIndentPlugin } from './BaseIndentPlugin';
@@ -103,6 +104,39 @@ describe('BaseIndentPlugin', () => {
 
     editor.update.indent.decrease({ nodes: { at: [] } });
     expect(indents()).toEqual([undefined, 1]);
+  });
+
+  it('indents the Details when the caret sits in its title', () => {
+    const editor = createHeadlessEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseDetailsPlugin,
+        BaseIndentPlugin.configure({ targetPlugins: ['paragraph', 'details'] }),
+      ],
+      initialValue: [
+        {
+          children: [
+            { children: [{ text: 'Title' }], type: 'summary' },
+            { children: [{ text: 'Body' }], type: 'paragraph' },
+          ],
+          type: 'details',
+        },
+      ],
+    });
+    editor.update.selection.set({ path: [0, 0, 0], offset: 5 });
+
+    editor.plugin(BaseIndentPlugin).update.increase();
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { children: [{ text: 'Title' }], type: 'summary' },
+          { children: [{ text: 'Body' }], type: 'paragraph' },
+        ],
+        indent: 1,
+        type: 'details',
+      },
+    ]);
   });
 
   it('uses configured targets for both model validation and injection', () => {
