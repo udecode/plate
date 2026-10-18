@@ -167,24 +167,27 @@ function vetoMessage(reasons: readonly string[]) {
   return sentences.join(' ');
 }
 
-/** Says why Suggesting refused a change, which then applied nothing. */
 function SuggestionRefusals() {
   const editor = useEditor();
 
-  React.useEffect(
-    () =>
-      editor.plugin(AuthoredPlugin).api.subscribeRefusals((refusal) => {
-        toast.error(
-          refusal.code === 'veto'
-            ? vetoMessage(refusal.reasons)
-            : refusal.code === 'generated-values'
-              ? 'Suggesting is off in this editor.'
+  React.useEffect(() => {
+    const authored = editor.plugin(AuthoredPlugin);
+
+    return authored.api.subscribeRefusals((refusal) => {
+      const view = authored.read.view();
+
+      toast.error(
+        refusal.code === 'veto'
+          ? vetoMessage(refusal.reasons)
+          : refusal.code === 'generated-values'
+            ? 'Suggesting is off in this editor.'
+            : 'intent' in view && view.intent === 'edit'
+              ? 'Editing cannot record this change next to a pending suggestion yet. Accept or reject that suggestion first.'
               : 'Suggesting cannot record this change yet. Switch to Editing to make it.',
-          { id: 'suggestion-refusal' }
-        );
-      }),
-    [editor]
-  );
+        { id: 'suggestion-refusal' }
+      );
+    });
+  }, [editor]);
 
   return null;
 }

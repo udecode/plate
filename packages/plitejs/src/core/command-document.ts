@@ -17,6 +17,13 @@ import {
 import { getEditorRuntimeOwner } from './editor-runtime';
 import { countCoreWork } from './work';
 
+/** A projected boundary whose two sides lie apart in storage. @internal */
+export type ProjectionBreak = Readonly<{
+  at: number;
+  before: number;
+  after: number;
+}>;
+
 /**
  * How positions of the stored document correspond to positions of the
  * document commands decide on. A root the projection leaves alone maps each
@@ -25,6 +32,12 @@ import { countCoreWork } from './work';
  * @internal
  */
 export type CommandProjectionMap = Readonly<{
+  /** Breaks in projected order, including both ends of the requested range. */
+  breaks: (
+    root: string,
+    from: number,
+    to: number
+  ) => readonly ProjectionBreak[];
   /**
    * The projected span of content the projection inserts that strictly holds
    * a projected position, or `null`.
@@ -123,6 +136,7 @@ export type EditorDocumentState = Readonly<{
  */
 export const projectionMapOf = (change: DocumentChange): CommandProjectionMap =>
   Object.freeze({
+    breaks: () => [],
     added: (root: string, position: number) => {
       const sections =
         getInternalDocumentRootChange(change, root)?.sections ?? [];

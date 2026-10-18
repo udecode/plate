@@ -1,14 +1,9 @@
-import { getInternalDocumentRootChange } from '../../core/change/document-change';
 import { deepFreeze, jsonEqual } from '../../core/change/json';
 import {
   type DocumentSetPropertyResolver,
   RootChange,
 } from '../../core/change/root-change';
-import {
-  type JsonEditorValue,
-  type JsonNode,
-  PreparedTokenSlice,
-} from '../../core/change/tokens';
+import type { JsonNode } from '../../core/change/tokens';
 import type { RecordSetVersion } from '../../core/record-store';
 import type { RootPart } from '../../core/representation';
 import { survivalUnder } from '../../core/survival';
@@ -16,11 +11,7 @@ import { getDefined } from '../../internal/get-defined';
 import type { ReviewFacts } from '../facts/facts';
 import { incarnationOf } from '../facts/records';
 import type { AuthoredFormatProjection } from '../format';
-import {
-  acceptedChange,
-  decidedContentChange,
-  tokenLength,
-} from '../tree/alignment';
+import { tokenLength } from '../tree/alignment';
 import {
   type AuthoredMark,
   readAuthoredMarks,
@@ -34,6 +25,7 @@ import {
   isTextBlock,
   resolveAuthoredChildren,
 } from '../tree/resolve';
+import { deleting, localChange, runOrderOf, type RunOrder } from './order';
 import { countLedgerWork } from './work';
 
 export type BlockFacts = Readonly<{
@@ -162,6 +154,20 @@ const UNMARKED: BlockFacts = Object.freeze({
   removedProposed: false,
 });
 
+export const canOrder = (
+  nodes: readonly JsonNode[],
+  mode: AuthoredFormatProjection
+) => {
+  if (mode !== 'proposed') return false;
+  const facts = nodes.map(blockFactsOf);
+  const follows = new Set(facts.flatMap((block) => block.follows));
+
+  return (
+    follows.size > 0 &&
+    facts.some((block) => block.joins.some((key) => follows.has(key)))
+  );
+};
+
 export const removesBlock = (
   mode: AuthoredFormatProjection,
   facts: BlockFacts
@@ -170,6 +176,7 @@ export const removesBlock = (
 export type Run = Readonly<{
   /** On a run the commands wrote, built on its first read. */
   change: RootChange | null;
+  order: RunOrder | null;
   /** Whether the run's output differs from its stored nodes, known without building `change`. */
   changed: boolean;
   nodes: readonly JsonNode[];
@@ -179,31 +186,6 @@ export type Run = Readonly<{
   storedLength: number;
   verdicts: RecordSetVersion;
 }>;
-
-const deleting = (
-  length: number,
-  ranges: ReadonlyArray<readonly [number, number]>
-) => {
-  const sections: number[] = [];
-  const data: Array<PreparedTokenSlice | null> = [];
-  let at = 0;
-
-  for (const [from, to] of ranges) {
-    if (from > at) {
-      sections.push(from - at, -1);
-      data.push(null);
-    }
-    sections.push(to - from, 0);
-    data.push(PreparedTokenSlice.empty);
-    at = to;
-  }
-  if (length > at) {
-    sections.push(length - at, -1);
-    data.push(null);
-  }
-
-  return RootChange.fromSections(sections, data);
-};
 
 const samePart = (left: RootPart, right: RootPart) =>
   left.head === right.head && left.min === right.min;
@@ -224,26 +206,6 @@ export type RunContext = Readonly<{
   verdicts: RecordSetVersion;
 }>;
 
-const localChange = (
-  kept: readonly JsonNode[],
-  output: readonly JsonNode[],
-  context: RunContext
-): RootChange | null => {
-  const stored = { children: kept } as JsonEditorValue;
-  const decided = { children: output } as JsonEditorValue;
-  const change =
-    context.mode === 'proposed'
-      ? acceptedChange(stored, decided, { isSetValued: context.isSetValued })
-      : decidedContentChange(stored, decided, {
-          facts: context.facts,
-          outcomes: 'reject',
-        });
-
-  return change.empty
-    ? null
-    : (getInternalDocumentRootChange(change, 'main') ?? null);
-};
-
 /** A tail run of one block the mode removes whole, which needs no kernel. */
 export const removedRun = (node: JsonNode, context: RunContext): Run => {
   const storedLength = tokenLength(node);
@@ -251,6 +213,7 @@ export const removedRun = (node: JsonNode, context: RunContext): Run => {
   return {
     change: deleting(storedLength, [[0, storedLength]]),
     changed: true,
+    order: null,
     nodes: [node],
     output: [],
     outputLength: 0,
@@ -296,12 +259,12 @@ export const resolveRun = (
 
   const input = inputOf(nodes, context, part);
   const { kept, tail } = input;
-  const output =
+  const resolution =
     kept.length === 0 ||
     (tail &&
       context.mode === 'proposed' &&
       !kept.some(proposedSurvival.survives))
-      ? []
+      ? null
       : deepFreeze(
           resolveAuthoredChildren(
             kept,
@@ -310,10 +273,16 @@ export const resolveRun = (
             context.root,
             { facts: context.facts, part }
           )
-        ).children;
-  const change = changeOf(input, output, context);
+        );
+  const output = resolution?.children ?? [];
+  const order =
+    resolution && canOrder(nodes, context.mode)
+      ? runOrderOf(input, output, resolution.reordered, context)
+      : null;
+  const change = order?.hull ?? changeOf(input, output, context);
   const run: Run = {
     change,
+    order,
     changed: !!change,
     nodes,
     output,
@@ -351,10 +320,14 @@ export const writtenRun = (
     output.length !== input.kept.length ||
     output.some((node, index) => !jsonEqual(node, input.kept[index]));
   let change: RootChange | null = null;
+  let order: RunOrder | null | undefined;
+  const apart = canOrder(nodes, context.mode);
   const run: Run = {
+    order: null,
     get change() {
       if (changed) {
         change ??=
+          run.order?.hull ??
           changeOf(input, output, context) ??
           RootChange.empty(input.storedLength);
       }
@@ -370,10 +343,35 @@ export const writtenRun = (
     verdicts: context.verdicts,
   };
 
+  if (apart) {
+    Object.defineProperty(run, 'order', {
+      get() {
+        if (order === undefined) {
+          const resolution = resolveAuthoredChildren(
+            input.kept,
+            () => 'accept',
+            context.schema,
+            context.root,
+            { facts: context.facts, part }
+          );
+
+          order = runOrderOf(input, output, resolution.reordered, context);
+        }
+        return order;
+      },
+    });
+  }
   cache.set(getDefined(nodes[0]), run);
 
   return run;
 };
+
+export type RunInput = Readonly<{
+  kept: readonly JsonNode[];
+  ranges: ReadonlyArray<readonly [number, number]>;
+  storedLength: number;
+  tail: boolean;
+}>;
 
 const inputOf = (
   nodes: readonly JsonNode[],
@@ -403,7 +401,7 @@ const inputOf = (
 };
 
 const changeOf = (
-  { kept, ranges, storedLength }: ReturnType<typeof inputOf>,
+  { kept, ranges, storedLength }: RunInput,
   output: readonly JsonNode[],
   context: RunContext
 ) => {

@@ -6,6 +6,7 @@ import {
   createEditorView,
   defineCommand,
   defineEditorSchema,
+  ContentSlice,
   DocumentChange,
   editorCommands,
   type EditorUpdateTransaction,
@@ -37,6 +38,7 @@ const blocks = {
   elements: {
     divider: { void: 'block' },
     heading: { content: schema.content.text() },
+    link: { content: schema.content.text(), inline: true },
     mention: { void: 'inline' },
     paragraph: schema.element.textBlock(),
     quote: {
@@ -57,6 +59,26 @@ const blocks = {
 const Blocks = defineEditorSchema('command-blocks', {
   ...blocks,
   id: 'command-blocks',
+});
+const ChipBlocks = defineEditorSchema('command-chip-blocks', {
+  ...blocks,
+  elements: {
+    ...blocks.elements,
+    chip: {
+      content: schema.content.text(),
+      contentRoots: {
+        note: {
+          content: schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'exclusive',
+        },
+      },
+      inline: true,
+    },
+  },
+  id: 'command-chip-blocks',
 });
 const HeaderBlocks = defineEditorSchema('command-header-blocks', {
   ...blocks,
@@ -80,6 +102,10 @@ const h = (...children: Array<string | Node>): Node => ({
   children: children.map(text),
   type: 'heading',
 });
+const link = (value: string): Node => ({
+  children: [{ text: value }],
+  type: 'link',
+});
 const q = (...children: Node[]): Node => ({ children, type: 'quote' });
 const struck = (value: string): Node => ({
   authored: [mark('delete')],
@@ -93,7 +119,31 @@ const struckBlock = (block: Node): Node => ({
     authored: [mark('delete')],
   })),
 });
-const joined = (block: Node): Node => ({ ...block, authored: [mark('join')] });
+const joined = (block: Node, author = 'carol'): Node => ({
+  ...block,
+  authored: [{ ...mark('join'), author, change: `${author}:1` }],
+});
+const follower = (
+  block: Node,
+  author = 'erin',
+  change = `~edit:${author}`,
+  join = 'carol:1'
+): Node => ({
+  ...block,
+  authored: [
+    {
+      at: 1,
+      author,
+      change,
+      follows: JSON.stringify([join, 1]),
+      kind: 'insert',
+    },
+  ],
+});
+const held = (value: string): Node => ({
+  authored: [mark('held')],
+  text: value,
+});
 
 const make = (
   value: Node[] | Readonly<{ children: Node[]; roots: Record<string, Node[]> }>,
@@ -241,13 +291,16 @@ const law = (c: Case) => {
       const editor = make(c.start, intent);
 
       drive(editor, c.at, c.run, c.via);
-      const raw = editor.read.children();
+      const raw = expandedChildren(editor);
 
       assert.deepEqual(unmarked(decided(raw, 'accept')), c.accepted);
       assert.ok(joinCount(raw) <= 1, 'a line carries two joins');
       if (intent === 'propose') {
         assert.deepEqual(decided(raw, 'reject'), decided(c.start, 'reject'));
-        assert.deepEqual(decided(raw, 'reject', 'bob'), c.start);
+        assert.deepEqual(
+          decided(raw, 'reject', 'bob'),
+          decided(c.start, 'reject', 'bob')
+        );
         assert.ok(changesOf(raw, 'bob').length <= 1, 'one update, one change');
       } else {
         const restored = textOf({
@@ -265,7 +318,7 @@ const law = (c: Case) => {
       typeZ(plain);
       typeZ(editor);
       assert.deepEqual(
-        unmarked(decided(editor.read.children(), 'accept')),
+        unmarked(decided(expandedChildren(editor), 'accept')),
         unmarked(plain.read.children()),
         'a letter typed next lands where the plain editor puts it'
       );
@@ -880,6 +933,310 @@ describe('authored review tree commands', () => {
     run: (tx) => tx.command(editorCommands.transposeCharacter),
     start: [p('a', struck('x'), 'b')],
   });
+  law({
+    accepted: [q(p('ab'), p('ef'), p('gh'))],
+    at: [[1, 0], 0],
+    intents: ['edit'],
+    name: 'M1 a word Backspace that empties a pending join’s target keeps the joining line in the target’s place after a line moved before it',
+    plainAt: [[0, 2, 0], 2],
+    run: deleteUnit('backward', 'word'),
+    start: [q(p('ab'), p('ef'), p('cd')), joined(p('gh'))],
+  });
+  law({
+    accepted: [p('cd'), p('ef')],
+    at: [
+      [[0, 0], 0],
+      [[0, 0], 2],
+    ],
+    name: 'M2 deleting the text of a pending join’s target keeps the joining line before a line moved between them',
+    plainAt: [
+      [[0, 0], 0],
+      [[0, 0], 2],
+    ],
+    run: fragment,
+    start: [p('ab'), follower(p('ef')), joined(p('cd'))],
+  });
+  law({
+    accepted: [q(p('cdefab'))],
+    at: [[0, 1, 0], 0],
+    name: 'M3 Backspace at the start of a line moved between a pending join’s halves merges it into the joined line',
+    plainAt: [[0, 1, 0], 0],
+    run: backspace,
+    start: [q(p('cd'), follower(p('ab')), joined(p('ef')))],
+  });
+  law({
+    accepted: [q(p('cf'), p('ab'))],
+    at: [
+      [[0, 0, 0], 1],
+      [[0, 2, 0], 1],
+    ],
+    name: 'M6 a range delete across a pending join keeps the line moved between its halves',
+    plainAt: [
+      [[0, 0, 0], 1],
+      [[0, 0, 0], 3],
+    ],
+    run: fragment,
+    start: [q(p('cd'), follower(p('ab')), joined(p('ef')))],
+  });
+  law({
+    accepted: [q(p('cdef'), p('Xb'))],
+    at: [
+      [[0, 1, 0], 0],
+      [[0, 1, 0], 1],
+    ],
+    intents: ['propose'],
+    name: 'M7 typing over a letter of a line one’s own Editing move placed between a pending join’s halves',
+    plainAt: [
+      [[0, 1, 0], 0],
+      [[0, 1, 0], 1],
+    ],
+    run: type('X'),
+    start: [q(p('cd'), follower(p('ab'), 'bob'), joined(p('ef')))],
+  });
+  law({
+    accepted: [q(p('cdf'), p('ab'))],
+    at: [[0, 0, 0], 2],
+    name: 'M8 Delete at the end of a pending join’s target keeps the line moved between its halves',
+    plainAt: [[0, 0, 0], 2],
+    run: del,
+    start: [q(p('cd'), follower(p('ab')), joined(p('ef')))],
+  });
+  law({
+    accepted: [q(p('cgh'))],
+    at: [
+      [[0, 0, 0], 1],
+      [[0, 3, 0], 0],
+    ],
+    name: 'M9 a range delete from a pending join’s target to the line after its followers merges that line in',
+    plainAt: [
+      [[0, 0, 0], 1],
+      [[0, 2, 0], 0],
+    ],
+    run: fragment,
+    start: [q(p('cd'), follower(p('ab')), joined(p('ef')), p('gh'))],
+  });
+  law({
+    accepted: [q(p('cdef'), p('abgh'))],
+    at: [[0, 2, 0], 0],
+    name: 'M10 Backspace at the start of a line moved between a pending join’s halves merges it into the moved line before it',
+    plainAt: [[0, 2, 0], 0],
+    run: backspace,
+    start: [q(p('cd'), follower(p('ab')), follower(p('gh')), joined(p('ef')))],
+  });
+  law({
+    accepted: [q(p('cdef'), p('aXb'))],
+    at: [[0, 1, 0], 1],
+    name: 'M11 typing inside a line one’s own suggestion placed between a pending join’s halves',
+    plainAt: [[0, 1, 0], 1],
+    run: type('X'),
+    start: [q(p('cd'), follower(p('ab'), 'bob', 'bob:7'), joined(p('ef')))],
+  });
+  // In Suggesting, rejecting Bob's split waits for Carol's join, as in J1.
+  law({
+    accepted: [q(p('c'), p('def'), p('ab'))],
+    at: [[0, 0, 0], 1],
+    intents: ['edit'],
+    name: 'M12 Enter in a pending join’s target breaks it before the lines moved between the join’s halves',
+    plainAt: [[0, 0, 0], 1],
+    run: (tx) => tx.command(editorCommands.insertBreak),
+    start: [q(p('cd'), follower(p('ab')), joined(p('ef')))],
+  });
+  law({
+    accepted: [q(p('cdef'), p('a'), p('b'))],
+    at: [[0, 1, 0], 1],
+    name: 'M13 Enter inside a line moved between a pending join’s halves breaks that line',
+    plainAt: [[0, 1, 0], 1],
+    run: (tx) => tx.command(editorCommands.insertBreak),
+    start: [q(p('cd'), follower(p('ab')), joined(p('ef')))],
+  });
+  law({
+    accepted: [q(p('cde'), p('f'), p('gh'))],
+    at: [[0, 1, 0], 1],
+    name: 'M14 Enter inside a pending join’s joining half with nothing moved between its halves',
+    plainAt: [[0, 0, 0], 3],
+    run: (tx) => tx.command(editorCommands.insertBreak),
+    start: [q(p('cd'), joined(p('ef')), p('gh'))],
+  });
+  law({
+    accepted: [q(p('cde', link('X'), 'f'), p('ab'))],
+    at: [[0, 2, 0], 1],
+    name: 'M15 pasting a link inside a pending join’s joining half with a line moved between its halves',
+    plainAt: [[0, 0, 0], 3],
+    run: (tx) =>
+      tx.command(editorCommands.replaceSlice, {
+        slice: ContentSlice.fromJSON({
+          content: [p(link('X'))],
+          openEnd: 1,
+          openStart: 1,
+        }),
+      }),
+    start: [q(p('cd'), follower(p('ab')), joined(p('ef')))],
+  });
+  law({
+    accepted: [q(p('cdef'), p('ab'), p('gh'))],
+    at: [[0, 2, 0], 0],
+    name: 'M16 Backspace then Enter at the start of the second line moved between a pending join’s halves leaves the lines as they were',
+    plainAt: [[0, 2, 0], 0],
+    run: (tx) => {
+      backspace(tx);
+      tx.command(editorCommands.insertBreak);
+    },
+    start: [q(p('cd'), follower(p('ab')), follower(p('gh')), joined(p('ef')))],
+  });
+  law({
+    accepted: [q(p('cXij'))],
+    at: [
+      [[0, 0, 0], 1],
+      [[0, 4, 0], 0],
+    ],
+    name: 'M17 typing over two pending joins and a line moved between the first one’s halves',
+    plainAt: [
+      [[0, 0, 0], 1],
+      [[0, 2, 0], 0],
+    ],
+    run: type('X'),
+    start: [
+      q(
+        p('cd'),
+        follower(p('ab')),
+        joined(p('ef')),
+        joined(p('gh'), 'dora'),
+        p('ij')
+      ),
+    ],
+  });
+  law({
+    accepted: [p('cdef'), p('abgh')],
+    at: [[3, 0], 0],
+    name: 'M23 Backspace at the line after a line moved between a pending join’s halves merges it into the moved line',
+    plainAt: [[2, 0], 0],
+    run: backspace,
+    start: [p('cd'), follower(p('ab')), joined(p('ef')), p('gh')],
+  });
+  law({
+    accepted: [p('cdef'), p('abgh')],
+    at: [[1, 0], 2],
+    name: 'M24 Delete at the end of a line moved between a pending join’s halves merges the line after it',
+    plainAt: [[1, 0], 2],
+    run: del,
+    start: [p('cd'), follower(p('ab')), joined(p('ef')), p('gh')],
+  });
+  law({
+    accepted: [q(p('cdef'), p('abgh'))],
+    at: [[0, 3, 0], 0],
+    name: 'M25 Backspace at the line after a line moved between a pending join’s halves in a quote merges it into the moved line',
+    plainAt: [[0, 2, 0], 0],
+    run: backspace,
+    start: [q(p('cd'), follower(p('ab')), joined(p('ef')), p('gh'))],
+  });
+  law({
+    accepted: [q(p('cdef'), p('abgh'))],
+    at: [[0, 1, 0], 2],
+    name: 'M26 Delete at the end of a line moved between a pending join’s halves in a quote merges the line after it',
+    plainAt: [[0, 1, 0], 2],
+    run: del,
+    start: [q(p('cd'), follower(p('ab')), joined(p('ef')), p('gh'))],
+  });
+  law({
+    accepted: [p('h'), p('ab'), q(p('ij'))],
+    at: [
+      [[0, 0], 1],
+      [[4, 0], 0],
+    ],
+    name: 'M4 a range delete up to a pending join past a suggested move leaves the caret before the joined text',
+    plainAt: [
+      [[0, 0], 0],
+      [[1, 0], 1],
+    ],
+    run: fragment,
+    start: ((): Node[] => {
+      const by = (kind: string, change: string) => ({
+        ...mark(kind),
+        change,
+      });
+
+      return [
+        {
+          ...p({ authored: [by('delete', 'carol:2')], text: 'ab' }),
+          authored: [by('delete', 'carol:2')],
+        },
+        p('cd'),
+        p('e', struck('f')),
+        {
+          ...p({ authored: [by('insert', 'carol:2')], text: 'ab' }),
+          authored: [
+            {
+              ...by('insert', 'carol:2'),
+              follows: JSON.stringify(['carol:1', 1]),
+            },
+          ],
+        },
+        {
+          ...p(
+            { authored: [mark('delete'), mark('insert')], text: 'g' },
+            { authored: [mark('insert')], text: 'h' }
+          ),
+          authored: [mark('insert'), mark('join')],
+        },
+        q(struckBlock(p('gh')), p('ij')),
+      ];
+    })(),
+  });
+
+  for (const intent of ['edit', 'propose'] as const) {
+    it(`M27 Backspace at a moved line that holds an exclusive root's owner ${intent === 'edit' ? 'records one owner in Editing' : 'is refused in Suggesting'}`, () => {
+      const chip = {
+        childRoots: { note: 'r' },
+        children: [{ text: 'k' }],
+        type: 'chip',
+      };
+      const editor = make(
+        {
+          children: [p('cd'), follower(p('ab', chip, 'z')), joined(p('ef'))],
+          roots: { r: [p('ROOT')] },
+        },
+        intent,
+        [],
+        ChipBlocks
+      );
+      const before = expandedChildren(editor);
+      const refusals: string[] = [];
+
+      editor.api.authored.subscribeRefusals(({ code }) => refusals.push(code));
+      drive(editor, [[1, 0], 0], backspace, 'update');
+
+      if (intent === 'propose') {
+        assert.deepEqual(refusals, ['unrepresentable']);
+        assert.deepEqual(expandedChildren(editor), before);
+      } else {
+        assert.deepEqual(refusals, []);
+        assert.deepEqual(unmarked(expandedChildren(editor)), [
+          p('cd'),
+          p('efab', chip, 'z'),
+        ]);
+      }
+    });
+
+    it(`M5 a letter typed before a rejected move’s held letter stays out of the held leaf in ${intent === 'edit' ? 'Editing' : 'Suggesting'}`, () => {
+      const editor = make(
+        [
+          p(''),
+          {
+            ...p('a', held('b')),
+            authored: [{ ...mark('split'), change: 'carol:2' }],
+          },
+          p('cd'),
+        ],
+        intent
+      );
+
+      drive(editor, [[1, 1], 0], type('Z'), 'update');
+      const line = (editor.read.children() as Node[])[1];
+
+      assert.equal(textOf(line), 'aZb');
+      assert.deepEqual((line.children as Node[]).at(-1), held('b'));
+    });
+  }
 
   for (const intent of ['edit', 'propose'] as const) {
     const mode = intent === 'edit' ? 'Editing' : 'Suggesting';
@@ -1095,6 +1452,123 @@ describe('authored review tree commands', () => {
       assert.deepEqual(editor.read.root('header'), [p('keepZ'), p('tail')]);
       assert.deepEqual(editor.read.children(), [p('main')]);
     });
+
+    it(`Enter after struck text in a named root types on the new line in ${mode}`, () => {
+      const editor = make(
+        { children: [p('main')], roots: { header: [p(struck('ab'))] } },
+        intent,
+        [],
+        HeaderBlocks
+      );
+      const view = createEditorView(editor, { root: 'header' });
+
+      view.update((tx) => {
+        tx.selection.set(selectionOf([[0, 0], 2]));
+        tx.command(editorCommands.insertBreak);
+      });
+      view.update((tx) => type('Z')(tx));
+      authoredTestApi(editor).decide({
+        action: 'accept',
+        changes: changesOf(editor.read.root('header')),
+      });
+
+      assert.deepEqual(editor.read.root('header'), [p(''), p('Z')]);
+      assert.deepEqual(editor.read.children(), [p('main')]);
+    });
+
+    const refusesWhole = (start: Node[], at: At, run: Run) => {
+      const editor = make(start, intent);
+      const before = expandedChildren(editor);
+      const refusals: string[] = [];
+
+      editor.api.authored.subscribeRefusals(({ code }) => refusals.push(code));
+      drive(editor, at, run, 'update');
+
+      assert.deepEqual(refusals, ['unrepresentable']);
+      assert.deepEqual(expandedChildren(editor), before);
+      assert.deepEqual(
+        decided(expandedChildren(editor), 'accept'),
+        decided(start, 'accept')
+      );
+      assert.deepEqual(
+        decided(expandedChildren(editor), 'reject'),
+        decided(start, 'reject')
+      );
+    };
+    const enters: Array<[string, Node, At]> = [
+      ['at', p('ef'), [[0, 2, 0], 0]],
+      ['inside', p('ef'), [[0, 2, 0], 1]],
+      ['at the end of', p('ef'), [[0, 2, 0], 2]],
+      ['inside a link in', p('e', link('fg'), 'h'), [[0, 2, 1, 0], 1]],
+      ['after a link that ends', p('e', link('fg'), ''), [[0, 2, 2], 0]],
+    ];
+
+    for (const [where, half, at] of enters) {
+      it(`Enter ${where} the joined half of a line with moved lines between its halves refuses the whole update in ${mode}`, () => {
+        refusesWhole(
+          [q(p('cd'), follower(p('ab')), joined(half))],
+          at,
+          (tx) => {
+            tx.command(editorCommands.insertBreak);
+            type('X')(tx);
+          }
+        );
+      });
+    }
+
+    const refused: Array<[string, Node[], At, Run]> = [
+      [
+        'a range delete into a joined line with a line moved between its halves',
+        [
+          q(
+            p('cd'),
+            follower(p('ab')),
+            joined(p('ef')),
+            p('gh'),
+            follower(p('ij'), 'erin', '~edit:erin', 'dora:1'),
+            joined(p('kl'), 'dora')
+          ),
+        ],
+        [
+          [[0, 0, 0], 1],
+          [[0, 3, 0], 1],
+        ],
+        fragment,
+      ],
+      [
+        'Delete at the end of a moved line whose next line ends at a break',
+        [
+          q(
+            p('cd'),
+            follower(p('ab')),
+            joined(p('ef')),
+            p('gh'),
+            follower(p('ij'), 'erin', '~edit:erin', 'dora:1'),
+            joined(p(struck('kl')), 'dora')
+          ),
+        ],
+        [[0, 1, 0], 2],
+        del,
+      ],
+      [
+        'a block inserted at the end of a joined line with a line moved between its halves',
+        [q(p('cd'), follower(p('ab')), joined(p('ef')), p('gh'))],
+        [[0, 2, 0], 2],
+        (tx) => tx.command(editorCommands.insertNodes, { nodes: [p('N')] }),
+      ],
+      [
+        'Enter inside a joined half whose target’s text is struck, with a line moved between them,',
+        [q(p(struck('cd')), follower(p('ab')), joined(p('ef')))],
+        [[0, 2, 0], 1],
+        (tx) => tx.command(editorCommands.insertBreak),
+      ],
+    ];
+
+    for (const [name, start, at, run] of refused) {
+      it(`${name} refuses the whole update in ${mode}`, () => {
+        refusesWhole(start, at, run);
+      });
+    }
 
     it(`D1 a drag of live text into a struck line lands at the end of the line above in ${mode}`, () => {
       const editor = make([p('ab'), struckBlock(p('gone')), p('cd')], intent, [

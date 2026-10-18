@@ -9,7 +9,10 @@ import { EditorRefusalError } from '../core/refusal';
 import type { CompiledEditorSchema } from '../core/schema-compiler';
 import { getDefined } from '../internal/get-defined';
 
-/** Why Suggesting refused a change whole, so nothing of it applied. */
+/**
+ * Why the authored plugin refused a change whole, so nothing of it applied,
+ * or refused a view switch.
+ */
 export type AuthoredRefusal = Readonly<{
   /**
    * `veto`: the change touches elements a feature's review marks cannot hold
@@ -17,7 +20,9 @@ export type AuthoredRefusal = Readonly<{
    * property values, which would differ between recording, accepting and
    * rejecting. `unrepresentable`: the review marks cannot hold the change,
    * such as deleting a named root or writing inside the root of a block
-   * whose deletion is pending.
+   * whose deletion is pending. Only `unrepresentable` refuses an Editing
+   * write, such as Enter in a pending join's second half with moved lines
+   * between its halves.
    */
   code: 'generated-values' | 'unrepresentable' | 'veto';
   message: string;
@@ -169,7 +174,6 @@ export const GENERATED_VALUES_REFUSAL: AuthoredRefusal = Object.freeze({
   reasons: Object.freeze([]),
 });
 
-/** The refusal of a Suggesting change whose review form the schema cannot hold. */
 export const unrepresentable = (message: string): EditorRefusalError =>
   new EditorRefusalError(
     Object.freeze({

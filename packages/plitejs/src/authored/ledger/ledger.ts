@@ -490,6 +490,8 @@ const mapOf = (
   return Object.freeze({
     added: (root: string, position: number) =>
       live(root)?.added(position) ?? null,
+    breaks: (root: string, from: number, to: number) =>
+      live(root)?.breaks(from, to) ?? [],
     change: () => {
       countCoreWork('projectionChanges');
       composed ??= createInternalDocumentChange(

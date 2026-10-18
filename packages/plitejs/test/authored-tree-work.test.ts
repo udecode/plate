@@ -286,6 +286,7 @@ const splitLinks = [
 const workPerEdit = (editor: Editor, edit: (run: number) => void) => {
   const counts = [0, 1, 2].map((run) => {
     const before = {
+      breakRuns: readLedgerWork().breakRuns,
       built,
       encodedTokens,
       markReads,
@@ -303,6 +304,7 @@ const workPerEdit = (editor: Editor, edit: (run: number) => void) => {
     const projected = projectorReads - before.projectorReads;
 
     return {
+      breakRuns: readLedgerWork().breakRuns - before.breakRuns,
       built: built - before.built,
       encodedTokens: encodedTokens - before.encodedTokens,
       markReads: markReads - before.markReads,
@@ -369,6 +371,77 @@ describe('authored review tree work per edit', () => {
     if (lawCheck === undefined) delete process.env.PLITE_LAW_CHECK;
     else process.env.PLITE_LAW_CHECK = lawCheck;
   });
+
+  for (const intent of ['edit', 'propose'] as const) {
+    for (const inside of [false, true]) {
+      for (const key of ['letter', 'Backspace', 'Enter'] as const) {
+        it(`does as much work for ${intent === 'edit' ? 'an Editing' : 'a Suggesting'} ${key} ${inside ? 'inside a moved line' : 'outside ordered runs'} at 5,000 blocks as at 100`, () => {
+          const [small, large] = atBothSizes(
+            (size) =>
+              editorFor(
+                Array.from({ length: size }, (_, index) => {
+                  const change = `bob:join-${Math.floor(index / 100)}`;
+                  const node = paragraph({ text: 'plain content' });
+
+                  if (index % 100 === 51) {
+                    return {
+                      ...node,
+                      authored: [
+                        {
+                          at: 1,
+                          author: 'erin',
+                          change: `~edit:erin-${Math.floor(index / 100)}`,
+                          follows: JSON.stringify([change, 1]),
+                          kind: 'insert',
+                        },
+                      ],
+                    };
+                  }
+                  if (index % 100 === 52) {
+                    return {
+                      ...node,
+                      authored: [
+                        { at: 1, author: 'bob', change, kind: 'join' },
+                      ],
+                    };
+                  }
+
+                  return node;
+                }),
+                intent,
+                'alice',
+                Blocks
+              ),
+            (editor, size) =>
+              editor.update((tx) => {
+                // In the middle hundred blocks, so a read from either end
+                // grows with size.
+                const hundred = Math.floor(size / 200) * 100;
+                const caret = {
+                  offset: 1,
+                  path: [hundred + (inside ? 51 : 10), 0],
+                };
+
+                tx.selection.set({ anchor: caret, focus: caret });
+                if (key === 'letter') {
+                  tx.command(editorCommands.insertText, { text: 'k' });
+                } else if (key === 'Enter') {
+                  tx.command(editorCommands.insertBreak);
+                } else {
+                  tx.command(editorCommands.delete, {
+                    direction: 'backward',
+                    unit: 'character',
+                  });
+                }
+              }),
+            [100, 5000]
+          );
+
+          assert.deepEqual(large, small);
+        });
+      }
+    }
+  }
 
   it('does as much work for Editing typing at 2,000 blocks as at 100', () => {
     const [small, large] = atBothSizes(

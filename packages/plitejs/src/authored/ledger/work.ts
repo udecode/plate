@@ -7,6 +7,7 @@
 export type LedgerWork = {
   blockFacts: number;
   bookEntries: number;
+  breakRuns: number;
   /** Pairs of neighboring changes the card sequence checked for touching. */
   cardPairs: number;
   /** Card members publication walked after a member's card id changed. */
@@ -37,6 +38,7 @@ export type LedgerWork = {
 const work: LedgerWork = {
   blockFacts: 0,
   bookEntries: 0,
+  breakRuns: 0,
   cardPairs: 0,
   cardWalks: 0,
   composedChanges: 0,

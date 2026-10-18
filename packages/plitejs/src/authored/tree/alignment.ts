@@ -203,25 +203,34 @@ const structuralChange = (
   }
 };
 
+// The characters of the leaves `removed` keeps, at their token positions. It
+// walks the nodes, not the index's tokens, because an index copies the marks
+// it reads and `removed` matches marks by identity.
 const liveCharacters = (
-  tokens: PreparedTokenSlice,
-  removed: (node: unknown) => boolean = (node) =>
-    readAuthoredMarks(node).some((mark) => mark.kind === 'delete')
+  index: DocumentIndex,
+  nodes: readonly JsonNode[],
+  removed: (node: unknown) => boolean
 ) => {
   const positions: number[] = [];
   let text = '';
-  let live = true;
-
-  tokens.tokens.forEach((token, index) => {
-    if (token.kind === 'open' && token.nodeKind === 'text') {
-      live = !removed(token.props);
-    } else if (token.kind === 'text' && live) {
-      for (let at = 0; at < token.text.length; at += 1) {
-        positions.push(tokens.offsets[index] + at);
+  const visit = (list: readonly JsonNode[], path: readonly number[]) => {
+    list.forEach((node, at) => {
+      if (typeof node.text !== 'string') {
+        visit(node.children ?? [], [...path, at]);
+        return;
       }
-      text += token.text;
-    }
-  });
+      if (removed(node)) return;
+
+      const { from } = index.nodeRange([...path, at]);
+
+      for (let offset = 0; offset < node.text.length; offset += 1) {
+        positions.push(from + 1 + offset);
+      }
+      text += node.text;
+    });
+  };
+
+  visit(nodes, []);
 
   return { positions, text };
 };
@@ -285,8 +294,8 @@ export const characterAlignedChange = (
       : survivalUnder<JsonNode>(settledBy.removes);
   const before = DocumentIndex.fromValue(stored.children);
   const after = DocumentIndex.fromValue(accepted.children);
-  const kept = liveCharacters(before.tokens, settledBy.removes);
-  const target = liveCharacters(after.tokens, () => false);
+  const kept = liveCharacters(before, stored.children, settledBy.removes);
+  const target = liveCharacters(after, accepted.children, () => false);
 
   if (kept.text !== target.text) return null;
 

@@ -36,7 +36,11 @@ import {
   normalizeSetValues,
   type PropertyModification,
 } from '../../core/change/transform';
-import type { CommandProjection } from '../../core/command-document';
+import type {
+  CommandProjection,
+  ProjectionBreak,
+} from '../../core/command-document';
+import type { ResolvedTokenEntry } from '../../core/resolved-token-cursor';
 import type { EditorJsonValue } from '../../interfaces/json';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
@@ -358,14 +362,23 @@ const rebase = (step: RootChange, map: PosMap, reviewLength: number) => {
     // the review draft keeps at either edge stays out of it, so new text
     // follows a deletion and a removal leaves earlier struck content alone.
     const replacesNext = inserted < 0 && pair + 1 < step.sections.length / 2;
-    // A removal ends before hidden content after it, wherever the caret
-    // sits, so the caret never pulls that content in.
-    const reviewEnd = Math.max(
-      reviewBefore,
+    // A removal ends before hidden content after it, and a section that
+    // removes or changes content starts at its first token, wherever the
+    // caret sits: a caret picks a stored edge only where new content goes in.
+    const mappedEnd =
       inserted === 0 && length > 0
         ? map(plainBefore + length, -1, false)
-        : map(plainBefore + length, replacesNext ? 1 : -1)
-    );
+        : map(
+            plainBefore + length,
+            replacesNext ? 1 : -1,
+            replacesNext && step.sections[pair * 2 + 2] > 0 ? false : undefined
+          );
+
+    if (inserted === 0 && length > 0 && mappedEnd < reviewBefore) {
+      throw unrepresentable('A removal runs backward in the stored document.');
+    }
+
+    const reviewEnd = Math.max(reviewBefore, mappedEnd);
     const removed = reviewEnd - reviewBefore;
 
     if (inserted < 0) {
@@ -475,37 +488,51 @@ const rebase = (step: RootChange, map: PosMap, reviewLength: number) => {
     reviewAfter += reviewLength - reviewBefore;
   }
 
+  type Output = (typeof outputs)[number];
+  const covers = (output: Output | undefined, position: number) =>
+    output !== undefined &&
+    output.plainAfter <= position &&
+    position <= output.plainAfterTo;
+  const removes = (output: Output | undefined) =>
+    output?.inserted === true && output.plainAfter === output.plainAfterTo;
   const afterMap: PosMap = (position, assoc, caret) => {
-    for (const output of outputs) {
-      if (position < output.plainAfter || position > output.plainAfterTo) {
-        continue;
-      }
-      if (output.inserted) {
-        return output.reviewAfter + position - output.plainAfter;
-      }
+    let at = outputs.findIndex((output) => covers(output, position));
+    const removal = removes(outputs[at]) ? at : at + 1;
 
-      const review = map(
-        output.plainBefore + position - output.plainAfter,
-        assoc,
-        caret
-      );
-      // An earlier step can move a caret across a removal, into the review
-      // stretch of another output, or into one this step replaces, where it
-      // sits at the replacement.
-      const holds = (other: (typeof outputs)[number]) =>
-        other.reviewBefore <= review && review <= other.reviewTo;
-      const owner =
-        (review < output.reviewBefore || review > output.reviewTo
-          ? (outputs.find((other) => !other.inserted && holds(other)) ??
-            outputs.find(holds))
-          : undefined) ?? output;
-
-      return owner.inserted
-        ? owner.reviewAfter
-        : owner.reviewAfter + review - owner.reviewBefore;
+    if (
+      assoc > 0 &&
+      removes(outputs[removal]) &&
+      covers(outputs[removal + 1], position)
+    ) {
+      at = removal + 1;
     }
 
-    return reviewAfter;
+    const output = outputs[at];
+
+    if (!output) return reviewAfter;
+    if (output.inserted) {
+      return output.reviewAfter + position - output.plainAfter;
+    }
+
+    const review = map(
+      output.plainBefore + position - output.plainAfter,
+      assoc,
+      caret
+    );
+    // An earlier step can move a caret across a removal, into the review
+    // stretch of another output, or into one this step replaces, where it
+    // sits at the replacement.
+    const holds = (other: Output) =>
+      other.reviewBefore <= review && review <= other.reviewTo;
+    const owner =
+      (review < output.reviewBefore || review > output.reviewTo
+        ? (outputs.find((other) => !other.inserted && holds(other)) ??
+          outputs.find(holds))
+        : undefined) ?? output;
+
+    return owner.inserted
+      ? owner.reviewAfter
+      : owner.reviewAfter + review - owner.reviewBefore;
   };
 
   return { afterMap, groups };
@@ -577,7 +604,400 @@ const groupsChange = (groups: readonly Group[]) => {
   return RootChange.fromSections(sections, data);
 };
 
+const insertsEmptyLeaves = (change: RootChange) => {
+  let inserted = false;
+
+  for (let pair = 0; pair < change.data.length; pair += 1) {
+    const length = change.sections[pair * 2];
+    const added = change.sections[pair * 2 + 1];
+
+    if (added === -1) continue;
+    const data = change.data[pair];
+
+    if (length !== 0 || !(data instanceof PreparedTokenSlice)) return false;
+    if (data.tokens.length % 2 !== 0) return false;
+    for (let at = 0; at < data.tokens.length; at += 2) {
+      const open = data.tokens[at];
+      const close = data.tokens[at + 1];
+
+      if (
+        open.kind !== 'open' ||
+        open.nodeKind !== 'text' ||
+        close.kind !== 'close' ||
+        close.nodeKind !== 'text'
+      ) {
+        return false;
+      }
+    }
+    inserted ||= data.length > 0;
+  }
+
+  return inserted;
+};
+
+/**
+ * For a canonical step that only inserts empty text leaves, each inserted
+ * leaf on a line the stored document holds childless, with its frame span
+ * and the stored position it lands at. Enter at a line's end moves the
+ * frame's empty leaf to the new line and the step refills the old one, while
+ * the stored split keeps the stored leaf on the old line, so the first leaf
+ * after each refilled line is checked too.
+ */
+const emptyLeavesOf = (
+  change: RootChange,
+  frame: DocumentIndex,
+  stored: DocumentIndex,
+  toStored: PosMap
+) => {
+  if (!insertsEmptyLeaves(change)) return [];
+
+  const leaves: Array<
+    Readonly<{
+      from: number;
+      slice: PreparedTokenSlice;
+      stored: number;
+      to: number;
+    }>
+  > = [];
+  const lineOf = (position: number) =>
+    getDefined(
+      frame
+        .openContextAt(position)
+        .findLast((entry) => entry.kind === 'element')
+    );
+  const record = (position: number) => {
+    const leaf = frame.textAt(position);
+
+    if (!leaf || leaf.contentFrom !== leaf.contentTo) return;
+    const target = stored.nodeStartingAt(
+      toStored(lineOf(leaf.from).from, 1, false)
+    );
+
+    if (
+      target?.kind === 'element' &&
+      target.contentFrom === target.contentTo &&
+      !leaves.some((entry) => entry.stored === target.contentFrom)
+    ) {
+      leaves.push({
+        from: leaf.from,
+        slice: frame.nodeSlice(leaf.path),
+        stored: target.contentFrom,
+        to: leaf.to,
+      });
+    }
+  };
+
+  change.iterChangedRanges((_fromA, _toA, from, to) => {
+    for (let at = from; at < to; at += 2) {
+      record(at + 1);
+
+      const next = frame.pointAt(lineOf(at).to, 1);
+
+      if (next) record(frame.positionAt(next));
+    }
+  });
+
+  return leaves;
+};
+
+const advanceBreaks = (
+  breaks: readonly ProjectionBreak[],
+  frame: RootChange,
+  stored: RootChange
+) =>
+  breaks
+    .map(({ after, at, before }) => ({
+      after: getDefined(stored.mapPos(after, 1)),
+      at: getDefined(frame.mapPos(at, 1)),
+      before: getDefined(stored.mapPos(before, -1)),
+    }))
+    .filter(({ after, before }) => after !== before);
+
+/**
+ * The stretch of a root's frame, in its coordinates before the steps, that the
+ * steps change. A step crosses only a break inside it.
+ */
+const changedStretch = (changes: readonly RootChange[]) => {
+  let from = Infinity;
+  let to = -Infinity;
+  let earlier: RootChange | null = null;
+
+  for (const change of changes) {
+    const back = (position: number, assoc: -1 | 1) =>
+      earlier
+        ? getDefined(mapRootChangePositionBackward(earlier, position, assoc))
+        : position;
+    let position = 0;
+
+    for (let pair = 0; pair < change.sections.length; pair += 2) {
+      const length = change.sections[pair];
+
+      if (change.sections[pair + 1] !== -1) {
+        from = Math.min(from, back(position, -1));
+        to = Math.max(to, back(position + length, 1));
+      }
+      position += length;
+    }
+    earlier = earlier ? earlier.compose(change) : change;
+  }
+
+  return from <= to ? { from, to } : null;
+};
+
+const isLine = (
+  index: DocumentIndex,
+  entry: ResolvedTokenEntry,
+  isInline: RecorderOptions['isInline']
+) => {
+  if (entry.kind !== 'element') return false;
+  const node = index.node(entry.path);
+
+  return isTextBlock(node) && !isInline(node);
+};
+
+const lineAround = (
+  index: DocumentIndex,
+  at: number,
+  assoc: -1 | 1,
+  isInline: RecorderOptions['isInline']
+) => {
+  const point = index.pointAt(at, assoc);
+
+  return (
+    point &&
+    index
+      .openContextAt(index.positionAt(point))
+      .findLast((entry) => isLine(index, entry, isInline))
+  );
+};
+
+// The context also lists a node that only starts or ends at the position.
+const enclosingAt = (index: DocumentIndex, position: number) =>
+  index
+    .openContextAt(position)
+    .filter((entry) => entry.from < position && position < entry.to);
+
+const lineHolding = (
+  index: DocumentIndex,
+  position: number,
+  isInline: RecorderOptions['isInline']
+) =>
+  enclosingAt(index, position).findLast((entry) =>
+    isLine(index, entry, isInline)
+  );
+
+const lineClosedAt = (
+  index: DocumentIndex,
+  position: number,
+  slice: PreparedTokenSlice,
+  isInline: RecorderOptions['isInline']
+) => {
+  const open = enclosingAt(index, position);
+  let depth = 0;
+
+  for (const token of slice.tokens) {
+    if (token.kind === 'open') depth += 1;
+    if (token.kind !== 'close') continue;
+    if (depth > 0) {
+      depth -= 1;
+      continue;
+    }
+
+    const closed = open.pop();
+
+    if (closed && isLine(index, closed, isInline)) return closed;
+  }
+
+  return undefined;
+};
+
+type SubStep = Readonly<{
+  change: RootChange;
+  movedChildren?: PreparedTokenSlice;
+  role: 'landing' | 'source' | null;
+}>;
+
+/**
+ * Splits a frame step that crosses a break into sub-steps that each map in
+ * stored order, or returns null when it crosses none. It keeps a text
+ * insertion at a break whole, cuts a text removal or property change inside
+ * one line at each break, and lowers a merge of two lines to removals around
+ * a move of the right line's children to the left line's end. It throws on
+ * any other crossing, on a merge whose right line holds a break after the
+ * merge point, and on a step that breaks a line after a break inside that
+ * line even when the step crosses no break.
+ */
+const lowerAcrossBreaks = (
+  step: RootChange,
+  breaks: readonly ProjectionBreak[],
+  frame: DocumentIndex,
+  isInline: RecorderOptions['isInline']
+): SubStep[] | null => {
+  if (breaks.length === 0) return null;
+
+  const crossing = (from: number, to: number) => (edge: ProjectionBreak) =>
+    from === to ? edge.at === from : from < edge.at && edge.at < to;
+  const sections: Array<{
+    from: number;
+    to: number;
+    added: number;
+    data: SectionData;
+  }> = [];
+  let position = 0;
+  let crosses = false;
+
+  for (let pair = 0; pair < step.data.length; pair += 1) {
+    const length = step.sections[pair * 2];
+    const added = step.sections[pair * 2 + 1];
+    const data = step.data[pair];
+
+    if (added !== -1) {
+      sections.push({ from: position, to: position + length, added, data });
+      crosses ||= breaks.some(crossing(position, position + length));
+
+      const line =
+        data instanceof PreparedTokenSlice &&
+        lineClosedAt(frame, position, data, isInline);
+
+      // The new line would land after the lines a pending join puts between
+      // its line's stored halves, not where the frame shows it.
+      if (
+        line &&
+        breaks.some(({ at }) => line.contentFrom <= at && at < position)
+      ) {
+        throw unrepresentable(
+          'A frame step breaks a line after a stored-order break inside it.'
+        );
+      }
+    }
+    position += length;
+  }
+  if (!crosses) return null;
+
+  const result: SubStep[] = [];
+  let index = frame;
+  let edges = breaks;
+  const emit = (
+    from: number,
+    to: number,
+    added: number,
+    data: SectionData,
+    role: SubStep['role'] = null,
+    movedChildren?: PreparedTokenSlice
+  ) => {
+    const change = RootChange.fromSections(
+      [from, -1, to - from, added, index.length - to, -1],
+      [null, data, null]
+    );
+
+    result.push(
+      movedChildren ? { change, movedChildren, role } : { change, role }
+    );
+    index = change.apply(index);
+    edges = edges.map((edge) => ({
+      ...edge,
+      at: getDefined(change.mapPos(edge.at, 1)),
+    }));
+    return change;
+  };
+  const remove = (from: number, to: number, role: SubStep['role'] = null) => {
+    const cuts = [
+      from,
+      ...edges.filter(({ at }) => from < at && at < to).map(({ at }) => at),
+      to,
+    ];
+
+    for (let at = cuts.length - 2; at >= 0; at -= 1) {
+      if (cuts[at] < cuts[at + 1]) {
+        emit(cuts[at], cuts[at + 1], 0, PreparedTokenSlice.empty, role);
+      }
+    }
+  };
+
+  const lineAt = (at: number, assoc: -1 | 1) =>
+    lineAround(index, at, assoc, isInline);
+
+  for (const { from, to, added, data } of sections.reverse()) {
+    const hits = edges.filter(crossing(from, to));
+    const inserted =
+      data instanceof PreparedTokenSlice ? data : PreparedTokenSlice.empty;
+
+    if (
+      hits.length === 0 ||
+      (from === to && inserted.tokens.every((token) => token.kind === 'text'))
+    ) {
+      emit(from, to, added, data);
+      continue;
+    }
+    const removed = index.slice(from, to).tokens;
+    const line = lineAt(from, 1);
+    const onlyText = removed.every(
+      (token) => token.kind === 'text' || token.nodeKind === 'text'
+    );
+
+    if (
+      from < to &&
+      (added === 0 || added === -2) &&
+      onlyText &&
+      line &&
+      line.from === lineAt(to, -1)?.from
+    ) {
+      const cuts = [from, ...hits.map(({ at }) => at), to];
+
+      for (let at = cuts.length - 2; at >= 0; at -= 1) {
+        emit(cuts[at], cuts[at + 1], added, data);
+      }
+      continue;
+    }
+    const left = lineAt(from, -1);
+    const right = lineAt(to, 1);
+
+    if (
+      added !== 0 ||
+      !left ||
+      !right ||
+      left.from >= right.from ||
+      from < left.contentFrom ||
+      from > left.contentTo ||
+      to < right.contentFrom ||
+      to > right.contentTo
+    ) {
+      throw unrepresentable(
+        'A frame step crosses an unsupported stored-order break.'
+      );
+    }
+    if (edges.some(({ at }) => to < at && at <= right.contentTo)) {
+      throw unrepresentable(
+        'A block merge moves a line that holds a stored-order break.'
+      );
+    }
+
+    remove(right.contentFrom, to);
+    remove(left.to, right.from);
+    const rightAt = lineAt(left.to, 1);
+
+    if (!rightAt) throw unrepresentable('A block merge has no right line.');
+    const children = index.slice(rightAt.contentFrom, rightAt.contentTo);
+    const landing = emit(
+      left.contentTo,
+      left.contentTo,
+      children.length,
+      children,
+      'landing',
+      children
+    );
+    const sourceFrom = getDefined(landing.mapPos(rightAt.from, 1));
+    const sourceTo = getDefined(landing.mapPos(rightAt.to, 1));
+
+    remove(sourceFrom, sourceTo, 'source');
+    remove(from, left.contentTo);
+  }
+
+  return result;
+};
+
 type RootFold = {
+  breaks: readonly ProjectionBreak[];
   composed: RootChange | null;
   frameIndex: DocumentIndex | null;
   index: DocumentIndex;
@@ -618,6 +1038,17 @@ export const recordAuthoredSteps = (
   let writtenPlain = true;
   const ownedRootsOf = (props: Props) => input.ownedRoots?.(props) ?? [];
   const doubled = new Map<string, Set<string>>();
+  const keepsMergedSource = !isEditingChange(changeId);
+  const doubledIn = (root: string) => {
+    let roots = doubled.get(root);
+
+    if (!roots) {
+      roots = new Set();
+      doubled.set(root, roots);
+    }
+
+    return roots;
+  };
   const holdsWithdrawal = (props: Props): boolean =>
     ownedRootsOf(props).some(({ root }) => {
       if (!input.deleteRoots.has(root) && !input.followed.has(root)) {
@@ -650,6 +1081,7 @@ export const recordAuthoredSteps = (
       const created = input.createRoots.has(root);
 
       fold = {
+        breaks: [],
         composed: null,
         frameIndex: null,
         index: created
@@ -665,6 +1097,30 @@ export const recordAuthoredSteps = (
 
     return fold;
   };
+
+  const stepChanges = input.steps.map((step) => ({
+    changes: [...getInternalDocumentChangeEntries(step.change)].flatMap(
+      ([root, written]) => {
+        if (input.followed.has(root)) return [];
+        const plain = getDefined(step.indexedBefore.get(root));
+        // A fitted slice writes anew the open tokens of the blocks it lands in.
+        const aligned =
+          step.origin === 'slice'
+            ? written.alignOpens(plain, bothUnclaimed)
+            : written;
+
+        const rootChange =
+          input.followed.size > 0
+            ? strikeRetyped(aligned, plain, input.followed, ownedRootsOf, () =>
+                doubledIn(root)
+              )
+            : aligned;
+
+        return [[root, rootChange] as const];
+      }
+    ),
+    step,
+  }));
 
   if (input.projection) {
     const { indexes, map } = input.projection;
@@ -692,7 +1148,29 @@ export const recordAuthoredSteps = (
               caretAt
             );
 
-      fold.frameIndex = getDefined(indexes.get(root));
+      const stretch = changedStretch(
+        stepChanges.flatMap(({ changes }) =>
+          changes.flatMap(([changed, change]) =>
+            changed === root ? [change] : []
+          )
+        )
+      );
+
+      const frame = getDefined(indexes.get(root));
+
+      fold.frameIndex = frame;
+      // A step that breaks a line is refused after a break earlier in that
+      // line, and a merge moves the rest of the line it ends in, so the read
+      // covers the lines that hold the stretch's ends.
+      fold.breaks = stretch
+        ? map.breaks(
+            root,
+            lineHolding(frame, stretch.from, input.isInline)?.contentFrom ??
+              stretch.from,
+            lineHolding(frame, stretch.to, input.isInline)?.contentTo ??
+              stretch.to
+          )
+        : [];
       fold.map = (position, assoc, caret) => {
         if (far && caret !== false && position === far.position) {
           return far.stored;
@@ -721,41 +1199,17 @@ export const recordAuthoredSteps = (
     }
   }
 
-  for (const step of input.steps) {
-    for (const [root, written] of getInternalDocumentChangeEntries(
-      step.change
-    )) {
-      if (input.followed.has(root)) continue;
+  for (const { changes, step } of stepChanges) {
+    for (const [root, rootChange] of changes) {
       const fold = foldOf(root);
-      const plain = getDefined(step.indexedBefore.get(root));
-      // A fitted slice writes anew the open tokens of the blocks it lands in.
-      const aligned =
-        step.origin === 'slice'
-          ? written.alignOpens(plain, bothUnclaimed)
-          : written;
-      const rootChange =
-        input.followed.size > 0
-          ? strikeRetyped(aligned, plain, input.followed, ownedRootsOf, () => {
-              let roots = doubled.get(root);
-
-              if (!roots) {
-                roots = new Set();
-                doubled.set(root, roots);
-              }
-
-              return roots;
-            })
-          : aligned;
 
       // The review draft runs its own canonical pass, so canonical
-      // construction only moves the plain draft away from it.
+      // construction only moves the plain draft away from it, except for an
+      // empty leaf it adds to a line the stored document holds childless,
+      // which is recorded so a caret inside that leaf has a stored place.
       if (step.origin === 'canonical') {
         const previous = fold.map;
-
-        if (fold.frameIndex) {
-          fold.frameIndex = rootChange.apply(fold.frameIndex);
-        }
-        fold.map = (position, assoc, caret) =>
+        const back: PosMap = (position, assoc, caret) =>
           previous(
             getDefined(
               mapRootChangePositionBackward(rootChange, position, assoc)
@@ -763,66 +1217,115 @@ export const recordAuthoredSteps = (
             assoc,
             caret
           );
-        continue;
-      }
+        const frame = fold.frameIndex && rootChange.apply(fold.frameIndex);
+        const leaves = frame
+          ? emptyLeavesOf(rootChange, frame, fold.index, back)
+          : [];
+        const recorded = RootChange.create(
+          fold.index,
+          leaves.map(({ slice, stored }) => ({ from: stored, insert: slice }))
+        );
 
-      const plainToReview = fold.map;
-      const { afterMap, groups } = rebase(
-        rootChange,
-        plainToReview,
-        fold.index.length
-      );
-      let recorded: RootChange;
-      let mapRecorded: PosMap = identity;
-
-      // A migration is not the writer's edit, and a created root is never
-      // pending, so both apply as written.
-      if (fold.created || step.origin === 'migration') {
-        recorded = groupsChange(groups);
-      } else {
-        const result = new RootRecorder(fold.index, {
-          dependencies: input.dependencies,
-          plainToReview,
-          changeId,
-          createTagId: input.createTagId,
-          emptyTextKeeps: (key, value, parents) =>
-            input.emptyTextKeeps(key, value, parents, root),
-          framed: input.projection !== undefined,
-          fill: (site) => input.fill(site, root),
-          frameIndex: fold.frameIndex,
-          holdsWithdrawal,
-          isInline: input.isInline,
-          isOwn,
-          keepsOnSplit: (split) => input.keepsOnSplit(split, root),
-          leftward: fold.leftward,
-          markOf,
-          moveRole: step.move?.role ?? null,
-          oneText: input.oneText ?? (() => false),
-          origin: step.origin,
-          standing: input.standing,
-          commitWriteId: input.commitWriteId,
-          selectionBefore:
-            !fold.touched && input.selectionBefore?.root === root
-              ? input.selectionBefore.position
-              : null,
-          source: step.source,
-        }).record(groups);
-
-        recorded = result.change;
-        mapRecorded = result.mapPosition;
-        fold.leftward = result.leftward;
-        writtenPlain &&= result.writtenPlain;
-      }
-      fold.touched = true;
-      if (fold.frameIndex) fold.frameIndex = rootChange.apply(fold.frameIndex);
-      if (!recorded.empty) {
+        fold.frameIndex = frame;
+        fold.breaks = advanceBreaks(fold.breaks, rootChange, recorded);
+        if (recorded.empty) {
+          fold.map = back;
+          continue;
+        }
         fold.index = recorded.apply(fold.index);
         fold.composed = fold.composed
           ? fold.composed.compose(recorded)
           : recorded;
+        fold.map = (position, assoc, caret) => {
+          const leaf = leaves.find(
+            ({ from, to }) => from <= position && position <= to
+          );
+
+          return leaf
+            ? getDefined(recorded.mapPos(leaf.stored, -1)) +
+                position -
+                leaf.from
+            : getDefined(recorded.mapPos(back(position, assoc, caret), assoc));
+        };
+        continue;
       }
-      fold.map = (position, assoc, caret) =>
-        mapRecorded(afterMap(position, assoc, caret), assoc, caret);
+
+      const subSteps = (fold.frameIndex &&
+        lowerAcrossBreaks(
+          rootChange,
+          fold.breaks,
+          fold.frameIndex,
+          input.isInline
+        )) ?? [{ change: rootChange, role: step.move?.role ?? null }];
+
+      for (const sub of subSteps) {
+        if (sub.movedChildren && keepsMergedSource) {
+          for (const node of DocumentIndex.fromTokens(sub.movedChildren)
+            .value) {
+            exclusiveRootsIn(node, ownedRootsOf, doubledIn(root));
+          }
+        }
+        const plainToReview = fold.map;
+        const { afterMap, groups } = rebase(
+          sub.change,
+          plainToReview,
+          fold.index.length
+        );
+        let recorded: RootChange;
+        let mapRecorded: PosMap = identity;
+
+        // A migration is not the writer's edit, and a created root is never
+        // pending, so both apply as written.
+        if (fold.created || step.origin === 'migration') {
+          recorded = groupsChange(groups);
+        } else {
+          const result = new RootRecorder(fold.index, {
+            dependencies: input.dependencies,
+            plainToReview,
+            changeId,
+            createTagId: input.createTagId,
+            emptyTextKeeps: (key, value, parents) =>
+              input.emptyTextKeeps(key, value, parents, root),
+            framed: input.projection !== undefined,
+            fill: (site) => input.fill(site, root),
+            frameIndex: fold.frameIndex,
+            holdsWithdrawal,
+            isInline: input.isInline,
+            isOwn,
+            keepsOnSplit: (split) => input.keepsOnSplit(split, root),
+            leftward: fold.leftward,
+            markOf,
+            moveRole: sub.role,
+            oneText: input.oneText ?? (() => false),
+            origin: step.origin,
+            standing: input.standing,
+            commitWriteId: input.commitWriteId,
+            selectionBefore:
+              !fold.touched && input.selectionBefore?.root === root
+                ? input.selectionBefore.position
+                : null,
+            source: step.source,
+          }).record(groups);
+
+          recorded = result.change;
+          mapRecorded = result.mapPosition;
+          fold.leftward = result.leftward;
+          writtenPlain &&= result.writtenPlain;
+        }
+        fold.touched = true;
+        if (fold.frameIndex) {
+          fold.frameIndex = sub.change.apply(fold.frameIndex);
+        }
+        if (!recorded.empty) {
+          fold.index = recorded.apply(fold.index);
+          fold.composed = fold.composed
+            ? fold.composed.compose(recorded)
+            : recorded;
+        }
+        fold.breaks = advanceBreaks(fold.breaks, sub.change, recorded);
+        fold.map = (position, assoc, caret) =>
+          mapRecorded(afterMap(position, assoc, caret), assoc, caret);
+      }
     }
   }
 
@@ -837,7 +1340,7 @@ export const recordAuthoredSteps = (
 
           if (seen > 1) {
             throw unrepresentable(
-              'Suggesting cannot retype a block whose old and new forms would both own one content root.'
+              'Suggesting cannot keep two forms of content that both own one content root.'
             );
           }
           owners.set(owned.root, seen);
@@ -893,6 +1396,22 @@ const restoredBy = (tag: FormatTag) => [
   ),
 ];
 
+const exclusiveRootsIn = (
+  node: JsonNode,
+  ownedRoots: (props: Props) => readonly OwnedRoot[],
+  roots = new Set<string>()
+) => {
+  if (node.children === undefined) return roots;
+  for (const { exclusive, root } of ownedRoots(propsOf(node))) {
+    if (exclusive) roots.add(root);
+  }
+  for (const child of node.children) {
+    exclusiveRootsIn(child, ownedRoots, roots);
+  }
+
+  return roots;
+};
+
 const strikeRetyped = (
   change: RootChange,
   before: DocumentIndex,
@@ -901,15 +1420,6 @@ const strikeRetyped = (
   doubled: () => Set<string>
 ): RootChange => {
   const after = change.apply(before);
-  const exclusiveIn = (node: JsonNode, roots = new Set<string>()) => {
-    if (node.children === undefined) return roots;
-    for (const { exclusive, root } of ownedRoots(propsOf(node))) {
-      if (exclusive) roots.add(root);
-    }
-    for (const child of node.children) exclusiveIn(child, roots);
-
-    return roots;
-  };
   const replaced: RootChangeSection[] = [];
   let at = 0;
   let covered = 0;
@@ -938,9 +1448,9 @@ const strikeRetyped = (
           ({ root }) => followed.has(root) && !kept.has(root)
         )
       ) {
-        const struck = exclusiveIn(before.node(from.path));
+        const struck = exclusiveRootsIn(before.node(from.path), ownedRoots);
 
-        for (const root of exclusiveIn(after.node(to.path))) {
+        for (const root of exclusiveRootsIn(after.node(to.path), ownedRoots)) {
           if (struck.has(root)) doubled().add(root);
         }
         replaced.push({
@@ -2617,15 +3127,29 @@ class RootRecorder {
       for (const context of [...stack].reverse()) {
         if (context.kind !== 'element') continue;
 
+        // A block an Editing edit placed after a pending join carries an
+        // Editing insertion that only says which join it goes with, so
+        // nothing inside it is pending.
         const own = this.marks(context.props).find(
-          (mark) => mark.kind === 'insert' && this.options.isOwn(mark)
+          (mark) =>
+            mark.kind === 'insert' &&
+            !isEditingChange(mark.change) &&
+            this.options.isOwn(mark)
         );
 
         if (own) {
           const { type } = context.props;
 
           return {
-            mark: own,
+            // What is written inside the block claims its insertion, never
+            // its place after a pending join.
+            mark: {
+              at: own.at,
+              author: own.author,
+              change: own.change,
+              ...(own.inc === undefined ? {} : { inc: own.inc }),
+              kind: 'insert' as const,
+            },
             oneText: typeof type === 'string' && this.options.oneText(type),
           };
         }
