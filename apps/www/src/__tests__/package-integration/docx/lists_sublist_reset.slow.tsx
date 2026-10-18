@@ -13,19 +13,19 @@ describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     expected: (
       <editor>
-        <hp indent={1} lineHeight="107%" listId="a" listType="numbered">
+        <hp indent={1} lineHeight={1.07} listId="a" listType="numbered">
           Head 1
         </hp>
-        <hp indent={2} lineHeight="107%" listId="a" listType="numbered">
+        <hp indent={2} lineHeight={1.07} listId="a" listType="numbered">
           Head 1.1
         </hp>
-        <hp indent={2} lineHeight="107%" listId="a" listType="numbered">
+        <hp indent={2} lineHeight={1.07} listId="a" listType="numbered">
           Head 1.2
         </hp>
-        <hp indent={1} lineHeight="107%" listId="a" listType="numbered">
+        <hp indent={1} lineHeight={1.07} listId="a" listType="numbered">
           Head 2
         </hp>
-        <hp indent={2} lineHeight="107%" listId="a" listType="numbered">
+        <hp indent={2} lineHeight={1.07} listId="a" listType="numbered">
           Head 2.1
         </hp>
       </editor>

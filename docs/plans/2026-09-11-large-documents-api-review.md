@@ -239,7 +239,7 @@ no blocker requiring user input.
 
 ## Deep research candidate and gate outcome
 
-The [reassessed contract](../research/decisions/large-documents-rendering-api.md)
+The reassessed contract (`2e865a0bc4:docs/research/decisions/large-documents-rendering-api.md`)
 replaces the earlier coordinate/marker proposal with one page canvas owner.
 Ordinary rendering keeps content in the DOM. The research handoff proposed
 `virtualize` on the existing Editable/PlateContent and a boolean permission on
@@ -530,7 +530,7 @@ Design artifacts:
 The original assessment and immutable review below remain historical evidence.
 
 Design outcome:
-[One Editable with explicit virtualization](../research/decisions/large-documents-rendering-api.md)
+One Editable with explicit virtualization (`2e865a0bc4:docs/research/decisions/large-documents-rendering-api.md`)
 specifies `virtualize?: boolean | { estimatedBlockSize?: number; overscan?: number }`.
 Ordinary rendering has no mode name or size-triggered omission. PagedEditable
 supplies measured layout privately. Delete public strategy and offset protocols;
@@ -667,7 +667,7 @@ records. The recorded review's source freshness is matching; adoption remains
 `not-assessed` and proof remains `not-replayed`.
 
 Decision:
-[Pursue explicit DOM omission](../research/decisions/large-documents-dom-coverage.md).
+Pursue explicit DOM omission (`2e865a0bc4:docs/research/decisions/large-documents-dom-coverage.md`).
 All eight inventory groups have dispositions, with none excluded or unresolved.
 Automatic rendering mounts 32 of 1,001 blocks and contradicts the DOM-present
 Vision direction. Staged has no demonstrated automatic full-DOM completion.

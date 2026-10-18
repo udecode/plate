@@ -26,7 +26,7 @@ metadata. This design must repair historical meaning before changing ownership.
 
 Objective:
 
-Turn the [final persistence review](../research/decisions/persistence-ownership.md)
+Turn the final persistence review (`2e865a0bc4:docs/research/decisions/persistence-ownership.md`)
 into one source-backed public contract and adoption plan. A successful conversion
 must produce a complete current saved envelope, preserve supported document data
 and selection, isolate caller input, and need no live editor to finish its work.

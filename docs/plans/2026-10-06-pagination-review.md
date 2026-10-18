@@ -286,7 +286,7 @@ Backlog to build now, because each repeats an earlier reflect's Backlog item or 
 
 ### Review inputs
 
-The build changed 14 of the review's inputs: `docs/vision/plate.md`, `docs/research/decisions/pagination-ownership.md`, `packages/plitejs/src/pagination/react.tsx`, `packages/plitejs/src/react/components/windowed-editable.internal.tsx`, `packages/platejs/src/pagination/react/index.ts`, `packages/platejs/src/react/components/PlateContent.tsx`, `packages/platejs/src/react/internal/plate-content-editable.internal.ts`, `packages/platejs/src/react/virtualized.tsx`, `tooling/entrypoints/entrypoint-dag.mjs`, `oxlint.config.ts`, `tooling/scripts/check-plite-release-artifacts.mjs`, `content/docs/(guides)/pagination.mdx`, `content/docs/api/plate.mdx`, `.changeset/plite-layout-runtime.md`. It read the other 11 and left them unchanged: `VISION.md`, `docs/vision/common.md`, `docs/vision/plite.md`, `.agents/playbooks/references/architecture.md`, `docs/research/review-records/2026-10-04-pagination-audit.json`, `docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md`, `packages/plitejs/src/pagination/index.ts`, `packages/platejs/src/pagination/index.ts`, `packages/platejs/src/react/components/PlateRoot.internal.tsx`, `packages/platejs/src/react/components/Plate.tsx`, `content/docs/(guides)/virtualized-rendering.mdx`.
+The build changed 14 of the review's inputs: `docs/vision/plate.md`, `2e865a0bc4:docs/research/decisions/pagination-ownership.md`, `packages/plitejs/src/pagination/react.tsx`, `packages/plitejs/src/react/components/windowed-editable.internal.tsx`, `packages/platejs/src/pagination/react/index.ts`, `packages/platejs/src/react/components/PlateContent.tsx`, `packages/platejs/src/react/internal/plate-content-editable.internal.ts`, `packages/platejs/src/react/virtualized.tsx`, `tooling/entrypoints/entrypoint-dag.mjs`, `oxlint.config.ts`, `tooling/scripts/check-plite-release-artifacts.mjs`, `content/docs/(guides)/pagination.mdx`, `content/docs/api/plate.mdx`, `.changeset/plite-layout-runtime.md`. It read the other 11 and left them unchanged: `VISION.md`, `docs/vision/common.md`, `docs/vision/plite.md`, `.agents/playbooks/references/architecture.md`, `docs/research/review-records/2026-10-04-pagination-audit.json`, `docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md`, `packages/plitejs/src/pagination/index.ts`, `packages/platejs/src/pagination/index.ts`, `packages/platejs/src/react/components/PlateRoot.internal.tsx`, `packages/platejs/src/react/components/Plate.tsx`, `content/docs/(guides)/virtualized-rendering.mdx`.
 
 ### Open work
 
@@ -331,7 +331,7 @@ Model: Claude Opus 5.5 (`claude-opus-5-5`) ran this review and wrote this plan. 
 - Plate applications import `platejs`, never `plitejs`, and Plate source imports `plitejs` only in exact facade, proxy or replacement leaves (`VISION.md` Boundary Law).
 - `EditorContent` is Plate's content primitive (`docs/vision/plate.md:33-36`), so a mounted Plate editable renders through its plugin pipeline.
 - Pagination is view-owned derived geometry. The mounted paged component owns measurement, page surfaces, omission and scroll stability; `measurePages` is the separate one-shot headless job (`docs/vision/plite.md:235-238`, `:740-747`).
-- Plate adds no pagination plugin, kit, store or second runtime (`docs/research/decisions/pagination-ownership.md`, Design lanes).
+- Plate adds no pagination plugin, kit, store or second runtime (`2e865a0bc4:docs/research/decisions/pagination-ownership.md`, Design lanes).
 - An optional peer stays behind its explicit subpath (`docs/vision/common.md` Boundary Law), so `@chenglou/pretext` must not become reachable from `platejs/react`.
 - Fragmentation is text, one atomic owner or all direct element children, and a top-level block that is not one inline flow needs a plan or measurement throws (`packages/plitejs/src/pagination/index.ts:414-508`).
 - Explicit omission (`virtualize`) and the exact-host `usePageLayout` read keep working.
@@ -408,7 +408,7 @@ Step 2.1 runs Benchmark's pre-acceptance probe before the placement mechanism is
 
 ### Proof limits
 
-The review and plan rest on source reading, six happy-dom probes and one type probe, and no browser, package build or measured run. The probe receipts are rerun under `docs/plans/artifacts/2026-10-06-pagination-review/proof/` with their exit status. The placement offset under real CSS, table rows, highlight paint and the remount cost in a browser are inferred until steps 2.5 and 3.3 run. The 2026-09-16 pagination receipts (37 tests, the cost packet, Chromium cases) are historical; `docs/research/decisions/pagination-ownership.md` holds them.
+The review and plan rest on source reading, six happy-dom probes and one type probe, and no browser, package build or measured run. The probe receipts are rerun under `docs/plans/artifacts/2026-10-06-pagination-review/proof/` with their exit status. The placement offset under real CSS, table rows, highlight paint and the remount cost in a browser are inferred until steps 2.5 and 3.3 run. The 2026-09-16 pagination receipts (37 tests, the cost packet, Chromium cases) are historical; `2e865a0bc4:docs/research/decisions/pagination-ownership.md` holds them.
 
 ### Ledger counts
 
@@ -420,7 +420,7 @@ From `node tooling/scripts/review-ledger.mjs status` on 2026-10-06 at `7ad817c35
 
 - Head review: `2026-10-04-pagination-audit`, a Pursue that supersedes `2026-09-16-pagination-engine-trust-closure`. It retains that review's engine trust boundary and the recovered view-owned layout execution, and reopens `2026-09-16-pagination-view-owned-implementation`'s adoption of `platejs/pagination/react` as an exact facade.
 - Landed plans: [2026-09-15-pagination-view-owned-layout.md](2026-09-15-pagination-view-owned-layout.md) (implemented 2026-09-16), [2026-09-10-editor-performance-follow-through.md](2026-09-10-editor-performance-follow-through.md), [2026-08-30-rename-page-layout-entrypoints-to-pagination.md](2026-08-30-rename-page-layout-entrypoints-to-pagination.md) and [2026-06-02-pagination-virtualized-stability-perf.md](2026-06-02-pagination-virtualized-stability-perf.md), all complete. `docs/plans/2026-09-11-large-documents-api-review.md` reads blocked. None adds a Plate paged content component.
-- Decision page: [pagination-ownership.md](../research/decisions/pagination-ownership.md), updated 2026-10-04, opens with the audit's Pursue.
+- Decision page: pagination-ownership.md (`2e865a0bc4:docs/research/decisions/pagination-ownership.md`), updated 2026-10-04, opens with the audit's Pursue.
 - Related scopes: `geometry`, `large-documents` and `table` closed with Stop; `exports` is an open Pursue about authored projection, a separate job.
 
 ### Freshness

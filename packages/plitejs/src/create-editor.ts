@@ -10,7 +10,6 @@ import { createCommandDispatch } from './core/command-registry';
 import {
   admitDocument,
   admitEditorDocument,
-  type DocumentAdmission,
   documentAdmissionPoint,
   onlyDocumentAdmission,
 } from './core/document-admission';
@@ -37,6 +36,7 @@ import {
   createEditorViewPluginApis,
   destroyEditor,
   markEditorDormant,
+  type PreparedEditorSchemaCompilation,
   prepareInitialPluginPublication,
   prepareScopedPluginPublication,
   setEditorLifecycleErrorSink,
@@ -45,6 +45,7 @@ import {
   assertPluginPublicationInactive,
   createPluginRegistry,
   finalizePluginRegistry,
+  getCompiledEditorSchema,
   getPluginContributions,
   getPluginRegistry,
   initializeBasePluginRegistry,
@@ -240,9 +241,7 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
     adoptInitialDocumentChange(
       editor,
       publication.documentChange,
-      onlyDocumentAdmission(
-        publication.schemaCompilation().contributions(documentAdmissionPoint)
-      )
+      publication.schemaCompilation()
     );
     publication.stage();
     publication.commit();
@@ -349,14 +348,19 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
 const adoptInitialDocumentChange = (
   editor: AnyEditor,
   change: DocumentChange,
-  admission: DocumentAdmission | null
+  compilation: PreparedEditorSchemaCompilation | null
 ) => {
   if (change.empty) return;
 
   const initialDocument = getEditorDocumentValue(editor);
   const initialSelection = getLiveSelection(editor);
   const initialSelectionRoot = getCurrentSelectionRoot(editor);
-  const admitted = admitDocument(admission, change.apply(initialDocument));
+  const admitted = admitDocument(
+    compilation &&
+      onlyDocumentAdmission(compilation.contributions(documentAdmissionPoint)),
+    change.apply(initialDocument),
+    compilation?.schema ?? getCompiledEditorSchema(editor)
+  );
 
   initializeEditorSchemaDocument(editor, admitted.document);
   if (!initialSelection) return;

@@ -13,7 +13,7 @@ Invariants to attack (do not assume they hold; try to break each):
 1. Every TaskHub-22 law holds: shared C/B/A undo and A/B/C redo order across document edits and comment creation; remote or diverged comment state is never deleted or skipped past; a refused, stale, thrown or concurrent replay never consumes the history entry; Comments persistence stays server-first (`docs/plans/2026-09-19-taskhub-22-comment-creation-undo-redo-regression.md`).
 2. No caller has to know the hidden batch kind before calling, and the return value tells the truth about whether the effect already happened.
 3. No rejection or error goes unobserved, and the floating-promise lint is not weakened.
-4. "Public updates are synchronous and cannot nest" (`docs/vision/plite.md`) and every other Plite history law in `docs/research/decisions/history-ownership.md` still holds, including mapping, selection and root ownership, native composition grouping and retirement.
+4. "Public updates are synchronous and cannot nest" (`docs/vision/plite.md`) and every other Plite history law in `2e865a0bc4:docs/research/decisions/history-ownership.md` still holds, including mapping, selection and root ownership, native composition grouping and retirement.
 5. Each phase beats keeping the incumbent (`Promise<HistoryResult>`) plus the earlier phases; a finding that a phase should not be built, or that the incumbent or a different lane wins, is in scope.
 6. The plan's Defaults are each the right default, and no Default leaves the owner's stated goal unmet.
 7. The adoption steps reach every caller, doc and doctrine owner, and each step's proof would actually catch the defect it targets.
@@ -25,7 +25,7 @@ Invariants to attack (do not assume they hold; try to break each):
 - Its decision log: `docs/plans/2026-10-05-history-sync-replay-result.decisions.tsv`
 - The subject page source: `docs/plans/topics/history.md`
 - The review record: `docs/research/review-records/2026-10-05-history-sync-replay-result.json`
-- The decision page: `docs/research/decisions/history-ownership.md`
+- The decision page: `2e865a0bc4:docs/research/decisions/history-ownership.md`
 - Probes and evidence: `docs/research/probes/2026-10-05-history-replay-result/` (`history-timing.probe.ts` and `.log`, `settle-failure.probe.ts` and `.log`, `grounding-how.md`, `survey.md`, `survey.tsv`, and `arena/` with the three candidates `label-A.md`, `label-B.md`, `label-C.md`, `judge.md` and `rubric.md`)
 - Source the plan relies on: `packages/plitejs/src/history/history-plugin.ts`, `packages/plitejs/src/history/history-state.ts`, `packages/plitejs/src/interfaces/editor.ts`, `packages/plitejs/src/core/lifecycle-error.ts`, `packages/plitejs/src/core/transaction-values.ts`, `packages/plitejs/src/react/editable/editable-dom-runtime.ts`, `packages/plitejs/src/react/editable/browser-handle.ts`, `packages/plitejs/src/react/editable/keyboard-input-strategy.ts`, `packages/plitejs/src/react/hooks/use-plite-history.ts`, `packages/platejs/src/features/comments/BaseCommentsPlugin.ts`, `tooling/entrypoints/entrypoint-dag.mjs`, `oxlint.config.ts`, `content/docs/(guides)/history.mdx`, `content/docs/api/react-hooks.mdx`, `docs/vision/plite.md`.
 

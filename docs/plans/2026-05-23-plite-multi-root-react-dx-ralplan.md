@@ -428,7 +428,7 @@ Research layer:
 - `docs/research/log.md` confirms editor architecture evidence has already been
   maintained for React 19.2, ProseMirror, Lexical, VS Code, and Plite at lines
   199-213.
-- `docs/research/decisions/plite-read-update-runtime-architecture.md`
+- `docs/research/history/slate-v2-read-update-runtime-architecture.md`
   accepts `editor.read` / `editor.update` as the public lifecycle and places
   DOM selection policy outside React at lines 21-51 and 133-150.
 - `docs/research/sources/editor-architecture/read-update-runtime-corpus-ledger.md`
@@ -843,9 +843,9 @@ specific architecture calls for the multi-root React DX slice.
 
 Read set:
 
-- `docs/research/decisions/plite-read-update-runtime-architecture.md`
-- `docs/research/decisions/plite-state-tx-public-api-and-extension-namespaces.md`
-- `docs/research/decisions/plite-data-model-first-react-perfect-runtime.md`
+- `docs/research/history/slate-v2-read-update-runtime-architecture.md`
+- `docs/research/history/slate-v2-state-tx-public-api-and-extension-namespaces.md`
+- `docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md`
 - `docs/research/sources/editor-architecture/read-update-runtime-corpus-ledger.md`
 - `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md`
 - `docs/research/systems/plite-perfect-plan-steal-reject-defer-map.md`

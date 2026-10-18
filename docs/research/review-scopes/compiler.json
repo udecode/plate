@@ -44,8 +44,8 @@
     "apps/www/src/registry/components/editor/plugins.ts",
     "apps/www/src/registry/components/editor/plugins.generated.ts",
     "apps/www/src/__tests__/package-integration/core-runtime/editor-api-inference.contract.ts",
-    "docs/research/decisions/plate-core-ownership.md",
-    "docs/research/decisions/generated-contract-boundary.md"
+    "docs/plans/topics/distribution.md",
+    "docs/plans/topics/compiler.md"
   ],
   "relatedScopes": [
     "plate-api",

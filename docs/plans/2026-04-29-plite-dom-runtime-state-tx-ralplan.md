@@ -204,9 +204,9 @@ Evidence:
 - `EditorUpdateTransaction` has `fragment.insert` but not `fragment.get` in
   `/Users/zbeyens/git/plite/packages/plite/src/core/public-state.ts:840`.
 - Existing research accepts `state`/`tx` callback APIs in
-  `docs/research/decisions/plite-state-tx-public-api-and-extension-namespaces.md`.
+  `docs/research/history/slate-v2-state-tx-public-api-and-extension-namespaces.md`.
 - Existing research accepts read/update lifecycle in
-  `docs/research/decisions/plite-read-update-runtime-architecture.md`.
+  `docs/research/history/slate-v2-read-update-runtime-architecture.md`.
 
 Research/live-source refresh result:
 

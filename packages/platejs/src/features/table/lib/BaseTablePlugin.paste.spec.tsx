@@ -533,6 +533,46 @@ describe('BaseTablePlugin prepared paste', () => {
     assert.deepEqual(replay.read.children(), source.read.children());
     expect(tableText(source)).toEqual([['x', 'y']]);
   });
+
+  it('types after the pasted text when the paste fills one cell', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                a<cursor />
+              </hp>
+            </htd>
+            <htd>
+              <hp>b</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const editor = createTestTableEditor({
+      plugins: getTestTablePlugins(),
+      selection: input.selection,
+      initialValue: input.children,
+    });
+    const source = (
+      <fragment>
+        <htable>
+          <htr>
+            <htd>
+              <hp>xy</hp>
+            </htd>
+          </htr>
+        </htable>
+      </fragment>
+    ) as Element[];
+
+    expect(editor.update.fragment.replace(source)).toBe(true);
+    editor.update.text.insert('!');
+
+    expect(tableText(editor)).toEqual([['xy!', 'b']]);
+  });
 });
 
 describe('BaseTablePlugin tab-separated paste', () => {

@@ -10,7 +10,7 @@ import {
 } from '../../../features/footnote';
 import {
   BaseColumnItemPlugin,
-  BaseColumnPlugin,
+  BaseColumnGroupPlugin,
 } from '../../../features/layout';
 import { BaseTocPlugin, type Heading } from '../../../features/toc';
 import {
@@ -65,7 +65,9 @@ const ColumnItemDocx = (
   </EditorElement>
 );
 
-const ColumnDocx = (props: EditorElementProps<typeof BaseColumnPlugin>) => (
+const ColumnGroupDocx = (
+  props: EditorElementProps<typeof BaseColumnGroupPlugin>
+) => (
   <EditorElement {...props}>
     <table style={layoutTable}>
       <tbody>
@@ -198,7 +200,7 @@ export const DOCX_STATIC_COMPONENTS: StaticComponentOverrides = Object.freeze({
   [BaseCalloutPlugin.name]: CalloutDocx,
   [BaseCodeBlockPlugin.name]: CodeBlockDocx,
   [BaseColumnItemPlugin.name]: ColumnItemDocx,
-  [BaseColumnPlugin.name]: ColumnDocx,
+  [BaseColumnGroupPlugin.name]: ColumnGroupDocx,
   [BaseEquationPlugin.name]: EquationDocx,
   [BaseFootnotePlugin.name]: FootnoteReferenceDocx,
   [BaseFootnoteDefinitionPlugin.name]: FootnoteDefinitionDocx,

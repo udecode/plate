@@ -84,8 +84,8 @@ packet.
 ## Ship And Synchronize
 
 1. Verify the Bug fix evidence packet matches the current checkout.
-2. Create or update a `udecode/plate` PR targeting `next`, written per the pstack
-   block's Commit and PR text rule and naming `<owner>/<repo>#<number>`.
+2. Create or update a `udecode/plate` PR targeting `next`, written per the commit format in
+   `.agents/pstack/rules/land.md` and naming `<owner>/<repo>#<number>`.
 3. Comment on the Slate issue with `fix prepared`, the PR URL, exact proof, and
    the merge/release boundary.
 4. Leave the issue open.

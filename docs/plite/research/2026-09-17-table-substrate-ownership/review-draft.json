@@ -31,7 +31,7 @@
   ],
   "proofLimits": "Source and test assertions inspected across seven repositories; exact snapshots and bounded current-head supplements are recorded. Existing paint-hook spec passed; fresh actual-hook Happy DOM probe passed 11 controls then failed selected attribute/caret style after same-key td-to-th replacement. No full production renderer/browser pixels, native caret, upstream test execution, physical devices or candidate performance claim. Prior paint benchmark rejects the naive React attribute candidate; alternative binding/shared-controls remain unmeasured. Prior adopted implementation remains adopted; current proof is partial because of the reproduced gap. Prior broad typecheck TS6307 limit and other historical receipts remain scoped to their recorded source. No product code, implementation plan, publication or release.",
   "references": [
-    "docs/research/decisions/table-ownership.md",
+    "2e865a0bc4:docs/research/decisions/table-ownership.md",
     "docs/plite/research/2026-09-17-table-substrate-ownership/REPORT.md",
     "docs/plite/research/2026-09-17-table-substrate-ownership/README.md",
     "docs/plite/research/2026-09-17-table-substrate-ownership/shards/pm.json",
@@ -136,7 +136,7 @@
       "docs/plite/research/2026-09-17-table-substrate-ownership/sources/upstream-inputs.json": "67390f839e5452d6fb1a7510c46422db8e90cc064d559b84b2980b904298fafe",
       "docs/plite/research/2026-09-17-table-substrate-ownership/REPORT.md": "483b8ae888a6ce308b6f27721c56389c42bdfbdf67174bbce0ea9fe019fce748",
       "docs/plite/research/2026-09-17-table-substrate-ownership/README.md": "6a4ce3ea4438c4d1f686801f297b7877c5e997ef7699ee564453a8d1d1a0a48e",
-      "docs/research/decisions/table-ownership.md": "6954b8cf1d0861995c64634a6ba7c8694ed663209387ac275f9e3d8149d0d675"
+      "2e865a0bc4:docs/research/decisions/table-ownership.md": "6954b8cf1d0861995c64634a6ba7c8694ed663209387ac275f9e3d8149d0d675"
     },
     "directories": {
       "packages/platejs/src/features/table": "9ea4cadc503a684f1fb50d6975a33a95cb46719700456a02e3cb7dd00c48ce45",

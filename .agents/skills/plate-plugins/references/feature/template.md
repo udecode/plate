@@ -16,7 +16,7 @@ Completion threshold:
 
 - Every applicable Feature Manifest row is complete with evidence.
 - Every excluded row has an explicit N/A reason.
-- Selected packs, the feature checker and `plan-open` are closed.
+- Selected packs and the feature checker are closed, and no plan box is pending.
 
 Constraints:
 

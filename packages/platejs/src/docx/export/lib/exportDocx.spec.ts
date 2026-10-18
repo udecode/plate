@@ -2,20 +2,28 @@ import JSZip from 'jszip';
 import { all, createLowlight } from 'lowlight';
 import React from 'react';
 
-import { createEditor, definePlugin } from '../../../core';
+import { createEditor, definePlugin, type Value } from '../../../core';
 import {
+  BaseBlockquotePlugin,
   BaseBoldPlugin,
   BaseHeadingPlugin,
 } from '../../../features/basic-nodes';
+import {
+  BaseLineHeightPlugin,
+  BaseTextAlignPlugin,
+  BaseTextIndentPlugin,
+} from '../../../features/basic-styles';
 import { BaseCalloutPlugin } from '../../../features/callout';
 import {
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
 } from '../../../features/code-block/lib/BaseCodeBlockPlugin';
+import { BaseIndentPlugin } from '../../../features/indent';
 import {
   BaseColumnItemPlugin,
-  BaseColumnPlugin,
+  BaseColumnGroupPlugin,
 } from '../../../features/layout';
+import { BaseListPlugin } from '../../../features/list';
 import { BaseTocPlugin } from '../../../features/toc';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '../../../math';
 import { EditorStatic, type EditorStaticProps } from '../../../static';
@@ -411,7 +419,7 @@ describe('exportDocx', () => {
         BaseEquationPlugin,
         BaseInlineEquationPlugin,
         BaseCalloutPlugin,
-        BaseColumnPlugin,
+        BaseColumnGroupPlugin,
         BaseColumnItemPlugin,
       ],
     });
@@ -758,6 +766,184 @@ describe('exportDocx output safety', () => {
         message: expect.stringContaining('could not be fetched'),
       }),
     ]);
+  });
+});
+
+describe('exportDocx layout values', () => {
+  const paragraphProperties = async (
+    initialValue: Value,
+    stylesheet?: string
+  ) => {
+    const editor = createEditor({
+      initialValue,
+      plugins: [
+        BaseBlockquotePlugin,
+        BaseHeadingPlugin,
+        BaseIndentPlugin.configure({
+          targetPlugins: ['paragraph', 'heading'],
+        }),
+        BaseLineHeightPlugin,
+        BaseListPlugin.configure({
+          slots: {
+            wrapNodeChildren: ({ element }) =>
+              element.listType
+                ? ({ children }) =>
+                    React.createElement(
+                      'ol',
+                      { 'data-list-id': 'list' },
+                      React.createElement(
+                        'li',
+                        { 'data-indent': element.indent },
+                        children
+                      )
+                    )
+                : undefined,
+          },
+          targetPlugins: ['heading'],
+        }),
+        BaseTextAlignPlugin,
+        BaseTextIndentPlugin.configure({
+          targetPlugins: ['paragraph', 'blockquote', 'heading'],
+        }),
+      ],
+    });
+    const result = await exportDocx(editor, {
+      projection: 'proposed',
+      stylesheet,
+    });
+
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+    const documentXml = await zip.file('word/document.xml')!.async('string');
+
+    return Object.fromEntries(
+      [...documentXml.matchAll(/<w:p\b[\s\S]*?<\/w:p>/g)].map(([paragraph]) => [
+        [...paragraph.matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/g)]
+          .map(([, text]) => text)
+          .join(''),
+        paragraph.match(/<w:pPr>[\s\S]*?<\/w:pPr>/)?.[0] ?? '',
+      ])
+    );
+  };
+  const paragraph = (text: string, properties: Record<string, unknown>) => ({
+    children: [{ text }],
+    type: 'paragraph',
+    ...properties,
+  });
+
+  it('writes a line height multiplier as whole 240ths of a line', async () => {
+    const properties = await paragraphProperties([
+      paragraph('Loose', { lineHeight: 1.75 }),
+      paragraph('Word', { lineHeight: 1.07 }),
+    ]);
+
+    expect(properties.Loose).toContain('w:line="420"');
+    expect(properties.Word).toContain('w:line="257"');
+  });
+
+  it('keeps line spacing independent of the paragraph font size', async () => {
+    const properties = await paragraphProperties(
+      [paragraph('Large', { lineHeight: 2 })],
+      '.editor-paragraph { font-size: 20pt; }'
+    );
+
+    expect(properties.Large).toContain('w:line="480"');
+  });
+
+  it.each([
+    ['24px', '360', 'atLeast'],
+    ['18pt', '360', 'atLeast'],
+    ['1cm', '567', 'atLeast'],
+    ['0.1in', '144', 'atLeast'],
+    ['115%', '276', 'auto'],
+    ['1.5em', '360', 'auto'],
+  ])(
+    'writes a stylesheet line height of %s as w:line %s under %s',
+    async (css, line, lineRule) => {
+      const properties = await paragraphProperties(
+        [paragraph('Styled', {})],
+        `.editor-paragraph { line-height: ${css}; }`
+      );
+
+      expect(properties.Styled).toContain(`w:line="${line}"`);
+      expect(properties.Styled).toContain(`w:lineRule="${lineRule}"`);
+    }
+  );
+
+  it.each(['normal', 'calc(1.5)', '0'])(
+    'writes no line spacing for a stylesheet line height of %s',
+    async (css) => {
+      const properties = await paragraphProperties(
+        [paragraph('Styled', {})],
+        `.editor-paragraph { line-height: ${css}; }`
+      );
+
+      expect(properties.Styled).not.toContain('w:line=');
+    }
+  );
+
+  it('maps logical and justified alignment to Word alignment', async () => {
+    const properties = await paragraphProperties([
+      paragraph('Start', { textAlign: 'start' }),
+      paragraph('End', { textAlign: 'end' }),
+      paragraph('Justify', { textAlign: 'justify' }),
+    ]);
+
+    expect(properties.Start).toContain('<w:jc w:val="left"/>');
+    expect(properties.End).toContain('<w:jc w:val="right"/>');
+    expect(properties.Justify).toContain('<w:jc w:val="both"/>');
+  });
+
+  it('writes a positive text indent as a first-line indent', async () => {
+    const properties = await paragraphProperties([
+      paragraph('Indented', { textIndent: 1 }),
+    ]);
+
+    expect(properties.Indented).toContain('<w:ind w:firstLine="360"/>');
+  });
+
+  it('writes a negative text indent as a hanging indent', async () => {
+    const properties = await paragraphProperties([
+      paragraph('Hanging', { textIndent: -1 }),
+    ]);
+
+    expect(properties.Hanging).toContain('<w:ind w:hanging="360"/>');
+  });
+
+  it('writes a margin and a text indent into one indentation', async () => {
+    const properties = await paragraphProperties([
+      paragraph('Both', { indent: 2, textIndent: 1 }),
+    ]);
+
+    expect(properties.Both.match(/<w:ind\b[^>]*\/>/g)).toEqual([
+      '<w:ind w:left="720" w:firstLine="360"/>',
+    ]);
+  });
+
+  it('keeps the blockquote indent beside its text indent', async () => {
+    const properties = await paragraphProperties([
+      { children: [{ text: 'Quoted' }], textIndent: 1, type: 'blockquote' },
+    ]);
+
+    expect(properties.Quoted.match(/<w:ind\b[^>]*\/>/g)).toEqual([
+      '<w:ind w:left="284" w:firstLine="360"/>',
+    ]);
+  });
+
+  it('leaves a numbered block to its list level indent', async () => {
+    const properties = await paragraphProperties([
+      {
+        children: [{ text: 'Item' }],
+        indent: 1,
+        level: 1,
+        listType: 'numbered',
+        textIndent: 1,
+        type: 'heading',
+      },
+    ]);
+
+    expect(properties.Item).toContain('<w:numPr>');
+    expect(properties.Item).not.toContain('<w:ind');
   });
 });
 

@@ -963,12 +963,11 @@
         },
         "./layout": {
           "exclude": [
+            "BaseColumnGroupPlugin",
             "BaseColumnItemPlugin",
-            "BaseColumnPlugin",
             "ColumnDefinition",
             "ColumnElement",
             "ColumnGroupElement",
-            "MoveMiddleColumnOptions",
             "SetColumnsOptions",
             "ToggleColumnGroupOptions"
           ],

@@ -17,7 +17,7 @@ One local Patch implementation with focused package proof.
 Task source:
 - User: `$patch Reject thenable transaction authors consistently across Plite
   extension updates and pure/extended command specs.`
-- [Accepted review](../research/decisions/transactions-synchronous-boundary.md).
+- Accepted review (`2e865a0bc4:docs/research/decisions/transactions-synchronous-boundary.md`).
 - [Source-bound reproduction](artifacts/transactions-api-review/proof-receipt.json).
 
 Completion threshold:

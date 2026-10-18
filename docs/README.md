@@ -57,7 +57,7 @@ Filename matches are search candidates until their contents are classified.
 | [plans](plans/) | Dated execution/design plans and templates. Each plan owns one lifecycle status; scope associations connect it to review history. Raw `artifacts/` may be ignored or unavailable elsewhere. |
 | [plite](plite/) | Mixed current runtime contracts, active research, historical migration plans, and proof inventories. Classify documents individually; the tree is not one archived or universally current authority. |
 | [plite-draft](plite-draft/) | Prior rewrite drafts and their historical decisions. Their queue/status language is scoped to that draft program. |
-| [research](research/schema.md) | Review scopes and queue, decisions, compiled source summaries, dated history and probes. Raw-source availability and evidence freshness remain separate. |
+| [research](research/schema.md) | Review scopes and queue, compiled source summaries, `history/` for retired Slate-era decision pages, and probes; current conclusions live in each scope's subject file. Raw-source availability and evidence freshness remain separate. |
 | [sync](sync/) | Dated upstream UI, doctrine, and source-sync provenance. Each receipt applies to its named source revision and destination. |
 | [transplant](transplant/) | Preserved donor provenance, migration manifests, and deletion/readiness evidence. Not an instruction to restore retired APIs. |
 | [vision](vision/) | Scoped durable law subordinate to [root Vision](../VISION.md), with its own doctrine history. |

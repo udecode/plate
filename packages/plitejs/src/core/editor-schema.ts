@@ -70,6 +70,12 @@ import { getPluginRegistry, type PluginRegistry } from './plugin-registry';
 import { profileCoreDuration } from './profiling';
 import { getEditorDocumentValue } from './public-state';
 import { getValueRecords } from './record-store';
+import {
+  emptyIndexedDocument,
+  type OrphanedRootsInput,
+  orphanedRoots,
+  schemaHasContentRoots,
+} from './root-ownership';
 import type {
   CompiledEditorSchema,
   CompiledSchemaContentProgram,
@@ -340,13 +346,7 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       }>
     >;
     getOrphanedElementOwnedRoots: (
-      input: Readonly<{
-        after: EditorDocumentValue;
-        before: EditorDocumentValue;
-        change: DocumentChange;
-        indexedAfter: ReadonlyMap<string, DocumentIndex>;
-        tracked: ReadonlySet<string>;
-      }>
+      input: OrphanedRootsInput
     ) => readonly NamedRootKey[];
     indexConstructedRoot: (
       input: Readonly<{
@@ -748,7 +748,6 @@ const isDeepFrozenNode = (node: Descendant): boolean => {
 // rebound validator compiles a new schema even when its identity is equal.
 const VALIDATED_ROOT_NODES = new WeakMap<object, WeakMap<object, RootKey>>();
 const SCHEMA_HAS_COPY_TRANSFORMS = new WeakMap<CompiledEditorSchema, boolean>();
-const emptyIndexedDocument = () => DocumentIndex.fromValue(Object.freeze([]));
 const rootNodes = (document: DocumentIndex) =>
   document.nodes as NodeList<Descendant>;
 
@@ -1347,110 +1346,17 @@ export const createEditorSchema = <V extends Value = Value>(
       );
     };
 
-  const hasContentRoots = () =>
-    [...(getDeclarativeSchema()?.elements.byType.values() ?? [])].some(
-      (element) => element.contentRoots.size > 0
-    );
+  const hasContentRoots = () => {
+    const schema = getDeclarativeSchema();
+
+    return schema ? schemaHasContentRoots(schema) : false;
+  };
 
   const getOrphanedElementOwnedRoots: InternalEditorSchemaApi['getOrphanedElementOwnedRoots'] =
-    ({ after, before, change, indexedAfter, tracked }) => {
+    (input) => {
       const schema = getDeclarativeSchema();
 
-      if (!schema || !hasContentRoots()) return Object.freeze([]);
-
-      const beforeRoots: Readonly<Record<string, readonly Descendant[]>> = {
-        main: before.children,
-        ...before.roots,
-      };
-      const afterRoots: Readonly<Record<string, readonly Descendant[]>> = {
-        main: after.children,
-        ...after.roots,
-      };
-      const beforeIndexes = new Map(
-        getDocumentOwnershipIndexes(schema, before).map(({ index, root }) => [
-          root,
-          index,
-        ])
-      );
-      const afterIndexes = new Map<RootKey, ElementOwnedRootIndex>();
-      const changedRoots = new Set([
-        ...[...getInternalDocumentChangeEntries(change)].map(([root]) => root),
-        ...change.createRoots,
-        ...change.deleteRoots,
-      ]);
-      const candidates = new Set(tracked);
-
-      for (const [root, children] of Object.entries(afterRoots)) {
-        const beforeDocument = DocumentIndex.fromValue(beforeRoots[root] ?? []);
-        const afterDocument =
-          indexedAfter.get(root) ?? DocumentIndex.fromValue(children);
-        const index = changedRoots.has(root)
-          ? rebaseElementOwnedRootIndex(
-              schema,
-              root,
-              getInternalDocumentRootChange(change, root),
-              beforeDocument,
-              afterDocument
-            )
-          : ensureElementOwnedRootIndex(schema, root, afterDocument);
-
-        afterIndexes.set(root, index);
-        if (changedRoots.has(root)) {
-          for (const childRoot of index.dirtyChildRoots) {
-            candidates.add(childRoot);
-          }
-        }
-      }
-      for (const root of change.deleteRoots) {
-        const beforeDocument = DocumentIndex.fromValue(beforeRoots[root] ?? []);
-        const index = rebaseElementOwnedRootIndex(
-          schema,
-          root,
-          getInternalDocumentRootChange(change, root),
-          beforeDocument,
-          emptyIndexedDocument()
-        );
-
-        for (const childRoot of index.dirtyChildRoots) {
-          candidates.add(childRoot);
-        }
-      }
-
-      const countOwners = (
-        indexes: ReadonlyMap<RootKey, ElementOwnedRootIndex>,
-        childRoot: string,
-        ownership: 'any' | 'exclusive'
-      ) => {
-        let count = 0;
-
-        for (const index of indexes.values()) {
-          for (const binding of getElementOwnedRootGrammarBindings(
-            index,
-            childRoot
-          )) {
-            if (ownership === 'any' || binding.ownership === ownership) {
-              count += binding.count;
-            }
-          }
-        }
-
-        return count;
-      };
-
-      const orphanedWith = schema.unknown === 'reject' ? 'any' : 'exclusive';
-
-      return Object.freeze(
-        [...candidates]
-          .filter(
-            (root): root is NamedRootKey =>
-              root !== 'main' &&
-              Object.hasOwn(afterRoots, root) &&
-              countOwners(afterIndexes, root, 'any') === 0 &&
-              (tracked.has(root) ||
-                countOwners(beforeIndexes, root, orphanedWith) > 0)
-          )
-          .sort()
-      );
+      return schema ? orphanedRoots(schema, input) : Object.freeze([]);
     };
 
   const getElementSlicePolicy = (element: Element) =>

@@ -10,7 +10,7 @@ review_upstreams: ['../prosemirror-suggest-changes@653fba70ba29ef6ea6af3ad8d6024
 
 # Authored: one review tree the editor edits
 
-Status: building: phase 2 runs in the order docs/plans/2026-10-12-suggestions-complete.md sets, after that iteration fixes two review-tree input defects
+Status: reopened: phase 2 runs in the order docs/plans/2026-10-12-suggestions-complete.md sets, after that iteration fixes two review-tree input defects
 Playbook: plan
 
 **Go with option 3, one document that holds the suggestions (Pursue, replacing the 2026-10-04 Stop).** Today crossed-out text lives outside the document you edit, so every click and keystroke in it needs special code. That one choice causes most of the bugs. Positions are tracked eight ways, edits save through a second path, and every accept or reject replays changes between two documents. No editor we checked works this way, and LibreOffice dropped the one design that tried it in 2018. Agents picked today's design by argument in September and never tested it against this one.
@@ -41,7 +41,7 @@ The plan keeps one document. Suggested text stays in place with a small tag that
 
 ## Public API
 
-A mounted view sets how input is recorded. Every editable view shows the review tree; accepted and proposed previews are read-only, and the view type cannot express a suggesting preview.
+A mounted view sets how input is recorded. Every editable view shows the review tree; accepted and proposed previews throw on a plain edit, and the view type cannot express a suggesting preview. Some other writes still change the document through a preview, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses. Remote collaboration changes land whatever the view.
 
 ```tsx before
 // content/docs/(plugins)/(collaboration)/suggestion.mdx
@@ -56,7 +56,7 @@ A mounted view sets how input is recorded. Every editable view shows the review 
 <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
 ```
 
-A read-only preview of the accepted or proposed document is a view input of its own.
+A preview of the accepted or proposed document is a view input of its own. It throws on a plain edit, but some other writes still change the document through it, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses. Remote collaboration changes land whatever the view.
 
 ```tsx before
 ```
@@ -367,7 +367,7 @@ The 2026-10-12 verdict ([2026-10-12-suggestions-complete.md](2026-10-12-suggesti
 - [ ] Re-apply PR 5144's changes that sit above the model, after Phase 2's adoption steps: the review-card rules in `discussion.tsx` (current content, a deletion beside an insertion reads as one replacement, empty suggestions hidden with their discussion kept, the reject-both offer), `comment-toolbar-button.tsx`, and its edits to the suggestion, authored-changes, comment, AI, copilot, clipboard, selection and editing-behavior docs with their Chinese twins. Proof: the registry tests and the docs steps below, with the PR's own text rewritten for one document.
 - [ ] Run a two-client spec on the real Yjs binding, history across peers included. Proof: its log.
 - [ ] Rerun the Phase 1 benchmark contract on the production path and source identity, then the correctness guard. Proof: the attempt logs against the frozen budgets.
-- [ ] Run `best-api repair`: rewrite the authored passages of `docs/vision/plite.md` and `docs/vision/plate.md` (accepted roots, projections per view, retained author history, the attribution sentence), supersede `docs/research/decisions/authored-change-ownership.md`, and fix each skill that teaches the old model. Proof: a grep for the rejected shapes over `docs/vision`, `docs/research/decisions` and `.agents/rules`, then `pnpm run prepare` and `node .agents/rules/plate-next/scripts/sync-resources.mjs --check`.
+- [ ] Run `best-api repair`: rewrite the authored passages of `docs/vision/plite.md` and `docs/vision/plate.md` (accepted roots, projections per view, retained author history, the attribution sentence), supersede `2e865a0bc4:docs/research/decisions/authored-change-ownership.md`, and fix each skill that teaches the old model. Proof: a grep for the rejected shapes over `docs/vision`, `docs/research/decisions` and `.agents/rules`, then `pnpm run prepare` and `node .agents/rules/plate-next/scripts/sync-resources.mjs --check`.
 - [ ] Reconcile `docs/editor-behavior/markdown-editing-spec.md` for typing, deleting and IME in struck text and for split and join suggestions, and tag the proving tests. Proof: `pnpm kb gaps` lists no new untested rule.
 - [ ] Run `plate-docs` on `content/docs/(guides)/authored-changes.mdx` and its Chinese twin. Proof: the docs checks and a preview of the rendered page.
 - [ ] Run `plate-docs` on `content/docs/(plugins)/(collaboration)/suggestion.mdx` and its Chinese twin. Proof: the docs checks and a preview of the rendered page with its demo.
@@ -410,7 +410,7 @@ The 2026-10-12 verdict ([2026-10-12-suggestions-complete.md](2026-10-12-suggesti
 | Suggesting inside a code block | Not allowed for now; whole code blocks still work | Replace the whole block, or allow split text in code | replace code blocks | big |
 | A layout left with too few parts, like one column | Pull its content out; never delete it | Refuse the edit that causes it | refuse underfull | detail |
 | Undoing someone's old accepted work | Gone; restore an older saved version instead | Keep that undo | keep revert | big |
-| Where you can edit | Only the review view; previews are read-only | Edit in the previews too | editable previews | small |
+| Where you can edit | Only the review view; previews throw on a plain edit, though some other writes still change the document through them, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses, and remote collaboration changes land whatever the view | Edit in the previews too | editable previews | small |
 | Moved text and new document parts | A move is a delete plus an insert; new parts are never suggestions | Keep tracked moves and suggested parts | keep moves | small |
 | Old saved suggestion data | Refused, since no release ever wrote it | Convert it when loading | convert old docs | small |
 | Old names in the code | Removed in phase 2 | Kept | keep names | detail |
@@ -443,7 +443,7 @@ I agree with the doc's direction and push it a bit further. Here are six answers
 2. **Revert of old accepted work.** Drop it. Restore an older saved version instead.
 3. **Unwritten constraints.** The record shows none. Agents picked accepted-first in September, and no owner ruled on it.
 4. **Saved data.** Cut it. No release ever wrote it.
-5. **Editable views.** Only the review view is editable. Previews are read-only, as in ONLYOFFICE and Google Docs.
+5. **Editable views.** Only the review view is editable. Previews throw on a plain edit, as ONLYOFFICE and Google Docs lock theirs, but some other writes still change the document through them, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses. Remote collaboration changes land whatever the view.
 6. **Moves.** A move is a delete plus an insert, as in Word.
 
 **Changes to the doc**
@@ -460,7 +460,7 @@ On deleted text in normal mode, you are right. Other editors let you type there,
 
 Model: claude-opus-5-5 led the review. The readers read `13956eec` and natamox's branch at `5a183f0d02`. History was later rewritten, so `review_commit` names `c70bacbd4a`, whose authored members match what the readers read except `packages/plitejs/src/react/editable/clipboard-input-strategy.ts` (drag and drop). Eight Opus readers traced the code, the branch, prior art and the record; their replies are saved verbatim under `docs/plans/artifacts/2026-10-08-authored-review/`, beside the teammate's doc as `felix-doc.md`.
 
-This review supersedes `2026-10-04-authored-audit` (Stop), because the requirement that editing in struck text feels like normal editing is new, and the coordinate-space count, the fix trail and the prior art contradict its conclusion. It retains `2026-10-07-suggestions-editor-input` (Pursue), because the editor's single user still stamps suggestions and comments. It takes up the unified content tree that [the loadable-state design](2026-09-12-authored-loadable-state-design.md) deferred as the strongest larger challenger, and it reverses the accepted-roots law in `docs/vision/plite.md` and [the authored ownership decision](../research/decisions/authored-change-ownership.md), which Phase 2 repairs through `best-api repair`.
+This review supersedes `2026-10-04-authored-audit` (Stop), because the requirement that editing in struck text feels like normal editing is new, and the coordinate-space count, the fix trail and the prior art contradict its conclusion. It retains `2026-10-07-suggestions-editor-input` (Pursue), because the editor's single user still stamps suggestions and comments. It takes up the unified content tree that [the loadable-state design](2026-09-12-authored-loadable-state-design.md) deferred as the strongest larger challenger, and it reverses the accepted-roots law in `docs/vision/plite.md` and the authored ownership decision (`2e865a0bc4:docs/research/decisions/authored-change-ownership.md`), which Phase 2 repairs through `best-api repair`.
 
 This review retains `2026-10-09-authored-structural`, because that iteration rebuilds Phase 1's recording and resolution per step on this plan's review tree and keeps its design and Defaults.
 
@@ -536,7 +536,7 @@ The direction is right, and I would push it further than the doc does. My answer
 
 **Saved data.** Hard cut. No published release carries any authored format, and Open work reopens this if one ships first.
 
-**Editable views.** Yes, review views only, with read-only accepted and original previews. OnlyOffice locks co-editing in its Final and Original views, Google Docs accepts writes only in its inline mode, and LibreOffice makes hidden deletions unreachable.
+**Editable views.** Yes, review views only; the accepted and original previews throw on a plain edit, but some other writes still change the document through them, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses, and remote collaboration changes land whatever the view. OnlyOffice locks co-editing in its Final and Original views, Google Docs accepts writes only in its inline mode, and LibreOffice makes hidden deletions unreachable.
 
 **Moves.** Yes, delete plus insert. Word and the ProseMirror suggestion libraries do the same.
 

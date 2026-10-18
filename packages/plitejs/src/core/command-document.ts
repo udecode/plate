@@ -50,12 +50,12 @@ export type CommandProjectionMap = Readonly<{
     root: string,
     position: number,
     association: 'backward' | 'forward'
-  ) => number;
+  ) => number | null;
   /**
    * The stored position of a projected one. `assoc` picks the stored edge of
    * content the projection removed there.
    */
-  toStored: (root: string, position: number, assoc: -1 | 1) => number;
+  toStored: (root: string, position: number, assoc: -1 | 1) => number | null;
 }>;
 
 /** @internal */
@@ -95,6 +95,7 @@ export type EditorCommandDocument = Readonly<{
    */
   recorded?: (input: EditorFrameRecording) => void;
   project: (value: EditorDocumentValue) => CommandProjection | null;
+  unplaced?: () => Error;
 }>;
 
 /** @internal */
@@ -148,6 +149,8 @@ export const projectionMapOf = (change: DocumentChange): CommandProjectionMap =>
       return change;
     },
     hides: (root: string, position: number) => {
+      if (change.deleteRoots.has(root)) return true;
+
       const sections =
         getInternalDocumentRootChange(change, root)?.sections ?? [];
       let before = 0;
@@ -174,6 +177,8 @@ export const projectionMapOf = (change: DocumentChange): CommandProjectionMap =>
       [...getInternalDocumentChangeEntries(change)].map(([root]) => root)
     ),
     toProjected: (root: string, position: number, association) => {
+      if (change.deleteRoots.has(root)) return null;
+
       const rootChange = getInternalDocumentRootChange(change, root);
 
       return rootChange
@@ -183,6 +188,8 @@ export const projectionMapOf = (change: DocumentChange): CommandProjectionMap =>
         : position;
     },
     toStored: (root: string, position: number, assoc: -1 | 1) => {
+      if (change.deleteRoots.has(root)) return null;
+
       const rootChange = getInternalDocumentRootChange(change, root);
 
       return rootChange

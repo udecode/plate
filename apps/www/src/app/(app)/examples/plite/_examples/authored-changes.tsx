@@ -550,8 +550,8 @@ const AuthoredChangesDocument = ({
     <div className="grid gap-6">
       <p>
         Every mounted view shares one document while keeping its own view:
-        editing, suggesting or a read-only preview. Suggested edits remain
-        pending until reviewed.
+        editing, suggesting or a preview of the accepted or proposed document.
+        Suggested edits remain pending until reviewed.
       </p>
       <div className="flex flex-wrap gap-4">
         <label className="flex items-center gap-3">

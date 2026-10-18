@@ -5,8 +5,8 @@ status: done
 depends_on:
   - docs/plite/absolute-architecture-release-claim.md
   - docs/plans/2026-04-24-plite-absolute-architecture-closure-plan.md
-  - docs/research/decisions/plite-post-closure-architecture-review.md
-  - docs/research/decisions/plite-read-update-runtime-architecture.md
+  - docs/research/history/slate-v2-post-closure-architecture-review.md
+  - docs/research/history/slate-v2-read-update-runtime-architecture.md
   - docs/research/systems/plite-perfect-plan-steal-reject-defer-map.md
 code_repo:
   - /Users/zbeyens/git/plite
@@ -483,7 +483,7 @@ Work:
   - `docs/plite/release-readiness-decision.md`
   - `docs/plite/replacement-gates-scoreboard.md`
   - `docs/plite/true-slate-rc-proof-ledger.md`
-  - `docs/research/decisions/plite-post-closure-architecture-review.md`
+  - `docs/research/history/slate-v2-post-closure-architecture-review.md`
 - remove any overclaim about:
   - browser correctness
   - raw native mobile proof

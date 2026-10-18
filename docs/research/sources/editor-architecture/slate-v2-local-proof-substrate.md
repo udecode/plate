@@ -23,7 +23,7 @@ source_refs:
 updated: 2026-04-28
 related:
   - c70bacbd4a:docs/research/entities/slate.md
-  - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
+  - docs/research/history/slate-v2-overlay-architecture-cuts.md
 ---
 
 # Slate v2 local overlay proof substrate

@@ -1,6 +1,6 @@
 # Extensions and schema composition
 
-The ledger asks how plugins compose into one schema and registry. The 2026-10-04 audit stopped: flat plugin descriptors, one compiled schema, typed contribution points and slot replacement each own a distinct live job, and the two dynamic front doors, `editor.install` and `tx.plugins.reconfigure`, already stage through one rollback-safe candidate publication. `node tooling/scripts/review-ledger.mjs show schema` prints the scope's history.
+The ledger asks how plugins compose into one schema and registry. The 2026-10-04 audit stopped. Flat plugin descriptors, one compiled schema, typed contribution points and slot replacement each own a distinct live job, and the two dynamic front doors, `editor.install` and `tx.plugins.reconfigure`, already stage through one rollback-safe candidate publication. `node tooling/scripts/review-ledger.mjs show schema` prints the scope's history.
 
 ## Layer and owner
 

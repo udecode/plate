@@ -48,7 +48,7 @@ Work Checklist:
   Sources: Autogoal checklist retention; Task proof/handoff.
 
 Verification evidence:
-See [the current decision](../research/decisions/plite-core-ownership.md),
+See the current decision (`2e865a0bc4:docs/research/decisions/plite-core-ownership.md`),
 [consumer census](artifacts/plite-core-api-review/consumer-census.json),
 [verification receipt](artifacts/plite-core-api-review/verification.json),
 [frozen facet contract](artifacts/plite-core-api-review/facet-probe-contract.json),

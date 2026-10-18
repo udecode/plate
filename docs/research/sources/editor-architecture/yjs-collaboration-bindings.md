@@ -22,8 +22,8 @@ source_refs:
   - ../y-prosemirror/src/undo-plugin.js
   - ../y-prosemirror/src/cursor-plugin.js
 related:
-  - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
-  - docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md
+  - docs/research/history/slate-v2-read-update-runtime-architecture.md
+  - docs/research/history/slate-v2-state-tx-public-api-and-extension-namespaces.md
   - docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md
   - docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md
   - docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md

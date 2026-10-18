@@ -128,53 +128,6 @@ describe('pluginInjectNodeProps', () => {
     expect(transformProps).not.toHaveBeenCalled();
   });
 
-  it('suppresses default node values unless transformProps forces an injection', () => {
-    const ForcedPlugin = definePlugin('forced', {
-      inject: {
-        nodeProps: {
-          defaultNodeValue: false,
-          nodeKey: 'bold',
-          styleKey: '',
-          transformProps: ({ props }) => ({
-            ...props,
-            'data-forced': 'yes',
-          }),
-        },
-      },
-    });
-    const SilentPlugin = definePlugin('silent', {
-      inject: {
-        nodeProps: {
-          defaultNodeValue: false,
-          nodeKey: 'bold',
-        },
-      },
-    });
-
-    const editor = createEditor({
-      plugins: [ForcedPlugin, SilentPlugin],
-    });
-
-    expect(
-      pluginInjectNodeProps(
-        editor,
-        editor.plugin(SilentPlugin),
-        { text: { bold: false, text: 'hello' } },
-        () => [0]
-      )
-    ).toBeUndefined();
-    expect(
-      pluginInjectNodeProps(
-        editor,
-        editor.plugin(ForcedPlugin),
-        { text: { bold: false, text: 'hello' } },
-        () => [0]
-      )
-    ).toEqual({
-      'data-forced': 'yes',
-    });
-  });
-
   it('runs a nodeKey-scoped injection only on text holding its key', () => {
     const query = mock(() => true);
     const transformProps = mock(() => ({ 'data-tone': 'yes' }));

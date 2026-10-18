@@ -1,12 +1,6 @@
 {
   "version": 1,
   "skills": {
-    "chips": {
-      "source": "udecode/dotai",
-      "sourceType": "github",
-      "skillPath": "skills/chips/SKILL.md",
-      "computedHash": "92256e42ea1de95f18b3d1c36766f338e3ac1bdfe162efb5de28f5b5d418ba1d"
-    },
     "cleanup": {
       "source": "udecode/dotai",
       "sourceType": "github",
@@ -18,12 +12,6 @@
       "sourceType": "github",
       "skillPath": "skills/plan-page/SKILL.md",
       "computedHash": "907af288e129471370c37fe4a4f08b951e42f278911e0761bb6b6a6afb1da0cd"
-    },
-    "redo": {
-      "source": "udecode/dotai",
-      "sourceType": "github",
-      "skillPath": "skills/redo/SKILL.md",
-      "computedHash": "a0c624a14a99908c82c72b3cf0dc710e2d21929f47d849ca3573abe493462232"
     },
     "shadcn": {
       "source": "shadcn/ui",

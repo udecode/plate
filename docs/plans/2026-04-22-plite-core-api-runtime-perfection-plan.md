@@ -9,7 +9,7 @@ source_repos:
 related:
   - docs/plans/2026-04-22-plite-browser-parity-skip-burndown-plan.md
   - docs/plans/2026-04-21-plite-final-api-runtime-shape-plan.md
-  - docs/research/decisions/plite-data-model-first-react-perfect-runtime.md
+  - docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md
   - docs/plans/2026-04-21-plite-react-huge-doc-perf-plan.md
 ---
 
@@ -1934,7 +1934,7 @@ Evidence:
   `Plate repo root` instead of control repo; this is a repo-layout mistake, not a
   product failure
 - second command found stale and historical language in:
-  - `docs/research/decisions/plite-data-model-first-react-perfect-runtime.md`
+  - `docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md`
     still naming `createPliteDecorationSource`
   - `docs/plite/references/architecture-contract.md` still includes
     example `editor.apply = ...` and legacy field language in reference
@@ -1949,7 +1949,7 @@ Decision:
 - Next docs slice should update latest-state decision/reference docs first,
   not historical ledgers wholesale.
 - Exact owner:
-  `docs/research/decisions/plite-data-model-first-react-perfect-runtime.md`
+  `docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md`
   and `docs/plite/ledgers/slate-editor-api.md`.
 
 ## 2026-04-22 Continue Checkpoint 15
@@ -1975,7 +1975,7 @@ Risks:
 
 Earliest gates:
 
-- `rg -n "createPliteDecorationSource|EditableRoot|editor\\.apply =|editor\\.children|editor\\.selection|editor\\.marks|editor\\.operations" docs/research/decisions/plite-data-model-first-react-perfect-runtime.md docs/plite/ledgers/slate-editor-api.md docs/plite/references/architecture-contract.md`
+- `rg -n "createPliteDecorationSource|EditableRoot|editor\\.apply =|editor\\.children|editor\\.selection|editor\\.marks|editor\\.operations" docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md docs/plite/ledgers/slate-editor-api.md docs/plite/references/architecture-contract.md`
 
 Next move:
 
@@ -2006,14 +2006,14 @@ Actions:
 
 Changed files:
 
-- `docs/research/decisions/plite-data-model-first-react-perfect-runtime.md`
+- `docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md`
 - `docs/plite/ledgers/slate-editor-api.md`
 - `docs/plite/references/architecture-contract.md`
 
 Commands:
 
 ```sh
-rg -n "createPliteDecorationSource|editor\\.apply =" docs/research/decisions/plite-data-model-first-react-perfect-runtime.md docs/plite/ledgers/slate-editor-api.md docs/plite/references/architecture-contract.md
+rg -n "createPliteDecorationSource|editor\\.apply =" docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md docs/plite/ledgers/slate-editor-api.md docs/plite/references/architecture-contract.md
 ```
 
 Evidence:
@@ -2189,7 +2189,7 @@ Final changed areas in this lane:
 - `content/docs/plite/libraries/slate-react/editable.md`
 - `Plate repo root/.changeset/**`
 - `docs/plans/2026-04-22-plite-core-api-runtime-perfection-plan.md`
-- `docs/research/decisions/plite-data-model-first-react-perfect-runtime.md`
+- `docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md`
 - `docs/plite/ledgers/slate-editor-api.md`
 - `docs/plite/references/architecture-contract.md`
 - `active goal state`
@@ -2477,7 +2477,7 @@ Work:
 Likely docs:
 
 - `docs/plite/**`
-- `docs/research/decisions/plite-data-model-first-react-perfect-runtime.md`
+- `docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md`
 - `docs/plans/2026-04-21-plite-final-api-runtime-shape-plan.md`
 
 Acceptance:

@@ -1,6 +1,124 @@
 {
   "schemaVersion": 1,
   "components": {
+    "media-image": [
+      "2026-10-18-layout-style-values",
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-10-01-native-block-drag",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-embed": [
+      "2026-10-18-layout-style-values",
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-audio": [
+      "2026-10-18-layout-style-values",
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-audio-static": [
+      "2026-10-18-layout-style-values",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-video": [
+      "2026-10-18-layout-style-values",
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-10-01-native-block-drag",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "caption": [
+      "2026-10-18-layout-style-values",
+      "2026-10-13-media-caption-preview",
+      "2026-08-31-stabilize-hidden-media-captions",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-07-23-rich-media-caption-children"
+    ],
+    "caption-static": [
+      "2026-10-18-layout-style-values",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "line-height-toolbar-button": [
+      "2026-10-18-layout-style-values",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "align-toolbar-button": [
+      "2026-10-18-layout-style-values",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "line-height": [
+      "2026-10-18-layout-style-values",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "align": [
+      "2026-10-18-layout-style-values",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "font": [
+      "2026-10-18-layout-style-values",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-12-fix-font-size-selection-highlight"
+    ],
+    "column": [
+      "2026-10-18-layout-style-values",
+      "2026-10-01-block-move-actions",
+      "2026-10-01-native-block-drag",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "column-static": [
+      "2026-10-18-layout-style-values",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "insert-toolbar-button": [
+      "2026-10-18-layout-style-values",
+      "2026-10-16-code-block-diagrams",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-08-17-flat-editor-registry",
+      "2026-04-23-redesign-blockquotes-container-blocks",
+      "2026-01-28-add-code-drawing-node",
+      "2025-11-20-biome-ultracite"
+    ],
+    "slash": [
+      "2026-10-18-layout-style-values",
+      "2026-10-16-code-block-diagrams",
+      "2026-10-15-slash-keeps-query-on-refusal",
+      "2026-10-13-details-heading-titles",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-09-08-inline-combobox-input",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "turn-into-toolbar-button": [
+      "2026-10-18-layout-style-values",
+      "2026-10-16-code-on-sparse-block-selection",
+      "2026-10-15-quote-on-details-title",
+      "2026-10-14-details-block-conversion",
+      "2026-10-14-details-unwrap-targets",
+      "2026-10-13-details-heading-titles",
+      "2026-10-12-toolbar-button-names",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-28-add-code-drawing-node"
+    ],
     "mode-toolbar-button": [
       "2026-10-17-accept-all-suggestions",
       "2026-10-13-suggestions-review-tree",
@@ -102,25 +220,6 @@
       "2026-09-04-code-block-editing-and-syntax",
       "2026-09-03-huge-code-block-demo"
     ],
-    "insert-toolbar-button": [
-      "2026-10-16-code-block-diagrams",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-08-17-flat-editor-registry",
-      "2026-04-23-redesign-blockquotes-container-blocks",
-      "2026-01-28-add-code-drawing-node",
-      "2025-11-20-biome-ultracite"
-    ],
-    "slash": [
-      "2026-10-16-code-block-diagrams",
-      "2026-10-15-slash-keeps-query-on-refusal",
-      "2026-10-13-details-heading-titles",
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-09-08-inline-combobox-input",
-      "2026-08-17-flat-editor-registry"
-    ],
     "indent": [
       "2026-10-16-code-block-diagrams",
       "2026-10-14-details-block-conversion",
@@ -139,19 +238,6 @@
       "2026-09-18-ui-commands-and-installation",
       "2026-09-09-ai-code-drawing-context",
       "2026-08-17-flat-editor-registry"
-    ],
-    "turn-into-toolbar-button": [
-      "2026-10-16-code-on-sparse-block-selection",
-      "2026-10-15-quote-on-details-title",
-      "2026-10-14-details-block-conversion",
-      "2026-10-14-details-unwrap-targets",
-      "2026-10-13-details-heading-titles",
-      "2026-10-12-toolbar-button-names",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-28-add-code-drawing-node"
     ],
     "toolbar": [
       "2026-10-16-code-on-sparse-block-selection",
@@ -249,34 +335,9 @@
       "2026-10-14-block-void-selection",
       "2026-08-17-flat-editor-registry"
     ],
-    "media-image": [
-      "2026-10-14-block-void-selection",
-      "2026-10-13-media-caption-preview",
-      "2026-10-01-native-block-drag",
-      "2026-08-17-flat-editor-registry"
-    ],
     "media-file": [
       "2026-10-14-block-void-selection",
       "2026-10-13-media-caption-preview",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "media-audio": [
-      "2026-10-14-block-void-selection",
-      "2026-10-13-media-caption-preview",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "media-video": [
-      "2026-10-14-block-void-selection",
-      "2026-10-13-media-caption-preview",
-      "2026-10-01-native-block-drag",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "media-embed": [
-      "2026-10-14-block-void-selection",
-      "2026-10-13-media-caption-preview",
-      "2026-08-20-improve-editor-control-accessibility",
       "2026-08-17-flat-editor-registry"
     ],
     "mention": [
@@ -425,13 +486,6 @@
     ],
     "lint": ["2026-10-13-lint"],
     "lint-demo": ["2026-10-13-lint"],
-    "caption": [
-      "2026-10-13-media-caption-preview",
-      "2026-08-31-stabilize-hidden-media-captions",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-07-23-rich-media-caption-children"
-    ],
     "media-preview-dialog": [
       "2026-10-13-media-caption-preview",
       "2026-08-28-canonical-editor-api-names",
@@ -871,14 +925,6 @@
       "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
       "2025-11-20-biome-ultracite"
     ],
-    "column": [
-      "2026-10-01-block-move-actions",
-      "2026-10-01-native-block-drag",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
     "table-static": [
       "2026-09-30-static-list-table-known-paths",
       "2026-08-17-finalize-v54-ast-profile",
@@ -950,22 +996,6 @@
       "2026-09-05-fix-ref-cleanup",
       "2026-08-31-inline-component-props",
       "2026-08-25-base-first-registry"
-    ],
-    "align-toolbar-button": [
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "line-height-toolbar-button": [
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "align": [
-      "2026-09-18-ui-commands-and-installation",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "line-height": [
-      "2026-09-18-ui-commands-and-installation",
-      "2026-08-17-flat-editor-registry"
     ],
     "plate": ["2026-09-18-ui-commands-and-installation"],
     "plate-ui": [
@@ -1231,7 +1261,6 @@
     "align-static": ["2026-08-17-flat-editor-registry"],
     "basic-marks-static": ["2026-08-17-flat-editor-registry"],
     "callout-static": ["2026-08-17-flat-editor-registry"],
-    "column-static": ["2026-08-17-flat-editor-registry"],
     "comment-static": ["2026-08-17-flat-editor-registry"],
     "font-static": [
       "2026-08-17-flat-editor-registry",
@@ -1245,14 +1274,9 @@
     "basic-marks": ["2026-08-17-flat-editor-registry"],
     "basic-nodes": ["2026-08-17-flat-editor-registry"],
     "exit-break": ["2026-08-17-flat-editor-registry"],
-    "font": [
-      "2026-08-17-flat-editor-registry",
-      "2026-08-12-fix-font-size-selection-highlight"
-    ],
     "media-uploadthing": ["2026-08-17-flat-editor-registry"],
     "toggle": ["2026-08-17-flat-editor-registry"],
     "ai-toolbar-button": ["2026-08-17-flat-editor-registry"],
-    "caption-static": ["2026-08-17-flat-editor-registry"],
     "indent-toolbar-button": [
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families"
@@ -1272,7 +1296,6 @@
     "media-image-static": ["2026-08-17-flat-editor-registry"],
     "kbd": ["2026-08-17-flat-editor-registry"],
     "kbd-static": ["2026-08-17-flat-editor-registry"],
-    "media-audio-static": ["2026-08-17-flat-editor-registry"],
     "media-file-static": ["2026-08-17-flat-editor-registry"],
     "media-video-static": ["2026-08-17-flat-editor-registry"],
     "paragraph": ["2026-08-17-flat-editor-registry"],

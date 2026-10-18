@@ -2653,10 +2653,9 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
                 });
               }
             } else {
-              const anchor = tx.points.start(plan.anchorCell);
-              const focus = tx.points.end(plan.focusCell);
+              const end = tx.points.end(plan.focusCell);
 
-              if (anchor && focus) tx.selection.set({ anchor, focus });
+              if (end) tx.selection.set(end);
             }
           });
 

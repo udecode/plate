@@ -32,6 +32,25 @@ Rejected, and why:
 | All collaboration inside Plate | Raw Plite examples need neutral synchronization and cursor reads. |
 | Generic commit or snapshot broadcast instead of Yjs | Local changes alone give no concurrent or offline convergence or durable relative identity. |
 
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- Native Yjs collaboration receives its exact `Y.Doc`, initial-load readiness,
+  optional awareness and explicit seed authority at descriptor construction.
+  The app owns provider connection, replacement, errors and destruction. The
+  binding admits a compatible room once per document generation, blocks
+  document and shared-effect publication before admission, retains failed
+  imports for explicit retry, and remains admitted during later disconnects so
+  offline edits and local history continue. Presence and compaction methods
+  exist in the inferred `api.yjs` only when their inputs are supplied. Live
+  admission and awareness state never become replayable `read` methods or
+  transaction updates; each `(Y.Doc, rootName)` has one binding owner while
+  mounted views retain exact selection projection. The binding takes its
+  document when its editor goes live and frees it when the editor is released, so a
+  remount or a replaced editor binds the same document again. Before that, its
+  status answers waiting and its cursors answer none.
+
 ## What other editors do
 
 Not compared in this scope's reviews beyond Yjs itself; the `yjs-collaboration` pages under `docs/research/sources/` hold the provider and binding prior art.

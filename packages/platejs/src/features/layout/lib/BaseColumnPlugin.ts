@@ -8,8 +8,6 @@ import {
   type ElementOf,
   type Location,
   type Node,
-  NodeApi,
-  type NodeEntry,
   type NodeSelection,
   type NodeTarget,
   PathApi,
@@ -26,10 +24,6 @@ import {
 } from '../../../core';
 import { canPlaceBlocksAtPath } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
-
-export type MoveMiddleColumnOptions = {
-  direction: 'left' | 'right';
-};
 
 export type SetColumnsOptions = {
   /** Column group location. */
@@ -68,51 +62,6 @@ export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
 })
   .extend(({ plugin }) => ({
     update: ({ tx }) => ({
-      moveMiddle: txLocate(
-        ([entry, options], place) =>
-          place.location(tx.key(entry[0])) === null ? null : [entry, options],
-        (
-          [target]: NodeEntry<Element>,
-          { direction = 'left' }: Partial<MoveMiddleColumnOptions> = {}
-        ) => {
-          if (direction !== 'left') return undefined;
-
-          const entry = tx.nodes.get(tx.key(target), {
-            match: ElementApi.isElement,
-          });
-
-          if (!entry) return false;
-
-          const [node, path] = entry;
-          const middleChildNode = NodeApi.get(node, [1]);
-
-          if (!NodeApi.isElement(middleChildNode)) return false;
-
-          const middleChildPath = path.concat([1]);
-
-          if (NodeApi.string(middleChildNode) === '') {
-            tx.nodes.remove({ at: middleChildPath });
-
-            return false;
-          }
-
-          const firstNode = NodeApi.descendant(node, [0]);
-
-          if (!NodeApi.isElement(firstNode)) return false;
-
-          const appendOffset = firstNode.children.length;
-
-          middleChildNode.children.forEach((_, childIndex) => {
-            tx.nodes.move({
-              at: middleChildPath.concat([0]),
-              to: path.concat([0, appendOffset + childIndex]),
-            });
-          });
-          tx.nodes.remove({ at: middleChildPath });
-
-          return undefined;
-        }
-      ),
       selectAll: () => {
         const selection = tx.selection();
 
@@ -199,7 +148,7 @@ const columnsOf = (
   return columns;
 };
 
-export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
+export const BaseColumnGroupPlugin = definePlugin(PLUGINS.columnGroup, {
   dependencies: [BaseColumnItemPlugin],
   schema: {
     element: {
@@ -540,6 +489,6 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
   },
 }));
 
-export type ColumnGroupElement = ElementOf<typeof BaseColumnPlugin>;
+export type ColumnGroupElement = ElementOf<typeof BaseColumnGroupPlugin>;
 
 export type ColumnDefinition = DefinitionOf<typeof BaseColumnItemPlugin>;

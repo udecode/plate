@@ -2,7 +2,7 @@
 
 Status: **research complete; production design gated**. Started September 11,
 closed September 12, 2026. The [Task plan](../../../plans/2026-09-11-large-documents-api-review.md)
-owns the lifecycle. The [proposed contract](../../../research/decisions/large-documents-rendering-api.md)
+owns the lifecycle. The proposed contract (`2e865a0bc4:docs/research/decisions/large-documents-rendering-api.md`)
 owns the current recommendation; immutable assessment
 `2026-09-12-large-documents-deep-contract` reconciles the preceding design.
 

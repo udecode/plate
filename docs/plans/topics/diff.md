@@ -21,6 +21,20 @@ Rejected, and why:
 | A public persistent graph | No consumer. |
 | A second diff manager | Duplicates the authored owner. |
 
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- Structural comparison reads fixed, schema-valid revisions without installing
+  editor state. It returns immutable span correspondence, grouped effects,
+  diagnostics, and a canonical `DocumentChange`; three-way resolution keeps
+  every branch contribution and requires explicit choices for conflicts.
+  Comparison presentation stays read-only. An explicit authored import checks
+  the exact live baseline and frontier before publishing one native proposal, so
+  comparison does not become another review or position system. It keeps one
+  comparison and one native import path, never annotated-node diff tags or a
+  matcher re-run during conflict resolution.
+
 ## What other editors do
 
 Seven upstream witnesses support the design; they certify none of the plan's 43 production acceptance families. The review records under `node tooling/scripts/review-ledger.mjs show diff` name them.

@@ -2077,7 +2077,9 @@ export type EditorViewOptions<TRoot extends RootKey = RootKey> = {
    * with its review marks: `edit` applies writes as written and `propose`
    * records them as suggestions. A `preview` view reads the document with
    * every pending change accepted (`proposed`) or rejected (`accepted`) and
-   * takes no writes.
+   * throws on a plain edit, though some other writes still change the
+   * document, such as an update that makes a decision, undo and redo, and
+   * remote collaboration changes.
    */
   authored?:
     | Readonly<{ intent: 'edit' | 'propose' }>

@@ -222,6 +222,24 @@ test('a word query shows the rule its best-matching test proves', () => {
   );
 });
 
+test('a word query finds a subject by its body and ranks a lead match first', () => {
+  const body = `\n\n## Rules\n\n${'- A long rule.\n'.repeat(400)}`;
+  const index = loadIndex(
+    tree({
+      'docs/plans/topics/pagination.md': `# Pagination\n\nPage breaks follow widow control.${body}`,
+      'docs/plans/topics/print.md':
+        '# Print\n\nPrinting.\n\n## Rules\n\n- Pagination keeps orphans together.\n',
+    })
+  );
+  const files = (query) =>
+    card(index, query).subjects.map((subject) => subject.file);
+  assert.deepEqual(files('pagination'), [
+    'docs/plans/topics/pagination.md',
+    'docs/plans/topics/print.md',
+  ]);
+  assert.deepEqual(files('orphans'), ['docs/plans/topics/print.md']);
+});
+
 test('a tag inside a skipped describe leaves its rule a gap', () => {
   assert.deepEqual(
     gapIds({

@@ -295,7 +295,7 @@ Evidence for the Phase 1 boxes: `artifacts/2026-10-13-list-paste/build-phase1-re
 
 ### Close
 
-- [x] Update the paste sentence in `docs/research/decisions/list-ownership.md` and the paste contract in `docs/plans/topics/list.md`. Proof: `artifacts/2026-10-13-list-paste/build-final-ledger-a2.log` has only its seven baseline pages; `build-acceptance-gate-controls-a2.log` compares the findings.
+- [x] Update the paste sentence in `2e865a0bc4:docs/research/decisions/list-ownership.md` and the paste contract in `docs/plans/topics/list.md`. Proof: `artifacts/2026-10-13-list-paste/build-final-ledger-a2.log` has only its seven baseline pages; `build-acceptance-gate-controls-a2.log` compares the findings.
 - [x] Add a changeset for `platejs` that names the `fragment.replace` and `slice.replace` change; run `deslop`, `no-comments` and scoped `pnpm lint:fix`. Proof: deslop, no-comments and unslop ran in this build; `artifacts/2026-10-13-list-paste/build-final-lint-fix-a2.log` is clean. Plite's closed-object repair also has its own patch changeset.
 - [x] Run a panel on the build's diff. The replacement iterations complete the required review; final evidence is `artifacts/2026-10-13-list-paste/type-replan/build-panel-2/synthesis.md`. The following original review history is retained. Proof: three diff rounds in `2026-10-13-list-paste.decisions.tsv`; round 3 reached the cap with both findings applied. Opus omitted required reads; Sol and Astra covered their packets.
 - [x] Run the six comparison specs together. Proof: `artifacts/2026-10-13-list-paste/build-final-regressions-a3.log` passes 716 cases, including all six against the tracked comparison fixture copied from the page.

@@ -1,6 +1,8 @@
 import type { JsonNode } from '../core/change/tokens';
 import { getEditorSchema } from '../core/editor-runtime';
+import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { completeChildrenAt } from '../core/representation';
+import type { CompiledEditorSchema } from '../core/schema-compiler';
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import type { Element } from '../interfaces/element';
 import type { Descendant } from '../interfaces/node';
@@ -10,17 +12,35 @@ import type { AuthoredResolveSchema } from './tree/resolve';
 // resolved content can key on it.
 const RESOLVE_SCHEMAS = new WeakMap<
   object,
-  Readonly<{ resolve: AuthoredResolveSchema; schema: object }>
+  Readonly<{ resolve: AuthoredResolveSchema; schema: CompiledEditorSchema }>
 >();
+const OWNERSHIP_SCHEMAS = new WeakMap<
+  CompiledEditorSchema,
+  AuthoredResolveSchema
+>();
+
+export const ownershipResolveSchemaOf = (
+  schema: CompiledEditorSchema
+): AuthoredResolveSchema => {
+  let resolve = OWNERSHIP_SCHEMAS.get(schema);
+
+  if (!resolve) {
+    resolve = { content: () => null, ownership: schema };
+    OWNERSHIP_SCHEMAS.set(schema, resolve);
+  }
+
+  return resolve;
+};
 
 export const authoredResolveSchemaOf = (
   editor: Editor
 ): AuthoredResolveSchema => {
-  const schema = getEditorSchema(editor);
+  const compiled = getCompiledEditorSchema(editor);
   const cached = RESOLVE_SCHEMAS.get(editor);
 
-  if (cached?.schema === schema) return cached.resolve;
+  if (cached?.schema === compiled) return cached.resolve;
 
+  const schema = getEditorSchema(editor);
   const resolve: AuthoredResolveSchema = {
     canonicalizeTextProperties: (props, path, root, key) =>
       schema.canonicalizeTextPropertiesAt(props, [...path], root, key),
@@ -58,9 +78,10 @@ export const authoredResolveSchemaOf = (
           }
         : null;
     },
+    ownership: compiled,
   };
 
-  RESOLVE_SCHEMAS.set(editor, { resolve, schema });
+  RESOLVE_SCHEMAS.set(editor, { resolve, schema: compiled });
 
   return resolve;
 };

@@ -517,7 +517,7 @@ reinstate the Widget/Runtime vocabulary to conceal an owner defect.
 
 Verification evidence:
 
-- Read the five-question [review](../research/decisions/plite-view-ownership.md)
+- Read the five-question review (`2e865a0bc4:docs/research/decisions/plite-view-ownership.md`)
   and the current provider, runtime handle, mount grammar and selector owners.
 - Branch is `next`; structured Autoreview is not run under branch policy.
 - [Geometry v5](artifacts/plite-view-design/geometry-gate-decision.md): 24/24

@@ -23,7 +23,7 @@ Checkpoints:
 The [full assessment](REPORT.md) recommends headless table selection commands in
 Plate, consolidated mounted table interaction, and a measured paint-lifetime
 repair. It rejects blanket promotion of table semantics into Plite. The
-[current decision](../../../research/decisions/table-ownership.md) and
+current decision (`2e865a0bc4:docs/research/decisions/table-ownership.md`) and
 [immutable review](../../../research/review-records/2026-09-17-table-substrate-ownership.json)
 reconcile the earlier closure.
 

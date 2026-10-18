@@ -1,3 +1,4 @@
+import { assertFrameSelectionPlaced } from '../core/command-frame';
 import type { Location } from '../interfaces';
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import {
@@ -19,6 +20,7 @@ export const getDefaultInsertLocation = (editor: Editor): Location => {
   if (selection && RangeApi.isRange(selection)) {
     return selection;
   }
+  if (!selection) assertFrameSelectionPlaced(editor);
   if (editorGetChildren(editor).length > 0) {
     return editorPoint(editor, [], { edge: 'end' });
   }

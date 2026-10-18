@@ -24,7 +24,7 @@ source_refs:
   - docs/research/sources/editor-architecture/cursor-find-and-widget-geometry.md
 updated: 2026-08-30
 related:
-  - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
+  - docs/research/history/slate-v2-overlay-architecture-cuts.md
   - c70bacbd4a:docs/plite-draft/decorations-annotations-cluster.md
 ---
 

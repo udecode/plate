@@ -37,7 +37,7 @@ import { BaseDatePlugin } from 'platejs/date';
 import { BaseDetailsPlugin } from 'platejs/details';
 import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
 import { BaseFootnotePlugin } from 'platejs/footnote';
-import { BaseColumnPlugin } from 'platejs/layout';
+import { BaseColumnGroupPlugin } from 'platejs/layout';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 import { BaseImagePlugin, BaseMediaEmbedPlugin } from 'platejs/media';
 import { type Editor, useEditor, useEditorReadOnly } from 'platejs/react';
@@ -106,7 +106,7 @@ function getGroups(editor: Editor): Group[] {
   const image = editor.plugin(BaseImagePlugin);
   const mediaEmbed = editor.plugin(BaseMediaEmbedPlugin);
   const toc = editor.plugin(BaseTocPlugin);
-  const column = editor.plugin(BaseColumnPlugin);
+  const column = editor.plugin(BaseColumnGroupPlugin);
   const equation = editor.plugin(BaseEquationPlugin);
   const excalidraw = editor.plugin(BaseExcalidrawPlugin);
   const link = editor.plugin(linkPlugin);
@@ -369,12 +369,15 @@ function getGroups(editor: Editor): Group[] {
       label: '3 columns',
       value: 'action_three_columns',
       onSelect: () => {
-        const current = editor.plugin(BaseColumnPlugin);
+        const current = editor.plugin(BaseColumnGroupPlugin);
 
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
-          tx.plugin(BaseColumnPlugin).insert({ columns: 3 }, { select: true });
+          tx.plugin(BaseColumnGroupPlugin).insert(
+            { columns: 3 },
+            { select: true }
+          );
         });
       },
     });

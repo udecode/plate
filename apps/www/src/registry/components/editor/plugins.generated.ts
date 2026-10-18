@@ -149,7 +149,7 @@ export interface HeadingElement extends Element {
   readonly checked?: boolean;
   readonly indent?: number;
   readonly level: 1 | 2 | 3 | 4 | 5 | 6;
-  readonly lineHeight?: number | string;
+  readonly lineHeight?: number;
   readonly listId?: string;
   readonly listLevels?: unknown;
   readonly listRestart?: number;
@@ -228,7 +228,7 @@ export interface ParagraphElement extends Element {
   readonly authored?: readonly (unknown)[];
   readonly checked?: boolean;
   readonly indent?: number;
-  readonly lineHeight?: number | string;
+  readonly lineHeight?: number;
   readonly listId?: string;
   readonly listLevels?: unknown;
   readonly listRestart?: number;
@@ -565,7 +565,7 @@ export type Mutations = Readonly<{
       readonly checked?: boolean;
       readonly indent?: number;
       readonly level: 1 | 2 | 3 | 4 | 5 | 6;
-      readonly lineHeight?: number | string;
+      readonly lineHeight?: number;
       readonly listId?: string;
       readonly listLevels?: unknown;
       readonly listRestart?: number;
@@ -579,7 +579,7 @@ export type Mutations = Readonly<{
       readonly checked?: boolean;
       readonly indent?: number;
       readonly level: 1 | 2 | 3 | 4 | 5 | 6;
-      readonly lineHeight?: number | string;
+      readonly lineHeight?: number;
       readonly listId?: string;
       readonly listLevels?: unknown;
       readonly listRestart?: number;
@@ -710,7 +710,7 @@ export type Mutations = Readonly<{
       readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
-      readonly lineHeight?: number | string;
+      readonly lineHeight?: number;
       readonly listId?: string;
       readonly listLevels?: unknown;
       readonly listRestart?: number;
@@ -723,7 +723,7 @@ export type Mutations = Readonly<{
       readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
-      readonly lineHeight?: number | string;
+      readonly lineHeight?: number;
       readonly listId?: string;
       readonly listLevels?: unknown;
       readonly listRestart?: number;

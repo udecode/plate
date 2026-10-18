@@ -433,6 +433,28 @@ export const deriveValue = <V extends object>(
   return withValueRecords(next as V, applyRecordOps(store, ops));
 };
 
+export const withoutValueRoots = <
+  V extends Readonly<{
+    records?: EditorDocumentRecords;
+    roots?: Readonly<Record<string, unknown>>;
+  }>,
+>(
+  value: V,
+  dropped: ReadonlySet<string>
+): V => {
+  const { roots, ...rest } = value;
+  const kept = Object.entries(roots ?? {}).filter(
+    ([root]) => !dropped.has(root)
+  );
+
+  return withValueRecords(
+    (kept.length > 0
+      ? { ...rest, roots: Object.fromEntries(kept) }
+      : rest) as V,
+    getValueRecords(value)
+  );
+};
+
 /** Attach `store` and give the value its `records` field when it holds any. */
 export const showValueRecords = <T extends Record<string, unknown>>(
   value: T,

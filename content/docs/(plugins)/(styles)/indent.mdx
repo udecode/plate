@@ -201,3 +201,24 @@ const { update } = editor.plugin(IndentPlugin);
   <ToolbarButton onClick={() => update.decrease()}>Outdent</ToolbarButton>
 </>
 ```
+
+## First-line indent
+
+`TextIndentPlugin` indents only a block's first line. It stores a step count in `textIndent` and draws CSS `text-indent` as `offset * textIndent + unit`, so a negative count is a hanging indent. No kit installs it, so add it yourself:
+
+```tsx
+import { TextIndentPlugin } from "platejs/react";
+import { createEditor } from "platejs/react";
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    TextIndentPlugin,
+  ],
+});
+
+editor.update.textIndent.set(1);
+editor.update.textIndent.clear({ at: [] });
+```
+
+`set(value, options?)` saves the count on matching target blocks, and `clear(options?)` removes it. Both take Plate node update options for the target range and matcher. The plugin targets paragraphs unless you pass `targetPlugins`. `initialState.offset` and `initialState.unit` set the step size, `24` and `'px'` by default. Word export writes the count as a first-line indent, or a hanging indent when negative, and skips it on list paragraphs.

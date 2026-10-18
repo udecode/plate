@@ -200,6 +200,10 @@ Use it to inspect:
 - editor-engine tradeoffs
 - cases where Typora or Notion behavior is hard to inspect directly
 
+When Milkdown's tests and docs disagree, its e2e input, shortcut and transform
+tests and package unit tests win for behavior, and its docs win for ownership
+and API mapping ([behavior test lanes](../research/sources/milkdown/behavior-test-lanes.md)).
+
 ### Candidate Reference Pools
 
 Do not treat this section as governing law.
@@ -2955,7 +2959,7 @@ Proof: none. No test in `packages/platejs/src/react/features/combobox/useCombobo
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: Atlassian's type-ahead, whose blur commits the raw query before an item is inserted
 Source: docs/plite/research/2026-10-03-autocomplete-arena/contract.md:18
-Proof: the www browser test "combobox:clicking an option during IME composition completes it" in `apps/www/tests/browser/combobox.spec.ts` (Chromium only, CDP composition of `biggs`, then a click on "Biggs Darklighter") asserts one mention node, model text `Mention`, the caret at offset 0 of `[0, 2]` and no `aria-controls`; it does not assert the blur or focus afterwards. Code: the copied popup prevents an option's `mousedown` only while no composition is active (`apps/www/src/registry/components/editor/inline-combobox.tsx:223-226`), and `complete` settles native input and still refuses while a composition is active (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:108-113`). Known gap: under Pixel 5 emulation the blur leaves Plite's model caret past the committed text and the tap refuses (`docs/research/decisions/autocomplete-ownership.md:186-193`); no Android device or iOS run exists. Plan hard law 10 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:245`). Checked 2026-10-08.
+Proof: the www browser test "combobox:clicking an option during IME composition completes it" in `apps/www/tests/browser/combobox.spec.ts` (Chromium only, CDP composition of `biggs`, then a click on "Biggs Darklighter") asserts one mention node, model text `Mention`, the caret at offset 0 of `[0, 2]` and no `aria-controls`; it does not assert the blur or focus afterwards. Code: the copied popup prevents an option's `mousedown` only while no composition is active (`apps/www/src/registry/components/editor/inline-combobox.tsx:223-226`), and `complete` settles native input and still refuses while a composition is active (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:108-113`). Known gap: under Pixel 5 emulation the blur leaves Plite's model caret past the committed text and the tap refuses (`2e865a0bc4:docs/research/decisions/autocomplete-ownership.md:186-193`); no Android device or iOS run exists. Plan hard law 10 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:245`). Checked 2026-10-08.
 
 - `EDIT-AUTOCOMPLETE-A11Y-001` `proposed` `screen reader`: while an autocomplete popup is open, assistive technology announces the caret as inside a combobox and follows the active option, while focus and IME stay in the editor
 

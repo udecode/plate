@@ -1,0 +1,34 @@
+---
+id: 2026-10-18-layout-style-values
+date: 2026-10-18
+status: draft
+kind: behavior
+summary: 'Place all six alignments on media, clear line height and alignment from the toolbars, and rename the column group plugin'
+change: { 'type': 'source', 'date': '2026-10-18', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-18-media-image-place-all-six-alignments-ff655f65","kind":"behavior","migrationNotes":[]} -->
+
+- **`media-image`**, **`media-embed`**, **`media-audio`**, **`media-audio-static`**, **`media-video`**, **`caption`**, **`caption-static`**: Place media aligned `start` or `justify` on the left and `end` on the right, instead of in the center.
+
+<!-- entry: {"id":"2026-10-18-line-height-toolbar-default-item-3a9e0c41","kind":"behavior","migrationNotes":[]} -->
+
+- **`line-height-toolbar-button`**: Add a Default item that clears line height, offer 1, 1.2, 1.5, 2 and 3, and check nothing when the selection mixes line heights.
+
+<!-- entry: {"id":"2026-10-18-align-toolbar-mixed-selection-7b2d5f18","kind":"fix","migrationNotes":[]} -->
+
+- **`align-toolbar-button`**: Check nothing when the selection mixes alignments, instead of Left.
+
+<!-- entry: {"id":"2026-10-18-style-kits-targets-only-c41f8a92","kind":"remove","migrationNotes":["Drop defaultNodeValue and validNodeValues from copied kits; platejs no longer accepts them."]} -->
+
+- **`line-height`**, **`align`**: Configure only the target blocks. Every stored line height and alignment now draws.
+
+<!-- entry: {"id":"2026-10-18-font-kit-black-draws-9d3e61b7","kind":"behavior","migrationNotes":[]} -->
+
+- **`font`**: Install `FontColorPlugin` without a black default, so pasted black text draws, including in dark mode.
+
+<!-- entry: {"id":"2026-10-18-column-group-plugin-rename-5d1c2a7e","kind":"rename","migrationNotes":["Import ColumnGroupPlugin and BaseColumnGroupPlugin where the copied code imported ColumnPlugin and BaseColumnPlugin."]} -->
+
+- **`column`**, **`column-static`**, **`insert-toolbar-button`**, **`slash`**, **`turn-into-toolbar-button`**: Use `ColumnGroupPlugin` and `BaseColumnGroupPlugin` for column groups.

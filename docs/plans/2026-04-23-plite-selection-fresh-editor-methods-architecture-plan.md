@@ -4,7 +4,7 @@ topic: plite-read-update-runtime-architecture
 status: superseded
 depends_on:
   - docs/plans/2026-04-23-plite-remaining-perfect-architecture-batches-plan.md
-  - docs/research/decisions/plite-data-model-first-react-perfect-runtime.md
+  - docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md
 related:
   - docs/plans/2026-04-23-plite-perfect-architecture-master-plan.md
   - docs/solutions/logic-errors/2026-04-04-decorated-multi-leaf-text-needs-cumulative-offset-mapping.md

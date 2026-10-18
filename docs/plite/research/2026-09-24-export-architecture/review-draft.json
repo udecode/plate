@@ -84,8 +84,8 @@
     "docs/plite/research/2026-09-24-export-architecture/sources/local-reads.json",
     "docs/plite/research/2026-09-24-export-architecture/sources/web-and-issues.md",
     "docs/plans/2026-09-24-exports-first-principles-research.md",
-    "docs/research/decisions/export-fidelity.md",
-    "docs/research/decisions/documents-conversion-fidelity.md"
+    "2e865a0bc4:docs/research/decisions/export-fidelity.md",
+    "2e865a0bc4:docs/research/decisions/documents-conversion-fidelity.md"
   ],
   "source": {
     "files": {

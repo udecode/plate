@@ -14,7 +14,10 @@ import { type Range, RangeApi } from '../interfaces/range';
 import { indexAuthoredChanges } from './changes';
 import { constructsValues } from './refusal';
 import { authoredResolveSchemaOf } from './resolve-schema';
-import { projectAuthoredValue } from './tree/resolve';
+import {
+  type AuthoredResolveSchema,
+  projectAuthoredValue,
+} from './tree/resolve';
 import type {
   AuthoredDocumentProjection,
   AuthoredProjectionRefusal,
@@ -83,13 +86,21 @@ export function projectAuthoredDocument(
 
   if (refusal) return refusal;
 
-  const value = document as JsonEditorValue;
-  const resolution = projectAuthoredValue(
-    value,
+  return projectAuthoredDocumentUnder(
+    document,
     options.projection,
     options.editor ? authoredResolveSchemaOf(options.editor) : null
   );
+}
 
+/** @internal */
+export const projectAuthoredDocumentUnder = (
+  document: EditorDocumentValue,
+  projection: AuthoredFormatProjection,
+  schema: AuthoredResolveSchema | null
+): AuthoredDocumentProjection => {
+  const value = document as JsonEditorValue;
+  const resolution = projectAuthoredValue(value, projection, schema);
   const pending = indexAuthoredChanges(value).changes.size;
 
   return Object.freeze({
@@ -99,7 +110,7 @@ export function projectAuthoredDocument(
         : [
             Object.freeze({
               code: 'authored-lossy-projection' as const,
-              message: `The ${options.projection} projection decides ${pending} pending change${
+              message: `The ${projection} projection decides ${pending} pending change${
                 pending === 1 ? '' : 's'
               }.`,
               severity: 'warning' as const,
@@ -111,7 +122,7 @@ export function projectAuthoredDocument(
     ok: true as const,
     pending,
   });
-}
+};
 
 export type AuthoredLocationMap = Readonly<{
   path: (path: Path) => Path | null;

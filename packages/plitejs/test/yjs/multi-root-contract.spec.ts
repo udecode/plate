@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import * as Y from 'yjs';
 
+import { createAuthoredPlugin } from '../../src/authored/authored';
 import { history } from '../../src/history';
 import {
   createEditor,
@@ -64,6 +65,33 @@ const ContentRootSchema = defineEditorSchema('schema:yjs-content-root', {
   version: 1,
 });
 
+const SharedCaptionSchema = defineEditorSchema('schema:yjs-shared-caption', {
+  elements: {
+    media: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      contentRoots: {
+        caption: {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'shared',
+        },
+      },
+    },
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+  id: 'yjs-shared-caption',
+  root: schema.content.types(['media', 'paragraph'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'preserve',
+  version: 1,
+});
+
 const createPeer = (
   doc: Y.Doc,
   _clientId: string
@@ -113,6 +141,39 @@ const sync = (source: { doc: Y.Doc }, target: { doc: Y.Doc }): void => {
     Y.encodeStateAsUpdate(source.doc, Y.encodeStateVector(target.doc))
   );
 };
+
+const joinPeer = (
+  doc: Y.Doc,
+  plugins: readonly unknown[],
+  seeded?: unknown
+): { doc: Y.Doc; editor: AnyEditor } => {
+  const editor = createEditor({
+    initialValue: (seeded ?? [paragraph('')]) as never,
+    plugins: plugins as never,
+  });
+
+  editor.install(
+    yjs({ doc, initialReady: true, ...(seeded ? { seed: true } : {}) })
+  );
+
+  return { doc, editor };
+};
+
+const authoredBy = (authorId: string, intent: 'edit' | 'propose') => {
+  let count = 0;
+
+  return createAuthoredPlugin({
+    authorId,
+    createChangeId: () => `${authorId}:${(count += 1)}`,
+    intent,
+    now: () => 1,
+  });
+};
+
+const rootsOf = (peer: { doc: Y.Doc; editor: AnyEditor }) => [
+  Object.keys(peer.editor.read.value().roots ?? {}),
+  [...peer.doc.getMap('document:roots').keys()],
+];
 
 describe('plitejs/yjs multi-root document contract', () => {
   it('owns the whole runtime when installed from a named-root view', () => {
@@ -358,5 +419,123 @@ describe('plitejs/yjs multi-root document contract', () => {
     unsubscribeTarget();
     source.cleanup();
     target.cleanup();
+  });
+
+  it('drops an owner and its root that one peer suggests and accepts deleting while another types in the root offline, in either delivery order', () => {
+    for (const offlineFirst of [true, false]) {
+      const decider = joinPeer(
+        new Y.Doc(),
+        [ContentRootSchema, authoredBy('bob', 'propose')],
+        {
+          children: [paragraph('Body'), media('caption:1', 'M')],
+          roots: { 'caption:1': [paragraph('Inside')] },
+        }
+      );
+      const offline = { doc: new Y.Doc() };
+
+      sync(decider, offline);
+      const typist = joinPeer(offline.doc, [
+        ContentRootSchema,
+        authoredBy('ann', 'edit'),
+      ]);
+
+      typist.editor.update((tx) => {
+        tx.text.insert('x', {
+          at: { offset: 0, path: [0, 0], root: 'caption:1' },
+        });
+      });
+      assert.deepEqual(typist.editor.read.root('caption:1'), [
+        paragraph('xInside'),
+      ]);
+
+      decider.editor.update((tx) => {
+        tx.nodes.remove({ at: [1] });
+      });
+      const [deletion] = decider.editor.read.authored.changes().items;
+
+      decider.editor.update.authored.decide({
+        action: 'accept',
+        changes: [deletion],
+      });
+
+      if (offlineFirst) {
+        sync(typist, decider);
+        sync(decider, typist);
+      } else {
+        sync(decider, typist);
+        sync(typist, decider);
+      }
+
+      for (const peer of [decider, typist]) {
+        assert.deepEqual(
+          [peer.editor.read.children(), rootsOf(peer)],
+          [[paragraph('Body')], [[], []]],
+          `offline first: ${offlineFirst}`
+        );
+      }
+    }
+  });
+
+  it('keeps a shared root whose two owners two peers remove at the same time, in an open schema', () => {
+    const left = joinPeer(new Y.Doc(), [SharedCaptionSchema], {
+      children: [
+        media('caption:1', 'A'),
+        media('caption:1', 'B'),
+        paragraph('Body'),
+      ],
+      roots: { 'caption:1': [paragraph('Shared')] },
+    });
+    const right = { doc: new Y.Doc() };
+
+    sync(left, right);
+    const peers = [left, joinPeer(right.doc, [SharedCaptionSchema])];
+
+    peers[0].editor.update((tx) => tx.nodes.remove({ at: [0] }));
+    peers[1].editor.update((tx) => tx.nodes.remove({ at: [1] }));
+    sync(peers[0], peers[1]);
+    sync(peers[1], peers[0]);
+
+    for (const peer of peers) {
+      assert.deepEqual(
+        [
+          peer.editor.read.children(),
+          peer.editor.read.root('caption:1'),
+          rootsOf(peer),
+        ],
+        [
+          [paragraph('Body')],
+          [paragraph('Shared')],
+          [['caption:1'], ['caption:1']],
+        ],
+        'an open schema keeps the shared root'
+      );
+    }
+  });
+
+  it('applies a remote edit to the main root after a local one, in a schema with content roots', () => {
+    const left = createContentRootPeer(new Y.Doc(), 'left');
+    const rightDoc = new Y.Doc();
+
+    sync(left, { doc: rightDoc });
+    const right = createContentRootPeer(rightDoc, 'right');
+
+    left.editor.update((tx) => {
+      tx.text.insert('x', { at: { offset: 4, path: [0, 0] } });
+    });
+    sync(left, right);
+    right.editor.update((tx) => {
+      tx.text.insert('y', { at: { offset: 5, path: [0, 0] } });
+    });
+    sync(right, left);
+
+    for (const peer of [left, right]) {
+      assert.deepEqual(
+        peer.editor.read.children(),
+        [paragraph('Bodyxy')],
+        'each peer shows both letters'
+      );
+    }
+    left.cleanup();
+    right.cleanup();
   });
 });

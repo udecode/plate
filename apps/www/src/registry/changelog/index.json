@@ -2,6 +2,42 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-18-layout-style-values",
+      "href": "/registry/changelog/2026-10-18-layout-style-values.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Place all six alignments on media, clear line height and alignment from the toolbars, and rename the column group plugin",
+      "change": {
+        "type": "source",
+        "date": "2026-10-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "media-image",
+        "media-embed",
+        "media-audio",
+        "media-audio-static",
+        "media-video",
+        "caption",
+        "caption-static",
+        "line-height-toolbar-button",
+        "align-toolbar-button",
+        "line-height",
+        "align",
+        "font",
+        "column",
+        "column-static",
+        "insert-toolbar-button",
+        "slash",
+        "turn-into-toolbar-button"
+      ],
+      "entries": 6,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-17-accept-all-suggestions",
       "href": "/registry/changelog/2026-10-17-accept-all-suggestions.json",
       "status": "draft",

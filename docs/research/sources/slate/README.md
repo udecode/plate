@@ -31,13 +31,13 @@ Pages in this folder:
 
 Decisions:
 
-- [Document import and conversion fidelity](../../decisions/import-fidelity.md). Plate/Plite format parse, diagnostics and admission contract, with a validation benchmark comparing ProseMirror, CKEditor, Slate, Lexical and Tiptap.
-- [Plugin input rules guide should lead with runtime first then feature owners then API reference](../../decisions/plugin-input-rules-guide-should-lead-with-runtime-first-then-feature-owners-then-api-reference.md). Plate docs-structure decision that compares the Tiptap, Slate, Lexical and ProseMirror documentation patterns.
-- [Slate v2 destructive leaf-boundary deletion should own leaf cleanup before render](../../decisions/slate-v2-destructive-leaf-boundary-legacy-parity.md). Slate v2 (Plite) leaf cleanup rule against legacy Slate's zero-width leaf behavior.
-- [Slate v2 Editing Epoch Legacy Timing Recovery Audit](../../decisions/slate-v2-editing-epoch-legacy-timing-recovery-audit.md). Maps legacy Slate Editable browser timing rules onto Slate v2 input/selection owners.
-- [Slate v2 Node Query API Should Keep Lazy Entries, Early-Exit Helpers, And Explicit Materialization](../../decisions/slate-v2-node-query-api-should-keep-lazy-entries-and-add-first-match-helpers.md). Slate v2 node-query API decision with a reference table comparing legacy Slate, ProseMirror, Lexical and Tiptap traversal APIs.
-- [Slate v2 overlay architecture beats legacy Slate and aligns with the best parts of the field](../../decisions/slate-v2-overlay-superiority-vs-legacy-and-field.md). Judges the April 2026 Slate v2 overlay design against legacy Slate and against ProseMirror, Lexical and Tiptap, one section each.
-- [Slate v2 post-closure architecture review](../../decisions/slate-v2-post-closure-architecture-review.md). Plite post-closure review: no pivot to Lexical, ProseMirror or Tiptap, and a typing-lane comparison against legacy Slate chunking.
+- Document import and conversion fidelity (`2e865a0bc4:docs/research/decisions/import-fidelity.md`). Plate/Plite format parse, diagnostics and admission contract, with a validation benchmark comparing ProseMirror, CKEditor, Slate, Lexical and Tiptap.
+- Plugin input rules guide should lead with runtime first then feature owners then API reference (`2e865a0bc4:docs/research/decisions/plugin-input-rules-guide-should-lead-with-runtime-first-then-feature-owners-then-api-reference.md`). Plate docs-structure decision that compares the Tiptap, Slate, Lexical and ProseMirror documentation patterns.
+- [Slate v2 destructive leaf-boundary deletion should own leaf cleanup before render](../../history/slate-v2-destructive-leaf-boundary-legacy-parity.md). Slate v2 (Plite) leaf cleanup rule against legacy Slate's zero-width leaf behavior.
+- [Slate v2 Editing Epoch Legacy Timing Recovery Audit](../../history/slate-v2-editing-epoch-legacy-timing-recovery-audit.md). Maps legacy Slate Editable browser timing rules onto Slate v2 input/selection owners.
+- [Slate v2 Node Query API Should Keep Lazy Entries, Early-Exit Helpers, And Explicit Materialization](../../history/slate-v2-node-query-api-should-keep-lazy-entries-and-add-first-match-helpers.md). Slate v2 node-query API decision with a reference table comparing legacy Slate, ProseMirror, Lexical and Tiptap traversal APIs.
+- [Slate v2 overlay architecture beats legacy Slate and aligns with the best parts of the field](../../history/slate-v2-overlay-superiority-vs-legacy-and-field.md). Judges the April 2026 Slate v2 overlay design against legacy Slate and against ProseMirror, Lexical and Tiptap, one section each.
+- [Slate v2 post-closure architecture review](../../history/slate-v2-post-closure-architecture-review.md). Plite post-closure review: no pivot to Lexical, ProseMirror or Tiptap, and a typing-lane comparison against legacy Slate chunking.
 
 Research runs:
 

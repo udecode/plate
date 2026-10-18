@@ -1,6 +1,7 @@
 import { BaseParagraphPlugin, createEditor, definePlugin } from 'platejs';
 
 import { type Element, property, schema, target } from '../core';
+import { BaseLineHeightPlugin } from '../features/basic-styles';
 import {
   defineDocumentMigrations,
   type DocumentMigrations,
@@ -99,7 +100,7 @@ const BaseColumnItemPlugin = definePlugin('column', {
     },
   }),
 });
-const BaseColumnPlugin = definePlugin('columnGroup', {
+const BaseColumnGroupPlugin = definePlugin('columnGroup', {
   dependencies: [BaseColumnItemPlugin],
   schema: {
     element: {
@@ -261,7 +262,7 @@ const plugins = [
   BaseFootnoteDefinitionPlugin,
   BaseInlineEquationPlugin,
   BaseEquationPlugin,
-  BaseColumnPlugin,
+  BaseColumnGroupPlugin,
   BaseFilePlugin,
   BaseImagePlugin,
   BaseMediaEmbedPlugin,
@@ -1014,6 +1015,81 @@ describe('migratePlateV54 AST contracts', () => {
     expect(result).toEqual({
       children: [sidebar, { children: [{ text: '' }], type: 'excalidraw' }],
       roots: { sidebar: [drawing] },
+    });
+  });
+
+  it('converts stored line heights to numbers and drops the ones it cannot read', () => {
+    const migrations = defineDocumentMigrations({
+      plugins: [...plugins, BaseLineHeightPlugin],
+      schema: MigrationSchema,
+      steps: { 54: migrateV54 },
+    });
+    const stored = [
+      '107%',
+      '133.3%',
+      '1.38',
+      '150%',
+      '1.5em',
+      'normal',
+      '12pt',
+      0,
+      -1,
+    ];
+    const result = migrateDocument(
+      {
+        children: stored.map((lineHeight) => ({
+          children: [{ text: String(lineHeight) }],
+          lineHeight,
+          type: 'p',
+        })),
+      },
+      { migrations }
+    ).document;
+
+    expect(
+      result.children.map((block) =>
+        Object.hasOwn(block, 'lineHeight') ? block.lineHeight : 'dropped'
+      )
+    ).toEqual([
+      1.07,
+      1.333,
+      1.38,
+      1.5,
+      1.5,
+      'dropped',
+      'dropped',
+      'dropped',
+      'dropped',
+    ]);
+  });
+
+  it('converts a stored line height outside the primary root', () => {
+    const migrations = defineDocumentMigrations({
+      plugins: [...plugins, SidebarPlugin, BaseLineHeightPlugin],
+      schema: MigrationSchema,
+      steps: { 54: migrateV54 },
+    });
+    const sidebar = {
+      childRoots: { body: 'sidebar' },
+      children: [{ text: '' }],
+      type: 'sidebar',
+    };
+    const result = migrateDocument(
+      {
+        children: [sidebar],
+        roots: {
+          sidebar: [
+            { children: [{ text: 'note' }], lineHeight: '115%', type: 'p' },
+          ],
+        },
+      },
+      { migrations }
+    ).document;
+
+    expect(result.roots).toEqual({
+      sidebar: [
+        { children: [{ text: 'note' }], lineHeight: 1.15, type: 'paragraph' },
+      ],
     });
   });
 

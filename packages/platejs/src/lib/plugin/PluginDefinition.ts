@@ -193,11 +193,6 @@ export type BaseInjectProps = {
    * extended.
    */
   classNames?: Record<string, string>;
-  /**
-   * Default node value. The node key would be unset if the node value =
-   * defaultNodeValue.
-   */
-  defaultNodeValue?: unknown;
   /** Node key to map to the styles. */
   nodeKey?: string;
   /**
@@ -215,8 +210,6 @@ export type BaseInjectProps = {
    * @default 'all'
    */
   textScope?: 'all' | 'nodeKey';
-  /** List of supported node values. */
-  validNodeValues?: readonly unknown[];
 };
 
 export type PluginBase<

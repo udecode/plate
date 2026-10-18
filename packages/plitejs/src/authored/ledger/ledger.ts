@@ -19,6 +19,10 @@ import type {
 } from '../../core/command-document';
 import { createEditorCommit, getEditorCommitValue } from '../../core/commit';
 import {
+  ensureElementOwnedRootIndex,
+  rebaseElementOwnedRootIndex,
+} from '../../core/element-owned-root-index';
+import {
   getEditorProjectionSnapshotIndex,
   hasEditorProjectionSnapshotIndex,
   inheritEditorProjectionIndexes,
@@ -30,6 +34,13 @@ import {
   type RecordSetVersion,
   recordSetChanges,
 } from '../../core/record-store';
+import {
+  judgeProjectedRoots,
+  type OwnershipSides,
+  orphanedRoots,
+  schemaHasContentRoots,
+} from '../../core/root-ownership';
+import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { EditorSchemaValidationError } from '../../core/schema-validation';
 import { countCoreWork } from '../../core/work';
 import type {
@@ -67,6 +78,7 @@ type RootState = Readonly<{
  * indexes, since each read of a document builds a new value.
  */
 type Synced = {
+  readonly dropped: ReadonlySet<string>;
   readonly records: unknown;
   readonly roots: ReadonlyMap<string, RootState>;
   readonly schema: AuthoredResolveSchema | null;
@@ -93,13 +105,18 @@ type FrameWrite = Readonly<{
 
 const projectedValueOf = (
   stored: JsonEditorValue,
-  roots: ReadonlyMap<string, RootState>
+  roots: ReadonlyMap<string, RootState>,
+  dropped: ReadonlySet<string>
 ) => {
   const value = deriveValue(stored, {}) as Record<string, unknown>;
   const named: Record<string, unknown> = { ...stored.roots };
-  let renamed = false;
+  let renamed = dropped.size > 0;
 
   for (const [root, { index }] of roots) {
+    if (dropped.has(root)) {
+      delete named[root];
+      continue;
+    }
     if (index === rootOf(stored, root)) continue;
     if (root === 'main') {
       setLazyRoot(value, 'children', index);
@@ -108,9 +125,96 @@ const projectedValueOf = (
       renamed = true;
     }
   }
-  if (renamed) value.roots = Object.freeze(named);
+  if (renamed) {
+    if (Object.keys(named).length > 0) value.roots = Object.freeze(named);
+    else delete value.roots;
+  }
 
   return Object.freeze(value) as JsonEditorValue;
+};
+
+const NO_ROOTS: ReadonlySet<string> = new Set();
+
+const droppedRoots = (
+  ownership: CompiledEditorSchema | null,
+  last: Synced | null,
+  stored: Roots,
+  previews: ReadonlyMap<string, DocumentIndex>,
+  changes: ReadonlyMap<string, RootChange>
+): ReadonlySet<string> => {
+  if (!ownership || !schemaHasContentRoots(ownership)) return NO_ROOTS;
+
+  const full = () =>
+    new Set(
+      orphanedRoots(ownership, {
+        after: (root) => previews.get(root) ?? null,
+        afterRoots: () => [...previews.keys()],
+        before: (root) => stored.get(root) ?? null,
+        beforeRoots: () => [...stored.keys()],
+        changedRoots: new Map(
+          [...previews]
+            .filter(([root, index]) => stored.get(root) !== index)
+            .map(([root]) => [root, undefined])
+        ),
+        tracked: NO_ROOTS,
+      })
+    );
+
+  if (!last || last.schema?.ownership !== ownership) return full();
+
+  const indexOf = (root: string, document: DocumentIndex | null) => {
+    if (!document) return null;
+    countCoreWork('ownerIndexReads');
+
+    return ensureElementOwnedRootIndex(ownership, root, document);
+  };
+  const sidesOf = (
+    before: ReadonlyMap<string, DocumentIndex>,
+    after: ReadonlyMap<string, DocumentIndex>,
+    afterOf: (
+      root: string,
+      from: DocumentIndex | null
+    ) => OwnershipSides['after']
+  ) => {
+    const sides = new Map<string, OwnershipSides>();
+
+    for (const root of new Set([...before.keys(), ...after.keys()])) {
+      const from = before.get(root) ?? null;
+
+      if (from === (after.get(root) ?? null)) continue;
+      const beforeIndex = indexOf(root, from);
+
+      sides.set(root, { after: afterOf(root, from), before: beforeIndex });
+    }
+
+    return sides;
+  };
+  const lastPreviews = new Map(
+    [...last.roots].map(([root, { index }]) => [root, index])
+  );
+
+  return judgeProjectedRoots({
+    closed: ownership.unknown === 'reject',
+    created: new Set(
+      [...stored.keys()].filter((root) => !last.stored.has(root))
+    ),
+    exists: (root) => stored.has(root),
+    full,
+    last: last.dropped,
+    projected: sidesOf(lastPreviews, previews, (root, from) => {
+      const to = previews.get(root) ?? null;
+      const change = changes.get(root);
+
+      if (!to || !from || !change) return indexOf(root, to);
+      countCoreWork('ownerIndexReads');
+
+      return rebaseElementOwnedRootIndex(ownership, root, change, from, to);
+    }),
+    projectedOf: (root) => indexOf(root, previews.get(root) ?? null),
+    stored: sidesOf(last.stored, stored, (root) =>
+      indexOf(root, stored.get(root) ?? null)
+    ),
+  });
 };
 
 const matches = (
@@ -165,6 +269,10 @@ class ModeProjection {
         : null;
     const writtenRoot = (root: string): WrittenRoot | null => {
       if (!written) return null;
+      const droppedByFrame =
+        root !== 'main' && !Object.hasOwn(written.value.roots ?? {}, root);
+
+      if (droppedByFrame) return null;
 
       const index = rootOf(written.value, root);
 
@@ -242,15 +350,23 @@ class ModeProjection {
       }
     }
 
+    const roots = new Map(
+      [...this.roots].map(([root, projection]) => [
+        root,
+        { changed: projection.changed, index: projection.previewRoot },
+      ])
+    );
     const next: Synced = back ?? {
+      dropped: droppedRoots(
+        schema?.ownership ?? null,
+        last,
+        content,
+        new Map([...roots].map(([root, { index }]) => [root, index])),
+        changes
+      ),
       preview: null,
       records,
-      roots: new Map(
-        [...this.roots].map(([root, projection]) => [
-          root,
-          { changed: projection.changed, index: projection.previewRoot },
-        ])
-      ),
+      roots,
       schema,
       stored: content,
       value,
@@ -310,10 +426,19 @@ class ModeProjection {
     const { changes, prior } = getDefined(this.history);
 
     if (from === to) return createInternalDocumentChange(new Map());
-    if (prior === from && sameKeys(from.roots, to.roots)) {
-      return createInternalDocumentChange(changes, {
+    if (
+      prior === from &&
+      sameKeys(from.roots, to.roots) &&
+      sameKeys(from.dropped, to.dropped)
+    ) {
+      const shown =
+        to.dropped.size === 0
+          ? changes
+          : new Map([...changes].filter(([root]) => !to.dropped.has(root)));
+
+      return createInternalDocumentChange(shown, {
         classifications: new Map(
-          [...changes].map(([root, change]) => [
+          [...shown].map(([root, change]) => [
             root,
             classifyRootChange(
               change,
@@ -339,11 +464,15 @@ class ModeProjection {
 }
 
 const valueOf = (synced: Synced) =>
-  (synced.preview ??= projectedValueOf(synced.value, synced.roots));
+  (synced.preview ??= projectedValueOf(
+    synced.value,
+    synced.roots,
+    synced.dropped
+  ));
 
 const sameKeys = (
-  left: ReadonlyMap<string, unknown>,
-  right: ReadonlyMap<string, unknown>
+  left: ReadonlyMap<string, unknown> | ReadonlySet<string>,
+  right: ReadonlyMap<string, unknown> | ReadonlySet<string>
 ) =>
   left.size === right.size && [...left.keys()].every((key) => right.has(key));
 
@@ -352,7 +481,7 @@ const mapOf = (
   synced: Synced
 ): CommandProjectionMap => {
   const changed = [...synced.roots]
-    .filter(([, root]) => root.changed)
+    .filter(([root, state]) => state.changed && !synced.dropped.has(root))
     .map(([root]) => root);
   const live = (root: string) =>
     changed.includes(root) ? projection.moveTo(synced).get(root) : undefined;
@@ -366,19 +495,26 @@ const mapOf = (
       composed ??= createInternalDocumentChange(
         new Map(
           changed.map((root) => [root, getDefined(live(root)).composedChange()])
-        )
+        ),
+        { deleteRoots: synced.dropped }
       );
 
       return composed;
     },
     hides: (root: string, position: number) =>
-      live(root)?.hides(position) ?? false,
+      synced.dropped.has(root) || (live(root)?.hides(position) ?? false),
     roots: Object.freeze(changed),
     toProjected: (root: string, position: number, association) =>
-      live(root)?.toProjected(position, association === 'forward' ? 1 : -1) ??
-      position,
+      synced.dropped.has(root)
+        ? null
+        : (live(root)?.toProjected(
+            position,
+            association === 'forward' ? 1 : -1
+          ) ?? position),
     toStored: (root: string, position: number, assoc: -1 | 1) =>
-      live(root)?.toStored(position, assoc) ?? position,
+      synced.dropped.has(root)
+        ? null
+        : (live(root)?.toStored(position, assoc) ?? position),
   });
 };
 
@@ -516,6 +652,10 @@ export class ReviewLedger {
     });
   }
 
+  dropped(stored: JsonEditorValue) {
+    return this.modeOf('proposed').sync(stored, this.schemaOf()).dropped;
+  }
+
   frame(stored: JsonEditorValue): CommandProjection | null {
     const projection = this.modeOf('proposed');
     const synced = projection.sync(stored, this.schemaOf());
@@ -523,7 +663,9 @@ export class ReviewLedger {
 
     if (this.lastFrame?.value === value) return this.lastFrame.frame;
 
-    const changed = [...synced.roots].filter(([, root]) => root.changed);
+    const changed = [...synced.roots].filter(
+      ([root, state]) => state.changed && !synced.dropped.has(root)
+    );
     const carried = new Map(
       changed.flatMap(([root]) => {
         const previous = projection.carried(root);
@@ -531,7 +673,7 @@ export class ReviewLedger {
       })
     );
     const frame: CommandProjection | null =
-      changed.length === 0
+      changed.length === 0 && synced.dropped.size === 0
         ? null
         : {
             carried,
@@ -570,8 +712,12 @@ export class ReviewLedger {
       from,
       state?.changed ? state.index : from,
       (position, assoc) =>
-        projection.moveTo(synced).get(root)?.toProjected(position, assoc) ??
-        position,
+        synced.dropped.has(root)
+          ? null
+          : (projection
+              .moveTo(synced)
+              .get(root)
+              ?.toProjected(position, assoc) ?? position),
       root
     );
   }

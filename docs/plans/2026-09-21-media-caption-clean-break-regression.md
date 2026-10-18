@@ -79,4 +79,4 @@ whole next job: current model probes also expose empty-caption asset removal
 and caption-only copy recreating the asset. Retain the behavior evidence above
 and the canonical type-conversion owner, but settle the schema-owned
 object/content contract before committing to a standalone reset option.
-See [the current decision](../research/decisions/media-object-content.md).
+See the current decision (`2e865a0bc4:docs/research/decisions/media-object-content.md`).

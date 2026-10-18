@@ -24,7 +24,7 @@ Template:
 Task source:
 - The user accepted the final Verdict and authorized full execution.
 - Governing review: `docs/research/review-records/2026-09-23-history-session-effect-authoring-final.json`.
-- Governing decision: `docs/research/decisions/history-ownership.md`.
+- Governing decision: `2e865a0bc4:docs/research/decisions/history-ownership.md`.
 
 Completion threshold:
 - `defineEffect` accepts local session replay only as `history: { replay }`.

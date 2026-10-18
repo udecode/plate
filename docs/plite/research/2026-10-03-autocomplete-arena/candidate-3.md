@@ -157,7 +157,7 @@ What law 1 changes in practice: Users gain a real combobox for assistive technol
 - Composition: no DOM Range reads (O:371-389).
 - Open and close: two focus moves, two anchors, one rect read and one decoration refresh.
 
-Nothing is measured; the gate is the frozen key-to-paint contract (docs/research/decisions/autocomplete-ownership.md) plus a query-typing cohort.
+Nothing is measured; the gate is the frozen key-to-paint contract (2e865a0bc4:docs/research/decisions/autocomplete-ownership.md) plus a query-typing cohort.
 
 ## Public API against the built code
 

@@ -13,7 +13,7 @@ source_refs:
   - ../raw/prosemirror/packages/view/src/input.ts
   - ../raw/prosemirror/packages/view/src/selection.ts
 related:
-  - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
+  - docs/research/history/slate-v2-read-update-runtime-architecture.md
 ---
 
 # ProseMirror transaction/view DOM runtime

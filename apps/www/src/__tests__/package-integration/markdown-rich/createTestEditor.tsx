@@ -26,7 +26,7 @@ import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnotePlugin,
 } from 'platejs/footnote';
-import { BaseColumnPlugin } from 'platejs/layout';
+import { BaseColumnGroupPlugin } from 'platejs/layout';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 import {
   BaseAudioPlugin,
@@ -86,7 +86,7 @@ const testPlugins = [
   BaseVideoPlugin,
   BaseMediaEmbedPlugin,
   BaseTocPlugin,
-  BaseColumnPlugin,
+  BaseColumnGroupPlugin,
   BaseMentionPlugin,
   BaseDatePlugin,
   BaseFontColorPlugin,

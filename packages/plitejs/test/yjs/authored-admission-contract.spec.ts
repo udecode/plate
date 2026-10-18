@@ -10,7 +10,12 @@ import {
   verdictIdOf,
 } from '../../src/authored/facts/records';
 import { authoredMarksSchema } from '../../src/authored/tree/marks';
-import { createEditor, definePlugin } from '../../src/index';
+import {
+  createEditor,
+  defineEditorSchema,
+  definePlugin,
+  schema,
+} from '../../src/index';
 import { yjs } from '../../src/yjs/core/plugin';
 import { authoredTestApi, reviewRecords } from '../support/authored';
 
@@ -37,10 +42,35 @@ const WithoutAdmission = definePlugin('authored', {
   schema: authoredMarksSchema,
 });
 
-const peer = (doc: Y.Doc, plugin: unknown, seeded?: readonly unknown[]) => {
+const cards = (unknown: 'preserve' | 'reject') =>
+  defineEditorSchema(`yjs-authored-cards:${unknown}`, {
+    elements: {
+      card: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        contentRoots: {
+          body: {
+            content: schema.content.type('paragraph', {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+            ownership: 'exclusive',
+          },
+        },
+      },
+      paragraph: { content: schema.content.text({ default: 'text', min: 1 }) },
+    },
+    root: schema.content.types(['paragraph', 'card'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown,
+  });
+const CARDS = [cards('reject'), cards('preserve')];
+
+const peer = (doc: Y.Doc, plugin: unknown, seeded?: unknown) => {
   const editor = createEditor({
     initialValue: (seeded ?? [paragraph({ text: '' })]) as never,
-    plugins: [plugin as never],
+    plugins: [plugin].flat() as never,
   });
   const binding = yjs({
     doc,
@@ -71,7 +101,66 @@ const copyOf = (doc: Y.Doc) => {
 const send = (from: Y.Doc, to: Y.Doc) =>
   Y.applyUpdate(to, Y.encodeStateAsUpdate(from, Y.encodeStateVector(to)));
 
+const rootsOf = (doc: Y.Doc) => [...doc.getMap('document:roots').keys()];
+
 describe('plitejs/yjs authored admission', () => {
+  it('drops the root of a suggested card a verdict rejects when a peer attaches, in both schema modes', () => {
+    for (const Cards of CARDS) {
+      const suggester = createEditor({
+        initialValue: [paragraph({ text: 'C' }), paragraph({ text: 'aa' })],
+        plugins: [
+          Cards,
+          createAuthoredPlugin({
+            authorId: 'bob',
+            createChangeId: () => 'bob:1',
+            intent: 'propose',
+            now: () => 1,
+          }),
+        ] as never,
+      });
+
+      suggester.update((tx) => {
+        tx.roots.create('b9', [paragraph({ text: 'B' })] as never);
+        tx.nodes.set({ type: 'card', childRoots: { body: 'b9' } } as never, {
+          at: [0],
+        });
+      });
+
+      const { records: _records, ...claimed } = suggester.read.value();
+      const room = new Y.Doc();
+      const writer = peer(room, [Cards, WithoutAdmission], {
+        ...claimed,
+        records: reviewRecords({
+          verdicts: [
+            {
+              decision: 'd:1',
+              member: { at: 1, change: 'bob:1' },
+              verdict: 'reject',
+            },
+          ],
+        }),
+      });
+      const dana = peer(copyOf(room), [
+        Cards,
+        createAuthoredPlugin({ authorId: 'dana' }),
+      ]);
+
+      send(dana.doc, room);
+
+      assert.deepEqual(
+        [dana, writer].map(({ doc, editor }) => [
+          rootsOf(doc),
+          editor.read.value().children.map((node: any) => node.type),
+          editor.read.value().roots,
+        ]),
+        [
+          [[], ['paragraph', 'paragraph'], undefined],
+          [[], ['paragraph', 'paragraph'], undefined],
+        ]
+      );
+    }
+  });
+
   it('upgrades a room an authored build without review contexts wrote, whichever upgrade arrives first', () => {
     for (const danaFirst of [true, false]) {
       const room = new Y.Doc();

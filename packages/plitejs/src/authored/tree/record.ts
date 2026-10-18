@@ -75,6 +75,7 @@ export type AuthoredRecordInput = Readonly<{
     root: string
   ) => readonly JsonNode[];
   deleteRoots: ReadonlySet<string>;
+  followed: ReadonlySet<string>;
   /**
    * Whether an empty text keeps property `key` at `value` under `parents`,
    * nearest first, as the canonical form decides.
@@ -108,6 +109,7 @@ export type AuthoredRecordInput = Readonly<{
   now: number;
   /** Element types that hold exactly one text, which marks must not split. */
   oneText?: (type: string) => boolean;
+  ownedRoots?: (props: Readonly<JsonRecord>) => readonly OwnedRoot[];
   /** The collapsed caret's position in the before document, and its root. */
   selectionBefore?: Readonly<{ position: number; root: string }> | null;
   steps: readonly DraftStep[];
@@ -133,6 +135,8 @@ export type AuthoredRecordResult = Readonly<{
 }>;
 
 type Props = Readonly<JsonRecord>;
+
+type OwnedRoot = Readonly<{ exclusive: boolean; root: string }>;
 
 /**
  * Maps a position between drafts. A removal the review draft keeps in place
@@ -613,6 +617,33 @@ export const recordAuthoredSteps = (
   ): AuthoredMark => (kind === 'split' ? { ...base, kind } : { ...base, kind });
   const folds = new Map<string, RootFold>();
   let writtenPlain = true;
+  const ownedRootsOf = (props: Props) => input.ownedRoots?.(props) ?? [];
+  const doubled = new Map<string, Set<string>>();
+  const holdsWithdrawal = (props: Props): boolean =>
+    ownedRootsOf(props).some(({ root }) => {
+      if (!input.deleteRoots.has(root) && !input.followed.has(root)) {
+        return false;
+      }
+      const index =
+        folds.get(root)?.index ??
+        (input.before.roots?.[root]
+          ? valueRootIndex(input.before, root)
+          : null);
+      const ownInsertion = (node: JsonNode) => {
+        const inserted = innermostInsert(input.dependencies.marks(node));
+
+        return inserted !== undefined && isOwn(inserted);
+      };
+      const holds = (nodes: readonly JsonNode[]): boolean =>
+        nodes.some(
+          (node) =>
+            !ownInsertion(node) ||
+            (node.children !== undefined &&
+              (holdsWithdrawal(propsOf(node)) || holds(node.children)))
+        );
+
+      return index !== null && holds(index.value);
+    });
   const foldOf = (root: string) => {
     let fold = folds.get(root);
 
@@ -642,7 +673,7 @@ export const recordAuthoredSteps = (
     for (const root of map.roots) {
       const fold = foldOf(root);
       const toStored = (position: number, assoc: -1 | 1) =>
-        map.toStored(root, position, assoc);
+        getDefined(map.toStored(root, position, assoc));
       const caretAt =
         input.selectionBefore?.root === root
           ? input.selectionBefore.position
@@ -655,7 +686,8 @@ export const recordAuthoredSteps = (
         caretAt === null
           ? null
           : farEdge(
-              (position) => map.toProjected(root, position, 'forward'),
+              (position) =>
+                getDefined(map.toProjected(root, position, 'forward')),
               toStored,
               fold.index,
               caretAt
@@ -694,13 +726,27 @@ export const recordAuthoredSteps = (
     for (const [root, written] of getInternalDocumentChangeEntries(
       step.change
     )) {
+      if (input.followed.has(root)) continue;
       const fold = foldOf(root);
-      const plain = step.indexedBefore?.get(root);
+      const plain = getDefined(step.indexedBefore.get(root));
       // A fitted slice writes anew the open tokens of the blocks it lands in.
-      const rootChange =
-        plain && step.origin === 'slice'
+      const aligned =
+        step.origin === 'slice'
           ? written.alignOpens(plain, bothUnclaimed)
           : written;
+      const rootChange =
+        input.followed.size > 0
+          ? strikeRetyped(aligned, plain, input.followed, ownedRootsOf, () => {
+              let roots = doubled.get(root);
+
+              if (!roots) {
+                roots = new Set();
+                doubled.set(root, roots);
+              }
+
+              return roots;
+            })
+          : aligned;
 
       // The review draft runs its own canonical pass, so canonical
       // construction only moves the plain draft away from it.
@@ -745,6 +791,7 @@ export const recordAuthoredSteps = (
           framed: input.projection !== undefined,
           fill: (site) => input.fill(site, root),
           frameIndex: fold.frameIndex,
+          holdsWithdrawal,
           isInline: input.isInline,
           isOwn,
           keepsOnSplit: (split) => input.keepsOnSplit(split, root),
@@ -778,6 +825,29 @@ export const recordAuthoredSteps = (
     }
   }
 
+  for (const [root, roots] of doubled) {
+    const owners = new Map<string, number>();
+    const count = (nodes: readonly JsonNode[]) => {
+      for (const node of nodes) {
+        if (node.children === undefined) continue;
+        for (const owned of ownedRootsOf(propsOf(node))) {
+          if (!roots.has(owned.root)) continue;
+          const seen = (owners.get(owned.root) ?? 0) + 1;
+
+          if (seen > 1) {
+            throw unrepresentable(
+              'Suggesting cannot retype a block whose old and new forms would both own one content root.'
+            );
+          }
+          owners.set(owned.root, seen);
+        }
+        count(node.children);
+      }
+    };
+
+    count(getDefined(folds.get(root)).index.value);
+  }
+
   const changes = new Map<string, RootChange>();
   const indexedAfter = new Map<string, DocumentIndex>();
 
@@ -793,7 +863,10 @@ export const recordAuthoredSteps = (
       createInternalDocumentChange(
         new Map(
           [...folds]
-            .filter(([root]) => !input.deleteRoots.has(root))
+            .filter(
+              ([root]) =>
+                !input.deleteRoots.has(root) && !input.followed.has(root)
+            )
             .map(([root, fold]) => [
               root,
               correspondence(plainAfter(root), fold.index, fold.map),
@@ -811,6 +884,72 @@ export const recordAuthoredSteps = (
   };
 };
 
+const strikeRetyped = (
+  change: RootChange,
+  before: DocumentIndex,
+  followed: ReadonlySet<string>,
+  ownedRoots: (props: Props) => readonly OwnedRoot[],
+  doubled: () => Set<string>
+): RootChange => {
+  const after = change.apply(before);
+  const exclusiveIn = (node: JsonNode, roots = new Set<string>()) => {
+    if (node.children === undefined) return roots;
+    for (const { exclusive, root } of ownedRoots(propsOf(node))) {
+      if (exclusive) roots.add(root);
+    }
+    for (const child of node.children) exclusiveIn(child, roots);
+
+    return roots;
+  };
+  const replaced: RootChangeSection[] = [];
+  let at = 0;
+  let covered = 0;
+
+  for (let pair = 0; pair < change.sections.length / 2; pair += 1) {
+    const length = change.sections[pair * 2];
+
+    if (change.sections[pair * 2 + 1] !== -2) {
+      at += length;
+      continue;
+    }
+    for (let offset = 0; offset < length; offset += 1) {
+      const from = before.nodeStartingAt(at + offset);
+      const mapped = change.mapPos(at + offset, 1);
+      const to = mapped === null ? null : after.nodeStartingAt(mapped);
+
+      if (!from || !to) continue;
+      const kept = new Set(
+        ownedRoots(propsOf(after.node(to.path))).map(({ root }) => root)
+      );
+      const range = after.nodeRange(to.path);
+
+      if (
+        range.from >= covered &&
+        ownedRoots(propsOf(before.node(from.path))).some(
+          ({ root }) => followed.has(root) && !kept.has(root)
+        )
+      ) {
+        const struck = exclusiveIn(before.node(from.path));
+
+        for (const root of exclusiveIn(after.node(to.path))) {
+          if (struck.has(root)) doubled().add(root);
+        }
+        replaced.push({
+          from: range.from,
+          insert: after.slice(range.from, range.to),
+          to: range.to,
+        });
+        covered = range.to;
+      }
+    }
+    at += length;
+  }
+
+  return replaced.length === 0
+    ? change
+    : change.compose(RootChange.create(after, replaced));
+};
+
 type RecorderOptions = Readonly<{
   dependencies: Dependencies;
   plainToReview: PosMap;
@@ -824,6 +963,7 @@ type RecorderOptions = Readonly<{
   fill: (site: readonly Props[]) => readonly JsonNode[];
   frameIndex: DocumentIndex | null;
   framed: boolean;
+  holdsWithdrawal: (props: Props) => boolean;
   isInline: (props: Props) => boolean;
   isOwn: (mark: AuthoredMark) => boolean;
   keepsOnSplit: (
@@ -2110,6 +2250,14 @@ class RootRecorder {
           );
 
         if (!spacer && !ownBoundary && !withdrawn(marks)) return false;
+        if (
+          token.nodeKind === 'element' &&
+          this.options.holdsWithdrawal(
+            this.propsStartingAt(from + localOffsets[inner])
+          )
+        ) {
+          return false;
+        }
       }
 
       return true;

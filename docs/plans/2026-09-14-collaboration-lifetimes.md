@@ -44,7 +44,7 @@ Blocked condition:
 none for collaboration. Manual long-duration soaks require an explicit soak
 request under the repository's proof rules and were not run for this closure.
 
-Sources: [initial review](../research/decisions/collaboration-ownership.md), [Task workflow](../../.agents/rules/task/references/workflow.md), [complex decisions](../../.agents/rules/task/references/complex-work.md), [Best API](../../.agents/skills/best-api/SKILL.md), [Plite Plan](../../.agents/skills/plite-plan/SKILL.md), [Benchmark](../../.agents/skills/benchmark/SKILL.md), and [Plite](../vision/plite.md) / [Plate](../vision/plate.md) / [common Vision](../vision/common.md). Detailed source witnesses and caller inventories live in the [provider investigation](artifacts/2026-09-14-collaboration-provider-design.md) and [Plate investigation](artifacts/2026-09-14-collaboration-plate-design.md). The decisions here take precedence over their preliminary alternatives.
+Sources: initial review (`2e865a0bc4:docs/research/decisions/collaboration-ownership.md`), [Task workflow](../../.agents/rules/task/references/workflow.md), [complex decisions](../../.agents/rules/task/references/complex-work.md), [Best API](../../.agents/skills/best-api/SKILL.md), [Plite Plan](../../.agents/skills/plite-plan/SKILL.md), [Benchmark](../../.agents/skills/benchmark/SKILL.md), and [Plite](../vision/plite.md) / [Plate](../vision/plate.md) / [common Vision](../vision/common.md). Detailed source witnesses and caller inventories live in the [provider investigation](artifacts/2026-09-14-collaboration-provider-design.md) and [Plate investigation](artifacts/2026-09-14-collaboration-plate-design.md). The decisions here take precedence over their preliminary alternatives.
 
 ## Selected ownership
 

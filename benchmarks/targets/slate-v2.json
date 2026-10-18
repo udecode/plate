@@ -877,7 +877,7 @@
       "docs": {
         "sources": [
           "docs/plans/2026-09-21-annotations-architecture-adoption.md",
-          "docs/research/decisions/2026-09-20-annotations-ownership.md"
+          "docs/plans/topics/annotations.md"
         ]
       },
       "thresholds": {

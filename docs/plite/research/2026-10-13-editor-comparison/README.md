@@ -20,7 +20,7 @@ Verdict: Stop a universal editor ranking or a runtime replacement inferred from 
 
 - [Current comparison and source findings](../../../research/sources/editor-architecture/current-comparison.md).
 - [Which editors to compare for each decision](../../../research/sources/editor-architecture/candidates.md).
-- [Accepted research decision](../../../research/decisions/editor-comparison-set.md).
+- Accepted research decision (`2e865a0bc4:docs/research/decisions/editor-comparison-set.md`).
 - [Review and its limits](../../../plans/2026-10-13-editor-comparison-review.md).
 
 The strongest additions are Wordgard for independent runtime evidence; ProseKit and current Lexical Extensions for composition; BlockSuite and Blok for shared blocks; Portable Text for schema and behavior contracts; Meowdown, MDXEditor and Milkdown for Markdown; and OpenDoc for experimental document layout. Canvas-editor, Lexxy and Proof SDK contribute narrower rendering, focus and agent scenarios.

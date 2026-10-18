@@ -20,7 +20,7 @@ source_refs:
   - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical/src/extension-core/types.ts
   - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical-website/docs/extensions/signals.md
 related:
-  - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
+  - docs/research/history/slate-v2-read-update-runtime-architecture.md
 ---
 
 # Lexical read/update extension runtime

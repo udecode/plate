@@ -129,10 +129,14 @@ authored.api.setView({ preview: "proposed" });
 | ------------------------ | ----------------------------------------------------- | ---------------------------------------------- |
 | `{ intent: 'edit' }`     | Stored content with pending insertions and deletions  | Applied as written                             |
 | `{ intent: 'propose' }`  | Stored content with pending insertions and deletions  | Recorded as proposals by the current author    |
-| `{ preview: 'proposed' }` | Every pending change accepted                        | None                                           |
-| `{ preview: 'accepted' }` | Every pending change rejected                        | None                                           |
+| `{ preview: 'proposed' }` | Every pending change accepted                        | Plain edits throw; see below                 |
+| `{ preview: 'accepted' }` | Every pending change rejected                        | Plain edits throw; see below                 |
+
+A preview throws on a plain edit, but some other writes still change the stored document, such as an update that makes a decision, undo and redo, and remote collaboration changes.
 
 Typing inside struck text splits the pending deletion around the new text. An `edit` view applies that text as written, and a `propose` view records it as an insertion. A `propose` view refuses a write it cannot record as a proposal, such as a change inside a table, and rolls it back; `api.subscribeRefusals(listener)` reports each refusal.
+
+Deleting a block that owns a [content root](/docs/roots#content-roots) in a `propose` view strikes the block and leaves the root's content unchanged and unmarked, so style the root as deleted in the block's component. Typing or pasting inside that root writes nothing until someone decides the deletion. Accepting it removes the block and its root, and returns `blocked` while the root holds text another pending change inserted. Rejecting it keeps both. Rejecting a proposed block that owns a content root removes the root too. A `propose` view still refuses deleting a named root that no element owns.
 
 A view's policy belongs to that exact view. Selection, clipboard input, commands, and anchors use that view's coordinates. Two mounted views over one document can use different policies.
 
@@ -149,7 +153,7 @@ const result = authored.update.decide({
 });
 ```
 
-Use `action: 'reject'` to reject changes. `changes(query)` reads pending changes in document order, 50 at a time by default and at most 200. Pass a non-null page `cursor` to read the next page; a cursor whose changes have all left throws as stale. Narrow a page to a place of the stored document with `at`, to one author with `authorId`, to creation times with `from` and `to`, or to one card with `group`.
+Use `action: 'reject'` to reject changes. `changes(query)` reads pending changes in document order, 50 at a time by default and at most 200. Pass a non-null page `cursor` to read the next page; a cursor whose changes have all left throws as stale. Narrow a page to a place of the stored document with `at`, to one author with `authorId`, or to one card with `group`.
 
 Each `AuthoredChange` has its `id`, `authorId`, `createdAt`, `kind`, current `ranges`, and a `revision` that differs whenever its marks or the content they mark differ. Use `change(id)` to read one change.
 
@@ -207,8 +211,6 @@ Always inspect the result of `decide`:
 | `blocked`   | Decide the changes `with` names with it. Nothing applied.    |
 | `invalid`   | The decisions contradict, or the schema refuses the result.  |
 
-`authored.read.preview(decision)` returns the result a decision would have without applying it. An `applied` preview means the decision can apply at that moment; the later `decide` call still needs result handling.
-
 ## Save the document
 
 Save the complete result of `editor.read.value()`. It holds the content with each node's pending review marks, and the review records in the document's `records`. Saving only the node array loses those records.
@@ -234,7 +236,9 @@ Historical previews and restores retain current conversations and use only the s
 Choose `accepted` or `proposed` for a clean document, or `review` when the
 format can preserve review records. Clean projections report diagnostics when
 they omit pending work. Every helper accepts or captures a complete document,
-including named roots and metadata.
+including named roots and metadata. A clean projection leaves out a content root
+once it leaves out the root's owner, by the
+[content root](/docs/roots#content-roots) ownership rule.
 
 HTML, Markdown, plain-text and static HTML exports of a document with pending
 changes throw a `TypeError` unless `projection` is `accepted` or `proposed`. A
@@ -343,7 +347,6 @@ After `const authored = editor.plugin(AuthoredPlugin)`, use these methods:
 | `authored.read.groups({ at })`             | Read summaries of the cards touching a place of the stored document.                   |
 | `authored.read.groupOf(changeId)`          | Read the card that holds a change, or `null`.                                          |
 | `authored.read.reviewOf(node)`             | Read a stored node's pending marks and the accepted values of the properties they format. |
-| `authored.read.preview(decision)`          | Check a decision without applying it.                                                  |
 | `authored.update.decide(decision)`         | Accept or reject changes or cards; an array of decisions decides together.             |
 | `authored.api.setView(view)`               | Change the policy on this exact view.                                                  |
 | `authored.api.subscribeChanges(listener)`  | Receive one shared delta for each commit that changes the review.                      |

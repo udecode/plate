@@ -201,3 +201,28 @@ const { update } = editor.plugin(IndentPlugin);
   <ToolbarButton onClick={() => update.decrease()}>Outdent</ToolbarButton>
 </>
 ```
+
+## 首行缩进
+
+`TextIndentPlugin` 只缩进块的第一行。它把缩进步数存在 `textIndent` 中，并按 `offset * textIndent + unit`
+绘制 CSS `text-indent`，所以负数步数是悬挂缩进。没有 kit 安装它，需要自己添加：
+
+```tsx
+import { TextIndentPlugin } from "platejs/react";
+import { createEditor } from "platejs/react";
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    TextIndentPlugin,
+  ],
+});
+
+editor.update.textIndent.set(1);
+editor.update.textIndent.clear({ at: [] });
+```
+
+`set(value, options?)` 在匹配的目标块上保存步数，`clear(options?)` 删除它。两者都接受 Plate 节点更新选项，
+用于指定目标范围和匹配器。默认目标是段落，可以用 `targetPlugins` 修改；`initialState.offset` 和
+`initialState.unit` 设置每一步的大小，默认是 `24` 和 `'px'`。Word 导出把步数写成首行缩进，负数时写成悬挂缩进，
+列表段落上会跳过。

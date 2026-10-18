@@ -143,7 +143,7 @@ Boundary decisions:
 - External annotation refresh must accept ids. `undefined` means full refresh;
   `[]` means no-op; a non-empty list recomputes just those annotations.
 - A research decision page is needed after steelman/high-risk acceptance:
-  `docs/research/decisions/plite-collaborative-annotation-channels.md`.
+  `docs/research/history/slate-v2-collaborative-annotation-channels.md`.
 
 Pressure test:
 
@@ -219,7 +219,7 @@ Compiled research:
   lanes (`docs/research/systems/plite-overlay-architecture.md:25-35`).
 - Research already allows annotation metadata to stay app/collab/service-owned
   while `plite-react` mirrors anchors
-  (`docs/research/decisions/plite-overlay-architecture-cuts.md:29-40`).
+  (`docs/research/history/slate-v2-overlay-architecture-cuts.md:29-40`).
 - Source-scoped invalidation is accepted as the performance layer between
   full-store refresh and runtime-id subscriber delivery
   (`docs/research/concepts/source-scoped-overlay-invalidation.md:16-43`).
@@ -683,7 +683,7 @@ Legacy Plite:
 
 Added and indexed:
 
-- `docs/research/decisions/plite-collaborative-annotation-channels.md`
+- `docs/research/history/slate-v2-collaborative-annotation-channels.md`
 
 The decision accepts external annotation channels as the raw Plite default for
 comment-only collaboration while preserving document-embedded ids as an adapter

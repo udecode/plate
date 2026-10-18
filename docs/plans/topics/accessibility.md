@@ -79,6 +79,19 @@ TabbablePlugin.configure({
 }),
 ```
 
+## Layer and owner
+
+Announcements, exact-view focus and Tab traversal stay three owners because their lifetimes and policies differ: announcements are local ephemeral commit effects with app-owned wording, focus handling keeps embedded controls and read-only transitions per view, and Tabbable adds optional product policy over native Tab.
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| Merging announcement, focus and traversal lifetimes | No material benefit. |
+| Moving Tabbable's policy into Plite, or deleting it | Loses or relocates the product job. |
+| Deduplicating announcements globally by document identity | Breaks the host lifetime; one announcer per editor writes each message into one registered region instead. |
+| A new public accessibility primitive | No job. |
+
 ## Main changes
 
 - `screenReaderAnnouncementEffect` in `packages/plitejs/src/core/screen-reader-announcement.ts` is a local effect with `history: 'skip'`; `editor.api.transfer.move` emits it when the input carries `announce`.

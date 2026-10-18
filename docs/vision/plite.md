@@ -5,7 +5,8 @@ boring in the best way: document model, canonical changes, runtime, input, DOM,
 selection, history, browser proof, package API, and benchmarks.
 
 Root `VISION.md` is the mandatory first read. This file carries the fuller
-Plite doctrine after the lane is selected.
+Plite doctrine after the lane is selected. A rule that binds one feature lives
+in that feature's subject file, `docs/plans/topics/<scope>.md`, under `## Rules`.
 
 ## Plite Source Order
 
@@ -275,10 +276,6 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   presence. The owning runtime publishes internal capability, unknown behavior
   fails closed, and ordinary applications never opt into correctness with a
   performance flag.
-- Pagination is view-owned derived geometry, not core editor truth. Its mounted
-  paged component owns live measurement, page surfaces, omission and scroll
-  stability; active caret, selection and composition stay on the native/browser
-  editing path. Independent headless measurement is a separate one-shot job.
 
 ## Plite API Direction
 
@@ -315,20 +312,6 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   configuration. Document commits reuse that topology; live values are method
   results, stable host values use `api`, and direct read facades resolve and
   invoke methods inside the read boundary.
-- Native Yjs collaboration receives its exact `Y.Doc`, initial-load readiness,
-  optional awareness and explicit seed authority at descriptor construction.
-  The app owns provider connection, replacement, errors and destruction. The
-  binding admits a compatible room once per document generation, blocks
-  document and shared-effect publication before admission, retains failed
-  imports for explicit retry, and remains admitted during later disconnects so
-  offline edits and local history continue. Presence and compaction methods
-  exist in the inferred `api.yjs` only when their inputs are supplied. Live
-  admission and awareness state never become replayable `read` methods or
-  transaction updates; each `(Y.Doc, rootName)` has one binding owner while
-  mounted views retain exact selection projection. The binding takes its
-  document when its editor goes live and frees it when the editor is released, so a
-  remount or a replaced editor binds the same document again. Before that, its
-  status answers waiting and its cursors answer none.
 - Plite owns the complete editor selection model. It supports text selection
   and one built-in directional `NodeSelection`; plugins cannot add selection
   kinds or parallel selection state. Feature owners write exact nodes and
@@ -350,74 +333,6 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
 - Internal projected view selection is input-engine state. Its keyboard,
   clipboard, history, mutation, reconciliation, and navigation semantics make
   it ineligible as a public carrier for presentation-only inactive selection.
-- Authored changes are one optional native document capability. The stored
-  document is the review tree. Pending insertions and deletions stay in place,
-  and each node carries its own claims. Text written inside another pending
-  change carries one `in` member that names an immutable context record
-  listing the changes it depends on. Context records live in the
-  `authored-contexts` record set, and one verdict per decided incarnation
-  lives in `authored-verdicts`. Every collaborator shares both sets, and
-  `read.value()` holds them in `records` beside the content. Code outside the authored
-  owner reads a node's pending claims through `reviewOf` instead of parsing
-  `authored`.
-  Review reads take a place. `read.groups({ at })` returns every card touching
-  it, and `read.changes({ at })` pages the changes there in document order, so
-  no read walks every pending change. A card is the adjacent pending changes of
-  one author, named by its oldest pending change, so every peer and reload
-  names it alike. A pending join or split stands for the line break it removes
-  or adds, so changes on either side of it are adjacent. A change whose last
-  part is, or lies inside, a whole block it inserts or deletes ends where that
-  block ends, so it is adjacent to a change inside that block and to a change
-  to the next block at the same depth, such as another added or struck line.
-  A change follows the
-  text, not the undo history. Repeated Backspace within a line grows one
-  deletion. Text or a line break written inside or at the edge of one's own
-  pending insertion becomes part of it, so rejecting the typing removes the
-  break too. Plite stores no color; Plate derives one from that name. A
-  decision takes the changes or cards it read and refuses one that moved since.
-  `api.subscribeChanges` hands each view one frozen delta per commit that
-  changes the review.
-  A view either writes, with intent `edit` or `propose`, or previews the
-  document with every pending change accepted (`proposed`) or rejected
-  (`accepted`) and takes no writes. View state never becomes another saved
-  document or a global mode. Suggesting records each write under its author,
-  and a write inside another pending change depends on that change's context, so
-  rejecting the outer change removes it too. Editing records the same way and
-  accepts the writer's own claims in the same commit. It leaves every other
-  author's claims pending, so text it writes inside another author's pending
-  insertion joins that insertion. A decision removes the decided claims and
-  appends a verdict for each incarnation it decides in one transaction.
-  Admission settles any claim that a peer's late edit brings in after the
-  verdict.
-  Undo is local inverse history. It restores document facts, decisions
-  included, and proposes nothing.
-  On the review tree, commands and plugin update methods decide on the
-  proposed projection, the document with every pending change accepted, and
-  the recorder lifts their result back into authored changes. A command or method whose input holds a stored location declares
-  where each location lands in that document, that it holds none, or that it
-  only moves the selection. An undeclared one throws on the review tree, and
-  an undeclared plugin update method that takes arguments throws on every
-  call, because its declaration also picks the root it runs in. A base-editor
-  plugin call decides on the proposed projection of that root. Point
-  stepping has no option that skips hidden content, because commands on the
-  review tree never see it.
-  Persistence saves the whole `read.value()`, records included. Every
-  document passes one admission owner before anyone reads it. Admission
-  validates claims and context references, compacts stacked legacy insertions
-  into contexts and settles claims against verdicts. Loading never replays
-  edits. `projectAuthoredDocument` returns one accepted or proposed document
-  with its pending count and diagnostics.
-- Changing authored input intent creates no document or history change, and a
-  composition finishes under the intent it started with.
-- Structural comparison reads fixed, schema-valid revisions without installing
-  editor state. It returns immutable span correspondence, grouped effects,
-  diagnostics, and a canonical `DocumentChange`; three-way resolution keeps
-  every branch contribution and requires explicit choices for conflicts.
-  Comparison presentation stays read-only. An explicit authored import checks
-  the exact live baseline and frontier before publishing one native proposal, so
-  comparison does not become another review or position system. It keeps one
-  comparison and one native import path, never annotated-node diff tags or a
-  matcher re-run during conflict resolution.
 - `NodeSelection` stores canonical exact membership as `paths`, directional
   `anchorPath` and `focusPath`, an optional explicit root, which defaults to
   the reader's root when the selection is passed as input, and a required
@@ -980,31 +895,12 @@ post-selection navigation` order, coalesces by semantic key, and reports
   decision.
 - If `worst_p95_ms` or a summary hides a hot lane, fix the metric before code.
   Fix any other suspect metric before code too.
-- Ordinary `Editable` mounts the complete document DOM. DOM omission is an
-  explicit mounted-view choice through the dedicated virtualized React
-  component; it never activates from document size, a threshold, or an
-  automatic strategy. The virtualized package entrypoint owns its optional
-  engine and exposes only block estimate and overscan tuning.
-- A virtualized view starts with one deterministic bounded window and retains
-  selected or requested targets. Its document, history and collaboration state
-  stay canonical while native find, accessibility traversal, printing and DOM
-  integrations can observe only mounted content. Product support requires
-  explicit browser, IME and device proof for the claimed matrix. Degraded
-  huge-document modes stay degraded until native behavior is proved.
 - React `Activity` hidden mode is not a primitive for hidden editable content,
   because it gives no browser find, native selection, IME, clipboard,
   screen-reader or DOM point mapping. Visible typing, DOM text sync, selection
   import and export, caret repair and IME stay urgent; transitions and deferred
   values serve only non-urgent work such as overlays, search results, sidebars
   and background summaries.
-- Pagination owns page omission, page surfaces and direct canvas coordinates.
-  It does not route page layouts or a public vertical offset through the generic
-  top-level block virtualizer. Live configuration belongs to the mounted paged
-  component; public layout reads are current committed snapshots for that exact
-  host, and page boundaries never become document authority.
-- Fragmentation is text, one atomic owner, or all direct element children.
-  Pagination derives source paths and keeps projection and decoration assembly
-  private. Its complete path mounts every document node and page surface.
 
 ## Plite Skill Topology
 

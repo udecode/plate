@@ -4,7 +4,7 @@
 
 - Edit the named root that holds the caret when a command such as Code block, Indent, List, Details, Column or Blockquote runs on the editor, instead of the primary document; a command whose result that root's schema forbids throws, as it does through that root's view
 - Throw when a plugin update method that takes arguments is called with one and wraps it in none of `txLocate`, `txSelection` or `txOnly`, including a method nested in a namespace
-- Edit the root that holds the target in `lint.fix` and `column.moveMiddle`
+- Edit the root that holds the target in `lint.fix`
 - Clear the root that holds the caret when `ai.removeMarks` or `ai.removeNodes` runs without `at`
 - Accept a node selection as `at` in `column.toggle`, wrap the block a block selection holds, and resize a column group that the target or the selection names instead of nesting a new one inside it
 - Add a new footnote definition at the end of the root the command runs in, numbered within that root

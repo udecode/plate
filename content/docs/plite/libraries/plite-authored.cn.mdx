@@ -3,7 +3,7 @@ title: Plite Authored Changes
 description: 审阅带作者身份的建议，并派生 accepted 和 proposed 预览。
 ---
 
-`plitejs/authored` 管理带作者身份的建议。文档节点保存 review mark，文档 record 保存审阅上下文和决定。只读 preview 派生 accepted 或 proposed 内容。
+`plitejs/authored` 管理带作者身份的建议。文档节点保存 review mark，文档 record 保存审阅上下文和决定。Preview 派生 accepted 或 proposed 内容；它遇到普通编辑会抛出错误，但部分其他写入仍会修改文档，例如带决定的 update、撤销和重做，以及远程协作变更。
 
 ## 安装
 
@@ -35,10 +35,10 @@ const reviewView = createEditorView(editor, {
 | --- | --- |
 | `{ intent: 'edit' }` | 显示带 review mark 的文档，并直接应用编辑。 |
 | `{ intent: 'propose' }` | 显示带 review mark 的文档，并把输入记录为建议。 |
-| `{ preview: 'accepted' }` | 只读显示拒绝所有待处理建议后的内容。 |
-| `{ preview: 'proposed' }` | 只读显示接受所有待处理建议后的内容。 |
+| `{ preview: 'accepted' }` | 显示拒绝所有待处理建议后的内容。普通编辑会抛出错误，见下文。 |
+| `{ preview: 'proposed' }` | 显示接受所有待处理建议后的内容。普通编辑会抛出错误，见下文。 |
 
-调用 `view.api.authored.setView(policy)` 修改一个视图。Source editor 和 sibling view 保留各自的 policy 与 selection。Preview 不接受写入；切换 view 不会决定建议。Composition 期间请求的切换会在 composition 结束后应用。
+调用 `view.api.authored.setView(policy)` 修改一个视图。Source editor 和 sibling view 保留各自的 policy 与 selection。Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改文档，例如带决定的 update、撤销和重做，以及远程协作变更。切换 view 不会决定建议。Composition 期间请求的切换会在 composition 结束后应用。
 
 ## 创建和决定 proposal
 
@@ -59,7 +59,9 @@ if (change) {
 }
 ```
 
-向 `tx.authored.propose(...)` 传入 `{ changeId: id }`，可以为 proposal 命名，或把该 transaction 的写入加入具有该 ID 的 pending change。决定使用读取时的 change revision。`blocked` 结果在 `with` 中列出需要一起决定的 change；在一次调用中传入多个决定即可一起决定。展示批量决定前调用 `read.authored.preview(...)`，并处理每种 `AuthoredResult` 状态。
+向 `tx.authored.propose(...)` 传入 `{ changeId: id }`，可以为 proposal 命名，或把该 transaction 的写入加入具有该 ID 的 pending change。决定使用读取时的 change revision。`blocked` 结果在 `with` 中列出需要一起决定的 change；在一次调用中传入多个决定即可一起决定。请处理每种 `AuthoredResult` 状态。
+
+提议删除一个拥有 content root 的 block 时，该 block 会被划掉，root 保持无标记，直到该删除被决定。接受和拒绝它的方式见 [Authored changes](/cn/docs/authored-changes#配置-view)。
 
 ## 导入比较结果
 
@@ -92,7 +94,7 @@ const inRange = editor.read.authored.changes({ at: range });
 const change = editor.read.authored.change(id);
 ```
 
-`changes(query)` 按文档顺序读取待处理 change，默认每页 50 条，最多 200 条。可用 `at`、`authorId`、`from` 和 `to` 或 `group` 缩小范围，并传入该页的 `cursor` 读取下一页。`AuthoredChange` 提供稳定 identity、作者、创建时间、revision、kind 和当前 range。Keyed reader 使用 `change(id)`。
+`changes(query)` 按文档顺序读取待处理 change，默认每页 50 条，最多 200 条。可用 `at`、`authorId` 或 `group` 缩小范围，并传入该页的 `cursor` 读取下一页。`AuthoredChange` 提供稳定 identity、作者、`createdAt`、revision、kind 和当前 range。Keyed reader 使用 `change(id)`。
 
 ## 审阅卡片
 
@@ -137,7 +139,6 @@ if (card) {
 | `read.authored.groups({ at })` | 读取与某个位置相交的卡片摘要。 |
 | `read.authored.groupOf(changeId)` | 读取包含某个 change 的卡片。 |
 | `read.authored.reviewOf(node)` | 读取存储 node 的待处理 mark。 |
-| `read.authored.preview(decision)` | 在不应用决定的情况下验证它。 |
 | `update.authored.decide(decision)` | 接受或拒绝 change 或卡片。 |
 | `api.authored.setView(policy)` | 设置一个 view 的 authored policy。 |
 | `api.authored.subscribeChanges(listener)` | 每次改变审阅的 commit 都会收到一个 delta。 |

@@ -23,7 +23,7 @@ docs:
 
 ### 安装
 
-最快捷的方式是使用 `ColumnKit`，它包含预配置的 `ColumnPlugin` 和 `ColumnItemPlugin` 以及 [Plate UI](/docs/installation/plate-ui) 组件。
+最快捷的方式是使用 `ColumnKit`，它包含预配置的 `ColumnGroupPlugin` 和 `ColumnItemPlugin` 以及 [Plate UI](/docs/installation/plate-ui) 组件。
 
 <ComponentSource name="column" />
 
@@ -60,16 +60,16 @@ npm install platejs @tanstack/react-virtual
 
 ### 添加插件
 
-将 `ColumnPlugin` 加入编辑器。它会把 `ColumnItemPlugin` 作为必需的结构依赖安装。
+将 `ColumnGroupPlugin` 加入编辑器。它会把 `ColumnItemPlugin` 作为必需的结构依赖安装。
 
 ```tsx
-import { ColumnPlugin } from 'platejs/layout/react';
+import { ColumnGroupPlugin } from 'platejs/layout/react';
 import { createEditor } from 'platejs/react';
 
 const editor = createEditor({
   plugins: [
     // ...其他插件,
-    ColumnPlugin,
+    ColumnGroupPlugin,
   ],
 });
 ```
@@ -79,14 +79,14 @@ const editor = createEditor({
 配置分栏组；需要替换依赖的渲染组件时，再加入完整的 `ColumnItemPlugin` 描述符。
 
 ```tsx
-import { ColumnPlugin, ColumnItemPlugin } from 'platejs/layout/react';
+import { ColumnGroupPlugin, ColumnItemPlugin } from 'platejs/layout/react';
 import { createEditor } from 'platejs/react';
 import { ColumnGroupElement, ColumnElement } from '@/components/editor/column';
 
 const editor = createEditor({
   plugins: [
     // ...其他插件,
-    ColumnPlugin.configure({ component: ColumnGroupElement }),
+    ColumnGroupPlugin.configure({ component: ColumnGroupElement }),
     ColumnItemPlugin.configure({ component: ColumnElement }),
   ],
 });
@@ -96,17 +96,17 @@ const editor = createEditor({
 
 ### 转换为工具栏按钮
 
-添加一个直接调用`BaseColumnPlugin`的结构化操作。只有在选中一个符合条件的块时才启用它。
+添加一个直接调用`BaseColumnGroupPlugin`的结构化操作。只有在选中一个符合条件的块时才启用它。
 
 ```tsx
-import { BaseColumnPlugin } from 'platejs/layout';
+import { BaseColumnGroupPlugin } from 'platejs/layout';
 
 const turnIntoItem = {
   icon: <Columns3Icon />,
   label: '3栏布局',
   value: 'action_three_columns',
   onSelect: () => {
-    const column = editor.plugin(BaseColumnPlugin);
+    const column = editor.plugin(BaseColumnGroupPlugin);
 
     if (!column.installed || editor.read.view.isReadOnly()) return;
 
@@ -119,13 +119,13 @@ const turnIntoItem = {
 
 ## 插件
 
-### `ColumnPlugin`
+### `ColumnGroupPlugin`
 
 负责分栏组，并要求安装 `ColumnItemPlugin`。
 
 ### `ColumnItemPlugin`
 
-负责由 `ColumnPlugin` 安装的结构分栏项。仅在替换其默认配置或组件时直接加入。
+负责由 `ColumnGroupPlugin` 安装的结构分栏项。仅在替换其默认配置或组件时直接加入。
 
 ## 类型定义
 
@@ -150,13 +150,12 @@ const turnIntoItem = {
 分栏组插件负责组操作，分栏项插件负责项操作：
 
 ```tsx
-const columnGroup = editor.plugin(ColumnPlugin);
+const columnGroup = editor.plugin(ColumnGroupPlugin);
 const column = editor.plugin(ColumnItemPlugin);
 
 columnGroup.update.insert({ columns: 3 }, { select: true });
 columnGroup.update.setColumns({ at: columnGroupPath, widths: ['33%', '67%'] });
 columnGroup.update.toggle({ columns: 2 });
-column.update.moveMiddle(columnGroupEntry, { direction: 'left' });
 column.update.selectAll();
 ```
 
@@ -168,18 +167,7 @@ column.update.selectAll();
   `at` 指定节点插入位置。
 - `setColumns` 修改现有分栏组的数量和宽度。
 - `toggle` 将当前区块转换为分栏组，或更新其布局。
-- `moveMiddle` 将中间栏内容移动到第一栏。
 - `selectAll` 将栏内选区扩展到整个分栏组。
 
-`ColumnPlugin` 还通过 `editorReads.transfer.side` 构建侧边放置，因此
+`ColumnGroupPlugin` 还通过 `editorReads.transfer.side` 构建侧边放置，因此
 `editor.api.transfer.move({ nodes, to: { key, side: 'end' } })` 会把区块放到顶层区块旁的新分栏组中，或作为新的一栏放到分栏内区块旁，最多五栏。新加的一栏取分栏组的平均宽度，随后分栏组按比例缩放回 100%。参见[在区块旁构建](/cn/docs/dnd#在区块旁构建)。
-
-## 钩子函数
-
-### `useDebouncePopoverOpen`
-
-<API name="useDebouncePopoverOpen">
-<APIReturns type="boolean">
-  弹窗是否处于打开状态
-</APIReturns>
-</API>

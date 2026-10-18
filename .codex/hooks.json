@@ -5,11 +5,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$(git rev-parse --show-toplevel)/tooling/scripts/autostage-next.mjs\"",
-            "timeout": 30
-          },
-          {
-            "type": "command",
             "command": "node \"$(git rev-parse --show-toplevel)/tooling/scripts/hand-drive.mjs\" --hook",
             "timeout": 60
           }

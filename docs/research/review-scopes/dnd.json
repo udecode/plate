@@ -91,7 +91,7 @@
     "AGENTS.md",
     "docs/editor-behavior/markdown-editing-spec.md",
     "docs/research/probes/2026-10-01-dnd/REPORT.md",
-    "docs/research/decisions/dnd-ownership.md"
+    "docs/plans/topics/dnd.md"
   ],
   "relatedScopes": [
     "clipboard",

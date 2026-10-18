@@ -24,6 +24,12 @@ export type CoreWork = {
   indexedNodes: number;
   /** Plugin update method calls that reached the dispatcher. */
   pluginDispatches: number;
+  /** Candidate roots the orphan judge counted owners for. */
+  ownedRootsJudged: number;
+  /** Roots' ownership indexes the orphan judge fetched. */
+  ownerIndexReads: number;
+  /** Ownership indexes built from a whole root. */
+  ownershipBuilds: number;
   /** Projected roots indexed because the projection gave no index. */
   projectedIndexes: number;
   /** Reads of the whole change from the stored document to the projected. */
@@ -64,6 +70,9 @@ export const coreWork: CoreWork = {
   fallbacks: 0,
   indexedNodes: 0,
   pluginDispatches: 0,
+  ownedRootsJudged: 0,
+  ownerIndexReads: 0,
+  ownershipBuilds: 0,
   projectedIndexes: 0,
   projectionChanges: 0,
   reconciles: 0,
@@ -90,4 +99,9 @@ export const resetCoreWork = () => {
   for (const kind of Object.keys(coreWork) as Array<keyof CoreWork>) {
     coreWork[kind] = 0;
   }
+};
+
+/** @internal */
+export const restoreCoreWork = (work: Readonly<CoreWork>) => {
+  Object.assign(coreWork, work);
 };

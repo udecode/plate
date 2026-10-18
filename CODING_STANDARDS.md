@@ -30,7 +30,7 @@ Read this file in full before you write, review or deslop any source, test or to
 
 ## Lint and format
 
-- Ultracite owns repository formatting and linting through Oxfmt and Oxlint. Run `pnpm lint:fix` at the root or the owning package's `lint:fix` script. When other sessions have work in the tree, run `pnpm lint:task <files…>` on the task's files instead. It runs `ultracite fix`, `oxfmt`, `ultracite check` and `oxlint --type-aware` on them, says how many of the paths lint ignores, such as `docs/**`, `AGENTS.md`, `.agents/**` and `.claude/**`, and exits 2 when it ignores them all. A lint-clean claim covers only the files it linted.
+- Ultracite owns repository formatting and linting through Oxfmt and Oxlint. Run `pnpm lint:fix` at the root or the owning package's `lint:fix` script. When other sessions have work in the tree, run `pnpm lint:task <files…>` on the task's files instead. It runs `ultracite fix`, `oxfmt`, `ultracite check` and `oxlint --type-aware` on them, says how many of the paths lint ignores, such as `docs/**`, `AGENTS.md`, `.agents/**` and `.claude/**`, and exits 2 when it ignores them all. With `--allow-ignored`, which `land.mjs` passes, it exits 0 instead. A lint-clean claim covers only the files it linted.
 - Never run Prettier directly on source files covered by Ultracite; the workspace exposes Prettier only as a transitive dependency and has no active Prettier configuration, so its defaults violate repository style.
 
 ## Third-party material

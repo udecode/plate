@@ -34,7 +34,7 @@ source_refs:
   - ../raw/tiptap/docs/src/content/guides/faq.mdx
 related:
   - docs/research/sources/editor-architecture/read-update-runtime-corpus-ledger.md
-  - docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md
+  - docs/research/history/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md
 ---
 
 # Node text mark render DX corpus ledger

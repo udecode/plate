@@ -7,7 +7,7 @@ selection tests fail before the matrix can complete.
 Objective:
 
 Implement the design/adoption plan requested after the
-[external-text audit](../research/decisions/external-text-ownership.md): delete
+external-text audit (`2e865a0bc4:docs/research/decisions/external-text-ownership.md`): delete
 deferred canonical feedback, choose its correct publication boundary, and
 complete implementation and proof. The audit's 11-unit inventory remains the
 scope; authored behavior supplies integration evidence, not another feature.

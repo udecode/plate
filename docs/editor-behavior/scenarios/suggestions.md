@@ -43,5 +43,5 @@ Drive `/docs/suggestion`'s preview as `alice` for single-author rows. `/dev/auth
 | S20 | Save, edit, then reload the saved snapshot | Pending suggestions and their cards come back; edits after the save do not |
 | S21 | As a second author, type inside the first author's insertion, then Backspace that text | My own text disappears; the first author's insertion is whole again |
 | S22 | In Editing, select across a pending join and delete | The two lines become one, as a plain editor joins them |
-| S23 | Switch the view to Accepted, then Proposed | Accepted shows the document without pending changes, Proposed with all of them; neither takes edits |
+| S23 | Switch the view to Accepted, then Proposed | Accepted shows the document without pending changes, Proposed with all of them; both throw on a plain edit, but some other writes still change the document through them, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses. Remote collaboration changes land whatever the view |
 | S24 | Reply on a card | The reply posts under the card and its count goes up |

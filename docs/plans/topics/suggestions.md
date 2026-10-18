@@ -182,6 +182,35 @@ Rejected, and why:
 | Restoring `main`'s independent suggestion mutation engine | Boolean mark rejection, paragraph-only splits and incomplete structural and clipboard proof. |
 | Parallel accept and reject aliases or a cast protocol such as `getSuggestionEditor` | Native authored reads, decisions and inferred plugin composition already serve them. |
 
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- Suggested-edit semantics come directly from Plite's native authored
+  capability. Plate may provide copied registry presentation, mode controls,
+  discussion composition, and product defaults, but it does not own another
+  suggestion schema, mutation engine, review scan, decision command set, or
+  global input mode. Human and explicitly tracked AI edits use the same authored
+  records and decisions; temporary AI drafts remain outside that lifecycle.
+  Plate attributes every authored write to the editor's `userId`, or to the
+  local user `'local'` when the application passes none, so a solo editor and
+  its AI suggestions need no identity setup. Collaborators pass a stable user,
+  and an editor with a Yjs plugin warns in development the first time it
+  attributes something to the local user. Plite still requires a non-empty
+  author at every write and invents none.
+  Comments keeps its independent thread lifecycle. Load existing suggestions
+  through the complete `initialValue`, records included, preserving
+  authors and change IDs; initialization never replays edits under switched
+  identities. `EditorRoot authored` configures the exact mounted view through
+  the native owner. Changed intent or preview inputs reconfigure that view;
+  equal values keep later view-local mode commands. Editing and Suggesting
+  both show the review tree with its marks, and suggestion mode controls
+  switch only the intent. A preview view has no intent. It throws on a plain
+  edit, but some other writes still change the document through it, such as
+  an update that makes a decision, and undo and redo; t_f485ac77 (owner
+  zbeyens) decides which of them a preview refuses. Remote collaboration
+  changes land whatever the view.
+
 ## Open work
 
 - No family of the 44 Google Docs suggestion families is certified at full parity; real list and table commands, closed review history, withdrawal and partial publication failure are the gaps. owner: the next `suggestions` review. stop: a family's browser lifecycle proof.
@@ -204,3 +233,4 @@ Rejected, and why:
 - The ledger law never builds adjacent own whole-line changes, and the plugin tests read only the ledger, so no suite test reaches the kernel's new end. A probe on the final bytes shows the kernel and the ledger agree on six such cases (`docs/plans/artifacts/2026-10-17-card-own-split/probe-kernel-final-a2.log`). Suggested task t_17ead528 widens the law's generator. owner: zbeyens, who starts or drops that task. stop: t_17ead528 lands or is dropped.
 - In WebKit, the playground image test's click on a paragraph lands on a Preview button and then on the sticky site header, and times out, at HEAD and at base too. Suggested task t_095b0272 holds it. owner: zbeyens, who starts or drops that task. stop: t_095b0272 lands or is dropped.
 - On a loaded host the authored suite's large-document tests run past their 5 s limit, at base too. Suggested task t_0a13d914 holds them. owner: zbeyens, who starts or drops that task. stop: t_0a13d914 lands or is dropped.
+- Suggesting now records typing, deleting and formatting inside a list item, and still refuses Enter, indenting and joining items (`docs/plans/2026-10-17-list-suggesting-insert.md`). The suggestions plan still says typing in a list item refuses, in its behavior row at line 79, its Defaults row at line 89, its P2.2 box and the refusal paragraph at line 177. S14 of the suggestions scenarios still expects Enter at a list item's end to suggest a new item, and the list refusal toast does not offer Switch to Editing. owner: zbeyens, through P3.1 of the suggestions plan. stop: P3.1's lists plan lands.

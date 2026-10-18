@@ -331,7 +331,7 @@ Of 9 steps, 9 are done, 4 of them with deviations, and none is partial, skipped,
 
 ## Open work
 
-- Suggesting refuses deleting a block that owns an exclusive content root, so a paste or removal over that block cannot be suggested at all, and a rich paste there no longer falls back to plain text. owner: the owner, through suggested task `t_a7c71be6`. stop: that task lands or is dropped.
+- [Authored root deletion](2026-10-17-authored-root-deletion.md) lifted the refusal to suggest deleting a block that owns an exclusive content root. Suggesting a move of such a block still fails validation, which reports two owners of its root. owner: the owner, through a session card offered at that plan's hand-back. stop: that session lands or is dropped.
 - A move keeps its landing guard on until after commit observers run, so an update a commit listener opens during a move throws `lossy` and its write is lost. owner: the owner, through suggested task `t_b6f088b9`. stop: that task lands or is dropped.
 - AI chat's suggestion publish stores the change id it captured before a refused commit. owner: the owner, through suggested task `task_bb870590`. stop: that task lands or is dropped.
 - The registry link editor's text-only edit calls a `void` upsert, then hides its popover even when a table's Suggesting veto refuses the edit. owner: zbeyens. stop: the next change to the link editor's submit.

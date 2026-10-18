@@ -484,7 +484,7 @@ Verification evidence:
 
 - Reconciled
   docs/research/review-records/2026-09-21-media-object-editable-content-final-pass.json,
-  docs/research/decisions/media-object-content.md, and recorded research/probes.
+  2e865a0bc4:docs/research/decisions/media-object-content.md, and recorded research/probes.
 - Read current schema/compiler, state, slice, emptiness, split, selection,
   media, docs, tests, release, and doctrine owners.
 - Ran a disposable source-alias probe for multi-block paste, boundary

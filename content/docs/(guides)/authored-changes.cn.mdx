@@ -127,10 +127,14 @@ authored.api.setView({ preview: "proposed" });
 | ------------------------- | -------------------------------- | ---------------------------- |
 | `{ intent: 'edit' }`      | 存储内容，以及待处理的插入和删除 | 按原样应用                   |
 | `{ intent: 'propose' }`   | 存储内容，以及待处理的插入和删除 | 记录为当前作者的 proposal    |
-| `{ preview: 'proposed' }` | 接受全部待处理 change 后的内容   | 无                           |
-| `{ preview: 'accepted' }` | 拒绝全部待处理 change 后的内容   | 无                           |
+| `{ preview: 'proposed' }` | 接受全部待处理 change 后的内容   | 普通编辑会抛出错误，见下文     |
+| `{ preview: 'accepted' }` | 拒绝全部待处理 change 后的内容   | 普通编辑会抛出错误，见下文     |
+
+Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改存储文档，例如带决定的 update、撤销和重做，以及远程协作变更。
 
 在被划掉的文本中输入时，待处理删除会在新文本两侧拆开。`edit` view 按原样应用这段文本，`propose` view 把它记录为插入。`propose` view 会拒绝无法记录为 proposal 的写入，例如表格内的修改，并将其回滚；`api.subscribeRefusals(listener)` 会报告每次拒绝。
+
+在 `propose` view 中删除一个拥有 [content root](/cn/docs/roots#content-roots) 的 block 时，该 block 会被划掉，root 的内容保持原样且不带审阅标记，因此请在 block 的组件中把 root 显示为已删除。在该 root 中输入或粘贴不会写入任何内容，直到有人决定这个删除。接受删除会移除该 block 及其 root；若 root 中有另一个待处理 change 插入的文本，结果为 `blocked`。拒绝删除会保留两者。拒绝一个拥有 content root 的待处理插入 block 时，root 也会一并移除。`propose` view 仍会拒绝删除没有任何元素拥有的 named root。
 
 View 的 policy 属于该精确 view。Selection、clipboard input、command 和 anchor 使用该 view 的坐标。同一个文档的两个已挂载 view 可以使用不同 policy。
 
@@ -147,7 +151,7 @@ const result = authored.update.decide({
 });
 ```
 
-使用 `action: 'reject'` 拒绝 change。`changes(query)` 按文档顺序读取待处理 change，默认每页 50 条，最多 200 条。传入非空的页 `cursor` 可读取下一页；若 cursor 对应的 change 都已离开，会以 stale 抛出。用 `at` 把一页限定到存储文档的某个位置，用 `authorId` 限定到某位作者，用 `from` 和 `to` 限定创建时间，或用 `group` 限定到某张卡片。
+使用 `action: 'reject'` 拒绝 change。`changes(query)` 按文档顺序读取待处理 change，默认每页 50 条，最多 200 条。传入非空的页 `cursor` 可读取下一页；若 cursor 对应的 change 都已离开，会以 stale 抛出。用 `at` 把一页限定到存储文档的某个位置，用 `authorId` 限定到某位作者，或用 `group` 限定到某张卡片。
 
 每个 `AuthoredChange` 都有 `id`、`authorId`、`createdAt`、`kind`、当前 `ranges`，以及 `revision`；只要它的 mark 或这些 mark 标记的内容有变化，`revision` 就会不同。用 `change(id)` 读取单个 change。
 
@@ -205,8 +209,6 @@ if (card) {
 | `blocked`   | 需与 `with` 列出的 change 一起决定。未应用任何内容。 |
 | `invalid`   | 多个决定互相矛盾，或 schema 拒绝决定结果。     |
 
-`authored.read.preview(decision)` 返回某个决定在不应用时会得到的结果。Preview 返回 `applied` 表示该决定在那一刻可以应用；之后的 `decide` 调用仍需处理结果。
-
 ## 保存文档
 
 保存 `editor.read.value()` 的完整结果。它包含内容及每个 node 上的待处理审阅 mark，以及文档 `records` 中的审阅记录。只保存 node 数组会丢失这些记录。
@@ -229,7 +231,7 @@ const restored = createEditor({
 
 ## 导出显式投影
 
-使用 `accepted` 或 `proposed` 得到 clean document；格式能够保留审阅记录时使用 `review`。Clean projection 省略待处理工作时会返回 diagnostic。每个 helper 都接收或捕获完整 document，包括 named root 和 metadata。
+使用 `accepted` 或 `proposed` 得到 clean document；格式能够保留审阅记录时使用 `review`。Clean projection 省略待处理工作时会返回 diagnostic。每个 helper 都接收或捕获完整 document，包括 named root 和 metadata。Clean projection 省略某个 content root 的 owner 时，也会按 [content root](/cn/docs/roots#content-roots) 的归属规则省略该 root。
 
 对含有待处理 change 的 document 执行 HTML、Markdown、plain text 与 static HTML 导出时，`projection` 必须是 `accepted` 或 `proposed`，否则抛出 `TypeError`。没有待处理 change 的 document 不需要 projection。DOCX export 始终需要 projection。
 
@@ -319,7 +321,6 @@ Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审�
 | `authored.read.groups({ at })`             | 读取与存储文档某个位置相交的卡片摘要。                                 |
 | `authored.read.groupOf(changeId)`          | 读取包含某个 change 的卡片；不存在时返回 `null`。                      |
 | `authored.read.reviewOf(node)`             | 读取存储 node 的待处理 mark，以及这些 mark 所格式化属性的已接受值。    |
-| `authored.read.preview(decision)`          | 在不应用决定的情况下检查决定。                                         |
 | `authored.update.decide(decision)`         | 接受或拒绝 change 或卡片；决定数组会一起决定。                         |
 | `authored.api.setView(view)`               | 修改该精确 view 的 policy。                                            |
 | `authored.api.subscribeChanges(listener)`  | 每次改变审阅的 commit 都会收到一个共享 delta。                         |

@@ -1,4 +1,4 @@
-import { BaseColumnItemPlugin, BaseColumnPlugin } from 'platejs/layout';
+import { BaseColumnItemPlugin, BaseColumnGroupPlugin } from 'platejs/layout';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
@@ -22,7 +22,7 @@ export function ColumnElementStatic(
 }
 
 export function ColumnGroupElementStatic(
-  props: EditorElementProps<typeof BaseColumnPlugin>
+  props: EditorElementProps<typeof BaseColumnGroupPlugin>
 ) {
   return (
     <EditorElement className="mb-2" {...props}>
@@ -59,7 +59,7 @@ export function ColumnElementDocx(
  * DOCX-compatible column group component using table layout.
  */
 export function ColumnGroupElementDocx(
-  props: EditorElementProps<typeof BaseColumnPlugin>
+  props: EditorElementProps<typeof BaseColumnGroupPlugin>
 ) {
   return (
     <EditorElement {...props}>
@@ -80,7 +80,7 @@ export function ColumnGroupElementDocx(
 }
 
 export const BaseColumnKit = [
-  BaseColumnPlugin.configure({
+  BaseColumnGroupPlugin.configure({
     component: ColumnGroupElementStatic,
   }),
   BaseColumnItemPlugin.configure({

@@ -1,6 +1,7 @@
 'use client';
 
 import { WrapText } from 'lucide-react';
+import { ElementApi } from 'platejs';
 import {
   LineHeightPlugin,
   useEditor,
@@ -17,19 +18,13 @@ import {
 } from '@/registry/components/editor/dropdown-menu';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
+const presets = [1, 1.2, 1.5, 2, 3];
+
 export function LineHeightToolbarButton() {
   const editor = useEditor();
-  const { nodeProps } = editor.plugin(LineHeightPlugin).inject;
-
-  if (!nodeProps) {
-    throw new Error('Line height node properties are not configured.');
-  }
-  const { defaultNodeValue, nodeKey, validNodeValues = [] } = nodeProps;
-  const values = validNodeValues.filter((value) => typeof value === 'number');
-
   const value = useSelectionFragmentProp({
-    defaultValue: defaultNodeValue,
-    key: nodeKey,
+    getProp: (node) =>
+      ElementApi.isElement(node) ? (node.lineHeight ?? 'default') : undefined,
   });
 
   const [open, setOpen] = React.useState(false);
@@ -44,19 +39,33 @@ export function LineHeightToolbarButton() {
 
       <DropdownMenuContent className="min-w-0" align="start">
         <DropdownMenuRadioGroup
-          value={String(value)}
+          value={
+            typeof value === 'number' || value === 'default'
+              ? String(value)
+              : ''
+          }
           onValueChange={(newValue) => {
-            editor.plugin(LineHeightPlugin).update.set(Number(newValue));
+            const lineHeight = editor.plugin(LineHeightPlugin);
+
+            if (newValue === 'default') lineHeight.update.clear();
+            else lineHeight.update.set(Number(newValue));
           }}
         >
-          {values.map((innerValue) => (
+          <DropdownMenuRadioItem
+            className="min-w-[180px] pl-2 *:first:[span]:hidden"
+            finalFocus={() => editor.api.dom.focus()}
+            value="default"
+          >
+            Default
+          </DropdownMenuRadioItem>
+          {presets.map((preset) => (
             <DropdownMenuRadioItem
-              key={innerValue}
+              key={preset}
               className="min-w-[180px] pl-2 *:first:[span]:hidden"
               finalFocus={() => editor.api.dom.focus()}
-              value={String(innerValue)}
+              value={String(preset)}
             >
-              {innerValue}
+              {preset}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

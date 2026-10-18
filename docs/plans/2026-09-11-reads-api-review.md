@@ -76,7 +76,7 @@ Verification evidence:
   fingerprints match final source. The [direct packet](artifacts/reads-api-review/path-membership-direct.json)
   retains the rejected uncached comparator; its exact source is archived.
 - [Immutable review](../research/review-records/2026-09-11-reads-demand-driven-invalidation.json)
-  recorded; [current decision](../research/decisions/reads-demand-driven-invalidation.md)
+  recorded; current decision (`2e865a0bc4:docs/research/decisions/reads-demand-driven-invalidation.md`)
   and generated ledger reconciled. Inventory inspection found no added/removed
   group IDs; refreshed observations do not promote unrelated review/proof state.
 - `node tooling/scripts/review-ledger.mjs check`: pass, 789 groups, 3,631 files,
@@ -95,7 +95,7 @@ may later stale this dated review; no whole-checkout or release claim is made.
 
 Next action:
 Hand off Pursue to the verified `.agents/skills/plite-plan/SKILL.md` owner:
-`$plite-plan make commit invalidation queries demand-driven across changed.hasNodeKey, React selector dispatch and DOM path bindings; use docs/research/decisions/reads-demand-driven-invalidation.md`.
+`$plite-plan make commit invalidation queries demand-driven across changed.hasNodeKey, React selector dispatch and DOM path bindings; use 2e865a0bc4:docs/research/decisions/reads-demand-driven-invalidation.md`.
 The review is complete; downstream execution is outside this request.
 
 Architecture probe contract:

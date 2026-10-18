@@ -47,16 +47,10 @@ const items = [
 
 export function AlignToolbarButton() {
   const editor = useEditor();
-  const value =
-    useSelectionFragmentProp({
-      defaultValue: 'start',
-      getProp: (node) =>
-        ElementApi.isElement(node)
-          ? items.find(({ value: innerValue }) => innerValue === node.textAlign)
-              ?.value
-          : undefined,
-    }) ?? 'left';
-  const selectedValue = typeof value === 'string' ? value : 'left';
+  const value = useSelectionFragmentProp({
+    getProp: (node) =>
+      ElementApi.isElement(node) ? (node.textAlign ?? 'start') : undefined,
+  });
 
   const [open, setOpen] = React.useState(false);
   const IconValue =
@@ -72,7 +66,7 @@ export function AlignToolbarButton() {
 
       <DropdownMenuContent className="min-w-0" align="start">
         <DropdownMenuRadioGroup
-          value={selectedValue}
+          value={typeof value === 'string' ? value : ''}
           onValueChange={(innerValue2) => {
             const alignment = items.find(
               (item) => item.value === innerValue2

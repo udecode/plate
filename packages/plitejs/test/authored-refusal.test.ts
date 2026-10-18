@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   authoredVeto,
+  ContentSlice,
   createEditor,
   DocumentChange,
   editorCommands,
@@ -31,15 +32,18 @@ const blocks = (generates = false) =>
       }),
     },
     id: 'authored-refusal-blocks',
-    properties: generates
-      ? [
-          schema.elementProperty(
-            'id',
-            property.string({ generate: () => 'generated' }),
-            { role: 'metadata', target: target.group('element') }
-          ),
-        ]
-      : [],
+    properties: [
+      schema.textProperty('bold', property.boolean()),
+      ...(generates
+        ? [
+            schema.elementProperty(
+              'id',
+              property.string({ generate: () => 'generated' }),
+              { role: 'metadata', target: target.group('element') }
+            ),
+          ]
+        : []),
+    ],
     root: schema.content.types(['paragraph', 'box'], {
       default: { type: 'paragraph' },
       min: 1,
@@ -52,7 +56,9 @@ const blocks = (generates = false) =>
 const vetoes = definePlugin('vetoes', {
   contributions: [
     authoredVeto.of((element) => (element.type === 'box' ? 'box' : null)),
-    authoredVeto.of((element) => (element.listType ? 'list' : null)),
+    authoredVeto.of((element, touch) =>
+      element.listType && touch !== 'content' ? 'list' : null
+    ),
   ],
 });
 
@@ -102,6 +108,100 @@ const make = (
 const point = (path: number[], offset: number) => ({ offset, path });
 
 describe('authored refusal', () => {
+  it('records text inserted at the end of a list item', () => {
+    const { editor, refusals } = make();
+
+    editor.update((tx) => {
+      tx.text.insert('X', { at: point([2, 0], 4) });
+    });
+
+    assert.deepEqual(refusals, []);
+    assert.equal(editor.read.text.string([2]), 'itemX');
+    assert.equal(editor.read.authored.changes().items.length, 1);
+  });
+
+  it('records deleting the last character of a list item', () => {
+    const { editor, refusals } = make();
+
+    editor.update((tx) => {
+      tx.text.delete({
+        at: { anchor: point([2, 0], 3), focus: point([2, 0], 4) },
+      });
+    });
+
+    assert.deepEqual(refusals, []);
+    assert.equal(editor.read.authored.changes().items[0]?.kind, 'delete');
+  });
+
+  it('records a bold run typed at the end of a list item', () => {
+    const { editor, refusals } = make();
+
+    editor.update((tx) => {
+      tx.nodes.insert({ bold: true, text: 'X' }, { at: [2, 1] });
+    });
+
+    assert.deepEqual(refusals, []);
+    assert.equal(editor.read.text.string([2]), 'itemX');
+    assert.equal(editor.read.authored.changes().items.length, 1);
+  });
+
+  it('records removing the last text leaf of a list item', () => {
+    const { editor, refusals } = make('propose', {
+      value: [
+        paragraph('before'),
+        { type: 'box', children: [paragraph('inside')] },
+        {
+          type: 'paragraph',
+          listType: 'disc',
+          children: [{ text: 'item' }, { bold: true, text: 'X' }],
+        },
+        paragraph('after'),
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.nodes.remove({ at: [2, 1] });
+    });
+
+    assert.deepEqual(refusals, []);
+    assert.equal(editor.read.authored.changes().items[0]?.kind, 'delete');
+  });
+
+  it('refuses two plain paragraphs pasted into the middle of a list item', () => {
+    const { editor, refusals } = make();
+
+    editor.update((tx) => {
+      tx.slice.replace(
+        ContentSlice.closed([paragraph('one'), paragraph('two')]),
+        { at: point([2, 0], 2) }
+      );
+    });
+
+    assert.deepEqual(editor.read.children(), initial());
+    assert.deepEqual(
+      refusals.map((refusal) => (refusal as { reasons: string[] }).reasons),
+      [['list']]
+    );
+  });
+
+  it('refuses a mark on a whole text leaf inside a vetoed block', () => {
+    const { editor, refusals } = make();
+
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: point([1, 0, 0], 0),
+        focus: point([1, 0, 0], 6),
+      });
+      tx.marks.add('bold', true);
+    });
+
+    assert.deepEqual(editor.read.children(), initial());
+    assert.deepEqual(
+      refusals.map((refusal) => (refusal as { reasons: string[] }).reasons),
+      [['box']]
+    );
+  });
+
   it('refuses typing inside a vetoed block whole and reports why', () => {
     const { editor, refusals } = make();
 
@@ -146,6 +246,20 @@ describe('authored refusal', () => {
 
     assert.deepEqual(editor.read.children(), initial());
     assert.equal(refusals.length, 1);
+  });
+
+  it('refuses turning a list item back into a paragraph', () => {
+    const { editor, refusals } = make();
+
+    editor.update((tx) => {
+      tx.nodes.unset('listType', { at: [2] });
+    });
+
+    assert.deepEqual(editor.read.children(), initial());
+    assert.deepEqual(
+      refusals.map((refusal) => (refusal as { reasons: string[] }).reasons),
+      [['list']]
+    );
   });
 
   it('refuses inserting a vetoed block', () => {

@@ -550,7 +550,7 @@ Evidence read:
 - Local Plite:
   `docs/research/sources/editor-architecture/plite-local-proof-substrate.md`
 - Overlay invalidation decision:
-  `docs/research/decisions/plite-source-scoped-overlay-invalidation.md`
+  `docs/research/history/slate-v2-source-scoped-overlay-invalidation.md`
 - Learnings:
   `docs/solutions/logic-errors/2026-04-03-slate-react-v2-projection-proof-must-split-range-semantics-from-react-overlay-store.md`
   and

@@ -25,6 +25,27 @@ const TEXT_ALIGNMENTS = new Set([
   'start',
 ]);
 
+const CSS_LINE_HEIGHT =
+  /^([+-]?(?:\d+(?:\.\d*)?|\.\d+))(?:e([+-]?\d+))?(%|em)?$/i;
+
+const migrateLineHeight = (value: unknown) => {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) && value > 0 ? value : undefined;
+  }
+  if (typeof value !== 'string') return undefined;
+
+  const match = CSS_LINE_HEIGHT.exec(value.trim());
+
+  if (!match) return undefined;
+
+  const [, digits, exponent = '0', unit] = match;
+  const lineHeight = Number(
+    `${digits}e${Number(exponent) - (unit === '%' ? 2 : 0)}`
+  );
+
+  return Number.isFinite(lineHeight) && lineHeight > 0 ? lineHeight : undefined;
+};
+
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
 
@@ -515,6 +536,19 @@ export const migratePlateV54Ast = ({
       !TEXT_ALIGNMENTS.has(String(properties().textAlign))
     ) {
       without('textAlign');
+    }
+
+    if (
+      ownsProperty(element.type, 'lineHeight', context) &&
+      Object.hasOwn(element, 'lineHeight')
+    ) {
+      const lineHeight = migrateLineHeight(properties().lineHeight);
+
+      if (lineHeight === undefined) {
+        without('lineHeight');
+      } else if (lineHeight !== properties().lineHeight) {
+        element = { ...element, lineHeight };
+      }
     }
 
     if (imageType && element.type === imageType) {

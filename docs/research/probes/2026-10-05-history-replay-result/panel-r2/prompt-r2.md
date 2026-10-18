@@ -6,7 +6,7 @@ The repository is `/Users/zbeyens/git/plate-2` (branch `next`). Other sessions e
 
 Re-review only what changed since round 1. Get the delta with:
 
-`git diff eca7f8e9 ed996682 -- docs/plans/2026-10-05-history-sync-replay-result.md docs/plans/topics/history.md docs/research/decisions/history-ownership.md`
+`git diff eca7f8e9 ed996682 -- docs/plans/2026-10-05-history-sync-replay-result.md docs/plans/topics/history.md 2e865a0bc4:docs/research/decisions/history-ownership.md`
 
 Read the round-1 findings and how the lead applied them: `git show ed996682:docs/research/probes/2026-10-05-history-replay-result/panel-r1/r1-opus.md` (and `r1-astra.md`, `r1-sol.md`), and the `panel` rows in `git show ed996682:docs/plans/2026-10-05-history-sync-replay-result.decisions.tsv`. New receipts: `history-timing.txt`, `settle-failure.txt`, `settlement.ts` and `settlement.txt` under `docs/research/probes/2026-10-05-history-replay-result/`.
 
@@ -21,7 +21,7 @@ Invariants to attack (do not assume they hold):
 1. Every TaskHub-22 law holds (`docs/plans/2026-09-19-taskhub-22-comment-creation-undo-redo-regression.md`): shared C/B/A undo and A/B/C redo order; remote or diverged comment state is never deleted or skipped past; a refused, stale, thrown or concurrent replay never consumes the entry; Comments persistence stays server-first.
 2. No caller has to know the hidden batch kind before calling, and the return value tells the truth about whether the effect already happened.
 3. No rejection or error goes unobserved, and the floating-promise lint is not weakened.
-4. "Public updates are synchronous and cannot nest" and every other Plite history law in `docs/research/decisions/history-ownership.md` still holds.
+4. "Public updates are synchronous and cannot nest" and every other Plite history law in `2e865a0bc4:docs/research/decisions/history-ownership.md` still holds.
 5. The plan beats keeping the incumbent `Promise<HistoryResult>`.
 6. Each Default is the right default and none leaves the owner's stated goal unmet.
 7. The steps reach every caller, doc and doctrine owner, and each step's proof would fail for the defect it targets.

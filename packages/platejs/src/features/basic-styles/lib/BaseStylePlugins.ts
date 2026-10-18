@@ -7,14 +7,61 @@ import {
   schema,
   target,
   type DefinitionOf,
+  type Editor,
   type Element,
   type NodeSetNodesOptions,
+  type PluginTransaction,
   txLocate,
   locateAt,
 } from '../../../core';
-import { failInvariant } from '../../../internal/failInvariant';
+import type { AnyBasePlugin } from '../../../lib/plugin/BasePlugin';
 
 const digitRegex = /\d+/;
+const lineHeightRegex = /^([+-]?(?:\d+(?:\.\d*)?|\.\d+))(%|em)?$/i;
+
+const isLineHeight = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value > 0;
+
+const parseLineHeight = (text: string) => {
+  const match = lineHeightRegex.exec(text.trim());
+
+  if (!match) return undefined;
+
+  const value = Number(match[2] === '%' ? `${match[1]}e-2` : match[1]);
+
+  return isLineHeight(value) ? value : undefined;
+};
+
+const blockStyleUpdate =
+  <TValue>(key: 'lineHeight' | 'textAlign' | 'textIndent') =>
+  ({
+    editor,
+    plugin,
+    tx,
+  }: {
+    editor: Editor;
+    plugin: Pick<AnyBasePlugin, 'inject' | 'name' | 'targetPlugins'>;
+    tx: PluginTransaction;
+  }) => ({
+    clear: txLocate(locateAt(0), (options?: NodeSetNodesOptions<Element>) => {
+      tx.nodes.unset(key, {
+        match: getInjectMatch(editor, plugin),
+        ...options,
+      });
+    }),
+    set: txLocate(
+      locateAt(1),
+      (value: TValue, options?: NodeSetNodesOptions<Element>) => {
+        tx.nodes.set(
+          { [key]: value },
+          {
+            match: getInjectMatch(editor, plugin),
+            ...options,
+          }
+        );
+      }
+    ),
+  });
 
 export type Alignment =
   | 'center'
@@ -84,7 +131,6 @@ export const BaseFontColorPlugin = definePlugin(PLUGINS.color, {
     }),
   inject: {
     nodeProps: {
-      defaultNodeValue: 'black',
       styleKey: 'color',
     },
   },
@@ -164,12 +210,7 @@ export const BaseLineHeightPlugin = definePlugin(PLUGINS.lineHeight, {
   schema: ({ targetElementTypes }) => ({
     properties: {
       lineHeight: schema.elementProperty(
-        property.json({
-          validate: (value): value is number | string =>
-            (typeof value === 'number' && Number.isFinite(value)) ||
-            typeof value === 'string',
-          validationVersion: 1,
-        }),
+        property.number({ validate: isLineHeight, validationVersion: 1 }),
         {
           target: target.types(targetElementTypes),
           typeChange: 'preserve-if-allowed',
@@ -181,12 +222,19 @@ export const BaseLineHeightPlugin = definePlugin(PLUGINS.lineHeight, {
   formats: ({ defineFormats }) =>
     defineFormats({
       html: {
-        decode: ({ element }) => {
-          if (!element.style.lineHeight) return undefined;
+        decode: ({ element, report }) => {
+          const text = element.style.lineHeight;
+          const value = parseLineHeight(text);
 
-          const value = Number(element.style.lineHeight);
+          if (value === undefined) {
+            report({
+              action: 'dropped',
+              kind: 'style',
+              message: `HTML line height "${text}" is not a positive number, percent or em value; it was omitted.`,
+            });
+          }
 
-          return Number.isFinite(value) ? value : element.style.lineHeight;
+          return value;
         },
         encode: ({ value }) => ({ style: { lineHeight: value } }),
         match: [{ style: { lineHeight: '*' } }],
@@ -194,37 +242,9 @@ export const BaseLineHeightPlugin = definePlugin(PLUGINS.lineHeight, {
     }),
   inject: {
     isBlock: true,
-    nodeProps: {
-      defaultNodeValue: 1.5,
-    },
+    nodeProps: {},
   },
-  update: ({ editor, plugin, tx }) => ({
-    set: txLocate(
-      locateAt(1),
-      (value: number, options?: NodeSetNodesOptions<Element>) => {
-        const { defaultNodeValue } =
-          editor.plugin(plugin).inject.nodeProps ??
-          failInvariant('Expected value to be defined');
-        const match = getInjectMatch(editor, plugin);
-
-        if (value === defaultNodeValue) {
-          tx.nodes.unset('lineHeight', {
-            match,
-            ...options,
-          });
-          return;
-        }
-
-        tx.nodes.set(
-          { lineHeight: value },
-          {
-            match,
-            ...options,
-          }
-        );
-      }
-    ),
-  }),
+  update: blockStyleUpdate<number>('lineHeight'),
 });
 
 /** Creates a plugin that adds alignment functionality to the editor. */
@@ -249,7 +269,7 @@ export const BaseTextAlignPlugin = definePlugin(PLUGINS.textAlign, {
         match: [
           {
             style: {
-              textAlign: [...ALIGNMENTS],
+              textAlign: ALIGNMENTS,
             },
           },
         ],
@@ -258,38 +278,10 @@ export const BaseTextAlignPlugin = definePlugin(PLUGINS.textAlign, {
   inject: {
     isBlock: true,
     nodeProps: {
-      defaultNodeValue: 'start',
       styleKey: 'textAlign',
-      validNodeValues: ALIGNMENTS,
     },
   },
-  update: ({ editor, plugin, tx }) => ({
-    set: txLocate(
-      locateAt(1),
-      (value: Alignment, options?: NodeSetNodesOptions<Element>) => {
-        const { defaultNodeValue } =
-          editor.plugin(plugin).inject.nodeProps ??
-          failInvariant('Expected value to be defined');
-        const match = getInjectMatch(editor, plugin);
-
-        if (value === defaultNodeValue) {
-          tx.nodes.unset('textAlign', {
-            match,
-            ...options,
-          });
-          return;
-        }
-
-        tx.nodes.set(
-          { textAlign: value },
-          {
-            match,
-            ...options,
-          }
-        );
-      }
-    ),
-  }),
+  update: blockStyleUpdate<Alignment>('textAlign'),
 });
 
 export const BaseTextIndentPlugin = definePlugin(PLUGINS.textIndent, {
@@ -359,6 +351,7 @@ export const BaseTextIndentPlugin = definePlugin(PLUGINS.textIndent, {
       },
     },
   },
+  update: blockStyleUpdate<number>('textIndent'),
 });
 
 export type LineHeightDefinition = DefinitionOf<typeof BaseLineHeightPlugin>;

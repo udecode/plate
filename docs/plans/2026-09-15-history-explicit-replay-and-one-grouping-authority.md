@@ -7,7 +7,7 @@ Status: Complete — S1-S6 implemented and verified; publication was not request
 Objective:
 Resolve history replay, grouping, availability and mounted-view ownership, then
 adopt and prove the resulting design across every consumer in the
-[ten-unit audit](../research/decisions/history-ownership.md).
+ten-unit audit (`2e865a0bc4:docs/research/decisions/history-ownership.md`).
 
 Decision brief:
 
@@ -203,7 +203,7 @@ Phase / pass table:
 
 ## Current evidence and hard laws
 
-The [history audit](../research/decisions/history-ownership.md) covers all ten
+The history audit (`2e865a0bc4:docs/research/decisions/history-ownership.md`) covers all ten
 ledger units and records 131 passing history tests, 31 anchor tests, 13 targeted
 authored/Yjs tests and history typechecking. Its five diagnostic failures prove
 invalid replay composition and two configured-delay mismatches. Reuse those

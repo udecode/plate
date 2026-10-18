@@ -66,7 +66,7 @@ The output should separate:
   - [decorations-annotations-overlay-corpus.md](/Users/zbeyens/git/plate-2/docs/research/sources/editor-architecture/decorations-annotations-overlay-corpus.md)
   - [editor-architecture-landscape.md](/Users/zbeyens/git/plate-2/docs/research/systems/editor-architecture-landscape.md)
   - [plite-overlay-architecture.md](/Users/zbeyens/git/plate-2/docs/research/systems/plite-overlay-architecture.md)
-  - [plite-overlay-architecture-cuts.md](/Users/zbeyens/git/plate-2/docs/research/decisions/plite-overlay-architecture-cuts.md)
+  - [plite-overlay-architecture-cuts.md](docs/research/history/slate-v2-overlay-architecture-cuts.md)
 - Decompacted the research lane into narrower source clusters plus reusable
   concepts so future non-overlay editor research does not have to reuse one fat
   page:

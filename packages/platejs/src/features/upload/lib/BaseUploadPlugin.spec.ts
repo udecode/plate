@@ -8,7 +8,7 @@ import {
   schema,
 } from '../../../core';
 import { writeDataTransferFragment } from '../../../dom';
-import { BaseColumnPlugin } from '../../layout/lib/BaseColumnPlugin';
+import { BaseColumnGroupPlugin } from '../../layout/lib/BaseColumnPlugin';
 import { BaseUploadPlugin } from './BaseUploadPlugin';
 
 describe('BaseUploadPlugin', () => {
@@ -161,7 +161,7 @@ describe('upload draft transfer', () => {
       },
       plugins: [
         cardPlugin('columnGroup', 'upload'),
-        BaseColumnPlugin,
+        BaseColumnGroupPlugin,
         BaseUploadPlugin,
       ],
     });

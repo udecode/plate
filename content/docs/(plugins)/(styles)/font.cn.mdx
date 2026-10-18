@@ -91,29 +91,9 @@ const editor = createEditor({
 });
 ```
 
-### 配置默认字体颜色
+### 字体标记
 
-字体插件会注册字符串类型的文本标记，因此它们跟随选中文本，而不是块级目标列表。只有 UI 需要不同默认值时才配置渲染属性。
-
-```tsx
-import { FontColorPlugin } from "platejs/react";
-import { createEditor } from "platejs/react";
-
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    FontColorPlugin.configure({
-      inject: {
-        nodeProps: {
-          defaultNodeValue: "currentColor",
-        },
-      },
-    }),
-  ],
-});
-```
-
-`FontColorPlugin` 的默认值为 `black`。HTML 解析器会把字体样式直接写入文本属性；块级注入目标不会限制文本标记。
+字体插件会注册字符串类型的文本标记，因此它们跟随选中文本，而不是块级目标列表。每个已保存的值都会渲染，因此粘贴的 `color: black` 在任何主题下都显示为黑色。HTML 解析器会把字体样式直接写入文本属性；块级注入目标不会限制文本标记。
 
 ### 添加工具栏按钮
 

@@ -119,7 +119,8 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900,
     child.on('close', (code, signal) => {
       if (computerUse) writeFileSync(computerUse.events, stdout);
       const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : stdout).trim();
-      const failure = `${code === 0 ? 'no answer' : `exit ${code ?? signal}`}: ${stderr.trim().split('\n').slice(-5).join('\n')}`;
+      // The Claude CLI prints a usage-limit refusal on stdout and nothing on stderr.
+      const failure = `${code === 0 ? 'no answer' : `exit ${code ?? signal}`}: ${(stderr.trim() || stdout.trim()).split('\n').slice(-5).join('\n')}`;
       // A Claude seat without --effort runs at the machine's default, which only its transcript records.
       const ran = runtime === 'claude' ? claudeSessionRun(sessionId) : null;
       const seat = `${ran?.model ?? model} @${ran?.effort ?? effort ?? 'default'}`;

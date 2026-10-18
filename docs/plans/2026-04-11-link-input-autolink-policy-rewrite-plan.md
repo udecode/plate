@@ -66,7 +66,7 @@ Current law and evidence:
 
 - [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)
 - [editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md)
-- [link-automd-belongs-to-the-link-interaction-lane.md](docs/research/decisions/link-automd-belongs-to-the-link-interaction-lane.md)
+- [link-automd-belongs-to-the-link-interaction-lane.md](2e865a0bc4:docs/research/decisions/link-automd-belongs-to-the-link-interaction-lane.md)
 - [2026-03-28-link-validation-must-not-treat-double-slash-as-internal-path.md](docs/solutions/logic-errors/2026-03-28-link-validation-must-not-treat-double-slash-as-internal-path.md)
 - [2026-03-29-custom-isurl-must-be-able-to-reject-internal-link-shortcuts.md](docs/solutions/logic-errors/2026-03-29-custom-isurl-must-be-able-to-reject-internal-link-shortcuts.md)
 - [2026-04-11-link-paste-autolink-must-stay-literal-inside-markdown-source-entry.md](docs/solutions/logic-errors/2026-04-11-link-paste-autolink-must-stay-literal-inside-markdown-source-entry.md)

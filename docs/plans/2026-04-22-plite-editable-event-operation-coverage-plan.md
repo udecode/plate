@@ -8,7 +8,7 @@ source_repos:
 related:
   - docs/plans/2026-04-22-plite-editable-browser-kernel-refactor-plan.md
   - docs/plans/2026-04-22-plite-backspace-caret-testing-plan.md
-  - docs/research/decisions/plite-data-model-first-react-perfect-runtime.md
+  - docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md
   - docs/solutions/logic-errors/2026-04-22-slate-react-model-owned-insert-must-repair-dom-caret.md
   - docs/solutions/logic-errors/2026-04-22-slate-react-cut-proof-must-use-real-shortcut-and-assert-selection.md
 ---

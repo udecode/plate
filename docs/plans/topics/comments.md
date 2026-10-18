@@ -29,6 +29,66 @@ Rejected, and why:
 | Switching every anchor to `drop` | Loses the ordinary exact-undo recovery contract. |
 | Restoring the sidebar or mode switch, a history plugin, or copying anchors into another store | The existing `attachment()` and subscription contracts already serve the job. |
 
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- Comments owns semantic thread records, actions, subscriptions and private
+  native range handles per editor. Applications load
+  `initialState.initialComments` and persist `api.toJSON()` with the exact
+  document revision. The saved envelope separates conversations from opaque
+  range targets; live records retain target identity and `attachment(id)`
+  supplies current coverage or neutral unavailable state. Semantic subscriptions
+  never wake for document mapping. The seed is not a second live store. Database
+  I/O, revision association, CAS and authorization stay with the application
+  through `initialState.mutate`; copied Comment/Discussion UI owns presentation.
+  BaseCommentsPlugin owns semantics and CommentsPlugin adds live interactions.
+  Consumers do not assemble a channel, provider, factory or anchor-binding
+  effect. Reuse Plite Annotation plus plugin Decoration for mapped locations and
+  paint. Body or metadata changes perform zero annotation resolution and zero
+  editor-node refreshes. Independent editors restore their own native handles
+  from the same saved revision. Ordinary reload starts a fresh undo stack; live
+  replacement and changed-baseline collaboration require their own proven
+  transport contract. Activation stores selected IDs; keyed writes retain
+  unrelated records and membership lists. Durable actions serialize per thread
+  and publish only after canonical commit; rejection preserves records and
+  composers. Draft operations stay local. Resolve/Reopen and explicit deletion
+  are independent of document undo. Loading preserves identity, authorship,
+  timestamps and status without replaying user commands. A published
+  conversation remains discoverable when its target has no current-view
+  coverage. Exact live coverage alone owns inline paint, block counts and
+  navigation; cached coordinates and surviving neighbor endpoints never relocate
+  a thread. Bounded copied UI resolves only its mounted page and labels missing
+  coverage neutrally. Document undo may restore target identity, while unrelated
+  later typing cannot inherit it. Document mapping notifies attachment
+  subscribers without rewriting conversations or triggering semantic
+  persistence. Durable comment actions return a typed awaited result, and the
+  package fences late work from a retired owner so it never publishes. Copied
+  Comments UI queries attachments and targets through the event or render slot's
+  exact editor, because one shared conversation can have different coverage in
+  two projected views. Document-level discovery adds no Comments location store,
+  whole-corpus attachment subscription, mandatory Suggestion dependency or
+  generic Editor surface. Replies and edits stay outside document undo too, and
+  a generic checkpoint, live record-replacement API or separate comment undo
+  stack needs an independent supported job.
+- Successful local thread creation joins the one document-history order through
+  a session-only effect after its durable commit. Replay returns a pending
+  history result while the same mutation owner finishes. Replaying that history
+  entry blocks on replies, canonical divergence or rejection, and settles failed
+  when the owner throws, without advancing to the next document change. User
+  records live in the ordinary plugin store, and threads, replies and
+  resolutions record the editor's `userId`. An
+  authoritative full-document import prepares its document, comments, users and
+  required plugin state in a detached candidate editor and swaps the editor
+  owner through a keyed remount; candidate failure preserves the mounted editor,
+  and document, comment and user replacement is never sequenced on the mounted
+  editor. Keeping the editor instance instead needs one owner that publishes or
+  discards every affected runtime resource as a unit, and without that owner the
+  import is rejected before mutation. A successful authoritative
+  import bypasses ordinary mutation and history, clears transient composer
+  state, fences late work from the retired snapshot, and never exposes
+  per-thread replacement.
+
 ## What other editors do
 
 Google Docs lists deleted-target suggestion entries in its comments view; that observation did not replay ordinary deletion, boundary replacement or every pending-deletion transition.

@@ -14,7 +14,7 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-import { Caption } from './caption';
+import { Caption, getMediaTextAlign } from './caption';
 import { imagePlugin } from './media-preview-dialog';
 import { MediaToolbar } from './media-toolbar';
 import {
@@ -27,13 +27,7 @@ export function ImageElement(props: EditorElementProps<typeof imagePlugin>) {
   const path = usePath();
   const focused = useEditorFocused();
   const selected = useElementSelected({ mode: 'object' });
-  const textAlign =
-    'textAlign' in props.element &&
-    (props.element.textAlign === 'left' ||
-      props.element.textAlign === 'right' ||
-      props.element.textAlign === 'center')
-      ? props.element.textAlign
-      : 'center';
+  const textAlign = getMediaTextAlign(props.element);
   const editor = useEditor();
   const previewOpen = usePluginStore(imagePlugin, 'previewOpen');
   const openPreview = () => {

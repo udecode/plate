@@ -112,7 +112,7 @@
     {
       "id": "2026-10-13-suggestion-refusals",
       "kind": "behavior",
-      "summary": "Show a toast when Suggesting refuses a change that touches a code block, a table or a list item, and leave the document as it was. The mode menu switches to Suggesting only when the switch takes.",
+      "summary": "Show a toast when Suggesting refuses a change that touches a code block or a table, or a change to a list item itself such as Enter, and leave the document as it was. Text typed inside a list item shows as a suggestion. The mode menu switches to Suggesting only when the switch takes.",
       "details": [],
       "migrationNotes": [],
       "targets": ["suggestion", "mode-toolbar-button"],

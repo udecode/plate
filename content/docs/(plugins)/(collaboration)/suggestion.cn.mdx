@@ -150,7 +150,7 @@ const authored = editor.plugin(AuthoredPlugin);
 authored.api.setView({ preview: 'proposed' });
 ```
 
-Preview 不接受写入，`read.mode()` 把它报告为 `'editing'`。切换到 preview 不会接受或拒绝 change。不同 view 的坐标可能不同，因此请通过产生 selection 的 view 读取 selection 并应用编辑。调用 `setMode` 可离开 preview。
+Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改文档，例如带决定的 update、撤销和重做，以及远程协作变更；`read.mode()` 把它报告为 `'editing'`。切换到 preview 不会接受或拒绝 change。不同 view 的坐标可能不同，因此请通过产生 selection 的 view 读取 selection 并应用编辑。调用 `setMode` 可离开 preview。
 
 ## 读取 view 状态
 

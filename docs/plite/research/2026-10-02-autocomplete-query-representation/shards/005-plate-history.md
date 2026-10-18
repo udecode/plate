@@ -76,7 +76,7 @@ Short answer: yes, there was one stated reason, and it was accessibility. The au
 - **Post-v34 screen-reader outcomes.** Issue and discussion searches from 2024-06 to 2026-10 found no AT reports about the input design. Absence of reports does not show the input worked for AT.
 - **Chat.** Plate's Discord, where design talk likely happened (felixfeng33 pointed contributors to its `contribute` channel, D#383), was not searchable. The window to check is 2024-04-25 to 2024-05-03 (869f8689f5 is dated 2024-04-25).
 - **People who would know.** Joe Anderson (@12joan) for the AT matrix and the alternatives he tried. @nemanja-tosic, who built the v33 input, never reviewed.
-- **The 2026 record does not engage the 2024 reason.** `git grep` for `3168`, `assistive` and `screen.?reader` across the 2026 autocomplete plan, decision page and review records found no reference to PR #3168 or its comment (the `3168` hits were file-hash false positives). "Screen-reader navigation" appears only as an open gate: plan line 456, and `docs/research/decisions/autocomplete-ownership.md` line 190. Line 193 of the plan notes the earlier runner "does not settle … popup accessibility".
+- **The 2026 record does not engage the 2024 reason.** `git grep` for `3168`, `assistive` and `screen.?reader` across the 2026 autocomplete plan, decision page and review records found no reference to PR #3168 or its comment (the `3168` hits were file-hash false positives). "Screen-reader navigation" appears only as an open gate: plan line 456, and `2e865a0bc4:docs/research/decisions/autocomplete-ownership.md` line 190. Line 193 of the plan notes the earlier runner "does not settle … popup accessibility".
 
 ### Sources Consulted
 

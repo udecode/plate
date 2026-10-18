@@ -21,6 +21,17 @@ Rejected, and why:
 | An incremental native parser | Needs a matched benchmark and full language and rendering oracles first. |
 | Splitting a copied backend out | Only worth it with a whole CodeMirror composition change and measured value; moving controls alone keeps Lowlight imports. |
 
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- Code-block commands construct schema-valid code nodes directly, preserving
+  their distinct insert/upsert selection policy without exposing an intermediate
+  default type. Optional JSON prettifying belongs to copied UI and edits the
+  canonical text through Plite. Syntax readers do not mutate a caller's
+  highlighter; copied native and static kits register their parser resources
+  before use.
+
 ## What other editors do
 
 Not compared in this scope's reviews; CodeMirror is the adopted optional editor, and its source pages live under `docs/research/sources/`.

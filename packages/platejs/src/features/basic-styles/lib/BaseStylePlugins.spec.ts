@@ -91,12 +91,6 @@ describe('BaseFontColorPlugin', () => {
     const plugin = editor.plugin(BaseFontColorPlugin);
 
     expect(plugin.inject.nodeProps).toEqual({
-      defaultNodeValue: 'black',
-      nodeKey: 'color',
-      styleKey: 'color',
-    });
-    expect(editor.plugin(BaseFontColorPlugin).inject.nodeProps!).toMatchObject({
-      defaultNodeValue: 'black',
       nodeKey: 'color',
       styleKey: 'color',
     });
@@ -321,7 +315,6 @@ describe('BaseLineHeightPlugin', () => {
     );
     expect(editor.plugin(BaseLineHeightPlugin).inject.nodeProps!).toMatchObject(
       {
-        defaultNodeValue: 1.5,
         nodeKey: 'lineHeight',
       }
     );
@@ -330,43 +323,69 @@ describe('BaseLineHeightPlugin', () => {
         key: 'lineHeight',
         placement: 'element',
       })?.value.kind
-    ).toBe('json');
+    ).toBe('number');
     expect(typeof editor.update.lineHeight.set).toBe('function');
   });
 
-  it('rejects non-number and non-string line heights', () => {
-    const editor = createEditor({
-      plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
-    });
-
+  it('refuses to load a line height stored as text', () => {
     expect(() =>
-      editor.read.schema.assertDocument({
-        children: [
+      createEditor({
+        initialValue: [
           {
             children: [{ text: 'One' }],
-            lineHeight: true,
+            lineHeight: '107%',
             type: 'paragraph',
           },
         ],
+        plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
       })
-    ).toThrow(/element property "lineHeight" fails custom property validation/);
+    ).toThrow(/lineHeight/);
   });
 
-  it('parses line-height styles through the injected target plugin deserializer', () => {
-    const editor = createEditor({
-      plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
-    });
+  it.each([
+    ['2', 2],
+    ['150%', 1.5],
+    ['1.5em', 1.5],
+    ['107%', 1.07],
+    ['133.3%', 1.333],
+  ])(
+    'saves a pasted line height of %s as the multiplier %d',
+    (css, lineHeight) => {
+      const editor = createEditor({
+        plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
+      });
+      const result = editor.api.html.parse(
+        `<p style="line-height: ${css}">text</p>`
+      );
 
-    expect(
-      parseHtmlSliceContent(editor, '<p style="line-height: 2">text</p>')
-    ).toMatchObject([
-      {
-        lineHeight: 2,
-        children: [{ text: 'text' }],
-        type: 'paragraph',
-      },
-    ]);
-  });
+      expect(result.diagnostics).toEqual([]);
+      expect(result.ok && result.document.children).toEqual([
+        { children: [{ text: 'text' }], lineHeight, type: 'paragraph' },
+      ]);
+    }
+  );
+
+  it.each(['normal', '24px', '1.5rem', '0'])(
+    'warns about a pasted line height of %s and saves none',
+    (css) => {
+      const editor = createEditor({
+        plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
+      });
+      const result = editor.api.html.parse(
+        `<p style="line-height: ${css}">text</p>`
+      );
+
+      expect(result.diagnostics).toMatchObject([
+        {
+          message: `HTML line height "${css}" is not a positive number, percent or em value; it was omitted.`,
+          severity: 'warning',
+        },
+      ]);
+      expect(result.ok && result.document.children).toEqual([
+        { children: [{ text: 'text' }], type: 'paragraph' },
+      ]);
+    }
+  );
 
   it('applies and clears line height through the typed tx group', () => {
     const editor = createEditor({
@@ -388,6 +407,9 @@ describe('BaseLineHeightPlugin', () => {
     expect(editor.read.children()[0]).toMatchObject({ lineHeight: 2 });
 
     editor.update.lineHeight.set(1.5);
+    expect(editor.read.children()[0]).toMatchObject({ lineHeight: 1.5 });
+
+    editor.update.lineHeight.clear();
     expect(editor.read.children()[0]).not.toHaveProperty('lineHeight');
   });
 
@@ -429,7 +451,7 @@ describe('BaseLineHeightPlugin', () => {
     expect(editor.read.children()[0]).toMatchObject({ lineHeight: 2 });
     expect(editor.read.children()[0]).not.toHaveProperty('legacyLineHeight');
 
-    editor.update.lineHeight.set(1.5);
+    editor.update.lineHeight.clear();
 
     expect(editor.read.children()[0]).not.toHaveProperty('lineHeight');
   });
@@ -471,9 +493,7 @@ describe('BaseTextAlignPlugin', () => {
       editor.plugin(BaseParagraphPlugin).schema.type
     );
     expect(plugin.inject.nodeProps).toMatchObject({
-      defaultNodeValue: 'start',
       styleKey: 'textAlign',
-      validNodeValues: ['center', 'end', 'justify', 'left', 'right', 'start'],
     });
     expect(
       editor.read.schema.property({
@@ -521,7 +541,55 @@ describe('BaseTextAlignPlugin', () => {
     expect(editor.read.children()[0]).toMatchObject({ [nodeKey]: 'center' });
 
     editor.update.textAlign.set('start');
+    expect(editor.read.children()[0]).toMatchObject({ [nodeKey]: 'start' });
+
+    editor.update.textAlign.clear();
     expect(editor.read.children()[0]).not.toHaveProperty(nodeKey);
+  });
+
+  it('keeps the schema fingerprint of saved documents with alignment', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseTextAlignPlugin.configure({
+          targetPlugins: [PLUGINS.heading, PLUGINS.paragraph],
+        }),
+      ],
+    });
+
+    expect(editor.read.schema.identity().fingerprint).toBe(
+      'fnv1a64:fc917d301389cde9'
+    );
+  });
+
+  it('keeps a stored start through HTML export and import', () => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
+      initialValue: [
+        {
+          children: [{ text: 'Start edge' }],
+          textAlign: 'start',
+          type: 'paragraph',
+        },
+      ],
+    });
+    const serialized = new Map<string, string>();
+
+    writeDataTransferFragment(
+      editor,
+      { setData: (format, value) => serialized.set(format, value) },
+      ContentSlice.closed(editor.read.children())
+    );
+
+    expect(parseHtmlSliceContent(editor, serialized.get('text/html')!)).toEqual(
+      [
+        {
+          children: [{ text: 'Start edge' }],
+          textAlign: 'start',
+          type: 'paragraph',
+        },
+      ]
+    );
   });
 
   it('uses the schema key instead of an injected node-prop key', () => {
@@ -564,7 +632,7 @@ describe('BaseTextAlignPlugin', () => {
     });
     expect(editor.read.children()[0]).not.toHaveProperty('legacyAlign');
 
-    editor.update.textAlign.set('start');
+    editor.update.textAlign.clear();
 
     expect(editor.read.children()[0]).not.toHaveProperty('textAlign');
   });
@@ -643,7 +711,7 @@ describe('BaseTextIndentPlugin', () => {
     ]);
   });
 
-  it('applies and clears text indent through generic node updates', () => {
+  it('applies and clears text indent through the typed tx group', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],
       initialValue: [
@@ -653,13 +721,12 @@ describe('BaseTextIndentPlugin', () => {
         },
       ],
     });
-    const nodeKey = 'textIndent';
 
-    editor.update.nodes.set({ textIndent: 2 }, { at: [0] });
-    expect(editor.read.children()[0]).toMatchObject({ [nodeKey]: 2 });
+    editor.update.textIndent.set(2, { at: [] });
+    expect(editor.read.children()[0]).toMatchObject({ textIndent: 2 });
 
-    editor.update.nodes.unset('textIndent', { at: [0] });
-    expect(editor.read.children()[0]).not.toHaveProperty(nodeKey);
+    editor.update.textIndent.clear({ at: [] });
+    expect(editor.read.children()[0]).not.toHaveProperty('textIndent');
   });
 
   it('uses the plugin type instead of an injected node key', () => {
@@ -689,6 +756,30 @@ describe('BaseTextIndentPlugin', () => {
 
     expect(editor.read.children()[0]).not.toHaveProperty('textIndent');
   });
+});
+
+describe('block style clear', () => {
+  it.each([
+    ['lineHeight', BaseLineHeightPlugin, 2],
+    ['textAlign', BaseTextAlignPlugin, 'center'],
+    ['textIndent', BaseTextIndentPlugin, 2],
+  ] as const)(
+    'clears %s in one change that one undo restores',
+    (key, plugin, value) => {
+      const editor = createEditor({
+        initialValue: [
+          { children: [{ text: 'One' }], [key]: value, type: 'paragraph' },
+        ],
+        plugins: [BaseParagraphPlugin, plugin],
+      });
+
+      editor.plugin(plugin).update.clear({ at: [] });
+      expect(editor.read.children()[0]).not.toHaveProperty(key);
+
+      editor.api.history.undo();
+      expect(editor.read.children()[0]).toMatchObject({ [key]: value });
+    }
+  );
 });
 
 describe('basic style HTML formats', () => {

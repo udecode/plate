@@ -143,10 +143,29 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
 
 const REFUSED: Readonly<Record<string, string>> = {
   'code-block': 'code blocks',
-  list: 'lists',
   table: 'tables',
 };
 const refusedPlaces = new Intl.ListFormat('en');
+
+function vetoMessage(reasons: readonly string[]) {
+  const places = reasons
+    .filter((reason) => reason !== 'list')
+    .map((reason) => REFUSED[reason] ?? reason);
+  const sentences =
+    places.length > 0
+      ? [
+          `Suggesting is off in ${refusedPlaces.format(places)} for now. Switch to Editing to change them.`,
+        ]
+      : [];
+
+  if (reasons.includes('list')) {
+    sentences.push(
+      "Suggesting can't change list items yet, only the text in them."
+    );
+  }
+
+  return sentences.join(' ');
+}
 
 /** Says why Suggesting refused a change, which then applied nothing. */
 function SuggestionRefusals() {
@@ -155,13 +174,9 @@ function SuggestionRefusals() {
   React.useEffect(
     () =>
       editor.plugin(AuthoredPlugin).api.subscribeRefusals((refusal) => {
-        const places = refusal.reasons.map(
-          (reason) => REFUSED[reason] ?? reason
-        );
-
         toast.error(
           refusal.code === 'veto'
-            ? `Suggesting is off in ${refusedPlaces.format(places)} for now. Switch to Editing to change them.`
+            ? vetoMessage(refusal.reasons)
             : refusal.code === 'generated-values'
               ? 'Suggesting is off in this editor.'
               : 'Suggesting cannot record this change yet. Switch to Editing to make it.',

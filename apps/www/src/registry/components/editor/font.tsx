@@ -8,13 +8,7 @@ import {
 } from 'platejs/react';
 
 export const FontKit = [
-  FontColorPlugin.configure({
-    inject: {
-      nodeProps: {
-        defaultNodeValue: 'black',
-      },
-    },
-  }),
+  FontColorPlugin,
   FontBackgroundColorPlugin,
   FontSizePlugin,
   FontFamilyPlugin,

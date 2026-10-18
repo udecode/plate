@@ -26,7 +26,7 @@ Docs lane:
 
 - lane: Guide / system
 - target docs: `content/docs/plite/why-this-fork.mdx`
-- documented source owner: Plate-maintained Plite runtime docs, grounded by `docs/plite/references/architecture-contract.md`, `docs/plite/absolute-architecture-release-claim.md`, and `docs/research/decisions/plite-read-update-runtime-architecture.md`
+- documented source owner: Plate-maintained Plite runtime docs, grounded by `docs/plite/references/architecture-contract.md`, `docs/plite/absolute-architecture-release-claim.md`, and `docs/research/history/slate-v2-read-update-runtime-architecture.md`
 - nearest sibling docs: `content/docs/plite/index.mdx`
 - plugin page: N/A: fork rationale page, not a plugin page
 
@@ -58,7 +58,7 @@ Verification surface:
 
 - source audit: `content/docs/plite/why-this-fork.mdx`
 - style/source context: `.agents/skills/docs-creator/SKILL.md`, `content/docs/plite/index.mdx`
-- source-backed rationale context: `docs/plite/references/architecture-contract.md`, `docs/plite/absolute-architecture-release-claim.md`, `docs/research/decisions/plite-read-update-runtime-architecture.md`
+- source-backed rationale context: `docs/plite/references/architecture-contract.md`, `docs/plite/absolute-architecture-release-claim.md`, `docs/research/history/slate-v2-read-update-runtime-architecture.md`
 - commands: `pnpm --filter www build:source`, `pnpm --filter www check:docs`
 - route check: Node REPL fetch for `http://localhost:3002/docs/plite/why-this-fork`
 

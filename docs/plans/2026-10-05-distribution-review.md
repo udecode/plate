@@ -136,7 +136,7 @@ Doctrine text:
 - `docs/vision/common.md:155-157`, the last sentence becomes: "Branded editor variants do not survive, and no public entrypoint publishes internals to authors; the one first-party bridge is the one root `VISION.md` defines."
 - `docs/vision/plite.md:77`, appended: "An export whose only callers are first-party layers is a framework hook and is exported only from `plitejs/internal`."
 - `docs/vision/plate.md:57-58`: "`platejs` reexports the approved Plite surface by identity, never a `plitejs/internal` binding."
-- `docs/research/decisions/plate-core-ownership.md:137-140`, appended: "The bridge exports only framework hooks and carriers and shares no binding with a public `plitejs` or `platejs` entrypoint."
+- `2e865a0bc4:docs/research/decisions/plate-core-ownership.md:137-140`, appended: "The bridge exports only framework hooks and carriers and shares no binding with a public `plitejs` or `platejs` entrypoint."
 
 Keep, revert or quarantine: keep when both packages typecheck, the suites and smoke lists pass and the consumer probe fails as planned. Revert the phase as a unit if a registry, template or example turns out to import a removed hook.
 
@@ -360,7 +360,7 @@ Prior work, from `node tooling/scripts/review-ledger.mjs lookup distribution --d
 - 2026-10-04 audit, Pursue, the current head. It supersedes the 2026-09-12 review and keeps both recovered executions. It counted 23 `@internal` tags reaching the `plitejs` root, 16 of them values, and proposes exporting them only from `plitejs/internal`, importing them there in `packages/platejs/src/facade.ts`, a check that rejects `@internal` exports reachable from a public entrypoint, and one doctrine statement of the bridge. It read source only and ran no build, typecheck, test or packed release.
 - `docs/plans/2026-10-04-ledger-triage-audit.md` names the next step for this scope as a plan for that cut.
 - Two other subjects track pieces of it: `docs/plans/2026-10-03-model-document-admission.md` left `setEditorSnapshotInputTransform` exported from the public root, owned in `docs/plans/topics/model.md` Open work, and `docs/plans/2026-10-04-correct-sweep.md` left five relative `plitejs` imports that need a facade or `plitejs/internal` export, owned in `docs/plans/topics/correct.md` Open work.
-- `docs/research/decisions/plate-core-ownership.md` is the decision page. No candidate record names this cut.
+- `2e865a0bc4:docs/research/decisions/plate-core-ownership.md` is the decision page. No candidate record names this cut.
 
 Freshness since the audit's tree, `fe0e9599a6`:
 

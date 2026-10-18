@@ -33,6 +33,25 @@ const captionVariants = cva('max-w-full', {
   },
 });
 
+export const getMediaTextAlign = (element: object) => {
+  if (!('textAlign' in element)) return 'center';
+
+  switch (element.textAlign) {
+    case 'justify':
+    case 'left':
+    case 'start': {
+      return 'left';
+    }
+    case 'end':
+    case 'right': {
+      return 'right';
+    }
+    default: {
+      return 'center';
+    }
+  }
+};
+
 export function useCaptionFocused(path: Path) {
   return useEditorSelector((editor) => {
     // A media NodeSelection also reads as a caret at the caption start.

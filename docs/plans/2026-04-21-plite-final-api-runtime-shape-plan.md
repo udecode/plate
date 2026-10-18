@@ -750,7 +750,7 @@ Changed files:
 
 - `/Users/zbeyens/git/plite/docs/libraries/slate-react/editable.md`
 - `/Users/zbeyens/git/plite/docs/walkthroughs/09-performance.md`
-- `/Users/zbeyens/git/plate-2/docs/research/decisions/plite-data-model-first-react-perfect-runtime.md`
+- `docs/research/history/slate-v2-data-model-first-react-perfect-runtime.md`
 - `/Users/zbeyens/git/plate-2/docs/plite/replacement-gates-scoreboard.md`
 
 Rejected tactics:

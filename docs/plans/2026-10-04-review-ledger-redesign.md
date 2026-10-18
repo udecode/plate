@@ -277,7 +277,7 @@ A scope file:
   "proof": ["packages/platejs/src/features/table/lib/BaseTablePlugin.apply.spec.tsx"],
   "evidenceInputs": ["apps/www/playwright.config.ts"],
   "relatedScopes": ["clipboard", "geometry", "editing", "dnd"],
-  "decision": "docs/research/decisions/table-ownership.md",
+  "decision": "2e865a0bc4:docs/research/decisions/table-ownership.md",
   "historyCandidates": ["docs/plans/5065-fix-table-tab-navigation.md"]
 }
 ```
