@@ -8,6 +8,6 @@
       "next": true
     }
   },
-  "ignoreCommand": "bash -c '[ \"$VERCEL_GIT_COMMIT_MESSAGE\" = \"Version Packages\" ]'",
+  "ignoreCommand": "node scripts/vercel-ignore-build.mjs",
   "installCommand": "pnpm install --no-frozen-lockfile"
 }
