@@ -2887,15 +2887,6 @@ export const assertRootPlaced = (
   }
 };
 
-const missingRootChildren = (
-  editor: Editor,
-  { currentChildrenRoot, snapshot }: TransactionSpecContext
-) => {
-  assertRootPlaced(editor, snapshot, currentChildrenRoot);
-
-  return EMPTY_CHILDREN;
-};
-
 const getChildrenSource = (editor: Editor): ChildrenSource => {
   const projection = getReadProjection(editor);
   if (projection) {
@@ -2914,7 +2905,7 @@ const getChildrenSource = (editor: Editor): ChildrenSource => {
           (value.children as readonly Descendant[]))
       : ((value.roots?.[context.currentChildrenRoot] as
           | readonly Descendant[]
-          | undefined) ?? missingRootChildren(editor, context));
+          | undefined) ?? EMPTY_CHILDREN);
   }
 
   return getStoredChildrenSource(editor);

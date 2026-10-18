@@ -192,9 +192,9 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   them in the projection, and a key the projection hides skips it when the
   method's locator places that key, as it skips a direct call. A call through a
   view stays unframed and decides on the stored document, so a hidden key
-  still reaches its body. The frame refuses a read, a write or a selection in a
-  root a pending deletion drops, so a call that touches only other roots still
-  runs. Point
+  still reaches its body. A read of a root a pending deletion drops sees it
+  empty, and the frame refuses a write or a selection there, so a call that
+  writes only other roots still runs. Point
   stepping has no option that skips hidden content, because commands on the
   review tree never see it.
   Persistence saves the whole `read.value()`, records included. Every

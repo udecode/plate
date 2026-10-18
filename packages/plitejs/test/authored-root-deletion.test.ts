@@ -1336,6 +1336,54 @@ describe('with the caret in the root of a struck card', () => {
     ]);
   });
 
+  it('a plugin update method with no target runs when it finds no block in b1 and writes main by key', () => {
+    const main: { key?: string } = {};
+    const Writer = definePlugin('writer', {
+      update: ({ tx }: any) => ({
+        replaceHere: () => {
+          const entry = tx.nodes.block();
+
+          tx.nodes.replace(p('RIGHT'), { at: entry ? entry[1] : main.key });
+        },
+      }),
+    });
+    const struck = caretInStruck('propose', [Writer]);
+
+    main.key = struck.editor.key([1]);
+    struck.editor.update.writer.replaceHere();
+
+    assert.deepEqual(
+      [struck.refusals, previewOf(struck.editor, 'proposed').children],
+      [[], [p('RIGHT')]]
+    );
+  });
+
+  const wholeRootWrites: Record<string, (tx: any, b1Key?: string) => unknown> =
+    {
+      'replaces b1': (tx) => tx.roots.replace('b1', [p('W')]),
+      'deletes b1': (tx) => tx.roots.delete('b1'),
+      'selects a block of b1 by key': (tx, b1Key) =>
+        tx.selection.setNodes([b1Key], { mode: 'block' }),
+    };
+
+  for (const [name, write] of Object.entries(wholeRootWrites)) {
+    it(`a plugin update method that ${name} writes nothing in Suggesting`, () => {
+      const b1: { key?: string } = {};
+      const Writer = definePlugin('writer', {
+        update: ({ tx }: any) => ({ write: () => write(tx, b1.key) }),
+      });
+      const struck = caretInStruck('propose', [Writer]);
+
+      b1.key = struck.editor.key(struck.editor.read.root('b1')[0]);
+      struck.editor.update.writer.write();
+
+      assert.deepEqual(
+        [struck.refusals, valueOf(struck.editor)],
+        [['unrepresentable'], struck.before]
+      );
+    });
+  }
+
   it('drops an effect a command emits inside b1', () => {
     const inBody = defineEffect<number>({
       key: 'test.in-body',

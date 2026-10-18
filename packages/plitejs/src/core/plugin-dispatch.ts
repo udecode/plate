@@ -15,6 +15,7 @@ import {
 import { getEditorRuntimeOwner } from './editor-runtime';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
+  assertRootPlaced,
   getCurrentSelection,
   getCurrentSelectionRoot,
   getNodeTargetRoot,
@@ -23,6 +24,7 @@ import {
   getUpdateView,
   withEditorUpdateRootScope,
 } from './public-state';
+import { EditorRefusalError } from './refusal';
 import { getTxMethodLocate, isTxOnlyMethod } from './tx-only';
 import { countCoreWork } from './work';
 
@@ -178,6 +180,13 @@ export const dispatchPluginUpdate = (
       return callMember(rootTransaction(editor, decidedRoot), group, path, [
         ...located,
       ]);
+    } catch (error) {
+      const snapshot = getTransactionSnapshot(editor);
+
+      if (snapshot && !callback && !(error instanceof EditorRefusalError)) {
+        assertRootPlaced(editor, snapshot, decidedRoot);
+      }
+      throw error;
     } finally {
       active.pluginRoot = previous;
     }
