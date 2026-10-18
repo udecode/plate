@@ -110,6 +110,7 @@ Three realistic failures: a refusal blocks a real Backspace in a layout the lowe
 | Proof that a removal mapped backward is refused | Step 3 closes without a run of it, because no command reaches it once the recorder splits each crossing (look) | Step 3 stays partial until a test reaches it | reach the refusal | detail |
 | Proving asks 2 and 3 on the merged code | Step 4 closes on the proof from before the merge, because next's own ledger bug stops those checks before any step over moved content (look) | Step 4 stays open until t_cbe5346a lands | rerun the ledger laws | small |
 | How this work gets to next | One squashed commit, opened as a pull request into next, as the new delivery rule says (look) | The brief's patch, applied to the main checkout and left uncommitted | apply the patch | small |
+| The page link | A new page at https://claude.ai/artifact/LMYNM7X5UttawN35x7edE5, because the earlier one, https://claude.ai/artifact/LzfdwnVufGpA4S1r9qnDmv, was deleted or no longer opens for this account | Drop the new page and publish nowhere | drop the new page | detail |
 
 ## Steps
 
