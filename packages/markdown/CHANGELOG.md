@@ -1,5 +1,25 @@
 # @platejs/markdown
 
+## 53.3.18
+
+### Patch Changes
+
+- [#5185](https://github.com/udecode/plate/pull/5185) by [@ybai08](https://github.com/ybai08) –
+
+  - Apply `allowedNodes`, `disallowedNodes` and `allowNode` to the children of bold, italic and strikethrough, so `disallowedNodes: ['a']` also removes a link inside `**…**`. An `allowedNodes` list now needs `text`, and any inline type such as `a`, listed to keep that content inside these marks, as it already does outside them.
+
+- [#5179](https://github.com/udecode/plate/pull/5179) by [@dylans](https://github.com/dylans) –
+
+  - Keep HTML that has no rule as source: unknown tags, raw `html` nodes and HTML comments deserialize as a text leaf with `rawHtml: true` and serialize back unescaped. Before, `<b>x</b>` came back as `\<b>x\</b>`, and comments were dropped.
+  - Keep Markdown inside unknown tags: `` <b>`code`</b> `` no longer loses its backticks, and a list or paragraph inside a block tag such as `<details>` keeps the blank lines around it, so it still renders as Markdown.
+
+- [#5177](https://github.com/udecode/plate/pull/5177) by [@dylans](https://github.com/dylans) –
+
+  - Deserialize reference links and images (`[text][id]`, `[id][]`, `[id]`, `![alt][id]`) as `a` and `img` nodes using the matching definition's URL. They were dropped before, so a paragraph holding only a reference link came back empty.
+
+- [#5178](https://github.com/udecode/plate/pull/5178) by [@dylans](https://github.com/dylans) –
+  - Stop serializing the empty text around inline elements (links, mentions, footnote references) as a zero-width space. Only an empty paragraph is written as `​` now, so Markdown output no longer carries invisible characters at the start or end of a paragraph.
+
 ## 53.3.17
 
 ### Patch Changes

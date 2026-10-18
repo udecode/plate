@@ -1,5 +1,29 @@
 # @udecode/slate
 
+## 53.3.18
+
+### Patch Changes
+
+- [#5172](https://github.com/udecode/plate/pull/5172) by [@dylans](https://github.com/dylans) – Bring the bundled history plugin up to date with slate-history:
+
+  - `withoutSaving`, `withoutMerging`, `withMerging` and `withNewBatch` restore their flags when the callback throws, so one failed transform no longer stops history from recording.
+  - A nested `withNewBatch` keeps the enclosing batch's split.
+  - An edit no longer merges into the previous undo step just because another operation, such as a selection change, ran earlier in the same tick.
+  - Inside `withoutMerging`, a transform's normalization stays in the same undo step as the transform, so undoing it no longer leaves an unnormalized document behind.
+
+  `editor.hasRange` and `editor.api.hasRange` now share one implementation built on slate's `hasRange`, and still return `false` for a missing range.
+
+- [#5190](https://github.com/udecode/plate/pull/5190) by [@dylans](https://github.com/dylans) – Bring the bundled history plugin up to date with slate-history 0.144.0:
+
+  - Add `editor.tf.setChildren(children)`, which applies an outside document through operations instead of replacing `editor.children`, so the selection, refs and history stay valid. Each call is its own undo step, separate from typing before and after it.
+  - Undo and redo now account for changes applied with `editor.tf.withoutSaving`. Saved steps are moved past each unsaved operation, so a block inserted above earlier typing, or text inserted before it, no longer makes undo remove the wrong characters. Steps whose content was removed, or that can no longer be applied, are dropped.
+
+- [#5172](https://github.com/udecode/plate/pull/5172) by [@dylans](https://github.com/dylans) – Upgrade to slate 0.142.1, slate-dom 0.142.0, slate-react 0.142.0 and slate-hyperscript 0.138.3.
+
+- [#5190](https://github.com/udecode/plate/pull/5190) by [@dylans](https://github.com/dylans) – Upgrade to slate 0.146.0, slate-dom 0.146.0 and slate-react 0.145.1.
+
+- [`cb4f514`](https://github.com/udecode/plate/commit/cb4f5146d61b01223e8fb815864b25c9a4e12b2e) by [@github-actions[bot]](https://github.com/github-actions%5Bbot%5D) – Updated `slate`, `slate-dom`, `slate-react`.
+
 ## 53.3.15
 
 ### Patch Changes
