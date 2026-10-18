@@ -1,6 +1,7 @@
 # Fix the Bun tests that fail on next
 
 Status: executed, two AI discard tests left to t_c411234d
+Page: https://claude.ai/artifact/1tmt3TSk8mfAxx49JeDGiF
 Playbook: bug-fix
 
 ## Brief
