@@ -21,6 +21,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/reread.mjs ] || node .agents/pstack/reread.mjs --hook AGENTS.md \"$HOME/.claude/pstack-models.md\" .claude/settings.json; }",
+            "timeout": 30
+          },
+          {
+            "type": "command",
             "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/head.mjs ] || node .agents/pstack/head.mjs; }",
             "timeout": 30
           },

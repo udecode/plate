@@ -67,8 +67,12 @@ For long unattended work, state a checkable exit condition. pstack's Autonomous
 run keeps going with `/loop` in Claude Code or `/goal` in Codex, and the domain
 plans stay in use. No single command, proof, review seat or wait on the machine
 runs longer than an hour. A measurement that needs longer, such as a soak or a
-multi-round timing protocol, becomes a session card that you start when you
-want it, and the run's close never waits on it.
+multi-round timing protocol, becomes a suggested task that you start when you
+want it, and the run's close never waits on it. A run that drops part of its
+exit condition on its own stays partial and lists what it dropped. After each
+compaction the agent rereads `AGENTS.md`, the models sheet and the plugin pin
+from disk, because the copy the runtime restores can be older, and after you
+correct how it works it runs `/pstack:reflect` before its final reply.
 
 ## Apply the project rules
 
