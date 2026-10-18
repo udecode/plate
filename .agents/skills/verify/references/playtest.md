@@ -31,10 +31,10 @@ A build runs Run steps 1 and 5 and the Findings section's build rules, and skips
 
 Sort each confirmed finding into a product bug, a spec or harness bug, or a parity gap, where the reference editor does something Plate lacks.
 
-- In a build, every product bug and every spec or harness bug in the catalog's specs is a finding of the build, a pre-existing one included. Fix each with a test that fails on it at the old code, as the hand drive's Drift section says. A parity gap that adds a feature, a finding that needs a design call, and a failure whose cause lies outside the feature, such as a shared test harness or the host, get a session card instead, as the block's Side work rule says. After the fixes, run the runner once more on the final tree. What still fails goes under Open work with its session card.
-- In a standalone pass, give each finding a session card, or one line in `docs/plans/backlog.md` when it is not worth a card now.
+- In a build, every product bug and every spec or harness bug in the catalog's specs is a finding of the build, a pre-existing one included. Fix each with a test that fails on it at the old code, as the hand drive's Drift section says. A parity gap that adds a feature, a finding that needs a design call, and a failure whose cause lies outside the feature, such as a shared test harness or the host, get a suggested task instead, as the block's Suggested tasks rule says. After the fixes, run the runner once more on the final tree. What still fails goes under Open work with its suggested task.
+- In a standalone pass, offer each finding as a suggested task.
 
-A whole pass's `results.md` in the run directory lists every row and move with its result, the runner's reports and each finding with its fix, test or session card.
+A whole pass's `results.md` in the run directory lists every row and move with its result, the runner's reports and each finding with its fix, test or suggested task.
 
 ## Limits
 

@@ -252,13 +252,13 @@ export const NOT_PASSED = ['partial', 'open', 'gap', 'blocked', 'inconclusive'];
 const realOf = (path) => (existsSync(path) ? realpathSync(path) : path);
 export const proofKey = (path) => relative(realOf(process.cwd()), realOf(resolve(path)));
 
-export function proofLabels(evidence, plans) {
+export function proofLabels(evidence, plans, exists = existsSync) {
   const root = `${plans}/artifacts/`;
   return [...evidence.matchAll(/(?:^|[\s;`])proof:\s+([^\s;,`]+)/gu)].flatMap(([, value]) => {
     if (value === 'none') return [{ none: true }];
     if (!value.includes(root)) return [];
     const path = tidy(value);
-    return [{ path, key: proofKey(path), exists: existsSync(path) }];
+    return [{ path, key: proofKey(path), exists: exists(path) }];
   });
 }
 

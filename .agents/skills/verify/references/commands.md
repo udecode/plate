@@ -308,8 +308,8 @@ that has served a long run is not yet a regression. Start a fresh base server
 from a worktree this helper makes with `--install`, and a fresh candidate
 server from a second one with `--install --with <changed file>`. Run the case
 with `--repeat-each=3` on each server, alternating, for two rounds. A case
-that also fails on the fresh base is pre-existing, and it gets a session
-card or a backlog line, as the block's Side work rule says.
+that also fails on the fresh base is pre-existing, and it gets a suggested
+task, as the block's Suggested tasks rule says.
 
 The helper has four modes for these cases:
 

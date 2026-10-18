@@ -11,11 +11,14 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   statSync,
   writeFileSync,
 } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
-import { SEATS, SEVERITIES, STAGE_PHASES, STATES, isFence, isHandOffReview, landed, readFence, reopened, splitRow, stateOf, TABLE_RULE, tablesOf } from './status.mjs';
+import { fileURLToPath } from 'node:url';
+import { DECK_SCRIPT, MOUNTS, dataBlock, slugOf } from './page-live.mjs';
+import { SEATS, SEVERITIES, STAGE_PHASES, STATES, isFence, isHandOffReview, landed, readFence, reopened, splitRow, stageOfRow, stateOf, TABLE_RULE, tablesOf } from './status.mjs';
 
 const PAGE_HEAD = `<meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -195,6 +198,12 @@ details.iteration[open] > summary { margin-bottom: 4px; }
 .lightbox img { display: block; max-width: none; cursor: zoom-out; }
 .shot figcaption { font-size: 0.8rem; opacity: 0.75; margin-top: 0.25rem; }
 .shot.missing { border: 1px dashed var(--rule); border-radius: 8px; padding: 0.5rem 0.75rem; }
+.live { display: grid; gap: 2px; font-size: 0.85rem; color: var(--muted); }
+.live-line { margin: 0; }
+.live-line.waiting { color: var(--c-orange); font-weight: 600; }
+.others { display: grid; gap: 10px; }
+.run .q { border-top: 1px solid var(--rule); padding: 6px 0; }
+.changed { display: block; color: var(--c-orange); font-size: 0.8rem; font-weight: 600; }
 </style>`;
 
 const ROLES = [
@@ -243,7 +252,36 @@ function pageConfig(root) {
           };
         })
     : [];
-  return { playbooks, plans: config.plans ?? 'docs/plans', topic: config.pageTopic ?? {} };
+  return { playbooks, plans: config.plans ?? 'docs/plans', topic: config.pageTopic ?? {}, branch: config.branch ?? 'main' };
+}
+
+export const gitOrNull = (root, ...args) => {
+  try {
+    return execFileSync('git', args, { cwd: root, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  } catch {
+    return null;
+  }
+};
+
+const worktrees = (root) => (gitOrNull(root, 'worktree', 'list', '--porcelain') ?? '').split('\n').filter((line) => line.startsWith('worktree ')).map((line) => line.slice('worktree '.length));
+
+export const mainCheckout = (root) => worktrees(root)[0] ?? root;
+
+export function pageUrlOf(root, file) {
+  const rel = relative(root, file);
+  const lineOf = (text) => (text === null ? null : (parsePlan(text).fields.page ?? null));
+  const own = lineOf(readFileSync(file, 'utf-8'));
+  const remote = `origin/${pageConfig(root).branch}`;
+  const base = gitOrNull(root, 'merge-base', 'HEAD', remote);
+  const forked = base ? lineOf(gitOrNull(root, 'show', `${base}:${rel}`)) : null;
+  const landedLine = base ? lineOf(gitOrNull(root, 'show', `${remote}:${rel}`)) : null;
+  // A rebind wins only while origin keeps the fork point's line; once origin rebinds too, every checkout follows origin.
+  const url = !base || (own !== forked && landedLine === forked) ? own : (landedLine ?? own);
+  const others = worktrees(root)
+    .filter((tree) => tree !== root && existsSync(join(tree, rel)))
+    .map((tree) => ({ tree, url: lineOf(readFileSync(join(tree, rel), 'utf-8')) }))
+    .filter((other) => other.url && other.url !== url);
+  return { url, others };
 }
 
 const PSTACK_PLAYBOOKS = [
@@ -748,8 +786,18 @@ function assertDemo(plan, where) {
   }
 }
 
-function inlineShotHtml(label, path, base) {
-  const file = resolve(base, path);
+function framesOrMainCheckout(base, root, plansDir) {
+  const artifacts = `${join(plansDir, 'artifacts')}/`;
+  return (path) => {
+    const file = resolve(base, path);
+    if (existsSync(file) || !file.startsWith(artifacts)) return file;
+    const shared = join(mainCheckout(root), relative(root, file));
+    return existsSync(shared) ? shared : file;
+  };
+}
+
+function inlineShotHtml(label, path, locate) {
+  const file = locate(path);
   const caption = label ? label[0].toUpperCase() + label.slice(1) : '';
   if (/^https?:\/\//.test(path)) {
     return `<figure class="shot missing"><figcaption>${escapeHtml(caption ? `${caption}: ` : '')}<a href="${escapeHtml(path)}">${escapeHtml(path)}</a></figcaption></figure>`;
@@ -776,11 +824,11 @@ const LIGHTBOX = `<dialog class="lightbox"><img alt=""></dialog>
 })();
 </script>`;
 
-function demoHtml(section, base) {
+function demoHtml(section, locate) {
   const { intro, steps } = demoSteps(section.lines);
   const items = steps
     .map((step) => {
-      const shots = [...step.matchAll(SHOT)].map(([, label, path]) => inlineShotHtml(label, path, base));
+      const shots = [...step.matchAll(SHOT)].map(([, label, path]) => inlineShotHtml(label, path, locate));
       const text = step.replace(SHOT, '').replace(/\s+/g, ' ').trim();
       return `<li><p>${inline(text)}</p>${shots.length ? `<div class="shots">${shots.join('')}</div>` : ''}</li>`;
     })
@@ -808,7 +856,7 @@ function assertTeach(plan, where) {
   }
 }
 
-function teachHtml(section, base) {
+function teachHtml(section, locate) {
   const parts = [];
   let prose = [];
   for (const line of section.lines) {
@@ -817,7 +865,7 @@ function teachHtml(section, base) {
       prose.push(line);
       continue;
     }
-    parts.push(blocksHtml(prose), `<div class="shots">${shots.map(([, label, path]) => inlineShotHtml(label, path, base)).join('')}</div>`);
+    parts.push(blocksHtml(prose), `<div class="shots">${shots.map(([, label, path]) => inlineShotHtml(label, path, locate)).join('')}</div>`);
     prose = [];
   }
   parts.push(blocksHtml(prose));
@@ -940,15 +988,15 @@ function questionGroups(sections) {
   const intro = [];
   const groups = [];
   const notes = [];
-  for (const { lines, from = null } of sections) {
+  for (const { lines, from = null, plan = null } of sections) {
     const last = notes.at(-1);
-    const note = from && last?.from === from ? last : { from, lines: [] };
+    const note = from && last?.from === from ? last : { from, plan, lines: [] };
     if (note === last) note.lines.push('');
     if (!from && intro.length) intro.push('');
     let own = null;
     for (const line of lines) {
       const heading = line.match(/^###\s+(.*)$/);
-      if (heading) groups.push((own = { header: heading[1].trim(), lines: [], from }));
+      if (heading) groups.push((own = { header: heading[1].trim(), lines: [], from, plan }));
       else (own?.lines ?? (from ? note.lines : intro)).push(line);
     }
     if (from && note !== last && note.lines.some((line) => line.trim())) notes.push(note);
@@ -956,8 +1004,8 @@ function questionGroups(sections) {
   return { intro, groups, notes };
 }
 
-function askOf({ header, lines, from }) {
-  const ask = { header, from, lines, question: [], why: '', facts: [], options: [], reason: '', go: '', attention: '', multi: false, rest: [] };
+function askOf({ header, lines, from, plan = null }) {
+  const ask = { header, from, plan, lines, question: [], why: '', facts: [], options: [], reason: '', go: '', attention: '', multi: false, rest: [] };
   let last = null;
   for (const line of lines) {
     const text = line.trim();
@@ -1172,6 +1220,8 @@ const STAGE_HINTS = {
   Reflect: 'Lessons saved with reflect.',
 };
 const WRITING_PASSES = ['deslop', 'no-comments', 'unslop'];
+const CAN_BE_CURRENT = ['Design', 'Plan review', 'Build', 'Writing', 'Code review', 'Verify', 'Ship'];
+const CURRENT_STATES = ['now', 'waiting', 'blocked'];
 
 function flowOf(entry, status, playbooks) {
   const rows = logRowsOf(entry.path);
@@ -1206,9 +1256,18 @@ function flowOf(entry, status, playbooks) {
     return { ...stage, ran, tools: ran ? (stage.tools ?? []) : [] };
   });
   const furthest = stages.findLastIndex((stage) => stage.ran);
-  for (const [index, stage] of stages.entries()) stage.state = stage.ran ? 'done' : ended || index < furthest ? 'skipped' : 'left';
+  const phases = rows.map((row) => row.phase);
+  const workOf = (index) => {
+    const stage = stageOfRow(phases, index);
+    const prosePass = stage === 'Writing' && (firstBuild < 0 || index < firstBuild);
+    return CAN_BE_CURRENT.includes(stage) && !prosePass ? stage : null;
+  };
+  const worked = phases.findLastIndex((_, index) => workOf(index));
+  const currentStage = worked < 0 ? (stepsDone > 0 ? 'Build' : 'Plan') : workOf(worked);
+  const current = stages.findIndex((stage) => stage.label === currentStage);
+  for (const [index, stage] of stages.entries()) stage.state = stage.ran ? 'done' : ended || index < current ? 'skipped' : 'left';
   if (ended && !landed(status)) stages.splice(furthest + 1, 0, { label: `${lead.charAt(0).toUpperCase()}${lead.slice(1)}`, state: 'stopped' });
-  else if (!ended && stages[furthest + 1]) stages[furthest + 1].state = state === 'held' ? 'blocked' : hue === 'orange' ? 'waiting' : 'now';
+  else if (!ended) stages[current].state = state === 'held' ? 'blocked' : hue === 'orange' ? 'waiting' : 'now';
   return stages;
 }
 
@@ -1234,7 +1293,7 @@ function mergedFlow(entries, status, playbooks) {
     return {
       ...stage,
       ran,
-      state: ran ? 'done' : stage.state,
+      state: ran && !CURRENT_STATES.includes(stage.state) ? 'done' : stage.state,
       tools: [...new Set(same.flatMap((other) => other.tools ?? []))],
       rounds: same.reduce((sum, other) => sum + (other.rounds ?? 0), 0),
       meta: stage.label === 'Build' && steps.length ? `${steps.filter(Boolean).length}/${steps.length}` : stage.meta,
@@ -1249,10 +1308,11 @@ function carriedPlans(entry, root) {
   return paths.map((path) => ({ path, plan: parsePlan(readFileSync(path, 'utf-8')) }));
 }
 
-function askHtml(ask, index) {
+function askHtml(ask, index, anchor = '') {
   const style = `--c: var(--c-${ATTENTION[levelOf(ask)][1]})`;
+  const tags = `${ask.plan ? ` data-plan="${escapeHtml(ask.plan)}"` : ''}${anchor}`;
   const head = `<h3><span class="n">${index + 1}</span><span>${ask.options.length ? inline(ask.question.join(' ')) : inline(ask.header)}${ask.from ? ` <span class="from">from ${inline(ask.from)}</span>` : ''}</span></h3>`;
-  if (ask.options.length === 0) return `<article class="q" style="${style}">${head}${blocksHtml(ask.lines)}</article>`;
+  if (ask.options.length === 0) return `<article class="q" style="${style}"${tags}>${head}${blocksHtml(ask.lines)}</article>`;
   const picks = ask.options.filter((option) => option.recommended).map((option) => option.label);
   const type = ask.multi ? 'checkbox' : 'radio';
   const context = [ask.why && inline(ask.why), ...ask.facts.map((fact) => `<span class="fact">${inline(fact)}</span>`)].filter(Boolean).join(' ');
@@ -1260,7 +1320,7 @@ function askHtml(ask, index) {
     .map((option) => `<label class="o"><input type="${type}" name="q${index}" value="${escapeHtml(option.label)}"${option.recommended ? ' checked' : ''}><b>${inline(option.label)}</b><span>${inline(option.does)}</span><span class="cost">${inline(option.cost)}</span>${option.recommended && ask.reason && !ask.multi ? `<span class="why">${inline(ask.reason)}</span>` : ''}</label>`)
     .join('');
   const after = picks.length === 0 ? `<p class="nopick">${inline(ask.go || 'No pick: choose one.')}</p>` : ask.multi && ask.reason ? `<p class="why-all">${inline(ask.reason)}</p>` : '';
-  return `<article class="q" style="${style}" data-title="${escapeHtml(ask.header)}" data-multi="${ask.multi ? 1 : 0}" data-default="${escapeHtml(JSON.stringify(picks))}">${head}${context ? `<p class="ctx">${context}</p>` : ''}<div class="opts" role="${ask.multi ? 'group' : 'radiogroup'}"><span class="hd"></span><span class="hd"></span><span class="hd">Then</span><span class="hd">Cost</span>${rows}</div>${blocksHtml(ask.rest)}${after}</article>`;
+  return `<article class="q" style="${style}"${tags} data-title="${escapeHtml(ask.header)}" data-multi="${ask.multi ? 1 : 0}" data-default="${escapeHtml(JSON.stringify(picks))}">${head}${context ? `<p class="ctx">${context}</p>` : ''}<div class="opts" role="${ask.multi ? 'group' : 'radiogroup'}"><span class="hd"></span><span class="hd"></span><span class="hd">Then</span><span class="hd">Cost</span>${rows}</div>${blocksHtml(ask.rest)}${after}</article>`;
 }
 
 const ANSWER_SCRIPT = `<script>
@@ -1304,17 +1364,60 @@ const ANSWER_SCRIPT = `<script>
 })();
 </script>`;
 
-function needsSection(sections) {
+const PICK_LEVEL = /\s*\((look|answer)\)\s*$/iu;
+
+export function planParts(entry) {
+  const { plan } = entry;
+  const answers = briefOf(plan);
+  const answer = (index) => answers?.find(({ question }) => sameText(question) === sameText(BRIEF[index]))?.lines.join(' ').replace(/\s+/gu, ' ').trim() ?? '';
+  const { intro, groups } = questionGroups(sectionsNamed(plan, 'Open questions'));
+  const unheaded = intro.some((line) => line.trim()) ? [{ header: null, lines: intro, from: null }] : [];
+  const asks = [...unheaded, ...groups].map(askOf).map((ask) => ({
+    header: ask.header,
+    question: ask.question.join(' '),
+    why: ask.why,
+    facts: ask.facts,
+    options: ask.options,
+    reason: ask.reason,
+    go: ask.go,
+    attention: levelOf(ask),
+    multi: ask.multi,
+    lines: ask.options.length ? [] : ask.lines.map((line) => line.trim()).filter(Boolean),
+    rest: ask.rest.map((line) => line.trim()).filter(Boolean),
+  }));
+  const picks = sectionsNamed(plan, 'Defaults').flatMap((section) =>
+    tablesOf(section.lines)
+      .filter((table) => isDefaultsHead(table.head))
+      .flatMap(({ head, rows }) =>
+        rows.flatMap((row) => {
+          const [decision = '', pick = '', alternative = '', word = ''] = row;
+          const level = pick.match(PICK_LEVEL)?.[1].toLowerCase();
+          return level ? [{ decision, pick: pick.replace(PICK_LEVEL, ''), alternative, word, impact: row[impactColumn(head)] ?? '', level }] : [];
+        })
+      )
+  );
+  return { title: plan.title || basename(entry.path, '.md'), status: plan.meta.status ?? '', brief: answers ? { changes: answer(0), risks: answer(1) } : null, asks, picks };
+}
+
+function needsSection(sections, lead) {
   const { intro, groups, notes } = questionGroups(sections);
-  const others = notes.map((note) => `<p class="from">from ${inline(note.from)}</p>${blocksHtml(note.lines)}`).join('');
-  if (groups.length === 0) return `<section class="needs"><div class="needs-head"><h2>Needs you</h2></div>${blocksHtml(intro)}${others}</section>`;
+  const anchored = new Set([lead]);
+  const anchorOnce = (plan) => {
+    if (!plan || anchored.has(plan)) return '';
+    anchored.add(plan);
+    return ` id="run-${escapeHtml(slugOf(plan))}"`;
+  };
+  const noteHtml = () => notes.map((note) => `<p class="from" data-plan="${escapeHtml(note.plan)}"${anchorOnce(note.plan)}>from ${inline(note.from)}</p>${blocksHtml(note.lines)}`).join('');
+  if (groups.length === 0) return `<section class="needs"><div class="needs-head"><h2>Needs you</h2></div>${blocksHtml(intro)}${noteHtml()}</section>`;
   const asks = groups.map(askOf).sort((a, b) => LEVELS.indexOf(levelOf(a)) - LEVELS.indexOf(levelOf(b)));
   const legend = LEVELS.map((level) => [level, asks.filter((ask) => levelOf(ask) === level).length])
     .filter(([, count]) => count)
     .map(([level, count]) => `<span class="lg" style="--c: var(--c-${ATTENTION[level][1]})">${count} ${ATTENTION[level][0]}</span>`)
     .join('');
   const answerable = asks.some((ask) => ask.options.length);
-  return `<section class="needs" style="--frame: var(--c-${ATTENTION[levelOf(asks[0])][1]})"><div class="needs-head"><h2>Needs you</h2>${legend}</div>${blocksHtml(intro)}${asks.map((ask, index) => askHtml(ask, index)).join('')}${others}${answerable ? '<div class="bar" aria-live="polite"><code></code><button type="button">Copy</button></div>' : ''}</section>${answerable ? ANSWER_SCRIPT : ''}`;
+  const items = asks.map((ask, index) => askHtml(ask, index, anchorOnce(ask.plan))).join('');
+  const others = noteHtml();
+  return `<section class="needs" style="--frame: var(--c-${ATTENTION[levelOf(asks[0])][1]})"><div class="needs-head"><h2>Needs you</h2>${legend}</div>${blocksHtml(intro)}${items}${others}${answerable ? '<div class="bar" aria-live="polite"><code></code><button type="button">Copy</button></div>' : ''}</section>${answerable ? ANSWER_SCRIPT : ''}`;
 }
 
 function parsePlan(source) {
@@ -1397,7 +1500,7 @@ function contextOf(planPath) {
     encoding: 'utf-8',
   }).trim();
   const repoPath = relative(root, planPath);
-  const { playbooks, topic } = pageConfig(root);
+  const { playbooks, topic, branch } = pageConfig(root);
   const plansDir = dirname(planPath);
   const named = subjectOf(plan, topic);
   const namedPath = named && join(plansDir, 'topics', `${named}.md`);
@@ -1406,11 +1509,17 @@ function contextOf(planPath) {
   const subjectPath = subject && namedPath;
   const doc = subjectPath ? parsePlan(readFileSync(subjectPath, 'utf-8')) : plan;
   const iterations = subject ? iterationsOf(plansDir, subject, topic) : [];
-  return { plan, root, repoPath, playbooks, topic, plansDir, subject, subjectPath, doc, iterations, missingSubject };
+  return { plan, root, repoPath, playbooks, topic, branch, plansDir, subject, subjectPath, doc, iterations, missingSubject };
+}
+
+function stagesOf(planPath) {
+  const { plan, root, playbooks } = contextOf(planPath);
+  const self = { path: planPath, plan };
+  return mergedFlow([self, ...carriedPlans(self, root)], plan.meta.status ?? 'unknown', playbooks);
 }
 
 function rail(planPath) {
-  const { plan, root, repoPath, playbooks, doc } = contextOf(planPath);
+  const { plan, root, repoPath, playbooks, subjectPath } = contextOf(planPath);
   const self = { path: planPath, plan };
   const status = plan.meta.status ?? 'unknown';
   let reason = null;
@@ -1424,7 +1533,7 @@ function rail(planPath) {
   const steps = entries.flatMap((entry) => stepChecks(entry.plan));
   return {
     requestedPlan: repoPath,
-    page: doc.fields.page ?? null,
+    page: pageUrlOf(root, subjectPath ?? planPath).url,
     status,
     valid: !reason,
     ...(reason ? { reason } : {}),
@@ -1444,8 +1553,14 @@ const BRIEF_ORDER = ['teach', 'ontop', 'demo', 'moved', 'needs', 'picked', 'api'
 const isOpenWork = (section) => sameText(section.title) === 'open work';
 const isVerification = (section) => sameText(section.title) === 'verification';
 
-function page(planPath, { folded = false } = {}) {
-  const { plan, root, repoPath, playbooks, topic, subject, subjectPath, doc, iterations, missingSubject } = contextOf(planPath);
+export const blobFacts = (root, paths) => {
+  const blobs = execFileSync('git', ['hash-object', '--', ...paths], { cwd: root, encoding: 'utf-8' }).trim().split('\n');
+  return new Map(paths.map((path, index) => [path, { blob: blobs[index], history: [], landed: false }]));
+};
+
+function page(planPath, { folded = false, now = new Date(), session = process.env.CLAUDE_CODE_SESSION_ID ?? null, facts = blobFacts } = {}) {
+  const { plan, root, repoPath, playbooks, topic, plansDir, subject, subjectPath, doc, iterations, missingSubject } = contextOf(planPath);
+  const frames = framesOrMainCheckout(dirname(planPath), root, plansDir);
   if (missingSubject) {
     if (plan.fields.topic) throw new Error(`${repoPath} belongs to topic ${missingSubject.subject}; ${missingSubject.hint}`);
     console.error(`${repoPath} renders its own page until its subject has a file: ${missingSubject.hint}`);
@@ -1514,13 +1629,13 @@ function page(planPath, { folded = false } = {}) {
       .join('\n  ');
   // A page with a brief shows no History, and an ask that is not a decision lives only in its plan's Status line.
   const needsOf = (withStatus) => [
-    ...byRole('needs', plan),
+    ...byRole('needs', plan).map((section) => ({ ...section, plan: repoPath })),
     ...iterations
       .filter((entry) => entry.path !== planPath)
       .flatMap((entry) => {
         const status = entry.plan.meta.status ?? '';
         const waits = withStatus && !finished(status) ? [[status[0].toUpperCase() + status.slice(1)]] : [];
-        return [...waits, ...byRole('needs', entry.plan).map((section) => section.lines)].map((lines) => ({ lines, from: entry.plan.title || basename(entry.path, '.md') }));
+        return [...waits, ...byRole('needs', entry.plan).map((section) => section.lines)].map((lines) => ({ lines, from: entry.plan.title || basename(entry.path, '.md'), plan: relative(root, entry.path) }));
       }),
   ];
   const needs = needsOf(false);
@@ -1599,9 +1714,28 @@ function page(planPath, { folded = false } = {}) {
   const statusLine = sentence ? `<p class="status-line">${inline(sentence[0].toUpperCase() + sentence.slice(1))}</p>` : '';
   const title = escapeHtml(doc.title || basename(planPath, '.md'));
   const where = subjectPath ? relative(root, subjectPath) : repoPath;
+  const headerTag = `<header id="run-${escapeHtml(slugOf(repoPath))}" data-plan="${escapeHtml(repoPath)}">`;
+  const shown = [...new Set([planPath, ...iterations.map((entry) => entry.path), ...carried.map((entry) => entry.path)])];
+  const planFacts = facts(root, shown);
+  const at = now.toISOString();
+  const data = {
+    v: 1,
+    lead: repoPath,
+    session,
+    at,
+    // The body shows the lead's whole hand-back but only another iteration's questions, and no carried plan's.
+    plans: [self, ...iterations.filter((entry) => entry.path !== planPath)].map(({ path, plan: entry }) => ({
+      plan: relative(root, path),
+      slug: slugOf(path),
+      title: entry.title || basename(path, '.md'),
+      ...planFacts.get(path),
+      ...(path === planPath ? { shows: 'all', session, at } : { shows: 'asks' }),
+      done: finished(entry.meta.status ?? ''),
+    })),
+  };
   const briefMain = () => {
     const asks = needsOf(true);
-    const asking = asks.length ? needsSection(asks) : '';
+    const asking = asks.length ? needsSection(asks, repoPath) : '';
     const answers = brief
       .map((answer) => ({ answer, index: BRIEF.findIndex((question) => sameText(question) === sameText(answer.question)) }))
       .filter(({ index }) => index >= 0)
@@ -1613,10 +1747,10 @@ function page(planPath, { folded = false } = {}) {
       .filter(Boolean)
       .map((path) => `<code>${escapeHtml(relative(root, path))}</code>`);
     const parts = {
-      teach: () => byRole('teach', plan).map((section) => teachHtml(section, dirname(planPath))),
+      teach: () => byRole('teach', plan).map((section) => teachHtml(section, frames)),
       ontop: () => byRole('ontop', plan).map((section) => sectionHtml(section)),
-      demo: () => byRole('demo', plan).map((section) => demoHtml(section, dirname(planPath))),
-      needs: () => [asking],
+      demo: () => byRole('demo', plan).map((section) => demoHtml(section, frames)),
+      needs: () => [asking, MOUNTS.others],
       picked: () => byRole('picked', plan).map((section) => pickedHtml(section)),
       api: () => byRole('api', plan).map((section) => sectionHtml(section)),
       lead: () =>
@@ -1631,12 +1765,13 @@ function page(planPath, { folded = false } = {}) {
       plans: () => [`<p class="source">Proof, steps, history and review rounds are in ${listed(files)}.</p>`],
     };
     return `<main>
-  <header>
+  ${headerTag}
     <h1>${title}</h1>
     ${headerFlow}
     ${statusLine}
     <div class="meta">${planTag}${carriedTag}${leadSeatsHtml(entries)}<span>Updated ${updated} UTC</span></div>
   </header>
+  ${MOUNTS.live}
   <section class="brief card">${answers}</section>
   ${BRIEF_ORDER.flatMap((key) => parts[key]?.() ?? [])
     .filter(Boolean)
@@ -1648,15 +1783,16 @@ function page(planPath, { folded = false } = {}) {
   const html = `<title>${title}</title>
 ${PAGE_HEAD}
 ${withViewer(brief ? briefMain() : `<main>
-  <header>
+  ${headerTag}
     <h1>${title}</h1>
     ${headerFlow}
     ${statusLine}
     <div class="meta"><code>${escapeHtml(where)}</code>${planTag}${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${carriedTag}${leadSeatsHtml(entries)}${reviewTag}<span>Updated ${updated} UTC</span></div>
   </header>
-  ${byRole('demo', plan).map((section) => demoHtml(section, dirname(planPath))).join('')}
-  ${needs.length ? needsSection(needs) : ''}${close ? sectionHtml(close, 'panel') : ''}
-  ${byRole('teach', plan).map((section) => teachHtml(section, dirname(planPath))).join('')}
+  ${MOUNTS.live}
+  ${byRole('demo', plan).map((section) => demoHtml(section, frames)).join('')}
+  ${needs.length ? needsSection(needs, repoPath) : ''}${MOUNTS.others}${close ? sectionHtml(close, 'panel') : ''}
+  ${byRole('teach', plan).map((section) => teachHtml(section, frames)).join('')}
   ${changeHtml('api')}
   ${changeHtml('lead')}
   ${changeHtml('main')}
@@ -1677,6 +1813,8 @@ ${withViewer(brief ? briefMain() : `<main>
   }
   ${reviewHistory}
 </main>`)}
+${dataBlock(data)}
+${DECK_SCRIPT}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script>
 window.hljs?.highlightAll();
@@ -2074,75 +2212,81 @@ ${PAGE_HEAD}
   return { html, out: join(plansDir, 'artifacts', 'topics', 'index.html') };
 }
 
-const args = process.argv.slice(2);
-if (args.includes('--index')) {
-  if (args.length !== 1) {
-    console.error('Usage: node .agents/pstack/plan-page.mjs --index');
+export { contextOf, page, parsePlan, rail, stagesOf };
+
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const args = process.argv.slice(2);
+  if (args.includes('--index')) {
+    if (args.length !== 1) {
+      console.error('Usage: node .agents/pstack/plan-page.mjs --index');
+      process.exit(2);
+    }
+    try {
+      const { html, out } = topicIndex(execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf-8' }).trim());
+      mkdirSync(dirname(out), { recursive: true });
+      writeFileSync(out, html);
+      console.info(out);
+    } catch (error) {
+      console.error(error.message);
+      process.exit(1);
+    }
+    process.exit(0);
+  }
+  const valueOf = (flag) => (args.indexOf(flag) >= 0 ? (args[args.indexOf(flag) + 1] ?? '') : null);
+  const into = valueOf('--into');
+  const since = valueOf('--comment');
+  const against = valueOf('--against');
+  const valued = new Set(['--into', '--comment', '--against'].flatMap((flag) => (args.indexOf(flag) >= 0 ? [args.indexOf(flag) + 1] : [])));
+  const flags = args.filter((_, index) => !valued.has(index));
+  const target = flags.find((arg) => !arg.startsWith('--'));
+  const planPath = target && resolve(target);
+  if (
+    !planPath ||
+    !existsSync(planPath) ||
+    flags.some((arg) => arg.startsWith('--') && !['--folded', '--check', '--rail', '--pr', '--into', '--comment', '--against'].includes(arg)) ||
+    (flags.includes('--pr') && since !== null) ||
+    (since !== null && (!since || since.startsWith('--'))) ||
+    [into, against].some((path) => path !== null && (!path || !existsSync(path))) ||
+    (into !== null && !flags.includes('--pr') && since === null) ||
+    (against !== null && since === null)
+  ) {
+    console.error('Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check] | <plan.md> --pr [--into <body.md>] | <plan.md> --comment <author sha> [--into <comment.md>] [--against <description.md>] | <plan.md> --rail | --index');
     process.exit(2);
   }
+  if (flags.includes('--pr') || since !== null) {
+    try {
+      const { body, attach, name } = prBody(planPath, into ? readFileSync(into, 'utf-8') : '', { since, against: against ? readFileSync(against, 'utf-8') : '' });
+      const out = join(dirname(planPath), 'artifacts', `${name}.md`);
+      mkdirSync(dirname(out), { recursive: true });
+      writeFileSync(out, body);
+      console.info([out, ...attach.map((file) => `--attach ${file}`)].join('\n'));
+    } catch (error) {
+      console.error(error.message);
+      process.exit(1);
+    }
+    process.exit(0);
+  }
+  if (args.includes('--rail')) {
+    try {
+      console.info(JSON.stringify(rail(planPath)));
+    } catch (error) {
+      console.error(error.message);
+      process.exit(1);
+    }
+    process.exit(0);
+  }
+  let rendered;
   try {
-    const { html, out } = topicIndex(execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf-8' }).trim());
-    mkdirSync(dirname(out), { recursive: true });
-    writeFileSync(out, html);
-    console.info(out);
+    rendered = page(planPath, { folded: args.includes('--folded') });
   } catch (error) {
     console.error(error.message);
     process.exit(1);
   }
-  process.exit(0);
+  if (args.includes('--check')) process.exit(0);
+  const out = join(dirname(planPath), 'artifacts', `${rendered.name}.html`);
+  mkdirSync(dirname(out), { recursive: true });
+  writeFileSync(out, rendered.html);
+  const { root, subjectPath } = contextOf(planPath);
+  const bound = pageUrlOf(root, subjectPath ?? planPath);
+  console.info([...(bound.url ? [`Page: ${bound.url}`] : []), ...bound.others.map((other) => `Page in ${other.tree}: ${other.url}`), out].join('\n'));
 }
-const valueOf = (flag) => (args.indexOf(flag) >= 0 ? (args[args.indexOf(flag) + 1] ?? '') : null);
-const into = valueOf('--into');
-const since = valueOf('--comment');
-const against = valueOf('--against');
-const valued = new Set(['--into', '--comment', '--against'].flatMap((flag) => (args.indexOf(flag) >= 0 ? [args.indexOf(flag) + 1] : [])));
-const flags = args.filter((_, index) => !valued.has(index));
-const target = flags.find((arg) => !arg.startsWith('--'));
-const planPath = target && resolve(target);
-if (
-  !planPath ||
-  !existsSync(planPath) ||
-  flags.some((arg) => arg.startsWith('--') && !['--folded', '--check', '--rail', '--pr', '--into', '--comment', '--against'].includes(arg)) ||
-  (flags.includes('--pr') && since !== null) ||
-  (since !== null && (!since || since.startsWith('--'))) ||
-  [into, against].some((path) => path !== null && (!path || !existsSync(path))) ||
-  (into !== null && !flags.includes('--pr') && since === null) ||
-  (against !== null && since === null)
-) {
-  console.error('Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check] | <plan.md> --pr [--into <body.md>] | <plan.md> --comment <author sha> [--into <comment.md>] [--against <description.md>] | <plan.md> --rail | --index');
-  process.exit(2);
-}
-if (flags.includes('--pr') || since !== null) {
-  try {
-    const { body, attach, name } = prBody(planPath, into ? readFileSync(into, 'utf-8') : '', { since, against: against ? readFileSync(against, 'utf-8') : '' });
-    const out = join(dirname(planPath), 'artifacts', `${name}.md`);
-    mkdirSync(dirname(out), { recursive: true });
-    writeFileSync(out, body);
-    console.info([out, ...attach.map((file) => `--attach ${file}`)].join('\n'));
-  } catch (error) {
-    console.error(error.message);
-    process.exit(1);
-  }
-  process.exit(0);
-}
-if (args.includes('--rail')) {
-  try {
-    console.info(JSON.stringify(rail(planPath)));
-  } catch (error) {
-    console.error(error.message);
-    process.exit(1);
-  }
-  process.exit(0);
-}
-let rendered;
-try {
-  rendered = page(planPath, { folded: args.includes('--folded') });
-} catch (error) {
-  console.error(error.message);
-  process.exit(1);
-}
-if (args.includes('--check')) process.exit(0);
-const out = join(dirname(planPath), 'artifacts', `${rendered.name}.html`);
-mkdirSync(dirname(out), { recursive: true });
-writeFileSync(out, rendered.html);
-console.info(out);
