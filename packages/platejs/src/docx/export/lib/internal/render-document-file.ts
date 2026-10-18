@@ -447,12 +447,11 @@ async function findXMLEquivalent(
             xmlFragment.import(paragraphFragment);
           }
           for (const listChild of listChildren) {
-            await buildList(
-              listChild,
-              docxDocumentInstance,
-              xmlFragment,
-              vNode
-            );
+            await buildList(listChild, docxDocumentInstance, xmlFragment, {
+              container: vNode,
+              host: vNode,
+              scope,
+            });
           }
           return;
         }
@@ -565,12 +564,10 @@ async function findXMLEquivalent(
     case 'ol':
     case 'ul': {
       // A list drawn without its own margin takes its indented ancestor's indent.
-      await buildList(
-        vNode,
-        docxDocumentInstance,
-        xmlFragment,
-        indentedAncestor
-      );
+      await buildList(vNode, docxDocumentInstance, xmlFragment, {
+        host: indentedAncestor,
+        scope,
+      });
       return;
     }
     case 'img': {
@@ -604,12 +601,11 @@ async function findXMLEquivalent(
         isVNode(childVNode) &&
         ['ul', 'ol'].includes((childVNode as VNodeType).tagName || '')
       ) {
-        await buildList(
-          childVNode,
-          docxDocumentInstance,
-          xmlFragment,
-          childIndentedAncestor ?? vNode
-        );
+        await buildList(childVNode, docxDocumentInstance, xmlFragment, {
+          container: vNode,
+          host: childIndentedAncestor ?? vNode,
+          scope,
+        });
       } else {
         await convertVTreeToXML(
           docxDocumentInstance,

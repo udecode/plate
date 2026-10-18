@@ -799,7 +799,7 @@ describe('exportDocx layout values', () => {
                     )
                 : undefined,
           },
-          targetPlugins: ['heading'],
+          targetPlugins: ['paragraph', 'heading'],
         }),
         BaseTextAlignPlugin,
         BaseTextIndentPlugin.configure({
@@ -857,6 +857,7 @@ describe('exportDocx layout values', () => {
     ['0.1in', '144', 'atLeast'],
     ['115%', '276', 'auto'],
     ['1.5em', '360', 'auto'],
+    ['1.5e0', '360', 'auto'],
   ])(
     'writes a stylesheet line height of %s as w:line %s under %s',
     async (css, line, lineRule) => {
@@ -944,6 +945,39 @@ describe('exportDocx layout values', () => {
 
     expect(properties.Item).toContain('<w:numPr>');
     expect(properties.Item).not.toContain('<w:ind');
+  });
+
+  it('keeps the line height and alignment of a numbered paragraph', async () => {
+    const properties = await paragraphProperties([
+      paragraph('Listed', {
+        indent: 1,
+        lineHeight: 1.75,
+        listType: 'numbered',
+        textAlign: 'end',
+      }),
+    ]);
+
+    expect(properties.Listed).toContain('<w:numPr>');
+    expect(properties.Listed).toContain('<w:jc w:val="right"/>');
+    expect(properties.Listed).toContain('w:line="420"');
+  });
+
+  it('lets a list item style override the numbered paragraph', async () => {
+    const properties = await paragraphProperties(
+      [
+        paragraph('Listed', {
+          indent: 1,
+          lineHeight: 1.75,
+          listType: 'numbered',
+          textAlign: 'end',
+        }),
+      ],
+      'li { line-height: 2; text-align: center; }'
+    );
+
+    expect(properties.Listed).toContain('<w:numPr>');
+    expect(properties.Listed).toContain('<w:jc w:val="center"/>');
+    expect(properties.Listed).toContain('w:line="480"');
   });
 });
 

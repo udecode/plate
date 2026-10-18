@@ -6,7 +6,7 @@
       "href": "/registry/changelog/2026-10-18-layout-style-values.json",
       "status": "draft",
       "kind": "behavior",
-      "summary": "Place all six alignments on media, clear line height and alignment from the toolbars, and rename the column group plugin",
+      "summary": "Place all six alignments on media, clear line height from its toolbar, and rename the column group plugin",
       "change": {
         "type": "source",
         "date": "2026-10-18",

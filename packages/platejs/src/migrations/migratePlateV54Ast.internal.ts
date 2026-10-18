@@ -6,6 +6,7 @@ import {
   TextApi,
   type Value,
 } from '../facade';
+import { getDocumentMigrationPluginName } from './documentMigrationPluginNames.internal';
 import type {
   DocumentMigrationContext,
   DocumentMigrationTarget,
@@ -75,14 +76,29 @@ export const migratePlateV54Ast = ({
 
     return descriptor?.type;
   };
-  const ownsProperty = (type: string, key: string, context: NodeContext) =>
+  const currentProperty = (type: string, key: string, context: NodeContext) =>
     conversionTarget.schema.property({
       ancestors: context.ancestors,
       key,
       placement: 'element',
       root: context.root,
       type,
-    }) !== null;
+    });
+  const ownsProperty = (type: string, key: string, context: NodeContext) =>
+    currentProperty(type, key, context) !== null;
+  const pluginDeclares = (
+    plugin: string,
+    type: string,
+    key: string,
+    context: NodeContext
+  ) => {
+    const property = currentProperty(type, key, context);
+
+    return (
+      property !== null &&
+      getDocumentMigrationPluginName(conversionTarget, property.id) === plugin
+    );
+  };
   const dateType = resolveElementType('date');
   const mentionType = resolveElementType('mention');
   const footnoteDefinitionType = resolveElementType('footnoteDefinition');
@@ -503,22 +519,25 @@ export const migratePlateV54Ast = ({
       without('texExpression');
     }
 
-    if (ownsProperty(element.type, 'listStart', context)) {
-      for (const key of ['listRestart', 'listStart'] as const) {
-        if (!Object.hasOwn(element, key)) continue;
+    for (const key of ['listRestart', 'listStart'] as const) {
+      if (
+        !Object.hasOwn(element, key) ||
+        !pluginDeclares('list', element.type, key, context)
+      ) {
+        continue;
+      }
 
-        const value = safeInteger(properties()[key]);
+      const value = safeInteger(properties()[key]);
 
-        if (value === undefined) {
-          without(key);
-        } else if (value !== properties()[key]) {
-          element = { ...element, [key]: value };
-        }
+      if (value === undefined) {
+        without(key);
+      } else if (value !== properties()[key]) {
+        element = { ...element, [key]: value };
       }
     }
 
     if (
-      ownsProperty(element.type, 'indent', context) &&
+      pluginDeclares('indent', element.type, 'indent', context) &&
       Object.hasOwn(element, 'indent')
     ) {
       const indent = safeInteger(properties().indent);
@@ -531,7 +550,7 @@ export const migratePlateV54Ast = ({
     }
 
     if (
-      ownsProperty(element.type, 'textAlign', context) &&
+      pluginDeclares('textAlign', element.type, 'textAlign', context) &&
       Object.hasOwn(element, 'textAlign') &&
       !TEXT_ALIGNMENTS.has(String(properties().textAlign))
     ) {
@@ -539,7 +558,7 @@ export const migratePlateV54Ast = ({
     }
 
     if (
-      ownsProperty(element.type, 'lineHeight', context) &&
+      pluginDeclares('lineHeight', element.type, 'lineHeight', context) &&
       Object.hasOwn(element, 'lineHeight')
     ) {
       const lineHeight = migrateLineHeight(properties().lineHeight);

@@ -10,7 +10,7 @@ review_upstreams: ['../lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988', '../ti
 
 # Columns, alignment and spacing: one rule for saved layout values
 
-Status: executed; Codex seats need you to run codex login
+Status: executed
 Playbook: plan
 
 **Pursue.** The strongest reason is a measured second authority. The schema decides which line heights a block may save, and the render step keeps its own value list and default. So a pasted `line-height: 1.75` is saved and exported to HTML, yet the editor, the static render and Word export all drop it (`docs/plans/artifacts/2026-10-18-layout-review/probe-a1.log`, `probe-docx-a2.log` in the same folder). The package also ships 1.5 as line height's default, a theme pick, where Vision asks for neutral defaults. The column plugins have crossed names. `BaseColumnPlugin` owns `columnGroup` and `BaseColumnItemPlugin` owns `column`, the only crossed pair under `packages/platejs/src/features/`. The column plugin also has `moveMiddle`, which nothing outside its specs calls and whose `'right'` direction does nothing, and the column docs teach it beside a hook that no longer exists. This review keeps the 2026-10-04 audit's verdict and its requirements. It replaces that audit's line-height target, a schema default set through plugin state, with no package default at all, because no line height is neutral and an app setting would change what documents save.
@@ -21,11 +21,11 @@ Playbook: plan
 
 ### What will change?
 
-Every saved line height, alignment and text indent now shows on screen and in Word exports. Line heights are saved as numbers, and the column group plugin has a new name. Review undid this plan's fix for old suggestions.
+Every saved line height, alignment and text indent now shows on screen and in Word exports. Line heights are saved as numbers, and the column group plugin has a new name. Review undid this plan's fix for old suggestions. A later Codex review found bugs in the landed change, and a second commit fixes them. Word list paragraphs now keep their alignment and line height. The v54 step now leaves an app plugin's own layout values alone, unless the plugin uses a built-in plugin's name.
 
 ### What could go wrong?
 
-Apps built on unreleased v2 code can't open saved documents until they convert text line heights. The Close says how. Pasted black text shows. Kits that set a default won't compile. Format suggestions from v53 still break, as before.
+Apps built on unreleased v2 code can't open saved documents until they convert their stored line heights. The Close says how. Pasted black text shows. Kits that set a default won't compile. Format suggestions from v53 still break, as before. An app plugin named like a built-in one, such as `lineHeight`, still has its values converted by the v54 step. That fix gets its own session.
 
 ## Teach
 
@@ -217,31 +217,31 @@ column.update.selectAll();
 Word paste saves this, and the editor, static pages, HTML export and Word export all read it.
 
 ```json before
-{ "type": "p", "lineHeight": "107%", "children": [{ "text": "Lorem ipsum" }] }
+{ "type": "paragraph", "lineHeight": "107%", "children": [{ "text": "Lorem ipsum" }] }
 ```
 
 ```json after
-{ "type": "p", "lineHeight": 1.07, "children": [{ "text": "Lorem ipsum" }] }
+{ "type": "paragraph", "lineHeight": 1.07, "children": [{ "text": "Lorem ipsum" }] }
 ```
 
 Picking 1.5 in the toolbar saves this. Today it clears the value, because 1.5 is the package default.
 
 ```json before
-{ "type": "p", "children": [{ "text": "Spaced" }] }
+{ "type": "paragraph", "children": [{ "text": "Spaced" }] }
 ```
 
 ```json after
-{ "type": "p", "lineHeight": 1.5, "children": [{ "text": "Spaced" }] }
+{ "type": "paragraph", "lineHeight": 1.5, "children": [{ "text": "Spaced" }] }
 ```
 
 Calling `textAlign.set('start')` saves this. Today it clears the value.
 
 ```json before
-{ "type": "p", "children": [{ "text": "Start edge" }] }
+{ "type": "paragraph", "children": [{ "text": "Start edge" }] }
 ```
 
 ```json after
-{ "type": "p", "textAlign": "start", "children": [{ "text": "Start edge" }] }
+{ "type": "paragraph", "textAlign": "start", "children": [{ "text": "Start edge" }] }
 ```
 
 | Pasted CSS line height | Saved value | Diagnostic |
@@ -286,7 +286,7 @@ What breaks in apps:
 - Code that calls `set(1.5)` or `set('start')` to clear now saves that value. Call `clear`.
 - Every reference to `ColumnPlugin` or `BaseColumnPlugin` stops compiling. Rename each to `ColumnGroupPlugin` or `BaseColumnGroupPlugin`. No name changes meaning, so nothing compiles against the wrong plugin.
 - Documents saved by published releases, the v54 betas included, are v53-shaped, and the v54 step converts their text line heights. Their format suggestions still don't migrate, as at base, so accept or reject them in v53 first. Line heights those kits hid, such as Word's `107%`, start drawing.
-- An app built from unreleased v2 source with line height installed gets a new schema fingerprint, so every saved document refuses to load, with or without a line height. The app bumps its schema version, supplies the old fingerprint from any stored envelope, and registers its own step that converts text line heights on nodes in every root and on both sides of `lineHeight` suggestion tags, as the Close says, since no release carries the old fingerprint and a changeset covers only released changes.
+- An app built from unreleased v2 source with line height installed gets a new schema fingerprint, so every saved document refuses to load, with or without a line height. The app bumps its schema version, supplies the old fingerprint from any stored envelope, and registers its own step. That step reads every stored line height the way the v54 step does and drops any value that is then not a positive number, on nodes in every root and on both sides of `lineHeight` suggestion tags, as the Close spells out. No changeset says this, because no release carries the old fingerprint.
 - Pasted black text draws black in every kit, dark themes included, until the styles review decides whether to drop it at paste.
 
 The copied static column kit changes like this. The live kit in `column.tsx` and the toolbar, slash and turn-into items get the same rename.
@@ -319,18 +319,19 @@ export const BaseColumnKit = [
 
 | Behavior | What changes | Proof surface |
 | --- | --- | --- |
-| HTML and Word paste of a line height | `150%` and `1.5em` save `1.5`, `normal` saves nothing, and lengths save nothing with a dropped-property warning | jsdom specs on the decoder and the eight www Word paste specs; native clipboard unproven |
+| HTML and Word paste of a line height | `150%` and `1.5em` save `1.5`, `1e0` saves 1, `normal` saves nothing, and lengths save nothing with a dropped-property warning | jsdom specs on the decoder, server-parse specs for exponents, and the eight www Word paste specs; native clipboard unproven |
 | Typing in colored text | unchanged: no font kit adds a `query`, so colored leaves keep native text sync | `pipeRenderLeaf` spec on the shipped font kit |
 | HTML paste of `text-align: start` | unchanged: saves `start`, so a stored `start` survives Plate's own HTML round trip | jsdom round-trip spec |
 | Undo of the toolbar's Default | one clear operation, undone like a set | package spec on `clear` |
-| Word export | whole-number `w:line` for multipliers and an at-least `w:line` in twips for fixed lengths, as released 53.3.16 writes, all six alignments, and `w:firstLine` or `w:hanging` for text indent in the paragraph's one `w:ind`, skipped on list paragraphs | `exportDocx.spec.ts` cases in bun; opening the file in Word is unproven |
+| Word export | whole-number `w:line` for multipliers and an at-least `w:line` in twips for fixed lengths, as released 53.3.16 writes, all six alignments, and `w:firstLine` or `w:hanging` for text indent in the paragraph's one `w:ind`, skipped on list paragraphs, which keep the alignment and line height they draw with | `exportDocx.spec.ts` cases in bun and a run through the copied `BaseEditorKit`; opening the file in Word is unproven |
 
 ## Main changes
 
 - `pluginInjectNodeProps.ts` stops filtering by a value list or a default, so the live and static renders draw every value the schema admits.
 - One helper gives the line-height, alignment and text-indent plugins the same `set` and `clear`, and `set` stops reading render config, so the render config no longer decides what gets saved.
-- `xml-builder.ts` writes `w:line` as a whole-number multiple for unitless, percent and `em` line heights and as an at-least line in twips for lengths, as the released 53.3.16 exporter does, drops the branch that multiplied an `auto` line by the font size, maps `start` to left, `end` to right and `justify` to both, and writes `text-indent` into the paragraph's one `w:ind`, as `w:firstLine` or, when negative, `w:hanging`, except on a list paragraph.
-- The v54 step turns stored text line heights into numbers with its own frozen parser and drops `normal`, unreadable, zero and negative ones, beside its existing alignment normalization.
+- `xml-builder.ts` writes `w:line` as a whole-number multiple for unitless, percent and `em` line heights and as an at-least line in twips for lengths, as the released 53.3.16 exporter does, drops the branch that multiplied an `auto` line by the font size, maps `start` to left, `end` to right and `justify` to both, and writes `text-indent` into the paragraph's one `w:ind`, as `w:firstLine` or, when negative, `w:hanging`, except on a list paragraph. `buildList` gives each numbered, bulleted or to-do paragraph the alignment and line height that its table cell, listed block, list and list item set, and the nearest one wins. Word's own stylesheet reader also takes a line height written with an exponent, such as `1.5e0`.
+- The v54 step turns stored text line heights into numbers with its own frozen parser and drops `normal`, unreadable, zero and negative ones, beside its existing alignment normalization. It converts `lineHeight`, `textAlign`, `indent`, `listStart` and `listRestart` only on a property declared by the plugin named `lineHeight`, `textAlign`, `indent` or `list`, read from a private map the migration target records at compile time. So an app plugin with another name keeps its own property with the same key, and a target copied outside `defineDocumentMigrations` throws a named error.
+- The HTML decoder's line-height parser reads exponents, such as `1e0` and `1.5e2%`.
 
 ## Defaults
 
@@ -359,6 +360,7 @@ export const BaseColumnKit = [
 | Text indent commands | Set and clear, like line height and alignment | Callers keep setting the property on nodes directly | no indent commands | small |
 | Where the paste parser lives | Beside the line-height plugin, with a frozen copy in the migration step | One parser shared by paste and migration | shared parser | detail |
 | Review seats while Codex can't log in | Opus seats, marked same-family | Wait for Codex before each review | wait codex | detail |
+| Once Codex was back | Codex reviewed the landed commit, and its fixes landed as a second commit | Skip the Codex round | skip codex round | detail |
 | Where the review lives | The layout subject page | A one-off page | one-off | detail |
 | The plugin key mismatch the judge found | One line in the backlog | Fix it in this plan | fix node key | detail |
 
@@ -385,7 +387,7 @@ Grafts into cand-3:
 Named limits, each a case a losing candidate handled that the base drops:
 
 - Pasted fixed lengths and `normal` save nothing. cand-1 kept them as text.
-- Line height's schema fingerprint changes for apps built from unreleased v2 source, so every saved document, room and history of such an app with line height installed refuses to load until the app bumps its version and converts text line heights itself. No published release carries the old fingerprint. cand-1 cost saved documents nothing.
+- Line height's schema fingerprint changes for apps built from unreleased v2 source, so every saved document, room and history of such an app with line height installed refuses to load until the app bumps its version and converts its stored line heights itself. No published release carries the old fingerprint. cand-1 cost saved documents nothing.
 - The v54 step drops a stored `12pt` or other length silently, because a migration step has no channel to report a loss, the same way it already drops an unknown `textAlign`.
 - Pasted black text draws, dark themes included, because no render filter remains to hide it.
 - Word `start` and `end` map to left and right, which is wrong for right-to-left text, because the exporter writes no `w:bidi`.
@@ -399,6 +401,10 @@ Challenge delta from plan panel round 2, three Opus seats labeled same-family (`
 Challenge delta from plan panel round 3, three Opus seats labeled same-family (`plan-panel-r3-seat-{a,b,c}.md`), the last plan round. One critical finding, raised by all three seats, was applied. Since `2e865a0bc4`, a format tag needs `write`, and the v54 suggestion step writes none, so every migrated v53 update suggestion fails to load at base (`suggestions-base-a1.log`). Step 4 now repairs those tags and converts both of their sides. Seats B and C showed from the `legal` fixture that Word writes `line-height: normal` as an author's pick, so every pasted line height the parser cannot store warns. The nits made Word skip text indent on numbered paragraphs, kept line height's empty `nodeProps`, moved gates to each phase's exit, and sent text indent's unit handling to the backlog.
 
 Diff panel round 3, three Opus seats labeled same-family (`diff-panel-r3-seat-{a,b,c}.md`), the last diff round, reverted that tag repair. Round 2 had already replaced its guard once. Seats A and C each found a v53 suggestion that loaded and then rejected to a wrong value: a removed list number came back as an explicit start, and `listRestart: 0` restarted the list at 0. Seat B found the same gap under a schema that keeps unknown keys. The probe stored both wrong values before the revert (`r3-reject-probe-head-a1-a1.log`). After it, each case fails to open or resolve, as at base (`r3-reject-probe-reverted-a1.log`). The project's panel rule takes a mechanism out of the review loop once it has had its one replacement. This plan's goal needs only node conversion, so the suggestion step is back to its base code, and its repair goes to its own session.
+
+Diff panel round 4, the two Codex seats on the landed commit (`diff-panel-r4-seat-{astra,sol}.md`), was the first review from another model family. Its three critical findings were fixed in a second commit. Both seats showed that the v54 step converted or dropped an app's own `lineHeight`, `textAlign`, `indent`, `listStart` and `listRestart`, because it checked only that some property had the key. Only line height was this plan's regression. All five now convert only on a property that the first-party plugin of that name declares. Astra showed that HTML import dropped a line height written with an exponent. Sol showed that Word export dropped the alignment and line height of numbered, bulleted and to-do paragraphs, as 53.3.16 did. The warnings tightened the recipe for unreleased v2 builds and the `pnpm check` attribution.
+
+Diff panel round 5, Opus and both Codex seats on round 4's fixes (`diff-panel-r5-seat-{opus,astra,sol}.md`), applied no critical finding, so no round follows. Sol found that the new check compares plugin names, so an app plugin named `lineHeight` still counts as first-party. Astra found that the profile's legacy list conversion checks ownership without root context. Both hold across the whole v54 step, which finds every first-party plugin by name and may not import those plugins (`tooling/entrypoints/entrypoint-dag.mjs:369-371`), so they go to their own session. Round 4's check already converts only a subset of what the base converted. Both Codex seats showed that a list paragraph in Word took one host's styles and missed its item's, its nested list's and its table cell's, and that Word's own reader rejected a stylesheet `1.5e0`. Both are fixed. Opus's warning made the recipe say how to read stored values. Its nits added a `w:numPr` assertion to the Word case, a copied-kit test and a named error for a copied migration target.
 
 ## Decision ledger
 
@@ -452,7 +458,7 @@ Keep the phase when the typecheck, the column, Word export and turn-into specs p
 Keep the phase when every generated file matches its source and `pnpm check` passes. A failure here never reverts phases 1 or 2; fix it in place.
 
 - [x] Run `pnpm brl`, `pnpm --filter www build:registry`, the `plate generate` schema output and the API reference manifest. Proof: each generator's output diff and its check mode.
-- [x] Amend the pending changesets in place: `layout-v54-runtime.md` for the group rename, with one line mapping v53's `ColumnPlugin` to `ColumnGroupPlugin`, and for removing `moveMiddle`; `platejs-column-side-drop.md` for `ColumnGroupPlugin`; and `basic-styles-v54-runtime.md` for `clear`, text indent's commands, the removed inject options, font color's removed black default, and its stale `codecs: ({ defineCodecs })` line, which becomes `formats: ({ defineFormats })`. Write one changeset for the v54 line-height conversion, the paste diagnostics and Word export, leaving builds from unreleased v2 source to the Close: bump the schema version, list the old fingerprint in `sourceFingerprints`, and convert text line heights on nodes in every root and on both sides of `lineHeight` suggestion tags. Write one registry changelog entry for the kits, both toolbars, the font kit and the media items. Proof: the changeset files, the registry changelog check, and `gates-r3.sh`'s release-note listing read by hand, each old name only in a line that maps it or says it was removed.
+- [x] Amend the pending changesets in place: `layout-v54-runtime.md` for the group rename, with one line mapping v53's `ColumnPlugin` to `ColumnGroupPlugin`, and for removing `moveMiddle`; `platejs-column-side-drop.md` for `ColumnGroupPlugin`; and `basic-styles-v54-runtime.md` for `clear`, text indent's commands, the removed inject options, font color's removed black default, and its stale `codecs: ({ defineCodecs })` line, which becomes `formats: ({ defineFormats })`. Write one changeset for the v54 line-height conversion, the paste diagnostics and Word export, leaving builds from unreleased v2 source to the Close: bump the schema version, list the old fingerprint in `sourceFingerprints`, and read every stored line height on nodes in every root and on both sides of `lineHeight` suggestion tags the way the v54 step does, dropping any value that is then not a positive number. Write one registry changelog entry for the kits, both toolbars, the font kit and the media items. Proof: the changeset files, the registry changelog check, and `gates-r3.sh`'s release-note listing read by hand, each old name only in a line that maps it or says it was removed.
 - [x] Run `best-api repair` on the layout subject. Proof: the folded subject file and a grep showing no skill or Vision file teaches the rejected shapes.
 - [x] Run `pnpm check` once on the settled change. Proof: its log.
 
@@ -472,31 +478,31 @@ Keep the phase when every generated file matches its source and `pnpm check` pas
 
 | Gate | Evidence |
 | --- | --- |
-| Focused proof for each step | `r3-package-specs-a1.log`: 525 pass and 1 fail, the suggestion spec's base failure; `r3-migration-specs-a1.log`: 120 pass and the same failure; `r3-slow-a1.log`: 51 pass, the eight Word paste specs among them |
+| Focused proof for each step | `r3-package-specs-a1.log`: 525 pass and 1 fail, the suggestion spec's base failure; `r3-migration-specs-a1.log`: 120 pass and the same failure; `r3-slow-a1.log`: 51 pass, the eight Word paste specs among them; after rounds 4 and 5, `r5-final-package-specs-a1.log`: 536 pass and the same failure, `r5-www-docx-set-a1.log`: 46 pass, and `r5-slow-a1.log`: 51 pass |
 | `plate-docs` on each named page | `d4-check-docs-a1.log` and `d4-docs-parity-a2.log`, then each page read on `:3519` after the round 1 to 3 docs fixes (`drive-notes.md`) |
 | Hand drive of the changed pages | `drive-notes.md`: the line-height toolbar, the align toolbar and image placement driven, and every changed page opened |
 | Playtest scope check | `drive-scope.sh check` prints `hand drive done`; `r3-load-cells-a1.log`: 226 pages, 0 with problems |
 | Shared-code review (thermos) | skip: the `api-build` and `push` rows owe a panel on the diff |
-| oxlint before the diff panel | `merged-lint-a2-a1.log`, and `r3-lint-a1.log` after round 3 |
+| oxlint before the diff panel | `merged-lint-a2-a1.log`, `r3-lint-a1.log` after round 3, `r4-lint-a1.log` before round 5 and `r5-lint-a1.log` after it |
 | Writing passes | `deslop` and `no-comments` on the build and on each round's fixes, `unslop` on each round's prose, then `unslop` and `bro` on the Close |
-| Diff panel (reviews: api-build, push) | rounds 1 to 3, `diff-panel-r{1,2,3}-seat-{a,b,c}.md`, all Opus and labeled same-family; round 3's criticals reverted the suggestion repair |
+| Diff panel (reviews: api-build, push) | rounds 1 to 3, `diff-panel-r{1,2,3}-seat-{a,b,c}.md`, all Opus and labeled same-family; round 3's criticals reverted the suggestion repair. Round 4, `diff-panel-r4-seat-{astra,sol}.md`, two Codex seats on the landed commit, whose three criticals the second commit fixes. Round 5, `diff-panel-r5-seat-{opus,astra,sol}.md`, on those fixes, whose two criticals go to their own session |
 | `best-api repair` | the folded `docs/plans/topics/layout.md`; `close-gates-a1.log`: group 0 with 16 path-only lines, the 13 expected plus three file paths in subject files, `moveMiddle` 0, render filter 0; `close-teaching-sweep-a1.log`: no skill, Vision or subject file teaches a cut name |
-| `pnpm check` | `close-pnpm-check-a1.log`: 15 of 26 steps pass, every generator's check mode among them. Each of the 11 red steps fails the same way at `origin/next` `7b7b76573b` (`close-attribute-a1.log`, `close-next-smoke-a1.log`), and three specs inside them fail only beside other specs. The run's one new failure, two knowledge citations in the layout subject, was fixed after it |
-| Landed through `land.mjs` | the squashed commit on `next` |
+| `pnpm check` | `close-pnpm-check-a1.log`: 15 of 26 steps pass, every generator's check mode among them. Each of the 11 red steps also fails at `origin/next` `7b7b76573b` (`close-attribute-a1.log`, `close-next-smoke-a1.log`). Three specs inside them fail only beside other specs, and two of those were never run grouped at `7b7b76573b`. The run's one new failure, two knowledge citations in the layout subject, was fixed after it. Not rerun for the second commit, whose files the targeted specs, both typechecks (`r5-typecheck-packages-a1.log`, `r5-www-typecheck-a1.log`, only the base TS2345) and lint cover |
+| Landed through `land.mjs` | `aa2f91c342`, then the second commit with the round 4 and 5 fixes |
 
 ## Verification
 
-- Package, migration and Word paste specs pass on the final bytes, except the suggestion spec's one failure, which fails the same way at base and at `origin/next` `7b7b76573b`. `pnpm check` fails 11 of 26 steps, each the same way as at `7b7b76573b`.
+- Package, migration and Word paste specs pass on the final bytes, except the suggestion spec's one failure, which fails the same way at base and at `origin/next` `7b7b76573b`. `pnpm check` fails 11 of 26 steps, each of which also fails at `7b7b76573b`.
 - The rename and cut gates read 0 across code, docs, skills, Vision and subject files, and every changed page renders on the dev server with no error.
-- Proof stops short of native clipboard paste, of opening an exported file in Word, of right-to-left text and of any Codex review seat.
+- Proof stops short of native clipboard paste, of opening an exported file in Word and of right-to-left text. Codex seats reviewed only the landed commit and its fixes.
 
 ## Close
 
 **Reversal.** Diff panel round 3 reverted this plan's repair of migrated v53 format suggestions. Two of its seats each found a suggestion that loaded and then rejected to a wrong value. Round 2 had already replaced the repair's guard once. The suggestion step and its specs are back to base code, so those suggestions fail to open or resolve as they did before this plan. Their fix goes to its own session.
 
-**Deviations.** The work landed from its own worktree through `land.mjs`, not as uncommitted changes in the main checkout, because the owner moved the project to trunk delivery before the build. Every plan and diff panel ran three Opus seats, labeled same-family, because both Codex seats refuse the logged-in account. A raw JSON response runs no visit reporter, so the four registry changelog files route their drive cells to `/docs/releases`, which renders their entry, and the lead read the JSON back in the browser. `/pstack:correct` did not run on the teaching class. Its tool already runs in `best-api repair`, and its gate is open work in `docs/plans/topics/correct.md`. The round 1 and 2 seats' hits were the subject file, which the plan-page rule keeps at its old state until the fold.
+**Deviations.** The work landed from its own worktree through `land.mjs`, not as uncommitted changes in the main checkout, because the owner moved the project to trunk delivery before the build. The three plan panels and the first three diff panels ran three Opus seats, labeled same-family, because both Codex seats refused the logged-in account until the owner's "codex is back". Diff round 4 then ran the two Codex seats on the landed commit, and its fixes landed as a second commit. A raw JSON response runs no visit reporter, so the four registry changelog files route their drive cells to `/docs/releases`, which renders their entry, and the lead read the JSON back in the browser. `/pstack:correct` did not run on the teaching class. Its tool already runs in `best-api repair`, and its gate is open work in `docs/plans/topics/correct.md`. The round 1 and 2 seats' hits were the subject file, which the plan-page rule keeps at its old state until the fold.
 
-**What landed.** One squashed commit on `next`, built from 15 branch commits:
+**What landed.** `aa2f91c342`, one squashed commit on `next` built from 15 branch commits:
 
 - Every saved line height, alignment and text indent draws in the live and static renders. `validNodeValues` and `defaultNodeValue` leave `inject.nodeProps`, and line height's `1.5`, alignment's `start` and font color's `black` package defaults go.
 - Line height stores a positive number. Paste parses `150%`, `1.5em` and Word's `107%` into numbers and warns about each value it drops. The v54 step converts stored text line heights.
@@ -506,8 +512,17 @@ Keep the phase when every generated file matches its source and `pnpm check` pas
 - `BaseColumnPlugin` and `ColumnPlugin` became `BaseColumnGroupPlugin` and `ColumnGroupPlugin`, and `moveMiddle` with `MoveMiddleColumnOptions` is gone.
 - The docs and their Chinese twins, the release notes, the registry changelog and the generated output match the code.
 
+**Round 4 and 5 fixes.** A second commit on `next` fixes what diff round 4's Codex seats found in `aa2f91c342`, and what round 5 found in those fixes:
+
+- The v54 step converts `lineHeight`, `textAlign`, `indent`, `listStart` and `listRestart` only on a property declared by the plugin of that name, `list` for the two list keys. Before, an app plugin's own `lineHeight: "150%"` became 1.5 and then failed its string schema, and its `textAlign: "domain"`, `indent: "two"` and `listStart: "seven"` were dropped. Only the line-height case came from this plan; the other four fail the same way at `7b7b76573b`.
+- HTML import reads a line height written with an exponent, such as `1e0` or `1.5e2%`, which the server parser keeps as written. The base stored these, and `aa2f91c342` dropped them.
+- Word export gives a numbered, bulleted or to-do paragraph the alignment and line height it draws with. A value on the list item beats one on its list, which beats the listed block's, which beats the table cell's. The released 53.3.16 exporter dropped them all, so the changeset says so. Word's own reader also takes a stylesheet value written with an exponent, such as `1.5e0`.
+- The v54 step throws a named error for a migration target copied outside `defineDocumentMigrations`. Before, it skipped all five conversions without a word, and the load then failed on the unconverted value.
+- The recipe for apps built from unreleased v2 source now says to read stored line heights the way the v54 step does and to drop every value that is then not a positive number. The `pnpm check` attribution names what it did not rerun, the registry changelog summary no longer promises clearing alignment, and the Document shape uses `paragraph`.
+
 **Proof.** Each row names its own scope in the decision log.
 
+- Round 4 and 5 fixes, on the final bytes: the package specs for migrations, Word export, basic styles, HTML and the compiler pass 536 and fail the base suggestion case (`r5-final-package-specs-a1.log`). The www Word specs pass 46, the copied-kit cases for numbered and task paragraphs and for a numbered paragraph in a styled cell among them (`r5-www-docx-set-a1.log`), and the slow Word and static HTML specs pass 51 (`r5-slow-a1.log`). Each new case failed before its fix (`r5-red-package-a2.log`, `r5-red-www-a1.log`, `r5-red-copied-target-a1.log`), and each fix's mutant fails its case (`r4-owner-mutant-head-a1.log`, `r4-owner-mutant-installed-a1.log`, `r4-exponent-mutant-a1.log`, `r4-list-style-mutant-a1.log`, `r5-word-mutants-a1.log`). Both typechecks fail only on the base TS2345 (`r5-typecheck-packages-a1.log`, `r5-www-typecheck-a1.log`), lint is clean (`r5-lint-a1.log`), and the registry changelog check passes (`r4-changelog-check-a1.log`).
 - The package specs pass 525 and fail 1 (`r3-package-specs-a1.log`). The failure is `migratePlateV54Suggestions.spec.ts`'s base case (`suggestions-base-a1.log`).
 - The migration specs pass 120 and fail the same case (`r3-migration-specs-a1.log`).
 - The Word paste and static HTML slow specs pass 51 (`r3-slow-a1.log`).
@@ -521,25 +536,24 @@ Keep the phase when every generated file matches its source and `pnpm check` pas
   - The knowledge check matches `7b7b76573b`'s 100 findings once the layout subject's two citations of an ignored run file were removed.
   - The import smoke fails at `7b7b76573b` (`close-next-smoke-a1.log`). The slow suite's import case reads the same stale list, which this branch does not touch.
   - The slow suite's two recording laws fail when run alone, with 40 passing and 2 failing in both trees.
-  - Three specs fail only beside other specs. Footnote navigation passes alone, and at `dc06078008` it failed the same way beside other specs. The link iframe case hit its 5000ms timeout and passes 5 of 5 alone in both trees. The list paste gallop took 78s against its 60s limit and passes 13 of 13 alone in both trees.
+  - Three specs fail only beside other specs. Footnote navigation passes alone, and at `dc06078008` it failed the same way beside other specs. The link iframe case hit its 5000ms timeout, and the list paste gallop took 78s against its 60s limit. Each of those two passes alone in both trees, 5 of 5 and 13 of 13, but neither grouped run was repeated at `7b7b76573b`, so their cause is not attributed.
   - Each failure left in place has a line in `docs/plans/backlog.md`, or a card for the suggestion step's TS2345.
 
-**Limits.** The run never tried native clipboard paste, opening an exported file in Word or right-to-left text. No Codex seat reviewed anything, so every panel is same-family. The suggestion spec and the TS2345 stay red, as at base, until the suggestion session lands. `pnpm check` stays red on the same 11 steps as `next` until their backlog lines and that session land.
+**Limits.** The run never tried native clipboard paste, opening an exported file in Word or right-to-left text. Codex seats reviewed only the landed commit and its fixes, so the arena and the three plan rounds stayed same-family. The v54 step still finds first-party plugins by name, so an app plugin named `lineHeight`, `textAlign`, `indent` or `list` has its values converted, and its profile still checks list ownership without root context. Both go to their own session. A listed heading in Word still ignores a line height or alignment that a stylesheet sets on its list or list item. The suggestion spec and the TS2345 stay red, as at base, until the suggestion session lands. `pnpm check` stays red on the same 11 steps as `next` until their backlog lines and that session land.
 
 **Apps built from unreleased v2 source.** No release carries their line-height fingerprint, so no changeset covers them. Such an app with line height installed:
 
 1. Bumps `EditorSchema.version`.
 2. Lists the fingerprint its stored envelopes carry under the old version in `sourceFingerprints`.
-3. Registers its own step for the new version that converts every text `lineHeight` to a number on nodes in `children` and every root, and on both sides of `lineHeight` suggestion tags, dropping values it cannot read.
+3. Registers its own step for the new version that reads every stored `lineHeight` on nodes in `children` and every root, and on both sides of `lineHeight` suggestion tags. It reads a text value the way the v54 step does. A percent is divided by 100, a unitless or `em` value stays as it is, and an exponent such as `1e0` is allowed. A length such as `"24px"`, a keyword such as `"normal"` and any value that is then not a positive finite number are dropped. So `"150%"` becomes 1.5, `"1.5em"` becomes 1.5, and `"24px"`, `0` and `-1` go. Reading with `parseFloat` instead would store `"150%"` as 150 and `"24px"` as 24, and both would load with no warning.
 
 **Review inputs.** The review read the doctrine in `VISION.md`, `docs/vision/common.md`, `docs/vision/plate.md` and `docs/vision/plite.md`, and the prior record `docs/research/review-records/2026-10-04-layout-audit.json` with its scope `docs/research/review-scopes/layout.json`. Its column sources were `packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts`, `packages/platejs/src/features/layout/lib/BaseColumnPlugin.spec.ts`, `packages/platejs/src/features/layout/lib/BaseColumnPlugin.authored-tree.spec.ts` and `packages/platejs/src/react/features/layout/ColumnPlugin.tsx`. Its style and plugin sources were `packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts`, `packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts`, `packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts`, `packages/platejs/src/features/list/lib/BaseListPlugin.ts`, `packages/platejs/src/features/media/lib/BaseMediaPlugin.ts`, `packages/platejs/src/internal/plugin/pluginInjectNodeProps.ts`, `packages/platejs/src/internal/plugin/pluginInjectNodeProps.spec.ts`, `packages/platejs/src/internal/plugin/resolvePlugins.ts`, `packages/platejs/src/lib/plugin/PluginDefinition.ts`, `packages/platejs/src/react/utils/pipeRenderLeaf.internal.tsx`, `packages/platejs/src/ai/react/AIChatPlugin.ts`, `packages/plitejs/src/core/editor-schema.ts` and the entrypoint graph `tooling/entrypoints/entrypoint-dag.mjs`. Its Word export sources were `packages/platejs/src/docx/export/lib/docxStaticComponents.tsx` and `packages/platejs/src/docx/export/lib/internal/xml-builder.ts`, and its migration sources were `packages/platejs/src/migrations/migratePlateV54Ast.internal.ts`, `packages/platejs/src/migrations/migratePlateV54Ast.spec.ts` and `packages/platejs/src/migrations/migratePlateV54Suggestions.internal.ts`. Its copied UI sources were `apps/www/src/registry/components/editor/line-height.tsx`, `apps/www/src/registry/components/editor/line-height-toolbar-button.tsx`, `apps/www/src/registry/components/editor/align.tsx`, `apps/www/src/registry/components/editor/align-toolbar-button.tsx`, `apps/www/src/registry/components/editor/block-menu.tsx`, `apps/www/src/registry/components/editor/indent.tsx`, `apps/www/src/registry/components/editor/font.tsx`, `apps/www/src/registry/components/editor/font-static.tsx`, `apps/www/src/registry/components/editor/column.tsx`, `apps/www/src/registry/components/editor/column-static.tsx`, `apps/www/src/registry/components/editor/caption-static.tsx`, `apps/www/src/registry/components/editor/caption.tsx`, `apps/www/src/registry/components/editor/media-image.tsx`, `apps/www/src/registry/components/editor/media-embed.tsx`, `apps/www/src/registry/components/editor/media-audio.tsx`, `apps/www/src/registry/components/editor/media-video.tsx`, `apps/www/src/registry/components/editor/table.tsx`, `apps/www/src/registry/components/editor/heading.tsx`, `apps/www/src/registry/components/editor/editor-static.tsx`, `apps/www/src/registry/components/editor/insert-toolbar-button.tsx`, `apps/www/src/registry/components/editor/slash.tsx`, `apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx`, `apps/www/src/registry/components/editor/fixed-toolbar.tsx`, `apps/www/src/registry/components/editor/plugins-static.ts` and `apps/www/src/registry/components/editor/list.tsx`. Its Word paste specs were `apps/www/src/__tests__/package-integration/docx/testDocxDeserializer.tsx`, `apps/www/src/__tests__/package-integration/docx/alternate_document_path.slow.tsx`, `apps/www/src/__tests__/package-integration/docx/dummy_item_after_list_item.slow.tsx`, `apps/www/src/__tests__/package-integration/docx/dummy_item_after_paragraph.slow.tsx`, `apps/www/src/__tests__/package-integration/docx/legal-in.slow.tsx`, `apps/www/src/__tests__/package-integration/docx/legal.slow.tsx`, `apps/www/src/__tests__/package-integration/docx/line-height.slow.tsx`, `apps/www/src/__tests__/package-integration/docx/lists_sublist_reset.slow.tsx` and `apps/www/src/__tests__/package-integration/docx/tabs.slow.tsx`. Its release and docs sources were `apps/www/api-reference.config.json`, `.changeset/layout-v54-runtime.md`, `.changeset/platejs-column-side-drop.md`, `.changeset/basic-styles-v54-runtime.md`, `content/docs/(plugins)/(styles)/font.mdx`, `content/docs/(plugins)/(elements)/column.mdx`, `content/docs/(plugins)/(styles)/line-height.mdx`, `content/docs/(plugins)/(styles)/text-align.mdx`, `content/docs/(guides)/plugin.mdx`, `content/docs/(guides)/editor.mdx` and `content/docs/(guides)/document-model.mdx`.
 
-**Counts.** The owner sent two messages, the `/verdict layout` brief, now done, and "c", which continued it. The decision log holds 152 rows. Three plan panel rounds and three diff panel rounds ran, each with three seats.
+**Counts.** The owner sent four messages, all done: the `/verdict layout` brief, "c", which continued it, "codex is back", which ran the Codex review of the landed commit, and "c" again after a usage stop. The decision log holds 176 rows. Three plan panel rounds and five diff panel rounds ran. Rounds 1 to 3 had three Opus seats, round 4 the two Codex seats, and round 5 Opus and both Codex seats.
 
 ## Open work
 
-- Codex seats. Owner: you, by running `codex login` with an account that serves gpt-6.1-sol and gpt-6-astra. Stop: the next panel's ping passes.
-- The rest moved to the layout subject's Open work with its owners and stops, the suggestion migration first.
+- Everything moved to the layout subject's Open work with its owners and stops, the suggestion migration first.
 
 ## Evidence
 

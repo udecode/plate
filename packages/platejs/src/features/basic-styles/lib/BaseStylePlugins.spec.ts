@@ -7,6 +7,7 @@ import {
   PLUGINS,
 } from '../../../core';
 import { writeDataTransferFragment } from '../../../dom';
+import { parseHtml } from '../../../html/server';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import { createPluginContext } from '../../../lib/plugin/createPluginContext.internal';
 import {
@@ -357,6 +358,24 @@ describe('BaseLineHeightPlugin', () => {
       const result = editor.api.html.parse(
         `<p style="line-height: ${css}">text</p>`
       );
+
+      expect(result.diagnostics).toEqual([]);
+      expect(result.ok && result.document.children).toEqual([
+        { children: [{ text: 'text' }], lineHeight, type: 'paragraph' },
+      ]);
+    }
+  );
+
+  it.each([
+    ['1e0', 1],
+    ['1e-7', 1e-7],
+    ['1.5e2%', 1.5],
+  ])(
+    'saves a server-parsed line height of %s written with an exponent',
+    (css, lineHeight) => {
+      const result = parseHtml(`<p style="line-height: ${css}">text</p>`, {
+        plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
+      });
 
       expect(result.diagnostics).toEqual([]);
       expect(result.ok && result.document.children).toEqual([

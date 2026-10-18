@@ -17,7 +17,8 @@ import {
 import type { AnyBasePlugin } from '../../../lib/plugin/BasePlugin';
 
 const digitRegex = /\d+/;
-const lineHeightRegex = /^([+-]?(?:\d+(?:\.\d*)?|\.\d+))(%|em)?$/i;
+const lineHeightRegex =
+  /^([+-]?(?:\d+(?:\.\d*)?|\.\d+))(?:e([+-]?\d+))?(%|em)?$/i;
 
 const isLineHeight = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value > 0;
@@ -27,7 +28,10 @@ const parseLineHeight = (text: string) => {
 
   if (!match) return undefined;
 
-  const value = Number(match[2] === '%' ? `${match[1]}e-2` : match[1]);
+  const [, digits, exponent = '0', unit] = match;
+  const value = Number(
+    `${digits}e${Number(exponent) - (unit === '%' ? 2 : 0)}`
+  );
 
   return isLineHeight(value) ? value : undefined;
 };

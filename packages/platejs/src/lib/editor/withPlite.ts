@@ -1116,6 +1116,7 @@ export type PlateEditorTargetCompilation = Readonly<{
   artifact: EditorCompilation;
   authored?: NativeAuthoredDocumentCapability;
   fields: ReadonlyArray<EditorStateField<any>>;
+  pluginNameByPropertyId: ReadonlyMap<string, string>;
   schema: CompiledEditorSchema;
 }>;
 
@@ -1192,6 +1193,11 @@ const withPlateEditorTargetCompilation = <T>(
                   : {}),
                 editor,
                 fields: capability.fields,
+                pluginNameByPropertyId: new Map(
+                  publication.model.bindings.flatMap(({ name, propertyIds }) =>
+                    propertyIds.map((id) => [id, name] as const)
+                  )
+                ),
                 schema: capability.schema,
               })
             );

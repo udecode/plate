@@ -92,6 +92,38 @@ const table = (...rows: Value[][]) => ({
 const firstCell = (xml: string) =>
   xml.slice(xml.indexOf('<w:tc>'), xml.lastIndexOf('</w:tc>'));
 
+const listed = (
+  text: string,
+  listType: 'numbered' | 'task',
+  properties: Record<string, unknown> = {}
+) => ({
+  children: [{ text }],
+  indent: 1,
+  listId: listType,
+  listType,
+  type: 'paragraph',
+  ...properties,
+});
+
+describe('DOCX export of listed paragraphs', () => {
+  it.each(['numbered', 'task'] as const)(
+    'keeps the alignment and line height of a %s paragraph',
+    async (listType) => {
+      const xml = await exportXml(
+        [listed('Listed', listType, { lineHeight: 1.75, textAlign: 'end' })],
+        DOCX_EXPORT_STYLES
+      );
+      const paragraph = [...xml.matchAll(/<w:p\b[\s\S]*?<\/w:p>/g)]
+        .map(([match]) => match)
+        .find((match) => match.includes('>Listed</w:t>'));
+
+      expect(paragraph).toContain('<w:numPr>');
+      expect(paragraph).toContain('<w:jc w:val="right"/>');
+      expect(paragraph).toContain('w:line="420"');
+    }
+  );
+});
+
 const widthOf = (xml: string) =>
   Number(/<wp:extent cx="(\d+)"/.exec(xml)?.[1] ?? Number.NaN);
 
@@ -151,6 +183,20 @@ describe('DOCX export of table cells', () => {
     );
 
     for (const pattern of patterns) expect(cell).toMatch(pattern);
+  });
+
+  it("gives a numbered paragraph the cell's alignment and line height", async () => {
+    const cell = firstCell(
+      await exportXml(
+        [table([[listed('CELL', 'numbered')]])] as Value,
+        `${DOCX_EXPORT_STYLES}
+td { line-height: 2; text-align: center; }`
+      )
+    );
+
+    expect(cell).toContain('<w:numPr>');
+    expect(cell).toContain('<w:jc w:val="center"/>');
+    expect(cell).toContain('w:line="480"');
   });
 
   it('numbers a list before, inside and after a table cell as one list', async () => {

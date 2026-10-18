@@ -1093,6 +1093,70 @@ describe('migratePlateV54 AST contracts', () => {
     });
   });
 
+  it('converts layout values only on properties the layout plugins declare', () => {
+    const ChartPlugin = definePlugin('chart', {
+      schema: {
+        element: schema.element.textBlock({
+          properties: {
+            indent: property.string(),
+            lineHeight: property.string(),
+            listStart: property.string(),
+            textAlign: property.string(),
+          },
+        }),
+      },
+    });
+    const migrations = defineDocumentMigrations({
+      plugins: [...plugins, BaseLineHeightPlugin, ChartPlugin],
+      schema: MigrationSchema,
+      steps: { 54: migrateV54 },
+    });
+    const chart = {
+      children: [{ text: 'chart' }],
+      indent: 'wide',
+      lineHeight: '150%',
+      listStart: 'seven',
+      textAlign: 'domain',
+      type: 'chart',
+    };
+    const result = migrateDocument(
+      {
+        children: [
+          chart,
+          { children: [{ text: 'note' }], lineHeight: '150%', type: 'p' },
+        ],
+      },
+      { migrations }
+    ).document;
+
+    expect(result.children).toEqual([
+      chart,
+      { children: [{ text: 'note' }], lineHeight: 1.5, type: 'paragraph' },
+    ]);
+  });
+
+  it('refuses a migration target copied outside defineDocumentMigrations', () => {
+    const migrations = defineDocumentMigrations({
+      plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
+      schema: MigrationSchema,
+      steps: {
+        54: (context) =>
+          migrateV54({ ...context, target: { ...context.target } }),
+      },
+    });
+
+    expect(() =>
+      migrateDocument(
+        {
+          children: [
+            { children: [{ text: 'x' }], lineHeight: '150%', type: 'p' },
+          ],
+        },
+        { migrations }
+      )
+    ).toThrow(/migration target from defineDocumentMigrations/);
+  });
+
   it('keeps a media name the target declares only under one parent', () => {
     const ColumnImageNamePlugin = definePlugin('columnImageName', {
       schema: {

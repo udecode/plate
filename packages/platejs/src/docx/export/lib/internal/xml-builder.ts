@@ -455,6 +455,7 @@ export const buildImage = async (
 };
 
 type VNodeObject = {
+  inherited: BlockScope;
   instance?: { readonly numberingId: number; next: number };
   pendingListOpen?: Readonly<{
     properties: VNodeProperties;
@@ -537,9 +538,29 @@ export const buildList = async (
   vNode: VNodeType,
   docxDocumentInstance: DocxDocumentInstance,
   xmlFragment: XMLBuilderType,
-  hostVNode?: VNodeType
+  {
+    container,
+    host,
+    scope = {},
+  }: Readonly<{ container?: VNodeType; host?: VNodeType; scope?: BlockScope }>
 ): Promise<void> => {
-  const level = getIndentLevel(vNode, hostVNode);
+  const inherit = (
+    node: VNodeType | undefined,
+    inherited: BlockScope
+  ): BlockScope => {
+    const { lineHeight, textAlign } = modifiedStyleAttributesBuilder(
+      docxDocumentInstance,
+      node ?? null,
+      {}
+    );
+
+    return {
+      ...inherited,
+      ...(lineHeight ? { lineHeight } : {}),
+      ...(textAlign ? { textAlign } : {}),
+    };
+  };
+  const level = getIndentLevel(vNode, host);
   const list = docxDocumentInstance.openList(
     (vNode.tagName || 'ul') as 'ol' | 'ul',
     withItemRestart(vNode.properties ?? {}, firstItem(vNode)),
@@ -547,6 +568,7 @@ export const buildList = async (
   );
   let vNodeObjects: VNodeObject[] = [
     {
+      inherited: inherit(vNode, inherit(container, scope)),
       instance: list,
       node: vNode,
       level,
@@ -579,6 +601,7 @@ export const buildList = async (
         await buildParagraph(
           current.node,
           {
+            ...current.inherited,
             numbering: {
               levelId: current.level,
               numberingId: current.numberingId,
@@ -615,6 +638,7 @@ export const buildList = async (
               childNode.properties?.attributes?.['data-list-id'] !== undefined;
 
             accumulator.push({
+              inherited: inherit(childNode, current.inherited),
               node: child,
               level: current.level + 1,
               type: childNode.tagName || '',
@@ -685,6 +709,9 @@ export const buildList = async (
           const listType = (node.tagName || 'ul') as 'ol' | 'ul';
 
           accumulator.push({
+            inherited: item
+              ? inherit(childNode, current.inherited)
+              : current.inherited,
             node: isVNode(child)
               ? item
                 ? child
@@ -1041,13 +1068,16 @@ const ltrWordAlignments = new Map([
 ]);
 
 const fixupLineHeight = (lineHeight: string): LineSpacing | undefined => {
-  const match = /^(\d*\.?\d+)(px|pt|cm|in|%|em)?$/i.exec(lineHeight.trim());
+  const match =
+    /^((?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?)(px|pt|cm|in|%|em)?$/i.exec(
+      lineHeight.trim()
+    );
 
   if (!match) return undefined;
 
-  const value = Number.parseFloat(match[1]);
+  const value = Number(match[1]);
 
-  if (value === 0) return undefined;
+  if (value === 0 || !Number.isFinite(value)) return undefined;
 
   switch (match[2]?.toLowerCase()) {
     case 'cm': {
