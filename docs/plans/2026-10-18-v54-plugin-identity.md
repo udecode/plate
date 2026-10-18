@@ -19,7 +19,7 @@ The v54 upgrade rewrites a saved value only when the built-in plugin that owns i
 
 ### What could go wrong?
 
-A built-in plugin the upgrade fails to recognize would leave old documents unconverted, so a probe checks each one. An app that copied a built-in plugin under its name, instead of extending it, loses the upgrade for those values.
+A built-in plugin the upgrade fails to recognize would leave old documents unconverted, so a spec checks each one. An app that copied a built-in plugin under its name, instead of extending it, loses the upgrade for those values.
 
 ## Teach
 

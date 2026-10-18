@@ -1,5 +1,7 @@
 # Document persistence and migration
 
+Page: https://claude.ai/artifact/77ZVnESPx3KYW3AnEUSf3V
+
 A saved document is one complete envelope with versioned feature metadata, application schema lineage and separate local history. Migration is one detached operation bound to immutable target facts: raw input carries per-call source intent, the chain is preflighted before any callback, input is isolated, and success returns a complete current envelope. The 2026-10-04 audit found this adopted and stopped; the silent loss of unknown top-level stored fields at migration completion belongs to the model scope's Pursue ([triage audit](../2026-10-04-ledger-triage-audit.md), [immutable conversion plan](../2026-09-16-persistence-immutable-conversion.md)). `node tooling/scripts/review-ledger.mjs show persistence` prints the full history.
 
 ## Layer and owner
