@@ -15,6 +15,7 @@
 - Keep editing and remote collaboration live while an effect-only session replay awaits its external owner, then settle the claimed entry in call order
 - Define fallible local replay effects with one `history: { replay }` value
 - Dispatch mounted undo and redo through void-returning `useEditorHistory` controls, and report final outcomes to the initiating `Editable` through `onHistoryReplay`
-- Report a failed replay through `createEditor({ lifecycleErrorSink })`; with no sink, report it through `reportError`, or `console.error` where `reportError` does not exist
+- Report a failed replay through `createEditor({ lifecycleErrorSink })` with `phase: 'replay'`; with no sink, report it through `reportError`, or `console.error` where `reportError` does not exist
+- Report a throw from `onHistoryReplay`, or from the selection and focus repair after a replay, to the same sink with `phase: 'observer'`, and still run the remaining steps
 - Keep transaction history controls limited to grouping, skipping, and restoration; replay is rejected from active reads and updates
 - Prepare history, authored state, anchors, plugin configuration, and document changes before publishing one coherent commit

@@ -838,7 +838,7 @@ export const encodeTrustedNodes = (
   return tokens;
 };
 
-export function assertNode(node: unknown): asserts node is JsonNode {
+export function assertJsonNode(node: unknown): asserts node is JsonNode {
   if (!isRecord(node)) throw new Error('A JSON node must be an object.');
 
   const hasText = Object.hasOwn(node, 'text');
@@ -857,7 +857,7 @@ export function assertNode(node: unknown): asserts node is JsonNode {
       throw new Error('A JSON element node must contain child nodes.');
     }
 
-    node.children.forEach(assertNode);
+    node.children.forEach(assertJsonNode);
   }
 }
 
@@ -868,7 +868,7 @@ export const encodeNodes = (nodes: readonly JsonNode[]) => {
   let position = 0;
 
   const encode = (node: JsonNode) => {
-    assertNode(node);
+    assertJsonNode(node);
 
     const from = position;
     const kind: NodeKind = isTextNode(node) ? 'text' : 'element';

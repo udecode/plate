@@ -235,7 +235,9 @@ A `failed` outcome means the replay's owner or settlement threw; the editor
 reports that error to its `lifecycleErrorSink`. With no sink, it uses
 `reportError`, or `console.error` where `reportError` does not exist. The mounted runtime restores selection and focus only when the
 initiating surface, focus target, and editor commit remain unchanged through
-settlement.
+settlement. A throw from `onHistoryReplay`, or from that selection and focus
+repair, reaches the same sink with `phase: "observer"`, and the other steps
+still run.
 
 ## Runtime and root hooks
 

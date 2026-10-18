@@ -22,6 +22,7 @@ import {
 import { toInternalRoot } from '../../core/public-root';
 import {
   getActiveEditorTransaction,
+  resolveEditorNodeKeyForNode,
   setEditorFocused,
   withUpdateTagContext,
 } from '../../core/public-state';
@@ -79,6 +80,7 @@ import {
   IS_READ_ONLY,
   NODE_TO_ELEMENT,
   NODE_TO_KEY,
+  resolveLastEditorWindow,
 } from '../utils/weak-maps';
 import {
   type ClipboardSliceRead,
@@ -171,6 +173,8 @@ export interface DOMApi {
   deselect: () => void;
   editable: (root?: RootKey) => HTMLElement | null;
   findDocumentOrShadowRoot: () => Document | ShadowRoot;
+  /** The document or shadow root holding the editable, or null when unmounted. */
+  resolveDocumentOrShadowRoot: () => Document | ShadowRoot | null;
   assertEventRange: (event: any) => Range;
   findKey: (node: Descendant) => Key;
   assertPath: (node: Node) => Path;
@@ -425,6 +429,17 @@ export interface DOMEditorInterface {
   >(
     editor: DOMEditor<V, TPlugins>
   ) => Document | ShadowRoot;
+
+  /**
+   * Resolve the DocumentOrShadowRoot holding the editor's editable, or null
+   * when the editor has no mounted editable.
+   */
+  resolveDocumentOrShadowRoot: <
+    V extends Value,
+    TPlugins extends readonly unknown[],
+  >(
+    editor: DOMEditor<V, TPlugins>
+  ) => Document | ShadowRoot | null;
 
   /**
    * Get the target range from a DOM `event`.
@@ -732,7 +747,9 @@ const cachePliteDOMNode = (
 ) => {
   const key = nodeKey
     ? getOrCreateDOMNodeKey(editor, nodeKey, node)
-    : DOMEditor.findKey(editor, node);
+    : resolveDOMNodeKey(editor, node);
+
+  if (!key) return domNode;
   const keyToElement = EDITOR_TO_KEY_TO_ELEMENT.get(editor) ?? new WeakMap();
 
   if (!EDITOR_TO_KEY_TO_ELEMENT.has(editor)) {
@@ -985,6 +1002,12 @@ export const getOrCreateDOMNodeKey = (
   return key;
 };
 
+const resolveDOMNodeKey = (editor: DOMEditor<any>, node: Descendant) => {
+  const nodeKey = resolveEditorNodeKeyForNode(editor, node);
+
+  return nodeKey ? getOrCreateDOMNodeKey(editor, nodeKey, node) : null;
+};
+
 /** Resolve native coordinates within an exact mounted DOM root. @internal */
 export const resolveDOMPointInRoot = (
   editor: DOMEditor<any>,
@@ -1219,20 +1242,22 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   blur: (editor) => {
-    const el = DOMEditor.assertDOMNode(editor, editor);
-    const root = DOMEditor.findDocumentOrShadowRoot(editor);
     EDITOR_TO_FOCUS_REQUEST_GENERATION.set(
       editor,
       (EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor) ?? 0) + 1
     );
-    if (ROOT_TO_FOCUS_REQUEST_OWNER.get(root)?.editor === editor) {
-      ROOT_TO_FOCUS_REQUEST_OWNER.delete(root);
-    }
     EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor)?.();
     EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
     IS_FOCUSED.set(editor, false);
     setEditorFocused(editor, false);
 
+    const el = DOMEditor.editable(editor);
+    const root = DOMEditor.resolveDocumentOrShadowRoot(editor);
+
+    if (!el || !root) return;
+    if (ROOT_TO_FOCUS_REQUEST_OWNER.get(root)?.editor === editor) {
+      ROOT_TO_FOCUS_REQUEST_OWNER.delete(root);
+    }
     if (root.activeElement === el) {
       el.blur();
     }
@@ -1240,8 +1265,8 @@ export const DOMEditor: DOMEditorInterface = {
 
   deselect: (editor) => {
     const selection = editor.read((state) => state.selection());
-    const root = DOMEditor.findDocumentOrShadowRoot(editor);
-    const domSelection = getSelection(root);
+    const root = DOMEditor.resolveDocumentOrShadowRoot(editor);
+    const domSelection = root ? getSelection(root) : null;
 
     if (domSelection && domSelection.rangeCount > 0) {
       domSelection.removeAllRanges();
@@ -1272,7 +1297,20 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   findDocumentOrShadowRoot: (editor) => {
-    const el = DOMEditor.assertDOMNode(editor, editor);
+    const root = DOMEditor.resolveDocumentOrShadowRoot(editor);
+
+    if (root) return root;
+
+    throw new DOMResolutionError(
+      `Cannot resolve a DOM node from an editor node: ${formatDebugValue(editor)}`,
+      { details: { node: editor } }
+    );
+  },
+
+  resolveDocumentOrShadowRoot: (editor) => {
+    const el = DOMEditor.editable(editor);
+
+    if (!el) return null;
     const root = el.getRootNode() as Document | ShadowRoot;
     const view = el.ownerDocument.defaultView;
 
@@ -1401,11 +1439,13 @@ export const DOMEditor: DOMEditorInterface = {
 
     // Return if no dom node is associated with the editor, which means the editor is not yet mounted
     // or has been unmounted. This can happen especially, while retrying to focus the editor.
-    if (!DOMEditor.editable(editor)) {
+    const el = DOMEditor.editable(editor);
+    const root = DOMEditor.resolveDocumentOrShadowRoot(editor);
+
+    if (!el || !root) {
       return;
     }
 
-    const root = DOMEditor.findDocumentOrShadowRoot(editor);
     const focusRequestOwner = {
       editor,
       generation: focusRequestGeneration,
@@ -1448,8 +1488,6 @@ export const DOMEditor: DOMEditorInterface = {
 
     EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor)?.();
     EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
-
-    const el = DOMEditor.assertDOMNode(editor, editor);
 
     const getLiveSelection = () => editorGetSelection(editor);
     const selection = getLiveSelection();
@@ -1650,7 +1688,7 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   getWindow: (editor) => {
-    const window = EDITOR_TO_WINDOW.get(editor);
+    const window = resolveLastEditorWindow(editor);
     if (!window) {
       throw new Error('Unable to find a host window element for this editor');
     }
@@ -1781,13 +1819,9 @@ export const DOMEditor: DOMEditorInterface = {
     if (mappedNode && isMountedEditorDOMNode(editor, mappedNode)) {
       return mappedNode;
     }
-    let key: Key;
+    const key = resolveDOMNodeKey(editor, node);
 
-    try {
-      key = DOMEditor.findKey(editor, node);
-    } catch {
-      return null;
-    }
+    if (!key) return null;
     const domNode = EDITOR_TO_KEY_TO_ELEMENT.get(editor)?.get(key);
 
     if (domNode && isMountedEditorDOMNode(editor, domNode)) {
@@ -2171,8 +2205,7 @@ export const DOMEditor: DOMEditorInterface = {
           if (textFlowOffset != null) {
             offset = textFlowOffset;
           } else {
-            const window = DOMEditor.getWindow(editor);
-            const range = window.document.createRange();
+            const range = textNode.ownerDocument.createRange();
             range.setStart(textNode, 0);
             range.setEnd(nearestNode, nearestOffset);
 
@@ -2755,6 +2788,8 @@ export const createDOMEditorCapability = <
     },
     editable: (root) => DOMEditor.editable(editor, root),
     findDocumentOrShadowRoot: () => DOMEditor.findDocumentOrShadowRoot(editor),
+    resolveDocumentOrShadowRoot: () =>
+      DOMEditor.resolveDocumentOrShadowRoot(editor),
     assertEventRange: (event) => DOMEditor.assertEventRange(editor, event),
     findKey: (node) => DOMEditor.findKey(editor, node),
     assertPath: (node) => DOMEditor.assertPath(editor, node),

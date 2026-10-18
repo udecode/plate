@@ -215,6 +215,7 @@ export const useEditableRootRuntime = ({
       forceModelExport: true,
       preserveScroll: true,
     });
+    runtime.renderContract.nominateSelection();
   });
   useEditableRootSelectionExport({
     runtime,

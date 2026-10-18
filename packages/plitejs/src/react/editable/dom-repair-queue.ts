@@ -259,11 +259,11 @@ export const createDOMRepairQueue = ({
     }
 
     const root = profileDOMRepairDuration('captured-find-root', () =>
-      ReactEditor.findDocumentOrShadowRoot(editor)
+      ReactEditor.resolveDocumentOrShadowRoot(editor)
     );
     const domSelection = profileDOMRepairDuration(
       'captured-read-dom-selection',
-      () => getSelection(root)
+      () => (root ? getSelection(root) : null)
     );
     const anchorNode = domSelection?.anchorNode ?? null;
     const anchorOffset = domSelection?.anchorOffset ?? null;
@@ -381,8 +381,8 @@ export const createDOMRepairQueue = ({
       }
 
       const inputText = nativeInput.data;
-      const root = ReactEditor.findDocumentOrShadowRoot(editor);
-      const domSelection = getSelection(root);
+      const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+      const domSelection = root ? getSelection(root) : null;
       const anchorNode = domSelection?.anchorNode ?? null;
       const anchorOffset = domSelection?.anchorOffset ?? null;
       let textHost = isDOMText(anchorNode)
@@ -738,14 +738,9 @@ export const createDOMRepairQueue = ({
           }
 
           const scrollCurrentDOMSelectionIntoView = () => {
-            let root: Document | ShadowRoot;
+            const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
 
-            try {
-              root = ReactEditor.findDocumentOrShadowRoot(editor);
-            } catch {
-              return false;
-            }
-
+            if (!root) return false;
             const domSelection = getSelection(root);
             const anchorNode = domSelection?.anchorNode ?? null;
             const focusNode = domSelection?.focusNode ?? null;
@@ -871,14 +866,9 @@ export const createDOMRepairQueue = ({
             !isVirtualizedTextHost &&
             !isDecoratedTextHost &&
             !shouldRetainModelOwnedTextInsert;
-          let root: Document | ShadowRoot;
+          const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
 
-          try {
-            root = ReactEditor.findDocumentOrShadowRoot(editor);
-          } catch {
-            return false;
-          }
-
+          if (!root) return false;
           const domSelection = getSelection(root);
 
           if (!domSelection) {

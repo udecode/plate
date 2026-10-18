@@ -78,7 +78,12 @@ description: \platejs 的 API 参考文档。
     - **默认值:** `false`
   </APIItem>
   <APIItem name="lifecycleErrorSink" type="(error: EditorLifecycleError) => void" optional>
-    接收插件 lifecycle 观察者抛出的错误。
+    接收编辑器捕获的错误，使其不会中断编辑器：插件 lifecycle 观察者、history
+    replay 及其 handler、data-transfer format、external text adapter 与
+    pagination 抛出的错误，以及 `renderElement` 检查的报告。
+    - **默认值:** 每个错误作为一个 `Error` 发送到 `reportError`，其 message
+      标明来源，`cause` 为原始错误。没有 `reportError` 的环境改用
+      `console.error`。
   </APIItem>
   <APIItem name="api" type="object" optional>
     编辑器的 API 方法。

@@ -198,8 +198,9 @@ export const useRuntimeFocusMouseEvents = ({
         return;
       }
 
-      const editorElement = ReactEditor.assertDOMNode(editor, editor);
+      const editorElement = ReactEditor.editable(editor);
       if (
+        editorElement &&
         event.target === editorElement &&
         getNestedEditableDOMSelectionRoot(editorElement)
       ) {

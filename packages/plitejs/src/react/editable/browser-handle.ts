@@ -450,8 +450,8 @@ export const attachPliteBrowserHandle = ({
         return false;
       }
 
-      const root = ReactEditor.findDocumentOrShadowRoot(editor);
-      const selection = getSelection(root);
+      const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+      const selection = root ? getSelection(root) : null;
 
       if (!selection || selection.rangeCount === 0) {
         return false;
@@ -647,8 +647,8 @@ export const attachPliteBrowserHandle = ({
         editorString(editor, [index])
       ),
     getDOMSelection: () => {
-      const root = ReactEditor.findDocumentOrShadowRoot(editor);
-      const selection = getSelection(root);
+      const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+      const selection = root ? getSelection(root) : null;
 
       if (!selection || selection.rangeCount === 0) {
         return null;

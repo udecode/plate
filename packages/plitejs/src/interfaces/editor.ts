@@ -2132,8 +2132,12 @@ export type CreateEditorOptions<
   initialSelection?: Selection<EditorSelection>;
   initialValue?: InitialValue<V>;
   /**
-   * Receives failures from observers that run after authoritative state is
-   * published, and the error behind each history replay that settles `failed`.
+   * Receives errors the editor catches so they cannot stop it: throws from
+   * plugin lifecycle observers, history replays and their handlers,
+   * data-transfer formats, external text adapters and pagination, and reports
+   * from the `renderElement` check. With no sink, each one goes to
+   * `reportError` as one `Error` that names its source, or to `console.error`
+   * where `reportError` does not exist.
    */
   lifecycleErrorSink?: EditorLifecycleErrorSink<Editor<V, TPlugins>>;
   maxLength?: number;
@@ -2879,8 +2883,27 @@ export type EditorLifecycleError<TEditor = Editor> =
       cause: unknown;
       direction: 'redo' | 'undo';
       editor: TEditor;
-      phase: 'replay';
+      /**
+       * `replay` when the replay could not finish; `observer` when a step
+       * after its outcome threw, such as `onHistoryReplay` or focus repair.
+       */
+      phase: 'observer' | 'replay';
       source: 'history';
+    }>
+  | Readonly<{
+      cause: Error;
+      /** The editable child the renderer left without DOM or a DOM coverage boundary. */
+      childPath: Path;
+      editor: TEditor;
+      /** The element whose `renderElement` omitted the child. */
+      element: Element;
+      path: Path;
+      /**
+       * `commit` from the development check after an element renders;
+       * `selection-export` from a failed post-commit selection export.
+       */
+      phase: 'commit' | 'selection-export';
+      source: 'render-element';
     }>;
 
 export type EditorLifecycleErrorSink<TEditor = Editor> = (

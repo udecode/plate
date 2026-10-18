@@ -100,6 +100,9 @@ export const pliteExampleComponents = {
   ),
   plaintext: createPliteExampleLoader(() => import('./_examples/plaintext')),
   'read-only': createPliteExampleLoader(() => import('./_examples/read-only')),
+  'render-contract': createPliteExampleLoader(
+    () => import('./_examples/render-contract')
+  ),
   richtext: createPliteExampleLoader(() => import('./_examples/richtext')),
   'schema-reconfiguration': createPliteExampleLoader(
     () => import('./_examples/schema-reconfiguration')

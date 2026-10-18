@@ -41,7 +41,10 @@ export const useEditableRootSelectionExport = ({
       shouldSkipDOMExport: (selection) =>
         !ReactEditor.isFocused(editor) ||
         runtime.isViewportBackedSelection(selection),
-      syncDOMSelectionToEditor,
+      syncDOMSelectionToEditor: (options) => {
+        syncDOMSelectionToEditor(options);
+        runtime.renderContract.nominateSelection();
+      },
     });
 
     return runtime.installDisposable('selection-export', unsubscribe);

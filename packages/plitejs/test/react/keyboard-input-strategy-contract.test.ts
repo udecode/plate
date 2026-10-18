@@ -790,9 +790,7 @@ describe('keyboard input strategy', () => {
     const nested = document.createElement('div');
     const graph = createPliteViewBoundaryGraph([{ path: [0], root: 'main' }]);
     const event = reactKeyEvent(keyEvent('Backspace'));
-    const assertDOMNode = vi
-      .spyOn(ReactEditor, 'assertDOMNode')
-      .mockReturnValue(root);
+    const editable = vi.spyOn(ReactEditor, 'editable').mockReturnValue(root);
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
       .mockReturnValue(false);
@@ -832,7 +830,7 @@ describe('keyboard input strategy', () => {
       ]);
     } finally {
       root.remove();
-      assertDOMNode.mockRestore();
+      editable.mockRestore();
       hasEditableTarget.mockRestore();
     }
   });
@@ -857,9 +855,7 @@ describe('keyboard input strategy', () => {
     const root = document.createElement('div');
     const nested = document.createElement('div');
     const event = reactKeyEvent(keyEvent('ArrowLeft', { shiftKey: true }));
-    const assertDOMNode = vi
-      .spyOn(ReactEditor, 'assertDOMNode')
-      .mockReturnValue(root);
+    const editable = vi.spyOn(ReactEditor, 'editable').mockReturnValue(root);
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
       .mockReturnValue(false);
@@ -921,7 +917,7 @@ describe('keyboard input strategy', () => {
       expect(event.preventDefault).toHaveBeenCalled();
     } finally {
       root.remove();
-      assertDOMNode.mockRestore();
+      editable.mockRestore();
       hasEditableTarget.mockRestore();
     }
   });
@@ -947,11 +943,9 @@ describe('keyboard input strategy', () => {
     const nested = document.createElement('div');
     const nativeText = document.createTextNode('Shared mission statement');
     const event = reactKeyEvent(keyEvent('ArrowLeft', { shiftKey: true }));
-    const assertDOMNode = vi
-      .spyOn(ReactEditor, 'assertDOMNode')
-      .mockReturnValue(root);
-    const findDocumentOrShadowRoot = vi
-      .spyOn(ReactEditor, 'findDocumentOrShadowRoot')
+    const editable = vi.spyOn(ReactEditor, 'editable').mockReturnValue(root);
+    const resolveDocumentOrShadowRoot = vi
+      .spyOn(ReactEditor, 'resolveDocumentOrShadowRoot')
       .mockReturnValue(document);
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
@@ -1024,8 +1018,8 @@ describe('keyboard input strategy', () => {
     } finally {
       document.getSelection()?.removeAllRanges();
       root.remove();
-      assertDOMNode.mockRestore();
-      findDocumentOrShadowRoot.mockRestore();
+      editable.mockRestore();
+      resolveDocumentOrShadowRoot.mockRestore();
       hasEditableTarget.mockRestore();
       hasSelectableTarget.mockRestore();
       resolveRange.mockRestore();
@@ -1509,8 +1503,8 @@ describe('keyboard input strategy', () => {
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
       .mockReturnValue(true);
-    const findDocumentOrShadowRoot = vi
-      .spyOn(ReactEditor, 'findDocumentOrShadowRoot')
+    const resolveDocumentOrShadowRoot = vi
+      .spyOn(ReactEditor, 'resolveDocumentOrShadowRoot')
       .mockReturnValue(document);
     const isComposing = vi
       .spyOn(ReactEditor, 'isComposing')
@@ -1552,7 +1546,7 @@ describe('keyboard input strategy', () => {
       root.remove();
       hasEditableTarget.mockRestore();
       hasSelectableTarget.mockRestore();
-      findDocumentOrShadowRoot.mockRestore();
+      resolveDocumentOrShadowRoot.mockRestore();
       isComposing.mockRestore();
     }
   });
@@ -1586,8 +1580,8 @@ describe('keyboard input strategy', () => {
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
       .mockReturnValue(true);
-    const findDocumentOrShadowRoot = vi
-      .spyOn(ReactEditor, 'findDocumentOrShadowRoot')
+    const resolveDocumentOrShadowRoot = vi
+      .spyOn(ReactEditor, 'resolveDocumentOrShadowRoot')
       .mockReturnValue(document);
     const isComposing = vi
       .spyOn(ReactEditor, 'isComposing')
@@ -1629,7 +1623,7 @@ describe('keyboard input strategy', () => {
       root.remove();
       hasEditableTarget.mockRestore();
       hasSelectableTarget.mockRestore();
-      findDocumentOrShadowRoot.mockRestore();
+      resolveDocumentOrShadowRoot.mockRestore();
       isComposing.mockRestore();
     }
   });
@@ -1657,8 +1651,8 @@ describe('keyboard input strategy', () => {
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
       .mockReturnValue(true);
-    const findDocumentOrShadowRoot = vi
-      .spyOn(ReactEditor, 'findDocumentOrShadowRoot')
+    const resolveDocumentOrShadowRoot = vi
+      .spyOn(ReactEditor, 'resolveDocumentOrShadowRoot')
       .mockReturnValue(document);
     const isComposing = vi
       .spyOn(ReactEditor, 'isComposing')
@@ -1702,7 +1696,7 @@ describe('keyboard input strategy', () => {
       root.remove();
       hasEditableTarget.mockRestore();
       hasSelectableTarget.mockRestore();
-      findDocumentOrShadowRoot.mockRestore();
+      resolveDocumentOrShadowRoot.mockRestore();
       isComposing.mockRestore();
     }
   });

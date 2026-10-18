@@ -27,6 +27,42 @@ export const setEditorLifecycleErrorSink = <
   }
 };
 
+type SourcedLifecycleError = Extract<
+  EditorLifecycleError<unknown>,
+  { source: string }
+>;
+
+const describeSource: {
+  [TSource in SourcedLifecycleError['source']]: (
+    error: Extract<SourcedLifecycleError, { source: TSource }>
+  ) => string;
+} = {
+  'data-transfer-format': (error) =>
+    `data-transfer-format ${error.phase} failed in plugin "${error.pluginName}" for MIME type "${error.mimeType}" and key "${error.key}"`,
+  'external-text': (error) => `external-text ${error.phase} failed`,
+  history: (error) => `history ${error.phase} failed on ${error.direction}`,
+  pagination: (error) => `pagination ${error.phase} failed`,
+  'render-element': (error) => `render-element ${error.phase} check failed`,
+};
+
+const describeCause = (cause: unknown) => {
+  try {
+    return String(cause instanceof Error ? cause.message : cause);
+  } catch {
+    return 'a value that cannot be converted to a string';
+  }
+};
+
+const describeFailingPart = (error: EditorLifecycleError<unknown>): string => {
+  if (!('source' in error)) {
+    return `plugin ${error.phase} failed in plugin "${error.pluginName}"`;
+  }
+
+  return (
+    describeSource[error.source] as (error: SourcedLifecycleError) => string
+  )(error);
+};
+
 /** @internal */
 export const reportEditorLifecycleError = <
   TEditor extends BaseEditor<any, any>,
@@ -47,15 +83,18 @@ export const reportEditorLifecycleError = <
     }
   }
 
+  const { cause } = error;
+  const reported = new Error(
+    `Editor ${describeFailingPart(error)}: ${describeCause(cause)}`,
+    { cause }
+  );
   const { reportError } = globalThis as {
     reportError?: (error: unknown) => void;
   };
 
-  // A replay failure settles `failed` instead of rejecting; reportError keeps it visible to window error monitors.
-  if ('source' in error && error.source === 'history' && reportError) {
-    reportError(error.cause);
-    return;
+  if (reportError) {
+    reportError(reported);
+  } else {
+    globalThis.console?.error(reported);
   }
-
-  globalThis.console?.error(error);
 };

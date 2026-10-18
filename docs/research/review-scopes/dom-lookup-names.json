@@ -1,0 +1,37 @@
+{
+  "id": "dom-lookup-names",
+  "title": "Strict DOM lookups with no internal caller",
+  "question": "Should DOMCoverage keep resolveDOMPointOrBoundary and resolveDOMRangeOrBoundary with no production caller, and should the strict findDocumentOrShadowRoot carry an assert name now that runtime code calls only resolveDocumentOrShadowRoot?",
+  "dependsOn": [],
+  "last": false,
+  "opportunity": {
+    "score": 4,
+    "reason": "A bounded naming and deletion question on public DOM lookups; runtime code already uses the soft forms."
+  },
+  "owners": [
+    "packages/plitejs/src/dom/plugin/dom-coverage.ts",
+    "packages/plitejs/src/dom/plugin/dom-editor.ts"
+  ],
+  "members": [
+    "packages/plitejs/src/dom/plugin/dom-coverage.ts",
+    "packages/plitejs/test/dom/dom-coverage.ts"
+  ],
+  "consumers": [
+    "content/docs/api/dom.mdx",
+    "content/docs/plite/libraries/plite-react/react-editor.mdx",
+    "content/docs/plite/libraries/plite-react/dom-coverage-boundaries.mdx"
+  ],
+  "proof": [
+    "packages/plitejs/test/dom/dom-coverage.ts",
+    "packages/plitejs/test/react/dom-coverage-boundary-contract.tsx",
+    "packages/plitejs/test/dom/public-surface-contract.ts"
+  ],
+  "evidenceInputs": [
+    "tooling/oxlint/plate-plugin.mjs",
+    "docs/plans/2026-10-18-plite-dom-error-gaps.md"
+  ],
+  "relatedScopes": [
+    "editor-public-naming",
+    "selection"
+  ]
+}

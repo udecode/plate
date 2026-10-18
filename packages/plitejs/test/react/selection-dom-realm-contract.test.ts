@@ -163,7 +163,7 @@ test('WebKit shadow selectionchange uses the editor document realm', async () =>
     value: ambientExecCommand,
   });
 
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
 
   try {
     applyEditableDOMSelectionChange({

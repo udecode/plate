@@ -70,13 +70,7 @@ const syncEditableDOMSelectionToEditor = (
   const root =
     options.editorElement ??
     EDITOR_TO_ELEMENT.get(options.editor) ??
-    (() => {
-      try {
-        return ReactEditor.assertDOMNode(options.editor, options.editor);
-      } catch {
-        return null;
-      }
-    })();
+    ReactEditor.editable(options.editor);
   const mountedRuntime = root
     ? findMountedEditableDOMRuntime(root)
     : getMountedEditableDOMRuntime(options.editor);
@@ -313,7 +307,7 @@ test('nested editable DOM targets are interactive boundaries for containing edit
   childEditor.append(childText);
   outerEditor.append(childEditor);
 
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(outerEditor);
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(outerEditor);
 
   expect(isInteractiveInternalTarget(editor, childText)).toBe(true);
 
@@ -348,8 +342,10 @@ test('failed DOM selection export clears the updating guard', () => {
     },
   });
 
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+    document
+  );
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
   vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(domRange);
   vi.spyOn(domSelection, 'setBaseAndExtent').mockImplementation(() => {
     throw new Error('stale DOM bridge');
@@ -397,7 +393,9 @@ test('model selection export preserves a focused editor control', () => {
     },
   });
 
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+    document
+  );
   const resolveDOMRange = vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot');
   input.focus();
 
@@ -442,8 +440,10 @@ test('forced model export respects a pending Android action', () => {
   domRange.setStart(textNode, 1);
   domRange.collapse(true);
   domSelection.setBaseAndExtent(textNode, 2, textNode, 2);
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+    document
+  );
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
   vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(domRange);
   const runtime = new EditableDOMRuntime({ editor });
   runtime.setRoot(editorElement);
@@ -519,8 +519,10 @@ test('native selection drag keeps DOM selection and scroll under browser ownersh
   domSelection.removeAllRanges();
   domSelection.addRange(domRange);
 
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+    document
+  );
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
   vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(domRange);
   const removeAllRanges = vi.spyOn(domSelection, 'removeAllRanges');
   const addRange = vi.spyOn(domSelection, 'addRange');
@@ -598,8 +600,10 @@ test('scroll-preserving export keeps a scroll made after it', () => {
   domRange.setStart(textNode, 1);
   domRange.collapse(true);
   domSelection.setBaseAndExtent(textNode, 2, textNode, 2);
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+    document
+  );
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
   vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(domRange);
   const runtime = new EditableDOMRuntime({ editor });
   runtime.setRoot(editorElement);
@@ -669,8 +673,10 @@ test('view selection export clears stale native selection ranges', () => {
     )
   );
 
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+    document
+  );
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
 
   const state = Object.assign(createEditableInputControllerState(), {
     isUpdatingSelection: false,
@@ -774,8 +780,10 @@ test('model selection export preserves preferred collapsed DOM point', () => {
     selection,
   });
 
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+    document
+  );
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
   vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockImplementation(() => {
     const fallbackRange = document.createRange();
 
@@ -988,8 +996,8 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
   });
   IS_NODE_MAP_DIRTY.delete(editor);
 
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(root);
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(root);
   const hasSelectableTarget = vi
     .spyOn(ReactEditor, 'hasSelectableTarget')
     .mockReturnValue(true);
@@ -1100,8 +1108,8 @@ test('projected DOM selection import publishes its anchor selection commit', () 
   ELEMENT_TO_NODE.set(editorElement, editor);
   ELEMENT_TO_NODE.set(childEditorElement, childEditor);
 
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(root);
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(root);
   vi.spyOn(ReactEditor, 'resolveRange').mockImplementation(
     (_editor, domRange) => {
       const startContainer =
@@ -1310,8 +1318,10 @@ test('model-owned collapsed programmatic selectionchange skips DOM range resolut
 
   domSelection.setBaseAndExtent(textNode, 1, textNode, 1);
 
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+    document
+  );
   const resolveRange = vi.spyOn(ReactEditor, 'resolveRange');
 
   try {
@@ -1397,8 +1407,10 @@ test('selectionchange ignores detached DOM endpoints before resolving Plite rang
   expect(staleTextNode.isConnected).toBe(false);
   expect(ReactEditor.hasSelectableTarget(editor, staleTextNode)).toBe(false);
 
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(fakeRoot);
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+    fakeRoot
+  );
   const resolveRange = vi.spyOn(ReactEditor, 'resolveRange');
 
   try {
@@ -1484,8 +1496,10 @@ test('selectionchange ignores host-removal collapse outside the editor', () => {
   outsideRange.collapse(true);
   domSelection.addRange(outsideRange);
 
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+    document
+  );
   const resolveRange = vi.spyOn(ReactEditor, 'resolveRange');
 
   try {
@@ -1575,8 +1589,10 @@ test('selectionchange ignores removed shadow host empty native selection', () =>
     getSelection: () => emptySelection,
   } as unknown as Document;
 
-  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
-  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(fakeRoot);
+  vi.spyOn(ReactEditor, 'editable').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+    fakeRoot
+  );
   const resolveRange = vi.spyOn(ReactEditor, 'resolveRange');
 
   try {

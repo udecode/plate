@@ -1,3 +1,5 @@
+import type { Options as RemarkStringifyOptions } from 'remark-stringify';
+
 import { AuthoredPlugin } from '../../authored';
 import {
   BaseParagraphPlugin,
@@ -19,7 +21,9 @@ import {
   BaseFontColorPlugin,
   BaseTextAlignPlugin,
 } from '../../features/basic-styles';
+import { BaseColumnGroupPlugin } from '../../features/layout';
 import { BaseListPlugin } from '../../features/list';
+import { BaseTablePlugin } from '../../features/table';
 import {
   createTestEditor,
   parseTestMarkdown,
@@ -160,6 +164,243 @@ describe('MarkdownPlugin', () => {
     ).toBe('* Item\n');
     expect(serializeHost()).toBe('* Item\n');
     expect(editor.read.schema.identity()).toEqual(identity);
+  });
+
+  describe('clipboard egress', () => {
+    const copyMarkdown = (
+      plugins: readonly BasePluginInput[],
+      slice: ContentSlice
+    ) => {
+      const lifecycleErrors: unknown[] = [];
+      const editor = createEditor({
+        lifecycleErrorSink: (error: unknown) => {
+          lifecycleErrors.push(error);
+        },
+        plugins: [BaseParagraphPlugin, ...plugins, MarkdownPlugin],
+      });
+      const data = new DataTransfer();
+
+      writeDataTransferFragment(editor, data, slice);
+
+      return {
+        editor,
+        lifecycleErrors,
+        markdown: data.getData('text/markdown'),
+      };
+    };
+
+    it('declines a table when no remark plugin writes GFM', () => {
+      const table = {
+        children: [
+          {
+            children: [
+              {
+                children: [{ children: [{ text: 'Cell' }], type: 'paragraph' }],
+                type: 'tableCell',
+              },
+            ],
+            type: 'tableRow',
+          },
+        ],
+        type: 'table',
+      };
+      const { editor, lifecycleErrors, markdown } = copyMarkdown(
+        [BaseTablePlugin],
+        ContentSlice.closed([table])
+      );
+
+      expect(lifecycleErrors).toEqual([]);
+      expect(markdown).toBe('');
+      expect(
+        editor
+          .plugin(MarkdownPlugin)
+          .api.serialize({ document: { children: [table] } })
+      ).toMatchObject({
+        diagnostics: [{ code: 'markdown-unsupported-node', nodeType: 'table' }],
+        ok: false,
+      });
+    });
+
+    it('writes the main content of a slice whose roots the editor does not declare', () => {
+      const { lifecycleErrors, markdown } = copyMarkdown(
+        [],
+        ContentSlice.fromJSON({
+          content: [{ children: [{ text: 'main' }], type: 'paragraph' }],
+          openEnd: 0,
+          openStart: 0,
+          roots: {
+            notes: [{ children: [{ text: 'named' }], type: 'paragraph' }],
+          },
+        })
+      );
+
+      expect(lifecycleErrors).toEqual([]);
+      expect(markdown).toBe('main\n');
+    });
+
+    it('writes a column dragged out of its group', () => {
+      const { lifecycleErrors, markdown } = copyMarkdown(
+        [BaseColumnGroupPlugin],
+        ContentSlice.closed([
+          {
+            children: [{ children: [{ text: 'First' }], type: 'paragraph' }],
+            type: 'column',
+            width: '50%',
+          },
+        ])
+      );
+
+      expect(lifecycleErrors).toEqual([]);
+      expect(markdown).toBe('<column width="50%">First</column>\n');
+    });
+  });
+
+  describe('writers', () => {
+    const serializeTransformed = (
+      children: unknown[],
+      {
+        lossPolicy,
+        remarkPlugins = [],
+        remarkStringifyOptions,
+      }: {
+        lossPolicy?: 'allow';
+        remarkPlugins?: MarkdownSyncPluggable[];
+        remarkStringifyOptions?: RemarkStringifyOptions;
+      } = {}
+    ) => {
+      const replaceTree = () => (tree: { children: unknown[] }) => {
+        tree.children = children;
+      };
+      const editor = createFixtureEditor({
+        plugins: [
+          BaseParagraphPlugin,
+          MarkdownPlugin.configure({
+            initialState: {
+              remarkPlugins: [replaceTree, ...remarkPlugins],
+              remarkStringifyOptions,
+            },
+          }),
+        ],
+      });
+
+      return serializeTestMarkdown(editor, {
+        document: {
+          children: [{ children: [{ text: 'replaced' }], type: 'paragraph' }],
+        },
+        lossPolicy,
+      });
+    };
+    const text = (value: string) => ({ type: 'text', value });
+    const parent = (type: string, children: unknown[]) => ({ children, type });
+
+    it('drops a node no writer handles before writing its neighbors', () => {
+      const tree = (gap: unknown[]) => [
+        parent('paragraph', [
+          text('before'),
+          ...gap,
+          parent('emphasis', [text('kept')]),
+        ]),
+        parent('paragraph', [
+          parent('emphasis', [text('kept')]),
+          ...gap,
+          text('after'),
+        ]),
+        {
+          children: [
+            {
+              children: [parent('paragraph', [text('a')]), ...gap],
+              spread: false,
+              type: 'listItem',
+            },
+            {
+              children: [parent('paragraph', [text('b')])],
+              spread: false,
+              type: 'listItem',
+            },
+          ],
+          ordered: false,
+          spread: false,
+          type: 'list',
+        },
+      ];
+      const dropped = serializeTransformed(tree([{ type: 'mystery' }]), {
+        lossPolicy: 'allow',
+      });
+
+      expect(dropped.data).toBe(serializeTransformed(tree([])).data);
+      expect(dropped.diagnostics).toMatchObject([
+        { code: 'markdown-unsupported-node', nodeType: 'mystery' },
+      ]);
+    });
+
+    it('reports a node a plugin writer reaches after the plugin replaces the writer list', () => {
+      function replaceWriters(this: {
+        data: (key: string, value: unknown) => void;
+      }) {
+        this.data('toMarkdownExtensions', [
+          {
+            handlers: {
+              box: (
+                node: unknown,
+                _parent: unknown,
+                state: {
+                  containerPhrasing: (node: unknown, info: unknown) => string;
+                },
+                info: unknown
+              ) => state.containerPhrasing(node, info),
+            },
+          },
+        ]);
+      }
+
+      expect(
+        serializeTransformed(
+          [
+            parent('paragraph', [
+              parent('box', [text('kept'), { type: 'mystery' }]),
+            ]),
+          ],
+          { lossPolicy: 'allow', remarkPlugins: [replaceWriters] }
+        )
+      ).toMatchObject({
+        data: 'kept\n',
+        diagnostics: [
+          { code: 'markdown-unsupported-node', nodeType: 'mystery' },
+        ],
+        ok: true,
+      });
+    });
+
+    it('writes a hard break that a remark plugin produces', () => {
+      expect(
+        serializeTransformed([
+          {
+            children: [
+              { type: 'text', value: 'before' },
+              { type: 'hardBreak' },
+              { type: 'text', value: 'after' },
+            ],
+            type: 'paragraph',
+          },
+        ])
+      ).toMatchObject({ data: 'before\\\nafter\n', ok: true });
+    });
+
+    it('writes a node whose custom handler writes its own children', () => {
+      const handlers: Record<
+        string,
+        (node: { children: Array<{ value: string }> }) => string
+      > = {
+        box: (node) => node.children.map((child) => child.value).join(''),
+      };
+
+      expect(
+        serializeTransformed(
+          [{ children: [{ type: 'payload', value: 'kept' }], type: 'box' }],
+          { remarkStringifyOptions: { handlers } }
+        )
+      ).toMatchObject({ data: 'kept\n', ok: true });
+    });
   });
 
   it('materializes frozen sync plugin tuples only at the unified boundary', () => {

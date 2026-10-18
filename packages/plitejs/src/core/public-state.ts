@@ -2200,9 +2200,9 @@ export const getNodeTargetRoot = (
 
     if (root) return root;
 
-    const found = findEditorNodeKeyForNode(editor, target);
+    const found = resolveEditorNodeKeyForNode(editor, target);
 
-    return found && getRuntimeTargetRoot(editor, found);
+    return found ? getRuntimeTargetRoot(editor, found) : undefined;
   }
 
   return undefined;
@@ -3041,25 +3041,11 @@ export const getEditorRuntimeElementEntries = (
 export const getEditorRuntimeRootKeys = (editor: Editor): readonly RootKey[] =>
   Object.freeze(Object.keys(getEditorDocumentRoots(editor)));
 
-export const getEditorNodeKeyForNode = (
+/** @internal */
+export const resolveEditorNodeKeyForNode = (
   editor: Editor,
   node: Descendant
-): NodeKey => {
-  const nodeKey = findEditorNodeKeyForNode(editor, node);
-
-  if (nodeKey) return nodeKey;
-
-  throw new Error(
-    `Node key requires a live node in this editor; received ${
-      'text' in node ? 'text' : `"${node.type}" element`
-    }.`
-  );
-};
-
-const findEditorNodeKeyForNode = (
-  editor: Editor,
-  node: Descendant
-): NodeKey | undefined => {
+): NodeKey | null => {
   const owner = getEditorRuntimeOwner(editor);
   let nodeKey = getNodeKeyForNode(node, owner);
   const index = getCurrentRuntimeIndex(owner);
@@ -3087,7 +3073,22 @@ const findEditorNodeKeyForNode = (
     if (resolvesIn(rootIndex)) return getDefined(nodeKey);
   }
 
-  return undefined;
+  return null;
+};
+
+export const getEditorNodeKeyForNode = (
+  editor: Editor,
+  node: Descendant
+): NodeKey => {
+  const nodeKey = resolveEditorNodeKeyForNode(editor, node);
+
+  if (nodeKey) return nodeKey;
+
+  throw new Error(
+    `Node key requires a live node in this editor; received ${
+      'text' in node ? 'text' : `"${node.type}" element`
+    }.`
+  );
 };
 
 export const getPathByNodeKey = (

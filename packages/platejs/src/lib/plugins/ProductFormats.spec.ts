@@ -634,7 +634,9 @@ describe('product formats', () => {
   });
 
   it('rejects array decode output and delegates to the next format', () => {
-    const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = spyOn(globalThis, 'reportError').mockImplementation(
+      () => {}
+    );
     const FallbackPlugin = definePlugin('arrayFallback', {
       dataTransferFormats: defineTransferFormats({
         'application/x-array': {
@@ -845,7 +847,9 @@ describe('product formats', () => {
         DecodeThrowPlugin,
       ],
     });
-    const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = spyOn(globalThis, 'reportError').mockImplementation(
+      () => {}
+    );
 
     try {
       expect(
@@ -1003,7 +1007,9 @@ describe('product formats', () => {
       initialValue,
       plugins: [MalformedPlugin],
     });
-    const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = spyOn(globalThis, 'reportError').mockImplementation(
+      () => {}
+    );
 
     try {
       expect(
@@ -1047,7 +1053,9 @@ describe('product formats', () => {
       initialValue,
       plugins: [MalformedPlugin],
     });
-    const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = spyOn(globalThis, 'reportError').mockImplementation(
+      () => {}
+    );
 
     try {
       const random = createSeededRandom(0xc_04);

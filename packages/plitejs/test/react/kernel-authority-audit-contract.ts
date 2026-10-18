@@ -696,7 +696,6 @@ test('source timing and document focus primitives have named owners', () => {
       allSourceFiles
     )
   ).toEqual({
-    'packages/plitejs/src/react/components/editable-rendered-element.tsx': 1,
     'packages/plitejs/src/react/components/editable-text-flow.tsx': 1,
     'packages/plitejs/src/react/components/plite.tsx': 1,
     'packages/plitejs/src/react/decoration-source.ts': 5,

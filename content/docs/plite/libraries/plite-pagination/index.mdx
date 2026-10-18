@@ -58,7 +58,9 @@ keep shared page settings in editor state without storing derived geometry.
 
 `usePageLayout(editableRef)` reads the snapshot published by that exact
 editable host. It returns `null` before the first valid layout and when
-measurement fails. Sibling paged surfaces keep separate snapshots.
+measurement fails. A measurement failure reaches the editor's
+`lifecycleErrorSink` once, and again only after a measurement succeeds or the
+error message changes. Sibling paged surfaces keep separate snapshots.
 
 ## Explicit fragmentation
 

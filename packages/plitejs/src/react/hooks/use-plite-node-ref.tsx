@@ -3,8 +3,10 @@ import { useCallback, useContext, useRef } from 'react';
 import type {
   Descendant,
   EditorCommitChanged,
+  Element as ElementNode,
   NodeKey,
   Path,
+  Text as TextNode,
   Value,
 } from '../..';
 import { NodeApi } from '../..';
@@ -53,8 +55,17 @@ const EDITOR_TO_TEXT_RENDER_REVISIONS = new WeakMap<
   Map<NodeKey, number>
 >();
 const ELEMENT_TO_PATH = new WeakMap<HTMLElement, Path>();
+export type ElementRenderBind = Readonly<{ node: ElementNode }>;
+
+export const ELEMENT_TO_RENDER_BIND = new WeakMap<
+  HTMLElement,
+  ElementRenderBind
+>();
 
 const pathKey = (path: readonly number[]) => path.join('.');
+
+const isTextNode = (node: Descendant): node is TextNode =>
+  typeof (node as TextNode).text === 'string';
 
 const getMountedFlowElements = (
   map: Map<NodeKey, Set<HTMLElement>> | undefined,
@@ -637,6 +648,13 @@ const bindPliteNodeElement = ({
   keyToElement.set(key, element);
   NODE_TO_ELEMENT.set(editorNode, element);
   ELEMENT_TO_NODE.set(element, editorNode);
+  const renderBind =
+    providedEditorNode && !isTextNode(providedEditorNode)
+      ? { node: providedEditorNode }
+      : null;
+  if (renderBind) {
+    ELEMENT_TO_RENDER_BIND.set(element, renderBind);
+  }
   ELEMENT_TO_EDITOR.set(element, editor);
   syncPliteElementPath({ editor, element, path, nodeKey });
   const cleanupNodeKeyElement = bindNodeKeyElement(editor, nodeKey, element);
@@ -658,6 +676,9 @@ const bindPliteNodeElement = ({
     if (ELEMENT_TO_EDITOR.get(element) === editor) {
       ELEMENT_TO_EDITOR.delete(element);
     }
+    if (renderBind && ELEMENT_TO_RENDER_BIND.get(element) === renderBind) {
+      ELEMENT_TO_RENDER_BIND.delete(element);
+    }
 
     const currentPath = ELEMENT_TO_PATH.get(element);
     if (currentPath) {
@@ -678,9 +699,11 @@ const bindPliteNodeElement = ({
 export const createPliteNodeFlowRootBinding = ({
   editor,
   node,
+  onBindChange,
 }: {
   editor: Editor;
   node: HTMLElement;
+  onBindChange?: (nodeKey: NodeKey) => void;
 }) => {
   const keyToElement = EDITOR_TO_KEY_TO_ELEMENT.get(editor) ?? new WeakMap();
   if (!EDITOR_TO_KEY_TO_ELEMENT.has(editor)) {
@@ -702,6 +725,7 @@ export const createPliteNodeFlowRootBinding = ({
     elements.add(node);
     flowElements.set(nodeKey, elements);
     NODE_TO_ELEMENT.set(editorNode, node);
+    onBindChange?.(nodeKey);
   };
 
   return {
@@ -730,8 +754,33 @@ export const createPliteNodeFlowRootBinding = ({
       if (NODE_TO_ELEMENT.get(editorNode) === node) {
         NODE_TO_ELEMENT.delete(editorNode);
       }
+      onBindChange?.(nodeKey);
     },
   };
+};
+
+export const getPliteNodeElementByKey = (
+  editor: Editor,
+  nodeKey: NodeKey,
+  root: HTMLElement
+) => {
+  const owner = getEditorRuntime(editor);
+  const isOwnElement = (element: HTMLElement) =>
+    ELEMENT_TO_EDITOR.get(element) === editor && root.contains(element);
+
+  for (const element of EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.get(owner)?.get(
+    nodeKey
+  ) ?? []) {
+    if (isOwnElement(element)) return element;
+  }
+
+  for (const element of EDITOR_TO_FLOW_RUNTIME_ID_TO_ELEMENTS.get(owner)?.get(
+    nodeKey
+  ) ?? []) {
+    if (element.isConnected && isOwnElement(element)) return element;
+  }
+
+  return null;
 };
 
 export const isPliteNodeFlowRootBound = (
@@ -792,12 +841,14 @@ const usePliteNodeRefBinding = (
         providedEditorNode,
         nodeKey,
       });
+      if (!detachNode) return;
+
+      editableRuntime?.renderContract.noteBind(nodeKey);
       cleanupRef.current = () => {
-        detachNode?.();
+        detachNode();
+        editableRuntime?.renderContract.noteBind(nodeKey);
       };
-      if (detachNode) {
-        editableRuntime?.requestSelectionExportAfterDOMCommit();
-      }
+      editableRuntime?.requestSelectionExportAfterDOMCommit();
     },
     [
       cleanupBinding,

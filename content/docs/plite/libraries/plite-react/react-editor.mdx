@@ -198,7 +198,13 @@ range is not currently mappable.
 
 #### `editor.api.dom.findDocumentOrShadowRoot(): Document | ShadowRoot`
 
-Return the document or shadow root that owns the editor.
+Return the document or shadow root that owns the editor. Throws when the editor
+has no mounted root.
+
+#### `editor.api.dom.resolveDocumentOrShadowRoot(): Document | ShadowRoot | null`
+
+Resolve the document or shadow root that owns the editor. Returns `null` when
+the editor has no mounted root.
 
 #### `editor.api.dom.getWindow(): Window`
 

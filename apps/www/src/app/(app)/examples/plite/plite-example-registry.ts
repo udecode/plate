@@ -61,6 +61,7 @@ export const EXAMPLE_NAMES_AND_PATHS = [
   ['Plate Schema Descriptors', 'plate-schema-descriptors'],
   ['Plain Text', 'plaintext'],
   ['Read-only', 'read-only'],
+  ['Render Contract', 'render-contract'],
   ['Rendering in iframes', 'iframe'],
   ['Rich Text', 'richtext'],
   ['Schema Reconfiguration', 'schema-reconfiguration'],
@@ -84,6 +85,7 @@ export const HIDDEN_EXAMPLES = [
   'plate-dnd-cross-editor',
   'plate-schema-descriptors',
   'persistent-annotation-anchors',
+  'render-contract',
   'schema-reconfiguration',
 ] as const;
 

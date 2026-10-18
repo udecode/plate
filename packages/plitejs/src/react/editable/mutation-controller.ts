@@ -781,7 +781,10 @@ export const focusEditableRepairTarget = (editor: ReactRuntimeEditor) => {
     const viewSelection = readPliteViewSelection(editor);
 
     if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
-      ReactEditor.assertDOMNode(editor, editor).focus({ preventScroll: true });
+      const editorElement = ReactEditor.editable(editor);
+
+      if (!editorElement) return false;
+      editorElement.focus({ preventScroll: true });
       return true;
     }
 

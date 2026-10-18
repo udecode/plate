@@ -301,8 +301,8 @@ const editor = createEditor({
 ```
 
 A format error carries `key`, `mimeType`, `pluginName`, and `phase`
-(`'accept'`, `'decode'`, or `'encode'`). Without a sink, Plate logs it with
-`console.error`.
+(`'accept'`, `'decode'`, or `'encode'`). Without a sink, Plate sends it to
+`reportError`, or to `console.error` where `reportError` does not exist.
 
 ### Paste order
 

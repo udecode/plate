@@ -11,7 +11,7 @@ import { countCoreWork } from '../work';
 import { cloneFrozen, cloneJson, type JsonRecord } from './json';
 import { lazyRootOf, type Roots } from './lazy-root';
 import {
-  assertNode,
+  assertJsonNode,
   CLAIMED_PREPARED_SOURCES,
   PreparedTokenSlice,
   PreparedTokenSliceStructureError,
@@ -230,7 +230,7 @@ export const decodeNodes = (
         ? { ...frame.props, text: frame.text.join('') }
         : { ...frame.props, children: frame.children };
 
-    assertNode(decodedNode);
+    assertJsonNode(decodedNode);
 
     const node =
       frame.kind === 'element'

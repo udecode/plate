@@ -72,6 +72,14 @@ update groups, and optional runtime APIs.
 `maxLength` limits user-facing text, fragment, and node insertions. Adapter-owned
 canonical change application remains outside user insertion policy.
 
+`lifecycleErrorSink` receives errors that Plite catches so they cannot stop the
+editor. Plugin lifecycle observers, history replays and their handlers,
+data-transfer formats, external text adapters and pagination throw into it, and
+the `renderElement` check reports into it. With no sink, each error goes to
+`reportError` as one `Error` whose message names its source, with the original
+error as `cause`. Where `reportError` does not exist, it goes to
+`console.error`.
+
 ## Reading state
 
 #### `editor.read.<group>.<method>()`

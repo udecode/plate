@@ -1633,10 +1633,14 @@ export const createAuthoredPlugin = (
         return update !== null && state.passThrough.has(update);
       };
 
+      let framed = false;
+
       beforePublish(() => {
-        ledger.prepare(editor.read.value());
+        ({ framed } = ledger.prepare(editor.read.value()));
       });
-      afterPublish(() => prepareCommandFrame(editor));
+      afterPublish(() => {
+        if (framed) prepareCommandFrame(editor);
+      });
       onCleanup(
         registerEditorDraftGuard(editor, (value) => ledger.check(value))
       );

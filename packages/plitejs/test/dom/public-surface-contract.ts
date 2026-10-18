@@ -320,6 +320,7 @@ describe('DOM public surface contract', () => {
         'resolveDOMNode',
         'resolveDOMPoint',
         'resolveDOMRange',
+        'resolveDocumentOrShadowRoot',
         'resolveDropTarget',
         'resolveEventRange',
         'resolvePath',

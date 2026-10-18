@@ -1339,6 +1339,7 @@ const reconcileTextFlow = ({
   buckets,
   editor,
   entries,
+  onBindChange,
   root,
   requireDOMMatch,
   state,
@@ -1346,6 +1347,7 @@ const reconcileTextFlow = ({
   buckets: ReadonlyArray<readonly DecorationSlice[]>;
   editor: ReturnType<typeof useEditorContext>;
   entries: readonly EditableTextFlowEntry[];
+  onBindChange?: (nodeKey: NodeKey) => void;
   root: HTMLSpanElement;
   requireDOMMatch: boolean;
   state: TextFlowDOMState;
@@ -1359,7 +1361,7 @@ const reconcileTextFlow = ({
   const binding =
     state.binding?.node === root
       ? state.binding
-      : createPliteNodeFlowRootBinding({ editor, node: root });
+      : createPliteNodeFlowRootBinding({ editor, node: root, onBindChange });
 
   state.binding = binding;
   const initializing = state.records.length === 0;
@@ -1808,6 +1810,7 @@ export const EditableTextFlow = ({
           buckets,
           editor,
           entries: liveEntries,
+          onBindChange: editableRuntime?.renderContract.noteBind,
           requireDOMMatch,
           root,
           state: stateRef.current,

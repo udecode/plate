@@ -118,6 +118,19 @@ Spread `attributes` on the top-level DOM element. Native renderers render
 `children` or `slots.children()`; external renderers use only
 `slots.externalText(...)` for that element's text.
 
+A native renderer that leaves an editable child without DOM, and without a
+[DOM coverage boundary](#dom-coverage-boundaries) over it, breaks selection in
+that child. Plite reports each such child once to the editor's
+`lifecycleErrorSink` with `source: "render-element"`. In development it reports
+after the element renders, with `phase: "commit"`. In every build it reports
+when a commit leaves the focused editor's selection in that child, with
+`phase: "selection-export"`. A child that mounts within two animation frames,
+such as one portaled into an iframe that has already loaded, does not report.
+A child that waits longer, such as one behind a Suspense fallback or one
+portaled into an iframe that is still loading, reports unless a boundary covers
+it while it loads, as
+[Children that load](dom-coverage-boundaries#children-that-load) shows.
+
 ## External text views
 
 Use `slots.externalText({ adapter, ariaLabel, config? })` for a non-void block

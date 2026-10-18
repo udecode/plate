@@ -23,6 +23,7 @@ import {
 } from '../utils/drag-session';
 import { publishDropIndicator } from '../utils/drop-indicator';
 import { usesAppleDOMHotkeys } from '../utils/environment';
+import { resolveLastEditorWindow } from '../utils/weak-maps';
 import { writeDOMSelectionData } from './dom-clipboard-runtime';
 import type { DOMApi } from './dom-editor';
 import { findEditorDOMRootRuntime } from './dom-root-runtime';
@@ -252,9 +253,8 @@ const probeAt = (
   if (!box) return null;
 
   let host =
-    asDOM(editor)
-      .getWindow()
-      .document.elementFromPoint(box.left + box.width / 2, input.clientY)
+    root.ownerDocument
+      .elementFromPoint(box.left + box.width / 2, input.clientY)
       ?.closest(ELEMENT_HOST) ?? null;
 
   while (host && host !== level.host && root.contains(host)) {
@@ -576,7 +576,9 @@ export const resolveDOMDropTarget = (
   input: DOMDropTargetInput,
   options: DOMDropTargetOptions = {}
 ): DOMDropTarget | null => {
-  const { document } = asDOM(editor).getWindow();
+  const document = resolveLastEditorWindow(editor)?.document;
+
+  if (!document) return null;
   const session = readDragSession(document, input.dataTransfer ?? null);
   const copy = options.copy ?? (session?.copyOnly || copyIntentOf(input));
   const from = options.from ?? session?.sourceEditor;
@@ -635,7 +637,7 @@ export const resolveDOMDropTarget = (
   const hit =
     input.target && 'nodeType' in input.target
       ? (input.target as globalThis.Node)
-      : dom.getWindow().document.elementFromPoint(input.clientX, input.clientY);
+      : document.elementFromPoint(input.clientX, input.clientY);
 
   if (!root || !hit || !root.contains(hit)) return null;
 
@@ -910,7 +912,7 @@ export const startDOMDrag = (
   const session = beginDragSession({
     copyOnly,
     dataTransfer,
-    document: dom.getWindow().document,
+    document: hosts[0].ownerDocument,
     draggedBlock: true,
     hosts,
     originX: event.clientX,

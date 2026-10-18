@@ -633,16 +633,18 @@ export class ReviewLedger {
   }
 
   /** Build what keys read, so the first key derives only its own edit. */
-  prepare(value: JsonEditorValue) {
+  prepare(value: JsonEditorValue): Readonly<{ framed: boolean }> {
     this.check(value);
     primeInsertions(value);
     this.book.sync(value);
     try {
       this.frame(value);
+      return { framed: true };
     } catch (error) {
       // A document whose accepted form the schema refuses still loads; the
       // command or decision that reads that form reports the refusal.
       if (!(error instanceof EditorSchemaValidationError)) throw error;
+      return { framed: false };
     }
   }
 

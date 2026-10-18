@@ -1,7 +1,7 @@
-import type { Root, RootContent as MdRootContent } from 'mdast';
+import type { Parent, Root, RootContent as MdRootContent } from 'mdast';
 import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
-import { type Plugin as UnifiedPlugin, unified } from 'unified';
+import { type Processor, type Plugin as UnifiedPlugin, unified } from 'unified';
 
 import {
   ContentSlice,
@@ -353,10 +353,19 @@ export const serializeMdWithRuntime = (
     diagnostics
   );
   const { remarkPlugins, value } = mergedOptions;
+  const unwritable: MarkdownWriterExtension & {
+    handlers: Record<string, (node: { type: string }) => string>;
+  } = { handlers: {} };
   const toRemarkProcessor = unified()
     .use(remarkMarkdownTagWriter)
     .use(remarkPlugins ?? [])
     .use(remarkEscapeDollars)
+    .use(function remarkUnwritableNodeWriter(this: Processor) {
+      const data = this.data() as { toMarkdownExtensions?: unknown[] };
+
+      // After every plugin, so a plugin that replaces the list still gets it.
+      (data.toMarkdownExtensions ??= []).push(unwritable);
+    })
     .use(remarkStringify, {
       emphasis: '_',
       resourceLink: false,
@@ -386,7 +395,124 @@ export const serializeMdWithRuntime = (
     })
   );
 
-  return toRemarkProcessor.stringify(toRemarkProcessor.runSync(tree));
+  const transformed = toRemarkProcessor.runSync(tree);
+  const configuredWriters = new Set<string>();
+
+  [
+    ...(toRemarkProcessor.data('toMarkdownExtensions') ?? []),
+    toRemarkProcessor.data('settings'),
+    mergedOptions.remarkStringifyOptions,
+  ].forEach((extension) =>
+    addMarkdownWriterKinds(configuredWriters, extension)
+  );
+  const writable = new Set([...COMMONMARK_WRITER_KINDS, ...configuredWriters]);
+  const reportUnwritable = (nodeType: string) =>
+    diagnostics.report({
+      action: 'dropped',
+      code: 'markdown-unsupported-node',
+      impact: 'lossy',
+      message: `Markdown cannot write "${nodeType}": no configured remark plugin serializes it.`,
+      nodeType,
+      owner: 'markdown',
+      phase: 'serialize',
+      severity: mergedOptions.lossPolicy === 'allow' ? 'warning' : 'error',
+    });
+
+  // mdast-util-to-markdown's own writers write every child and read its
+  // neighbors' output, so a child no writer handles leaves the tree before
+  // they run. A configured writer may write its children itself, so a node
+  // under one reports only when that writer reaches it.
+  if (!configuredWriters.has('root')) {
+    dropUnwritableMarkdownNodes(
+      transformed,
+      writable,
+      configuredWriters,
+      reportUnwritable
+    );
+  }
+  addUnwritableMarkdownKinds(transformed, writable, (nodeType) => {
+    unwritable.handlers[nodeType] = (node) => {
+      reportUnwritable(node.type);
+
+      return '';
+    };
+  });
+
+  return toRemarkProcessor.stringify(transformed);
+};
+
+// mdast-util-to-markdown writes these CommonMark kinds itself and throws on any
+// other kind no remark plugin registers a handler for.
+const COMMONMARK_WRITER_KINDS = [
+  'blockquote',
+  'break',
+  'code',
+  'definition',
+  'emphasis',
+  'hardBreak',
+  'heading',
+  'html',
+  'image',
+  'imageReference',
+  'inlineCode',
+  'link',
+  'linkReference',
+  'list',
+  'listItem',
+  'paragraph',
+  'root',
+  'strong',
+  'text',
+  'thematicBreak',
+];
+
+type MarkdownWriterExtension = Readonly<{
+  extensions?: readonly MarkdownWriterExtension[] | null;
+  handlers?: object | null;
+}>;
+
+const addMarkdownWriterKinds = (
+  kinds: Set<string>,
+  extension: MarkdownWriterExtension | null | undefined
+) => {
+  extension?.extensions?.forEach((nested) =>
+    addMarkdownWriterKinds(kinds, nested)
+  );
+  Object.keys(extension?.handlers ?? {}).forEach((kind) => kinds.add(kind));
+};
+
+const dropUnwritableMarkdownNodes = (
+  parent: { children: Parent['children'] },
+  writable: ReadonlySet<string>,
+  configuredWriters: ReadonlySet<string>,
+  report: (nodeType: string) => void
+) => {
+  parent.children = parent.children.filter((child) => {
+    if (!writable.has(child.type)) {
+      report(child.type);
+      return false;
+    }
+    if ('children' in child && !configuredWriters.has(child.type)) {
+      dropUnwritableMarkdownNodes(child, writable, configuredWriters, report);
+    }
+    return true;
+  });
+};
+
+const addUnwritableMarkdownKinds = (
+  parent: { children: Parent['children'] },
+  known: Set<string>,
+  add: (nodeType: string) => void
+) => {
+  for (const child of parent.children) {
+    if (!known.has(child.type)) {
+      known.add(child.type);
+      add(child.type);
+    }
+    if ('children' in child) {
+      addUnwritableMarkdownKinds(child, known, add);
+    }
+  }
 };
 
 const markdownParseLimits = (options: MarkdownParsePolicy) =>
@@ -1089,6 +1215,30 @@ export const serializeMarkdownWithRuntime = (
         severity: 'warning',
       });
     });
+
+  return finishMarkdownSerialize(runtime, options, document, diagnostics);
+};
+
+export const serializeMarkdownSliceWithRuntime = (
+  runtime: MarkdownRuntime,
+  children: Element[]
+): MarkdownSerializeResult => {
+  runtime.state.schema.assertFragment(children);
+
+  return finishMarkdownSerialize(
+    runtime,
+    {},
+    { children },
+    new MarkdownDiagnostics()
+  );
+};
+
+const finishMarkdownSerialize = (
+  runtime: MarkdownRuntime,
+  options: MarkdownSerializePolicy,
+  document: EditorDocumentValue,
+  diagnostics: MarkdownDiagnostics
+): MarkdownSerializeResult => {
   const data = serializeMdWithRuntime(runtime, options, document, diagnostics);
   const failure = diagnostics.failure();
 

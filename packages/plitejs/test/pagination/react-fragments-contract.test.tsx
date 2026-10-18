@@ -1010,6 +1010,48 @@ describe('PagedEditable', () => {
     ).toEqual([]);
   });
 
+  it('reports a measurement failure once until measurement recovers', async () => {
+    const reported: unknown[] = [];
+    const quote = {
+      children: [paragraph('Quoted')],
+      type: 'blockquote',
+    };
+    const editor = createEditor({
+      initialValue: [paragraph('First'), quote],
+      lifecycleErrorSink(error) {
+        if ('source' in error && error.source === 'pagination') {
+          reported.push(error.cause);
+        }
+      },
+    });
+
+    render(
+      <EditorRoot editor={editor}>
+        <PagedEditable engine={engine} page={page} />
+      </EditorRoot>
+    );
+    for (const text of ['a', 'b', 'c']) {
+      await act(async () => {
+        editor.update.text.insert(text, { at: { offset: 0, path: [1, 0, 0] } });
+      });
+    }
+
+    expect(reported).toEqual([
+      new Error(
+        'Pagination requires an explicit fragmentation plan for blockquote at [1].'
+      ),
+    ]);
+
+    await act(async () => {
+      editor.update.nodes.remove({ at: [1] });
+    });
+    await act(async () => {
+      editor.update.nodes.insert(quote, { at: [1] });
+    });
+
+    expect(reported).toHaveLength(2);
+  });
+
   it('shares one font listener owner and invalidates each distinct engine once', async () => {
     const listeners = new Map<string, Set<() => void>>();
     let added = 0;

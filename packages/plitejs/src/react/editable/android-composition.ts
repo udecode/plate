@@ -247,7 +247,9 @@ const captureBase = (
   const lines: AndroidCompositionLine[] = [];
   const segments: Segment[] = [];
   const nodes = new Set<Text>();
-  const root = ReactEditor.assertDOMNode(editor, editor);
+  const root = ReactEditor.editable(editor);
+
+  if (!root) return null;
   let text = '';
 
   for (const [, path] of entries) {
@@ -407,7 +409,9 @@ const listenForLeave = (
   lines: AndroidCompositionBase['lines'],
   end: (reason: AndroidCompositionEndReason) => void
 ) => {
-  const root = ReactEditor.assertDOMNode(editor, editor);
+  const root = ReactEditor.editable(editor);
+
+  if (!root) return () => {};
   const document = root.ownerDocument;
   const onSelectionChange = () => {
     const selection = document.getSelection();

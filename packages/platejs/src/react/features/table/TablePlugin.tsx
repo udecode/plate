@@ -408,9 +408,10 @@ export const TablePlugin = toReactPlugin(BaseTablePlugin, {
       return true;
     },
     mouseUp: ({ editor }) => {
-      const domSelection = getSelection(
-        editor.api.dom.findDocumentOrShadowRoot()
-      );
+      const root = editor.api.dom.resolveDocumentOrShadowRoot();
+
+      if (!root) return undefined;
+      const domSelection = getSelection(root);
 
       if (!domSelection || domSelection.rangeCount === 0) return undefined;
 

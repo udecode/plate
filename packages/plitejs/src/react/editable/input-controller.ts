@@ -157,13 +157,9 @@ export const getNestedEditableDOMSelectionRoot = (
 };
 
 const getEditorDOMElement = (editor: ReactRuntimeEditor) => {
-  try {
-    const node = ReactEditor.assertDOMNode(editor, editor);
+  const node = ReactEditor.editable(editor);
 
-    return node instanceof HTMLElement ? node : null;
-  } catch {
-    return null;
-  }
+  return node instanceof HTMLElement ? node : null;
 };
 
 export const isInteractiveInternalTarget = (

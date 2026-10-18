@@ -99,7 +99,9 @@ page still fragments.
 The app owns these sizes. Without a plan, a void block such as an image
 measures as one empty line, and a top-level block whose children are other
 blocks makes measurement fail; the editor stays editable and renders without
-pages until the document measures again.
+pages until the document measures again. The failure reaches the editor's
+`lifecycleErrorSink` once, and again only after a measurement succeeds or the
+error message changes.
 
 Use `usePageLayoutFragments()` inside an element renderer to read the current
 element's mounted page placements. The hook derives the element path from the

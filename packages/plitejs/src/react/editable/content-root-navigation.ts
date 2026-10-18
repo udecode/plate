@@ -11,6 +11,7 @@ import {
   SelectionApi,
   type RootKey,
 } from '../..';
+import { resolveLastEditorWindow } from '../../dom/internal';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { readRootChildren } from '../root-key';
 import {
@@ -165,21 +166,7 @@ const collapseNativeSelectionForProjectedSelection = (
     return;
   }
 
-  const domApi = editor.api.dom;
-
-  if (!domApi) {
-    return;
-  }
-
-  let document: Document;
-
-  try {
-    ({ document } = domApi.getWindow());
-  } catch {
-    return;
-  }
-
-  const domSelection = document.getSelection();
+  const domSelection = resolveLastEditorWindow(editor)?.document.getSelection();
 
   if (!domSelection) {
     return;

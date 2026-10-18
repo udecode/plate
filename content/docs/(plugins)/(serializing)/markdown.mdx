@@ -512,7 +512,7 @@ reportWarnings(result.diagnostics);
 
 | Code | Severity | Reports |
 | --- | --- | --- |
-| `markdown-unsupported-node` | Warning when `lossless` or when the content stays; other `lossy` follows `lossPolicy` | Content no mapping accepts, refused content, or nodes dropped on export (`lossy`). Raw HTML kept as text, HTML comments and removed `<block>` wrappers are `lossless`. A [table cell](#table-cells)'s folded paragraph boundary or collapsed block keeps its content and warns. |
+| `markdown-unsupported-node` | Warning when `lossless` or when the content stays; other `lossy` follows `lossPolicy` | Content no mapping accepts, refused content, or nodes dropped on export (`lossy`), such as a table when no remark plugin, like `remark-gfm`, writes tables. Raw HTML kept as text, HTML comments and removed `<block>` wrappers are `lossless`. A [table cell](#table-cells)'s folded paragraph boundary or collapsed block keeps its content and warns. |
 | `markdown-unsafe-content` | Warning when `lossless`; lossy follows `lossPolicy` | A removed link or image destination. |
 | `markdown-tag-repair` | Warning | An `unclosed`, `unmatched`, or `misplaced` registered tag. |
 | `markdown-property-omitted` | Warning | A property or mark Markdown cannot carry on export, such as a paragraph's `textAlign`, or an invalid tag attribute value on import. |

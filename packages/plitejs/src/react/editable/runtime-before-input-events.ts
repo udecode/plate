@@ -496,9 +496,10 @@ export const useRuntimeBeforeInputEvents = ({
           return;
         }
         const el = profilePliteReactDuration('beforeinput-root-node', () =>
-          ReactEditor.assertDOMNode(editor, editor)
+          ReactEditor.editable(editor)
         );
         if (
+          !el ||
           profilePliteReactDuration('beforeinput-nested-editable-target', () =>
             isNestedEditableDOMTarget(el, event.target)
           )

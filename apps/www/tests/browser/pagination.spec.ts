@@ -46,6 +46,7 @@ const demoTest = (
     harness: BrowserEditorHarness;
     page: Page;
     root: Locator;
+    runtimeErrors: ReturnType<typeof recordBrowserRuntimeErrors>;
     testInfo: TestInfo;
   }) => Promise<void>
 ) =>
@@ -57,7 +58,7 @@ const demoTest = (
     try {
       const { harness, root } = await openDemo(page);
 
-      await body({ harness, page, root, testInfo });
+      await body({ harness, page, root, runtimeErrors, testInfo });
       runtimeErrors.assertNone();
     } finally {
       runtimeErrors.stop();
@@ -503,8 +504,8 @@ test.describe('pagination demo', () => {
   );
 
   demoTest(
-    'stays editable without pages after a markdown blockquote the fragmentation does not describe',
-    async ({ page, root }) => {
+    'stays editable without pages and reports once after a markdown blockquote the fragmentation does not describe',
+    async ({ page, root, runtimeErrors }) => {
       const block = await readBlock(
         root,
         await blockPathByText(root, 'A table shorter')
@@ -528,6 +529,12 @@ test.describe('pagination demo', () => {
           runs: host.querySelectorAll('[data-pagination-line]').length,
         }))
       ).toEqual({ pages: 0, placed: 0, runs: 0 });
+      expect(runtimeErrors.errors).toEqual([
+        expect.stringContaining(
+          'Pagination requires an explicit fragmentation plan for blockquote'
+        ),
+      ]);
+      runtimeErrors.reset();
     }
   );
 

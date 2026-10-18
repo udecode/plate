@@ -468,7 +468,7 @@ reportWarnings(result.diagnostics);
 
 | Code | Severity | 报告内容 |
 | --- | --- | --- |
-| `markdown-unsupported-node` | `lossless` 或内容保留时为 warning；其他 `lossy` 遵循 `lossPolicy` | 没有 mapping 接受的内容、被拒绝的内容，或导出时丢弃的 node（`lossy`）。保留为文本的 raw HTML、HTML comment 与被移除的 `<block>` wrapper 为 `lossless`。[Table cell](#table-cell) 中折叠的 paragraph 边界或被折叠的 block 保留内容并报告 warning。 |
+| `markdown-unsupported-node` | `lossless` 或内容保留时为 warning；其他 `lossy` 遵循 `lossPolicy` | 没有 mapping 接受的内容、被拒绝的内容，或导出时丢弃的 node（`lossy`），例如没有 remark plugin（如 `remark-gfm`）写出 table 时的 table。保留为文本的 raw HTML、HTML comment 与被移除的 `<block>` wrapper 为 `lossless`。[Table cell](#table-cell) 中折叠的 paragraph 边界或被折叠的 block 保留内容并报告 warning。 |
 | `markdown-unsafe-content` | `lossless` 时为 warning；`lossy` 遵循 `lossPolicy` | 被移除的 link 或 image destination。 |
 | `markdown-tag-repair` | Warning | `unclosed`、`unmatched` 或 `misplaced` 的注册 tag。 |
 | `markdown-property-omitted` | Warning | 导出时 Markdown 无法携带的 property 或 mark（例如 paragraph 的 `textAlign`），或导入时无效的 tag attribute value。 |

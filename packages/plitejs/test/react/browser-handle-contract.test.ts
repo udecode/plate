@@ -484,7 +484,7 @@ test('browser handle importDOMSelection clears projected view selection', () => 
   expect(element[BROWSER_HANDLE_KEY]?.getViewSelection()).not.toBeNull();
 
   expect(() => element[BROWSER_HANDLE_KEY]?.importDOMSelection()).toThrow(
-    /Cannot resolve a DOM node/
+    /selection import requires event lifecycle frame/
   );
 
   expect(element[BROWSER_HANDLE_KEY]?.getViewSelection()).toBeNull();

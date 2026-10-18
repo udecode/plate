@@ -9,12 +9,14 @@ import {
   ElementApi,
 } from 'plitejs';
 
+import { setEditorFocused } from '../../src/core/public-state';
 import { dom } from '../../src/dom/index';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_KEY_TO_ELEMENT,
   EDITOR_TO_WINDOW,
   ELEMENT_TO_NODE,
+  IS_FOCUSED,
   IS_NODE_MAP_DIRTY,
   NODE_TO_ELEMENT,
   NODE_TO_INDEX,
@@ -453,6 +455,64 @@ describe('plite-dom bridge', () => {
     expect(() => editor.api.dom.assertDOMRange(range)).toThrow();
     expect(editor.api.dom.resolveDOMRange(range)).toBeNull();
     expect(editor.api.dom.resolvePath({ text: 'detached' })).toBeNull();
+  });
+
+  it('blurs an unmounted editor by clearing its focused state', () => {
+    const editor = createParagraphEditor();
+
+    IS_FOCUSED.set(editor, true);
+    setEditorFocused(editor, true);
+    editor.api.dom.blur();
+
+    expect([
+      editor.api.dom.isFocused(),
+      editor.read((state) => state.view.isFocused()),
+    ]).toEqual([false, false]);
+  });
+
+  it('deselects an unmounted editor by clearing its model selection', () => {
+    const editor = createParagraphEditor();
+
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 5 },
+      });
+    });
+    editor.api.dom.deselect();
+
+    expect(editor.read((state) => state.selection())).toBeNull();
+  });
+
+  it('resolves no drop target on an unmounted editor', () => {
+    const editor = createParagraphEditor();
+
+    expect(
+      editor.api.dom.resolveDropTarget({ clientX: 0, clientY: 0 })
+    ).toBeNull();
+  });
+
+  it('resolves a leaf element point on a mounted root before its window is recorded', () => {
+    withDom(({ document }) => {
+      const editor = createParagraphEditor();
+      const root = mountEditorRoot(editor, document);
+      const owner = document.createElement('span');
+      const leaf = document.createElement('span');
+      const string = document.createElement('span');
+
+      leaf.setAttribute('data-editor-leaf', 'true');
+      string.setAttribute('data-editor-string', 'true');
+      string.append('alpha beta');
+      leaf.append(string);
+      owner.append(leaf);
+      root.append(owner);
+      bindTextOwner(editor, [0, 0], owner);
+      EDITOR_TO_WINDOW.delete(editor);
+
+      expect(
+        editor.api.dom.resolvePoint([string, 1], { exactMatch: true })
+      ).toEqual({ path: [0, 0], offset: 10 });
+    });
   });
 
   it('does not materialize node identities for a missing or disconnected DOM root', () => {

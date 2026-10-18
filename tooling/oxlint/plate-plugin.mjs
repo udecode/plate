@@ -1141,6 +1141,91 @@ const noBrandedValue = {
   },
 };
 
+const STRICT_DOM_LOOKUP_RESOLVERS = {
+  assertDOMNode:
+    'resolveDOMNode(node), or editable() for the editor root, and handle null',
+  assertDOMPoint: 'resolveDOMPoint(point) and handle null',
+  assertDOMRange: 'resolveDOMRange(range) and handle null',
+  assertEventRange: 'resolveEventRange(event) and handle null',
+  assertNode: 'resolveNode(domNode) and handle null',
+  assertPath: 'resolvePath(node) and handle null',
+  assertPoint: 'resolvePoint(domPoint, options) and handle null',
+  assertRange: 'resolveRange(domRange, options) and handle null',
+  findDocumentOrShadowRoot: 'resolveDocumentOrShadowRoot() and handle null',
+  findKey:
+    'resolveDOMNode(node) when it needs the DOM node, or editor.key(path) when it needs the node key, and handle null',
+};
+
+const isStrictLookup = (name) =>
+  Object.hasOwn(STRICT_DOM_LOOKUP_RESOLVERS, name ?? '');
+
+const staticKeyName = (key, computed) => {
+  if (!computed) return key.name ?? key.value;
+  if (typeof key.value === 'string') return key.value;
+  return key.type === 'TemplateLiteral' && key.expressions.length === 0
+    ? key.quasis[0].value.cooked
+    : null;
+};
+
+const staticPropertyName = (property) =>
+  property.type === 'Property'
+    ? staticKeyName(property.key, property.computed)
+    : null;
+
+const strictNamedForwarderCallee = (property) => {
+  const body = isFunction(property.value) ? property.value.body : null;
+  return isStrictLookup(staticPropertyName(property)) &&
+    body?.type === 'CallExpression'
+    ? body.callee
+    : null;
+};
+
+const noStrictDOMLookup = {
+  create(context) {
+    const forwarders = new Set();
+    const report = (node, name) =>
+      context.report({
+        data: { resolver: STRICT_DOM_LOOKUP_RESOLVERS[name] },
+        messageId: 'strict',
+        node,
+      });
+
+    return {
+      CallExpression(node) {
+        const { callee } = node;
+        if (callee.type === 'Identifier' && isStrictLookup(callee.name)) {
+          report(callee, callee.name);
+        }
+      },
+      MemberExpression(node) {
+        const name = staticKeyName(node.property, node.computed);
+        if (isStrictLookup(name) && !forwarders.has(node)) report(node, name);
+      },
+      ObjectPattern(node) {
+        for (const property of node.properties) {
+          const name = staticPropertyName(property);
+          if (isStrictLookup(name)) report(property, name);
+        }
+      },
+      Property(node) {
+        const callee = strictNamedForwarderCallee(node);
+        if (callee) forwarders.add(callee);
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'Plite and Plate runtime code reads the DOM through a lookup that returns null, never a strict one that throws.',
+    },
+    messages: {
+      strict:
+        'Plite and Plate runtime code never calls a strict DOM lookup, which throws while DOM is missing. Use {{resolver}}.',
+    },
+    type: 'problem',
+  },
+};
+
 export { noAsNever };
 
 export default {
@@ -1183,6 +1268,7 @@ export default {
       'no-source-text-test',
       noSourceTextTest
     ),
+    'no-strict-dom-lookup': noStrictDOMLookup,
     'no-structural-mark-copy': withBaseline(
       'no-structural-mark-copy',
       noStructuralMarkCopy

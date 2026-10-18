@@ -381,6 +381,10 @@ test("preserves exact product codec slices across priority, fallback, errors, co
       .getByRole("button", { name: "Import throwing codec slice" })
       .click();
     await expect.poll(() => editor.get.modelText()).toBe("fallback:throw");
+    expect(runtimeErrors.errors).toEqual([
+      expect.stringContaining("Expected Plate codec browser proof failure."),
+    ]);
+    runtimeErrors.reset();
 
     await page
       .getByRole("button", { name: "Use replacement codec state" })

@@ -291,17 +291,16 @@ export const shouldUseModelBackedSelectAllSelection = ({
     return true;
   }
 
-  try {
-    const editorElement = ReactEditor.assertDOMNode(editor, editor);
+  const editorElement = ReactEditor.editable(editor);
 
-    return shouldKeepFullDocumentSelectionModelBacked({
+  return (
+    !!editorElement &&
+    shouldKeepFullDocumentSelectionModelBacked({
       editor,
       editorElement,
       selection,
-    });
-  } catch {
-    return false;
-  }
+    })
+  );
 };
 
 export type EditableDOMSelectionSyncOptions = {
@@ -476,16 +475,15 @@ export const syncEditorSelectionFromDOM = ({
     return;
   }
 
-  const root = ReactEditor.findDocumentOrShadowRoot(editor);
-  const domSelection = getSelection(root);
+  const editorElement = ReactEditor.editable(editor);
+  const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+  const domSelection = root ? getSelection(root) : null;
 
-  if (!domSelection || domSelection.rangeCount === 0) {
+  if (!editorElement || !domSelection || domSelection.rangeCount === 0) {
     return;
   }
 
   const { anchorNode, focusNode } = domSelection;
-
-  const editorElement = ReactEditor.assertDOMNode(editor, editor);
 
   if (
     isNestedEditableDOMTarget(editorElement, anchorNode) ||
@@ -937,14 +935,12 @@ export const resolveEditableImplicitTarget = ({
   const preferModelSelection =
     isEditableModelSelectionPreferred(inputController);
 
-  if (
-    !ReactEditor.editable(editor) ||
-    inputController.state.isReplayingAndroidCommand
-  ) {
+  const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+
+  if (!root || inputController.state.isReplayingAndroidCommand) {
     return request.fallback;
   }
 
-  const root = ReactEditor.findDocumentOrShadowRoot(editor);
   const domSelection = getSelection(root);
 
   if (!domSelection || domSelection.rangeCount === 0) {
@@ -1012,7 +1008,10 @@ export const applyEditableDOMSelectionChange = ({
     return;
   }
 
-  const editorElement = ReactEditor.assertDOMNode(editor, editor);
+  const editorElement = ReactEditor.editable(editor);
+  const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+
+  if (!editorElement || !root) return;
   const editorDocument = editorElement.ownerDocument;
   const ShadowRootConstructor = editorDocument.defaultView?.ShadowRoot;
   const editorRoot = editorElement.getRootNode();
@@ -1053,7 +1052,6 @@ export const applyEditableDOMSelectionChange = ({
     return;
   }
 
-  const root = ReactEditor.findDocumentOrShadowRoot(editor);
   const { activeElement } = root;
   const domSelection = getSelection(root);
 
@@ -1456,15 +1454,14 @@ export const syncEditableDOMSelectionToEditor = ({
   }
 
   try {
-    const root = ReactEditor.findDocumentOrShadowRoot(editor);
-    const domSelection = getSelection(root);
+    const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+    const domSelection = root ? getSelection(root) : null;
+    const editorElement = explicitEditorElement ?? ReactEditor.editable(editor);
 
-    if (!domSelection) {
+    if (!root || !domSelection || !editorElement) {
       return;
     }
 
-    const editorElement =
-      explicitEditorElement ?? ReactEditor.assertDOMNode(editor, editor);
     const { activeElement } = root;
 
     if (

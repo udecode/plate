@@ -626,7 +626,9 @@ describe('compilePlateHtmlFormat', () => {
   });
 
   it('validates CSS declaration names and values before encoding', () => {
-    const reports = spyOn(console, 'error').mockImplementation(() => {});
+    const reports = spyOn(globalThis, 'reportError').mockImplementation(
+      () => {}
+    );
     const ParagraphPlugin = definePlugin('cssParagraph', {
       schema: {
         element: {
@@ -1308,7 +1310,9 @@ describe('compilePlateHtmlFormat', () => {
     const editor = createEditor({
       plugins: [LowerPlugin, HigherPlugin, ParagraphPlugin],
     });
-    const report = spyOn(console, 'error').mockImplementation(() => {});
+    const report = spyOn(globalThis, 'reportError').mockImplementation(
+      () => {}
+    );
     const input = new DataTransfer();
 
     input.setData('text/html', '<section>Fallback</section>');
@@ -1475,7 +1479,9 @@ describe('compilePlateHtmlFormat', () => {
     const editor = createEditor({
       plugins: [LowerPlugin, HigherPlugin, ParagraphPlugin],
     });
-    const report = spyOn(console, 'error').mockImplementation(() => {});
+    const report = spyOn(globalThis, 'reportError').mockImplementation(
+      () => {}
+    );
     const input = new DataTransfer();
 
     input.setData('text/html', '<section>Fallback</section>');
@@ -1860,7 +1866,9 @@ describe('compilePlateHtmlFormat', () => {
   });
 
   it('aborts the whole encode on conflicting normalized patch writes', () => {
-    const report = spyOn(console, 'error').mockImplementation(() => {});
+    const report = spyOn(globalThis, 'reportError').mockImplementation(
+      () => {}
+    );
     const ParagraphPlugin = definePlugin('htmlParagraphCase13', {
       schema: {
         element: {
@@ -1935,7 +1943,9 @@ describe('compilePlateHtmlFormat', () => {
   });
 
   it('aborts encode when structural and patch specs use both style channels', () => {
-    const report = spyOn(console, 'error').mockImplementation(() => {});
+    const report = spyOn(globalThis, 'reportError').mockImplementation(
+      () => {}
+    );
     const ParagraphPlugin = definePlugin('htmlParagraphCase14', {
       schema: {
         element: {
@@ -1997,7 +2007,9 @@ describe('compilePlateHtmlFormat', () => {
   });
 
   it('rejects cyclic specs without writing partial HTML', () => {
-    const report = spyOn(console, 'error').mockImplementation(() => {});
+    const report = spyOn(globalThis, 'reportError').mockImplementation(
+      () => {}
+    );
     const ParagraphPlugin = definePlugin('htmlParagraphCase15', {
       schema: {
         element: {
@@ -2037,7 +2049,9 @@ describe('compilePlateHtmlFormat', () => {
   });
 
   it('rejects duplicate patch targets without writing partial HTML', () => {
-    const report = spyOn(console, 'error').mockImplementation(() => {});
+    const report = spyOn(globalThis, 'reportError').mockImplementation(
+      () => {}
+    );
     const ParagraphPlugin = definePlugin('htmlParagraphCase16', {
       schema: {
         element: {

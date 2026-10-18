@@ -7,37 +7,31 @@ test.describe('iframe editor', () => {
   });
 
   test('should be editable', async ({ page }) => {
-    const pliteErrors: string[] = [];
-    page.on('console', (message) => {
-      if (
-        message.type() === 'error' &&
-        message.text().includes('without a DOM coverage boundary')
-      ) {
-        pliteErrors.push(message.text());
-      }
-    });
-
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const textbox = page
       .frameLocator('iframe')
       .locator('body')
       .getByRole('textbox');
 
-    await textbox.evaluate((element: HTMLElement, key) => {
-      const handle = (element as Record<string, any>)[key];
+    try {
+      await textbox.evaluate((element: HTMLElement, key) => {
+        const handle = (element as Record<string, any>)[key];
 
-      if (!handle?.selectRange || !handle?.insertText) {
-        throw new Error('Missing Plite browser handle');
-      }
+        if (!handle?.selectRange || !handle?.insertText) {
+          throw new Error('Missing Plite browser handle');
+        }
 
-      handle.selectRange({
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 0 },
-      });
-      handle.insertText('Hello World');
-    }, BROWSER_HANDLE_KEY);
-    await expect(textbox).toContainText('Hello World');
-    await page.waitForTimeout(50);
-    expect(pliteErrors).toEqual([]);
+        handle.selectRange({
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 0 },
+        });
+        handle.insertText('Hello World');
+      }, BROWSER_HANDLE_KEY);
+      await expect(textbox).toContainText('Hello World');
+      runtimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+    }
   });
 
   test('clicks mounted iframe content without DOM node resolution errors', async ({

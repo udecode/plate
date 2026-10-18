@@ -134,8 +134,8 @@ const shouldCancelStaleCompositionSelectionChangeFlush = ({
     return false;
   }
 
-  const root = ReactEditor.findDocumentOrShadowRoot(editor);
-  const domSelection = getSelection(root);
+  const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+  const domSelection = root ? getSelection(root) : null;
 
   if (!domSelection?.isCollapsed) {
     return false;

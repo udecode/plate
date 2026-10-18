@@ -1043,13 +1043,8 @@ export const useEditableDOMInputHandler = ({
       return;
     }
 
-    let domSelection: Selection | null = null;
-
-    try {
-      domSelection = getSelection(ReactEditor.findDocumentOrShadowRoot(editor));
-    } catch {
-      return;
-    }
+    const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+    const domSelection = root ? getSelection(root) : null;
 
     if (!domSelection || domSelection.rangeCount === 0) {
       return;

@@ -910,6 +910,27 @@ const sameRunOrigins = (
     return previous?.left === origin.left && previous.top === origin.top;
   });
 
+const useReportEachNewMeasureFailure = (editor: Editor, error: unknown) => {
+  const lastReportedFailure = useRef<unknown>(null);
+
+  useEffect(() => {
+    if (!error) {
+      lastReportedFailure.current = null;
+      return;
+    }
+    const failure = error instanceof Error ? error.message : error;
+
+    if (Object.is(failure, lastReportedFailure.current)) return;
+    lastReportedFailure.current = failure;
+    reportEditorLifecycleError({
+      cause: error,
+      editor,
+      phase: 'measure',
+      source: 'pagination',
+    });
+  }, [editor, error]);
+};
+
 /**
  * Subscribes to the decoration store so it rerenders with every publish; its
  * layout effect then reads run origins from the runs that publish committed.
@@ -1046,15 +1067,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
     [gap, mode, snapshot]
   );
 
-  useEffect(() => {
-    if (!measurement.error) return;
-    reportEditorLifecycleError({
-      cause: measurement.error,
-      editor,
-      phase: 'measure',
-      source: 'pagination',
-    });
-  }, [editor, measurement.error]);
+  useReportEachNewMeasureFailure(editor, measurement.error);
   useLayoutEffect(() => decorationStore.mount(), [decorationStore]);
   useEffect(() => () => decorationStore.destroy(), [decorationStore]);
   useLayoutEffect(() => {

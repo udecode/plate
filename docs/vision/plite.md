@@ -665,8 +665,10 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   schema—not tuple-length types—owns child cardinality.
 - Structurally owned editable content stays in normal node `children`.
   Conditional mounting and selection use DOM coverage without changing the
-  persisted model. Selection kinds distinguish owner selection from child-text
-  focus; that distinction alone does not justify a persisted child wrapper.
+  persisted model. A renderer that leaves an editable child with neither DOM
+  nor a coverage boundary breaks that contract, and the runtime reports it as a
+  `render-element` lifecycle error in every build. Selection kinds distinguish
+  owner selection from child-text focus; that distinction alone does not justify a persisted child wrapper.
   Structural child elements require their own grammar, properties, commands,
   or multiple real semantic regions. Explicit roots require independent
   addressing, lifecycle, sharing, or transaction semantics.
@@ -726,7 +728,10 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
 - Publication is the update outcome boundary. A callback that can still abort
   belongs before publication; observers that run after an `EditorCommit`
   exists report failure through `lifecycleErrorSink` and cannot make the
-  committed update appear rejected.
+  committed update appear rejected. With no sink, every lifecycle source
+  reports to `reportError` as one `Error` that names the source and keeps the
+  original as `cause`, and to `console.error` only where `reportError` does not
+  exist.
 - An update call answers what landed. `editor.update(fn)` returns the
   callback's value, and a call that opens its own update, such as a direct
   method, `editor.update.command` or a plugin portal, returns its method's
@@ -802,7 +807,11 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   hydration may use a deterministic editor-local render token, but mounted
   lookup publishes the full owning runtime key. Resolve mounted DOM through
   `editor.api.dom.resolveDOMNode(nodeOrKey)`. Foreign, removed, and unmounted
-  keys fail closed with `null`; renderer-private structures stay private.
+  keys fail closed with `null`; renderer-private structures stay private. Each
+  `assert*` DOM lookup and `findDocumentOrShadowRoot` throws while DOM is
+  missing and has a `resolve*` twin that returns `null`. The strict form is for
+  a direct caller that knows the DOM is mounted. Runtime and package code call
+  the twin, and a lint rule bans the strict forms and `findKey` there.
 - Code that holds a live node passes it directly as the `NodeTarget` or `at`
   value, resolves a path only when the path is the result, and never rediscovers
   the node by scanning for its `type` and `id`. Package code treats an

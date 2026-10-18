@@ -12,6 +12,7 @@ import {
   type TransferOutcome,
   type Value,
 } from '../..';
+import { reportEditorLifecycleError } from '../../core/lifecycle-error';
 import { getInstalledPlugin } from '../../core/plugin';
 import {
   readEditorHistoryReplayReceipt,
@@ -66,6 +67,7 @@ import {
 } from './input-state';
 import { getEditableInteractionOwner } from './interaction-owner';
 import type { DeferredMutation } from './model-input-strategy';
+import { RenderContractMonitor } from './render-contract-monitor';
 import {
   getEditorRuntimeOwner,
   setEditorComposing,
@@ -308,6 +310,7 @@ type EditableDOMRuntimeUpdate = {
 /** Private imperative owner for one mounted editable root. */
 export class EditableDOMRuntime {
   readonly externalText = new ExternalTextRuntime(this);
+  readonly renderContract = new RenderContractMonitor(this);
   readonly androidInputManagerRef: MutableCell<
     AndroidInputManager | null | undefined
   > = { current: undefined };
@@ -430,6 +433,7 @@ export class EditableDOMRuntime {
       adapter: this,
       afterRootMount: () => {
         this.attachNativeInputListeners();
+        this.renderContract.afterRootMount();
       },
       beforeRootTeardown: () => {
         runAllRuntimeSteps([
@@ -819,6 +823,18 @@ export class EditableDOMRuntime {
     );
   }
 
+  hasPendingInputWork() {
+    const { pendingCompositionEnd } = this.state;
+
+    return (
+      this.state.isComposing ||
+      (pendingCompositionEnd !== null &&
+        pendingCompositionEnd.ownership !== 'settled') ||
+      this.deferredCompositionDOMWrites.size > 0 ||
+      !!this.androidInputManagerRef.current?.hasPendingAction()
+    );
+  }
+
   deferCompositionDOMWrite(node: globalThis.Node, write: () => void) {
     if (!this.isCompositionDOMNodeProtected(node)) return false;
 
@@ -1121,12 +1137,38 @@ export class EditableDOMRuntime {
       return result;
     }
 
-    writePliteViewSelection(
-      this.editorValue,
-      readPliteViewSelectionHistoryGroup(receipt.group, direction) ?? null
+    this.observeHistoryReplay(direction, () =>
+      writePliteViewSelection(
+        this.editorValue,
+        readPliteViewSelectionHistoryGroup(receipt.group, direction) ?? null
+      )
     );
-    this.historyFocusHandler(focusPolicy);
+    this.observeHistoryReplay(direction, () =>
+      this.historyFocusHandler(focusPolicy)
+    );
     return result;
+  }
+
+  private reportHistoryReplayError(
+    direction: 'redo' | 'undo',
+    phase: 'observer' | 'replay',
+    cause: unknown
+  ) {
+    reportEditorLifecycleError({
+      cause,
+      direction,
+      editor: this.editorValue,
+      phase,
+      source: 'history',
+    });
+  }
+
+  private observeHistoryReplay(direction: 'redo' | 'undo', step: () => void) {
+    try {
+      step();
+    } catch (error) {
+      this.reportHistoryReplayError(direction, 'observer', error);
+    }
   }
 
   dispatchHistory(
@@ -1134,31 +1176,17 @@ export class EditableDOMRuntime {
     focusPolicy: EditorHistoryFocusPolicy = 'restore-root',
     onFulfilled?: (result: EditableHistoryReplayResult) => void
   ): void {
-    void this.replayHistory(direction, focusPolicy)
-      .then((result) => {
-        runAllRuntimeSteps([
-          () => this.historyReplayHandler({ direction, result }),
-          () => onFulfilled?.(result),
-        ]);
-      })
-      .catch((error: unknown) => {
-        const { reportError } = globalThis as {
-          reportError?: (error: unknown) => void;
-        };
-
-        if (reportError) {
-          reportError(error);
-          return;
-        }
-        this.domPhaseScheduler.schedule(
-          'post-selection',
-          'report-history-replay-error',
-          () => {
-            throw error;
-          },
-          { timing: 'microtask' }
+    void this.replayHistory(direction, focusPolicy).then(
+      (result) => {
+        this.observeHistoryReplay(direction, () =>
+          this.historyReplayHandler({ direction, result })
         );
-      });
+        this.observeHistoryReplay(direction, () => onFulfilled?.(result));
+      },
+      (error: unknown) => {
+        this.reportHistoryReplayError(direction, 'replay', error);
+      }
+    );
   }
 
   /**
@@ -1322,6 +1350,7 @@ export class EditableDOMRuntime {
         this.externalMouseGesture = false;
         this.deferredCompositionDOMWrites.clear();
       },
+      () => this.renderContract.beforeRootTeardown(),
       () => {
         const cancelMicrotask = this.cancelSelectionExportMicrotask;
         const cancelFrame = this.cancelSelectionExportFrameTask;

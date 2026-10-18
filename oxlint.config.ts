@@ -58,6 +58,12 @@ const htmlParserOwnerMessage =
 const docxDomParserOwnerMessage =
   'DOCX builds a DOM document only through parseDocxHtml, parseDocxXml or captureDocxDomParsers in packages/platejs/src/docx/internal/domParser.ts. HTML that needs no DOM document goes through parseHtmlAst from packages/platejs/src/lib/plugins/html/htmlAst.ts.';
 
+const editorWindowRestriction = {
+  property: 'getWindow',
+  message:
+    'This file runs before the first mount or headless. Read the window with resolveLastEditorWindow from packages/plitejs/src/dom/utils/weak-maps.ts and handle null, or use the ownerDocument of mounted DOM.',
+};
+
 const forbiddenUdecodeImport = {
   regex: '^@udecode(?:/|$)',
   message:
@@ -329,6 +335,31 @@ export default defineConfig({
             ],
           },
         ],
+      },
+    },
+    {
+      files: [
+        'packages/platejs/src/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}',
+        'packages/plitejs/src/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}',
+      ],
+      excludeFiles: [
+        'packages/*/src/**/*.spec.*',
+        'packages/*/src/**/*.test.*',
+        'packages/*/src/**/*.slow.*',
+        'packages/*/src/**/__tests__/**',
+      ],
+      rules: {
+        'plate/no-strict-dom-lookup': 'error',
+      },
+    },
+    {
+      files: [
+        'packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts',
+        'packages/plitejs/src/dom/plugin/dom-drag.ts',
+        'packages/plitejs/src/react/editable/content-root-navigation.ts',
+      ],
+      rules: {
+        'no-restricted-properties': ['error', editorWindowRestriction],
       },
     },
     {

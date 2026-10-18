@@ -3,6 +3,7 @@ import {
   type Anchor,
   defineEffect,
   definePlugin,
+  type EditorLifecycleError,
   type Point,
   type Range,
   type Value,
@@ -24,6 +25,7 @@ import {
 } from '../../src/react/editable/composition-state';
 import {
   EditableDOMRuntime,
+  type EditableHistoryReplayEvent,
   type EditableHistoryReplayResult,
   subscribeEditableRuntimeFocus,
 } from '../../src/react/editable/editable-dom-runtime';
@@ -299,7 +301,9 @@ test('reports a failed replay once through the platform error sink', async () =>
 
     await waitFor(() => {
       expect(reportError).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'history owner failed' })
+        expect.objectContaining({
+          cause: expect.objectContaining({ message: 'history owner failed' }),
+        })
       );
     });
     expect(reportError).toHaveBeenCalledTimes(1);
@@ -318,6 +322,101 @@ test('reports a failed replay once through the platform error sink', async () =>
       delete (globalThis as { reportError?: unknown }).reportError;
     }
   }
+});
+
+const createUndoableRuntime = (
+  onHistoryReplay?: (event: EditableHistoryReplayEvent) => void
+) => {
+  const reports: EditorLifecycleError[] = [];
+  const initialValue: Value = [
+    { type: 'paragraph', children: [{ text: 'a' }] },
+  ];
+  const editor = createEditor({
+    initialValue,
+    lifecycleErrorSink: (error) => reports.push(error),
+    plugins: [history()],
+  });
+  const runtime = new EditableDOMRuntime({ editor, onHistoryReplay });
+
+  runtime.setRoot(document.createElement('div'));
+  runtime.connect();
+  editor.update((tx) => {
+    tx.text.insert('b', { at: { path: [0, 0], offset: 1 } });
+  });
+
+  return { editor, reports, runtime };
+};
+
+const historyReport = (cause: Error, phase: 'observer' | 'replay') =>
+  expect.objectContaining({
+    cause,
+    direction: 'undo',
+    phase,
+    source: 'history',
+  });
+
+test('reports a throwing history replay handler to the lifecycle sink', async () => {
+  const cause = new Error('replay handler failed');
+  const { reports, runtime } = createUndoableRuntime(() => {
+    throw cause;
+  });
+
+  runtime.dispatchHistory('undo');
+
+  await waitFor(() => {
+    expect(reports).toEqual([historyReport(cause, 'observer')]);
+  });
+  runtime.destroy();
+});
+
+test('reports a focus handler that throws after an applied undo to the lifecycle sink', async () => {
+  const cause = new Error('focus failed');
+  const { reports, runtime } = createUndoableRuntime();
+
+  runtime.updateHistoryFocusHandler(() => {
+    throw cause;
+  });
+  runtime.dispatchHistory('undo');
+
+  await waitFor(() => {
+    expect(reports).toEqual([historyReport(cause, 'observer')]);
+  });
+  runtime.destroy();
+});
+
+test('reports each throwing history observer on its own', async () => {
+  const handlerCause = new Error('replay handler failed');
+  const fulfilledCause = new Error('fulfillment callback failed');
+  const { reports, runtime } = createUndoableRuntime(() => {
+    throw handlerCause;
+  });
+
+  runtime.dispatchHistory('undo', 'restore-root', () => {
+    throw fulfilledCause;
+  });
+
+  await waitFor(() => {
+    expect(reports).toEqual([
+      historyReport(handlerCause, 'observer'),
+      historyReport(fulfilledCause, 'observer'),
+    ]);
+  });
+  runtime.destroy();
+});
+
+test('reports a throw before the replay has an outcome as a replay failure', async () => {
+  const cause = new Error('settle failed');
+  const { reports, runtime } = createUndoableRuntime();
+
+  runtime.updateHistorySettleHandler(() => {
+    throw cause;
+  });
+  runtime.dispatchHistory('undo');
+
+  await waitFor(() => {
+    expect(reports).toEqual([historyReport(cause, 'replay')]);
+  });
+  runtime.destroy();
 });
 
 test('keeps one runtime per mount without render fan-out and tears it down', () => {

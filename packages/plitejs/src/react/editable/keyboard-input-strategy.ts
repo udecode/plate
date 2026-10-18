@@ -193,15 +193,13 @@ const getNestedEditableRootKey = (
     return null;
   }
 
-  let editorElement: HTMLElement;
+  const editorElement = ReactEditor.editable(editor);
 
-  try {
-    editorElement = ReactEditor.assertDOMNode(editor, editor);
-  } catch {
-    return null;
-  }
-
-  if (targetEditor === editorElement || !editorElement.contains(targetEditor)) {
+  if (
+    !editorElement ||
+    targetEditor === editorElement ||
+    !editorElement.contains(targetEditor)
+  ) {
     return null;
   }
 
@@ -236,14 +234,9 @@ const qualifySelectionRoot = (
 const readNestedEditableDOMSelection = (
   nestedEditor: ReactRuntimeEditor
 ): Range | null => {
-  let root: Document | ShadowRoot;
+  const root = ReactEditor.resolveDocumentOrShadowRoot(nestedEditor);
 
-  try {
-    root = ReactEditor.findDocumentOrShadowRoot(nestedEditor);
-  } catch {
-    return null;
-  }
-
+  if (!root) return null;
   const domSelection = getSelection(root);
 
   if (!domSelection || domSelection.rangeCount === 0) {
@@ -333,14 +326,9 @@ const isCollapsedSelectionBackedByEditableTextDOM = ({
     return false;
   }
 
-  let root: Document | ShadowRoot;
+  const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
 
-  try {
-    root = ReactEditor.findDocumentOrShadowRoot(editor);
-  } catch {
-    return false;
-  }
-
+  if (!root) return false;
   const domSelection = getSelection(root);
   const anchorNode = domSelection?.anchorNode ?? null;
   const focusNode = domSelection?.focusNode ?? null;
@@ -498,18 +486,12 @@ export const applyEditableKeyDown = ({
     return true;
   };
 
+  const editorElement = ReactEditor.editable(editor);
+
   if (isInteractiveInternalTarget(editor, event.target)) {
     const { nativeEvent } = event;
-    const nestedEditableTarget = (() => {
-      try {
-        return isNestedEditableDOMTarget(
-          ReactEditor.assertDOMNode(editor, editor),
-          event.target
-        );
-      } catch {
-        return false;
-      }
-    })();
+    const nestedEditableTarget =
+      !!editorElement && isNestedEditableDOMTarget(editorElement, event.target);
     const nestedSelectionContext = nestedEditableTarget
       ? getNestedEditableSelectionContext({
           editor,
@@ -633,17 +615,8 @@ export const applyEditableKeyDown = ({
     return keyDownHandled();
   }
 
-  try {
-    if (
-      isNestedEditableDOMTarget(
-        ReactEditor.assertDOMNode(editor, editor),
-        event.target
-      )
-    ) {
-      return keyDownUnhandled();
-    }
-  } catch {
-    // Unit tests and unmounted editables can exercise the strategy without DOM.
+  if (editorElement && isNestedEditableDOMTarget(editorElement, event.target)) {
+    return keyDownUnhandled();
   }
 
   if (readOnly && ReactEditor.hasEditableTarget(editor, event.target)) {

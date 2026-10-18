@@ -245,6 +245,103 @@ describe('editor lifetime', () => {
     ]);
   });
 
+  describe('with no lifecycle error sink', () => {
+    const platform = globalThis as { reportError?: (error: unknown) => void };
+    const destroyWithBrokenRelease = () => {
+      const cause = new Error('release failed');
+
+      createEditor({
+        initialValue: [paragraph('a')],
+        plugins: [
+          definePlugin('broken', {
+            activate({ acquire }) {
+              acquire(() => () => {
+                throw cause;
+              });
+            },
+          }),
+        ],
+      }).destroy();
+
+      return cause;
+    };
+    const describeReports = (reports: unknown[]) =>
+      reports.map((report) => ({
+        cause: report instanceof Error ? report.cause : report,
+        namesFailingPart:
+          report instanceof Error &&
+          ['plugin', '"broken"', 'cleanup'].every((part) =>
+            report.message.includes(part)
+          ),
+      }));
+
+    it('reports one error naming the failing plugin to the platform error event', () => {
+      const reports: unknown[] = [];
+      const { reportError } = platform;
+
+      platform.reportError = (error) => reports.push(error);
+      try {
+        const cause = destroyWithBrokenRelease();
+
+        assert.deepEqual(describeReports(reports), [
+          { cause, namesFailingPart: true },
+        ]);
+      } finally {
+        platform.reportError = reportError;
+      }
+    });
+
+    it('reports a thrown value that cannot become a string, and the next commit listener still runs', () => {
+      const reports: unknown[] = [];
+      const { reportError } = platform;
+      const cause = Object.create(null);
+      const editor = createEditor({ initialValue: [paragraph('a')] });
+      let nextListenerRan = false;
+
+      editor.subscribeCommit(() => {
+        throw cause;
+      });
+      editor.subscribeCommit(() => {
+        nextListenerRan = true;
+      });
+      platform.reportError = (error) => reports.push(error);
+      try {
+        editor.update((tx) => {
+          tx.text.insert('b', { at: { offset: 1, path: [0, 0] } });
+        });
+      } finally {
+        platform.reportError = reportError;
+      }
+
+      assert.equal(nextListenerRan, true);
+      assert.deepEqual(
+        reports.map((report) =>
+          report instanceof Error ? report.cause : report
+        ),
+        [cause]
+      );
+    });
+
+    it('logs that error to the console where the platform has no error event', () => {
+      const reports: unknown[] = [];
+      const { reportError } = platform;
+      const consoleError = console.error;
+
+      delete platform.reportError;
+      console.error = (...args: unknown[]) => reports.push(...args);
+      try {
+        const cause = destroyWithBrokenRelease();
+
+        assert.deepEqual(describeReports(reports), [
+          { cause, namesFailingPart: true },
+        ]);
+      } finally {
+        console.error = consoleError;
+        platform.reportError = reportError;
+      }
+    });
+  });
+
   it('keeps releasing when one release throws', () => {
     const log: string[] = [];
     const errors: unknown[] = [];

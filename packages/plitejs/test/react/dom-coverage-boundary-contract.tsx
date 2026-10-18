@@ -147,8 +147,8 @@ describe('DOM coverage private boundary harness', () => {
           path: [1, 0],
           offset: 2,
         });
-        expect(point.type).toBe('dom-point');
-        if (point.type === 'dom-point') {
+        expect(point?.type).toBe('dom-point');
+        if (point?.type === 'dom-point') {
           expect(runtime.rootElement?.contains(point.domPoint[0])).toBe(true);
         }
         const sibling = runtime === left ? right : left;
@@ -269,73 +269,70 @@ describe('DOM coverage private boundary harness', () => {
     ).toBe('section-body');
   });
 
-  test('BoundaryRange registers before dev safety reports omitted children', async () => {
-    const editor = createEditor();
-    const errors: string[] = [];
-    const errorSpy = vi
-      .spyOn(console, 'error')
-      .mockImplementation((message: unknown) => {
-        errors.push(String(message));
-      });
+  test('BoundaryRange registers before the development check nominates its omitted children', async () => {
+    const sources: string[] = [];
+    const editor = createEditor({
+      lifecycleErrorSink: (error) => {
+        sources.push('source' in error ? error.source : 'plugin');
+      },
+    });
 
     editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
     });
 
-    try {
-      render(
-        <EditorRoot editor={editor}>
-          <Editable
-            id="dom-coverage-boundary-range-lifecycle"
-            renderElement={({ children, element }) => {
-              if (element.type === 'section') {
-                const childNodes = React.Children.toArray(children);
-
-                return (
-                  <EditorElement style={{ position: 'relative' }}>
-                    {childNodes[0]}
-                    <DOMCoverageBoundaryRange
-                      boundaryId="section-body"
-                      content={childNodes.slice(1)}
-                      from={1}
-                    >
-                      Collapsed body
-                    </DOMCoverageBoundaryRange>
-                  </EditorElement>
-                );
-              }
+    render(
+      <EditorRoot editor={editor}>
+        <Editable
+          id="dom-coverage-boundary-range-lifecycle"
+          renderElement={({ children, element }) => {
+            if (element.type === 'section') {
+              const childNodes = React.Children.toArray(children);
 
               return (
                 <EditorElement style={{ position: 'relative' }}>
-                  {children}
+                  {childNodes[0]}
+                  <DOMCoverageBoundaryRange
+                    boundaryId="section-body"
+                    content={childNodes.slice(1)}
+                    from={1}
+                  >
+                    Collapsed body
+                  </DOMCoverageBoundaryRange>
                 </EditorElement>
               );
-            }}
-          />
-        </EditorRoot>
-      );
+            }
 
-      await waitFor(() => {
-        expect(
-          getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
-            'section-body'
-          ) ?? null
-        ).not.toBeNull();
-      });
+            return (
+              <EditorElement style={{ position: 'relative' }}>
+                {children}
+              </EditorElement>
+            );
+          }}
+        />
+      </EditorRoot>
+    );
 
-      await act(async () => {
-        await Promise.resolve();
-      });
-
+    await waitFor(() => {
       expect(
-        errors.filter((message) =>
-          message.includes('without a DOM coverage boundary')
-        )
-      ).toEqual([]);
-    } finally {
-      errorSpy.mockRestore();
-    }
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).not.toBeNull();
+    });
+
+    await act(async () => {
+      for (let cycle = 0; cycle < 5; cycle++) {
+        await new Promise<void>((resolve) => {
+          requestAnimationFrame(() => {
+            setTimeout(resolve, 0);
+          });
+        });
+      }
+    });
+
+    expect(sources).toEqual([]);
   });
 
   test('BoundaryRange unregisters and renders current model content when expanded', async () => {
@@ -1340,55 +1337,5 @@ describe('DOM coverage private boundary harness', () => {
     expect(rendered.container.textContent).not.toContain('Hidden alpha update');
     expect(renderCounts.hiddenBody).toBe(0);
     expect(renderCounts.visibleSibling).toBe(0);
-  });
-
-  test('renderElement dropping editable children without a boundary reports a dev safety error', async () => {
-    const editor = createEditor();
-    const errors: string[] = [];
-    const errorSpy = vi
-      .spyOn(console, 'error')
-      .mockImplementation((message: unknown) => {
-        errors.push(String(message));
-      });
-
-    editorReplace(editor, {
-      children: createNestedChildren(),
-      selection: null,
-    });
-
-    try {
-      render(
-        <EditorRoot editor={editor}>
-          <Editable
-            id="dom-coverage-boundary-dev-safety"
-            renderElement={({ element }) => {
-              if (element.type === 'section') {
-                return (
-                  <EditorElement style={{ position: 'relative' }}>
-                    Section shell only
-                  </EditorElement>
-                );
-              }
-
-              return (
-                <EditorElement style={{ position: 'relative' }}>
-                  Leaf shell only
-                </EditorElement>
-              );
-            }}
-          />
-        </EditorRoot>
-      );
-
-      await waitFor(() => {
-        expect(
-          errors.some((message) =>
-            message.includes('without a DOM coverage boundary')
-          )
-        ).toBe(true);
-      });
-    } finally {
-      errorSpy.mockRestore();
-    }
   });
 });

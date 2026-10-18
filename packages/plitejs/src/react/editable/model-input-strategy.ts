@@ -185,8 +185,8 @@ export const applyEditableInput = ({
     nativeInput.data.length > 0 &&
     domText !== modelText
   ) {
-    const root = ReactEditor.findDocumentOrShadowRoot(editor);
-    const domSelection = getSelection(root);
+    const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+    const domSelection = root ? getSelection(root) : null;
     const anchorNode = domSelection?.anchorNode ?? null;
     const anchorOffset = domSelection?.anchorOffset ?? null;
     const textHost = isDOMText(anchorNode)

@@ -90,7 +90,13 @@ Creates a new `Editor` with the supplied plugins and configuration. To render an
     - **Default:** `false`
   </APIItem>
   <APIItem name="lifecycleErrorSink" type="(error: EditorLifecycleError) => void" optional>
-    Receives failures from plugin lifecycle observers.
+    Receives errors that the editor catches so they cannot stop it: throws
+    from plugin lifecycle observers, history replays and their handlers,
+    data-transfer formats, external text adapters and pagination, and reports
+    from the `renderElement` check.
+    - **Default:** each error goes to `reportError` as one `Error` whose
+      message names its source, with the original error as `cause`. Where
+      `reportError` does not exist, it goes to `console.error`.
   </APIItem>
   <APIItem name="api" type="object" optional>
     API methods for the editor.

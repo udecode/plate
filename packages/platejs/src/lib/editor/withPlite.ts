@@ -728,7 +728,14 @@ export type EditorOptions<
    * generated id.
    */
   id?: string;
-  /** Receives failures from plugin lifecycle observers. */
+  /**
+   * Receives errors the editor catches so they cannot stop it: throws from
+   * plugin lifecycle observers, history replays and their handlers,
+   * data-transfer formats, external text adapters and pagination, and reports
+   * from the `renderElement` check. With no sink, each one goes to
+   * `reportError` as one `Error` that names its source, or to `console.error`
+   * where `reportError` does not exist.
+   */
   lifecycleErrorSink?: EditorLifecycleErrorSink<RuntimeEditor<any, any>>;
   /**
    * The user this editor writes and comments as, recorded as the author of

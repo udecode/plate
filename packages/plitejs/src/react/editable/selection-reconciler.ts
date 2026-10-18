@@ -203,13 +203,14 @@ export const applyEditableBlur = ({
   // one, this is due to the window being blurred when the tab
   // itself becomes unfocused, so we want to abort early to allow to
   // editor to stay focused when the tab becomes focused again.
-  const root = ReactEditor.findDocumentOrShadowRoot(editor);
-  if (state.latestElement === root.activeElement) {
+  const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+  const el = ReactEditor.editable(editor);
+
+  if (!root || !el || state.latestElement === root.activeElement) {
     return;
   }
 
   const { relatedTarget } = event;
-  const el = ReactEditor.assertDOMNode(editor, editor);
 
   // COMPAT: The event should be ignored if the focus is returning
   // to the editor from an embedded editable element (eg. an <input>
@@ -279,8 +280,10 @@ export const applyEditableFocus = ({
     return false;
   }
 
-  const el = ReactEditor.assertDOMNode(editor, editor);
-  const root = ReactEditor.findDocumentOrShadowRoot(editor);
+  const el = ReactEditor.editable(editor);
+  const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+
+  if (!el || !root) return false;
   state.latestElement = root.activeElement;
 
   // COMPAT: If the editor has nested editable elements, the focus
@@ -395,10 +398,13 @@ export const applyEditableClick = ({
 
     // Firefox ends a drag selection with a click whose detail is 1, so only a
     // collapsed native selection is a caret click.
+    const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+
     if (
       isGeckoDOMHost(event) &&
       event.detail === 1 &&
-      getSelection(ReactEditor.findDocumentOrShadowRoot(editor))?.isCollapsed
+      root &&
+      getSelection(root)?.isCollapsed
     ) {
       const range = editor.api.dom.resolveEventRange(event.nativeEvent);
       const clickedInline =
@@ -1041,7 +1047,9 @@ export const useEditableSelectionReconciler = ({
       return undefined;
     }
     const projectedSelection = getSelectionDOMRange(editor, selection);
-    const root = ReactEditor.findDocumentOrShadowRoot(editor);
+    const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+
+    if (!root) return undefined;
     const domSelection = getSelection(root);
 
     if (!isSelectionInEditorView(editor, selection)) {
@@ -1377,7 +1385,9 @@ export const useEditableSelectionReconciler = ({
             if (!ReactEditor.isFocused(editor)) return;
 
             try {
-              const el = ReactEditor.assertDOMNode(editor, editor);
+              const el = ReactEditor.editable(editor);
+
+              if (!el) return;
               if (!shouldSkipSelectionFocus(editor)) {
                 el.focus();
               }

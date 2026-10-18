@@ -1,4 +1,4 @@
-import { type Node, type Value, RangeApi } from '../..';
+import { type Value, RangeApi } from '../..';
 import { getSelection } from '../../dom';
 import { IS_FOCUSED } from '../../dom/internal';
 import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
@@ -28,17 +28,15 @@ const createEditableFocusRequest = <
 >(
   editor: ReactRuntimeEditor<V, TPlugins>
 ): EditableFocusRequest | null => {
-  try {
-    const element = editor.api.dom.assertDOMNode(editor as unknown as Node);
-    const root = element.getRootNode();
-    const token = {};
+  const element = editor.api.dom.editable();
 
-    ROOT_TO_EDITABLE_FOCUS_REQUEST.set(root, token);
+  if (!element) return null;
+  const root = element.getRootNode();
+  const token = {};
 
-    return { root, token };
-  } catch {
-    return null;
-  }
+  ROOT_TO_EDITABLE_FOCUS_REQUEST.set(root, token);
+
+  return { root, token };
 };
 
 const ownsEditableFocusRequest = (request: EditableFocusRequest | null) =>
@@ -127,13 +125,7 @@ const focusPliteEditableForRequest = <
 ) => {
   if (!ownsEditableFocusRequest(request)) return;
 
-  let element: HTMLElement | null = null;
-
-  try {
-    element = editor.api.dom.assertDOMNode(editor as unknown as Node);
-  } catch {
-    // The DOM editor focus path still handles unmounted or dirty node maps.
-  }
+  const element = editor.api.dom.editable();
 
   const viewSelection = readPliteViewSelection(editor);
 

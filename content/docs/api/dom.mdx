@@ -46,15 +46,16 @@ Check if the DOM editor is in read-only mode.
 
 #### `editor.api.dom.blur(): void`
 
-Blur the editor.
+Blur the editor. An unmounted editor only clears its focused state.
 
 #### `editor.api.dom.focus(options?: { retries?: number }): void`
 
-Focus the editor.
+Focus the editor. Does nothing while the editor has no mounted root.
 
 #### `editor.api.dom.deselect(): void`
 
-Clear the native DOM selection and the editor selection.
+Clear the native DOM selection and the editor selection. An unmounted editor
+clears only the editor selection.
 
 ## Typed text
 
@@ -222,7 +223,13 @@ range is not currently mappable.
 
 #### `editor.api.dom.findDocumentOrShadowRoot(): Document | ShadowRoot`
 
-Return the document or shadow root that owns the editor.
+Return the document or shadow root that owns the editor. Throws when the editor
+has no mounted root.
+
+#### `editor.api.dom.resolveDocumentOrShadowRoot(): Document | ShadowRoot | null`
+
+Resolve the document or shadow root that owns the editor. Returns `null` when
+the editor has no mounted root.
 
 #### `editor.api.dom.getWindow(): Window`
 

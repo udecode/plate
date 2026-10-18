@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer';
 
 import { expect, type Locator, test } from '@playwright/test';
 import { BROWSER_HANDLE_KEY,
+  type BrowserRuntimeErrorRecorder,
   attachBrowserJsonArtifact,
   installReactRenderProfiler,
   openExample,
@@ -11,9 +12,9 @@ import { BROWSER_HANDLE_KEY,
   withExclusiveClipboardAccess,
 } from '@platejs/test/playwright';
 
-const pliteCoverageErrors = new WeakMap<
+const pageLoadErrors = new WeakMap<
   import('@playwright/test').Page,
-  string[]
+  BrowserRuntimeErrorRecorder
 >();
 
 const getEditor = (page: import('@playwright/test').Page) =>
@@ -159,16 +160,7 @@ const commitDOMComposition = async (
 
 test.describe('mentions example', () => {
   test.beforeEach(async ({ page }) => {
-    const errors: string[] = [];
-    pliteCoverageErrors.set(page, errors);
-    page.on('console', (message) => {
-      if (
-        message.type() === 'error' &&
-        message.text().includes('without a DOM coverage boundary')
-      ) {
-        errors.push(message.text());
-      }
-    });
+    pageLoadErrors.set(page, recordBrowserRuntimeErrors(page));
     await installReactRenderProfiler(page);
     await page.goto('/examples/plite/mentions');
     await expect(page.getByRole('textbox')).toBeVisible();
@@ -177,8 +169,7 @@ test.describe('mentions example', () => {
   test('renders mention element', async ({ page }) => {
     await expect(page.locator('[data-cy="mention-R2-D2"]')).toHaveCount(1);
     await expect(page.locator('[data-cy="mention-Mace-Windu"]')).toHaveCount(1);
-    await page.waitForTimeout(50);
-    expect(pliteCoverageErrors.get(page)).toEqual([]);
+    pageLoadErrors.get(page)?.assertNone();
   });
 
   test('keyboard undo restores select-all replacement content', async ({

@@ -46,7 +46,7 @@ test('initial unselected mounts do not read native selection between sibling vie
   });
   const runtime = new EditableDOMRuntime({ editor });
   const findRoot = vi
-    .spyOn(ReactEditor, 'findDocumentOrShadowRoot')
+    .spyOn(ReactEditor, 'resolveDocumentOrShadowRoot')
     .mockReturnValue(document);
   const Harness = () => {
     useEditableSelectionReconciler({
@@ -123,7 +123,9 @@ test.each(['before-frame', 'after-frame'] as const)(
     const range = document.createRange();
     range.setStart(text, 0);
     range.setEnd(text, 1);
-    vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+    vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+      document
+    );
     vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
     vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(range);
@@ -1426,7 +1428,9 @@ test('selection reconciler preserves node selection while clearing native select
     domSelection.setBaseAndExtent(firstText, 0, secondText, 3);
 
     vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
-    vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+    vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+      document
+    );
     vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
     const resolveDOMRange = vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot');
@@ -1513,7 +1517,9 @@ test('selection reconciler clears the updating guard when DOM export throws', ()
     domSelection.setBaseAndExtent(textNode, 0, textNode, 0);
 
     vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
-    vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+    vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+      document
+    );
     vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
     vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(
@@ -1592,7 +1598,9 @@ test('selection reconciler clamps stale DOM range offsets after text shortening'
     domSelection.setBaseAndExtent(textNode, 0, textNode, 0);
 
     vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
-    vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+    vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+      document
+    );
     vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
     const staleRange = document.createRange();
@@ -1688,7 +1696,9 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
     domSelection.setBaseAndExtent(firstText, 3, firstText, 3);
 
     vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
-    vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+    vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+      document
+    );
     vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
     const resolveDOMRange = vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot');
@@ -1974,7 +1984,9 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
     domSelection.setBaseAndExtent(firstText, 1, firstText, 1);
 
     vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
-    vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+    vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+      document
+    );
     vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
     const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');

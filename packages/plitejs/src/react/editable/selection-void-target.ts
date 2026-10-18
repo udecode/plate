@@ -286,7 +286,9 @@ export const selectEditableSelectableOwnerPath = ({
   writePliteViewSelection(editor, null);
   dispatchCommand(editor, editorCommands.select, { target: selection });
   ReactEditor.focus(editor);
-  getSelection(ReactEditor.findDocumentOrShadowRoot(editor))?.removeAllRanges();
+  const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+
+  if (root) getSelection(root)?.removeAllRanges();
 
   return path;
 };

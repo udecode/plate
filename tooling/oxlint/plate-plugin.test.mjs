@@ -558,6 +558,49 @@ describe('plate oxlint rules', () => {
     ],
   });
 
+  tester.run('no-strict-dom-lookup', plugin.rules['no-strict-dom-lookup'], {
+    invalid: [
+      {
+        // 979c00b350, TablePlugin.tsx; 888f9ccaed, browser-handle.ts
+        ...plate('const root = editor.api.dom.findDocumentOrShadowRoot();'),
+        errors: [{ messageId: 'strict' }],
+      },
+      {
+        ...plite('const { findKey } = DOMEditor;'),
+        errors: [{ messageId: 'strict' }],
+      },
+      {
+        ...plite("DOMEditor['assertPath'](editor, node);"),
+        errors: [{ messageId: 'strict' }],
+      },
+      {
+        ...plite(
+          'const api = { resolve: (node) => DOMEditor.assertDOMNode(editor, node) };'
+        ),
+        errors: [{ messageId: 'strict' }],
+      },
+      {
+        ...plite(
+          "const assertDOMNode = 'resolve';\nconst api = { [assertDOMNode]: (node) => DOMEditor.assertDOMNode(editor, node) };"
+        ),
+        errors: [{ messageId: 'strict' }],
+      },
+      {
+        ...plite('DOMEditor[`assertPath`](editor, node);'),
+        errors: [{ messageId: 'strict' }],
+      },
+      {
+        ...plite('assertDOMNode(editor, node);'),
+        errors: [{ messageId: 'strict' }],
+      },
+    ],
+    valid: [
+      plite(
+        'const api = { assertDOMNode: (node) => DOMEditor.assertDOMNode(editor, node) };'
+      ),
+    ],
+  });
+
   tester.run(
     'baseline identity',
     withBaseline('no-as-never', noAsNever, {

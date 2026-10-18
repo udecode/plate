@@ -40,6 +40,44 @@ Use `scope={{ type: 'children', from, to }}` when the boundary covers child
 nodes. Use `scope={{ type: 'self' }}` when the whole element is hidden by app
 chrome.
 
+A child that a renderer leaves unmounted without a boundary is a renderer bug.
+Plite reports it to the editor's `lifecycleErrorSink` with
+`source: "render-element"`, as [`renderElement`](editable#renderelement)
+says.
+
+## Children that load
+
+A renderer that shows its children only once something loads, such as a lazy
+component behind `<Suspense>` or an iframe it portals into, leaves them without
+DOM until then. Cover them with an unmounted boundary while they load, and use
+`selectionPolicy: "model"` so the selection can stay in them.
+
+```tsx
+const renderElement = ({ attributes, children, element, slots }) => {
+  if (element.type === "diagram") {
+    return (
+      <div {...attributes}>
+        <React.Suspense
+          fallback={slots.contentBoundary({
+            mounted: false,
+            renderPlaceholder: () => "Loading…",
+            scope: { from: 0, to: element.children.length - 1, type: "children" },
+            selectionPolicy: "model",
+          })}
+        >
+          <DiagramFrame>{children}</DiagramFrame>
+        </React.Suspense>
+      </div>
+    );
+  }
+
+  return <p {...attributes}>{children}</p>;
+};
+```
+
+`DiagramFrame` is a `React.lazy` component. React unmounts the fallback, and
+the boundary with it, once the children mount.
+
 ## Selection policy
 
 `selectionPolicy` controls keyboard and model selection through hidden content.

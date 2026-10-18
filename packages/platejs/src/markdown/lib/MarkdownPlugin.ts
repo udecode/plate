@@ -32,6 +32,7 @@ import {
   parseMarkdownInlineWithRuntime,
   parseMarkdownSliceWithRuntime,
   prepareMarkdownRuntime,
+  serializeMarkdownSliceWithRuntime,
   serializeMarkdownWithRuntime,
   withMarkdownRuntime,
 } from './internal/markdownConversion';
@@ -132,11 +133,10 @@ const getMarkdownReuse = (
   };
 };
 
-const createMarkdownDocument = (
+const toMarkdownBlocks = (
   runtime: MarkdownRuntime,
-  children: readonly Descendant[],
-  roots?: Readonly<Record<string, readonly Descendant[]>>
-): EditorDocumentValue => {
+  children: readonly Descendant[]
+): Element[] => {
   const output: Element[] = [];
   let inline: Descendant[] = [];
   const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
@@ -157,10 +157,7 @@ const createMarkdownDocument = (
   });
   flushInline();
 
-  return {
-    children: output,
-    ...(roots ? { roots: roots as Readonly<Record<string, Value>> } : {}),
-  };
+  return output;
 };
 
 const serializeMarkdownDataTransferSlice = (
@@ -169,18 +166,18 @@ const serializeMarkdownDataTransferSlice = (
   state: EditorCoreStateView
 ): string | null => {
   if (slice.openStart === 0 && slice.openEnd === 0) {
-    const result = serializeMarkdownWithRuntime(
+    const result = serializeMarkdownSliceWithRuntime(
       runtime,
-      createMarkdownDocument(runtime, slice.content, slice.roots)
+      toMarkdownBlocks(runtime, slice.content)
     );
 
     return result.ok ? result.data : null;
   }
   let failed = false;
   const serialize = (children: readonly Descendant[]) => {
-    const result = serializeMarkdownWithRuntime(
+    const result = serializeMarkdownSliceWithRuntime(
       runtime,
-      createMarkdownDocument(runtime, children)
+      toMarkdownBlocks(runtime, children)
     );
 
     if (!result.ok) {

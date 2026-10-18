@@ -747,8 +747,11 @@ export const createDOMCoverageSession = (
       };
     },
 
-    /** Resolve a Plite point to mounted DOM or to the covering boundary. */
-    resolveDOMPointOrBoundary(point: Point): DOMCoverageDOMPointResult {
+    /**
+     * Resolve a Plite point to mounted DOM or to the covering boundary, or
+     * `null` when neither answers.
+     */
+    resolveDOMPointOrBoundary(point: Point): DOMCoverageDOMPointResult | null {
       const boundary = coverage.getBoundaryForPoint(point);
 
       if (boundary) {
@@ -759,22 +762,22 @@ export const createDOMCoverageSession = (
         };
       }
 
-      return {
-        domPoint: getRoot
-          ? assertCoverageDOMResult(
-              resolveDOMPointInRoot(
-                editor as DOMEditorType<any>,
-                point,
-                getRoot()
-              )
-            )
-          : (editor as DOMEditorType<any>).api.dom.assertDOMPoint(point),
-        type: 'dom-point',
-      };
+      const domPoint = resolveDOMPointInRoot(
+        editor as DOMEditorType<any>,
+        point,
+        getRoot?.()
+      );
+
+      return domPoint ? { domPoint, type: 'dom-point' } : null;
     },
 
-    /** Resolve a Plite range to mounted DOM or to covered boundary ranges. */
-    resolveDOMRangeOrBoundary(range: ModelRange): DOMCoverageDOMRangeResult {
+    /**
+     * Resolve a Plite range to mounted DOM or to covered boundary ranges, or
+     * `null` when neither answers.
+     */
+    resolveDOMRangeOrBoundary(
+      range: ModelRange
+    ): DOMCoverageDOMRangeResult | null {
       const boundaries = coverage.getBoundariesForRange(range);
 
       if (boundaries.length > 0) {
@@ -785,18 +788,13 @@ export const createDOMCoverageSession = (
         };
       }
 
-      return {
-        domRange: getRoot
-          ? assertCoverageDOMResult(
-              resolveDOMRangeInRoot(
-                editor as DOMEditorType<any>,
-                range,
-                getRoot()
-              )
-            )
-          : (editor as DOMEditorType<any>).api.dom.assertDOMRange(range),
-        type: 'dom-range',
-      };
+      const domRange = resolveDOMRangeInRoot(
+        editor as DOMEditorType<any>,
+        range,
+        getRoot?.()
+      );
+
+      return domRange ? { domRange, type: 'dom-range' } : null;
     },
 
     /** Resolve native boundary DOM back to the Plite point it represents. */
@@ -835,13 +833,6 @@ export const createDOMCoverageSession = (
     },
   };
   return coverage;
-};
-
-const assertCoverageDOMResult = <T>(result: T | null): T => {
-  if (result === null) {
-    throw new Error('Cannot resolve DOM coordinates in this coverage view.');
-  }
-  return result;
 };
 
 /** Boundary and materialization state owned by one mounted editor view. */

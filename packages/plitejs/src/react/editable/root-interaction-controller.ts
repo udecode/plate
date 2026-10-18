@@ -1353,13 +1353,7 @@ export const useRootInteractionController = ({
         }
 
         selectionBridge?.beforeModelSelection();
-        try {
-          focusEditor.api.dom
-            .assertDOMNode(focusEditor)
-            .focus({ preventScroll: true });
-        } catch {
-          // The regular focus path below handles temporarily unmounted roots.
-        }
+        focusEditor.api.dom.editable()?.focus({ preventScroll: true });
         writePliteViewSelection(
           focusEditor,
           hasContentRootOwnerBetweenDragEndpoints({

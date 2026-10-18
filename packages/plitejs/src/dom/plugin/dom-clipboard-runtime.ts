@@ -35,6 +35,7 @@ import {
   isDOMElement,
   isDOMText,
 } from '../utils/dom';
+import { resolveLastEditorWindow } from '../utils/weak-maps';
 import {
   createDataTransferTransactionSpec,
   insertDataTransfer,
@@ -403,19 +404,10 @@ export const writeDOMDataTransferFragment = <V extends Value>(
 ) => {
   const clipboardFormatKey =
     payload.clipboardFormatKey ?? getDOMClipboardFormatKey(editor);
-  let { window } = payload;
-
-  if (!window) {
-    try {
-      window = DOMEditor.getWindow(editor);
-    } catch {
-      // Headless host adapters use the ambient encoder.
-    }
-  }
   const encoded = writeDOMFragmentData(data, {
     ...payload,
     clipboardFormatKey,
-    window,
+    window: payload.window ?? resolveLastEditorWindow(editor) ?? undefined,
   });
 
   const { explicitFormats } = options;
@@ -586,20 +578,18 @@ export const writeDOMRangeData = <V extends Value>(
 
   // COMPAT: Void selections can be anchored in their hidden spacer DOM. Clone
   // the full void element so external HTML payloads include visible content.
-  if (startVoid || endVoid) {
+  const startVoidDOM = startVoid
+    ? DOMEditor.resolveDOMNode(editor, startVoid[0])
+    : null;
+  const endVoidDOM = endVoid
+    ? DOMEditor.resolveDOMNode(editor, endVoid[0])
+    : null;
+
+  if (startVoidDOM || endVoidDOM) {
     const r = domRange.cloneRange();
 
-    if (startVoid) {
-      const [voidNode] = startVoid;
-      const domNode = DOMEditor.assertDOMNode(editor, voidNode);
-      r.setStartBefore(domNode);
-    }
-
-    if (endVoid) {
-      const [voidNode] = endVoid;
-      const domNode = DOMEditor.assertDOMNode(editor, voidNode);
-      r.setEndAfter(domNode);
-    }
+    if (startVoidDOM) r.setStartBefore(startVoidDOM);
+    if (endVoidDOM) r.setEndAfter(endVoidDOM);
 
     contents = r.cloneContents();
     attach = getDefaultFragmentAttach(contents);
@@ -721,15 +711,10 @@ export const readDOMFragmentData = <V extends Value>(
   const fragment = readClipboardFragmentPayload(data, clipboardFormatKey);
 
   if (fragment?.value) {
-    let window: Pick<Window, 'atob'> | undefined;
-
-    try {
-      window = DOMEditor.getWindow(editor);
-    } catch {
-      // Headless host adapters use the ambient decoder.
-    }
-
-    const slice = decodeClipboardSlice<V>(fragment.value, window);
+    const slice = decodeClipboardSlice<V>(
+      fragment.value,
+      resolveLastEditorWindow(editor) ?? undefined
+    );
 
     return slice ? importContentSlice(editor, slice) : null;
   }
@@ -746,16 +731,11 @@ export const readDOMClipboardSlice = <V extends Value>(
   const payload = readClipboardFragmentPayload(data, clipboardFormatKey);
 
   if (!payload) return Object.freeze({ kind: 'absent' });
-  let window: Pick<Window, 'atob'> | undefined;
-
-  try {
-    window = DOMEditor.getWindow(editor);
-  } catch {
-    // Headless host adapters use the ambient decoder.
-  }
-
   const decoded = payload.value
-    ? decodeClipboardSlice<V>(payload.value, window)
+    ? decodeClipboardSlice<V>(
+        payload.value,
+        resolveLastEditorWindow(editor) ?? undefined
+      )
     : null;
   const slice = decoded ? importContentSlice(editor, decoded) : null;
 

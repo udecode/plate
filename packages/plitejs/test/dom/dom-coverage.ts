@@ -1378,6 +1378,21 @@ describe('DOM coverage boundaries', () => {
     ).toEqual(['hidden-200']);
   });
 
+  test('answers null for an uncovered point and range with no DOM', () => {
+    const editor = createNestedEditor();
+    const point = { path: [1, 0], offset: 2 };
+    const { domCoverage } = testView(editor);
+
+    expect({
+      point: domCoverage.resolveDOMPointOrBoundary(point),
+      range: domCoverage.resolveDOMRangeOrBoundary({
+        kind: 'text',
+        anchor: point,
+        focus: point,
+      }),
+    }).toEqual({ point: null, range: null });
+  });
+
   test('keeps exact DOM coordinate APIs separate from virtualized boundaries', () => {
     withDom((document) => {
       const editor = createLargeEditor(500);

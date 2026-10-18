@@ -31,8 +31,8 @@ const mountOutsideFocusBoundary = () => {
     getWindow: () => window,
   });
   const editor = createEditor();
-  const findDocumentOrShadowRoot = vi
-    .spyOn(ReactEditor, 'findDocumentOrShadowRoot')
+  const resolveDocumentOrShadowRoot = vi
+    .spyOn(ReactEditor, 'resolveDocumentOrShadowRoot')
     .mockReturnValue(document);
 
   root.tabIndex = 0;
@@ -56,7 +56,7 @@ const mountOutsideFocusBoundary = () => {
     unmount() {
       detach();
       domPhaseScheduler.destroy();
-      findDocumentOrShadowRoot.mockRestore();
+      resolveDocumentOrShadowRoot.mockRestore();
       root.remove();
       outsideButton.remove();
 
@@ -142,9 +142,7 @@ test('keeps a newer editor refocus after an outside mouse press', () => {
 
 test('releases the explicit root even when another view has cleared the editor DOM binding', () => {
   const runtime = mountOutsideFocusBoundary();
-  vi.mocked(ReactEditor.findDocumentOrShadowRoot).mockImplementation(() => {
-    throw new Error('No editor-global DOM binding');
-  });
+  vi.mocked(ReactEditor.resolveDocumentOrShadowRoot).mockReturnValue(null);
   try {
     runtime.root.focus();
     runtime.outsideButton.dispatchEvent(

@@ -242,7 +242,8 @@ const editor = createEditor({
 ```
 
 Format error 带有 `key`、`mimeType`、`pluginName` 与 `phase`（`'accept'`、
-`'decode'` 或 `'encode'`）。未配置 sink 时，Plate 通过 `console.error` 记录。
+`'decode'` 或 `'encode'`）。未配置 sink 时，Plate 将其发送到 `reportError`；没有
+`reportError` 的环境改用 `console.error`。
 
 ### Paste 顺序
 

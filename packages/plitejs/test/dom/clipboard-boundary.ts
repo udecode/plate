@@ -3050,6 +3050,46 @@ describe('plite-dom clipboard boundary', () => {
     });
   });
 
+  it('copies a range into a selected void whose element has no DOM', () => {
+    withDom((document) => {
+      const source = createClipboardEditor(
+        [
+          {
+            type: 'paragraph',
+            children: [
+              { text: 'alpha ' },
+              {
+                type: 'mention',
+                character: 'R2-D2',
+                children: [{ text: '' }],
+              },
+              { text: ' omega' },
+            ],
+          },
+        ],
+        {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 2 },
+          focus: { path: [0, 1, 0], offset: 0 },
+        },
+        undefined,
+        [clipboardRichSchema]
+      );
+      const clipboard = new FakeDataTransfer();
+
+      mountInlineVoidEditorDOM(source, document);
+      const [mentionNode] = source.read((state) => state.nodes.get([0, 1]));
+      EDITOR_TO_KEY_TO_ELEMENT.get(source)!.delete(
+        source.api.dom.findKey(mentionNode)
+      );
+      NODE_TO_ELEMENT.delete(mentionNode);
+
+      source.api.dom.clipboard.writeSelection(clipboard);
+
+      expect(clipboard.getData('application/x-editor-fragment')).not.toBe('');
+    });
+  });
+
   it('exports a selected inline void as a Plite fragment without requiring block void spacer DOM', () => {
     withDom((document) => {
       const source = createClipboardEditor(
