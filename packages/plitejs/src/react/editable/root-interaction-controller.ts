@@ -832,11 +832,16 @@ const isRegressiveDragAutoScrollRange = ({
   return false;
 };
 
+const isRootLocalRange = (range: Range | null, root: RootKey) =>
+  !range || (range.anchor.root ?? root) === root;
+
 const canApplyCoordinateDragSelection = (
-  pendingInteraction: PendingRootInteraction
+  pendingInteraction: PendingRootInteraction,
+  root: RootKey
 ) =>
-  pendingInteraction.action.type === 'place-native-editable' ||
-  pendingInteraction.coordinateDragSelection;
+  isRootLocalRange(pendingInteraction.startRange, root) &&
+  (pendingInteraction.action.type === 'place-native-editable' ||
+    pendingInteraction.coordinateDragSelection);
 
 const clearDOMSelectionFromEvent = (event: MouseEvent<HTMLElement>) => {
   const rootNode = event.currentTarget.getRootNode() as Document | ShadowRoot;
@@ -1332,6 +1337,20 @@ export const useRootInteractionController = ({
 
       if (action.type === 'set-selection') {
         const range = withInteractionRangeRoot(action.range, root);
+        const selectionRoot = range.anchor.root ?? root;
+
+        if (selectionRoot !== root) {
+          const selectionEditor = getMountedViewEditor(selectionRoot);
+
+          if (selectionEditor) {
+            writePliteViewSelection(focusEditor, null);
+            dispatchCommand(selectionEditor, editorCommands.select, {
+              target: range,
+            });
+            focusPliteEditableAfterEventFrame(selectionEditor);
+          }
+          return;
+        }
 
         selectionBridge?.beforeModelSelection();
         try {
@@ -1572,6 +1591,24 @@ export const useRootInteractionController = ({
         const placementDOMPoint = rootChromeCoordinatePlacement
           ? getPliteStringPlacementDOMPoint(rootChromeCoordinatePlacement)
           : null;
+        // A content root owner hides its own children, so a click on its
+        // chrome places the caret in its content root instead.
+        const ownerChromeClickEndpoint =
+          startRange && RangeApi.isCollapsed(startRange)
+            ? resolveContentRootOwnerChromeEndpoint({
+                editor,
+                event,
+                owners: findContentRootOwners(editor),
+                point: startRange.anchor,
+                root,
+              })
+            : null;
+        const clickRange = ownerChromeClickEndpoint
+          ? {
+              anchor: ownerChromeClickEndpoint.point,
+              focus: ownerChromeClickEndpoint.point,
+            }
+          : startRange;
 
         if (ignoreBlankEditableRootClick && !startRange) {
           action = { type: 'ignore' };
@@ -1665,11 +1702,11 @@ export const useRootInteractionController = ({
           clientX: event.clientX,
           clientY: event.clientY,
           coordinateDragSelection: coordinateDragRootChromePlacement,
-          currentRange: startRange,
+          currentRange: clickRange,
           nativeSelectedTextClick: nativeEditableSelectedTextTarget,
           placementDOMPoint,
           preventNativeSelection,
-          startRange,
+          startRange: clickRange,
         };
 
         if (action.type === 'ignore') {
@@ -1699,13 +1736,13 @@ export const useRootInteractionController = ({
         }
 
         if (action.type === 'place-native-editable') {
-          if (startRange) {
+          if (clickRange) {
             profilePliteReactDuration(
               'root-mousedown.apply-place-native-selection',
               () =>
                 applyInteractionAction(
                   {
-                    range: startRange,
+                    range: clickRange,
                     type: 'set-selection',
                   },
                   { placementDOMPoint }
@@ -1761,7 +1798,7 @@ export const useRootInteractionController = ({
 
       if (
         ((projectedDrag && !projectedDrag.browserOwned) ||
-          canApplyCoordinateDragSelection(pendingInteraction)) &&
+          canApplyCoordinateDragSelection(pendingInteraction, root)) &&
         shouldIgnoreDragTarget(event)
       ) {
         event.preventDefault();
@@ -1784,7 +1821,10 @@ export const useRootInteractionController = ({
         return;
       }
 
-      if (disabled || !canApplyCoordinateDragSelection(pendingInteraction)) {
+      if (
+        disabled ||
+        !canApplyCoordinateDragSelection(pendingInteraction, root)
+      ) {
         stopDragAutoScroll(pendingDragAutoScrollRef);
         return;
       }
@@ -1871,7 +1911,7 @@ export const useRootInteractionController = ({
       if (
         pointerMoved &&
         ((projectedDrag && !projectedDrag.browserOwned) ||
-          canApplyCoordinateDragSelection(pendingInteraction)) &&
+          canApplyCoordinateDragSelection(pendingInteraction, root)) &&
         shouldIgnoreDragTarget(event)
       ) {
         event.preventDefault();
@@ -2018,7 +2058,7 @@ export const useRootInteractionController = ({
         event.nativeEvent
       );
       if (
-        canApplyCoordinateDragSelection(pendingInteraction) &&
+        canApplyCoordinateDragSelection(pendingInteraction, root) &&
         eventRange &&
         pendingInteraction.startRange &&
         pointerMoved
@@ -2045,7 +2085,7 @@ export const useRootInteractionController = ({
       }
 
       if (
-        canApplyCoordinateDragSelection(pendingInteraction) &&
+        canApplyCoordinateDragSelection(pendingInteraction, root) &&
         pendingInteraction.startRange &&
         pointerMoved
       ) {
@@ -2055,7 +2095,8 @@ export const useRootInteractionController = ({
       if (
         pendingAction.type === 'place-native-editable' &&
         pendingInteraction.startRange &&
-        !pointerMoved
+        (!pointerMoved ||
+          !isRootLocalRange(pendingInteraction.startRange, root))
       ) {
         applyInteractionAction(
           {

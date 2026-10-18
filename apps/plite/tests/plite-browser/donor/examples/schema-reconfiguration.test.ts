@@ -147,3 +147,52 @@ test('publishes schema-only behavior atomically across primary, named, and proje
     runtimeErrors.stop();
   }
 });
+
+test('places the caret in the projected root when clicking beside the card label', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await openExample(page, 'plite/schema-reconfiguration', {
+      ready: { editor: 'visible', text: 'probe' },
+      surface: { scope: '#schema-reconfiguration-main' },
+    });
+    const card = page.getByTestId('schema-reconfiguration-card');
+    const cardBox = await card.boundingBox();
+    const labelBox = await card
+      .getByText('Projected root', { exact: true })
+      .boundingBox();
+
+    if (!cardBox || !labelBox) {
+      throw new Error('Missing content card boxes');
+    }
+    await page.mouse.click(
+      cardBox.x + cardBox.width - 20,
+      labelBox.y + labelBox.height / 2
+    );
+    await expect(
+      page.locator('#schema-reconfiguration-projected')
+    ).toBeFocused();
+    await page.keyboard.type('Z');
+    await expect
+      .poll(async () => {
+        const value = JSON.parse(
+          (await page
+            .getByTestId('schema-reconfiguration-document')
+            .textContent()) ?? 'null'
+        );
+
+        return {
+          cardText: value.children[2].children[0].text,
+          projectedText:
+            value.roots['schema-reconfiguration:card:body'][0].children[0].text,
+        };
+      })
+      .toEqual({ cardText: '', projectedText: 'Z' });
+
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
