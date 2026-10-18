@@ -275,8 +275,8 @@ export function pageUrlOf(root, file) {
   const base = gitOrNull(root, 'merge-base', 'HEAD', remote);
   const forked = base ? lineOf(gitOrNull(root, 'show', `${base}:${rel}`)) : null;
   const landedLine = base ? lineOf(gitOrNull(root, 'show', `${remote}:${rel}`)) : null;
-  // A rebind wins only while origin keeps the fork point's line; once origin rebinds too, every checkout follows origin.
-  const url = !base || (own !== forked && landedLine === forked) ? own : (landedLine ?? own);
+  const rebindStands = own !== forked && landedLine === forked;
+  const url = !base || rebindStands ? own : (landedLine ?? own);
   const others = worktrees(root)
     .filter((tree) => tree !== root && existsSync(join(tree, rel)))
     .map((tree) => ({ tree, url: lineOf(readFileSync(join(tree, rel), 'utf-8')) }))
@@ -1723,7 +1723,6 @@ function page(planPath, { folded = false, now = new Date(), session = process.en
     lead: repoPath,
     session,
     at,
-    // The body shows the lead's whole hand-back but only another iteration's questions, and no carried plan's.
     plans: [self, ...iterations.filter((entry) => entry.path !== planPath)].map(({ path, plan: entry }) => ({
       plan: relative(root, path),
       slug: slugOf(path),

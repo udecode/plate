@@ -44,7 +44,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|mcp__ccd_host__sync_with_base_branch",
         "hooks": [
           {
             "type": "command",

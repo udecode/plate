@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
-// Usage: a Claude Code PreToolUse hook on Bash, `node .agents/pstack/guard.mjs`.
+// Usage: a Claude Code PreToolUse hook on Bash and on the desktop app's
+// sync_with_base_branch tool, `node .agents/pstack/guard.mjs`.
 // Denies an agent's `git push` that forces or deletes the branch or the
 // protected branch that .agents/pstack.json names: --force, -f, a short-flag
 // cluster holding f or d, --force-with-lease, --mirror, --delete, a `+`
@@ -8,13 +9,16 @@
 // destination is HEAD, targets the current branch. It reads every command in
 // the line, including `bash -c` payloads and `$(...)` bodies, skips heredoc
 // bodies, passes every other command, and prints the command for the owner to
-// run in their own terminal. The owner's terminal never runs this hook.
+// run in their own terminal. The owner's terminal never runs this hook. It
+// also denies the app's base-branch sync, which refuses the branch whenever it
+// changes .claude files, and names the rebase to run instead.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const CONFIG = new URL('../pstack.json', import.meta.url);
+const BASE_SYNC = /(?:^|__)sync_with_base_branch$/u;
 const GIT_VALUE_OPTIONS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--config-env']);
 const PUSH_VALUE_OPTIONS = new Set(['-o', '--push-option', '--repo', '--receive-pack', '--exec']);
 const PREFIXES = new Set(['sudo', 'env', 'command', 'builtin', 'exec', 'nohup', 'time', 'timeout']);
@@ -151,10 +155,25 @@ function rewrites(words, cwd) {
   return refspecs.length > 0 ? targets : [current()];
 }
 
+const deny = (reason) => {
+  process.stdout.write(
+    JSON.stringify({
+      hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: `guard.mjs: ${reason}` },
+    })
+  );
+  process.exit(0);
+};
+
 const input = JSON.parse(readFileSync(0, 'utf8'));
-const command = input.tool_input?.command;
-if (typeof command !== 'string' || !existsSync(CONFIG)) process.exit(0);
+if (!existsSync(CONFIG)) process.exit(0);
 const config = JSON.parse(readFileSync(CONFIG, 'utf8'));
+if (BASE_SYNC.test(input.tool_name ?? '')) {
+  deny(
+    `the app's base-branch sync refuses origin/${config.branch} whenever it changes .claude files. Commit your work, then run \`git fetch origin ${config.branch} && git rebase origin/${config.branch}\` in this worktree; land.mjs also rebases before it pushes.`
+  );
+}
+const command = input.tool_input?.command;
+if (typeof command !== 'string') process.exit(0);
 const kept = new Set([config.branch, config.protected].filter(Boolean));
 const hits = new Set();
 eachCommand(command, (words) => {
@@ -164,14 +183,5 @@ eachCommand(command, (words) => {
   }
 });
 if (hits.size > 0) {
-  const names = [...hits].join(' and ');
-  process.stdout.write(
-    JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
-        permissionDecision: 'deny',
-        permissionDecisionReason: `guard.mjs: agents never force-push or delete ${names}. Tell the owner, who can run it in their own terminal if they want it:\n  ${command}`,
-      },
-    })
-  );
+  deny(`agents never force-push or delete ${[...hits].join(' and ')}. Tell the owner, who can run it in their own terminal if they want it:\n  ${command}`);
 }

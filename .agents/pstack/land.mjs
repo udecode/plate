@@ -11,8 +11,10 @@
 // commit, so a run stopped by a conflict or a failed check reruns as is.
 //
 // The message is one Conventional Commit whose body holds a `Beyond the ask:`
-// line. A rebase conflict stops with the rebase in progress and lists the
-// conflicting paths. A push rejected because <branch> moved rebases and
+// line. The commit gains a `Session:` line naming the agent session that
+// landed it, and a `Plan:` line when the task changes exactly one plan, so
+// review.mjs lists each session's commits together. A rebase conflict stops
+// with the rebase in progress and lists the conflicting paths. A push rejected because <branch> moved rebases and
 // retries up to three times. It never force-pushes.
 
 import { spawnSync } from 'node:child_process';
@@ -23,7 +25,11 @@ import { join } from 'node:path';
 const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]...';
 const SUBJECT = /^(feat|fix|docs|refactor|test|chore|perf)(\([^()\s]+\))?!?: \S(.*\S)?$/u;
 const BEYOND = /^Beyond the ask: \S/mu;
+const SESSION = /^Session: \S/mu;
+const PLAN = /^Plan: \S/mu;
+const DATED = /^\d{4}-\d\d-\d\d-[^/]+\.md$/u;
 const RETRIES = 3;
+const session = process.env.CLAUDE_CODE_HOST_SESSION_ID || process.env.CLAUDE_CODE_SESSION_ID || process.env.CODEX_SESSION_ID || '';
 
 const fail = (message, code = 1) => {
   console.error(`land.mjs: ${message}`);
@@ -50,7 +56,7 @@ const messageText = messageFile === null ? null : readFileSync(messageFile, 'utf
 
 process.chdir(must('rev-parse', '--show-toplevel'));
 const config = JSON.parse(readFileSync('.agents/pstack.json', 'utf8'));
-const { branch, protected: guarded, lintFix } = config;
+const { branch, protected: guarded, lintFix, plans = 'docs/plans' } = config;
 if (!branch) fail('.agents/pstack.json names no branch');
 const upstream = `refs/remotes/origin/${branch}`;
 const mode = git('config', '--get', 'pstack.delivery').stdout.trim() === 'push' ? 'push' : 'pr';
@@ -92,7 +98,15 @@ function validate(text) {
   return { subject, body: rest.join('\n').trim() };
 }
 
-function squash(text) {
+function trailers(body, staged) {
+  const lines = [];
+  if (session && !SESSION.test(body)) lines.push(`Session: ${session}`);
+  const touched = staged.filter((path) => path.startsWith(`${plans}/`) && DATED.test(path.slice(plans.length + 1)));
+  if (!PLAN.test(body) && touched.length === 1) lines.push(`Plan: ${touched[0]}`);
+  return lines.length > 0 ? `${body}\n\n${lines.join('\n')}` : body;
+}
+
+function squash({ subject, body }) {
   const head = must('rev-parse', 'HEAD');
   const base = must('merge-base', 'HEAD', upstream);
   must('add', '--all');
@@ -101,8 +115,9 @@ function squash(text) {
     must('reset', '--quiet', '--soft', head);
     fail(`nothing to land: the task changes nothing against origin/${branch}`);
   }
+  const staged = must('diff', '--cached', '--name-only').split('\n').filter(Boolean);
   const file = join(mkdtempSync(join(tmpdir(), 'land-')), 'message');
-  writeFileSync(file, text);
+  writeFileSync(file, `${subject}\n\n${trailers(body, staged)}\n`);
   const run = spawnSync('git', ['commit', '--quiet', '--file', file], { stdio: 'inherit' });
   if (run.status !== 0) {
     must('reset', '--quiet', '--soft', head);
@@ -114,7 +129,7 @@ fetch();
 const ahead = Number(must('rev-list', '--count', `${upstream}..HEAD`));
 if (messageText === null && ahead === 0) fail(`HEAD has no task commit to take a message from; pass --message <file>\n${USAGE}`);
 const message = validate(messageText ?? must('log', '-1', '--format=%B'));
-squash(`${message.subject}\n\n${message.body}\n`);
+squash(message);
 rebase();
 
 const changed = must('diff', '--name-only', '--diff-filter=d', upstream, 'HEAD').split('\n').filter(Boolean);

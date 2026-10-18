@@ -127,8 +127,10 @@ For release work, use the current Release Lanes modes:
 Each task works in its own worktree and lands on `next` through
 `node .agents/pstack/land.mjs`, which squashes it into one Conventional Commit,
 rebases it onto `origin/next`, runs its checks, and pushes `next` or opens a PR
-as the clone's `git config pstack.delivery` says. Review what landed with
-`node .agents/pstack/review.mjs`. A merge, a release, a push to `main` and an
+as the clone's `git config pstack.delivery` says. Each commit names the session
+that landed it. `node .agents/pstack/review.mjs` lists the commits you have not
+reviewed, grouped by session, and `--done <session>` marks one session reviewed.
+A session that landed work ends with a 👀 title. A merge, a release, a push to `main` and an
 external message still need your word. [AGENTS.md](../../AGENTS.md) owns scope, authority and
 delivery. The [Release Lanes skill](../../.agents/skills/release-lanes/SKILL.md)
 owns release mode details.

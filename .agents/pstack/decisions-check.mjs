@@ -167,7 +167,9 @@ function rowProblems(line, where, opened, chips) {
       found.push(`${where}: an open panel finding names its patch: and owner:`);
     }
   }
-  if (rest[0] !== 'chip' && CHIP_STATES.includes(status)) found.push(`${where}: an ${status} result belongs only in a chip row`);
+  if (rest[0] !== 'chip' && CHIP_STATES.includes(status)) {
+    found.push(`${where}: ${/^[aeiou]/u.test(status) ? 'an' : 'a'} ${status} result belongs only in a chip row; a run's log records the same step as applied, decided, fixed or verified`);
+  }
   if (rest[0] === 'chip' && chips) found.push(...chipRowProblems(rest, chips, where));
   const reviewerRow = isHandOffReview(rest[0]);
   return reviewerRow ? found : [...found, ...missingPaths(rest[3], where)];

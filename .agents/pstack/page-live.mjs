@@ -13,8 +13,10 @@ export function handbackOf(parts, { blob, history = [], landed = false }, { sess
   return { kind: 'handback', v: 1, plan, slug, title, session, at, since, stage, state, blob, history, landed: Boolean(landed), status, brief, asks, picks, ...(stop ? { stop } : {}) };
 }
 
-// A finished plan's picks were settled at its own hand-back, as the body shows Defaults only for open plans.
-export const asking = (copy) => copy.asks.length > 0 || copy.state === 'waiting' || copy.state === 'blocked' || (copy.picks.length > 0 && copy.state !== 'done');
+export const asking = (copy) => {
+  const unsettledPicks = copy.picks.length > 0 && copy.state !== 'done';
+  return copy.asks.length > 0 || copy.state === 'waiting' || copy.state === 'blocked' || unsettledPicks;
+};
 
 export function supersedes(a, b) {
   if (a.plan !== b.plan) return false;
@@ -151,12 +153,11 @@ async function deck(collection, words, size) {
     landed = true;
     target.scrollIntoView();
   };
-  // The newest notes stay live; once they fill the window, the older ones are read once, page by page, so an old question still shows.
   const notes = db.collection(collection).orderBy('at', 'desc');
-  const read = { live: [], older: [] };
-  let paged = false;
+  const read = { live: [], backfill: [] };
+  let backfilled = false;
   const fail = () => say('Other runs stopped updating. Reload the page.');
-  const older = async (snapshot) => {
+  const backfillOnce = async (snapshot) => {
     const seen = new Set(snapshot.docs.map((doc) => doc.id));
     let oldest = read.live.at(-1).at;
     for (;;) {
@@ -164,7 +165,7 @@ async function deck(collection, words, size) {
       const fresh = next.docs.filter((doc) => !seen.has(doc.id));
       for (const doc of fresh) {
         seen.add(doc.id);
-        read.older.push(doc.data());
+        read.backfill.push(doc.data());
       }
       if (!fresh.length || next.size < size) return;
       oldest = fresh.at(-1).data().at;
@@ -172,11 +173,11 @@ async function deck(collection, words, size) {
   };
   notes.limit(size).onSnapshot(async (snapshot) => {
     read.live = snapshot.docs.map((doc) => doc.data());
-    if (snapshot.size === size && !paged) {
-      paged = true;
-      await older(snapshot).catch(fail);
+    if (snapshot.size === size && !backfilled) {
+      backfilled = true;
+      await backfillOnce(snapshot).catch(fail);
     }
-    draw([...read.live, ...read.older]);
+    draw([...read.live, ...read.backfill]);
   }, fail);
 }
 

@@ -15,8 +15,7 @@ import { blobFacts, contextOf, gitOrNull, mainCheckout, page, pageUrlOf, parsePl
 const USAGE = 'Usage: node .agents/pstack/page-stop.mjs beacon <plan.md> [--session <id>] | stop <plan.md> --own <dir> [--no-db] [--session <id>]';
 const CODEX = 'Nothing to send: outside Claude Code, such as in Codex, a run saves no notes; render the page locally';
 const RUNNING = { now: 'working', waiting: 'waiting', blocked: 'blocked' };
-// A printed set may never reach the page, so an unmoved stage is sent again once this long has passed.
-const HEARTBEAT = 30 * 60_000;
+const RESEND_UNMOVED_AFTER = 30 * 60_000;
 
 function currentOf(planPath) {
   const stages = stagesOf(planPath);
@@ -67,12 +66,11 @@ function ownDocs(dir) {
 const call = (tool, payload) => `${tool} ${JSON.stringify(payload)}`;
 const runDir = (root, plansDir, slug) => join(mainCheckout(root), relative(root, plansDir), 'artifacts', slug);
 
-// The stage this session last noted for a plan on one page, and since when it holds; due when it moved or a heartbeat passed.
-function noted({ root, plansDir }, slug, session, { url, stage, state }, now) {
+function markBeacon({ root, plansDir }, slug, session, { url, stage, state }, now) {
   const file = join(runDir(root, plansDir, slug), `page-beacon.${session}.json`);
   const last = existsSync(file) ? JSON.parse(readFileSync(file, 'utf-8')) : null;
   const same = last?.url === url && last.stage === stage && last.state === state && typeof last.since === 'string';
-  if (same && now - Date.parse(last.at) < HEARTBEAT) return { due: false, since: last.since };
+  if (same && now - Date.parse(last.at) < RESEND_UNMOVED_AFTER) return { due: false, since: last.since };
   const since = same ? last.since : now.toISOString();
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, `${JSON.stringify({ url, stage, state, since, at: now.toISOString() })}\n`);
@@ -87,7 +85,7 @@ function beacon(planPath, session) {
   const { url } = pageUrlOf(root, subjectPath ?? planPath);
   if (!url) return ['Nothing to send: the page has no Page: line yet; run a stop, which publishes it'];
   const now = new Date();
-  const { due, since } = noted(context, slug, session, { url, ...current }, now);
+  const { due, since } = markBeacon(context, slug, session, { url, ...current }, now);
   if (!due) return [`Nothing to send: ${slug} is still at ${current.stage}, ${current.state}`];
   const doc = `${slug}.b.${session.slice(0, 8)}.${now.getTime()}`;
   const data = { kind: 'beacon', v: 1, plan: repoPath, slug, title: plan.title || slug, session, ...current, since, at: now.toISOString() };
@@ -118,16 +116,17 @@ function stop(planPath, { own, db, session }) {
   const docs = ownDocs(own).filter((doc) => doc.data.session === session);
   const mine = session.slice(0, 8);
   const current = currentOf(planPath);
-  const { since } = noted(context, slug, session, { url: url ?? '', ...current }, now);
+  const { since } = markBeacon(context, slug, session, { url: url ?? '', ...current }, now);
   const record = (path, fields) => handbackOf({ plan: relative(root, path), slug: slugOf(path), ...planParts({ path, plan: parsePlan(readFileSync(path, 'utf-8')) }) }, facts.get(path), { session, ...fields });
   const lead = record(planPath, { at, since, ...current });
   const digest = createHash('sha256').update(JSON.stringify({ ...lead, at: null, since: null })).digest('hex').slice(0, 12);
-  // Another shown plan this checkout changed, or one that asks, gets a record too, so a checkout that lacks it cannot drop it; a committed copy dates from its commit.
   const changed = changedSince(root, branch);
+  const committedAt = (path) => facts.get(path).at ?? at;
+  const keeps = ({ path, data }) => changed.has(path) || asking(data);
   const others = [...facts.keys()]
     .filter((path) => path !== planPath)
-    .map((path) => ({ path, data: record(path, { at: facts.get(path).at ?? at, ...currentOf(path) }) }))
-    .filter(({ path, data }) => changed.has(path) || asking(data))
+    .map((path) => ({ path, data: record(path, { at: committedAt(path), ...currentOf(path) }) }))
+    .filter(keeps)
     .map(({ path, data }) => ({ id: `${slugOf(path)}.h.${mine}.${facts.get(path).blob.slice(0, 12)}`, data }));
   const records = [{ id: `${slug}.s.${mine}.${digest}`, data: { ...lead, stop: digest } }, ...others];
   const ids = new Set(records.map((each) => each.id));

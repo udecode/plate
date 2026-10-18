@@ -411,8 +411,14 @@ architect runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh
 - **Card sessions skip the chips law.** `chips brief` prints the ledger row command with the task's stored decision shell-quoted, plus the started-row rules, so a card session reads neither `.agents/pstack/rules/chips.md` nor the chips skill unless it offers or drops another task.
 - **The rules table leaves CODING_STANDARDS.md.** `docs/development/enforcement.md` holds the table that `/pstack:correct` keeps, and CODING_STANDARDS.md keeps its gates and a pointer that names when to read the table. `AGENTS.md`, `VISION.md` and `docs/development/agent-skills.md` cite the new file.
 - **The block has a byte budget.** dotai's `scripts/validate-skills` refuses `assets/block.md` over 39,500 bytes and says to move a rule's detail into a rule file.
+- **Landed commits name their session.** `land.mjs` ends each commit with `Session:` and, when the task changes one dated plan, `Plan:`. `review.mjs` lists unreviewed commits grouped by session, `--done <session>` marks one session reviewed, and a run that landed a commit closes with a 👀 title.
+- **Tools block two trunk mistakes.** `guard.mjs` denies the desktop app's `sync_with_base_branch`, which refuses `next` whenever it changes `.claude` files, and names the rebase. `sync-pstack apply` and `sync` refuse to write a trunk project's main checkout when its clone sets `pstack.delivery`.
 
 ## Open work
+
+- The per-session trail change shipped fast and is owed a review. owner: zbeyens. stop: "full" or the owner drops the review.
+- A worktree force-removed despite the cleanup scan's ask, and an archived session the owner still needed, each happened once. A second time gets a check through `/pstack:correct`. owner: the lead. stop: the second time either happens.
+- ellie and plate pick up dotai `fadcba8` at their next sync. owner: zbeyens. stop: each project's next sync.
 
 - plate-2's agent-context changes wait on your commit: `AGENTS.md`, `CODING_STANDARDS.md`, `VISION.md`, `docs/development/agent-skills.md`, `docs/development/enforcement.md`, `.agents/pstack.json`, `.agents/pstack/` helpers and rules, `.agents/skills/chips/SKILL.md`, `skills-lock.json`, `docs/plans/2026-10-17-agent-context.md` and its log, and this subject's fold. owner: zbeyens. stop: the owner commits them.
 - plate syncs the agent-context change at its own next sync, which also opens its PR. owner: zbeyens. stop: plate's next sync.
