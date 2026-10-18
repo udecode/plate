@@ -159,6 +159,7 @@ To take one, start a session on it in its own worktree, read its rows, and land 
 
 Many of these fix the chips, plan-open, freeze and patch-landing machinery that the trunk cut removes. Check that the code a task names still exists before starting it.
 
+- Fix the 28 repository paths that agent rule references name but the tree no longer has, listed in `docs/plans/artifacts/2026-10-17-trunk-delivery/route-scan-a1.log`, such as `docs/maintainer/security.md` and `apps/www/src/__registry__/index.ts`.
 - `t_fd284610` Decide which plan a subject page leads with at a hand-back. Kind decide, effort xhigh. Started in session `local_d57d286d-7743-4521-8848-d5a1eb02511d`. Writes `/Users/zbeyens/git/dotai/skills/sync-pstack/assets/pstack/plan-page.mjs`, `/Users/zbeyens/git/dotai/skills/sync-pstack/assets/pstack/rules/pages.md`, `.agents/pstack/plan-page.mjs` and 10 more.
 - `t_a559e970` Give mutate.mjs's summary an exit line plan-open accepts. Kind fix, effort high. Writes `/Users/zbeyens/git/dotai/skills/sync-pstack/assets/pstack/mutate.mjs`.
 - `t_68844aa2` Have each panel seat state the owner's goal before it judges feasibility. Kind fix, effort high. Writes `/Users/zbeyens/git/dotai/skills/sync-pstack/assets/pstack/rules/panel.md`.

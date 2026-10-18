@@ -1,6 +1,6 @@
 # Agents land their own work on next
 
-Status: building: Phase 0 is done, step 1.6 lands its first real push, and Phase 2 runs in the trunk-phase-1 session
+Status: partial: the fresh-session routing smoke of step 2.3 waits on its session card
 Topic: pstack
 Playbook: plan
 
@@ -10,11 +10,11 @@ The owner asked why worktrees and the uncommitted `next` checkout cost so much, 
 
 ### What will change?
 
-Agents land each task on next as one commit from their own worktree, and you review a short commit list instead of PRs. Contributors still get PRs. Most of our extra workflow rules go back to pstack's.
+Agents land each task on next as one commit from their own worktree, and a review script lists them. A clone without the push setting opens a PR instead. plate-2's workflow rules shrank from 145 KB to 67 KB.
 
 ### What could go wrong?
 
-An agent ships a change nobody asked for, and you notice days later. Two agents edit the same lines, and one redoes its work. Cutting the ledger and log checks removes guards that past mistakes added.
+No panel has reviewed the landing script or the cuts; say "full" for one. Each commit says what it did beyond the ask, which is where you catch unasked changes. A contributor's fork and a fresh session's routing are untested.
 
 ## Teach
 
@@ -33,13 +33,13 @@ That removes patch landing, the waits for your commits and most rules built arou
 | Decision log checks | A plain log like pstack's, plus proof logs | Keep the strict checker | keep checks | small |
 | Who finds evidence | The lead's own model, one level lower | Keep it on Codex | codex explorer | small |
 | Review of the landing script | Owed until you say "full", because your "continue complete all without pausing" carried on the fast request and no panel ran before the first real push (look) | A panel before the first real push | full | small |
-| Topic page link | A new page at https://claude.ai/artifact/YTszMh8atAUzyhXUKobq91, because https://claude.ai/artifact/KxphyH719Pz39dqythPSZ8 no longer opens | Keep the old link | old page | detail |
+| Topic page link | A new page at https://claude.ai/artifact/Q5TusVfYgEUm4SEStmFRBd, because https://claude.ai/artifact/YTszMh8atAUzyhXUKobq91 and https://claude.ai/artifact/KxphyH719Pz39dqythPSZ8 no longer open (look) | Publish no page for this subject | no page | detail |
 | Trunk rules before your Phase 0 commit | They are live in this checkout's AGENTS.md now, uncommitted, while the rules outside the block still say you own commits and win (look) | Keep user delivery here until Phase 0 lands | hold trunk | big |
 | What the force-push guard does | Blocks the push and shows you the command to run yourself (look) | Asks you to approve it inside the session | ask | small |
 | A push rejected because next moved | Rebases and pushes again, up to three times, without rerunning the checks | Reruns the checks before each retry | recheck | small |
 | What else the guard blocks | Deleting or mirroring next or main too | Force-push only | force only | detail |
 | Where the worktree and landing rules live | A rule file the Delivery line points to, because the block hit its size limit | Inline in the block | inline | detail |
-| Open chips at the cut | All 196 are frozen into `docs/plans/backlog.md`, and the six started ones land through their own sessions with `land.mjs` (look) | 190 session cards or public issue drafts under Needs you | issue drafts | big |
+| Open chips at the cut | All 196 are frozen into a backlog file, and the six started ones land through their own sessions with the landing script (look) | 190 session cards or public issue drafts under Needs you | issue drafts | big |
 | Who runs Phase 2 | The trunk-phase-1 session, which built Phase 1, from its own worktree (safe) | This session | here | detail |
 
 ## Public API
@@ -133,8 +133,8 @@ Edits go to dotai's shared source through sync-pstack's Lesson mode, then sync h
 - [x] 1.4 Add a `trunk` delivery mode to the block whose Delivery and Git rules say to finish with `land.mjs`, and set plate-2's `delivery` to `trunk`. Proof: `validate-skills` and the sync check pass, and the other projects' rendered blocks do not change. Done in dotai `4f61b8d`, synced from `9e3de89`; `docs/plans/artifacts/2026-10-17-trunk-delivery/validate-skills-a2.log`, `docs/plans/artifacts/2026-10-17-trunk-delivery/sync-check-a1.log`, `docs/plans/artifacts/2026-10-17-trunk-delivery/sync-verify-a1.log` and `docs/plans/artifacts/2026-10-17-trunk-delivery/render-compare-a2.log`.
   The Delivery line points to `.agents/pstack/rules/land.md`, which holds the worktree and landing rules, and the Git rule drops the in-place checkout text without naming `land.mjs`.
 - [x] 1.5 Run a panel on `land.mjs` and the new Delivery and Git text before the first real push. Proof: the panel rows in this plan's log. skip: fast, the owner said "ok go! fast mode" and then "continue complete all without pausing", so the panel is owed until "full".
-- [ ] 1.6 Sync plate-2, set `pstack.delivery push` in this clone, land one real task with `land.mjs`, open one PR from a scratch clone without the setting, and see the guard block an agent's force-push. Proof: the three `proof.mjs` logs.
-  The sync part is done, and `git config pstack.delivery push` is set in this clone. The first real land is the commit that adds `docs/plans/backlog.md`.
+- [x] 1.6 Sync plate-2, set `pstack.delivery push` in this clone, land one real task with `land.mjs`, open one PR from a scratch clone without the setting, and see the guard block an agent's force-push. Proof: the three `proof.mjs` logs.
+  Done. The first real land failed because `ultracite fix` exits 2 when lint ignores every file it gets, which a docs-only commit always hits (`docs/plans/artifacts/2026-10-17-trunk-delivery/land-push-a1.log`). `lintFix` became `pnpm lint:task --allow-ignored` in `714b241607` (`docs/plans/artifacts/2026-10-17-trunk-delivery/land-lint-a1.log`), and the backlog then landed as `2225378463` (`docs/plans/artifacts/2026-10-17-trunk-delivery/land-push-a2.log`). A clone without the setting opened https://github.com/udecode/plate/pull/5191 (`docs/plans/artifacts/2026-10-17-trunk-delivery/land-pr-a1.log`). The guard denied an agent's `git push --force origin HEAD:next` before it ran (`docs/plans/artifacts/2026-10-17-trunk-delivery/guard-live-a1.log`); the hook denies the tool call itself, so that proof is the saved denial, not a `proof.mjs` log.
 
 ### Phase 2. Cut back to pstack
 
@@ -143,7 +143,9 @@ Edits go to dotai's shared source through sync-pstack's Lesson mode, then sync h
 - [x] 2.2 In plate-2, drop the autostage and freeze hooks, the Worktrees troubleshooting section, the autostage paragraph and the cut parts of the seven playbooks, swap the `pr` review row for `push`, and update `docs/development/agent-skills.md`. Proof: `check-playbooks.mjs`, `pnpm run prepare` and the sync check.
   Done in the commit that ticks this box. `check-playbooks-p2-a1.log`, `prepare-p2-a1.log`, `sync-resources-check-p2-a1.log` and `sync-check-p2-a1.log` in the run directory all exit 0. The `chips` and `redo` skills are uninstalled and listed in `dropped`, `.claude/settings.json` sets `worktree.baseRef` to `head`, and `VISION.md`, `enforcement.md` and the rule references no longer name the cut helpers. Tooling and dotai lines the cut left behind are under Open work.
 - [ ] 2.3 Smoke one plain request per playbook in a fresh session and check it routes and lands through `land.mjs`. Proof: each smoke answer saved in the run directory.
-- [ ] 2.4 Run the writing passes, then land this plan's plate-2 changes with `land.mjs`. Proof: the landed commit on `origin/next`.
+  Partly done. A scan of the 81 agent files on the seven routes found no live cut rule, and 28 stale paths that predate this plan (`docs/plans/artifacts/2026-10-17-trunk-delivery/route-scan-a1.log`). The fresh-session run waits on a session card: this turn came from another session's report, so the app refused to start a session, and fast drops subagents.
+- [x] 2.4 Run the writing passes, then land this plan's plate-2 changes with `land.mjs`. Proof: the landed commit on `origin/next`.
+  Done. The plate-2 changes landed through `land.mjs` as `714b241607`, `2225378463` and `dc06078008`, and this Close lands in the commit that carries it. `unslop` ran over the lead's plan and backlog prose before each land.
 
 ## Evidence
 
@@ -151,8 +153,10 @@ Measured from plate-2 session transcripts over three days, with the scripts in `
 
 ## Open work
 
-- Step 1.6, the scratch PR and a live guard block. owner: the lead session. stop: none. Tracked here, in Phase 1.
-- The six started card sessions land through `land.mjs`: `t_fd284610`, `t_6e339e60`, `t_80279835`, `t_dd0dd0bd`, `t_a7c71be6` and `t_e126f178`. owner: each task's own session. stop: its own run. Tracked in `docs/plans/backlog.md`.
+- Run step 2.3's seven routing requests in a fresh session. owner: the session card "Smoke plate-2 routing after the trunk cut". stop: you start it. Tracked here.
+- Merge or close https://github.com/udecode/plate/pull/5191, the PR-mode proof, which drops 11 chips-only tasks from the backlog. owner: you. stop: none, because step 2.2 landed in `dc06078008`. Tracked here.
+- Five started card sessions still land through `land.mjs`: `t_fd284610`, `t_6e339e60`, `t_80279835`, `t_dd0dd0bd` and `t_a7c71be6`. `t_e126f178` landed as `249c28301c`. owner: each task's own session. stop: its own run. Tracked in `docs/plans/backlog.md`.
+- Land once from a contributor's fork clone, where `origin` is the fork, and check that `gh pr create` targets `udecode/plate`. owner: you, or the first contributor PR. stop: none. Tracked here.
 - The panel on `land.mjs`, `guard.mjs`, `setup.mjs`, `rules/land.md` and the Delivery line, owed because this build ran fast. owner: the session that runs your "full". stop: you say "full". Tracked here, in step 1.5.
 - Rerun `docs/plans/artifacts/2026-10-17-trunk-delivery/probe/ask-bypass.sh` to learn whether a hook's ask prompts in bypass mode; the 2026-10-17 run hit the weekly usage limit in every arm. owner: the session that resumes this plan. stop: the limit resets on 2026-10-22, and an ask that prompts flips the guard to ask. Tracked here.
 - ellie and plate still render from their last sync. This change renders nothing new there, but dotai `9e3de89`, another session's plan-page and `cross.mjs` edits pushed with it, does. owner: the session that started this one. stop: their next sync. Tracked here.
@@ -161,12 +165,20 @@ Measured from plate-2 session transcripts over three days, with the scripts in `
 
 ## Close
 
-Reversals and deviations first. Step 1.4 asked for Delivery and Git rules that name `land.mjs`. The block was over its 39,500-byte limit with them inline, so the Delivery line now points to a new `rules/land.md` that only trunk projects get, and the Git rule just drops the in-place checkout text. The guard was meant to ask when a hook's ask still prompts in bypass mode. The probe hit the weekly usage limit in every arm, so the guard blocks and prints the command, with ask as the reversing word. Step 1.5's panel was skipped under fast and now runs before the first real push.
+Reversals and deviations first.
 
-What landed: dotai `4f61b8d` adds trunk delivery, with `land.mjs`, `review.mjs`, `guard.mjs`, `setup.mjs`, `rules/land.md`, the delivery gate in `sync-pstack.mjs` and 9 tests. dotai `9e3de89` carries other sessions' plan-page and `cross.mjs` edits, as dotai's rules ask. plate-2 is synced from `9e3de89` and left uncommitted: delivery is trunk, AGENTS.md has the new Delivery line, there are 4 new helpers and `rules/land.md`, and `.claude/settings.json` wires the guard and setup hooks.
+- Step 0.2 froze the 196 open chips into `docs/plans/backlog.md` instead of turning them into session cards or issue drafts. "issue drafts" reverses it.
+- Step 1.4 moved the worktree and landing rules into `rules/land.md`, because the block was over its size limit with them inline.
+- The guard blocks instead of asking, because the ask probe hit the weekly usage limit in every arm. "ask" reverses it.
+- The whole run went fast, so no panel has read `land.mjs`, `guard.mjs`, `setup.mjs`, `rules/land.md`, the Phase 2 cuts or the `lint-task.mjs` change. "full" reviews them.
+- The first real land failed, because `ultracite fix` exits 2 when lint ignores every file it gets. `lintFix` now runs `pnpm lint:task --allow-ignored`, which also adds lint:task's check and type-aware oxlint to every land.
+- Step 2.3 ran as a static scan instead of a fresh session, and its session card holds the rest.
+- `deslop` did not run on the six-line `lint-task.mjs` change.
 
-Proof: the 9 trunk tests pass, the full sync-pstack suite passes 306 of 306, and validate-skills passes with the block at 39,432 bytes. ellie and plate render the same AGENTS.md, `close.md` and `panel.md`, and get no trunk files. The old source refuses to render plate-2 at all (`docs/plans/artifacts/2026-10-17-trunk-delivery/render-control-a1.log`). The installed guard blocks 3 force or delete forms and passes 3 safe commands. A replay of 1,560 past push commands from 1,571 transcripts blocks none.
+What landed. dotai `4f61b8d` adds trunk delivery with `land.mjs`, `review.mjs`, `guard.mjs`, `setup.mjs`, `rules/land.md` and 9 tests. `9e3de89` carries other sessions' edits, and `bc337c5` cuts the trunk renders back to pstack's defaults. On plate-2's `origin/next`, your `61fa924e8d` holds the Phase 1 sync. `714b241607` fixes the docs-only lint failure, `2225378463` adds the backlog and `dc06078008` cuts the workflow back to pstack. This Close lands in its own commit. A card session that this run did not start landed `t_e126f178` through `land.mjs` as `249c28301c`.
 
-Limits: PR mode cannot update a topic branch that already exists, because it never forces. A retry after a rejected push does not rerun the checks. The hooks are wired for Claude Code only, not Codex. The guard does not see a push run from inside a script file. Running `ultracite fix` on lint-ignored paths is untested until step 1.6. No panel has read this code.
+Proof. Phase 1's 9 trunk tests and 306 sync-pstack tests pass, and a replay of 1,560 past push commands blocks none. Step 1.6 has `land-lint-a1.log`, `land-push-a2.log`, `land-pr-a1.log` and `guard-live-a1.log`. In Phase 2, plate-2's block went from 28,114 to 20,649 bytes and its rule files from 116,752 to 45,971, while ellie's and plate's renders stayed the same. `validate-skills`, `check-playbooks`, `pnpm run prepare` and the sync checks pass. Step 2.3's `route-scan-a1.log` covers 81 agent files. All of these logs are in `docs/plans/artifacts/2026-10-17-trunk-delivery/`.
 
-Counts for Phase 1: 6 steps, with 4 done, 1 skipped, 1 blocked and 0 open.
+Limits. PR mode is proven only from a clone whose `origin` is `udecode/plate`, not from a fork. It cannot update a topic branch that already exists, because it never forces. A retry after a rejected push does not rerun the checks. The hooks are wired for Claude Code only, and the guard does not see a push run from inside a script file. No fresh session has routed a request under the cut rules yet. `pnpm check knowledge` fails on citation hits in topic files this change does not touch, as the Phase 2 session logged.
+
+Counts: 12 steps, with 10 done, 1 skipped and 1 partly done.
