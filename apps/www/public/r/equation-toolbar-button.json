@@ -6,7 +6,6 @@
   "dependencies": [
     "platejs",
     "diff-match-patch-ts@^0.6.0",
-    "katex@0.16.22",
     "lucide-react"
   ],
   "registryDependencies": [

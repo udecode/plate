@@ -66,5 +66,9 @@ export default createPlatePackageConfig({
   additionalEntries: [...plateAdditionalEntries],
   bundleDependencies: ['use-sync-external-store/with-selector'],
   directDeclarations: false,
+  runtimeImportBoundaries: [
+    { entry: 'dist/math/index.js', forbiddenPackages: ['katex'] },
+    { entry: 'dist/math/react/index.js', forbiddenPackages: ['katex'] },
+  ],
   unbundle: true,
 });

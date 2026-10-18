@@ -1,0 +1,22 @@
+---
+id: 2026-10-18-math-katex-import
+date: 2026-10-18
+status: draft
+kind: behavior
+summary: 'Import KaTeX in the copied equation components'
+change: { 'type': 'source', 'date': '2026-10-18', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-18-math-draw-equations-katex-imported-83e30547","kind":"behavior","migrationNotes":[]} -->
+
+- **`math`**, **`math-static`**: Import `katex` and `katex/dist/katex.min.css` directly.
+
+<!-- entry: {"id":"2026-10-18-math-katex-install-scope-4c27a9e1","kind":"behavior","migrationNotes":[]} -->
+
+- **`equation-toolbar-button`**, **`insert-toolbar-button`**, **`slash`**: Stop installing `katex`.
+
+<!-- entry: {"id":"2026-10-18-math-static-docx-elements-5d1e8b42","kind":"remove","migrationNotes":["Delete imports of EquationElementDocx and InlineEquationElementDocx; exportDocx draws equations as Word math itself."]} -->
+
+- **`math-static`**: Remove `EquationElementDocx` and `InlineEquationElementDocx`, which `exportDocx` does not use.

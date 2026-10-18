@@ -302,34 +302,6 @@ describe('registry package dependency derivation', () => {
     ).toThrow('unknown public Plate/Plite entrypoint platejs/private');
   });
 
-  it('accepts exact package-manifest asset exports without inventing DAG nodes', () => {
-    const sourceRoot = createSourceRoot({
-      'math.ts': "import 'platejs/math/katex.css';",
-    });
-    const derived = deriveRegistryDependencies(
-      createRegistry([
-        {
-          files: [{ path: 'math.ts', type: 'registry:lib' }],
-          name: 'math',
-          type: 'registry:lib',
-        },
-      ]),
-      {
-        entrypointDags: cyclicDags,
-        packageManifests: {
-          ...packageManifests,
-          platejs: {
-            ...packageManifests.platejs,
-            exports: { './math/katex.css': './math/katex.css' },
-          },
-        },
-        sourceRoot,
-      }
-    );
-
-    expect(derived.items[0].dependencies).toEqual(['platejs']);
-  });
-
   it('derives provider packages from the selected source file', () => {
     const sourceRoot = createSourceRoot({
       'bases/base/toolbar.tsx':

@@ -145,7 +145,7 @@ Rules:
   `tooling/scripts/check-plite-release-artifacts.mjs`. The managed
   `tests/plite-browser/runtime-entrypoints.test.ts` drives `/runtime-entrypoints`
   for client imports. These runners derive membership from the DAG; type-only
-  exports and CSS assets retain their separate proof scope;
+  exports retain their separate proof scope;
 - a reported type regression in a published release starts from the tarballs: `npm pack` the bad and the last good version, compare their declaration entrypoints, and rebuild locally; when the rebuild is right and the tarball wrong, fix the release artifact path, not source;
 - split external consumer type smoke by claim width. App-facing packages
   should compile with strict declaration checking. `@platejs/test/playwright`

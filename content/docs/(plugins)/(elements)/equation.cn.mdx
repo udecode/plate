@@ -65,8 +65,10 @@ const editor = createEditor({
 ### 安装
 
 ```bash
-npm install platejs @tanstack/react-virtual katex
+npm install platejs katex@0.16.22
 ```
+
+`platejs/math` 和 `platejs/math/react` 不加载 KaTeX。`math` 和 `math-static` 组件会导入 `katex` 及其样式表 `katex/dist/katex.min.css`。`platejs/docx/export` 也会导入 `katex`。在运行其中任何一个的地方安装 `katex`。
 
 ### 添加插件
 

@@ -13,8 +13,6 @@ import { BaseCodeBlockPlugin } from '../../features/code-block';
 import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
-  type BlockEquationElement,
-  getEquationHtml,
   MathRules,
 } from './BaseEquationPlugin';
 
@@ -131,22 +129,6 @@ describe('BaseEquationPlugin', () => {
         type: 'equation',
       },
     ]);
-  });
-
-  it('renders KaTeX html and forwards options', () => {
-    const element: BlockEquationElement = {
-      children: [{ text: '' }],
-      latex: 'x^2',
-      type: 'equation',
-    };
-
-    expect(getEquationHtml({ element })).toContain('katex');
-    expect(
-      getEquationHtml({
-        element,
-        options: { displayMode: true },
-      })
-    ).toContain('katex-display');
   });
 });
 

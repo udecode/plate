@@ -1,11 +1,8 @@
-import { RadicalIcon } from 'lucide-react';
+import katex from 'katex';
 
-import 'platejs/math/katex.css';
-import {
-  BaseEquationPlugin,
-  BaseInlineEquationPlugin,
-  getEquationHtml,
-} from 'platejs/math';
+import 'katex/dist/katex.min.css';
+import { RadicalIcon } from 'lucide-react';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
@@ -16,19 +13,16 @@ export function EquationElementStatic(
 ) {
   const { element } = props;
 
-  const html = getEquationHtml({
-    element,
-    options: {
-      displayMode: true,
-      errorColor: '#cc0000',
-      fleqn: false,
-      leqno: false,
-      macros: { '\\f': '#1f(#2)' },
-      output: 'htmlAndMathml',
-      strict: 'warn',
-      throwOnError: false,
-      trust: false,
-    },
+  const html = katex.renderToString(element.latex, {
+    displayMode: true,
+    errorColor: '#cc0000',
+    fleqn: false,
+    leqno: false,
+    macros: { '\\f': '#1f(#2)' },
+    output: 'htmlAndMathml',
+    strict: 'warn',
+    throwOnError: false,
+    trust: false,
   });
 
   return (
@@ -61,19 +55,16 @@ export function EquationElementStatic(
 export function InlineEquationElementStatic(
   props: EditorElementProps<typeof BaseInlineEquationPlugin>
 ) {
-  const html = getEquationHtml({
-    element: props.element,
-    options: {
-      displayMode: true,
-      errorColor: '#cc0000',
-      fleqn: false,
-      leqno: false,
-      macros: { '\\f': '#1f(#2)' },
-      output: 'htmlAndMathml',
-      strict: 'warn',
-      throwOnError: false,
-      trust: false,
-    },
+  const html = katex.renderToString(props.element.latex, {
+    displayMode: true,
+    errorColor: '#cc0000',
+    fleqn: false,
+    leqno: false,
+    macros: { '\\f': '#1f(#2)' },
+    output: 'htmlAndMathml',
+    strict: 'warn',
+    throwOnError: false,
+    trust: false,
   });
 
   return (
@@ -98,73 +89,6 @@ export function InlineEquationElementStatic(
           dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>
-      {props.children}
-    </EditorElement>
-  );
-}
-
-/**
- * DOCX-compatible block equation component.
- * Displays LaTeX source code with styling.
- */
-export function EquationElementDocx(
-  props: EditorElementProps<typeof BaseEquationPlugin>
-) {
-  const { element } = props;
-
-  if (!element.latex || element.latex.length === 0) {
-    return (
-      <EditorElement {...props}>
-        <p style={{ color: '#888', fontStyle: 'italic' }}>[Empty equation]</p>
-        {props.children}
-      </EditorElement>
-    );
-  }
-
-  return (
-    <EditorElement {...props}>
-      <p
-        style={{
-          fontFamily: 'Cambria Math, Consolas, monospace',
-          fontSize: '12pt',
-          margin: '8pt 0',
-          textAlign: 'center',
-        }}
-      >
-        {element.latex}
-      </p>
-      {props.children}
-    </EditorElement>
-  );
-}
-
-/**
- * DOCX-compatible inline equation component.
- * Displays LaTeX source code inline.
- */
-export function InlineEquationElementDocx(
-  props: EditorElementProps<typeof BaseInlineEquationPlugin>
-) {
-  const { element } = props;
-
-  if (!element.latex || element.latex.length === 0) {
-    return (
-      <EditorElement {...props} as="span">
-        <span style={{ color: '#888', fontStyle: 'italic' }}>[equation]</span>
-        {props.children}
-      </EditorElement>
-    );
-  }
-
-  return (
-    <EditorElement {...props} as="span">
-      <span
-        style={{
-          fontFamily: 'Cambria Math, Consolas, monospace',
-        }}
-      >
-        {element.latex}
-      </span>
       {props.children}
     </EditorElement>
   );

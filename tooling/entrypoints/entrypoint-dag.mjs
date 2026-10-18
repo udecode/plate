@@ -304,6 +304,7 @@ export const entrypointDags = {
               'html-to-vdom',
               'jszip',
               'juice',
+              'katex',
               'mime-types',
               'react',
               'virtual-dom',
@@ -358,11 +359,7 @@ export const entrypointDags = {
           peerDependencies: ['remark-parse', 'remark-stringify', 'unified'],
         })
       ),
-      math: headless(
-        directory('math', ['core'], [], {
-          peerDependencies: ['katex'],
-        })
-      ),
+      math: headless(directory('math', ['core'])),
       'math/react': client(
         directory('math/react', ['core', 'math', 'react-core'])
       ),

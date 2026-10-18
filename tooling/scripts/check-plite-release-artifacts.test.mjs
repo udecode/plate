@@ -617,6 +617,16 @@ test('accepts complete artifacts and enforced package directions', () => {
   );
 });
 
+test('rejects a package that marks stylesheets as side effects', () => {
+  assert.ok(
+    auditPackedPackage({
+      allowedPlateRuntime: ['platejs'],
+      files,
+      packageJson: { ...packageJson, sideEffects: ['./x.css'] },
+    }).includes('package sideEffects must be false')
+  );
+});
+
 test('rejects missing declarations, undeclared imports, and reversed layers', () => {
   const errors = auditPackedPackage({
     allowedPlateRuntime: [],

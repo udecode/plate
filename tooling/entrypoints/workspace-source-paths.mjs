@@ -51,10 +51,6 @@ const expectedConfig = (repoRoot, relativeConfigPath) => {
   let inserted = false;
 
   for (const [specifier, targets] of Object.entries(currentPaths)) {
-    if (specifier === 'platejs/math/katex.css') {
-      paths[specifier] = targets;
-      continue;
-    }
     if (/^(?:platejs|plitejs)(?:\/|$)/.test(specifier)) {
       if (!inserted) {
         Object.assign(paths, generated);

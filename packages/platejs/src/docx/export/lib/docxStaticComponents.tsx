@@ -1,3 +1,4 @@
+import katex from 'katex';
 import React from 'react';
 
 import type { Editor } from '../../../core';
@@ -17,7 +18,6 @@ import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
   type EquationElement,
-  getEquationHtml,
 } from '../../../math';
 import {
   EditorElement,
@@ -82,14 +82,11 @@ const escapeHtml = (text: string) =>
 
 const equationMathml = (element: EquationElement, displayMode: boolean) => {
   try {
-    return getEquationHtml({
-      element,
-      options: {
-        displayMode,
-        output: 'mathml',
-        throwOnError: true,
-        trust: false,
-      },
+    return katex.renderToString(element.latex, {
+      displayMode,
+      output: 'mathml',
+      throwOnError: true,
+      trust: false,
     });
   } catch {
     return `<math${displayMode ? ' display="block"' : ''}><semantics><annotation encoding="application/x-tex">${escapeHtml(element.latex)}</annotation></semantics></math>`;

@@ -174,7 +174,6 @@
       "plitejs/testing": ["../../packages/plitejs/src/testing/index.ts"],
       "plitejs/yjs": ["../../packages/plitejs/src/yjs/index.ts"],
       "plitejs/yjs/react": ["../../packages/plitejs/src/yjs/react/index.ts"],
-      "platejs/math/katex.css": ["../../packages/platejs/math/katex.css"],
       "@platejs/test": ["../../packages/test/src/index.ts"],
       "registry": ["./public/r/registry.json"],
       "registry-shadcn": ["./registry-shadcn.json"]

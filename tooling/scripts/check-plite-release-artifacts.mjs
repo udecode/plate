@@ -549,18 +549,8 @@ export function auditPackedPackage({
     errors.push('package must declare type=module');
   }
 
-  const validSideEffects =
-    packageJson.sideEffects === false ||
-    (Array.isArray(packageJson.sideEffects) &&
-      packageJson.sideEffects.length > 0 &&
-      packageJson.sideEffects.every(
-        (entry) => typeof entry === 'string' && entry.endsWith('.css')
-      ));
-
-  if (!validSideEffects) {
-    errors.push(
-      'package sideEffects must be false or contain only explicit CSS assets'
-    );
+  if (packageJson.sideEffects !== false) {
+    errors.push('package sideEffects must be false');
   }
 
   if (publicExports.length === 0) {

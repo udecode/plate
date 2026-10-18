@@ -28,10 +28,7 @@ export function getPackageBuildArtifacts(packageJson) {
   const artifacts = new Set();
   const addArtifact = (target) => {
     if (!target || target === './package.json') return;
-    const isPublicStylesheet =
-      target.startsWith('./') && /\.css(?:\.d\.ts)?$/u.test(target);
-
-    if (!target.startsWith('./dist/') && !isPublicStylesheet) {
+    if (!target.startsWith('./dist/')) {
       throw new Error(`Public build target must live in ./dist: ${target}`);
     }
 

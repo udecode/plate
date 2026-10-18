@@ -107,8 +107,7 @@
       "plitejs/react/virtualized": ["../plitejs/src/react/virtualized.tsx"],
       "plitejs/testing": ["../plitejs/src/testing/index.ts"],
       "plitejs/yjs": ["../plitejs/src/yjs/index.ts"],
-      "plitejs/yjs/react": ["../plitejs/src/yjs/react/index.ts"],
-      "platejs/math/katex.css": ["../platejs/math/katex.css"]
+      "plitejs/yjs/react": ["../plitejs/src/yjs/react/index.ts"]
     },
     "types": ["node"]
   }

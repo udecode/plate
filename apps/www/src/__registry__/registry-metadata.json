@@ -1,5 +1,5 @@
 {
-  "generation": "113ed6b5bc593da0bf4e9fc51e6403756090da334bfcfd8fe87a010e557cef08",
+  "generation": "9be1337c79cc735cbfc690efe4ee970ce1ce4bc757027d5d79b557e680114743",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -703,7 +703,6 @@
         {
           "dependencies": [
             "diff-match-patch-ts@^0.6.0",
-            "katex@0.16.22",
             "lucide-react",
             "platejs"
           ],
@@ -1374,7 +1373,6 @@
           "dependencies": [
             "platejs",
             "diff-match-patch-ts@^0.6.0",
-            "katex@0.16.22",
             "lucide-react"
           ],
           "description": "A toolbar button for inserting and editing equations.",
@@ -2207,8 +2205,8 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0",
             "katex@0.16.22",
+            "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
           "files": [
@@ -3547,9 +3545,9 @@
         {
           "dependencies": [
             "platejs",
+            "katex@0.16.22",
             "react-textarea-autosize",
             "diff-match-patch-ts@^0.6.0",
-            "katex@0.16.22",
             "lucide-react"
           ],
           "files": [
@@ -3725,7 +3723,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "katex@0.16.22",
             "lucide-react",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -7558,7 +7555,6 @@
         {
           "dependencies": [
             "diff-match-patch-ts@^0.6.0",
-            "katex@0.16.22",
             "lucide-react",
             "platejs"
           ],
@@ -8223,7 +8219,6 @@
           "dependencies": [
             "platejs",
             "diff-match-patch-ts@^0.6.0",
-            "katex@0.16.22",
             "lucide-react"
           ],
           "description": "A toolbar button for inserting and editing equations.",
@@ -9056,8 +9051,8 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0",
             "katex@0.16.22",
+            "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
           "files": [
@@ -10396,9 +10391,9 @@
         {
           "dependencies": [
             "platejs",
+            "katex@0.16.22",
             "react-textarea-autosize",
             "diff-match-patch-ts@^0.6.0",
-            "katex@0.16.22",
             "lucide-react"
           ],
           "files": [
@@ -10574,7 +10569,6 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
-            "katex@0.16.22",
             "lucide-react",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",

@@ -2306,7 +2306,6 @@
       "cache": true,
       "dependsOn": [
         "plitejs#typecheck:partition:authored",
-        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:details",
         "typecheck:partition:layout",
@@ -2459,19 +2458,32 @@
     "test:partition:migrations": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:ai-react",
         "typecheck:partition:authored",
+        "typecheck:partition:callout",
         "typecheck:partition:core",
+        "typecheck:partition:date",
         "typecheck:partition:details",
+        "typecheck:partition:excalidraw",
+        "typecheck:partition:footnote",
+        "typecheck:partition:layout",
+        "typecheck:partition:layout-react",
+        "typecheck:partition:math",
         "typecheck:partition:media",
+        "typecheck:partition:mention",
         "typecheck:partition:migrations",
         "typecheck:partition:root",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-basic-styles",
+        "typecheck:partition:standard-basic-styles-react",
         "typecheck:partition:standard-code-block",
         "typecheck:partition:standard-indent",
         "typecheck:partition:standard-link",
         "typecheck:partition:standard-list",
-        "typecheck:partition:table"
+        "typecheck:partition:standard-list-react",
+        "typecheck:partition:table",
+        "typecheck:partition:table-react",
+        "typecheck:partition:toc"
       ],
       "inputs": [
         "src/migrations/**",
@@ -2638,6 +2650,7 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:html-server",
         "typecheck:partition:proxies",
         "typecheck:partition:standard-basic-styles"
       ],

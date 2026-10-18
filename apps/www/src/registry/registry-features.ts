@@ -144,7 +144,7 @@ export const registryStaticFeatures: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs'],
+    dependencies: ['platejs', 'katex@0.16.22'],
     files: [
       {
         path: 'components/editor/math-static.tsx',
@@ -906,7 +906,7 @@ export const registryFeatures: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs', 'react-textarea-autosize'],
+    dependencies: ['platejs', 'katex@0.16.22', 'react-textarea-autosize'],
     files: [
       {
         path: 'components/editor/math.tsx',

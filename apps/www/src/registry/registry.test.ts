@@ -130,6 +130,43 @@ describe('Plate registry editor files', () => {
     }
   });
 
+  it('installs KaTeX only with the components that draw equations', () => {
+    const platePackage = JSON.parse(
+      readFileSync(
+        join(import.meta.dir, '../../../../packages/platejs/package.json'),
+        'utf-8'
+      )
+    );
+    const katex = `katex@${platePackage.peerDependencies.katex}`;
+    const itemNames = new Set([
+      'equation-toolbar-button',
+      'insert-toolbar-button',
+      'math',
+      'math-static',
+      'slash',
+    ]);
+
+    expect(
+      Object.fromEntries(
+        items
+          .filter((item) => itemNames.has(item.name))
+          .map((item) => [
+            item.name,
+            item.dependencies?.filter(
+              (dependency) =>
+                dependency === 'katex' || dependency.startsWith('katex@')
+            ) ?? [],
+          ])
+      )
+    ).toEqual({
+      'equation-toolbar-button': [],
+      'insert-toolbar-button': [],
+      math: [katex],
+      'math-static': [katex],
+      slash: [],
+    });
+  });
+
   it('keeps only declared provider authors in each base directory', () => {
     const expectedFileNames = [...EDITOR_REGISTRY_VARIANTS.keys()]
       .map(getEditorRegistryVariantFileName)

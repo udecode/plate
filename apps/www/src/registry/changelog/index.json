@@ -38,6 +38,30 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-18-math-katex-import",
+      "href": "/registry/changelog/2026-10-18-math-katex-import.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Import KaTeX in the copied equation components",
+      "change": {
+        "type": "source",
+        "date": "2026-10-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "math",
+        "math-static",
+        "equation-toolbar-button",
+        "insert-toolbar-button",
+        "slash"
+      ],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-17-accept-all-suggestions",
       "href": "/registry/changelog/2026-10-17-accept-all-suggestions.json",
       "status": "draft",

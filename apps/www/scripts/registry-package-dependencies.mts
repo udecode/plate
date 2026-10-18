@@ -31,7 +31,6 @@ type EntrypointDags = Record<
 >;
 
 type PackageManifest = {
-  exports?: Record<string, unknown>;
   peerDependencies?: Record<string, string>;
 };
 
@@ -333,24 +332,6 @@ export function deriveRegistryDependencies(
         });
 
         if (!initialTarget) {
-          const packageName = getPackageName(initialSpecifier);
-          const exportName = packageName
-            ? initialSpecifier === packageName
-              ? '.'
-              : `.${initialSpecifier.slice(packageName.length)}`
-            : null;
-
-          if (
-            packageName &&
-            exportName &&
-            Object.hasOwn(
-              packageManifests[packageName]?.exports ?? {},
-              exportName
-            )
-          ) {
-            return;
-          }
-
           throw new Error(
             `${context}: unknown public Plate/Plite entrypoint ${initialSpecifier}.`
           );

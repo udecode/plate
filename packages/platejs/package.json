@@ -24,13 +24,10 @@
   },
   "files": [
     "dist/**/*",
-    "math/**/*",
     "THIRD_PARTY_NOTICES.md"
   ],
   "type": "module",
-  "sideEffects": [
-    "./math/katex.css"
-  ],
+  "sideEffects": false,
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -219,10 +216,6 @@
       "types": "./dist/math/index.d.ts",
       "import": "./dist/math/index.js",
       "default": "./dist/math/index.js"
-    },
-    "./math/katex.css": {
-      "types": "./math/katex.css.d.ts",
-      "default": "./math/katex.css"
     },
     "./math/react": {
       "types": "./dist/math/react/index.d.ts",

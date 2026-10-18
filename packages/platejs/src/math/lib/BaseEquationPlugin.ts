@@ -1,5 +1,3 @@
-import katex, { type KatexOptions } from 'katex';
-
 import {
   BaseParagraphPlugin,
   createBlockFenceInputRule,
@@ -219,14 +217,6 @@ export const MathRules = (() => {
     },
   };
 })();
-
-export const getEquationHtml = ({
-  element,
-  options,
-}: {
-  element: EquationElement;
-  options?: KatexOptions;
-}) => katex.renderToString(element.latex, options);
 
 registerFirstPartyPlugin(BaseEquationPlugin);
 registerFirstPartyPlugin(BaseInlineEquationPlugin);

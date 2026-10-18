@@ -1,6 +1,6 @@
 'use client';
 
-import 'platejs/math/katex.css';
+import 'katex/dist/katex.min.css';
 import katex, { type KatexOptions } from 'katex';
 import { CornerDownLeftIcon, RadicalIcon } from 'lucide-react';
 import { isHotkey, NodeApi } from 'platejs';

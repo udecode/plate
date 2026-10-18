@@ -127,7 +127,6 @@
       "plitejs/testing": ["./packages/plitejs/src/testing/index.ts"],
       "plitejs/yjs": ["./packages/plitejs/src/yjs/index.ts"],
       "plitejs/yjs/react": ["./packages/plitejs/src/yjs/react/index.ts"],
-      "platejs/math/katex.css": ["./packages/platejs/math/katex.css"],
       "@platejs/test": ["./packages/test/src/index.ts"],
       "@platejs/test/browser": ["./packages/test/src/browser/index.ts"],
       "@platejs/test/playwright": ["./packages/test/src/playwright/index.ts"],
