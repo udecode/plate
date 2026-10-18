@@ -6,16 +6,12 @@ import {
   TextApi,
   type Value,
 } from '../facade';
-import { getDocumentMigrationPluginName } from './documentMigrationPluginNames.internal';
-import type {
-  DocumentMigrationContext,
-  DocumentMigrationTarget,
-} from './documentMigrations';
-
-const getCompiledPlatePlugin = (
-  target: DocumentMigrationTarget,
-  name: string
-) => target.bindings.find((binding) => binding.name === name);
+import { getFirstPartyType } from './documentMigrationFirstParty.internal';
+import type { DocumentMigrationContext } from './documentMigrations';
+import {
+  createPropertyOwnership,
+  type NodeContext,
+} from './migratePlateV54Ownership.internal';
 
 const TEXT_ALIGNMENTS = new Set([
   'center',
@@ -50,11 +46,6 @@ const migrateLineHeight = (value: unknown) => {
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
 
-type NodeContext = Readonly<{
-  ancestors: readonly string[];
-  root: string | null;
-}>;
-
 const safeInteger = (value: unknown) => {
   if (typeof value !== 'number' || !Number.isFinite(value)) return undefined;
 
@@ -71,34 +62,10 @@ export const migratePlateV54Ast = ({
   DocumentMigrationContext,
   'document' | 'target'
 >): EditorDocumentValue => {
-  const resolveElementType = (name: string) => {
-    const descriptor = getCompiledPlatePlugin(conversionTarget, name);
-
-    return descriptor?.type;
-  };
-  const currentProperty = (type: string, key: string, context: NodeContext) =>
-    conversionTarget.schema.property({
-      ancestors: context.ancestors,
-      key,
-      placement: 'element',
-      root: context.root,
-      type,
-    });
-  const ownsProperty = (type: string, key: string, context: NodeContext) =>
-    currentProperty(type, key, context) !== null;
-  const pluginDeclares = (
-    plugin: string,
-    type: string,
-    key: string,
-    context: NodeContext
-  ) => {
-    const property = currentProperty(type, key, context);
-
-    return (
-      property !== null &&
-      getDocumentMigrationPluginName(conversionTarget, property.id) === plugin
-    );
-  };
+  const resolveElementType = (name: string) =>
+    getFirstPartyType(conversionTarget, name);
+  const { firstPartyDeclares, ownsProperty } =
+    createPropertyOwnership(conversionTarget);
   const dateType = resolveElementType('date');
   const mentionType = resolveElementType('mention');
   const footnoteDefinitionType = resolveElementType('footnoteDefinition');
@@ -522,7 +489,7 @@ export const migratePlateV54Ast = ({
     for (const key of ['listRestart', 'listStart'] as const) {
       if (
         !Object.hasOwn(element, key) ||
-        !pluginDeclares('list', element.type, key, context)
+        !firstPartyDeclares('list', element.type, key, context)
       ) {
         continue;
       }
@@ -537,7 +504,7 @@ export const migratePlateV54Ast = ({
     }
 
     if (
-      pluginDeclares('indent', element.type, 'indent', context) &&
+      firstPartyDeclares('indent', element.type, 'indent', context) &&
       Object.hasOwn(element, 'indent')
     ) {
       const indent = safeInteger(properties().indent);
@@ -550,7 +517,7 @@ export const migratePlateV54Ast = ({
     }
 
     if (
-      pluginDeclares('textAlign', element.type, 'textAlign', context) &&
+      firstPartyDeclares('textAlign', element.type, 'textAlign', context) &&
       Object.hasOwn(element, 'textAlign') &&
       !TEXT_ALIGNMENTS.has(String(properties().textAlign))
     ) {
@@ -558,7 +525,7 @@ export const migratePlateV54Ast = ({
     }
 
     if (
-      pluginDeclares('lineHeight', element.type, 'lineHeight', context) &&
+      firstPartyDeclares('lineHeight', element.type, 'lineHeight', context) &&
       Object.hasOwn(element, 'lineHeight')
     ) {
       const lineHeight = migrateLineHeight(properties().lineHeight);

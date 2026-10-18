@@ -7,6 +7,7 @@ import {
   ElementApi,
   type Value,
 } from '../facade';
+import { getFirstPartyType } from './documentMigrationFirstParty.internal';
 import type { DocumentMigration } from './documentMigrations';
 
 const LIST_TYPES = new Set<unknown>(['bulleted', 'numbered', 'task']);
@@ -36,9 +37,7 @@ export const migrateListIdentity: DocumentMigration = ({
   document,
   target,
 }) => {
-  const headingType = target.bindings.find(
-    (binding) => binding.name === 'heading'
-  )?.type;
+  const headingType = getFirstPartyType(target, 'heading');
   const sameRun = (previous: Element, element: Element) =>
     previous.listType === element.listType &&
     styleOf(previous) === styleOf(element) &&

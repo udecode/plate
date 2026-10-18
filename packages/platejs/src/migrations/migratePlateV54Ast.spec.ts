@@ -2,6 +2,7 @@ import { BaseParagraphPlugin, createEditor, definePlugin } from 'platejs';
 
 import { type Element, property, schema, target } from '../core';
 import { BaseLineHeightPlugin } from '../features/basic-styles';
+import { registerFirstPartyPlugin } from '../internal/plugin/firstPartyPlugin';
 import {
   defineDocumentMigrations,
   type DocumentMigrations,
@@ -273,6 +274,14 @@ const plugins = [
   BaseTextAlignPlugin,
   BaseElementIdPlugin,
 ] as const;
+
+[
+  ...plugins,
+  BaseDetailsSummaryPlugin,
+  BaseColumnItemPlugin,
+  BaseTableRowPlugin,
+  BaseTableCellPlugin,
+].forEach(registerFirstPartyPlugin);
 
 const createMigrationEditor = () => {
   const migrations = defineDocumentMigrations({
@@ -1132,6 +1141,35 @@ describe('migratePlateV54 AST contracts', () => {
     expect(result.children).toEqual([
       chart,
       { children: [{ text: 'note' }], lineHeight: 1.5, type: 'paragraph' },
+    ]);
+  });
+
+  it('keeps the values of an app plugin that reuses a layout plugin name', () => {
+    const AppLineHeightPlugin = definePlugin('lineHeight', {
+      schema: {
+        properties: {
+          lineHeight: schema.elementProperty(property.string(), {
+            target: target.element(BaseParagraphPlugin),
+          }),
+        },
+      },
+    });
+    const migrations = defineDocumentMigrations({
+      plugins: [...plugins, AppLineHeightPlugin],
+      schema: MigrationSchema,
+      steps: { 54: migrateV54 },
+    });
+    const result = migrateDocument(
+      {
+        children: [
+          { children: [{ text: 'note' }], lineHeight: '150%', type: 'p' },
+        ],
+      },
+      { migrations }
+    ).document;
+
+    expect(result.children).toEqual([
+      { children: [{ text: 'note' }], lineHeight: '150%', type: 'paragraph' },
     ]);
   });
 

@@ -44,6 +44,7 @@ Not compared in this scope's reviews.
 ## Main changes
 
 - The runner lost its editor and store authority, input aliasing and hidden mapper; the CLI lost its editor-per-file loop. The 10,000-block, 10,055-change checkpoint loads with zero replay, and the built converter passes 36 of 36 production rows.
+- The v54 step and `migrateListIdentity` find a built-in plugin by the descriptor family that each built-in plugin registers, never by plugin name, so an app plugin that reuses a built-in name keeps its own values ([v54 plugin identity](../2026-10-18-v54-plugin-identity.md)). The profile pass checks property ownership in the node's root and among its ancestors.
 
 ## Open work
 

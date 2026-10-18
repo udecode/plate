@@ -16,6 +16,7 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
+import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 
 const thematicBreakDashRe = /^(--|—)$/;
@@ -326,3 +327,6 @@ const groupInlineChildrenIntoParagraphs = (
     ? elements
     : [{ children: [{ text: '' }], type: paragraphType }];
 };
+
+registerFirstPartyPlugin(BaseBlockquotePlugin);
+registerFirstPartyPlugin(BaseHorizontalRulePlugin);

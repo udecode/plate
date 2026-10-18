@@ -24,6 +24,7 @@ import {
 } from '../../../core';
 import type { TxDeclaredMethod } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
+import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import { decideUrl, isStoredUrl } from '../../../internal/utils/urlPolicy';
 import {
   readHtmlMediaProvider,
@@ -634,3 +635,7 @@ export type VideoElement = ElementOf<typeof BaseVideoPlugin>;
 export type ResizableElement = ElementWith<
   Pick<typeof mediaElementProperties, 'width'>
 >;
+
+registerFirstPartyPlugin(BaseAudioPlugin);
+registerFirstPartyPlugin(BaseFilePlugin);
+registerFirstPartyPlugin(BaseVideoPlugin);

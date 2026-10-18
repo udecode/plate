@@ -7,6 +7,7 @@ import {
   type EditorStateView,
   type NodeKey,
 } from '../../../core';
+import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import { BaseHeadingPlugin } from '../../basic-nodes';
 
 export type Heading = {
@@ -69,3 +70,5 @@ export const BaseTocPlugin = definePlugin(PLUGINS.toc, {
 });
 
 export type TocDefinition = DefinitionOf<typeof BaseTocPlugin>;
+
+registerFirstPartyPlugin(BaseTocPlugin);

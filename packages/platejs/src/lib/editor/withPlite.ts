@@ -49,6 +49,7 @@ import {
 import { failInvariant } from '../../internal/failInvariant';
 import { compilePlateFormats } from '../../internal/plugin/compilePlateFormats';
 import {
+  type CompiledModelBinding,
   attachPlateModelPublication,
   applyEditorApplicationSchema,
   clearPlateModelPublication,
@@ -1116,7 +1117,7 @@ export type PlateEditorTargetCompilation = Readonly<{
   artifact: EditorCompilation;
   authored?: NativeAuthoredDocumentCapability;
   fields: ReadonlyArray<EditorStateField<any>>;
-  pluginNameByPropertyId: ReadonlyMap<string, string>;
+  modelBindings: readonly CompiledModelBinding[];
   schema: CompiledEditorSchema;
 }>;
 
@@ -1193,11 +1194,7 @@ const withPlateEditorTargetCompilation = <T>(
                   : {}),
                 editor,
                 fields: capability.fields,
-                pluginNameByPropertyId: new Map(
-                  publication.model.bindings.flatMap(({ name, propertyIds }) =>
-                    propertyIds.map((id) => [id, name] as const)
-                  )
-                ),
+                modelBindings: publication.model.bindings,
                 schema: capability.schema,
               })
             );

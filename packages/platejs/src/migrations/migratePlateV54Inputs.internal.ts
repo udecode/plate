@@ -12,6 +12,7 @@ import {
   TextApi,
   type Value,
 } from '../facade';
+import { getFirstPartyType } from './documentMigrationFirstParty.internal';
 import type { DocumentMigrationContext } from './documentMigrations';
 import {
   migratePlateV54DrawingCodeText,
@@ -54,7 +55,7 @@ export const migratePlateV54Inputs = ({
   const childMappings = new Map<string, ChildMapping[]>();
   const drawingTarget = target.schema.element('code_drawing')
     ? undefined
-    : target.bindings.find((binding) => binding.name === 'codeBlock')?.type;
+    : getFirstPartyType(target, 'codeBlock');
 
   // A v53 drawing becomes a code block before the profile stage, so the later
   // stages upgrade its block properties as they do any code block's. Without a

@@ -33,7 +33,10 @@ import {
 } from '../lib/editor/withPlite';
 import { assertElementIds } from '../lib/plugins/element-id/elementIdAdmission.internal';
 import { registerDocumentMigrationAuthoredCapability } from './documentMigrationAuthored.internal';
-import { registerDocumentMigrationPluginNames } from './documentMigrationPluginNames.internal';
+import {
+  getFirstPartyBinding,
+  registerDocumentMigrationFirstParty,
+} from './documentMigrationFirstParty.internal';
 
 type NamedEditorApplicationSchema = EditorApplicationSchema &
   Readonly<{ id: string; version: number }>;
@@ -539,7 +542,7 @@ export const defineDocumentMigrations = <
     bindings: compiled.artifact.bindings,
     schema,
   }) satisfies DocumentMigrationTarget;
-  registerDocumentMigrationPluginNames(target, compiled.pluginNameByPropertyId);
+  registerDocumentMigrationFirstParty(target, compiled.modelBindings);
   if (compiled.authored) {
     registerDocumentMigrationAuthoredCapability(target, compiled.authored);
   }
@@ -555,9 +558,7 @@ export const defineDocumentMigrations = <
     Object.freeze({
       ...(compiled.authored ? { authored: compiled.authored } : {}),
       fields: compiled.fields,
-      ownsElementIds: compiled.artifact.bindings.some(
-        ({ name }) => name === 'elementId'
-      ),
+      ownsElementIds: getFirstPartyBinding(target, 'elementId') !== undefined,
       schema,
       target,
     })

@@ -5,6 +5,7 @@ import {
   schema,
   PLUGINS,
 } from '../../../core';
+import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 
 const DEFAULT_CALLOUT_ICON = '💡';
 
@@ -43,3 +44,5 @@ export const BaseCalloutPlugin = definePlugin(PLUGINS.callout, {
 });
 
 export type CalloutElement = ElementOf<typeof BaseCalloutPlugin>;
+
+registerFirstPartyPlugin(BaseCalloutPlugin);

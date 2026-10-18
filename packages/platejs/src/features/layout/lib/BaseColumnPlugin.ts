@@ -24,6 +24,7 @@ import {
 } from '../../../core';
 import { canPlaceBlocksAtPath } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
+import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 
 export type SetColumnsOptions = {
   /** Column group location. */
@@ -492,3 +493,6 @@ export const BaseColumnGroupPlugin = definePlugin(PLUGINS.columnGroup, {
 export type ColumnGroupElement = ElementOf<typeof BaseColumnGroupPlugin>;
 
 export type ColumnDefinition = DefinitionOf<typeof BaseColumnItemPlugin>;
+
+registerFirstPartyPlugin(BaseColumnItemPlugin);
+registerFirstPartyPlugin(BaseColumnGroupPlugin);

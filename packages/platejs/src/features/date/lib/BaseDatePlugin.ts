@@ -7,6 +7,7 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
+import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import { normalizeDateValue, parseCanonicalDateValue } from './dateValue';
 
 export const BaseDatePlugin = definePlugin(PLUGINS.date, {
@@ -95,3 +96,5 @@ export const BaseDatePlugin = definePlugin(PLUGINS.date, {
 }));
 
 export type DateElement = ElementOf<typeof BaseDatePlugin>;
+
+registerFirstPartyPlugin(BaseDatePlugin);

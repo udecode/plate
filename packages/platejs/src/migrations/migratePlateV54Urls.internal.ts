@@ -10,15 +10,8 @@ import {
   TextApi,
   type Value,
 } from '../facade';
-import type {
-  DocumentMigrationContext,
-  DocumentMigrationTarget,
-} from './documentMigrations';
-
-const getCompiledPlatePlugin = (
-  target: DocumentMigrationTarget,
-  name: string
-) => target.bindings.find((binding) => binding.name === name);
+import { getFirstPartyType } from './documentMigrationFirstParty.internal';
+import type { DocumentMigrationContext } from './documentMigrations';
 
 /** `null` marks text that was removed with its media. */
 type TextPointMapping = Readonly<{ offset?: number; path: Path }> | null;
@@ -46,7 +39,7 @@ export const migratePlateV54Urls = ({
   'document' | 'target'
 >): PlateV54UrlMigrationResult => {
   const resolveElementType = (name: string) =>
-    getCompiledPlatePlugin(conversionTarget, name)?.type;
+    getFirstPartyType(conversionTarget, name);
   const fileType = resolveElementType('file');
   const linkType = resolveElementType('link');
   const paragraphType = resolveElementType('paragraph') ?? 'paragraph';

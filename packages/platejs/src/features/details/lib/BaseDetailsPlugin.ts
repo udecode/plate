@@ -25,6 +25,7 @@ import {
 } from '../../../core';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { blockRelease } from '../../../internal/plugin/blockRelease';
+import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import { insertionAnchor } from '../../../internal/plugin/insertionAnchor';
 import { BaseHeadingPlugin, type HeadingLevel } from '../../basic-nodes';
 
@@ -730,3 +731,6 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
 
 export type DetailsElement = ElementOf<typeof BaseDetailsPlugin>;
 export type DetailsSummaryElement = ElementOf<typeof BaseDetailsSummaryPlugin>;
+
+registerFirstPartyPlugin(BaseDetailsSummaryPlugin);
+registerFirstPartyPlugin(BaseDetailsPlugin);

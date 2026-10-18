@@ -18,6 +18,7 @@ import {
   txSelection,
   locateAt,
 } from '../../../core';
+import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import { selectAfterInline } from '../../../internal/plugin/inlineInsertion';
 import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import type { ComboboxState } from '../../combobox';
@@ -763,3 +764,6 @@ export type FootnoteElement = ElementOf<
   typeof BaseFootnoteDefinitionPlugin | typeof BaseFootnotePlugin
 >;
 export type FootnoteDefinition = DefinitionOf<typeof BaseFootnotePlugin>;
+
+registerFirstPartyPlugin(BaseFootnoteDefinitionPlugin);
+registerFirstPartyPlugin(BaseFootnotePlugin);

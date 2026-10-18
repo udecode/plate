@@ -19,6 +19,7 @@ import {
   BaseVideoPlugin,
 } from '../features/media';
 import { BaseTableCellPlugin, BaseTablePlugin } from '../features/table';
+import { registerFirstPartyPlugin } from '../internal/plugin/firstPartyPlugin';
 import {
   defineDocumentMigrations,
   type DocumentMigrations,
@@ -38,18 +39,19 @@ const elementPlugin = (name: string) =>
     schema: { element: schema.element.textBlock() },
   });
 
-const migrationPlugins: BasePluginInput[] = [
+const firstPartyStandIns: BasePluginInput[] = [
   ...new Set(
     Object.values(V53_ELEMENT_TYPE_OWNERS).filter(
       (type) => type !== 'paragraph'
     )
   ),
 ].map(elementPlugin);
-migrationPlugins.push(
+firstPartyStandIns.push(
   definePlugin('script', {
     schema: { mark: property.enum(['sub', 'sup'] as const) },
   })
 );
+firstPartyStandIns.forEach(registerFirstPartyPlugin);
 
 const defineV54Migrations = (plugins: readonly BasePluginInput[]) =>
   defineDocumentMigrations({
@@ -59,10 +61,10 @@ const defineV54Migrations = (plugins: readonly BasePluginInput[]) =>
     steps: { 54: migrateV54 },
   });
 
-const migrationPlan = defineV54Migrations(migrationPlugins);
+const migrationPlan = defineV54Migrations(firstPartyStandIns);
 
 const createEditor = ({
-  plugins = migrationPlugins,
+  plugins = firstPartyStandIns,
 }: Readonly<{
   plugins?: readonly BasePluginInput[];
   [key: string]: unknown;
@@ -89,7 +91,7 @@ const migrateDocument = (
 
 const createMigrationEditor = () =>
   createEditor({
-    plugins: migrationPlugins,
+    plugins: firstPartyStandIns,
   });
 
 describe('migratePlateV54 profile', () => {
@@ -106,7 +108,7 @@ describe('migratePlateV54 profile', () => {
 
   it('preserves table header semantics and migrates marks and properties', () => {
     const editor = createEditor({
-      plugins: [BaseTablePlugin, migrationPlugins.at(-1)!],
+      plugins: [BaseTablePlugin, firstPartyStandIns.at(-1)!],
     });
     const result = migrateDocument(
       {
@@ -180,7 +182,7 @@ describe('migratePlateV54 profile', () => {
     const editor = createEditor({
       migrations: migrationPlan,
       plugins: [
-        ...migrationPlugins,
+        ...firstPartyStandIns,
         CurrentElementPlugin,
         CurrentSubscriptPlugin,
       ],
@@ -222,7 +224,11 @@ describe('migratePlateV54 profile', () => {
     });
     const editor = createEditor({
       migrations: migrationPlan,
-      plugins: [...migrationPlugins, CustomChartPlugin, CustomSubscriptPlugin],
+      plugins: [
+        ...firstPartyStandIns,
+        CustomChartPlugin,
+        CustomSubscriptPlugin,
+      ],
       schema: MigrationSchema,
       skipInitialization: true,
     });
@@ -257,7 +263,7 @@ describe('migratePlateV54 profile', () => {
     });
     const editor = createEditor({
       migrations: migrationPlan,
-      plugins: [...migrationPlugins, CustomStepPlugin],
+      plugins: [...firstPartyStandIns, CustomStepPlugin],
       schema: MigrationSchema,
       skipInitialization: true,
     });
@@ -288,6 +294,89 @@ describe('migratePlateV54 profile', () => {
     ).toEqual(document);
   });
 
+  it('keeps a list style an app declares only outside the primary root', () => {
+    const SidebarPlugin = definePlugin('sidebar', {
+      dependencies: [BaseParagraphPlugin],
+      schema: ({ plugins }) => ({
+        element: {
+          contentRoots: {
+            body: {
+              content: plugins.blockContent({
+                default: BaseParagraphPlugin,
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          void: 'block',
+        },
+      }),
+    });
+    const SidebarListStylePlugin = definePlugin('sidebarListStyle', {
+      schema: {
+        properties: {
+          listStyleType: schema.elementProperty(property.string(), {
+            target: target.not(target.root()),
+          }),
+        },
+      },
+    });
+    const migrations = defineV54Migrations([
+      ...firstPartyStandIns,
+      BaseListPlugin,
+      SidebarPlugin,
+      SidebarListStylePlugin,
+    ]);
+    const sidebar = {
+      childRoots: { body: 'sidebar' },
+      children: [{ text: '' }],
+      type: 'sidebar',
+    };
+    const result = migrateDocument(
+      {
+        children: [
+          sidebar,
+          {
+            children: [{ text: 'main' }],
+            listStyleType: 'upper-roman',
+            type: 'p',
+          },
+        ],
+        roots: {
+          sidebar: [
+            {
+              children: [{ text: 'note' }],
+              listStyleType: 'upper-roman',
+              type: 'p',
+            },
+          ],
+        },
+      },
+      { migrations }
+    ).document;
+
+    expect(result).toEqual({
+      children: [
+        sidebar,
+        {
+          children: [{ text: 'main' }],
+          listStyle: 'upper-roman',
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+      roots: {
+        sidebar: [
+          {
+            children: [{ text: 'note' }],
+            listStyleType: 'upper-roman',
+            type: 'paragraph',
+          },
+        ],
+      },
+    });
+  });
+
   it('does not reinterpret a legacy alias claimed by the current schema', () => {
     const CustomLegacyPlugin = definePlugin('customLegacy', {
       schema: {
@@ -309,7 +398,11 @@ describe('migratePlateV54 profile', () => {
     });
     const editor = createEditor({
       migrations: migrationPlan,
-      plugins: [...migrationPlugins, CustomLegacyPlugin, CustomSubscriptPlugin],
+      plugins: [
+        ...firstPartyStandIns,
+        CustomLegacyPlugin,
+        CustomSubscriptPlugin,
+      ],
       schema: MigrationSchema,
       skipInitialization: true,
     });

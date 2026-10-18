@@ -36,6 +36,7 @@ import {
   canReplaceContainers,
   readBlockReleases,
 } from '../../../internal/plugin/blockRelease';
+import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import {
   createBrowserHtmlDocument,
   materializeHtmlAst,
@@ -1224,3 +1225,5 @@ export type CodeBlockDefinition = DefinitionOf<typeof BaseCodeBlockPlugin>;
 export type CodeHighlightDefinition = DefinitionOf<
   typeof BaseCodeHighlightPlugin
 >;
+
+registerFirstPartyPlugin(BaseCodeBlockPlugin);

@@ -10,21 +10,21 @@ import {
   TextApi,
   type Value,
 } from '../facade';
-import type {
-  DocumentMigrationContext,
-  DocumentMigrationTarget,
-} from './documentMigrations';
+import {
+  getFirstPartyBinding,
+  getFirstPartyType,
+} from './documentMigrationFirstParty.internal';
+import type { DocumentMigrationContext } from './documentMigrations';
+import {
+  createPropertyOwnership,
+  type NodeContext,
+} from './migratePlateV54Ownership.internal';
 import {
   V53_ELEMENT_TYPE_OWNERS,
   V53_FIRST_PARTY_IDENTITIES,
 } from './v53-manifest.internal';
 
 const LEGACY_HEADING_TYPE_RE = /^h([1-6])$/;
-
-const getCompiledPlatePlugin = (
-  target: DocumentMigrationTarget,
-  name: string
-) => target.bindings.find((binding) => binding.name === name);
 
 const formatMigrationValue = (value: unknown): string => {
   if (typeof value === 'string') return value;
@@ -51,22 +51,11 @@ export const migratePlateV54Profile = ({
   DocumentMigrationContext,
   'document' | 'target'
 >): EditorDocumentValue => {
-  const ownsProperty = (
-    key: string,
-    placement: 'element' | 'text',
-    type?: string
-  ) =>
-    conversionTarget.schema.property({
-      key,
-      placement,
-      ...(type === undefined ? {} : { type }),
-    }) !== null;
-  const resolveElementType = (name: string) => {
-    const descriptor = getCompiledPlatePlugin(conversionTarget, name);
-
-    return descriptor?.type;
-  };
-  const scriptDescriptor = getCompiledPlatePlugin(conversionTarget, 'script');
+  const { firstPartyDeclares, ownsProperty, ownsTextProperty } =
+    createPropertyOwnership(conversionTarget);
+  const resolveElementType = (name: string) =>
+    getFirstPartyType(conversionTarget, name);
+  const scriptDescriptor = getFirstPartyBinding(conversionTarget, 'script');
   const scriptKey = scriptDescriptor?.key;
   const mediaTypes = new Set(
     ['audio', 'file', 'image', 'mediaEmbed', 'video']
@@ -80,14 +69,12 @@ export const migratePlateV54Profile = ({
   const tableRowType = resolveElementType('tableRow');
   const tableType = resolveElementType('table');
   const videoType = resolveElementType('video');
-  const ownsTableCellSize =
-    tableCellType !== undefined &&
-    ownsProperty('size', 'element', tableCellType);
   const legacyListLocations = new Map<
     string,
     { derivedStart: number | undefined }
   >();
   const typeMigrations = new Map<string, string>();
+  const strippedCellSizes = new WeakMap<Descendant, unknown>();
   const firstPartyElementTypes = new Set<string>();
 
   for (const entry of V53_FIRST_PARTY_IDENTITIES) {
@@ -118,11 +105,12 @@ export const migratePlateV54Profile = ({
     element: Element,
     from: string,
     to: string,
-    location: string
+    location: string,
+    context: NodeContext
   ): Element => {
     if (
       !Object.hasOwn(element, from) ||
-      ownsProperty(from, 'element', element.type)
+      ownsProperty(element.type, from, context)
     ) {
       return element;
     }
@@ -144,8 +132,10 @@ export const migratePlateV54Profile = ({
   const migrateText = (
     text: Descendant,
     location: string,
-    parentType?: string
+    context: NodeContext
   ): Descendant => {
+    const [parentType, ...parentAncestors] = context.ancestors;
+
     if (
       !TextApi.isText(text) ||
       !scriptKey ||
@@ -155,12 +145,13 @@ export const migratePlateV54Profile = ({
       return text;
     }
 
+    const parentContext = { ancestors: parentAncestors, root: context.root };
     const hasSubscript =
       Object.hasOwn(text, 'subscript') &&
-      !ownsProperty('subscript', 'text', parentType);
+      !ownsTextProperty(parentType, 'subscript', parentContext);
     const hasSuperscript =
       Object.hasOwn(text, 'superscript') &&
-      !ownsProperty('superscript', 'text', parentType);
+      !ownsTextProperty(parentType, 'superscript', parentContext);
 
     if (!hasSubscript && !hasSuperscript) return text;
 
@@ -220,9 +211,9 @@ export const migratePlateV54Profile = ({
   const migrateDescendant = (
     input: unknown,
     location: string,
-    parentType?: string
+    context: NodeContext
   ): Descendant => {
-    if (TextApi.isText(input)) return migrateText(input, location, parentType);
+    if (TextApi.isText(input)) return migrateText(input, location, context);
     if (!ElementApi.isElement(input)) {
       throw new Error(`Invalid Plate document node at ${location}.`);
     }
@@ -253,11 +244,15 @@ export const migratePlateV54Profile = ({
       }
     }
 
+    const childContext = {
+      ancestors: [type, ...context.ancestors],
+      root: context.root,
+    };
     const children = input.children.map((child, index) => {
       const migrated = migrateDescendant(
         child,
         `${location}.children.${index}`,
-        type
+        childContext
       );
 
       if (migrated !== child) changed = true;
@@ -277,7 +272,7 @@ export const migratePlateV54Profile = ({
     if (
       Object.hasOwn(element, 'align') &&
       firstPartyElementTypes.has(element.type) &&
-      !ownsProperty('align', 'element', element.type)
+      !ownsProperty(element.type, 'align', context)
     ) {
       if (Object.hasOwn(element, 'textAlign')) {
         throw new Error(
@@ -305,7 +300,13 @@ export const migratePlateV54Profile = ({
     }
 
     if (codeBlockType && element.type === codeBlockType) {
-      element = renameElementProperty(element, 'lang', 'language', location);
+      element = renameElementProperty(
+        element,
+        'lang',
+        'language',
+        location,
+        context
+      );
     }
 
     if (tableType && element.type === tableType) {
@@ -313,7 +314,8 @@ export const migratePlateV54Profile = ({
         element,
         'colSizes',
         'columnWidths',
-        location
+        location,
+        context
       );
 
       if (!Object.hasOwn(element, 'columnWidths')) {
@@ -356,11 +358,10 @@ export const migratePlateV54Profile = ({
               cell.rowSpan > 0
                 ? cell.rowSpan
                 : 1;
+            const strippedSize = strippedCellSizes.get(cell);
             const size =
-              !ownsTableCellSize &&
-              typeof cell.size === 'number' &&
-              Number.isFinite(cell.size)
-                ? cell.size
+              typeof strippedSize === 'number' && Number.isFinite(strippedSize)
+                ? strippedSize
                 : undefined;
             const spanIndices = Array.from(
               { length: columnSpan },
@@ -410,7 +411,13 @@ export const migratePlateV54Profile = ({
     }
 
     if (tableRowType && element.type === tableRowType) {
-      element = renameElementProperty(element, 'size', 'height', location);
+      element = renameElementProperty(
+        element,
+        'size',
+        'height',
+        location,
+        context
+      );
     }
 
     if (tableCellType && element.type === tableCellType) {
@@ -418,7 +425,8 @@ export const migratePlateV54Profile = ({
         element,
         'background',
         'backgroundColor',
-        location
+        location,
+        context
       );
 
       if (Object.hasOwn(element, 'borders')) {
@@ -462,17 +470,21 @@ export const migratePlateV54Profile = ({
         if (bordersChanged) element = { ...element, borders: nextBorders };
       }
 
-      if (Object.hasOwn(element, 'size') && !ownsTableCellSize) {
-        const { size: _size, ...withoutSize } = element;
+      if (
+        Object.hasOwn(element, 'size') &&
+        !ownsProperty(element.type, 'size', context)
+      ) {
+        const { size, ...withoutSize } = element;
 
+        strippedCellSizes.set(input, size);
         element = withoutSize;
       }
     }
 
     if (
-      ownsProperty('listType', 'element', element.type) &&
+      firstPartyDeclares('list', element.type, 'listType', context) &&
       Object.hasOwn(element, 'listStyleType') &&
-      !ownsProperty('listStyleType', 'element', element.type)
+      !ownsProperty(element.type, 'listStyleType', context)
     ) {
       const legacyStyle = Reflect.get(element, 'listStyleType');
 
@@ -597,20 +609,22 @@ export const migratePlateV54Profile = ({
         element,
         'initialHeight',
         'naturalHeight',
-        location
+        location,
+        context
       );
       element = renameElementProperty(
         element,
         'initialWidth',
         'naturalWidth',
-        location
+        location,
+        context
       );
     }
 
     if (
       mediaTypes.has(element.type) &&
       Object.hasOwn(element, 'isUpload') &&
-      !ownsProperty('isUpload', 'element', element.type)
+      !ownsProperty(element.type, 'isUpload', context)
     ) {
       const isUpload = Reflect.get(element, 'isUpload');
 
@@ -645,7 +659,7 @@ export const migratePlateV54Profile = ({
 
     const removePlaceholder =
       Object.hasOwn(element, 'placeholderId') &&
-      !ownsProperty('placeholderId', 'element', element.type);
+      !ownsProperty(element.type, 'placeholderId', context);
 
     if (!Object.hasOwn(element, 'url') || removePlaceholder) {
       let properties = element;
@@ -664,7 +678,7 @@ export const migratePlateV54Profile = ({
     }
     if (
       !Object.hasOwn(element, 'caption') ||
-      ownsProperty('caption', 'element', element.type)
+      ownsProperty(element.type, 'caption', context)
     ) {
       return element;
     }
@@ -680,7 +694,7 @@ export const migratePlateV54Profile = ({
       (ElementApi.isElement(child) && conversionTarget.schema.isInline(child));
     const direct = element.children;
     const migratedLegacy = legacyCaption.map((child, index) =>
-      migrateDescendant(child, `${location}.caption.${index}`, element.type)
+      migrateDescendant(child, `${location}.caption.${index}`, childContext)
     );
     let legacy: Descendant[];
 
@@ -844,10 +858,17 @@ export const migratePlateV54Profile = ({
     return changed ? normalized : inputChildren;
   };
 
-  const migrateChildren = (children: Value, location: string): Value => {
+  const migrateChildren = (
+    children: Value,
+    location: string,
+    root: string | null
+  ): Value => {
     let changed = false;
     const next = children.map((child, index) => {
-      const migrated = migrateDescendant(child, `${location}.${index}`);
+      const migrated = migrateDescendant(child, `${location}.${index}`, {
+        ancestors: [],
+        root,
+      });
 
       if (migrated !== child) changed = true;
 
@@ -858,14 +879,14 @@ export const migratePlateV54Profile = ({
     return changed || normalized !== next ? normalized : children;
   };
 
-  const children = migrateChildren(document.children, 'main');
+  const children = migrateChildren(document.children, 'main', null);
   let { roots } = document;
 
   if (roots) {
     let changed = false;
     const next = Object.fromEntries(
       Object.entries(roots).map(([root, rootChildren]) => {
-        const migrated = migrateChildren(rootChildren, `roots.${root}`);
+        const migrated = migrateChildren(rootChildren, `roots.${root}`, root);
 
         if (migrated !== rootChildren) changed = true;
 

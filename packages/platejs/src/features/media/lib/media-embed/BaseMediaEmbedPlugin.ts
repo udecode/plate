@@ -6,6 +6,7 @@ import {
   property,
   schema,
 } from '../../../../core';
+import { registerFirstPartyPlugin } from '../../../../internal/plugin/firstPartyPlugin';
 import { decideUrl, isStoredUrl } from '../../../../internal/utils/urlPolicy';
 import {
   defineMediaPlugin,
@@ -208,3 +209,5 @@ export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
 
 export type MediaEmbedDefinition = DefinitionOf<typeof BaseMediaEmbedPlugin>;
 export type MediaEmbedElement = ElementOf<typeof BaseMediaEmbedPlugin>;
+
+registerFirstPartyPlugin(BaseMediaEmbedPlugin);
