@@ -173,12 +173,12 @@ for (const variant of ['native', 'codemirror'] as const) {
       const { editor, picture } = await open(page, { variant });
 
       await expect(picture).toBeVisible();
-      expect(await pictureSvg(picture)).not.toContain('<p>CX</p>');
+      expect(await pictureSvg(picture)).not.toContain('>CX<');
       await editor.selection.collapse({ path: [1, 0], offset: SOURCE.length });
       await editor.focus();
       await page.keyboard.type('X');
       await expect.poll(() => editor.get.modelBlockText(1)).toBe(`${SOURCE}X`);
-      await expect.poll(() => pictureSvg(picture)).toContain('<p>CX</p>');
+      await expect.poll(() => pictureSvg(picture)).toContain('>CX<');
     });
 
     test('select-all and copy put the diagram source on the clipboard', async ({
@@ -318,6 +318,17 @@ test('Export PNG writes a PNG of the picture', async ({ page }) => {
   expect(png.painted).toBeGreaterThan(100);
 });
 
+test('a renderer that resolves markup other than SVG shows an error instead of a picture', async ({
+  page,
+}) => {
+  const { block, picture } = await open(page, { query: '&output=html' });
+
+  await expect(block.locator('.text-destructive')).toHaveText(
+    'The renderer did not return an SVG picture.'
+  );
+  await expect(picture).toHaveCount(0);
+});
+
 test('a source waiting behind a render does not start once the reader picks Code', async ({
   page,
 }) => {
@@ -356,44 +367,28 @@ test('a render aborted by an emptied source keeps its slot until it settles', as
 
       return pictureSvg(picture);
     })
-    .toContain('<p>Q</p>');
+    .toContain('>Q<');
   expect(await maxRendersInFlight(page)).toBe(1);
 });
 
-test('a Mermaid Gantt chart draws at the width of the page', async ({
+test('a Mermaid Gantt chart exports at the size its picture states', async ({
   page,
 }) => {
-  const { picture } = await open(page, {
+  const { block, picture } = await open(page, {
     query: `&source=${encodeURIComponent(GANTT)}`,
   });
 
   await expect(picture).toBeVisible();
 
-  const [, width] = /viewBox="0 0 ([\d.]+) /.exec(await pictureSvg(picture))!;
-  const pageWidth = await page.evaluate(() => document.body.clientWidth);
+  const [, width] = /^<svg\b[^>]*\swidth="([^"]*)"/.exec(
+    await pictureSvg(picture)
+  )!;
+  const png = await exportPng(page, block);
 
-  expect(Number(width)).toBeGreaterThan(pageWidth * 0.9);
+  expect(png.width).toBe(Number(width));
+  expect(png.width).toBeGreaterThan(300);
+  expect(png.painted).toBeGreaterThan(100);
 });
-
-for (const [mode, security] of [
-  ['default', ''],
-  ['sandbox', '&mermaidSecurity=sandbox'],
-] as const) {
-  test(`a failed Mermaid render leaves nothing behind in the page, ${mode} mode`, async ({
-    page,
-  }) => {
-    const { block } = await open(page, {
-      query: `${security}&source=${encodeURIComponent('graph TD\n  A[')}`,
-    });
-
-    await expect(block.locator('.text-destructive')).toBeVisible();
-    await expect(
-      page.locator(
-        '[id^="dcode-block-diagram-mermaid"], [id^="icode-block-diagram-mermaid"]'
-      )
-    ).toHaveCount(0);
-  });
-}
 
 test('a drawn block starts no render when Activity shows it again', async ({
   page,
@@ -426,15 +421,4 @@ test('a block Activity hid during a render draws once shown again', async ({
     })
     .toBe(1);
   await expect(picture).toBeVisible();
-});
-
-test('Mermaid in sandbox mode shows an error instead of a broken picture', async ({
-  page,
-}) => {
-  const { block, picture } = await open(page, {
-    query: '&mermaidSecurity=sandbox',
-  });
-
-  await expect(block.locator('.text-destructive')).toBeVisible();
-  await expect(picture).toHaveCount(0);
 });

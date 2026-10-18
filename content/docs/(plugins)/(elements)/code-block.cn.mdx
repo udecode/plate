@@ -89,7 +89,7 @@ npx shadcn@latest add @plate/code-block-diagram @plate/code-block-diagram-mermai
 
 | 条目 | 渲染器 | 语言 | 依赖包 |
 | --- | --- | --- | --- |
-| `code-block-diagram-mermaid` | `mermaidRenderer` | `mermaid` | `mermaid` |
+| `code-block-diagram-mermaid` | `mermaidRenderer` | `mermaid` | `pele` |
 | `code-block-diagram-graphviz` | `graphvizRenderer` | `graphviz`、`dot` | `viz.js`、`@types/viz.js` |
 | `code-block-diagram-flowchart` | `flowchartRenderer` | `flowchart` | `flowchart.js` |
 | `code-block-diagram-plantuml` | `createPlantUmlRenderer({ server })` | `plantuml`、`puml` | `plantuml-encoder`、`@types/plantuml-encoder` |
@@ -121,7 +121,9 @@ export const DiagramEditorKit = EditorKit.map((plugin) =>
 
 `withDiagrams` 也能以同样方式包装 `CodeBlockCodeMirrorElement`。每个渲染器都会把自己的
 标签加入语言选择器；两个渲染器声明同一种语言时，`withDiagrams` 会抛出错误。Mermaid
-渲染器使用应用自己的 Mermaid 配置，从不调用 `mermaid.initialize`。
+渲染器使用 [Pele](https://pele.run/) 绘制：它读取 Mermaid 语法，并按自己的方式布局和
+配色。它绘制 Mermaid 内置的图表类型，不支持 ZenUML 等外部类型。无论通过
+`mermaid.initialize` 还是 `%%{init}%%` 指令设置，Mermaid 主题都不会生效。
 
 ### PlantUML 服务器
 
@@ -145,12 +147,10 @@ Export PNG 会把已绘制的图片保存为 `diagram.png`。
 代码块接近视口且浏览器空闲时才开始绘制。每个代码块同时只运行一次渲染，只有最新的源码
 会等待下一次渲染。
 
-- 图片是渲染器输出的 SVG 图像，以语言作为替代文本。Mermaid 的大多数图表类型只声明
-  100% 宽度，因此这些图片会缩放以适应栏宽，其 PNG 采用浏览器对这类图像的默认尺寸。
-- 渲染失败时，错误显示在源码下方。不是 SVG 的输出也显示为错误，例如
-  `securityLevel: 'sandbox'` 下 Mermaid 的 iframe。
-- Mermaid 在页面中按应用的 `securityLevel` 构建每张图，因此设置为 `'loose'` 时，
-  标签中的 HTML 会在页面中运行。
+- 图片是渲染器输出的 SVG 图像，以语言作为替代文本。Export PNG 按 SVG 声明的尺寸绘制；
+  SVG 未声明尺寸时，采用浏览器的默认尺寸。
+- Mermaid 图片不绘制背景，因此在深色主题下，它的深色线条直接显示在页面上。
+- 渲染失败时，错误显示在源码下方；不是 SVG 的输出也显示为错误。
 - 没有渲染器声明的语言仍是普通代码块。
 - 图表代码块与其他块一样删除。
 

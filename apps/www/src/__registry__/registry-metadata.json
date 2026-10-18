@@ -1,5 +1,5 @@
 {
-  "generation": "b7657eb1b2b3f9e266f6eca04a01f59b1463b28a34a86aa2b9b2cac2c3f597a3",
+  "generation": "1f397ab8e203f3247b8b53f3378cdb2541c1c891691b8310f29a9a3e99da44c2",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2706,7 +2706,7 @@
             ]
           },
           "dependencies": [
-            "mermaid"
+            "pele"
           ],
           "registryDependencies": [
             "@plate/code-block-diagram"
@@ -9555,7 +9555,7 @@
             ]
           },
           "dependencies": [
-            "mermaid"
+            "pele"
           ],
           "registryDependencies": [
             "@plate/code-block-diagram"

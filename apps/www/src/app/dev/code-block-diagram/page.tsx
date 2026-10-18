@@ -1,6 +1,5 @@
 'use client';
 
-import type { MermaidConfig } from 'mermaid';
 import { useSearchParams } from 'next/navigation';
 import {
   CodeBlockPlugin,
@@ -36,16 +35,6 @@ const heldRenders: Array<() => void> = [];
 
 const applyRouteOptions = async () => {
   const params = new URLSearchParams(window.location.search);
-  const securityLevel = params.get('mermaidSecurity');
-
-  if (securityLevel) {
-    const { default: mermaid } = await import('mermaid');
-
-    mermaid.initialize({
-      securityLevel: securityLevel as MermaidConfig['securityLevel'],
-      startOnLoad: false,
-    });
-  }
 
   if (params.get('hold') === '1') {
     (window as ProbeWindow).__releaseRenders = () => {
@@ -55,6 +44,8 @@ const applyRouteOptions = async () => {
       heldRenders.push(resolve);
     });
   }
+
+  return params;
 };
 
 const withRenderProbe = (renderer: DiagramRenderer): DiagramRenderer => ({
@@ -71,7 +62,9 @@ const withRenderProbe = (renderer: DiagramRenderer): DiagramRenderer => ({
     );
 
     try {
-      await applyRouteOptions();
+      const params = await applyRouteOptions();
+
+      if (params.get('output') === 'html') return '<div>not a picture</div>';
 
       return await renderer.render(source, options);
     } finally {

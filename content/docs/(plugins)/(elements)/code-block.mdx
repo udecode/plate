@@ -162,7 +162,7 @@ npx shadcn@latest add @plate/code-block-diagram @plate/code-block-diagram-mermai
 
 | Item | Renderer | Languages | Packages |
 | --- | --- | --- | --- |
-| `code-block-diagram-mermaid` | `mermaidRenderer` | `mermaid` | `mermaid` |
+| `code-block-diagram-mermaid` | `mermaidRenderer` | `mermaid` | `pele` |
 | `code-block-diagram-graphviz` | `graphvizRenderer` | `graphviz`, `dot` | `viz.js`, `@types/viz.js` |
 | `code-block-diagram-flowchart` | `flowchartRenderer` | `flowchart` | `flowchart.js` |
 | `code-block-diagram-plantuml` | `createPlantUmlRenderer({ server })` | `plantuml`, `puml` | `plantuml-encoder`, `@types/plantuml-encoder` |
@@ -194,8 +194,11 @@ export const DiagramEditorKit = EditorKit.map((plugin) =>
 
 `withDiagrams` wraps `CodeBlockCodeMirrorElement` the same way. Each renderer
 adds its label to the language picker, and `withDiagrams` throws when two
-renderers claim one language. The Mermaid renderer uses your app's Mermaid
-configuration and never calls `mermaid.initialize`.
+renderers claim one language. The Mermaid renderer draws with
+[Pele](https://pele.run/), which reads Mermaid syntax and lays out and colors
+each diagram its own way. It draws the diagram types built into Mermaid, not
+ZenUML or other external types. Mermaid themes do not apply, whether set through
+`mermaid.initialize` or a `%%{init}%%` directive.
 
 ### PlantUML server
 
@@ -223,13 +226,12 @@ A block draws once it is near the viewport and the browser is idle. Each block
 runs one render at a time, and only its latest source waits for the next one.
 
 - The picture is an image of the renderer's SVG, with the language as its alt
-  text. Mermaid gives most diagram types only a width of 100%, so those pictures
-  scale to fit the column, and their PNG takes the browser's default size for
-  such an image.
-- A failed render shows its error below the source. Output that is not SVG, such
-  as Mermaid's iframe under `securityLevel: 'sandbox'`, shows as an error.
-- Mermaid builds each drawing in the page under your app's `securityLevel`, so
-  with `'loose'` the HTML in a label runs there.
+  text. Export PNG draws it at the size the SVG states, or at the browser's
+  default size for an SVG that states none.
+- A Mermaid picture paints no background, so in a dark theme its dark lines sit
+  directly on the page.
+- A failed render shows its error below the source, and output that is not SVG
+  shows as an error too.
 - A language that no renderer claims stays an ordinary code block.
 - A diagram block deletes like any other block.
 

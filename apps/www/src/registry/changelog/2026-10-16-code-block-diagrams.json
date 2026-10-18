@@ -111,7 +111,7 @@
     {
       "id": "2026-10-16-code-block-diagram-draw-diagrams-blocks-77929476",
       "kind": "new",
-      "summary": "Draw the picture of a code block in a diagram language below its source. `withDiagrams` wraps `CodeBlockElement` or `CodeBlockCodeMirrorElement` with the renderers you pass, the toolbar switches between Code and Both and exports a PNG, and the PlantUML renderer sends source only to the server you configure.",
+      "summary": "Draw the picture of a code block in a diagram language below its source. `withDiagrams` wraps `CodeBlockElement` or `CodeBlockCodeMirrorElement` with the renderers you pass, the toolbar switches between Code and Both and exports a PNG, and the PlantUML renderer sends source only to the server you configure. The Mermaid renderer draws with Pele.",
       "details": [],
       "migrationNotes": [],
       "targets": [
