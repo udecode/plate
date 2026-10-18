@@ -274,7 +274,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
               replacementMarks
             ) as Value
           ),
-        { selectionAfter: newSelection, selectionRoot: root }
+        { selection: { root, value: newSelection } }
       );
       if (options.at == null) {
         syncImplicitTargetToCurrentSelection(editor);

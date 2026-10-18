@@ -4051,8 +4051,10 @@ const writeSliceAtRange = <V extends Value>(
           step,
           selection && options.selection !== 'keep'
             ? {
-                selectionAfter: selection,
-                selectionRoot: range.anchor.root ?? MAIN_ROOT_KEY,
+                selection: {
+                  root: range.anchor.root ?? MAIN_ROOT_KEY,
+                  value: selection,
+                },
               }
             : {}
         );
@@ -8351,8 +8353,10 @@ const applyTransactionSpecContents = <V extends Value>(
   const options = {
     ...(spec.selection
       ? {
-          selectionAfter: spec.selection.value,
-          selectionRoot: toInternalRoot(spec.selection.root),
+          selection: {
+            root: toInternalRoot(spec.selection.root),
+            value: spec.selection.value,
+          },
         }
       : {}),
     ...(landing
@@ -10196,10 +10200,9 @@ export const withTransactionDocumentChangeObserver = <T>(
 type ApplyDocumentChangeOptions = Readonly<{
   notifyTransactionListeners?: boolean;
   beforeListeners?: () => void;
-  selectionAfter?: Selection;
+  selection?: Readonly<{ root: RootKey; value: Selection }>;
   selectionAssociation?: 'backward' | 'forward' | 'inward' | 'outward';
   selectionMapping?: 'representation';
-  selectionRoot?: RootKey;
 }>;
 
 const getDocumentRootChildren = (
@@ -10348,7 +10351,7 @@ const applyTransactionSpecDocumentChangeStep = (
   const nextRoot = hasRoot(activeRoot) ? activeRoot : MAIN_ROOT_KEY;
   const selectionBefore = getCurrentSelection(editor);
   const selectionRoot = getCurrentSelectionRoot(editor);
-  const hasExplicitSelection = Object.hasOwn(options, 'selectionAfter');
+  const explicitSelection = options.selection;
 
   const runtimeIndexes = profileCoreDuration(
     specContext.kind === 'spec'
@@ -10356,14 +10359,14 @@ const applyTransactionSpecDocumentChangeStep = (
       : 'transaction-node-keys',
     () =>
       inheritDocumentChangeStepNodeKeys(editor, snapshot, step, {
-        defer: specContext.kind === 'spec' && hasExplicitSelection,
+        defer: specContext.kind === 'spec' && explicitSelection !== undefined,
       })
   );
   const selectionRuntimeIndexes = runtimeIndexes.get(selectionRoot);
   specContext.currentChildrenRoot = nextRoot;
 
-  const mappedSelection = hasExplicitSelection
-    ? (options.selectionAfter ?? null)
+  const mappedSelection = explicitSelection
+    ? explicitSelection.value
     : selectionBefore
       ? mapSelectionThroughChange(
           editor,
@@ -10389,9 +10392,10 @@ const applyTransactionSpecDocumentChangeStep = (
   setCurrentSelection(
     editor,
     mappedSelection,
-    options.selectionRoot ?? (hasRoot(selectionRoot) ? selectionRoot : nextRoot)
+    explicitSelection?.root ??
+      (hasRoot(selectionRoot) ? selectionRoot : nextRoot)
   );
-  if (hasExplicitSelection) {
+  if (explicitSelection) {
     specContext.selectionWritten = true;
     syncImplicitTargetToCurrentSelection(editor);
   } else {
@@ -11422,9 +11426,7 @@ const createRootFitTransactionSpec = (
         applyDocumentChangeStep(
           editor,
           step,
-          mappedSelection
-            ? { selectionAfter: mappedSelection, selectionRoot: root }
-            : {}
+          mappedSelection ? { selection: { root, value: mappedSelection } } : {}
         );
       },
       builder: getActiveDocumentChangeBuilder(editor),
@@ -11466,7 +11468,7 @@ const createRootFitTransactionSpec = (
       applyDocumentChangeStep(
         editor,
         step,
-        selection ? { selectionAfter: selection, selectionRoot: root } : {}
+        selection ? { selection: { root, value: selection } } : {}
       );
     });
   }

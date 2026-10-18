@@ -561,6 +561,77 @@ describe('selection protocol', () => {
     );
   });
 
+  describe('replaceChildren with a caret in another root', () => {
+    const createRootedEditor = () =>
+      createEditor({
+        initialValue: {
+          children: [{ children: [{ text: 'main' }], type: 'paragraph' }],
+          roots: {
+            note: [{ children: [{ text: 'note' }], type: 'paragraph' }],
+          },
+        },
+      });
+    const noteCaret = {
+      anchor: { offset: 1, path: [0, 0], root: 'note' },
+      focus: { offset: 1, path: [0, 0], root: 'note' },
+    };
+
+    it('keeps a note caret when it wraps a main block', () => {
+      const editor = createRootedEditor();
+
+      editor.update.selection.set(noteCaret);
+      editor.update.nodes.replaceChildren(
+        [{ children: [...editor.read.children()], type: 'group' }],
+        { at: [], count: 1 }
+      );
+
+      assert.deepEqual(editor.read.children(), [
+        {
+          children: [{ children: [{ text: 'main' }], type: 'paragraph' }],
+          type: 'group',
+        },
+      ]);
+      assert.deepEqual(editor.read.selection(), noteCaret);
+    });
+
+    it('keeps a note caret when it writes new main blocks', () => {
+      const editor = createRootedEditor();
+
+      editor.update.selection.set(noteCaret);
+      editor.update.nodes.replaceChildren(
+        [{ children: [{ text: 'new' }], type: 'paragraph' }],
+        { at: [], count: 1 }
+      );
+
+      assert.deepEqual(editor.read.children(), [
+        { children: [{ text: 'new' }], type: 'paragraph' },
+      ]);
+      assert.deepEqual(editor.read.selection(), noteCaret);
+    });
+
+    it('keeps a main caret when it wraps a note block', () => {
+      const editor = createRootedEditor();
+      const mainCaret = {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      };
+
+      editor.update.selection.set(mainCaret);
+      editor.update.nodes.replaceChildren(
+        [{ children: [...editor.read.root('note')], type: 'group' }],
+        { at: [], count: 1, root: 'note' }
+      );
+
+      assert.deepEqual(editor.read.root('note'), [
+        {
+          children: [{ children: [{ text: 'note' }], type: 'paragraph' }],
+          type: 'group',
+        },
+      ]);
+      assert.deepEqual(editor.read.selection(), mainCaret);
+    });
+  });
+
   it('validates built-in selections against the current document', () => {
     const editor = createEditor({ initialValue });
 

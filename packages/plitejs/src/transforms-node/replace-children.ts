@@ -1,6 +1,7 @@
 import {
   applyBuiltDocumentChange,
   getChildren,
+  getCurrentSelectionRoot,
   getEditorUpdateRoot,
   getLiveSelection,
 } from '../core/public-state';
@@ -81,7 +82,14 @@ export const replaceChildren = <
     index,
     index + replacementCount
   ) as Descendant[];
-  const selection = getLiveSelection(editor);
+  const updateRoot = getEditorUpdateRoot(editor);
+  const liveSelection = getLiveSelection(editor);
+  const selection =
+    liveSelection &&
+    (SelectionApi.root(liveSelection) ?? getCurrentSelectionRoot(editor)) ===
+      updateRoot
+      ? liveSelection
+      : null;
   const pointIsReplaced = (point: Point) =>
     point.path.length > at.length &&
     at.every((part, depth) => point.path[depth] === part) &&
@@ -169,8 +177,9 @@ export const replaceChildren = <
               source: replacedChildren[childIndex],
             }))
         : undefined,
-      ...(selectionAfter === undefined ? {} : { selectionAfter }),
-      selectionRoot: getEditorUpdateRoot(editor),
+      ...(selectionAfter === undefined
+        ? {}
+        : { selection: { root: updateRoot, value: selectionAfter } }),
     }
   );
 };

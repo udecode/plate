@@ -123,10 +123,7 @@ export const deleteWholeTopLevelBlockRange = (
               children: [{ text: '' }],
             },
           ]),
-        {
-          selectionAfter: selection,
-          selectionRoot: root,
-        }
+        { selection: { root, value: selection } }
       );
     });
     return true;
@@ -168,10 +165,7 @@ export const deleteWholeTopLevelBlockRange = (
           removedChildren.length,
           []
         ),
-      {
-        selectionAfter: selection,
-        selectionRoot: root,
-      }
+      { selection: { root, value: selection } }
     );
   });
   return true;
