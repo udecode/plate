@@ -182,6 +182,7 @@ In this repository the cut breaks the copied `math-static.tsx` and `math.tsx` an
 | Rules for package files outside the build output | Delete them all, since only the removed stylesheet used them | Keep them for a later stylesheet or asset export | keep asset rule | detail |
 | KaTeX stylesheet in the copied HTML export block | Leave its CDN link at 0.16.18 for a separate task | Move it to 0.16.22 in this change | fix html export | detail |
 | Next step | Build now, since the panel reviewed the plan (look) | Hold at the plan | hold | detail |
+| Page link | A new page at https://claude.ai/artifact/PfCBE94wSKd6ypRvEFLdeB, because the old page at https://claude.ai/artifact/2CB1wsDbu19vEN752jPaio no longer opens (safe) | No page for this subject | drop new page | detail |
 
 ## Decision ledger
 

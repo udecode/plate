@@ -1,6 +1,6 @@
 # Math and equations
 
-Page: https://claude.ai/artifact/2CB1wsDbu19vEN752jPaio
+Page: https://claude.ai/artifact/PfCBE94wSKd6ypRvEFLdeB
 
 The ledger asks how math values, delimiters, inline selection and rendering should compose. Today an equation is a void element from `platejs/math`: `equation` for a block and `inlineEquation` inside text, each storing its LaTeX source as a flat `latex` string. The same entrypoint maps both to Markdown `math` and `inlineMath` and ships `MathRules` for `$...$` and `$$` input. It imports no KaTeX, so `platejs/math` and `platejs/math/react` load without it. The copied UI draws and edits equations with KaTeX and imports KaTeX's stylesheet itself. Word export turns each equation into Word math through KaTeX's MathML, and it owns the optional `katex` peer. Landed and proven: the flat shape, the Markdown mappings and the input rules in `BaseEquationPlugin.spec.tsx`, the copied popover's local draft with one undoable commit in `math.spec.tsx` and `math.lifecycle.spec.tsx`, Word math in `exportDocx.spec.ts`, and the move of KaTeX out of the plugins in the [2026-10-18 review](../2026-10-18-math-review.md), which adopted the [2026-10-04 audit](../../research/review-records/2026-10-04-math-audit.json)'s Pursue. The scope's history prints with `node tooling/scripts/review-ledger.mjs show math`.
 
