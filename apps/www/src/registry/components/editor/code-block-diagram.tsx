@@ -192,10 +192,20 @@ function DiagramExportButton({ url }: { url: string }) {
         image.addEventListener(
           'load',
           () => {
+            const { naturalHeight, naturalWidth } = image;
+            // A canvas past the browser's size limit exports as `data:,`. These
+            // bounds sit within every engine's, iOS Safari's 16,777,216 px included.
+            const scale = Math.min(
+              1,
+              16_384 / Math.max(naturalWidth, naturalHeight),
+              Math.sqrt(16_777_216 / (naturalWidth * naturalHeight))
+            );
             const canvas = ownerDocument.createElement('canvas');
-            canvas.width = image.naturalWidth;
-            canvas.height = image.naturalHeight;
-            canvas.getContext('2d')?.drawImage(image, 0, 0);
+            canvas.width = Math.max(1, Math.floor(naturalWidth * scale));
+            canvas.height = Math.max(1, Math.floor(naturalHeight * scale));
+            canvas
+              .getContext('2d')
+              ?.drawImage(image, 0, 0, canvas.width, canvas.height);
 
             const link = ownerDocument.createElement('a');
             link.href = canvas.toDataURL('image/png');

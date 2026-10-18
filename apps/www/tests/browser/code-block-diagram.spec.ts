@@ -390,6 +390,34 @@ test('a Mermaid Gantt chart exports at the size its picture states', async ({
   expect(png.painted).toBeGreaterThan(100);
 });
 
+test('a chain wider than a canvas exports a painted PNG scaled to the same shape', async ({
+  page,
+}) => {
+  const chain = Array.from(
+    { length: 400 },
+    (_, index) => `n${index}[Task number ${index}]`
+  ).join('-->');
+  const { block, picture } = await open(page, {
+    query: `&source=${encodeURIComponent(`graph LR\n  ${chain}`)}`,
+  });
+
+  await expect(picture).toBeVisible();
+
+  const [, width, height] =
+    /^<svg\b[^>]*\swidth="([^"]*)"[^>]*\sheight="([^"]*)"/.exec(
+      await pictureSvg(picture)
+    )!;
+
+  expect(Number(width)).toBeGreaterThan(65_535);
+
+  const png = await exportPng(page, block);
+
+  expect(png.painted).toBeGreaterThan(100);
+  expect(
+    Math.abs(png.height - (png.width * Number(height)) / Number(width))
+  ).toBeLessThanOrEqual(1);
+});
+
 test('a drawn block starts no render when Activity shows it again', async ({
   page,
 }) => {
