@@ -382,6 +382,33 @@ describe('plite transforms contract', () => {
     ]);
   });
 
+  for (const [lost, anchor] of [
+    ['its end', [0, 0]],
+    ['both ends', [1, 0]],
+  ] as const) {
+    it(`blocks.duplicate copies nothing from a saved range that lost ${lost}`, () => {
+      const editor = createEditor();
+
+      editorReplace(editor, {
+        children: [paragraph('one'), paragraph('two')],
+        selection: null,
+      });
+      editor.update((tx) => {
+        tx.nodes.remove({ at: [1] });
+      });
+      editor.update((tx) => {
+        tx.blocks.duplicate({
+          at: {
+            anchor: { path: [...anchor], offset: 0 },
+            focus: { path: [1, 0], offset: 0 },
+          },
+        });
+      });
+
+      assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('one')]);
+    });
+  }
+
   it('blocks.insert inserts after the target block', () => {
     const editor = createEditor();
 
@@ -4528,6 +4555,28 @@ describe('blocks built for a required position', () => {
         tx.blocks.duplicate({
           at: SelectionApi.nodes(paths as unknown as [Path], { mode: 'block' }),
         });
+      });
+
+      assert.deepEqual(editor.read.children(), [card(...expected)]);
+    }
+  });
+
+  it('duplicates only the block a caret sits in, not the card around it', () => {
+    for (const [path, expected] of [
+      [
+        [0, 0, 0],
+        [caption('Title'), paragraph('Title'), paragraph('Body')],
+      ],
+      [
+        [0, 1, 0],
+        [caption('Title'), paragraph('Body'), paragraph('Body')],
+      ],
+    ] as const) {
+      const editor = create();
+
+      editor.update((tx) => {
+        tx.selection.set(collapsedSelection([...path], 2));
+        tx.blocks.duplicate();
       });
 
       assert.deepEqual(editor.read.children(), [card(...expected)]);

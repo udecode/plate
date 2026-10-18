@@ -1421,6 +1421,41 @@ it('positions returns no points for stale range endpoints but still rejects inva
   );
 });
 
+it('blocks reads no block at a path that no longer exists', () => {
+  const editor = createEditor();
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+    selection: null,
+  });
+
+  const blockPaths = (at: Parameters<typeof editor.read.nodes.blocks>[0]) =>
+    editor.read.nodes.blocks(at).map(([, path]) => path);
+
+  assert.deepEqual(
+    blockPaths({
+      at: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 0 },
+      },
+    }),
+    []
+  );
+  assert.deepEqual(
+    blockPaths({
+      at: {
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 0 },
+      },
+    }),
+    []
+  );
+  assert.deepEqual(
+    blockPaths({ at: SelectionApi.nodes([[0], [1]], { mode: 'block' }) }),
+    [[0]]
+  );
+});
+
 it('mirrors the legacy positions/path/inline.tsx oracle row', () => {
   const editor = createEditor();
 

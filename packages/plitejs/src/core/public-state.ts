@@ -5387,6 +5387,8 @@ const getStateView = <
               } = inputOptions;
 
               for (const path of target.paths) {
+                if (!NodeApi.has(editor, path)) continue;
+
                 const selectedBlocks = Array.from(
                   getNodes(editor as unknown as Editor, {
                     ...queryOptions,
@@ -5433,15 +5435,17 @@ const getStateView = <
         const queryOptions = resolvedOptions ?? {};
 
         return withOptionsRootRead(editor, queryOptions, () =>
-          Object.freeze(
-            Array.from(
-              getNodes(editor as unknown as Editor, {
-                ...queryOptions,
-                match: matchesBlock,
-                mode: queryOptions.mode ?? 'lowest',
-              })
-            ) as Array<NodeEntry<Element>>
-          )
+          hasReadableNodeCollection(editor, queryOptions)
+            ? Object.freeze(
+                Array.from(
+                  getNodes(editor as unknown as Editor, {
+                    ...queryOptions,
+                    match: matchesBlock,
+                    mode: queryOptions.mode ?? 'lowest',
+                  })
+                ) as Array<NodeEntry<Element>>
+              )
+            : []
         );
       })) as EditorStateNodesApi<V>['blocks'];
     function getStateNodeKey(node: Descendant): NodeKey;
@@ -6856,12 +6860,7 @@ export const getUpdateView = <
             )
           : targetAt
             ? LocationApi.isRange(targetAt)
-              ? state.nodes.toArray({
-                  at: targetAt,
-                  match: matchesBlock,
-                  mode,
-                  voids,
-                })
+              ? state.nodes.blocks({ at: targetAt, match, mode, type, voids })
               : (() => {
                   const entry = state.nodes.block({ at: targetAt });
 

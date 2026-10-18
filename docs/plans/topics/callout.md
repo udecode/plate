@@ -1,6 +1,6 @@
 # Callouts and disclosure
 
-Page: https://claude.ai/artifact/BqosrKxyq52ofShbAKD48L
+Page: https://claude.ai/artifact/Tyhb89oz7EQTvETPc7g74a
 
 Plate has two container presentations in this scope. A callout is an emphasized text block. A Details block is a disclosure: its first child, the Summary, is the title that stays visible, and the blocks after it form a body that hides when the Details closes. The ledger asks how both compose standard block editing. The 2026-10-04 audit gave a Pursue verdict: the schema should own the Summary slot, and the callout's emoji default and unrendered variant should leave the package. The 2026-10-15 Details title slot plan built the Details half; the callout half is still open. Since then, Details titles gained heading levels, Code and List conversions that release the Details, and closed-title landing, through the October 2026 Details plans. The scope's review and plan history prints with `node tooling/scripts/review-ledger.mjs show callout`.
 
@@ -121,6 +121,8 @@ Pasting two paragraphs at the end of a title keeps them in the same section.
 
 - `BaseDetailsPlugin` declares its content as `schema.content.prefix([{ element: BaseDetailsSummaryPlugin }], plugins.blockContent({ default: BaseParagraphPlugin }))`, so the schema refuses any change that moves, removes or retypes the title, and Plite checks each change against it before writing. The title is child 0 of a Details when that child is live content. HTML import moves each `details` element's first `summary` to the front and turns later ones into body blocks that keep their formatting.
 - Plite builds the tail of a split, each later line of a plain-text paste, each copy of a duplicate and each block pasted over picked blocks with its source's type when the parent admits it there, and otherwise with that position's default block, through one internal read, `placeElementAt`. Its slice fitter keeps a paste that ends in another text block inside the title, quote or cell it lands in.
+- Plite's Duplicate reads the blocks of a caret or text range through the blocks read that block set, reset and toggle use, so it copies only the innermost blocks by default, and a caret in a title copies just that title.
+- Plite's blocks read returns no blocks for a range or point whose path no longer exists, and skips each picked block that no longer exists, so Duplicate, block set, reset and toggle change nothing for a deleted block.
 - Code and List conversions of a title read the Details' `blockRelease` contribution, which unwraps that Details and turns the title into the converted block. A closed title's `insertionAnchor` contribution sends an implicit insert after the whole Details.
 - AI types each answer block for its landing position, the Column toggle checks placement before it replaces a block, and `BlockquotePlugin`'s `toggle()` returns whether it applied, so the copied menus clear List only when Quote applied.
 - The paragraph shortcut in `ParagraphPlugin` resets the level, then toggles Paragraph, which the schema refuses on a title.
@@ -154,7 +156,8 @@ How an extension finds an optional peer, read from source, not run: Lexical `dd5
 
 - The callout half of the 2026-10-04 audit: the package's `'💡'` icon default and the `variant` no copied component renders. owner: zbeyens. stop: a callout plan runs or the owner drops it.
 - A message in the copied menus when a block change is refused. owner: zbeyens. stop: the owner asks for it or drops it.
-- A caret Duplicate inside a Details child throws "cannot be repeated or cyclic" on `next`. owner: zbeyens. stop: its suggested task runs or the owner drops it.
+- A Duplicate over a selection that crosses a Details edge puts every copy after the last innermost block, so an inward selection copies the block above into the Details body. owner: zbeyens. stop: its suggested task runs or the owner drops it.
+- A Duplicate of a closed Details title puts the copy in the hidden body instead of after the Details. owner: zbeyens. stop: its suggested task runs or the owner drops it.
 - `tx.slice.replace` crashes when `at` is a block pick, and returns false for a pick outside command paths, on `next` (`probe/pick-replace-base-a1.log`, `probe/pick-replace-base-a2.log`). owner: zbeyens. stop: its suggested task runs or the owner drops it.
 - Lifting a Details title throws "primary root cannot contain summary" on `next` (`probe/lift-base-a1.log`). owner: zbeyens. stop: its suggested task runs or the owner drops it.
 - Rejecting a pending title-level suggestion after Enter split the title returns `invalid` on `next` (`probe/r2w-base-a1.log`). Plite's split retypes the tail, so the same reject turns `invalid` in every Plite editor whose Enter in a fixed slot used to throw, such as forced-layout's. owner: zbeyens. stop: its suggested task runs or the owner drops it.

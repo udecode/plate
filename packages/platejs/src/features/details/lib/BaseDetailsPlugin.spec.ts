@@ -861,6 +861,35 @@ describe('Details title slot', () => {
     ]);
   });
 
+  it('duplicates the title or body line holding the caret', () => {
+    for (const [path, children] of [
+      [
+        [0, 0, 0],
+        [summary('Title'), paragraph('Title'), paragraph('Body')],
+      ],
+      [
+        [0, 1, 0],
+        [summary('Title'), paragraph('Body'), paragraph('Body')],
+      ],
+    ] as const) {
+      const editor = titled();
+
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 2, path: [...path] },
+          focus: { offset: 2, path: [...path] },
+          kind: 'text',
+        });
+        tx.blocks.duplicate();
+      });
+
+      expect(editor.read.children()).toEqual([
+        { children: [...children], type: 'details' },
+        paragraph('After'),
+      ]);
+    }
+  });
+
   it('reads the first HTML summary as the title and later ones as body blocks', () => {
     const editor = createEditor({
       plugins: [
