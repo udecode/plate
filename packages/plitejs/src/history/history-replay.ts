@@ -40,13 +40,16 @@ type TextKeyWrite =
 type TextFormatSpan = CharacterSpan &
   Readonly<{ writes: readonly TextKeyWrite[] }>;
 type HistoryReplaySchema = ReturnType<typeof historyReplaySchemaOf>;
+type RecordedHistoryReplay<T extends JsonEditorValue> = Readonly<{
+  structure: DocumentChange;
+  format: ReadonlyMap<string, readonly TextFormatSpan[]>;
+  after: T;
+}>;
 export type HistoryReplay<T extends JsonEditorValue = JsonEditorValue> =
   Readonly<{
-    structure: DocumentChange;
-    format: ReadonlyMap<string, readonly TextFormatSpan[]>;
     change: DocumentChange;
-    after: T;
     direction: 'undo' | 'redo';
+    record: () => RecordedHistoryReplay<T>;
   }>;
 
 export const historyReplaySchemaOf = (editor: AnyEditor) => {
@@ -176,6 +179,20 @@ export const recordHistoryReplay = <T extends JsonEditorValue>(
   change: DocumentChange,
   direction: 'undo' | 'redo'
 ): HistoryReplay<T> => {
+  let recorded: RecordedHistoryReplay<T> | undefined;
+
+  return {
+    change,
+    direction,
+    record: () => (recorded ??= recordReplay(schema, base, change)),
+  };
+};
+
+const recordReplay = <T extends JsonEditorValue>(
+  schema: HistoryReplaySchema,
+  base: T,
+  change: DocumentChange
+): RecordedHistoryReplay<T> => {
   const after = change.apply(base);
   const format = new Map<string, TextFormatSpan[]>();
   const classifications = [
@@ -188,13 +205,7 @@ export const recordHistoryReplay = <T extends JsonEditorValue>(
         ([, kind]) => kind.text && !kind.properties && !kind.structure
       ))
   ) {
-    return {
-      structure: change,
-      format,
-      change,
-      after,
-      direction,
-    };
+    return { structure: change, format, after };
   }
   const reset = new Map<CharacterSpan, JsonRecord>();
   const resets = new Map<string, CharacterSpan[]>();
@@ -319,13 +330,7 @@ export const recordHistoryReplay = <T extends JsonEditorValue>(
     if (rootResets.length) resets.set(root, rootResets);
   }
   if (format.size === 0) {
-    return {
-      structure: change,
-      format,
-      change,
-      after,
-      direction,
-    };
+    return { structure: change, format, after };
   }
   const middle = rewriteSpans(after, resets, (span) => reset.get(span) ?? {});
   const resetChange = DocumentChange.between(after, middle, {
@@ -352,9 +357,7 @@ export const recordHistoryReplay = <T extends JsonEditorValue>(
       isSetValued: schema.isSetValued,
     }),
     format,
-    change,
     after,
-    direction,
   };
 };
 
@@ -428,34 +431,39 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
   base: T,
   mapping: Readonly<{ after: T; change: DocumentChange; textOnly: boolean }>
 ) => {
-  const middle = replay.structure.apply(base);
+  const recorded = replay.record();
+  const middle = recorded.structure.apply(base);
   const textOnly = [
     ...getInternalDocumentChangeClassificationEntries(replay.change),
   ];
   const structure =
     mapping.textOnly &&
-    replay.format.size === 0 &&
+    recorded.format.size === 0 &&
     textOnly.length > 0 &&
     textOnly.every(
       ([, kind]) => kind.text && !kind.properties && !kind.structure
     )
-      ? DocumentChange.between(base, replay.after)
-      : replay.structure;
+      ? DocumentChange.between(base, recorded.after)
+      : recorded.structure;
   const transformed = DocumentChange.transform(mapping.change, structure, base);
   const mappedMiddle = transformed.b.apply(mapping.after);
-  if (replay.format.size === 0) {
+  if (recorded.format.size === 0) {
+    const mappedAfter = transformed.a.apply(recorded.after);
     return {
       replay: {
-        ...replay,
-        structure: transformed.b,
         change: transformed.b,
-        after: transformed.a.apply(replay.after),
+        direction: replay.direction,
+        record: () => ({
+          structure: transformed.b,
+          format: recorded.format,
+          after: mappedAfter,
+        }),
       },
       rest: transformed.a,
     };
   }
   const format = new Map<string, TextFormatSpan[]>();
-  for (const [root, spans] of replay.format) {
+  for (const [root, spans] of recorded.format) {
     const correspondence = createCharacterCorrespondence(
       middle,
       mappedMiddle,
@@ -484,7 +492,7 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
         })
       )
     : transformed.b;
-  const formatChange = DocumentChange.between(middle, replay.after, {
+  const formatChange = DocumentChange.between(middle, recorded.after, {
     isSetValued: schema.isSetValued,
   });
   const mapped = DocumentChange.transform(
@@ -492,7 +500,7 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
     formatChange,
     middle
   ).a;
-  const intermediate = mapped.apply(replay.after);
+  const intermediate = mapped.apply(recorded.after);
   const rest = mapped.compose(
     DocumentChange.between(intermediate, after, {
       isSetValued: schema.isSetValued,
@@ -500,11 +508,9 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
   );
   return {
     replay: {
-      structure: transformed.b,
-      format,
       change,
-      after,
       direction: replay.direction,
+      record: () => ({ structure: transformed.b, format, after }),
     },
     rest,
   };

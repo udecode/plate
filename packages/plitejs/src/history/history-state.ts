@@ -439,7 +439,7 @@ const resolveHead = <V extends Value>(
   let { recovery } = value;
 
   for (const mapping of journalEntries(value.mappings)) {
-    const nextBase = replay.after;
+    const nextBase = replay.record().after;
     const mapped = mapHistoryReplay(
       historyReplaySchemaOf(editor),
       replay,
@@ -447,7 +447,7 @@ const resolveHead = <V extends Value>(
       mapping
     );
     const mappedBatchBase = mapping.after;
-    const mappedNextBase = mapped.replay.after;
+    const mappedNextBase = mapped.replay.record().after;
     ({ replay } = mapped);
 
     recovery = mapAnchorHistoryRecovery(

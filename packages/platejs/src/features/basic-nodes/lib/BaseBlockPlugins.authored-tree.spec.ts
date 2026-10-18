@@ -61,7 +61,14 @@ const insertedBlock = (block: Node): Node => ({
   })),
 });
 const bolded = (value: string): Node => ({
-  authored: [{ ...mark('format'), id: 'carol-tag:1', key: 'bold' }],
+  authored: [
+    {
+      ...mark('format'),
+      id: 'carol-tag:1',
+      key: 'bold',
+      write: { kind: 'set', value: true },
+    },
+  ],
   bold: true,
   text: value,
 });

@@ -291,7 +291,11 @@ describe('BaseCodeBlockPlugin', () => {
         children: [{ text: '' }],
         type: 'codeBlock',
       })
-    ).toEqual({ preserveContext: true, replaceWhenCovered: false });
+    ).toEqual({
+      endMatter: false,
+      preserveContext: true,
+      replaceWhenCovered: false,
+    });
     expect(
       editorWithCodeBlock.read.schema.element(BaseCodeBlockPlugin)?.groups
     ).toContain('block');
