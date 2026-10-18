@@ -11,6 +11,7 @@ import {
   SelectionApi,
   type Descendant,
   createEditor,
+  createEditorView,
   definePlugin,
   DocumentChange,
   schema,
@@ -768,6 +769,68 @@ describe('BaseFootnotePlugins', () => {
       undefined,
       undefined,
     ]);
+  });
+
+  it('appends and numbers a definition in the caret root', () => {
+    const NoteHolder = definePlugin('footnoteNote', {
+      schema: {
+        element: {
+          contentRoots: {
+            body: {
+              content: schema.content.types(
+                ['paragraph', 'footnoteDefinition'],
+                { default: { type: 'paragraph' }, min: 1 }
+              ),
+              ownership: 'exclusive',
+            },
+          },
+          void: 'block',
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin, NoteHolder],
+      initialValue: {
+        children: [
+          {
+            type: 'footnoteDefinition',
+            ref: '1',
+            children: [
+              { type: 'paragraph', children: [{ text: 'Main note' }] },
+            ],
+          },
+          {
+            type: 'footnoteNote',
+            childRoots: { body: 'note' },
+            children: [{ text: '' }],
+          },
+        ],
+        roots: {
+          note: ['A', 'B', 'C', 'D'].map((text) => ({
+            type: 'paragraph',
+            children: [{ text }],
+          })),
+        },
+      },
+    });
+    const main = editor.read.children();
+    editor.update.selection.set({ path: [0, 0], offset: 1, root: 'note' });
+
+    editor.plugin(BaseFootnotePlugin).update.insert();
+
+    const note = createEditorView(editor, { root: 'note' });
+    expect({
+      main: editor.read.children(),
+      definition: note
+        .plugin(BaseFootnotePlugin)
+        .read.definition({ ref: '1' })?.[1],
+    }).toEqual({ main, definition: [4] });
+    expect(
+      note.plugin(BaseFootnotePlugin).update.selectDefinition({ ref: '1' })
+    ).toMatchObject({
+      targetPath: [4],
+      point: { path: [4, 0, 0], root: 'note' },
+    });
   });
 
   it('requires non-empty refs on references and definitions', () => {

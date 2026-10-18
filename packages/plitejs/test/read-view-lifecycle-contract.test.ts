@@ -7,6 +7,7 @@ import {
   definePlugin,
   type EditorStateView,
   setEditorReadOnly,
+  txLocate,
 } from 'plitejs';
 
 import {
@@ -415,12 +416,18 @@ describe('read view lifecycle', () => {
           }),
           update: () => ({
             nested: {
-              other(amount: number) {
+              other: txLocate(false, (amount: number) => {
                 updates += amount;
-              },
-              value(amount: number) {
-                this.other(amount);
-              },
+              }),
+              value: txLocate(
+                false,
+                function value(
+                  this: { other(amount: number): void },
+                  amount: number
+                ) {
+                  this.other(amount);
+                }
+              ),
             },
           }),
         }),

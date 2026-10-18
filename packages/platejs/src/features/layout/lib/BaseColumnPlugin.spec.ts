@@ -11,12 +11,14 @@ import {
   schema,
   type Selection,
   PLUGINS,
+  SelectionApi,
 } from '../../../core';
 import {
   ColumnItemPlugin,
   ColumnGroupPlugin,
 } from '../../../react/features/layout/ColumnPlugin';
 import { BaseBlockquotePlugin } from '../../basic-nodes/lib/BaseBlockPlugins';
+import { NoteHolder } from '../../details/__tests__/detailsConversionFixture';
 import { BaseDetailsPlugin } from '../../details/lib/BaseDetailsPlugin';
 import { BaseIndentPlugin } from '../../indent';
 import { BaseListPlugin, ListType } from '../../list/lib/BaseListPlugin';
@@ -25,9 +27,68 @@ import {
   BaseColumnGroupPlugin,
   type ColumnElement,
   type ColumnGroupElement,
+  type ToggleColumnGroupOptions,
 } from './BaseColumnPlugin';
 
 const columnPlugins = [BaseColumnGroupPlugin] as const;
+
+describe('columns in a named root', () => {
+  it.each(['caret', 'nodes'] as const)(
+    'toggles from a %s target without editing main',
+    (target) => {
+      const editor = createRuntimeEditor({
+        plugins: [BaseColumnGroupPlugin, NoteHolder],
+        initialValue: {
+          children: [
+            { type: 'paragraph', children: [{ text: 'Main' }] },
+            {
+              type: 'listNoteHolder',
+              childRoots: { body: 'note' },
+              children: [{ text: '' }],
+            },
+          ],
+          roots: {
+            note: [{ type: 'paragraph', children: [{ text: 'Note' }] }],
+          },
+        },
+      });
+      const main = editor.read.children();
+      editor.update.selection.set({ path: [0, 0], offset: 0, root: 'note' });
+
+      if (target === 'caret') {
+        editor.plugin(BaseColumnGroupPlugin).update.toggle();
+      } else {
+        createEditorView(editor, { root: 'note' })
+          .plugin(BaseColumnGroupPlugin)
+          .update.toggle({
+            at: SelectionApi.nodes([[0]], { mode: 'block' }),
+          });
+      }
+
+      expect({
+        main: editor.read.children(),
+        note: editor.read.root('note'),
+      }).toMatchObject({
+        main,
+        note: [
+          {
+            type: 'columnGroup',
+            children: [
+              {
+                type: 'column',
+                children: [{ type: 'paragraph', children: [{ text: 'Note' }] }],
+              },
+              {
+                type: 'column',
+                children: [{ type: 'paragraph', children: [{ text: '' }] }],
+              },
+            ],
+          },
+        ],
+      });
+    }
+  );
+});
 const TestColumnHostPlugin = definePlugin('testColumnHost', {
   dependencies: [BaseColumnItemPlugin],
   schema: {
@@ -639,6 +700,189 @@ describe('BaseColumnGroupPlugin schema', () => {
 
         expect(editor.read.children()).toEqual(value);
       });
+
+      it('wraps the block at an explicit container path, not its first child', () => {
+        const editor = createRuntimeEditor({
+          plugins: [
+            BaseParagraphPlugin,
+            BaseBlockquotePlugin,
+            BaseColumnGroupPlugin,
+          ],
+          initialValue: [
+            {
+              children: [
+                { children: [{ text: 'A' }], type: 'paragraph' },
+                { children: [{ text: 'B' }], type: 'paragraph' },
+              ],
+              type: 'blockquote',
+            },
+            { children: [{ text: 'C' }], type: 'paragraph' },
+          ],
+        });
+
+        editor.update.columnGroup.toggle({ at: [0] });
+
+        const [group, after] = editor.read.children() as Element[];
+        expect({
+          after: NodeApi.string(after),
+          first: (group.children[0] as Element).children.map(
+            (node) => (node as Element).type
+          ),
+          type: group.type,
+        }).toEqual({
+          after: 'C',
+          first: ['blockquote'],
+          type: PLUGINS.columnGroup,
+        });
+      });
+
+      it('wraps the block a block selection holds', () => {
+        const editor = createRuntimeEditor({
+          plugins: [BaseParagraphPlugin, BaseColumnGroupPlugin],
+          initialValue: [
+            { children: [{ text: 'A' }], type: 'paragraph' },
+            { children: [{ text: 'tail' }], type: 'paragraph' },
+          ],
+        });
+
+        editor.update.selection.setNodes([[0]]);
+        editor.update.columnGroup.toggle({ columns: 3 });
+
+        const [group] = editor.read.children() as Element[];
+        expect({
+          columns: group.children.length,
+          first: NodeApi.string(group.children[0]),
+          type: group.type,
+        }).toEqual({ columns: 3, first: 'A', type: PLUGINS.columnGroup });
+      });
+
+      it('leaves a block selection of two blocks alone', () => {
+        const editor = createRuntimeEditor({
+          plugins: [BaseParagraphPlugin, BaseColumnGroupPlugin],
+          initialValue: [
+            { children: [{ text: 'A' }], type: 'paragraph' },
+            { children: [{ text: 'B' }], type: 'paragraph' },
+          ],
+        });
+
+        editor.update.selection.setNodes([[0], [1]]);
+        editor.update.columnGroup.toggle({ columns: 2 });
+
+        expect(editor.read.children().map((node) => node.type)).toEqual([
+          'paragraph',
+          'paragraph',
+        ]);
+      });
+
+      it('resizes the group a selection across its columns covers', () => {
+        const editor = createRuntimeEditor({
+          plugins: [BaseParagraphPlugin, BaseColumnGroupPlugin],
+          initialValue: [
+            {
+              children: [
+                {
+                  children: [{ children: [{ text: 'A' }], type: 'paragraph' }],
+                  type: 'column',
+                  width: '50%',
+                },
+                {
+                  children: [{ children: [{ text: 'B' }], type: 'paragraph' }],
+                  type: 'column',
+                  width: '50%',
+                },
+              ],
+              type: 'columnGroup',
+            },
+          ],
+        });
+
+        editor.update.selection.set({
+          anchor: { offset: 0, path: [0, 0, 0, 0] },
+          focus: { offset: 1, path: [0, 1, 0, 0] },
+        });
+        editor.update.columnGroup.toggle({ columns: 3 });
+
+        const [group] = editor.read.children() as Element[];
+        expect(group.children.map((column) => NodeApi.string(column))).toEqual([
+          'A',
+          'B',
+          '',
+        ]);
+      });
+
+      it('wraps only the block a node selection names inside a container', () => {
+        const editor = createRuntimeEditor({
+          plugins: [
+            BaseParagraphPlugin,
+            BaseBlockquotePlugin,
+            BaseColumnGroupPlugin,
+          ],
+          initialValue: [
+            {
+              children: [
+                { children: [{ text: 'A' }], type: 'paragraph' },
+                { children: [{ text: 'B' }], type: 'paragraph' },
+              ],
+              type: 'blockquote',
+            },
+          ],
+        });
+
+        editor.update.columnGroup.toggle({
+          at: SelectionApi.nodes([[0, 1]], { mode: 'block' }),
+        });
+
+        const [quote] = editor.read.children() as Element[];
+        expect(
+          quote.children.map((node) => [
+            (node as Element).type,
+            NodeApi.string(node),
+          ])
+        ).toEqual([
+          ['paragraph', 'A'],
+          [PLUGINS.columnGroup, 'B'],
+        ]);
+      });
+
+      it.each<[string, ToggleColumnGroupOptions['at']]>([
+        ['a node selection', SelectionApi.nodes([[0]], { mode: 'block' })],
+        ['its path', [0]],
+      ])(
+        'resizes a column group named by %s instead of nesting it',
+        (_, at) => {
+          const editor = createRuntimeEditor({
+            plugins: [BaseParagraphPlugin, BaseColumnGroupPlugin],
+            initialValue: [
+              {
+                children: [
+                  {
+                    children: [
+                      { children: [{ text: 'A' }], type: 'paragraph' },
+                    ],
+                    type: 'column',
+                    width: '50%',
+                  },
+                  {
+                    children: [
+                      { children: [{ text: 'B' }], type: 'paragraph' },
+                    ],
+                    type: 'column',
+                    width: '50%',
+                  },
+                ],
+                type: 'columnGroup',
+              },
+            ],
+          });
+
+          editor.update.columnGroup.toggle({ at, columns: 3 });
+
+          const [group] = editor.read.children() as Element[];
+          expect(
+            group.children.map((column) => NodeApi.string(column))
+          ).toEqual(['A', 'B', '']);
+        }
+      );
     });
 
     it('normalizes existing column widths to one hundred percent', () => {

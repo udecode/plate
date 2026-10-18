@@ -5,6 +5,7 @@ import type {
 } from 'files-sdk/client';
 
 import {
+  createEditorView,
   defineEffect,
   definePlugin,
   documentReplacement,
@@ -18,6 +19,7 @@ import {
   type NodeEntry,
   type NodeKey,
   property,
+  SelectionApi,
   transferVeto,
   txLocate,
   locateAt,
@@ -860,10 +862,15 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           return next();
         }
 
-        const block = state.nodes.block();
-        const after =
-          getCaretAnchor(editor, state) ??
-          (block ? state.key(block[0]) : undefined);
+        const root = SelectionApi.root(state.selection());
+        const caretEditor = root ? createEditorView(editor, { root }) : editor;
+        const after = caretEditor.read((caret) => {
+          const block = caret.nodes.block();
+          return (
+            getCaretAnchor(editor, caret) ??
+            (block ? caret.key(block[0]) : undefined)
+          );
+        });
         let handled = false;
         const transaction = state.transaction((tx) => {
           handled = tx.upload.submit(files, { after, replaceEmpty: true });

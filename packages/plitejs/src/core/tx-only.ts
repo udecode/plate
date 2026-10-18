@@ -90,9 +90,8 @@ type UndeclaredTxMethodPaths<TUpdate> = {
 
 /**
  * Refuses a plugin's update methods when one takes arguments without
- * `txLocate`, `txSelection` or `txOnly`, because the update throws on such a
- * call while a command document is registered. Intersect it with the update
- * factory's return type.
+ * `txLocate`, `txSelection` or `txOnly`, because calling such a method with
+ * arguments throws. Intersect it with the update factory's return type.
  */
 export type TxMethodDeclarations<TUpdate> = [
   UndeclaredTxMethodPaths<TUpdate>,
@@ -121,11 +120,14 @@ const TX_LOCATES = getRuntimeRegistry(
 );
 
 /**
- * Declare where a plugin update method's arguments land in the document
- * editing commands decide on. `locate` maps the stored locations in them, or
- * returns null when they have no place there, so the method does nothing;
- * `false` says they hold no location. While a command document is
- * registered, a method called with arguments that declares neither throws.
+ * Declare where a plugin update method's arguments land. The method runs in
+ * the root of the targets `locate` places. While a command document is
+ * registered, `locate` also maps them into the document editing commands
+ * decide on, or returns null when they have no place there, so the method
+ * does nothing. `false` says the arguments hold no location. A call that
+ * passes a function runs in the caller's root, and `locate` runs only to map
+ * its arguments into the command document. A method called with arguments
+ * that has no declaration throws.
  */
 export const txLocate = <TMethod extends (...args: never[]) => unknown>(
   locate: NoInfer<BivariantLocate<Parameters<TMethod>>> | false,
@@ -190,8 +192,8 @@ export const locateAt =
 
 /**
  * Declare a plugin update method that only moves the selection, as caret
- * movement does: it runs on the stored document, and throws if it changes
- * content.
+ * movement does: it runs in the caller's root on the stored document, and
+ * throws if it changes content.
  */
 export const txSelection = <TMethod extends (...args: never[]) => unknown>(
   method: TMethod
@@ -203,8 +205,8 @@ export const txSelection = <TMethod extends (...args: never[]) => unknown>(
 
 /**
  * Mark a plugin update method that works on the stored document, such as
- * deciding review changes, so it runs in the update itself instead of the
- * document editing commands decide on. @internal
+ * deciding review changes, so it runs in the update itself, in the caller's
+ * root, instead of the document editing commands decide on. @internal
  */
 export const txStored = <TMethod extends (...args: never[]) => unknown>(
   method: TMethod

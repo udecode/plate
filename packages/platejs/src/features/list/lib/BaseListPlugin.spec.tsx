@@ -224,6 +224,73 @@ describe('BaseListPlugin canonical model', () => {
     ]);
   });
 
+  it.each(['Tab', 'Shift+Tab'])(
+    'moves a named-root list family with %s',
+    (key) => {
+      const reverse = key === 'Shift+Tab';
+      const Note = definePlugin('listKeyNote', {
+        schema: {
+          element: {
+            void: 'block',
+            contentRoots: {
+              body: schema.content.group('block', {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+            },
+          },
+        },
+      });
+      const editor = createProductEditor({
+        plugins: [BaseListPlugin, Note],
+        initialValue: {
+          children: [
+            {
+              type: 'listKeyNote',
+              childRoots: { body: 'note' },
+              children: [{ text: '' }],
+            },
+          ],
+          roots: {
+            note: [
+              {
+                type: 'paragraph',
+                listType: 'bulleted',
+                indent: reverse ? 2 : 1,
+                children: [{ text: 'Item' }],
+              },
+              {
+                type: 'paragraph',
+                indent: reverse ? 3 : 2,
+                children: [{ text: 'Body' }],
+              },
+            ],
+          },
+        },
+      });
+      const main = editor.read.children();
+      editor.update.selection.set({ path: [0, 0], offset: 0, root: 'note' });
+
+      dispatchPlateShortcut(
+        editor,
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          code: 'Tab',
+          key: 'Tab',
+          shiftKey: reverse,
+        }),
+        'keydown',
+        getPlateRuntime(editor).shortcutTable
+      );
+
+      expect({
+        main: editor.read.children(),
+        depths: editor.read.root('note').map((node) => node.indent),
+      }).toEqual({ main, depths: reverse ? [1, 2] : [2, 3] });
+    }
+  );
+
   it('lifts a root item on Shift+Tab only out of the blockquote plugin', () => {
     const untab = (quote: typeof BaseBlockquotePlugin) => {
       const editor = createProductEditor({

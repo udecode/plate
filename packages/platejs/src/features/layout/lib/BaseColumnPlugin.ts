@@ -8,6 +8,7 @@ import {
   type ElementOf,
   type Location,
   type Node,
+  type NodeSelection,
   type NodeTarget,
   PathApi,
   type BlockInsertOptions,
@@ -16,13 +17,13 @@ import {
   property,
   RangeApi,
   schema,
+  SelectionApi,
   transferVeto,
   txLocate,
   locateAt,
 } from '../../../core';
 import { canPlaceBlocksAtPath } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
-import { rootOf } from '../../../internal/utils/inRoot';
 
 export type SetColumnsOptions = {
   /** Column group location. */
@@ -32,7 +33,7 @@ export type SetColumnsOptions = {
 };
 
 export type ToggleColumnGroupOptions = {
-  at?: Location;
+  at?: Location | NodeSelection;
   columns?: number;
   widths?: string[];
 };
@@ -411,21 +412,34 @@ export const BaseColumnGroupPlugin = definePlugin(PLUGINS.columnGroup, {
       toggle: txLocate(
         locateAt(0),
         ({ at, columns = 2, widths }: ToggleColumnGroupOptions = {}) => {
-          const entry = tx.nodes.block({ at });
-          const columnGroupEntry = tx.nodes.above({
-            at,
-            type: plugin,
-          });
+          const selection = SelectionApi.isNode(at)
+            ? tx.nodes.toArray({ at })
+            : at === undefined
+              ? tx.selection.nodes()
+              : [];
 
-          if (!entry) return;
+          if (selection.length > 1) return;
 
-          if (columnGroupEntry) {
-            setColumns({ at: columnGroupEntry[1], columns, widths });
+          const [selected] = selection;
+          const [node, path] =
+            selected ??
+            (SelectionApi.isNode(at) ? [] : (tx.nodes.block({ at }) ?? []));
+
+          if (!ElementApi.isElement(node) || !path) return;
+
+          const groupPath = ElementApi.isElementType(node, type)
+            ? path
+            : tx.nodes.above({
+                at: selected || SelectionApi.isNode(at) ? path : at,
+                type: plugin,
+              })?.[1];
+
+          if (groupPath) {
+            setColumns({ at: groupPath, columns, widths });
 
             return;
           }
 
-          const [node, path] = entry;
           const columnWidths = widths ?? columnsToWidths(columns);
           const columnGroup = {
             children: Array.from({ length: columns }, (_, index) => ({
@@ -449,7 +463,7 @@ export const BaseColumnGroupPlugin = definePlugin(PLUGINS.columnGroup, {
             index === undefined ||
             !canPlaceBlocksAtPath(tx.schema, path, [columnGroup], {
               removing: [index],
-              root: rootOf(tx, at),
+              root: tx.view.root(),
             })
           ) {
             return;

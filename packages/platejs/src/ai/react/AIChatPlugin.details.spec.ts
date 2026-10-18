@@ -5,10 +5,13 @@ import {
   BaseParagraphPlugin,
   createEditorView,
   definePlugin,
+  ElementApi,
   type Editor,
   NodeApi,
   schema,
+  SelectionApi,
 } from '../../core';
+import { setEditorReadOnly } from '../../facade';
 import { BaseBlockquotePlugin } from '../../features/basic-nodes';
 import { BaseDetailsPlugin } from '../../features/details';
 import { BaseTablePlugin } from '../../features/table/lib/BaseTablePlugin';
@@ -109,6 +112,9 @@ describe('AIChatPlugin from a closed Details title', () => {
 describe('AIChatPlugin over a Details title', () => {
   const summary = (text: string) => ({ children: [{ text }], type: 'summary' });
   const details = (...children: unknown[]) => ({ children, type: 'details' });
+  const TestObject = definePlugin('testObject', {
+    schema: { element: schema.element.textBlock({ object: true }) },
+  });
   const HeaderHolder = definePlugin('testHeaderHolder', {
     schema: {
       element: {
@@ -120,6 +126,7 @@ describe('AIChatPlugin over a Details title', () => {
                 schema.content.type('blockquote').allowed,
                 schema.content.type('details').allowed,
                 schema.content.type('paragraph').allowed,
+                schema.content.type('testObject').allowed,
               ],
               { default: { type: 'paragraph' }, min: 1 }
             ),
@@ -147,6 +154,7 @@ describe('AIChatPlugin over a Details title', () => {
         }),
         AIChatPlugin,
         HeaderHolder,
+        TestObject,
       ],
       userId: 'alice',
       initialValue: header
@@ -168,13 +176,10 @@ describe('AIChatPlugin over a Details title', () => {
     paths: number[][],
     view: Editor = editor
   ) => {
-    const root = view.read.view.root();
-
     editor.plugin(AIChatPlugin).store.set({
       chatNodes: paths.map((path) => ({
-        node: view.read.nodes.get(path)![0],
+        node: view.read.nodes.get(path, { match: ElementApi.isElement })![0],
         nodeKey: view.key(path)!,
-        ...(root ? { root } : {}),
       })),
       chatSelection: null,
       mode: 'chat',
@@ -230,6 +235,211 @@ describe('AIChatPlugin over a Details title', () => {
       [details(summary('X'), paragraph('Body'))],
       details(summary('X'), paragraph('Body')),
     ]);
+  });
+
+  it.each([
+    [
+      'block',
+      (editor: Editor) =>
+        editor.update.selection.setNodes([editor.read.children()[0]]),
+    ],
+    [
+      'text',
+      (editor: Editor) =>
+        editor.update.selection.set({
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
+        }),
+    ],
+  ] as const)(
+    'keeps a main %s selection captured through a named view in main',
+    (_, select) => {
+      const editor = create([paragraph('Note')], [paragraph('Main')]);
+      select(editor);
+      const view = createEditorView(editor, { root: 'header' });
+
+      view.plugin(AIChatPlugin).api.show();
+      view.plugin(AIChatPlugin).api.setPreview('Answer');
+      view.plugin(AIChatPlugin).api.replaceSelection({ format: 'none' });
+
+      expect({
+        main: NodeApi.string(editor.read.children()[0]),
+        note: editor.read.root('header'),
+        root: SelectionApi.root(editor.read.selection()),
+      }).toEqual({
+        main: 'Answer',
+        note: [paragraph('Note')],
+        root: undefined,
+      });
+    }
+  );
+
+  it('stops later chunks after an edit moves the picked block in its named root', () => {
+    const editor = create(
+      [paragraph('old'), paragraph('tail')],
+      [paragraph('Main')]
+    );
+    const header = createEditorView(editor, { root: 'header' });
+    pick(editor, [[0]], header);
+    const ai = editor.plugin(AIChatPlugin);
+    ai.store.set({ toolName: 'edit' });
+
+    ai.api.setPreview('new');
+    createEditorView(editor, {
+      authored: { intent: 'edit' },
+      root: 'header',
+    }).update((tx) => {
+      tx.nodes.insert(paragraph('independent'), { at: [0] });
+    });
+    const before = editor.read.value();
+
+    ai.api.setPreview('next');
+
+    expect(editor.read.value()).toEqual(before);
+  });
+
+  it('selects the rewritten named title after a main-editor answer', () => {
+    const editor = create(
+      [details(summary('Title'), paragraph('Body'))],
+      [paragraph('Main')]
+    );
+    const view = createEditorView(editor, { root: 'header' });
+    pick(editor, [[0, 0]], view);
+    const ai = editor.plugin(AIChatPlugin);
+
+    ai.api.setPreview('Answer');
+    ai.api.replaceSelection({ format: 'none' });
+
+    expect({
+      root: SelectionApi.root(editor.read.selection()),
+      selected: editor.read.selection
+        .nodes()
+        .map(([node]) => NodeApi.string(node)),
+    }).toEqual({ root: 'header', selected: ['Answer'] });
+  });
+
+  it.each([
+    ['main', 'block'],
+    ['main', 'object'],
+    ['header', 'block'],
+    ['header', 'object'],
+  ] as const)(
+    'builds the request from a node selection in %s in %s mode',
+    (root, mode) => {
+      const block = (text: string) =>
+        mode === 'object'
+          ? { ...paragraph(text), type: 'testObject' }
+          : paragraph(text);
+      const editor = create([block('Note')], [block('Main')]);
+      const view = createEditorView(editor, { root: 'header' });
+      const source = root === 'main' ? editor : view;
+      const command = root === 'main' ? view : editor;
+      source.update.selection.setNodes([source.read.children()[0]], { mode });
+      const ai = editor.plugin(AIChatPlugin);
+      let request: unknown;
+      ai.store.set({
+        chat: {
+          clear: () => {},
+          messages: [],
+          regenerate: async () => {},
+          sendMessage: async (_text, options) => {
+            request = options?.body;
+          },
+          status: 'ready',
+          stop: () => {},
+        },
+      });
+
+      command.plugin(AIChatPlugin).api.submit('Rewrite');
+
+      expect(request).toMatchObject({
+        ctx: {
+          children: root === 'main' ? editor.read.children() : [block('Note')],
+          nodeSelection: {
+            paths: [[0]],
+            anchorPath: [0],
+            focusPath: [0],
+            mode,
+          },
+          refs: { blocks: [{ path: [0], ref: 'b1' }] },
+        },
+      });
+    }
+  );
+
+  it.each(['', 'Note'])(
+    'accepts insert output in the captured named block %j',
+    (text) => {
+      const editor = create([paragraph(text)], [paragraph('Main')]);
+      const main = editor.read.children();
+      editor.update.selection.set({
+        path: [0, 0],
+        offset: text.length,
+        root: 'header',
+      });
+      const ai = editor.plugin(AIChatPlugin);
+      ai.api.show();
+
+      ai.api.setPreview('Answer');
+      ai.api.accept();
+
+      expect({
+        main: editor.read.children(),
+        note: editor.read.root('header'),
+        root: SelectionApi.root(editor.read.selection()),
+      }).toEqual({
+        main,
+        note: text
+          ? [paragraph(text), paragraph('Answer')]
+          : [paragraph('Answer')],
+        root: 'header',
+      });
+    }
+  );
+
+  it('keeps a main capture read-only when accepted from a named view', () => {
+    const editor = create([paragraph('Note')], [paragraph('Main')]);
+    const view = createEditorView(editor, { root: 'header', readOnly: true });
+    const before = editor.read.value();
+    pick(editor, [[0]]);
+
+    view.plugin(AIChatPlugin).api.setPreview('Answer');
+    expect(() =>
+      view.plugin(AIChatPlugin).api.replaceSelection({ format: 'none' })
+    ).toThrow('read-only');
+
+    expect(editor.read.value()).toEqual(before);
+  });
+
+  it('keeps proposing intent when a named view accepts a main capture', () => {
+    const editor = create([paragraph('Note')], [paragraph('Main')]);
+    const view = createEditorView(editor, {
+      root: 'header',
+      authored: { intent: 'propose' },
+    });
+    pick(editor, [[0]]);
+
+    view.plugin(AIChatPlugin).api.setPreview('Answer');
+    view.plugin(AIChatPlugin).api.replaceSelection({ format: 'none' });
+
+    expect({
+      changes: editor.plugin(AuthoredPlugin).read.changes().items.length,
+      note: editor.read.root('header'),
+    }).toEqual({ changes: 1, note: [paragraph('Note')] });
+  });
+
+  it('skips restoring selection when the base command editor is read-only', () => {
+    const editor = create();
+    editor.update.selection.set({ path: [0, 0, 0], offset: 2 });
+    const ai = editor.plugin(AIChatPlugin);
+    ai.api.show();
+    editor.update.selection.set({ path: [0, 1, 0], offset: 1 });
+    const selection = editor.read.selection();
+    setEditorReadOnly(editor, true);
+
+    ai.api.reset();
+
+    expect(editor.read.selection()).toEqual(selection);
   });
 
   it('keeps a picked title when the answer starts with a table', () => {

@@ -201,11 +201,10 @@ import {
   freezeOwnedJsonValue,
   isImmutable,
 } from './clone';
-import { getEditorCommandDocument } from './command-document';
+import { unplacedIn } from './command-document';
 import {
   COMMAND_FRAMES,
   FRAMED_SPECS,
-  frameUpdateMethods,
   runInEditorCommandFrame,
 } from './command-frame';
 import { createEditorCommit } from './commit';
@@ -290,7 +289,11 @@ import {
   getNodeSelectionReplacement,
   replaceSelectedBlocks,
 } from './node-selection';
-import { PLUGIN_UPDATE_ORIGIN } from './plugin-dispatch';
+import {
+  dispatchPluginUpdate,
+  PLUGIN_UPDATE_METHOD,
+  PLUGIN_UPDATE_ORIGIN,
+} from './plugin-dispatch';
 import {
   assertPluginPublicationInactive,
   type PluginRegistry,
@@ -395,6 +398,7 @@ import {
   cloneFrozenEditorJsonValue,
   snapshotEditorJsonValue,
 } from './value-codec';
+import { countCoreWork } from './work';
 
 export {
   hasListeners,
@@ -832,6 +836,8 @@ export type TransactionSpecContext = {
   kind: 'spec' | 'update';
   mutationVersion: number;
   parentId?: object;
+  pluginRoot?: string;
+  pluginRootTransactions?: Map<string, EditorUpdateTransaction>;
   selection: Selection;
   selectionRoot: string;
   selectionWritten: boolean;
@@ -1345,7 +1351,7 @@ const carryDraftNodeKeys = (
       if (fromA < toA) removed.push({ from: fromA, root, to: toA });
       for (const entry of after.nodeRangesTouching(from, to)) {
         if (entry.from < from || entry.from >= to) continue;
-        draft ??= getTransactionSnapshotIndex(editor, snapshot, root);
+        draft ??= retainTransactionSnapshotIndex(editor, snapshot, root);
         const key = draft.keyAt(entry.path);
 
         if (key) {
@@ -1882,6 +1888,14 @@ const getCurrentChildrenRoot = (editor: Editor): string =>
   CURRENT_CHILDREN_ROOT.get(editor) ??
   MAIN_ROOT_KEY;
 
+const getNodeSelectionRoot = (
+  editor: Editor,
+  selection: NodeSelection,
+  from: 'stored' | 'target'
+) =>
+  selection.root ??
+  (from === 'target' ? getCurrentChildrenRoot(editor) : MAIN_ROOT_KEY);
+
 const getCachedSnapshot = (
   editor: Editor,
   root = getCurrentChildrenRoot(editor)
@@ -1932,7 +1946,11 @@ const withOptionsRootRead = <T>(
   queryOptions?: { selectionFallback?: boolean }
 ): T => {
   if (SelectionApi.isNode(options?.at)) {
-    return withEditorRootChildren(editor, options.at.root ?? MAIN_ROOT_KEY, fn);
+    return withEditorRootChildren(
+      editor,
+      options.at.root ?? getCurrentChildrenRoot(editor),
+      fn
+    );
   }
 
   return withLocationRootRead(editor, options?.at, fn, queryOptions);
@@ -1948,7 +1966,7 @@ const withOptionsRootGenerator = <T>(
     if (SelectionApi.isNode(options?.at)) {
       yield* withEditorRootChildrenGenerator(
         editor,
-        options.at.root ?? MAIN_ROOT_KEY,
+        options.at.root ?? getCurrentChildrenRoot(editor),
         create
       );
       return;
@@ -2106,28 +2124,85 @@ type NodeTargetOptions = { at?: NodeTarget };
 const getOptionsNodeTarget = (options: object | undefined) =>
   options && 'at' in options ? (options as NodeTargetOptions).at : undefined;
 
+const LAST_TARGET_ROOTS = new WeakMap<Editor, string>();
+const LOOKUP_INDEXES = new WeakMap<
+  Editor,
+  WeakMap<readonly Descendant[], SnapshotIndex>
+>();
+
+const getLookupIndex = (
+  owner: Editor,
+  transactionSnapshot: TransactionSnapshot,
+  root: string
+) => {
+  const known = getKnownTransactionIndex(transactionSnapshot, root);
+  const children = transactionSnapshot.roots[root];
+
+  if (known || !children) return known;
+
+  let indexes = LOOKUP_INDEXES.get(owner);
+
+  if (!indexes) {
+    indexes = new WeakMap();
+    LOOKUP_INDEXES.set(owner, indexes);
+  }
+
+  let index = indexes.get(children);
+
+  if (!index) {
+    index = buildSnapshotIndex(owner, children);
+    indexes.set(children, index);
+  }
+
+  return index;
+};
+
 const getRuntimeTargetRoot = (
   editor: Editor,
   nodeKey: NodeKey
 ): string | undefined => {
+  const owner = getEditorRuntimeOwner(editor);
+  const transactionSnapshot = getReadProjection(editor)
+    ? undefined
+    : getTransactionSnapshot(editor);
+
   for (const root of new Set([
     getCurrentChildrenRoot(editor),
     MAIN_ROOT_KEY,
+    LAST_TARGET_ROOTS.get(owner) ?? MAIN_ROOT_KEY,
     ...getEditorRuntimeRootKeys(editor),
   ])) {
-    const path = withEditorRootChildren(editor, root, () =>
-      getPathByNodeKey(editor, nodeKey)
-    );
+    const path = transactionSnapshot
+      ? getLookupIndex(owner, transactionSnapshot, root)?.pathOf(nodeKey)
+      : withEditorRootChildren(editor, root, () =>
+          getPathByNodeKey(editor, nodeKey)
+        );
 
-    if (path) return root;
+    if (path) {
+      LAST_TARGET_ROOTS.set(owner, root);
+      return root;
+    }
   }
 
   return undefined;
 };
 
-const getNodeTargetRoot = (editor: Editor, target: NodeTarget | undefined) => {
+export const getNodeTargetRoot = (
+  editor: Editor,
+  target: NodeTarget | NodeSelection | Span | undefined
+) => {
   if (typeof target === 'string') {
     return getRuntimeTargetRoot(editor, target);
+  }
+  if (NodeApi.isDescendant(target)) {
+    const key = getNodeKeyForNode(target, getEditorRuntimeOwner(editor));
+    const root = key && getRuntimeTargetRoot(editor, key);
+
+    if (root) return root;
+
+    const found = findEditorNodeKeyForNode(editor, target);
+
+    return found && getRuntimeTargetRoot(editor, found);
   }
 
   return undefined;
@@ -2643,7 +2718,7 @@ const getMutationRoot = (
 ): string | undefined => {
   if (options?.at !== undefined) {
     if (SelectionApi.isNode(options.at)) {
-      return options.at.root ?? MAIN_ROOT_KEY;
+      return options.at.root ?? getCurrentChildrenRoot(editor);
     }
 
     return (
@@ -2699,7 +2774,7 @@ const getCurrentRuntimeIndex = (editor: Editor): SnapshotIndex => {
   const transactionSnapshot = getTransactionSnapshot(editor);
 
   if (transactionSnapshot) {
-    return getTransactionSnapshotIndex(editor, transactionSnapshot, root);
+    return retainTransactionSnapshotIndex(editor, transactionSnapshot, root);
   }
 
   return getSnapshot(editor).index;
@@ -2801,6 +2876,26 @@ const hasTransactionNetChanges = (
   );
 };
 
+/** @internal */
+export const assertRootPlaced = (
+  editor: Editor,
+  { reservedRoots, roots }: TransactionSnapshot,
+  root: string
+) => {
+  if (reservedRoots.has(root) && !Object.hasOwn(roots, root)) {
+    throw unplacedIn(editor, `root "${root}"`);
+  }
+};
+
+const missingRootChildren = (
+  editor: Editor,
+  { currentChildrenRoot, snapshot }: TransactionSpecContext
+) => {
+  assertRootPlaced(editor, snapshot, currentChildrenRoot);
+
+  return EMPTY_CHILDREN;
+};
+
 const getChildrenSource = (editor: Editor): ChildrenSource => {
   const projection = getReadProjection(editor);
   if (projection) {
@@ -2819,7 +2914,7 @@ const getChildrenSource = (editor: Editor): ChildrenSource => {
           (value.children as readonly Descendant[]))
       : ((value.roots?.[context.currentChildrenRoot] as
           | readonly Descendant[]
-          | undefined) ?? EMPTY_CHILDREN);
+          | undefined) ?? missingRootChildren(editor, context));
   }
 
   return getStoredChildrenSource(editor);
@@ -2959,6 +3054,21 @@ export const getEditorNodeKeyForNode = (
   editor: Editor,
   node: Descendant
 ): NodeKey => {
+  const nodeKey = findEditorNodeKeyForNode(editor, node);
+
+  if (nodeKey) return nodeKey;
+
+  throw new Error(
+    `Node key requires a live node in this editor; received ${
+      'text' in node ? 'text' : `"${node.type}" element`
+    }.`
+  );
+};
+
+const findEditorNodeKeyForNode = (
+  editor: Editor,
+  node: Descendant
+): NodeKey | undefined => {
   const owner = getEditorRuntimeOwner(editor);
   let nodeKey = getNodeKeyForNode(node, owner);
   const index = getCurrentRuntimeIndex(owner);
@@ -2980,17 +3090,13 @@ export const getEditorNodeKeyForNode = (
   for (const root of getEditorRuntimeRootKeys(owner)) {
     if (root === currentRoot) continue;
     const rootIndex = transactionSnapshot
-      ? getTransactionSnapshotIndex(owner, transactionSnapshot, root)
+      ? retainTransactionSnapshotIndex(owner, transactionSnapshot, root)
       : getCurrentRootSnapshot(owner, root).index;
 
     if (resolvesIn(rootIndex)) return getDefined(nodeKey);
   }
 
-  throw new Error(
-    `Node key requires a live node in this editor; received ${
-      'text' in node ? 'text' : `"${node.type}" element`
-    }.`
-  );
+  return undefined;
 };
 
 export const getPathByNodeKey = (
@@ -3198,45 +3304,46 @@ const createNodesToArray = <V extends Value>(
 ): EditorStateNodesApi<V>['toArray'] => {
   const toArray = (
     options: EditorNodesReadOptions<PliteNode> = {}
-  ): readonly NodeEntry[] => {
-    const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
+  ): readonly NodeEntry[] =>
+    withNodeTargetRootRead(editor, getOptionsNodeTarget(options), () => {
+      const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
 
-    if (resolvedOptions === null) return [];
+      if (resolvedOptions === null) return [];
 
-    return (({ options: innerOptions = {} }) =>
-      withOptionsRootRead(
-        editor,
-        innerOptions as { at?: Location | NodeSelection | Span },
-        () => {
-          if (
-            !hasReadableNodeCollection(
-              editor,
+      return (({ options: innerOptions = {} }) =>
+        withOptionsRootRead(
+          editor,
+          innerOptions as { at?: Location | NodeSelection | Span },
+          () => {
+            if (
+              !hasReadableNodeCollection(
+                editor,
+                innerOptions as { at?: Location | NodeSelection | Span }
+              )
+            ) {
+              return [];
+            }
+
+            const entries: NodeEntry[] = [];
+
+            for (const entry of getNodes(
+              editor as unknown as Editor,
+              innerOptions
+            )) {
+              entries.push(entry);
+            }
+
+            return entries;
+          },
+          {
+            selectionFallback: usesImplicitSelectionLocation(
               innerOptions as { at?: Location | NodeSelection | Span }
-            )
-          ) {
-            return [];
+            ),
           }
-
-          const entries: NodeEntry[] = [];
-
-          for (const entry of getNodes(
-            editor as unknown as Editor,
-            innerOptions
-          )) {
-            entries.push(entry);
-          }
-
-          return entries;
-        },
-        {
-          selectionFallback: usesImplicitSelectionLocation(
-            innerOptions as { at?: Location | NodeSelection | Span }
-          ),
-        }
-      ))({
-      options: resolvedOptions as EditorNodesOptions<PliteNode>,
+        ))({
+        options: resolvedOptions as EditorNodesOptions<PliteNode>,
+      });
     });
-  };
 
   return toArray as EditorStateNodesApi<V>['toArray'];
 };
@@ -3548,7 +3655,7 @@ const discardReplacedNodeKeys = (
   const snapshot = getTransactionSnapshot(editor);
 
   if (!snapshot || entries.length === 0) return;
-  const currentIndex = getTransactionSnapshotIndex(
+  const currentIndex = retainTransactionSnapshotIndex(
     getEditorRuntimeOwner(editor),
     snapshot,
     getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY
@@ -5093,7 +5200,15 @@ const getStateView = <
       };
 
       const slice = SelectionApi.isNode(target)
-        ? withEditorRootChildren(editor, target.root ?? MAIN_ROOT_KEY, read)
+        ? withEditorRootChildren(
+            editor,
+            getNodeSelectionRoot(
+              editor,
+              target,
+              options.at === undefined ? 'stored' : 'target'
+            ),
+            read
+          )
         : withOptionsRootRead(editor, options as { at?: Range }, read, {
             selectionFallback: options.at === undefined,
           });
@@ -5249,88 +5364,93 @@ const getStateView = <
       })) as EditorStateNodesApi<V>['block'];
     const readBlocks = ((
       inputOptions: Parameters<EditorStateNodesApi<V>['blocks']>[0] = {}
-    ) => {
-      const target =
-        inputOptions.at ?? getCurrentSelection(editor) ?? undefined;
+    ) =>
+      withNodeTargetRootRead(editor, getOptionsNodeTarget(inputOptions), () => {
+        const target =
+          inputOptions.at ?? getCurrentSelection(editor) ?? undefined;
 
-      if (!target) return [];
+        if (!target) return [];
 
-      const match = normalizeNodeMatch(inputOptions.type, inputOptions.match);
-      const matchesBlock = (node: PliteNode, path: Path) =>
-        NodeApi.isElement(node) &&
-        getEditorSchema(editor).isBlock(node) &&
-        (match?.(node, path) ?? true);
+        const match = normalizeNodeMatch(inputOptions.type, inputOptions.match);
+        const matchesBlock = (node: PliteNode, path: Path) =>
+          NodeApi.isElement(node) &&
+          getEditorSchema(editor).isBlock(node) &&
+          (match?.(node, path) ?? true);
 
-      if (SelectionApi.isNode(target)) {
-        return withEditorRootChildren(
-          editor,
-          target.root ?? MAIN_ROOT_KEY,
-          () => {
-            const entries: Array<NodeEntry<Element>> = [];
-            const {
-              at: _at,
-              reverse: _reverse,
-              ...queryOptions
-            } = inputOptions;
+        if (SelectionApi.isNode(target)) {
+          return withEditorRootChildren(
+            editor,
+            getNodeSelectionRoot(
+              editor,
+              target,
+              inputOptions.at === undefined ? 'stored' : 'target'
+            ),
+            () => {
+              const entries: Array<NodeEntry<Element>> = [];
+              const {
+                at: _at,
+                reverse: _reverse,
+                ...queryOptions
+              } = inputOptions;
 
-            for (const path of target.paths) {
-              const selectedBlocks = Array.from(
-                getNodes(editor as unknown as Editor, {
-                  ...queryOptions,
-                  at: path,
-                  match: matchesBlock,
-                  mode: queryOptions.mode ?? 'lowest',
-                })
-              ) as Array<NodeEntry<Element>>;
-              const fallbackBlock =
-                selectedBlocks.length === 0
-                  ? readBlock({ at: path, match: matchesBlock })
-                  : undefined;
-              const blocks =
-                selectedBlocks.length > 0
-                  ? selectedBlocks
-                  : fallbackBlock
-                    ? [fallbackBlock as NodeEntry<Element>]
-                    : [];
+              for (const path of target.paths) {
+                const selectedBlocks = Array.from(
+                  getNodes(editor as unknown as Editor, {
+                    ...queryOptions,
+                    at: path,
+                    match: matchesBlock,
+                    mode: queryOptions.mode ?? 'lowest',
+                  })
+                ) as Array<NodeEntry<Element>>;
+                const fallbackBlock =
+                  selectedBlocks.length === 0
+                    ? readBlock({ at: path, match: matchesBlock })
+                    : undefined;
+                const blocks =
+                  selectedBlocks.length > 0
+                    ? selectedBlocks
+                    : fallbackBlock
+                      ? [fallbackBlock as NodeEntry<Element>]
+                      : [];
 
-              for (const block of blocks) {
-                if (
-                  !entries.some(([, candidate]) =>
-                    PathApi.equals(candidate, block[1])
-                  )
-                ) {
-                  entries.push(block);
+                for (const block of blocks) {
+                  if (
+                    !entries.some(([, candidate]) =>
+                      PathApi.equals(candidate, block[1])
+                    )
+                  ) {
+                    entries.push(block);
+                  }
                 }
               }
+
+              return Object.freeze(
+                inputOptions.reverse ? entries.toReversed() : entries
+              );
             }
+          );
+        }
 
-            return Object.freeze(
-              inputOptions.reverse ? entries.toReversed() : entries
-            );
-          }
+        const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, {
+          ...inputOptions,
+          at: target,
+        });
+
+        if (resolvedOptions === null) return [];
+        const queryOptions = resolvedOptions ?? {};
+
+        return withOptionsRootRead(editor, queryOptions, () =>
+          Object.freeze(
+            Array.from(
+              getNodes(editor as unknown as Editor, {
+                ...queryOptions,
+                match: matchesBlock,
+                mode: queryOptions.mode ?? 'lowest',
+              })
+            ) as Array<NodeEntry<Element>>
+          )
         );
-      }
-
-      const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, {
-        ...inputOptions,
-        at: target,
-      });
-
-      if (resolvedOptions === null) return [];
-      const queryOptions = resolvedOptions ?? {};
-
-      return withOptionsRootRead(editor, queryOptions, () =>
-        Object.freeze(
-          Array.from(
-            getNodes(editor as unknown as Editor, {
-              ...queryOptions,
-              match: matchesBlock,
-              mode: queryOptions.mode ?? 'lowest',
-            })
-          ) as Array<NodeEntry<Element>>
-        )
-      );
-    }) as EditorStateNodesApi<V>['blocks'];
+      })) as EditorStateNodesApi<V>['blocks'];
     function getStateNodeKey(node: Descendant): NodeKey;
     function getStateNodeKey(at: Location): NodeKey | null;
     function getStateNodeKey(target: Descendant | Location): NodeKey | null {
@@ -5770,7 +5890,11 @@ const getStateView = <
           if (SelectionApi.isNode(resolvedTarget)) {
             return withEditorRootChildren(
               editor,
-              resolvedTarget.root ?? MAIN_ROOT_KEY,
+              getNodeSelectionRoot(
+                editor,
+                resolvedTarget,
+                target === undefined ? 'stored' : 'target'
+              ),
               () =>
                 resolvedTarget.paths
                   .filter((path) => NodeApi.has(editor, path))
@@ -5876,6 +6000,70 @@ export const createEditorViewReadState = <T extends object>(
   return Object.freeze(state) as T;
 };
 
+const createTransactionPluginSelector = (
+  registry: PluginRegistry,
+  groups: Record<string, unknown>,
+  directPluginGroup: unknown
+) => {
+  const pluginPortal = (plugin: PluginReference | string) => {
+    const name = typeof plugin === 'string' ? plugin : plugin.name;
+    const installed =
+      typeof plugin === 'string'
+        ? registry.plugins.get(plugin)
+        : registry.pluginsByDescriptor.get(plugin);
+
+    if (!installed) {
+      throw new Error(
+        `Editor plugin "${name}" is not installed on this editor.`
+      );
+    }
+    const group =
+      installed.name === 'plugin' ? directPluginGroup : groups[installed.name];
+
+    if (group === undefined) {
+      throw new Error(
+        `Editor plugin "${installed.name}" does not expose transaction methods.`
+      );
+    }
+
+    return group;
+  };
+
+  const pluginSelector =
+    (typeof directPluginGroup === 'object' && directPluginGroup !== null) ||
+    typeof directPluginGroup === 'function'
+      ? new Proxy(pluginPortal, {
+          get(target, property, receiver) {
+            if (
+              property === PLUGIN_UPDATE_METHOD ||
+              Reflect.has(directPluginGroup, property)
+            ) {
+              return Reflect.get(
+                directPluginGroup,
+                property,
+                directPluginGroup
+              );
+            }
+
+            return Reflect.get(target, property, receiver);
+          },
+          getOwnPropertyDescriptor(target, property) {
+            const descriptor = Reflect.getOwnPropertyDescriptor(
+              directPluginGroup,
+              property
+            );
+
+            return descriptor
+              ? { ...descriptor, configurable: true }
+              : Reflect.getOwnPropertyDescriptor(target, property);
+          },
+        })
+      : pluginPortal;
+
+  copyTxMethodMarkers(directPluginGroup, pluginSelector);
+  return pluginSelector;
+};
+
 export const createEditorViewTransactionState = <T extends object>(
   editor: Editor,
   core: T,
@@ -5893,6 +6081,7 @@ export const createEditorViewTransactionState = <T extends object>(
     unknown
   >;
   const registry = getPluginRegistry(editor);
+  if (!registry.stateGroups.has('plugin')) delete state.plugin;
   const assertActive = () =>
     assertActiveTransaction(owner, scope.snapshot.token);
   const context = projectContext(getUpdateContext(owner));
@@ -5913,9 +6102,16 @@ export const createEditorViewTransactionState = <T extends object>(
       scope.kind === 'spec' ? getSpecSafeTransactionGroup(group) : group,
       assertActive,
       new WeakMap(),
-      origin
+      origin,
+      {
+        editor,
+        transaction: state as EditorUpdateTransaction,
+        group: name,
+        path: [],
+      }
     );
   }
+  state.plugin = createTransactionPluginSelector(registry, state, state.plugin);
   return Object.freeze(state) as T;
 };
 
@@ -5978,7 +6174,14 @@ const guardTransactionValue = (
   value: unknown,
   assertActive: () => void,
   cache: WeakMap<object, Map<unknown, object>>,
-  updateValue?: unknown
+  updateValue?: unknown,
+  dispatch?: {
+    editor: Editor;
+    transaction: object & { view: { root: () => string | undefined } };
+    group: string;
+    path: readonly PropertyKey[];
+    transactionOnly?: boolean;
+  }
 ): unknown => {
   if (
     (typeof value !== 'object' || value === null) &&
@@ -5988,28 +6191,41 @@ const guardTransactionValue = (
   }
 
   const objectValue = value;
-  // The same method can occupy both a read path and a write path.
-  const existing = cache.get(objectValue)?.get(updateValue);
+  const pathBound = dispatch !== undefined && updateValue !== undefined;
+  const existing = pathBound
+    ? undefined
+    : cache.get(objectValue)?.get(updateValue);
 
   if (existing) {
     return existing;
   }
 
+  const members = new Map<PropertyKey, readonly [unknown, unknown]>();
   const guardMember = (property: PropertyKey, member: unknown) => {
+    const known = members.get(property);
+    if (known && known[0] === member) return known[1];
     const updateDescriptor =
       updateValue !== null &&
       (typeof updateValue === 'object' || typeof updateValue === 'function')
         ? Object.getOwnPropertyDescriptor(updateValue, property)
         : undefined;
 
-    return guardTransactionValue(
+    const guardedMember = guardTransactionValue(
       member,
       assertActive,
       cache,
       updateDescriptor && 'value' in updateDescriptor
         ? updateDescriptor.value
-        : undefined
+        : undefined,
+      dispatch && {
+        ...dispatch,
+        path: [...dispatch.path, property],
+        transactionOnly:
+          dispatch.transactionOnly || isTxOnlyMethod(objectValue),
+      }
     );
+    members.set(property, [member, guardedMember]);
+    return guardedMember;
   };
   const proxyTarget =
     typeof objectValue === 'function' ? () => {} : Object.create(null);
@@ -6017,11 +6233,20 @@ const guardTransactionValue = (
     apply(_target, thisArg, args) {
       assertActive();
 
-      const result = Reflect.apply(
-        objectValue as (...args: unknown[]) => unknown,
-        thisArg,
-        args
-      );
+      const method = objectValue as (...args: unknown[]) => unknown;
+      const result =
+        typeof updateValue === 'function' && dispatch
+          ? dispatchPluginUpdate(
+              dispatch.editor,
+              dispatch.transaction,
+              dispatch.group,
+              dispatch.path,
+              method,
+              thisArg,
+              args,
+              dispatch.transactionOnly
+            )
+          : Reflect.apply(method, thisArg, args);
 
       if (typeof updateValue === 'function') {
         assertSynchronousTransactionAuthorResult(result);
@@ -6030,6 +6255,12 @@ const guardTransactionValue = (
       return result;
     },
     get(_target, property) {
+      if (
+        property === PLUGIN_UPDATE_METHOD &&
+        typeof updateValue === 'function'
+      ) {
+        return objectValue;
+      }
       if (property === PLUGIN_UPDATE_ORIGIN) {
         return typeof updateValue === 'function';
       }
@@ -6065,13 +6296,15 @@ const guardTransactionValue = (
     },
   });
 
-  let variants = cache.get(objectValue);
+  if (!pathBound) {
+    let variants = cache.get(objectValue);
 
-  if (!variants) {
-    variants = new Map();
-    cache.set(objectValue, variants);
+    if (!variants) {
+      variants = new Map();
+      cache.set(objectValue, variants);
+    }
+    variants.set(updateValue, guarded);
   }
-  variants.set(updateValue, guarded);
   copyTxMethodMarkers(objectValue, guarded);
 
   return guarded;
@@ -6195,7 +6428,11 @@ export const getUpdateView = <
 
     return runWithMutationRoot(
       editor,
-      nodeSelection.root ?? MAIN_ROOT_KEY,
+      getNodeSelectionRoot(
+        editor,
+        nodeSelection,
+        options?.at === undefined ? 'stored' : 'target'
+      ),
       () =>
         fn(
           normalizeNodeMatchOption({
@@ -6348,108 +6585,131 @@ export const getUpdateView = <
   const toggleBlock = defineSemanticUpdateMethod<
     EditorTransactionBlocksApi<V>['toggle']
   >(
-    (
-      props,
-      { at = getCurrentSelection(editor) ?? undefined, voids, wrap } = {}
-    ) => {
+    (props, { at: explicitAt, voids, wrap } = {}) => {
+      const at = explicitAt ?? getCurrentSelection(editor) ?? undefined;
       if (!at) return false;
-      const nodeSelection = SelectionApi.isNode(at) ? at : null;
-      const targetAt = nodeSelection
-        ? null
-        : resolveNodeTargetLocation(editor, at as NodeTarget);
-
-      if (!nodeSelection && !targetAt) return false;
-      const root = nodeSelection
-        ? (nodeSelection.root ?? MAIN_ROOT_KEY)
-        : targetAt
-          ? (getLocationMutationRoot(editor, targetAt) ?? MAIN_ROOT_KEY)
-          : MAIN_ROOT_KEY;
-      const selectedBlockPaths = runWithMutationRoot(editor, root, () =>
-        state.nodes
-          .blocks({ at: nodeSelection ?? targetAt ?? undefined, voids })
-          .map(([, path]) => path)
-      );
-
-      if (selectedBlockPaths.length === 0) return false;
-
-      const propsMatch = (node: PliteNode) =>
-        NodeApi.isElement(node) && ElementApi.matches(node, props);
-      const isActive = runWithMutationRoot(editor, root, () =>
-        wrap
-          ? selectedBlockPaths.some((path) =>
-              state.nodes.some({ at: path, match: propsMatch, voids })
+      return runWithMutationRoot(
+        editor,
+        SelectionApi.isNode(at)
+          ? getNodeSelectionRoot(
+              editor,
+              at,
+              explicitAt === undefined ? 'stored' : 'target'
             )
-          : selectedBlockPaths.some((path) => {
-              const entry = state.nodes.get(path);
+          : getNodeTargetRoot(editor, at),
+        () => {
+          const nodeSelection = SelectionApi.isNode(at) ? at : null;
+          const targetAt = nodeSelection
+            ? null
+            : resolveNodeTargetLocation(editor, at as NodeTarget);
 
-              return !!entry && propsMatch(entry[0]);
-            })
-      );
+          if (!nodeSelection && !targetAt) return false;
+          const root = nodeSelection
+            ? getNodeSelectionRoot(
+                editor,
+                nodeSelection,
+                explicitAt === undefined ? 'stored' : 'target'
+              )
+            : targetAt
+              ? (getLocationMutationRoot(editor, targetAt) ?? MAIN_ROOT_KEY)
+              : MAIN_ROOT_KEY;
+          const selectedBlockPaths = runWithMutationRoot(editor, root, () =>
+            state.nodes
+              .blocks({ at: nodeSelection ?? targetAt ?? undefined, voids })
+              .map(([, path]) => path)
+          );
 
-      if (!wrap) {
-        const before = getActiveDocumentChangeBuilder(editor).change;
-        const applied = runWithMutationRoot(editor, root, () => {
-          const patches = isActive
-            ? prepareBlockResets(selectedBlockPaths, root, Object.keys(props))
-            : selectedBlockPaths.map((path) => ({ path, props, unset: [] }));
+          if (selectedBlockPaths.length === 0) return false;
 
-          return !!patches && applyBlockPatches(patches, root, voids);
-        });
+          const propsMatch = (node: PliteNode) =>
+            NodeApi.isElement(node) && ElementApi.matches(node, props);
+          const isActive = runWithMutationRoot(editor, root, () =>
+            wrap
+              ? selectedBlockPaths.some((path) =>
+                  state.nodes.some({ at: path, match: propsMatch, voids })
+                )
+              : selectedBlockPaths.some((path) => {
+                  const entry = state.nodes.get(path);
 
-        return (
-          applied && getActiveDocumentChangeBuilder(editor).change !== before
-        );
-      }
+                  return !!entry && propsMatch(entry[0]);
+                })
+          );
 
-      if (!isActive) {
-        const schema = getEditorSchema(editor);
-        const allowed = runWithMutationRoot(editor, root, () =>
-          selectedBlockPaths.every((path) => {
-            const entry = state.nodes.get(path);
+          if (!wrap) {
+            const before = getActiveDocumentChangeBuilder(editor).change;
+            const applied = runWithMutationRoot(editor, root, () => {
+              const patches = isActive
+                ? prepareBlockResets(
+                    selectedBlockPaths,
+                    root,
+                    Object.keys(props)
+                  )
+                : selectedBlockPaths.map((path) => ({
+                    path,
+                    props,
+                    unset: [],
+                  }));
 
-            if (!entry || !ElementApi.isElement(entry[0])) return false;
+              return !!patches && applyBlockPatches(patches, root, voids);
+            });
 
-            const wrapper = {
-              ...props,
-              children: [entry[0]],
-            } as Element;
-            const parent = state.nodes.parent(path)?.[0];
-
-            return schema.canWrap(
-              ElementApi.isElement(parent) ? parent : null,
-              wrapper,
-              path.at(-1) ?? 0,
-              root
+            return (
+              applied &&
+              getActiveDocumentChangeBuilder(editor).change !== before
             );
-          })
-        );
-
-        if (!allowed) return false;
-      }
-
-      const before = getActiveDocumentChangeBuilder(editor).change;
-
-      for (const path of selectedBlockPaths.toReversed()) {
-        runWithMutationRoot(editor, root, () => {
-          if (
-            isActive &&
-            !state.nodes.some({ at: path, match: propsMatch, voids })
-          ) {
-            return;
           }
 
-          if (isActive) {
-            unwrapNodes(editor, { at: path, match: propsMatch, voids });
-          } else {
-            wrapNodes(editor, { ...props, children: [] } as ElementIn<V>, {
-              at: path,
-              voids,
+          if (!isActive) {
+            const schema = getEditorSchema(editor);
+            const allowed = runWithMutationRoot(editor, root, () =>
+              selectedBlockPaths.every((path) => {
+                const entry = state.nodes.get(path);
+
+                if (!entry || !ElementApi.isElement(entry[0])) return false;
+
+                const wrapper = {
+                  ...props,
+                  children: [entry[0]],
+                } as Element;
+                const parent = state.nodes.parent(path)?.[0];
+
+                return schema.canWrap(
+                  ElementApi.isElement(parent) ? parent : null,
+                  wrapper,
+                  path.at(-1) ?? 0,
+                  root
+                );
+              })
+            );
+
+            if (!allowed) return false;
+          }
+
+          const before = getActiveDocumentChangeBuilder(editor).change;
+
+          for (const path of selectedBlockPaths.toReversed()) {
+            runWithMutationRoot(editor, root, () => {
+              if (
+                isActive &&
+                !state.nodes.some({ at: path, match: propsMatch, voids })
+              ) {
+                return;
+              }
+
+              if (isActive) {
+                unwrapNodes(editor, { at: path, match: propsMatch, voids });
+              } else {
+                wrapNodes(editor, { ...props, children: [] } as ElementIn<V>, {
+                  at: path,
+                  voids,
+                });
+              }
             });
           }
-        });
-      }
 
-      return getActiveDocumentChangeBuilder(editor).change !== before;
+          return getActiveDocumentChangeBuilder(editor).change !== before;
+        }
+      );
     },
     (command, [props, options]) =>
       command(editorCommands.toggleBlock, { options, props })
@@ -6540,61 +6800,94 @@ export const getUpdateView = <
     const at = explicitAt ?? getCurrentSelection(editor) ?? undefined;
 
     if (!at) return;
-    const nodeSelection = SelectionApi.isNode(at) ? at : null;
-    const targetAt = nodeSelection
-      ? null
-      : resolveNodeTargetLocation(editor, at as NodeTarget);
+    runWithMutationRoot(
+      editor,
+      SelectionApi.isNode(at)
+        ? getNodeSelectionRoot(
+            editor,
+            at,
+            explicitAt === undefined ? 'stored' : 'target'
+          )
+        : (getNodeTargetRoot(editor, at) ??
+            getLocationMutationRoot(
+              editor,
+              resolveNodeTargetLocation(editor, at) ?? []
+            )),
+      () => {
+        const nodeSelection = SelectionApi.isNode(at) ? at : null;
+        const targetAt = nodeSelection
+          ? null
+          : resolveNodeTargetLocation(editor, at as NodeTarget);
 
-    if (!nodeSelection && !targetAt) return;
+        if (!nodeSelection && !targetAt) return;
 
-    const blockMatch = normalizeNodeMatch(type, match);
+        const blockMatch = normalizeNodeMatch(type, match);
 
-    const matchesBlock = (node: PliteNode, path: Path) =>
-      NodeApi.isElement(node) &&
-      state.schema.isBlock(node) &&
-      (!blockMatch || blockMatch(node, path));
-    const entries = nodeSelection
-      ? runWithMutationRoot(editor, nodeSelection.root ?? MAIN_ROOT_KEY, () =>
-          nodeSelection.paths.reduce<Array<NodeEntry<Element>>>((all, path) => {
-            const exact = state.nodes.get(path);
-            const block =
-              exact &&
-              NodeApi.isElement(exact[0]) &&
-              state.schema.isBlock(exact[0])
-                ? (exact as NodeEntry<Element>)
-                : state.nodes.block({ at: path });
+        const matchesBlock = (node: PliteNode, path: Path) =>
+          NodeApi.isElement(node) &&
+          state.schema.isBlock(node) &&
+          (!blockMatch || blockMatch(node, path));
+        const entries = nodeSelection
+          ? runWithMutationRoot(
+              editor,
+              getNodeSelectionRoot(
+                editor,
+                nodeSelection,
+                explicitAt === undefined ? 'stored' : 'target'
+              ),
+              () =>
+                nodeSelection.paths.reduce<Array<NodeEntry<Element>>>(
+                  (all, path) => {
+                    const exact = state.nodes.get(path);
+                    const block =
+                      exact &&
+                      NodeApi.isElement(exact[0]) &&
+                      state.schema.isBlock(exact[0])
+                        ? (exact as NodeEntry<Element>)
+                        : state.nodes.block({ at: path });
 
-            if (
-              block &&
-              matchesBlock(block[0], block[1]) &&
-              !all.some(([, candidate]) => PathApi.equals(candidate, block[1]))
-            ) {
-              all.push(block);
-            }
+                    if (
+                      block &&
+                      matchesBlock(block[0], block[1]) &&
+                      !all.some(([, candidate]) =>
+                        PathApi.equals(candidate, block[1])
+                      )
+                    ) {
+                      all.push(block);
+                    }
 
-            return all;
-          }, [])
-        )
-      : targetAt
-        ? LocationApi.isRange(targetAt)
-          ? state.nodes.toArray({
-              at: targetAt,
-              match: matchesBlock,
-              mode,
-              voids,
-            })
-          : (() => {
-              const entry = state.nodes.block({ at: targetAt });
+                    return all;
+                  },
+                  []
+                )
+            )
+          : targetAt
+            ? LocationApi.isRange(targetAt)
+              ? state.nodes.toArray({
+                  at: targetAt,
+                  match: matchesBlock,
+                  mode,
+                  voids,
+                })
+              : (() => {
+                  const entry = state.nodes.block({ at: targetAt });
 
-              return entry && matchesBlock(entry[0], entry[1]) ? [entry] : [];
-            })()
-        : [];
+                  return entry && matchesBlock(entry[0], entry[1])
+                    ? [entry]
+                    : [];
+                })()
+            : [];
 
-    duplicateNodes(entries as ReadonlyArray<NodeEntry<ElementOrTextIn<V>>>, {
-      hanging,
-      select: innerSelect,
-      voids,
-    });
+        duplicateNodes(
+          entries as ReadonlyArray<NodeEntry<ElementOrTextIn<V>>>,
+          {
+            hanging,
+            select: innerSelect,
+            voids,
+          }
+        );
+      }
+    );
   }) as EditorTransactionBlocksApi<V>['duplicate'];
   const insertBlocks: EditorTransactionBlocksApi<V>['insert'] = (
     nodes,
@@ -6709,11 +7002,19 @@ export const getUpdateView = <
       const last = target.paths.at(-1);
 
       if (!last) return undefined;
-      return runWithMutationRoot(editor, target.root ?? MAIN_ROOT_KEY, () => {
-        const block = blockAt(last, 'end');
+      return runWithMutationRoot(
+        editor,
+        getNodeSelectionRoot(
+          editor,
+          target,
+          after === undefined ? 'stored' : 'target'
+        ),
+        () => {
+          const block = blockAt(last, 'end');
 
-        return block ? landAfter(block) : undefined;
-      });
+          return block ? landAfter(block) : undefined;
+        }
+      );
     }
 
     return runTargetMutation({ at: target }, (resolvedOptions) => {
@@ -6796,71 +7097,72 @@ export const getUpdateView = <
   const replaceNode: EditorTransactionNodesApi<V>['replace'] = (
     nodes,
     options
-  ) => {
-    const at = resolveNodeTargetLocation(editor, options.at);
+  ) =>
+    runTargetMutation(options, (resolved) => {
+      const at = resolved?.at;
 
-    if (!at || !LocationApi.isPath(at)) return false;
+      if (!at || !LocationApi.isPath(at)) return false;
 
-    return runMutation({ at }, () => {
-      if (at.length === 0) {
-        throw new Error('Cannot replace the editor root.');
-      }
+      return runMutation({ at }, () => {
+        if (at.length === 0) {
+          throw new Error('Cannot replace the editor root.');
+        }
 
-      const replacedNode = NodeApi.get(editor, at);
-      const replacements = Array.isArray(nodes) ? nodes : [nodes];
-      const parentPath = PathApi.parent(at);
-      const index = getDefined(at.at(-1));
-      const parent = state.nodes.get(parentPath)?.[0];
+        const replacedNode = NodeApi.get(editor, at);
+        const replacements = Array.isArray(nodes) ? nodes : [nodes];
+        const parentPath = PathApi.parent(at);
+        const index = getDefined(at.at(-1));
+        const parent = state.nodes.get(parentPath)?.[0];
 
-      if (
-        replacements.length === 1 &&
-        !getEditorSchema(editor).canContainAt(
-          ElementApi.isElement(parent) ? parent : null,
-          replacements[0],
+        if (
+          replacements.length === 1 &&
+          !getEditorSchema(editor).canContainAt(
+            ElementApi.isElement(parent) ? parent : null,
+            replacements[0],
+            index,
+            getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY
+          )
+        ) {
+          return false;
+        }
+
+        discardReplacedNodeKeys(editor, [[replacedNode, at]]);
+
+        const newSelection =
+          options.select && replacements.length > 0
+            ? (() => {
+                const lastNode = getDefined(replacements.at(-1));
+                const [lastText, relativePath] = NodeApi.last(lastNode, []);
+
+                if (!NodeApi.isText(lastText)) {
+                  throw new Error('Cannot select a replacement with no text.');
+                }
+
+                const point = {
+                  offset: lastText.text.length,
+                  path: [
+                    ...parentPath,
+                    index + replacements.length - 1,
+                    ...relativePath,
+                  ],
+                };
+
+                return SelectionApi.text({ anchor: point, focus: point });
+              })()
+            : undefined;
+
+        const before = getActiveDocumentChangeBuilder(editor).change;
+
+        replaceChildren(editor, replacements, {
+          at: parentPath,
+          count: 1,
           index,
-          getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY
-        )
-      ) {
-        return false;
-      }
+          newSelection,
+        });
 
-      discardReplacedNodeKeys(editor, [[replacedNode, at]]);
-
-      const newSelection =
-        options.select && replacements.length > 0
-          ? (() => {
-              const lastNode = getDefined(replacements.at(-1));
-              const [lastText, relativePath] = NodeApi.last(lastNode, []);
-
-              if (!NodeApi.isText(lastText)) {
-                throw new Error('Cannot select a replacement with no text.');
-              }
-
-              const point = {
-                offset: lastText.text.length,
-                path: [
-                  ...parentPath,
-                  index + replacements.length - 1,
-                  ...relativePath,
-                ],
-              };
-
-              return SelectionApi.text({ anchor: point, focus: point });
-            })()
-          : undefined;
-
-      const before = getActiveDocumentChangeBuilder(editor).change;
-
-      replaceChildren(editor, replacements, {
-        at: parentPath,
-        count: 1,
-        index,
-        newSelection,
+        return getActiveDocumentChangeBuilder(editor).change !== before;
       });
-
-      return getActiveDocumentChangeBuilder(editor).change !== before;
-    });
-  };
+    }) ?? false;
   const replaceChildrenNodes: EditorTransactionNodesApi<V>['replaceChildren'] =
     (children, options) => {
       if (options.root !== undefined) {
@@ -7591,92 +7893,33 @@ export const getUpdateView = <
     );
   }
 
-  const framed =
-    specContext?.kind === 'update' &&
-    !COMMAND_FRAMES.has(editor) &&
-    getEditorCommandDocument(editor) !== undefined;
-
   for (const [groupName, registration] of pluginRegistry.txGroups) {
     const authored = registration.factory(
       txPluginRecord as never,
       editor,
       getUpdateContext(editor)
     );
-    const updateGroup = framed
-      ? frameUpdateMethods(editor, groupName, authored)
-      : authored;
 
-    assertUpdateMethodTreeProtocolKeys(groupName, updateGroup);
+    assertUpdateMethodTreeProtocolKeys(groupName, authored);
     const { group, origin } = mergeTransactionGroup(
       txPluginRecord[groupName],
-      updateGroup
+      authored
     );
 
     txPluginRecord[groupName] = guardTransactionValue(
       specContext?.kind === 'spec' ? getSpecSafeTransactionGroup(group) : group,
       assertActive,
       new WeakMap(),
-      origin
+      origin,
+      { editor, transaction: txRecord, group: groupName, path: [] }
     );
   }
 
-  const directPluginGroup = txPluginRecord.plugin;
-  const pluginPortal = (plugin: PluginReference | string) => {
-    const name = typeof plugin === 'string' ? plugin : plugin.name;
-    const installed =
-      typeof plugin === 'string'
-        ? pluginRegistry.plugins.get(plugin)
-        : pluginRegistry.pluginsByDescriptor.get(plugin);
-
-    if (!installed) {
-      throw new Error(
-        `Editor plugin "${name}" is not installed on this editor.`
-      );
-    }
-    const group =
-      installed.name === 'plugin'
-        ? directPluginGroup
-        : txPluginRecord[installed.name];
-
-    if (group === undefined) {
-      throw new Error(
-        `Editor plugin "${installed.name}" does not expose transaction methods.`
-      );
-    }
-
-    return group;
-  };
-
-  const pluginSelector =
-    (typeof directPluginGroup === 'object' && directPluginGroup !== null) ||
-    typeof directPluginGroup === 'function'
-      ? new Proxy(pluginPortal, {
-          get(target, property, receiver) {
-            if (Reflect.has(directPluginGroup, property)) {
-              return Reflect.get(
-                directPluginGroup,
-                property,
-                directPluginGroup
-              );
-            }
-
-            return Reflect.get(target, property, receiver);
-          },
-          getOwnPropertyDescriptor(target, property) {
-            const descriptor = Reflect.getOwnPropertyDescriptor(
-              directPluginGroup,
-              property
-            );
-
-            return descriptor
-              ? { ...descriptor, configurable: true }
-              : Reflect.getOwnPropertyDescriptor(target, property);
-          },
-        })
-      : pluginPortal;
-
-  copyTxMethodMarkers(directPluginGroup, pluginSelector);
-  txPluginRecord.plugin = pluginSelector;
+  txPluginRecord.plugin = createTransactionPluginSelector(
+    pluginRegistry,
+    txPluginRecord,
+    txPluginRecord.plugin
+  );
 
   TRANSACTION_VIEW_TRANSFORMS.get(getEditorRuntimeOwner(editor))?.(
     txPluginRecord
@@ -7739,7 +7982,11 @@ export const createTransactionSpecContext = (
   const currentChildrenRoot = getCurrentChildrenRoot(editor);
   const baseRuntimeIndex = parentSnapshot
     ? () =>
-        getTransactionSnapshotIndex(editor, parentSnapshot, currentChildrenRoot)
+        retainTransactionSnapshotIndex(
+          editor,
+          parentSnapshot,
+          currentChildrenRoot
+        )
     : (() => {
         const baseSnapshot = getSnapshot(editor);
 
@@ -8805,6 +9052,10 @@ export const getCurrentSelection = (editor: Editor): Selection => {
   const owner = getEditorRuntimeOwner(editor);
   const context = getTransactionSpecContext(owner);
 
+  const readRoot = VIEW_READ_ROOTS.get(owner);
+  if (readRoot !== undefined && readRoot !== getCurrentSelectionRoot(owner)) {
+    return null;
+  }
   return cloneValue(
     context
       ? context.selection
@@ -8944,6 +9195,11 @@ export const setCurrentSelection = (
   selection: Selection,
   root = getActiveUpdateRoot(editor) ?? getCurrentSelectionRoot(editor)
 ) => {
+  const snapshot = getTransactionSnapshot(editor);
+
+  if (snapshot && selection) {
+    assertRootPlaced(editor, snapshot, SelectionApi.root(selection) ?? root);
+  }
   assertSelectionSupported(
     editor,
     selection,
@@ -9335,17 +9591,22 @@ const snapshotIndexesEqual = (left: SnapshotIndex, right: SnapshotIndex) => {
   );
 };
 
-function getTransactionSnapshotIndex(
+const getKnownTransactionIndex = (
+  transactionSnapshot: TransactionSnapshot,
+  root: string
+) =>
+  transactionSnapshot.rootIndexes[root] ??
+  transactionSnapshot.baseRuntimeIndexes[root]?.() ??
+  (root === transactionSnapshot.childrenRoot
+    ? transactionSnapshot.previousSnapshot?.index
+    : null);
+
+export function retainTransactionSnapshotIndex(
   editor: Editor,
   transactionSnapshot: TransactionSnapshot,
   root: string
 ): SnapshotIndex {
-  const existingIndex =
-    transactionSnapshot.rootIndexes[root] ??
-    transactionSnapshot.baseRuntimeIndexes[root]?.() ??
-    (root === transactionSnapshot.childrenRoot
-      ? transactionSnapshot.previousSnapshot?.index
-      : null);
+  const existingIndex = getKnownTransactionIndex(transactionSnapshot, root);
 
   if (existingIndex) {
     return existingIndex;
@@ -9367,7 +9628,11 @@ const getTransactionRootSnapshot = (
   root: string
 ): EditorSnapshot => {
   const children = transactionSnapshot.roots[root] ?? [];
-  const index = getTransactionSnapshotIndex(editor, transactionSnapshot, root);
+  const index = retainTransactionSnapshotIndex(
+    editor,
+    transactionSnapshot,
+    root
+  );
 
   return Object.freeze({
     children: isImmutable(children) ? children : cloneFrozen(children),
@@ -9388,6 +9653,7 @@ const getCurrentRootSnapshot = (
   knownIndex?: SnapshotIndex,
   version = getVersion(editor)
 ): EditorSnapshot => {
+  countCoreWork('rootSnapshots');
   const owner = getEditorRuntimeOwner(editor);
   const live = rootSourceOf(getEditorDocumentRoots(editor), root);
   const selectionRoot = getCurrentSelectionRoot(editor);
@@ -11771,4 +12037,23 @@ const adoptEditorSchemaDocument = (
   else DOCUMENT_STATE.set(editor, document.meta);
   for (const children of Object.values(roots)) seedNodeKeys(children, editor);
   clearSnapshotCache(editor);
+};
+
+const VIEW_READ_ROOTS = new WeakMap<Editor, string>();
+
+export const withEditorViewSelectionRead = <T>(
+  editor: Editor,
+  root: string | undefined,
+  read: () => T
+): T => {
+  const owner = getEditorRuntimeOwner(editor);
+  const previous = VIEW_READ_ROOTS.get(owner);
+  if (root === undefined) VIEW_READ_ROOTS.delete(owner);
+  else VIEW_READ_ROOTS.set(owner, root);
+  try {
+    return read();
+  } finally {
+    if (previous === undefined) VIEW_READ_ROOTS.delete(owner);
+    else VIEW_READ_ROOTS.set(owner, previous);
+  }
 };

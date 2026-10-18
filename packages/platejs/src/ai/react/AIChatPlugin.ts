@@ -17,7 +17,6 @@ import {
   type EditorUpdateTransaction,
   type Element,
   ElementApi,
-  type NamedRootKey,
   type Node,
   NodeApi,
   type NodeEntry,
@@ -120,19 +119,15 @@ export type AIChatNodeSnapshot = {
   isSelectionFocus?: true;
   node: Element;
   nodeKey: NodeKey;
-  root?: NamedRootKey;
 };
 
 export type AIChatPluginState = {
   _blockKey: NodeKey | null;
-  _blockRefs: Record<string, Readonly<{ key: NodeKey; root?: NamedRootKey }>>;
+  _blockRefs: Record<string, Readonly<{ key: NodeKey }>>;
   _changeId: string | null;
   _requestId: string | null;
   _replaceNodeKeys: NodeKey[];
-  _tableCellRefs: Record<
-    string,
-    Readonly<{ key: NodeKey; root?: NamedRootKey }>
-  >;
+  _tableCellRefs: Record<string, Readonly<{ key: NodeKey }>>;
   chat: AIChatAdapter | null;
   chatNodeMode: NodeSelectionMode | null;
   chatNodes: AIChatNodeSnapshot[];
@@ -231,10 +226,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   // anyone wrote since.
   let suggestion: Readonly<{ children: readonly unknown[] }> | null = null;
   let suggestionTarget: AISuggestionTarget | null = null;
-  const tableDraft = new Map<
-    NodeKey,
-    { children: Value; root?: NamedRootKey }
-  >();
+  const tableDraft = new Map<NodeKey, { children: Value }>();
   const captureSelection = (commandEditor: Editor, selection: Range | null) => {
     previewAnchor?.release();
     previewAnchor = selection
@@ -251,13 +243,13 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     const nodeSource = viewNodes.length ? commandEditor : editor;
     const selectedNodes = target ? [] : nodeSource.read.selection.nodes();
     const isNodeSelecting = selectedNodes.length > 0;
-    const root = commandEditor.read.view.root() ?? SelectionApi.root(current);
+    const root = current
+      ? SelectionApi.root(current)
+      : commandEditor.read.view.root();
+    const captureEditor = createEditorView(commandEditor, root ? { root } : {});
     const selection =
       current && !isNodeSelecting
-        ? (root
-            ? createEditorView(commandEditor, { root })
-            : commandEditor
-          ).read((state) => captureTextRange(state, current))
+        ? captureEditor.read((state) => captureTextRange(state, current))
         : current;
 
     if (
@@ -269,13 +261,13 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     }
     const blocks = isNodeSelecting
       ? selectedNodes
-      : commandEditor.read.nodes.blocks(selection ? { at: selection } : {});
+      : captureEditor.read.nodes.blocks(selection ? { at: selection } : {});
     const isEndpoint = (path: Path, endpoint: Path | undefined) =>
       isNodeSelecting &&
       !!endpoint &&
       (PathApi.equals(path, endpoint) || PathApi.isAncestor(path, endpoint));
 
-    captureSelection(commandEditor, selection);
+    captureSelection(captureEditor, selection);
     context.store.set({
       chatNodeMode: isNodeSelecting
         ? nodeSource.read.selection.nodeMode()
@@ -293,7 +285,6 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
                 ...(isEndpoint(path, selection?.focus.path)
                   ? { isSelectionFocus: true as const }
                   : {}),
-                ...(root ? { root } : {}),
               },
             ]
           : []
@@ -302,11 +293,13 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   };
   const prepareTargetRestore = (commandEditor: Editor) => {
     const { chatNodeMode, chatNodes, chatSelection } = context.store.get();
+    const actionEditor = getActionEditor(commandEditor);
+    if (!actionEditor) return null;
     if (!chatSelection && chatNodes.length > 0) {
       const anchor = chatNodes.find((node) => node.isSelectionAnchor);
       const focus = chatNodes.find((node) => node.isSelectionFocus);
       const entries = chatNodes.flatMap(({ nodeKey }) => {
-        const entry = commandEditor.read.nodes.get(nodeKey, {
+        const entry = actionEditor.read.nodes.get(nodeKey, {
           match: ElementApi.isElement,
         });
         return entry ? [entry] : [];
@@ -315,7 +308,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         return null;
       }
       const target = entries[0]?.[0];
-      const { schema } = commandEditor.read;
+      const { schema } = actionEditor.read;
       const mode =
         chatNodeMode === 'object' &&
         target &&
@@ -325,33 +318,46 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           ? 'object'
           : 'block';
       return () =>
-        commandEditor.update.selection.setNodes(
+        actionEditor.update.selection.setNodes(
           entries.map(([node]) => node),
           { anchor: anchor.nodeKey, focus: focus.nodeKey, mode }
         );
     }
     const selection = previewAnchor?.resolve();
     if (!selection) return null;
-    return () => commandEditor.update.selection.set(selection);
+    return () => actionEditor.update.selection.set(selection);
   };
   const restoreTarget = (commandEditor: Editor) => {
     const restore = prepareTargetRestore(commandEditor);
     restore?.();
     return !!restore;
   };
-  const getActionEditor = (commandEditor: Editor) =>
-    commandEditor as AIActionEditor;
-  const getCapturedTargetRoot = (
-    commandEditor: Editor,
-    chatSelection: Range | null
-  ) => {
-    const [chatNode] = context.store.get('chatNodes');
+  const resolveTargetRoot = (commandEditor: Editor, key: NodeKey) => {
+    const point = commandEditor.read.points.start(key);
 
-    if (chatNode) return chatNode.root;
+    return point ? { root: point.root } : null;
+  };
+  const getActionEditor = (commandEditor: Editor, targetKey?: NodeKey) => {
+    const { _blockKey, chatNodes, chatSelection } = context.store.get();
+    const selection =
+      suggestionTarget?.range ?? previewAnchor?.resolve() ?? chatSelection;
+    const key =
+      targetKey ??
+      (suggestionTarget ? undefined : (_blockKey ?? chatNodes[0]?.nodeKey));
+    const target = key
+      ? resolveTargetRoot(commandEditor, key)
+      : {
+          root: selection
+            ? SelectionApi.root(selection)
+            : commandEditor.read.view.root(),
+        };
 
-    return chatSelection
-      ? SelectionApi.root(chatSelection)
-      : commandEditor.read.view.root();
+    if (!target) return null;
+
+    return createEditorView(
+      commandEditor,
+      target.root ? { root: target.root } : {}
+    ) as AIActionEditor;
   };
   const columnGroupDescriptor = getCompiledPlatePlugin(
     editor,
@@ -590,7 +596,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         if (nodeKey && selectedNodeKeys.has(nodeKey)) {
           const ref = `c${selectedCells.length + 1}`;
 
-          refs[ref] = { key: nodeKey, ...(root ? { root } : {}) };
+          refs[ref] = { key: nodeKey };
           selectedCells.push({ cell, ref });
 
           return `<CellRef ref="${ref}" />`;
@@ -644,17 +650,14 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   const getRequestContext = (
     commandEditor: Editor,
     at: Range | null,
-    selectedNodePaths: readonly Path[] = commandEditor.read.selection
-      .nodes()
-      .map(([, path]) => [...path])
+    selectedNodePaths?: readonly Path[]
   ): AIChatRequestContext => {
-    const root =
-      commandEditor.read.view.root() ??
-      SelectionApi.root(at) ??
-      SelectionApi.root(commandEditor.read.selection());
-    const requestEditor = root
-      ? createEditorView(commandEditor, { root })
-      : commandEditor;
+    const current =
+      at ?? commandEditor.read.selection() ?? editor.read.selection();
+    const root = current
+      ? SelectionApi.root(current)
+      : commandEditor.read.view.root();
+    const requestEditor = createEditorView(commandEditor, root ? { root } : {});
     const requestAt = at
       ? {
           ...at,
@@ -663,7 +666,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         }
       : null;
     const [firstSelectedNodePath, ...remainingSelectedNodePaths] =
-      selectedNodePaths;
+      selectedNodePaths ??
+      requestEditor.read.selection.nodes().map(([, path]) => [...path]);
     const isNodeSelecting = !!firstSelectedNodePath;
     const nodeSelection = (() => {
       if (!firstSelectedNodePath || !requestAt) return null;
@@ -690,7 +694,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       return {
         anchorPath,
         focusPath,
-        mode: commandEditor.read.selection.nodeMode() ?? 'block',
+        mode: requestEditor.read.selection.nodeMode() ?? 'block',
         paths,
       };
     })();
@@ -708,7 +712,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
       const ref = `b${index + 1}`;
 
-      blockRefs[ref] = { key, ...(root ? { root } : {}) };
+      blockRefs[ref] = { key };
 
       return [{ path: [...path], ref }];
     });
@@ -725,7 +729,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
           const ref = `c${index + 1}`;
 
-          tableCellRefs[ref] = { key, ...(root ? { root } : {}) };
+          tableCellRefs[ref] = { key };
 
           return [{ path: [...path], ref }];
         })
@@ -863,7 +867,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     tx: AIActionTransaction,
     entries: ReadonlyArray<NodeEntry<Element>>
   ) => {
-    tx.selection.setNodes(entries.map(([, path]) => path));
+    tx.selection.setNodes(entries.map(([node]) => node));
   };
   const resolveActionBlocks = (tx: AIActionTransaction, nodes: Element[]) => {
     const entries = nodes.flatMap((node) => {
@@ -884,10 +888,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     tx: AIActionTransaction,
     source: Element[],
     format: 'all' | 'none' | 'single',
-    target: NodeEntry<Element>,
-    root: NamedRootKey | undefined
+    target: NodeEntry<Element>
   ) => {
-    const anchor = resolveInsertionAnchor(editor, tx, target, root);
+    const anchor = resolveInsertionAnchor(editor, tx, target);
     // An answer that lands past its source, such as after the closed Details of
     // a title, takes none of the source's formatting: a copied title type has no
     // place outside its Details.
@@ -903,8 +906,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     const nodes = placeActionBlocks(
       tx,
       landAIOutput(editor, tx, blocks, { block: anchor[0], kind: 'kept' }),
-      PathApi.next(anchor[1]),
-      root
+      PathApi.next(anchor[1])
     );
 
     const inserted =
@@ -919,7 +921,6 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     tx: AIActionTransaction,
     nodes: readonly Element[],
     first: Path,
-    root: NamedRootKey | undefined,
     // A caller that writes through tx.nodes.insert or tx.nodes.replace passes
     // the sibling indexes it removes, because neither checks how many children
     // the parent can hold; tx.blocks.insert and tx.slice.replace refuse alone.
@@ -932,7 +933,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     for (const [offset, node] of nodes.entries()) {
       const block = placeElementAt(tx.schema, node, {
         at: [...parentPath, index + offset],
-        root,
+        root: tx.view.root(),
       });
 
       if (!block) return null;
@@ -941,7 +942,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
     if (
       removing &&
-      !canPlaceBlocksAtPath(tx.schema, first, placed, { removing, root })
+      !canPlaceBlocksAtPath(tx.schema, first, placed, {
+        removing,
+        root: tx.view.root(),
+      })
     ) {
       return null;
     }
@@ -951,8 +955,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   const replaceActionBlocks = (
     tx: AIActionTransaction,
     nodes: Element[],
-    entries: ReadonlyArray<NodeEntry<Element>>,
-    root: NamedRootKey | undefined
+    entries: ReadonlyArray<NodeEntry<Element>>
   ) => {
     const selectedKeys = entries.map(([node]) => tx.key(node));
     const firstKey = selectedKeys[0];
@@ -964,16 +967,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         ? [path.at(-1) ?? 0]
         : []
     );
-    const replacingFirst = placeActionBlocks(
-      tx,
-      nodes,
-      first[1],
-      root,
-      removing
-    );
+    const replacingFirst = placeActionBlocks(tx, nodes, first[1], removing);
     const keepingRequiredFirst = replacingFirst
       ? null
-      : placeActionBlocks(tx, nodes, PathApi.next(first[1]), root);
+      : placeActionBlocks(tx, nodes, PathApi.next(first[1]));
     const landed = replacingFirst ?? keepingRequiredFirst;
 
     if (!landed) return false;
@@ -1077,10 +1074,19 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   ) => {
     const state = context.store.get();
     if (requestId !== undefined && requestId !== state._requestId) return false;
-    const sourceRoots = new Set(state.chatNodes.map(({ root }) => root));
-    const root = commandEditor.read.view.root();
+    const actionEditor = getActionEditor(commandEditor);
+    if (!actionEditor) return false;
+    const sourceRoots = new Set(
+      state.chatNodes.map(
+        ({ nodeKey }) => resolveTargetRoot(commandEditor, nodeKey)?.root
+      )
+    );
+    const root = actionEditor.read.view.root();
 
-    if (sourceRoots.size !== 1 || !sourceRoots.has(root)) {
+    if (
+      !suggestionTarget &&
+      (sourceRoots.size !== 1 || !sourceRoots.has(root))
+    ) {
       return false;
     }
     if (state.chatSelection && previewAnchor && !previewAnchor.resolve()) {
@@ -1111,7 +1117,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
     if (!target) {
       const entries = targetKeys.flatMap((key) => {
-        const entry = commandEditor.read.nodes.get(key, {
+        const entry = actionEditor.read.nodes.get(key, {
           match: ElementApi.isElement,
         });
 
@@ -1122,8 +1128,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       const first = ordered[0];
       const last = ordered.at(-1);
       if (!first || !last) return false;
-      const anchor = commandEditor.read.points.start(first[1]);
-      const focus = commandEditor.read.points.end(last[1]);
+      const anchor = actionEditor.read.points.start(first[1]);
+      const focus = actionEditor.read.points.end(last[1]);
       const capturedEdges = capturedSelection
         ? RangeApi.edges(capturedSelection)
         : null;
@@ -1138,7 +1144,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         capturedSelection ??
         (anchor && focus
           ? { anchor, focus }
-          : commandEditor.read.ranges.fromEntries(ordered));
+          : actionEditor.read.ranges.fromEntries(ordered));
 
       if (!range) return false;
       if (coversWholeBlocks) {
@@ -1166,7 +1172,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       suggestionTarget = target;
     }
     const nextNodes = parseSuggestion(parsed.slice.content, target);
-    if (suggestion && editor.read.value().children !== suggestion.children) {
+    if (suggestion && actionEditor.read.children() !== suggestion.children) {
       return false;
     }
     const previous = currentChangeId
@@ -1174,7 +1180,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       : null;
 
     if (previous) {
-      getActionEditor(commandEditor).update((tx) => {
+      actionEditor.update((tx) => {
         tx.history.merge();
         tx.plugin(AuthoredPlugin).decide({
           action: 'reject',
@@ -1184,7 +1190,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     }
 
     let publishedChangeId: string | null = null;
-    getActionEditor(commandEditor).update((tx) => {
+    actionEditor.update((tx) => {
       const changeId = tx
         .plugin(AuthoredPlugin)
         .propose(currentChangeId ? { changeId: currentChangeId } : undefined);
@@ -1193,7 +1199,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       if (writeSuggestion(tx, target, nextNodes)) publishedChangeId = changeId;
     });
 
-    suggestion = { children: editor.read.value().children };
+    suggestion = { children: actionEditor.read.children() };
     context.store.set({
       _changeId: publishedChangeId,
       _replaceNodeKeys: publishedChangeId ? targetKeys : [],
@@ -1210,11 +1216,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     }
     if (tableDraft.size > 0) {
       let applied = false;
-      getActionEditor(commandEditor).update((tx) => {
+      getActionEditor(commandEditor)?.update((tx) => {
         const targets = [...tableDraft].map(([key, draft]) => ({
           draft,
           entry:
-            draft.root === commandEditor.read.view.root()
+            resolveTargetRoot(commandEditor, key)?.root === tx.view.root()
               ? tx.nodes.get(key, { match: ElementApi.isElement })
               : undefined,
         }));
@@ -1237,7 +1243,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       return undefined;
     }
     let applied = false;
-    getActionEditor(commandEditor).update((tx) => {
+    getActionEditor(commandEditor)?.update((tx) => {
       const output = getActionPreviewSource();
       const blockKey = context.store.get('_blockKey');
       const target = blockKey
@@ -1250,12 +1256,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         node.type === paragraph.schema.type && tx.nodes.isEmpty(node);
       const [anchor, anchorPath] = replace
         ? target
-        : resolveInsertionAnchor(
-            editor,
-            tx,
-            target,
-            commandEditor.read.view.root()
-          );
+        : resolveInsertionAnchor(editor, tx, target);
       const firstPath = replace ? path : PathApi.next(anchorPath);
       const firstIndex = firstPath.at(-1);
       if (firstIndex === undefined) return;
@@ -1273,7 +1274,6 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         tx,
         blocks,
         firstPath,
-        commandEditor.read.view.root(),
         replace ? [firstIndex] : undefined
       );
 
@@ -1303,7 +1303,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   ) => {
     let applied = false;
 
-    getActionEditor(commandEditor).update((tx) => {
+    getActionEditor(commandEditor)?.update((tx) => {
       const source = getActionPreviewSource();
 
       if (!source) return;
@@ -1313,7 +1313,6 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           ? previewAnchor.resolve()
           : capturedSelection;
       if (capturedSelection && previewAnchor && !chatSelection) return;
-      const chatRoot = getCapturedTargetRoot(commandEditor, chatSelection);
 
       if (chatSelection) {
         const [start, end] = RangeApi.edges(chatSelection);
@@ -1323,13 +1322,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
         if (!block) return;
         if (action === 'insertBelow') {
-          applied = insertActionBlocks(
-            tx,
-            cloneDeep(source),
-            format,
-            block,
-            chatRoot
-          );
+          applied = insertActionBlocks(tx, cloneDeep(source), format, block);
 
           return;
         }
@@ -1348,12 +1341,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         );
 
         if (whole) {
-          applied = replaceActionBlocks(
-            tx,
-            whole.nodes,
-            whole.blocks,
-            chatRoot
-          );
+          applied = replaceActionBlocks(tx, whole.nodes, whole.blocks);
 
           return;
         }
@@ -1373,7 +1361,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         const [head, ...rest] = landed;
         const tail =
           head && openTextBlock(head)
-            ? placeActionBlocks(tx, rest, PathApi.next(block[1]), chatRoot)
+            ? placeActionBlocks(tx, rest, PathApi.next(block[1]))
             : rest;
 
         if (!tail) return;
@@ -1403,8 +1391,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           tx,
           cloneDeep(source),
           format,
-          sourceBlock,
-          chatRoot
+          sourceBlock
         );
 
         return;
@@ -1424,8 +1411,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           block: sourceBlock[0],
           kind: 'replaced',
         }),
-        selected,
-        chatRoot
+        selected
       );
     });
 
@@ -1613,29 +1599,30 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           const selection = previewAnchor
             ? previewAnchor.resolve()
             : (state.chatSelection ?? commandEditor.read.selection());
-          if (previewAnchor && !selection) {
+          const actionEditor = getActionEditor(commandEditor);
+          if ((previewAnchor && !selection) || !actionEditor) {
             invalidatePreview();
             return undefined;
           }
           const target =
             state.chatNodes.length > 0 && !state.chatSelection
-              ? commandEditor.read.nodes.get(state.chatNodes[0].nodeKey, {
+              ? actionEditor.read.nodes.get(state.chatNodes[0].nodeKey, {
                   match: ElementApi.isElement,
                 })
-              : commandEditor.read.nodes.block({
+              : actionEditor.read.nodes.block({
                   ...(selection ? { at: RangeApi.start(selection) } : {}),
                 });
           if (!target) {
             invalidatePreview();
             return undefined;
           }
-          targetKey = commandEditor.key(target[0]);
+          targetKey = actionEditor.key(target[0]);
           if (
             !previewAnchor &&
             selection &&
             (state.chatSelection || state.chatNodes.length === 0)
           ) {
-            captureSelection(commandEditor, selection);
+            captureSelection(actionEditor, selection);
           }
         }
         if (!commandEditor.read.nodes.get(targetKey)) {
@@ -1706,12 +1693,20 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         }
         const refs = context.store.get('_tableCellRefs');
         const target = Object.hasOwn(refs, ref) ? refs[ref] : undefined;
-        if (!target || target.root !== commandEditor.read.view.root()) return;
-        const cell = commandEditor.read.nodes.get(target.key, {
+        if (!target) return;
+        const actionEditor = getActionEditor(commandEditor, target.key);
+        if (
+          !actionEditor ||
+          actionEditor.read.view.root() !==
+            getActionEditor(commandEditor)?.read.view.root()
+        ) {
+          return;
+        }
+        const cell = actionEditor.read.nodes.get(target.key, {
           match: ElementApi.isElement,
         });
         if (!cell) return;
-        const table = commandEditor.read.nodes.above({
+        const table = actionEditor.read.nodes.above({
           at: cell[1],
           match: (node): node is Element =>
             ElementApi.isElement(node) && node.type === tablePlugin.schema.type,
@@ -1730,7 +1725,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         tableDraft.set(target.key, {
           children: landAIOutput(
             editor,
-            commandEditor.read,
+            actionEditor.read,
             parsed.slice.content,
             {
               block: cell[0].children.find((node): node is Element =>
@@ -1739,11 +1734,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
               kind: 'replaced',
             }
           ),
-          root: target.root,
         });
         const previewNode = (node: Descendant, path: Path): Descendant => {
           if (!ElementApi.isElement(node)) return node;
-          const key = commandEditor.key(path);
+          const key = actionEditor.key(path);
           const draft = key ? tableDraft.get(key) : undefined;
           return {
             ...node,
@@ -1757,7 +1751,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         const preview = previewNode(table[0], table[1]);
         if (!ElementApi.isElement(preview)) return;
         context.store.set({
-          _blockKey: commandEditor.key(table[0]),
+          _blockKey: actionEditor.key(table[0]),
           previewValue: [preview],
         });
       },
@@ -1794,9 +1788,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         captureTarget(commandEditor);
         const selection =
           commandEditor.read.selection() ?? editor.read.selection();
-        const selectedNodePaths = commandEditor.read.selection
-          .nodes()
-          .map(([, path]) => [...path]);
+        const viewNodes = commandEditor.read.selection.nodes();
+        const selectedNodePaths = (
+          viewNodes.length ? viewNodes : editor.read.selection.nodes()
+        ).map(([, path]) => [...path]);
         const isNodeSelecting = selectedNodePaths.length > 0;
         tableDraft.clear();
         const nextMode =
@@ -1855,9 +1850,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
         if (!blockRef) return undefined;
 
-        const blockEditor = blockRef.root
-          ? createEditorView(commandEditor, { root: blockRef.root })
-          : commandEditor;
+        const blockEditor = getActionEditor(commandEditor, blockRef.key);
+        if (!blockEditor) return undefined;
+        const root = blockEditor.read.view.root();
         const chatSelection = context.store.get('chatSelection');
         const isTextSelecting =
           !!chatSelection && RangeApi.isExpanded(chatSelection);
@@ -1877,7 +1872,12 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
         for (const [index, node] of nodes.entries()) {
           const ref = refs[firstIndex + index];
-          if (!ref || ref.root !== blockRef.root) return undefined;
+          if (
+            !ref ||
+            resolveTargetRoot(commandEditor, ref.key)?.root !== root
+          ) {
+            return undefined;
+          }
           const block = blockEditor.read.nodes.get(ref.key, {
             match: ElementApi.isElement,
           });
@@ -1897,7 +1897,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
               const anchor = {
                 path: [...block[1], ...path],
                 offset: 0,
-                ...(blockRef.root ? { root: blockRef.root } : {}),
+                ...(root ? { root } : {}),
               };
               const leafRange = {
                 anchor,

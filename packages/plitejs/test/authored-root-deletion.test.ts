@@ -15,9 +15,10 @@ import {
   editorCommands,
   schema,
   SelectionApi,
+  txLocate,
 } from 'plitejs';
 import { dataTransferFormats, dom } from 'plitejs/dom';
-import { history } from 'plitejs/history';
+import { History, history } from 'plitejs/history';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
 import { putVerdicts } from '../src/authored/facts/records';
@@ -1226,6 +1227,114 @@ describe('with the caret in the root of a struck card', () => {
       });
     }
   }
+
+  it('a plugin update method with no target writes nothing in Suggesting', () => {
+    const Writer = definePlugin('writer', {
+      update: ({ tx }: any) => ({
+        write: () => tx.nodes.insert(p('W'), { at: [tx.children().length] }),
+      }),
+    });
+    const struck = caretInStruck('propose', [Writer]);
+
+    struck.editor.update.writer.write();
+
+    assert.deepEqual(struck.refusals, ['unrepresentable']);
+    assert.deepEqual(valueOf(struck.editor), struck.before);
+  });
+
+  it('a plugin update method another method calls writes nothing in Suggesting', () => {
+    const Writer = definePlugin('writer', {
+      update: ({ tx }: any) => ({
+        outer: txLocate(false, (done: () => void) => {
+          done();
+          tx.writer.write();
+        }),
+        write: () => tx.nodes.insert(p('W'), { at: [tx.children().length] }),
+      }),
+    });
+    const struck = caretInStruck('propose', [Writer]);
+
+    struck.editor.update.writer.outer(() => {});
+
+    assert.deepEqual(struck.refusals, ['unrepresentable']);
+    assert.deepEqual(valueOf(struck.editor), struck.before);
+  });
+
+  it('a plugin update method that writes b1 by path writes nothing in Suggesting', () => {
+    const Writer = definePlugin('writer', {
+      update: ({ tx }: any) => ({
+        insertAtPath: () =>
+          tx.text.insert('W', { at: { offset: 0, path: [0, 0] } }),
+        outer: txLocate(false, (done: () => void) => {
+          done();
+          tx.writer.remove();
+        }),
+        remove: () => tx.nodes.remove({ at: [0] }),
+        replace: () => tx.nodes.replace(p('W'), { at: [0] }),
+        select: () => {
+          const at = { offset: 0, path: [0, 0] };
+
+          tx.selection.set(SelectionApi.text({ anchor: at, focus: at }));
+        },
+      }),
+    });
+    const struck = caretInStruck('propose', [Writer]);
+
+    struck.editor.update.writer.insertAtPath();
+    struck.editor.update.writer.replace();
+    struck.editor.update.writer.remove();
+    struck.editor.update.writer.select();
+    struck.editor.update.writer.outer(() => {});
+
+    assert.deepEqual(struck.refusals, [
+      'unrepresentable',
+      'unrepresentable',
+      'unrepresentable',
+      'unrepresentable',
+      'unrepresentable',
+    ]);
+    assert.deepEqual(valueOf(struck.editor), struck.before);
+  });
+
+  it('a plugin update method with no target runs when it writes outside b1', () => {
+    const main: { key?: string } = {};
+    const ran: string[] = [];
+    const Writer = definePlugin('writer', {
+      update: ({ tx }: any) => ({
+        replaceMain: () => tx.nodes.replace(p('RIGHT'), { at: main.key }),
+        tag: () => {
+          ran.push('tag');
+          tx.tags.add('test.tag');
+        },
+      }),
+    });
+    const struck = caretInStruck('propose', [Writer, history()]);
+    const undoBefore = struck.editor.read.history.hasUndo();
+
+    main.key = struck.editor.key([1]);
+    struck.editor.update.writer.tag();
+    struck.editor.update((tx) => {
+      tx.history.restore(
+        History.fromJSON(struck.editor, {
+          redos: [],
+          schema: struck.editor.read.history().schema,
+          undos: [],
+          version: 4,
+        })
+      );
+      tx.writer.replaceMain();
+    });
+
+    assert.deepEqual(struck.refusals, []);
+    assert.deepEqual(ran, ['tag']);
+    assert.deepEqual(
+      [undoBefore, struck.editor.read.history.hasUndo()],
+      [true, false]
+    );
+    assert.deepEqual(previewOf(struck.editor, 'proposed').children, [
+      p('RIGHT'),
+    ]);
+  });
 
   it('drops an effect a command emits inside b1', () => {
     const inBody = defineEffect<number>({

@@ -7,7 +7,9 @@ import {
   definePlugin,
   schema,
 } from '../../../core';
+import { domCommands } from '../../../dom/plite-dom.internal';
 import { setEditorReadOnly } from '../../../facade';
+import { BaseDetailsPlugin } from '../../details';
 import { BaseFilePlugin } from '../../media/lib/BaseMediaPlugin';
 import { BaseImagePlugin } from '../../media/lib/image/BaseImagePlugin';
 import {
@@ -98,6 +100,73 @@ const UploadRootHolderPlugin = definePlugin('uploadRootHolder', {
 });
 
 describe('Files admission and lifetime', () => {
+  it('pastes a file after the closed Details in the caret root', () => {
+    const Note = definePlugin('uploadDetailsNote', {
+      schema: {
+        element: {
+          void: 'block',
+          contentRoots: {
+            body: schema.content.group('block', {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+          },
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [
+        BaseDetailsPlugin,
+        BaseImagePlugin,
+        Note,
+        withUpload({
+          initialState: {
+            rules: { image: { kind: 'image' } },
+            upload: () => new Promise(() => {}),
+          },
+        }),
+      ],
+      initialValue: {
+        children: [
+          {
+            type: 'uploadDetailsNote',
+            childRoots: { body: 'note' },
+            children: [{ text: '' }],
+          },
+        ],
+        roots: {
+          note: [
+            {
+              type: 'details',
+              children: [
+                { type: 'summary', children: [{ text: 'Title' }] },
+                paragraph('Body'),
+              ],
+            },
+            paragraph('After'),
+          ],
+        },
+      },
+    });
+    const main = editor.read.children();
+    const details = editor.read.root('note')[0];
+    editor.update.selection.set({ path: [0, 0, 0], offset: 5, root: 'note' });
+    const data = new DataTransfer();
+    data.items.add(new File(['image'], 'image.png', { type: 'image/png' }));
+
+    editor.update((tx) => {
+      tx.command(domCommands.insertData, data);
+    });
+
+    expect({
+      main: editor.read.children(),
+      note: editor.read.root('note'),
+    }).toEqual({
+      main,
+      note: [details, slot('image'), paragraph('After')],
+    });
+  });
+
   it('rejects a batch atomically and reports the failure once after commit', () => {
     const failures: UploadFailure[] = [];
     const editor = createEditor({

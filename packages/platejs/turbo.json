@@ -1764,6 +1764,7 @@
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-basic-styles",
         "typecheck:partition:standard-code-block",
+        "typecheck:partition:standard-indent",
         "typecheck:partition:standard-link",
         "typecheck:partition:standard-list",
         "typecheck:partition:static",
@@ -2305,6 +2306,7 @@
       "cache": true,
       "dependsOn": [
         "plitejs#typecheck:partition:authored",
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:details",
         "typecheck:partition:layout",
@@ -2998,6 +3000,7 @@
       "dependsOn": [
         "typecheck:partition:authored",
         "typecheck:partition:core",
+        "typecheck:partition:details",
         "typecheck:partition:layout",
         "typecheck:partition:media",
         "typecheck:partition:proxies",

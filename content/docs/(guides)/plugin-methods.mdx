@@ -263,10 +263,37 @@ export const HighlightPlugin = definePlugin('highlight', {
 | `txSelection(method)` | A method that only moves the selection. It runs on the stored document and throws if it changes content. |
 | `txOnly(method)` | A control that only changes the active transaction, such as `tx.history.merge()`. Call it on `tx`. A one-shot call through `editor.update.<plugin>` or a plugin portal throws. |
 
+On the review tree, the editor places a method's arguments in the proposed
+document when a call on the editor comes from outside a command or another
+update method. A call made inside one, such as from a method's body, a command handler
+or an input rule, already reads the proposed document, so its arguments stay as
+given. Either way, when `locate` places a node key the proposed document hides,
+the method does nothing. A call through a view decides on the stored document,
+so a hidden key still reaches the method there.
+
 TypeScript refuses an update method that takes arguments and is wrapped in
-none of `txLocate`, `txSelection` or `txOnly`, so the plugin fails to compile
-instead of throwing on the review tree. A method without parameters needs no
-wrapper.
+none of `txLocate`, `txSelection` or `txOnly`, so the plugin fails to compile.
+At runtime, calling an undeclared method with an argument throws. A method
+without parameters needs no wrapper.
+
+### Run in the target's root
+
+The same declarations pick the [root](/docs/roots) an update method runs in.
+A target that carries its root, such as a node key, a live node, or a point or
+range that names its root, runs the method in that root, as if you called it
+through that root's view. A bare path stays in the root of the editor or view
+you call. A method called with no target runs in a view's own root, or where
+the caret is when you call it on the editor.
+
+```ts
+// The caret sits in the `header` root.
+editor.update.highlight.clear(); // clears highlights across the header
+editor.update.highlight.clear({ at: bodyBlock }); // clears one primary-document block
+```
+
+A call whose targets sit in two roots throws before the method runs.
+`txSelection` and `txOnly` methods, and a call that passes a function, run in
+the caller's root.
 
 ## Declare feature format mappings
 

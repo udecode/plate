@@ -334,7 +334,8 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   clipboard, history, mutation, reconciliation, and navigation semantics make
   it ineligible as a public carrier for presentation-only inactive selection.
 - `NodeSelection` stores canonical exact membership as `paths`, directional
-  `anchorPath` and `focusPath`, an optional explicit root, and a required
+  `anchorPath` and `focusPath`, an optional explicit root, which defaults to
+  the reader's root when the selection is passed as input, and a required
   `mode`: `block` for block gestures or `object` for selecting one selectable
   object or atom that is not void. The constructor requires the mode, so a
   rebuild cannot drop it. Mapping keeps `object` only while that node keeps its
@@ -782,8 +783,17 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   entry. Keys are unique across one editor's roots and may target node
   operations across roots, while `nodes.path(key)` remains scoped to the current
   editor or view root because a `Path` carries no root. Passing a live node to
-  `editor.key(node)` resolves it from any root in the same editor. Base-editor path inputs
+  `editor.key(node)` resolves it from any root in the same editor, and a live
+  node passed as a target reaches its own root as its key does. Base-editor path inputs
   always address the main root; view path inputs address that view's root. A
+  `NodeSelection` passed without a root means the reader's root, as a path
+  does; a stored one keeps its own root. A plugin update method runs in its
+  target's root, as if called through that root's view: a key, live node or
+  rooted point or range picks the root, a bare path stays in the caller's root,
+  and a call with no target runs in a view's own root, or in the caret's root
+  from the base editor. Only a base-editor call whose root is main, with the
+  caret in main or nowhere, runs on the base transaction. Code outside a plugin
+  method that writes by bare path from the base editor still writes main. A
   view created from a view reads its requested root, or the primary root when
   none is given, and keeps the source view's document, read-only state and
   authored mode; derivation never unlocks a read-only source. Callbacks receive

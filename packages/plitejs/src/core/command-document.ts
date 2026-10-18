@@ -61,13 +61,16 @@ export type CommandProjectionMap = Readonly<{
 /** @internal */
 export type CommandProjection = Readonly<{
   /**
-   * The previous projection's main root and the change from it to this one's
-   * main root, when the projector derived one from the other.
+   * Each previous projected root and the change from it to this one's
+   * root, when the projector derived one from the other.
    */
-  carried?: Readonly<{
-    change: RootChange;
-    from: DocumentIndex;
-  }>;
+  carried?: ReadonlyMap<
+    string,
+    Readonly<{
+      change: RootChange;
+      from: DocumentIndex;
+    }>
+  >;
   /** The projected document's index of each root `map` changes. */
   indexes: ReadonlyMap<string, DocumentIndex>;
   map: CommandProjectionMap;
@@ -219,3 +222,8 @@ export const registerEditorCommandDocument = (
 /** @internal */
 export const getEditorCommandDocument = (editor: Editor) =>
   COMMAND_DOCUMENTS.get(getEditorRuntimeOwner(editor));
+
+/** @internal */
+export const unplacedIn = (editor: Editor, what: string) =>
+  getEditorCommandDocument(editor)?.unplaced?.() ??
+  new Error(`The command frame has no place for ${what}.`);

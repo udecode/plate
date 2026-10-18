@@ -765,6 +765,9 @@ export const BaseLintPlugin = definePlugin('lint', {
       { at: path, content: true }
     )[0] ?? null;
 
+  const findingKey = (id: string) =>
+    groupKeys.get(Number(id.slice(0, id.indexOf(':'))));
+
   // The stored document's entry says whether an id is current; the range comes
   // from the document the update edits, which a command frame can replace.
   const locate = (
@@ -774,7 +777,7 @@ export const BaseLintPlugin = definePlugin('lint', {
   ) => {
     if (!store.get('active')) return null;
 
-    const key = groupKeys.get(Number(id.slice(0, id.indexOf(':'))));
+    const key = findingKey(id);
     const item =
       key &&
       entries.get(key)?.items.find((candidate) => candidate.finding.id === id);
@@ -838,20 +841,27 @@ export const BaseLintPlugin = definePlugin('lint', {
        * Writes nothing and returns false when the finding is gone or has no fix
        * at `index`.
        */
-      fix: txLocate(false, (id: string, index = 0): boolean => {
-        const located = locate(tx, (key) => tx.nodes.get(key), id);
-        const replacement = located?.item.finding.fixes[index];
+      fix: txLocate(
+        (args, place) => {
+          const key = findingKey(args[0]);
 
-        if (!located || replacement === undefined) return false;
+          return key && place.location(key) === null ? null : args;
+        },
+        (id: string, index: number = 0): boolean => {
+          const located = locate(tx, (key) => tx.nodes.get(key), id);
+          const replacement = located?.item.finding.fixes[index];
 
-        if (!HISTORY_TAGS.some((tag) => tx.tags.has(tag))) {
-          tx.tags.add('history-push');
+          if (!located || replacement === undefined) return false;
+
+          if (!HISTORY_TAGS.some((tag) => tx.tags.has(tag))) {
+            tx.tags.add('history-push');
+          }
+          tx.selection.set(located.range);
+          tx.text.insert(replacement, { marks: false });
+
+          return true;
         }
-        tx.selection.set(located.range);
-        tx.text.insert(replacement, { marks: false });
-
-        return true;
-      }),
+      ),
       /** Select a finding's text. */
       select: txSelection((id: string): boolean => {
         const located = locate(tx, (key) => tx.nodes.get(key), id);

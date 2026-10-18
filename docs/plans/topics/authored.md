@@ -184,7 +184,17 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   proposed projection, the document with every pending change accepted, and
   the recorder lifts their result back into authored changes. A command or method whose input holds a stored location declares
   where each location lands in that document, that it holds none, or that it
-  only moves the selection. An undeclared one throws on the review tree. Point
+  only moves the selection. An undeclared one throws on the review tree, and
+  an undeclared plugin update method that takes arguments throws on every
+  call, because its declaration also picks the root it runs in. A base-editor
+  plugin call decides on the proposed projection of that root. A plugin call
+  made inside the frame keeps its arguments as given, because its caller read
+  them in the projection, and a key the projection hides skips it when the
+  method's locator places that key, as it skips a direct call. A call through a
+  view stays unframed and decides on the stored document, so a hidden key
+  still reaches its body. The frame refuses a read, a write or a selection in a
+  root a pending deletion drops, so a call that touches only other roots still
+  runs. Point
   stepping has no option that skips hidden content, because commands on the
   review tree never see it.
   Persistence saves the whole `read.value()`, records included. Every

@@ -11,6 +11,7 @@ import {
 } from 'plitejs';
 
 import { insertNodes as editorInsertNodes } from '../src/internal';
+import { defineTestSchema } from './support/schema';
 
 const paragraph = (text: string) =>
   ({
@@ -419,6 +420,79 @@ describe('rooted transaction contract', () => {
         header: [{ type: 'quote', children: [paragraph('header')] }],
       },
     });
+  });
+
+  it('wraps a range in its named root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.nodes.wrap(
+        { type: 'quote', children: [] },
+        {
+          at: {
+            anchor: { path: [0, 0], offset: 0, root: 'header' },
+            focus: { path: [0, 0], offset: 6, root: 'header' },
+          },
+        }
+      );
+    });
+
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('body')],
+      roots: {
+        header: [{ type: 'quote', children: [paragraph('header')] }],
+      },
+    });
+  });
+
+  it('unwraps the selected text of an inline in its named root', () => {
+    const editor = createEditor({
+      plugins: [defineTestSchema('rooted-inline', { link: { inline: true } })],
+      initialValue: {
+        children: [paragraph('body')],
+        roots: {
+          header: [
+            {
+              type: 'paragraph',
+              children: [
+                { text: 'a' },
+                { type: 'link', children: [{ text: 'bcd' }] },
+                { text: 'e' },
+              ],
+            },
+          ],
+        },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.nodes.unwrap({
+        at: {
+          anchor: { path: [0, 1, 0], offset: 1, root: 'header' },
+          focus: { path: [0, 1, 0], offset: 2, root: 'header' },
+        },
+        split: true,
+        type: 'link',
+      });
+    });
+
+    assert.deepEqual(editor.read.root('header'), [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'a' },
+          { type: 'link', children: [{ text: 'b' }] },
+          { text: 'c' },
+          { type: 'link', children: [{ text: 'd' }] },
+          { text: 'e' },
+        ],
+      },
+    ]);
   });
 
   it('routes exact node unwraps through their named root', () => {

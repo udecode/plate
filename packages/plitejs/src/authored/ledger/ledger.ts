@@ -666,12 +666,17 @@ export class ReviewLedger {
     const changed = [...synced.roots].filter(
       ([root, state]) => state.changed && !synced.dropped.has(root)
     );
-    const carried = projection.carried('main');
+    const carried = new Map(
+      changed.flatMap(([root]) => {
+        const previous = projection.carried(root);
+        return previous ? [[root, previous] as const] : [];
+      })
+    );
     const frame: CommandProjection | null =
       changed.length === 0 && synced.dropped.size === 0
         ? null
         : {
-            ...(carried ? { carried } : {}),
+            carried,
             indexes: new Map(changed.map(([root, { index }]) => [root, index])),
             map: mapOf(projection, synced),
             value: value as EditorDocumentValue,

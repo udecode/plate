@@ -244,8 +244,24 @@ export const HighlightPlugin = definePlugin('highlight', {
 | `txOnly(method)` | 只改变当前事务的控制方法，例如 `tx.history.merge()`。在 `tx` 上调用它。通过 `editor.update.<plugin>` 或插件门户的一次性调用会抛错。 |
 
 带参数的 update 方法如果没有用 `txLocate`、`txSelection` 或 `txOnly` 包装，
-TypeScript 会拒绝它，插件在编译时报错，而不是在 review tree 上抛错。没有参数的方法
-不需要包装。
+TypeScript 会拒绝它，插件在编译时报错。运行时，带参数调用未声明的方法会抛错。
+没有参数的方法不需要包装。
+
+### 在目标的 root 中运行
+
+同样的声明也决定 update 方法在哪个 [root](/docs/roots) 中运行。自带 root 的目标，
+例如节点键、实时节点，或指明 root 的点和范围，会让方法在该 root 中运行，就像通过
+该 root 的 view 调用一样。裸路径留在你调用的 editor 或 view 的 root 中。不带目标的
+调用在 view 自己的 root 中运行；在 editor 上调用时，在光标所在的 root 中运行。
+
+```ts
+// 光标位于 `header` root。
+editor.update.highlight.clear(); // 清除整个 header 中的高亮
+editor.update.highlight.clear({ at: bodyBlock }); // 清除主文档中的一个块
+```
+
+目标分属两个 root 时，方法运行前就会抛错。`txSelection` 和 `txOnly` 方法，以及传入
+函数的调用，在调用方的 root 中运行。
 
 ## 声明 feature format mapping
 

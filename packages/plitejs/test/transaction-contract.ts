@@ -16,6 +16,7 @@ import {
   type Range,
   SelectionApi,
   type Value,
+  txLocate,
 } from 'plitejs';
 
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
@@ -1585,8 +1586,9 @@ describe('plite transaction contract', () => {
           }),
         update: ({ tx }) =>
           Object.freeze({
-            append: (text: string) =>
-              tx.text.insert(text, { at: { path: [0, 0], offset: 3 } }),
+            append: txLocate(false, (text: string) =>
+              tx.text.insert(text, { at: { path: [0, 0], offset: 3 } })
+            ),
           }),
       })
     );

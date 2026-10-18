@@ -681,7 +681,7 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       if (children.length === 0) {
         children.push({ children: [{ text: '' }], type: paragraphType });
       }
-      const path = [tx.value().children.length];
+      const path = [tx.children().length];
 
       tx.nodes.insert(
         {

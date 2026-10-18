@@ -2,6 +2,7 @@ import {
   createEditor,
   definePlugin,
   type EditorUpdatePolicyFor,
+  txLocate,
   txOnly,
 } from 'plitejs';
 
@@ -56,7 +57,7 @@ const portalProbe = definePlugin('portalProbe', {
   update: () => ({
     callable: Object.assign(() => {}, { child: () => {} }),
     control: txOnly(() => {}),
-    echo: <TValue>(value: TValue) => value,
+    echo: txLocate(false, <TValue>(value: TValue) => value),
   }),
 });
 const portalEditor = createEditor({

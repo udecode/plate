@@ -69,7 +69,7 @@ Use `read` for owner-local queries and `update` for owner-local model writes.
 The plugin name becomes the namespace on `editor.read` and `editor.update`.
 
 ```ts
-import { createEditor, definePlugin } from "plitejs";
+import { createEditor, definePlugin, txLocate } from "plitejs";
 
 const LinksPlugin = definePlugin("links", {
   read: ({ state }) => ({
@@ -78,9 +78,9 @@ const LinksPlugin = definePlugin("links", {
     },
   }),
   update: ({ tx }) => ({
-    setHref(href: string) {
+    setHref: txLocate(false, (href: string) => {
       tx.nodes.set({ url: href });
-    },
+    }),
   }),
 });
 
@@ -109,6 +109,15 @@ coherent read boundary as `editor.read((state) => ...)`.
 Plugin write methods must finish synchronously. Returning a Promise or
 other thenable throws, including when a caller ignores the result inside
 `editor.update(...)`. An uncaught failure discards the update draft.
+
+Calling an update method with an argument throws unless the method declares
+where it acts. Wrap it in `txLocate(false, method)` when its arguments hold no
+location, as with `setHref`; the method then runs in the view's own root or,
+on the editor, in the root that holds the caret, and a call that also passes a
+function runs in the root of the editor or view you call. Wrap it in
+`txLocate(locateAt(0), method)` when its first argument's `at` names the
+target; the method then runs in that target's root. A method without
+parameters needs no wrapper.
 
 Reads cannot write by accident. Updates can still read transaction-local state
 after earlier writes in the same transaction. Wrap a method with `txOnly(...)`
@@ -167,13 +176,13 @@ const LinksPlugin = definePlugin("links", {
 const MentionsPlugin = definePlugin("mentions", {
   dependencies: [LinksPlugin],
   update: ({ tx }) => ({
-    insert(character: string) {
+    insert: txLocate(false, (character: string) => {
       tx.nodes.insert({
         type: "mention",
         character,
         children: [{ text: "" }],
       });
-    },
+    }),
   }),
 });
 ```
@@ -470,6 +479,7 @@ when generic library code needs it.
 import {
   type DefinitionOf,
   definePlugin,
+  txLocate,
 } from "plitejs";
 
 const ImagesPlugin = definePlugin("images", {
@@ -481,13 +491,13 @@ const ImagesPlugin = definePlugin("images", {
     },
   },
   update: ({ tx }) => ({
-    insert(url: string) {
+    insert: txLocate(false, (url: string) => {
       tx.nodes.insert({
         type: "image",
         url,
         children: [{ text: "" }],
       });
-    },
+    }),
   }),
 });
 

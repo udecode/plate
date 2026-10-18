@@ -14,6 +14,7 @@ import { YjsPlugin } from '../../../yjs/react';
 import { BaseBlockquotePlugin } from '../../basic-nodes/lib/BaseBlockPlugins';
 import { BaseHeadingPlugin } from '../../basic-nodes/lib/BaseHeadingPlugins';
 import { BaseBoldPlugin } from '../../basic-nodes/lib/BaseMarkPlugins';
+import { NoteHolder } from '../../details/__tests__/detailsConversionFixture';
 import { BaseLinkPlugin } from '../../link';
 import { BaseLintPlugin, type LintRule } from './BaseLintPlugin';
 
@@ -112,6 +113,39 @@ const expectOracle = (current: Setup) => {
 };
 
 describe('local rules', () => {
+  test('fixes a main finding while the caret is in a named root', () => {
+    const editor = createEditor({
+      plugins: [
+        NoteHolder,
+        BaseLintPlugin.configure({
+          initialState: { rules: [counted(/bad/g, 'bad', ['good'])] },
+        }),
+      ],
+      initialValue: {
+        children: [
+          paragraph('bad'),
+          {
+            type: 'listNoteHolder',
+            childRoots: { body: 'note' },
+            children: [{ text: '' }],
+          },
+        ],
+        roots: { note: [paragraph('Note')] },
+      },
+    });
+    const lint = editor.plugin(BaseLintPlugin);
+    const [finding] = lint.api.findings();
+    const note = editor.read.root('note');
+    editor.update.selection.set({ path: [0, 0], offset: 0, root: 'note' });
+
+    const fixed = lint.update.fix(finding.id);
+
+    expect({
+      fixed,
+      main: editor.read.text.string([0]),
+      note: editor.read.root('note'),
+    }).toEqual({ fixed: true, main: 'good', note });
+  });
   for (const size of [100, 2000]) {
     test(`calls each rule once per keystroke and rebuilds the list without key lookups at ${size} blocks, nested blocks included`, () => {
       const bad = counted(/bad/g, 'bad');

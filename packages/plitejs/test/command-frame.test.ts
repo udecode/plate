@@ -343,6 +343,99 @@ describe('command frame', () => {
     ]);
   });
 
+  it('skips a method whose key names a hidden node when the call also passes a callback', () => {
+    const received: unknown[] = [];
+    const Marker = definePlugin('marker', {
+      update: ({ tx }) => ({
+        mark: txLocate(
+          locateAt(0, 'key'),
+          ({ key }: { key: NodeKey }, done: () => void) => {
+            received.push(key);
+            tx.nodes.set({ marked: true }, { at: key });
+            done();
+          }
+        ),
+      }),
+    });
+    const editor = framedEditor(
+      [paragraph('gone', { hidden: true }), paragraph('a')],
+      { plugins: [Marker] }
+    );
+    const hidden = editor.key([0]);
+    const live = editor.key([1]);
+    const done: unknown[] = [];
+
+    editor.update.marker.mark({ key: hidden }, () => done.push(hidden));
+    editor.update.marker.mark({ key: live }, () => done.push(live));
+
+    assert.deepEqual({ done, received }, { done: [live], received: [live] });
+  });
+
+  it('skips a method another method calls with a key that names a hidden node', () => {
+    const received: unknown[] = [];
+    const done: unknown[] = [];
+    const Marker = definePlugin('marker', {
+      update: ({ tx }: any) => ({
+        mark: txLocate(
+          locateAt(0, 'key'),
+          ({ key }: { key: NodeKey }, then?: () => void) => {
+            received.push(key);
+            tx.nodes.set({ marked: true }, { at: key });
+            then?.();
+          }
+        ),
+        markAll: txLocate(false, (keys: readonly NodeKey[]) => {
+          for (const key of keys) {
+            tx.marker.mark({ key });
+            tx.marker.mark({ key }, () => done.push(key));
+          }
+        }),
+      }),
+    });
+    const editor = framedEditor(
+      [paragraph('gone', { hidden: true }), paragraph('a')],
+      { plugins: [Marker] }
+    );
+    const hidden = editor.key([0]);
+    const live = editor.key([1]);
+
+    editor.update.marker.markAll([hidden, live]);
+
+    assert.deepEqual(
+      { done, received },
+      { done: [live], received: [live, live] }
+    );
+    assert.deepEqual(editor.read.value().children, [
+      paragraph('a', { marked: true }),
+    ]);
+  });
+
+  it('runs a method another method calls with a live node the projection rebuilt', () => {
+    const Marker = definePlugin('marker', {
+      update: ({ tx }: any) => ({
+        mark: txLocate(locateAt(0), ({ at }: { at: Descendant }) => {
+          tx.nodes.set({ marked: true }, { at });
+        }),
+        markFirst: () => tx.marker.mark({ at: tx.children()[0] }),
+      }),
+    });
+    const editor = framedEditor(
+      [
+        {
+          children: [paragraph('gone', { hidden: true }), paragraph('a')],
+          type: 'quote',
+        },
+      ],
+      { plugins: [Marker] }
+    );
+
+    editor.update.marker.markFirst();
+
+    assert.deepEqual(editor.read.value().children, [
+      { children: [paragraph('a')], marked: true, type: 'quote' },
+    ]);
+  });
+
   it('runs a selection-only plugin method on the stored document', () => {
     const Caret = definePlugin('caret', {
       update: ({ tx }) => ({

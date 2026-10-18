@@ -36,6 +36,7 @@ import { getPluginRegistry as getInternalPluginRegistry } from '../core/plugin-r
 import {
   getCurrentSelection,
   getCurrentSelectionRoot,
+  getEditorUpdateRoot,
   getCollabEffects as getEditorCollabEffects,
   isInTransaction,
   replaceSnapshot,
@@ -58,7 +59,7 @@ import { insertText as executeInsertTextCommand } from '../editor/insert-text';
 import { isEditor as isEditorValue } from '../editor/is-editor';
 import { removeMark as executeRemoveMarkCommand } from '../editor/remove-mark';
 import { toggleMark as executeToggleMarkCommand } from '../editor/toggle-mark';
-import { getLocationRoot, MAIN_ROOT_KEY } from '../internal/root-location';
+import { getLocationRoot } from '../internal/root-location';
 import {
   liftNodes as executeLiftNodes,
   mergeNodes as executeMergeNodes,
@@ -426,7 +427,7 @@ export type EditorReplaceChildrenOptions = Omit<
 
 /** Options for replacing exactly one node with zero or more nodes. */
 export type EditorReplaceNodeOptions = {
-  at: Descendant | Path;
+  at: Descendant | NodeKey | Path;
   select?: boolean;
 };
 
@@ -4650,7 +4651,7 @@ const getWriteRoot = (
   at === undefined
     ? getImplicitSelectionRoot(editor)
     : SelectionApi.isNode(at)
-      ? (at.root ?? MAIN_ROOT_KEY)
+      ? (at.root ?? getEditorUpdateRoot(editor))
       : getLocationRoot(at);
 
 const isPathLocation = (

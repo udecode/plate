@@ -712,9 +712,6 @@ describe('AIChatPlugin submit', () => {
 
     if (!headerKey) throw new Error('Expected a named-root block key');
 
-    expect(blockRef).toEqual({
-      key: headerKey,
-      root: 'header',
-    });
+    expect(blockRef).toEqual({ key: headerKey });
   });
 });
