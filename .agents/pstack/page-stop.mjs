@@ -1,165 +1,121 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
-// Usage: node .agents/pstack/page-stop.mjs beacon <plan.md> [--session <id>]
-//        node .agents/pstack/page-stop.mjs stop <plan.md> --own <dir> [--no-db] [--session <id>]
-// Prints the Artifact and ArtifactData calls a Claude Code session sends, one
-// JSON line each after the tool's name, in the order to send them.
+// Usage: node .agents/pstack/page-stop.mjs stage|stop <plan.md> [--base <file>] [--new] [--session <id>]
+// Prints the Artifact publish that adds or updates this run's part of its
+// subject page, and the files to read in full before sending it. --base names
+// the page as the Artifact tool last returned it, such as the source a refused
+// publish saved; without it the helper starts from this checkout's last
+// publish. --new makes a new page for a subject whose page no longer opens.
 
-import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join, relative, resolve } from 'node:path';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CAPABILITIES, COLLECTION, MAX_WRITES, asking, handbackOf, slugOf } from './page-live.mjs';
-import { blobFacts, contextOf, gitOrNull, mainCheckout, page, pageUrlOf, parsePlan, planParts, stagesOf } from './plan-page.mjs';
+import { CODE_VERSION, contextOf, pageFile, pageUrlOf, parsePageFile, runBody, runHeader, slugOf, viewerCode } from './plan-page.mjs';
+import { stageOfRow } from './status.mjs';
 
-const USAGE = 'Usage: node .agents/pstack/page-stop.mjs beacon <plan.md> [--session <id>] | stop <plan.md> --own <dir> [--no-db] [--session <id>]';
-const CODEX = 'Nothing to send: outside Claude Code, such as in Codex, a run saves no notes; render the page locally';
-const RUNNING = { now: 'working', waiting: 'waiting', blocked: 'blocked' };
-const RESEND_UNMOVED_AFTER = 30 * 60_000;
+const USAGE = 'Usage: node .agents/pstack/page-stop.mjs stage|stop <plan.md> [--base <file>] [--new] [--session <id>]';
+const CODEX = 'Nothing to send: outside Claude Code, such as in Codex, a run publishes nothing; render the page locally';
+const DUE = ['occurrence', 'state', 'status', 'title', 'asks', 'picks'];
 
-function currentOf(planPath) {
-  const stages = stagesOf(planPath);
-  const at = stages.find((stage) => RUNNING[stage.state]);
-  if (at) return { stage: at.label, state: RUNNING[at.state] };
-  return { stage: stages.findLast((stage) => ['done', 'stopped'].includes(stage.state))?.label ?? null, state: 'done' };
+const readJson = (path) => (existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null);
+const same = (a, b, fields) => fields.every((field) => JSON.stringify(a[field]) === JSON.stringify(b[field]));
+
+// A stage counts from its first row in the decisions log, so a stage the run returns to starts a new occurrence.
+function occurrenceOf(planPath, stage) {
+  const log = planPath.replace(/\.md$/u, '.decisions.tsv');
+  const rows = existsSync(log)
+    ? readFileSync(log, 'utf8')
+        .split('\n')
+        .slice(1)
+        .filter((line) => line.trim())
+        .map((line) => line.split('\t'))
+    : [];
+  const phases = rows.map(([, phase]) => phase);
+  const stages = phases.map((_, index) => stageOfRow(phases, index));
+  let first = stages.findLastIndex((each) => each === stage);
+  if (first < 0) return { occurrence: String(stage), since: null };
+  for (let index = first - 1; index >= 0 && (stages[index] === stage || stages[index] === undefined); index -= 1) if (stages[index] === stage) first = index;
+  const at = Date.parse(rows[first][0]);
+  return { occurrence: `${stage}@${rows[first][0]}`, since: Number.isNaN(at) ? null : new Date(at).toISOString() };
 }
 
-const versionsAt = (root, revision, rel) =>
-  (gitOrNull(root, 'log', '-n', '20', '--format=', '--raw', '--no-abbrev', revision, '--', rel) ?? '')
-    .split('\n')
-    .map((line) => line.split(/\s+/u)[3])
-    .filter((blob) => blob && !/^0+$/u.test(blob));
-
-function gitFacts(root, paths, branch) {
-  return new Map(
-    [...blobFacts(root, paths)].map(([path, { blob }]) => {
-      const rel = relative(root, path);
-      const committed = versionsAt(root, 'HEAD', rel);
-      const time = committed[0] === blob ? gitOrNull(root, 'log', '-1', '--format=%cI', 'HEAD', '--', rel) : null;
-      return [path, { blob, history: [...new Set(committed)].filter((each) => each !== blob), landed: versionsAt(root, `origin/${branch}`, rel).includes(blob), at: time ? new Date(time).toISOString() : null }];
-    })
-  );
+function baseOf(path) {
+  if (!path || !existsSync(path)) return { runs: [], list: [], code: 0, note: null };
+  const parsed = parsePageFile(readFileSync(path, 'utf8'));
+  if (!parsed.ok) return { runs: [], list: [], code: 0, note: `The base lists no runs (${parsed.reason}); this publish lists only this run until the others publish again` };
+  return { runs: parsed.data.runs, list: parsed.list, code: parsed.data.code ?? 0, note: null };
 }
 
-function changedSince(root, branch) {
-  const base = gitOrNull(root, 'merge-base', 'HEAD', `origin/${branch}`) ?? 'HEAD';
-  const names = [...(gitOrNull(root, 'diff', '--name-only', base, '--') ?? '').split('\n'), ...(gitOrNull(root, 'ls-files', '--others', '--exclude-standard') ?? '').split('\n')];
-  return new Set(names.filter(Boolean).map((name) => join(root, name)));
-}
+function publish(command, planPath, { session, base: baseFile, fresh }) {
+  const { root, plansDir, subject, subjectPath, doc } = contextOf(planPath);
+  const name = subject ?? slugOf(planPath);
+  const out = join(plansDir, 'artifacts', 'pages', name);
+  const url = fresh ? null : pageUrlOf(root, subjectPath ?? planPath).url;
+  const base = baseOf(fresh ? null : baseFile ? resolve(baseFile) : join(out, 'index.html'));
+  const now = new Date().toISOString();
+  const header = runHeader(planPath, { session, at: now });
+  const previous = readJson(join(out, 'runs', `${header.key}.json`));
+  const listed = base.runs.find((entry) => entry.key === header.key);
+  // The page shows the previous header only when the base lists the entry that publish wrote.
+  const shown = previous && listed && listed.at === previous.at ? previous : null;
+  const { occurrence, since } = occurrenceOf(planPath, header.stage);
+  header.occurrence = occurrence;
+  header.since = since ?? (shown?.occurrence === occurrence ? shown.since : now);
+  const highest = Math.max(0, ...base.runs.map((entry) => (Number.isInteger(entry.handback) ? entry.handback : 0)));
+  header.handback = command === 'stop' ? highest + 1 : (listed?.handback ?? null);
+  if (command === 'stage' && shown && same(header, shown, DUE)) return ['Nothing to send: the page already shows this stage'];
 
-// An ArtifactData query with out_dir saves only each document's fields, as <dir>/runs/<id>.json, never its version.
-const CREATED = 1;
-
-// A query leaves the files an earlier query saved in its directory, so each directory is read once.
-function ownDocs(dir) {
-  const marker = join(dir, '.read');
-  if (existsSync(marker)) throw new Error(`${dir} was read by an earlier stop; query into a new directory`);
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(marker, '');
-  const folder = join(dir, COLLECTION);
-  if (!existsSync(folder)) return [];
-  return readdirSync(folder)
-    .filter((name) => name.endsWith('.json'))
-    .map((name) => ({ id: basename(name, '.json'), version: CREATED, data: JSON.parse(readFileSync(join(folder, name), 'utf-8')) }));
-}
-
-const call = (tool, payload) => `${tool} ${JSON.stringify(payload)}`;
-const runDir = (root, plansDir, slug) => join(mainCheckout(root), relative(root, plansDir), 'artifacts', slug);
-
-function markBeacon({ root, plansDir }, slug, session, { url, stage, state }, now) {
-  const file = join(runDir(root, plansDir, slug), `page-beacon.${session}.json`);
-  const last = existsSync(file) ? JSON.parse(readFileSync(file, 'utf-8')) : null;
-  const same = last?.url === url && last.stage === stage && last.state === state && typeof last.since === 'string';
-  if (same && now - Date.parse(last.at) < RESEND_UNMOVED_AFTER) return { due: false, since: last.since };
-  const since = same ? last.since : now.toISOString();
-  mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, `${JSON.stringify({ url, stage, state, since, at: now.toISOString() })}\n`);
-  return { due: true, since };
-}
-
-function beacon(planPath, session) {
-  const context = contextOf(planPath);
-  const { root, subjectPath, repoPath, plan } = context;
-  const current = currentOf(planPath);
-  const slug = slugOf(repoPath);
-  const { url } = pageUrlOf(root, subjectPath ?? planPath);
-  if (!url) return ['Nothing to send: the page has no Page: line yet; run a stop, which publishes it'];
-  const now = new Date();
-  const { due, since } = markBeacon(context, slug, session, { url, ...current }, now);
-  if (!due) return [`Nothing to send: ${slug} is still at ${current.stage}, ${current.state}`];
-  const doc = `${slug}.b.${session.slice(0, 8)}.${now.getTime()}`;
-  const data = { kind: 'beacon', v: 1, plan: repoPath, slug, title: plan.title || slug, session, ...current, since, at: now.toISOString() };
-  return [call('ArtifactData', { action: 'set', url, collection: COLLECTION, doc_id: doc, data })];
-}
-
-function stop(planPath, { own, db, session }) {
-  const context = contextOf(planPath);
-  const { root, branch, subjectPath, repoPath } = context;
-  const now = new Date();
-  const at = now.toISOString();
-  const facts = new Map();
-  const rendered = page(planPath, {
-    now,
-    session,
-    facts: (_, paths) => {
-      for (const [path, fact] of gitFacts(root, paths, branch)) facts.set(path, fact);
-      return facts;
-    },
-  });
-  const out = join(dirname(planPath), 'artifacts', `${rendered.name}.html`);
-  mkdirSync(dirname(out), { recursive: true });
-  writeFileSync(out, rendered.html);
-  const { url } = pageUrlOf(root, subjectPath ?? planPath);
-  const target = url ?? '<the url the publish returns>';
-  const slug = slugOf(repoPath);
-  const reply = `Reply ${target}#run-${slug}`;
-  const docs = ownDocs(own).filter((doc) => doc.data.session === session);
-  const mine = session.slice(0, 8);
-  const current = currentOf(planPath);
-  const { since } = markBeacon(context, slug, session, { url: url ?? '', ...current }, now);
-  const record = (path, fields) => handbackOf({ plan: relative(root, path), slug: slugOf(path), ...planParts({ path, plan: parsePlan(readFileSync(path, 'utf-8')) }) }, facts.get(path), { session, ...fields });
-  const lead = record(planPath, { at, since, ...current });
-  const digest = createHash('sha256').update(JSON.stringify({ ...lead, at: null, since: null })).digest('hex').slice(0, 12);
-  const changed = changedSince(root, branch);
-  const committedAt = (path) => facts.get(path).at ?? at;
-  const keeps = ({ path, data }) => changed.has(path) || asking(data);
-  const others = [...facts.keys()]
-    .filter((path) => path !== planPath)
-    .map((path) => ({ path, data: record(path, { at: committedAt(path), ...currentOf(path) }) }))
-    .filter(keeps)
-    .map(({ path, data }) => ({ id: `${slugOf(path)}.h.${mine}.${facts.get(path).blob.slice(0, 12)}`, data }));
-  const records = [{ id: `${slug}.s.${mine}.${digest}`, data: { ...lead, stop: digest } }, ...others];
-  const ids = new Set(records.map((each) => each.id));
-  const plans = new Set(records.map((each) => each.data.plan));
-  const creates = records.filter((each) => !docs.some((doc) => doc.id === each.id));
-  if (creates.length > MAX_WRITES) throw new Error(`this stop saves ${creates.length} records, more than one batch's ${MAX_WRITES}`);
-  const stale = docs.filter((doc) => plans.has(doc.data.plan) && !ids.has(doc.id)).sort((a, b) => String(a.data.at).localeCompare(String(b.data.at)));
-  const writes = [
-    ...creates.map(({ id, data }) => ({ op: 'set', collection: COLLECTION, doc_id: id, data })),
-    ...stale.slice(0, MAX_WRITES - creates.length).map((doc) => ({ op: 'delete', collection: COLLECTION, doc_id: doc.id, if_version: doc.version })),
-  ];
-  const batch = writes.length ? [call('ArtifactData', { action: 'batch', url: target, writes })] : [];
-  // The database takes writes only once a published version declares it.
-  if (db && url) return [...batch, call('Artifact', { action: 'publish', url, file_path: out }), reply];
-  const publish = call('Artifact', { action: 'publish', ...(url ? { url } : {}), file_path: out, capabilities: CAPABILITIES });
-  const after = 'Keep in the publish any other capability the read header names, then send the batch once the publish returns. If the publish is refused, read the page again: when its header now names a database, send only the batch; otherwise publish nothing more and say the hand-back is not on the page';
-  return [publish, after, ...batch, reply];
+  const entry = { key: header.key, session, plan: header.plan, slug: header.slug, title: header.title, added: listed?.added ?? now, at: now, handback: header.handback, done: header.state === 'done' };
+  const stages = Object.fromEntries(base.list.map((item) => [item.slug, item.stage]));
+  stages[header.slug] = header.stage ?? header.state;
+  const runs = [...base.runs.filter((each) => each.key !== header.key), entry];
+  const files = [`runs/${header.key}.json`];
+  const write = (path, text) => {
+    mkdirSync(dirname(join(out, path)), { recursive: true });
+    writeFileSync(join(out, path), text);
+  };
+  write('index.html', pageFile({ title: doc.title || name, subject: name, runs, stages }));
+  write(files[0], `${JSON.stringify(header, null, 2)}\n`);
+  if (command === 'stop' || !shown || !same(header, shown, ['asks', 'picks'])) {
+    const { html, shots } = runBody(planPath, { key: header.key });
+    write(`runs/${header.key}.html`, html);
+    files.push(`runs/${header.key}.html`);
+    for (const shot of shots) {
+      mkdirSync(dirname(join(out, shot.path)), { recursive: true });
+      copyFileSync(shot.source, join(out, shot.path));
+      files.push(shot.path);
+    }
+  }
+  if (base.code < CODE_VERSION) {
+    const { version, js, css } = viewerCode();
+    write(`code/${version}.js`, js);
+    write(`code/${version}.css`, css);
+    files.push(`code/${version}.js`, `code/${version}.css`);
+  }
+  const call = { ...(url ? { url } : { icon: 'plan' }), file_path: join(out, 'index.html'), root: out, files };
+  const target = subjectPath ?? planPath;
+  return [
+    ...(base.note ? [base.note] : []),
+    `Read in full, and view each picture, before you send: ${['index.html', ...files].map((path) => join(out, path)).join(' ')}`,
+    `Artifact ${JSON.stringify(call)}`,
+    url ? null : `This publish makes the page: write its URL as \`Page: <url>\` under the title of ${target}`,
+    `If the tool refuses the publish because the page changed, run this command again with --base <the source path the refusal saved> and send what it prints`,
+    command === 'stop' ? `Once the publish goes through, reply with ${url ?? '<url>'}#run-${header.slug}` : null,
+  ].filter(Boolean);
 }
 
 export function cli(args, env) {
   const [command, target, ...rest] = args;
   const valueOf = (flag) => (rest.includes(flag) ? (rest[rest.indexOf(flag) + 1] ?? '') : null);
-  const own = valueOf('--own');
-  const known = ['--session', '--own', '--no-db'];
-  const flags = rest.filter((arg, index) => !['--session', '--own'].includes(rest[index - 1]));
+  const flags = rest.filter((arg, index) => !['--session', '--base'].includes(rest[index - 1]));
   const planPath = target && resolve(target);
-  if (!['beacon', 'stop'].includes(command) || !planPath || !existsSync(planPath) || flags.some((arg) => !known.includes(arg)) || (command === 'stop' ? !own : own !== null || flags.includes('--no-db'))) {
-    return { code: 2, error: USAGE };
-  }
+  if (!['stage', 'stop'].includes(command) || !planPath || !existsSync(planPath) || flags.some((arg) => !['--session', '--base', '--new'].includes(arg))) return { code: 2, error: USAGE };
+  const base = valueOf('--base');
+  if (base !== null && (!base || !existsSync(resolve(base)))) return { code: 2, error: `page-stop: no base file at ${base}` };
   if (env.CLAUDECODE !== '1') return { code: 0, lines: [CODEX] };
   const session = valueOf('--session') || env.CLAUDE_CODE_SESSION_ID;
   if (!session) return { code: 2, error: 'page-stop needs a session id: pass --session <id>, or run it in Claude Code, which sets CLAUDE_CODE_SESSION_ID' };
-  return { code: 0, lines: command === 'beacon' ? beacon(planPath, session) : stop(planPath, { own: resolve(own), db: !flags.includes('--no-db'), session }) };
+  return { code: 0, lines: publish(command, planPath, { session, base, fresh: flags.includes('--new') }) };
 }
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {

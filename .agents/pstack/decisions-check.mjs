@@ -14,7 +14,8 @@
 //        and effort, read by lead.mjs, when they differ from the log's last lead row.
 //        Both append forms print the stage a written batch moves the log into, so
 //        the lead renames the session as the Session title rule asks, and in Claude
-//        Code print the page-stop beacon's set for the plan beside the log.
+//        Code, outside trunk delivery, print what page-stop.mjs stage prints for
+//        the plan beside the log.
 //        Both append forms, unlike the <log> and --all checks, refuse a partial, open, gap,
 //        blocked or inconclusive row without proof: <existing file under <plans>/artifacts/>
 //        or proof: none, and an accepted row unless its proof: names files an earlier row
@@ -315,16 +316,15 @@ function stageMoves(path) {
   return stages.filter((stage, index) => stage !== stages[index - 1]);
 }
 
-function tryBeacon(log) {
+function stagePage(log) {
   const plan = log.replace(/\.decisions\.tsv$/u, '.md');
-  if (process.env.CLAUDECODE !== '1' || plan === log || !existsSync(plan)) return;
+  if (trunk() || process.env.CLAUDECODE !== '1' || plan === log || !existsSync(plan)) return;
   try {
-    const { error, lines = [] } = pageStop(['beacon', plan], process.env);
-    if (error) console.error(`No beacon: ${error}`);
-    const sets = lines.filter((line) => line.startsWith('ArtifactData '));
-    if (sets.length) console.info(`Send this beacon with the next working call:\n${sets.join('\n')}`);
+    const { error, lines = [] } = pageStop(['stage', plan], process.env);
+    if (error) console.error(`No page publish: ${error}`);
+    if (lines.length) console.info(lines.join('\n'));
   } catch (error) {
-    console.error(`No beacon: ${error.message}`);
+    console.error(`No page publish: ${error.message}`);
   }
 }
 
@@ -472,7 +472,7 @@ if (args[0] === 'append') {
   if (run) console.info(`Lead: ${leadLabel(run)}.`);
   const entered = stageMoves(args[1]).slice(before);
   if (entered.length) console.info(`Stage: ${entered.join(', then ')}.${existsSync(new URL('rules/title.md', import.meta.url)) ? ' Rename the session now, as .agents/pstack/rules/title.md says.' : ''}`);
-  tryBeacon(args[1]);
+  stagePage(args[1]);
   process.exit(0);
 }
 const paths =

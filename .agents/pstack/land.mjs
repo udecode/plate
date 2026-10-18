@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
 // Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]...
-// Lands this worktree's task on origin/<branch>, the branch .agents/pstack.json
+// Lands this worktree's task on <branch>, the branch .agents/pstack.json
 // names, as one commit. It commits every change in the worktree, squashes the
-// task's commits into one with the message file's text, rebases it onto
-// origin/<branch>, runs the config's lintFix on the changed files and each
+// task's commits into one with the message file's text, rebases it onto the
+// canonical <branch>, runs the config's lintFix on the changed files and each
 // --check, then delivers by this clone's `git config pstack.delivery`: `push`
-// pushes <branch>, and anything else pushes a topic branch and opens a PR into
-// <branch> with gh. Without --message it keeps the message of the task's last
-// commit, so a run stopped by a conflict or a failed check reruns as is.
+// pushes <branch> to origin, and anything else pushes a topic branch to origin
+// and opens a PR into <branch> with gh. In PR mode the canonical repository is
+// the `upstream` remote when the clone has one, so a contributor whose origin
+// is a fork rebases onto upstream and opens the PR there from the fork.
+// Without --message it keeps the message of the task's last commit, so a run
+// stopped by a conflict or a failed check reruns as is.
 //
 // The message is one Conventional Commit whose body holds a `Beyond the ask:`
 // line. The commit gains a `Session:` line naming the agent session that
@@ -58,10 +61,13 @@ process.chdir(must('rev-parse', '--show-toplevel'));
 const config = JSON.parse(readFileSync('.agents/pstack.json', 'utf8'));
 const { branch, protected: guarded, lintFix, plans = 'docs/plans' } = config;
 if (!branch) fail('.agents/pstack.json names no branch');
-const upstream = `refs/remotes/origin/${branch}`;
 const mode = git('config', '--get', 'pstack.delivery').stdout.trim() === 'push' ? 'push' : 'pr';
+const forked = mode === 'pr' && git('remote', 'get-url', 'upstream').status === 0;
+const canonical = forked ? 'upstream' : 'origin';
+const upstream = `refs/remotes/${canonical}/${branch}`;
+const target = `${canonical}/${branch}`;
 const current = must('branch', '--show-current');
-if (guarded && current === guarded) fail(`this checkout is on ${guarded}; land from a worktree cut from origin/${branch}`);
+if (guarded && current === guarded) fail(`this checkout is on ${guarded}; land from a worktree cut from ${target}`);
 
 const midway = ['rebase-merge', 'rebase-apply', 'MERGE_HEAD'].some((name) => existsSync(must('rev-parse', '--git-path', name)));
 if (midway) fail('a rebase or merge is in progress; resolve it, `git add` the paths, `git rebase --continue`, then run land.mjs again');
@@ -70,7 +76,7 @@ const conflicted = () => must('diff', '--name-only', '--diff-filter=U').split('\
 const dirty = () => must('status', '--porcelain', '--untracked-files=all') !== '';
 
 function fetch() {
-  must('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${upstream}`);
+  must('fetch', '--quiet', canonical, `+refs/heads/${branch}:${upstream}`);
 }
 
 function rebase() {
@@ -80,12 +86,19 @@ function rebase() {
   const paths = conflicted();
   if (paths.length === 0) {
     git('rebase', '--abort');
-    fail(`git rebase origin/${branch} failed: ${run.stderr.trim()}`);
+    fail(`git rebase ${target} failed: ${run.stderr.trim()}`);
   }
   fail(
-    `rebasing onto origin/${branch} conflicts in:\n${paths.map((path) => `  ${path}`).join('\n')}\n` +
+    `rebasing onto ${target} conflicts in:\n${paths.map((path) => `  ${path}`).join('\n')}\n` +
       'The rebase is still in progress. Resolve those paths, `git add` them, `git rebase --continue`, then run land.mjs again without --message.'
   );
+}
+
+// The owner and name of a remote's repository, from its URL's last two path parts.
+function repo(remote) {
+  const match = must('remote', 'get-url', remote).match(/([^/:]+)\/([^/]+?)(?:\.git)?\/?$/u);
+  if (!match) fail(`cannot read an owner/name from the ${remote} remote's URL`);
+  return [match[1], match[2]];
 }
 
 function validate(text) {
@@ -113,7 +126,7 @@ function squash({ subject, body }) {
   must('reset', '--quiet', '--soft', base);
   if (git('diff', '--cached', '--quiet').status === 0) {
     must('reset', '--quiet', '--soft', head);
-    fail(`nothing to land: the task changes nothing against origin/${branch}`);
+    fail(`nothing to land: the task changes nothing against ${target}`);
   }
   const staged = must('diff', '--cached', '--name-only').split('\n').filter(Boolean);
   const file = join(mkdtempSync(join(tmpdir(), 'land-')), 'message');
@@ -164,12 +177,17 @@ if (mode === 'push') {
   const slug = message.subject.toLowerCase().replace(/[^a-z0-9]+/gu, '-').replace(/^-|-$/gu, '').slice(0, 50);
   const topic = current && current !== branch ? current : `land/${slug}`;
   const pushed = git('push', '--quiet', 'origin', `HEAD:refs/heads/${topic}`);
+  if (pushed.status !== 0 && !forked && /denied|\b403\b/iu.test(pushed.stderr)) {
+    fail('this clone cannot push to origin: fork the repository, point origin at the fork, add the canonical repository as `upstream`, then run land.mjs again');
+  }
   if (pushed.status !== 0) {
     fail(`git push origin HEAD:${topic} failed, and land.mjs never forces: ${pushed.stderr.trim()}\nPush follow-up commits to the open PR yourself, or land from a new branch.`);
   }
   const body = join(mkdtempSync(join(tmpdir(), 'land-')), 'body');
   writeFileSync(body, `${message.body}\n`);
-  const pr = spawnSync('gh', ['pr', 'create', '--base', branch, '--head', topic, '--title', message.subject, '--body-file', body], { encoding: 'utf8' });
+  const head = forked ? `${repo('origin')[0]}:${topic}` : topic;
+  const into = forked ? ['--repo', repo('upstream').join('/')] : [];
+  const pr = spawnSync('gh', ['pr', 'create', '--base', branch, '--head', head, '--title', message.subject, '--body-file', body, ...into], { encoding: 'utf8' });
   if (pr.status !== 0) fail(`gh pr create failed after pushing ${topic}: ${`${pr.stderr}${pr.stdout}`.trim()}`);
   console.log(`Pushed ${topic} and opened a PR into ${branch}: ${pr.stdout.trim()}`);
 }
