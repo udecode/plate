@@ -80,14 +80,6 @@ export const createTextInjectionMatcher = (editor: Editor) => {
     reaches.some((reach) => reach === 'all' || isDefined(marks[reach.key]));
 };
 
-/**
- * Return if `element`, `text`, `nodeKey` is defined. Return if `node.type` is
- * not in `targetPlugins` (when configured). Return if `value =
- * node[nodeKey]` is not in `validNodeValues` (if defined). If
- * `classNames[value]` is defined,
- * override `className` with it. If `styleKey` is defined, override `style` with
- * `[styleKey]: value`.
- */
 export const pluginInjectNodeProps = (
   editor: Editor,
   plugin: Pick<AnyBasePlugin, 'inject' | 'name' | 'targetPlugins'>,
@@ -107,14 +99,12 @@ export const pluginInjectNodeProps = (
 
   const {
     classNames,
-    defaultNodeValue,
     query,
     styleKey: configuredStyleKey,
     transformClassName,
     transformNodeValue,
     transformProps,
     transformStyle,
-    validNodeValues,
   } = injectNodeProps;
   const nodeKey = getInjectNodeKey(editor, plugin);
   const textScopeKey = getTextScopeKey(plugin, nodeKey);
@@ -147,12 +137,10 @@ export const pluginInjectNodeProps = (
       ? Reflect.apply(query, undefined, [
           {
             classNames,
-            defaultNodeValue,
             ...editorPluginContext,
             nodeKey,
             nodeProps,
             styleKey,
-            validNodeValues,
           },
         ])
       : undefined;
@@ -160,12 +148,7 @@ export const pluginInjectNodeProps = (
   if (typeof query === 'function' && !queryResult) return undefined;
 
   // early return if there is no reason to inject props
-  if (
-    typeof transformProps !== 'function' &&
-    (!isDefined(nodeValue) ||
-      (validNodeValues && !validNodeValues.includes(nodeValue)) ||
-      nodeValue === defaultNodeValue)
-  ) {
+  if (typeof transformProps !== 'function' && !isDefined(nodeValue)) {
     return undefined;
   }
 

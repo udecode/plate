@@ -1,8 +1,10 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test';
-import { BaseListPlugin } from 'platejs';
+import { BaseListPlugin, createEditor } from 'platejs';
+import { LineHeightPlugin } from 'platejs/react';
 
+import { readTestFile } from './readTestFile';
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsxt;
@@ -10,6 +12,16 @@ jsxt;
 const name = 'legal';
 
 describe(getDocxTestName(name), () => {
+  it('warns that the single-spaced paragraphs lose their line height', () => {
+    const { diagnostics } = createEditor({
+      plugins: [LineHeightPlugin],
+    }).api.html.parse(readTestFile(`./${name}.html`));
+
+    expect(diagnostics.map(({ message }) => message)).toContain(
+      'HTML line height "normal" is not a positive number, percent or em value; it was omitted.'
+    );
+  });
+
   testDocxDeserializer({
     expected: (
       <editor>
@@ -22,7 +34,7 @@ describe(getDocxTestName(name), () => {
         <hp textAlign="center">
           <htext bold>Name</htext>
         </hp>
-        <hp textAlign="justify" lineHeight="normal" textIndent={1}>
+        <hp textAlign="justify" textIndent={1}>
           A
         </hp>
         <hp textAlign="justify">
@@ -47,10 +59,10 @@ describe(getDocxTestName(name), () => {
         <hp textAlign="justify" indent={1}>
           B
         </hp>
-        <hp textAlign="center" lineHeight="normal" textIndent={1}>
+        <hp textAlign="center" textIndent={1}>
           (<htext italic>signature page follows</htext>)
         </hp>
-        <hp textAlign="justify" lineHeight="normal" textIndent={1}>
+        <hp textAlign="justify" textIndent={1}>
           C
         </hp>
         <hp indent={7}>

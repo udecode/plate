@@ -22,7 +22,7 @@ describe(getDocxTestName(name), () => {
         <hp textAlign="center">
           <htext bold>Name</htext>
         </hp>
-        <hp textAlign="justify" lineHeight="normal" textIndent={1}>
+        <hp textAlign="justify" textIndent={1}>
           A
         </hp>
         <hp textAlign="justify">
@@ -47,10 +47,10 @@ describe(getDocxTestName(name), () => {
         <hp textAlign="justify" indent={1}>
           B
         </hp>
-        <hp textAlign="center" lineHeight="normal" textIndent={1}>
+        <hp textAlign="center" textIndent={1}>
           (<htext italic>signature page follows</htext>)
         </hp>
-        <hp textAlign="justify" lineHeight="normal" textIndent={1}>
+        <hp textAlign="justify" textIndent={1}>
           C
         </hp>
         <hp indent={7}>

@@ -91,32 +91,13 @@ const editor = createEditor({
 });
 ```
 
-### Configure the color default
+### Font marks
 
 Font plugins register string-valued text marks, so they follow the selected
-text instead of a block target list. Configure render props only when your UI
-needs a different default.
-
-```tsx
-import { FontColorPlugin } from "platejs/react";
-import { createEditor } from "platejs/react";
-
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    FontColorPlugin.configure({
-      inject: {
-        nodeProps: {
-          defaultNodeValue: "currentColor",
-        },
-      },
-    }),
-  ],
-});
-```
-
-`FontColorPlugin` defaults to `black`. HTML parsers read font styles directly
-onto text properties; block target injection does not constrain text marks.
+text instead of a block target list. Every stored value renders, so a pasted
+`color: black` draws black in every theme. HTML parsers read font styles
+directly onto text properties; block target injection does not constrain text
+marks.
 
 ### Add toolbar button
 

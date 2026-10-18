@@ -9,6 +9,12 @@ import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { createEditor } from '../editor/withPlate';
 import {
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  FontFamilyPlugin,
+  FontSizePlugin,
+} from '../features/basic-styles/BasicStylePlugins';
+import {
   setDOMTextSyncRendererCapability,
   setRetainedTextFlowRendererCapability,
 } from '../plite-react';
@@ -263,6 +269,31 @@ it('fails DOM text sync closed only for text a query injection can paint', () =>
     );
     expect(resolveDOMTextSyncCapability({ marks: { tone: 0 } })).toBe(false);
     expect(getRetainedTextFlowCapability(renderer)?.({ marks: {} })).toBe(true);
+  }
+});
+
+it('keeps DOM text sync for text the font plugins paint', () => {
+  const editor = createEditor({
+    navigationFeedback: false,
+    plugins: [
+      FontColorPlugin,
+      FontBackgroundColorPlugin,
+      FontSizePlugin,
+      FontFamilyPlugin,
+    ],
+  });
+
+  for (const renderer of [pipeRenderLeaf(editor)!, pipeRenderText(editor)!]) {
+    expect(
+      getDOMTextSyncCapability(renderer)({
+        marks: {
+          backgroundColor: 'yellow',
+          color: 'black',
+          fontFamily: 'serif',
+          fontSize: '18px',
+        },
+      })
+    ).toBe(true);
   }
 });
 

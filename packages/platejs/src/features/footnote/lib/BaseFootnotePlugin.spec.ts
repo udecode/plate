@@ -22,7 +22,7 @@ import { getStaticDocumentView } from '../../../static/internal/staticDocumentVi
 import { TrailingBlockPlugin } from '../../../utils/plugins/TrailingBlockPlugin';
 import { YjsPlugin } from '../../../yjs/react';
 import { BaseBlockquotePlugin } from '../../basic-nodes/lib/BaseBlockPlugins';
-import { BaseColumnPlugin } from '../../layout/lib/BaseColumnPlugin';
+import { BaseColumnGroupPlugin } from '../../layout/lib/BaseColumnPlugin';
 import { BaseListPlugin } from '../../list/lib/BaseListPlugin';
 import { BaseTablePlugin } from '../../table/lib/BaseTablePlugin';
 import {
@@ -1697,7 +1697,7 @@ describe('footnote definition transfer landing', () => {
       plugins: [
         BaseFootnotePlugin,
         BaseFootnoteDefinitionPlugin,
-        BaseColumnPlugin,
+        BaseColumnGroupPlugin,
       ],
       initialValue: [
         { children: [{ text: 'text' }], type: 'paragraph' },

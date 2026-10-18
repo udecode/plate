@@ -13,7 +13,7 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-import { Caption } from './caption';
+import { Caption, getMediaTextAlign } from './caption';
 import { MediaToolbar } from './media-toolbar';
 
 export function AudioElement(props: EditorElementProps<typeof AudioPlugin>) {
@@ -21,13 +21,7 @@ export function AudioElement(props: EditorElementProps<typeof AudioPlugin>) {
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
   const selected = useElementSelected({ mode: 'object' });
-  const textAlign =
-    'textAlign' in props.element &&
-    (props.element.textAlign === 'left' ||
-      props.element.textAlign === 'right' ||
-      props.element.textAlign === 'center')
-      ? props.element.textAlign
-      : 'center';
+  const textAlign = getMediaTextAlign(props.element);
 
   return (
     <MediaToolbar

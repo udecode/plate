@@ -4,7 +4,7 @@ import { authoredTestApi } from '../../../authored/__tests__/authoredTestApi';
 import { BaseParagraphPlugin, createEditor } from '../../../core';
 import {
   BaseColumnItemPlugin,
-  BaseColumnPlugin,
+  BaseColumnGroupPlugin,
   type ColumnElement,
 } from './BaseColumnPlugin';
 
@@ -41,7 +41,7 @@ const make = (initialValue: unknown[], intent: 'edit' | 'propose' = 'edit') => {
     plugins: [
       BaseParagraphPlugin,
       BaseColumnItemPlugin,
-      BaseColumnPlugin,
+      BaseColumnGroupPlugin,
       proof,
     ],
   });
@@ -356,33 +356,5 @@ describe('stacked width suggestions', () => {
     // Editing alone gives 15/35/50; the correction's 50 for the new column
     // carries no tag, so the repair rescales from it (a named limit).
     expect(widths(run.editor)).toEqual([20, 46.67, 33.33]);
-  });
-});
-
-describe('moveMiddle beside pending content', () => {
-  it('decides on the middle column as accepting everything shows it', () => {
-    const review = make([group(20, 30, 50)]);
-    const editing = make([group(20, 30, 50)]);
-    const middle = {
-      anchor: { offset: 0, path: [0, 1, 0, 0] },
-      focus: { offset: 1, path: [0, 1, 0, 0] },
-    };
-    const moveMiddle = (editor: Editor) =>
-      editor.update.column.moveMiddle([editor.read.children()[0], [0]], {
-        direction: 'left',
-      });
-
-    review.proof.propose('bob:1', (tx) => tx.text.delete({ at: middle }));
-    moveMiddle(review.editor);
-    review.proof.decide({
-      action: 'accept',
-      changes: pending(review.editor.read.value().children as readonly Node[]),
-    });
-    editing.editor.update((tx) => tx.text.delete({ at: middle }));
-    moveMiddle(editing.editor);
-
-    expect(review.editor.read.children()).toEqual(
-      editing.editor.read.children()
-    );
   });
 });

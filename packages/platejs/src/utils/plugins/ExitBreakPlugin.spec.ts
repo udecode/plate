@@ -9,7 +9,7 @@ import {
 import { BaseHeadingPlugin } from '../../features/basic-nodes/lib/BaseHeadingPlugins';
 import { BaseCodeBlockPlugin } from '../../features/code-block/lib/BaseCodeBlockPlugin';
 import { BaseDetailsPlugin } from '../../features/details/lib/BaseDetailsPlugin';
-import { BaseColumnPlugin } from '../../features/layout/lib/BaseColumnPlugin';
+import { BaseColumnGroupPlugin } from '../../features/layout/lib/BaseColumnPlugin';
 import { BaseImagePlugin } from '../../features/media/lib/image/BaseImagePlugin';
 import { ExitBreakPlugin } from './ExitBreakPlugin';
 
@@ -107,7 +107,7 @@ describe('ExitBreakPlugin', () => {
 
   it('exits a code block inside a column without leaving the column [EDIT-GLOBAL-001]', () => {
     const editor = createEditor({
-      plugins: [ExitBreakPlugin, BaseCodeBlockPlugin, BaseColumnPlugin],
+      plugins: [ExitBreakPlugin, BaseCodeBlockPlugin, BaseColumnGroupPlugin],
       selection: {
         kind: 'text',
         anchor: { offset: 4, path: [0, 1, 0, 0] },
@@ -163,7 +163,7 @@ describe('ExitBreakPlugin', () => {
       url: 'https://example.com/a.png',
     };
     const editor = createEditor({
-      plugins: [ExitBreakPlugin, BaseColumnPlugin, BaseImagePlugin],
+      plugins: [ExitBreakPlugin, BaseColumnGroupPlugin, BaseImagePlugin],
       selection: {
         kind: 'text',
         anchor: { offset: 1, path: [0, 0, 0, 0] },
@@ -219,7 +219,11 @@ describe('ExitBreakPlugin', () => {
 
   it('lands a paragraph after a divider inside its column [EDIT-GLOBAL-001]', () => {
     const editor = createEditor({
-      plugins: [ExitBreakPlugin, BaseColumnPlugin, BaseHorizontalRulePlugin],
+      plugins: [
+        ExitBreakPlugin,
+        BaseColumnGroupPlugin,
+        BaseHorizontalRulePlugin,
+      ],
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [0, 0, 0, 0] },

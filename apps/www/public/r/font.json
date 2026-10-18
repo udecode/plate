@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/font.tsx",
-      "content": "'use client';\n\nimport {\n  FontBackgroundColorPlugin,\n  FontColorPlugin,\n  FontFamilyPlugin,\n  FontSizePlugin,\n} from 'platejs/react';\n\nexport const FontKit = [\n  FontColorPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 'black',\n      },\n    },\n  }),\n  FontBackgroundColorPlugin,\n  FontSizePlugin,\n  FontFamilyPlugin,\n];\n",
+      "content": "'use client';\n\nimport {\n  FontBackgroundColorPlugin,\n  FontColorPlugin,\n  FontFamilyPlugin,\n  FontSizePlugin,\n} from 'platejs/react';\n\nexport const FontKit = [\n  FontColorPlugin,\n  FontBackgroundColorPlugin,\n  FontSizePlugin,\n  FontFamilyPlugin,\n];\n",
       "type": "registry:component",
       "target": "@components/editor/font.tsx"
     }

@@ -8,8 +8,8 @@ import {
   GripHorizontal,
 } from 'lucide-react';
 import type { Element } from 'platejs';
-import { BaseColumnPlugin } from 'platejs/layout';
-import { ColumnItemPlugin, ColumnPlugin } from 'platejs/layout/react';
+import { BaseColumnGroupPlugin } from 'platejs/layout';
+import { ColumnItemPlugin, ColumnGroupPlugin } from 'platejs/layout/react';
 import {
   type EditorElementProps,
   EditorElement,
@@ -146,7 +146,7 @@ function ColumnDragHandle({ element }: { element: Element }) {
 }
 
 export function ColumnGroupElement(
-  props: EditorElementProps<typeof ColumnPlugin>
+  props: EditorElementProps<typeof ColumnGroupPlugin>
 ) {
   return (
     <EditorElement className="mb-2" {...props}>
@@ -160,7 +160,7 @@ export function ColumnGroupElement(
 function ColumnFloatingToolbar({ children }: { children: React.ReactElement }) {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
-  const element = useElement(ColumnPlugin);
+  const element = useElement(ColumnGroupPlugin);
   const selected = useElementSelected();
   const isCollapsed = useEditorSelector((innerEditor) =>
     innerEditor.read.selection.isCollapsed()
@@ -170,7 +170,7 @@ function ColumnFloatingToolbar({ children }: { children: React.ReactElement }) {
   const open = isFocusedLast && !readOnly && selected && isCollapsed;
 
   const onColumnChange = (widths: string[]) => {
-    editor.plugin(BaseColumnPlugin).update.setColumns({
+    editor.plugin(BaseColumnGroupPlugin).update.setColumns({
       at: element,
       widths,
     });
@@ -345,6 +345,6 @@ const DoubleSideDoubleColumnOutlined = (props: LucideProps) => (
 );
 
 export const ColumnKit = [
-  ColumnPlugin.configure({ component: ColumnGroupElement }),
+  ColumnGroupPlugin.configure({ component: ColumnGroupElement }),
   ColumnItemPlugin.configure({ component: ColumnElement }),
 ];

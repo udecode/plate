@@ -23,7 +23,7 @@ import ReactPlayer from 'react-player';
 
 import { cn } from '@/lib/utils';
 
-import { Caption } from './caption';
+import { Caption, getMediaTextAlign } from './caption';
 import { MediaToolbar } from './media-toolbar';
 import {
   mediaResizeHandleVariants,
@@ -37,13 +37,7 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
   const readOnly = useEditorReadOnly();
   const selected = useElementSelected({ mode: 'object' });
   const { provider, url: unsafeUrl } = props.element;
-  const textAlign =
-    'textAlign' in props.element &&
-    (props.element.textAlign === 'left' ||
-      props.element.textAlign === 'right' ||
-      props.element.textAlign === 'center')
-      ? props.element.textAlign
-      : 'center';
+  const textAlign = getMediaTextAlign(props.element);
   const embed = React.useMemo(
     () =>
       parseMediaUrl(unsafeUrl, {

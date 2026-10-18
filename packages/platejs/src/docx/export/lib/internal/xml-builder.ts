@@ -27,7 +27,6 @@ import namespaces from './namespaces';
 import {
   cmRegex,
   cmToTWIP,
-  HIPToTWIP,
   inchRegex,
   inchToTWIP,
   percentageRegex,
@@ -726,8 +725,19 @@ export const buildList = async (
 
 // Types for attributes and options
 type Indentation = {
+  firstLine?: number;
+  hanging?: number;
   left?: number;
   right?: number;
+};
+
+/**
+ * `w:spacing` line height: twips when `lineRule` is `atLeast`, 240ths of a
+ * line when `auto`.
+ */
+type LineSpacing = {
+  line: number;
+  lineRule: 'atLeast' | 'auto';
 };
 
 type NumberingInfo = {
@@ -760,7 +770,7 @@ type RunAttributes = {
   hyperlink?: boolean;
   i?: boolean;
   kbd?: boolean;
-  lineHeight?: number;
+  lineHeight?: LineSpacing;
   mark?: boolean;
   reviewRunId?: string;
   strike?: boolean;
@@ -1021,23 +1031,44 @@ const buildTextElement = (text: string): XMLBuilderType =>
     .txt(text)
     .up();
 
-const fixupLineHeight = (
-  lineHeight: number,
-  fontSize: number | null
-): number => {
-  // FIXME: If line height is anything other than a number
+const ltrWordAlignments = new Map([
+  ['center', 'center'],
+  ['end', 'right'],
+  ['justify', 'both'],
+  ['left', 'left'],
+  ['right', 'right'],
+  ['start', 'left'],
+]);
 
-  if (Number.isNaN(lineHeight)) {
-    // 240 TWIP or 12 point is default line height
-    return 240;
-  }
-  if (fontSize) {
-    const actualLineHeight = +lineHeight * fontSize;
+const fixupLineHeight = (lineHeight: string): LineSpacing | undefined => {
+  const match = /^(\d*\.?\d+)(px|pt|cm|in|%|em)?$/i.exec(lineHeight.trim());
 
-    return HIPToTWIP(actualLineHeight);
+  if (!match) return undefined;
+
+  const value = Number.parseFloat(match[1]);
+
+  if (value === 0) return undefined;
+
+  switch (match[2]?.toLowerCase()) {
+    case 'cm': {
+      return { line: pointToTWIP((value * 72) / 2.54), lineRule: 'atLeast' };
+    }
+    case 'in': {
+      return { line: pointToTWIP(value * 72), lineRule: 'atLeast' };
+    }
+    case 'pt': {
+      return { line: pointToTWIP(value), lineRule: 'atLeast' };
+    }
+    case 'px': {
+      return { line: pixelToTWIP(value), lineRule: 'atLeast' };
+    }
+    case '%': {
+      return { line: Math.round((value / 100) * 240), lineRule: 'auto' };
+    }
+    default: {
+      return { line: Math.round(value * 240), lineRule: 'auto' };
+    }
   }
-  // 240 TWIP or 12 point is default line height
-  return +lineHeight * 240;
 };
 
 const fixupFontSize = (fontSizeString: string): number | undefined => {
@@ -1235,12 +1266,11 @@ const modifiedStyleAttributesBuilder = (
       modifiedAttributes.verticalAlign = style['vertical-align'];
     }
 
-    if (
-      style['text-align'] &&
-      ['left', 'right', 'center', 'justify'].includes(style['text-align'])
-    ) {
-      modifiedAttributes.textAlign = style['text-align'];
-    }
+    const textAlign = style['text-align']
+      ? ltrWordAlignments.get(style['text-align'])
+      : undefined;
+
+    if (textAlign) modifiedAttributes.textAlign = textAlign;
 
     // FIXME: remove bold check when other font weights are handled.
     if (style['font-weight'] && style['font-weight'] === 'bold') {
@@ -1255,10 +1285,7 @@ const modifiedStyleAttributesBuilder = (
       modifiedAttributes.fontSize = fixupFontSize(style['font-size']);
     }
     if (style['line-height']) {
-      modifiedAttributes.lineHeight = fixupLineHeight(
-        Number.parseFloat(style['line-height']),
-        style['font-size'] ? fixupFontSize(style['font-size']) || null : null
-      );
+      modifiedAttributes.lineHeight = fixupLineHeight(style['line-height']);
     }
     if (style['margin-left'] || style['margin-right']) {
       const leftMargin = style['margin-left']
@@ -1299,6 +1326,19 @@ const modifiedStyleAttributesBuilder = (
       modifiedAttributes.highlightColor = 'lightGray';
     } else if (isVNode(vNode) && (vNode as VNodeType).tagName === 'pre') {
       modifiedAttributes.font = 'Courier';
+    }
+
+    const textIndent = isVNode(vNode)
+      ? (vNode as VNodeType).properties?.style?.['text-indent']
+      : undefined;
+    const textIndentSize = textIndent ? fixupMargin(textIndent) : undefined;
+    if (textIndent && textIndentSize && !modifiedAttributes.numbering) {
+      modifiedAttributes.indentation = {
+        ...modifiedAttributes.indentation,
+        ...(textIndent.trim().startsWith('-')
+          ? { hanging: textIndentSize }
+          : { firstLine: textIndentSize }),
+      };
     }
   }
 
@@ -1813,7 +1853,7 @@ const buildNumberingInstances = (): XMLBuilderType =>
     .up();
 
 const buildSpacing = (
-  lineSpacing?: number,
+  lineSpacing?: LineSpacing,
   beforeSpacing?: number,
   afterSpacing?: number
 ): XMLBuilderType => {
@@ -1823,7 +1863,7 @@ const buildSpacing = (
   );
 
   if (lineSpacing) {
-    spacingFragment.att('@w', 'line', String(lineSpacing));
+    spacingFragment.att('@w', 'line', String(lineSpacing.line));
   }
   if (beforeSpacing) {
     spacingFragment.att('@w', 'before', String(beforeSpacing));
@@ -1832,12 +1872,17 @@ const buildSpacing = (
     spacingFragment.att('@w', 'after', String(afterSpacing));
   }
 
-  spacingFragment.att('@w', 'lineRule', 'auto').up();
+  spacingFragment.att('@w', 'lineRule', lineSpacing?.lineRule ?? 'auto').up();
 
   return spacingFragment;
 };
 
-const buildIndentation = ({ left, right }: Indentation): XMLBuilderType => {
+const buildIndentation = ({
+  firstLine,
+  hanging,
+  left,
+  right,
+}: Indentation): XMLBuilderType => {
   const indentationFragment = fragment({
     namespaceAlias: { w: namespaces.w },
   }).ele('@w', 'ind');
@@ -1847,6 +1892,12 @@ const buildIndentation = ({ left, right }: Indentation): XMLBuilderType => {
   }
   if (right) {
     indentationFragment.att('@w', 'right', String(right));
+  }
+  if (firstLine) {
+    indentationFragment.att('@w', 'firstLine', String(firstLine));
+  }
+  if (hanging) {
+    indentationFragment.att('@w', 'hanging', String(hanging));
   }
 
   indentationFragment.up();
@@ -1861,17 +1912,12 @@ const buildPStyle = (style = 'Normal'): XMLBuilderType =>
     .up();
 
 const buildHorizontalAlignment = (
-  initialHorizontalAlignment: string
-): XMLBuilderType => {
-  let horizontalAlignment = initialHorizontalAlignment;
-  if (horizontalAlignment === 'justify') {
-    horizontalAlignment = 'both';
-  }
-  return fragment({ namespaceAlias: { w: namespaces.w } })
+  horizontalAlignment: string
+): XMLBuilderType =>
+  fragment({ namespaceAlias: { w: namespaces.w } })
     .ele('@w', 'jc')
     .att('@w', 'val', horizontalAlignment)
     .up();
-};
 
 const buildParagraphBorder = (): XMLBuilderType => {
   const paragraphBorderFragment = fragment({
@@ -3833,5 +3879,4 @@ export {
   buildItalics,
   buildUnderline,
   buildDrawing,
-  fixupLineHeight,
 };

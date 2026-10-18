@@ -3830,10 +3830,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:3d46d7c54193857a",
+  "fingerprint": "fnv1a64:e46b453f6efa5533",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:3d46d7c54193857a",
+    "fingerprint": "fnv1a64:e46b453f6efa5533",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -4388,7 +4388,7 @@
       },
       {
         "descriptor": {
-          "kind": "json",
+          "kind": "number",
           "omitDefault": false,
           "required": false,
           "validationVersion": 1

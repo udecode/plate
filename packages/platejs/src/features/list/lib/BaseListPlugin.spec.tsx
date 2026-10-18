@@ -32,7 +32,7 @@ import { BaseCalloutPlugin } from '../../callout/lib/BaseCalloutPlugin';
 import { BaseCodeBlockPlugin } from '../../code-block';
 import { BaseDetailsPlugin } from '../../details/lib/BaseDetailsPlugin';
 import { BaseIndentPlugin } from '../../indent';
-import { BaseColumnPlugin } from '../../layout/lib/BaseColumnPlugin';
+import { BaseColumnGroupPlugin } from '../../layout/lib/BaseColumnPlugin';
 import { BaseAudioPlugin, BaseImagePlugin } from '../../media';
 import { BaseTablePlugin } from '../../table';
 import listPasteCases from './__tests__/list-paste.fixture.json';
@@ -3904,7 +3904,7 @@ describe('BaseListPlugin list identity', () => {
           BaseHeadingPlugin,
           BaseBlockquotePlugin,
           BaseCalloutPlugin,
-          BaseColumnPlugin,
+          BaseColumnGroupPlugin,
           BaseIndentPlugin,
           BaseTablePlugin,
           BaseListPlugin.configure({

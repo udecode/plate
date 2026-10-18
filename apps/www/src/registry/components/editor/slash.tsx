@@ -36,7 +36,7 @@ import { BaseDatePlugin } from 'platejs/date';
 import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
 import { BaseFootnotePlugin } from 'platejs/footnote';
-import { BaseColumnPlugin } from 'platejs/layout';
+import { BaseColumnGroupPlugin } from 'platejs/layout';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 import { type Editor, useEditor, useEditorReadOnly } from 'platejs/react';
 import { SlashPlugin } from 'platejs/slash-command/react';
@@ -238,11 +238,13 @@ const groups: Group[] = [
       },
       {
         icon: <Columns3Icon />,
-        isAvailable: (editor) => editor.plugin(BaseColumnPlugin).installed,
+        isAvailable: (editor) => editor.plugin(BaseColumnGroupPlugin).installed,
         label: '3 columns',
         value: 'action_three_columns',
         onSelect: (_editor, tx) =>
-          tx.plugin(BaseColumnPlugin).upsert({ columns: 3 }, { select: true }),
+          tx
+            .plugin(BaseColumnGroupPlugin)
+            .upsert({ columns: 3 }, { select: true }),
       },
       {
         focusEditor: false,

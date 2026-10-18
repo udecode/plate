@@ -28,7 +28,7 @@ import {
   type Element,
 } from 'platejs';
 import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
-import { BaseColumnPlugin } from 'platejs/layout';
+import { BaseColumnGroupPlugin } from 'platejs/layout';
 import {
   type Editor,
   useEditor,
@@ -197,7 +197,7 @@ const getStructuralState = (editor: Editor): StructuralState => {
   const quote = editor.plugin(BaseBlockquotePlugin);
   const details = editor.plugin(BaseDetailsPlugin);
   const code = editor.plugin(BaseCodeBlockPlugin);
-  const columns = editor.plugin(BaseColumnPlugin);
+  const columns = editor.plugin(BaseColumnGroupPlugin);
   const quoteActive =
     quote.installed &&
     hasSelection &&
@@ -224,7 +224,7 @@ const getStructuralState = (editor: Editor): StructuralState => {
     (entries[0][0].type === columns.schema.type ||
       !!editor.read.nodes.above({
         at: entries[0][1],
-        type: BaseColumnPlugin,
+        type: BaseColumnGroupPlugin,
       }));
 
   return {
@@ -359,7 +359,7 @@ export function TurnIntoToolbarButton() {
   const quote = editor.plugin(BaseBlockquotePlugin);
   const details = editor.plugin(BaseDetailsPlugin);
   const code = editor.plugin(BaseCodeBlockPlugin);
-  const columns = editor.plugin(BaseColumnPlugin);
+  const columns = editor.plugin(BaseColumnGroupPlugin);
   const leafItems: LeafItem[] = [
     {
       icon: <PilcrowIcon />,
@@ -534,7 +534,7 @@ export function TurnIntoToolbarButton() {
             label: '3 columns',
             onSelect: () => {
               const current = getStructuralState(editor).columns;
-              const portal = editor.plugin(BaseColumnPlugin);
+              const portal = editor.plugin(BaseColumnGroupPlugin);
 
               if (
                 !portal.installed ||

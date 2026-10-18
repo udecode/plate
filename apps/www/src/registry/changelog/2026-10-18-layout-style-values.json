@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-18-layout-style-values",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-18-layout-style-values.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Place all six alignments on media, clear line height and alignment from the toolbars, and rename the column group plugin",
+  "targets": [
+    {
+      "name": "media-image",
+      "files": ["apps/www/src/registry/components/editor/media-image.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-embed",
+      "files": ["apps/www/src/registry/components/editor/media-embed.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-audio",
+      "files": ["apps/www/src/registry/components/editor/media-audio.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-audio-static",
+      "files": [
+        "apps/www/src/registry/components/editor/media-audio-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-video",
+      "files": ["apps/www/src/registry/components/editor/media-video.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "caption",
+      "files": ["apps/www/src/registry/components/editor/caption.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "caption-static",
+      "files": ["apps/www/src/registry/components/editor/caption-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "line-height-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/line-height-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "align-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/align-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "line-height",
+      "files": ["apps/www/src/registry/components/editor/line-height.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "align",
+      "files": ["apps/www/src/registry/components/editor/align.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font",
+      "files": ["apps/www/src/registry/components/editor/font.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column",
+      "files": ["apps/www/src/registry/components/editor/column.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column-static",
+      "files": ["apps/www/src/registry/components/editor/column-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-18-media-image-place-all-six-alignments-ff655f65",
+      "kind": "behavior",
+      "summary": "Place media aligned `start` or `justify` on the left and `end` on the right, instead of in the center.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "media-image",
+        "media-embed",
+        "media-audio",
+        "media-audio-static",
+        "media-video",
+        "caption",
+        "caption-static"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-layout-style-values",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-18-line-height-toolbar-default-item-3a9e0c41",
+      "kind": "behavior",
+      "summary": "Add a Default item that clears line height, offer 1, 1.2, 1.5, 2 and 3, and check nothing when the selection mixes line heights.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["line-height-toolbar-button"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-layout-style-values",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-18-align-toolbar-mixed-selection-7b2d5f18",
+      "kind": "fix",
+      "summary": "Check nothing when the selection mixes alignments, instead of Left.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["align-toolbar-button"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-layout-style-values",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-18-style-kits-targets-only-c41f8a92",
+      "kind": "remove",
+      "summary": "Configure only the target blocks. Every stored line height and alignment now draws.",
+      "details": [],
+      "migrationNotes": [
+        "Drop defaultNodeValue and validNodeValues from copied kits; platejs no longer accepts them."
+      ],
+      "targets": ["line-height", "align"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-layout-style-values",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-18-font-kit-black-draws-9d3e61b7",
+      "kind": "behavior",
+      "summary": "Install `FontColorPlugin` without a black default, so pasted black text draws, including in dark mode.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["font"],
+      "source": {
+        "line": 30,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-layout-style-values",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-18-column-group-plugin-rename-5d1c2a7e",
+      "kind": "rename",
+      "summary": "Use `ColumnGroupPlugin` and `BaseColumnGroupPlugin` for column groups.",
+      "details": [],
+      "migrationNotes": [
+        "Import ColumnGroupPlugin and BaseColumnGroupPlugin where the copied code imported ColumnPlugin and BaseColumnPlugin."
+      ],
+      "targets": [
+        "column",
+        "column-static",
+        "insert-toolbar-button",
+        "slash",
+        "turn-into-toolbar-button"
+      ],
+      "source": {
+        "line": 34,
+        "row": 6,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-layout-style-values",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

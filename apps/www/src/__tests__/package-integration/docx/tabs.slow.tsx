@@ -11,8 +11,8 @@ describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     expected: (
       <editor>
-        <hp lineHeight="115%">Some text separated{'\t'}by a tab.</hp>
-        <hp lineHeight="115%">{'\t'}Tab-indented text.</hp>
+        <hp lineHeight={1.15}>Some text separated{'\t'}by a tab.</hp>
+        <hp lineHeight={1.15}>{'\t'}Tab-indented text.</hp>
       </editor>
     ),
     filename: name,

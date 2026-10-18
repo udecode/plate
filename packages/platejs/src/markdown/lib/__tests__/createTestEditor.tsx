@@ -38,7 +38,7 @@ import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnotePlugin,
 } from '../../../features/footnote';
-import { BaseColumnPlugin } from '../../../features/layout';
+import { BaseColumnGroupPlugin } from '../../../features/layout';
 import { BaseLinkPlugin } from '../../../features/link';
 import { BaseListPlugin } from '../../../features/list';
 import {
@@ -98,7 +98,7 @@ const testSchemaPlugins: readonly BasePluginInput[] = [
   BaseImagePlugin,
   BaseMediaEmbedPlugin,
   BaseVideoPlugin,
-  BaseColumnPlugin,
+  BaseColumnGroupPlugin,
   BaseTablePlugin,
   BaseCalloutPlugin,
   BaseTocPlugin,

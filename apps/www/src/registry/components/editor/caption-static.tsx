@@ -6,9 +6,20 @@ import { cn } from '@/lib/utils';
 export const getMediaTextAlign = (element: object) => {
   if (!('textAlign' in element)) return 'center';
 
-  const align = element.textAlign;
-
-  return align === 'left' || align === 'right' ? align : 'center';
+  switch (element.textAlign) {
+    case 'justify':
+    case 'left':
+    case 'start': {
+      return 'left';
+    }
+    case 'end':
+    case 'right': {
+      return 'right';
+    }
+    default: {
+      return 'center';
+    }
+  }
 };
 
 export function CaptionStatic({

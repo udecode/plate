@@ -20,7 +20,7 @@ import {
   type Value,
 } from 'platejs';
 import { BaseCalloutPlugin } from 'platejs/callout';
-import { BaseColumnPlugin } from 'platejs/layout';
+import { BaseColumnGroupPlugin } from 'platejs/layout';
 import { CodeBlockPlugin, createEditor, EditorRoot } from 'platejs/react';
 import { BaseTablePlugin } from 'platejs/table';
 import * as React from 'react';
@@ -135,7 +135,7 @@ const createTestEditor = ({
       ...BaseListKit,
       ...BaseDetailsKit,
       CodeBlockPlugin,
-      BaseColumnPlugin,
+      BaseColumnGroupPlugin,
     ],
     selection,
     initialValue,
@@ -485,7 +485,7 @@ describe('turn into menu behavior', () => {
         ...BaseListKit,
         ...BaseDetailsKit,
         CodeBlockPlugin,
-        BaseColumnPlugin,
+        BaseColumnGroupPlugin,
         BaseTablePlugin,
       ],
       initialValue,

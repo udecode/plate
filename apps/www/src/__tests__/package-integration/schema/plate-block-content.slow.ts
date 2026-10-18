@@ -5,7 +5,7 @@ import {
   ElementApi,
 } from 'platejs';
 import { BaseFootnoteDefinitionPlugin } from 'platejs/footnote';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from 'platejs/layout';
+import { BaseColumnItemPlugin, BaseColumnGroupPlugin } from 'platejs/layout';
 import {
   BaseTableCellPlugin,
   BaseTablePlugin,
@@ -32,7 +32,7 @@ describe('Plate block-content eligibility', () => {
         BaseBlockquotePlugin,
         BaseCodeBlockPlugin,
         BaseFootnoteDefinitionPlugin,
-        BaseColumnPlugin,
+        BaseColumnGroupPlugin,
         BaseTablePlugin,
       ],
     });

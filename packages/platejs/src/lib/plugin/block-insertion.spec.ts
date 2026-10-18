@@ -22,7 +22,7 @@ import {
 import { BaseCalloutPlugin } from '../../features/callout';
 import { BaseCodeBlockPlugin } from '../../features/code-block';
 import { BaseDetailsPlugin } from '../../features/details';
-import { BaseColumnPlugin } from '../../features/layout';
+import { BaseColumnGroupPlugin } from '../../features/layout';
 import { BaseListPlugin } from '../../features/list';
 import { BaseImagePlugin } from '../../features/media';
 import { BaseTablePlugin } from '../../features/table';
@@ -37,7 +37,7 @@ const plugins = [
   BaseHorizontalRulePlugin,
   BaseCalloutPlugin,
   BaseDetailsPlugin,
-  BaseColumnPlugin,
+  BaseColumnGroupPlugin,
   BaseImagePlugin,
   BaseUploadPlugin,
   BaseTablePlugin,
@@ -78,7 +78,7 @@ const cases: Array<{ type: string; insert: (editor: Editor) => void }> = [
     type: 'columnGroup',
     insert: (editor) =>
       editor
-        .plugin(BaseColumnPlugin)
+        .plugin(BaseColumnGroupPlugin)
         .update.insert({ columns: 3 }, { select: true }),
   },
   {
@@ -320,7 +320,8 @@ it.each<[string, (editor: Editor) => boolean]>([
   ],
   [
     'column group',
-    (editor) => editor.plugin(BaseColumnPlugin).update.insert({ columns: 2 }),
+    (editor) =>
+      editor.plugin(BaseColumnGroupPlugin).update.insert({ columns: 2 }),
   ],
   ['details', (editor) => editor.plugin(BaseDetailsPlugin).update.insert()],
   [
@@ -628,7 +629,7 @@ it.each<
     'column group',
     (editor, before) =>
       editor
-        .plugin(BaseColumnPlugin)
+        .plugin(BaseColumnGroupPlugin)
         .update.insert({ columns: 2 }, { before, select: true }),
   ],
   [

@@ -190,4 +190,21 @@ describe('core static renderStaticHtml mark rendering', () => {
       '<span><em><strong><span>bold and italic</span></strong></em></span>'
     );
   });
+
+  it('draws pasted black text in its color', async () => {
+    const parsed = createEditor({ plugins: BaseEditorKit }).api.html.parse(
+      '<p><span style="color: black">dark</span></p>'
+    );
+
+    if (!parsed.ok) throw new Error(parsed.diagnostics[0]?.message);
+
+    const editor = createEditor({
+      initialValue: parsed.document.children,
+      plugins: BaseEditorKit,
+    });
+
+    expect(await renderStaticMarkup(editor)).toMatch(
+      /<span style="color: ?black;?">.*dark/
+    );
+  });
 });

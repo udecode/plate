@@ -192,9 +192,7 @@ const TextAlignPlugin = definePlugin("textAlign", {
   inject: {
     isBlock: true,
     nodeProps: {
-      defaultNodeValue: "start",
       styleKey: "textAlign",
-      validNodeValues: ["start", "left", "center", "right", "end", "justify"],
     },
   },
   schema: ({ targetElementTypes }) => ({

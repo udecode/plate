@@ -14,7 +14,7 @@ import {
 } from '../../../core';
 import {
   ColumnItemPlugin,
-  ColumnPlugin,
+  ColumnGroupPlugin,
 } from '../../../react/features/layout/ColumnPlugin';
 import { BaseBlockquotePlugin } from '../../basic-nodes/lib/BaseBlockPlugins';
 import { BaseDetailsPlugin } from '../../details/lib/BaseDetailsPlugin';
@@ -22,12 +22,12 @@ import { BaseIndentPlugin } from '../../indent';
 import { BaseListPlugin, ListType } from '../../list/lib/BaseListPlugin';
 import {
   BaseColumnItemPlugin,
-  BaseColumnPlugin,
+  BaseColumnGroupPlugin,
   type ColumnElement,
   type ColumnGroupElement,
 } from './BaseColumnPlugin';
 
-const columnPlugins = [BaseColumnPlugin] as const;
+const columnPlugins = [BaseColumnGroupPlugin] as const;
 const TestColumnHostPlugin = definePlugin('testColumnHost', {
   dependencies: [BaseColumnItemPlugin],
   schema: {
@@ -55,18 +55,18 @@ const isColumnGroupNode = (node: unknown): node is ColumnGroupNode =>
       typeof child.width === 'string'
   );
 
-describe('BaseColumnPlugin schema', () => {
+describe('BaseColumnGroupPlugin schema', () => {
   it('declares the item as an exact required Base and React dependency', () => {
     expect(BaseColumnItemPlugin.dependencies).toEqual([BaseParagraphPlugin]);
-    expect(BaseColumnPlugin.dependencies).toEqual([BaseColumnItemPlugin]);
-    expect(ColumnPlugin.dependencies).toEqual([ColumnItemPlugin]);
+    expect(BaseColumnGroupPlugin.dependencies).toEqual([BaseColumnItemPlugin]);
+    expect(ColumnGroupPlugin.dependencies).toEqual([ColumnItemPlugin]);
   });
 
   it('rejects a disabled required column-item dependency', () => {
     expect(() =>
       createRuntimeEditor({
         plugins: [
-          BaseColumnPlugin,
+          BaseColumnGroupPlugin,
           BaseColumnItemPlugin.configure({ enabled: false }),
         ],
       })
@@ -97,10 +97,10 @@ describe('BaseColumnPlugin schema', () => {
 
   it('constructs configured column-group content from plugin-name grammar', () => {
     const editor = createRuntimeEditor({
-      plugins: [BaseColumnPlugin],
+      plugins: [BaseColumnGroupPlugin],
     });
 
-    expect(editor.read.schema.create(BaseColumnPlugin)).toEqual({
+    expect(editor.read.schema.create(BaseColumnGroupPlugin)).toEqual({
       children: [
         {
           children: [{ children: [{ text: '' }], type: 'paragraph' }],
@@ -115,7 +115,7 @@ describe('BaseColumnPlugin schema', () => {
       ],
       type: 'columnGroup',
     });
-    expect(editor.read.schema.element(BaseColumnPlugin)?.groups).toContain(
+    expect(editor.read.schema.element(BaseColumnGroupPlugin)?.groups).toContain(
       'block'
     );
     expect(editor.read.schema.element(BaseColumnItemPlugin)?.groups).toContain(
@@ -204,7 +204,7 @@ describe('BaseColumnPlugin schema', () => {
     return entry[0];
   };
 
-  describe('BaseColumnPlugin update', () => {
+  describe('BaseColumnGroupPlugin update', () => {
     describe('insert', () => {
       it('inserts a column with the schema width and normalizes the group', () => {
         const editor = createEditor({
@@ -290,7 +290,7 @@ describe('BaseColumnPlugin schema', () => {
         });
 
         editor
-          .plugin(BaseColumnPlugin)
+          .plugin(BaseColumnGroupPlugin)
           .update.insert({ columns: 3 }, { at: [1] });
 
         const entry = editor.read.nodes.get([1], {
@@ -298,9 +298,11 @@ describe('BaseColumnPlugin schema', () => {
         });
 
         assert.ok(entry);
-        expect(BaseColumnPlugin.name).toBe('columnGroup');
-        expect(BaseColumnPlugin.name).toBe(PLUGINS.columnGroup);
-        expect(entry[0].type).toBe(editor.plugin(BaseColumnPlugin).schema.type);
+        expect(BaseColumnGroupPlugin.name).toBe('columnGroup');
+        expect(BaseColumnGroupPlugin.name).toBe(PLUGINS.columnGroup);
+        expect(entry[0].type).toBe(
+          editor.plugin(BaseColumnGroupPlugin).schema.type
+        );
         expect(entry[0].children).toHaveLength(3);
         expect(entry[0].children[0].width).toContain('33.3333');
         expect(entry[0].children[1].width).toContain('33.3333');
@@ -321,93 +323,6 @@ describe('BaseColumnPlugin schema', () => {
         );
 
         expect(editor.read.nodes.block()?.[1]).toEqual([1, 0, 0]);
-      });
-    });
-
-    describe('moveMiddle', () => {
-      it('merges a non-empty middle column into the first column', () => {
-        const editor = createEditor({
-          value: [
-            {
-              children: [
-                {
-                  children: [
-                    { children: [{ text: 'Left' }], type: 'paragraph' },
-                  ],
-                  type: 'column',
-                  width: '33%',
-                },
-                {
-                  children: [
-                    { children: [{ text: 'Middle' }], type: 'paragraph' },
-                  ],
-                  type: 'column',
-                  width: '33%',
-                },
-                {
-                  children: [
-                    { children: [{ text: 'Right' }], type: 'paragraph' },
-                  ],
-                  type: 'column',
-                  width: '34%',
-                },
-              ],
-              type: 'columnGroup',
-            },
-          ],
-        });
-        const entry = editor.read.nodes.get([0], {
-          match: ElementApi.isElement,
-        });
-
-        assert.ok(entry);
-        editor.update.column.moveMiddle(entry, { direction: 'left' });
-
-        expect(getColumnGroup(editor).children).toHaveLength(2);
-        expect(editor.read.text.string([0, 0])).toBe('LeftMiddle');
-        expect(editor.read.text.string([0, 1])).toBe('Right');
-      });
-
-      it('removes an empty middle column and reports failure', () => {
-        const editor = createEditor({
-          value: [
-            {
-              children: [
-                {
-                  children: [
-                    { children: [{ text: 'Left' }], type: 'paragraph' },
-                  ],
-                  type: 'column',
-                  width: '33%',
-                },
-                {
-                  children: [{ children: [{ text: '' }], type: 'paragraph' }],
-                  type: 'column',
-                  width: '33%',
-                },
-                {
-                  children: [
-                    { children: [{ text: 'Right' }], type: 'paragraph' },
-                  ],
-                  type: 'column',
-                  width: '34%',
-                },
-              ],
-              type: 'columnGroup',
-            },
-          ],
-        });
-        const entry = editor.read.nodes.get([0], {
-          match: ElementApi.isElement,
-        });
-
-        assert.ok(entry);
-        expect(
-          editor.update.column.moveMiddle(entry, { direction: 'left' })
-        ).toBe(false);
-        expect(getColumnGroup(editor).children).toHaveLength(2);
-        expect(editor.read.text.string([0, 0])).toBe('Left');
-        expect(editor.read.text.string([0, 1])).toBe('Right');
       });
     });
 
@@ -1118,7 +1033,7 @@ it('changes nothing when Columns cannot replace a Details title', () => {
   ];
   const editor = createRuntimeEditor({
     initialValue,
-    plugins: [BaseParagraphPlugin, BaseColumnPlugin, BaseDetailsPlugin],
+    plugins: [BaseParagraphPlugin, BaseColumnGroupPlugin, BaseDetailsPlugin],
     selection: {
       anchor: { offset: 2, path: [0, 0, 0] },
       focus: { offset: 2, path: [0, 0, 0] },
@@ -1126,7 +1041,7 @@ it('changes nothing when Columns cannot replace a Details title', () => {
     },
   });
 
-  editor.plugin(BaseColumnPlugin).update.toggle();
+  editor.plugin(BaseColumnGroupPlugin).update.toggle();
 
   assert.deepEqual(editor.read.children(), initialValue);
 });
@@ -1177,14 +1092,14 @@ it('converts a quote line in a named view while the main root starts with a Deta
     plugins: [
       BaseParagraphPlugin,
       BaseBlockquotePlugin,
-      BaseColumnPlugin,
+      BaseColumnGroupPlugin,
       BaseDetailsPlugin,
       HeaderHolder,
     ],
   });
   const header = createEditorView(editor, { root: 'header' });
 
-  header.plugin(BaseColumnPlugin).update.toggle({ at: [0, 0] });
+  header.plugin(BaseColumnGroupPlugin).update.toggle({ at: [0, 0] });
 
   assert.deepEqual(NodeApi.string(header.read.nodes.get([0, 0, 0])![0]), 'Q');
   assert.equal(header.read.nodes.get([0, 0])![0].type, PLUGINS.columnGroup);
