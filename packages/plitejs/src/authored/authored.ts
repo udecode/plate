@@ -113,15 +113,20 @@ import { editingChangeOf, isEditingChange } from './facts/editing';
 import {
   claimsOf,
   factsOf,
+  isAccepted,
   isSettledDeletion,
   marksOf,
   type ReviewFacts,
+  standingClaimsOf,
 } from './facts/facts';
 import {
   authoredRecords,
   type ContextRecord,
   incarnationOf,
+  type LandedRecord,
+  landedOf,
   putContexts,
+  putLanded,
   putVerdicts,
   type VerdictRecord,
   withStore,
@@ -146,7 +151,7 @@ import {
   decidedContentChange,
 } from './tree/alignment';
 import { relinkCuts } from './tree/cuts';
-import { acceptedValues, type FormatTag } from './tree/layers';
+import { acceptedValues, type FormatTag, type Standing } from './tree/layers';
 import {
   type AuthoredMark,
   AuthoredMarkError,
@@ -847,6 +852,17 @@ const acceptOwn = (
   const settledBy = { joins: own('join'), removes: own('delete') };
   const changes = new Map<string, RootChange>();
   const accepted = new Map(indexes);
+  const landed: LandedRecord[] = [];
+  const resolveOwn = (nodes: readonly JsonNode[], root: string) => {
+    const resolution = resolveAuthoredChildren(nodes, outcome, null, root, {
+      dependencies,
+      facts,
+    });
+
+    landed.push(...resolution.landed);
+
+    return resolution.children;
+  };
 
   for (const [root, index] of indexes) {
     const rootChange = getInternalDocumentRootChange(change, root);
@@ -886,27 +902,14 @@ const acceptOwn = (
         const nodes = siblings.slice(run.from, run.to);
 
         if (run.path.length === 0) {
-          return {
-            nodes,
-            result: resolveAuthoredChildren(nodes, outcome, null, root, {
-              dependencies,
-              facts,
-            }).children,
-            run,
-          };
+          return { nodes, result: resolveOwn(nodes, root), run };
         }
 
         const shell: JsonNode = {
           ...nodePropsOf(index.node(run.path)),
           children: [...nodes],
         };
-        const [only, ...rest] = resolveAuthoredChildren(
-          [shell],
-          outcome,
-          null,
-          root,
-          { dependencies, facts }
-        ).children;
+        const [only, ...rest] = resolveOwn([shell], root);
 
         // A join or split on the element's first remaining block can land
         // outside it.
@@ -993,6 +996,7 @@ const acceptOwn = (
     : {
         change: createInternalDocumentChange(changes),
         indexes: accepted,
+        landed,
       };
 };
 
@@ -1453,7 +1457,14 @@ export const createAuthoredPlugin = (
         return Object.freeze({
           accepted: Object.freeze(
             acceptedValues(
-              marks.filter((mark): mark is FormatTag => mark.kind === 'format')
+              node as Readonly<Record<string, unknown>>,
+              standingClaimsOf(node, facts, facts).filter(
+                (mark): mark is FormatTag => mark.kind === 'format'
+              ),
+              {
+                accepted: (member) => isAccepted(facts, member),
+                landed: facts.landed,
+              }
             )
           ),
           hidden: isSettledDeletion(node, facts),
@@ -1787,6 +1798,15 @@ export const createAuthoredPlugin = (
           minted.set(input.update, minting);
           const { at, changeId } = minting;
           const dependencies = createDependencies(known, carriedIn(after));
+          let commitWrite: string | undefined;
+          const commitWriteId = () => (commitWrite ??= createTagId());
+          // An Editing commit's own write lands with it.
+          const landedHere = (write: string) =>
+            (editing && write === commitWrite) || known.landed(write);
+          const standing: Standing = {
+            accepted: (member) => isAccepted(known, member),
+            landed: landedHere,
+          };
           const recorded = recordAuthoredSteps({
             before,
             changeId,
@@ -1845,7 +1865,9 @@ export const createAuthoredPlugin = (
                     position: selectionPosition,
                     root: input.selectionBeforeRoot,
                   },
+            standing,
             steps,
+            commitWriteId,
             writer,
           });
           // Map only through the recorded change: the recorder slot's finalize
@@ -1932,7 +1954,6 @@ export const createAuthoredPlugin = (
                 after: valueOf(indexes),
                 before,
                 change,
-                createTagId,
                 dependencies,
                 editor,
                 indexes,
@@ -1942,12 +1963,17 @@ export const createAuthoredPlugin = (
                   change: forced?.changeId ?? changeId,
                   ...(forced?.inc === undefined ? {} : { inc: forced.inc }),
                 },
+                standing,
+                commitWriteId,
               });
           const content = filled ? change.compose(filled.change) : change;
           const writtenIndexes = filled?.indexes ?? indexes;
           const accepted =
             editing && !writtenPlain
-              ? acceptOwn(content, writtenIndexes, dependencies, known)
+              ? acceptOwn(content, writtenIndexes, dependencies, {
+                  ...known,
+                  landed: landedHere,
+                })
               : null;
           // Accepting removes fragments outright, whose cuts move to the
           // fragments that stay.
@@ -1974,6 +2000,7 @@ export const createAuthoredPlugin = (
                     ...accepted.indexes,
                     ...relinkedOwn.indexes,
                   ]),
+                  landed: accepted.landed,
                 }
               : accepted;
           const through =
@@ -2007,11 +2034,19 @@ export const createAuthoredPlugin = (
           const later = owned ? content.compose(owned.change) : content;
           const indexedAfter = owned?.indexes ?? writtenIndexes;
           // The context records the writes rest on go with them, so no
-          // node ever points at a record its document lacks.
-          const records = composeRecordOps(
-            ownRecords,
-            putContexts(restedOn(dependencies.minted(), later, indexedAfter))
-          );
+          // node ever points at a record its document lacks. An Editing
+          // format write over pending tags lands with its commit, so a tag
+          // over it reads it after it leaves the key, until an undo takes
+          // both back.
+          const records = [
+            putContexts(restedOn(dependencies.minted(), later, indexedAfter)),
+            putLanded([
+              ...(editing && commitWrite !== undefined
+                ? [landedOf({ at, change: changeId, id: commitWrite })]
+                : []),
+              ...(owned?.landed ?? []),
+            ]),
+          ].reduce(composeRecordOps, ownRecords);
 
           return {
             anchorChange: (plainAfter) =>

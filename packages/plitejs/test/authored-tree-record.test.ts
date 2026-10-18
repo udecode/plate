@@ -19,6 +19,7 @@ import { createAuthoredPlugin } from '../src/authored/authored';
 import {
   authoredTestApi,
   expandedChildren,
+  recordsOf,
   reviewedValue,
   storedContexts,
 } from './support/authored';
@@ -133,6 +134,38 @@ const editing = (
   initialValue: Array<Record<string, unknown>>,
   author = 'bob'
 ) => editorFor(initialValue, 'edit', author);
+const annBlue = () => [
+  paragraph({
+    authored: [
+      {
+        at: AT,
+        author: 'ann',
+        change: 'ann:1',
+        id: 'a1',
+        key: 'color',
+        kind: 'format',
+        write: { kind: 'set', value: 'blue' },
+      },
+    ],
+    color: 'blue',
+    text: 'word',
+  }),
+];
+const colorState = (editor: ReturnType<typeof editorFor>) => {
+  const [leaf] = (
+    editor.read.children()[0] as { children: Array<{ color?: string }> }
+  ).children;
+
+  return {
+    accepted: editor.read.authored.reviewOf(leaf).accepted.color ?? null,
+    color: leaf.color ?? null,
+    pending: editor.read.authored.changes().items.map(({ id }) => id),
+  };
+};
+const setColor = (editor: ReturnType<typeof editorFor>, value: string) =>
+  editor.update((tx) =>
+    tx.nodes.set({ color: value } as never, { at: [0, 0] })
+  );
 
 describe('authored review tree recording', () => {
   it('records typed text as an insertion in Suggesting', () => {
@@ -412,6 +445,54 @@ describe('authored review tree recording', () => {
     ]);
   });
 
+  it('stores one landed write for an accepted or stacking Editing format commit, however many leaves it writes', () => {
+    const Color = defineEditorSchema('landed-color-schema', {
+      elements: { paragraph: { content: schema.content.text() } },
+      id: 'landed-color-schema',
+      properties: [schema.textProperty('color', property.string())],
+      root: schema.content.type('paragraph'),
+      unknown: 'reject',
+      version: 1,
+    });
+    const colorAll = (
+      editor: ReturnType<typeof editorFor>,
+      count: number,
+      value: string
+    ) =>
+      editor.update((tx) => {
+        tx.selection.set({ anchor: point(0), focus: point(4, [count - 1, 0]) });
+        tx.marks.add('color', value);
+      });
+    const leaves = (count: number, intent: 'edit' | 'propose') =>
+      editorFor(
+        Array.from({ length: count }, () => paragraph({ text: 'word' })),
+        intent,
+        'bob',
+        [Color]
+      );
+    const landed = (editor: ReturnType<typeof editorFor>) =>
+      Object.keys(recordsOf(editor.read.value())['authored-landed'] ?? {})
+        .length;
+    const accepted = [1, 10, 1000].map((count) => {
+      const editor = leaves(count, 'propose');
+
+      colorAll(editor, count, 'red');
+      authoredTestApi(editor).decide({ action: 'accept', changes: ['bob:1'] });
+
+      return landed(editor);
+    });
+    const editor = leaves(1000, 'propose');
+
+    colorAll(editor, 1000, 'red');
+    authoredTestApi(editor).setIntent('edit');
+    colorAll(editor, 1000, 'green');
+
+    assert.deepEqual(
+      { accepted, stacked: landed(editor) },
+      { accepted: [1, 1, 1], stacked: 1 }
+    );
+  });
+
   it('reads the accepted value of a key two suggestions formatted at once from the tag with the smallest id', () => {
     const tag = (id: string, author: string, before: string) => ({
       at: AT,
@@ -437,6 +518,315 @@ describe('authored review tree recording', () => {
     assert.deepEqual(editor.read.authored.reviewOf(text).accepted, {
       color: 'blue',
     });
+  });
+
+  it('keeps the pending suggestions under an Editing write to their key, through undo and their decisions', () => {
+    const editor = editorFor(annBlue(), 'propose', 'bob', [
+      history({ newBatchDelay: 0 }),
+    ]);
+    const api = authoredTestApi(editor);
+
+    setColor(editor, 'yellow');
+    api.setIntent('edit');
+    setColor(editor, 'green');
+    const edited = colorState(editor);
+
+    editor.api.history.undo();
+    const undone = colorState(editor);
+
+    editor.api.history.redo();
+    api.decide({ action: 'reject', changes: ['bob:1'] });
+    const bobRejected = colorState(editor);
+
+    api.decide({ action: 'reject', changes: ['ann:1'] });
+
+    assert.deepEqual(
+      { bobRejected, edited, end: colorState(editor), undone },
+      {
+        bobRejected: { accepted: 'green', color: 'green', pending: ['ann:1'] },
+        edited: {
+          accepted: 'green',
+          color: 'green',
+          pending: ['ann:1', 'bob:1'],
+        },
+        end: { accepted: 'green', color: 'green', pending: [] },
+        undone: {
+          accepted: null,
+          color: 'yellow',
+          pending: ['ann:1', 'bob:1'],
+        },
+      }
+    );
+  });
+
+  it('keeps an Editing value accepted under the suggestion its writer then writes over it', () => {
+    const editor = editing(annBlue());
+    const api = authoredTestApi(editor);
+
+    setColor(editor, 'green');
+    api.setIntent('propose');
+    setColor(editor, 'purple');
+    const suggested = colorState(editor);
+
+    api.decide({ action: 'reject', changes: ['bob:1'] });
+
+    assert.deepEqual(
+      { rejected: colorState(editor), suggested },
+      {
+        rejected: { accepted: 'green', color: 'green', pending: ['ann:1'] },
+        suggested: {
+          accepted: 'green',
+          color: 'purple',
+          pending: ['ann:1', 'bob:1'],
+        },
+      }
+    );
+  });
+
+  it('keeps an Editing value when the suggestion under it is accepted before the one over it is rejected', () => {
+    const editor = editing(annBlue());
+    const api = authoredTestApi(editor);
+
+    setColor(editor, 'green');
+    api.setIntent('propose');
+    setColor(editor, 'purple');
+    api.decide({ action: 'accept', changes: ['ann:1'] });
+    api.decide({ action: 'reject', changes: ['bob:1'] });
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph({ color: 'green', text: 'word' }),
+    ]);
+  });
+
+  it('keeps an Editing value that returns a key to the suggested value', () => {
+    const editor = editing(annBlue());
+    const api = authoredTestApi(editor);
+
+    setColor(editor, 'green');
+    setColor(editor, 'blue');
+    const returned = colorState(editor);
+
+    api.decide({ action: 'reject', changes: ['ann:1'] });
+
+    assert.deepEqual(
+      { rejected: colorState(editor), returned },
+      {
+        rejected: { accepted: 'blue', color: 'blue', pending: [] },
+        returned: { accepted: 'blue', color: 'blue', pending: ['ann:1'] },
+      }
+    );
+  });
+
+  it('keeps another author’s pending property on the block an Editing removal leaves in its place', () => {
+    const Aligned = defineEditorSchema('record-aligned-shell', {
+      elements: { paragraph: { content: schema.content.text() } },
+      id: 'record-aligned-shell',
+      properties: [
+        schema.elementProperty('align', property.string(), {
+          target: target.type('paragraph'),
+        }),
+      ],
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = editorFor(
+      [
+        {
+          type: 'paragraph',
+          align: 'center',
+          authored: [
+            {
+              at: AT,
+              author: 'ann',
+              change: 'ann:1',
+              id: 'a1',
+              key: 'align',
+              kind: 'format',
+              write: { kind: 'set', value: 'center' },
+            },
+          ],
+          children: [{ text: 'a' }],
+        },
+      ],
+      'edit',
+      'bob',
+      [Aligned]
+    );
+
+    editor.update((tx) => tx.nodes.remove({ at: [0] }));
+    const [shell] = editor.read.children() as Array<{ align?: string }>;
+    const pending = editor.read.authored.changes().items.map(({ id }) => id);
+
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['ann:1'] });
+    const [rejected] = editor.read.children() as Array<{ align?: string }>;
+
+    assert.deepEqual(
+      {
+        align: shell.align ?? null,
+        pending,
+        rejected: {
+          align: rejected.align ?? null,
+          pending: editor.read.authored.changes().items,
+        },
+      },
+      {
+        align: null,
+        pending: ['ann:1'],
+        rejected: { align: null, pending: [] },
+      }
+    );
+  });
+
+  it('keeps the Editing value of the block an Editing removal leaves in its place when the suggestion under it is accepted before the one over it is rejected', () => {
+    const Aligned = defineEditorSchema('record-aligned-landed-shell', {
+      elements: { paragraph: { content: schema.content.text() } },
+      id: 'record-aligned-landed-shell',
+      properties: [
+        schema.elementProperty('align', property.string(), {
+          target: target.type('paragraph'),
+        }),
+      ],
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = editorFor(
+      [
+        {
+          type: 'paragraph',
+          align: 'center',
+          authored: [
+            {
+              at: AT,
+              author: 'ann',
+              change: 'ann:1',
+              id: 'a1',
+              key: 'align',
+              kind: 'format',
+              write: { kind: 'set', value: 'center' },
+            },
+          ],
+          children: [{ text: 'a' }],
+        },
+      ],
+      'edit',
+      'bob',
+      [Aligned]
+    );
+    const api = authoredTestApi(editor);
+
+    editor.update((tx) => tx.nodes.remove({ at: [0] }));
+    api.setIntent('propose');
+    editor.update((tx) =>
+      tx.nodes.set({ align: 'right' } as never, { at: [0] })
+    );
+    api.decide({ action: 'accept', changes: ['ann:1'] });
+    api.decide({ action: 'reject', changes: ['bob:1'] });
+    const [shell] = editor.read.children() as Array<{ align?: string }>;
+
+    assert.deepEqual(
+      {
+        align: shell.align ?? null,
+        pending: editor.read.authored.changes().items,
+      },
+      { align: null, pending: [] }
+    );
+  });
+
+  it('rewrites the writer’s own pending property on the block their removal leaves in its place', () => {
+    const Aligned = defineEditorSchema('record-aligned-own-shell-rewrite', {
+      elements: { paragraph: { content: schema.content.text() } },
+      id: 'record-aligned-own-shell-rewrite',
+      properties: [
+        schema.elementProperty('align', property.string(), {
+          target: target.type('paragraph'),
+        }),
+      ],
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = editorFor(
+      [{ type: 'paragraph', align: 'left', children: [{ text: 'a' }] }],
+      'propose',
+      'bob',
+      [Aligned]
+    );
+    const api = authoredTestApi(editor);
+
+    api.propose('bob:1', (tx) =>
+      tx.nodes.set({ align: 'center' }, { at: [0] })
+    );
+    api.propose('bob:1', (tx) => tx.nodes.remove({ at: [0] }));
+    const [shell] = editor.read.children() as Array<{ align?: string }>;
+    const formats = editor.read.authored
+      .reviewOf(shell)
+      .marks.filter(({ kind }) => kind === 'format');
+
+    assert.deepEqual(
+      {
+        align: shell.align ?? null,
+        formats: formats.map(({ before, write }) => ({ before, write })),
+      },
+      { align: null, formats: [{ before: 'left', write: { kind: 'remove' } }] }
+    );
+    api.decide({ action: 'reject', changes: ['bob:1'] });
+    assert.equal(
+      (editor.read.children() as Array<{ align?: string }>)[0]?.align,
+      'left'
+    );
+  });
+
+  it('withdraws the writer’s own pending property on the block their removal leaves in its place', () => {
+    const Aligned = defineEditorSchema('record-aligned-own-shell', {
+      elements: { paragraph: { content: schema.content.text() } },
+      id: 'record-aligned-own-shell',
+      properties: [
+        schema.elementProperty('align', property.string(), {
+          target: target.type('paragraph'),
+        }),
+      ],
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = editorFor(
+      [{ type: 'paragraph', children: [{ text: 'a' }] }],
+      'propose',
+      'bob',
+      [Aligned]
+    );
+
+    const api = authoredTestApi(editor);
+
+    api.propose('bob:1', (tx) =>
+      tx.nodes.set({ align: 'center' }, { at: [0] })
+    );
+    api.propose('bob:1', (tx) => tx.nodes.remove({ at: [0] }));
+    const [shell] = editor.read.children() as Array<{ align?: string }>;
+
+    assert.deepEqual(
+      {
+        align: shell.align ?? null,
+        formats: editor.read.authored
+          .reviewOf(shell)
+          .marks.filter(({ kind }) => kind === 'format'),
+      },
+      { align: null, formats: [] }
+    );
   });
 
   it('stores no context record for an Editing keystroke inside text that rests on one', () => {
@@ -2215,7 +2605,7 @@ describe('authored review tree recording laws', () => {
   });
 
   describe('rejecting a pending property change after Enter places the tail in another slot', () => {
-    const bobTag = (key: string, before?: unknown) => ({
+    const bobTag = (key: string, before?: unknown, value?: unknown) => ({
       at: AT,
       author: 'bob',
       ...(before === undefined ? {} : { before }),
@@ -2223,6 +2613,7 @@ describe('authored review tree recording laws', () => {
       id: `${key}-1`,
       key,
       kind: 'format',
+      write: value === undefined ? { kind: 'remove' } : { kind: 'set', value },
     });
     const title = (props: Record<string, unknown>) => ({
       type: 'title',
@@ -2253,7 +2644,7 @@ describe('authored review tree recording laws', () => {
     it('rejects a pending level change on the title, in both modes', () => {
       for (const intent of ['edit', 'propose'] as const) {
         const { children, result } = enterThenReject(
-          title({ authored: [bobTag('level', 2)], level: 3 }),
+          title({ authored: [bobTag('level', 2, 3)], level: 3 }),
           TitleThenParagraphs('drop'),
           intent
         );
@@ -2278,7 +2669,10 @@ describe('authored review tree recording laws', () => {
 
     it('leaves the tail without a property its type change dropped', () => {
       const { children, result } = enterThenReject(
-        title({ align: 'center', authored: [bobTag('align', 'left')] }),
+        title({
+          align: 'center',
+          authored: [bobTag('align', 'left', 'center')],
+        }),
         TitleThenParagraphs('drop')
       );
 
@@ -2334,7 +2728,10 @@ describe('authored review tree recording laws', () => {
         version: 1,
       });
       const { children, result } = enterThenReject(
-        title({ align: 'center', authored: [bobTag('align', 'justify')] }),
+        title({
+          align: 'center',
+          authored: [bobTag('align', 'justify', 'center')],
+        }),
         Aligned
       );
 
@@ -2344,6 +2741,93 @@ describe('authored review tree recording laws', () => {
         { ...paragraph({ text: 'tle' }), align: 'center' },
         paragraph({ text: 'Body' }),
       ]);
+    });
+
+    it('keeps the Editing value on the tail over a pending value its type refuses', () => {
+      const Aligned = defineEditorSchema('record-titled-aligned-editing', {
+        elements: {
+          paragraph: { content: schema.content.text() },
+          title: { content: schema.content.text() },
+        },
+        id: 'record-titled-aligned-editing',
+        properties: [
+          schema.elementProperty(
+            'align',
+            property.enum(['center', 'justify']),
+            {
+              target: target.type('title'),
+              typeChange: 'preserve-if-allowed',
+            }
+          ),
+          schema.elementProperty('align', property.enum(['center', 'left']), {
+            target: target.type('paragraph'),
+          }),
+        ],
+        root: schema.content.prefix(
+          [{ element: 'title' }],
+          schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+          })
+        ),
+        unknown: 'reject',
+        version: 1,
+      });
+      const handOff = (
+        from: ReturnType<typeof editorFor>,
+        intent: 'edit' | 'propose',
+        author: string
+      ) =>
+        editorFor(
+          JSON.parse(JSON.stringify(from.read.value())),
+          intent,
+          author,
+          [Aligned]
+        );
+      const bob = editorFor(
+        [title({}), paragraph({ text: 'Body' })],
+        'propose',
+        'bob',
+        [Aligned]
+      );
+
+      bob.update((tx) =>
+        tx.nodes.set({ align: 'justify' } as never, { at: [0] })
+      );
+      const dana = handOff(bob, 'edit', 'dana');
+
+      dana.update((tx) =>
+        tx.nodes.set({ align: 'center' } as never, { at: [0] })
+      );
+      const alice = handOff(dana, 'edit', 'alice');
+
+      alice.update((tx) => {
+        tx.selection.set({ anchor: point(2), focus: point(2) });
+        tx.break.insert();
+      });
+      const tail = alice.read.children()[1];
+
+      assert.deepEqual(
+        alice.read.authored
+          .reviewOf(tail)
+          .marks.filter(({ kind }) => kind === 'format'),
+        []
+      );
+      const result = authoredTestApi(alice).decide({
+        action: 'reject',
+        changes: ['bob:1'],
+      });
+
+      assert.equal(result.status, 'applied');
+      assert.deepEqual(
+        (alice.read.children() as Array<Record<string, unknown>>).map(
+          ({ authored: _authored, ...block }) => block
+        ),
+        [
+          { type: 'title', align: 'center', children: [{ text: 'Ti' }] },
+          { ...paragraph({ text: 'tle' }), align: 'center' },
+          paragraph({ text: 'Body' }),
+        ]
+      );
     });
 
     it('leaves the tail the value its slot fixes', () => {
@@ -2371,7 +2855,7 @@ describe('authored review tree recording laws', () => {
         {
           ...paragraph({ text: 'Title' }),
           align: 'center',
-          authored: [bobTag('align', 'right')],
+          authored: [bobTag('align', 'right', 'center')],
         },
         Fixed,
         'edit',

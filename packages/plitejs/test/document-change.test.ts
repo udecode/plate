@@ -35,6 +35,7 @@ import {
   hasMaterializedDocumentSliceTokens,
   type JsonEditorValue,
   type JsonNode,
+  openToken,
   PreparedTokenSlice,
 } from '../src/core/change/tokens';
 import { isImmutable } from '../src/core/clone';
@@ -950,6 +951,64 @@ describe('JSON document change algebra', () => {
       replacements: 2,
       usedTokenFallback: false,
     });
+  });
+
+  it('applies an insertion beside a replacement at the same position locally, in order', () => {
+    const children = [paragraph('a'), paragraph('b'), paragraph('c')];
+    const document = DocumentIndex.fromValue(asJsonNodes(children));
+    const target = document.nodeRange([1]);
+    const insert = PreparedTokenSlice.fromNodes([paragraph('x')]);
+    const replace = PreparedTokenSlice.fromNodes([paragraph('y')]);
+    const change = RootChange.fromSections(
+      [
+        target.from,
+        -1,
+        0,
+        insert.length,
+        target.to - target.from,
+        replace.length,
+        document.length - target.to,
+        -1,
+      ],
+      [null, insert, replace, null]
+    );
+    const applied = change.apply(document);
+    const stats = getRootChangeApplyStats(change);
+
+    assert.deepEqual(applied.value, [
+      paragraph('a'),
+      paragraph('x'),
+      paragraph('y'),
+      paragraph('c'),
+    ]);
+    assert.deepEqual(
+      applied.value,
+      applyByTokenReference(change, document).value
+    );
+    assert.equal(stats?.fallbackReason, null);
+    assert.equal(stats?.usedTokenFallback, false);
+  });
+
+  it('refuses an element opening that replaces a text opening, as the token reference does', () => {
+    const document = DocumentIndex.fromValue(asJsonNodes([paragraph('word')]));
+    const change = RootChange.fromSections(
+      [1, -1, 0, 1, 1, 0, document.length - 2, -1],
+      [
+        null,
+        PreparedTokenSlice.fromTokens([openToken('element', { type: 'link' })]),
+        PreparedTokenSlice.empty,
+        null,
+      ]
+    );
+
+    assert.throws(
+      () => applyByTokenReference(change, document),
+      /Text content must be inside a text node/
+    );
+    assert.throws(
+      () => change.apply(document),
+      /Text content must be inside a text node/
+    );
   });
 
   it('rewrites a shared ancestor once for every replacement inside it', () => {

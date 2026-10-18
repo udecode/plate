@@ -320,33 +320,6 @@ describe('authored review tree decisions', () => {
     );
   });
 
-  it('reads a tag written over a decided tag as written over the accepted value', () => {
-    // Bob unbolded on top of t1, which a decision has since accepted.
-    const formatted = [
-      paragraph({
-        authored: [
-          {
-            at: AT,
-            author: 'bob',
-            before: true,
-            change: 'bob:2',
-            id: 't2',
-            key: 'bold',
-            kind: 'format',
-            write: { kind: 'remove' },
-            over: ['t1'],
-          },
-        ],
-        text: 'word',
-      }),
-    ];
-
-    assert.deepEqual(
-      resolveAuthoredChildren(formatted, reject('bob:2')).children,
-      [paragraph({ bold: true, text: 'word' })]
-    );
-  });
-
   it('decides one change as one undoable step', () => {
     const editor = createEditor({
       plugins: [

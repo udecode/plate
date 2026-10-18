@@ -591,11 +591,11 @@ export const locateChainOffset = (
       (remaining === text.length && bias === 'left' && text.length > 0) ||
       i === chain.length - 1
     ) {
-      return { index: Math.min(remaining, text.length), text };
+      return { index: Math.min(remaining, text.length), segment: i, text };
     }
     remaining -= text.length;
   }
-  return { index: 0, text: chain[0] };
+  return { index: 0, segment: 0, text: chain[0] };
 };
 
 export const chainOffsetOf = (
@@ -661,23 +661,29 @@ const diffText = (before: string, after: string): Diff[] => {
   ];
 };
 
-const leafAt = (leaves: readonly Text[], offset: number) => {
+const leafCursor = (leaves: readonly Text[]) => {
+  let index = 0;
   let from = 0;
-  for (let index = 0; index < leaves.length; index++) {
-    const leaf = leaves[index];
-    if (offset < from + leaf.text.length || index === leaves.length - 1) {
-      return { leaf, index, end: from + leaf.text.length };
+  return (offset: number) => {
+    if (leaves.length === 0) throw new Error('A text group needs a leaf.');
+    while (
+      index < leaves.length - 1 &&
+      offset >= from + leaves[index].text.length
+    ) {
+      from += leaves[index].text.length;
+      index += 1;
     }
-    from += leaf.text.length;
-  }
-  throw new Error('A text group needs a leaf.');
+    const leaf = leaves[index];
+    return { leaf, index, end: from + leaf.text.length };
+  };
 };
 
 export const writeTextRuns = (
   chain: YjsTextChain,
   before: readonly Text[],
   after: readonly Text[],
-  encode: YjsRunEncoder
+  encode: YjsRunEncoder,
+  encodeBefore: YjsRunEncoder = encode
 ): void => {
   const previous = before.map((leaf) => leaf.text).join('');
   const next = after.map((leaf) => leaf.text).join('');
@@ -686,6 +692,8 @@ export const writeTextRuns = (
   }
   let fromBefore = 0;
   let fromAfter = 0;
+  const targetAt = leafCursor(after);
+  const sourceAt = leafCursor(before);
   for (const [operation, value] of diffText(previous, next)) {
     if (operation === DiffOp.Delete) {
       let remaining = value.length;
@@ -705,9 +713,8 @@ export const writeTextRuns = (
     }
     let remaining = value.length;
     while (remaining > 0) {
-      const target = leafAt(after, fromAfter);
-      const source =
-        operation === DiffOp.Equal ? leafAt(before, fromBefore) : null;
+      const target = targetAt(fromAfter);
+      const source = operation === DiffOp.Equal ? sourceAt(fromBefore) : null;
       const length = Math.min(
         remaining,
         target.end - fromAfter,
@@ -751,7 +758,7 @@ export const writeTextRuns = (
           inserted = end;
         }
       } else if (source) {
-        const oldAttributes = encode(source.leaf, source.index);
+        const oldAttributes = encodeBefore(source.leaf, source.index);
         const patch: YjsAttributeRecord = {};
         for (const key of new Set([
           ...Object.keys(oldAttributes),
@@ -765,24 +772,25 @@ export const writeTextRuns = (
         }
         if (Object.keys(patch).length > 0) {
           let rest = length;
-          let offset = fromAfter;
+          let { index: at, segment } = locateChainOffset(
+            chain,
+            fromAfter,
+            'right'
+          );
           while (rest > 0) {
-            const position = locateChainOffset(chain, offset, 'right');
-            const count = Math.min(rest, position.text.length - position.index);
-            if (count === 0) {
+            const text = chain[segment];
+            if (text === undefined) {
               throw new Error('Cannot format beyond a text chain.');
             }
-            for (const [key, markValue] of Object.entries(patch)) {
-              writeMarkRecord(
-                position.text,
-                position.index,
-                count,
-                key,
-                markValue
-              );
+            const count = Math.min(rest, text.length - at);
+            if (count > 0) {
+              for (const [key, markValue] of Object.entries(patch)) {
+                writeMarkRecord(text, at, count, key, markValue);
+              }
             }
             rest -= count;
-            offset += count;
+            segment += 1;
+            at = 0;
           }
         }
         fromBefore += length;
@@ -794,6 +802,32 @@ export const writeTextRuns = (
   if (next.length === 0) {
     writeEmptyAttributes(chain[0], after[0] ? encode(after[0], 0) : {});
   }
+};
+
+export const rewriteTextRuns = (
+  chain: YjsTextChain,
+  after: readonly Text[],
+  encode: YjsRunEncoder
+): void => {
+  const runs: Array<{ text: string; attributes: YjsAttributeRecord }> = [];
+  for (const text of chain) {
+    if (text.length === 0) continue;
+    for (const run of readEncodedRuns(text)) {
+      const last = runs.at(-1);
+      if (last && areJsonLikeValuesEqual(last.attributes, run.attributes)) {
+        last.text += run.text;
+      } else {
+        runs.push({ ...run });
+      }
+    }
+  }
+  writeTextRuns(
+    chain,
+    runs.map((run) => ({ text: run.text })),
+    after,
+    encode,
+    (_leaf, index) => runs[index].attributes
+  );
 };
 
 export const retainTextChainRange = (

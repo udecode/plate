@@ -13,6 +13,8 @@ import {
 
 import { createAuthoredPlugin } from '../src/authored/authored';
 import { expandContexts } from '../src/authored/facts/compact';
+import { factsOf } from '../src/authored/facts/facts';
+import { type LandedRecord, landedOf } from '../src/authored/facts/records';
 import { authoredResolveSchemaOf } from '../src/authored/resolve-schema';
 import type { AuthoredMark } from '../src/authored/tree/marks';
 import {
@@ -20,14 +22,98 @@ import {
   resolveAuthoredChildren,
 } from '../src/authored/tree/resolve';
 import type { JsonNode } from '../src/core/change/tokens';
-import { authoredTestApi } from './support/authored';
+import { authoredTestApi, reviewRecords } from './support/authored';
 
 // The laws hold for the editor's canonical form, which decisions produce.
 const schema = authoredResolveSchemaOf(
   createEditor({ plugins: [createAuthoredPlugin({ authorId: 'laws' })] })
 );
-const resolve = (children: readonly JsonNode[], outcome: AuthoredOutcome) =>
-  resolveAuthoredChildren(children, outcome, schema);
+
+type Verdict = 'accept' | 'reject';
+
+// A link to `<key>l` names a gone write that landed, one to `<key>g` a gone
+// write that never did.
+const LANDED = ['align', 'bold'].map((key) =>
+  landedOf({ at: 1, change: '~edit:laws', id: `${key}l` })
+);
+// Only a landed write some remaining tag links can be read; a step that
+// lands a write on content a later step removes stores one nothing reads.
+const writesOf = (
+  landed: readonly LandedRecord[],
+  nodes: readonly unknown[]
+) => {
+  const linked = new Set<string>();
+  const walk = (node: {
+    authored?: readonly AuthoredMark[];
+    children?: readonly unknown[];
+  }) => {
+    const formats = (node.authored ?? []).filter(
+      (item) => item.kind === 'format'
+    );
+
+    // A link whose tag still sits on the key reads that tag, not its record.
+    for (const item of formats) {
+      for (const link of (item.over ?? []).flat()) {
+        if (
+          !formats.some(
+            (other) => other.id === link.id && other.key === item.key
+          )
+        ) {
+          linked.add(link.id);
+        }
+      }
+    }
+    for (const child of node.children ?? []) walk(child as never);
+  };
+
+  for (const node of nodes) walk(node as never);
+
+  return [...new Set(landed.map(({ write }) => write))]
+    .filter((write) => linked.has(write))
+    .sort();
+};
+
+const resolveWithVerdicts = (
+  decided: ReadonlyMap<string, Verdict>,
+  children: readonly JsonNode[],
+  outcome: AuthoredOutcome,
+  resolveSchema = schema,
+  landed: readonly LandedRecord[] = LANDED
+) =>
+  resolveAuthoredChildren(children, outcome, resolveSchema, 'main', {
+    facts: factsOf({
+      children,
+      records: reviewRecords({
+        landed,
+        verdicts: [...decided].map(([change, verdict], index) => ({
+          decision: `d:${index}`,
+          member: { at: 1, change },
+          verdict,
+        })),
+      }),
+    }),
+  });
+
+const settleAsAdmission = (
+  decided: ReadonlyMap<string, Verdict>,
+  step: Readonly<{
+    children: readonly JsonNode[];
+    landed: readonly LandedRecord[];
+  }>,
+  landed: readonly LandedRecord[],
+  resolveSchema = schema
+) => {
+  const stored = [...landed, ...step.landed];
+  const settled = resolveWithVerdicts(
+    decided,
+    step.children,
+    () => 'keep',
+    resolveSchema,
+    stored
+  );
+
+  return { children: settled.children, landed: [...stored, ...settled.landed] };
+};
 
 type Leaf = { authored?: AuthoredMark[]; bold?: boolean; text: string };
 type Block = { authored?: AuthoredMark[]; children: Leaf[]; type: 'paragraph' };
@@ -52,6 +138,24 @@ const mark = (kind: AuthoredMark['kind'], change: string): AuthoredMark => {
   return { at: 1, author: change, change, kind };
 };
 
+// A link names a tag present when its tag was written, or a gone write.
+const linksToPresentTags = (tags: readonly AuthoredMark[]) =>
+  tags.map((tag) => {
+    if (tag.kind !== 'format' || !tag.over) return tag;
+    const over = tag.over
+      .map((step) =>
+        step.filter(
+          ({ id }) =>
+            /[gl]$/.test(id) ||
+            tags.some((other) => other.kind === 'format' && other.id === id)
+        )
+      )
+      .filter((step) => step.length > 0);
+    const { base, over: _over, ...rest } = tag;
+
+    return over.length > 0 ? { ...rest, base, over } : rest;
+  });
+
 /**
  * Up to three linked tags on one key, as recording writes them: stacks, forks
  * written from one point, and a change written again on top. A tag's change
@@ -60,59 +164,73 @@ const mark = (kind: AuthoredMark['kind'], change: string): AuthoredMark => {
 const tagsArbitrary = (
   key: string,
   changes: readonly string[],
-  value: unknown,
+  values: readonly unknown[],
   excluded: readonly string[] = []
-) =>
-  fc
+) => {
+  const write = (index: number) =>
+    index < values.length
+      ? { kind: 'set' as const, value: values[index] as never }
+      : { kind: 'remove' as const };
+  const pick = fc.nat({ max: values.length });
+
+  return fc
     .array(
       fc.record({
-        before: fc.boolean(),
+        base: pick,
+        before: pick,
         change: fc.constantFrom(...changes),
+        gone: fc.constantFrom(null, 'g', 'l'),
         over: fc.array(fc.boolean(), { maxLength: 3, minLength: 3 }),
+        write: pick,
       }),
       { maxLength: 3 }
     )
     .map((rows) =>
       rows.flatMap((row, index): AuthoredMark[] => {
         if (excluded.includes(row.change)) return [];
-        const over = rows
-          .slice(0, index)
-          .flatMap((_, at) => (row.over[at] ? [`${key}${at}`] : []));
+        const over = [
+          ...(row.gone === null
+            ? []
+            : [[{ id: `${key}${row.gone}`, write: write(row.base) }]]),
+          ...rows.slice(0, index).flatMap((earlier, at) =>
+            row.over[at]
+              ? [
+                  [
+                    {
+                      id: `${key}${at}${earlier.change}`,
+                      write: write(earlier.write),
+                    },
+                  ],
+                ]
+              : []
+          ),
+        ];
 
         return [
           {
             at: 1,
             author: row.change,
             change: row.change,
-            id: `${key}${index}`,
+            id: `${key}${index}${row.change}`,
             key,
             kind: 'format',
-            write: { kind: 'set', value: value as never },
-            ...(row.before ? { before: value as never } : {}),
-            ...(over.length > 0 ? { over } : {}),
+            write: write(row.write),
+            ...(row.before < values.length
+              ? { before: values[row.before] as never }
+              : {}),
+            ...(over.length > 0 ? { base: write(row.base), over } : {}),
           },
         ];
       })
     )
-    .map((tags) =>
-      // An `over` id names a tag that was present when the tag was written.
-      tags.map((tag) =>
-        tag.kind === 'format' && tag.over
-          ? (() => {
-              const over = tag.over.filter((id) =>
-                tags.some((other) => other.kind === 'format' && other.id === id)
-              );
-              const { over: _over, ...rest } = tag;
-
-              return over.length > 0 ? { ...rest, over } : rest;
-            })()
-          : tag
-      )
-    );
+    .map(linksToPresentTags);
+};
 
 /**
  * A whole-block insertion or deletion marks every node inside the block too,
- * as recording writes it, in place of the node's own mark of that change.
+ * as recording writes it, in place of the node's own mark of that change. A
+ * link to a dropped format tag goes with it, since a link that names a tag on
+ * another leaf would be a part withdrawal, a named limit.
  */
 const spread = <T extends object>(node: T, item: AuthoredMark): T => {
   const record = node as T & {
@@ -123,7 +241,10 @@ const spread = <T extends object>(node: T, item: AuthoredMark): T => {
 
   return {
     ...node,
-    authored: [...marks.filter((other) => other.change !== item.change), item],
+    authored: linksToPresentTags([
+      ...marks.filter((other) => other.change !== item.change),
+      item,
+    ]),
     ...(record.children
       ? { children: record.children.map((child) => spread(child, item)) }
       : {}),
@@ -140,10 +261,12 @@ const leafArbitrary = fc
     text: fc.constantFrom('a', 'b', 'cd', 'e'),
   })
   .chain((leaf) =>
-    tagsArbitrary('bold', CHANGES, true, [
-      ...leaf.inserts,
-      ...leaf.deletes,
-    ]).map((tags) => ({ ...leaf, tags }))
+    tagsArbitrary(
+      'bold',
+      CHANGES,
+      [true],
+      [...leaf.inserts, ...leaf.deletes]
+    ).map((tags) => ({ ...leaf, tags }))
   )
   .map(({ bold, deletes, inserts, tags, text }): Leaf => {
     const usedByInsert = new Set(inserts);
@@ -241,28 +364,50 @@ describe('authored review tree decision laws', () => {
           const decisions = new Map(
             order.map((change, index) => [change, actions[index]])
           );
-          const atOnce = resolve(document, all(decisions));
+          const decidedAtOnce = resolveWithVerdicts(
+            new Map(),
+            document,
+            all(decisions)
+          );
+          const decided = new Map<string, Verdict>();
+          let landed: readonly LandedRecord[] = LANDED;
           let stepped: readonly unknown[] = document;
           let waiting: string[] = [];
 
-          if (atOnce.blockers.length > 0) return;
+          if (decidedAtOnce.blockers.length > 0) return;
+          const atOnce = settleAsAdmission(decisions, decidedAtOnce, LANDED);
           // A decision that waits joins the next one.
           for (const change of order) {
             waiting = waiting.concat(change);
-            const step = resolve(
+            const batch = new Map(
+              waiting.map((item) => [item, decisions.get(item)!])
+            );
+            const step = resolveWithVerdicts(
+              decided,
               stepped as Block[],
-              all(new Map(waiting.map((item) => [item, decisions.get(item)!])))
+              all(batch),
+              schema,
+              landed
             );
 
             if (step.blockers.length > 0) continue;
-            stepped = step.children;
+            for (const [item, verdict] of batch) decided.set(item, verdict);
+            ({ children: stepped, landed } = settleAsAdmission(
+              decided,
+              step,
+              landed
+            ));
             waiting = [];
           }
 
           compared += 1;
           assert.deepEqual(
-            { children: stepped, waiting },
-            { children: atOnce.children, waiting: [] }
+            { children: stepped, landed: writesOf(landed, stepped), waiting },
+            {
+              children: atOnce.children,
+              landed: writesOf(atOnce.landed, atOnce.children),
+              waiting: [],
+            }
           );
         }
       ),
@@ -277,32 +422,57 @@ describe('authored review tree decision laws', () => {
         documentArbitrary,
         fc.shuffledSubarray(CHANGES, { minLength: 6 }),
         (document, order) => {
-          const accepted = resolve(document, () => 'accept').children;
+          const accepted = settleAsAdmission(
+            new Map(order.map((change) => [change, 'accept' as const])),
+            resolveWithVerdicts(new Map(), document, () => 'accept'),
+            LANDED
+          );
+          const decided = new Map<string, Verdict>();
+          let landed: readonly LandedRecord[] = LANDED;
           let stepped: readonly unknown[] = document;
           const remaining = [...order];
+          const acceptIn =
+            (batch: ReadonlySet<string>): AuthoredOutcome =>
+            (id) =>
+              batch.has(id) ? 'accept' : 'keep';
 
           while (remaining.length > 0) {
             // A blocked step grows into a batch with the changes it waits for.
             const batch = new Set([remaining.shift()!]);
-            let step = resolve(stepped as Block[], (id) =>
-              batch.has(id) ? 'accept' : 'keep'
-            );
+            const stepOf = () =>
+              resolveWithVerdicts(
+                decided,
+                stepped as Block[],
+                acceptIn(batch),
+                schema,
+                landed
+              );
+            let step = stepOf();
 
             while (step.blockers.some((change) => !batch.has(change))) {
               for (const change of step.blockers) batch.add(change);
-              step = resolve(stepped as Block[], (id) =>
-                batch.has(id) ? 'accept' : 'keep'
-              );
+              step = stepOf();
             }
             for (const change of batch) {
               const at = remaining.indexOf(change);
 
               if (at !== -1) remaining.splice(at, 1);
+              decided.set(change, 'accept');
             }
-            stepped = step.children;
+            ({ children: stepped, landed } = settleAsAdmission(
+              decided,
+              step,
+              landed
+            ));
           }
 
-          assert.deepEqual(stepped, accepted);
+          assert.deepEqual(
+            { children: stepped, landed: writesOf(landed, stepped) },
+            {
+              children: accepted.children,
+              landed: writesOf(accepted.landed, accepted.children),
+            }
+          );
         }
       ),
       { numRuns: 1000 }
@@ -331,11 +501,18 @@ describe('authored review tree decision laws', () => {
           key: 'bold',
           kind: 'format' as const,
           write: { kind: 'remove' as const },
-          over: ['ta'],
+          base: { kind: 'remove' as const },
+          over: [[{ id: 'ta', write: { kind: 'set' as const, value: true } }]],
         },
       ],
       text: 'a',
     };
+
+    const verdictKeepingEditor = () =>
+      createEditor({
+        initialValue: [{ children: [leaf], type: 'paragraph' }] as never,
+        plugins: [createAuthoredPlugin({ authorId: 'laws' })],
+      });
 
     for (const first of ['accept', 'reject'] as const) {
       for (const second of ['accept', 'reject'] as const) {
@@ -343,8 +520,19 @@ describe('authored review tree decision laws', () => {
           ['alice:1', first],
           ['bob:1', second],
         ]);
-        const document = [{ children: [leaf], type: 'paragraph' }] as Block[];
-        const atOnce = resolve(document, all(decisions)).children;
+        const decide = (
+          editor: ReturnType<typeof verdictKeepingEditor>,
+          changes: readonly string[]
+        ) =>
+          authoredTestApi(editor).decide(
+            changes.map((change) => ({
+              action: decisions.get(change)!,
+              changes: [change],
+            }))
+          );
+        const once = verdictKeepingEditor();
+
+        decide(once, ['alice:1', 'bob:1']);
 
         // A decision that waits joins the next one, so every order is tried
         // as the admissible steps it allows.
@@ -352,23 +540,17 @@ describe('authored review tree decision laws', () => {
           ['alice:1', 'bob:1'],
           ['bob:1', 'alice:1'],
         ]) {
-          let stepped: readonly unknown[] = document;
+          const editor = verdictKeepingEditor();
           let waiting: string[] = [];
 
           for (const change of order) {
             waiting = waiting.concat(change);
-            const step = resolve(
-              stepped as Block[],
-              all(new Map(waiting.map((item) => [item, decisions.get(item)!])))
-            );
-
-            if (step.blockers.length > 0) continue;
-            stepped = step.children;
+            if (decide(editor, waiting).status === 'blocked') continue;
             waiting = [];
           }
           assert.deepEqual(
-            [waiting, stepped],
-            [[], atOnce],
+            [waiting, editor.read.children()],
+            [[], once.read.children()],
             `${first}/${second} in order ${order}`
           );
         }
@@ -496,7 +678,7 @@ const structuralBlock = (first: boolean) =>
         align: fc.boolean(),
         content: optionalMark(['delete', 'insert']),
         enclosure: optionalMark(['unwrap', 'wrap']),
-        tags: tagsArbitrary('align', STRUCTURAL, 'center'),
+        tags: tagsArbitrary('align', STRUCTURAL, ['center', 'right']),
       })
       .map(({ align, boundary, children, content, enclosure, tags }) => {
         const quote: { authored?: AuthoredMark[] } & Record<string, unknown> =
@@ -507,7 +689,9 @@ const structuralBlock = (first: boolean) =>
           ]);
 
         const own = new Set((quote.authored ?? []).map((item) => item.change));
-        const written = tags.filter((tag) => !own.has(tag.change));
+        const written = linksToPresentTags(
+          tags.filter((tag) => !own.has(tag.change))
+        );
 
         if (written.length === 0) return quote;
 
@@ -610,8 +794,6 @@ describe('authored review tree structural decision laws', () => {
             let document: readonly JsonNode[];
 
             try {
-              // resolveAuthoredChildren runs without review facts here, so the
-              // insertions a load folded into contexts go back to explicit claims.
               document = expandContexts(
                 quotesEditor(generated).read.value()
               ).children;
@@ -622,27 +804,57 @@ describe('authored review tree structural decision laws', () => {
             const decisions = new Map(
               order.map((change, index) => [change, actions[index]])
             );
-            const atOnce = resolveAuthoredChildren(
+            const decidedAtOnce = resolveWithVerdicts(
+              new Map(),
               document,
               all(decisions),
               quotesSchema
             );
+            const decided = new Map<string, Verdict>();
+            let landed: readonly LandedRecord[] = LANDED;
             let stepped = document;
 
-            if (atOnce.blockers.length > 0 || atOnce.unplaceable) return;
+            if (
+              decidedAtOnce.blockers.length > 0 ||
+              decidedAtOnce.unplaceable
+            ) {
+              return;
+            }
+            const atOnce = settleAsAdmission(
+              decisions,
+              decidedAtOnce,
+              LANDED,
+              quotesSchema
+            );
+
             for (const change of order) {
-              const step = resolveAuthoredChildren(
+              const verdict = decisions.get(change)!;
+              const step = resolveWithVerdicts(
+                decided,
                 stepped,
-                all(new Map([[change, decisions.get(change)!]])),
-                quotesSchema
+                all(new Map([[change, verdict]])),
+                quotesSchema,
+                landed
               );
 
               if (step.blockers.length > 0 || step.unplaceable) return;
-              stepped = step.children;
+              decided.set(change, verdict);
+              ({ children: stepped, landed } = settleAsAdmission(
+                decided,
+                step,
+                landed,
+                quotesSchema
+              ));
             }
 
             compared += 1;
-            assert.deepEqual(stepped, atOnce.children);
+            assert.deepEqual(
+              { children: stepped, landed: writesOf(landed, stepped) },
+              {
+                children: atOnce.children,
+                landed: writesOf(atOnce.landed, atOnce.children),
+              }
+            );
           }
         ),
         {

@@ -6,18 +6,17 @@ import fc from 'fast-check';
 import {
   decideKey,
   type FormatTag,
+  type IsAccepted,
   keySteps,
   keyTips,
   type LayerOutcome,
   type LayerValue,
-  writeLayer,
+  recordFormats,
 } from '../src/authored/tree/layers';
-
-// docs/plans/2026-10-10-authored-values.md, S1: the decision laws of one key
-// over histories that clients write, amend, withdraw, correct and merge.
 
 type Client = {
   added: Map<string, FormatTag>;
+  landed: Set<string>;
   clock: number;
   id: number;
   live: LayerValue;
@@ -32,8 +31,11 @@ const VALUES: LayerValue[] = [undefined, 1, 2, 3];
 
 type Op =
   | { client: number; kind: 'write'; change: number; value: number }
-  | { client: number; kind: 'correct'; value: number }
+  | { client: number; kind: 'correct' | 'edit'; value: number }
   | { a: number; b: number; kind: 'sync' };
+
+const isEditing = (change: string) => change.startsWith('~edit:');
+const accepted: IsAccepted = ({ change }) => isEditing(change);
 
 const opArb = (clients: number) =>
   fc.oneof(
@@ -49,10 +51,10 @@ const opArb = (clients: number) =>
     {
       arbitrary: fc.record({
         client: fc.nat({ max: clients - 1 }),
-        kind: fc.constant('correct' as const),
+        kind: fc.constantFrom('correct' as const, 'edit' as const),
         value: fc.nat({ max: VALUES.length - 1 }),
       }),
-      weight: 1,
+      weight: 2,
     },
     {
       arbitrary: fc.record({
@@ -74,6 +76,10 @@ const sync = (a: Client, b: Client) => {
     a.removed.add(id);
     b.removed.add(id);
   }
+  for (const id of [...a.landed, ...b.landed]) {
+    a.landed.add(id);
+    b.landed.add(id);
+  }
   const later =
     a.written > b.written || (a.written === b.written && a.id > b.id) ? a : b;
 
@@ -88,6 +94,7 @@ const run = (clients: number, ops: Op[]) => {
     added: new Map(),
     clock: 0,
     id,
+    landed: new Set(),
     live: undefined,
     removed: new Set(),
     written: 0,
@@ -102,51 +109,46 @@ const run = (clients: number, ops: Op[]) => {
     const peer = peers[op.client];
     const next = VALUES[op.value];
     const before = tagsOf(peer);
-    const change = `p${peer.id}c${'change' in op ? op.change : 0}`;
-    const after =
-      op.kind === 'correct'
-        ? writeLayer({
-            intent: 'edit',
-            isOwn: () => false,
-            next,
-            ownInsertion: false,
-            previous: peer.live,
-            source: 'correction',
-            tag: () => {
-              throw new Error('a correction writes no tag');
-            },
-            tags: before,
-          })
-        : writeLayer({
-            intent: 'propose',
-            isOwn: (tag) => tag.change === change,
-            next,
-            ownInsertion: false,
-            previous: peer.live,
-            source: 'command',
-            tag: (fields) => ({
-              ...fields,
-              at: 1,
-              author: `p${peer.id}`,
-              change,
-              id: `p${peer.id}t${(peer.clock += 1)}`,
-              key: 'bold',
-              kind: 'format',
-            }),
-            tags: before,
-          });
+    let write: string | undefined;
+    const change =
+      op.kind === 'write' ? `p${peer.id}c${op.change}` : `~edit:p${peer.id}`;
+    const after = recordFormats({
+      keys: ['bold'],
+      next: { bold: next },
+      ownInsertion: false,
+      previous: { bold: peer.live },
+      source: op.kind === 'correct' ? 'correction' : 'command',
+      standing: { accepted, landed: (id) => peer.landed.has(id) },
+      tags: before,
+      writer: {
+        at: 1,
+        author: `p${peer.id}`,
+        change,
+        isOwn: (tag) => tag.change === change,
+        commitWriteId: () => (write ??= `p${peer.id}t${(peer.clock += 1)}`),
+      },
+    });
 
     for (const tag of before) {
       if (!after.includes(tag)) peer.removed.add(tag.id);
     }
-    for (const tag of after) peer.added.set(tag.id, tag);
+    for (const tag of after) {
+      if (!before.includes(tag) && isEditing(tag.change)) {
+        peer.landed.add(tag.id);
+      }
+      peer.added.set(tag.id, tag);
+    }
     peer.live = next;
     stamp += 1;
     peer.written = stamp;
   }
   for (const a of peers) for (const b of peers) sync(a, b);
 
-  return { live: peers[0].live, tags: tagsOf(peers[0]) };
+  return {
+    landed: peers[0].landed as ReadonlySet<string>,
+    live: peers[0].live,
+    tags: tagsOf(peers[0]),
+  };
 };
 
 const sameValue = (left: LayerValue, right: LayerValue) =>
@@ -155,9 +157,15 @@ const sameValue = (left: LayerValue, right: LayerValue) =>
 const apply = (
   live: LayerValue,
   tags: readonly FormatTag[],
-  outcome: LayerOutcome
+  outcome: LayerOutcome,
+  landed: ReadonlySet<string>,
+  before: IsAccepted = accepted
 ) => {
-  const decision = decideKey(live, tags, outcome);
+  const decision = decideKey(tags, {
+    accepted: before,
+    landed: (id) => landed.has(id),
+    outcome,
+  });
 
   return {
     blocked: decision.waits.length > 0,
@@ -174,8 +182,10 @@ const historyArb = fc.integer({ max: 3, min: 1 }).chain((clients) =>
   })
 );
 
-const changesOf = (tags: readonly FormatTag[]) => [
-  ...new Set(tags.map((tag) => tag.change)),
+const decidableChanges = (tags: readonly FormatTag[]) => [
+  ...new Set(
+    tags.map((tag) => tag.change).filter((change) => !isEditing(change))
+  ),
 ];
 
 describe('format layers', () => {
@@ -186,12 +196,14 @@ describe('format layers', () => {
         fc.infiniteStream(fc.boolean()),
         fc.infiniteStream(fc.nat({ max: 1000 })),
         ({ clients, ops }, coins, shuffle) => {
-          const { live, tags } = run(clients, ops);
-          const changes = changesOf(tags);
+          const { landed, live, tags } = run(clients, ops);
+          const changes = decidableChanges(tags);
           const every = coins.next().value || coins.next().value;
           const decided = every
             ? changes
             : changes.filter(() => coins.next().value);
+
+          if (decided.length === 0) return;
           const actions = new Map(
             decided.map((change) => [
               change,
@@ -202,17 +214,27 @@ describe('format layers', () => {
             (part: readonly string[]): LayerOutcome =>
             ({ change }) =>
               part.includes(change) ? (actions.get(change) ?? 'keep') : 'keep';
-          const batch = apply(live, tags, outcomeFor(decided));
+          const batch = apply(live, tags, outcomeFor(decided), landed);
           const order = [...decided].sort(() => shuffle.next().value - 500);
 
           // Grow each group from a shuffled order until it applies, so every
           // partition tried is admissible; a blocked group changes nothing.
           let state = { live, tags };
           let group: string[] = [];
+          const landedEarlier = new Set(landed);
+          const acceptedEarlier = new Set<string>();
+          const acceptedBefore: IsAccepted = (member) =>
+            accepted(member) || acceptedEarlier.has(member.change);
 
           for (const change of order) {
             group = group.concat(change);
-            const step = apply(state.live, state.tags, outcomeFor(group));
+            const step = apply(
+              state.live,
+              state.tags,
+              outcomeFor(group),
+              landedEarlier,
+              acceptedBefore
+            );
 
             if (step.blocked) {
               assert.equal(
@@ -227,6 +249,10 @@ describe('format layers', () => {
               continue;
             }
             state = { live: step.live, tags: step.tags };
+            for (const tag of step.decision.landed) landedEarlier.add(tag.id);
+            for (const done of group) {
+              if (actions.get(done) === 'accept') acceptedEarlier.add(done);
+            }
             group = [];
           }
 
@@ -250,6 +276,11 @@ describe('format layers', () => {
             batch.tags.map((tag) => tag.id).sort(),
             'an admissible order keeps the batch tags'
           );
+          assert.deepEqual(
+            [...landedEarlier].filter((id) => !landed.has(id)).sort(),
+            [...new Set(batch.decision.landed.map((tag) => tag.id))].sort(),
+            'an admissible order lands the batch writes'
+          );
         }
       ),
       { numRuns: 2000 }
@@ -263,23 +294,25 @@ describe('format layers', () => {
         fc.infiniteStream(fc.nat({ max: 2 })),
         fc.infiniteStream(fc.nat({ max: 1000 })),
         ({ clients, ops }, picks, shuffle) => {
-          const { live, tags } = run(clients, ops);
+          const { landed, tags } = run(clients, ops);
           const outcomes = new Map(
-            changesOf(tags).map((change) => [
+            decidableChanges(tags).map((change) => [
               change,
               (['accept', 'keep', 'reject'] as const)[picks.next().value],
             ])
           );
           const outcome: LayerOutcome = ({ change }) =>
             outcomes.get(change) ?? 'keep';
+          const isLanded = (id: string) => landed.has(id);
           const shuffled = [...tags].sort(() => shuffle.next().value - 500);
           const shape = (list: readonly FormatTag[]) =>
-            keySteps(list).map((step) => ({
+            keySteps(list, isLanded).map((step) => ({
               below: step.below ?? null,
               ids: step.tags.map((tag) => tag.id).sort(),
             }));
-          const held = decideKey(live, tags, outcome);
-          const other = decideKey(live, shuffled, outcome);
+          const reading = { accepted, landed: isLanded, outcome };
+          const held = decideKey(tags, reading);
+          const other = decideKey(shuffled, reading);
 
           assert.deepEqual(
             shape(shuffled),
@@ -313,18 +346,18 @@ describe('format layers', () => {
         historyArb,
         fc.infiniteStream(fc.nat({ max: 2 })),
         ({ clients, ops }, picks) => {
-          const { live, tags } = run(clients, ops);
+          const { landed, tags } = run(clients, ops);
           const outcomes = new Map(
-            changesOf(tags).map((change) => [
+            decidableChanges(tags).map((change) => [
               change,
               (['accept', 'keep', 'reject'] as const)[picks.next().value],
             ])
           );
-          const { kept } = decideKey(
-            live,
-            tags,
-            ({ change }) => outcomes.get(change) ?? 'keep'
-          );
+          const { kept } = decideKey(tags, {
+            accepted,
+            landed: (id) => landed.has(id),
+            outcome: ({ change }) => outcomes.get(change) ?? 'keep',
+          });
 
           for (const tag of kept) {
             assert.ok(
@@ -341,72 +374,46 @@ describe('format layers', () => {
   it('restores the value before the first tag when everything is rejected and keeps the live value when everything is accepted', () => {
     fc.assert(
       fc.property(historyArb, ({ clients, ops }) => {
-        const { live, tags } = run(clients, ops);
+        const { landed, live, tags } = run(clients, ops);
 
         if (tags.length === 0) return;
-        const rejected = apply(live, tags, () => 'reject');
-        const accepted = apply(live, tags, () => 'accept');
+        const rejected = apply(live, tags, () => 'reject', landed);
+        const acceptedAll = apply(live, tags, () => 'accept', landed);
 
+        const anEditingTagStands = tags.some((tag) => isEditing(tag.change));
+
+        if (!anEditingTagStands) {
+          assert.ok(
+            sameValue(
+              rejected.live,
+              keySteps(tags, (id) => landed.has(id))[0].below
+            ),
+            'rejecting everything restores the value the bottom step replaced'
+          );
+        }
         assert.ok(
-          sameValue(rejected.live, keySteps(tags)[0].below),
-          'rejecting everything restores the value the bottom step replaced'
-        );
-        assert.equal(
-          rejected.tags.length,
-          0,
-          'rejecting everything leaves no tag'
+          rejected.tags.every((tag) => isEditing(tag.change)),
+          'rejecting everything leaves only Editing tags'
         );
         assert.ok(
-          sameValue(accepted.live, live),
+          sameValue(acceptedAll.live, live),
           'accepting everything keeps the live value'
         );
-        assert.equal(
-          accepted.tags.length,
-          0,
-          'accepting everything leaves no tag'
+        const leftUnlanded = (tag: FormatTag) =>
+          (tag.over ?? [])
+            .flat()
+            .some(
+              ({ id }) =>
+                id !== tag.id &&
+                !tags.some((other) => other.id === id) &&
+                !landed.has(id)
+            );
+
+        assert.ok(
+          acceptedAll.tags.every(leftUnlanded),
+          'accepting everything keeps only tags over a write that left without landing'
         );
       }),
-      { numRuns: 300 }
-    );
-  });
-
-  it('decides the same whatever value a correction left live', () => {
-    fc.assert(
-      fc.property(
-        historyArb,
-        fc.nat({ max: VALUES.length - 1 }),
-        fc.infiniteStream(fc.nat({ max: 2 })),
-        ({ clients, ops }, corrected, picks) => {
-          const { live, tags } = run(clients, ops);
-          const outcomes = new Map(
-            changesOf(tags).map((change) => [
-              change,
-              (['accept', 'keep', 'reject'] as const)[picks.next().value],
-            ])
-          );
-          const outcome: LayerOutcome = ({ change }) =>
-            outcomes.get(change) ?? 'keep';
-          const before = decideKey(live, tags, outcome);
-          const after = decideKey(VALUES[corrected], tags, outcome);
-
-          assert.deepEqual(
-            [...after.waits].sort(),
-            [...before.waits].sort(),
-            'a correction that rewrote only the live value changes no wait'
-          );
-          assert.equal(
-            after.value.kind,
-            before.value.kind,
-            'a correction changes no decision'
-          );
-          if (before.value.kind === 'set' && after.value.kind === 'set') {
-            assert.ok(
-              sameValue(after.value.value, before.value.value),
-              'a correction changes no restored value'
-            );
-          }
-        }
-      ),
       { numRuns: 300 }
     );
   });
@@ -417,24 +424,22 @@ describe('format layers', () => {
         historyArb,
         fc.nat({ max: VALUES.length - 1 }),
         ({ clients, ops }, value) => {
-          const { live, tags } = run(clients, ops);
-          const next = writeLayer({
-            intent: 'propose',
-            isOwn: () => false,
-            next: VALUES[value],
+          const { landed, live, tags } = run(clients, ops);
+          const next = recordFormats({
+            keys: ['bold'],
+            next: { bold: VALUES[value] },
             ownInsertion: false,
-            previous: live,
+            previous: { bold: live },
             source: 'command',
-            tag: (fields) => ({
-              ...fields,
+            standing: { accepted, landed: (id) => landed.has(id) },
+            tags,
+            writer: {
               at: 1,
               author: 'z',
               change: 'z',
-              id: 'z1',
-              key: 'bold',
-              kind: 'format',
-            }),
-            tags,
+              isOwn: () => false,
+              commitWriteId: () => 'z1',
+            },
           });
 
           assert.equal(
@@ -452,40 +457,105 @@ describe('format layers', () => {
       { numRuns: 200 }
     );
   });
+
+  it('stacks a tag per Editing turn when writers take turns', () => {
+    let tags: readonly FormatTag[] = [
+      {
+        at: 1,
+        author: 'ann',
+        change: 'ann:1',
+        id: 'a1',
+        key: 'color',
+        kind: 'format',
+        write: { kind: 'set', value: 0 },
+      },
+    ];
+
+    for (let round = 1; round <= 4; round++) {
+      const author = round % 2 === 1 ? 'carol' : 'dave';
+
+      tags = recordFormats({
+        keys: ['color'],
+        next: { color: round },
+        ownInsertion: false,
+        previous: { color: round - 1 },
+        source: 'command',
+        standing: { accepted, landed: (id) => id.startsWith('e') },
+        tags,
+        writer: {
+          at: round,
+          author,
+          change: `~edit:${author}`,
+          isOwn: (tag) => tag.author === author,
+          commitWriteId: () => `e${round}`,
+        },
+      });
+    }
+
+    assert.deepEqual(
+      tags.map(({ change, id, over }) => ({
+        change,
+        id,
+        over: over?.map((step) => step.map((link) => link.id)),
+      })),
+      [
+        { change: 'ann:1', id: 'a1', over: undefined },
+        { change: '~edit:carol', id: 'e1', over: [['a1']] },
+        { change: '~edit:dave', id: 'e2', over: [['a1'], ['e1']] },
+        { change: '~edit:carol', id: 'e3', over: [['a1'], ['e1'], ['e2']] },
+        {
+          change: '~edit:dave',
+          id: 'e4',
+          over: [['a1'], ['e1'], ['e2'], ['e3']],
+        },
+      ]
+    );
+  });
+
   it("withdraws a writer's own tag on their own insertion when the value goes back", () => {
-    // Bob's red tag under `blue` was accepted, so only Alice's tag is left.
+    const red = {
+      at: 1,
+      author: 'bob',
+      change: 'bob:1',
+      id: 'red',
+      key: 'color',
+      kind: 'format' as const,
+      write: { kind: 'set' as const, value: 'red' },
+    };
     const blue = {
       at: 1,
       author: 'alice',
+      base: { kind: 'remove' as const },
       before: 'red',
       change: 'alice:3',
       id: 'blue',
       key: 'color',
       kind: 'format' as const,
       write: { kind: 'set' as const, value: 'blue' },
-      over: ['red'],
+      over: [[{ id: 'red', write: { kind: 'set' as const, value: 'red' } }]],
     };
 
     assert.deepEqual(
-      writeLayer({
-        intent: 'propose',
-        isOwn: (tag) => tag.author === 'alice',
-        next: 'red',
+      recordFormats({
+        keys: ['color'],
+        next: { color: 'red' },
         ownInsertion: true,
-        previous: 'blue',
+        previous: { color: 'blue' },
         source: 'command',
-        tag: (fields) => ({
-          ...fields,
+        standing: {
+          accepted: ({ change }) => change === 'bob:1',
+          landed: () => false,
+        },
+        tags: [red, blue],
+        writer: {
           at: 1,
           author: 'alice',
           change: 'alice:4',
-          id: 'new',
-          key: 'color',
-          kind: 'format',
-        }),
-        tags: [blue],
+          isOwn: (tag) => tag.author === 'alice',
+          commitWriteId: () => 'new',
+        },
       }),
-      []
+      [red]
     );
   });
 });

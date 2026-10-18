@@ -3,7 +3,11 @@ import type { NodeList } from '../../core/change/document-index';
 import type { JsonRecord } from '../../core/change/json';
 import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
-import { deriveValue, withoutValueRoots } from '../../core/record-store';
+import {
+  composeRecordOps,
+  deriveValue,
+  withoutValueRoots,
+} from '../../core/record-store';
 import type { RootPart } from '../../core/representation';
 import { orphanedValueRoots } from '../../core/root-ownership';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
@@ -19,14 +23,19 @@ import {
   type ReviewFacts,
   standingClaimsOf,
 } from '../facts/facts';
-import { incarnationOf, putContexts } from '../facts/records';
+import {
+  incarnationOf,
+  type LandedRecord,
+  landedOf,
+  putContexts,
+  putLanded,
+} from '../facts/records';
 import { cutsOf, joinRejectedCuts } from './cuts';
 import {
   decideKey,
   type FormatTag,
+  type KeyReading,
   tipsWrittenValue,
-  type LayerOutcome,
-  type LayerValue,
 } from './layers';
 import {
   type AuthoredMark,
@@ -90,6 +99,7 @@ export type AuthoredResolution = Readonly<{
   children: readonly JsonNode[];
   decided: readonly string[];
   diagnostics: readonly AuthoredProjectionDiagnostic[];
+  landed: readonly LandedRecord[];
   /**
    * The node an original node became in the resolved tree, or null when a
    * decision removed it or merged it into the block before it, the canonical
@@ -610,6 +620,7 @@ export const resolveAuthoredChildren = (
         };
   const decided = new Set<string>();
   const waits = new Set<string>();
+  const landings = new Map<string, LandedRecord>();
   const diagnostics: AuthoredProjectionDiagnostic[] = [];
   const origins = new Map<object, object>();
   // Elements whose children or properties a decision changed, which the
@@ -1146,7 +1157,11 @@ export const resolveAuthoredChildren = (
       const formats = decideFormats(
         props,
         marks,
-        decisionOf,
+        {
+          accepted: (member) => isAccepted(facts, member),
+          landed: facts.landed,
+          outcome: (tag) => outcome(tag.change),
+        },
         isText(node)
           ? (candidate, key) =>
               schema?.canonicalizeTextProperties?.(
@@ -1159,6 +1174,9 @@ export const resolveAuthoredChildren = (
       );
 
       for (const change of formats?.waits ?? []) waits.add(change);
+      for (const tag of formats?.landed ?? []) {
+        if (!facts.landed(tag.id)) landings.set(tag.id, landedOf(tag));
+      }
 
       const kept = keptMembers(node, marks, (mark) => {
         const result = resultOf(mark);
@@ -1464,6 +1482,7 @@ export const resolveAuthoredChildren = (
     children: resolvedChildren as readonly JsonNode[],
     decided: [...decided],
     diagnostics,
+    landed: [...landings.values()],
     resolvedOf: (original) => {
       if (typeof original !== 'object' || original === null) return null;
 
@@ -1490,12 +1509,13 @@ const CONTENT_AND_ENCLOSURE_KINDS: ReadonlySet<AuthoredMark['kind']> = new Set([
 const decideFormats = (
   props: JsonRecord,
   marks: readonly AuthoredMark[],
-  outcome: LayerOutcome,
+  reading: KeyReading,
   canonicalize?: (props: JsonRecord, key: string) => Readonly<JsonRecord>
 ) => {
   if (!marks.some((mark) => mark.kind === 'format')) return null;
 
   const kept = new Set<AuthoredMark>();
+  const landed: FormatTag[] = [];
   const waits: string[] = [];
   const keys = new Set(
     marks.flatMap((mark) => (mark.kind === 'format' ? [mark.key] : []))
@@ -1507,9 +1527,10 @@ const decideFormats = (
     const tags = marks.filter(
       (mark): mark is FormatTag => mark.kind === 'format' && mark.key === key
     );
-    const decision = decideKey(props[key] as LayerValue, tags, outcome);
+    const decision = decideKey(tags, reading);
 
     waits.push(...decision.waits);
+    landed.push(...decision.landed);
     for (const tag of decision.kept) kept.add(tag);
     if (decision.value.kind !== 'set') {
       if (
@@ -1537,7 +1558,7 @@ const decideFormats = (
     else next[key] = decision.value.value;
   }
 
-  return { changed, kept, props: next, waits };
+  return { changed, kept, landed, props: next, waits };
 };
 
 const mergeTextsWithEqualProps = (nodes: readonly Node[]): Node[] => {
@@ -1625,6 +1646,7 @@ export const resolveAuthoredValue = (
     blockers: [...new Set(all.flatMap((resolution) => resolution.blockers))],
     decided: [...new Set(all.flatMap((resolution) => resolution.decided))],
     diagnostics: live.flatMap((resolution) => resolution.diagnostics),
+    landed: live.flatMap((resolution) => resolution.landed),
     resolvedOf: (original: unknown) =>
       live.reduce<JsonNode | null>(
         (found, resolution) => found ?? resolution.resolvedOf(original),
@@ -1643,7 +1665,10 @@ export const resolveAuthoredValue = (
             }
           : {}),
       },
-      putContexts(dependencies.minted())
+      composeRecordOps(
+        putContexts(dependencies.minted()),
+        putLanded(live.flatMap((resolution) => resolution.landed))
+      )
     ),
   };
 };

@@ -44,7 +44,7 @@ import { isEditingChange } from '../facts/editing';
 import { incarnationOf } from '../facts/records';
 import { unrepresentable } from '../refusal';
 import { isCut } from './cuts';
-import { type FormatTag, type LayerValue, writeLayer } from './layers';
+import { type FormatTag, recordFormats, type Standing } from './layers';
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMark,
@@ -60,10 +60,7 @@ export type AuthoredRecordInput = Readonly<{
   changeId: string;
   dependencies: Dependencies;
   createRoots: ReadonlySet<string>;
-  /**
-   * A fresh id for each format tag and inline split cut, unique across
-   * collaborators.
-   */
+  /** A fresh id for each inline split cut, unique across collaborators. */
   createTagId: () => string;
   /**
    * The children an element keeps when a suggestion withdraws every child,
@@ -112,7 +109,9 @@ export type AuthoredRecordInput = Readonly<{
   ownedRoots?: (props: Readonly<JsonRecord>) => readonly OwnedRoot[];
   /** The collapsed caret's position in the before document, and its root. */
   selectionBefore?: Readonly<{ position: number; root: string }> | null;
+  standing: Standing;
   steps: readonly DraftStep[];
+  commitWriteId: () => string;
   writer: string;
 }>;
 
@@ -800,6 +799,8 @@ export const recordAuthoredSteps = (
           moveRole: step.move?.role ?? null,
           oneText: input.oneText ?? (() => false),
           origin: step.origin,
+          standing: input.standing,
+          commitWriteId: input.commitWriteId,
           selectionBefore:
             !fold.touched && input.selectionBefore?.root === root
               ? input.selectionBefore.position
@@ -883,6 +884,14 @@ export const recordAuthoredSteps = (
     writtenPlain,
   };
 };
+
+// A reject can land any write under the tag, since each can stand by landing.
+const restoredBy = (tag: FormatTag) => [
+  tag.before,
+  ...[tag.base, ...(tag.over ?? []).flat().map(({ write }) => write)].flatMap(
+    (write) => (write?.kind === 'set' ? [write.value] : [])
+  ),
+];
 
 const strikeRetyped = (
   change: RootChange,
@@ -976,6 +985,8 @@ type RecorderOptions = Readonly<{
   origin: DraftStepOrigin;
   selectionBefore: number | null;
   source: DraftStepSource;
+  standing: Standing;
+  commitWriteId: () => string;
 }>;
 
 type StrikeMode = 'delete' | 'move';
@@ -995,18 +1006,14 @@ class RootRecorder {
     return this.options.dependencies.marks(props);
   }
 
-  /**
-   * The keys whose pending writes `continuation`, the element a split of
-   * `continued` wrote, does not inherit: each key it could not hold at the
-   * value `continued` has now, or at the value a write replaced, which
-   * rejecting that write gives back.
-   */
   private droppedOnSplit(
     continued: Context,
     continuation: Props,
     marks: readonly AuthoredMark[]
   ) {
-    const formats = marks.filter((mark) => mark.kind === 'format');
+    const formats = marks.filter(
+      (mark): mark is FormatTag => mark.kind === 'format'
+    );
 
     if (formats.length === 0) return null;
     const keeps = this.options.keepsOnSplit({
@@ -1018,8 +1025,9 @@ class RootRecorder {
 
     return new Set(
       formats.flatMap((mark) =>
-        keeps(mark.key, continued.props[mark.key]) &&
-        keeps(mark.key, mark.before)
+        [continued.props[mark.key], ...restoredBy(mark)].every((value) =>
+          keeps(mark.key, value)
+        )
           ? []
           : [mark.key]
       )
@@ -1961,8 +1969,6 @@ class RootRecorder {
   /**
    * The properties a node takes when an edit changes keys other than the
    * review marks from `previous` to `next`, or `null` to keep `previous`.
-   * Each changed key's tags go through `writeLayer`; Suggesting records
-   * nothing on struck content.
    */
   private formattedProps(previous: Props, next: Props): Props | null {
     const keys = [
@@ -1980,38 +1986,25 @@ class RootRecorder {
       return null;
     }
 
-    const { changeId, createTagId, isOwn, markOf, source } = this.options;
+    const { isOwn, markOf, source, standing, commitWriteId } = this.options;
     const { at, author, change, inc } = markOf('insert');
-    const ownInsertion = marks.some(
-      (mark) => mark.kind === 'insert' && isOwn(mark)
-    );
-    let tags = marks.filter(
-      (mark): mark is FormatTag => mark.kind === 'format'
-    );
-
-    for (const key of keys) {
-      const written = writeLayer({
-        intent: isEditingChange(changeId) ? 'edit' : 'propose',
+    const tags = recordFormats({
+      keys,
+      next,
+      ownInsertion: marks.some((mark) => mark.kind === 'insert' && isOwn(mark)),
+      previous,
+      source,
+      standing,
+      tags: marks.filter((mark): mark is FormatTag => mark.kind === 'format'),
+      writer: {
+        at,
+        author,
+        change,
+        ...(inc === undefined ? {} : { inc }),
         isOwn,
-        next: next[key] as LayerValue,
-        ownInsertion,
-        previous: previous[key] as LayerValue,
-        source,
-        tag: (fields) => ({
-          ...fields,
-          at,
-          author,
-          change,
-          ...(inc === undefined ? {} : { inc }),
-          id: createTagId(),
-          key,
-          kind: 'format',
-        }),
-        tags: tags.filter((tag) => tag.key === key),
-      });
-
-      tags = [...tags.filter((tag) => tag.key !== key), ...written];
-    }
+        commitWriteId,
+      },
+    });
 
     return this.withMarks(next, [
       ...marks.filter((mark) => mark.kind !== 'format'),

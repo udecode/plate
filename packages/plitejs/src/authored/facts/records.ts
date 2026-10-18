@@ -12,6 +12,7 @@ import { hashSchemaIdentityString } from '../../core/schema-compiler';
 import type { MarkBase } from '../tree/marks';
 
 export const CONTEXTS = 'authored-contexts';
+export const LANDED = 'authored-landed';
 export const VERDICTS = 'authored-verdicts';
 
 /**
@@ -41,6 +42,29 @@ export type VerdictRecord = Readonly<{
   member: Pick<MarkBase, 'at' | 'change' | 'inc'>;
   verdict: Verdict;
 }>;
+
+/**
+ * A format write that stands after its tags leave the key: an Editing write
+ * over pending tags, or a Suggesting write a decision accepted and removed.
+ * It counts only while its member is accepted, so undoing a decision voids it.
+ */
+export type LandedRecord = Readonly<{
+  member: Pick<MarkBase, 'at' | 'change' | 'inc'>;
+  write: string;
+}>;
+
+export const landedOf = ({
+  at,
+  change,
+  id,
+  inc,
+}: Pick<MarkBase, 'at' | 'change' | 'inc'> & { id: string }): LandedRecord =>
+  Object.freeze({
+    member: Object.freeze(
+      inc === undefined ? { at, change } : { at, change, inc }
+    ),
+    write: id,
+  });
 
 export const memberOf = ({ at, author, change, inc }: MarkBase): MarkBase =>
   Object.freeze(
@@ -188,6 +212,35 @@ export const parseVerdict = (
   return verdictIdOf(record) === id ? record : null;
 };
 
+export const parseLanded = (
+  write: string,
+  json: string
+): LandedRecord | null => {
+  const node: unknown = JSON.parse(json);
+
+  if (!isRecordNode(node)) return null;
+
+  const { at, change, inc } = node;
+
+  return write.length > 0 &&
+    typeof at === 'number' &&
+    Number.isFinite(at) &&
+    isText(change) &&
+    (inc === undefined || isText(inc))
+    ? landedOf({ at, change, id: write, ...(inc === undefined ? {} : { inc }) })
+    : null;
+};
+
+export const putLanded = (records: Iterable<LandedRecord>): RecordOps => {
+  const writes = new Map<string, string>();
+
+  for (const { member, write } of records) {
+    writes.set(write, canonicalRecordJson(member));
+  }
+
+  return writes.size === 0 ? NO_RECORD_OPS : new Map([[LANDED, writes]]);
+};
+
 /** The puts that store `records` in the contexts set. */
 export const putContexts = (records: Iterable<ContextRecord>): RecordOps => {
   const writes = new Map<string, string>();
@@ -228,12 +281,17 @@ export const withStore = <V extends object>(value: V, store: RecordStore): V =>
   );
 
 /**
- * The record sets that hold review contexts and verdicts. `authored()`
- * depends on it, so a host that mirrors plugin dependencies, such as Plate,
- * names it.
+ * The record sets that hold review contexts, verdicts and landed writes.
+ * `authored()` depends on it, so a host that mirrors plugin dependencies,
+ * such as Plate, names it. Undo carries a verdict or a landed write with the
+ * commit that stored it.
  */
 export const authoredRecords = definePlugin('authored-records', {
   schema: {
-    records: { [CONTEXTS]: { history: 'retain' }, [VERDICTS]: {} },
+    records: {
+      [CONTEXTS]: { history: 'retain' },
+      [LANDED]: {},
+      [VERDICTS]: {},
+    },
   },
 });

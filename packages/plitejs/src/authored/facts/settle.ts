@@ -1,12 +1,13 @@
 import { type NodeList, rootNodesOf } from '../../core/change/document-index';
-import { deriveValue } from '../../core/record-store';
+import { jsonEqual } from '../../core/change/json';
+import { composeRecordOps, deriveValue } from '../../core/record-store';
 import { countLedgerWork } from '../ledger/work';
 import {
   decideKey,
   type FormatTag,
-  type LayerOutcome,
-  type LayerValue,
+  type KeyReading,
   tipsWrittenValue,
+  valueAfterLeaving,
 } from '../tree/layers';
 import {
   type AuthoredMark,
@@ -21,8 +22,14 @@ import {
 import { heldByJoinsAt, heldByPendingJoins } from '../tree/resolve';
 import { createDependencies, type Dependencies } from './dependencies';
 import { isEditingChange } from './editing';
-import { claimsOf, outcomeOf, type ReviewFacts } from './facts';
-import { incarnationOf, putContexts } from './records';
+import { claimsOf, isAccepted, outcomeOf, type ReviewFacts } from './facts';
+import {
+  incarnationOf,
+  type LandedRecord,
+  landedOf,
+  putContexts,
+  putLanded,
+} from './records';
 
 type Node = Readonly<Record<string, unknown>> & {
   children?: readonly Node[];
@@ -41,32 +48,41 @@ type Pass = Readonly<{
   dependencies: Dependencies;
   facts: ReviewFacts;
   heldByJoin: Readonly<{ has: (node: Node) => boolean }>;
+  landed: Map<string, LandedRecord>;
   reopenedRejections: Set<string>;
   returnsHeld: boolean;
 }>;
 
+export const keyReadingOf = (facts: ReviewFacts): KeyReading => ({
+  accepted: (member) => isAccepted(facts, member),
+  landed: facts.landed,
+  outcome: (tag) => (outcomeOf(facts, tag) === 'reject' ? 'reject' : 'keep'),
+});
+
 const settleFormats = (
   node: Node,
   tags: readonly FormatTag[],
-  facts: ReviewFacts
+  facts: ReviewFacts,
+  landed: Map<string, LandedRecord>
 ) => {
-  const outcomes = new Map(tags.map((tag) => [tag, outcomeOf(facts, tag)]));
-  const outcome: LayerOutcome = (tag) => {
-    const result = outcomes.get(tag);
-
-    return result === 'accept' || result === 'reject' ? result : 'keep';
-  };
+  const reading = keyReadingOf(facts);
   const dropped = new Set<FormatTag>();
   const props: Record<string, unknown> = {};
 
   for (const key of new Set(tags.map((tag) => tag.key))) {
     const onKey = tags.filter((tag) => tag.key === key);
 
-    if (onKey.every((tag) => outcome(tag) === 'keep')) {
+    if (
+      onKey.every(
+        (tag) => !reading.accepted(tag) && reading.outcome(tag) === 'keep'
+      )
+    ) {
       const present = new Set(onKey.map((tag) => tag.id));
       if (
         node[key] === undefined &&
-        onKey.some((tag) => tag.over?.some((id) => !present.has(id)))
+        onKey.some((tag) =>
+          tag.over?.some((step) => step.some(({ id }) => !present.has(id)))
+        )
       ) {
         const value = tipsWrittenValue(onKey);
         if (value !== undefined) props[key] = value;
@@ -74,9 +90,12 @@ const settleFormats = (
       continue;
     }
 
-    const decision = decideKey(node[key] as LayerValue, onKey, outcome);
+    const decision = decideKey(onKey, reading);
 
     if (decision.waits.length > 0) continue;
+    for (const tag of decision.landed) {
+      if (!facts.landed(tag.id)) landed.set(tag.id, landedOf(tag));
+    }
     for (const tag of onKey) {
       if (!decision.kept.includes(tag)) dropped.add(tag);
     }
@@ -100,14 +119,26 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
     readAuthoredMarks(node).filter(
       (mark): mark is FormatTag => mark.kind === 'format'
     ),
-    facts
+    facts,
+    pass.landed
   );
   const next: Record<string, unknown> = { ...node };
   for (const [key, value] of Object.entries(props)) {
     if (value === undefined) delete next[key];
     else next[key] = value;
   }
-  if (!facts.hasVerdicts) return Object.keys(props).length > 0 ? next : node;
+  if (!facts.hasVerdicts) {
+    if (dropped.size === 0) {
+      return Object.keys(props).length > 0 ? next : node;
+    }
+
+    return withMembers(
+      next,
+      members.filter(
+        (member) => member.kind !== 'format' || !dropped.has(member)
+      )
+    );
+  }
   let changed = dropped.size > 0 || Object.keys(props).length > 0;
   const kept: AuthoredMember[] = [];
   // Editing's claim that its block goes with a pending join stays until the
@@ -235,6 +266,55 @@ const settleBlocks = (
   return next ?? children;
 };
 
+const formatTagsOf = (node: Node) =>
+  readAuthoredMarks(node).filter(
+    (mark): mark is FormatTag => mark.kind === 'format'
+  );
+
+const sameValue = (left: unknown, right: unknown) =>
+  left === undefined || left === null
+    ? right === undefined || right === null
+    : jsonEqual(left, right);
+
+export const repairKeys = (
+  before: Node,
+  after: Node,
+  reading: KeyReading
+): Node => {
+  const was = formatTagsOf(before);
+  const now = formatTagsOf(after);
+  let next: Record<string, unknown> | null = null;
+
+  for (const key of new Set(was.map((tag) => tag.key))) {
+    const wasOnKey = was.filter((tag) => tag.key === key);
+    const nowOnKey = now.filter((tag) => tag.key === key);
+    const wasIds = new Set(wasOnKey.map(({ id }) => id));
+    const nowIds = new Set(nowOnKey.map(({ id }) => id));
+    const left = new Set(wasOnKey.filter(({ id }) => !nowIds.has(id)));
+
+    if (
+      left.size === 0 ||
+      nowOnKey.some(({ id }) => !wasIds.has(id)) ||
+      sameValue(before[key], after[key])
+    ) {
+      continue;
+    }
+
+    const decided = valueAfterLeaving(wasOnKey, left, reading);
+
+    if (!decided) continue;
+
+    const value = decided.kind === 'set' ? decided.value : before[key];
+
+    if (sameValue(value, after[key])) continue;
+    next ??= { ...after };
+    if (value === undefined || value === null) delete next[key];
+    else next[key] = value;
+  }
+
+  return next ?? after;
+};
+
 /**
  * Returning a held deletion asks which changes still insert, which `facts`
  * answers by walking the whole document unless an index backs it, so a block
@@ -253,6 +333,7 @@ export const settleValue = <V extends Value>(
     dependencies: createDependencies(facts),
     facts,
     heldByJoin: new Set<Node>(),
+    landed: new Map(),
     reopenedRejections: new Set(),
     returnsHeld,
   };
@@ -321,7 +402,10 @@ export const settleValue = <V extends Value>(
                   }
                 : {}),
             } as Partial<V>,
-            putContexts(minted)
+            composeRecordOps(
+              putContexts(minted),
+              putLanded(pass.landed.values())
+            )
           ),
   };
 };

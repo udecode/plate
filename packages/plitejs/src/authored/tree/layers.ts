@@ -1,18 +1,27 @@
 import { jsonEqual } from '../../core/change/json';
 import type { EditorJsonValue } from '../../interfaces/json';
 import { getDefined } from '../../internal/get-defined';
+import { isEditingChange } from '../facts/editing';
 
 /** A property value, with `undefined` for an absent property; `null` counts as absent. */
 export type LayerValue = EditorJsonValue | undefined;
 
+export type FormatWrite =
+  | Readonly<{ kind: 'remove' }>
+  | Readonly<{ kind: 'set'; value: EditorJsonValue }>;
+
+export type FormatLink = Readonly<{ id: string; write: FormatWrite }>;
+
 /**
- * One property write a pending suggestion made. Nothing edits a tag after it
- * is written: recording, decisions and Editing takeover only add or remove
- * whole tags.
+ * One property write of one change. Nothing edits a tag after it is written.
+ * Every format tag one commit writes shares that commit's write id, so a tag's
+ * id is unique only within its node and key.
  */
 export type FormatTag = Readonly<{
   at: number;
   author: string;
+  /** The key's value with every tag in `over` undone. */
+  base?: FormatWrite;
   /** The value this write replaced; absent when the property was absent. */
   before?: EditorJsonValue;
   change: string;
@@ -20,18 +29,35 @@ export type FormatTag = Readonly<{
   inc?: string;
   key: string;
   kind: 'format';
-  /** The key's tips when this was written; absent over the accepted value. */
-  over?: readonly string[];
-  write:
-    | Readonly<{ kind: 'remove' }>
-    | Readonly<{ kind: 'set'; value: EditorJsonValue }>;
+  /**
+   * The key's steps, bottom first, each with the writes of its tags, when this
+   * write or the first write of the run it replaced was made.
+   */
+  over?: ReadonlyArray<readonly FormatLink[]>;
+  write: FormatWrite;
 }>;
 
+export type IsAccepted = (
+  member: Readonly<{ at: number; change: string; inc?: string }>
+) => boolean;
+
+/** Whether a write gone from the key still stands: its landed record names a member that is accepted. */
+export type IsLanded = (write: string) => boolean;
+
+export type Standing = Readonly<{ accepted: IsAccepted; landed: IsLanded }>;
+
 export type LayerOutcome = (tag: FormatTag) => 'accept' | 'keep' | 'reject';
+
+export type KeyReading = Standing & Readonly<{ outcome: LayerOutcome }>;
 
 export type KeyDecision = Readonly<{
   /** The tags left on the key, each the same object as an input tag. */
   kept: readonly FormatTag[];
+  /**
+   * The accepted Suggesting tags the decision removes, whose writes stand from
+   * now on only through a landed record.
+   */
+  landed: readonly FormatTag[];
   value:
     | Readonly<{ kind: 'set'; value: LayerValue }>
     | Readonly<{ kind: 'unchanged' }>;
@@ -48,6 +74,14 @@ const absent = (value: unknown): value is null | undefined =>
 const sameValue = (left: LayerValue, right: LayerValue) =>
   absent(left) ? absent(right) : !absent(right) && jsonEqual(left, right);
 
+const valueOf = (write: FormatWrite | undefined): LayerValue =>
+  write?.kind === 'set' ? write.value : undefined;
+
+const writeOf = (value: LayerValue): FormatWrite =>
+  absent(value) ? { kind: 'remove' } : { kind: 'set', value };
+
+const linkOf = ({ id, write }: FormatTag): FormatLink => ({ id, write });
+
 // The bottom tag of a step whose roots differ, the same on every client. A
 // malformed cycle leaves no root, so its tags all compete.
 const smallestId = (roots: readonly FormatTag[], all: readonly FormatTag[]) =>
@@ -57,28 +91,52 @@ const smallestId = (roots: readonly FormatTag[], all: readonly FormatTag[]) =>
     )[0]
   );
 
-const parentsOf = (tag: FormatTag, present: ReadonlySet<string>) =>
-  (tag.over ?? []).filter((id) => id !== tag.id && present.has(id));
+const linksOf = (tag: FormatTag) => (tag.over ?? []).flat();
 
-/**
- * The key's tags as a chain of steps, bottom first. `over` is read against the
- * tags present, so an id a decision removed means the accepted value. A tag
- * every other tag descends from or leads to is a step of its own; the tags
- * between two such tags, which some concurrent write left incomparable, form
- * one fork step.
- */
-export const keySteps = (tags: readonly FormatTag[]): readonly Step[] => {
+const valueBelow = (
+  tag: FormatTag,
+  byId: ReadonlyMap<string, FormatTag>,
+  landed: IsLanded
+): LayerValue => {
+  const steps = (tag.over ?? [])
+    .map((step) => step.filter((link) => link.id !== tag.id))
+    .filter((step) => step.length > 0);
+  const stands = (link: FormatLink) => byId.has(link.id) || landed(link.id);
+  const top = steps.at(-1);
+
+  if (!top || top.every(stands)) {
+    return absent(tag.before) ? undefined : tag.before;
+  }
+  for (const step of steps.toReversed()) {
+    const [first] = step
+      .filter(stands)
+      .sort((left, right) => (left.id < right.id ? -1 : 1));
+
+    if (first) return valueOf(first.write);
+  }
+
+  return valueOf(tag.base);
+};
+
+export const keySteps = (
+  tags: readonly FormatTag[],
+  landed: IsLanded
+): readonly Step[] => {
   const count = tags.length;
   const positions = new Map<string, number>();
+  const byId = new Map<string, FormatTag>();
 
-  tags.forEach((tag, index) => positions.set(tag.id, index));
+  tags.forEach((tag, index) => {
+    positions.set(tag.id, index);
+    byId.set(tag.id, tag);
+  });
   const writtenOver: number[][] = [];
   const writtenUnder: number[][] = tags.map(() => []);
 
   tags.forEach((tag, index) => {
     const below: number[] = [];
 
-    for (const id of tag.over ?? []) {
+    for (const { id } of linksOf(tag)) {
       const other = positions.get(id);
 
       if (other !== undefined && id !== tag.id && !below.includes(other)) {
@@ -150,7 +208,7 @@ export const keySteps = (tags: readonly FormatTag[]): readonly Step[] => {
     );
 
     steps.push({
-      below: bottom.before,
+      below: valueBelow(bottom, byId, landed),
       tags: fork
         .sort((left, right) => left - right)
         .map((index) => tags[index]),
@@ -164,17 +222,25 @@ export const keySteps = (tags: readonly FormatTag[]): readonly Step[] => {
       continue;
     }
     closeFork();
-    steps.push({ below: tags[index].before, tags: [tags[index]] });
+    steps.push({
+      below: valueBelow(tags[index], byId, landed),
+      tags: [tags[index]],
+    });
   }
   closeFork();
 
   return steps;
 };
 
-/** The ids of the key's tips: the tags no other present tag was written over. */
 export const keyTips = (tags: readonly FormatTag[]): readonly string[] => {
   const present = new Set(tags.map((tag) => tag.id));
-  const covered = new Set(tags.flatMap((tag) => parentsOf(tag, present)));
+  const covered = new Set(
+    tags.flatMap((tag) =>
+      linksOf(tag).flatMap(({ id }) =>
+        id !== tag.id && present.has(id) ? [id] : []
+      )
+    )
+  );
 
   return tags.filter((tag) => !covered.has(tag.id)).map((tag) => tag.id);
 };
@@ -183,192 +249,301 @@ export const tipsWrittenValue = (tags: readonly FormatTag[]): LayerValue => {
   const tipIds = new Set(keyTips(tags));
   const tips = tags.filter((tag) => tipIds.has(tag.id));
   if (tips.some((tag) => tag.write.kind === 'remove')) return undefined;
-  const top = smallestId(tips, tags);
-  return top.write.kind === 'set' ? top.write.value : undefined;
+  return valueOf(smallestId(tips, tags).write);
 };
 
-/**
- * Decide one key. A suggestion built on another depends on it: accepting a
- * step waits on every pending step below it, rejecting one waits on every
- * pending step above it, and a decision on one tag of a fork waits on the
- * fork's other tags. The value comes from the highest step not rejected: the
- * live value when it is the top step, otherwise the value the step above it
- * replaced; with every step rejected, the value the bottom step replaced. It
- * never compares the live value with a tag, so a correction that rewrote the
- * live value changes no decision.
- */
+type Status = 'accept' | 'keep' | 'reject' | 'replaced' | 'settled';
+
 export const decideKey = (
-  live: LayerValue,
   tags: readonly FormatTag[],
-  outcome: LayerOutcome
+  reading: KeyReading
 ): KeyDecision => {
-  const outcomes = new Set(tags.map(outcome));
+  const statusOf = new Map<FormatTag, Status>(
+    tags.map((tag) => [
+      tag,
+      // An Editing commit lands with a record, so an Editing tag without one
+      // was undone.
+      isEditingChange(tag.change)
+        ? reading.landed(tag.id)
+          ? 'settled'
+          : 'reject'
+        : reading.accepted(tag)
+          ? 'settled'
+          : reading.outcome(tag),
+    ])
+  );
+  const of = (tag: FormatTag) => getDefined(statusOf.get(tag));
+  const stands = (tag: FormatTag) =>
+    of(tag) === 'accept' || of(tag) === 'settled';
+  const byId = new Map(tags.map((tag) => [tag.id, tag]));
+  const linkStays = ({ id }: FormatLink) => {
+    const tag = byId.get(id);
 
-  // One outcome for every tag needs no steps: keeping changes nothing,
-  // accepting keeps the live value, and rejecting restores what the bottom
-  // step replaced.
-  if (outcomes.size <= 1) {
-    if (!outcomes.has('reject')) {
-      return {
-        kept: outcomes.has('keep') ? tags : [],
-        value: { kind: 'unchanged' },
-        waits: [],
-      };
-    }
-
-    const present = new Set(tags.map((tag) => tag.id));
-    const bottom = smallestId(
-      tags.filter((tag) => parentsOf(tag, present).length === 0),
-      tags
-    );
+    return tag ? of(tag) !== 'reject' : reading.landed(id);
+  };
+  // An undo of a standing tag reads the links under it, so the tag stays
+  // stored while one of them neither stays nor landed.
+  const holds = (tag: FormatTag) =>
+    stands(tag) &&
+    linksOf(tag).some((link) => link.id !== tag.id && !linkStays(link));
+  const decided = (
+    stepsKept: readonly FormatTag[],
+    value: KeyDecision['value']
+  ): KeyDecision => {
+    const kept = [
+      ...stepsKept,
+      ...tags.filter((tag) => holds(tag) && !stepsKept.includes(tag)),
+    ];
+    const keeps = new Set(kept);
 
     return {
-      kept: [],
-      value: {
-        kind: 'set',
-        value: absent(bottom.before) ? undefined : bottom.before,
-      },
+      kept,
+      landed: tags.filter(
+        (tag) => !keeps.has(tag) && stands(tag) && !isEditingChange(tag.change)
+      ),
+      value,
       waits: [],
     };
+  };
+  const kinds = new Set(statusOf.values());
+
+  if (!kinds.has('keep') && !kinds.has('reject')) {
+    return decided([], { kind: 'unchanged' });
+  }
+  if (kinds.size === 1 && kinds.has('keep')) {
+    return decided(tags, { kind: 'unchanged' });
   }
 
-  const steps = keySteps(tags);
-  const waits = new Set<string>();
-  const statuses = steps.map((step) => {
-    const pending = step.tags.filter((tag) => outcome(tag) === 'keep');
+  const steps = keySteps(tags, reading.landed);
 
-    if (pending.length === step.tags.length) return 'keep';
+  if (kinds.size === 1) {
+    return decided([], { kind: 'set', value: getDefined(steps[0]).below });
+  }
+
+  const waits = new Set<string>();
+  const decides = (tag: FormatTag) =>
+    of(tag) === 'accept' || of(tag) === 'reject';
+  const statuses = steps.map((step): Status => {
+    const pending = step.tags.filter((tag) => of(tag) === 'keep');
+
     if (pending.length > 0) {
-      for (const tag of pending) waits.add(tag.change);
+      if (step.tags.some(decides)) {
+        for (const tag of pending) waits.add(tag.change);
+      }
 
       return 'keep';
     }
+    if (!step.tags.some(decides)) return 'settled';
+    if (step.tags.some((tag) => of(tag) === 'reject')) {
+      return step.tags.some(stands) ? 'replaced' : 'reject';
+    }
 
-    return step.tags.some((tag) => outcome(tag) === 'reject')
-      ? 'reject'
-      : 'accept';
+    return 'accept';
   });
-
-  const firstReject = statuses.indexOf('reject');
-  const lastAccept = statuses.lastIndexOf('accept');
+  const firstReject = statuses.findIndex(
+    (status) => status === 'reject' || status === 'replaced'
+  );
+  const lastAccept = steps.findLastIndex((step) =>
+    step.tags.some((tag) => of(tag) === 'accept')
+  );
 
   steps.forEach((step, index) => {
-    const buried = firstReject !== -1 && index > firstReject;
-
-    if (statuses[index] === 'keep' && (buried || index < lastAccept)) {
-      for (const tag of step.tags) waits.add(tag.change);
+    if (statuses[index] !== 'keep') return;
+    if ((firstReject !== -1 && index > firstReject) || index < lastAccept) {
+      for (const tag of step.tags) {
+        if (of(tag) === 'keep') waits.add(tag.change);
+      }
     }
   });
 
   if (waits.size > 0) {
-    return { kept: tags, value: { kind: 'unchanged' }, waits: [...waits] };
+    return {
+      kept: tags,
+      landed: [],
+      value: { kind: 'unchanged' },
+      waits: [...waits],
+    };
   }
 
+  // A pending tag over a standing one reads it through its landed write, so
+  // only a pending step under it keeps a standing tag stored.
   const kept = steps.flatMap((step, index) =>
-    statuses[index] === 'keep' ? step.tags : []
+    statuses[index] === 'keep'
+      ? step.tags
+      : statuses.slice(0, index).includes('keep')
+        ? step.tags.filter(stands)
+        : []
   );
-
-  if (statuses.every((status) => status === 'keep')) {
-    return { kept, value: { kind: 'unchanged' }, waits: [] };
-  }
-
   const highest = statuses.findLastIndex((status) => status !== 'reject');
 
-  if (highest === steps.length - 1) {
-    return { kept, value: { kind: 'unchanged' }, waits: [] };
+  if (highest === -1) {
+    return decided(kept, { kind: 'set', value: getDefined(steps[0]).below });
+  }
+  if (statuses[highest] === 'replaced') {
+    const standing = getDefined(steps[highest]).tags.filter(stands);
+
+    return decided(kept, {
+      kind: 'set',
+      value: valueOf(smallestId(standing, standing).write),
+    });
   }
 
-  const value = getDefined(steps[highest + 1]).below;
+  const above = steps[highest + 1];
 
-  return {
+  return decided(
     kept,
-    value: { kind: 'set', value: absent(value) ? undefined : value },
-    waits: [],
-  };
-};
-
-/** Each tagged key's value with every tag on it rejected. */
-export const acceptedValues = (
-  tags: readonly FormatTag[]
-): Readonly<Record<string, LayerValue>> => {
-  const byKey = Map.groupBy(tags, (tag) => tag.key);
-
-  return Object.fromEntries(
-    [...byKey].map(([key, written]) => {
-      const decided = decideKey(undefined, written, () => 'reject');
-
-      return [
-        key,
-        decided.value.kind === 'set' ? decided.value.value : undefined,
-      ];
-    })
+    above ? { kind: 'set', value: above.below } : { kind: 'unchanged' }
   );
 };
 
-/**
- * Record one property write. Editing commands take the key over, Editing
- * corrections keep every tag, and Suggesting adds a tag over the key's tips,
- * except on the writer's own pending insertion when no other change holds the
- * key, or over the writer's own run of tags at the top: a value that returns
- * to what the run replaced withdraws the run, and any other value replaces it
- * with one tag from that value, so a reviewer sees each writer's change to a
- * key once.
- */
-export const writeLayer = (
+export const valueAfterLeaving = (
+  tags: readonly FormatTag[],
+  left: ReadonlySet<FormatTag>,
+  reading: KeyReading
+): KeyDecision['value'] | undefined => {
+  const decision = decideKey(tags, {
+    ...reading,
+    outcome: (tag) => (left.has(tag) ? 'reject' : reading.outcome(tag)),
+  });
+
+  return decision.waits.length > 0 ? undefined : decision.value;
+};
+
+const acceptedValue = (
+  live: LayerValue,
+  tags: readonly FormatTag[],
+  standing: Standing
+): LayerValue => {
+  const decision = decideKey(tags, { ...standing, outcome: () => 'reject' });
+
+  return decision.value.kind === 'set' ? decision.value.value : live;
+};
+
+export const acceptedValues = (
+  props: Readonly<Record<string, unknown>>,
+  tags: readonly FormatTag[],
+  standing: Standing
+): Readonly<Record<string, LayerValue>> =>
+  Object.fromEntries(
+    [...Map.groupBy(tags, (tag) => tag.key)].map(([key, written]) => [
+      key,
+      acceptedValue(props[key] as LayerValue, written, standing),
+    ])
+  );
+
+export type FormatWriter = Readonly<{
+  at: number;
+  author: string;
+  change: string;
+  inc?: string;
+  isOwn: (tag: FormatTag) => boolean;
+  commitWriteId: () => string;
+}>;
+
+const writeLayer = (
   input: Readonly<{
-    intent: 'edit' | 'propose';
-    isOwn: (tag: FormatTag) => boolean;
+    key: string;
     next: LayerValue;
     ownInsertion: boolean;
     previous: LayerValue;
     source: 'command' | 'correction';
-    tag: (fields: Pick<FormatTag, 'before' | 'over' | 'write'>) => FormatTag;
+    standing: Standing;
     tags: readonly FormatTag[];
+    writer: FormatWriter;
   }>
 ): readonly FormatTag[] => {
-  const { tags } = input;
+  const { tags, writer } = input;
+  const editing = isEditingChange(writer.change);
 
-  if (input.intent === 'edit') {
-    return input.source === 'correction' ? tags : [];
+  if (editing && (input.source === 'correction' || tags.length === 0)) {
+    return tags;
   }
-  const steps = keySteps(tags);
+
+  const joinsRun = editing
+    ? (tag: FormatTag) => tag.change === writer.change
+    : (tag: FormatTag) => !input.standing.accepted(tag) && writer.isOwn(tag);
+  const tag = (
+    fields: Readonly<{
+      base: FormatWrite | undefined;
+      before: LayerValue;
+      over: ReadonlyArray<readonly FormatLink[]>;
+    }>
+  ): FormatTag => ({
+    at: writer.at,
+    author: writer.author,
+    ...(fields.over.length > 0
+      ? { base: fields.base ?? { kind: 'remove' }, over: fields.over }
+      : {}),
+    ...(absent(fields.before) ? {} : { before: fields.before }),
+    change: writer.change,
+    id: writer.commitWriteId(),
+    ...(writer.inc === undefined ? {} : { inc: writer.inc }),
+    key: input.key,
+    kind: 'format',
+    write: writeOf(input.next),
+  });
+  const steps = keySteps(tags, input.standing.landed);
   const run: FormatTag[] = [];
+  let runBelow: LayerValue;
 
   for (const step of [...steps].reverse()) {
-    const [tag] = step.tags;
+    const [top] = step.tags;
 
-    if (step.tags.length !== 1 || !tag || !input.isOwn(tag)) break;
-    run.push(tag);
+    if (step.tags.length !== 1 || !top || !joinsRun(top)) break;
+    run.push(top);
+    runBelow = step.below;
   }
   const first = run.at(-1);
 
-  if (first && sameValue(input.next, first.before)) {
-    return tags.filter((tag) => !run.includes(tag));
+  if (first && !editing && sameValue(input.next, runBelow)) {
+    return tags.filter((other) => !run.includes(other));
   }
-  if (input.ownInsertion && tags.every(input.isOwn)) return tags;
+  if (!editing && input.ownInsertion && tags.every(joinsRun)) return tags;
   if (first) {
     return [
-      ...tags.filter((tag) => !run.includes(tag)),
-      input.tag({
-        write: absent(input.next)
-          ? { kind: 'remove' }
-          : { kind: 'set', value: input.next },
-        ...(first.over ? { over: first.over } : {}),
-        ...(absent(first.before) ? {} : { before: first.before }),
-      }),
+      ...tags.filter((other) => !run.includes(other)),
+      tag({ base: first.base, before: first.before, over: first.over ?? [] }),
     ];
   }
 
-  const tips = keyTips(tags);
-
   return [
     ...tags,
-    input.tag({
-      write: absent(input.next)
-        ? { kind: 'remove' }
-        : { kind: 'set', value: input.next },
-      ...(tips.length > 0 ? { over: tips } : {}),
-      ...(absent(input.previous) ? {} : { before: input.previous }),
+    tag({
+      base: writeOf(steps[0]?.below),
+      before: input.previous,
+      over: steps.map((step) => step.tags.map(linkOf)),
     }),
   ];
+};
+
+export const recordFormats = (
+  input: Readonly<{
+    keys: Iterable<string>;
+    next: Readonly<Record<string, unknown>>;
+    ownInsertion: boolean;
+    previous: Readonly<Record<string, unknown>>;
+    source: 'command' | 'correction';
+    standing: Standing;
+    tags: readonly FormatTag[];
+    writer: FormatWriter;
+  }>
+): readonly FormatTag[] => {
+  let { tags } = input;
+
+  for (const key of input.keys) {
+    const written = writeLayer({
+      key,
+      next: input.next[key] as LayerValue,
+      ownInsertion: input.ownInsertion,
+      previous: input.previous[key] as LayerValue,
+      source: input.source,
+      standing: input.standing,
+      tags: tags.filter((tag) => tag.key === key),
+      writer: input.writer,
+    });
+
+    tags = [...tags.filter((tag) => tag.key !== key), ...written];
+  }
+
+  return tags;
 };

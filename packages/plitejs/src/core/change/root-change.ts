@@ -1606,6 +1606,72 @@ export const isRootChangeRangeReplaced = (
   return after > 0 && ranges.toA[after - 1] >= to;
 };
 
+export type KeptRun = Readonly<{ at: number; from: number; to: number }>;
+
+/**
+ * The input token runs the change keeps for output tokens `from` to `to`, in
+ * order: each run is the same tokens in the input, starting at `at`, so the
+ * output tokens a replacement wrote have no run. Walks only the sections that
+ * reach the range.
+ *
+ * @internal
+ */
+export const keptRunsOf = (
+  change: RootChange,
+  from: number,
+  to: number
+): readonly KeptRun[] => {
+  const ends = sectionEndsOf(change);
+  const runs: KeptRun[] = [];
+
+  for (
+    let section = firstSectionEnding(ends.endB, from, false);
+    section < ends.endB.length && ends.startB[section] < to;
+    section++
+  ) {
+    if (change.sections[section * 2 + 1] >= 0) continue;
+
+    const start = Math.max(from, ends.startB[section]);
+    const end = Math.min(to, ends.endB[section]);
+
+    if (start < end) {
+      runs.push({
+        at: ends.startA[section] + start - ends.startB[section],
+        from: start,
+        to: end,
+      });
+    }
+  }
+
+  return runs;
+};
+
+const sortJoiningInsertions = (replacements: readonly Replacement[]) => {
+  const sorted: Replacement[] = [];
+
+  for (const replacement of [...replacements].sort(
+    (left, right) => left.from - right.from
+  )) {
+    const previous = sorted.at(-1);
+
+    if (
+      previous &&
+      previous.from === previous.to &&
+      previous.to === replacement.from
+    ) {
+      sorted[sorted.length - 1] = {
+        from: previous.from,
+        insert: previous.insert.concat(replacement.insert),
+        to: replacement.to,
+      };
+    } else {
+      sorted.push(replacement);
+    }
+  }
+
+  return sorted;
+};
+
 /**
  * Map an output position back to the input, as `change.invert(before).mapPos`
  * would, without copying the content the change replaced.
@@ -2485,9 +2551,7 @@ export class RootChange {
       }
     }
 
-    const replacementsByPosition = [...replacements].sort(
-      (left, right) => left.from - right.from
-    );
+    const replacementsByPosition = sortJoiningInsertions(replacements);
 
     for (let index = 1; index < replacementsByPosition.length; index++) {
       const previous = replacementsByPosition[index - 1];
@@ -2626,7 +2690,7 @@ export class RootChange {
         replacement.to === replacement.from + 1 &&
         insertedTokens.length === 1 &&
         insertedTokens[0]?.kind === 'open' &&
-        nodeEntry
+        nodeEntry?.kind === insertedTokens[0].nodeKind
       ) {
         if (!recordLocality(nodeEntry.path)) return null;
         current = current.withExactNodeProperties(

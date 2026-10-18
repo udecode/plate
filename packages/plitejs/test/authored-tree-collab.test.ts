@@ -6,6 +6,7 @@ import {
   definePlugin,
   defineEditorSchema,
   type EditorUpdateTransaction,
+  NodeApi,
   property,
   schema,
   target,
@@ -15,6 +16,7 @@ import * as Y from 'yjs';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
 import { expandContexts } from '../src/authored/facts/compact';
+import { readCoreWork, resetCoreWork } from '../src/core/work';
 import { yjs } from '../src/yjs';
 import { getActiveYjsController } from '../src/yjs/core/controller-registry';
 import { authoredTestApi } from './support/authored';
@@ -846,17 +848,27 @@ describe('authored property tags on several clients', () => {
       cell: { content: schema.content.text() },
       group: { content: schema.content.type('cell', { min: 1 }) },
       link: { content: schema.content.text({ min: 1 }), inline: true },
+      mention: { void: 'markable-inline' },
       paragraph: schema.element.textBlock(),
+      quote: { content: schema.content.type('paragraph', { min: 1 }) },
     },
     id: 'collab-formats',
     properties: [
       schema.textProperty('color', property.string()),
+      schema.textProperty('weight', property.string()),
+      schema.elementProperty('align', property.string(), {
+        target: target.type('paragraph'),
+      }),
       schema.elementProperty('size', property.number(), {
         target: target.type('cell'),
       }),
     ],
     root: schema.content.any(
-      [schema.content.type('paragraph'), schema.content.type('group')],
+      [
+        schema.content.type('paragraph'),
+        schema.content.type('group'),
+        schema.content.type('quote'),
+      ],
       { default: { type: 'paragraph' }, min: 1 }
     ),
     unknown: 'reject',
@@ -914,6 +926,12 @@ describe('authored property tags on several clients', () => {
     editor: Peer['editor'];
   }>;
 
+  let now = AT;
+
+  afterEach(() => {
+    now = AT;
+  });
+
   /**
    * Clients on one document; `order` sets their Yjs client ids, so the last
    * one wins a concurrent scalar write.
@@ -922,7 +940,8 @@ describe('authored property tags on several clients', () => {
     names: readonly string[],
     value: Array<Record<string, unknown>>,
     order: readonly number[],
-    intent: Intent = 'propose'
+    intent: Intent = 'propose',
+    withHistory = false
   ): Client[] => {
     const docs = names.map((_, index) => {
       const doc = new Y.Doc();
@@ -949,8 +968,9 @@ describe('authored property tags on several clients', () => {
             // every run.
             createTagId: counter(`${name}-t`),
             intent,
-            now: () => AT,
+            now: () => now,
           }),
+          ...(withHistory ? [history({ newBatchDelay: 0 })] : []),
           yjs({
             doc: docs[index],
             initialReady: true,
@@ -1005,7 +1025,7 @@ describe('authored property tags on several clients', () => {
       (
         children(client)[0] as {
           children: Array<{
-            authored?: Array<{ change: string; kind: string; over?: string[] }>;
+            authored?: Array<{ change: string; kind: string }>;
           }>;
         }
       ).children[0].authored ?? []
@@ -1013,11 +1033,181 @@ describe('authored property tags on several clients', () => {
       .filter((mark) => mark.kind === 'format')
       .map((mark) => mark.change)
       .sort();
+  type Reading = Readonly<{
+    read: Readonly<{
+      authored: Readonly<{
+        changes: () => Readonly<{
+          items: ReadonlyArray<Readonly<{ id: string }>>;
+        }>;
+      }>;
+      children: () => readonly unknown[];
+      value: () => unknown;
+    }>;
+  }>;
+  const leafColor = (nodes: readonly unknown[]) =>
+    (nodes[0] as { children: Array<{ color?: string }> }).children[0].color ??
+    null;
+  const outcomeOf = (editor: Reading) => ({
+    color: leafColor(editor.read.children()),
+    pending: editor.read.authored.changes().items.map(({ id }) => id),
+  });
+  const acceptedColor = (editor: Reading) =>
+    leafColor(
+      (
+        authoredTestApi(editor as never).project('accepted').value as {
+          children: readonly unknown[];
+        }
+      ).children
+    );
+  const reload = (client: Client) => {
+    const editor = createEditor({
+      plugins: [
+        Formats,
+        SumTo100,
+        createAuthoredPlugin({ authorId: 'dana', now: () => AT }),
+      ],
+      initialValue: JSON.parse(JSON.stringify(client.editor.read.value())),
+    });
+
+    return { api: authoredTestApi(editor), editor };
+  };
+  const rejectInBothOrders = (
+    order: readonly number[],
+    setup: (clients: readonly Client[], sync: () => void) => void,
+    batches: ReadonlyArray<readonly string[]>,
+    withHistory = false,
+    names: readonly string[] = ['alice', 'bob', 'carol']
+  ) =>
+    [false, true].map((reversed) => {
+      const all = clients(
+        names,
+        word,
+        [...order, ...names.slice(2).map((_, index) => 2 + index)],
+        'propose',
+        withHistory
+      );
+      const sync = () => syncAll(reversed ? [...all].reverse() : all);
+
+      setup(all, sync);
+      sync();
+      same(all);
+      const saved = reload(all[0]);
+      const preview = acceptedColor(all[0].editor);
+
+      assert.equal(acceptedColor(saved.editor), preview, 'reloaded preview');
+
+      return {
+        preview,
+        rejected: batches.map((changes) => {
+          all[0].api.decide({ action: 'reject', changes });
+          sync();
+          same(all);
+          saved.api.decide({ action: 'reject', changes });
+          assert.deepEqual(
+            outcomeOf(saved.editor),
+            outcomeOf(all[0].editor),
+            'a reloaded copy decides the same'
+          );
+
+          return outcomeOf(all[0].editor);
+        }),
+      };
+    });
+  const leafOf = (editor: Reading) => {
+    const {
+      authored: _authored,
+      text: _text,
+      ...props
+    } = (
+      editor.read.children()[0] as { children: Array<Record<string, unknown>> }
+    ).children[0];
+
+    return {
+      pending: editor.read.authored.changes().items.map(({ id }) => id),
+      props,
+    };
+  };
+  const seenInBothOrders = (
+    ids: readonly number[],
+    setup: (all: readonly Client[], sync: () => void, seen: () => void) => void
+  ) =>
+    [false, true].map((reversed) => {
+      const all = clients(
+        ['alice', 'bob', 'carol'],
+        word,
+        ids,
+        'propose',
+        true
+      );
+      const sync = () => syncAll(reversed ? [...all].reverse() : all);
+      const states: Array<ReturnType<typeof leafOf>> = [];
+
+      setup(all, sync, () => {
+        sync();
+        same(all);
+        states.push(leafOf(all[0].editor));
+      });
+
+      return states;
+    });
+  const inBothOrders = <T>(value: T) => [value, value];
   const color = (tx: EditorUpdateTransaction, value: string) =>
     tx.nodes.set({ color: value } as never, { at: [0, 0] });
   const setColor = (client: Client, value: string) =>
     client.editor.update((tx) => color(tx, value));
+  const enterAt = (tx: EditorUpdateTransaction, offset: number) => {
+    tx.selection.set({
+      kind: 'text',
+      anchor: { offset, path: [0, 0] },
+      focus: { offset, path: [0, 0] },
+    });
+    tx.break.insert();
+  };
+  const markRange = (
+    client: Client,
+    [from, to]: readonly [readonly number[], readonly number[]],
+    value: string
+  ) =>
+    client.editor.update((tx) => {
+      tx.selection.set({
+        kind: 'text',
+        anchor: { offset: from[2], path: from.slice(0, 2) },
+        focus: { offset: to[2], path: to.slice(0, 2) },
+      });
+      tx.marks.add('color', value);
+    });
+  type Shape = Readonly<{
+    align?: string;
+    children?: readonly Shape[];
+    color?: string;
+    text?: string;
+  }>;
+  const leavesOf = (node: Shape): Array<[string, string | null]> =>
+    node.children
+      ? node.children.flatMap(leavesOf)
+      : [[node.text ?? '', node.color ?? null]];
+  const shapeOf = (nodes: readonly unknown[]) =>
+    (nodes as readonly Shape[]).map((block) => ({
+      align: block.align ?? null,
+      leaves: leavesOf(block),
+    }));
   const word = [paragraph({ text: 'word' })];
+
+  it("joins an Editing writer's later turns over a pending suggestion into their own tag", () => {
+    const all = clients(['alice', 'carol'], word, [0, 1]);
+    const [alice, carol] = all;
+
+    setColor(alice, 'red');
+    syncAll(all);
+    carol.api.setIntent('edit');
+    for (const value of ['green', 'blue']) {
+      now += 1000;
+      setColor(carol, value);
+    }
+    syncAll(all);
+    same(all);
+    assert.deepEqual(tagsOf(alice), ['alice:1', '~edit:carol']);
+  });
 
   for (const order of [
     [0, 1],
@@ -1075,7 +1265,7 @@ describe('authored property tags on several clients', () => {
         },
         {
           accepted: [live, [], true],
-          mixed: [null, [], true],
+          mixed: ['red', [], true],
           single: { ids: ['alice:1'], status: 'blocked', with: ['bob:1'] },
           tags: ['alice:1', 'bob:1'],
         }
@@ -1355,13 +1545,28 @@ describe('authored property tags on several clients', () => {
           alice.api.decide({ action: 'accept', changes: ['alice:1', 'bob:1'] });
           carol.api.decide({ action: 'reject', changes: ['alice:1', 'bob:1'] });
         }),
-        // Carol takes the key over in Editing while Bob stacks on Alice's tag.
-        takeoverVersusStack: race((alice, bob, carol) => {
+        editingOverStack: race((alice, bob, carol) => {
           setColor(alice, 'red');
           syncAll([alice, bob, carol]);
           bob.api.propose('bob:1', (tx) => color(tx, 'blue'));
           carol.api.setIntent('edit');
           setColor(carol, 'green');
+        }),
+        rejectionRaceHoldsEditing: race((alice, bob) => {
+          setColor(alice, 'red');
+          syncAll([alice, bob]);
+          bob.api.setIntent('edit');
+          setColor(bob, 'green');
+          alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+        }),
+        withdrawalRaceHoldsEditing: race((alice, bob) => {
+          setColor(alice, 'red');
+          syncAll([alice, bob]);
+          bob.api.setIntent('edit');
+          setColor(bob, 'green');
+          alice.editor.update((tx) =>
+            tx.nodes.unset('color' as never, { at: [0, 0] })
+          );
         }),
         // Alice withdraws her own run while Bob stacks on it.
         withdrawalVersusStack: race((alice, bob) => {
@@ -1488,11 +1693,1479 @@ describe('authored property tags on several clients', () => {
             [33.3333, 0],
           ],
           overlappingBatches: { color: null, tags: [] },
+          rejectionRaceHoldsEditing: {
+            color: winner === 'bob' ? 'green' : null,
+            tags: ['~edit:bob'],
+          },
           rejectionVersusStack: { color: 'blue', tags: ['bob:1'] },
           sizes: [30, 70],
-          takeoverVersusStack: { color: 'green', tags: ['bob:1'] },
+          editingOverStack: {
+            color: 'green',
+            tags: ['alice:1', 'bob:1', '~edit:carol'],
+          },
+          withdrawalRaceHoldsEditing: {
+            color: winner === 'bob' ? 'green' : null,
+            tags: ['~edit:bob'],
+          },
           withdrawalVersusStack: { color: 'blue', tags: ['bob:1'] },
         }
+      );
+    });
+
+    it(`keeps the suggestions an Editing write lands over pending, in both delivery orders and after a reload, ${winner} winning`, () => {
+      const amendment = rejectInBothOrders(
+        order,
+        ([alice, bob], sync) => {
+          setColor(alice, 'blue');
+          sync();
+          setColor(alice, 'yellow');
+          bob.api.setIntent('edit');
+          setColor(bob, 'green');
+        },
+        [['alice:2']]
+      );
+      const writeBack = rejectInBothOrders(
+        order,
+        ([alice, bob, carol], sync) => {
+          setColor(alice, 'red');
+          sync();
+          carol.api.setIntent('edit');
+          setColor(carol, 'green');
+          sync();
+          setColor(carol, 'red');
+          bob.api.propose('bob:1', (tx) => color(tx, 'blue'));
+        },
+        [['bob:1'], ['alice:1']]
+      );
+      const thirdPeer = rejectInBothOrders(
+        order,
+        ([alice, bob, carol], sync) => {
+          setColor(alice, 'red');
+          sync();
+          bob.api.propose('bob:1', (tx) => color(tx, 'blue'));
+          carol.api.setIntent('edit');
+          setColor(carol, 'green');
+        },
+        [['bob:1'], ['alice:1']]
+      );
+
+      assert.deepEqual(
+        { amendment, thirdPeer, writeBack },
+        {
+          amendment: [false, true].map(() => ({
+            preview: 'green',
+            rejected: [{ color: 'green', pending: [] }],
+          })),
+          thirdPeer: [false, true].map(() => ({
+            preview: 'green',
+            rejected: [
+              { color: 'green', pending: ['alice:1'] },
+              { color: 'green', pending: [] },
+            ],
+          })),
+          writeBack: [false, true].map(() => ({
+            preview: 'red',
+            rejected: [
+              { color: 'red', pending: ['alice:1'] },
+              { color: 'red', pending: [] },
+            ],
+          })),
+        }
+      );
+    });
+
+    it(`reads an Editing write undone under a stack as gone, in both delivery orders and after a reload, ${winner} winning`, () => {
+      const stackOverUndone = (undoAlice: boolean) =>
+        rejectInBothOrders(
+          order,
+          ([alice, bob, carol], sync) => {
+            setColor(alice, 'red');
+            sync();
+            carol.api.setIntent('edit');
+            setColor(carol, 'green');
+            sync();
+            setColor(bob, 'blue');
+            sync();
+            carol.editor.api.history.undo();
+            if (undoAlice) {
+              sync();
+              alice.editor.api.history.undo();
+            }
+          },
+          [['bob:1']],
+          true
+        );
+
+      assert.deepEqual(
+        { bothUndone: stackOverUndone(true), undone: stackOverUndone(false) },
+        {
+          bothUndone: [false, true].map(() => ({
+            preview: null,
+            rejected: [{ color: null, pending: [] }],
+          })),
+          undone: [false, true].map(() => ({
+            preview: null,
+            rejected: [{ color: 'red', pending: ['alice:1'] }],
+          })),
+        }
+      );
+    });
+
+    it(`reads a tag a stack was written over as gone once it is rejected or withdrawn, in both delivery orders and after a reload, ${winner} winning`, () => {
+      const stackOver = (remove: (alice: Client) => void) =>
+        rejectInBothOrders(
+          order,
+          ([alice, bob], sync) => {
+            setColor(alice, 'red');
+            sync();
+            bob.api.propose('bob:1', (tx) => color(tx, 'blue'));
+            remove(alice);
+          },
+          [['bob:1']]
+        );
+      const nothingLeft = [false, true].map(() => ({
+        preview: null,
+        rejected: [{ color: null, pending: [] }],
+      }));
+
+      assert.deepEqual(
+        {
+          rejection: stackOver((alice) =>
+            alice.api.decide({ action: 'reject', changes: ['alice:1'] })
+          ),
+          withdrawal: stackOver((alice) =>
+            alice.editor.update((tx) =>
+              tx.nodes.unset('color' as never, { at: [0, 0] })
+            )
+          ),
+          lateSiblingDropsAccepted: rejectInBothOrders(
+            order,
+            ([alice, bob]) => {
+              setColor(alice, 'red');
+              setColor(bob, 'blue');
+              alice.api.decide({ action: 'accept', changes: ['alice:1'] });
+            },
+            [['bob:1']]
+          ),
+        },
+        {
+          lateSiblingDropsAccepted: nothingLeft,
+          rejection: nothingLeft,
+          withdrawal: nothingLeft,
+        }
+      );
+    });
+
+    it(`keeps the writer's accepted value under the suggestion they write over their own pending one, in both delivery orders and after a reload, ${winner} winning`, () => {
+      const writeAgain = (write: (alice: Client) => void) =>
+        rejectInBothOrders(
+          order,
+          ([alice], sync) => {
+            alice.api.propose('alice:7', (tx) => color(tx, 'red'));
+            alice.api.propose('alice:8', (tx) => color(tx, 'blue'));
+            sync();
+            alice.api.decide({ action: 'accept', changes: ['alice:7'] });
+            sync();
+            write(alice);
+          },
+          [['alice:3']]
+        );
+      const keptRed = [false, true].map(() => ({
+        preview: 'red',
+        rejected: [{ color: 'red', pending: [] }],
+      }));
+
+      assert.deepEqual(
+        {
+          rewritten: writeAgain((alice) => setColor(alice, 'green')),
+          unset: writeAgain((alice) =>
+            alice.editor.update((tx) =>
+              tx.nodes.unset('color' as never, { at: [0, 0] })
+            )
+          ),
+        },
+        { rewritten: keptRed, unset: keptRed }
+      );
+    });
+
+    it(`reads a suggestion undone under a stack as gone even once the rest of its change is accepted, and keeps an accepted one, in both delivery orders and after a reload, ${winner} winning`, () => {
+      const undoUnderStack = (
+        [alice, bob]: readonly Client[],
+        sync: () => void
+      ) => {
+        alice.api.propose('alice:1', (tx) =>
+          tx.text.insert('!', { at: point(4) })
+        );
+        alice.api.propose('alice:1', (tx) => color(tx, 'red'));
+        sync();
+        bob.api.propose('bob:1', (tx) => color(tx, 'blue'));
+        sync();
+        alice.editor.api.history.undo();
+        sync();
+      };
+      const undone = (accept: boolean) =>
+        rejectInBothOrders(
+          order,
+          (all, sync) => {
+            undoUnderStack(all, sync);
+            if (accept) {
+              all[0].api.decide({ action: 'accept', changes: ['alice:1'] });
+            }
+          },
+          [['bob:1']],
+          true
+        );
+      const together = [false, true].map((reversed) => {
+        const all = clients(
+          ['alice', 'bob', 'carol'],
+          word,
+          [...order, 2],
+          'propose',
+          true
+        );
+        const sync = () => syncAll(reversed ? [...all].reverse() : all);
+
+        undoUnderStack(all, sync);
+        all[0].api.decide([
+          { action: 'accept', changes: ['alice:1'] },
+          { action: 'reject', changes: ['bob:1'] },
+        ]);
+        sync();
+        same(all);
+
+        return outcomeOf(all[0].editor);
+      });
+      const accepted = rejectInBothOrders(
+        order,
+        ([alice, bob], sync) => {
+          setColor(alice, 'red');
+          sync();
+          bob.api.propose('bob:1', (tx) => color(tx, 'blue'));
+          sync();
+          alice.api.decide({ action: 'accept', changes: ['alice:1'] });
+        },
+        [['bob:1']]
+      );
+
+      assert.deepEqual(
+        {
+          accepted,
+          together,
+          undone: undone(false),
+          undoneThenAccepted: undone(true),
+        },
+        {
+          accepted: [false, true].map(() => ({
+            preview: 'red',
+            rejected: [{ color: 'red', pending: [] }],
+          })),
+          together: [false, true].map(() => ({ color: null, pending: [] })),
+          undone: [false, true].map(() => ({
+            preview: null,
+            rejected: [{ color: null, pending: ['alice:1'] }],
+          })),
+          undoneThenAccepted: [false, true].map(() => ({
+            preview: null,
+            rejected: [{ color: null, pending: [] }],
+          })),
+        }
+      );
+    });
+
+    it(`keeps an accepted or Editing value a stack reads after its tag left the key, in both delivery orders and after a reload, ${winner} winning`, () => {
+      const redoOver = (decideAlice: 'accept' | 'reject', editing: boolean) =>
+        rejectInBothOrders(
+          order,
+          ([alice, bob, carol], sync) => {
+            setColor(alice, 'red');
+            sync();
+            if (editing) {
+              carol.api.setIntent('edit');
+              setColor(carol, 'green');
+              sync();
+            }
+            setColor(bob, 'blue');
+            sync();
+            bob.editor.api.history.undo();
+            sync();
+            alice.api.decide({ action: decideAlice, changes: ['alice:1'] });
+            sync();
+            bob.editor.api.history.redo();
+          },
+          [['bob:1']],
+          true
+        );
+      const decidedWhileStacking = (decideAlice: 'accept' | 'reject') =>
+        rejectInBothOrders(
+          order,
+          ([alice, bob, carol], sync) => {
+            setColor(alice, 'red');
+            sync();
+            carol.api.setIntent('edit');
+            setColor(carol, 'green');
+            sync();
+            alice.api.decide({ action: decideAlice, changes: ['alice:1'] });
+            setColor(bob, 'blue');
+          },
+          [['bob:1']]
+        );
+      const acceptedUnseen = rejectInBothOrders(
+        order,
+        ([alice, bob], sync) => {
+          setColor(alice, 'red');
+          sync();
+          alice.api.decide({ action: 'accept', changes: ['alice:1'] });
+          setColor(bob, 'blue');
+        },
+        [['bob:1']]
+      );
+      const lands = (value: string) =>
+        [false, true].map(() => ({
+          preview: value,
+          rejected: [{ color: value, pending: [] }],
+        }));
+
+      assert.deepEqual(
+        {
+          acceptedUnseen,
+          acceptedWhileStacking: decidedWhileStacking('accept'),
+          redoOverAccepted: redoOver('accept', false),
+          redoOverEditing: redoOver('reject', true),
+          rejectedWhileStacking: decidedWhileStacking('reject'),
+        },
+        {
+          acceptedUnseen: lands('red'),
+          acceptedWhileStacking: lands('green'),
+          redoOverAccepted: lands('red'),
+          redoOverEditing: lands('green'),
+          rejectedWhileStacking: lands('green'),
+        }
+      );
+    });
+
+    it(`reads a tag undone before a stack is decided by what stood when the stack was written, in both delivery orders and after a reload, ${winner} winning`, () => {
+      const undoneUnderEditing = (suggestAgain: boolean) =>
+        rejectInBothOrders(
+          order,
+          ([alice, bob, carol], sync) => {
+            setColor(alice, 'red');
+            sync();
+            carol.api.setIntent('edit');
+            setColor(carol, 'green');
+            sync();
+            alice.editor.api.history.undo();
+            if (suggestAgain) setColor(alice, 'blue');
+            else setColor(bob, 'blue');
+          },
+          [[suggestAgain ? 'alice:2' : 'bob:1']],
+          true
+        );
+      const undoneUnderFork = rejectInBothOrders(
+        order,
+        ([alice, bob, carol, dave], sync) => {
+          setColor(alice, 'red');
+          sync();
+          setColor(bob, 'blue');
+          setColor(carol, 'green');
+          sync();
+          setColor(dave, 'yellow');
+          sync();
+          alice.editor.api.history.undo();
+        },
+        [['dave:1']],
+        true,
+        ['alice', 'bob', 'carol', 'dave']
+      );
+      const forkShown = [false, true].map(() => {
+        const all = clients(['alice', 'bob', 'carol', 'dave'], word, [
+          ...order,
+          2,
+          3,
+        ]);
+
+        setColor(all[0], 'red');
+        syncAll(all);
+        setColor(all[1], 'blue');
+        setColor(all[2], 'green');
+        syncAll(all);
+
+        return colorOf(all[0]);
+      });
+
+      assert.deepEqual(
+        {
+          suggestedAgain: undoneUnderEditing(true),
+          undoneUnderEditing: undoneUnderEditing(false),
+          undoneUnderFork,
+        },
+        {
+          suggestedAgain: [false, true].map(() => ({
+            preview: 'green',
+            rejected: [{ color: 'green', pending: [] }],
+          })),
+          undoneUnderEditing: [false, true].map(() => ({
+            preview: 'green',
+            rejected: [{ color: 'green', pending: [] }],
+          })),
+          undoneUnderFork: forkShown.map((value) => ({
+            preview: null,
+            rejected: [{ color: value, pending: ['bob:1', 'carol:1'] }],
+          })),
+        }
+      );
+    });
+
+    it(`keeps an accepted value a third peer saw settle before the stack over it arrived, ${winner} winning`, () => {
+      const [alice, bob, carol] = clients(['alice', 'bob', 'carol'], word, [
+        ...order,
+        2,
+      ]);
+      const relay = (from: Client, to: Client, run: () => void) => {
+        const updates: Uint8Array[] = [];
+        const keep = (update: Uint8Array) => updates.push(update);
+
+        from.doc.on('update', keep);
+        run();
+        from.doc.off('update', keep);
+        Y.applyUpdate(to.doc, Y.mergeUpdates(updates));
+        getActiveYjsController(to.editor)?.debugProcessAvailableInput();
+      };
+
+      setColor(alice, 'red');
+      syncAll([alice, bob, carol]);
+      setColor(bob, 'blue');
+      send(bob, alice);
+      relay(alice, carol, () =>
+        alice.api.decide({ action: 'accept', changes: ['alice:1'] })
+      );
+      syncAll([alice, bob, carol]);
+      same([alice, bob, carol]);
+      carol.api.decide({ action: 'reject', changes: ['bob:1'] });
+      syncAll([alice, bob, carol]);
+
+      assert.deepEqual(
+        { color: colorOf(alice), tags: tagsOf(alice) },
+        { color: 'red', tags: [] }
+      );
+    });
+
+    it(`undoes and redoes a decision over a stack with what it landed, ${winner} winning`, () => {
+      const [alice, bob] = clients(
+        ['alice', 'bob'],
+        word,
+        order,
+        'propose',
+        true
+      );
+
+      setColor(alice, 'red');
+      syncAll([alice, bob]);
+      setColor(bob, 'blue');
+      syncAll([alice, bob]);
+      alice.api.decide({ action: 'accept', changes: ['alice:1'] });
+      syncAll([alice, bob]);
+      const accepted = tagsOf(alice);
+
+      alice.editor.api.history.undo();
+      syncAll([alice, bob]);
+      const undone = {
+        pending: outcomeOf(alice.editor).pending,
+        tags: tagsOf(alice),
+      };
+
+      alice.editor.api.history.redo();
+      syncAll([alice, bob]);
+      bob.api.decide({ action: 'reject', changes: ['bob:1'] });
+      syncAll([alice, bob]);
+
+      assert.deepEqual(
+        { accepted, redone: same([alice, bob]), undone },
+        {
+          accepted: ['bob:1'],
+          redone: [paragraph({ color: 'red', text: 'word' })],
+          undone: { pending: ['alice:1', 'bob:1'], tags: ['alice:1', 'bob:1'] },
+        }
+      );
+    });
+
+    it(`brings back what rejecting a write gives when its writer undoes it after the write under it left or landed, ${winner} winning`, () => {
+      const undoneLast = (
+        setup: (all: readonly Client[], sync: () => void) => void
+      ) =>
+        [false, true].map((reversed) => {
+          const all = clients(
+            ['alice', 'bob', 'carol'],
+            word,
+            [...order, 2],
+            'propose',
+            true
+          );
+          const sync = () => syncAll(reversed ? [...all].reverse() : all);
+
+          setup(all, sync);
+          sync();
+          same(all);
+
+          return outcomeOf(all[0].editor);
+        });
+      const editingOver = (leave: (alice: Client) => void) =>
+        undoneLast(([alice, , carol], sync) => {
+          setColor(alice, 'red');
+          sync();
+          carol.api.setIntent('edit');
+          setColor(carol, 'green');
+          sync();
+          leave(alice);
+          sync();
+          carol.editor.api.history.undo();
+        });
+      const nothingLeft = [false, true].map(() => ({
+        color: null,
+        pending: [],
+      }));
+
+      assert.deepEqual(
+        {
+          editingOverRejected: editingOver((alice) =>
+            alice.api.decide({ action: 'reject', changes: ['alice:1'] })
+          ),
+          editingOverUndone: editingOver((alice) =>
+            alice.editor.api.history.undo()
+          ),
+          suggestingOverAccepted: undoneLast(([alice, bob], sync) => {
+            setColor(alice, 'red');
+            sync();
+            setColor(bob, 'blue');
+            sync();
+            alice.api.decide({ action: 'accept', changes: ['alice:1'] });
+            sync();
+            bob.editor.api.history.undo();
+          }),
+          suggestingOverUndone: undoneLast(([alice, bob], sync) => {
+            setColor(alice, 'red');
+            sync();
+            setColor(bob, 'blue');
+            sync();
+            alice.editor.api.history.undo();
+            sync();
+            bob.editor.api.history.undo();
+          }),
+        },
+        {
+          editingOverRejected: nothingLeft,
+          editingOverUndone: nothingLeft,
+          suggestingOverAccepted: [false, true].map(() => ({
+            color: 'red',
+            pending: [],
+          })),
+          suggestingOverUndone: nothingLeft,
+        }
+      );
+    });
+
+    it(`brings back what rejecting a write gives when its writer undoes it with a block it inserted beside, ${winner} winning`, () => {
+      const undone = (at: number) =>
+        [false, true].map((reversed) => {
+          const all = clients(
+            ['alice', 'bob', 'carol'],
+            [...word, paragraph({ text: 'tail' })],
+            [...order, 2],
+            'propose',
+            true
+          );
+          const sync = () => syncAll(reversed ? [...all].reverse() : all);
+          const [alice, , carol] = all;
+
+          setColor(alice, 'red');
+          sync();
+          carol.api.setIntent('edit');
+          carol.editor.update((tx) => {
+            color(tx, 'green');
+            tx.nodes.insert(paragraph({ text: 'new' }), { at: [at] });
+          });
+          sync();
+          alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+          sync();
+          carol.editor.api.history.undo();
+          sync();
+          same(all);
+
+          return outcomeOf(all[0].editor);
+        });
+      const nothingLeft = [false, true].map(() => ({
+        color: null,
+        pending: [],
+      }));
+
+      assert.deepEqual(
+        { after: undone(2), before: undone(0) },
+        { after: nothingLeft, before: nothingLeft }
+      );
+    });
+
+    it(`brings back what rejecting a write gives when its writer undoes it, over two keys, under another Editing writer or beside a fork, ${winner} winning`, () => {
+      const ids = [...order, 2];
+      const bobWins = [order[0], 2, order[1]];
+      const left = (value?: string) => ({
+        pending: [],
+        props: value === undefined ? {} : { color: value },
+      });
+      const underAlice = (value: string) => ({
+        pending: ['alice:1'],
+        props: { color: value },
+      });
+
+      assert.deepEqual(
+        {
+          besideEditingFork: seenInBothOrders(
+            ids,
+            ([alice, bob, carol], sync, seen) => {
+              setColor(alice, 'red');
+              sync();
+              bob.api.setIntent('edit');
+              carol.api.setIntent('edit');
+              setColor(bob, 'yellow');
+              setColor(carol, 'green');
+              sync();
+              carol.editor.api.history.undo();
+              seen();
+              alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+              seen();
+            }
+          ),
+          besideSuggestingFork: seenInBothOrders(
+            bobWins,
+            ([alice, bob, carol], sync, seen) => {
+              setColor(alice, 'red');
+              sync();
+              carol.api.setIntent('edit');
+              setColor(bob, 'blue');
+              setColor(carol, 'green');
+              sync();
+              bob.editor.api.history.undo();
+              seen();
+              alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+              seen();
+            }
+          ),
+          forkRejectRedone: seenInBothOrders(
+            bobWins,
+            ([alice, bob, carol], sync, seen) => {
+              setColor(alice, 'red');
+              sync();
+              carol.api.setIntent('edit');
+              setColor(bob, 'blue');
+              setColor(carol, 'green');
+              sync();
+              alice.api.decide({ action: 'reject', changes: ['bob:1'] });
+              sync();
+              alice.editor.api.history.undo();
+              sync();
+              alice.editor.api.history.redo();
+              seen();
+            }
+          ),
+          twoKeys: seenInBothOrders(ids, ([, bob], sync, seen) => {
+            bob.editor.update((tx) =>
+              tx.nodes.set({ color: 'blue', weight: 'bold' } as never, {
+                at: [0, 0],
+              })
+            );
+            setColor(bob, 'yellow');
+            sync();
+            bob.editor.api.history.undo();
+            seen();
+            bob.api.decide({ action: 'accept', changes: ['bob:1'] });
+            seen();
+          }),
+          underAnotherEditingWriter: seenInBothOrders(
+            ids,
+            ([alice, bob, carol], sync, seen) => {
+              setColor(alice, 'red');
+              sync();
+              bob.api.setIntent('edit');
+              carol.api.setIntent('edit');
+              setColor(carol, 'green');
+              sync();
+              setColor(bob, 'yellow');
+              sync();
+              carol.editor.api.history.undo();
+              seen();
+              bob.editor.api.history.undo();
+              seen();
+              alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+              seen();
+            }
+          ),
+        },
+        {
+          besideEditingFork: inBothOrders([
+            underAlice('yellow'),
+            left('yellow'),
+          ]),
+          besideSuggestingFork: inBothOrders([
+            underAlice('green'),
+            left('green'),
+          ]),
+          forkRejectRedone: inBothOrders([underAlice('green')]),
+          twoKeys: inBothOrders([
+            { pending: ['bob:1'], props: { color: 'blue', weight: 'bold' } },
+            { pending: [], props: { color: 'blue', weight: 'bold' } },
+          ]),
+          underAnotherEditingWriter: inBothOrders([
+            underAlice('yellow'),
+            underAlice('red'),
+            left(),
+          ]),
+        }
+      );
+    });
+
+    it(`keeps an undone Editing write gone when the accept under it is undone, ${winner} winning`, () => {
+      assert.deepEqual(
+        seenInBothOrders([...order, 2], ([alice, , carol], sync, seen) => {
+          setColor(alice, 'red');
+          sync();
+          carol.api.setIntent('edit');
+          setColor(carol, 'green');
+          sync();
+          alice.api.decide({ action: 'accept', changes: ['alice:1'] });
+          sync();
+          carol.editor.api.history.undo();
+          sync();
+          alice.editor.api.history.undo();
+          seen();
+          alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+          seen();
+        }),
+        inBothOrders([
+          { pending: ['alice:1'], props: { color: 'red' } },
+          { pending: [], props: {} },
+        ])
+      );
+    });
+
+    it(`brings back what rejecting a block's write gives when its writer undoes it with a block inserted or removed before it, ${winner} winning`, () => {
+      const undone = (
+        value: Array<Record<string, unknown>>,
+        at: number,
+        beside: (tx: EditorUpdateTransaction) => void
+      ) =>
+        [false, true].map((reversed) => {
+          const all = clients(
+            ['alice', 'bob', 'carol'],
+            value,
+            [...order, 2],
+            'propose',
+            true
+          );
+          const sync = () => syncAll(reversed ? [...all].reverse() : all);
+          const [alice, , carol] = all;
+
+          alice.editor.update((tx) =>
+            tx.nodes.set({ align: 'center' } as never, { at: [at] })
+          );
+          sync();
+          carol.api.setIntent('edit');
+          carol.editor.update((tx) => {
+            tx.nodes.set({ align: 'right' } as never, { at: [at] });
+            beside(tx);
+          });
+          sync();
+          alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+          sync();
+          carol.editor.api.history.undo();
+          sync();
+          same(all);
+
+          return all[0].editor.read
+            .children()
+            .map((block) => (block as { align?: string }).align ?? null);
+        });
+
+      assert.deepEqual(
+        {
+          alone: undone(word, 0, () => {}),
+          inserted: undone(word, 0, (tx) =>
+            tx.nodes.insert(paragraph({ text: 'new' }), { at: [0] })
+          ),
+          removed: undone([paragraph({ text: 'head' }), ...word], 1, (tx) =>
+            tx.nodes.remove({ at: [0] })
+          ),
+        },
+        {
+          alone: inBothOrders([null]),
+          inserted: inBothOrders([null]),
+          removed: inBothOrders([null, null]),
+        }
+      );
+    });
+
+    it(`brings back what rejecting a block's write gives when its writer undoes it with the block wrapped or unwrapped, ${winner} winning`, () => {
+      const undone = (
+        value: Array<Record<string, unknown>>,
+        at: readonly number[],
+        change: (tx: EditorUpdateTransaction) => void
+      ) =>
+        [false, true].map((reversed) => {
+          const all = clients(
+            ['alice', 'bob', 'carol'],
+            value,
+            [...order, 2],
+            'propose',
+            true
+          );
+          const sync = () => syncAll(reversed ? [...all].reverse() : all);
+          const [alice, , carol] = all;
+
+          alice.editor.update((tx) =>
+            tx.nodes.set({ align: 'center' } as never, { at })
+          );
+          sync();
+          carol.api.setIntent('edit');
+          carol.editor.update((tx) => {
+            tx.nodes.set({ align: 'right' } as never, { at });
+            change(tx);
+          });
+          sync();
+          alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+          sync();
+          carol.editor.api.history.undo();
+          sync();
+          const block = NodeApi.get({ children: same(all) } as never, at) as {
+            align?: string;
+          };
+
+          return block.align ?? null;
+        });
+
+      assert.deepEqual(
+        {
+          unwrapped: undone(
+            [{ type: 'quote', children: [paragraph({ text: 'word' })] }],
+            [0, 0],
+            (tx) => tx.nodes.unwrap({ at: [0] })
+          ),
+          wrapped: undone(word, [0], (tx) =>
+            tx.nodes.wrap({ type: 'quote', children: [] }, { at: [0] })
+          ),
+        },
+        { unwrapped: inBothOrders(null), wrapped: inBothOrders(null) }
+      );
+    });
+
+    const idsSwappingAliceAndCarol = order[0] === 0 ? [0, 1, 2] : [2, 1, 0];
+
+    it(`brings back what rejecting a write gives when its writer undoes it on a mention's empty text, ${winner} winning`, () => {
+      const at = [0, 1, 0];
+      const undone = [false, true].map((reversed) => {
+        const all = clients(
+          ['alice', 'bob', 'carol'],
+          [
+            paragraph(
+              { text: 'a' },
+              { type: 'mention', children: [{ text: '' }] },
+              { text: '' }
+            ),
+          ],
+          idsSwappingAliceAndCarol,
+          'propose',
+          true
+        );
+        const sync = () => syncAll(reversed ? [...all].reverse() : all);
+        const [alice, , carol] = all;
+
+        alice.editor.update((tx) =>
+          tx.nodes.set({ color: 'red' } as never, { at, voids: true })
+        );
+        sync();
+        carol.api.setIntent('edit');
+        carol.editor.update((tx) =>
+          tx.nodes.set({ color: 'green' } as never, { at, voids: true })
+        );
+        sync();
+        alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+        sync();
+        carol.editor.api.history.undo();
+        sync();
+
+        return NodeApi.get({ children: same(all) } as never, at);
+      });
+
+      assert.deepEqual(undone, inBothOrders({ text: '' }));
+    });
+
+    const undoneOver = (
+      value: Array<Record<string, unknown>>,
+      suggest: (tx: EditorUpdateTransaction) => void,
+      edit: (tx: EditorUpdateTransaction) => void,
+      leave: 'reject' | 'undo' = 'reject'
+    ) =>
+      [false, true].map((reversed) => {
+        const all = clients(
+          ['alice', 'bob', 'carol'],
+          value,
+          idsSwappingAliceAndCarol,
+          'propose',
+          true
+        );
+        const sync = () => syncAll(reversed ? [...all].reverse() : all);
+        const [alice, , carol] = all;
+
+        alice.editor.update(suggest);
+        sync();
+        carol.api.setIntent('edit');
+        carol.editor.update(edit);
+        sync();
+        if (leave === 'undo') alice.editor.api.history.undo();
+        else alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+        sync();
+        carol.editor.api.history.undo();
+        sync();
+
+        return shapeOf(same(all));
+      });
+    const plainWord = inBothOrders([{ align: null, leaves: [['word', null]] }]);
+
+    it(`brings back what rejecting a write gives when its writer undoes it with an Enter at the block's start or a join, ${winner} winning`, () => {
+      const red = (tx: EditorUpdateTransaction) => color(tx, 'red');
+
+      assert.deepEqual(
+        {
+          enterAtStart: undoneOver(word, red, (tx) => {
+            color(tx, 'green');
+            enterAt(tx, 0);
+          }),
+          enterAtStartColoringTheSecondHalf: undoneOver(word, red, (tx) => {
+            enterAt(tx, 0);
+            tx.nodes.set({ color: 'green' } as never, { at: [1, 0] });
+          }),
+          enterAtStartAfterTheSuggesterUndid: undoneOver(
+            word,
+            red,
+            (tx) => {
+              color(tx, 'green');
+              enterAt(tx, 0);
+            },
+            'undo'
+          ),
+          joinIntoTheBlockBefore: undoneOver(
+            [paragraph({ text: 'head' }), ...word],
+            (tx) => tx.nodes.set({ color: 'red' } as never, { at: [1, 0] }),
+            (tx) => {
+              tx.nodes.set({ color: 'green' } as never, { at: [1, 0] });
+              tx.nodes.merge({ at: [1] });
+            }
+          ),
+        },
+        {
+          enterAtStart: plainWord,
+          enterAtStartColoringTheSecondHalf: plainWord,
+          enterAtStartAfterTheSuggesterUndid: plainWord,
+          joinIntoTheBlockBefore: inBothOrders([
+            { align: null, leaves: [['head', null]] },
+            { align: null, leaves: [['word', null]] },
+          ]),
+        }
+      );
+    });
+
+    it(`gives each part of a leaf an undo joins the value rejecting the undone write gives that part, ${winner} winning`, () => {
+      const joined = (
+        names: readonly string[],
+        value: Array<Record<string, unknown>>,
+        setup: (all: readonly Client[], sync: () => void) => void
+      ) =>
+        [false, true].map((reversed) => {
+          const all = clients(
+            names,
+            value,
+            idsSwappingAliceAndCarol,
+            'propose',
+            true
+          );
+          const sync = () => syncAll(reversed ? [...all].reverse() : all);
+
+          setup(all, sync);
+          sync();
+          const done = same(all);
+          all[2].editor.api.history.undo();
+          sync();
+          const undone = shapeOf(same(all))[0].leaves;
+          all[2].editor.api.history.redo();
+          sync();
+          assert.deepEqual(
+            same(all),
+            done,
+            'the redo puts back the undone write'
+          );
+
+          return undone;
+        });
+
+      assert.deepEqual(
+        {
+          oneAcceptedOneRejected: joined(
+            ['alice', 'dave', 'carol'],
+            word,
+            ([alice, dave, carol], sync) => {
+              markRange(
+                alice,
+                [
+                  [0, 0, 0],
+                  [0, 0, 2],
+                ],
+                'red'
+              );
+              sync();
+              markRange(
+                dave,
+                [
+                  [0, 1, 0],
+                  [0, 1, 2],
+                ],
+                'red'
+              );
+              sync();
+              carol.api.setIntent('edit');
+              markRange(
+                carol,
+                [
+                  [0, 0, 0],
+                  [0, 1, 2],
+                ],
+                'green'
+              );
+              sync();
+              dave.api.decide({ action: 'accept', changes: ['dave:1'] });
+              sync();
+              alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+            }
+          ),
+          intoAPlainNeighbour: joined(
+            ['alice', 'bob', 'carol'],
+            [paragraph({ color: 'red', text: 'w' }, { text: 'ord' })],
+            ([alice, , carol], sync) => {
+              alice.editor.update((tx) =>
+                tx.nodes.set({ color: 'red' } as never, { at: [0, 1] })
+              );
+              sync();
+              carol.api.setIntent('edit');
+              carol.editor.update((tx) =>
+                tx.nodes.set({ color: 'green' } as never, { at: [0, 1] })
+              );
+              sync();
+              alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+            }
+          ),
+          restoredNeighbour: joined(
+            ['alice', 'bob', 'carol'],
+            [paragraph({ text: 'a' }, { color: 'red', text: 'b' })],
+            ([alice, , carol], sync) => {
+              alice.editor.update((tx) =>
+                tx.nodes.set({ color: 'red' } as never, { at: [0, 0] })
+              );
+              sync();
+              carol.api.setIntent('edit');
+              carol.editor.update((tx) => {
+                tx.nodes.set({ color: 'green' } as never, { at: [0, 0] });
+                tx.nodes.remove({ at: [0, 1] });
+              });
+              sync();
+              alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+            }
+          ),
+          restoredBetween: joined(
+            ['alice', 'bob', 'carol'],
+            [
+              paragraph(
+                { text: 'w' },
+                { color: 'red', text: 'X' },
+                { text: 'rd' }
+              ),
+            ],
+            ([alice, , carol], sync) => {
+              alice.editor.update((tx) => {
+                tx.nodes.set({ color: 'red' } as never, { at: [0, 0] });
+                tx.nodes.set({ color: 'red' } as never, { at: [0, 2] });
+              });
+              sync();
+              carol.api.setIntent('edit');
+              carol.editor.update((tx) => {
+                tx.nodes.set({ color: 'green' } as never, { at: [0, 0] });
+                tx.nodes.set({ color: 'green' } as never, { at: [0, 2] });
+                tx.nodes.remove({ at: [0, 1] });
+              });
+              sync();
+              alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+            }
+          ),
+        },
+        {
+          oneAcceptedOneRejected: inBothOrders([
+            ['wo', null],
+            ['rd', 'red'],
+          ]),
+          intoAPlainNeighbour: inBothOrders([
+            ['w', 'red'],
+            ['ord', null],
+          ]),
+          restoredNeighbour: inBothOrders([
+            ['a', null],
+            ['b', 'red'],
+          ]),
+          restoredBetween: inBothOrders([
+            ['w', null],
+            ['X', 'red'],
+            ['rd', null],
+          ]),
+        }
+      );
+    });
+
+    it(`keeps an undo's repair from reading more as the document grows, ${winner} winning`, () => {
+      const undoWork = (
+        blocks: number,
+        shape: 'alone' | 'enterAtStart' | 'joined'
+      ) => {
+        // A middle block, so work over the blocks after it shows.
+        const middle = blocks / 2;
+        const at = [middle, shape === 'joined' ? 1 : 0];
+        const all = clients(
+          ['alice', 'bob', 'carol'],
+          Array.from({ length: blocks }, (_, index) =>
+            index === middle && shape === 'joined'
+              ? paragraph({ color: 'red', text: 'w' }, { text: 'ord' })
+              : paragraph({ text: `plain ${index}` })
+          ),
+          idsSwappingAliceAndCarol,
+          'propose',
+          true
+        );
+        const [alice, , carol] = all;
+
+        alice.editor.update((tx) =>
+          tx.nodes.set({ color: 'red' } as never, { at })
+        );
+        syncAll(all);
+        carol.api.setIntent('edit');
+        carol.editor.update((tx) => {
+          tx.nodes.set({ color: 'green' } as never, { at });
+          if (shape === 'enterAtStart') {
+            tx.selection.set({
+              kind: 'text',
+              anchor: { offset: 0, path: at },
+              focus: { offset: 0, path: at },
+            });
+            tx.break.insert();
+          }
+        });
+        syncAll(all);
+        alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+        syncAll(all);
+        resetCoreWork();
+        carol.editor.api.history.undo();
+        const work = readCoreWork();
+
+        return {
+          indexedNodes: work.indexedNodes,
+          leaves: shapeOf(carol.editor.read.children())[middle]?.leaves,
+          walkedSlots: work.walkedSlots,
+          wholeReadNodes: work.wholeReadNodes,
+        };
+      };
+      const shapes = ['alone', 'enterAtStart', 'joined'] as const;
+      const measured = Object.fromEntries(
+        shapes.map((shape) => [
+          shape,
+          { at100: undoWork(100, shape), at2000: undoWork(2000, shape) },
+        ])
+      ) as Record<
+        (typeof shapes)[number],
+        Record<'at100' | 'at2000', ReturnType<typeof undoWork>>
+      >;
+
+      process.stdout.write(`case undo work: ${JSON.stringify(measured)}\n`);
+      for (const shape of shapes) {
+        const { at100, at2000 } = measured[shape];
+
+        assert.equal(
+          at2000.indexedNodes,
+          at100.indexedNodes,
+          `${shape}: indexed nodes grow with the document`
+        );
+        assert.equal(
+          at2000.walkedSlots,
+          at100.walkedSlots,
+          `${shape}: walked slots grow with the document`
+        );
+        for (const [blocks, { leaves, wholeReadNodes }] of [
+          [100, at100],
+          [2000, at2000],
+        ] as const) {
+          assert.deepEqual(
+            leaves,
+            shape === 'joined'
+              ? [
+                  ['w', 'red'],
+                  ['ord', null],
+                ]
+              : [[`plain ${blocks / 2}`, null]],
+            `${shape}: the undo repairs the value`
+          );
+          // A whole read of the blocks the undo changed adds a few nodes.
+          assert.ok(
+            wholeReadNodes <=
+              { alone: 12, enterAtStart: 8, joined: 12 }[shape] * blocks + 8,
+            `${shape}: ${wholeReadNodes} nodes read whole at ${blocks} blocks`
+          );
+        }
+      }
+    });
+
+    it(`keeps every client on the redone value after undoing a write with an Enter at the block's start, ${winner} winning`, () => {
+      const steps = [false, true].map((reversed) => {
+        const all = clients(
+          ['alice', 'bob', 'carol'],
+          word,
+          idsSwappingAliceAndCarol,
+          'propose',
+          true
+        );
+        const sync = () => syncAll(reversed ? [...all].reverse() : all);
+        const [alice, , carol] = all;
+
+        setColor(alice, 'red');
+        sync();
+        carol.api.setIntent('edit');
+        carol.editor.update((tx) => {
+          color(tx, 'green');
+          enterAt(tx, 0);
+        });
+        sync();
+        alice.api.decide({ action: 'reject', changes: ['alice:1'] });
+        sync();
+        carol.editor.api.history.undo();
+        sync();
+        const undone = shapeOf(same(all));
+
+        carol.editor.api.history.redo();
+        sync();
+        const redone = same(all);
+
+        return {
+          redone: shapeOf(redone),
+          tags: (
+            (
+              redone[1] as {
+                children: Array<{
+                  authored?: Array<{ change: string; kind: string }>;
+                }>;
+              }
+            ).children[0].authored ?? []
+          )
+            .filter((mark) => mark.kind === 'format')
+            .map((mark) => mark.change),
+          undone,
+        };
+      });
+
+      assert.deepEqual(
+        steps,
+        inBothOrders({
+          redone: [
+            { align: null, leaves: [['', null]] },
+            { align: null, leaves: [['word', 'green']] },
+          ],
+          tags: ['~edit:carol'],
+          undone: [{ align: null, leaves: [['word', null]] }],
+        })
+      );
+    });
+
+    it(`gives a block a redo puts in place of a suggested one none of the suggestion's values, with the same text or another, ${winner} winning`, () => {
+      const redone = (text: string) => {
+        const [alice, , carol] = clients(
+          ['alice', 'bob', 'carol'],
+          [paragraph({ color: 'blue', text: 'word' })],
+          [...order, 2],
+          'propose',
+          true
+        );
+        const all = [alice, carol];
+
+        setColor(alice, 'red');
+        syncAll(all);
+        carol.api.setIntent('edit');
+        carol.editor.update((tx) => {
+          tx.nodes.remove({ at: [0] });
+          tx.nodes.insert(paragraph({ text }), { at: [0] });
+        });
+        syncAll(all);
+        carol.editor.api.history.undo();
+        syncAll(all);
+        carol.editor.api.history.redo();
+        syncAll(all);
+        same(all);
+
+        return alice.editor.read.children();
+      };
+
+      assert.deepEqual(
+        { other: redone('other'), same: redone('word') },
+        {
+          other: [paragraph({ text: 'other' })],
+          same: [paragraph({ text: 'word' })],
+        }
+      );
+    });
+
+    it(`keeps an Editing value over a suggestion its writer undoes and redoes, in both delivery orders and after a reload, ${winner} winning`, () => {
+      const redoneUnder = (
+        stacked: boolean,
+        batches: ReadonlyArray<readonly string[]>
+      ) =>
+        rejectInBothOrders(
+          order,
+          ([alice, bob, carol], sync) => {
+            setColor(alice, 'red');
+            sync();
+            carol.api.setIntent('edit');
+            setColor(carol, 'green');
+            sync();
+            if (stacked) {
+              setColor(bob, 'blue');
+              sync();
+            }
+            alice.editor.api.history.undo();
+            sync();
+            alice.editor.api.history.redo();
+          },
+          batches,
+          true
+        );
+
+      assert.deepEqual(
+        {
+          redone: redoneUnder(false, [['alice:1']]),
+          redoneUnderStack: redoneUnder(true, [['bob:1'], ['alice:1']]),
+        },
+        {
+          redone: [false, true].map(() => ({
+            preview: 'green',
+            rejected: [{ color: 'green', pending: [] }],
+          })),
+          redoneUnderStack: [false, true].map(() => ({
+            preview: 'green',
+            rejected: [
+              { color: 'green', pending: ['alice:1'] },
+              { color: 'green', pending: [] },
+            ],
+          })),
+        }
+      );
+    });
+
+    it(`reads a fork sibling or a plain value under a stack once the tag between them left, in both delivery orders and after a reload, ${winner} winning`, () => {
+      const siblingUndone = rejectInBothOrders(
+        order,
+        ([alice, bob, carol, dave], sync) => {
+          setColor(carol, 'red');
+          sync();
+          setColor(alice, 'blue');
+          setColor(bob, 'green');
+          sync();
+          setColor(dave, 'yellow');
+          sync();
+          bob.editor.api.history.undo();
+        },
+        [['dave:1']],
+        true,
+        ['alice', 'bob', 'carol', 'dave']
+      );
+      const plainUnder = rejectInBothOrders(
+        order,
+        ([alice, bob, carol], sync) => {
+          carol.api.setIntent('edit');
+          setColor(carol, 'purple');
+          sync();
+          setColor(alice, 'red');
+          sync();
+          setColor(bob, 'blue');
+          sync();
+          alice.editor.api.history.undo();
+        },
+        [['bob:1']],
+        true
+      );
+
+      assert.deepEqual(
+        { plainUnder, siblingUndone },
+        {
+          plainUnder: [false, true].map(() => ({
+            preview: 'purple',
+            rejected: [{ color: 'purple', pending: [] }],
+          })),
+          siblingUndone: [false, true].map(() => ({
+            preview: null,
+            rejected: [{ color: 'blue', pending: ['alice:1', 'carol:1'] }],
+          })),
+        }
+      );
+    });
+
+    it(`reads a write a settle landed as gone once the accept it relied on is undone, ${winner} winning`, () => {
+      const settledThenUndone = (reincarnated: boolean) =>
+        [false, true].map((reversed) => {
+          const all = clients(
+            ['alice', 'bob', 'carol'],
+            word,
+            [...order, 2],
+            'propose',
+            true
+          );
+          const [alice, bob, carol] = all;
+          const sync = () => syncAll(reversed ? [...all].reverse() : all);
+
+          if (reincarnated) {
+            alice.api.propose('alice:1', (tx) =>
+              tx.text.insert('?', { at: point(4) })
+            );
+            sync();
+            carol.api.decide({ action: 'accept', changes: ['alice:1'] });
+            sync();
+          }
+          alice.api.propose('alice:1', (tx) =>
+            tx.text.insert('!', { at: point(4) })
+          );
+          sync();
+          // Carol accepts before the red reaches her, so the other clients'
+          // settles drop its tag and land its write.
+          alice.api.propose('alice:1', (tx) => color(tx, 'red'));
+          send(alice, bob);
+          bob.api.propose('bob:1', (tx) => color(tx, 'blue'));
+          send(bob, alice);
+          carol.api.decide({ action: 'accept', changes: ['alice:1'] });
+          sync();
+          carol.editor.api.history.undo();
+          sync();
+          alice.api.decide({ action: 'reject', changes: ['bob:1'] });
+          sync();
+          same(all);
+
+          return outcomeOf(alice.editor);
+        });
+      const gone = [false, true].map(() => ({
+        color: null,
+        pending: ['alice:1'],
+      }));
+
+      assert.deepEqual(
+        {
+          reincarnated: settledThenUndone(true),
+          undone: settledThenUndone(false),
+        },
+        { reincarnated: gone, undone: gone }
       );
     });
   }

@@ -184,7 +184,7 @@ The first proposal makes a sentence bold; the second inserts a paragraph. Open e
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-Add [Basic Marks](/docs/basic-marks) for supported text formatting. Editor commands record text, mark, and node operations as proposals while the view is in suggesting mode. A `propose` view refuses a write it cannot record as a proposal and rolls it back; see [Authored Changes](/docs/authored-changes#configure-a-view).
+Add [Basic Marks](/docs/basic-marks) for supported text formatting. Editor commands record text, mark, and node operations as proposals while the view is in suggesting mode. A `propose` view refuses a write it cannot record as a proposal and rolls it back; see [Authored Changes](/docs/authored-changes#configure-a-view). Formatting in Editing mode over a pending format suggestion applies directly and leaves the suggestion pending, so rejecting it later keeps the direct edit. If a collaborator decides or withdraws that suggestion while the edit syncs, the direct edit can be lost.
 
 ### Accepted, proposed, and markup
 

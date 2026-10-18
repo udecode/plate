@@ -23,7 +23,8 @@ import { type Element, ElementApi } from '../../interfaces/element';
 import type { Descendant } from '../../interfaces/node';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
-import { type FormatTag, type LayerValue, writeLayer } from './layers';
+import { isEditingChange } from '../facts/editing';
+import { type FormatTag, recordFormats, type Standing } from './layers';
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMark,
@@ -45,12 +46,13 @@ export type RecordCompletionInput = Readonly<{
   before: JsonEditorValue;
   /** The recorded change from `before` to `after`. */
   change: DocumentChange;
-  createTagId: () => string;
   dependencies: Dependencies;
   editor: Editor;
   /** The indexes of `after`, by root. */
   indexes: ReadonlyMap<string, DocumentIndex>;
   mark: Mark;
+  standing: Standing;
+  commitWriteId: () => string;
 }>;
 
 export type RecordCompletion = Readonly<{
@@ -129,7 +131,10 @@ const restingChanges = (
 ) => {
   const reshaping = [
     ...readAuthoredMarks(host).filter(
-      (mark) => mark.kind === 'format' && mark.key === 'type'
+      (mark) =>
+        mark.kind === 'format' &&
+        mark.key === 'type' &&
+        !isEditingChange(mark.change)
     ),
     ...lifted.flatMap((node) =>
       readAuthoredMarks(node).filter((mark) => mark.kind === 'unwrap')
@@ -490,9 +495,10 @@ export const completeProposed = (
               [
                 edit,
                 keptShell(edit.node, edit.props, {
-                  createTagId: input.createTagId,
                   isOwn,
                   mark: input.mark,
+                  standing: input.standing,
+                  commitWriteId: input.commitWriteId,
                 }),
               ] as const,
             ]
@@ -598,48 +604,46 @@ const keptShell = (
   shell: JsonNode,
   props: JsonRecord,
   options: Readonly<{
-    createTagId: () => string;
     isOwn: (mark: Readonly<{ change: string }>) => boolean;
     mark: Mark;
+    standing: Standing;
+    commitWriteId: () => string;
   }>
 ) => {
   const marks = readAuthoredMarks(shell);
   const ownDeletes = marks.filter(
     (mark) => mark.kind === 'delete' && options.isOwn(mark)
   );
-  const withdrawn = new Set<unknown>(ownDeletes);
   const previous = propsOf(shell);
-  const tags: FormatTag[] = [];
+  const keys = [
+    ...new Set([...Object.keys(previous), ...Object.keys(props)]),
+  ].filter((key) => key !== 'type' && !jsonEqual(previous[key], props[key]));
+  const existing = marks.filter(
+    (mark): mark is FormatTag => mark.kind === 'format'
+  );
+  const written = recordFormats({
+    keys,
+    next: props,
+    ownInsertion: false,
+    previous,
+    source: 'command',
+    standing: options.standing,
+    tags: existing,
+    writer: {
+      ...options.mark,
+      isOwn: options.isOwn,
+      commitWriteId: options.commitWriteId,
+    },
+  });
+  const tags = written.filter((tag) => !existing.includes(tag));
+  const withdrawn = new Set<unknown>([
+    ...ownDeletes,
+    ...existing.filter((tag) => !written.includes(tag)),
+  ]);
   const set: Record<string, unknown> = {};
   const unset: string[] = [];
 
-  for (const key of new Set([
-    ...Object.keys(previous),
-    ...Object.keys(props),
-  ])) {
-    if (key === 'type' || jsonEqual(previous[key], props[key])) continue;
-
-    const existing = marks.filter(
-      (mark): mark is FormatTag => mark.kind === 'format' && mark.key === key
-    );
-    const written = writeLayer({
-      intent: 'propose',
-      isOwn: options.isOwn,
-      next: props[key] as LayerValue,
-      ownInsertion: false,
-      previous: previous[key] as LayerValue,
-      source: 'command',
-      tag: (fields) => ({
-        ...fields,
-        ...options.mark,
-        id: options.createTagId(),
-        key,
-        kind: 'format',
-      }),
-      tags: existing,
-    });
-
-    tags.push(...written.filter((tag) => !existing.includes(tag)));
+  for (const key of keys) {
     if (props[key] === undefined) unset.push(key);
     else set[key] = props[key];
   }
@@ -647,7 +651,7 @@ const keptShell = (
   return {
     delta: {
       ...(tags.length > 0 ? { add: { [AUTHORED_MARKS_KEY]: tags } } : {}),
-      remove: { [AUTHORED_MARKS_KEY]: ownDeletes },
+      remove: { [AUTHORED_MARKS_KEY]: [...withdrawn] },
       ...(Object.keys(set).length > 0 ? { set: set as JsonRecord } : {}),
       ...(unset.length > 0 ? { unset } : {}),
     },

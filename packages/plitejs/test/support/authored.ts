@@ -10,7 +10,9 @@ import type {
 import { expandContexts } from '../../src/authored/facts/compact';
 import {
   type ContextRecord,
+  type LandedRecord,
   putContexts,
+  putLanded,
   putVerdicts,
   type VerdictRecord,
 } from '../../src/authored/facts/records';
@@ -27,23 +29,27 @@ import type {
   EditorDocumentRecords,
 } from '../../src/interfaces/editor';
 
-/** A document's `records` holding these review contexts and verdicts. */
 export const reviewRecords = ({
   contexts = [],
+  landed = [],
   verdicts = [],
 }: Readonly<{
   contexts?: readonly ContextRecord[];
+  landed?: readonly LandedRecord[];
   verdicts?: readonly VerdictRecord[];
 }>): EditorDocumentRecords =>
   Object.fromEntries(
-    [...composeRecordOps(putContexts(contexts), putVerdicts(verdicts))].map(
-      ([set, writes]) => [
-        set,
-        Object.fromEntries(
-          [...writes].map(([id, json]) => [id, JSON.parse(json ?? 'null')])
-        ),
-      ]
-    )
+    [
+      ...composeRecordOps(
+        composeRecordOps(putContexts(contexts), putVerdicts(verdicts)),
+        putLanded(landed)
+      ),
+    ].map(([set, writes]) => [
+      set,
+      Object.fromEntries(
+        [...writes].map(([id, json]) => [id, JSON.parse(json ?? 'null')])
+      ),
+    ])
   );
 
 /** A value's records as JSON, whether it holds them as a field or beside it. */

@@ -118,6 +118,7 @@ const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
 const FORMAT_FIELDS: ReadonlySet<string> = new Set([
   'at',
   'author',
+  'base',
   'before',
   'change',
   'id',
@@ -168,8 +169,25 @@ const isCutTag = (value: Readonly<Record<string, unknown>>) =>
     (isRecord(value.kept) && !Object.hasOwn(value.kept, AUTHORED_MARKS_KEY))) &&
   Object.keys(value).every((field) => CUT_FIELDS.has(field));
 
+const LINK_FIELDS: ReadonlySet<string> = new Set(['id', 'write']);
+
+const isFormatWrite = (write: unknown) =>
+  isRecord(write) &&
+  ((write.kind === 'remove' && Object.keys(write).length === 1) ||
+    (write.kind === 'set' &&
+      Object.keys(write).length === 2 &&
+      Object.hasOwn(write, 'value') &&
+      isEditorJsonValue(write.value)));
+
+const isFormatLink = (value: unknown) =>
+  isRecord(value) &&
+  typeof value.id === 'string' &&
+  value.id.length > 0 &&
+  isFormatWrite(value.write) &&
+  Object.keys(value).every((field) => LINK_FIELDS.has(field));
+
 const isFormatTag = (value: Readonly<Record<string, unknown>>) => {
-  const { id, key, over, write } = value;
+  const { base, id, key, over, write } = value;
 
   return (
     typeof id === 'string' &&
@@ -177,15 +195,16 @@ const isFormatTag = (value: Readonly<Record<string, unknown>>) => {
     typeof key === 'string' &&
     key.length > 0 &&
     key !== AUTHORED_MARKS_KEY &&
-    isRecord(write) &&
-    ((write.kind === 'remove' && Object.keys(write).length === 1) ||
-      (write.kind === 'set' &&
-        Object.keys(write).length === 2 &&
-        Object.hasOwn(write, 'value') &&
-        isEditorJsonValue(write.value))) &&
-    (over === undefined ||
-      (Array.isArray(over) &&
-        over.every((item) => typeof item === 'string' && item.length > 0))) &&
+    isFormatWrite(write) &&
+    (over === undefined
+      ? base === undefined
+      : Array.isArray(over) &&
+        over.length > 0 &&
+        over.every(
+          (step) =>
+            Array.isArray(step) && step.length > 0 && step.every(isFormatLink)
+        ) &&
+        isFormatWrite(base)) &&
     Object.keys(value).every((field) => FORMAT_FIELDS.has(field))
   );
 };
@@ -327,14 +346,16 @@ const visitMarks = (
         }
         const follows =
           member.kind === 'insert' && member.follows !== undefined;
+        const stacked = member.kind === 'format' && member.over !== undefined;
 
         if (
           isEditingChange(member.change) &&
           !STORED_EDITING_KINDS.has(member.kind) &&
-          !follows
+          !follows &&
+          !stacked
         ) {
           throw new AuthoredMarkError(
-            `An Editing mark of kind "${member.kind}" never stays stored; only a join, a split, a deletion or an insertion that follows a join does.`,
+            `An Editing mark of kind "${member.kind}" never stays stored; only a join, a split, a deletion, an insertion that follows a join or a format written over other tags does.`,
             at
           );
         }

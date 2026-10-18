@@ -13,6 +13,7 @@ import {
 import type { EditorDocumentRecords } from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
 import { countLedgerWork } from '../ledger/work';
+import type { IsLanded } from '../tree/layers';
 import {
   type AuthoredMark,
   AuthoredMarkError,
@@ -28,7 +29,9 @@ import {
   contextIdOf,
   contextRecordOf,
   incarnationOf,
+  LANDED,
   parseContext,
+  parseLanded,
   parseVerdict,
   type Verdict,
   VERDICTS,
@@ -46,6 +49,7 @@ export type ReviewFacts = Readonly<{
   insertedIncarnations: () => Readonly<{
     has: (incarnation: string) => boolean;
   }>;
+  landed: IsLanded;
 }>;
 
 /** Where context records are read from: a document's, or a recording's that adds to them. */
@@ -144,9 +148,26 @@ const assertChainEnds = (
   for (const ctx of walked) ended.add(ctx);
 };
 
-const assertVerdict = (id: string, json: string) => {
-  if (!parseVerdict(id, json)) {
-    throw new AuthoredMarkError(`Review verdict ${id} is malformed.`, []);
+// The record sets whose records each stand alone, checked one by one.
+const PARSERS: ReadonlyArray<
+  readonly [
+    set: string,
+    name: string,
+    parse: (id: string, json: string) => unknown,
+  ]
+> = [
+  [VERDICTS, 'verdict', parseVerdict],
+  [LANDED, 'landed write', parseLanded],
+];
+
+const assertParsed = (
+  name: string,
+  parse: (id: string, json: string) => unknown,
+  id: string,
+  json: string
+) => {
+  if (!parse(id, json)) {
+    throw new AuthoredMarkError(`Review ${name} ${id} is malformed.`, []);
   }
 };
 
@@ -157,7 +178,6 @@ const assertVerdict = (id: string, json: string) => {
  */
 export const assertRecordWrites = (store: RecordStore, ops: RecordOps) => {
   const contexts = ops.get(CONTEXTS);
-  const verdicts = ops.get(VERDICTS);
 
   if (contexts) {
     const written = new Map<string, ContextRecord>();
@@ -205,8 +225,10 @@ export const assertRecordWrites = (store: RecordStore, ops: RecordOps) => {
       }
     }
   }
-  for (const [id, json] of verdicts ?? []) {
-    if (json !== null) assertVerdict(id, json);
+  for (const [set, name, parse] of PARSERS) {
+    for (const [id, json] of ops.get(set) ?? []) {
+      if (json !== null) assertParsed(name, parse, id, json);
+    }
   }
 };
 
@@ -221,8 +243,10 @@ export const assertRecordStore = (store: RecordStore) => {
 
   for (const record of records) assertChainEnds(record, get, ended);
   records.forEach(assertContentId);
-  for (const [id, json] of getRecordEntries(store, VERDICTS)) {
-    assertVerdict(id, json);
+  for (const [set, name, parse] of PARSERS) {
+    for (const [id, json] of getRecordEntries(store, set)) {
+      assertParsed(name, parse, id, json);
+    }
   }
 };
 
@@ -249,11 +273,13 @@ const NO_RECORD_FACTS: RecordFacts = Object.freeze({
     return false;
   },
   hasVerdicts: false,
+  landed: () => false,
 });
 
 const recordFactsOf = (store: RecordStore): RecordFacts => {
   if (
     getRecordSetVersion(store, CONTEXTS) === null &&
+    getRecordSetVersion(store, LANDED) === null &&
     getRecordSetVersion(store, VERDICTS) === null
   ) {
     return NO_RECORD_FACTS;
@@ -262,6 +288,16 @@ const recordFactsOf = (store: RecordStore): RecordFacts => {
   let facts = RECORD_FACTS.get(store);
 
   if (!facts) {
+    const hasVerdict = (incarnation: string, verdict?: Verdict) => {
+      countLedgerWork('verdictLookups');
+
+      return hasRecordWithPrefix(
+        store,
+        VERDICTS,
+        verdictProbeOf(incarnation, verdict)
+      );
+    };
+
     facts = Object.freeze({
       contexts: Object.freeze({
         get: (ctx: string) => readContext(store, ctx),
@@ -276,16 +312,19 @@ const recordFactsOf = (store: RecordStore): RecordFacts => {
           changeVerdictProbeOf(change)
         );
       },
-      hasVerdict: (incarnation: string, verdict?: Verdict) => {
-        countLedgerWork('verdictLookups');
+      hasVerdict,
+      hasVerdicts: getRecordCount(store, VERDICTS) > 0,
+      landed: (write: string) => {
+        const json = getRecord(store, LANDED, write);
+        const member =
+          json === undefined ? null : parseLanded(write, json)?.member;
 
-        return hasRecordWithPrefix(
-          store,
-          VERDICTS,
-          verdictProbeOf(incarnation, verdict)
+        return (
+          !!member &&
+          (isEditingChange(member.change) ||
+            hasVerdict(incarnationOf(member), 'accept'))
         );
       },
-      hasVerdicts: getRecordCount(store, VERDICTS) > 0,
     });
     RECORD_FACTS.set(store, facts);
   }
@@ -655,9 +694,12 @@ export const standingClaimsOf = (
     : claims.filter((mark) => outcomeOf(facts, mark) !== 'reject');
 };
 
-export const isAccepted = (facts: ReviewFacts, mark: AuthoredMark) =>
-  isEditingChange(mark.change) ||
-  (facts.hasVerdicts && outcomeOf(facts, mark) === 'accept');
+export const isAccepted = (
+  facts: ReviewFacts,
+  member: Pick<MarkBase, 'at' | 'change' | 'inc'>
+) =>
+  isEditingChange(member.change) ||
+  (facts.hasVerdicts && facts.hasVerdict(incarnationOf(member), 'accept'));
 
 export const isSettledDeletion = (node: unknown, facts: ReviewFacts) =>
   readAuthoredMarks(node).some(

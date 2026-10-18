@@ -7,12 +7,23 @@ import {
 } from '../../core/change/document-change';
 import {
   type DocumentIndex,
+  type IndexedNodeRange,
   NO_NODES,
   type SparseNodes,
   type NodeList,
 } from '../../core/change/document-index';
-import type { RootChange } from '../../core/change/root-change';
-import type { JsonEditorValue } from '../../core/change/tokens';
+import { jsonEqual } from '../../core/change/json';
+import {
+  type KeptRun,
+  keptRunsOf,
+  RootChange,
+  type RootChangeSection,
+} from '../../core/change/root-change';
+import {
+  type JsonEditorValue,
+  type JsonNode,
+  PreparedTokenSlice,
+} from '../../core/change/tokens';
 import type { DocumentAdmission } from '../../core/document-admission';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { EditorMissingReferenceError } from '../../core/missing-reference';
@@ -23,6 +34,7 @@ import type { Path } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import { getReviewLedger } from '../ledger/ledger';
 import { rootOf } from '../ledger/roots';
+import type { KeyReading } from '../tree/layers';
 import {
   AuthoredMarkError,
   createAuthoredMarksValidator,
@@ -40,7 +52,7 @@ import {
   rememberInsertions,
 } from './facts';
 import { CONTEXTS, VERDICTS, verdictIncarnationsOf } from './records';
-import { settleValue } from './settle';
+import { keyReadingOf, repairKeys, settleValue } from './settle';
 
 const firstChildEndingAfter = (index: DocumentIndex, position: number) => {
   let low = 0;
@@ -89,6 +101,124 @@ const changedSpan = (
   return from >= to
     ? null
     : { beforeTo: before.length - (after.length - to), from, to };
+};
+
+type Leaf = Readonly<Record<string, unknown>> & { text?: string };
+
+type Part = Readonly<{ node: Leaf; run: KeptRun }>;
+
+const propsOf = ({ text: _text, ...props }: Leaf) => props;
+
+const splitLeaf = (
+  node: Leaf,
+  contentFrom: number,
+  parts: readonly Part[]
+): readonly Leaf[] => {
+  const text = node.text ?? '';
+  const leaves: Leaf[] = [];
+  const push = (
+    props: Readonly<Record<string, unknown>>,
+    start: number,
+    end: number
+  ) => {
+    if (end <= start) return;
+    const last = leaves.at(-1);
+
+    if (last && jsonEqual(propsOf(last), props)) {
+      leaves[leaves.length - 1] = {
+        ...props,
+        text: last.text + text.slice(start, end),
+      };
+    } else leaves.push({ ...props, text: text.slice(start, end) });
+  };
+  let offset = 0;
+
+  for (const part of parts) {
+    const start = part.run.from - contentFrom;
+
+    push(propsOf(node), offset, start);
+    push(propsOf(part.node), start, part.run.to - contentFrom);
+    offset = part.run.to - contentFrom;
+  }
+  push(propsOf(node), offset, text.length);
+
+  return leaves;
+};
+
+const formatTokensOf = (entry: IndexedNodeRange) =>
+  entry.kind === 'text' && entry.contentFrom < entry.contentTo
+    ? { from: entry.contentFrom, to: entry.contentTo }
+    : { from: entry.from, to: entry.from + 1 };
+
+const repairRejectedTags = (
+  change: RootChange,
+  ranges: Iterable<readonly [number, number, number, number]>,
+  before: DocumentIndex,
+  after: DocumentIndex,
+  reading: KeyReading
+) => {
+  const sections: RootChangeSection[] = [];
+  const seen = new Set<number>();
+
+  for (const [_fromBefore, _toBefore, from, to] of ranges) {
+    for (const entry of after.nodeRangesTouching(from, to)) {
+      if (seen.has(entry.from)) continue;
+      seen.add(entry.from);
+
+      const node = after.node(entry.path) as Leaf;
+      const tokens = formatTokensOf(entry);
+      const runs = keptRunsOf(change, tokens.from, tokens.to);
+      const parts = runs.flatMap((run): Part[] => {
+        const source = before.nodeStartingAt(run.at) ?? before.textAt(run.at);
+
+        return source
+          ? [{ run, node: repairKeys(before.node(source.path), node, reading) }]
+          : [];
+      });
+
+      if (parts.every((part) => part.node === node)) continue;
+      const [first] = parts;
+      const covered =
+        parts.reduce((sum, part) => sum + part.run.to - part.run.from, 0) ===
+        tokens.to - tokens.from;
+
+      if (
+        covered &&
+        parts.every((part) =>
+          jsonEqual(propsOf(part.node), propsOf(getDefined(first).node))
+        )
+      ) {
+        const props = propsOf(getDefined(first).node);
+        const unset = Object.keys(propsOf(node)).filter(
+          (key) => !(key in props)
+        );
+        const set = Object.fromEntries(
+          Object.entries(props).filter(
+            ([key, value]) => !jsonEqual(value, node[key])
+          )
+        );
+
+        sections.push({
+          from: entry.from,
+          properties: {
+            ...(Object.keys(set).length > 0 ? { set } : {}),
+            ...(unset.length > 0 ? { unset } : {}),
+          },
+        });
+        continue;
+      }
+
+      sections.push({
+        from: entry.from,
+        insert: PreparedTokenSlice.fromNodes(
+          splitLeaf(node, entry.contentFrom, parts) as readonly JsonNode[]
+        ),
+        to: entry.to,
+      });
+    }
+  }
+
+  return sections.length === 0 ? null : RootChange.create(after, sections);
 };
 
 const repairOf = (
@@ -232,7 +362,32 @@ export const authoredAdmission: DocumentAdmission = {
     }
     rememberInsertions(after, counts);
 
-    const compacted = compactClaims(after, scope);
+    const repairs = new Map<string, RootChange>();
+
+    if (getActiveEditorUpdateTags(editor).includes('historic')) {
+      const reading = keyReadingOf(facts);
+
+      for (const root of scope.keys()) {
+        const rootChange = getInternalDocumentRootChange(change, root);
+
+        if (!rootChange || !previous.roots.has(root)) continue;
+        const repair = repairRejectedTags(
+          rootChange,
+          getInternalDocumentChangeRanges(change, root),
+          rootOf(before, root),
+          indexOf(root),
+          reading
+        );
+
+        if (repair) repairs.set(root, repair);
+      }
+    }
+
+    const replayed =
+      repairs.size === 0
+        ? after
+        : createInternalDocumentChange(repairs).apply(after);
+    const compacted = compactClaims(replayed, scope);
     const compactedFacts = factsOf(compacted);
     // A verdict, or an incarnation a verdict names starting or stopping to
     // insert, settles claims in every block naming that incarnation.

@@ -27,7 +27,10 @@ import {
 import { areJsonLikeValuesEqual } from './json-equality';
 import { nextPath } from './path';
 import {
+  createYjsRunEncoder,
+  createYjsTextChain,
   cutTextChain,
+  rewriteTextRuns,
   segmentPliteChildren,
   segmentYjsChildren,
 } from './text-runs';
@@ -35,9 +38,8 @@ import {
 type CanonicalSplit = Readonly<{
   elementPath: Path;
   elementProperties: YjsAttributeRecord;
-  rightText: string;
+  rightLeaves: readonly Text[] | null;
   textPath: Path;
-  textProperties: YjsAttributeRecord;
   textGroup: number;
   textOffset: number;
 }>;
@@ -111,12 +113,16 @@ const findSplitText = (
     );
     const group = segments[textGroup];
     if (group?.kind !== 'text') return null;
+    const [rightGroup] = segmentPliteChildren(right.children);
     return {
       elementPath,
       elementProperties: nodeProperties(right, 'children'),
-      rightText: rightText.text,
+      rightLeaves:
+        nodePropertiesEqual(originalText, rightText, 'text') ||
+        rightGroup?.kind !== 'text'
+          ? null
+          : rightGroup.leaves,
       textPath: [...elementPath, index],
-      textProperties: nodeProperties(rightText, 'text'),
       textGroup,
       textOffset:
         group.leaves
@@ -329,6 +335,32 @@ export const applyCanonicalSplitToYjs = (
   );
 
   insertYjsChild(root, parent, index + 1, right);
+
+  // Patching the moved runs in place, instead of refusing the split, keeps a
+  // peer's concurrent typing in the block it split.
+  if (split.rightLeaves) {
+    const encode = createYjsRunEncoder(isSetValued, {
+      ...createYjsPropertyLocationFromPath(
+        root,
+        nextPath(split.elementPath),
+        schemaRoot
+      ),
+      offset: 0,
+    });
+    const rightGroup = segmentYjsChildren(
+      getYjsVisibleChildren(root, right)
+    )[0];
+    if (rightGroup?.kind === 'text') {
+      rewriteTextRuns(rightGroup.chain, split.rightLeaves, encode);
+    } else {
+      insertYjsChild(
+        root,
+        right,
+        0,
+        createYjsTextChain(split.rightLeaves, encode)
+      );
+    }
+  }
 
   return right;
 };

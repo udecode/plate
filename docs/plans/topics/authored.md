@@ -102,6 +102,69 @@ Exports pick a projection explicitly.
 const markdown = editor.api.markdown.serialize({ projection: "proposed" });
 ```
 
+## Document shape
+
+Admission's validator, every decision, the change cards, Yjs and saved documents read a stacked format suggestion. Yjs merges `authored` as a set of whole members and each record set as a map keyed by record id. A stacked tag stores its links grouped by step, bottom step first, each with the linked tag's id and written value, plus `base`, the key's value with every tag on it undone.
+
+Bob's blue over Alice's pending red:
+
+```json
+{
+  "text": "word",
+  "color": "blue",
+  "authored": [
+    { "id": "alice-t:1", "key": "color", "kind": "format", "change": "alice:1", "author": "alice", "at": 1000,
+      "write": { "kind": "set", "value": "red" } },
+    { "id": "bob-t:1", "key": "color", "kind": "format", "change": "bob:1", "author": "bob", "at": 1000,
+      "before": "red", "base": { "kind": "remove" },
+      "over": [[{ "id": "alice-t:1", "write": { "kind": "set", "value": "red" } }]],
+      "write": { "kind": "set", "value": "blue" } }
+  ]
+}
+```
+
+Carol's Editing green over Alice's pending red keeps Alice's tag, puts Carol's accepted tag on top, and stores one landed record for Carol's write:
+
+```json
+{
+  "text": "word",
+  "color": "green",
+  "authored": [
+    { "id": "alice-t:1", "key": "color", "kind": "format", "change": "alice:1", "author": "alice", "at": 1000,
+      "write": { "kind": "set", "value": "red" } },
+    { "id": "carol-w:1", "key": "color", "kind": "format", "change": "~edit:carol", "author": "carol", "at": 1000,
+      "before": "red", "base": { "kind": "remove" },
+      "over": [[{ "id": "alice-t:1", "write": { "kind": "set", "value": "red" } }]],
+      "write": { "kind": "set", "value": "green" } }
+  ],
+  "records": { "authored-landed": { "carol-w:1": { "at": 1000, "change": "~edit:carol" } } }
+}
+```
+
+Rejecting Alice's red under Carol's Editing green leaves Carol's tag and record, so a later undo by Carol reads that Alice's red is gone:
+
+```json
+{
+  "text": "word",
+  "color": "green",
+  "authored": [
+    { "id": "carol-w:1", "key": "color", "kind": "format", "change": "~edit:carol", "author": "carol", "at": 1000,
+      "before": "red", "base": { "kind": "remove" },
+      "over": [[{ "id": "alice-t:1", "write": { "kind": "set", "value": "red" } }]],
+      "write": { "kind": "set", "value": "green" } }
+  ],
+  "records": { "authored-landed": { "carol-w:1": { "at": 1000, "change": "~edit:carol" } } }
+}
+```
+
+Accepting `alice:1` once nothing pending lies under her tag removes the tag and stores one landed record for the commit that wrote it, however many leaves that commit wrote. The record names the change's `inc` too when it has one:
+
+```json
+{ "records": { "authored-verdicts": { "…": "…" }, "authored-landed": { "alice-t:1": { "at": 1000, "change": "alice:1" } } } }
+```
+
+Every format tag one commit writes shares that commit's write id, so the record names the write. An Editing write on a property with no pending tag stores nothing. When Editing writers take turns over a pending tag, each turn stacks its own tag, linked to every tag below it.
+
 ## Layer and owner
 
 | Responsibility | Decision |
@@ -119,6 +182,15 @@ Rejected, and why:
 | Reducing every saved operation on open | Made opening depend on history the saved state already held. |
 | An opaque live-state mirror | Stored 44.25 MB, was slower than replay, and either replayed to validate both or admitted inconsistent text. |
 | A second projected document with a causal operation graph | Replaced by review marks on the one stored document ([review-tree pivot](../2026-10-13-review-tree-pivot.md)). |
+
+The undo repair of [Undo finds what each node was](../2026-10-18-undo-repair-nodes.md) puts its changes in these layers:
+
+| Change | Layer (Plite or Plate) | Package | Why |
+| --- | --- | --- | --- |
+| The split write | Plite | `plitejs/yjs` | The bridge decides how a commit reaches the Yjs document |
+| Kept runs of a change | Plite | `plitejs` core change | It walks the change's private sections, beside the other mapping functions |
+| Applying an insertion beside a deletion in place | Plite | `plitejs` core change | The localized apply decides which changes apply without a token rebuild |
+| Which node a replayed node was, and its repair | Plite | `plitejs/authored` admission | Only admission sees the decisions made since the write together with the change |
 
 ## Rules
 
@@ -163,10 +235,53 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   rejecting the outer change removes it too. Editing records the same way and
   accepts the writer's own claims in the same commit. It leaves every other
   author's claims pending, so text it writes inside another author's pending
-  insertion joins that insertion. A decision removes the decided claims and
-  appends a verdict for each incarnation it decides in one transaction.
-  Admission settles any claim that a peer's late edit brings in after the
-  verdict.
+  insertion joins that insertion. A format write in Editing stacks an accepted
+  claim over the format claims on that property, replacing only its writer's
+  own Editing claim, and never takes a suggestion back, its writer's own
+  included, so deciding a suggestion under it never undoes the Editing value.
+  A format write that left its property still counts under a claim over it
+  only while it was accepted or written in Editing. One landed record per
+  write says so, and undoing its decision voids that record. An accepted or
+  Editing claim stays stored, unseen, while a write under it neither stays on
+  the property nor landed. An undo or redo that takes a claim off sets the
+  property to what rejecting that claim gives now. It repairs each node from
+  the characters the undo kept of it, or from its kept opening when the node
+  is an element or an empty text. Suggestions on both sides
+  of an Editing write still wait on each other, a question suggested task
+  `t_7314eae0` holds. These fourteen cases are known to give the wrong value,
+  the first seven as before, and the list is not complete. Rejecting a
+  peer's suggestion written beside an accept it never saw loses the accepted
+  value. Rejecting a suggestion written at the same time as an Editing write
+  restores what its writer saw. A suggestion redone over a stack whose
+  claims changed meanwhile lands what its writer saw. When part of a change
+  is withdrawn while a peer suggests over that part, or undoes a suggestion
+  there and redoes it after the rest is accepted, rejecting the peer's
+  suggestion after that accept lands the withdrawn value. An undo or
+  withdrawal at the same time as an accept of the same change counts as
+  accepted. A value
+  accepted and then undone by its writer after it left the property still
+  counts. A decision or withdrawal whose write wins the merge over a
+  concurrent Editing write drops the Editing value; suggested task
+  `t_b8a4ce47`, owned by the project owner, holds its fix. A decision on a
+  suggestion, or its writer's undo, at the same time as the Editing writer's
+  undo of a write over it leaves a rejected or undone value as plain text,
+  because only the undoing client repairs the property. Undoing a reject
+  after the Editing write over that suggestion was undone brings the
+  suggestion back without its value, so accepting it writes nothing. Suggested
+  task `t_b8a4ce47` holds the fix for these two as well.
+  Characters another writer typed inside the undone write keep the value
+  that history replays. A block or empty text
+  whose opening the undo replaced keeps the replayed values, and so does the text of a
+  block the undone commit wrapped or unwrapped. When an Editing commit replaced a
+  block and another author then suggested a format on the new one, the
+  undo brings back the old block with that pending claim. Suggested task
+  `t_128bbd1d`, owned by the project owner, decides these four. Undoing
+  one's own suggestion after an Editing commit pressed Enter inside it
+  leaves its claim on the half the Enter split off. Suggested task
+  `t_ecea0fff`, owned by the project owner, holds that one. A
+  decision removes the decided claims and appends a verdict for each
+  incarnation it decides in one transaction. Admission settles any claim that a peer's late
+  edit brings in after the verdict.
   A content root lives as long as its owner. An exclusive root goes with its
   owner, and a shared one goes with its last owner in a closed schema and
   stays in an open one. Suggesting an owner's deletion strikes the owner and
@@ -216,6 +331,11 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
 - The Yjs binding carries review marks as node properties in the shared tree, and review records in one shared map per record set that peers merge by id (`packages/plitejs/src/yjs/core/controller.ts`).
 - `packages/platejs/src/authored/AuthoredPlugin.ts` stamps writes with the editor's `userId` and takes no options. `BaseSuggestionPlugin` maps Editing and Suggesting to view intents and writes the `data-editor-authored-*` attributes, and `useSuggestionGroups(blockKey)` reads the cards touching a block (`packages/platejs/src/react/features/suggestion/useSuggestion.ts`).
 
+- `packages/plitejs/src/authored/facts/records.ts` adds the `authored-landed` record set, which maps a format write's id to the change that wrote it. Decisions, admission's repair and the recorder store one record for each commit that removes accepted format tags or writes an Editing tag over pending ones. `facts.ts` lets a stacked tag's link to a tag that left stand only while its record counts.
+- `recordFormats` in `packages/plitejs/src/authored/tree/layers.ts` records every format write. An Editing write over pending tags stacks its writer's accepted tag on top and leaves them pending.
+- Admission repairs each node an undo or redo replays from the nodes its kept tokens came from. `keptRunsOf` in `packages/plitejs/src/core/change/root-change.ts` gives those runs, and `applyIndexed` there merges an insertion with the replacement that starts where it ends, so a split repair applies in place instead of rebuilding the root.
+- The Yjs split write in `packages/plitejs/src/yjs/core/canonical-split.ts` writes the right half's text properties onto the runs it moves, through `rewriteTextRuns` in `text-runs.ts`, so a split that also formats its new block reaches other clients with that format.
+
 ## What other editors do
 
 Read from local checkouts and vendor docs on 2026-10-08. Every editor that lets the caret into deleted text keeps that text in the tree its input edits.
@@ -231,6 +351,31 @@ Read from local checkouts and vendor docs on 2026-10-08. Every editor that lets 
 | Google Docs (API) | One index space; runs carry suggested deletion IDs | Not documented | Accept or reject by ID | Preview modes for accepted and original content; only the inline mode is valid for writes |
 | CKEditor 5 (commercial, docs only) | Model markers over in-tree content | Not documented | Accept and discard commands | Accepted data is built in a temporary editor |
 
+For an Editing edit over another author's pending format, [Format suggestions keep the values that landed](../2026-10-18-editing-format-gone-links.md) read the docs of Google Docs, Word and CKEditor 5 and the source of prosemirror-suggest-changes at 653fba70, and searched Slate at 945a484df, Lexical at dd5c41b13 and Tiptap at 91c51be53 for a tracked-changes model by file name, and ran none of them. None documents what a direct edit does to another author's pending format suggestion.
+
+| Editor | Stores a pending format change | Records the value it wrote | Direct edit over another author's pending format | Rejecting it afterwards |
+| --- | --- | --- | --- | --- |
+| Google Docs | yes | not documented | not documented | not documented |
+| Word (OOXML) | yes, `w:rPrChange` | no, only the previous property set | not documented | restoring the stored set would undo the direct edit (inferred) |
+| CKEditor 5 (commercial) | yes | yes, `oldValue` and `newValue` | not documented | not documented |
+| prosemirror-suggest-changes | yes, as a replaced copy | yes, the copy holds it | the suggestion stays (source read) | the direct edit is lost (source read) |
+| ProseMirror core, prosemirror-changeset | no pending suggestions | no | no | no |
+| Slate, Lexical, Tiptap open source | no tracked changes (file-name search) | no | no | no |
+| Plite | yes | yes | the suggestion stays | the direct edit stays |
+
+Plite's DOCX export of a stack with an Editing tag on top writes a format revision whose old and new values are both the Editing value. The pending suggestion under it has no OOXML form, because OOXML keeps one previous property set per run (inferred from `w:rPrChange`).
+
+For undo, [Undo finds what each node was](../2026-10-18-undo-repair-nodes.md) read ProseMirror history and transform, y-prosemirror with Yjs, Lexical history, Slate history and Tiptap's collaboration extension at the revisions in its frontmatter, and ran none of them. None has a review layer that decides values after the change, so none faces this repair. The closest is Yjs refusing a redo that conflicts with a later write.
+
+| Editor | How undo finds the content it changes | What formatting does on undo | Re-decides a value after undo |
+| --- | --- | --- | --- |
+| ProseMirror | Stores each step's inverse with its position map and rebases it through later maps (`history/src/history.ts:88`, `:58`); a position inside a deleted range comes back through mirror maps (`transform/src/map.ts:264`) | Marks are values on the content, so the inverse step puts the old marks back | No |
+| Tiptap | ProseMirror history, or y-prosemirror's undo under collaboration (`extension-collaboration/src/collaboration.ts:175`) | As ProseMirror or Yjs | No |
+| Slate | Applies each stored operation's inverse in reverse order (`slate-history/src/with-history.ts:53`) | Properties are values on the node | No |
+| Lexical | Restores a whole saved editor state (`lexical-history/src/index.ts:444`); under collaboration, Yjs's UndoManager | The snapshot's values | No |
+| Yjs with y-prosemirror | Item ids; a redo re-creates deleted items linked to their old ids | Formatting attributes follow the characters | Refuses a redo of a map key another client wrote after (`yjs/src/structs/Item.js:236`) |
+| Plite | The kept sections of the undo's own change, since stored values carry no node ids | History's values, then admission's repair | Yes, from the decisions made since the write |
+
 ## Open work
 
 - Suggesting a move of a block that owns an exclusive content root fails validation, which reports two owners of its root. owner: the owner, through session card `task_04df43cd`. stop: that session lands or is dropped.
@@ -239,3 +384,18 @@ Read from local checkouts and vendor docs on 2026-10-08. Every editor that lets 
 - Line T was not measured on the final bytes, because the host stayed loaded past its limit. owner: the owner, through suggested task `t_8ce3c935`. stop: that task lands or is dropped.
 - The diff of [authored root deletion](../2026-10-17-authored-root-deletion.md) had only Opus seats, because Codex is signed in with a ChatGPT account that lacks the review models. owner: the owner, through that plan's Codex login question. stop: a Codex seat reviews the diff, or the owner drops it.
 - A Yjs import in a closed schema, in which two peers each removed one owner of a shared root, fails validation before the orphan drop, and the 8-key work gate leaves work that grows with a long session's key count ungated. owner: the owner, through suggested tasks `t_ba83b625` and `t_240c8c44`. stop: each task lands or is dropped.
+
+- A decision or withdrawal at the same time as an Editing write can lose the edit, as on next (C15). Suggested task t_b8a4ce47 owns the fix and holds the arena's put-back sketch. owner: the owner. stop: t_b8a4ce47 lands or is dropped.
+- A wrong value can still come back after an undo in four cases. Characters another writer typed keep the replayed value, and so do a block whose opening the undo replaced and the text of a block the undone commit wrapped or unwrapped. Undoing an Editing commit that replaced a block brings back the old block with any format another author then suggested on the new one. Suggested task t_128bbd1d decides these four. owner: the owner. stop: t_128bbd1d lands or is dropped.
+- A decision or undo at the same time as an Editing writer's undo leaves a rejected or undone value as plain text (R12, R17), and undoing a reject after that undo brings the suggestion back without its value (R13b). Suggested task t_b8a4ce47 holds both. owner: the owner. stop: t_b8a4ce47 lands or is dropped.
+- A partial withdrawal racing a suggestion over it gives a result that depends on decision order, and next gives the withdrawn value in both orders. A host that drops a document's records loses its Editing values with no error. The discussion button keeps a stale count after a decision that changes only `authored`, as on next. Suggested tasks t_a0284bee, t_f1233d76 and t_1ccd8173 hold them, in that order. owner: the owner. stop: each task lands or is dropped.
+- Suggestions on both sides of an Editing edit wait on each other. Suggested task t_7314eae0 owns the question. owner: the owner. stop: t_7314eae0 lands or is dropped.
+- The accepted line join that blocks decisions on the same block stays with suggested task t_a269db34. owner: the owner. stop: t_a269db34 lands or is dropped.
+- The many-records reject line of step 7 is inconclusive, and its next probe counts landed-record reads before it times the line again on a quiet host. Suggested task t_541200bb runs it, and t_a7c7c429 owns core's rebuild of the records JSON on each record write. owner: the owner. stop: each task lands or is dropped.
+- The recording law suite fails two laws, the same way on next. Suggested tasks t_cbe5346a and t_820a6175 own them. owner: the owner. stop: each task lands or is dropped.
+- Undoing one's own suggestion after another writer's Enter split it leaves the suggestion's tag on the half the Enter split off. It is suggested task t_ecea0fff. owner: the owner. stop: t_ecea0fff lands or is dropped.
+- Undo reads the whole document about ten times through history's replay and redo record. It is suggested task t_d78c9655. owner: the owner. stop: t_d78c9655 lands or is dropped.
+- Returning any repair costs 2 more whole reads in core admission's orphan check, and settle copies the whole root when a decision settles blocks. Suggested task t_1a6aacfb holds both. owner: the owner. stop: t_1a6aacfb lands or is dropped.
+- A peer's typing in the right half of a block another client splits lands in the left half, and a peer's edit in a child the split moves whole is lost. Typing is also lost when the split formats that half at offset 0, when Enter lands at a block's end, or when the commit also changes the left block, formats only part of the first text it moves or changes anything it moves after that text. A split before two inline elements copies them into both halves while a peer types, and the peers differ. A cut where two leaves meet leaves the writer's editor and the shared document different, and a replacement whose left block keeps the old letters and format reaches peers as a split. All of it happens at 01da933d63 or on next. Suggested task t_649d2131 decides how a split keeps its moved letters. owner: the owner. stop: t_649d2131 lands a fix or is dropped.
+- A type change in place that unsets a property set-valued only on the old type leaves it in the Yjs document, and the peers' editors differ. It is suggested task t_0242f13b. owner: the owner. stop: t_0242f13b lands or is dropped.
+- `writeTextRuns` finds each changed run's place in the Yjs text chain by scanning from the chain's start, so formatting many runs over a block that holds many Yjs texts, as repeated merges leave, reads the chain once per run. It is suggested task t_3c33e35c. owner: the owner. stop: t_3c33e35c lands or is dropped.

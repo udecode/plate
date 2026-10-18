@@ -76,6 +76,78 @@ describe('authored review tree marks', () => {
     assert.deepEqual(editor.read.children(), children);
   });
 
+  it('keeps an Editing format tag only over other tags, with their links and its landed write', () => {
+    const pending = {
+      at: 1,
+      author: 'ann',
+      change: 'ann:1',
+      id: 'a1',
+      key: 'color',
+      kind: 'format',
+      write: { kind: 'set', value: 'red' },
+    };
+    const edited = {
+      at: 2,
+      author: 'bob',
+      base: { kind: 'remove' },
+      before: 'red',
+      change: '~edit:bob',
+      id: 'e1',
+      key: 'color',
+      kind: 'format',
+      over: [[{ id: 'a1', write: { kind: 'set', value: 'red' } }]],
+      write: { kind: 'set', value: 'green' },
+    };
+    const load = (authored: unknown[], landed = true) =>
+      createEditor({
+        plugins: [createAuthoredPlugin({ authorId: 'alice' })],
+        initialValue: {
+          children: [
+            {
+              type: 'paragraph',
+              children: [{ authored, color: 'green', text: 'word' }],
+            },
+          ],
+          records: {
+            'authored-landed': landed
+              ? { e1: { at: 2, change: '~edit:bob' } }
+              : {},
+          },
+        },
+      } as never).read.children();
+    const { base: _base, over: _over, ...plain } = edited;
+
+    assert.deepEqual(load([pending, edited]), [
+      {
+        type: 'paragraph',
+        children: [
+          { authored: [pending, edited], color: 'green', text: 'word' },
+        ],
+      },
+    ]);
+    assert.deepEqual(load([pending, edited], false), [
+      {
+        type: 'paragraph',
+        children: [{ authored: [pending], color: 'red', text: 'word' }],
+      },
+    ]);
+    assert.throws(
+      () => load([pending, plain]),
+      /An Editing mark of kind "format" never stays stored/
+    );
+    assert.throws(
+      () =>
+        load([
+          pending,
+          {
+            ...edited,
+            over: [{ id: 'a1', write: { kind: 'set', value: 'red' } }],
+          },
+        ]),
+      /A review mark is malformed\./
+    );
+  });
+
   it('loads a replacement whose marks agree and keeps them in the value', () => {
     const children = [
       {

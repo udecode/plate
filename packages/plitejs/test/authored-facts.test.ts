@@ -275,6 +275,18 @@ describe('authored review fact validation', () => {
     );
   });
 
+  it('refuses a landed write whose record names no member', () => {
+    assert.throws(
+      load({
+        children: [{ children: [{ text: 'X' }], type: 'paragraph' } as Node],
+        records: {
+          'authored-landed': { w1: { change: 'A' } },
+        },
+      }),
+      refused('Review landed write w1 is malformed.')
+    );
+  });
+
   it('refuses a record its id does not hash', () => {
     assert.throws(
       load(
@@ -872,7 +884,10 @@ describe('authored incarnations', () => {
                     id: 'new',
                     inc: 'ann:next',
                     write: { kind: 'set', value: false },
-                    over: ['old'],
+                    base: { kind: 'remove' },
+                    over: [
+                      [{ id: 'old', write: { kind: 'set', value: true } }],
+                    ],
                   },
                 ],
                 bold: false,
@@ -900,6 +915,139 @@ describe('authored incarnations', () => {
     assert.deepEqual(editor.read.children(), [
       { children: [{ bold: true, text: 'x' }], type: 'paragraph' },
     ]);
+  });
+
+  describe('a fork that keeps an accepted tag', () => {
+    const color = (change: 'C' | 'D', at: number, value: string) => ({
+      at,
+      author: change === 'C' ? 'ann' : 'bob',
+      before: 'red',
+      change,
+      id: change.toLowerCase(),
+      key: 'color',
+      kind: 'format',
+      write: { kind: 'set', value },
+    });
+    const over = {
+      at: 4,
+      author: 'eve',
+      base: { kind: 'remove' },
+      before: 'purple',
+      change: 'F',
+      id: 'f',
+      key: 'color',
+      kind: 'format',
+      over: [
+        [
+          { id: 'c', write: { kind: 'set', value: 'blue' } },
+          { id: 'd', write: { kind: 'set', value: 'purple' } },
+        ],
+      ],
+      write: { kind: 'set', value: 'green' },
+    };
+    const start = (top: readonly unknown[] = []) =>
+      createEditor({
+        initialValue: {
+          children: [
+            {
+              children: [
+                {
+                  authored: [
+                    color('C', 1, 'blue'),
+                    color('D', 2, 'purple'),
+                    ...top,
+                  ],
+                  color: top.length > 0 ? 'green' : 'purple',
+                  text: 'x',
+                },
+              ],
+              type: 'paragraph',
+            },
+            {
+              children: [
+                { text: 'z' },
+                {
+                  authored: [
+                    { at: 3, author: 'eve', change: 'E', kind: 'insert' },
+                  ],
+                  text: 'e',
+                },
+              ],
+              type: 'paragraph',
+            },
+          ],
+          records: reviewRecords({
+            verdicts: [
+              {
+                decision: 'd:1',
+                member: { at: 1, change: 'C' },
+                verdict: 'accept',
+              },
+            ],
+          }),
+        } as never,
+        plugins: [createAuthoredPlugin({ authorId: 'ann', now: () => 5 })],
+      });
+    const leaf = (editor: ReturnType<typeof start>) =>
+      (editor.read.children()[0] as Node).children?.[0] as Node & {
+        color?: string;
+      };
+
+    it('keeps the accepted value when the pending one is rejected', () => {
+      const editor = start();
+
+      authoredTestApi(editor).decide({ action: 'reject', changes: ['D'] });
+
+      assert.deepEqual(leaf(editor), { color: 'blue', text: 'x' });
+    });
+
+    it('decides other changes without waiting on the pending one', () => {
+      const restyled = () => {
+        const editor = start();
+
+        editor.update((tx) => {
+          tx.authored.propose({ changeId: 'C' });
+          tx.nodes.set({ color: 'yellow' } as never, { at: [0, 0] });
+        });
+
+        return editor;
+      };
+      const rejected = restyled();
+      const rejection = authoredTestApi(rejected).decide({
+        action: 'reject',
+        changes: ['C'],
+      });
+
+      assert.deepEqual(
+        {
+          acceptE: authoredTestApi(start()).decide({
+            action: 'accept',
+            changes: ['E'],
+          }).status,
+          acceptOver: authoredTestApi(start([over])).decide({
+            action: 'accept',
+            changes: ['F'],
+          }),
+          acceptNewC: authoredTestApi(restyled()).decide({
+            action: 'accept',
+            changes: ['C'],
+          }),
+          rejectNewC: [
+            rejection.status,
+            leaf(rejected).color,
+            (leaf(rejected).authored as Array<{ change: string }>).map(
+              ({ change }) => change
+            ),
+          ],
+        },
+        {
+          acceptE: 'applied',
+          acceptNewC: { ids: ['C'], status: 'blocked', with: ['D'] },
+          acceptOver: { ids: ['F'], status: 'blocked', with: ['D'] },
+          rejectNewC: ['applied', 'purple', ['C', 'D']],
+        }
+      );
+    });
   });
 
   it('starts a new incarnation of a change whose accepted claim a pending fork keeps', () => {

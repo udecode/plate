@@ -947,6 +947,48 @@ describe('authored review tree decisions that complete', () => {
     );
   });
 
+  it('rests a fill on the pending type change under an Editing one, not on the Editing write', () => {
+    const editor = createEditor({
+      initialValue: structuredClone([
+        lead,
+        el('wide', el('cell', t('a')), el('cell', t('b'))),
+      ]) as never,
+      plugins: [
+        Typed,
+        createAuthoredPlugin({
+          authorId: 'ann',
+          intent: 'propose',
+          now: () => 1,
+        }),
+      ] as never,
+    });
+    const api = authoredTestApi(editor);
+
+    api.propose('k:1', ((tx) =>
+      tx.nodes.set({ type: 'narrow' }, { at: [1] })) as never);
+    api.setIntent('edit');
+    editor.update((tx) => tx.nodes.set({ type: 'wide' } as never, { at: [1] }));
+    api.setIntent('propose');
+    api.propose('a:1', ((tx) => tx.nodes.remove({ at: [1, 0] })) as never);
+    const fill = (expandedChildren(editor) as readonly Node[])[1]?.children?.at(
+      -1
+    );
+
+    assert.equal(fill?.type, 'row');
+    assert.deepEqual(
+      (
+        (fill?.authored ?? []) as ReadonlyArray<{
+          change: string;
+          kind: string;
+        }>
+      )
+        .filter(({ kind }) => kind === 'insert')
+        .map(({ change }) => change)
+        .sort(),
+      ['a:1', 'k:1']
+    );
+  });
+
   it('waits on a pending change of the element’s own type before building into it', () => {
     const start = [lead, el('wide', el('cell', t('a')), el('cell', t('b')))];
     const recorded = suggesting(
