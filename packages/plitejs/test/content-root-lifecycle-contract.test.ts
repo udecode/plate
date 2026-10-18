@@ -8,6 +8,7 @@ import {
   definePlugin,
   defineStateField,
   type Descendant,
+  DocumentChange,
   property,
   schema,
   SelectionApi,
@@ -175,6 +176,38 @@ describe('element-owned root lifecycle', () => {
           roots: { 'shared:1': [paragraph('shared')] },
         },
       ]
+    );
+  });
+
+  it('drops the root of an owner that a whole-document change retypes, in an open schema', () => {
+    const OpenSchema = defineEditorSchema('schema:content-root-open-retype', {
+      ...ContentRootSchema.schema,
+      unknown: 'preserve',
+    });
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          portal('exclusive-portal', 'exclusive:1'),
+          paragraph('body'),
+        ],
+        roots: { 'exclusive:1': [paragraph('caption')] },
+      },
+      plugins: [OpenSchema],
+    });
+    const before = editor.read((state) => state.value());
+
+    editor.update((tx) =>
+      tx.changes.apply(
+        DocumentChange.between(before, {
+          ...before,
+          children: [paragraph('C'), paragraph('body')],
+        })
+      )
+    );
+
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      { children: [paragraph('C'), paragraph('body')] }
     );
   });
 

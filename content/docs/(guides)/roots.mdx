@@ -157,7 +157,9 @@ owner. Use `ownership: "exclusive"` for
 a separately mounted document that belongs to exactly one element, such as an
 element-owned annotation surface. Moving an owner preserves its root key.
 Removing, retargeting, or changing the type of an exclusive owner removes the
-root only when it becomes orphaned.
+root only when it becomes orphaned. In an
+[authored](/docs/authored-changes#configure-a-view) `propose` view, deleting an
+owner keeps its root until someone accepts the deletion.
 
 Duplicate and copy/paste clone detached roots. Keys remap deterministically to
 `:copy`, then `:copy:2`, while shared aliases in the copied group continue to

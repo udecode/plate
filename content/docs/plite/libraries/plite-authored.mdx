@@ -61,6 +61,8 @@ if (change) {
 
 Pass `{ changeId: id }` to `tx.authored.propose(...)` to name the proposal or add the transaction's writes to the pending change with that ID. Decisions use the revisions of the changes you read. A `blocked` result names in `with` the changes to decide together; pass several decisions in one call to decide them together. Handle every `AuthoredResult` status.
 
+Proposing the deletion of a block that owns a content root strikes the block and keeps the root unmarked until the deletion is decided. [Authored changes](/docs/authored-changes#configure-a-view) covers accepting and rejecting it.
+
 ## Import a comparison
 
 ```tsx

@@ -10,7 +10,7 @@ review_upstreams: ['../prosemirror-suggest-changes@653fba70ba29ef6ea6af3ad8d6024
 
 # Authored: one review tree the editor edits
 
-Status: building: phase 2 runs in the order docs/plans/2026-10-12-suggestions-complete.md sets, after that iteration fixes two review-tree input defects
+Status: reopened: phase 2 runs in the order docs/plans/2026-10-12-suggestions-complete.md sets, after that iteration fixes two review-tree input defects
 Playbook: plan
 
 **Go with option 3, one document that holds the suggestions (Pursue, replacing the 2026-10-04 Stop).** Today crossed-out text lives outside the document you edit, so every click and keystroke in it needs special code. That one choice causes most of the bugs. Positions are tracked eight ways, edits save through a second path, and every accept or reject replays changes between two documents. No editor we checked works this way, and LibreOffice dropped the one design that tried it in 2018. Agents picked today's design by argument in September and never tested it against this one.

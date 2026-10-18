@@ -136,6 +136,8 @@ A preview throws on a plain edit, but some other writes still change the stored 
 
 Typing inside struck text splits the pending deletion around the new text. An `edit` view applies that text as written, and a `propose` view records it as an insertion. A `propose` view refuses a write it cannot record as a proposal, such as a change inside a table, and rolls it back; `api.subscribeRefusals(listener)` reports each refusal.
 
+Deleting a block that owns a [content root](/docs/roots#content-roots) in a `propose` view strikes the block and leaves the root's content unchanged and unmarked, so style the root as deleted in the block's component. Typing or pasting inside that root writes nothing until someone decides the deletion. Accepting it removes the block and its root, and returns `blocked` while the root holds text another pending change inserted. Rejecting it keeps both. Rejecting a proposed block that owns a content root removes the root too. A `propose` view still refuses deleting a named root that no element owns.
+
 A view's policy belongs to that exact view. Selection, clipboard input, commands, and anchors use that view's coordinates. Two mounted views over one document can use different policies.
 
 ## Review changes
@@ -234,7 +236,9 @@ Historical previews and restores retain current conversations and use only the s
 Choose `accepted` or `proposed` for a clean document, or `review` when the
 format can preserve review records. Clean projections report diagnostics when
 they omit pending work. Every helper accepts or captures a complete document,
-including named roots and metadata.
+including named roots and metadata. A clean projection leaves out a content root
+once it leaves out the root's owner, by the
+[content root](/docs/roots#content-roots) ownership rule.
 
 HTML, Markdown, plain-text and static HTML exports of a document with pending
 changes throw a `TypeError` unless `projection` is `accepted` or `proposed`. A

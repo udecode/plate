@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  authoredVeto,
   ContentSlice,
   createEditor,
   createEditorView,
@@ -89,6 +90,12 @@ const Replacer = definePlugin('replacer', {
   }),
 });
 
+const CardVeto = definePlugin('card-veto', {
+  contributions: [
+    authoredVeto.of((element) => (element.type === 'card' ? 'card' : null)),
+  ],
+});
+
 const make = (
   intent: 'edit' | 'propose',
   selection:
@@ -102,6 +109,7 @@ const make = (
     initialValue: initialValue as never,
     plugins: [
       ExclusiveCards,
+      CardVeto,
       dom(),
       Replacer,
       dataTransferFormats('refused-update-answer-formats', [
@@ -163,7 +171,7 @@ describe('an update call answers what landed', () => {
       undefined
     );
     assert.deepEqual(editor.read.value(), before);
-    assert.deepEqual(refusals, ['unrepresentable']);
+    assert.deepEqual(refusals, ['veto']);
   });
 
   it("keeps its answer when a commit listener's update is refused", () => {
@@ -190,7 +198,7 @@ describe('an update call answers what landed', () => {
       'landed'
     );
     assert.equal(listened, undefined);
-    assert.deepEqual(refusals, ['unrepresentable']);
+    assert.deepEqual(refusals, ['veto']);
     assert.deepEqual(editor.read.children(), [card('b1'), paragraph('aa!')]);
   });
 });
@@ -220,7 +228,7 @@ describe('a call that opens its own update answers undefined when refused', () =
 
       assert.equal(call(editor), undefined);
       assert.deepEqual(editor.read.value(), before);
-      assert.deepEqual(refusals, ['unrepresentable']);
+      assert.deepEqual(refusals, ['veto']);
     });
   }
 });
@@ -239,7 +247,7 @@ describe('a refused paste', () => {
       undefined
     );
     assert.deepEqual(editor.read.value(), before);
-    assert.deepEqual(refusals, ['unrepresentable']);
+    assert.deepEqual(refusals, ['veto']);
   });
 
   it('answers true for plain text Suggesting can record', () => {
@@ -294,6 +302,6 @@ describe('a refused paste', () => {
       undefined
     );
     assert.deepEqual(editor.read.value(), before);
-    assert.deepEqual(refusals, ['unrepresentable']);
+    assert.deepEqual(refusals, ['veto']);
   });
 });

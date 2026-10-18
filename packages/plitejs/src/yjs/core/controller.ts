@@ -240,6 +240,7 @@ export class YjsController<
   private readonly pendingRemoteNamedRoots = new Set<string>();
   private readonly pendingRemoteRecords = new Map<string, Set<string>>();
   private readonly remoteRepairRoots = new Set<string>();
+  private readonly remoteRepairDeletedRoots = new Set<string>();
   private readonly remoteRepairRecords = new Map<string, Set<string>>();
   private pendingRemoteRootChange = false;
   private pendingRemoteSchemaChange = false;
@@ -680,6 +681,9 @@ export class YjsController<
       for (const root of getDocumentChangeRootKeys(repair)) {
         this.remoteRepairRoots.add(root);
       }
+      for (const root of repair.deleteRoots) {
+        this.remoteRepairDeletedRoots.add(root);
+      }
       for (const [set, writes] of getInternalDocumentChangeRecords(repair)) {
         for (const id of writes.keys()) {
           addRecordId(this.remoteRepairRecords, set, id);
@@ -771,6 +775,7 @@ export class YjsController<
     }
 
     const removedBindings: string[] = [];
+    const reconciles = this.editor.read.schema.hasContentRoots();
     const fallbacks = new Set<string>([
       ...commit.changes.createRoots,
       ...commit.changes.deleteRoots,
@@ -826,7 +831,7 @@ export class YjsController<
                 commit.changes,
                 (changed) => changed === root
               );
-        const incremental = !this.editor.read.schema.hasContentRoots()
+        const incremental = !reconciles
           ? binding.bridge.lower(rootChange, expected, {
               indexes: () => ({
                 after: valueRootIndex(after, root),
@@ -897,7 +902,7 @@ export class YjsController<
 
       if (!binding) continue;
 
-      if (fallbacks.has(root)) {
+      if (reconciles || fallbacks.has(root)) {
         binding.bridge.reset(childrenOf(after, root));
       }
     }
@@ -1079,7 +1084,8 @@ export class YjsController<
   private lowerRemoteCommitRepairs(): void {
     if (
       this.remoteRepairRoots.size === 0 &&
-      this.remoteRepairRecords.size === 0
+      this.remoteRepairRecords.size === 0 &&
+      this.remoteRepairDeletedRoots.size === 0
     ) {
       return;
     }
@@ -1091,7 +1097,10 @@ export class YjsController<
         new Map([...ids].map((id) => [id, getRecord(store, set, id) ?? null])),
       ])
     );
-    const roots = new Set(this.remoteRepairRoots);
+    const deleted = new Set(this.remoteRepairDeletedRoots);
+    const roots = new Set(
+      [...this.remoteRepairRoots].filter((root) => !deleted.has(root))
+    );
     const repaired = [...roots].map((root) => {
       const binding = this.bindings.get(root);
 
@@ -1104,8 +1113,10 @@ export class YjsController<
 
     this.remoteRepairRoots.clear();
     this.remoteRepairRecords.clear();
+    this.remoteRepairDeletedRoots.clear();
     this.doc.transact(() => {
       this.lowerRecords(records);
+      for (const root of deleted) this.roots.delete(root);
       for (const { binding, children, root } of repaired) {
         reconcileYjsRoot(
           binding.root,
@@ -1116,12 +1127,16 @@ export class YjsController<
         );
       }
     }, this.canonicalizeOrigin);
+    for (const root of deleted) this.bindings.delete(root);
     for (const { binding, children } of repaired) {
       binding.bridge.reset(children);
     }
-    if (roots.size > 0) {
-      this.awarenessAdapter?.publishMappedRoots(roots, {
-        fallbackRoots: roots,
+
+    const mapped = new Set([...roots, ...deleted]);
+
+    if (mapped.size > 0) {
+      this.awarenessAdapter?.publishMappedRoots(mapped, {
+        fallbackRoots: mapped,
       });
     }
   }

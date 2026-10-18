@@ -39,6 +39,7 @@ import { getEditorCommitSnapshot } from './commit';
 import {
   documentAdmissionPoint,
   onlyDocumentAdmission,
+  repairLoadedDocument,
 } from './document-admission';
 import {
   EDITOR_STRUCTURE_FIELDS,
@@ -2353,10 +2354,13 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
   if (options.validateDocument !== false) {
     if (loadsInitialValue(options)) {
       const loaded = getEditorDocumentValue(editor);
-      const repair =
+      const repair = repairLoadedDocument(
         onlyDocumentAdmission(
           getRegistryContributions(mergedCandidate, documentAdmissionPoint)
-        )?.load(loaded) ?? null;
+        ),
+        loaded,
+        mergedCandidate.schemaContributions.compiled
+      );
 
       return Object.freeze({
         configured: candidate,

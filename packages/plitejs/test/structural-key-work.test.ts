@@ -30,7 +30,9 @@ mock.module(join(import.meta.dir, '../src/interfaces/text.ts'), () => ({
   }),
 }));
 
-const { createEditor, editorCommands } = await import('plitejs');
+const { createEditor, defineEditorSchema, editorCommands, schema } =
+  await import('plitejs');
+const { readCoreWork } = await import('../src/core/work');
 
 const words = Array.from({ length: 30 }, (_, k) => `word${k}`).join(' ');
 
@@ -115,6 +117,74 @@ describe('structural key work per key', () => {
     });
 
     expect(small[0]).toBeGreaterThan(0);
+    expect(large).toEqual(small);
+  });
+});
+
+const textContent = () => schema.content.text({ default: 'text', min: 1 });
+const CardSchema = defineEditorSchema('schema:content-root-key-work', {
+  elements: {
+    card: {
+      content: textContent(),
+      contentRoots: {
+        body: {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'exclusive',
+        },
+      },
+    },
+    paragraph: { content: textContent() },
+  },
+  root: schema.content.types(['paragraph', 'card'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+});
+
+describe('content-root key work per key', () => {
+  it('reads as many nodes and ownership indexes for a key in a main paragraph at 1,000 cards as at 20', () => {
+    const [small, large] = [20, 1000].map((cards) => {
+      const editor = createEditor({
+        initialValue: {
+          children: Array.from({ length: cards }, (_, i) => [
+            { children: [{ text: `plain ${i}` }], type: 'paragraph' },
+            {
+              childRoots: { body: `b${i}` },
+              children: [{ text: 'C' }],
+              type: 'card',
+            },
+          ]).flat(),
+          roots: Object.fromEntries(
+            Array.from({ length: cards }, (_, i) => [
+              `b${i}`,
+              [{ children: [{ text: `body ${i}` }], type: 'paragraph' }],
+            ])
+          ),
+        },
+        plugins: [CardSchema],
+      });
+      const at = { offset: 0, path: [0, 0] };
+
+      editor.update((tx) => tx.selection.set({ anchor: at, focus: at }));
+
+      return [0, 1, 2].map(() => {
+        const before = readCoreWork();
+
+        editor.update((tx) => tx.text.insert('k'));
+        const after = readCoreWork();
+
+        return {
+          ownerIndexReads: after.ownerIndexReads - before.ownerIndexReads,
+          wholeReadNodes: after.wholeReadNodes - before.wholeReadNodes,
+        };
+      });
+    });
+
+    expect(small[0].ownerIndexReads).toBeGreaterThan(0);
     expect(large).toEqual(small);
   });
 });

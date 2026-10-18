@@ -44,7 +44,7 @@ import {
   createEditorDocumentChangeBuilder,
   createTransactionSpecContext,
   disposeTransactionSpecContext,
-  finalizeTransactionRepresentation,
+  finalizeWithoutOrphanedRoots,
   getActiveEditorUpdateTags,
   getCurrentSelection,
   getCurrentSelectionRoot,
@@ -157,6 +157,8 @@ export const probeInEditorCommandFrame = <T>(
       stored,
       projected,
       snapshot.baseRuntimeIndexes[MAIN_ROOT_KEY],
+      storedSelection,
+      selectionRoot,
       selection
     );
     snapshot.implicitTarget = null;
@@ -176,6 +178,16 @@ export const probeInEditorCommandFrame = <T>(
     COMMAND_FRAMES.delete(editor);
     disposeTransactionSpecContext(editor, frame);
   }
+};
+
+/** @internal */
+export const assertFrameSelectionPlaced = (editor: Editor) => {
+  if (!getTransactionSnapshot(editor)?.selectionInDroppedRoot) return;
+
+  throw (
+    getEditorCommandDocument(editor)?.unplaced?.() ??
+    new Error('The command frame has no place for the selection.')
+  );
 };
 
 /** @internal */
@@ -359,6 +371,8 @@ const enterFrameDraft = (
   stored: EditorDocumentValue,
   projected: CommandProjection,
   storedIndex: (() => SnapshotIndex) | undefined,
+  storedSelection: Selection,
+  storedSelectionRoot: string,
   selection: Selection
 ) => {
   const { snapshot } = frame;
@@ -367,6 +381,7 @@ const enterFrameDraft = (
 
   copyRoot(roots, MAIN_ROOT_KEY, projected.value, 'children');
   snapshot.roots = Object.assign(roots, projected.value.roots);
+  snapshot.reservedRoots = new Set(Object.keys(stored.roots ?? {}));
   countCoreWork('snapshotRoots', Object.keys(snapshot.roots).length);
   snapshot.rootIndexes = {};
   snapshot.baseRuntimeIndexes = {};
@@ -386,6 +401,15 @@ const enterFrameDraft = (
   snapshot.activeChange = { change: snapshot.builder.change };
   frame.selection = selection;
   snapshot.selection = selection;
+  const selectedRoot =
+    storedSelection &&
+    (SelectionApi.root(storedSelection) ?? storedSelectionRoot);
+
+  snapshot.selectionInDroppedRoot =
+    selection === null &&
+    !!selectedRoot &&
+    Object.hasOwn(stored.roots ?? {}, selectedRoot) &&
+    !Object.hasOwn(projected.value.roots ?? {}, selectedRoot);
   frame.exitAnchorScope();
   frame.exitAnchorScope = enterAnchorScope(editor, projected.value);
   countCoreWork('anchorScopes');
@@ -429,6 +453,9 @@ const createFramePlace = (
       DocumentIndex.fromValue(valueRoot(stored, root)).positionAt(point),
       mapAssoc < 0 ? 'backward' : 'forward'
     );
+
+    if (position === null) return null;
+
     const after = projectedIndex(projected, root);
     const [next] =
       position < after.length ? after.slice(position, position + 1).tokens : [];
@@ -661,6 +688,8 @@ const effectChange = (
       : position;
     const at = projected.map.toStored(root, before, assoc);
 
+    if (at === null) return null;
+
     return recorded ? recorded.mapPosition(at, options) : at;
   };
 
@@ -740,6 +769,8 @@ export const runInEditorCommandFrame = (
       stored,
       projected,
       outerIndex && (() => outerIndex),
+      outer.selection,
+      outer.selectionRoot,
       selection
     );
     if (snapshot.implicitTargetResolved) {
@@ -753,17 +784,20 @@ export const runInEditorCommandFrame = (
     }
 
     if (!withTransactionSpecDraftRead(editor, run)) return false;
-    finalizeTransactionRepresentation(editor);
+    finalizeWithoutOrphanedRoots(editor);
     const wrote = snapshot.builder.change;
 
     storedToWritten = (root, position, assoc) => {
       countCoreWork('adapterMappings');
       const association = assoc === 1 ? 'forward' : 'backward';
+      const at = projected.map.toProjected(root, position, association);
 
-      return wrote.mapPosition(
-        projected.map.toProjected(root, position, association),
-        { association, ...(root === MAIN_ROOT_KEY ? {} : { root }) }
-      );
+      return at === null
+        ? null
+        : wrote.mapPosition(at, {
+            association,
+            ...(root === MAIN_ROOT_KEY ? {} : { root }),
+          });
     };
     runEditorDraftGuards(
       editor,

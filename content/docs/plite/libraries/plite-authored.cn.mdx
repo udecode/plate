@@ -61,6 +61,8 @@ if (change) {
 
 向 `tx.authored.propose(...)` 传入 `{ changeId: id }`，可以为 proposal 命名，或把该 transaction 的写入加入具有该 ID 的 pending change。决定使用读取时的 change revision。`blocked` 结果在 `with` 中列出需要一起决定的 change；在一次调用中传入多个决定即可一起决定。请处理每种 `AuthoredResult` 状态。
 
+提议删除一个拥有 content root 的 block 时，该 block 会被划掉，root 保持无标记，直到该删除被决定。接受和拒绝它的方式见 [Authored changes](/cn/docs/authored-changes#配置-view)。
+
 ## 导入比较结果
 
 ```tsx

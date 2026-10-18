@@ -144,12 +144,20 @@ const {
   editorCommands,
   property,
   schema,
+  SelectionApi,
   target,
 } = await import('plitejs');
 const { createAuthoredPlugin } = await import('../src/authored/authored');
 const { proposedChildren, proposedHost } =
   await import('../src/authored/tree/proposed');
 const { expandContexts } = await import('../src/authored/facts/compact');
+const { projectAuthoredDocumentUnder } = await import('../src/authored/format');
+const { authoredResolveSchemaOf } =
+  await import('../src/authored/resolve-schema');
+const { getCompiledEditorSchema } = await import('../src/core/plugin-registry');
+const { getEditorAuthoredDocumentCapability } =
+  await import('../src/create-editor');
+const { history } = await import('plitejs/history');
 const { reviewRecords, storedContexts } = await import('./support/authored');
 
 const Inline = defineEditorSchema('work-inline', {
@@ -958,6 +966,332 @@ describe('authored review tree work per edit', () => {
     };
 
     assert.equal(reads(2000), reads(100));
+  });
+
+  describe('with content roots', () => {
+    const cards = (ownership: 'exclusive' | 'shared') =>
+      defineEditorSchema(`work-cards-${ownership}`, {
+        elements: {
+          card: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            contentRoots: {
+              body: {
+                content: schema.content.type('paragraph', {
+                  default: { type: 'paragraph' },
+                  min: 1,
+                }),
+                ownership,
+              },
+            },
+          },
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
+        },
+        id: `work-cards-${ownership}`,
+        root: schema.content.types(['paragraph', 'card'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      });
+    const Cards = cards('exclusive');
+    const SharedCards = cards('shared');
+    const card = (root: string) => ({
+      childRoots: { body: root },
+      children: [{ text: 'C' }],
+      type: 'card',
+    });
+    const inserted = (change: string) => ({
+      authored: [{ at: 1, author: 'alice', change, kind: 'insert' }],
+      text: 'a',
+    });
+    const struckCard = (root: string, change: string) => {
+      const authored = [{ at: 1, author: 'carol', change, kind: 'delete' }];
+
+      return { ...card(root), authored, children: [{ authored, text: 'C' }] };
+    };
+
+    const deck = (
+      size: number,
+      {
+        pendingPerParagraph = 0,
+        struck = 0,
+      }: Readonly<{ pendingPerParagraph?: number; struck?: number }> = {}
+    ) => ({
+      children: Array.from({ length: size }, (_, index) => [
+        paragraph(
+          ...Array.from(
+            { length: index < 10 ? pendingPerParagraph : 0 },
+            (_slot, run) => inserted(`alice:${index}:${run}`)
+          ),
+          { text: `plain ${index}` }
+        ),
+        index < struck
+          ? struckCard(`b${index}`, `carol:${index}`)
+          : card(`b${index}`),
+      ]).flat(),
+      roots: Object.fromEntries(
+        Array.from({ length: size }, (_, index) => [
+          `b${index}`,
+          [paragraph({ text: `body ${index}` })],
+        ])
+      ),
+    });
+    const work = () =>
+      ({ ...readCoreWork(), ...readLedgerWork() }) as Record<string, number>;
+    const workOf = (step: () => void) => {
+      const start = work();
+
+      step();
+      const end = work();
+
+      return Object.fromEntries(
+        Object.keys(end).map((key) => [key, end[key] - start[key]])
+      );
+    };
+    const pick = (counts: Record<string, number>, keys: readonly string[]) =>
+      Object.fromEntries(keys.map((key) => [key, counts[key]]));
+    const KEY_OWNERSHIP = [
+      'ownedRootsJudged',
+      'ownerIndexReads',
+      'ownershipBuilds',
+      'wholeReadNodes',
+    ];
+    const KEY_OWNERSHIP_UNDER_HISTORY = KEY_OWNERSHIP.filter(
+      (key) => key !== 'wholeReadNodes'
+    );
+    const assertKeyOwnership = (
+      small: ReadonlyArray<Record<string, number>>,
+      large: ReadonlyArray<Record<string, number>>,
+      keys = KEY_OWNERSHIP
+    ) => {
+      assert.ok(
+        small.some((counts) => counts.ownerIndexReads > 0),
+        'The ownership counter saw no reads.'
+      );
+      assert.deepEqual(
+        large.map((counts) => pick(counts, keys)),
+        small.map((counts) => pick(counts, keys)),
+        'ownership work grew with the document'
+      );
+      assert.deepEqual(
+        small.map((counts) => [
+          counts.ownedRootsJudged,
+          counts.ownershipBuilds,
+        ]),
+        small.map(() => [0, 0])
+      );
+    };
+    const assertLinear = (
+      small: readonly number[],
+      large: readonly number[]
+    ) => {
+      assert.ok(small.every((reads) => reads > 0));
+      assert.ok(
+        large.every((reads, index) => reads <= 60 * small[index]),
+        `ownership work grew faster than the document: ${JSON.stringify({ large, small })}`
+      );
+    };
+    const at = (path: number[], root?: string) => {
+      const point = { offset: 0, path, ...(root ? { root } : {}) };
+
+      return { anchor: point, focus: point };
+    };
+    const suggesting = (value: unknown, plugins: readonly unknown[] = []) => {
+      let editor: any;
+      const preview = () =>
+        realLedger
+          .getReviewLedger(editor)!
+          .preview(editor.read.value(), 'proposed');
+      const step = (edit: () => void) =>
+        workOf(() => {
+          edit();
+          preview();
+        });
+      const loaded = workOf(() => {
+        editor = createEditor({
+          initialValue: value as never,
+          plugins: [
+            Cards,
+            ...plugins,
+            createAuthoredPlugin({
+              authorId: 'bob',
+              createChangeId: () => `bob:${(count += 1)}`,
+              intent: 'propose',
+              now: () => 1,
+            }),
+          ] as never,
+        });
+        editor.update((tx) => tx.selection.set(at([0, 0])));
+        preview();
+      });
+      const keys = (selection: unknown) => {
+        editor.update((tx) => tx.selection.set(selection));
+        preview();
+
+        return Array.from({ length: 8 }, () =>
+          step(() => editor.update((tx) => tx.text.insert('k')))
+        );
+      };
+
+      return { editor, keys, loaded, preview, step };
+    };
+    const SIZES = [20, 1000];
+    const SLOW = { timeout: 20_000 };
+
+    it(
+      'does as much work for 8 Suggesting keys in a main paragraph, a card body root and a card’s own text at 1,000 cards as at 20, and as much ownership work for Backspace over a selected card',
+      SLOW,
+      () => {
+        const [small, large] = SIZES.map((size) => {
+          const { editor, keys, step } = suggesting(deck(size));
+          const typed = [at([0, 0]), at([0, 0], 'b1'), at([1, 0])].map(keys);
+
+          editor.update((tx) =>
+            tx.selection.set(SelectionApi.nodes([[5]], { mode: 'block' }))
+          );
+
+          return {
+            backspace: step(() =>
+              editor.update((tx) =>
+                tx.command(editorCommands.delete, {
+                  direction: 'backward',
+                  unit: 'character',
+                })
+              )
+            ),
+            typed,
+          };
+        });
+
+        for (const [site, keys] of small.typed.entries()) {
+          assertKeyOwnership(keys, large.typed[site]);
+        }
+        assert.deepEqual(large.typed, small.typed);
+        assert.ok(small.backspace.ownedRootsJudged > 0);
+        assert.deepEqual(
+          pick(large.backspace, ['ownedRootsJudged', 'ownerIndexReads']),
+          pick(small.backspace, ['ownedRootsJudged', 'ownerIndexReads']),
+          'ownership work grew with the document'
+        );
+      }
+    );
+
+    it(
+      'does as much work for 8 Suggesting keys beside 50 pending insertions at 1,000 cards as at 20',
+      SLOW,
+      () => {
+        const [small, large] = SIZES.map((size) =>
+          suggesting(deck(size, { pendingPerParagraph: 5 })).keys(at([0, 0]))
+        );
+
+        assertKeyOwnership(small, large);
+        assert.deepEqual(large, small);
+      }
+    );
+
+    it(
+      'does as much ownership work for 8 Suggesting keys, an export and a decision while 10 card deletions are pending at 1,000 cards as at 20, and previews what the resolver gives',
+      SLOW,
+      () => {
+        const [small, large] = SIZES.map((size) => {
+          const { editor, keys, loaded, preview } = suggesting(
+            deck(size, { struck: 10 })
+          );
+          const typed = keys(at([0, 0]));
+          const stored = editor.read.value();
+          const proposed = preview() as any;
+
+          assert.deepEqual(
+            proposed,
+            projectAuthoredDocumentUnder(
+              stored,
+              'proposed',
+              authoredResolveSchemaOf(editor)
+            ).document
+          );
+          assert.deepEqual(
+            Array.from({ length: 10 }, (_, index) =>
+              Object.hasOwn(proposed.roots ?? {}, `b${index}`)
+            ),
+            Array.from({ length: 10 }, () => false)
+          );
+
+          const deletion = editor.read.authored
+            .changes()
+            .items.find((item: any) => item.id === 'carol:0');
+          const unindexedCopy = JSON.parse(JSON.stringify(stored));
+          const operations = [
+            workOf(() =>
+              getEditorAuthoredDocumentCapability(editor)!.project(
+                unindexedCopy,
+                'proposed',
+                getCompiledEditorSchema(editor)
+              )
+            ),
+            workOf(() =>
+              editor.update.authored.decide({
+                action: 'accept',
+                changes: [deletion],
+              })
+            ),
+          ].map((counts) =>
+            pick(counts, ['ownedRootsJudged', 'ownerIndexReads'])
+          );
+
+          return { loaded: loaded.ownerIndexReads, operations, typed };
+        });
+
+        assertLinear([small.loaded], [large.loaded]);
+        assertKeyOwnership(small.typed, large.typed);
+        assert.ok(
+          small.operations.every((counts) => counts.ownedRootsJudged > 0)
+        );
+        assert.deepEqual(
+          large.operations,
+          small.operations,
+          'ownership work grew with the document'
+        );
+      }
+    );
+
+    it(
+      'does as much ownership work for an undo, a redo and a key after them at 1,000 cards as at 20',
+      SLOW,
+      () => {
+        const [small, large] = SIZES.map((size) => {
+          const { editor, keys, step } = suggesting(deck(size), [history()]);
+
+          keys(at([0, 0]));
+
+          return [
+            step(() => editor.api.history.undo()),
+            step(() => editor.api.history.redo()),
+            step(() => editor.update((tx) => tx.text.insert('k'))),
+          ];
+        });
+
+        assertKeyOwnership(small, large, KEY_OWNERSHIP_UNDER_HISTORY);
+      }
+    );
+
+    it('reads at most linearly more owner indexes to remove one owner of a shared root at 1,000 cards than at 20', () => {
+      const [small, large] = SIZES.map((size) => {
+        const value = deck(size);
+        const editor = createEditor({
+          initialValue: { ...value, children: [...value.children, card('b0')] },
+          plugins: [SharedCards],
+        });
+
+        return workOf(() =>
+          editor.update((tx) => tx.nodes.remove({ at: [2 * size] }))
+        ).ownerIndexReads;
+      });
+
+      assertLinear([small], [large]);
+    });
   });
 });
 

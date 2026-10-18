@@ -26,6 +26,7 @@ import {
   getCanonicalDocumentPathMappingStats,
   mapCanonicalDocumentPath,
 } from './snapshot-index';
+import { countCoreWork } from './work';
 
 const stableProgramValue = (value: unknown): unknown => {
   if (Array.isArray(value)) return value.map(stableProgramValue);
@@ -576,6 +577,7 @@ const buildIndex = (
   dirty: boolean
 ) =>
   profileCoreDuration('schema-root-ownership-index-build', () => {
+    countCoreWork('ownershipBuilds');
     const pathOrigin = createPathOriginId();
     const index: MutableIndex = {
       childRoots: null,
@@ -870,6 +872,19 @@ export const getElementOwnedRootGrammarBindings = (
     }))
   );
 };
+
+export function* getElementOwnedRootOwnerCounts(
+  index: ElementOwnedRootIndex
+): Generator<readonly [string, number]> {
+  for (const [childRoot, owners] of persistentMapEntries(index.childRoots)) {
+    let count = 0;
+
+    for (const [, grammar] of persistentMapEntries(owners.grammars)) {
+      count += persistentMapSize(grammar.bindings);
+    }
+    yield [childRoot, count];
+  }
+}
 
 export const getElementOwnedRootKeys = (index: ElementOwnedRootIndex) =>
   Object.freeze(

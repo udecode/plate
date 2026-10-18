@@ -4,9 +4,11 @@ import {
   registerAuthoredRuntime,
 } from '../core/authored-runtime';
 import { authoredVeto } from '../core/authored-veto';
+import { type DraftStep, UNSCOPED_ORIGINS } from '../core/change/builder';
 import {
   createInternalDocumentChange,
   DocumentChange,
+  getInternalDocumentChangeEntries,
   getInternalDocumentChangeRanges,
   getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
@@ -68,6 +70,11 @@ import {
   subscribeEditorRefusals,
 } from '../core/refusal';
 import { completeChildrenAt, emptyTextDrops } from '../core/representation';
+import {
+  changedRootsOf,
+  orphanedValueRoots,
+  rootsDeletedByName,
+} from '../core/root-ownership';
 import { EditorSchemaValidationError } from '../core/schema-validation';
 import {
   type TxDeclaredMethod,
@@ -119,16 +126,20 @@ import {
   type VerdictRecord,
   withStore,
 } from './facts/records';
-import { projectAuthoredDocument, projectionRefusal } from './format';
+import { projectAuthoredDocumentUnder, projectionRefusal } from './format';
 import { createReviewLedger, getReviewLedger } from './ledger/ledger';
 import {
   type AuthoredRefusal,
   constructsValues,
   GENERATED_VALUES_REFUSAL,
   proposalRefusal,
+  unplaced,
   unrepresentable,
 } from './refusal';
-import { authoredResolveSchemaOf } from './resolve-schema';
+import {
+  authoredResolveSchemaOf,
+  ownershipResolveSchemaOf,
+} from './resolve-schema';
 import {
   acceptedChange,
   characterAlignedChange,
@@ -478,6 +489,8 @@ const assertFramedLaw = (
 // Owners reading their stored document, which their own preview would
 // otherwise project the review marks out of.
 const STORED_READS = new WeakSet<Editor>();
+
+const NO_ROOTS: ReadonlySet<string> = new Set();
 
 // One publisher per view runtime, so every listener of a view gets one delta
 // per commit.
@@ -983,6 +996,47 @@ const acceptOwn = (
       };
 };
 
+const writtenNamedRoots = (steps: readonly DraftStep[]) => {
+  const written = new Set<string>();
+
+  for (const step of steps) {
+    if (UNSCOPED_ORIGINS.has(step.origin)) continue;
+    for (const [root] of getInternalDocumentChangeEntries(step.change)) {
+      if (root !== 'main') written.add(root);
+    }
+  }
+
+  return written;
+};
+
+const insertionsInDroppedRoots = (
+  value: JsonEditorValue,
+  decided: JsonEditorValue
+) => {
+  const facts = factsOf(value);
+  const stranded = new Set<string>();
+  const visit = (node: JsonNode, struck: boolean) => {
+    const marks = marksOf(node, facts);
+    const covered = struck || marks.some((mark) => mark.kind === 'delete');
+
+    if (typeof node.text === 'string') {
+      if (covered || node.text === '') return;
+      for (const mark of marks) {
+        if (mark.kind === 'insert') stranded.add(mark.change);
+      }
+      return;
+    }
+    for (const child of node.children ?? []) visit(child, covered);
+  };
+
+  for (const [root, children] of Object.entries(value.roots ?? {})) {
+    if (Object.hasOwn(decided.roots ?? {}, root)) continue;
+    for (const child of children) visit(child, false);
+  }
+
+  return stranded;
+};
+
 const incarnationsOf = (occurrences: readonly Occurrence[]) =>
   new Map(occurrences.map(({ mark }) => [incarnationOf(mark), mark])).values();
 
@@ -1130,18 +1184,20 @@ export const createAuthoredPlugin = (
     // inside a rejected insertion, goes only when it is decided too. An empty
     // block completion built holds nothing to lose.
     const remaining = indexAuthoredChanges(decidedValue).changes;
+    const inDroppedRoots = insertionsInDroppedRoots(value, decidedValue);
     const taken = [...book.idsFrom({})].filter(
       (id) =>
         !actions.has(id) &&
-        !remaining.has(id) &&
-        book
-          .occurrences(id)
-          .some(
-            ({ mark, node }) =>
-              mark.kind === 'insert' &&
-              typeof node.text === 'string' &&
-              node.text !== ''
-          )
+        (inDroppedRoots.has(id) ||
+          (!remaining.has(id) &&
+            book
+              .occurrences(id)
+              .some(
+                ({ mark, node }) =>
+                  mark.kind === 'insert' &&
+                  typeof node.text === 'string' &&
+                  node.text !== ''
+              )))
     );
 
     if (taken.length > 0) {
@@ -1183,7 +1239,11 @@ export const createAuthoredPlugin = (
         claimsBreakBefore,
         project: (document, projection, schema) =>
           projectionRefusal(document, schema) ??
-          projectAuthoredDocument(document, { projection }),
+          projectAuthoredDocumentUnder(
+            document,
+            projection,
+            ownershipResolveSchemaOf(schema)
+          ),
       }),
     ],
     api: ({ editor }) => ({
@@ -1595,6 +1655,7 @@ export const createAuthoredPlugin = (
 
             return ledger.frame(value);
           },
+          unplaced,
         })
       );
       // Every frame of one update records under the same change.
@@ -1631,11 +1692,23 @@ export const createAuthoredPlugin = (
 
             return change === step.change ? step : { ...step, change };
           });
+          const contentSteps = steps.filter((step) => step.origin !== 'root');
           const ownRecords = getInternalDocumentChangeRecords(input.change);
           const known = factsOf(withStore(before, getValueRecords(after)));
 
           if ('preview' in updateView) {
             throw new Error('A preview view does not take this write.');
+          }
+          if (!input.projection) {
+            const written = writtenNamedRoots(contentSteps);
+
+            if (written.size > 0) {
+              const dropped = ledger.dropped(before);
+
+              if ([...written].some((root) => dropped.has(root))) {
+                throw unplaced();
+              }
+            }
           }
 
           // Editing records what Suggesting records, under the writer's
@@ -1646,11 +1719,33 @@ export const createAuthoredPlugin = (
           if (writer === null) {
             throw new Error('An author ID is required for authored writes.');
           }
-          if (!editing && contentChange.deleteRoots.size > 0) {
+          const byName =
+            contentChange.deleteRoots.size > 0
+              ? new Set(
+                  rootsDeletedByName(
+                    getCompiledEditorSchema(editor),
+                    input.projection?.value ?? before,
+                    after,
+                    changedRootsOf(contentChange),
+                    contentChange.deleteRoots
+                  )
+                )
+              : NO_ROOTS;
+
+          if (!editing && byName.size > 0) {
             throw unrepresentable(
               'Suggesting cannot delete a named root; suggest deleting its content.'
             );
           }
+          const followed: ReadonlySet<string> =
+            byName.size === 0
+              ? contentChange.deleteRoots
+              : new Set(
+                  [...contentChange.deleteRoots].filter(
+                    (root) => !byName.has(root)
+                  )
+                );
+
           if (!editing) {
             // Vetoes keep a person's Suggesting out of blocks review marks
             // cannot hold yet; a proposal forced from Editing, such as an AI
@@ -1664,7 +1759,7 @@ export const createAuthoredPlugin = (
               (constructsValues(getCompiledEditorSchema(editor))
                 ? GENERATED_VALUES_REFUSAL
                 : vetoes.length > 0
-                  ? proposalRefusal(steps, vetoes)
+                  ? proposalRefusal(contentSteps, vetoes)
                   : null);
 
             if (refusal) {
@@ -1697,11 +1792,12 @@ export const createAuthoredPlugin = (
             changeId,
             createRoots: contentChange.createRoots,
             createTagId,
-            deleteRoots: contentChange.deleteRoots,
+            deleteRoots: byName,
             dependencies,
             fill: (site, root) =>
               completeChildrenAt(editor, site.map(elementOf), [], root)
                 .children,
+            followed,
             forcedChangeId: forced?.changeId ?? (editing ? changeId : null),
             projection: input.projection,
             inc: forced?.inc ?? null,
@@ -1732,6 +1828,16 @@ export const createAuthoredPlugin = (
 
               return content?.max === 1 && content.allowsText;
             },
+            ownedRoots: (props) => {
+              const schema: InternalEditorSchemaApi = getEditorSchema(editor);
+
+              return schema
+                .getElementOwnedRoots(props as Element)
+                .map(({ ownership, root }) => ({
+                  exclusive: ownership === 'exclusive',
+                  root,
+                }));
+            },
             selectionBefore:
               selectionPosition === null
                 ? null
@@ -1752,19 +1858,17 @@ export const createAuthoredPlugin = (
           };
           const selection = mapSelection(input.selection, map);
 
-          // Withdrawing one's own insertion removes fragments outright, and
-          // they can hold another author's cuts, which move to the fragments
-          // that stay.
-          const roots = [
+          const kept = [
             ...new Set([
               ...Object.keys(before.roots ?? {}),
               ...recorded.indexedAfter.keys(),
             ]),
-          ].filter(
-            (root) => root !== 'main' && !contentChange.deleteRoots.has(root)
-          );
+          ].filter((root) => root !== 'main' && !byName.has(root));
           const beforeRecords = getValueRecords(before);
-          const valueOf = (indexes: ReadonlyMap<string, DocumentIndex>) => {
+          const valueWith = (
+            roots: readonly string[],
+            indexes: ReadonlyMap<string, DocumentIndex>
+          ) => {
             const next = copyFields({}, before, ['records', 'roots']);
 
             setLazyRoot(
@@ -1783,9 +1887,32 @@ export const createAuthoredPlugin = (
 
             return withValueRecords(next, beforeRecords) as typeof before;
           };
+          const withdrawn =
+            followed.size > 0
+              ? orphanedValueRoots(
+                  getCompiledEditorSchema(editor),
+                  before,
+                  valueWith(kept, recorded.indexedAfter),
+                  changedRootsOf(recorded.change)
+                ).filter((root) => followed.has(root))
+              : [];
+          const roots =
+            withdrawn.length > 0
+              ? kept.filter((root) => !withdrawn.includes(root))
+              : kept;
+          const valueOf = (indexes: ReadonlyMap<string, DocumentIndex>) =>
+            valueWith(roots, indexes);
+          const recordedChange =
+            withdrawn.length > 0
+              ? recorded.change.compose(
+                  createInternalDocumentChange(new Map(), {
+                    deleteRoots: withdrawn,
+                  })
+                )
+              : recorded.change;
           const written = valueOf(recorded.indexedAfter);
           const relink = relinkCuts(
-            recorded.change,
+            recordedChange,
             before,
             written,
             (root) =>
@@ -1793,8 +1920,8 @@ export const createAuthoredPlugin = (
               DocumentIndex.fromValue(valueRoot(written, root))
           );
           const change = relink
-            ? recorded.change.compose(relink.change)
-            : recorded.change;
+            ? recordedChange.compose(relink.change)
+            : recordedChange;
           const indexes = relink
             ? new Map([...recorded.indexedAfter, ...relink.indexes])
             : recorded.indexedAfter;

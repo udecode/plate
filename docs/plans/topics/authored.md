@@ -1,6 +1,6 @@
 # Authored changes and selective reversal
 
-Page: https://claude.ai/artifact/9cWhXkwmQrpyrwSVkbZkcM
+Page: https://claude.ai/artifact/LzfdwnVufGpA4S1r9qnDmv
 
 Plite's native authored capability records who changed what, keeps pending suggestions reviewable, and decides them atomically. The ledger asks which native contract should retain authorship and reversible edits without requiring a particular review UI (`docs/research/review-scopes/authored.json`). Pending changes live in the editor's one stored document as review marks: inserted content carries an insert mark, and struck content stays in place under a delete mark (`packages/plitejs/src/authored/tree/record.ts`). Accepting or rejecting a change rewrites that document (`packages/plitejs/src/authored/tree/resolve.ts`), and the accepted and proposed previews are views of it that throw on a plain edit (`packages/plitejs/src/authored/tree/proposed.ts`). Some other writes still change the document through them, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses. Remote collaboration changes land whatever the view. The document's `records` hold the review facts marks cannot show (`packages/plitejs/src/authored/facts/records.ts`), and a ledger reads the marks into changes and cards, a card being one author's adjacent pending changes (`packages/plitejs/src/authored/ledger/cards.ts`). The review-tree pivot (`docs/plans/2026-10-13-review-tree-pivot.md`) replaced the earlier design, in which a second, projected document held pending changes and every write became an operation in a causal graph. Suggestions, AI review and copied review UI build on this capability; `docs/plans/topics/suggestions.md` covers the Plate side. `node tooling/scripts/review-ledger.mjs show authored` prints the scope's full history.
 
@@ -70,6 +70,29 @@ A feature contributes a veto for blocks that review marks cannot hold yet, and S
 authoredVeto.of((element, touch) =>
   element.listType && touch !== 'content' ? 'list' : null
 ),
+```
+
+Suggesting can delete a block that owns a content root. The block is struck and keeps its root, unmarked, until someone decides the deletion.
+
+```ts
+// packages/plitejs/test/authored-root-deletion.test.ts
+const { editor, refusals } = make({
+  selection: blockSelected,
+  unknown,
+  value: initial(unknown),
+});
+
+editor.update((tx) =>
+  tx.command(editorCommands.replaceSlice, {
+    slice: ContentSlice.closed([p('x')]),
+  })
+);
+
+assert.deepEqual(refusals, []);
+const { main, roots } = marked(editor);
+
+assert.deepEqual(main[0], ['card', 'delete:bob:1', { body: 'b1' }]);
+assert.deepEqual(roots, ['b1']);
 ```
 
 Exports pick a projection explicitly.
@@ -144,6 +167,17 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   appends a verdict for each incarnation it decides in one transaction.
   Admission settles any claim that a peer's late edit brings in after the
   verdict.
+  A content root lives as long as its owner. An exclusive root goes with its
+  owner, and a shared one goes with its last owner in a closed schema and
+  stays in an open one. Suggesting an owner's deletion strikes the owner and
+  leaves its roots unmarked, and Editing leaves another author's pending
+  deletion of an owner in place with its roots, as it leaves a struck
+  paragraph. Every projection, decision and load drops each root this rule
+  leaves without an owner, and a write whose implicit target lies in such a
+  root writes nothing. Removing one's own pending owner in a later update
+  strikes it when one of its roots holds anything but that author's own
+  pending insertions, because nothing in a root says who wrote its unmarked
+  content. Suggesting still refuses deleting a root no element owns.
   Undo is local inverse history. It restores document facts, decisions
   included, and proposes nothing.
   On the review tree, commands and plugin update methods decide on the
@@ -167,6 +201,7 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
 - `packages/plitejs/src/authored/tree/` turns each write into review marks on the stored document (`record.ts`, `record-completion.ts`), decides changes by rewriting that document (`resolve.ts`) and builds the previews (`proposed.ts`). `cuts.ts` reads the cut marks of pending splits and joins the fragments of a rejected one, and `layers.ts` decides pending property writes.
 - `packages/plitejs/src/authored/facts/` owns the review records saved in the document's `records` and admits them when a document loads or a peer sends them (`records.ts`, `admission.ts`).
 - `packages/plitejs/src/authored/ledger/` reads the marks into changes and cards and keeps them per top-level block, so a read or a change delta costs work in proportion to the edit, not the document (`ledger.ts`, `cards.ts`, `work.ts`).
+- `packages/plitejs/src/core/root-ownership.ts` judges which content roots lose their last owner, counting an exclusive root's owners from the roots a change touched. The recorder, resolution, decisions, load admission and the review ledger drop the roots it names.
 - `packages/plitejs/src/authored/authored.ts` is the plugin, with its views, its reads, `update.decide`, `api.subscribeChanges` and `api.subscribeRefusals`.
 - The Yjs binding carries review marks as node properties in the shared tree, and review records in one shared map per record set that peers merge by id (`packages/plitejs/src/yjs/core/controller.ts`).
 - `packages/platejs/src/authored/AuthoredPlugin.ts` stamps writes with the editor's `userId` and takes no options. `BaseSuggestionPlugin` maps Editing and Suggesting to view intents and writes the `data-editor-authored-*` attributes, and `useSuggestionGroups(blockKey)` reads the cards touching a block (`packages/platejs/src/react/features/suggestion/useSuggestion.ts`).
@@ -185,3 +220,12 @@ Read from local checkouts and vendor docs on 2026-10-08. Every editor that lets 
 | Word (OOXML) | Same tree, `w:del` around `w:delText` runs | Inserts split a deletion in the format | Accept or reject commands | Deleted text has its own element, so a plain text reader skips it |
 | Google Docs (API) | One index space; runs carry suggested deletion IDs | Not documented | Accept or reject by ID | Preview modes for accepted and original content; only the inline mode is valid for writes |
 | CKEditor 5 (commercial, docs only) | Model markers over in-tree content | Not documented | Accept and discard commands | Accepted data is built in a temporary editor |
+
+## Open work
+
+- Suggesting a move of a block that owns an exclusive content root fails validation, which reports two owners of its root. owner: the owner, through session card `task_04df43cd`. stop: that session lands or is dropped.
+- Removing one's own pending card in a later update strikes it instead of removing it, because a root's content carries no marks that say who wrote it. owner: the owner, through session card `task_78ec84d8`. stop: that session lands or is dropped.
+- Three ownership judges infer the owners of roots a change did not touch, and the projected judge falls back to a full judgment when an owner moves between an exclusive and a shared slot. owner: the owner, through session card `task_97fe3a33`. stop: that session lands or is dropped.
+- Line T was not measured on the final bytes, because the host stayed loaded past its limit. owner: the owner, through a line in `docs/plans/backlog.md`. stop: that line is taken or deleted.
+- The diff of [authored root deletion](../2026-10-17-authored-root-deletion.md) had only Opus seats, because Codex is signed in with a ChatGPT account that lacks the review models. owner: the owner, through that plan's Codex login question. stop: a Codex seat reviews the diff, or the owner drops it.
+- A Yjs import in a closed schema, in which two peers each removed one owner of a shared root, fails validation before the orphan drop, and the 8-key work gate leaves work that grows with a long session's key count ungated. owner: the owner, through two lines in `docs/plans/backlog.md`. stop: each line is taken or deleted.

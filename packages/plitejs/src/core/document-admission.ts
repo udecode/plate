@@ -6,8 +6,17 @@ import type {
 import { DocumentChange } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
 import { definePluginPoint } from './plugin-point';
-import { getPluginContributions } from './plugin-registry';
-import { getValueRecords, showValueRecords } from './record-store';
+import {
+  getCompiledEditorSchema,
+  getPluginContributions,
+} from './plugin-registry';
+import {
+  getValueRecords,
+  showValueRecords,
+  withoutValueRoots,
+} from './record-store';
+import { changedRootsOf, orphanedValueRoots } from './root-ownership';
+import type { CompiledEditorSchema } from './schema-compiler';
 
 /**
  * A plugin's rule for the documents an editor loads and commits. A loaded
@@ -62,11 +71,50 @@ export const onlyDocumentAdmission = (
 };
 
 /** @internal */
+export const withoutRepairOrphans = <V extends EditorDocumentValue>(
+  schema: CompiledEditorSchema,
+  document: EditorDocumentValue,
+  repaired: Readonly<{ change: DocumentChange; value: V }>
+) => {
+  const orphaned = new Set(
+    orphanedValueRoots(
+      schema,
+      document,
+      repaired.value,
+      changedRootsOf(repaired.change)
+    )
+  );
+
+  if (orphaned.size === 0) return repaired;
+
+  const value = withoutValueRoots(repaired.value, orphaned);
+
+  return {
+    change: repaired.change.compose(
+      DocumentChange.between(repaired.value, value)
+    ),
+    value,
+  };
+};
+
+/** @internal */
+export const repairLoadedDocument = (
+  admission: DocumentAdmission | null,
+  document: EditorDocumentValue,
+  schema: CompiledEditorSchema
+) => {
+  const repaired = admission?.load(document) ?? null;
+
+  return repaired && withoutRepairOrphans(schema, document, repaired);
+};
+
+/** @internal */
 export const admitDocument = (
   admission: DocumentAdmission | null,
-  document: EditorDocumentValue
+  document: EditorDocumentValue,
+  schema: CompiledEditorSchema
 ): Readonly<{ change: DocumentChange; document: AdmittedDocument }> => {
-  const repaired = admission?.load(document) ?? null;
+  const repaired = repairLoadedDocument(admission, document, schema);
 
   if (!repaired) {
     return {
@@ -97,5 +145,6 @@ export const admitEditorDocument = (
     onlyDocumentAdmission(
       getPluginContributions(editor, documentAdmissionPoint)
     ),
-    document
+    document,
+    getCompiledEditorSchema(editor)
   );

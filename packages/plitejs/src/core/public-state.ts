@@ -221,6 +221,7 @@ import {
   admitEditorDocument,
   documentAdmissionPoint,
   onlyDocumentAdmission,
+  withoutRepairOrphans,
 } from './document-admission';
 import {
   type EditorDocumentRecorder,
@@ -293,6 +294,7 @@ import { PLUGIN_UPDATE_ORIGIN } from './plugin-dispatch';
 import {
   assertPluginPublicationInactive,
   type PluginRegistry,
+  getCompiledEditorSchema,
   getPluginContributions,
   getPluginRegistry,
   hasChangeListeners as hasPluginChangeListeners,
@@ -329,6 +331,7 @@ import {
   constructCanonicalDocumentChange,
   getProtectedInlineSpacerEntries,
 } from './representation';
+import { changedRootsOf } from './root-ownership';
 import { areEditorSchemaIdentitiesEqual } from './schema-compiler';
 import {
   EditorNoncanonicalChangeError,
@@ -471,6 +474,8 @@ type TransactionSnapshot = {
   reason: 'replace' | null;
   /** The records the transaction started from. */
   records: RecordStore;
+  reservedRoots: ReadonlySet<string>;
+  selectionInDroppedRoot: boolean;
   runtimeIndexRollbacks: Map<SnapshotIndex, () => void>;
   selection: Selection;
   selectionRoot: string;
@@ -1390,6 +1395,21 @@ const carryDraftNodeKeys = (
   }
 };
 
+const settleBeforeRecordingFrontier = (
+  editor: Editor,
+  snapshot: TransactionSnapshot
+) => {
+  const constructed = snapshot.builder.finalize();
+
+  if (constructed) {
+    applyTransactionSpecDocumentChangeStep(editor, constructed, {
+      notifyTransactionListeners: false,
+      selectionMapping: 'representation',
+    });
+  }
+  dropOrphanedRoots(editor, { notifyTransactionListeners: false });
+};
+
 export const commitRecordedDraft = (
   editor: Editor,
   context: TransactionSpecContext,
@@ -1480,15 +1500,7 @@ export const commitRecordedDraft = (
   if (snapshot.implicitTargetResolved) {
     snapshot.implicitTarget = cloneValue(recorded.selection);
   }
-  if (!change.empty) {
-    const constructed = snapshot.builder.finalize();
-    if (constructed) {
-      applyTransactionSpecDocumentChangeStep(editor, constructed, {
-        notifyTransactionListeners: false,
-        selectionMapping: 'representation',
-      });
-    }
-  }
+  if (!change.empty) settleBeforeRecordingFrontier(editor, snapshot);
   RECORDING_FRONTIERS.set(snapshot, {
     change: snapshot.builder.change,
     selection: context.selection,
@@ -1567,7 +1579,7 @@ const admitTransactionDraft = (editor: Editor) => {
 
   for (let pass = 0; ; pass += 1) {
     const after = snapshot.builder.value as EditorDocumentValue;
-    const repair = admission.commit({
+    const repaired = admission.commit({
       after,
       before,
       change,
@@ -1575,10 +1587,18 @@ const admitTransactionDraft = (editor: Editor) => {
       indexOf: (root) => snapshot.builder.getIndex(root),
     });
 
-    if (!repair) return;
+    if (!repaired) return;
     if (pass === 2) {
       throw new Error('Document admission repaired its own repair twice.');
     }
+    const repair = withoutRepairOrphans(
+      getCompiledEditorSchema(editor),
+      after,
+      {
+        change: repaired,
+        value: repaired.apply(after),
+      }
+    ).change;
 
     applyTransactionSpecDocumentChangeStep(
       editor,
@@ -3416,18 +3436,25 @@ export const doesSelectionContain = (
   );
 };
 
+const NO_RESERVED_ROOTS: ReadonlySet<string> = new Set();
+
+const takenRootNames = (editor: Editor) =>
+  new Set([
+    ...Object.keys(
+      (getActiveDocumentChangeBuilder(editor).value as EditorDocumentValue)
+        .roots ?? {}
+    ),
+    ...(getTransactionSpecContext(editor)?.snapshot.reservedRoots ??
+      NO_RESERVED_ROOTS),
+  ]);
+
 const remapContentSliceRoots = <V extends Value>(
   editor: Editor<V>,
   slice: import('../interfaces/editor').ContentSlice<V>
 ) => {
   if (!slice.roots || Object.keys(slice.roots).length === 0) return slice;
 
-  const existingRoots = new Set(
-    Object.keys(
-      (getActiveDocumentChangeBuilder(editor).value as EditorDocumentValue)
-        .roots ?? {}
-    )
-  );
+  const existingRoots = takenRootNames(editor);
   const remapped = new Map<string, string>();
 
   for (const root of Object.keys(slice.roots).sort()) {
@@ -4451,12 +4478,7 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
 
   const root = getCurrentChildrenRoot(editor);
   const source = ContentSlice.fromJSON<V>(sourceTile);
-  const usedRoots = new Set(
-    Object.keys(
-      (getActiveDocumentChangeBuilder(editor).value as EditorDocumentValue)
-        .roots ?? {}
-    )
-  );
+  const usedRoots = takenRootNames(editor);
   const nextRootSuffix = new Map<string, number>();
   const ownership = new Map<string, 'exclusive' | 'shared'>();
   const sharedRoots = new Map<string, string>();
@@ -7193,9 +7215,10 @@ export const getUpdateView = <
       create: (root, children) => {
         runActive(() => {
           requireMutableRoot(root);
-          const roots = getEditorDocumentRoots(editor);
-
-          if (Object.hasOwn(roots, root)) {
+          if (
+            Object.hasOwn(getEditorDocumentRoots(editor), root) ||
+            takenRootNames(editor).has(root)
+          ) {
             throw new Error(`Cannot create existing editor root "${root}".`);
           }
 
@@ -7757,6 +7780,8 @@ export const createTransactionSpecContext = (
       parentSnapshot?.protectedInlineSpacerPaths
     ),
     reason: null,
+    reservedRoots: parentSnapshot?.reservedRoots ?? NO_RESERVED_ROOTS,
+    selectionInDroppedRoot: parentSnapshot?.selectionInDroppedRoot ?? false,
     records,
     rootIndexes: {},
     roots,
@@ -7874,49 +7899,42 @@ export const finalizeTransactionRepresentation = (editor: Editor) => {
   return step;
 };
 
-const dropOrphanedRootsOnce = (editor: Editor) => {
+const dropOrphanedRoots = (
+  editor: Editor,
+  options: ApplyDocumentChangeOptions = {}
+) => {
   const snapshot = getTransactionSnapshot(editor);
 
   if (!snapshot) return false;
   const schema: InternalEditorSchemaApi = getEditorSchema(editor);
-  const before = getChangeValue(
-    snapshot.roots,
-    snapshot.records
-  ) as EditorDocumentValue;
-  const after = snapshot.builder.value as EditorDocumentValue;
-  const { change } = snapshot.builder;
-  const candidates = schema.getOrphanedElementOwnedRoots({
-    after,
-    before,
-    change,
-    indexedAfter: snapshot.builder.indexedAfter(change),
+  const { builder, roots } = snapshot;
+  const after = builder.value as EditorDocumentValue;
+  const existsAfter = (root: string) =>
+    root === MAIN_ROOT_KEY || Object.hasOwn(after.roots ?? {}, root);
+  const orphaned = schema.getOrphanedElementOwnedRoots({
+    after: (root) => (existsAfter(root) ? builder.getIndex(root) : null),
+    afterRoots: () => [MAIN_ROOT_KEY, ...Object.keys(after.roots ?? {})],
+    before: (root) =>
+      Object.hasOwn(roots, root)
+        ? (lazyRootOf(roots, root) ?? DocumentIndex.fromValue(roots[root]))
+        : null,
+    beforeRoots: () => Object.keys(roots),
+    changedRoots: changedRootsOf(builder.change),
     tracked: snapshot.contentSliceRoots,
   });
-
-  let changed = false;
-
-  for (const root of candidates) {
-    applyDocumentChangeStep(editor, snapshot.builder.deleteRoot(root));
+  for (const root of orphaned) {
+    applyDocumentChangeStep(editor, builder.deleteRoot(root), options);
     snapshot.contentSliceRoots.delete(root);
-    changed = true;
 
     if (getCurrentSelectionRoot(editor) === root) {
       setCurrentSelection(editor, null, MAIN_ROOT_KEY);
     }
   }
 
-  return changed;
+  return orphaned.length > 0;
 };
 
-const dropOrphanedRoots = (editor: Editor) => {
-  let dropped = false;
-
-  while (dropOrphanedRootsOnce(editor)) dropped = true;
-
-  return dropped;
-};
-
-const finalizeWithoutOrphanedRoots = (editor: Editor) => {
+export const finalizeWithoutOrphanedRoots = (editor: Editor) => {
   dropOrphanedRoots(editor);
   finalizeTransactionRepresentation(editor);
   if (dropOrphanedRoots(editor)) finalizeTransactionRepresentation(editor);
@@ -10411,6 +10429,8 @@ const createEditorUpdateDraftContext = (
     previousVersion: previousSnapshot.version,
     protectedInlineSpacerPaths: new Map(),
     reason: null,
+    reservedRoots: NO_RESERVED_ROOTS,
+    selectionInDroppedRoot: false,
     records,
     rootIndexes: {},
     roots: transactionRoots,

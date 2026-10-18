@@ -202,6 +202,30 @@ describe('rooted transaction contract', () => {
     );
   });
 
+  it('commits a root created and deleted beside edits that leave main as it was', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('head')] },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.roots.create('island', [paragraph('child')]);
+      tx.nodes.set({ id: 'x' }, { at: [0] });
+      tx.nodes.unset('id', { at: [0] });
+      tx.roots.delete('island');
+      tx.text.insert('!', { at: { offset: 4, path: [0, 0], root: 'header' } });
+    });
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('head!')] },
+      }
+    );
+  });
+
   it('fails loudly for invalid root lifecycle calls', () => {
     const root = 'island:body';
     const editor = createEditor({

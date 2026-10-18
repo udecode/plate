@@ -677,20 +677,14 @@ export class ChangeDraft {
       // Earlier draft steps may be unvalidated; retain the transaction baseline.
       const indexedAfter = candidateBuilder.indexedAfter(accumulated);
       const indexedBefore = new Map<string, DocumentIndex>();
-      const hasRestoredRoot =
-        (rootNodesOf(candidate.after, 'children') !==
-          rootNodesOf(this.source, 'children') &&
-          !indexedAfter.has('main')) ||
-        Object.entries(candidate.after.roots ?? {}).some(
-          ([root, children]) =>
-            children !== this.source.roots?.[root] && !indexedAfter.has(root)
-        );
 
       for (const root of indexedAfter.keys()) {
         indexedBefore.set(root, this.getSourceIndex(root));
       }
-      if (hasRestoredRoot && this.validate) {
-        // Cancellation can restore content without its validated root identity.
+      if (
+        this.validate &&
+        this.hasUnindexedRootChange(candidate.after, indexedAfter)
+      ) {
         this.validate(candidate.after, accumulated);
       } else {
         this.validateConstructed({
@@ -1008,7 +1002,16 @@ export class ChangeDraft {
     }
 
     if (this.validateConstructed) {
-      this.validateConstructed(this.validationInput());
+      const input = this.validationInput();
+
+      if (
+        this.validate &&
+        this.hasUnindexedRootChange(input.after, input.indexedAfter)
+      ) {
+        this.validate(this.current, this.accumulated);
+      } else {
+        this.validateConstructed(input);
+      }
     } else {
       this.validate?.(this.current, this.accumulated);
     }
@@ -1323,6 +1326,21 @@ export class ChangeDraft {
       indexedAfter,
       indexedBefore,
     };
+  }
+
+  private hasUnindexedRootChange(
+    after: JsonEditorValue,
+    indexedAfter: ReadonlyMap<string, DocumentIndex>
+  ) {
+    return (
+      (rootNodesOf(after, 'children') !==
+        rootNodesOf(this.source, 'children') &&
+        !indexedAfter.has('main')) ||
+      Object.entries(after.roots ?? {}).some(
+        ([root, children]) =>
+          children !== this.source.roots?.[root] && !indexedAfter.has(root)
+      )
+    );
   }
 
   private getSourceIndex(root: string) {

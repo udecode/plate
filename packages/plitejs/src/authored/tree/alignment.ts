@@ -1,6 +1,8 @@
 import {
   createInternalDocumentChange,
   DocumentChange,
+  getInternalDocumentChangeEntries,
+  getInternalDocumentRootChange,
 } from '../../core/change/document-change';
 import { DocumentIndex } from '../../core/change/document-index';
 import { deepFreeze, jsonEqual, type JsonRecord } from '../../core/change/json';
@@ -523,13 +525,67 @@ export const decidedAlignment = (
   );
 };
 
+const rootByRoot = (
+  stored: JsonEditorValue,
+  settled: JsonEditorValue,
+  align: (stored: JsonEditorValue, settled: JsonEditorValue) => DocumentChange
+): DocumentChange => {
+  if (!stored.roots && !settled.roots) return align(stored, settled);
+
+  const childrenOf = (value: JsonEditorValue, root: string) =>
+    root === 'main' ? value.children : value.roots?.[root];
+  const named = (value: JsonEditorValue) => Object.keys(value.roots ?? {});
+  const changes = new Map<string, RootChange>();
+
+  for (const root of ['main', ...named(stored)]) {
+    const before = childrenOf(stored, root);
+    const after = childrenOf(settled, root);
+
+    if (!before || !after || before === after) continue;
+    const change = getInternalDocumentRootChange(
+      align({ children: before }, { children: after }),
+      'main'
+    );
+
+    if (change && !change.empty) changes.set(root, change);
+  }
+
+  const only = (value: JsonEditorValue, other: JsonEditorValue) =>
+    Object.fromEntries(
+      Object.entries(value.roots ?? {}).filter(
+        ([root]) => !childrenOf(other, root)
+      )
+    );
+  const lifecycle = DocumentChange.between(
+    {
+      children: settled.children,
+      roots: only(stored, settled),
+    },
+    {
+      children: settled.children,
+      roots: only(settled, stored),
+    },
+    { isSetValued: isAuthoredSetValued }
+  );
+
+  return createInternalDocumentChange(
+    new Map([...changes, ...getInternalDocumentChangeEntries(lifecycle)]),
+    { createRoots: lifecycle.createRoots, deleteRoots: lifecycle.deleteRoots }
+  );
+};
+
 export const decidedContentChange = (
   stored: JsonEditorValue,
   decided: JsonEditorValue,
   decision: Decision
 ): DocumentChange =>
-  decidedAlignment(stored, decided, decision) ??
-  DocumentChange.between(stored, decided, { isSetValued: isAuthoredSetValued });
+  rootByRoot(
+    stored,
+    decided,
+    (from, to) =>
+      decidedAlignment(from, to, decision) ??
+      DocumentChange.between(from, to, { isSetValued: isAuthoredSetValued })
+  );
 
 /**
  * The change from a stored document to its accepted form: structural when the walk
@@ -540,16 +596,16 @@ export const acceptedChange = (
   stored: JsonEditorValue,
   accepted: JsonEditorValue,
   options: AlignmentOptions
-): DocumentChange => {
-  const structural =
-    structuralAcceptedChange(stored, accepted) ??
-    characterAlignedChange(stored, accepted);
+): DocumentChange =>
+  rootByRoot(stored, accepted, (from, to) => {
+    const structural =
+      structuralAcceptedChange(from, to) ?? characterAlignedChange(from, to);
 
-  if (structural) return structural;
+    if (structural) return structural;
 
-  const unstruck = deepFreeze(withoutStruck(stored));
+    const unstruck = deepFreeze(withoutStruck(from));
 
-  return DocumentChange.between(stored, unstruck, options).compose(
-    DocumentChange.between(unstruck, accepted, options)
-  );
-};
+    return DocumentChange.between(from, unstruck, options).compose(
+      DocumentChange.between(unstruck, to, options)
+    );
+  });

@@ -3,8 +3,10 @@ import type { NodeList } from '../../core/change/document-index';
 import type { JsonRecord } from '../../core/change/json';
 import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
-import { deriveValue } from '../../core/record-store';
+import { deriveValue, withoutValueRoots } from '../../core/record-store';
 import type { RootPart } from '../../core/representation';
+import { orphanedValueRoots } from '../../core/root-ownership';
+import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { survivalUnder } from '../../core/survival';
 import { type Path, PathApi } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
@@ -79,6 +81,7 @@ export type AuthoredResolveSchema = Readonly<{
     min: number;
     prefix: number;
   }> | null;
+  ownership: CompiledEditorSchema;
 }>;
 
 export type AuthoredResolution = Readonly<{
@@ -1591,25 +1594,51 @@ export const resolveAuthoredValue = (
       ] as const
   );
   const all = [main, ...roots.map(([, resolution]) => resolution)];
+  const changedRoots = new Map<string, undefined>(
+    roots.flatMap(([root, resolution]) =>
+      resolution.children === value.roots?.[root] ? [] : [[root, undefined]]
+    )
+  );
+
+  if (main.children !== value.children) changedRoots.set('main', undefined);
+
+  const dropped = new Set(
+    schema && changedRoots.size > 0
+      ? orphanedValueRoots(
+          schema.ownership,
+          value,
+          {
+            children: main.children,
+            roots: Object.fromEntries(
+              roots.map(([root, resolution]) => [root, resolution.children])
+            ),
+          },
+          changedRoots
+        )
+      : []
+  );
+  const kept = roots.filter(([root]) => !dropped.has(root));
+  const live = [main, ...kept.map(([, resolution]) => resolution)];
+  const base = dropped.size > 0 ? withoutValueRoots(value, dropped) : value;
 
   return {
     blockers: [...new Set(all.flatMap((resolution) => resolution.blockers))],
     decided: [...new Set(all.flatMap((resolution) => resolution.decided))],
-    diagnostics: all.flatMap((resolution) => resolution.diagnostics),
+    diagnostics: live.flatMap((resolution) => resolution.diagnostics),
     resolvedOf: (original: unknown) =>
-      all.reduce<JsonNode | null>(
+      live.reduce<JsonNode | null>(
         (found, resolution) => found ?? resolution.resolvedOf(original),
         null
       ),
-    unplaceable: all.some((resolution) => resolution.unplaceable),
+    unplaceable: live.some((resolution) => resolution.unplaceable),
     value: deriveValue(
-      value,
+      base,
       {
         children: main.children,
-        ...(value.roots
+        ...(base.roots
           ? {
               roots: Object.fromEntries(
-                roots.map(([root, resolution]) => [root, resolution.children])
+                kept.map(([root, resolution]) => [root, resolution.children])
               ),
             }
           : {}),
