@@ -22,7 +22,7 @@ Benchmark's run lifecycle. `benchmark` holds the knowledge: the lanes and their 
 - **In** "Loop, one hypothesis per iteration": each attempt is one packet on the selected target and runs Fix, rerun, resume; a reverted packet still gets its ledger row. Several measured hypotheses on one selected target and correctness guard may use `codex-autoresearch` as packet machinery while this run keeps lane and cause ownership. Commits follow `AGENTS.md`'s Delivery rule.
 - **In** "Stop when the predicate is met": the predicate never overrides Close, and an early win on one lane completes nothing.
 - The Close names the plan path where Hillclimb's reply asks for the `decision.tsv` path.
-- **Replace** "Run **Opening a PR**": when the reviews list names the work or the user asked for one, run its panel on the diff, then end with Close's report and stop. A commit or PR follows only the user's own request, per `AGENTS.md`'s Delivery rule.
+- **Replace** "Run **Opening a PR**": when the reviews list names the work or the user asked for one, run its panel on the diff, then land through `land.mjs`, which pushes the commit or opens its PR as the clone's `pstack.delivery` setting says, and end with Close's report.
 
 ## Intake
 
@@ -89,7 +89,7 @@ The cause's Cause History row then takes the decision `pivoted`, with `pivot-pla
 
 ## Close
 
-The run completes only when every applicable lane is `complete` or N/A with a concrete reason, Cause History records every kept, pivoted, invalidated, reverted, quarantined or deferred cause with its durable fix decision or holds one `none` row, every kept fix has successful exact benchmark and correctness reruns, the checkpoint is back to `none`, the final candidate and baseline identities still match the measured artifacts, the validator passes with `--complete`, `node .agents/pstack/plan-open.mjs <plan>` passes on the plan's Start and Completion Gates, and the review `AGENTS.md`'s Review rule requires passes. Runtime verification is the exact lane command, the correctness guard, the comparable baseline artifact, the post-fix rerun and any browser or native proof the claim needs. Review follows `AGENTS.md`'s Review rule; benchmark packets add none.
+The run completes only when every applicable lane is `complete` or N/A with a concrete reason, Cause History records every kept, pivoted, invalidated, reverted, quarantined or deferred cause with its durable fix decision or holds one `none` row, every kept fix has successful exact benchmark and correctness reruns, the checkpoint is back to `none`, the final candidate and baseline identities still match the measured artifacts, the validator passes with `--complete`, no row of the plan's Start and Completion Gates is pending, and the review `AGENTS.md`'s Review rule requires passes. Runtime verification is the exact lane command, the correctness guard, the comparable baseline artifact, the post-fix rerun and any browser or native proof the claim needs. Review follows `AGENTS.md`'s Review rule; benchmark packets add none.
 
 The plan's `## Close` reports:
 

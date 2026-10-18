@@ -138,8 +138,10 @@ Edits go to dotai's shared source through sync-pstack's Lesson mode, then sync h
 
 ### Phase 2. Cut back to pstack
 
-- [ ] 2.1 Remove the cut rules from the block's `trunk` mode and the cut rule files and helpers from dotai, and set the code roles to `@high` in both models sheets with the Helper effort exemption. Proof: the block's byte count before and after, and `validate-skills`.
-- [ ] 2.2 In plate-2, drop the autostage and freeze hooks, the Worktrees troubleshooting section, the autostage paragraph and the cut parts of the seven playbooks, swap the `pr` review row for `push`, and update `docs/development/agent-skills.md`. Proof: `check-playbooks.mjs`, `pnpm run prepare` and the sync check.
+- [x] 2.1 Remove the cut rules from the block's `trunk` mode and the cut rule files and helpers from dotai, and set the code roles to `@high` in both models sheets with the Helper effort exemption. Proof: the block's byte count before and after, and `validate-skills`.
+  Done in dotai `bc337c5`. plate-2's block went from 28,114 to 20,649 bytes and its rule files from 116,752 to 45,971, while ellie's and plate's renders did not change (`block-bytes-before-a1.log`, `block-bytes-after-a2.log`, `render-compare-p2-a2.log`), and `validate-skills` passes (`validate-skills-p2-a2.log`), all in `docs/plans/artifacts/2026-10-17-trunk-delivery/`. `lead.mjs` stays, because `cross.mjs` imports its effort helpers.
+- [x] 2.2 In plate-2, drop the autostage and freeze hooks, the Worktrees troubleshooting section, the autostage paragraph and the cut parts of the seven playbooks, swap the `pr` review row for `push`, and update `docs/development/agent-skills.md`. Proof: `check-playbooks.mjs`, `pnpm run prepare` and the sync check.
+  Done in the commit that ticks this box. `check-playbooks-p2-a1.log`, `prepare-p2-a1.log`, `sync-resources-check-p2-a1.log` and `sync-check-p2-a1.log` in the run directory all exit 0. The `chips` and `redo` skills are uninstalled and listed in `dropped`, `.claude/settings.json` sets `worktree.baseRef` to `head`, and `VISION.md`, `enforcement.md` and the rule references no longer name the cut helpers. Tooling and dotai lines the cut left behind are under Open work.
 - [ ] 2.3 Smoke one plain request per playbook in a fresh session and check it routes and lands through `land.mjs`. Proof: each smoke answer saved in the run directory.
 - [ ] 2.4 Run the writing passes, then land this plan's plate-2 changes with `land.mjs`. Proof: the landed commit on `origin/next`.
 
@@ -153,8 +155,9 @@ Measured from plate-2 session transcripts over three days, with the scripts in `
 - The six started card sessions land through `land.mjs`: `t_fd284610`, `t_6e339e60`, `t_80279835`, `t_dd0dd0bd`, `t_a7c71be6` and `t_e126f178`. owner: each task's own session. stop: its own run. Tracked in `docs/plans/backlog.md`.
 - The panel on `land.mjs`, `guard.mjs`, `setup.mjs`, `rules/land.md` and the Delivery line, owed because this build ran fast. owner: the session that runs your "full". stop: you say "full". Tracked here, in step 1.5.
 - Rerun `docs/plans/artifacts/2026-10-17-trunk-delivery/probe/ask-bypass.sh` to learn whether a hook's ask prompts in bypass mode; the 2026-10-17 run hit the weekly usage limit in every arm. owner: the session that resumes this plan. stop: the limit resets on 2026-10-22, and an ask that prompts flips the guard to ask. Tracked here.
-- The rules outside the block, Git and publication and Worktrees, still say you own commits and patches land by hand, and they win over the trunk block. owner: the session that runs Phase 2. stop: step 2.2 lands. Tracked here, in step 2.2.
 - ellie and plate still render from their last sync. This change renders nothing new there, but dotai `9e3de89`, another session's plan-page and `cross.mjs` edits pushed with it, does. owner: the session that started this one. stop: their next sync. Tracked here.
+- Delete the tooling the cut hooks and trials left without callers: `tooling/scripts/autostage-next.mjs`, `tooling/autostage-next.txt`, `tooling/scripts/stale-mutations.mjs` and its test, the `--hook` mode of `tooling/scripts/stale-claims.mjs` and its test case, and `tooling/scripts/trial-power.mjs` and its test. owner: a session card offered on 2026-10-18. stop: none. Tracked by that card.
+- In dotai, trunk renders still name cut rules: the `--timeout` messages of `cross.mjs` and `proof.mjs` say suggested task, and `rules/panel.md` and the Fast rule name the decision-trail review. owner: a session card offered on 2026-10-18. stop: none. Tracked by that card.
 
 ## Close
 

@@ -10,11 +10,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ ! -d \"$CLAUDE_PROJECT_DIR\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/autostage-next.mjs\"",
-            "timeout": 30
-          },
-          {
-            "type": "command",
             "command": "[ ! -d \"$CLAUDE_PROJECT_DIR\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/hand-drive.mjs\" --hook",
             "timeout": 60
           }
@@ -24,11 +19,6 @@
     "SessionStart": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && node .agents/pstack/reread.mjs --hook AGENTS.md \"$HOME/.claude/pstack-models.md\" .claude/settings.json",
-            "timeout": 30
-          },
           {
             "type": "command",
             "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/head.mjs ] || node .agents/pstack/head.mjs; }",
@@ -58,26 +48,10 @@
           }
         ]
       }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "if": "Bash(node .agents/pstack/freeze.mjs *)",
-            "command": "node \"$CLAUDE_PROJECT_DIR/tooling/scripts/stale-claims.mjs\" --hook",
-            "timeout": 60
-          },
-          {
-            "type": "command",
-            "if": "Bash(node .agents/pstack/freeze.mjs *)",
-            "command": "node \"$CLAUDE_PROJECT_DIR/tooling/scripts/stale-mutations.mjs\" --hook",
-            "timeout": 60
-          }
-        ]
-      }
     ]
+  },
+  "worktree": {
+    "baseRef": "head"
   },
   "enabledPlugins": {
     "pstack@pstack-claude": true,

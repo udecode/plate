@@ -111,7 +111,7 @@ Before the architecture owner may lock that target:
 An asymptotic table, review score, profiler suspicion, future benchmark plan,
 or "measure during implementation" note cannot satisfy this probe. Record N/A
 only when live source proves the change is type-only or cannot change repeated
-or hot runtime work. The probe never goes to a suggested task, because the
+or hot runtime work. The probe never goes to a session card, because the
 target's acceptance waits on it. It narrows its cohorts or rounds to fit the
 block's one-hour Time budget, and an inconclusive narrowed probe leaves the
 decision `defer` or `gate`, as step 5 says.
@@ -122,7 +122,7 @@ check it with one quick pass of the affected rows; the full interleaved protocol
 runs once, on the final tree, and again only when a later change touches the
 measured path or a result misses its budget. Each run fits the block's one-hour
 Time budget. A protocol that cannot fit, or that needs a quieter host than
-the run has, goes to a suggested task as that rule says. Its lines stay
+the run has, goes to a session card as that rule says. Its lines stay
 `gate`s that the run's close does not wait on. In a Perf issue run, whose
 validator does not yet accept a deferred measurement, the plan stays partial
 instead, as the close rule says. The lead sets that `Status:` before it offers

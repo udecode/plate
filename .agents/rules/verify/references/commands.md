@@ -308,8 +308,8 @@ that has served a long run is not yet a regression. Start a fresh base server
 from a worktree this helper makes with `--install`, and a fresh candidate
 server from a second one with `--install --with <changed file>`. Run the case
 with `--repeat-each=3` on each server, alternating, for two rounds. A case
-that also fails on the fresh base is pre-existing, and it gets a suggested
-task through the `chips` skill's Offer mode.
+that also fails on the fresh base is pre-existing, and it gets a session
+card or a backlog line, as the block's Side work rule says.
 
 The helper has four modes for these cases:
 
@@ -350,7 +350,7 @@ The helper has four modes for these cases:
   same way, and a match does not show which case printed it, so read the log
   to tie the failure to its defect. A
   case designed to pass at the base, such as a must-pass control or a case
-  whose defect only a mutation shows, goes to `mutate.mjs` instead. The
+  whose defect only a mutation shows, goes to a mutation run instead. The
   helper exits 0 when the command fails with every text, and 1 when the command
   passes, a text is missing or the worktree setup refuses. It exits 2 when
   `proof.mjs` cannot load or refuses its arguments, or the command cannot

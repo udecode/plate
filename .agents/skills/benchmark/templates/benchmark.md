@@ -135,7 +135,7 @@ Completion Gates:
 | Browser surface proof | pending | Run Browser for product routes; Chrome/device for native state when applicable, or N/A with reason | pending |
 | Changeset/release artifact | pending | Add only for published package behavior/API changes, otherwise N/A | pending |
 | Benchmark plan complete validation | yes | Run validator with `--complete` | pending |
-| Plan complete | yes | Run `node .agents/pstack/plan-open.mjs {{PLAN_PATH}}` | pending |
+| Plan complete | yes | No box or gate row in the plan is pending | pending |
 
 Verification evidence:
 - Pending.

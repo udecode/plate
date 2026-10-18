@@ -48,20 +48,10 @@ Hard constraints:
   do not anticipate later tests.
 - One logical assertion per test.
 - Failing at the base commit proves only that the behavior was missing. For a
-  guard or a new branch, revert that one condition with
-  `node .agents/pstack/mutate.mjs --dir <run directory> <spec>`. Its spec names
-  the candidate's `freeze.mjs` commit, and the mutation runs in a fresh export
-  of that commit under the run directory that the helper removes afterwards unless
-  the run is killed, never in this checkout. The helper links this checkout's root and package
-  `node_modules` into that export, so a test resolves this checkout's
-  installed packages, and a test that imports a workspace sibling runs this
-  checkout's copy of it. It copies no env file, and only one run at a time may
-  use a run directory. A test that needs `apps/www/.env.local`, or a Turbopack build
-  that refuses linked `node_modules`, reverts its condition in a
-  `tooling/scripts/proof-worktree.mjs` worktree instead, made with `--install`
-  for Turbopack. Name the assertion's
-  own message as the expected text and read the mutant's log, because the
-  helper only finds that text in the last 16 MB of the output. A premise probe counts only once it fails with the
+  guard or a new branch, revert that one condition in a
+  `tooling/scripts/proof-worktree.mjs` worktree, made with `--install` when the
+  test needs installed packages or env files, and confirm the test fails there
+  with the assertion's own message. A premise probe counts only once it fails with the
   mechanism it credits mutated out, because a base that already has the
   property cannot catch a probe that bypasses it.
 - A mutant judged through a build, a bundle or emitted declarations counts only

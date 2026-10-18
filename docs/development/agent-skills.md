@@ -59,15 +59,15 @@ These are optional shortcuts for a specific job, not a sequence to run.
 | Draft a review comment on a Slate PR or a Plate `main` PR, with Plate v2's evidence and repro tests | `/review-comment <PR>` |
 | Draft a Plate Beta issue from video or text | `$maintainer issue-draft <video or text>` |
 
-A planning-only request stops at a reviewable plan. Any other request runs to its close. Agents stop only for a production deploy or release, a push to `main`, a force-push to a shared branch, a message to a customer or anyone outside the team, a comment, label or close on a public issue or PR, and deleting data the run did not create. Two kinds of folder are not data and go without asking. A card session deletes its own worktree once its patch lands. `/cleanup` deletes the rest, and only what its scan marks safe: idle Next.js caches no server holds, other than each app's own `.next` build, and worktrees an agent made that no running session or process, and no recent session transcript, uses, after it saves their uncommitted changes as a patch. Every other call they make shows under Picked for you with the word that reverses it, and a call with no clear pick takes its most reversible option. Add "stop at plan", "stop at design" or "stop before ship" to a request to stop sooner.
+A planning-only request stops at a reviewable plan. Any other request runs to its close. Agents stop only for a production deploy or release, a push to `main`, a force-push to a shared branch, a message to a customer or anyone outside the team, a comment, label or close on a public issue or PR, and deleting data the run did not create. Two kinds of folder are not data and go without asking. Each session removes its own worktree once its task lands. `/cleanup` deletes the rest, and only what its scan marks safe: idle Next.js caches no server holds, other than each app's own `.next` build, and worktrees an agent made that no running session or process, and no recent session transcript, uses, after it saves their uncommitted changes as a patch. Every other call they make shows under Picked for you with the word that reverses it, and a call with no clear pick takes its most reversible option. Add "stop at plan", "stop at design" or "stop before ship" to a request to stop sooner.
 
-When an agent finds that the accepted design cannot meet a requirement, such as a frozen budget it misses or a cost only a new owner or stored shape removes, it pivots at once. It runs `architect`, writes a plan that adopts the winner and builds it, and holds every step that only finishes the old design. It never parks such a finding in Open work, a deferred benchmark cause or a suggested task, unless you said to keep it until a date. Suggested tasks hold only side work, or a measurement that does not fit a run's one-hour budget. Each one is a task in the project's ledger, `docs/plans/suggested-tasks.decisions.tsv`, under one id it keeps for good, and a card in the app is only a view of it. A task names the paths it writes, the question it belongs to as its `topic:`, and what it waits for: a PR, another task or a running plan. `node .agents/pstack/decisions-check.mjs chips` shows every open task as ready, started, waiting or unmigrated. Only a ready task gets a card, and the session that offered a card withdraws it when its task later has to wait. A card that drops out of the app's queue or ends with its session leaves its task open. Findings on one question join one task, and a topic holds at most one open design question. A title ends in `(xhigh)` only for a design question or a bug or slowness whose cause nobody has located. Every other task runs at `high`, including a hard fix whose finding already names its cause. A ledger row can lower a task that an older offer tagged too high. The card starts at that effort. When that effort is above the agent's own, which the app does not let it set, the agent offers the card at its own effort, and you can raise it on the card before you start it. A failure an agent blames on the base branch needs an open task that owns that check. `.agents/pstack/rules/chips.md` holds the whole rule.
+When an agent finds that the accepted design cannot meet a requirement, such as a frozen budget it misses or a cost only a new owner or stored shape removes, it pivots at once. It runs `architect`, writes a plan that adopts the winner and builds it, and holds every step that only finishes the old design. It never parks such a finding in Open work, a deferred benchmark cause or a session card, unless you said to keep it until a date. Session cards hold only side work, or a measurement that does not fit a run's one-hour budget. The agent offers each one as a card in the app, with a brief that names the files and what done looks like, and you start it when you want. A finding not worth a card now gets one line in `docs/plans/backlog.md`. The old suggested-task ledger, `docs/plans/suggested-tasks.decisions.tsv`, stays as history, and nothing writes it.
 
 For long unattended work, state a checkable exit condition. pstack's Autonomous
 run keeps going with `/loop` in Claude Code or `/goal` in Codex, and the domain
 plans stay in use. No single command, proof, review seat or wait on the machine
 runs longer than an hour. A measurement that needs longer, such as a soak or a
-multi-round timing protocol, becomes a suggested task that you start when you
+multi-round timing protocol, becomes a session card that you start when you
 want it, and the run's close never waits on it.
 
 ## Apply the project rules
@@ -89,15 +89,14 @@ and the full principle (`pstack:principle-redesign-from-first-principles`).
 
 Known owners and accepted plans go directly to their Plate skill. `verify`
 applies to every proof owner. A tiny edit needs direct verification,
-without a playbook, app launch or review panel. Subagents research and review;
-the lead writes the code. The panel review (`/pstack:interrogate`), `architect` and arena run
+without a playbook, app launch or review panel. The lead hands code to
+subagents, each in its own worktree, and reviews and proves each diff. The panel review (`/pstack:interrogate`), `architect` and arena run
 without asking wherever a pstack step calls for them and for the rows in the
 `reviews` list of `.agents/pstack.json`: a plan that changes a public API (after
-`architect`), a PR's diff before it opens and "review PR <number>". For
-anything else, say "panel", "arena" or "full". A plan step that broadly changes
-how agents find, route or finish work gets a paired trial on its first
-prototype before the plan's panel, once `tooling/scripts/trial-power.mjs`
-shows the trial can tell its arms apart. Each round's fixes get `deslop` and
+`architect`), a push that changes a public API or Plite core or deletes
+behavior, and "review PR <number>". For anything else, say "panel", "arena" or
+"full". A change to how agents find, route or finish work gets a smoke of each
+route it changes before it lands. Each round's fixes get `deslop` and
 `no-comments` before the next round, and the comment reviewer only reports;
 the lead applies its edits. How rounds, fixes and reverts work lives in
 [the panel rules](../../.agents/pstack/rules/panel.md).
@@ -121,16 +120,18 @@ For release work, use the current Release Lanes modes:
 | `$release-lanes promote execute` | Execute the promotion workflow. |
 | `$release-lanes verify` | Verify published release state. |
 
-State the publication actions you want. Agents commit and push their work to
-any branch other than `main` and `next` without asking. A local repair, review
-or plan does not by itself authorize a commit or push to `main` or `next`, a
-new PR, a merge, a release or an external message. [AGENTS.md](../../AGENTS.md) owns scope, authority and
+Each task works in its own worktree and lands on `next` through
+`node .agents/pstack/land.mjs`, which squashes it into one Conventional Commit,
+rebases it onto `origin/next`, runs its checks, and pushes `next` or opens a PR
+as the clone's `git config pstack.delivery` says. Review what landed with
+`node .agents/pstack/review.mjs`. A merge, a release, a push to `main` and an
+external message still need your word. [AGENTS.md](../../AGENTS.md) owns scope, authority and
 delivery. The [Release Lanes skill](../../.agents/skills/release-lanes/SKILL.md)
 owns release mode details.
 
 ## Read a page and answer it
 
-Each stop that hands work back replies with a page link. The page opens with a rail of the work's stages, from Plan to Reflect, then the line that says what the work waits on, such as your answer or a commit you owe, and two short answers labeled Changes and Risks. How it works follows, at most three short paragraphs that explain the thing the work changes, with a before and after picture when parts move. Demo comes next when there is something to try. Every sentence on the page is plain, like one person talking to another. On the rail, Plan names the playbook the agent picked, such as feature or bug-fix, and the design, review, writing and audit stages that ran name their pstack skills, such as interrogate or deslop. Under them, Needs you lists each decision as a short memo: the question, why it needs you, one or two facts, each option with what happens and what it costs, and the agent's pick with its reason. Each part runs at most 15 words, in plain words with no file paths or commands. A question's number is red when it needs your answer, amber when it is worth a look and green when the pick is safe, and red questions come first. Change a pick and the bar at the bottom gives you a reply to copy. Picked for you lists the calls the agent made for you, one line each with the word that reverses it, grouped as Big calls, Small calls and Details. Under them come the plan's changes: Public API, the review sections and Main changes. Nothing folds, and the plan file under `docs/plans` keeps the proof, steps and history.
+Each stop that hands work back replies with a page link. The page opens with a rail of the work's stages, from Plan to Reflect, then the line that says what the work waits on, such as your answer, and two short answers labeled Changes and Risks. How it works follows, at most three short paragraphs that explain the thing the work changes, with a before and after picture when parts move. Demo comes next when there is something to try. Every sentence on the page is plain, like one person talking to another. On the rail, Plan names the playbook the agent picked, such as feature or bug-fix, and the design, review, writing and audit stages that ran name their pstack skills, such as interrogate or deslop. Under them, Needs you lists each decision as a short memo: the question, why it needs you, one or two facts, each option with what happens and what it costs, and the agent's pick with its reason. Each part runs at most 15 words, in plain words with no file paths or commands. A question's number is red when it needs your answer, amber when it is worth a look and green when the pick is safe, and red questions come first. Change a pick and the bar at the bottom gives you a reply to copy. Picked for you lists the calls the agent made for you, one line each with the word that reverses it, grouped as Big calls, Small calls and Details. Under them come the plan's changes: Public API, the review sections and Main changes. Nothing folds, and the plan file under `docs/plans` keeps the proof, steps and history.
 
 Answer in your own words in the chat. "go" takes the pick on every decision that has one and authorizes nothing else.
 
@@ -195,4 +196,4 @@ and evidence. Use this guide and the current skill files to choose today's route
 
 ## Retired commands
 
-The owner retired Plate's typed aliases on 2026-10-01 and the vendor `prototype` skill on 2026-10-02. Older plans, ledger records and decision pages still name them. Read `$task design plan <goal>`, `$plate-plan` and `$plite-plan` as "plan" through the Plan playbook, `$task execute` as "go", `$patch` as the Bug fix playbook, `$autoclosure` as the Babysit playbook, `$editor-audit` and `$editor-test-harvester` as `research audit` and `research harvest`, `$clawsweeper` and `issue-harvester slate` as the retired Slate claims mode, which `git log -- .agents/rules/issue-harvester/references/slate-claims.md` keeps, and `$prototype` as pstack's Prototype playbook. `best-api-review` became `verdict` on 2026-10-10, and its playbook `api-review.md` became `verdict.md`.
+The owner retired Plate's typed aliases on 2026-10-01 and the vendor `prototype` skill on 2026-10-02. Older plans, ledger records and decision pages still name them. Read `$task design plan <goal>`, `$plate-plan` and `$plite-plan` as "plan" through the Plan playbook, `$task execute` as "go", `$patch` as the Bug fix playbook, `$autoclosure` as the Babysit playbook, `$editor-audit` and `$editor-test-harvester` as `research audit` and `research harvest`, `$clawsweeper` and `issue-harvester slate` as the retired Slate claims mode, which `git log -- .agents/rules/issue-harvester/references/slate-claims.md` keeps, and `$prototype` as pstack's Prototype playbook. `best-api-review` became `verdict` on 2026-10-10, and its playbook `api-review.md` became `verdict.md`. Trunk delivery retired `chips` and `redo` on 2026-10-18: read a suggested task as a session card or a line in `docs/plans/backlog.md`, and `redo` as the Babysit playbook.
