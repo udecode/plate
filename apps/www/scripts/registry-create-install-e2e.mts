@@ -253,9 +253,14 @@ async function verifyInstalledEditorCommands(project: string) {
       exact: true,
     });
     const emojiSearch = page.getByRole('combobox', { name: 'Search emoji' });
-    const fireCount = async () =>
-      ((await editor.textContent()) ?? '').split('🔥').length - 1;
-    const initialFireCount = await fireCount();
+    const headingText = async () => {
+      const strings = await insertedHeading
+        .locator('[data-editor-string="true"]')
+        .allTextContents();
+
+      return strings.join('');
+    };
+    const initialHeadingText = await headingText();
 
     await insertedHeading.click();
     await insertedHeading.press('End');
@@ -271,7 +276,7 @@ async function verifyInstalledEditorCommands(project: string) {
       () => document.activeElement?.getAttribute('contenteditable') === 'true'
     );
 
-    if ((await fireCount()) !== initialFireCount + 1) {
+    if ((await headingText()) !== `${initialHeadingText}🔥`) {
       throw new Error('Installed emoji picker did not insert 🔥 at the caret');
     }
 
