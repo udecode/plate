@@ -8,7 +8,9 @@ documents without mounting React.
 
 <Callout type="warning" title="Use server-safe imports">
   Import the editor runtime from `platejs`, not `platejs/react`. Markdown uses
-  `platejs/markdown`. Node HTML parsing uses `platejs/html/server`.
+  `platejs/markdown`. Node HTML parsing uses `platejs/html/server`. Pass base
+  plugins, not the copied `BaseEditorKit`. Its `math-static` component imports
+  the KaTeX stylesheet, and Node throws on a CSS import.
 </Callout>
 
 <Steps>
@@ -113,10 +115,11 @@ DOCX import is detached and browser/client-only. Supply the complete plugin
 target in `options`; do not pass an editor.
 
 ```ts
+import { BaseBoldPlugin, BaseHeadingPlugin } from 'platejs';
 import { importDocx } from 'platejs/docx/import';
 
 const result = await importDocx(file, {
-  plugins: EditorKit,
+  plugins: [BaseHeadingPlugin, BaseBoldPlugin],
   signal,
 });
 ```

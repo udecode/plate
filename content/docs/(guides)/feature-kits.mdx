@@ -71,8 +71,10 @@ or registry dependencies.
 ## Base kits
 
 Base kits use base plugins and static components. They are the right starting
-point for [Static Rendering](/docs/static), [Node.js](/docs/installation/node),
-and other non-editable pipelines.
+point for [Static Rendering](/docs/static) and other non-editable pipelines
+that a bundler builds. `BaseEditorKit` includes `math-static`, which imports the
+KaTeX stylesheet. Plain Node throws on that import, so a
+[Node.js](/docs/installation/node) process passes base plugins instead.
 
 ```ts title="editor.ts"
 import { createEditor } from 'platejs';

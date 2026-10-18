@@ -66,12 +66,12 @@ export const editor = createEditor({
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `platejs/math` | Package | Exports the base equation family and `MathRules`. |
+| `platejs/math` | Package | Exports the base equation family, its Markdown `math` and `inlineMath` mappings, and `MathRules`. |
 | `platejs/math/react` | Package | Exports the React equation descriptors. |
 | `math` | Registry | Adds block and inline React plugins with input rules and the editable equation elements. |
 | `math-static` | Registry | Adds static equation elements for read-only rendering. |
 | `equation-toolbar-button` | Registry UI | Inserts inline equations from the toolbar. |
-| `platejs/markdown` | Package | Serializes and parses `math` and `inlineMath` nodes when `remark-math` is configured. |
+| `platejs/markdown` | Package | Runs the equation plugins' Markdown mappings when `MarkdownPlugin` is configured with `remark-math`. |
 | `platejs/docx/export` | Package | Exports equations as Word math. See [DOCX](/docs/docx). |
 
 `platejs/math` and `platejs/math/react` load no KaTeX. The `math` and `math-static` components and `platejs/docx/export` import `katex`, so install it wherever one of them runs.
@@ -85,10 +85,10 @@ Block and inline equations share the `EquationElement` shape, but they are diffe
 ### Install package
 
 ```bash
-npm install platejs katex@0.16.22
+npm install platejs katex@0.16.22 lucide-react react-textarea-autosize
 ```
 
-The `math` and `math-static` components import the KaTeX stylesheet, `katex/dist/katex.min.css`.
+The `math` and `math-static` components import the KaTeX stylesheet, `katex/dist/katex.min.css`, and icons from `lucide-react`. `math` also imports `react-textarea-autosize` for its source input.
 
 ### Add plugins
 
@@ -126,6 +126,8 @@ export const editor = createEditor({
 Use the base kit when rendering read-only output with `platejs/static`.
 
 <ComponentSource name="math-static" />
+
+`math-static` imports the KaTeX stylesheet, so it runs only where a bundler loads CSS imports. Plain Node throws on that import. A Node process that converts equations without rendering them uses `BaseEquationPlugin` and `BaseInlineEquationPlugin` from `platejs/math`.
 
 ### Insert equations
 
@@ -165,7 +167,7 @@ const value = [
   },
   {
     children: [{ text: '' }],
-    latex: '\\\\int_{a}^{b} f(x) \\\\, dx = F(b) - F(a)',
+    latex: '\\int_{a}^{b} f(x) \\, dx = F(b) - F(a)',
     type: 'equation',
   },
 ];
@@ -207,7 +209,7 @@ KaTeX is configured with `throwOnError: false`, `strict: 'warn'`, and `trust: fa
 
 ## Markdown
 
-Markdown math support comes from `platejs/markdown` plus `remark-math`, as configured by the registry `MarkdownKit`.
+The equation plugins own the Markdown mapping. `BaseEquationPlugin` maps `equation` to the `math` node and `BaseInlineEquationPlugin` maps `inlineEquation` to `inlineMath`. `MarkdownPlugin` from `platejs/markdown` runs those mappings once `remark-math` is in its remark plugins, as the registry `MarkdownKit` configures it.
 
 ```mdx
 Inline $x+1$ math

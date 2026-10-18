@@ -52,9 +52,12 @@ edges or detached roots. Those are native transfer properties owned by
 ### Detached conversion
 
 ```ts
+import { BaseBoldPlugin, BaseHeadingPlugin } from 'platejs';
 import { parseMarkdown } from 'platejs/markdown';
 
-const result = parseMarkdown(source, { plugins: EditorKit });
+const plugins = [BaseHeadingPlugin, BaseBoldPlugin] as const;
+
+const result = parseMarkdown(source, { plugins });
 ```
 
 Standalone functions compile the supplied plugin declarations for one
@@ -89,10 +92,14 @@ const result = editor.api.markdown.serialize({
 import { serializeMarkdown } from 'platejs/markdown';
 
 const result = serializeMarkdown(document, {
-  plugins: EditorKit,
+  plugins,
   projection: 'accepted',
 });
 ```
+
+In plain Node, pass base plugins rather than a static kit such as
+`BaseEditorKit`. Its `math-static` component imports the KaTeX stylesheet, and
+Node throws on a CSS import.
 
 Serialization asserts the document and the selected authored projection.
 Invalid model data and mapping bugs throw. Expected format loss returns a
