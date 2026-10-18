@@ -160,8 +160,6 @@ Measured from plate-2 session transcripts over three days, with the scripts in `
 - The panel on `land.mjs`, `guard.mjs`, `setup.mjs`, `rules/land.md` and the Delivery line, owed because this build ran fast. owner: the session that runs your "full". stop: you say "full". Tracked here, in step 1.5.
 - Rerun `docs/plans/artifacts/2026-10-17-trunk-delivery/probe/ask-bypass.sh` to learn whether a hook's ask prompts in bypass mode; the 2026-10-17 run hit the weekly usage limit in every arm. owner: the session that resumes this plan. stop: the limit resets on 2026-10-22, and an ask that prompts flips the guard to ask. Tracked here.
 - ellie and plate still render from their last sync. This change renders nothing new there, but dotai `9e3de89`, another session's plan-page and `cross.mjs` edits pushed with it, does. owner: the session that started this one. stop: their next sync. Tracked here.
-- Delete the tooling the cut hooks and trials left without callers: `tooling/scripts/autostage-next.mjs`, `tooling/autostage-next.txt`, `tooling/scripts/stale-mutations.mjs` and its test, the `--hook` mode of `tooling/scripts/stale-claims.mjs` and its test case, and `tooling/scripts/trial-power.mjs` and its test. owner: a session card offered on 2026-10-18. stop: none. Tracked by that card.
-- In dotai, trunk renders still name cut rules: the `--timeout` messages of `cross.mjs` and `proof.mjs` say suggested task, and `rules/panel.md` and the Fast rule name the decision-trail review. owner: a session card offered on 2026-10-18. stop: none. Tracked by that card.
 
 ## Close
 
