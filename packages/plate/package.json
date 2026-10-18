@@ -1,6 +1,6 @@
 {
   "name": "platejs",
-  "version": "53.3.15",
+  "version": "53.3.18",
   "description": "Plate – a framework for building rich text editors on the web",
   "keywords": [
     "contentEditable",

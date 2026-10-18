@@ -1,5 +1,13 @@
 # @platejs/core
 
+## 53.3.18
+
+### Patch Changes
+
+- [#5172](https://github.com/udecode/plate/pull/5172) by [@dylans](https://github.com/dylans) – Upgrade to slate 0.142.1, slate-dom 0.142.0, slate-react 0.142.0 and slate-hyperscript 0.138.3.
+
+- [#5190](https://github.com/udecode/plate/pull/5190) by [@dylans](https://github.com/dylans) – Upgrade to slate 0.146.0, slate-dom 0.146.0 and slate-react 0.145.1.
+
 ## 53.3.15
 
 ## 53.3.14
