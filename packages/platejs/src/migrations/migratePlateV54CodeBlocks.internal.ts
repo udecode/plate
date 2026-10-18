@@ -10,8 +10,8 @@ import {
   type Selection,
   TextApi,
 } from '../facade';
-import { getFirstPartyBinding } from './documentMigrationFirstParty.internal';
 import type { DocumentMigrationContext } from './documentMigrations';
+import { resolveV54BuiltIns } from './migratePlateV54BuiltIns.internal';
 import { migratePlateV54ReplacementText } from './migratePlateV54Suggestions.internal';
 
 type TextPointMapping = Readonly<{ offset: number; path: Path }>;
@@ -30,14 +30,11 @@ export const migratePlateV54CodeBlocks = ({
   target: conversionTarget,
 }: DocumentMigrationContext): PlateV54CodeBlockMigrationResult => {
   const { roots: inputRoots } = document;
-  const codeBlockDescriptor = getFirstPartyBinding(
-    conversionTarget,
-    'codeBlock'
-  );
+  const codeBlockType =
+    resolveV54BuiltIns(conversionTarget).elementType('codeBlock');
 
-  if (!codeBlockDescriptor?.type) return { document };
+  if (!codeBlockType) return { document };
 
-  const codeBlockType = codeBlockDescriptor.type;
   const pointMappings = new Map<string, TextPointMapping>();
   const collectPointMappings = (
     input: Descendant,

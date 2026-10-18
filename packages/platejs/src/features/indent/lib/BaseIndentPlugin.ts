@@ -14,7 +14,6 @@ import {
   type Element,
   type NodeMatchPredicate,
 } from '../../../core';
-import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import { BaseBlockquotePlugin } from '../../basic-nodes';
 import {
   isNonNegativeSafeInteger,
@@ -260,5 +259,3 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
 }));
 
 export type IndentDefinition = DefinitionOf<typeof BaseIndentPlugin>;
-
-registerFirstPartyPlugin(BaseIndentPlugin);

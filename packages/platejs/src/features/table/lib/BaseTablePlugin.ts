@@ -36,7 +36,6 @@ import {
 import { domCommands } from '../../../dom/plite-dom.internal';
 import { fitSlicePlacements } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
-import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import {
   createDetachedTableContext,
   type createTableContext,
@@ -2702,7 +2701,3 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
 export type TableDefinition = DefinitionOf<typeof BaseTablePlugin>;
 
 export type { TableCellBorder, TableCellBorders } from './types';
-
-registerFirstPartyPlugin(BaseTablePlugin);
-registerFirstPartyPlugin(BaseTableRowPlugin);
-registerFirstPartyPlugin(BaseTableCellPlugin);

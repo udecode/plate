@@ -10,8 +10,8 @@ import {
   TextApi,
   type Value,
 } from '../facade';
-import { getFirstPartyType } from './documentMigrationFirstParty.internal';
 import type { DocumentMigrationContext } from './documentMigrations';
+import { resolveV54BuiltIns } from './migratePlateV54BuiltIns.internal';
 
 /** `null` marks text that was removed with its media. */
 type TextPointMapping = Readonly<{ offset?: number; path: Path }> | null;
@@ -38,16 +38,10 @@ export const migratePlateV54Urls = ({
   DocumentMigrationContext,
   'document' | 'target'
 >): PlateV54UrlMigrationResult => {
-  const resolveElementType = (name: string) =>
-    getFirstPartyType(conversionTarget, name);
-  const fileType = resolveElementType('file');
-  const linkType = resolveElementType('link');
-  const paragraphType = resolveElementType('paragraph') ?? 'paragraph';
-  const mediaTypes = new Set(
-    ['audio', 'file', 'image', 'mediaEmbed', 'video']
-      .map(resolveElementType)
-      .filter((type): type is string => type !== undefined)
-  );
+  const { elementType, mediaTypes } = resolveV54BuiltIns(conversionTarget);
+  const fileType = elementType('file');
+  const linkType = elementType('link');
+  const paragraphType = elementType('paragraph') ?? 'paragraph';
   // Only string values are URLs; other invalid values keep failing closed.
   const rejects = (element: Element, key: string) => {
     const value = Reflect.get(element, key);

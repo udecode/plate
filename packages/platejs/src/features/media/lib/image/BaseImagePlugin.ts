@@ -10,7 +10,6 @@ import {
   TextApi,
 } from '../../../../core';
 import { domCommands } from '../../../../dom/plite-dom.internal';
-import { registerFirstPartyPlugin } from '../../../../internal/plugin/firstPartyPlugin';
 import { getMarkdownParagraphType } from '../../../../internal/plugin/markdownParagraph';
 import { isScriptUrl, isStoredUrl } from '../../../../internal/utils/urlPolicy';
 import {
@@ -570,5 +569,3 @@ const imageExtensions = new Set([
   'xcf',
   'xpm',
 ]);
-
-registerFirstPartyPlugin(BaseImagePlugin);

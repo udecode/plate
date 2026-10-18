@@ -82,10 +82,15 @@ export const V53_STRUCTURAL_PROPERTIES = [
   { key: 'placeholderId', kind: 'property-structural' },
 ] as const;
 
-export const V53_ELEMENT_TYPE_OWNERS = Object.fromEntries(
-  V53_FIRST_PARTY_IDENTITIES.flatMap((entry) =>
-    'owner' in entry && entry.kind.startsWith('element-')
-      ? [[entry.identity, entry.owner]]
-      : []
-  )
-) as Readonly<Record<string, string>>;
+export type V53ElementIdentity = Extract<
+  (typeof V53_FIRST_PARTY_IDENTITIES)[number],
+  { kind: `element-${string}` }
+>;
+
+export type V53ElementOwner =
+  | Exclude<V53ElementIdentity, { owner: string }>['identity']
+  | Extract<V53ElementIdentity, { owner: string }>['owner'];
+
+export const V53_ELEMENT_IDENTITIES = V53_FIRST_PARTY_IDENTITIES.filter(
+  (entry): entry is V53ElementIdentity => entry.kind.startsWith('element-')
+);

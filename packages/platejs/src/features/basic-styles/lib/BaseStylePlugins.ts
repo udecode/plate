@@ -14,7 +14,6 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
-import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import type { AnyBasePlugin } from '../../../lib/plugin/BasePlugin';
 
 const digitRegex = /\d+/;
@@ -373,6 +372,3 @@ export const toUnitLess = (value: string): string => {
 
   return value.endsWith('rem') ? String(number * 16) : String(number);
 };
-
-registerFirstPartyPlugin(BaseLineHeightPlugin);
-registerFirstPartyPlugin(BaseTextAlignPlugin);

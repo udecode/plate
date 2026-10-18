@@ -7,8 +7,9 @@ import {
   ElementApi,
   type Value,
 } from '../facade';
-import { getFirstPartyType } from './documentMigrationFirstParty.internal';
+import { BaseHeadingPlugin } from '../features/basic-nodes';
 import type { DocumentMigration } from './documentMigrations';
+import { getMigrationBinding } from './documentMigrationTarget.internal';
 
 const LIST_TYPES = new Set<unknown>(['bulleted', 'numbered', 'task']);
 
@@ -37,7 +38,10 @@ export const migrateListIdentity: DocumentMigration = ({
   document,
   target,
 }) => {
-  const headingType = getFirstPartyType(target, 'heading');
+  const headingType = getMigrationBinding(
+    target,
+    BaseHeadingPlugin
+  )?.elementType;
   const sameRun = (previous: Element, element: Element) =>
     previous.listType === element.listType &&
     styleOf(previous) === styleOf(element) &&

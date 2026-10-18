@@ -23,7 +23,6 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
-import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import { decideUrl, isStoredUrl } from '../../../internal/utils/urlPolicy';
 
 const BARE_AUTOLINK_LITERAL_RE = /^https?:\/\//i;
@@ -852,5 +851,3 @@ export const LinkRules = {
     return spaceAutolinkRule(runtime);
   },
 };
-
-registerFirstPartyPlugin(BaseLinkPlugin);

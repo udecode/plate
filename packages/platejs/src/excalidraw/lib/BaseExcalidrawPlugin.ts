@@ -5,7 +5,6 @@ import {
   type EditorJsonValue,
   PLUGINS,
 } from '../../core';
-import { registerFirstPartyPlugin } from '../../internal/plugin/firstPartyPlugin';
 
 type ExcalidrawElementData = {
   elements: readonly EditorJsonValue[];
@@ -37,5 +36,3 @@ export const BaseExcalidrawPlugin = definePlugin(PLUGINS.excalidraw, {
 });
 
 export type ExcalidrawElement = ElementOf<typeof BaseExcalidrawPlugin>;
-
-registerFirstPartyPlugin(BaseExcalidrawPlugin);

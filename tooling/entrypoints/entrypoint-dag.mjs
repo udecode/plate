@@ -364,7 +364,29 @@ export const entrypointDags = {
         directory('math/react', ['core', 'math', 'react-core'])
       ),
       migrations: headless(
-        directory('migrations', ['authored', 'core', 'dom', 'history'])
+        directory('migrations', [
+          'authored',
+          'callout',
+          'core',
+          'date',
+          'details',
+          'dom',
+          'excalidraw',
+          'footnote',
+          'history',
+          'layout',
+          'math',
+          'media',
+          'mention',
+          'standard/basic-nodes',
+          'standard/basic-styles',
+          'standard/code-block',
+          'standard/indent',
+          'standard/link',
+          'standard/list',
+          'table',
+          'toc',
+        ])
       ),
       pagination: headless(
         directory('pagination', [], ['plitejs/pagination'], {

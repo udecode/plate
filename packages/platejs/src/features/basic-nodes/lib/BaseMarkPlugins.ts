@@ -5,7 +5,6 @@ import {
   property,
   PLUGINS,
 } from '../../../core';
-import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import { someHtmlElement } from '../../../lib/plugins/html/htmlDom';
 
 const findHtmlParentElement = (
@@ -343,5 +342,3 @@ export const BaseUnderlinePlugin = definePlugin(PLUGINS.underline, {
     }),
   component: 'u',
 });
-
-registerFirstPartyPlugin(BaseScriptPlugin);

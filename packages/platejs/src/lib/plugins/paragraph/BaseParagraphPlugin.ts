@@ -1,5 +1,4 @@
 import { schema } from '../../../facade';
-import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import { definePlugin, type DefinitionOf } from '../../plugin';
 
 export const BaseParagraphPlugin = definePlugin('paragraph', {
@@ -21,5 +20,3 @@ export const BaseParagraphPlugin = definePlugin('paragraph', {
 });
 
 export type BaseParagraphDefinition = DefinitionOf<typeof BaseParagraphPlugin>;
-
-registerFirstPartyPlugin(BaseParagraphPlugin);

@@ -11,7 +11,6 @@ import {
   txLocate,
 } from '../../../core';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
-import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -165,5 +164,3 @@ export const HeadingRules = {
       },
     }),
 };
-
-registerFirstPartyPlugin(BaseHeadingPlugin);

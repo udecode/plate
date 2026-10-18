@@ -12,8 +12,8 @@ import {
   TextApi,
   type Value,
 } from '../facade';
-import { getFirstPartyType } from './documentMigrationFirstParty.internal';
 import type { DocumentMigrationContext } from './documentMigrations';
+import { resolveV54BuiltIns } from './migratePlateV54BuiltIns.internal';
 import {
   migratePlateV54DrawingCodeText,
   migratePlateV54ReplacementText,
@@ -55,7 +55,7 @@ export const migratePlateV54Inputs = ({
   const childMappings = new Map<string, ChildMapping[]>();
   const drawingTarget = target.schema.element('code_drawing')
     ? undefined
-    : getFirstPartyType(target, 'codeBlock');
+    : resolveV54BuiltIns(target).elementType('codeBlock');
 
   // A v53 drawing becomes a code block before the profile stage, so the later
   // stages upgrade its block properties as they do any code block's. Without a

@@ -45,7 +45,6 @@ import {
   BaseTableRowPlugin,
 } from '../../features/table';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
-import { registerFirstPartyPlugin } from '../../internal/plugin/firstPartyPlugin';
 import { resolveInsertionAnchor } from '../../internal/plugin/insertionAnchor';
 import {
   type MarkdownSerializeResult,
@@ -2007,5 +2006,3 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 });
 
 export type AIChatDefinition = DefinitionOf<typeof AIChatPlugin>;
-
-registerFirstPartyPlugin(AIChatPlugin);

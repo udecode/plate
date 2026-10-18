@@ -1,4 +1,3 @@
-import { getFirstPartyPropertyOwner } from './documentMigrationFirstParty.internal';
 import type { DocumentMigrationTarget } from './documentMigrations';
 
 export type NodeContext = Readonly<{
@@ -22,18 +21,15 @@ export const createPropertyOwnership = (target: DocumentMigrationTarget) => {
     });
 
   return {
-    firstPartyDeclares: (
-      plugin: string,
+    declares: (
+      declared: ReadonlySet<string>,
       type: string,
       key: string,
       context: NodeContext
     ) => {
       const property = currentProperty(type, key, context, 'element');
 
-      return (
-        property !== null &&
-        getFirstPartyPropertyOwner(target, property.id) === plugin
-      );
+      return property !== null && declared.has(property.id);
     },
     ownsProperty: (type: string, key: string, context: NodeContext) =>
       currentProperty(type, key, context, 'element') !== null,

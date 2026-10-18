@@ -14,7 +14,6 @@ import {
   txLocate,
   locateAt,
 } from '../../core';
-import { registerFirstPartyPlugin } from '../../internal/plugin/firstPartyPlugin';
 
 const INLINE_EQUATION_BOUNDARY_RE = /[\s([{'"`]/;
 const INLINE_EQUATION_FOLLOW_RE = /[\s)\]}:;,.!?'"`]/;
@@ -217,6 +216,3 @@ export const MathRules = (() => {
     },
   };
 })();
-
-registerFirstPartyPlugin(BaseEquationPlugin);
-registerFirstPartyPlugin(BaseInlineEquationPlugin);

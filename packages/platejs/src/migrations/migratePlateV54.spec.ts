@@ -6,20 +6,28 @@ import {
 } from 'platejs';
 
 import { ElementApi, property, schema, target } from '../core';
-import { BaseHeadingPlugin } from '../features/basic-nodes';
+import {
+  BaseHeadingPlugin,
+  BaseHorizontalRulePlugin,
+  BaseScriptPlugin,
+} from '../features/basic-nodes';
 import { BaseCodeBlockPlugin } from '../features/code-block';
 import {
   BaseDetailsPlugin,
   BaseDetailsSummaryPlugin,
 } from '../features/details';
+import { BaseFootnotePlugin } from '../features/footnote';
+import { BaseColumnGroupPlugin } from '../features/layout';
+import { BaseLinkPlugin } from '../features/link';
 import { BaseListPlugin } from '../features/list';
 import {
   BaseFilePlugin,
   BaseImagePlugin,
+  BaseMediaEmbedPlugin,
   BaseVideoPlugin,
 } from '../features/media';
 import { BaseTableCellPlugin, BaseTablePlugin } from '../features/table';
-import { registerFirstPartyPlugin } from '../internal/plugin/firstPartyPlugin';
+import { BaseInlineEquationPlugin } from '../math';
 import {
   defineDocumentMigrations,
   type DocumentMigrations,
@@ -27,31 +35,25 @@ import {
 } from './documentMigrations';
 import { migrateV54 } from './migratePlateV54';
 import {
-  V53_ELEMENT_TYPE_OWNERS,
   V53_FIRST_PARTY_IDENTITIES,
   V53_PROFILE_SOURCE,
 } from './v53-manifest.internal';
 
 const MigrationSchema = { id: 'plate', version: 54 } as const;
 
-const elementPlugin = (name: string) =>
-  definePlugin(name, {
-    schema: { element: schema.element.textBlock() },
-  });
-
-const firstPartyStandIns: BasePluginInput[] = [
-  ...new Set(
-    Object.values(V53_ELEMENT_TYPE_OWNERS).filter(
-      (type) => type !== 'paragraph'
-    )
-  ),
-].map(elementPlugin);
-firstPartyStandIns.push(
-  definePlugin('script', {
-    schema: { mark: property.enum(['sub', 'sup'] as const) },
-  })
-);
-firstPartyStandIns.forEach(registerFirstPartyPlugin);
+const builtInPlugins: BasePluginInput[] = [
+  BaseCodeBlockPlugin,
+  BaseColumnGroupPlugin,
+  BaseFootnotePlugin,
+  BaseHeadingPlugin,
+  BaseHorizontalRulePlugin,
+  BaseImagePlugin,
+  BaseInlineEquationPlugin,
+  BaseLinkPlugin,
+  BaseMediaEmbedPlugin,
+  BaseScriptPlugin,
+  BaseTablePlugin,
+];
 
 const defineV54Migrations = (plugins: readonly BasePluginInput[]) =>
   defineDocumentMigrations({
@@ -61,10 +63,10 @@ const defineV54Migrations = (plugins: readonly BasePluginInput[]) =>
     steps: { 54: migrateV54 },
   });
 
-const migrationPlan = defineV54Migrations(firstPartyStandIns);
+const migrationPlan = defineV54Migrations(builtInPlugins);
 
 const createEditor = ({
-  plugins = firstPartyStandIns,
+  plugins = builtInPlugins,
 }: Readonly<{
   plugins?: readonly BasePluginInput[];
   [key: string]: unknown;
@@ -91,7 +93,7 @@ const migrateDocument = (
 
 const createMigrationEditor = () =>
   createEditor({
-    plugins: firstPartyStandIns,
+    plugins: builtInPlugins,
   });
 
 describe('migratePlateV54 profile', () => {
@@ -108,7 +110,7 @@ describe('migratePlateV54 profile', () => {
 
   it('preserves table header semantics and migrates marks and properties', () => {
     const editor = createEditor({
-      plugins: [BaseTablePlugin, firstPartyStandIns.at(-1)!],
+      plugins: [BaseTablePlugin, BaseScriptPlugin],
     });
     const result = migrateDocument(
       {
@@ -182,7 +184,7 @@ describe('migratePlateV54 profile', () => {
     const editor = createEditor({
       migrations: migrationPlan,
       plugins: [
-        ...firstPartyStandIns,
+        ...builtInPlugins,
         CurrentElementPlugin,
         CurrentSubscriptPlugin,
       ],
@@ -224,11 +226,7 @@ describe('migratePlateV54 profile', () => {
     });
     const editor = createEditor({
       migrations: migrationPlan,
-      plugins: [
-        ...firstPartyStandIns,
-        CustomChartPlugin,
-        CustomSubscriptPlugin,
-      ],
+      plugins: [...builtInPlugins, CustomChartPlugin, CustomSubscriptPlugin],
       schema: MigrationSchema,
       skipInitialization: true,
     });
@@ -263,7 +261,7 @@ describe('migratePlateV54 profile', () => {
     });
     const editor = createEditor({
       migrations: migrationPlan,
-      plugins: [...firstPartyStandIns, CustomStepPlugin],
+      plugins: [...builtInPlugins, CustomStepPlugin],
       schema: MigrationSchema,
       skipInitialization: true,
     });
@@ -322,7 +320,7 @@ describe('migratePlateV54 profile', () => {
       },
     });
     const migrations = defineV54Migrations([
-      ...firstPartyStandIns,
+      ...builtInPlugins,
       BaseListPlugin,
       SidebarPlugin,
       SidebarListStylePlugin,
@@ -398,11 +396,7 @@ describe('migratePlateV54 profile', () => {
     });
     const editor = createEditor({
       migrations: migrationPlan,
-      plugins: [
-        ...firstPartyStandIns,
-        CustomLegacyPlugin,
-        CustomSubscriptPlugin,
-      ],
+      plugins: [...builtInPlugins, CustomLegacyPlugin, CustomSubscriptPlugin],
       schema: MigrationSchema,
       skipInitialization: true,
     });

@@ -8,7 +8,6 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
-import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import {
   getCaretInline,
   selectAfterInline,
@@ -190,5 +189,3 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
 
 export type MentionDefinition = DefinitionOf<typeof BaseMentionPlugin>;
 export type MentionElement = ElementOf<typeof BaseMentionPlugin>;
-
-registerFirstPartyPlugin(BaseMentionPlugin);

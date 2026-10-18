@@ -1,8 +1,35 @@
 import { BaseParagraphPlugin, createEditor, definePlugin } from 'platejs';
 
 import { type Element, property, schema, target } from '../core';
-import { BaseLineHeightPlugin } from '../features/basic-styles';
-import { registerFirstPartyPlugin } from '../internal/plugin/firstPartyPlugin';
+import { BaseExcalidrawPlugin } from '../excalidraw';
+import {
+  BaseLineHeightPlugin,
+  BaseTextAlignPlugin,
+} from '../features/basic-styles';
+import { BaseDatePlugin } from '../features/date';
+import {
+  BaseDetailsPlugin,
+  BaseDetailsSummaryPlugin,
+} from '../features/details';
+import {
+  BaseFootnoteDefinitionPlugin,
+  BaseFootnotePlugin,
+} from '../features/footnote';
+import { BaseIndentPlugin } from '../features/indent';
+import {
+  BaseColumnGroupPlugin,
+  BaseColumnItemPlugin,
+} from '../features/layout';
+import { BaseListPlugin } from '../features/list';
+import {
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseMediaEmbedPlugin,
+} from '../features/media';
+import { BaseMentionPlugin } from '../features/mention';
+import { BaseTablePlugin } from '../features/table';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from '../math';
+import { LineHeightPlugin } from '../react/features/basic-styles/BasicStylePlugins';
 import {
   defineDocumentMigrations,
   type DocumentMigrations,
@@ -11,224 +38,7 @@ import {
 import { migrateV54 } from './index';
 
 const MigrationSchema = { id: 'plate', version: 54 } as const;
-const requiredRef = property.string({ required: true });
-const BaseDatePlugin = definePlugin('date', {
-  schema: {
-    element: {
-      properties: { value: property.string({ required: true }) },
-      void: 'inline',
-    },
-  },
-});
-const BaseMentionPlugin = definePlugin('mention', {
-  schema: {
-    element: {
-      properties: { label: property.string(), ref: requiredRef },
-      void: 'inline',
-    },
-  },
-});
-const BaseDetailsSummaryPlugin = definePlugin('detailsSummary', {
-  schema: {
-    element: { ...schema.element.textBlock(), type: 'summary' },
-  },
-});
-const BaseDetailsPlugin = definePlugin('details', {
-  dependencies: [BaseDetailsSummaryPlugin, BaseParagraphPlugin],
-  schema: ({ plugins }) => ({
-    element: {
-      content: schema.content.any(
-        [
-          schema.content.type('summary').allowed,
-          plugins.blockContent().allowed,
-        ],
-        { default: { type: 'summary' }, min: 1 }
-      ),
-    },
-  }),
-});
-const BaseFootnotePlugin = definePlugin('footnote', {
-  schema: {
-    element: {
-      properties: { ref: requiredRef },
-      type: 'footnoteReference',
-      void: 'inline',
-    },
-  },
-});
-const BaseFootnoteDefinitionPlugin = definePlugin('footnoteDefinition', {
-  dependencies: [BaseParagraphPlugin],
-  schema: ({ plugins }) => ({
-    element: {
-      content: plugins.blockContent({
-        default: BaseParagraphPlugin,
-        min: 1,
-      }),
-      properties: { ref: requiredRef },
-    },
-  }),
-});
-const BaseInlineEquationPlugin = definePlugin('inlineEquation', {
-  schema: {
-    element: {
-      properties: {
-        latex: property.string({ default: '', omitDefault: false }),
-      },
-      void: 'inline',
-    },
-  },
-});
-const BaseEquationPlugin = definePlugin('equation', {
-  schema: {
-    element: {
-      properties: {
-        latex: property.string({ default: '', omitDefault: false }),
-      },
-      void: 'block',
-    },
-  },
-});
-const BaseColumnItemPlugin = definePlugin('column', {
-  dependencies: [BaseParagraphPlugin],
-  schema: ({ plugins }) => ({
-    element: {
-      blockContent: false,
-      content: plugins.blockContent({
-        default: BaseParagraphPlugin,
-        min: 1,
-      }),
-      properties: { width: property.string({ required: true }) },
-    },
-  }),
-});
-const BaseColumnGroupPlugin = definePlugin('columnGroup', {
-  dependencies: [BaseColumnItemPlugin],
-  schema: {
-    element: {
-      content: schema.content.element(BaseColumnItemPlugin, { min: 2 }),
-    },
-  },
-});
-const mediaElement = (
-  properties: Record<string, ReturnType<typeof property.string>>
-) =>
-  schema.element.textBlock({
-    properties: {
-      ...properties,
-      url: property.string({ required: true }),
-    },
-  });
-const BaseFilePlugin = definePlugin('file', {
-  schema: {
-    element: mediaElement({ name: property.string() }),
-  },
-});
-const BaseImagePlugin = definePlugin('image', {
-  schema: {
-    element: schema.element.textBlock({
-      properties: {
-        naturalHeight: property.number(),
-        naturalWidth: property.number(),
-        url: property.string({ required: true }),
-      },
-    }),
-  },
-});
-const BaseMediaEmbedPlugin = definePlugin('mediaEmbed', {
-  schema: { element: mediaElement({}) },
-});
-const BaseExcalidrawPlugin = definePlugin('excalidraw', {
-  schema: {
-    element: { properties: { data: property.json() }, void: 'block' },
-  },
-});
-const BaseTableCellPlugin = definePlugin('tableCell', {
-  dependencies: [BaseParagraphPlugin],
-  schema: ({ plugins }) => ({
-    element: {
-      blockContent: false,
-      content: plugins.blockContent({
-        default: BaseParagraphPlugin,
-        min: 1,
-      }),
-      properties: {
-        borders: property.json(),
-        colSpan: property.number(),
-        rowSpan: property.number(),
-      },
-    },
-  }),
-});
-const BaseTableRowPlugin = definePlugin('tableRow', {
-  dependencies: [BaseTableCellPlugin],
-  schema: {
-    element: {
-      blockContent: false,
-      content: schema.content.element(BaseTableCellPlugin, { min: 0 }),
-      properties: { height: property.number() },
-    },
-  },
-});
-const BaseTablePlugin = definePlugin('table', {
-  dependencies: [BaseTableRowPlugin],
-  schema: {
-    element: {
-      content: schema.content.element(BaseTableRowPlugin, { min: 1 }),
-      properties: { columnWidths: property.json() },
-    },
-  },
-});
-const BaseIndentPlugin = definePlugin('indent', {
-  schema: {
-    properties: {
-      indent: schema.elementProperty(property.number(), {
-        target: target.elements([
-          BaseParagraphPlugin,
-          BaseDetailsPlugin,
-          BaseExcalidrawPlugin,
-        ]),
-      }),
-    },
-  },
-});
-const BaseListPlugin = definePlugin('list', {
-  schema: {
-    properties: {
-      checked: schema.elementProperty(property.boolean(), {
-        target: target.elements([BaseParagraphPlugin, BaseDetailsPlugin]),
-      }),
-      listRestart: schema.elementProperty(property.number(), {
-        target: target.elements([BaseParagraphPlugin, BaseDetailsPlugin]),
-      }),
-      listStart: schema.elementProperty(property.number(), {
-        target: target.elements([BaseParagraphPlugin, BaseDetailsPlugin]),
-      }),
-      listStyle: schema.elementProperty(property.string(), {
-        target: target.elements([BaseParagraphPlugin, BaseDetailsPlugin]),
-      }),
-      listType: schema.elementProperty(
-        property.enum(['bulleted', 'numbered', 'task']),
-        { target: target.elements([BaseParagraphPlugin, BaseDetailsPlugin]) }
-      ),
-    },
-  },
-});
-const BaseTextAlignPlugin = definePlugin('textAlign', {
-  schema: {
-    properties: {
-      textAlign: schema.elementProperty(
-        property.enum(['center', 'end', 'justify', 'left', 'right', 'start']),
-        {
-          target: target.elements([
-            BaseParagraphPlugin,
-            BaseDetailsSummaryPlugin,
-          ]),
-        }
-      ),
-    },
-  },
-});
-const BaseElementIdPlugin = definePlugin('elementId', {
+const DetailsIdPlugin = definePlugin('detailsId', {
   schema: {
     properties: {
       id: schema.elementProperty(property.string(), {
@@ -269,19 +79,21 @@ const plugins = [
   BaseMediaEmbedPlugin,
   BaseExcalidrawPlugin,
   BaseTablePlugin,
-  BaseIndentPlugin,
-  BaseListPlugin,
-  BaseTextAlignPlugin,
-  BaseElementIdPlugin,
+  BaseIndentPlugin.configure({
+    targetPlugins: [
+      BaseParagraphPlugin,
+      BaseDetailsPlugin,
+      BaseExcalidrawPlugin,
+    ],
+  }),
+  BaseListPlugin.configure({
+    targetPlugins: [BaseParagraphPlugin, BaseDetailsPlugin],
+  }),
+  BaseTextAlignPlugin.configure({
+    targetPlugins: [BaseParagraphPlugin, BaseDetailsSummaryPlugin],
+  }),
+  DetailsIdPlugin,
 ] as const;
-
-[
-  ...plugins,
-  BaseDetailsSummaryPlugin,
-  BaseColumnItemPlugin,
-  BaseTableRowPlugin,
-  BaseTableCellPlugin,
-].forEach(registerFirstPartyPlugin);
 
 const createMigrationEditor = () => {
   const migrations = defineDocumentMigrations({
@@ -1143,6 +955,35 @@ describe('migratePlateV54 AST contracts', () => {
       { children: [{ text: 'note' }], lineHeight: 1.5, type: 'paragraph' },
     ]);
   });
+
+  it.each([
+    [
+      'configured',
+      BaseLineHeightPlugin.configure({ targetPlugins: [BaseParagraphPlugin] }),
+    ],
+    ['React', LineHeightPlugin],
+  ] as const)(
+    'converts line heights the %s line height plugin declares',
+    (_kind, lineHeightPlugin) => {
+      const migrations = defineDocumentMigrations({
+        plugins: [BaseParagraphPlugin, lineHeightPlugin],
+        schema: MigrationSchema,
+        steps: { 54: migrateV54 },
+      });
+      const result = migrateDocument(
+        {
+          children: [
+            { children: [{ text: 'note' }], lineHeight: '150%', type: 'p' },
+          ],
+        },
+        { migrations }
+      ).document;
+
+      expect(result.children).toEqual([
+        { children: [{ text: 'note' }], lineHeight: 1.5, type: 'paragraph' },
+      ]);
+    }
+  );
 
   it('keeps the values of an app plugin that reuses a layout plugin name', () => {
     const AppLineHeightPlugin = definePlugin('lineHeight', {

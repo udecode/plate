@@ -1,8 +1,41 @@
 # Document persistence and migration
 
-Page: https://claude.ai/artifact/77ZVnESPx3KYW3AnEUSf3V
+Page: https://claude.ai/artifact/NPMbVFoGPpJhk2nnNbpwz8
 
 A saved document is one complete envelope with versioned feature metadata, application schema lineage and separate local history. Migration is one detached operation bound to immutable target facts: raw input carries per-call source intent, the chain is preflighted before any callback, input is isolated, and success returns a complete current envelope. The 2026-10-04 audit found this adopted and stopped; the silent loss of unknown top-level stored fields at migration completion belongs to the model scope's Pursue ([triage audit](../2026-10-04-ledger-triage-audit.md), [immutable conversion plan](../2026-09-16-persistence-immutable-conversion.md)). `node tooling/scripts/review-ledger.mjs show persistence` prints the full history.
+
+## Public API
+
+An app binds its migration chain to its plugins and schema once:
+
+```ts
+// content/docs/(guides)/editor.mdx
+export const EditorMigrations = defineDocumentMigrations({
+  plugins: EditorKit,
+  schema: EditorSchema,
+  sourceFingerprints: { 53: v53Fingerprint, 54: v54Fingerprint },
+  steps: { 54: migrateV54, 55: migrateListIdentity },
+});
+```
+
+It converts a saved envelope at the storage boundary, then loads the output:
+
+```tsx
+// content/docs/(guides)/editor.mdx
+const current = migrateDocument(persisted, {
+  migrations: EditorMigrations,
+}).output;
+```
+
+Inside the v54 step, each ownership check reads the property IDs of the installed built-in, which `resolveV54BuiltIns` finds by descriptor family:
+
+```ts
+// packages/platejs/src/migrations/migratePlateV54Ast.internal.ts
+if (
+  declares(declared.lineHeight, element.type, 'lineHeight', context) &&
+  Object.hasOwn(element, 'lineHeight')
+)
+```
 
 ## Layer and owner
 
@@ -20,7 +53,7 @@ saved { document, schema, selection? }
 | Responsibility | Decision |
 | --- | --- |
 | Plite | Versioned JSON codecs, document shape, schema and selection laws; the whole-document read keeps roots and metadata and excludes local-only fields. |
-| `platejs/migrations` | The only format-migration API: the v54 profile, AST, code-block and suggestion transforms, and the separate legacy-comment extractor. Root exports are cut and `V53_*` constants are private. v54 decodes historical review meaning before destructive shaping and reads frozen source policy. |
+| `platejs/migrations` | The only format-migration API: the v54 profile, AST, code-block and suggestion transforms, and the separate legacy-comment extractor. Root exports are cut and `V53_*` constants are private. v54 decodes historical review meaning before destructive shaping and reads frozen source policy. The v54 step imports the Base descriptors it converts for and finds each installed one by descriptor family; built-in plugin modules carry no migration code. |
 | Applications | Lineage, supported historical identities and steps; conversion runs at the app's load boundary, before editor construction. Comment thread records and Yjs room cutovers stay app jobs. |
 | CLI | Files, dry-run, check and write, and reports, through the same detached operation. |
 | Authored state | Codec v6 persists live footprints; a directly validated live checkpoint is current authority, and retained operation bodies stay cold. |
@@ -38,6 +71,7 @@ Rejected, and why:
 | Folding app migrations into `defineValueCodec.previousVersions` | Feature codec versions also serve effects and history. |
 | Plain app functions only | Exact identity checks, ordered dispatch, selection mapping and runtime and CLI parity are repeated jobs. |
 | One universal session of snapshots, history, collaboration and view state | Different lifetimes and compatibility laws. |
+| A registry each built-in plugin fills when its module loads | Only the upgrade read it, a module that forgot its call lost its conversions without an error, and it gathered identity from 24 owners. |
 
 ## What other editors do
 
@@ -46,10 +80,16 @@ Not compared in this scope's reviews.
 ## Main changes
 
 - The runner lost its editor and store authority, input aliasing and hidden mapper; the CLI lost its editor-per-file loop. The 10,000-block, 10,055-change checkpoint loads with zero replay, and the built converter passes 36 of 36 production rows.
-- The v54 step and `migrateListIdentity` find a built-in plugin by the descriptor family that each built-in plugin registers, never by plugin name, so an app plugin that reuses a built-in name keeps its own values ([v54 plugin identity](../2026-10-18-v54-plugin-identity.md)). The profile pass checks property ownership in the node's root and among its ancestors.
+- The v54 step and `migrateListIdentity` find a built-in plugin by its descriptor family, never by plugin name, so an app plugin that reuses a built-in name keeps its own values ([v54 plugin identity](../2026-10-18-v54-plugin-identity.md)). The profile pass checks property ownership in the node's root and among its ancestors.
+- `migratePlateV54BuiltIns.internal.ts` imports every Base descriptor the v54 step converts for and resolves the installed copy of each per target, so built-in plugin modules carry no migration code ([built-in identity](../2026-10-18-persistence-built-in-identity.md)). Its owner table's mapped type over the v53 owners makes a missing row, or a `null` row for an owner that has a descriptor, a type error, and a lookup with an object that is not a descriptor throws.
+- `platejs/migrations` depends on 17 headless feature entrypoints.
 
 ## Open work
 
 - Unknown top-level stored fields are dropped at migration completion. owner: the `model` subject's Pursue. stop: its build.
 - An older persisted v54 draft, offline history and live rooms need an app-owned cutover for the ordinary-text autocomplete change ([plan](../2026-10-01-autocomplete-ordinary-text-adoption.md)). owner: that plan. stop: a release version is allocated.
 - No physical-device, storage-provider or distributed Yjs cutover proof. owner: the next persistence review. stop: such a run.
+- `DocumentMigrationTarget.bindings` is a public, name-keyed field that no Plate code reads, and code that read it would match plugins by name, which `plate.md:238-241` forbids. owner: the next persistence verdict. stop: that verdict.
+- The `code_line` rename produces the type `codeLine` even when no code block plugin is installed, so an app plugin named `codeLine` adopts those lines by name. owner: the next persistence verdict. stop: that verdict.
+- The manifest labels `footnoteReference` as unchanged, yet the step renames it to `footnote`. owner: the next persistence verdict. stop: that verdict.
+- `migratePlateV54.spec.ts` builds its migration plan through a `createEditor` stand-in that drops every option but `plugins`. owner: suggested task `t_78eb5eb2`. stop: its fix.

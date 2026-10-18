@@ -39,7 +39,6 @@ import {
   readBlockReleases,
 } from '../../../internal/plugin/blockRelease';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
-import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import type { MarkdownMappingDiagnosticInput } from '../../../lib/plugin/PluginFormatContext';
 import { traverseHtmlElements } from '../../../lib/plugins/html/htmlDom';
 import { BaseBlockquotePlugin } from '../../basic-nodes';
@@ -1635,5 +1634,3 @@ export type ListElement = ElementWith<
   typeof BaseIndentPlugin | typeof BaseListPlugin,
   'indent' | 'listType'
 >;
-
-registerFirstPartyPlugin(BaseListPlugin);

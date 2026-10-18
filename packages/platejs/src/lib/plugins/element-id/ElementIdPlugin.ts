@@ -16,7 +16,6 @@ import {
   MAIN_ROOT_KEY,
 } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
-import { registerFirstPartyPlugin } from '../../../internal/plugin/firstPartyPlugin';
 import { definePlugin } from '../../plugin/definePlugin';
 import {
   assertElementIds,
@@ -254,5 +253,3 @@ export const ElementIdPlugin = definePlugin('elementId', {
     },
   };
 });
-
-registerFirstPartyPlugin(ElementIdPlugin);

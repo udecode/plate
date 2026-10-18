@@ -15,7 +15,7 @@ import {
   AuthoredPlugin,
   projectAuthoredDocument,
 } from '../../platejs/src/authored/index';
-import { createEditor, definePlugin, schema } from '../../platejs/src/index';
+import { BaseParagraphPlugin, createEditor } from '../../platejs/src/index';
 import {
   defineDocumentMigrations,
   migrateDocument,
@@ -28,12 +28,9 @@ import {
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const temporaryDirectories: string[] = [];
-const RuntimeParagraphPlugin = definePlugin('paragraph', {
-  schema: { element: schema.element.textBlock() },
-});
 const RuntimeSchema = { id: 'plate', version: 54 } as const;
 const RuntimeMigrations = defineDocumentMigrations({
-  plugins: [RuntimeParagraphPlugin],
+  plugins: [BaseParagraphPlugin],
   schema: RuntimeSchema,
   sourceFingerprints: { 53: 'source-53' },
   steps: {
@@ -56,22 +53,18 @@ const createFixture = (
   temporaryDirectories.push(directory);
   writeFileSync(
     entryPath,
-    `import { definePlugin, schema } from '../../platejs/src/index';
+    `import { BaseParagraphPlugin, schema } from '../../platejs/src/index';
 import { AuthoredPlugin } from '../../platejs/src/authored/index';
 import { defineDocumentMigrations, migrateV54 } from '../../platejs/src/migrations/index';
 
-const ParagraphPlugin = definePlugin('paragraph', {
-  schema: { element: schema.element.textBlock() },
-});
-
 export const EditorKit = [
-  ${options.emptyKit ? '' : 'ParagraphPlugin,'}
+  ${options.emptyKit ? '' : 'BaseParagraphPlugin,'}
   ${options.suggestions ? 'AuthoredPlugin,' : ''}
 ] as const;
 export const OtherEmptyArray = [] as const;
 export const EditorSchema = {
   id: 'plate',
-  ${options.applicationRoot ? 'root: schema.content.element(ParagraphPlugin, { min: 2 }),' : ''}
+  ${options.applicationRoot ? 'root: schema.content.element(BaseParagraphPlugin, { min: 2 }),' : ''}
   version: 54,
 } as const;
 export const EditorMigrations = defineDocumentMigrations({
@@ -277,12 +270,12 @@ describe('plate migrate run', () => {
     const output = JSON.parse(result.outputText);
     const cliEditor = createEditor({
       initialValue: output,
-      plugins: [RuntimeParagraphPlugin, AuthoredPlugin],
+      plugins: [BaseParagraphPlugin, AuthoredPlugin],
       schema: RuntimeSchema,
     });
     const runtimeOutput = migrateDocument(JSON.parse(sourceText), {
       migrations: defineDocumentMigrations({
-        plugins: [RuntimeParagraphPlugin, AuthoredPlugin],
+        plugins: [BaseParagraphPlugin, AuthoredPlugin],
         schema: RuntimeSchema,
         sourceFingerprints: { 53: 'source-53' },
         steps: { 54: migrateV54 },
@@ -291,7 +284,7 @@ describe('plate migrate run', () => {
     }).output;
     const runtimeEditor = createEditor({
       initialValue: runtimeOutput,
-      plugins: [RuntimeParagraphPlugin, AuthoredPlugin],
+      plugins: [BaseParagraphPlugin, AuthoredPlugin],
       schema: RuntimeSchema,
     });
     const project = (

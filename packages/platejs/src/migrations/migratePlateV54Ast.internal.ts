@@ -6,8 +6,8 @@ import {
   TextApi,
   type Value,
 } from '../facade';
-import { getFirstPartyType } from './documentMigrationFirstParty.internal';
 import type { DocumentMigrationContext } from './documentMigrations';
+import { resolveV54BuiltIns } from './migratePlateV54BuiltIns.internal';
 import {
   createPropertyOwnership,
   type NodeContext,
@@ -62,34 +62,27 @@ export const migratePlateV54Ast = ({
   DocumentMigrationContext,
   'document' | 'target'
 >): EditorDocumentValue => {
-  const resolveElementType = (name: string) =>
-    getFirstPartyType(conversionTarget, name);
-  const { firstPartyDeclares, ownsProperty } =
-    createPropertyOwnership(conversionTarget);
-  const dateType = resolveElementType('date');
-  const mentionType = resolveElementType('mention');
-  const footnoteDefinitionType = resolveElementType('footnoteDefinition');
-  const footnoteReferenceType = resolveElementType('footnote');
-  const columnGroupType = resolveElementType('columnGroup');
-  const columnType = resolveElementType('column');
-  const fileType = resolveElementType('file');
-  const mediaTypes = new Set(
-    ['audio', 'file', 'image', 'mediaEmbed', 'video']
-      .map(resolveElementType)
-      .filter((type): type is string => type !== undefined)
-  );
-  const excalidrawType = resolveElementType('excalidraw');
-  const equationTypes = new Set(
-    ['equation', 'inlineEquation']
-      .map(resolveElementType)
-      .filter((type): type is string => type !== undefined)
-  );
-  const imageType = resolveElementType('image');
-  const detailsType = resolveElementType('details');
-  const detailsSummaryType = resolveElementType('detailsSummary');
-  const tableType = resolveElementType('table');
-  const tableRowType = resolveElementType('tableRow');
-  const tableCellType = resolveElementType('tableCell');
+  const {
+    declared,
+    detailsSummaryType,
+    detailsType,
+    elementType,
+    equationTypes,
+    mediaTypes,
+  } = resolveV54BuiltIns(conversionTarget);
+  const { declares, ownsProperty } = createPropertyOwnership(conversionTarget);
+  const dateType = elementType('date');
+  const mentionType = elementType('mention');
+  const footnoteDefinitionType = elementType('footnoteDefinition');
+  const footnoteReferenceType = elementType('footnote');
+  const columnGroupType = elementType('columnGroup');
+  const columnType = elementType('column');
+  const fileType = elementType('file');
+  const excalidrawType = elementType('excalidraw');
+  const imageType = elementType('image');
+  const tableType = elementType('table');
+  const tableRowType = elementType('tableRow');
+  const tableCellType = elementType('tableCell');
   const legacyDepth = (element: Element, location: string) => {
     const rawIndent = element.indent;
 
@@ -489,7 +482,7 @@ export const migratePlateV54Ast = ({
     for (const key of ['listRestart', 'listStart'] as const) {
       if (
         !Object.hasOwn(element, key) ||
-        !firstPartyDeclares('list', element.type, key, context)
+        !declares(declared.list, element.type, key, context)
       ) {
         continue;
       }
@@ -504,7 +497,7 @@ export const migratePlateV54Ast = ({
     }
 
     if (
-      firstPartyDeclares('indent', element.type, 'indent', context) &&
+      declares(declared.indent, element.type, 'indent', context) &&
       Object.hasOwn(element, 'indent')
     ) {
       const indent = safeInteger(properties().indent);
@@ -517,7 +510,7 @@ export const migratePlateV54Ast = ({
     }
 
     if (
-      firstPartyDeclares('textAlign', element.type, 'textAlign', context) &&
+      declares(declared.textAlign, element.type, 'textAlign', context) &&
       Object.hasOwn(element, 'textAlign') &&
       !TEXT_ALIGNMENTS.has(String(properties().textAlign))
     ) {
@@ -525,7 +518,7 @@ export const migratePlateV54Ast = ({
     }
 
     if (
-      firstPartyDeclares('lineHeight', element.type, 'lineHeight', context) &&
+      declares(declared.lineHeight, element.type, 'lineHeight', context) &&
       Object.hasOwn(element, 'lineHeight')
     ) {
       const lineHeight = migrateLineHeight(properties().lineHeight);

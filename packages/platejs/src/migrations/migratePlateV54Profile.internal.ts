@@ -10,19 +10,13 @@ import {
   TextApi,
   type Value,
 } from '../facade';
-import {
-  getFirstPartyBinding,
-  getFirstPartyType,
-} from './documentMigrationFirstParty.internal';
 import type { DocumentMigrationContext } from './documentMigrations';
+import { resolveV54BuiltIns } from './migratePlateV54BuiltIns.internal';
 import {
   createPropertyOwnership,
   type NodeContext,
 } from './migratePlateV54Ownership.internal';
-import {
-  V53_ELEMENT_TYPE_OWNERS,
-  V53_FIRST_PARTY_IDENTITIES,
-} from './v53-manifest.internal';
+import { V53_ELEMENT_IDENTITIES } from './v53-manifest.internal';
 
 const LEGACY_HEADING_TYPE_RE = /^h([1-6])$/;
 
@@ -51,24 +45,17 @@ export const migratePlateV54Profile = ({
   DocumentMigrationContext,
   'document' | 'target'
 >): EditorDocumentValue => {
-  const { firstPartyDeclares, ownsProperty, ownsTextProperty } =
+  const { declares, ownsProperty, ownsTextProperty } =
     createPropertyOwnership(conversionTarget);
-  const resolveElementType = (name: string) =>
-    getFirstPartyType(conversionTarget, name);
-  const scriptDescriptor = getFirstPartyBinding(conversionTarget, 'script');
-  const scriptKey = scriptDescriptor?.key;
-  const mediaTypes = new Set(
-    ['audio', 'file', 'image', 'mediaEmbed', 'video']
-      .map(resolveElementType)
-      .filter((type): type is string => type !== undefined)
-  );
-  const tableCellType = resolveElementType('tableCell');
-  const codeBlockType = resolveElementType('codeBlock');
-  const headingType = resolveElementType('heading');
-  const imageType = resolveElementType('image');
-  const tableRowType = resolveElementType('tableRow');
-  const tableType = resolveElementType('table');
-  const videoType = resolveElementType('video');
+  const { declared, elementType, mediaTypes, scriptKey } =
+    resolveV54BuiltIns(conversionTarget);
+  const tableCellType = elementType('tableCell');
+  const codeBlockType = elementType('codeBlock');
+  const headingType = elementType('heading');
+  const imageType = elementType('image');
+  const tableRowType = elementType('tableRow');
+  const tableType = elementType('table');
+  const videoType = elementType('video');
   const legacyListLocations = new Map<
     string,
     { derivedStart: number | undefined }
@@ -77,28 +64,23 @@ export const migratePlateV54Profile = ({
   const strippedCellSizes = new WeakMap<Descendant, unknown>();
   const firstPartyElementTypes = new Set<string>();
 
-  for (const entry of V53_FIRST_PARTY_IDENTITIES) {
-    if (!entry.kind.startsWith('element-')) continue;
+  for (const entry of V53_ELEMENT_IDENTITIES) {
     const owner = 'owner' in entry ? entry.owner : entry.identity;
-    const target = resolveElementType(owner);
+    const target = elementType(owner);
+    const kept = conversionTarget.schema.element(entry.identity);
 
     if (target) {
-      if (
-        entry.kind === 'element-unchanged' ||
-        !conversionTarget.schema.element(entry.identity)
-      ) {
+      if (entry.kind === 'element-unchanged' || !kept) {
         firstPartyElementTypes.add(entry.identity);
       }
       firstPartyElementTypes.add(target);
     }
-  }
 
-  for (const [legacyType, owner] of Object.entries(V53_ELEMENT_TYPE_OWNERS)) {
-    if (conversionTarget.schema.element(legacyType)) continue;
-    const target =
-      owner === 'codeLine' ? 'codeLine' : resolveElementType(owner);
+    const migrated = owner === 'codeLine' ? 'codeLine' : target;
 
-    if (target) typeMigrations.set(legacyType, target);
+    if ('owner' in entry && !kept && migrated) {
+      typeMigrations.set(entry.identity, migrated);
+    }
   }
 
   const renameElementProperty = (
@@ -482,7 +464,7 @@ export const migratePlateV54Profile = ({
     }
 
     if (
-      firstPartyDeclares('list', element.type, 'listType', context) &&
+      declares(declared.list, element.type, 'listType', context) &&
       Object.hasOwn(element, 'listStyleType') &&
       !ownsProperty(element.type, 'listStyleType', context)
     ) {

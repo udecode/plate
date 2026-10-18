@@ -74,6 +74,8 @@ Every plugin already carries a family, a private object its configured and React
 - A table's column widths come from the cell sizes the cell pass removed, so the width pass and the cell pass read one answer.
 - `documentMigrationFirstParty.spec.ts` checks that every built-in name the v54 step resolves has a shipped plugin that registers it, React and configured copies included.
 
+**Read before the change.** `VISION.md`, `docs/vision/plate.md`, `tooling/entrypoints/entrypoint-dag.mjs`, `packages/platejs/src/lib/editor/withPlite.ts`, `packages/platejs/src/internal/utils/mergePlugins.ts`, `packages/platejs/src/migrations/documentMigrations.ts`, `packages/platejs/src/migrations/migratePlateV54Ast.internal.ts`, `packages/platejs/src/migrations/migratePlateV54Ast.spec.ts`, `packages/platejs/src/migrations/migratePlateV54Profile.internal.ts`, `packages/platejs/src/migrations/migratePlateV54.spec.ts`, `packages/platejs/src/migrations/migratePlateV54CodeBlocks.internal.ts`, `packages/platejs/src/migrations/migratePlateV54Urls.internal.ts` and `packages/platejs/src/migrations/migratePlateV54Inputs.internal.ts`.
+
 **Proof.** Each row names its scope in the decision log.
 
 - Both new tests failed at base with their own assertion (`red-tests-a2.log`), and a name fallback, a dropped root and a dropped registration each turn their test red (`mutant-a-name-fallback-a1.log`, `mutant-b-no-root-a1.log`, `mutant-c-no-registration-a1.log`).

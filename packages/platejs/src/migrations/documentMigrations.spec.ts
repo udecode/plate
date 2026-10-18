@@ -1,6 +1,13 @@
-import { BaseParagraphPlugin, createEditor, NodeApi } from 'platejs';
+import {
+  BaseParagraphPlugin,
+  type BasePluginInput,
+  createEditor,
+  definePlugin,
+  ElementIdPlugin,
+  NodeApi,
+} from 'platejs';
 
-import type { EditorDocumentValue } from '../core';
+import { type EditorDocumentValue, property, schema, target } from '../core';
 import {
   defineDocumentMigrations,
   type DocumentMigrations,
@@ -372,5 +379,55 @@ describe('document migrations', () => {
         schema: EditorSchema,
       } as never)
     ).toThrow('editor `migrations` is unsupported');
+  });
+
+  describe('element ID ownership', () => {
+    const duplicateIds = {
+      document: {
+        children: [
+          { children: [{ text: 'a' }], id: 'same', type: 'paragraph' },
+          { children: [{ text: 'b' }], id: 'same', type: 'paragraph' },
+        ],
+      },
+      schema: {
+        fingerprint: 'source-2',
+        id: EditorSchema.id,
+        kind: 'named' as const,
+        version: 2,
+      },
+    };
+    const migrateWithIds = (idPlugin: BasePluginInput) =>
+      migrateDocument(duplicateIds, {
+        migrations: defineDocumentMigrations({
+          plugins: [BaseParagraphPlugin, idPlugin],
+          schema: EditorSchema,
+          sourceFingerprints: { 2: 'source-2' },
+          steps: { 3: ({ document }) => ({ document }) },
+        }),
+      });
+
+    it('refuses duplicate IDs when the element ID plugin is installed', () => {
+      expect(() => migrateWithIds(ElementIdPlugin)).toThrow(
+        'Duplicate element ID "same"'
+      );
+    });
+
+    it('keeps duplicate IDs owned by an app plugin that reuses its name', () => {
+      const AppIdPlugin = definePlugin('elementId', {
+        schema: {
+          properties: {
+            id: schema.elementProperty(property.string(), {
+              target: target.element(BaseParagraphPlugin),
+            }),
+          },
+        },
+      });
+
+      expect(
+        migrateWithIds(AppIdPlugin).output.document.children.map(
+          (element) => element.id
+        )
+      ).toEqual(['same', 'same']);
+    });
   });
 });
