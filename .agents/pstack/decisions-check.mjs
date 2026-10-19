@@ -32,7 +32,7 @@
 //        a wait that can never clear or two open design questions in one topic;
 //        <ledger> defaults to <plans>/suggested-tasks.decisions.tsv,
 //        --fetch refreshes the remote branches that PR waits read, and --session names
-//        this session, so it cards only the tasks it owns and each card it does not hold
+//        this session, so it cards only the tasks it owns and the ship-list tasks, and each card it does not hold
 //        gets a check item instead of a withdraw problem)
 //        node .agents/pstack/decisions-check.mjs chips all --session <id> [--sessions <file>] [<ledger>]
 //        (lists every priority, also cards the tasks no session owns, and with the session
@@ -255,9 +255,9 @@ function problems(path) {
 // batch from a session whose lead differs from the log's last lead row opens
 // with a new one.
 function leadRow(existing, run) {
-  if (!run) return [];
   const last = existing.findLast((line) => line.split('\t')[1] === 'lead')?.split('\t')[2];
-  const label = leadLabel(run);
+  const label = run ? leadLabel(run) : 'unknown';
+  if (!run) return last === label ? [] : [['lead', label, 'runtime identity could not be verified', 'proof: none', 'recorded unknown session']];
   return last === label ? [] : [['lead', label, 'read from the session transcript, since an agent cannot see its own effort', `transcript ${basename(run.transcript)}`, `recorded ${run.runtime} session`]];
 }
 
@@ -265,7 +265,9 @@ function append(path, batch, run) {
   const stamp = new Date().toISOString().replace(/\.\d{3}Z$/u, 'Z');
   const text = existsSync(path) ? readFileSync(path, 'utf8') : null;
   const existing = (text ?? '').split('\n');
-  batch = [...leadRow(existing, run), ...batch];
+  const count = batch.length;
+  const attribution = leadRow(existing, run);
+  batch = [...attribution, ...batch];
   let opened = existing.some(opens);
   const isWriting = (line) => line.split('\t')[1] === 'writing';
   let written = isWriting(existing.findLast((line) => opens(line) || isWriting(line)) ?? '');
@@ -277,7 +279,7 @@ function append(path, batch, run) {
   const found = [];
   for (let [index, cells] of batch.entries()) {
     if (cells.length === 5) cells = stampTranscript(cells, run);
-    const where = batch.length > 1 ? `${path} (new row ${index + 1})` : `${path} (new row)`;
+    const where = index < attribution.length ? `${path} (lead row)` : count > 1 ? `${path} (new row ${index + 1 - attribution.length})` : `${path} (new row)`;
     if (cells.length !== 5) {
       found.push(`${where}: append takes 5 cells, got ${cells.length}`);
       continue;
@@ -386,7 +388,7 @@ if (args[0] === 'chips') {
     process.exit(2);
   }
   const listed = all ? sessionList() : null;
-  const owning = { transcript: here === null ? null : transcriptOf(currentLead(here)), all, live: listed && new Set(listed.filter((session) => !session.isArchived).map((session) => session.sessionId)) };
+  const owning = { transcript: here === null ? null : transcriptOf(currentLead()), all, live: listed && new Set(listed.filter((session) => !session.isArchived).map((session) => session.sessionId)) };
   if (rest[0] === 'cleanup') {
     const sessions = sessionList();
     if (!sessions) {
@@ -466,8 +468,8 @@ if (args[0] === 'append') {
           .map((line) => line.split('\t'))
       : [args.slice(2)];
   const before = stageMoves(args[1] ?? '').length;
-  const run = currentLead(basename(args[1] ?? ''));
-  if (!run) console.error(`No single session transcript holds this command, so ${args[1]} gets no lead row naming the model and effort.`);
+  const run = currentLead();
+  if (!run) console.error(`Runtime identity is unknown, so ${args[1]} records an unknown lead boundary.`);
   const found = batch.length === 0 ? [`${args[3]} holds no rows`] : append(args[1] ?? '', batch, run);
   if (found.length > 0) {
     console.error(`${batch.length > 1 ? 'No row written' : 'Row not written'}:\n${found.join('\n')}`);

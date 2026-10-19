@@ -302,6 +302,7 @@ export function readTasks(lines) {
     const [ts, ...cells] = line.split('\t');
     recordRow(tasks, cells, ts);
   }
+  liftPriorities(tasks);
   return tasks;
 }
 
@@ -394,7 +395,12 @@ export function chipRowProblems(cells, before, where) {
 // A session owns the tasks it offered, or carded first when the offer named no
 // session. here is the writing session's { session, transcript }; either id
 // matches, because an account switch can change one of them.
-export const ownedBy = (task, here) => Boolean(here) && ((here.session && task.owner === here.session) || (here.transcript && task.ownerTranscript === here.transcript));
+export const ownedBy = (task, here) => Boolean(here) && ((here.session && ownerOf(task) === here.session) || (here.transcript && ownerTranscriptOf(task) === here.transcript));
+
+// No session owns a ship-list task, whatever session: its rows name, so any
+// session cards it.
+export const ownerOf = (task) => (task.ship ? null : task.owner);
+const ownerTranscriptOf = (task) => (task.ship ? null : task.ownerTranscript);
 
 export function newChipRowProblems(cells, before, where, git, here = null, shipList = () => NO_SHIP) {
   const [, decision, , evidence] = cells;
@@ -461,7 +467,7 @@ export function newChipRowProblems(cells, before, where, git, here = null, shipL
   }
   if (move === 'carded' && before.get(id)?.card) found.push(`${where}: ${id} already has card ${before.get(id).card}; log uncarded with card: ${before.get(id).card} once that card is withdrawn or its session has ended, then card it again`);
   if (given.card && !given.session && ['carded', 'offered'].includes(move)) found.push(`${where}: a card names the session that holds it as "session: <id>", the id the runtime's session tool gives this session`);
-  const owner = before.get(id)?.owner;
+  const owner = before.has(id) ? ownerOf(before.get(id)) : null;
   if (move === 'carded' && owner && given.session && given.session !== owner && !ownedBy(before.get(id), here)) {
     found.push(`${where}: ${id} belongs to session ${owner}, so only that session cards it; withdraw this card, as chips.md's Limits says, and once that session is archived or gone, /chips all takes the task with updated session: ${given.session}`);
   }
@@ -694,7 +700,7 @@ export function staleReport(tasks, at, probe) {
       const shipClosed = Boolean(task.ship && probe.ship && !probe.ship.some((item) => item.id === task.ship));
       const facts = [
         since ? `age ${Math.floor((probe.now - Date.parse(since)) / 86_400_000)}d` : 'age unknown',
-        priorityOf(task) ? `priority ${priorityOf(task)}` : 'no priority',
+        priorityOf(task) ? `priority ${priorityOf(task)}${task.blocks ? ` (own ${task.priority ?? 'none'}, from ${task.blocks})` : ''}` : 'no priority',
         ...(shipClosed ? [`ship item ${task.ship} is no longer open`] : []),
         ...(task.status === 'started' ? [task.startedIn ? `started in session ${task.startedIn}` : 'started'] : []),
         ...(deleted.length ? [`deleted since its offer: ${deleted.join(', ')}`] : []),
@@ -779,14 +785,14 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
         : `find the session that started ${task.id} with the session tool, archived sessions included, as the one whose transcript opens with its card prompt, and log started with session: <its id>; when the search finds none, ${task.id} stays started`,
     }));
   const me = here === null ? null : { session: here, transcript };
-  const mine = (task) => here === null || ownedBy(task, me);
-  const ownerless = (task) => !task.owner && !task.ownerTranscript;
+  const mine = (task) => here === null || ownedBy(task, me) || Boolean(task.ship);
+  const ownerless = (task) => !ownerOf(task) && !ownerTranscriptOf(task);
   const mayCard = (task) => mine(task) || (all && ownerless(task));
   const others = offered.filter((task) => !mine(task));
   const adoptions = all
     ? others
-        .filter((task) => !task.card && task.owner && live !== null && !live.has(task.owner))
-        .map((task) => ({ kind: 'adopt', ids: [task.id], text: `take ${task.id}: its owner session ${task.owner} is archived or gone; log updated with session: ${here}` }))
+        .filter((task) => !task.card && ownerOf(task) && live !== null && !live.has(ownerOf(task)))
+        .map((task) => ({ kind: 'adopt', ids: [task.id], text: `take ${task.id}: its owner session ${ownerOf(task)} is archived or gone; log updated with session: ${here}` }))
     : [];
   const withdrawals = [
     ...waiting
@@ -806,7 +812,7 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
     ...offered
       .filter((task) => task.topic && !priorityOf(task))
       .map((task) => ({ kind: 'priority', ids: [task.id], text: `prioritize ${task.id}: log updated with priority: and the evidence a P0 or P1 claim needs, as chips.md's Priority says` })),
-    ...shipOffers(ship.items, tasks, open, here),
+    ...shipOffers(ship.items, tasks, open),
     ...lost.map((task) => ({ kind: 'migrate', ids: [task.id], text: `reopen ${task.id} or close it: a dropped card closed it as gone; log reopened, then updated with topic: and waits:, or dismissed done or superseded` })),
   ];
   const owed = [...tasks.values()].filter((task) => task.status === 'landed' && fastOf(task) && !task.reviewed).sort(byOrder);
@@ -836,9 +842,28 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
   return { open, ready, cardable, others, all, started, waiting, unmigrated, lost, owed, topics: [...topics.values()], todo: [...items, ...(pass === 'card' || pass === null ? notes : []), ...checks, ...runs], pass, problem, here, note: git.note, shipNote: ship.note };
 }
 
-// A task that owns a check failing on the base branch is broken now, whatever
-// its token says.
-export const priorityOf = (task) => (task.owns.length ? 'P0' : task.priority);
+const failsOnBase = (task) => task.owns.length > 0;
+export const priorityOf = (task) => (failsOnBase(task) ? 'P0' : higher(task.priority, task.blockingPriority));
+
+function liftPriorities(tasks) {
+  const open = [...tasks.values()].filter(isOpen);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const waiter of open) {
+      const level = priorityOf(waiter);
+      for (const wait of waiter.waits) {
+        const blocker = follow(wait.match(WAIT)?.[2] ?? '', tasks);
+        const current = blocker && priorityOf(blocker);
+        if (!level || !blocker || blocker === waiter || !isOpen(blocker) || (current && current <= level)) continue;
+        blocker.blockingPriority = level;
+        blocker.blocks = waiter.id;
+        changed = true;
+      }
+    }
+  }
+}
+
 const rank = (task) => {
   const at = PRIORITIES.indexOf(priorityOf(task));
   return at === -1 ? PRIORITIES.length : at;
@@ -853,14 +878,14 @@ const priorityOrder = (items) => {
   return (a, b) => rank(a) - rank(b) || place(a) - place(b) || byOrder(a, b);
 };
 
-function shipOffers(items, tasks, open, here) {
+function shipOffers(items, tasks, open) {
   const served = new Set(open.map((task) => task.ship).filter(Boolean));
   return (items ?? [])
     .filter((item) => !item.busy && !served.has(item.id))
     .map((item) => {
       const landedFor = [...tasks.values()].filter((task) => task.status === 'landed' && task.ship === item.id).sort(byOrder).at(-1);
       const flag = landedFor ? `; ${landedFor.id} landed serving it, so first check whether only the item's own record still lists it open` : '';
-      const tokens = `writes: ${item.writes.join(', ')}; topic: ${item.topic}; kind: ${item.kind}; priority: P1; ship: ${item.id}${here ? `; session: ${here}` : ''}`;
+      const tokens = `writes: ${item.writes.join(', ')}; topic: ${item.topic}; kind: ${item.kind}; priority: P1; ship: ${item.id}`;
       return { kind: 'ship', ids: [], text: `offer ship item ${item.id}, which no open task serves${flag}: append chip "${newId()} ${item.title}" "${item.finding}" "${tokens}" offered` };
     });
 }
@@ -908,14 +933,14 @@ export function renderBoard(view, ledger, max = null) {
   if (view.open.length === 0 && view.lost.length === 0 && view.owed.length === 0) return `No open suggested tasks in ${ledger}.`;
   const out = [`${view.open.length} open suggested tasks in ${ledger}. ${view.note}`, 'A session a card started works from chips brief <its task id>, because its task can change after the card.'];
   if (view.shipNote) out.push(`No ship list: ${view.shipNote}.`);
-  if (view.here && view.all) out.push('This session cards the tasks it owns and the ones no session owns, and takes over each task whose owner session is archived or gone.');
-  else if (view.here) out.push('This session cards only the tasks it owns: the ones it offered, or carded first when the offer named no session. chips all also takes the tasks no live session owns.');
+  if (view.here && view.all) out.push('This session cards the tasks it owns, the ship-list tasks and the ones no session owns, and takes over each task whose owner session is archived or gone.');
+  else if (view.here) out.push('This session cards the tasks it owns, the ones it offered or carded first when the offer named no session, and the ship-list tasks, which no session owns. chips all also takes the tasks no live session owns.');
   const section = (title, rows) => {
     if (rows.length > 0) out.push('', `${title} (${rows.length})`, ...rows);
   };
   const owners = new Map();
   for (const task of view.others) {
-    const owner = task.owner ? `session ${task.owner}` : 'no owner';
+    const owner = ownerOf(task) ? `session ${ownerOf(task)}` : 'no owner';
     owners.set(owner, [...(owners.get(owner) ?? []), task.id]);
   }
   const card = (task) => `  card ${task.card}${task.session && task.session !== view.here ? ` in session ${task.session}` : ''}`;
@@ -939,9 +964,10 @@ export function renderBoard(view, ledger, max = null) {
     }
     if (hidden.length > 0) out.push('', `${title}, lower priority (${hidden.join(', ')}): chips all lists them`);
   };
-  tiered('Ready', view.ready, (task) => task, (task) => line(task, loweredEffort(task) + (task.card ? card(task) : '  no card') + shares(task)));
+  const blocking = (task) => (task.blocks ? `  blocks ${task.blocks}` : '');
+  tiered('Ready', view.ready, (task) => task, (task) => line(task, loweredEffort(task) + blocking(task) + (task.card ? card(task) : '  no card') + shares(task)));
   section('Started', view.started.map((task) => line(task, task.startedIn ? `  session ${task.startedIn}` : '')));
-  tiered('Waiting', view.waiting, ({ task }) => task, ({ task, blockers }) => line(task, `${loweredEffort(task)}  waits on ${blockers.join('; ')}`));
+  tiered('Waiting', view.waiting, ({ task }) => task, ({ task, blockers }) => line(task, `${loweredEffort(task)}${blocking(task)}  waits on ${blockers.join('; ')}`));
   section('Owed review', view.owed.map((task) => line(task, task.patch ? `  patch ${task.patch}` : '')));
   section('Unmigrated', view.unmigrated.map((task) => line(task)));
   section('Lost', view.lost.map((task) => line(task)));
@@ -992,7 +1018,7 @@ function brief(task, ledger, max, tasks, codex) {
   return [
     `${priority ? `[${priority}] ` : ''}${displayTitle(task)}`,
     '',
-    `Topic: ${task.topic ?? 'none'}. Kind: ${task.kind}. Effort: ${effortOf(task, max)}. Priority: ${priority ?? 'none yet'}.`,
+    `Topic: ${task.topic ?? 'none'}. Kind: ${task.kind}. Effort: ${effortOf(task, max)}. Priority: ${priority ?? 'none yet'}${task.blocks ? `, from ${task.blocks}, which waits on it; its own is ${task.priority ?? 'none yet'}` : ''}.`,
     ...(task.repro ? [`Repro: ${task.repro}`] : []),
     ...(task.regressed ? [`Regressed in: ${task.regressed}`] : []),
     ...(task.ship ? [`Serves ship item: ${task.ship}`] : []),

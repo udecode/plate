@@ -4,14 +4,14 @@
 // Installed by sync-pstack.
 // Usage: node .agents/pstack/lead.mjs
 //        (prints this session's "<model> @<effort>", or exits 1 when no
-//        transcript holds this very command)
+//        runtime identity can be verified against its transcript)
 
-import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const RECENT_MS = 10 * 60 * 1000;
 const TAIL_BYTES = 512 * 1024;
 
 const claudeHome = () => join(process.env.HOME ?? homedir(), '.claude');
@@ -57,60 +57,55 @@ export function claudeSessionRun(sessionId) {
   return path ? claudeRun(tailLines(path)) : null;
 }
 
-/**
- * The session whose pending execution calls
- * hold `marker`, a string from the running command, with the model and effort
- * in force when it made that call. Returns null when no recent transcript, or
- * more than one, holds it.
- */
-export function currentLead(marker, now = Date.now()) {
-  const sources = [
-    { files: filesUnder(join(claudeHome(), 'projects'), 1), runtime: 'claude' },
-    { files: filesUnder(join(codexHome(), 'sessions'), 3), runtime: 'codex' },
-  ];
-  return leadFromTranscripts(marker, sources.flatMap(({ files, runtime }) =>
-    files
-      .filter((file) => now - statSync(file).mtimeMs < RECENT_MS)
-      .map((file) => ({ runtime, transcript: file, text: readFileSync(file, 'utf8') })),
-  ));
+const ID = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$/u;
+
+function nearestRuntime() {
+  let pid = process.ppid;
+  const seen = new Set();
+  while (pid > 1 && !seen.has(pid)) {
+    seen.add(pid);
+    const result = execFileSync('ps', ['-o', 'ppid=,comm=', '-p', String(pid)], { encoding: 'utf8' }).trim();
+    const match = result.match(/^(\d+)\s+(.+)$/u);
+    if (!match) return null;
+    const name = basename(match[2]);
+    if (name === 'claude' || name === 'codex') return name;
+    pid = Number(match[1]);
+  }
+  return null;
 }
 
-export function leadFromTranscripts(marker, transcripts) {
-  const found = transcripts.flatMap(({ runtime, transcript, text }) => {
-    let run = null;
-    const pending = new Map();
-    for (const line of text.split('\n')) {
-      const record = parse(line);
-      if (runtime === 'claude') {
-        if (record?.type === 'assistant') {
-          run = record.effort && record.message?.model ? { runtime, model: record.message.model, effort: record.effort, at: record.timestamp } : null;
-          for (const block of Array.isArray(record.message?.content) ? record.message.content : []) {
-            if (block.type === 'tool_use' && block.name === 'Bash' && typeof block.input?.command === 'string') pending.set(block.id, { command: block.input.command, run });
-          }
-        }
-        if (record?.type === 'user') {
-          for (const block of Array.isArray(record.message?.content) ? record.message.content : []) {
-            if (block.type === 'tool_result') pending.delete(block.tool_use_id);
-          }
-        }
-      } else if (runtime === 'codex') {
-        if (record?.type === 'turn_context') run = record.payload?.model ? { runtime, model: record.payload.model, effort: record.payload.effort ?? 'default', at: record.timestamp } : null;
-        if (record?.type !== 'response_item') continue;
-        const call = record.payload;
-        if (call?.type === 'function_call_output' || call?.type === 'custom_tool_call_output') pending.delete(call.call_id);
-        if (call?.type === 'function_call' && call.name === 'exec_command') {
-          const args = parse(call.arguments);
-          if (typeof args?.cmd === 'string') pending.set(call.call_id, { command: args.cmd, run });
-        }
-        if (call?.type === 'custom_tool_call' && call.name === 'exec' && typeof call.input === 'string') pending.set(call.call_id, { command: call.input, run });
-      }
-    }
-    const matches = [...pending.values()].filter(({ command }) => command.includes(marker));
-    if (!matches.length) return [];
-    const first = matches[0].run;
-    return [{ ...(matches.every(({ run }) => run && first && leadLabel(run) === leadLabel(first)) ? first : {}), transcript }];
+export function invocationRun(identity, transcripts) {
+  const { runtime, thread, session, invocation } = identity;
+  if (runtime !== 'codex' || !ID.test(session ?? '') || !ID.test(thread ?? '') || !/^exec-[a-f0-9-]{36}$/u.test(invocation ?? '')) return null;
+  const found = transcripts.flatMap(({ transcript, text }) => {
+    const records = text.split('\n').map(parse).filter(Boolean);
+    const metas = records.filter((record) => record.type === 'session_meta');
+    if (metas.length !== 1) return [];
+    const meta = metas[0].payload;
+    if (meta?.id !== thread || meta.session_id !== session) return [];
+    if (thread !== session && meta.parent_thread_id !== session) return [];
+    const execution = records.findLast((record) => record.type === 'event_msg' && record.payload?.item?.id === invocation);
+    if (execution && (execution.payload.thread_id !== thread || execution.payload.item.type !== 'CommandExecution' || execution.payload.item.status !== 'inProgress')) return [];
+    const context = records.findLast((record) => record.type === 'turn_context');
+    if (!context?.payload?.model || !context.payload.effort) return [];
+    if (execution && execution.payload.turn_id !== context.payload.turn_id) return [];
+    return [{ runtime, model: context.payload.model, effort: context.payload.effort, at: context.timestamp, transcript }];
   });
-  return found.length === 1 && found[0].model ? found[0] : null;
+  return found.length === 1 ? found[0] : null;
+}
+
+export function currentLead() {
+  try {
+    const runtime = nearestRuntime();
+    if (runtime !== 'codex' || ['CLAUDECODE', 'CLAUDE_SESSION_ID', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_PID', 'CLAUDE_CODE_ENTRYPOINT'].some((key) => process.env[key])) return null;
+    const identity = { runtime, thread: process.env.CODEX_THREAD_ID, session: process.env.CODEX_SESSION_ID, invocation: process.env.CODEX_TOOL_CALL_ID };
+    const id = identity.thread;
+    if (!ID.test(id ?? '')) return null;
+    const files = filesUnder(join(codexHome(), 'sessions'), 3).filter((file) => file.endsWith(`-${id}.jsonl`));
+    return invocationRun(identity, files.map((transcript) => ({ transcript, text: readFileSync(transcript, 'utf8') })));
+  } catch {
+    return null;
+  }
 }
 
 export const leadLabel = (run) => `${run.model} @${run.effort}`;
@@ -128,9 +123,9 @@ export function maxEffort(root = process.cwd()) {
 export const capEffort = (effort, max) => (max && EFFORTS.indexOf(effort) > EFFORTS.indexOf(max) ? max : effort);
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const run = currentLead('lead.mjs');
+  const run = currentLead();
   if (!run) {
-    console.error('No single recent Claude Code or Codex transcript holds this command, so the effort is unknown.');
+    console.error('Runtime identity could not be verified against one transcript, so the effort is unknown.');
     process.exit(1);
   }
   console.info(leadLabel(run));
