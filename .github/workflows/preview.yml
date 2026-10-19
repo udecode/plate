@@ -1,0 +1,319 @@
+name: Preview
+run-name: 'Preview PR #${{ github.event.pull_request.number || inputs.pr_number }} at ${{ github.event.pull_request.head.sha || inputs.reviewed_head_sha }}'
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Reviewed pull request number
+        required: true
+        type: string
+      reviewed_head_sha:
+        description: Exact reviewed PR head SHA (40 lowercase hexadecimal characters)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-pr-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    if: github.repository == 'udecode/plate' && (github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    outputs:
+      pr_number: ${{ steps.resolve.outputs.pr_number }}
+      source_sha: ${{ steps.resolve.outputs.source_sha }}
+      head_branch: ${{ steps.resolve.outputs.head_branch }}
+      diff_base: ${{ steps.resolve.outputs.diff_base }}
+      build: ${{ steps.changes.outputs.build || 'false' }}
+    steps:
+      - name: Resolve the reviewed PR source
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_INPUT: ${{ inputs.pr_number }}
+          REVIEWED_HEAD_SHA: ${{ inputs.reviewed_head_sha }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { execFileSync } from 'node:child_process';
+          import { appendFileSync, readFileSync } from 'node:fs';
+
+          const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+          const repository = process.env.GITHUB_REPOSITORY;
+          const manual = process.env.GITHUB_EVENT_NAME === 'workflow_dispatch';
+          const number = manual ? process.env.PR_INPUT : String(event.number);
+          const expectedSha = manual ? process.env.REVIEWED_HEAD_SHA : event.pull_request?.head?.sha;
+          const shaPattern = /^[a-f0-9]{40}$/;
+          if (
+            repository !== 'udecode/plate' ||
+            !/^[1-9]\d*$/.test(number) ||
+            !Number.isSafeInteger(Number(number)) ||
+            !shaPattern.test(expectedSha ?? '')
+          ) {
+            throw new Error('A valid PR number and exact reviewed head SHA are required.');
+          }
+          if (manual && !['refs/heads/main', 'refs/heads/next'].includes(process.env.GITHUB_REF)) {
+            throw new Error('Manual previews must run from trusted main or next.');
+          }
+          if (!manual && process.env.GITHUB_EVENT_NAME !== 'pull_request') {
+            throw new Error('Unsupported Preview event.');
+          }
+
+          const pr = JSON.parse(execFileSync('gh', ['api', `repos/${repository}/pulls/${number}`], { encoding: 'utf8' }));
+          if (
+            pr.number !== Number(number) ||
+            pr.state !== 'open' ||
+            pr.base?.repo?.full_name !== repository ||
+            !shaPattern.test(pr.base?.sha ?? '') ||
+            !shaPattern.test(pr.head?.sha ?? '') ||
+            pr.head.sha !== expectedSha ||
+            !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(pr.head?.repo?.full_name ?? '') ||
+            typeof pr.head.ref !== 'string'
+          ) {
+            throw new Error('The PR must be open in this repository at the exact reviewed head SHA.');
+          }
+          execFileSync('git', ['check-ref-format', `refs/heads/${pr.head.ref}`]);
+          const internal = pr.head.repo.full_name === repository;
+          if (!manual && !internal) {
+            throw new Error('Fork previews require a manual exact-commit approval.');
+          }
+          const eligible = manual || !(internal && ['main', 'next'].includes(pr.head.ref));
+          let base = pr.base.sha;
+          if (eligible) {
+            try {
+              const runs = execFileSync('gh', [
+                'api',
+                `repos/${repository}/actions/workflows/preview.yml/runs?status=success&per_page=100`,
+                '--jq', '.workflow_runs[] | [.display_title, .event, .head_repository.full_name] | @json',
+              ], { encoding: 'utf8' });
+              for (const line of runs.trim().split('\n').filter(Boolean)) {
+                const [title, eventName, headRepository] = JSON.parse(line);
+                const match = /^Preview PR #([1-9]\d*) at ([a-f0-9]{40})$/.exec(title);
+                if (match?.[1] === number && headRepository === repository && ['pull_request', 'workflow_dispatch'].includes(eventName)) {
+                  base = match[2];
+                  break;
+                }
+              }
+            } catch {
+              console.log('Preview history is unavailable; comparing with the PR base.');
+            }
+          }
+          appendFileSync(process.env.GITHUB_OUTPUT, [
+            `pr_number=${number}`,
+            `source_sha=${pr.head.sha}`,
+            `head_branch=${pr.head.ref}`,
+            `diff_base=${base}`,
+            `eligible=${eligible}`,
+            '',
+          ].join('\n'));
+          NODE
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.resolve.outputs.eligible == 'true'
+        with:
+          ref: ${{ steps.resolve.outputs.source_sha }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Decide whether the site changed
+        id: changes
+        if: steps.resolve.outputs.eligible == 'true'
+        env:
+          SOURCE_SHA: ${{ steps.resolve.outputs.source_sha }}
+          DIFF_BASE: ${{ steps.resolve.outputs.diff_base }}
+        run: |
+          [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+          build=true
+          if git fetch --no-tags --depth=1 origin "$DIFF_BASE"; then
+            if git diff --quiet "$DIFF_BASE" "$SOURCE_SHA" -- .github/workflows/preview.yml; then
+              set +e
+              VERCEL_GIT_COMMIT_MESSAGE="$(git log -1 --format=%B "$SOURCE_SHA")" VERCEL_GIT_PREVIOUS_SHA="$DIFF_BASE" VERCEL_GIT_COMMIT_SHA="$SOURCE_SHA" node apps/www/scripts/vercel-ignore-build.mjs
+              result=$?
+              set -e
+              case "$result" in
+                0) build=false ;;
+                1) build=true ;;
+                *) exit "$result" ;;
+              esac
+            fi
+          fi
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: changes
+    if: needs.changes.outputs.build == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: read
+    environment:
+      name: Preview
+      deployment: false
+    env:
+      PR_NUMBER: ${{ needs.changes.outputs.pr_number }}
+      SOURCE_SHA: ${{ needs.changes.outputs.source_sha }}
+      HEAD_BRANCH: ${{ needs.changes.outputs.head_branch }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      VERCEL_CLI_VERSION: 64.5.0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.changes.outputs.source_sha }}
+          persist-credentials: false
+
+      - name: Check deployment configuration and source
+        run: |
+          [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+          if [[ -z "$VERCEL_ORG_ID" || -z "$VERCEL_PROJECT_ID" ]]; then
+            echo '::error::Configure VERCEL_ORG_ID and VERCEL_PROJECT_ID in the Preview environment.'
+            exit 1
+          fi
+
+      - name: Create the PR deployment record
+        id: deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" \
+            | jq --exit-status --arg sha "$SOURCE_SHA" '.state == "open" and .head.sha == $sha' > /dev/null
+          deployment="$(jq --null-input --arg sha "$SOURCE_SHA" --arg branch "$HEAD_BRANCH" --argjson pr "$PR_NUMBER" --arg run "$GITHUB_RUN_ID" \
+            '{ref: $sha, environment: "Preview", auto_merge: false, required_contexts: [], transient_environment: true, production_environment: false, description: ("Preview PR #" + ($pr | tostring)), payload: {pr: $pr, source_sha: $sha, head_branch: $branch, run_id: $run}}' \
+            | gh api --method POST "repos/$GITHUB_REPOSITORY/deployments" --input - \
+            | jq --exit-status --raw-output --arg sha "$SOURCE_SHA" 'select(.sha == $sha and .environment == "Preview") | .id | select(type == "number" and . > 0)')"
+          echo "id=$deployment" >> "$GITHUB_OUTPUT"
+          jq --null-input --arg log "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state: "in_progress", log_url: $log, auto_inactive: false}' \
+            | gh api --method POST "repos/$GITHUB_REPOSITORY/deployments/$deployment/statuses" --input - > /dev/null
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.12
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          cache: true
+
+      - name: Restore build cache
+        id: build-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            apps/www/.next/cache
+            .vercel/cache
+          key: www-preview-pr-${{ needs.changes.outputs.pr_number }}-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ needs.changes.outputs.source_sha }}
+          restore-keys: |
+            www-preview-pr-${{ needs.changes.outputs.pr_number }}-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
+      - name: Install Vercel CLI
+        run: npm install --global "vercel@$VERCEL_CLI_VERSION"
+
+      - name: Pull PR branch preview settings
+        run: |
+          : "${VERCEL_TOKEN:?Configure VERCEL_TOKEN in the Preview environment.}"
+          vercel pull --yes --environment=preview --git-branch="$HEAD_BRANCH"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build deployment
+        id: build
+        env:
+          PLATE_BUILD_BASIC: '0'
+        run: |
+          nproc
+          free -m
+          uptime
+          vercel build
+
+      - name: Check PR approval before upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" \
+            | jq --exit-status --arg sha "$SOURCE_SHA" '.state == "open" and .head.sha == $sha' > /dev/null
+
+      - name: Upload the immutable PR preview
+        id: deploy
+        run: |
+          git checkout --detach "$SOURCE_SHA"
+          url="$(vercel deploy --prebuilt --archive=tgz --meta plateCommitRef="$HEAD_BRANCH" --meta githubCommitRef="$HEAD_BRANCH" --meta githubCommitSha="$SOURCE_SHA" --meta githubPrId="$PR_NUMBER")"
+          DEPLOYMENT_URL="$url" node --input-type=module -e '
+            const value = process.env.DEPLOYMENT_URL;
+            const url = new URL(value);
+            if (url.protocol !== "https:" || url.origin !== value || !url.hostname.endsWith(".vercel.app")) process.exit(1);
+          '
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Record the deployment URL
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOYMENT_ID: ${{ steps.deployment.outputs.id }}
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          jq --null-input --arg url "$DEPLOYMENT_URL" --arg log "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state: "in_progress", environment_url: $url, log_url: $log, auto_inactive: false}' \
+            | gh api --method POST "repos/$GITHUB_REPOSITORY/deployments/$DEPLOYMENT_ID/statuses" --input - > /dev/null
+
+      - name: Check deployed routes
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/" > /dev/null
+          curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/docs/installation/react" > /dev/null
+          curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/api/search?query=controlled&locale=en" | jq --exit-status 'type == "array" and length > 0' > /dev/null
+          curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/r/installation-docs.json" | jq --exit-status '.files | length > 0' > /dev/null
+
+      - name: Save build cache
+        if: always() && steps.build.outcome == 'success' && steps.build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            apps/www/.next/cache
+            .vercel/cache
+          key: ${{ steps.build-cache.outputs.cache-primary-key }}
+
+      - name: Finish the PR deployment record
+        if: always() && steps.deployment.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOYMENT_ID: ${{ steps.deployment.outputs.id }}
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          case "$JOB_STATUS" in
+            success) state=success ;;
+            cancelled) state=inactive ;;
+            *) state=failure ;;
+          esac
+          stale=false
+          if [[ "$state" == success ]] && ! gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" \
+            | jq --exit-status --arg sha "$SOURCE_SHA" '.state == "open" and .head.sha == $sha' > /dev/null; then
+            state=inactive
+            stale=true
+          fi
+          jq --null-input --arg state "$state" --arg url "$DEPLOYMENT_URL" --arg log "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state: $state, log_url: $log, auto_inactive: false} + (if $url == "" then {} else {environment_url: $url} end)' \
+            | gh api --method POST "repos/$GITHUB_REPOSITORY/deployments/$DEPLOYMENT_ID/statuses" --input - > /dev/null
+          if [[ -n "$DEPLOYMENT_URL" ]]; then
+            echo "Preview PR #$PR_NUMBER at $SOURCE_SHA ($state): $DEPLOYMENT_URL" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          [[ "$stale" == false ]]

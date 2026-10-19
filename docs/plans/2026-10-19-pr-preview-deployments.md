@@ -49,10 +49,10 @@ Ellie currently builds through Vercel. Its next branch is the production target 
 - [x] Independent workstreams. Proof: a read-only Ellie inventory and a single Plate workflow owner have disjoint resources.
 - [x] Shared mutable state. Proof: per-PR concurrency in the Preview design; credential writes and branch deliveries stay sequential.
 - [x] Smallest safe decomposition. Proof: a separate `.github/workflows/preview.yml` leaves the existing live publishing workflow unchanged.
-- [ ] Implement Plate's PR-only Preview workflow through the delegated owner.
-- [ ] Configure the Preview environment with only deployment credentials and project identifiers.
-- [ ] Run syntax and focused behavior checks over relevant/ignored updates, plain pushes, stale heads and fork approval.
-- [ ] Run writing passes and applicable reviews before delivery.
+- [x] Implement Plate's PR-only Preview workflow through the delegated owner. Proof: `.github/workflows/preview.yml`.
+- [x] Configure the Preview environment with only deployment credentials and project identifiers. Proof: `docs/plans/artifacts/pr-previews/preview-environment-config.json`; migration run `39312330565`.
+- [x] Run syntax and focused behavior checks over relevant/ignored updates, plain pushes, stale heads and fork approval. Proof: `preview-actionlint-a1.log` and `preview-behavior-a1.log` in this run's artifact folder. GitHub API responses are fixtures; remote proof remains open.
+- [x] Run writing passes and applicable reviews before delivery. Proof: deslop by lead, no-comments reviewer found no required changes; unslop and bro over plan and delivery prose. No package/public API panel trigger.
 - [ ] Deliver the matching workflow on main and next with required branch checks.
 - [ ] Prove a real pull-request preview and ignored-update behavior from GitHub records.
 - [ ] "then sync to ellie" Adapt the selected scope, run its checks and deliver it.
@@ -62,9 +62,9 @@ Ellie currently builds through Vercel. Its next branch is the production target 
 
 | Gate | Evidence |
 | --- | --- |
-| Workflow syntax | pending |
-| PR event and ignore decisions | pending |
-| Credential boundary and source identity | pending |
+| Workflow syntax | actionlint 1.7.12 passes on Preview |
+| PR event and ignore decisions | 23 final workflow behavior cases pass, including an exact-SHA mutation control |
+| Credential boundary and source identity | Preview credential readback; fixture-backed source guards pass; live deployment pending |
 | Local landing checks | pending |
 | Real GitHub preview and ignored records | pending |
 | Ellie sync | pending |
