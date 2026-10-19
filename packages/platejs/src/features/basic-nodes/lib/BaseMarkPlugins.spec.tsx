@@ -596,30 +596,6 @@ describe('basic mark input rules', () => {
       input: (
         <editor>
           <hp>
-            **hello*
-            <cursor />
-          </hp>
-        </editor>
-      ),
-      output: (
-        <editor>
-          <hp>
-            <htext bold italic>
-              hello
-            </htext>
-          </hp>
-        </editor>
-      ),
-      plugin: BaseBoldPlugin.configure({
-        inputRules: [MarkComboRules.markdown({ variant: 'boldItalic' })],
-      }),
-      text: ['*'],
-      title: 'formats combined bold italic delimiters',
-    },
-    {
-      input: (
-        <editor>
-          <hp>
             __hello*
             <cursor />
           </hp>

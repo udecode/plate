@@ -8,6 +8,7 @@ import {
 } from 'platejs';
 
 import { AutoformatKit } from '@/registry/components/editor/autoformat';
+import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
 
 jsxt;
 
@@ -102,6 +103,31 @@ describe('AutoformatKit current contract', () => {
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: '≱ ≰ ≉' }], type: 'paragraph' },
+    ]);
+  });
+
+  it('applies bold and italic to typed triple asterisks while double asterisks stay bold only [plate#5203]', () => {
+    const editor = createCurrentKitEditor({
+      plugins: [...BasicMarksKit],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+        kind: 'text',
+      },
+      value: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+
+    for (const char of '***both*** **bold**') insertText(editor, char);
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { bold: true, italic: true, text: 'both' },
+          { text: ' ' },
+          { bold: true, text: 'bold' },
+        ],
+        type: 'paragraph',
+      },
     ]);
   });
 

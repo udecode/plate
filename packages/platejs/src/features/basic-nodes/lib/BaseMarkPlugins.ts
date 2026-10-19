@@ -124,7 +124,7 @@ export const MarkComboRules = {
     createMarkInputRule({
       ...options,
       end: {
-        boldItalic: '*',
+        boldItalic: '**',
         boldItalicUnderline: '**',
         boldUnderline: '*',
         italicUnderline: '*',
@@ -136,7 +136,7 @@ export const MarkComboRules = {
         italicUnderline: ['underline', 'italic'],
       }[variant],
       start: {
-        boldItalic: '**',
+        boldItalic: '***',
         boldItalicUnderline: '___',
         boldUnderline: '__',
         italicUnderline: '__',
