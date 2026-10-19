@@ -40,10 +40,12 @@ const REASONS = Object.keys(FROM)
 export const CHIP_STATES = ['offered', ...Object.keys(FROM).filter((move) => !move.startsWith('dismissed '))];
 const RESULT = new RegExp(`^(${CHIP_STATES.join('|')}|dismissed (?:${REASONS.join('|')}|(${TARGETED.join('|')}) ([\\w-]+)))(?:[.:;,]?(?:\\s.*)?)?$`, 'u');
 const LEGACY_ONLY = ['dismissed gone', 'dismissed replaced'];
+const PROOFS = ['repro', 'regressed', 'ship'];
+const EVIDENCE = ['priority', ...PROOFS];
 const TAKES = {
-  offered: ['writes', 'topic', 'kind', 'waits', 'owns', 'fast', 'card', 'session', 'transcript'],
-  updated: ['writes', 'topic', 'kind', 'effort', 'waits', 'owns', 'fast', 'session', 'transcript'],
-  folded: ['writes', 'kind', 'effort', 'waits', 'owns'],
+  offered: ['writes', 'topic', 'kind', 'waits', 'owns', 'fast', 'card', 'session', 'transcript', ...EVIDENCE],
+  updated: ['writes', 'topic', 'kind', 'effort', 'waits', 'owns', 'fast', 'session', 'transcript', ...EVIDENCE],
+  folded: ['writes', 'kind', 'effort', 'waits', 'owns', ...EVIDENCE],
   started: ['writes', 'session'],
   landed: ['patch', 'commit'],
   carded: ['card', 'session', 'codex'],
@@ -51,8 +53,10 @@ const TAKES = {
   'dismissed declined': ['card'],
 };
 const LIST_KEYS = ['writes', 'waits', 'owns', 'commit'];
-const SCALAR_KEYS = ['topic', 'kind', 'effort', 'fast', 'patch', 'card', 'session', 'transcript', 'codex'];
+const SCALAR_KEYS = ['topic', 'kind', 'effort', 'fast', 'patch', 'card', 'session', 'transcript', 'codex', ...EVIDENCE];
 const KINDS = ['fix', 'decide', 'review'];
+const PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
+const CARD_LIMIT = 10;
 
 const CHIP = /^([\w-]+) (?:(?:Now|After): )?\S/u;
 const LEGACY_TITLE_TAGS = /^(?:Now|After): | \((?:high|fast)\)$/gu;
@@ -74,6 +78,7 @@ const untaggedTitle = (decision, id) => decision.slice(id.length + 1).replace(LE
 const takePlaceOf = (kept, task) => {
   if (kept) kept.order = Math.min(kept.order, task.order);
 };
+const higher = (one, other) => (one && (!other || one < other) ? one : other ?? null);
 const article = (word) => (/^[aeiou]/u.test(word) ? 'an' : 'a');
 
 // Lowercased because macOS volumes are case-insensitive by default, so
@@ -174,6 +179,8 @@ const mergeInto = (kept, task, tasks) => {
   kept.keys = kept.writes.map(writeKey);
   if (task.kind === 'decide') kept.kind = 'decide';
   if (needsJudgment(task)) kept.effort = 'xhigh';
+  kept.priority = higher(task.priority, kept.priority);
+  for (const key of PROOFS) kept[key] ??= task[key];
 };
 
 export function recordRow(tasks, cells, ts = null) {
@@ -206,6 +213,10 @@ export function recordRow(tasks, cells, ts = null) {
       startedIn: null,
       effort: null,
       fast: given.fast === 'yes',
+      priority: given.priority ?? null,
+      repro: given.repro ?? null,
+      regressed: given.regressed ?? null,
+      ship: given.ship ?? null,
       patch: null,
       commits: [],
       landedAt: null,
@@ -227,6 +238,8 @@ export function recordRow(tasks, cells, ts = null) {
     if (given.effort) task.effort = given.effort;
     task.waits = joined(task.waits, given.waits ?? []);
     task.owns = joined(task.owns, given.owns ?? []);
+    task.priority = higher(given.priority, task.priority);
+    for (const key of PROOFS) if (given[key] !== undefined) task[key] = given[key];
     task.findings.push(row.why);
   }
   if (row.move === 'started') {
@@ -265,7 +278,7 @@ export function recordRow(tasks, cells, ts = null) {
       task.writes = given.writes;
       task.keys = given.writes.map(writeKey);
     }
-    for (const key of ['topic', 'kind', 'effort', 'waits', 'owns']) if (given[key] !== undefined) task[key] = given[key];
+    for (const key of ['topic', 'kind', 'effort', 'waits', 'owns', ...EVIDENCE]) if (given[key] !== undefined) task[key] = given[key];
     if (given.fast !== undefined) task.fast = given.fast === 'yes';
     if (given.session !== undefined) {
       task.owner = given.session;
@@ -304,6 +317,10 @@ const tokenProblems = (given, where) => {
   if (given.session !== undefined && !SESSION.test(given.session)) found.push(`${where}: session: names the session id as one token`);
   if (given.transcript !== undefined && !SESSION.test(given.transcript)) found.push(`${where}: transcript: names the session's transcript id as one token`);
   if (given.codex !== undefined && given.codex !== 'always') found.push(`${where}: codex: is always, which forces the card session's Codex handoff`);
+  if (given.priority !== undefined && !PRIORITIES.includes(given.priority)) found.push(`${where}: priority: is P0, P1, P2 or P3, as chips.md's Priority says`);
+  if (given.repro === '') found.push(`${where}: repro: names a failing test or the exact steps that show the bug`);
+  if (given.regressed !== undefined && !/^[0-9a-f]{7,40}$/u.test(given.regressed)) found.push(`${where}: regressed: names the commit the regression came in by its hash`);
+  if (given.ship !== undefined && !SESSION.test(given.ship)) found.push(`${where}: ship: names one item of the project's ship list by its id`);
   return found;
 };
 
@@ -379,7 +396,7 @@ export function chipRowProblems(cells, before, where) {
 // matches, because an account switch can change one of them.
 export const ownedBy = (task, here) => Boolean(here) && ((here.session && task.owner === here.session) || (here.transcript && task.ownerTranscript === here.transcript));
 
-export function newChipRowProblems(cells, before, where, git, here = null) {
+export function newChipRowProblems(cells, before, where, git, here = null, shipList = () => NO_SHIP) {
   const [, decision, , evidence] = cells;
   const row = parseRow(cells);
   if (!row) return [];
@@ -395,6 +412,22 @@ export function newChipRowProblems(cells, before, where, git, here = null) {
   if (move === 'offered' && !before.has(id)) {
     if (untaggedTitle(decision, id) !== decision.slice(id.length + 1)) found.push(`${where}: a new title is a plain imperative phrase, with (xhigh) only for a design question or a bug whose cause nobody has located; chips works out when a task can start, so no title says Now: or After:, and fast: yes adds (fast) for it`);
     if (!given.topic) found.push(`${where}: a new offer names its owner question as "topic: <word>"; run chips to see the open topics and reuse one when the finding answers its question`);
+    if (!given.priority && !given.owns?.length) found.push(`${where}: a new offer names its priority as "priority: P0", P1, P2 or P3, as chips.md's Priority says; a task that owns a check failing on the base branch is P0 without one`);
+  }
+  const claimed = ['P0', 'P1'].includes(given.priority) ? afterRow(before, cells).get(id) : null;
+  if (claimed && !claimed.owns.length && !claimed.repro) {
+    if (given.priority === 'P0' && !claimed.regressed) {
+      found.push(`${where}: a P0 task is broken now, so it owns a check failing on the base branch (owns:), names the commit it regressed in (regressed: <hash>) or names its repro (repro: <failing test or exact steps>); without one, it is P1 or lower`);
+    }
+    if (given.priority === 'P1' && !claimed.ship) {
+      found.push(`${where}: a P1 task is a bug with its repro (repro: <failing test or exact steps>) or serves an open item of the project's ship list (ship: <id>); without one, it is P2 or lower`);
+    }
+  }
+  if (given.regressed !== undefined && !isCommit(given.regressed)) found.push(`${where}: regressed: ${given.regressed} is not a commit in this checkout; name the commit the regression came in`);
+  if (given.ship !== undefined) {
+    const { items, note } = shipList();
+    if (!items) found.push(`${where}: ship: names an item of the project's ship list, and ${note ?? 'this project sets no chips.ship command in .agents/pstack.json'}`);
+    else if (!items.some((item) => item.id === given.ship)) found.push(`${where}: ship: ${given.ship} is not an open item of the project's ship list; chips lists the open ones`);
   }
   const cycledBefore = cyclicEdges(before);
   const added = [...cyclicEdges(afterRow(before, cells))].filter((edge) => !cycledBefore.has(edge)).map((edge) => edge.split(' '));
@@ -441,9 +474,9 @@ export function newChipRowProblems(cells, before, where, git, here = null) {
   if (move === 'folded' && held(own)) found.push(`${where}: ${id} holds card ${own.card}, which cannot show new work; offer the finding as a new task in topic ${own.topic ?? '<its question>'} with waits: task:${id}, and chips merges it once the card is withdrawn`);
   const narrows = Object.keys(given).every((key) => key === 'writes') && (given.writes ?? []).map(writeKey).every((key) => own?.keys.some((old) => key === old || contains(old, key)));
   const addsWaits = Object.keys(given).every((key) => key === 'waits') && given.waits !== undefined && given.waits.length > (own?.waits.length ?? 0) && (own?.waits ?? []).every((wait) => given.waits.includes(wait));
-  const setsEffort = Object.keys(given).every((key) => key === 'effort');
-  if (move === 'updated' && held(own) && !narrows && !addsWaits && !setsEffort) {
-    found.push(`${where}: ${id} holds card ${own.card}, which cannot change; withdraw the card first, as chips.md's Limits says, then log this row; a row that only narrows writes:, only adds waits: and keeps every wait it has, or only sets effort:, needs no withdrawal`);
+  const relabels = Object.keys(given).every((key) => key === 'effort' || EVIDENCE.includes(key));
+  if (move === 'updated' && held(own) && !narrows && !addsWaits && !relabels) {
+    found.push(`${where}: ${id} holds card ${own.card}, which cannot change; withdraw the card first, as chips.md's Limits says, then log this row; a row that only narrows writes:, only adds waits: and keeps every wait it has, or only sets effort:, priority: and its evidence, needs no withdrawal`);
   }
   if (given.fast === 'yes') {
     const after = afterRow(before, cells).get(id);
@@ -471,6 +504,33 @@ export function baseRedProblems(evidence, tasks, where) {
       const owner = [...tasks.values()].some((task) => isOpen(task) && task.owns.includes(check));
       return owner ? [] : [`${where}: base-red: ${check} has no open suggested task that owns it; offer one with "owns: ${check}", or log updated on the task that makes the base branch green, before this row`];
     });
+}
+
+export const NO_SHIP = { items: null, note: null };
+
+// The ship list is a project's path to release, such as a review ledger's open
+// items in queue order, which the chips.ship command prints as a JSON array.
+export function readShip(command) {
+  if (!command) return NO_SHIP;
+  if (!Array.isArray(command) || command.length === 0 || command.some((part) => typeof part !== 'string')) return { items: null, note: 'chips.ship in .agents/pstack.json is not a command written as an array of strings' };
+  try {
+    const parsed = JSON.parse(execFileSync(command[0], command.slice(1), { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 120_000 }));
+    if (!Array.isArray(parsed)) return { items: null, note: `${command.join(' ')} printed no JSON array` };
+    const items = parsed
+      .filter((item) => SESSION.test(item?.id ?? '') && typeof item.title === 'string')
+      .map((item) => ({
+        id: item.id,
+        title: item.title,
+        finding: typeof item.finding === 'string' ? item.finding : `${item.id} is open on the project's ship list`,
+        writes: Array.isArray(item.writes) && item.writes.length ? item.writes : [projectConfig().plans ?? 'docs/plans'],
+        topic: TOPIC.test(item.topic ?? '') ? item.topic : `ship-${item.id.toLowerCase().replace(/[^a-z0-9]+/gu, '-')}`,
+        kind: KINDS.includes(item.kind) ? item.kind : 'decide',
+        busy: item.busy === true,
+      }));
+    return { items, note: null };
+  } catch (error) {
+    return { items: null, note: `${command.join(' ')} failed: ${String(error.stderr || error.message).trim().split('\n')[0]}` };
+  }
 }
 
 export function gitMerges({ fetch = false, branch } = {}) {
@@ -631,8 +691,11 @@ export function staleReport(tasks, at, probe) {
         const state = pr && probe.prState(Number(pr));
         return state && state !== 'OPEN' ? [`pr:${pr} ${state.toLowerCase()}`] : [];
       });
+      const shipClosed = Boolean(task.ship && probe.ship && !probe.ship.some((item) => item.id === task.ship));
       const facts = [
         since ? `age ${Math.floor((probe.now - Date.parse(since)) / 86_400_000)}d` : 'age unknown',
+        priorityOf(task) ? `priority ${priorityOf(task)}` : 'no priority',
+        ...(shipClosed ? [`ship item ${task.ship} is no longer open`] : []),
         ...(task.status === 'started' ? [task.startedIn ? `started in session ${task.startedIn}` : 'started'] : []),
         ...(deleted.length ? [`deleted since its offer: ${deleted.join(', ')}`] : []),
         ...(missing.length ? [`missing: ${missing.join(', ')}`] : []),
@@ -641,7 +704,7 @@ export function staleReport(tasks, at, probe) {
         ...(possiblyThin(task) ? ['possibly thin: every finding is a note an older migration wrote, so add the finding before its next card'] : []),
         ...(task.card ? [`card ${task.card}${task.session ? ` in session ${task.session}` : ''}`] : []),
       ];
-      return { task, facts, weight: 3 * (deleted.length > 0) + 3 * (closed.length > 0) + 2 * possiblyThin(task) + (missing.length > 0) + (commits.length > 0) };
+      return { task, facts, weight: 3 * (deleted.length > 0) + 3 * (closed.length > 0) + 3 * shipClosed + 2 * possiblyThin(task) + (missing.length > 0) + (commits.length > 0) };
     })
     .sort((a, b) => b.weight - a.weight || byOrder(a.task, b.task));
   return rows.map(({ task, facts }) => line(task, `  ${facts.join('; ')}`));
@@ -660,7 +723,8 @@ export function startedOverlaps(tasks) {
 // A session cards only the tasks it owns. With all, it also cards the tasks no
 // session owns and takes over each one whose owner is not in live, the ids of
 // the sessions not archived; without live, no owner counts as gone.
-export function board(tasks, git, here = null, { transcript = null, all = false, live = null } = {}) {
+export function board(tasks, git, here = null, { transcript = null, all = false, live = null, ship = NO_SHIP } = {}) {
+  const byPriority = priorityOrder(ship.items);
   const open = [...tasks.values()].filter(isOpen).sort(byOrder);
   const started = open.filter((task) => task.status === 'started');
   const offered = open.filter((task) => task.status === 'offered');
@@ -680,8 +744,8 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
     if (found.length > 0) waiting.push({ task, blockers: found.map((blocker) => blocker.text), stuck: found.filter((blocker) => blocker.stuck).map((blocker) => blocker.text) });
     else ready.push(task);
   }
-  ready.sort(byOrder);
-  waiting.sort((a, b) => byOrder(a.task, b.task));
+  ready.sort(byPriority);
+  waiting.sort((a, b) => byPriority(a.task, b.task));
   const topics = new Map();
   for (const task of open) {
     if (!task.topic) continue;
@@ -738,14 +802,21 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
       .filter((entry) => freeDecides(entry).length > 1)
       .map((entry) => ({ kind: 'problem', ids: freeDecides(entry).map((task) => task.id), text: `fold topic ${entry.topic}: ${freeDecides(entry).map((task) => task.id).join(' and ')} are both open design questions; keep one and log the others as dismissed dup <kept id>` })),
     ...unmigrated.flatMap((task) => blockersOf(task, tasks, git).filter((blocker) => blocker.stuck && !blocker.malformed).map((blocker) => ({ kind: 'problem', ids: [task.id], text: `fix ${task.id}'s wait: ${blocker.text}; log updated with the waits it has now` }))),
-    ...unmigrated.map((task) => ({ kind: 'migrate', ids: [task.id], text: `migrate ${task.id}: log updated with topic: and the waits: it has, as waits: none when it has none` })),
+    ...unmigrated.map((task) => ({ kind: 'migrate', ids: [task.id], text: `migrate ${task.id}: log updated with topic:, priority: and the waits: it has, as waits: none when it has none` })),
+    ...offered
+      .filter((task) => task.topic && !priorityOf(task))
+      .map((task) => ({ kind: 'priority', ids: [task.id], text: `prioritize ${task.id}: log updated with priority: and the evidence a P0 or P1 claim needs, as chips.md's Priority says` })),
+    ...shipOffers(ship.items, tasks, open, here),
     ...lost.map((task) => ({ kind: 'migrate', ids: [task.id], text: `reopen ${task.id} or close it: a dropped card closed it as gone; log reopened, then updated with topic: and waits:, or dismissed done or superseded` })),
   ];
   const owed = [...tasks.values()].filter((task) => task.status === 'landed' && fastOf(task) && !task.reviewed).sort(byOrder);
   rows.push(...reviewItems(tasks, owed), ...adoptions);
   const merge = mergeItem(offered, tasks, git);
-  const cardable = ready.filter((task) => !task.card && mayCard(task));
+  const cardable = ready.filter((task) => !task.card && mayCard(task) && priorityOf(task));
+  const room = Math.max(0, CARD_LIMIT - offered.filter((task) => task.card && !elsewhere(task)).length);
+  const notes = cardable.length > room ? [{ kind: 'note', text: `${cardable.length - room} more can start once this session holds fewer than ${CARD_LIMIT} cards; the card pass offers the highest priority first` }] : [];
   const cards = cardable
+    .slice(0, room)
     .map((task) => {
       const shared = sharesWith(task, open);
       const hint = shared.length ? `, starting with ${shared.join(', ')}, which ${shared.length === 1 ? 'writes' : 'write'} its paths` : '';
@@ -762,7 +833,36 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
   ];
   const [pass, items] = passes.find(([, each]) => each.length > 0) ?? [null, []];
   const problem = [...withdrawals, ...rows].some((item) => item.kind === 'problem');
-  return { open, ready, cardable, others, all, started, waiting, unmigrated, lost, owed, topics: [...topics.values()], todo: [...items, ...checks, ...runs], pass, problem, here, note: git.note };
+  return { open, ready, cardable, others, all, started, waiting, unmigrated, lost, owed, topics: [...topics.values()], todo: [...items, ...(pass === 'card' || pass === null ? notes : []), ...checks, ...runs], pass, problem, here, note: git.note, shipNote: ship.note };
+}
+
+// A task that owns a check failing on the base branch is broken now, whatever
+// its token says.
+export const priorityOf = (task) => (task.owns.length ? 'P0' : task.priority);
+const rank = (task) => {
+  const at = PRIORITIES.indexOf(priorityOf(task));
+  return at === -1 ? PRIORITIES.length : at;
+};
+
+// P1 tasks follow the ship list's order, then the ledger's.
+const priorityOrder = (items) => {
+  const place = (task) => {
+    const at = items?.findIndex((item) => item.id === task.ship) ?? -1;
+    return at === -1 ? Number.MAX_SAFE_INTEGER : at;
+  };
+  return (a, b) => rank(a) - rank(b) || place(a) - place(b) || byOrder(a, b);
+};
+
+function shipOffers(items, tasks, open, here) {
+  const served = new Set(open.map((task) => task.ship).filter(Boolean));
+  return (items ?? [])
+    .filter((item) => !item.busy && !served.has(item.id))
+    .map((item) => {
+      const landedFor = [...tasks.values()].filter((task) => task.status === 'landed' && task.ship === item.id).sort(byOrder).at(-1);
+      const flag = landedFor ? `; ${landedFor.id} landed serving it, so first check whether only the item's own record still lists it open` : '';
+      const tokens = `writes: ${item.writes.join(', ')}; topic: ${item.topic}; kind: ${item.kind}; priority: P1; ship: ${item.id}${here ? `; session: ${here}` : ''}`;
+      return { kind: 'ship', ids: [], text: `offer ship item ${item.id}, which no open task serves${flag}: append chip "${newId()} ${item.title}" "${item.finding}" "${tokens}" offered` };
+    });
 }
 
 // Fast work stays owed until a review task covers it, so a declined or
@@ -807,6 +907,7 @@ const line = (task, extra = '') => `  ${task.id}  ${displayTitle(task)}${task.to
 export function renderBoard(view, ledger, max = null) {
   if (view.open.length === 0 && view.lost.length === 0 && view.owed.length === 0) return `No open suggested tasks in ${ledger}.`;
   const out = [`${view.open.length} open suggested tasks in ${ledger}. ${view.note}`, 'A session a card started works from chips brief <its task id>, because its task can change after the card.'];
+  if (view.shipNote) out.push(`No ship list: ${view.shipNote}.`);
   if (view.here && view.all) out.push('This session cards the tasks it owns and the ones no session owns, and takes over each task whose owner session is archived or gone.');
   else if (view.here) out.push('This session cards only the tasks it owns: the ones it offered, or carded first when the offer named no session. chips all also takes the tasks no live session owns.');
   const section = (title, rows) => {
@@ -826,9 +927,21 @@ export function renderBoard(view, ledger, max = null) {
     const shared = sharesWith(task, view.open);
     return shared.length ? `  shares paths with ${shared.join(', ')}` : '';
   };
-  section('Ready', view.ready.map((task) => line(task, loweredEffort(task) + (task.card ? card(task) : '  no card') + shares(task))));
+  // P2, P3 and untagged tasks show as counts unless chips all, because every
+  // sweep reads the board and the urgent tiers are what it acts on.
+  const tiered = (title, entries, taskOf, render) => {
+    const hidden = [];
+    for (const tier of [...PRIORITIES, null]) {
+      const group = entries.filter((entry) => (priorityOf(taskOf(entry)) ?? null) === tier);
+      const name = tier ?? 'no priority';
+      if (view.all || tier === 'P0' || tier === 'P1') section(`${title}, ${name}`, group.map(render));
+      else if (group.length > 0) hidden.push(`${name} ${group.length}`);
+    }
+    if (hidden.length > 0) out.push('', `${title}, lower priority (${hidden.join(', ')}): chips all lists them`);
+  };
+  tiered('Ready', view.ready, (task) => task, (task) => line(task, loweredEffort(task) + (task.card ? card(task) : '  no card') + shares(task)));
   section('Started', view.started.map((task) => line(task, task.startedIn ? `  session ${task.startedIn}` : '')));
-  section('Waiting', view.waiting.map(({ task, blockers }) => line(task, `${loweredEffort(task)}  waits on ${blockers.join('; ')}`)));
+  tiered('Waiting', view.waiting, ({ task }) => task, ({ task, blockers }) => line(task, `${loweredEffort(task)}  waits on ${blockers.join('; ')}`));
   section('Owed review', view.owed.map((task) => line(task, task.patch ? `  patch ${task.patch}` : '')));
   section('Unmigrated', view.unmigrated.map((task) => line(task)));
   section('Lost', view.lost.map((task) => line(task)));
@@ -878,7 +991,10 @@ function brief(task, ledger, max, tasks, codex) {
   return [
     displayTitle(task),
     '',
-    `Topic: ${task.topic ?? 'none'}. Kind: ${task.kind}. Effort: ${effortOf(task, max)}.`,
+    `Topic: ${task.topic ?? 'none'}. Kind: ${task.kind}. Effort: ${effortOf(task, max)}. Priority: ${priorityOf(task) ?? 'none yet'}.`,
+    ...(task.repro ? [`Repro: ${task.repro}`] : []),
+    ...(task.regressed ? [`Regressed in: ${task.regressed}`] : []),
+    ...(task.ship ? [`Serves ship item: ${task.ship}`] : []),
     'Findings:',
     ...task.findings.map((finding) => `- ${finding}`),
     ...(task.covers.length ? ['Also covers:', ...task.covers.flatMap((entry) => [`- ${entry.id} ${entry.title}`, ...entry.findings.map((finding) => `  - ${finding}`)])] : []),
