@@ -1,4 +1,5 @@
 import { promises as fs } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 import {
@@ -7,6 +8,7 @@ import {
   type registryItemFileSchema,
   registryItemSchema,
 } from 'shadcn/schema';
+import { Project, ScriptKind } from 'ts-morph';
 import type { z } from 'zod';
 
 import type { UnistNode } from '@/types/unist';
@@ -459,7 +461,21 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
     'utf-8'
   );
 
-  return fixImport(raw);
+  const project = new Project({
+    compilerOptions: {},
+  });
+
+  const tempFile = await createTempSourceFile(file.path);
+  const sourceFile = project.createSourceFile(tempFile, raw, {
+    scriptKind: ScriptKind.TSX,
+  });
+
+  let code = sourceFile.getFullText();
+
+  // Fix imports.
+  code = fixImport(code);
+
+  return code;
 }
 
 function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
@@ -486,6 +502,12 @@ function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
   }
 
   return target ?? '';
+}
+
+async function createTempSourceFile(filename: string) {
+  const dir = await fs.mkdtemp(path.join(tmpdir(), 'shadcn-'));
+
+  return path.join(dir, filename);
 }
 
 function fixFilePaths(files: z.infer<typeof registryItemSchema>['files']) {
