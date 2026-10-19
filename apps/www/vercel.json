@@ -9,5 +9,5 @@
     }
   },
   "ignoreCommand": "node scripts/vercel-ignore-build.mjs",
-  "installCommand": "pnpm install --no-frozen-lockfile"
+  "installCommand": "pnpm install --frozen-lockfile"
 }

@@ -1,6 +1,6 @@
 # Build the beta website in GitHub Actions
 
-Status: blocked: waiting for credential approval before live deployment
+Status: building: fixing preview upload and measuring GitHub deployment
 Playbook: build
 
 ## Brief
@@ -15,17 +15,19 @@ The first Linux build can expose packaging or runtime differences. The current b
 
 ## Teach
 
-Vercel currently builds the website when the beta branch changes. The latest deployment ran out of memory with a four-gigabyte JavaScript heap limit.
+Vercel Basic now builds the website successfully with memory optimizations. Its verified cold deployment took 8 minutes 37 seconds. GitHub Actions already completes compilation, but its upload fails because the workflow uses a production-only option on a preview deployment.
 
 GitHub Actions will build the same website and upload the finished output to Vercel. It compares changes with the last successful workflow, checks the uploaded pages and search endpoint, then updates the beta domain.
 
 ## Main changes
 
 - Add `.github/workflows/deploy-www.yml` for trusted pushes to `next` and manual retries. The workflow is named for the website so production can adopt the same pipeline after beta passes.
-- Reuse the existing frozen workspace install and Vercel-owned monorepo build command.
+- Let Vercel build install the workspace once with a frozen lockfile and run the existing monorepo build command. GitHub prepares Node, pnpm, Bun and the dependency cache first.
 - Restore dependency and compilation caches without persisting pulled environment files.
 - Keep the existing ignore script and translate its reversed exit statuses into a workflow output. Compare with the last successful run, including successful skips, to retain changes from failed or cancelled deployments.
-- Upload with `--skip-domain`, verify homepage, documentation, search and registry routes, then assign only `beta.platejs.org` if the commit is still current.
+- Upload a detached preview without the production-only `--skip-domain` option or a `next` Git branch association. Keep the source SHA and a descriptive branch label in metadata. Verify homepage, documentation, search and registry routes, then assign only `beta.platejs.org` if the commit is still current.
+- Rename the single build flag to `PLATE_BUILD_BASIC`. Default and `1` retain the passing Basic configuration. GitHub explicitly sets `0`, using the 8192 MiB heap and normal webpack caching and parallelism. Turbo preserves the flag.
+- Compare observed setup, build, upload and complete deployment durations with the verified Vercel Basic run. This is an initial single-run comparison, not a controlled speedup claim.
 - Configure the `preview-next` GitHub environment, restrict it to `next`, and store project identifiers as variables. Store the Vercel token only as a secret.
 - Disable automatic Vercel Git deployments for `next` after the first successful Actions deployment. Preserve `main`.
 
@@ -43,7 +45,7 @@ Execution authority: the owner's "ok go" authorizes the workflow, GitHub and Ver
 
 The owner clarified that the same CI must serve `main` after `next` is proven. The token is scoped to the Plate project, not a branch. The initial GitHub environment remains restricted to `next`; production uses its own environment when enabled.
 
-The workflow's state is skipped, building, uploaded, checked, or assigned. Only a successful checked and assigned run, or a safe skip from its baseline, can become the next comparison base. No website source or public API changes are planned.
+The workflow's state is skipped, building, uploaded, checked, or assigned. Only a successful checked and assigned run, or a safe skip from its baseline, can become the next comparison base. The only website configuration change is the agreed build-flag rename and its explicit GitHub off setting.
 
 ## Steps
 
@@ -54,9 +56,11 @@ The workflow's state is skipped, building, uploaded, checked, or assigned. Only 
 - [x] Shared mutable state: serialize repository delivery and beta alias changes.
 - [x] Smallest safe decomposition: workflow first, live verification, then Git deployment cutover.
 - [x] Implement and verify the deployment workflow.
-- [ ] Configure GitHub and Vercel credentials and project settings.
-- [ ] Land through the repository delivery helper.
-- [ ] Run the build on GitHub Actions and inspect the deployed beta website in Chrome.
+- [x] Configure GitHub and Vercel credentials and project settings.
+- [x] Land through the repository delivery helper.
+- [ ] Run the build on GitHub Actions with `PLATE_BUILD_BASIC=0` and inspect the deployed beta website in Chrome.
+- [ ] Compare complete deployment time and separate build from setup and upload.
+- [ ] "ok lets continue github lane now, without that env enabled, and compare the speed of deployment at least. see Move Vercel builds to GitHub Actions for the wip work, we will continue here"
 - [ ] Disable duplicate automatic Git deployment after the replacement passes.
 - [ ] Finish writing passes, proof record and close.
 - [ ] "ok go, cut any overhead so it does fast. then use @Vercel and chrome as needed for the full setup"
@@ -64,43 +68,39 @@ The workflow's state is skipped, building, uploaded, checked, or assigned. Only 
 
 ## Completion Gates
 
+The owner explicitly waived the local aggregate gate for this deployment change: "Continue with focused checks and GitHub proof." The interrupted aggregate run records a watcher startup timeout and a CLI missing-dependency watcher timeout. Both cases passed their separate control runs, which do not prove that the full aggregate is green. Focused workflow and flag checks, real GitHub compilation, upload, route checks and Chrome verification remain required.
+
 | Gate | Evidence |
 | --- | --- |
-| Workflow syntax and shell checks | actionlint-a2.log; skip-baseline-a2.log covers five decision scenarios |
-| Focused existing workflow contracts | workflow-contracts-a2.log; seven tests passed |
+| Workflow syntax and shell checks | actionlint-a3.log; skip-baseline-a2.log covers five decision scenarios |
+| Focused existing workflow contracts | workflow-contracts-a3.log; eight tests passed |
+| Build flag modes | off-flag-modes-a1.log; default, 1 and 0 checked with real Next worker launch; compilation intercepted |
+| Local aggregate gate | Owner waived after continue-land-a1.log recorded two watcher timeouts; stopped under that approval |
 | Writing passes | deslop, unslop and bro completed; no-comments and agent reviews skip under fast |
 | Scoped lint | lint-a1.log; repository lint ignores these paths; actionlint covers the workflow |
-| GitHub environment and secret | pending |
+| GitHub environment and secret | preview-next restricts next; Plate-only token saved October 19, 2026 and expires October 19, 2027 |
 | GitHub Actions build and deployment | pending |
 | Live route and Chrome checks | pending |
 | Vercel Git deployment cutover | pending |
-| Delivery | pending |
-
-## Open questions
-
-### Deployment token
-
-May GitHub deploy Plate with a new project token?
-
-Why it needs you: The repository requires separate approval before a credential grant.
-
-- The token covers only the Plate project and expires October 19, 2027.
-- The first deployment environment accepts only the beta branch.
-
-- **Create token** (recommended): Create and store the project token in GitHub. Cost: Project access for one year.
-- **Configure yourself**: You supply the token directly in GitHub. Cost: You handle the credential.
-
-Why I pick it: Project scope keeps the token useful for beta and later production deployments.
-
-Attention: look
+| Delivery | 88e2550143 landed through land.mjs; live setup continues |
 
 ## Evidence
 
 - Vercel project `plate`, team `udecode`, project ID `prj_Itzm0mKIfc7VxZaktQCoWUZmkOiF`, organization ID `team_fVPtHPCspsy3Lyix3mdstrvj`.
 - Vercel maps `beta.platejs.org` to `next`; `next.platejs.org` maps to `pro` and is outside this change.
 - GitHub currently sets `SKIP_NEXT_CI=true`. The new deployment job has its own trigger and does not change that setting.
-- GitHub has no existing Vercel repository secret. Credential values are excluded from the plan, logs and caches.
-- The current build contract is `pnpm -w build:www:ci`, with package build concurrency limited to two. The JavaScript heap stays at 4096 MiB.
+- The owner approved creation and storage of the project-scoped `plate-github-actions` token. The token is stored only as the `VERCEL_TOKEN` secret in the GitHub environment. It expires October 19, 2027. Credential values are excluded from the plan, logs and caches.
+- The build contract is `pnpm -w build:www:ci`, with package build concurrency limited to two. Commit `40010f7279` restored the passing Basic mode. This continuation renames its flag and explicitly disables Basic mode on GitHub.
+- Baseline: Vercel Basic deployment `dpl_2n4jVxGHSpjrBvVqKJ9hbvyHnwTx`, commit `40010f7279`, 2 cores and 8 GB, 4096 MiB heap, zero Turbo cache hits, 1448 generated pages. Created-to-ready time is 516541 ms. Source and cache differences will be reported with the GitHub measurement.
+- GitHub run `39245512247` built successfully in 5m34s, then failed at `--skip-domain`. This is reproduction evidence only, not a successful deployment timing.
+- Continued in this chat from the original idle worktree `codex/deploy-www-next`. Four pending original-task files were preserved while fast-forwarding to current `origin/next`. Existing credential approval and fast mode persist. Production and hourly scheduling remain deferred.
+- The first authenticated run reached compilation, then a newer push cancelled it. Its log exposed a second dependency install. The final workflow removes the first install and makes Vercel's existing install command frozen. The replacement also pins current Node 24 action versions to remove the old actions' runtime deprecation warning.
+
+## Measurement scope
+
+The requested result is an observed end-to-end deployment duration with correctness checks. Record runner hardware, Node, source SHA, build mode, cache messages, real compilation and page counts, deployment READY state and beta alias identity. A failed or skipped run is excluded. One successful run per configuration is a ballpark comparison; it does not establish a repeatable causal speedup or choose the hosting provider.
+
+Benchmark lanes: source-and-host-readiness applies to the remote build and deployment. Current-vs-main-product-smoke, plate-vs-plite-decomposition, owner-microbench-and-trace, product-mount-matrix, trusted-editing-matrix, plite-vs-pinned-slate, example-breadth and large-and-stress are N/A because this compares deployment pipelines, not editor runtime performance. Interaction coverage is N/A for first and settled editing interactions; route-scope is the uploaded homepage, installation docs, search and registry, plus Chrome inspection; reporter-profile is GitHub Ubuntu and Vercel Basic builds, with Chrome for route proof.
 
 ## Verification
 
@@ -110,13 +110,12 @@ Attention: look
 
 ## Open work
 
-- Credential approval: owner is the user; stop when the authorized Vercel token is stored in the GitHub deployment environment.
 - Live deployment and beta cutover: owner is this run; stop after GitHub builds, route checks, Chrome verification and duplicate Git deployment removal pass.
 
 ## Close
 
 This is a partial setup. The workflow, next-only GitHub environment and project variables are configured. Seven existing contracts, workflow validation and five skip-decision scenarios passed. Lint ignores the changed paths. No website build ran on the Mac.
 
-The requested token has not been created or transferred. GitHub deployment, live Chrome verification and Vercel Git deployment cutover remain open. Production is a later adoption of the same pipeline after beta is proven. Agent reviews, no-comments, decision-trail review and reflect were skipped under the owner's fast instruction.
+The owner approved the requested token, and it is stored in GitHub. GitHub deployment, live Chrome verification and Vercel Git deployment cutover remain open. Production is a later adoption of the same pipeline after beta is proven. Agent reviews, no-comments, decision-trail review and reflect were skipped under the owner's fast instruction.
 
 The user's implementation request remains open until the live setup passes. The branch-scope question is answered. No unrelated changes were included.

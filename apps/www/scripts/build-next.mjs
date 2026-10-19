@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const heapLimit = process.env.PLATE_WWW_LOW_MEMORY === '0' ? 8192 : 4096;
+const heapLimit = process.env.PLATE_BUILD_BASIC === '0' ? 8192 : 4096;
 console.log(`Next.js build heap limit: ${heapLimit} MiB`);
 const result = spawnSync(
   process.execPath,
