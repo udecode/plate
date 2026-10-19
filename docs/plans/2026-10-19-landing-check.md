@@ -1,6 +1,6 @@
 # Land each task with only the checks it needs
 
-Status: building, waiting on the landing check
+Status: landed in c99fd5c2af
 Page: https://claude.ai/artifact/LgCVnj4DFGNgPNuufjNNch
 Playbook: build
 
@@ -8,11 +8,11 @@ Playbook: build
 
 ### What will change?
 
-This builds steps 1 to 5. A landing runs only the checks its changed files reach, so a docs change skips test suites. Load flakes are fixed, property tests replay one seed, and a daily run checks everything.
+Steps 1 to 5 landed in c99fd5c2af. A landing runs only the checks its files reach, so a docs change skips test suites. Three load flakes are fixed, property tests replay one seed, and a daily run checks everything.
 
 ### What could go wrong?
 
-A change can break a test that its paths do not pick, and only the daily run catches it. The docs checks no longer block a landing. A bad seed the daily run finds needs a task to fix.
+A change can break a test that its paths do not pick, and only the daily run catches it. The docs checks no longer block a landing. The daily task has not run yet, and it may stop on a permission prompt until you set its mode.
 
 ## Teach
 
@@ -56,7 +56,7 @@ Now a landing always runs the cheap steps and picks the test, Plite, CLI and www
 - [x] Step 4. Add `pnpm check --affected`.
 - [x] Step 5. Replay one fast-check seed in every Bun run, with `FAST_CHECK_SEED=random` for the daily run.
 - [x] Schedule the daily full check as the `plate-daily-full-check` task, 4am each day.
-- [ ] Land through `land.mjs --check 'pnpm check --affected'`.
+- [x] Land through `land.mjs --check 'pnpm check --affected'`.
 
 ## Completion Gates
 
@@ -68,7 +68,7 @@ Now a landing always runs the cheap steps and picks the test, Plite, CLI and www
 | CLI suite under load | `cli-test-rebudget-a1.log` |
 | Fixed seed reaches the laws | `law-seed-198320648-a1.log`; `law-seed-default-a1.log` |
 | Tooling tests | `tooling-tests-a2.log` |
-| Landing check on the squashed commit | pending |
+| Landing check on the squashed commit | `land-a4.log`, 25 of 25 steps |
 | Thermos review | skip: fast |
 | Hand drive | skip: no browser-visible change |
 | Workflow trial | skip: fast |
@@ -79,3 +79,24 @@ Now a landing always runs the cheap steps and picks the test, Plite, CLI and www
 - About 49 other `waitFor` presence checks in www specs may pay the same DOM-format cost on each failed poll. owner: t_18a7003e. stop: none.
 - One CLI watch case waited 30 seconds for a regenerate that never came, which points at a missed watch event rather than a slow host. owner: t_568bb940. stop: none.
 - Steps 6 to 8 of the testing plan: cut tests that cannot fail, update test-audit, then run the full audit. owner: t_fb191618 and t_8ea0d74e. stop: none.
+
+## Close
+
+Commit c99fd5c2af on `origin/next` holds steps 1 to 5, the docs that describe them and this plan. The daily `plate-daily-full-check` task lives outside the repository, in `~/.claude/scheduled-tasks/`.
+
+### Proof and its limits
+
+- The fourth landing check passed all 25 steps on the squashed commit, rebased onto dd053ee6d8 (`land-a4.log`). The commit changes `turbo.json` and `tooling/config/`, so it ran every step but the three that never run at landing. The test, slow test and CLI steps took 720 of its 847 step seconds.
+- Before this plan's docs-only close commit, which is the first landing to skip the test steps, the narrow path rested on the planner tests and on `affected-replay-a2.log` and `squash-replay-a2.log`, which show which steps recent commits would pick.
+- The daily task has not run yet. Its first run is at 4:07 tomorrow, in the default permission mode.
+
+### Reversals and deviations
+
+- The first landing check failed 3 steps. A root `globalEnv` broke the turbo env test, so the seed moved to the partition env. A yjs scale case hit Bun's 5 second limit at load 38, so both runners got a 30 second hang limit. The docs app read an empty generated file once, and it passed on every later run.
+- The second check failed a TableGrid speed budget and one CLI watch case, neither in this diff. Task t_568bb940 holds the watch case.
+- The third check passed, and `land.mjs` refused it because the lead edited the plan during the run.
+- The `cli-test` rule widened to Plate and Plite source, which the CLI tests compile against. `cli-rule-mutant-a1.log` shows the planner test fails on the narrower rule.
+
+### Counts
+
+One owner ask, "do 1 to 5. fast.", is done. All 7 steps are closed. The thermos review, panel and workflow trial were skipped under fast, so this commit stays owed a review.
