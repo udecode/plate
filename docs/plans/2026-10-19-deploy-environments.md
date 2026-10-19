@@ -48,9 +48,9 @@ The data shape is a branch decision followed by an environment-bound deployment 
 - [x] Independent workstreams. skip: sequential credential transfer and workflow delivery share the deployment setup.
 - [x] Shared mutable state. Source: per-branch concurrency in `.github/workflows/deploy.yml`; settings writes remain sequential.
 - [x] Smallest safe decomposition. Source: `.github/workflows/migrate-deploy-environments.yml` and `.github/workflows/deploy.yml`.
-- [ ] Configure Production and Beta with branch restrictions and project variables.
-- [ ] Transfer the existing credential encrypted and remove the temporary transfer workflow.
-- [ ] Update both branch workflows and run focused checks and writing passes.
+- [x] Configure Production and Beta with branch restrictions and project variables. Proof: GitHub environment API readback on 2026-10-19; `docs/plans/artifacts/deploy-environments/target-public-keys.json`.
+- [x] Transfer the existing credential encrypted and remove the temporary transfer workflow. Proof: https://github.com/udecode/plate/actions/runs/39277273271; encrypted values accepted by both destination secret APIs.
+- [x] Update both branch workflows and run focused checks and writing passes. Proof: `docs/plans/artifacts/deploy-environments/deploy-actionlint-a1.log` and `docs/plans/artifacts/deploy-environments/skip-a1.log`; direct deslop, unslop and bro.
 - [ ] Prove a real successful deployment in Production and Beta with the correct URLs.
 - [ ] Prove ignored pushes start no deployment job and create no deployment record.
 - [ ] "ok go update https://github.com/udecode/plate/settings/environments" Verify the final settings in Chrome and record delivery.

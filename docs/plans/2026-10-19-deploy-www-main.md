@@ -115,3 +115,5 @@ The production alias points to dpl_sLDRfNDitWr27QLxDtdao2TrGB9T. Beta points to 
 The follow-up proof commits are a5c30c247b on main, docs(www): record production deployment proof, and 2f23fe08ca on next, docs(www): record the renamed beta deployment workflow. All three explicit asks are complete. The local aggregate remains unpassed under the owner's waiver. No editor-interaction coverage or controlled deployment speedup is claimed. The final docs-only record changes no served application bytes.
 
 All 16 plan steps are closed. Independent reviews, no-comments, trail review and reflect were skipped under fast mode. There is no remaining work in this rollout.
+
+The environment-tracking correction is owned by [Correct GitHub deployment environments](./2026-10-19-deploy-environments.md). The initial rollout reused preview-next, so production history was misfiled and skipped jobs created deployment records. That follow-up separates Production and Beta and checks changes before starting a deployment job.
