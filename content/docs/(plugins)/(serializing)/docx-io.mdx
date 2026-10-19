@@ -252,6 +252,11 @@ Font family for the document body. Overrides default Calibri font.
 <APIItem name="customStyles" type="string" optional>
 Additional CSS styles to include. Appended after default DOCX_EXPORT_STYLES.
 </APIItem>
+<APIItem name="pageNumber" type="boolean" optional>
+Number the pages in a footer, left-aligned in the document font.
+
+- **Default:** `false`
+</APIItem>
 <APIItem name="title" type="string" optional>
 Document title for metadata.
 </APIItem>
@@ -318,6 +323,9 @@ Font family.
 </APIItem>
 <APIItem name="customStyles" type="string" optional>
 Additional CSS styles.
+</APIItem>
+<APIItem name="pageNumber" type="boolean" optional>
+Number the pages in a footer.
 </APIItem>
 <APIItem name="title" type="string" optional>
 Document title.

@@ -18,6 +18,7 @@
  * - Support for inline images (base64)
  * - Configurable page orientation (portrait/landscape)
  * - Configurable page margins
+ * - Optional footer with page numbers
  * - Custom CSS styles support
  * - Font family customization
  *
@@ -202,6 +203,13 @@ export type DocxExportOperationOptions = {
    * @default 'portrait'
    */
   orientation?: DocxExportOrientation;
+
+  /**
+   * Number the pages in a footer, left-aligned in the document font.
+   *
+   * @default false
+   */
+  pageNumber?: boolean;
 
   /**
    * Page size in twentieths of a point (twips). Defaults to the html-to-docx
@@ -429,6 +437,7 @@ async function exportToDocxInternal(
     fontFamily,
     margins = DEFAULT_DOCX_MARGINS,
     orientation = 'portrait',
+    pageNumber,
     pageSize,
     value,
   } = options;
@@ -456,11 +465,13 @@ async function exportToDocxInternal(
   // Convert to DOCX using browser-compatible implementation
   const blob = await htmlToDocxBlob(inlinedHtml, {
     font: fontFamily,
+    footer: pageNumber,
     margins: {
       ...DEFAULT_DOCX_MARGINS,
       ...margins,
     },
     orientation,
+    pageNumber,
     pageSize,
   });
 
