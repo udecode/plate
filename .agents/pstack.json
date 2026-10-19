@@ -133,7 +133,7 @@
     }
   ],
   "synced": {
-    "block": "b946ad6c975a0e8c0c9c6cb0313db436214a443e50c77cc0e8bf505c92c6bf84",
+    "block": "63cf002c1c07f4968a027418aa6703a0db4719b0c82e448b8842e9d5fc6c4453",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-build.md": "7371c8760bd3bf2a18d53e4efe3f0b2a4b814bc2d7da5c01e741e7ee6bc49599",
@@ -142,7 +142,7 @@
       ".agents/pstack/cua-steps.mjs": "1ab7c6ed073ad08616be3be0e81d3c8a474c57e46cedda772afced8f570493cb",
       ".agents/pstack/freeze.mjs": "6a4f314d07235936da116d73e116a45e7a03821084f5044f84f84d3ec122e332",
       ".agents/pstack/head.mjs": "bcd2d1b577deff6ae700d20491f9e4c90a76a0e68a76347e3b4f33e7971a7fae",
-      ".agents/pstack/lead.mjs": "905434fc6ddcc7795f85924739b793af5f4eda02aefad2d8a34a6df35d42e80b",
+      ".agents/pstack/lead.mjs": "723ee85adab4e045d2d8c8f6f565fabeb16b7f3eb9391bea1a11d7eb26a18ee4",
       ".agents/pstack/mutate.mjs": "0cbd3c8ca6565407737d832f8b654bbdeb0500d466f527452084fc909d7935c5",
       ".agents/pstack/proof.mjs": "c81639aeadb82404ab064d7c8ee181ab1ef895cdc6aceee2ea65fa3343af1136",
       ".agents/pstack/reply.mjs": "36db86ef0f6af915d4a2ac58fea6be62417234a0b1348462e61c8d4f46fd71a3",
@@ -164,10 +164,10 @@
       ".agents/pstack/rules/panel.md": "afdac198ce09c42aff948f070e7c43801e0ec2b44fc0756bb50d74f11e800c33",
       ".agents/pstack/rules/reflect.md": "82ab2777a04d538a60db29a71f743db3cb9952774a51b5f76ebbbba7c51c7f4c",
       ".agents/pstack/rules/tests.md": "d1dd6d0ceb41a6ce2baa3dac909b411d780aa3ba9548436b0c5618a92a27eff5",
-      ".agents/pstack/rules/time.md": "294121428612e5195254953b703106c3c05ccf1ac08a79847cefa457fa1e59e9",
+      ".agents/pstack/rules/time.md": "786dbe6caf14d354d75a524fc3abeccdebbbb508d3d11ffcbed6cd3d0833df61",
       ".agents/pstack/rules/title.md": "1d5152a96964564d66224b484e34127d1e64b1b21783a46385350751583ff821",
       ".agents/pstack/rules/trails.md": "e5d12f8c578a1d2f45dd6624ed0022babbad97f2e474b05894f00a6075913ae1"
     },
-    "source": "272ed789a7109d36e01f15c50340265627dab5ab"
+    "source": "db0651a120c598c9f2c815fc7d8961ad7bb1810e"
   }
 }
