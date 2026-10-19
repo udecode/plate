@@ -1345,7 +1345,9 @@ for (const action of ['Accept', 'Reject'] as const) {
     const paragraph = root.locator('.editor-paragraph').filter({
       hasText: 'Embed rich media like images directly in your content.',
     });
-    await paragraph.click();
+    // The reselected image's toolbar flips above it when the viewport has no
+    // room below, covering this paragraph's middle, so click its first word.
+    await paragraph.click({ position: { x: 12, y: 12 } });
     await page.keyboard.press('End');
     await page.keyboard.type(' Still editing.');
     await expect(paragraph).toContainText('Still editing.');
