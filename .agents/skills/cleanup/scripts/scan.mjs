@@ -17,6 +17,12 @@
 // safe item, judges it again, checks the running processes once more, saves a
 // worktree's uncommitted changes the checkout lacks as a patch under the git
 // folder's cleanup/ and removes it.
+// In a pstack project, whose .agents/pstack.json names its plans directory,
+// --landed counts only ignored files under <plans>/artifacts/, because there
+// every other ignored file is build output or a copy of the checkout's, and
+// one there counts as held once the checkout has that path, because the
+// landing merge never overwrites the checkout's copy. It also skips commits
+// only HEAD's reflog reaches, which land.mjs's squash leaves behind.
 // --brief prints one line, or nothing, counting the unlocked agent worktrees and
 // the checkout caches cleanup could remove that show no git or cache writes for
 // three days. --landed exits 0 only when every change and ignored file of one
@@ -257,11 +263,21 @@ function recreated(path, rel, isDir) {
   return CACHE.test(name) || (PACKAGE_OUTPUT.has(name) && existsSync(join(path, dirname(rel), 'package.json')));
 }
 
-function ignoredWork(main, path, listings) {
+function runRoot(main) {
+  try {
+    const { plans } = JSON.parse(readFileSync(join(main, '.agents', 'pstack.json'), 'utf8'));
+    return typeof plans === 'string' && plans ? join(plans, 'artifacts') : null;
+  } catch {
+    return null;
+  }
+}
+
+function ignoredWork(main, path, listings, root = null) {
   const unique = [];
   let seen = 0;
   const visit = (rel) => {
     if (seen > IGNORED_LIMIT) return;
+    if (root && !within(join(path, rel), join(path, root)) && !within(join(path, root), join(path, rel))) return;
     const isDir = Boolean(statOrNull(join(path, rel))?.isDirectory());
     if (recreated(path, rel, isDir)) return;
     if (isDir) {
@@ -269,7 +285,7 @@ function ignoredWork(main, path, listings) {
       return;
     }
     seen += 1;
-    if (!matchesCheckout(main, path, rel, listings)) unique.push(rel);
+    if (root ? !spelledIn(main, rel, listings) : !matchesCheckout(main, path, rel, listings)) unique.push(rel);
   };
   for (const entry of git(path, ['ls-files', '-z', '--others', '--ignored', '--exclude-standard', '--directory']).split('\0')) {
     const rel = entry.replace(/\/$/u, '');
@@ -354,16 +370,16 @@ function heldCaches(path, worktrees) {
 
 // Removing a worktree deletes its HEAD reflog, so a commit made on a detached
 // HEAD and left behind by a later switch or reset is lost unless a ref reaches it.
-function unreachedList(main, entry, options) {
-  const history = execFileSync('git', ['--no-optional-locks', 'reflog', 'show', '--format=%H', 'HEAD'], { cwd: entry.path, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+function unreachedList(main, entry, options, reflog = true) {
+  const history = reflog ? execFileSync('git', ['--no-optional-locks', 'reflog', 'show', '--format=%H', 'HEAD'], { cwd: entry.path, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }) : '';
   const tips = [...new Set([entry.HEAD, ...history.split('\n')].filter(Boolean))];
   const input = [...tips, '--not', '--branches', '--tags', '--remotes', ''].join('\n');
   return execFileSync('git', ['--no-optional-locks', 'rev-list', ...options, '--ignore-missing', '--stdin'], { cwd: main, encoding: 'utf8', input, stdio: ['pipe', 'pipe', 'ignore'] });
 }
 
-function unreachedCommits(main, entry) {
+function unreachedCommits(main, entry, reflog = true) {
   try {
-    return Number(unreachedList(main, entry, ['--count']));
+    return Number(unreachedList(main, entry, ['--count'], reflog));
   } catch {
     return null;
   }
@@ -383,11 +399,12 @@ const cleanupFacts = (main, entry, worktrees) => ({ heldCaches: heldCaches(entry
 
 function contentFacts(main, entry, worktrees) {
   const listings = new Map();
+  const root = runRoot(main);
   return {
     ...compareWithCheckout(main, entry.path, listings),
     heldCaches: heldCaches(entry.path, worktrees),
-    ignored: ignoredWork(main, entry.path, listings),
-    unreached: unreachedCommits(main, entry),
+    ignored: ignoredWork(main, entry.path, listings, root),
+    unreached: unreachedCommits(main, entry, root === null),
   };
 }
 

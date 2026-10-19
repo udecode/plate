@@ -161,6 +161,39 @@ test('--landed passes ignored copies of the checkout and folders an install or b
   assert.equal(landedOf(f.archived), 'safe');
 });
 
+function pstackFixture() {
+  const f = fixture();
+  mkdirSync(join(f.main, '.agents'), { recursive: true });
+  writeFileSync(join(f.main, '.agents', 'pstack.json'), '{"plans":"docs/plans"}\n');
+  writeFileSync(join(f.main, '.git', 'info', 'exclude'), '.source/\ndocs/plans/artifacts/\n');
+  return f;
+}
+
+test('--landed in a pstack project passes generated output and asks only about run artifacts the checkout lacks', () => {
+  const f = pstackFixture();
+  mkdirSync(join(f.archived, 'apps', 'www', '.source'), { recursive: true });
+  writeFileSync(join(f.archived, 'apps', 'www', '.source', 'browser.ts'), 'generated\n');
+  assert.equal(landedOf(f.archived), 'safe', 'generated output outside the run folders does not keep the worktree');
+  mkdirSync(join(f.archived, 'docs', 'plans', 'artifacts', 'run'), { recursive: true });
+  writeFileSync(join(f.archived, 'docs', 'plans', 'artifacts', 'run', 'proof.log'), 'exit 0\n');
+  assert.equal(landedOf(f.archived), 'ask', 'a run artifact the checkout lacks keeps the worktree');
+  mkdirSync(join(f.main, 'docs', 'plans', 'artifacts', 'run'), { recursive: true });
+  writeFileSync(join(f.main, 'docs', 'plans', 'artifacts', 'run', 'proof.log'), 'exit 0, merged earlier\n');
+  assert.equal(landedOf(f.archived), 'safe', 'the checkout copy a no-overwrite merge kept holds the artifact');
+});
+
+test('--landed in a pstack project passes the commits a squash left only in the reflog', () => {
+  const f = pstackFixture();
+  for (const name of ['b.txt', 'c.txt']) {
+    writeFileSync(join(f.archived, name), `${name}\n`);
+    git(f.archived, 'add', name);
+    git(f.archived, '-c', 'user.email=t@example.com', '-c', 'user.name=t', 'commit', '-q', '-m', name);
+  }
+  git(f.archived, 'reset', '-q', '--soft', 'HEAD~2');
+  git(f.archived, '-c', 'user.email=t@example.com', '-c', 'user.name=t', 'commit', '-q', '-m', 'squashed');
+  assert.equal(landedOf(f.archived), 'safe');
+});
+
 test('--landed asks about proof logs in a run folder named build', () => {
   const f = fixture();
   mkdirSync(join(f.archived, 'artifacts', 'run', 'build'), { recursive: true });
