@@ -1,5 +1,9 @@
 import type { Point } from '../../../facade';
 import { defineInputRule } from './defineInputRule';
+import {
+  createMarkSpanInputRule,
+  NON_WHITESPACE,
+} from './markInputRule.internal';
 import type {
   BlockFenceInputRuleConfig,
   BlockFenceInputRuleMatch,
@@ -18,129 +22,9 @@ import type {
   TextSubstitutionPattern,
 } from './types';
 
-const NON_WHITESPACE = /\S+/;
-
 export const createMarkInputRule = (
   config: MarkInputRuleConfig
-): InsertTextInputRule<MarkInputRuleMatch> =>
-  defineInputRule({
-    enabled: config.enabled,
-    priority: config.priority,
-    target: 'insertText',
-    trigger: config.trigger,
-    resolve: ({ editor, text }) => {
-      const selection = editor.read.selection();
-
-      if (
-        text !== config.trigger ||
-        !selection ||
-        !editor.read.selection.isCollapsed()
-      ) {
-        return undefined;
-      }
-
-      let beforeEndMatchPoint: Point | undefined = selection.anchor;
-
-      if (config.end) {
-        beforeEndMatchPoint = editor.read.points.before(selection, {
-          matchString: config.end,
-        });
-      }
-
-      if (!beforeEndMatchPoint) return undefined;
-
-      const afterStartMatchPoint = editor.read.points.before(
-        beforeEndMatchPoint,
-        {
-          afterMatch: true,
-          matchString: config.start,
-          skipInvalid: true,
-        }
-      );
-      const beforeStartMatchPoint = editor.read.points.before(
-        beforeEndMatchPoint,
-        {
-          matchString: config.start,
-          skipInvalid: true,
-        }
-      );
-
-      if (!afterStartMatchPoint || !beforeStartMatchPoint) return undefined;
-
-      const pointBeforeStart = editor.read.points.before(beforeStartMatchPoint);
-      const previousText = pointBeforeStart
-        ? editor.read.text.string({
-            anchor: pointBeforeStart,
-            focus: beforeStartMatchPoint,
-          })
-        : '';
-
-      if (previousText && NON_WHITESPACE.test(previousText)) return undefined;
-
-      const range = {
-        anchor: afterStartMatchPoint,
-        focus: beforeEndMatchPoint,
-      };
-      const matchText = editor.read.text.string(range);
-
-      if (config.trim !== 'allow' && matchText.trim() !== matchText) {
-        return undefined;
-      }
-
-      return {
-        afterStartMatchPoint,
-        beforeEndMatchPoint,
-        beforeStartMatchPoint,
-        end: config.end,
-      };
-    },
-    apply: ({ editor, plugin, tx }, match) => {
-      const marks = config.marks ? [...config.marks] : [config.mark ?? plugin];
-      const markKeys: string[] = [];
-
-      for (const mark of marks) {
-        const portal = editor.plugin(mark);
-        if (!portal.installed) return undefined;
-        const { schema } = portal;
-
-        if (!('key' in schema)) return undefined;
-        markKeys.push(schema.key);
-      }
-
-      const selection = tx.selection();
-
-      if (selection && match.beforeEndMatchPoint !== selection.anchor) {
-        tx.text.delete({
-          at: {
-            anchor: match.beforeEndMatchPoint,
-            focus: selection.anchor,
-          },
-        });
-      }
-
-      tx.selection.set({
-        anchor: match.afterStartMatchPoint,
-        focus: match.beforeEndMatchPoint,
-      });
-
-      markKeys.forEach((key) => {
-        tx.marks.add(key, config.value === undefined ? true : config.value);
-      });
-
-      tx.selection.collapse({ edge: 'end' });
-
-      markKeys.forEach((key) => {
-        tx.marks.remove(key);
-      });
-      tx.text.delete({
-        at: {
-          anchor: match.beforeStartMatchPoint,
-          focus: match.afterStartMatchPoint,
-        },
-      });
-      return undefined;
-    },
-  });
+): InsertTextInputRule<MarkInputRuleMatch> => createMarkSpanInputRule(config);
 
 export const matchBlockStart = <
   TMatch extends object = {},

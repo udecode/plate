@@ -2,10 +2,16 @@ import {
   definePlugin,
   createMarkInputRule,
   type MarkInputRuleConfig,
+  NodeApi,
   property,
   PLUGINS,
 } from '../../../core';
 import { someHtmlElement } from '../../../lib/plugins/html/htmlDom';
+import {
+  createMarkSpanInputRule,
+  type IntraWordMarkAcceptor,
+  resolveMarkSpan,
+} from '../../../lib/plugins/input-rules/markInputRule.internal';
 
 const findHtmlParentElement = (
   element: HTMLElement | null,
@@ -72,6 +78,44 @@ export const ItalicRules = {
     }),
 };
 
+const acceptScriptInsideWord: IntraWordMarkAcceptor = ({
+  content,
+  context,
+  previousChar,
+  start,
+}) => {
+  if (
+    !/^[\d)A-Za-z]$/.test(previousChar) ||
+    !/^[+-]?[\dA-Za-z]+[+-]?$/.test(content)
+  ) {
+    return false;
+  }
+
+  const code = context.editor.plugin(BaseCodePlugin);
+
+  if (!code.installed) return true;
+  if (code.read.isActive()) return false;
+
+  const caret = context.editor.read.selection()?.anchor;
+  const blockEntry = context.getBlockEntry();
+
+  if (!caret || !blockEntry) return false;
+
+  const [block, blockPath] = blockEntry;
+
+  for (const [leaf] of NodeApi.texts(block, {
+    from: start.path.slice(blockPath.length),
+    to: caret.path.slice(blockPath.length),
+  })) {
+    if (leaf[code.schema.key]) return false;
+  }
+
+  return (
+    !context.getBlockTextBeforeSelection().includes('`') ||
+    !resolveMarkSpan(context, { start: '`' })
+  );
+};
+
 export const ScriptRules = {
   markdown: ({
     value,
@@ -79,12 +123,15 @@ export const ScriptRules = {
   }: MarkdownMarkRuleOptions & {
     value: ScriptValue;
   }) =>
-    createMarkInputRule({
-      ...options,
-      start: value === 'sub' ? '~' : '^',
-      trigger: value === 'sub' ? '~' : '^',
-      value,
-    }),
+    createMarkSpanInputRule(
+      {
+        ...options,
+        start: value === 'sub' ? '~' : '^',
+        trigger: value === 'sub' ? '~' : '^',
+        value,
+      },
+      acceptScriptInsideWord
+    ),
 };
 
 export const StrikethroughRules = {

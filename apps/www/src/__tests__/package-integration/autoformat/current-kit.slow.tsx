@@ -179,6 +179,50 @@ describe('AutoformatKit current contract', () => {
     ]);
   });
 
+  it('applies subscript and superscript to typed H~2~O X^2^ inside words [plate#5204] [EDIT-PROFILE-AUTOFMT-MARK-002]', () => {
+    const editor = createCurrentKitEditor({
+      plugins: [...BasicMarksKit],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+        kind: 'text',
+      },
+      value: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+
+    for (const char of 'H~2~O X^2^') insertText(editor, char);
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { text: 'H' },
+          { script: 'sub', text: '2' },
+          { text: 'O X' },
+          { script: 'sup', text: '2' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('keeps typed a`b and `x^2^ literal where a backtick would close inline code over it [plate#5204] [EDIT-PROFILE-AUTOFMT-MARK-004]', () => {
+    const editor = createCurrentKitEditor({
+      plugins: [...BasicMarksKit],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+        kind: 'text',
+      },
+      value: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+
+    for (const char of 'a`b and `x^2^') insertText(editor, char);
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'a`b and `x^2^' }], type: 'paragraph' },
+    ]);
+  });
+
   it('keeps shorthand literal inside code blocks because the kit gates autoformat there', () => {
     const input = (
       <fragment>

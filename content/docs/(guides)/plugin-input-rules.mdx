@@ -281,7 +281,15 @@ export const AdditionalMarkInputRulesKit = [
 ```
 
 Inline code uses `` `x` ``. Strikethrough uses `~~x~~`. Subscript is `~x~`.
-Superscript is `^x^`. Highlight accepts `==x==` or `≡x≡` — pick either, both,
+Superscript is `^x^`. Unlike the other mark rules, subscript and superscript
+also open inside a word, as in `H~2~O` and `X^2^`. There the opener must follow
+an ASCII letter, a digit or `)`, the text between must be ASCII letters or
+digits with an optional sign at either end. While `CodePlugin` is installed, the
+match must also not sit inside inline code, or where the `` `x` `` shortcut would
+wrap it on one more typed backtick, even when that shortcut is off. At the start
+of a text run, such as right after bold text, the opener counts as following a
+space, so these limits do not apply.
+Highlight accepts `==x==` or `≡x≡` — pick either, both,
 or pass a different variant.
 
 ### Code blocks
@@ -965,7 +973,7 @@ Every family below is a single export from its package. Each `.markdown()` (or `
 | `UnderlineRules` | `platejs` | `__x__` mark rule |
 | `CodeRules` | `platejs` | `` `x` `` inline code mark rule |
 | `StrikethroughRules` | `platejs` | `~~x~~` mark rule |
-| `ScriptRules` | `platejs` | `~x~` for `'sub'`, `^x^` for `'sup'` |
+| `ScriptRules` | `platejs` | `~x~` for `'sub'`, `^x^` for `'sup'`, also inside a word as in `H~2~O` |
 | `HighlightRules` | `platejs` | `==x==` / `≡x≡` mark rule |
 | `MarkComboRules` | `platejs` | Multi-mark combo rules (bold/italic/underline) |
 | `CodeBlockRules` | `platejs` | Triple-backtick block fence rule, requires `on` |

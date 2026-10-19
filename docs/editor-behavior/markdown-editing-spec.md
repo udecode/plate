@@ -3848,7 +3848,9 @@ Proof: the code meets it, and no test pins it. `HeadingRules.markdown()` decline
 Ownership:
 
 - mark autoformat closes a valid delimiter run and removes the wrappers
-- invalid, escaped, intra-word, or trim-sensitive mismatches stay text
+- invalid, escaped, intra-word, or trim-sensitive mismatches stay text, except
+  the intra-word subscript and superscript shorthand that
+  `EDIT-PROFILE-AUTOFMT-MARK-002` names
 - nested delimiter compositions are a separate current contract from plain
   one-mark shorthand
 
@@ -3872,7 +3874,14 @@ highlight / subscript / superscript mark
 ```
 
 note: these symbols are markdown-sensitive and deserve their own row even when
-they still end as marks
+they still end as marks. Inside a word, `~` and `^` open only after an ASCII
+letter, a digit or `)`, around ASCII letters or digits with an optional sign at
+either end, and, while the code plugin is installed, never inside inline code
+or where the inline-code shortcut would wrap the match on one more typed
+backtick, even when that shortcut is off, so `H~2~O`, `X^2^` and `Ca^2+^`
+mark while `3~5天` and `(^3^)` stay text. These limits hold within one text
+run; an opener at the start of a text run, such as right after bold text,
+follows the after-space rule
 
 - `EDIT-PROFILE-AUTOFMT-MARK-003` `deviation`
 
@@ -3893,7 +3902,9 @@ type a**word**
 leave text literal
 ```
 
-note: invalid or intra-word delimiter runs must not silently become marks
+note: invalid or intra-word delimiter runs must not silently become marks;
+the subscript and superscript shorthand in `EDIT-PROFILE-AUTOFMT-MARK-002` is
+the one intra-word exception
 
 - `EDIT-PROFILE-AUTOFMT-MARK-005` `deviation`
 
