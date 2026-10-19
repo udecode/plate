@@ -1,1 +1,0 @@
-export { createCodeMirrorAdapter } from './createCodeMirrorAdapter';

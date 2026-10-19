@@ -1,1 +1,0 @@
-[Beta]: Editor drag crashes the page

@@ -1,1 +1,0 @@
-import './editing-kernel-contract';

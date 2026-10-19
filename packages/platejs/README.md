@@ -1,5 +1,0 @@
-# Plate
-
-## License
-
-[MIT](../../LICENSE)
