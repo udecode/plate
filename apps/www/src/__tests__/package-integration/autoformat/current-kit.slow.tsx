@@ -152,6 +152,33 @@ describe('AutoformatKit current contract', () => {
     ]);
   });
 
+  it('applies subscript and superscript to typed ~2~ and ^2^ instead of unicode digits [plate#5204]', () => {
+    const editor = createCurrentKitEditor({
+      plugins: [...BasicMarksKit],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+        kind: 'text',
+      },
+      value: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+
+    for (const char of 'a ~2~ b ^2^ c') insertText(editor, char);
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { text: 'a ' },
+          { script: 'sub', text: '2' },
+          { text: ' b ' },
+          { script: 'sup', text: '2' },
+          { text: ' c' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
   it('keeps shorthand literal inside code blocks because the kit gates autoformat there', () => {
     const input = (
       <fragment>

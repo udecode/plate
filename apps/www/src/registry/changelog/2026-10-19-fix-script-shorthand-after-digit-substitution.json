@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-19-fix-script-shorthand-after-digit-substitution",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-19-fix-script-shorthand-after-digit-substitution.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix typed ~2~ and ^2^, which the unicode digit substitutions broke",
+  "targets": [
+    {
+      "name": "autoformat",
+      "files": ["apps/www/src/registry/components/editor/autoformat.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-19-autoformat-fix-typed-2-next-2e0f23d6",
+      "kind": "fix",
+      "summary": "Remove the `~0`–`~9`, `^0`–`^9`, `~+`, `~-`, `^+` and `^-` unicode substitutions, so typed `~2~` and `^2^` become subscript and superscript with `basic-marks` instead of `₂~` and `²^`. `^o` still becomes `°`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["autoformat"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-19",
+          "entry": "2026-10-19-fix-script-shorthand-after-digit-substitution",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

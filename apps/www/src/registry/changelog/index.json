@@ -56,6 +56,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-19-fix-script-shorthand-after-digit-substitution",
+      "href": "/registry/changelog/2026-10-19-fix-script-shorthand-after-digit-substitution.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix typed ~2~ and ^2^, which the unicode digit substitutions broke",
+      "change": {
+        "type": "source",
+        "date": "2026-10-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["autoformat"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-19-math-inline-mode",
       "href": "/registry/changelog/2026-10-19-math-inline-mode.json",
       "status": "draft",

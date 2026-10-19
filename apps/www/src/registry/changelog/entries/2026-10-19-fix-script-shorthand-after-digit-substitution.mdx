@@ -1,0 +1,14 @@
+---
+id: 2026-10-19-fix-script-shorthand-after-digit-substitution
+date: 2026-10-19
+status: draft
+kind: fix
+summary: 'Fix typed ~2~ and ^2^, which the unicode digit substitutions broke'
+change: { 'type': 'source', 'date': '2026-10-19', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-19-autoformat-fix-typed-2-next-2e0f23d6","kind":"fix","migrationNotes":[]} -->
+
+- **`autoformat`**: Remove the `~0`–`~9`, `^0`–`^9`, `~+`, `~-`, `^+` and `^-` unicode substitutions, so typed `~2~` and `^2^` become subscript and superscript with `basic-marks` instead of `₂~` and `²^`. `^o` still becomes `°`.

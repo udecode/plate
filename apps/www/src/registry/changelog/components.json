@@ -25,6 +25,7 @@
     ],
     "autoformat": [
       "2026-10-19-fix-negated-comparison-shortcuts",
+      "2026-10-19-fix-script-shorthand-after-digit-substitution",
       "2026-08-17-flat-editor-registry"
     ],
     "math": [
