@@ -619,7 +619,6 @@ export const cleanWordHtml = (
         fontFamily,
         fontSize,
         fontStyle,
-        fontWeight,
         textDecoration,
       },
     } = htmlElement;
@@ -630,7 +629,6 @@ export const cleanWordHtml = (
       !fontFamily &&
       !fontSize &&
       !fontStyle &&
-      !fontWeight &&
       !textDecoration
     ) {
       return true;
@@ -645,9 +643,6 @@ export const cleanWordHtml = (
 
     if (!['inherit', 'initial', 'normal'].includes(color)) {
       span.style.fontStyle = fontStyle;
-    }
-    if (![400, 'normal'].includes(fontWeight)) {
-      span.style.fontWeight = fontWeight;
     }
 
     span.style.textDecoration = textDecoration;

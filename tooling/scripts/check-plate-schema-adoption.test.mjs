@@ -2717,7 +2717,7 @@ test('allows only the exact reviewed raw-query count in an owning file', () => {
 
   const htmlOwner = 'packages/platejs/src/lib/plugins/html/HtmlPlugin.ts';
   const htmlQueries = Array.from(
-    { length: 4 },
+    { length: 5 },
     () =>
       `state.schema.property({ key: property.key, placement: property.property.placement, type })`
   ).join(';');

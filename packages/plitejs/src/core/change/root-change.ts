@@ -566,13 +566,30 @@ export class SectionIterator {
   }
 }
 
+const flushJoins = (data: SectionData[], joins: PreparedTokenSlice[]) => {
+  if (joins.length === 0) return;
+
+  const slices = [
+    (data.at(-1) ?? PreparedTokenSlice.empty) as PreparedTokenSlice,
+    ...joins,
+  ];
+  const filled = slices.filter((slice) => slice.length > 0);
+
+  data[data.length - 1] =
+    filled.length > 1
+      ? PreparedTokenSlice.concat(filled)
+      : (filled[0] ?? PreparedTokenSlice.empty);
+  joins.length = 0;
+};
+
 export const addSection = (
   sections: number[],
   data: SectionData[],
   length: number,
   inserted: number,
   value: SectionData,
-  forceJoin = false
+  forceJoin = false,
+  joins?: PreparedTokenSlice[]
 ) => {
   if (length === 0 && inserted <= 0) return;
 
@@ -593,11 +610,17 @@ export const addSection = (
   ) {
     sections[last] += length;
     sections[last + 1] += inserted;
-    data[data.length - 1] = (
-      (data.at(-1) ?? PreparedTokenSlice.empty) as PreparedTokenSlice
-    ).concat((value ?? PreparedTokenSlice.empty) as PreparedTokenSlice);
+    const slice = (value ?? PreparedTokenSlice.empty) as PreparedTokenSlice;
+
+    if (joins) joins.push(slice);
+    else {
+      data[data.length - 1] = (
+        (data.at(-1) ?? PreparedTokenSlice.empty) as PreparedTokenSlice
+      ).concat(slice);
+    }
     return;
   }
+  if (joins) flushJoins(data, joins);
 
   sections.push(length, inserted);
   data.push(value);
@@ -611,21 +634,32 @@ export const composeSections = (
 ) => {
   const sections: number[] = [];
   const data: SectionData[] = [];
+  const joins: PreparedTokenSlice[] = [];
+  const add = (
+    length: number,
+    inserted: number,
+    value: SectionData,
+    forceJoin: boolean
+  ) => addSection(sections, data, length, inserted, value, forceJoin, joins);
   const a = new SectionIterator(sectionsA, dataA);
   const b = new SectionIterator(sectionsB, dataB);
   let open = false;
 
   for (;;) {
-    if (a.done && b.done) return { data, sections };
+    if (a.done && b.done) {
+      flushJoins(data, joins);
+
+      return { data, sections };
+    }
 
     if (a.inserted === 0) {
-      addSection(sections, data, a.length, 0, a.slice, open);
+      add(a.length, 0, a.slice, open);
       a.next();
       continue;
     }
 
     if (b.length === 0 && !b.done) {
-      addSection(sections, data, 0, b.inserted, b.slice, open);
+      add(0, b.inserted, b.slice, open);
       b.next();
       continue;
     }
@@ -643,18 +677,14 @@ export const composeSections = (
         ...(b.modifications ?? []),
       ]);
 
-      addSection(
-        sections,
-        data,
+      add(
         length,
         modifications.length > 0 ? -2 : -1,
         modifications.length > 0 ? modifications : null,
         open
       );
     } else if (a.keep) {
-      addSection(
-        sections,
-        data,
+      add(
         length,
         b.offset > 0 ? 0 : b.inserted,
         b.offset > 0 ? PreparedTokenSlice.empty : b.slice,
@@ -663,9 +693,7 @@ export const composeSections = (
     } else if (b.keep) {
       const slice = a.slicePart(length);
 
-      addSection(
-        sections,
-        data,
+      add(
         a.offset > 0 ? 0 : a.length,
         length,
         b.modifications
@@ -674,9 +702,7 @@ export const composeSections = (
         open
       );
     } else {
-      addSection(
-        sections,
-        data,
+      add(
         a.offset > 0 ? 0 : a.length,
         b.offset > 0 ? 0 : b.inserted,
         b.offset > 0 ? PreparedTokenSlice.empty : b.slice,

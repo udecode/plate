@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-19-font-size-saved-units",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-19-font-size-saved-units.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Show saved point sizes in pixels in the font size control",
+  "targets": [
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-19-font-size-toolbar-saved-point-sizes-pixels-ca6a9908",
+      "kind": "fix",
+      "summary": "Show a saved `pt` size in pixels and step from it, and show any other saved size, such as `1.2em`, as saved without stepping it.",
+      "details": [],
+      "migrationNotes": [
+        "Reinstall `font-size-toolbar-button`, or replace its `toUnitLess` calls with a local parser, because `platejs` no longer exports `toUnitLess`."
+      ],
+      "targets": ["font-size-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-19",
+          "entry": "2026-10-19-font-size-saved-units",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

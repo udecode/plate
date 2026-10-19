@@ -60,18 +60,25 @@ describe('cleanWordHtml behavior', () => {
     expect(document.querySelector('br')).toBeNull();
   });
 
-  it('copies block mark styles to a span child', () => {
+  it('copies block mark styles except weight to a span child', () => {
     const result = cleanWordHtml(
-      '<p style="font-style: italic; font-weight: 700; text-decoration: underline;">Hello</p>',
+      '<p style="font-style: italic; font-weight: bolder; text-decoration: underline;">Hello</p>',
       '{\\rtf1}'
     );
     const document = new DOMParser().parseFromString(result, 'text/html');
     const span = document.querySelector('p > span') as HTMLSpanElement | null;
 
-    expect(span?.textContent).toBe('Hello');
-    expect(span?.style.fontStyle).toBe('italic');
-    expect(span?.style.fontWeight).toBe('700');
-    expect(span?.style.textDecoration).toContain('underline');
+    expect({
+      fontStyle: span?.style.fontStyle,
+      fontWeight: span?.style.fontWeight,
+      text: span?.textContent,
+      textDecoration: span?.style.textDecoration,
+    }).toEqual({
+      fontStyle: 'italic',
+      fontWeight: '',
+      text: 'Hello',
+      textDecoration: 'underline',
+    });
   });
 
   it('normalizes line endings and ignores content outside the outer html element', () => {

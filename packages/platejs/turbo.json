@@ -2243,7 +2243,8 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
-        "typecheck:partition:html-server"
+        "typecheck:partition:html-server",
+        "typecheck:partition:standard-basic-nodes"
       ],
       "inputs": [
         "src/html/server/**",

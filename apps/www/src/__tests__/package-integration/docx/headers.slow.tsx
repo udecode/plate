@@ -6,7 +6,6 @@ import {
   FontColorPlugin,
   FontFamilyPlugin,
   FontSizePlugin,
-  FontWeightPlugin,
 } from 'platejs/react';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
@@ -118,7 +117,6 @@ describe(getDocxTestName(name), () => {
       FontColorPlugin,
       FontSizePlugin,
       FontFamilyPlugin,
-      FontWeightPlugin,
     ],
   });
 });

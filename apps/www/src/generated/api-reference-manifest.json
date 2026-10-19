@@ -475,18 +475,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:BaseFontWeightPlugin": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "BaseFontWeightPlugin",
-          "route": null,
-          "runtime": true,
-          "signature": "BaseFontWeightPlugin: BasePlugin<Readonly<{\n  formats: true;\n  inject: true;\n}> & Readonly<{\n  name: \"fontWeight\";\n}> & Readonly<Record<never, never>> & Readonly<{\n  __pluginWritableProperties: Readonly<{\n    descriptor: PropertyStringDescriptor<PropertyValueOptions<string>>;\n    key: \"fontWeight\";\n    localId: \"fontWeight\";\n    ownerName: \"fontWeight\";\n    placement: \"text\";\n    unaliased: true;\n    value: string;\n  }>;\n  schema: {\n    readonly mark: PropertyStringDescriptor<PropertyValueOptions<string>>;\n  };\n}>>",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:BaseHeadingPlugin": {
           "aliases": [],
           "documentation": "",
@@ -7688,7 +7676,7 @@
           "name": "PLUGINS",
           "route": null,
           "runtime": true,
-          "signature": "PLUGINS: {\n  readonly affinity: 'affinity';\n  readonly ai: 'ai';\n  readonly aiChat: 'aiChat';\n  readonly audio: 'audio';\n  readonly backgroundColor: 'backgroundColor';\n  readonly blockPlaceholder: 'blockPlaceholder';\n  readonly blockquote: 'blockquote';\n  readonly bold: 'bold';\n  readonly callout: 'callout';\n  readonly code: 'code';\n  readonly codeBlock: 'codeBlock';\n  readonly codeSyntax: 'codeSyntax';\n  readonly color: 'color';\n  readonly column: 'column';\n  readonly columnGroup: 'columnGroup';\n  readonly copilot: 'copilot';\n  readonly date: 'date';\n  readonly debug: 'debug';\n  readonly dnd: 'dnd';\n  readonly dom: 'dom';\n  readonly elementState: 'elementState';\n  readonly equation: 'equation';\n  readonly excalidraw: 'excalidraw';\n  readonly exitBreak: 'exitBreak';\n  readonly file: 'file';\n  readonly fixedToolbar: 'fixedToolbar';\n  readonly floatingToolbar: 'floatingToolbar';\n  readonly fontFamily: 'fontFamily';\n  readonly fontSize: 'fontSize';\n  readonly fontWeight: 'fontWeight';\n  readonly footnote: 'footnote';\n  readonly footnoteDefinition: 'footnoteDefinition';\n  readonly heading: 'heading';\n  readonly highlight: 'highlight';\n  readonly history: 'history';\n  readonly horizontalRule: 'horizontalRule';\n  readonly html: 'html';\n  readonly image: 'image';\n  readonly indent: 'indent';\n  readonly inlineEquation: 'inlineEquation';\n  readonly inputRules: 'inputRules';\n  readonly italic: 'italic';\n  readonly kbd: 'kbd';\n  readonly lineHeight: 'lineHeight';\n  readonly link: 'link';\n  readonly list: 'list';\n  readonly markdown: 'markdown';\n  readonly mediaEmbed: 'mediaEmbed';\n  readonly mention: 'mention';\n  readonly navigationFeedback: 'navigationFeedback';\n  readonly override: 'override';\n  readonly paragraph: 'paragraph';\n  readonly script: 'script';\n  readonly searchHighlight: 'searchHighlight';\n  readonly singleBlock: 'singleBlock';\n  readonly singleLine: 'singleLine';\n  readonly strikethrough: 'strikethrough';\n  readonly suggestion: 'suggestion';\n  readonly tabbable: 'tabbable';\n  readonly table: 'table';\n  readonly tableCell: 'tableCell';\n  readonly tableRow: 'tableRow';\n  readonly textAlign: 'textAlign';\n  readonly textIndent: 'textIndent';\n  readonly toc: 'toc';\n  readonly details: 'details';\n  readonly detailsSummary: 'detailsSummary';\n  readonly trailingBlock: 'trailingBlock';\n  readonly underline: 'underline';\n  readonly upload: 'upload';\n  readonly video: 'video';\n  readonly wordPaste: 'wordPaste';\n  readonly yjs: 'yjs';\n}",
+          "signature": "PLUGINS: {\n  readonly affinity: 'affinity';\n  readonly ai: 'ai';\n  readonly aiChat: 'aiChat';\n  readonly audio: 'audio';\n  readonly backgroundColor: 'backgroundColor';\n  readonly blockPlaceholder: 'blockPlaceholder';\n  readonly blockquote: 'blockquote';\n  readonly bold: 'bold';\n  readonly callout: 'callout';\n  readonly code: 'code';\n  readonly codeBlock: 'codeBlock';\n  readonly codeSyntax: 'codeSyntax';\n  readonly color: 'color';\n  readonly column: 'column';\n  readonly columnGroup: 'columnGroup';\n  readonly copilot: 'copilot';\n  readonly date: 'date';\n  readonly debug: 'debug';\n  readonly dnd: 'dnd';\n  readonly dom: 'dom';\n  readonly elementState: 'elementState';\n  readonly equation: 'equation';\n  readonly excalidraw: 'excalidraw';\n  readonly exitBreak: 'exitBreak';\n  readonly file: 'file';\n  readonly fixedToolbar: 'fixedToolbar';\n  readonly floatingToolbar: 'floatingToolbar';\n  readonly fontFamily: 'fontFamily';\n  readonly fontSize: 'fontSize';\n  readonly footnote: 'footnote';\n  readonly footnoteDefinition: 'footnoteDefinition';\n  readonly heading: 'heading';\n  readonly highlight: 'highlight';\n  readonly history: 'history';\n  readonly horizontalRule: 'horizontalRule';\n  readonly html: 'html';\n  readonly image: 'image';\n  readonly indent: 'indent';\n  readonly inlineEquation: 'inlineEquation';\n  readonly inputRules: 'inputRules';\n  readonly italic: 'italic';\n  readonly kbd: 'kbd';\n  readonly lineHeight: 'lineHeight';\n  readonly link: 'link';\n  readonly list: 'list';\n  readonly markdown: 'markdown';\n  readonly mediaEmbed: 'mediaEmbed';\n  readonly mention: 'mention';\n  readonly navigationFeedback: 'navigationFeedback';\n  readonly override: 'override';\n  readonly paragraph: 'paragraph';\n  readonly script: 'script';\n  readonly searchHighlight: 'searchHighlight';\n  readonly singleBlock: 'singleBlock';\n  readonly singleLine: 'singleLine';\n  readonly strikethrough: 'strikethrough';\n  readonly suggestion: 'suggestion';\n  readonly tabbable: 'tabbable';\n  readonly table: 'table';\n  readonly tableCell: 'tableCell';\n  readonly tableRow: 'tableRow';\n  readonly textAlign: 'textAlign';\n  readonly textIndent: 'textIndent';\n  readonly toc: 'toc';\n  readonly details: 'details';\n  readonly detailsSummary: 'detailsSummary';\n  readonly trailingBlock: 'trailingBlock';\n  readonly underline: 'underline';\n  readonly upload: 'upload';\n  readonly video: 'video';\n  readonly wordPaste: 'wordPaste';\n  readonly yjs: 'yjs';\n}",
           "source": null,
           "typeParameters": []
         },
@@ -10469,18 +10457,6 @@
           "route": null,
           "runtime": false,
           "signature": "type TopLevelRuntimeRange = readonly [number, number];",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:toUnitLess": {
-          "aliases": [],
-          "documentation": "Converts a CSS size to a unitless pixel value.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "toUnitLess",
-          "route": null,
-          "runtime": true,
-          "signature": "toUnitLess: (value: string) => string",
           "source": null,
           "typeParameters": []
         },

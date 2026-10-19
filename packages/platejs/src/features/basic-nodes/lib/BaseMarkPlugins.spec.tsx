@@ -148,6 +148,184 @@ describe('BaseMarkPlugins', () => {
     }
   );
 
+  const pasteBoldLeaves = (html: string) => {
+    const editor = createEditor({ plugins: [BaseBoldPlugin] });
+    const data = new DataTransfer();
+
+    data.setData('text/html', html);
+    editor.api.dom.clipboard.insertData(data);
+
+    return editor.read
+      .children()
+      .flatMap(
+        (block) =>
+          (block.children ?? []) as Array<{ bold?: boolean; text: string }>
+      )
+      .filter((leaf) => leaf.text !== '')
+      .map((leaf) => [leaf.text, leaf.bold === true]);
+  };
+
+  it.each([
+    [
+      'a normal weight inside bold',
+      '<p><b>a<span style="font-weight: 400">b</span>c</b></p>',
+    ],
+    [
+      'an initial weight inside bold',
+      '<p><b>a<span style="font-weight: initial">b</span>c</b></p>',
+    ],
+  ])(
+    'pastes %s with only the reset text plain [EDIT-CLIPBOARD-HTML-MARK-001]',
+    (_label, html) => {
+      expect(pasteBoldLeaves(html)).toEqual([
+        ['a', true],
+        ['b', false],
+        ['c', true],
+      ]);
+    }
+  );
+
+  it.each([
+    [
+      'heavy numbers and bolder',
+      '<p><span style="font-weight: 800">a</span><span style="font-weight: 900">b</span><span style="font-weight: bolder">c</span></p>',
+      [['abc', true]],
+    ],
+    [
+      'bolder inside bolder',
+      '<p><span style="font-weight: bolder"><span style="font-weight: bolder">x</span></span></p>',
+      [['x', true]],
+    ],
+    [
+      'a lighter strong',
+      '<p><strong style="font-weight: lighter">x</strong></p>',
+      [['x', false]],
+    ],
+    [
+      'bold tags that state a light weight',
+      '<p><b style="font-weight: 400">a</b><strong style="font-weight: 500">b</strong></p>',
+      [['ab', false]],
+    ],
+    [
+      'a strong inheriting normal text',
+      '<p><span style="font-weight: 400"><strong style="font-weight: inherit">x</strong></span></p>',
+      [['x', false]],
+    ],
+    [
+      'a lighter strong inside black text',
+      '<p><span style="font-weight: 900"><strong style="font-weight: lighter">x</strong></span></p>',
+      [['x', true]],
+    ],
+    [
+      'a lighter span inside a heading inside black text',
+      '<div style="font-weight: 900"><h1><span style="font-weight: lighter">x</span></h1></div>',
+      [['x', false]],
+    ],
+    [
+      'the Google Docs wrapper',
+      '<p><b style="font-weight: normal" id="docs-internal-guid-1">a<span style="font-weight: 700">b</span></b></p>',
+      [
+        ['a', false],
+        ['b', true],
+      ],
+    ],
+    [
+      'a b inside light text',
+      '<p><span style="font-weight: 300"><b>x</b></span></p>',
+      [['x', true]],
+    ],
+    [
+      'strong weights it cannot resolve',
+      '<p><strong style="font-weight: revert">a</strong><strong style="font-weight: revert-layer">b</strong><strong style="font-weight: var(--w, 600)">c</strong></p>',
+      [['abc', true]],
+    ],
+    [
+      'inherit and unset inside bold',
+      '<p><b>a<span style="font-weight: inherit">b</span><span style="font-weight: unset">c</span></b></p>',
+      [['abc', true]],
+    ],
+    [
+      'a strong inheriting a heading',
+      '<h1><strong style="font-weight: inherit">x</strong></h1>',
+      [['x', true]],
+    ],
+    [
+      'bolder inside light text',
+      '<p><span style="font-weight: 300"><span style="font-weight: bolder">x</span></span></p>',
+      [['x', false]],
+    ],
+  ])('pastes %s with the weight CSS draws', (_label, html, leaves) => {
+    expect(pasteBoldLeaves(html)).toEqual(leaves);
+  });
+
+  it.each(['400', 'lighter', 'inherit'])(
+    'reads the DOM in work linear in the depth of nested %s spans',
+    (weight) => {
+      const style = Object.getOwnPropertyDescriptor(
+        HTMLElement.prototype,
+        'style'
+      )!;
+      const outerHtml = Object.getOwnPropertyDescriptor(
+        Element.prototype,
+        'outerHTML'
+      )!;
+      let work = 0;
+      const workAt = (depth: number) => {
+        const editor = createEditor({ plugins: [BaseBoldPlugin] });
+
+        work = 0;
+        editor.api.html.parse(
+          `<p>${`<span style="font-weight: ${weight}">x`.repeat(depth)}${'</span>'.repeat(depth)}</p>`
+        );
+
+        return work;
+      };
+
+      Object.defineProperty(HTMLElement.prototype, 'style', {
+        ...style,
+        get() {
+          work += 1;
+
+          return style.get!.call(this);
+        },
+      });
+      Object.defineProperty(Element.prototype, 'outerHTML', {
+        ...outerHtml,
+        get() {
+          const html = outerHtml.get!.call(this) as string;
+
+          work += html.length;
+
+          return html;
+        },
+      });
+      try {
+        const small = workAt(50);
+        const large = workAt(200);
+
+        expect(large).toBeLessThanOrEqual(small * 5);
+      } finally {
+        Object.defineProperty(HTMLElement.prototype, 'style', style);
+        Object.defineProperty(Element.prototype, 'outerHTML', outerHtml);
+      }
+    }
+  );
+
+  it('parses a slice without storing the bold a normal weight turns off', () => {
+    const editor = createEditor({ plugins: [BaseBoldPlugin] });
+    const parsed = editor.api.html.parseSlice(
+      '<p><b>a<span style="font-weight: 400">b</span></b></p>'
+    );
+
+    if (!parsed.ok) throw new Error(parsed.diagnostics[0].message);
+    expect(parsed.slice.content).toEqual([
+      {
+        children: [{ bold: true, text: 'a' }, { text: 'b' }],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
   it('skips inline code parsing inside pre blocks and paragraphs styled as code', () => {
     const hasDecodedCode = getDecodedMarkReader(BaseCodePlugin);
 

@@ -1,0 +1,14 @@
+---
+id: 2026-10-19-font-size-saved-units
+date: 2026-10-19
+status: draft
+kind: fix
+summary: 'Show saved point sizes in pixels in the font size control'
+change: { 'type': 'source', 'date': '2026-10-19', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-19-font-size-toolbar-saved-point-sizes-pixels-ca6a9908","kind":"fix","migrationNotes":["Reinstall `font-size-toolbar-button`, or replace its `toUnitLess` calls with a local parser, because `platejs` no longer exports `toUnitLess`."]} -->
+
+- **`font-size-toolbar-button`**: Show a saved `pt` size in pixels and step from it, and show any other saved size, such as `1.2em`, as saved without stepping it.

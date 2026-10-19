@@ -14,6 +14,7 @@ docs:
 - 应用加粗格式以强调重要文本
 - 支持快捷键快速格式化 (`Cmd + B`)
 - 默认渲染为 `<strong>` HTML 元素
+- 从 HTML 的 `strong`、`b` 以及 600 及以上的 `font-weight` 解析加粗
 
 </PackageInfo>
 
@@ -96,6 +97,19 @@ const editor = createEditor({
 你可以将 [`MarkToolbarButton`](/docs/components/mark-toolbar-button) 添加到[工具栏](/docs/toolbar)来切换加粗格式。
 
 </Steps>
+
+## 粘贴的字重
+
+加粗是 Plate 中字重的唯一负责者，没有插件单独保存字重。粘贴时按来源的绘制方式读取每个元素自身的字重：`bold` 和 600 及以上为加粗；`bolder`、`lighter`、`inherit` 和 `unset` 相对父元素的字重计算，标题和表头按 700 计。低于 600 的字重只在已加粗的文本内取消加粗。`strong` 和 `b` 除非声明了 Plate 能读取的字重，否则保持加粗。在服务器上，`platejs/html/server` 会忽略写在 `font` 简写中、写在大写的 `FONT-WEIGHT` 下或带注释的字重。有多条 `font-weight` 声明时，它读取最后一条，即使前一条带 `!important`。
+
+| 粘贴的 HTML | 保存结果 |
+|-------------|----------|
+| `<span style="font-weight: 800">a</span>` | `a` 加粗 |
+| `<b>a<span style="font-weight: 400">b</span>c</b>` | `a` 和 `c` 加粗，`b` 不加粗 |
+| `<strong style="font-weight: 500">a</strong>` | `a` 不加粗 |
+| `<strong style="font-weight: var(--w, 600)">a</strong>` | `a` 加粗，因为字重无法读取 |
+| 300 字重文本中的 `<span style="font-weight: bolder">a</span>` | `a` 不加粗，因为比 300 更粗一级是 400 |
+| `<h1>a<span style="font-weight: 400">b</span>c</h1>` | `abc` 不带标记，因此 `b` 以标题的字重显示。加粗无法保存比所在标题或表头更细的文本。 |
 
 ## 插件
 

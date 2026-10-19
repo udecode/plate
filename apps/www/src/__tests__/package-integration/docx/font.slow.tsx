@@ -6,7 +6,6 @@ import {
   FontColorPlugin,
   FontFamilyPlugin,
   FontSizePlugin,
-  FontWeightPlugin,
 } from 'platejs/react';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
@@ -68,12 +67,7 @@ describe(getDocxTestName(name), () => {
           </htext>
         </hp>
         <hp>
-          <htext
-            fontFamily="Cambria, serif"
-            fontSize="12pt"
-            fontWeight="bold"
-            bold
-          >
+          <htext fontFamily="Cambria, serif" fontSize="12pt" bold>
             Definition Term
           </htext>
         </hp>
@@ -85,7 +79,6 @@ describe(getDocxTestName(name), () => {
       FontFamilyPlugin,
       FontColorPlugin,
       FontSizePlugin,
-      FontWeightPlugin,
     ],
   });
 });

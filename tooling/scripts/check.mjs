@@ -2,6 +2,8 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+import { BUN_TEST_TIMEOUT_MS } from '../config/test-suites.mjs';
+
 const root = fileURLToPath(new URL('../..', import.meta.url));
 
 const touches =
@@ -76,7 +78,7 @@ export const steps = [
   { name: 'public-types', run: 'pnpm plite:public-types' },
   {
     name: 'cli-test',
-    run: 'pnpm --filter @platejs/cli test',
+    run: `pnpm --filter @platejs/cli run test --timeout=${BUN_TEST_TIMEOUT_MS}`,
     // The CLI tests compile editors against platejs source, which builds on plitejs.
     affected: touches(
       'packages/cli/',

@@ -1220,6 +1220,21 @@ const reportDecodeError = (
   );
 };
 
+const shallowElementState = (element: HTMLElement) => ({
+  attributes: JSON.stringify(
+    Array.from(element.attributes, ({ name, value }) => [name, value])
+  ),
+  children: Array.from(element.childNodes),
+});
+
+const sameShallowElementState = (
+  a: ReturnType<typeof shallowElementState>,
+  b: ReturnType<typeof shallowElementState>
+) =>
+  a.attributes === b.attributes &&
+  a.children.length === b.children.length &&
+  a.children.every((child, index) => child === b.children[index]);
+
 /**
  * Run one decoder. The attributes it claims with `preserve` join `claims` only
  * when it returns a result.
@@ -1238,7 +1253,7 @@ const invokeDecode = <T>(
   claims: Set<string>
 ): T | undefined => {
   try {
-    const before = element.outerHTML;
+    const before = shallowElementState(element);
     const preserved = new Set<string>();
     const preserve = (...attributes: readonly string[]) => {
       for (const attribute of attributes) {
@@ -1268,7 +1283,7 @@ const invokeDecode = <T>(
       })
     );
 
-    if (element.outerHTML !== before) {
+    if (!sameShallowElementState(before, shallowElementState(element))) {
       throw new Error(
         `Plate HTML mapping "${rule.owner}" decode must not mutate its element.`
       );
@@ -2274,9 +2289,58 @@ const decodeCompiledHtml = (
     operation.onLoss
   );
 
+  const marked = dropOmittedTextDefaults(decoded, state);
+
   return coalesceAdjacentText(
-    fitSchema ? wrapRootInlineRuns(decoded, state) : decoded
+    fitSchema ? wrapRootInlineRuns(marked, state) : marked
   );
+};
+
+const dropOmittedTextDefaults = (
+  descendants: readonly Descendant[],
+  state: EditorCoreStateView
+): readonly Descendant[] => {
+  let changed = false;
+  const next = descendants.map((node) => {
+    const dropped = dropOmittedTextDefault(node, state);
+
+    changed ||= dropped !== node;
+
+    return dropped;
+  });
+
+  return changed ? next : descendants;
+};
+
+const dropOmittedTextDefault = (
+  node: Descendant,
+  state: EditorCoreStateView
+): Descendant => {
+  if (ElementApi.isElement(node)) {
+    const children = dropOmittedTextDefaults(node.children, state);
+
+    return children === node.children ? node : { ...node, children };
+  }
+  if (!TextApi.isText(node)) return node;
+
+  let kept: Record<string, unknown> | null = null;
+
+  for (const key of Object.keys(node)) {
+    if (key === 'text') continue;
+
+    const soleOwner = state.schema.property({ key, placement: 'text' })?.value;
+
+    if (
+      soleOwner?.omitDefault &&
+      'default' in soleOwner &&
+      isEqual(node[key], soleOwner.default)
+    ) {
+      kept ??= { ...node };
+      delete kept[key];
+    }
+  }
+
+  return (kept ?? node) as Descendant;
 };
 
 /**

@@ -93,6 +93,17 @@ describe('WordPastePlugin', () => {
     ]);
   });
 
+  it('counts a Word paragraph relative weight once', () => {
+    const editor = insertHtml(
+      '<div style="font-weight: 300"><p class="MsoNormal" style="font-weight: bolder">x</p></div>',
+      { plugins: [BaseBoldPlugin] }
+    );
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'x' }], type: 'paragraph' },
+    ]);
+  });
+
   it('normalizes Word list markers through public DataTransfer insertion', () => {
     const editor = insertHtml(
       [

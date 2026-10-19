@@ -42,7 +42,6 @@
             "BaseFontColorPlugin",
             "BaseFontFamilyPlugin",
             "BaseFontSizePlugin",
-            "BaseFontWeightPlugin",
             "BaseHeadingPlugin",
             "BaseHighlightPlugin",
             "BaseHorizontalRulePlugin",
@@ -836,7 +835,6 @@
             "serializePlainText",
             "setEditorReadOnly",
             "target",
-            "toUnitLess",
             "transfer",
             "valueCodecs"
           ],

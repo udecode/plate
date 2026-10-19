@@ -15,11 +15,9 @@ import {
   BaseFontColorPlugin,
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
-  BaseFontWeightPlugin,
   BaseLineHeightPlugin,
   BaseTextAlignPlugin,
   BaseTextIndentPlugin,
-  toUnitLess,
 } from './BaseStylePlugins';
 
 describe('BaseFontBackgroundColorPlugin', () => {
@@ -242,62 +240,6 @@ describe('BaseFontSizePlugin', () => {
 
     expect(editor.read.children()[0]?.children[0]).toMatchObject({
       fontSize: '24px',
-      text: 'text',
-    });
-  });
-});
-
-describe('BaseFontWeightPlugin', () => {
-  it('parses html font-weight styles into leaf marks', () => {
-    const editor = createEditor({
-      plugins: [BaseFontWeightPlugin],
-    });
-    const plugin = editor.plugin(BaseFontWeightPlugin);
-
-    expect(plugin.inject.nodeProps).toEqual({
-      nodeKey: 'fontWeight',
-      styleKey: 'fontWeight',
-    });
-    expect(editor.plugin(BaseFontWeightPlugin).inject.nodeProps!).toMatchObject(
-      {
-        nodeKey: 'fontWeight',
-        styleKey: 'fontWeight',
-      }
-    );
-    expect(
-      editor.read.schema.property({
-        key: editor.plugin(BaseFontWeightPlugin).schema.key,
-        placement: 'text',
-      })?.value.kind
-    ).toBe('string');
-    expect(
-      parseHtmlSliceContent(
-        editor,
-        '<span style="font-weight: 700">text</span>'
-      )
-    ).toMatchObject([
-      {
-        fontWeight: '700',
-        text: 'text',
-      },
-    ]);
-  });
-
-  it('sets font weight through the typed tx group', () => {
-    const editor = createEditor({
-      plugins: [BaseFontWeightPlugin],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 4, path: [0, 0] },
-      },
-      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
-    });
-
-    editor.update.fontWeight.set('bold');
-
-    expect(editor.read.children()[0]?.children[0]).toMatchObject({
-      fontWeight: 'bold',
       text: 'text',
     });
   });
@@ -832,7 +774,6 @@ describe('basic style HTML formats', () => {
         BaseFontColorPlugin,
         BaseFontFamilyPlugin,
         BaseFontSizePlugin,
-        BaseFontWeightPlugin,
         BaseLineHeightPlugin,
         BaseTextAlignPlugin,
         BaseTextIndentPlugin,
@@ -846,7 +787,6 @@ describe('basic style HTML formats', () => {
               color: 'red',
               fontFamily: 'serif',
               fontSize: '18px',
-              fontWeight: '700',
               text: 'Styled',
             },
           ],
@@ -893,27 +833,8 @@ describe('basic style HTML formats', () => {
     expect(
       styledElements.some((element) => element.style.fontSize === '18px')
     ).toBe(true);
-    expect(
-      styledElements.some((element) => element.style.fontWeight === '700')
-    ).toBe(true);
     expect(parseHtmlSliceContent(editor, html)).toEqual([
       ...editor.read.children(),
     ]);
-  });
-});
-
-describe('toUnitLess', () => {
-  it('returns 0 for invalid values', () => {
-    expect(toUnitLess('')).toBe('0');
-    expect(toUnitLess('auto')).toBe('0');
-  });
-
-  it('keeps numeric values unitless', () => {
-    expect(toUnitLess('24')).toBe('24');
-    expect(toUnitLess('24px')).toBe('24');
-  });
-
-  it('converts rem values using a 16px base', () => {
-    expect(toUnitLess('2rem')).toBe('32');
   });
 });

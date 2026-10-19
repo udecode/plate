@@ -14,8 +14,8 @@ docs:
 
 ## Features
 
-- Apply font styling to selected text including size, family, color, background color, and weight.
-- Supports custom font families, sizes, colors, and weights.
+- Apply font styling to selected text including size, family, color, and background color.
+- Supports custom font families, sizes, and colors.
 
 ## Plugins
 
@@ -23,7 +23,6 @@ docs:
 - `FontColorPlugin`: Control font color with `color` style
 - `FontFamilyPlugin`: Change font family using inline elements with `font-family` style
 - `FontSizePlugin`: Control font size with CSS class or `font-size` style
-- `FontWeightPlugin`: Control font weight with `font-weight` style
 
 </PackageInfo>
 
@@ -99,6 +98,9 @@ text instead of a block target list. Every stored value renders, so a pasted
 directly onto text properties; block target injection does not constrain text
 marks.
 
+Font weight is not a font mark. [Bold](/docs/bold) owns it, so a pasted
+`font-weight` of 600 or more stores `bold`.
+
 ### Add toolbar button
 
 You can add [`FontColorToolbarButton`](/docs/components/font-color-toolbar-button) and [`FontSizeToolbarButton`](/docs/components/font-size-toolbar-button) to your [Toolbar](/docs/toolbar) to control font color and size.
@@ -122,10 +124,6 @@ Plugin for font family formatting. Applies `font-family` style to selected text.
 ### `FontSizePlugin`
 
 Plugin for font size formatting. Applies `font-size` style to selected text.
-
-### `FontWeightPlugin`
-
-Plugin for font weight formatting. Applies `font-weight` style to selected text.
 
 ## Transforms
 
@@ -175,34 +173,4 @@ Set the font size mark on the selected text.
       The font size value to set (e.g., `'16px'`, `'1.2em'`).
     </APIItem>
   </APIParameters>
-</API>
-
-### `editor.update.fontWeight.set`
-
-Set the font weight mark on the selected text.
-
-<API name="editor.update.fontWeight.set">
-  <APIParameters>
-    <APIItem name="value" type="string">
-      The font weight value to set (e.g., `'bold'`, `'400'`, `'600'`).
-    </APIItem>
-  </APIParameters>
-</API>
-
-## API
-
-### `toUnitLess`
-
-Convert a font size value to a unitless value.
-
-<API name="toUnitLess">
-<APIParameters>
-  <APIItem name="fontSize" type="string">
-    The font size value to convert.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="string">
-  The font size value without units.
-</APIReturns>
 </API>

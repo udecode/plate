@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-19-font-size-saved-units",
+      "href": "/registry/changelog/2026-10-19-font-size-saved-units.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show saved point sizes in pixels in the font size control",
+      "change": {
+        "type": "source",
+        "date": "2026-10-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["font-size-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-19-math-inline-mode",
       "href": "/registry/changelog/2026-10-19-math-inline-mode.json",
       "status": "draft",

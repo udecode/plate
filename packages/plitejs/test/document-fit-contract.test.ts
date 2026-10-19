@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, defineEditorSchema, schema } from 'plitejs';
+import { createEditor, defineEditorSchema, property, schema } from 'plitejs';
 
+import { PreparedTokenSlice } from '../src/core/change/tokens';
 import { getEditorSchema } from '../src/core/editor-runtime';
 
 const paragraph = (text: string) => ({
@@ -125,4 +126,67 @@ describe('complete document fitting', () => {
       assert.deepEqual(editor.read.children(), [paragraph('initial')]);
     });
   }
+});
+
+const DefaultStripSchema = defineEditorSchema('schema:document-fit-strip', {
+  elements: {
+    paragraph: { content: schema.content.text() },
+  },
+  id: 'document-fit-strip',
+  properties: [
+    schema.textProperty(
+      'bold',
+      property.boolean({ default: false, omitDefault: true })
+    ),
+  ],
+  root: schema.content.type('paragraph', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
+
+const positionsConcatenated = (paragraphs: number) => {
+  const editor = createEditor({
+    initialValue: [paragraph('initial')],
+    plugins: [DefaultStripSchema],
+  });
+  const { concat } = PreparedTokenSlice;
+  let positions = 0;
+
+  PreparedTokenSlice.concat = (slices) => {
+    for (const slice of slices) positions += slice.length;
+
+    return concat.call(PreparedTokenSlice, slices);
+  };
+
+  try {
+    const fitted = editor.read.schema.fitDocument({
+      children: Array.from({ length: paragraphs }, () => ({
+        children: [
+          { bold: true, text: 'a ' },
+          { bold: false, text: 'b' },
+          { bold: true, text: ' c' },
+        ],
+        type: 'paragraph',
+      })),
+    });
+
+    assert.equal(fitted.children.length, paragraphs);
+  } finally {
+    PreparedTokenSlice.concat = concat;
+  }
+
+  return positions;
+};
+
+it('concatenates each slice position once when fitting strips a default from every paragraph', () => {
+  const small = positionsConcatenated(100);
+  const large = positionsConcatenated(400);
+
+  assert.ok(
+    large <= small * 5,
+    `fitting 400 paragraphs concatenated ${large} slice positions, against ${small} for 100`
+  );
 });
