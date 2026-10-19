@@ -50,17 +50,6 @@ function claudeRun(lines, upTo = lines.length - 1) {
   return null;
 }
 
-// Codex writes one turn_context per turn, ahead of that turn's tool calls.
-function codexRun(lines, upTo = lines.length - 1) {
-  for (let index = upTo; index >= 0; index -= 1) {
-    const record = parse(lines[index]);
-    if (record?.type === 'turn_context' && record.payload?.model) {
-      return { runtime: 'codex', model: record.payload.model, effort: record.payload.effort ?? 'default', at: record.timestamp };
-    }
-  }
-  return null;
-}
-
 /** The model and effort a finished `claude -p --session-id <id>` run used. */
 export function claudeSessionRun(sessionId) {
   const projects = join(claudeHome(), 'projects');
@@ -68,32 +57,60 @@ export function claudeSessionRun(sessionId) {
   return path ? claudeRun(tailLines(path)) : null;
 }
 
-const claudeResult = (record) => record?.type === 'user';
-const codexResult = (record) => /_output$/u.test(record?.payload?.type ?? '');
-
 /**
- * The session whose pending tool calls, the ones after its last tool result,
+ * The session whose pending execution calls
  * hold `marker`, a string from the running command, with the model and effort
  * in force when it made that call. Returns null when no recent transcript, or
  * more than one, holds it.
  */
 export function currentLead(marker, now = Date.now()) {
   const sources = [
-    { files: filesUnder(join(claudeHome(), 'projects'), 1), read: claudeRun, isResult: claudeResult },
-    { files: filesUnder(join(codexHome(), 'sessions'), 3), read: codexRun, isResult: codexResult },
+    { files: filesUnder(join(claudeHome(), 'projects'), 1), runtime: 'claude' },
+    { files: filesUnder(join(codexHome(), 'sessions'), 3), runtime: 'codex' },
   ];
-  const found = sources.flatMap(({ files, read, isResult }) =>
+  return leadFromTranscripts(marker, sources.flatMap(({ files, runtime }) =>
     files
       .filter((file) => now - statSync(file).mtimeMs < RECENT_MS)
-      .flatMap((file) => {
-        const lines = tailLines(file);
-        const pending = lines.findLastIndex((line) => isResult(parse(line))) + 1;
-        const index = lines.findLastIndex((line, at) => at >= pending && line.includes(marker));
-        const run = index === -1 ? null : read(lines, index);
-        return run ? [{ ...run, transcript: file }] : [];
-      }),
-  );
-  return found.length === 1 ? found[0] : null;
+      .map((file) => ({ runtime, transcript: file, text: readFileSync(file, 'utf8') })),
+  ));
+}
+
+export function leadFromTranscripts(marker, transcripts) {
+  const found = transcripts.flatMap(({ runtime, transcript, text }) => {
+    let run = null;
+    const pending = new Map();
+    for (const line of text.split('\n')) {
+      const record = parse(line);
+      if (runtime === 'claude') {
+        if (record?.type === 'assistant') {
+          run = record.effort && record.message?.model ? { runtime, model: record.message.model, effort: record.effort, at: record.timestamp } : null;
+          for (const block of Array.isArray(record.message?.content) ? record.message.content : []) {
+            if (block.type === 'tool_use' && block.name === 'Bash' && typeof block.input?.command === 'string') pending.set(block.id, { command: block.input.command, run });
+          }
+        }
+        if (record?.type === 'user') {
+          for (const block of Array.isArray(record.message?.content) ? record.message.content : []) {
+            if (block.type === 'tool_result') pending.delete(block.tool_use_id);
+          }
+        }
+      } else if (runtime === 'codex') {
+        if (record?.type === 'turn_context') run = record.payload?.model ? { runtime, model: record.payload.model, effort: record.payload.effort ?? 'default', at: record.timestamp } : null;
+        if (record?.type !== 'response_item') continue;
+        const call = record.payload;
+        if (call?.type === 'function_call_output' || call?.type === 'custom_tool_call_output') pending.delete(call.call_id);
+        if (call?.type === 'function_call' && call.name === 'exec_command') {
+          const args = parse(call.arguments);
+          if (typeof args?.cmd === 'string') pending.set(call.call_id, { command: args.cmd, run });
+        }
+        if (call?.type === 'custom_tool_call' && call.name === 'exec' && typeof call.input === 'string') pending.set(call.call_id, { command: call.input, run });
+      }
+    }
+    const matches = [...pending.values()].filter(({ command }) => command.includes(marker));
+    if (!matches.length) return [];
+    const first = matches[0].run;
+    return [{ ...(matches.every(({ run }) => run && first && leadLabel(run) === leadLabel(first)) ? first : {}), transcript }];
+  });
+  return found.length === 1 && found[0].model ? found[0] : null;
 }
 
 export const leadLabel = (run) => `${run.model} @${run.effort}`;
