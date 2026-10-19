@@ -1,0 +1,282 @@
+{
+ "chromium": {
+  "handle": {
+   "preference": {
+    "preferModelSelection": true,
+    "reason": "browser-handle",
+    "selectionSource": "model-owned"
+   },
+   "typed": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ],
+    [
+     "beforeinput",
+     "model-owned",
+     false
+    ]
+   ],
+   "backspace": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ]
+   ],
+   "text": "This is editable ric"
+  },
+  "click": {
+   "preference": {
+    "preferModelSelection": false,
+    "reason": "native-selection",
+    "selectionSource": "dom-current"
+   },
+   "typed": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ],
+    [
+     "beforeinput",
+     "model-owned",
+     false
+    ]
+   ],
+   "backspace": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ]
+   ],
+   "text": "This is editable ric"
+  }
+ },
+ "firefox": {
+  "handle": {
+   "preference": {
+    "preferModelSelection": true,
+    "reason": "browser-handle",
+    "selectionSource": "model-owned"
+   },
+   "typed": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ],
+    [
+     "beforeinput",
+     "model-owned",
+     false
+    ]
+   ],
+   "backspace": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ]
+   ],
+   "text": "This is editable ric"
+  },
+  "click": {
+   "preference": {
+    "preferModelSelection": false,
+    "reason": "native-selection",
+    "selectionSource": "dom-current"
+   },
+   "typed": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ],
+    [
+     "beforeinput",
+     "model-owned",
+     false
+    ]
+   ],
+   "backspace": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ]
+   ],
+   "text": "This is editable ric"
+  }
+ },
+ "webkit": {
+  "handle": {
+   "preference": {
+    "preferModelSelection": true,
+    "reason": "browser-handle",
+    "selectionSource": "model-owned"
+   },
+   "typed": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ],
+    [
+     "beforeinput",
+     "model-owned",
+     false
+    ]
+   ],
+   "backspace": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ]
+   ],
+   "text": "This is editable ric"
+  },
+  "click": {
+   "preference": {
+    "preferModelSelection": false,
+    "reason": "native-selection",
+    "selectionSource": "dom-current"
+   },
+   "typed": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ],
+    [
+     "beforeinput",
+     "model-owned",
+     false
+    ]
+   ],
+   "backspace": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ]
+   ],
+   "text": "This is editable ric"
+  }
+ },
+ "mobile": {
+  "handle": {
+   "preference": {
+    "preferModelSelection": true,
+    "reason": "browser-handle",
+    "selectionSource": "model-owned"
+   },
+   "typed": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ],
+    [
+     "beforeinput",
+     "model-owned",
+     false
+    ]
+   ],
+   "backspace": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ]
+   ],
+   "text": "This is editable ric"
+  },
+  "click": {
+   "preference": {
+    "preferModelSelection": false,
+    "reason": "native-selection",
+    "selectionSource": "dom-current"
+   },
+   "typed": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ],
+    [
+     "beforeinput",
+     "model-owned",
+     false
+    ]
+   ],
+   "backspace": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ]
+   ],
+   "text": "This is editable ric"
+  }
+ },
+ "mobile-webkit": {
+  "handle": {
+   "preference": {
+    "preferModelSelection": true,
+    "reason": "browser-handle",
+    "selectionSource": "model-owned"
+   },
+   "typed": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ],
+    [
+     "beforeinput",
+     "model-owned",
+     false
+    ]
+   ],
+   "backspace": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ]
+   ],
+   "text": "This is editable ric"
+  },
+  "click": {
+   "preference": {
+    "preferModelSelection": false,
+    "reason": "native-selection",
+    "selectionSource": "dom-current"
+   },
+   "typed": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ],
+    [
+     "beforeinput",
+     "model-owned",
+     false
+    ]
+   ],
+   "backspace": [
+    [
+     "keydown",
+     "model-owned",
+     false
+    ]
+   ],
+   "text": "This is editable ric"
+  }
+ }
+}

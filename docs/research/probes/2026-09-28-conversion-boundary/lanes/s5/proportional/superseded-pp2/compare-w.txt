@@ -1,0 +1,56 @@
+ai-cjk-10000
+  a        base 377.5 cand 50.2 (x0.133) | ref 62.8 -> 50.2: raw -20.1%, drift 0.4%, normalized -18.9%
+  b        base 1411 cand 25.1 (x0.018) | ref 23.7 -> 25.1: raw 5.9%, drift 1.6%, normalized 5.9%
+  c        base 480.3 cand 409.5 (x0.853) | ref 657.1 -> 409.5: raw -37.7%, drift -20%, normalized -21.2%
+  busy     base 2784.9 cand 893 (x0.328) | ref 1135.4 -> 893: raw -21.3%, drift -2.7%, normalized -15.7%
+  final    base 114.3 cand 53.6 (x0.464) | ref 54.1 -> 53.6: raw -0.9%, drift -9.1%, normalized 8.2%
+  arrival  base 130.8 cand 44.1 (x0.336) | ref 71.5 -> 44.1: raw -38.3%, drift -4.7%, normalized -35.5%
+ai-cjk-50000
+  a        base 7414.4 cand 256.4 (x0.035) | ref 308.2 -> 256.4: raw -16.8%, drift -8.5%, normalized -7.9%
+  b        base 28424.8 cand 178.7 (x0.006) | ref 195.9 -> 178.7: raw -8.8%, drift -7.8%, normalized 0%
+  c        base 4006.7 cand 3999.1 (x0.998) | ref 8083.7 -> 3999.1: raw -50.5%, drift -44%, normalized -11.6%
+  busy     base 45527.9 cand 6459.5 (x0.142) | ref 10794.6 -> 6459.5: raw -40.2%, drift -14.7%, normalized -29.7%
+  final    base 551.3 cand 188.2 (x0.34) | ref 225.7 -> 188.2: raw -16.6%, drift -14.7%, normalized -4.2%
+  arrival  base 439.8 cand 46.6 (x0.106) | ref 169.2 -> 46.6: raw -72.5%, drift -23%, normalized -64.2%
+ai-rich-10000
+  a        base 230.5 cand 38.5 (x0.17) | ref 45.3 -> 38.5: raw -15%, drift 0%, normalized -13.7%
+  b        base 791.9 cand 5 (x0.006) | ref 5 -> 5: raw 0%, drift 1.2%, normalized 0%
+  c        base 253.3 cand 231.9 (x0.959) | ref 383.3 -> 231.9: raw -39.5%, drift -25.6%, normalized -15.3%
+  busy     base 1571.8 cand 549.4 (x0.363) | ref 697 -> 549.4: raw -21.2%, drift -7.9%, normalized -12.3%
+  final    base 75.5 cand 28.1 (x0.377) | ref 38.3 -> 28.1: raw -26.6%, drift -12.6%, normalized -17.9%
+  arrival  base 78.6 cand 39.5 (x0.501) | ref 44.3 -> 39.5: raw -10.8%, drift -4.6%, normalized -7.1%
+ai-rich-50000
+  a        base 4576.7 cand 212.8 (x0.047) | ref 235.3 -> 212.8: raw -9.6%, drift -3.4%, normalized -6%
+  b        base 15130.2 cand 100.7 (x0.007) | ref 105.6 -> 100.7: raw -4.6%, drift -2.4%, normalized 0%
+  c        base 2093.4 cand 2361.1 (x1.055) | ref 4375.1 -> 2361.1: raw -46%, drift -44.1%, normalized -9.2%
+  busy     base 25113.3 cand 4042.4 (x0.158) | ref 6106.5 -> 4042.4: raw -33.8%, drift -8.7%, normalized -29.1%
+  final    base 291.8 cand 120.8 (x0.414) | ref 152.2 -> 120.8: raw -20.6%, drift -20.1%, normalized -0.7%
+  arrival  base 251.9 cand 44.1 (x0.176) | ref 87.7 -> 44.1: raw -49.7%, drift -9.5%, normalized -45%
+static-cjk-10000
+  a        base 341.4 cand 56.1 (x0.165) | ref 57.6 -> 56.1: raw -2.6%, drift -4.5%, normalized 2.5%
+  b        base 1257.6 cand 7.8 (x0.006) | ref 8.7 -> 7.8: raw -10.3%, drift 1.4%, normalized -14.3%
+  c        base 291.8 cand 330.5 (x1.133) | ref 632.1 -> 330.5: raw -47.7%, drift -42.8%, normalized -1.7%
+  busy     base 2442 cand 794.9 (x0.324) | ref 1225.4 -> 794.9: raw -35.1%, drift -12.6%, normalized -26%
+  final    base 82.7 cand 10.5 (x0.125) | ref 10.2 -> 10.5: raw 2.9%, drift -1.1%, normalized 2.5%
+  arrival  base 112.6 cand 44.5 (x0.395) | ref 48.4 -> 44.5: raw -8.1%, drift 0.3%, normalized -5.7%
+static-cjk-50000
+  a        base 6874.7 cand 230.4 (x0.033) | ref 315.7 -> 230.4: raw -27%, drift -23.4%, normalized -2.9%
+  b        base 25918.4 cand 62.8 (x0.002) | ref 83.8 -> 62.8: raw -25.1%, drift -23.3%, normalized 0%
+  c        base 3511.1 cand 4378.5 (x1.247) | ref 9389.1 -> 4378.5: raw -53.4%, drift -57%, normalized 10.1%
+  busy     base 43339.4 cand 7469.9 (x0.172) | ref 15097.2 -> 7469.9: raw -50.5%, drift -30%, normalized -29.5%
+  final    base 353.1 cand 29.4 (x0.084) | ref 35.9 -> 29.4: raw -18.1%, drift -8.1%, normalized -8.7%
+  arrival  base 377.9 cand 48 (x0.127) | ref 79.9 -> 48: raw -39.9%, drift -12%, normalized -31.7%
+static-rich-10000
+  a        base 214.1 cand 40.5 (x0.189) | ref 41.7 -> 40.5: raw -2.9%, drift -2.1%, normalized -1%
+  b        base 644.3 cand 8.7 (x0.014) | ref 6.1 -> 8.7: raw 42.6%, drift -4.2%, normalized 55.6%
+  c        base 167.6 cand 197.6 (x1.192) | ref 382.3 -> 197.6: raw -48.3%, drift -49.6%, normalized 3.7%
+  busy     base 1358.8 cand 551 (x0.406) | ref 854.6 -> 551: raw -35.5%, drift -20.6%, normalized -18.6%
+  final    base 46 cand 6.2 (x0.127) | ref 7.3 -> 6.2: raw -15.1%, drift -10.9%, normalized -0.8%
+  arrival  base 71.1 cand 40.3 (x0.575) | ref 41.7 -> 40.3: raw -3.4%, drift -3.9%, normalized 2%
+static-rich-50000
+  a        base 4124 cand 151.4 (x0.036) | ref 199.2 -> 151.4: raw -24%, drift -11.3%, normalized -14.3%
+  b        base 13054.4 cand 46.4 (x0.004) | ref 54.9 -> 46.4: raw -15.5%, drift -9.8%, normalized 0%
+  c        base 2187.2 cand 2863.9 (x1.306) | ref 6355.4 -> 2863.9: raw -54.9%, drift -61.8%, normalized 19.1%
+  busy     base 23530.5 cand 4995.3 (x0.209) | ref 10087.5 -> 4995.3: raw -50.5%, drift -23.1%, normalized -35.1%
+  final    base 183.5 cand 12.6 (x0.069) | ref 24.2 -> 12.6: raw -47.9%, drift -15.1%, normalized -38.4%
+  arrival  base 210.8 cand 44.3 (x0.21) | ref 56.5 -> 44.3: raw -21.6%, drift -9.5%, normalized -14.6%

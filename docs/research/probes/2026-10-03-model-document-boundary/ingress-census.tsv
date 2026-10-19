@@ -1,0 +1,19 @@
+path	entry	routed	evidence
+plite createEditor({initialValue}) incl. react createEditor/useEditor, testing createEditorFromFixture	core/public-state.ts:10154	yes	normalizeEditorValue initial-value.ts:88 -> assertEditorDocumentShape; array input = children only (snapshot initial-value.ts:66)
+plate createEditor/useCreateEditor/createStaticEditor (applyEditor)	lib/editor/withPlite.ts:1060	yes	resolveBaseInitialValue -> initializePluginEntries create-editor.ts:280 initializeEditorSchemaSnapshot public-state.ts:10040 -> fitDocument(WithSelection) compiled-slice-fitter.ts:3755
+editor.update.value.replace / tx.value.replace / Editor.replace|reset / hyperscript <editor>	public-state.ts:6135, interfaces/editor.ts:4730, hyperscript/creators.ts:342	yes	replaceSnapshot public-state.ts:9961 -> replaceTransformedSnapshot:9836 fitDocument -> compiled-slice-fitter.ts:3755
+persisted envelope via replace/initialValue	public-state.ts:9718	yes	readExactDataRecord keys+schema identity, then fitDocument
+root-bound view value.replace	editor-runtime-view.ts:631/692	yes	replaceTransformedSnapshot(...,root) -> fitDocument; envelopes rejected :685
+tx.roots.create/replace(root, children)	public-state.ts:5783/5818	equivalent	ContentSlice.closed array check content-slice.ts:77; requireMutableRoot public-root.ts:99; fallback assertDocument public-state.ts:9634
+editor.read.schema.assertDocument	editor-schema.ts:3745	yes	:3765
+schema.fitDocument/WithReport/WithSelection	compiled-slice-fitter.ts:3932-3952	yes	fitDocumentInput :3755
+authored parseAuthoredDocument/createAuthoredReviewDocument/admit/normalize	authored/format.ts:429, checkpoint.ts:60/80	yes	checkpoint.ts:67
+History.fromJSON	history/history.ts:116	yes (changes)	history-codec.ts:117/125 assertDocument per replay; plugin restore decode validateDocument:false justified by encodeHistoryValue validate history-plugin.ts:1098
+Yjs load/remote	yjs/core/controller.ts:1338, plugin.ts:165	yes	editor-adapter.ts:208 fitDocument; main canonicalize via tx.value.replace; applyRemote replacement -> tx.value.replace editor-adapter.ts:171; event changes = change ingress
+parseMarkdown	markdownConversion.ts:798	yes	fitDocumentWithReport :756 + assertDocument :818
+parseHtml	HtmlPlugin.ts:3763	yes	fitDocumentWithReport
+importDocx	importDocx.ts:305/1640/1714	yes	parseAuthoredDocument + assertDocument/fitDocument
+serializeMarkdown/Html readDocument/projectDocument	withPlite.ts:1287/1308	yes	detachedSchema.assertDocument
+compare (diff)	diff/lib/comparison-internal.ts:62	yes	assertDocument
+migrateDocument	documentMigrations.ts:687/701/743	partial	duplicate assertOwnedDocument :241-282 at entry and each step; owner only at completeDocument fitDocument :430/435
+compilePlateModel	internal/plugin/compilePlateModel.ts:897	n/a	no document ingress

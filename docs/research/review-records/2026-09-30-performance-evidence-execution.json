@@ -1,0 +1,130 @@
+{
+  "id": "2026-09-30-performance-evidence-execution",
+  "kind": "execution",
+  "date": "2026-09-30",
+  "scopes": [
+    "performance"
+  ],
+  "reviewBasis": [
+    "2026-09-30-performance-evidence-value-review",
+    "2026-09-30-performance-evidence-cuts"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-30-performance-evidence-execution.md",
+    "sha256": "813c604f72a72da5f0c6f4661a0c693a8cab74be3c6ce5f7b7cec1ca37e2f9bd"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "S2 to S5 adopted after S1. Target artifacts carry the lab's interpretation metadata; the lab registry keeps workloads and five retired definitions. admitArtifact admits each artifact once as current, stale or unknown from its receipt, its recipe and the inputs its producer recorded; only current rows read ok or count as coverage, and threshold rows claim only operator-independent verdicts. Target history and report show each target's latest run and recipe state; health, the viewer and the landing index show admission. One S5 evaluator assesses matrices under s5-no-regression-v1 and s5-work-gain-profile120-v1, with correctness bound to a per-cell, per-arm preflight and the served build id. The code-block clock starts before the editor's handlers, external-text samples are dense and copied, and seven strict producers write measurements before validating. The lab READMEs teach the flow, and the pinned Evidence Kit CLI reads the adapted rows.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "tooling/scripts/bench-targets.test.mjs",
+        "sha256": "9968180e01817ed1d37b2388527d4440ed56a0c0af4c212823e4dd732b0a7867",
+        "claim": "28 tests: receipts, recipe isolation, history, and three loader tests that run a fixture target through the real CLI and prove unknown, current and stale admission, coverage, recomputed thresholds, historical retired rows and the unavailable legacy comparison. Admission and loader mutations each fail the intended test."
+      },
+      {
+        "path": "benchmarks/editor/benchmarks/markdown-streaming-measurement.test.mjs",
+        "sha256": "94d1ecab0c2c4902cb25b281f50b0e94de7e06866865388e12af5207e0802605",
+        "claim": "8 tests over the evaluator, including the audit counterexamples, preflight binding and a replay of the archived content-root matrix; eleven mutations each fail the intended test."
+      },
+      {
+        "path": "benchmarks/editor/benchmarks/code-block-highlight-oracle.test.mjs",
+        "sha256": "dc4bb9d69a7d16925c58c35729adfdcd39fe5a23a842f50af1b6c8799d45e41d",
+        "claim": "Chromium tests reject a missing input start and prove the clock starts before an editor handler that stops immediate propagation."
+      },
+      {
+        "path": "benchmarks/editor/benchmarks/benchmark-artifact.test.ts",
+        "sha256": "0c10f412fc8f4ec234a0b5627bd9100d35ce8afaea9ac3ed8d74f67495438531",
+        "claim": "A strict failure replaces an older passing artifact with this run's unpassed measurements; a pass rewrites it as passed."
+      },
+      {
+        "path": "benchmarks/editor/docs/perf/index.html",
+        "sha256": "875cbd2221a26035ece4425c282808da9ef12aca5c5fc8a7300171c33cd2412c",
+        "claim": "Regenerated landing index after real CLI reruns: one current, two stale and 17 unknown lab artifacts; its check and the Evidence Kit docs check pass."
+      }
+    ],
+    "limits": "Runtime proofs are not retained as files and are described in the plan: a two-cell S5 matrix on two builds of one snapshot (no-regression pass, work gain fail), a full native code-block run (validity pass, native budgets missed), eight functional spec tests on a production build, a strict schema-construction failure over an old passing artifact, and real CLI reruns of collab-readiness (current) and core-node-transforms (producer broken, stale). Most lab artifacts stay unknown until their targets rerun; producers that record no inputs stay unknown after a rerun; threshold rows stay unassessed until producers record operators. No performance acceptance, all-target rerun or calibration is claimed. The global ledger check is red on the tooling/distribution inventory group, which mixes this plan's tooling/scripts edits with other sessions' edits."
+  },
+  "source": {
+    "files": {
+      "tooling/scripts/bench-targets.mjs": "966a00643b9170d1c2bc362ff504c44213c4dc910babe49c85f9fc38e8d98f6e",
+      "benchmarks/targets/slate-v2.json": "dceac93cfbc9b0d489aa401bfcf78765b18b9872b3a22944cd128a480eaa8e38",
+      "benchmarks/editor/research/benchmark-registry.json": "ecad4a21630e8dc6aafc72aebc0114f7d46a36fb6d54a17877843fa0b106005c",
+      "benchmarks/editor/src/index.mjs": "82692c116ed152008db008266a8cfc2bc86950339d0f1d1afba4221d262fa914",
+      "packages/plitejs/src/core/profiling.ts": "f5e8ea27a4eda605ef7d53c75907aa9904bf89a3ced01db67d70d55fcf4bf715",
+      "packages/plitejs/src/react/render-profiler.ts": "91078a23226b1906d000a258e602d3b6426bc26603dd691667e297f72d45051a",
+      "benchmarks/editor/README.md": "215bbdea8c2f7dd0a97bc13fc8e2d66e9c5f9fe1477c64ceb9aeeeb494995c9a",
+      "benchmarks/editor/research/evidence-source-map.md": "2dc3969934e538d5d045f1a9dc99f15bae0c03031a1097928e271728054e00d9",
+      "benchmarks/editor/package.json": "ee860dc24fcdcbe052c52b0ed48a9dd0a2847b23e5b24a899936fd10a95ec165",
+      "apps/www/scripts/run-homepage-input-perf.mts": "c34c77d9eaf23f71a5061c35ae304a5e5fbc48545267c721260ecff3654adedf",
+      "apps/www/scripts/run-table-perf.mts": "5dc9b0bc90c9e113bdea89e45312c3151d2f45343544865f9eefc3719361af98",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/summarize-matrix.ts": "69ce2e81ce9def866211ce2826d5f8370b94af7089030db8f5bf4c59380bbee6",
+      "docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/proportional/pp4-ai/scripts/summarize-matrix-ratio125.ts": "dd9aff2c188d61e2ff637b941b4e33d74f01df872b9daebebecdb4921960d465",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/README.md": "a2e12253d12bf7c4587cf0061796c57c6a9cc231eca21f7caa21486cb9df4ced",
+      "tooling/scripts/bench-targets.test.mjs": "9968180e01817ed1d37b2388527d4440ed56a0c0af4c212823e4dd732b0a7867",
+      "benchmarks/editor/benchmarks/external-text-measurement.test.mjs": "452b0b9f9fe4bc5d94fb42fe73886f1e911a87fe09355238e4fb027d9ec0b96b",
+      "benchmarks/editor/benchmarks/code-block-highlight-oracle.test.mjs": "dc4bb9d69a7d16925c58c35729adfdcd39fe5a23a842f50af1b6c8799d45e41d",
+      "benchmarks/editor/benchmarks/benchmark-artifact.test.ts": "0c10f412fc8f4ec234a0b5627bd9100d35ce8afaea9ac3ed8d74f67495438531",
+      "docs/research/probes/2026-09-30-performance-review/reproduce.mjs": "8729b98a352c61d4ab3265004defc3ec9ab496511af6a9c4621782af363c32ad",
+      "docs/research/probes/2026-09-30-performance-review/RESULTS.json": "7a947572ee2831397726dbc565fe87fddb852a096a42e5d2bf804077592198ca",
+      "benchmarks/targets/history/slate-v2-latest.json": "6259cc45e24b836181c506528526f1283593843b840d2f71f7a36227fe0a5bff",
+      "benchmarks/targets/reports/slate-v2.md": "c383d48ca8186ca960ddaac0ec14bba716df673b724f7c083caaba06cd9f8d93",
+      "docs/plite/research/2026-09-09-editor-performance-iteration-2/experiments.md": "7a89f49cf14b5ff0b88c420d0779bb9169948a9bb883d4b83d1603419bfa2bad",
+      "docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/prior-candidate-reconciliation.md": "5bb9de499989bfe8e140827e706d4e87ca640c5940925924628aa7faee2828a6",
+      "docs/plans/2026-09-10-editor-performance-execution.md": "b0fa7f684c7493297095f7a76fc00ec4bd389ef459704a8b31c8701291e856e8",
+      "docs/plans/2026-09-10-editor-performance-follow-through.md": "9cb0cb9500b278740b5b98dc5f46d3f145e2bd2c11bdd19e1ef39747addca59c",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/README.txt": "1236eba2d944655ada507c41c74203212df6622d7f688aa260feaf94a92e6dcf",
+      "docs/research/probes/2026-09-30-content-root-locations/s5/matrix-summary.json": "16980a7a7d8c78014790ee6571df736433943d8b5a81aa92334494e25731cd46",
+      "docs/research/review-records/2026-09-30-content-root-locations-closure.json": "b6a1ee96994cc9db2cfae4113f92beb124937fad3155dbf94d1cbe642e3d29ff",
+      "docs/research/review-records/2026-09-30-static-preview-proportional-cost-execution.json": "0abf926771c40870706b4da4d3041115a887b78c20c814a7b37eb08f13c81c02",
+      "packages/plitejs/src/index.ts": "bcfeaa00ef5809e1dd8b34e7581c7bcef85a21b72355bdbf64130a5bae430a1d",
+      "packages/plitejs/src/react/index.ts": "e47da0a4e58ca90108fdd32a70df2f886a3a2d53199699ab5acd9c55692bdee3",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "VISION.md": "620e57044c438a2c9d6ded4480038a258bfe10ac35708080a91df1821919547e",
+      "docs/vision/common.md": "d4e12fc4b28bd7d6cd077be54853ee8c873e051cf9dcc93a7e6e43fd32347129",
+      "package.json": "6b7cc2c7a6121b945be2c3e922d72e760c18f421c54384cae267f4d7dfc4e216",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      "docs/plans/2026-09-30-performance-evidence-execution.md": "813c604f72a72da5f0c6f4661a0c693a8cab74be3c6ce5f7b7cec1ca37e2f9bd",
+      "docs/plans/2026-09-30-performance-evidence-design.md": "fcfd843a326b6a15c42f0add1bcff291849496338313d2493bef516bcbe9e118",
+      "benchmarks/editor/benchmarks/markdown-streaming-measurement.mjs": "6eb2590b44361391d19c6260f77c46b8ce2b446c59f5b26e87173780f6b5b13c",
+      "apps/www/tests/browser/markdown-streaming-contract.spec.ts": "f25c656eb91bffdc2f09c2ececd2e623355372d97f148cc51ab5b8b5ecb63f3e",
+      "benchmarks/editor/benchmarks/plate-code-block-browser.mjs": "c5d0ff9698e65908b934ac0349215f93c610c4017de90d6941689d3c93d39515",
+      "benchmarks/editor/benchmarks/code-block-highlight-oracle.mjs": "a08bc6e188467b67ebfba856c368bac999e9dd858a791c98e748d0090eccf66b",
+      "benchmarks/editor/benchmarks/external-text-measurement.mjs": "926589f6eb4908b189b49496576758b234d46b8f3558891647b741c51643fe43",
+      "benchmarks/editor/benchmarks/benchmark-artifact.ts": "9fa5ff114d56868aa4e8c6417e08b370f21858138d15921b229accbe61aaae2c",
+      "benchmarks/targets/README.md": "3de31c8e9a79303a3c9aa39dc20123aa7c13c208ae965c6b46863df1e869e112",
+      "benchmarks/editor/benchmarks/markdown-streaming-measurement.test.mjs": "94d1ecab0c2c4902cb25b281f50b0e94de7e06866865388e12af5207e0802605",
+      "benchmarks/editor/docs/perf/index.html": "875cbd2221a26035ece4425c282808da9ef12aca5c5fc8a7300171c33cd2412c"
+    },
+    "directories": {
+      "benchmarks/editor/benchmarks": "26a93fbeb5843e94880cc3def3d59fe64e2f8b2129f665bc8fc897b33807cbe4"
+    },
+    "features": {
+      "plitejs/core/profiling": "6092b7d1a78bd8c662a494007c646d69bc76c71fb58870b58acdd85d663faffd",
+      "tooling/performance": "d6566c2467f4b250063208194a22c3587772f4b937da112ddac93c95db57095c"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-30-performance-evidence-execution.md",
+    "docs/plans/2026-09-30-performance-evidence-design.md",
+    "tooling/scripts/bench-targets.mjs",
+    "benchmarks/editor/src/index.mjs",
+    "benchmarks/editor/research/benchmark-registry.json",
+    "benchmarks/targets/slate-v2.json",
+    "benchmarks/editor/benchmarks/markdown-streaming-measurement.mjs",
+    "apps/www/tests/browser/markdown-streaming-contract.spec.ts",
+    "benchmarks/editor/benchmarks/plate-code-block-browser.mjs",
+    "benchmarks/editor/benchmarks/code-block-highlight-oracle.mjs",
+    "benchmarks/editor/benchmarks/external-text-measurement.mjs",
+    "benchmarks/editor/benchmarks/benchmark-artifact.ts",
+    "benchmarks/editor/README.md",
+    "benchmarks/editor/research/evidence-source-map.md",
+    "benchmarks/targets/README.md",
+    "benchmarks/targets/history/slate-v2-latest.json",
+    "benchmarks/targets/reports/slate-v2.md"
+  ]
+}

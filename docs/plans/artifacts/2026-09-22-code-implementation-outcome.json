@@ -1,0 +1,96 @@
+{
+  "id": "2026-09-22-code-commands-and-highlighter-implementation",
+  "kind": "execution",
+  "date": "2026-09-22",
+  "scopes": [
+    "code"
+  ],
+  "reviewBasis": [
+    "2026-09-22-code-last-pass-ownership-gates"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-22-code-commands-and-highlighter-ownership.md",
+    "sha256": "e9f328ef1362fe1a318dcd1dc1926c762c2841bc5b9104387124536b63539592"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Construct code blocks directly from their schema, retain code-specific insertion and reuse policy, correct selected-line endpoints, move JSON formatting to the copied UI with one canonical multi-edit update, repair Plite mapping for retained text anchors, and register browser-safe Python at copied-kit construction rather than during package reads. Public docs, generated registry items, behavior law and Plate Next v230 are aligned; the optional CodeMirror backend split remains deferred.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "docs/plans/artifacts/2026-09-22-code-implementation-proof.md",
+        "sha256": "3d740915b70ee2c32fd5a6b6889876e8ee2bb4c8885c8a4ff6f1ae7c69b0e23f",
+        "claim": "Plate and Plite focused partitions, copied-component tests, source-matched browser rows, registry/typecheck and lint passed; the adjacent code-demo Enter row failed twice."
+      }
+    ],
+    "limits": "An adjacent code-demo Enter-at-heading-start row fails; cause not established, so no full browser-file pass is claimed. No production bundle, large-JSON timing, assistive-technology or physical-device proof ran."
+  },
+  "source": {
+    "files": {
+      "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts": "0c04dd8ee1e74f2bd087991ccc7ae848bc03e226083fbc5f80c5aaaaf249395f",
+      "apps/www/src/registry/components/editor/code-block.tsx": "295c03a94b95cd1a2029c5376c41d0456dbe23cbd82dd6ce76058db798053775",
+      "apps/www/src/registry/examples/code-block-huge-demo.tsx": "79101d73adaf70f48a794d8becd5a00799d5ba4458f1ece09fb6678a1f38c773",
+      "apps/www/tests/browser/code-block-native-interactions.spec.ts": "3428eda572f118b3b61d7f503a1900f8d8ce36c2fed32b009866a9cc4cc9a795",
+      "apps/www/tests/browser/code-block-syntax.spec.ts": "790c509832a447482d471589cdd8787d17640d4faedb2eed099e773aed6a5d96",
+      "apps/www/playwright.config.ts": "a205a2ae686426226a8e49bf5f5a4bdb81accc8dc495ac38ca568f4ebaa252bf",
+      "apps/www/package.json": "fa379b896cd99a95ecc39dd3eba92fcde63f977d2d74e6e62075fac0d1706757",
+      "packages/platejs/src/internal/plugin/blockInsertion.ts": "cca8614da6bb4bde12cb9bc9e2a60a4db12301366ac5e8a803ad8ad9961a1889",
+      "packages/platejs/src/lib/editor/pluginRuntimeTypes.ts": "4f461635fa3e15361c6227ce49de1fabee001c8144e50d7702ff88d031267d8d",
+      "apps/www/src/registry/components/editor/code-block-static.tsx": "b2af1208166dc3cc2b05becb42522d54938d35eb4dbb4c32205fa4077f91595a",
+      "apps/www/src/registry/components/editor/code-block-codemirror.tsx": "ab7b976014306982ade881891f6726ff4df30946211f484e08772bc32efb120f",
+      "apps/www/src/registry/examples/code-block-codemirror-demo.tsx": "b6741adcc114982b5859cfa391ab9fc1fd5c2dc3802604578247a09c693905cf",
+      "apps/www/src/registry/examples/code-block-views-demo.tsx": "706e5767ac8807fe8576e3b4c3f7e672792dfdf9c40ffc7512e89eddfb6d364b",
+      "apps/www/src/registry/registry-features.ts": "5b141249e48f53afd208b66b0300f1f4cf436b02f24bc86f4dc6cddb77323d94",
+      "content/docs/(plugins)/(elements)/code-block.mdx": "1e5c9746b739bc19e55f7722bae170e16a9387c0a7fadaaa0d625a1870f1a81a",
+      "content/docs/(plugins)/(elements)/code-block.cn.mdx": "f7a7396d2ebc469f3d44f1ea21ab311d615ead4bddaf15f59fff07c84625603a",
+      "content/docs/(guides)/plugin-components.cn.mdx": "d1d87c17aa2fee98976577c343ca0ec1c792c8a84c724f115775cc92ed022114",
+      "packages/platejs/package.json": "97faae906581c775d720a4953a98c5642e0f53f909ed0720ad12c2bfc6576411",
+      "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "tooling/config/bunTestSetup.ts": "f792ad47c50664174ee921a394fb2f667c69bb2eb6037c4f1e17bba440c93a0e",
+      "tooling/scripts/run-entrypoint-task.mjs": "2a7c478035f55226129436c0cf4ce4988edc52d8317de27500ecf33a3ab7e3ec",
+      "tooling/entrypoints/entrypoint-turbo.mjs": "29b373de283b2a7c959c1124a03aee1584e908cf6d7a569627b35ec97d3ea316",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77bf6f360dc7b3199b947dc167649fbc39007b81b4f9bd5364660757e7d4a703",
+      "packages/plitejs/src/core/anchor.ts": "b034ae0e2bd64c5b4eafb592e227a3307f07494344126f6e533599c8fe682a84",
+      "packages/plitejs/test/authored-anchor-contract.test.ts": "975f73eb28bf6f2f83ac8c4fe92c43ef5953db0335498cd096edf330a0b30c4b",
+      "apps/www/src/registry/components/editor/code-block-lowlight.ts": "16bb2bbdd38d2afd270a1966ce0c9ed6cf34193fec310e549ace63b8e0c0781d",
+      "apps/www/src/registry/components/editor/code-block.format.spec.tsx": "d0daa8b67acb69f3fc7bc0a5e799a0d7fdced244c67a06489d2087ba416351cd",
+      "apps/www/src/registry/components/editor/code-block-lowlight.spec.ts": "7d64d25fd0f6cd57ad8322aeea0f53fcfabf8fae90906aac0395418d51ac929a",
+      "apps/www/public/r/code-block.json": "0fbbf7e69c4ef2ee57d22886a8d1ba67ff86e257276cb383ff254f99a2d02b09",
+      "apps/www/public/r/code-block-static.json": "a8d0b861e048ffc1ea2170994319e0f9c3346cf5c0090affd4854d5e120b3a21"
+    },
+    "directories": {
+      "packages/platejs/src/features/code-block": "4404779a8520cb25eb7c2d16cc2daa5fe4612f77b13ea0edf25912b791308275",
+      "packages/platejs/src/react/features/code-block": "b384c606319e1ba8151104443345737f101c279279101bc20ce146c2b1bc39c1",
+      "packages/platejs/src/code-block/codemirror": "03b54c0ec4abfc5e6d3c5c2a060becea676e9eb17d926801d881e678cb5a5c78"
+    },
+    "features": {
+      "browser/code-block-demos": "7140023ac7389d3168c656b3542e799457a92ea3f55ff0c1f9a60d5ded309ae8",
+      "browser/code-block-native-interactions": "251a0ce0a5c53303486693615a6f63c094d39bddd35d41023770399ee613f580",
+      "browser/code-block-selection": "769f4c63b2ac6b896b55a7599fe93614048da61906b8f3cb847dab4c6565aa77",
+      "browser/code-block-syntax": "0f6eb83345714b1dbca39e5710c9fba53a78860a6a783eabaadd9f2cb4ff540e",
+      "capability/codeBlock": "890b127f5bf292fa364a66b9d71a5d6372c2ecc45dacccc13580d3947e433f86",
+      "capability/codeSyntax": "fe609ccb759a27fb21cb005d5af86dae7586ce0186e7849d0e777015fb79d752",
+      "example/plite/code-highlighting": "1eccb4a1b858636f0bde95cb699a75bd737b95dcb76b9ae4ea48c4b6f2f4eae7",
+      "example/registry/code-block-demo": "234bee48bd145c9bcaa6551e56d07f018742609612ec5d7d63d37918bb6136a4",
+      "example/registry/code-block-huge-demo": "6505a9be5c8f533a20a831b2d52eaf419be2933f1d3e90f531be8c552ce2e6b2",
+      "example/value/code-block-value": "0e63f922786c5ef9462b1a3d7c3903c209bf599f1cca68e7fa9ff50b52539086",
+      "example/value/huge-code-block-value": "c1779f9e270099d1afa55710a6d21ff219fbedbd0909cfb44706a0860761a13f",
+      "platejs/code-block": "4404779a8520cb25eb7c2d16cc2daa5fe4612f77b13ea0edf25912b791308275",
+      "ui/code-block": "9b9eb29ab4b768b2202d3f5c296a56680cf043f7d6fd5f0f97cfd77458c74929",
+      "ui/code-block-lowlight": "4c5751f0e4f6a7dac12713a0eb9269f0fbc57784ae8bc504d8a74032096515ee"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-22-code-commands-and-highlighter-ownership.md",
+    "docs/plans/artifacts/2026-09-22-code-implementation-proof.md",
+    "packages/plitejs/src/core/anchor.ts",
+    "apps/www/src/registry/components/editor/code-block-lowlight.ts"
+  ]
+}

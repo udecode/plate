@@ -1,0 +1,20 @@
+S6 production-path benchmark (bench-s6.ts), baseline = origin/next e33ad94aea worktree, candidate = adopted checkout; bun 1.3.12 darwin/arm64; single host.
+parse legacy normal    base 26.1 ms [22.2-32.6]      cand 25.5 ms [22.8-28.4]      ratio 0.98  bound 1.10  PASS
+parse legacy large     base 523.6 ms [498.4-548.8]   cand 552.3 ms [524.9-651.3]   ratio 1.05  bound 1.10  INCONCLUSIVE (overlapping ranges)
+parse legacy stress    base 2753.1 ms [2688.4-2826.6] cand 2446.1 ms [2410.5-2659.2] ratio 0.89 bound 1.10  PASS
+prose                  base 165.6 ms [155.0-176.5]   cand 163.7 ms [158.6-172.9]   ratio 0.99  bound 1.25  PASS
+streaming              base 3646.0 ms [3323.2-3823.4] cand 3260.9 ms [3228.7-3481.6] ratio 0.89 bound 1.25  PASS
+serialize              base 224.6 ms [212.4-252.2]   cand 227.1 ms [217.3-239.5]   ratio 1.01  bound 1.10  INCONCLUSIVE (parity)
+guard: legacy corpus parses to identical documents on baseline (MDX) and candidate (Plate tags)
+
+Rerun after D15 dispatch and the mark wrap/marks rename (2026-09-28 17:36-17:46), same bench-s6.ts, baseline = e33ad94aea worktree, ABBA order, shared host load 4.6-9.6.
+Discarded: two runs at 17:08-17:31 overlapped another session's edits to markdownMappings.ts/markdownAttributes.ts (source changed mid-run); their ratios (0.82-2.33) are not evidence.
+Frozen tree before the serialize fix (s6-rerun-prefix-{a,b}-*.json):
+  parse normal 0.89/0.88, large 0.89/0.94, stress 0.93/0.94, prose 0.97/0.91, streaming 0.91/0.94  PASS
+  serialize 1.12/1.10  bound 1.10  INCONCLUSIVE, consistent in both orders
+Cause (prof-serialize.ts CPU profiles): per-paragraph `{...options}` in encodeMarkdownParagraph missed the per-operation format-context cache (4.3% of samples rebuilding plugin contexts vs 0.6% baseline), and the parse-only tag transformer ran on serialize.
+Fix: stable `operation` key on the conversion context; serialize installs remarkMarkdownTagWriter only. Profile after fix: context rebuild 0.5%, parse transformer 0.0%, samples 3716 vs 3878 baseline.
+Frozen tree after the fix (s6-rerun-fixed-{a,b}-*.json), orders baseline-first / candidate-first:
+  serialize 0.99/0.93  PASS both orders
+  parse normal 1.03/1.33, large 0.96/1.15, stress 0.96/0.95, prose 1.06/0.93, streaming 1.10/0.89: mixed across orders with no parse-path change; INCONCLUSIVE timing on a shared host (earlier frozen run 0.88-0.94)
+guard: legacy corpus parses to identical documents in every run

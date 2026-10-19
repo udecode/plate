@@ -1,0 +1,208 @@
+---
+title: Font
+description: Provide extended formatting options for document content.
+docs:
+  - route: /docs/components/font-color-toolbar-button
+    title: Font Color Toolbar Button
+  - route: /docs/components/font-size-toolbar-button
+    title: Font Size Toolbar Button
+---
+
+<ComponentPreview name="font-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Apply font styling to selected text including size, family, color, background color, and weight.
+- Supports custom font families, sizes, colors, and weights.
+
+## Plugins
+
+- `FontBackgroundColorPlugin`: Control background color with `background-color` style
+- `FontColorPlugin`: Control font color with `color` style
+- `FontFamilyPlugin`: Change font family using inline elements with `font-family` style
+- `FontSizePlugin`: Control font size with CSS class or `font-size` style
+- `FontWeightPlugin`: Control font weight with `font-weight` style
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add font styling functionality is with the `FontKit`, which includes pre-configured font plugins with their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="font" />
+
+- Includes all font plugins (`FontColorPlugin`, `FontBackgroundColorPlugin`, `FontSizePlugin`, `FontFamilyPlugin`) with sensible defaults.
+
+### Add kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createEditor } from "platejs/react";
+import { FontKit } from "@/components/editor/font";
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...FontKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs
+```
+
+### Add plugins
+
+Include the font plugins in your Plate plugins array when creating the editor.
+
+```tsx
+import {
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  FontFamilyPlugin,
+  FontSizePlugin,
+} from "platejs/react";
+import { createEditor } from "platejs/react";
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    FontColorPlugin,
+    FontBackgroundColorPlugin,
+    FontFamilyPlugin,
+    FontSizePlugin,
+  ],
+});
+```
+
+### Font marks
+
+Font plugins register string-valued text marks, so they follow the selected
+text instead of a block target list. Every stored value renders, so a pasted
+`color: black` draws black in every theme. HTML parsers read font styles
+directly onto text properties; block target injection does not constrain text
+marks.
+
+### Add toolbar button
+
+You can add [`FontColorToolbarButton`](/docs/components/font-color-toolbar-button) and [`FontSizeToolbarButton`](/docs/components/font-size-toolbar-button) to your [Toolbar](/docs/toolbar) to control font color and size.
+
+</Steps>
+
+## Plugins
+
+### `FontBackgroundColorPlugin`
+
+Plugin for font background color formatting. Applies `background-color` style to selected text.
+
+### `FontColorPlugin`
+
+Plugin for font color formatting. Applies `color` style to selected text.
+
+### `FontFamilyPlugin`
+
+Plugin for font family formatting. Applies `font-family` style to selected text.
+
+### `FontSizePlugin`
+
+Plugin for font size formatting. Applies `font-size` style to selected text.
+
+### `FontWeightPlugin`
+
+Plugin for font weight formatting. Applies `font-weight` style to selected text.
+
+## Transforms
+
+### `editor.update.backgroundColor.set`
+
+Set the font background color mark on the selected text.
+
+<API name="editor.update.backgroundColor.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      The background color value to set (e.g., `'#ff0000'`, `'red'`).
+    </APIItem>
+  </APIParameters>
+</API>
+
+### `editor.update.color.set`
+
+Set the font color mark on the selected text.
+
+<API name="editor.update.color.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      The color value to set (e.g., `'#0000ff'`, `'blue'`).
+    </APIItem>
+  </APIParameters>
+</API>
+
+### `editor.update.fontFamily.set`
+
+Set the font family mark on the selected text.
+
+<API name="editor.update.fontFamily.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      The font family value to set (e.g., `'Arial'`, `'Times New Roman'`).
+    </APIItem>
+  </APIParameters>
+</API>
+
+### `editor.update.fontSize.set`
+
+Set the font size mark on the selected text.
+
+<API name="editor.update.fontSize.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      The font size value to set (e.g., `'16px'`, `'1.2em'`).
+    </APIItem>
+  </APIParameters>
+</API>
+
+### `editor.update.fontWeight.set`
+
+Set the font weight mark on the selected text.
+
+<API name="editor.update.fontWeight.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      The font weight value to set (e.g., `'bold'`, `'400'`, `'600'`).
+    </APIItem>
+  </APIParameters>
+</API>
+
+## API
+
+### `toUnitLess`
+
+Convert a font size value to a unitless value.
+
+<API name="toUnitLess">
+<APIParameters>
+  <APIItem name="fontSize" type="string">
+    The font size value to convert.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="string">
+  The font size value without units.
+</APIReturns>
+</API>

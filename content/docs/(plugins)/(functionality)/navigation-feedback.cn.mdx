@@ -1,0 +1,159 @@
+---
+title: 导航反馈
+description: 在目录、脚注、搜索或自定义跳转后高亮目标元素。
+---
+
+<ComponentPreview name="toc-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 在发起调用的已挂载视图中高亮元素，包括只读视图。
+- 元素的位置发生变化时，高亮仍跟随同一元素。
+- 重复调用会替换高亮；目标删除或视图卸载时清除反馈。
+- 在调用处传入整个元素的类名、样式和安全属性。
+
+</PackageInfo>
+
+导航反馈负责临时样式。选择、聚焦和滚动由执行跳转的功能负责。
+脚注的完整跳转流程使用 [Footnote API](/docs/footnote#navigate-between-reference-and-definition)。
+
+## 使用
+
+### React 插件
+
+`NavigationFeedbackPlugin` 包含在 React 编辑器的默认插件中。通过
+`navigationFeedback` 配置默认时长：
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  navigationFeedback: { duration: 1200 },
+});
+```
+
+默认时长为 `1600` 毫秒。设置 `navigationFeedback: false` 可禁用插件。
+
+### 高亮目标
+
+从 `useEditor()` 获取已挂载视图的编辑器，在该视图中
+获取元素的 `NodeKey`，然后传入本次操作的样式：
+
+```tsx title="flash-first-block.tsx" showLineNumbers
+import { useEditor } from 'platejs/react';
+
+export function FlashFirstBlock() {
+  const editor = useEditor();
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        const key = editor.key([0]);
+        if (!key) return;
+
+        editor.api.navigation.flashTarget({
+          key,
+          attributes: { className: 'rounded-md bg-yellow-100' },
+          duration: 1200,
+        });
+      }}
+    >
+      高亮第一个区块
+    </button>
+  );
+}
+```
+
+高亮不会修改文档、选择、焦点、滚动位置或历史记录。同一文档的多个视图各自拥有
+独立的目标和计时器。未绑定已挂载视图的基础编辑器返回 `false`，不会选择其他视图。
+
+已删除的键、文本节点、其他编辑器或内容根的键，以及已卸载的视图都会返回
+`false`，并保留原有高亮。时长必须是有限的非负数。
+
+### 目标样式
+
+`attributes` 支持 `className`、`style`、`data-*` 和 `aria-*` 等安全属性，
+不接受事件处理器、ref 或 HTML 注入。每次高亮都会复制属性对象及其样式对象。
+
+插件在目标元素上发布以下生命周期标记；这些值优先于调用者传入的同名属性：
+
+| 属性 | 值 |
+| --- | --- |
+| `data-nav-target` | 高亮期间为 `"true"`。 |
+| `data-nav-cycle` | 每次高亮在 `"0"` 和 `"1"` 之间交替。 |
+| `data-nav-pulse` | 当前已挂载视图递增的脉冲计数。 |
+| `--editor-nav-feedback-duration` | CSS 时长，例如 `"1200ms"`。 |
+
+`EditorElement` 会在根元素上接收这些属性。嵌套按钮可根据父元素的
+`data-nav-target` 设置样式。需要动画时，可用 `data-nav-cycle` 在两个动画名称
+之间切换，让重复高亮重新播放。样式由请求反馈的功能组件定义。
+
+### 清除反馈
+
+```tsx
+editor.api.navigation.clear();
+```
+
+清除操作取消当前视图的计时器，并返回该视图是否存在活动目标。
+
+## 插件
+
+### `NavigationFeedbackPlugin`
+
+<API name="NavigationFeedbackPlugin">
+<APIOptions>
+  <APIItem name="duration" type="number">
+    默认反馈时长，单位为毫秒。
+    - **默认值：** `1600`
+  </APIItem>
+</APIOptions>
+</API>
+
+## API 参考
+
+### `editor.api.navigation.flashTarget`
+
+在发起调用的已挂载视图中高亮一个元素，替换该视图当前的目标并重新计时。
+
+<API name="flashTarget">
+<APIParameters>
+  <APIItem name="options" type="NavigationFlashTargetOptions">
+    <APIList>
+      <APISubListItem parent="options" name="key" type="NodeKey">
+        当前编辑器和内容根中的元素标识。
+      </APISubListItem>
+      <APISubListItem parent="options" name="attributes" type="ViewElementAttributes" optional>
+        本次高亮的安全整元素样式。
+      </APISubListItem>
+      <APISubListItem parent="options" name="duration" type="number" optional>
+        有限的非负毫秒数，默认使用配置的时长。
+      </APISubListItem>
+    </APIList>
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    已挂载视图是否接受了目标。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.api.navigation.clear`
+
+<API name="clear">
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    当前已挂载视图是否存在需要清除的活动目标。
+  </APIItem>
+</APIReturns>
+</API>
+
+## 相关文档
+
+- [目录](/docs/toc)
+- [脚注](/docs/footnote)
+- [编辑器方法](/docs/editor-methods)
+- [插件配置](/docs/plugin)

@@ -1,0 +1,12 @@
+ai-cjk-10000: pass | a+b 1715.2→72.3 (-95.8%), 1716.7→76.5 (-95.5%), 1664.7→78.3 (-95.3%) | a 357.9→54 b 1341→21.7 c 458.9→417.3 busy 2624.2→912.4 | final p95 120.43→49.75 | arrival p95 127.5→44.6 | previews 40/40/39→40/40/40 | texts match
+ai-cjk-50000: pass | a+b 35434.4→435.9 (-98.8%), 35826.1→455.2 (-98.7%), 35498.1→434.9 (-98.8%) | a 7449.3→257.1 b 28136.9→184.9 c 4159.2→4274.3 busy 45473.2→6752 | final p95 540.86→196.89 | arrival p95 449.5→45.7 | previews 195/196/195→203/206/204 | texts match
+ai-rich-10000: pass | a+b 990.5→45.7 (-95.4%), 989.7→46.9 (-95.3%), 997.4→42.8 (-95.7%) | a 220.2→39.8 b 772.3→5.4 c 244.1→258.2 busy 1536.5→579 | final p95 74.01→33.75 | arrival p95 76.5→40.3 | previews 40/40/40→40/40/40 | texts match
+ai-rich-50000: pass | a+b 19320.9→326.6 (-98.3%), 19738.9→316.1 (-98.4%), 19755.2→327.3 (-98.3%) | a 4558.8→220.2 b 15046.2→103.1 c 2129→2325.5 busy 24898→4055.8 | final p95 309.75→122.33 | arrival p95 250→44.4 | previews 196/197/197→198/198/198 | texts match
+static-cjk-10000: pass | a+b 1593→54 (-96.6%), 1531.5→59.4 (-96.1%), 1553.7→67.4 (-95.7%) | a 335→52.1 b 1224.5→8.1 c 261.7→315.4 busy 2380→790.5 | final p95 79.71→11.31 | arrival p95 107.7→43.9 | previews 39/39/39→39/39/39 | texts match
+static-cjk-50000: pass | a+b 34171.5→299 (-99.1%), 32199→294.9 (-99.1%), 32991.2→291.7 (-99.1%) | a 6977.1→231.5 b 26143.5→63.7 c 3608.4→4370.6 busy 44047.5→7553.6 | final p95 378.12→36.47 | arrival p95 376.2→48.6 | previews 196/195/196→197/198/196 | texts match
+static-rich-10000: pass | a+b 851.9→46.5 (-94.5%), 855.3→47.2 (-94.5%), 853→46.6 (-94.5%) | a 205.8→40.9 b 647.6→5.9 c 155.6→192.9 busy 1372.1→554.2 | final p95 48.45→7.25 | arrival p95 71→40.4 | previews 39/39/39→39/39/39 | texts match
+static-rich-50000: pass | a+b 17249.4→203.7 (-98.8%), 17308.5→177.7 (-99%), 17171.6→202.7 (-98.8%) | a 4139.7→151.8 b 13103.5→42.9 c 2200.6→2793.6 busy 23598.5→4970.9 | final p95 190.45→15.64 | arrival p95 211→44.1 | previews 196/196/196→196/196/196 | texts match
+(node:84941) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zbeyens/git/plate-2/docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/summarize-matrix.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/zbeyens/git/plate-2/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)

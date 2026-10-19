@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-12-link-code-block-form",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-12-link-code-block-form.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-12",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the link form closed where a link cannot go",
+  "targets": [
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-12-link-keep-form-closed-where-68be0b7c",
+      "kind": "fix",
+      "summary": "Cmd+K and the link button no longer open the link form in a block that cannot hold a link, such as a code block, where submitting it threw an error.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-12",
+          "entry": "2026-10-12-link-code-block-form",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

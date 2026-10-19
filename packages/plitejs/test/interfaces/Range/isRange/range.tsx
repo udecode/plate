@@ -1,0 +1,17 @@
+/** @jsx jsx */
+
+import { RangeApi } from 'plitejs';
+
+export const input = {
+  kind: 'text',
+  anchor: {
+    path: [0, 1],
+    offset: 0,
+  },
+  focus: {
+    path: [0, 1],
+    offset: 0,
+  },
+};
+export const test = (value) => RangeApi.isRange(value);
+export const output = true;

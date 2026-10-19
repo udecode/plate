@@ -1,0 +1,106 @@
+{
+  "tag": "v0.9.88",
+  "branch": "next",
+  "protected": "main",
+  "delivery": "trunk",
+  "lintFix": "pnpm lint:task --allow-ignored",
+  "check": "pnpm check",
+  "maxEffort": "xhigh",
+  "plans": "docs/plans",
+  "proof": "verify",
+  "skiller": true,
+  "codexLanes": true,
+  "regen": "pnpm run prepare",
+  "skip": [],
+  "dropped": [
+    "architecture",
+    "architecture-cleanup",
+    "autoclosure",
+    "autoreview",
+    "best-api audit",
+    "best-api-review",
+    "clawsweeper",
+    "cross-review",
+    "editor-audit",
+    "editor-test-harvester",
+    "github-issue-reporter",
+    "grill-with-docs",
+    "hard-cut",
+    "improve",
+    "issue-harvester slate",
+    "maintain-workflow",
+    "patch",
+    "plate-feature",
+    "plate-plan",
+    "plate-plugin-creator",
+    "plite-plan",
+    "plite-research",
+    "prototype",
+    "research-wiki",
+    "shadcn-parity",
+    "slate-ar",
+    "task",
+    "testing",
+    "typescript-advanced-types",
+    "vercel-composition-patterns",
+    "verify corpus",
+    "verify-plate"
+  ],
+  "synced": {
+    "block": "29233deef733f325b2ee0aac89a69d3f55bc6c03c09b77602214996a094c51ea",
+    "files": {
+      ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
+      ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
+      ".agents/pstack/cross.mjs": "57d7bffc13d8e3980a2a17964368c2462d27798e37d4ae9112f79de90f8fe493",
+      ".agents/pstack/cua-steps.mjs": "1ab7c6ed073ad08616be3be0e81d3c8a474c57e46cedda772afced8f570493cb",
+      ".agents/pstack/head.mjs": "bcd2d1b577deff6ae700d20491f9e4c90a76a0e68a76347e3b4f33e7971a7fae",
+      ".agents/pstack/lead.mjs": "905434fc6ddcc7795f85924739b793af5f4eda02aefad2d8a34a6df35d42e80b",
+      ".agents/pstack/proof.mjs": "c81639aeadb82404ab064d7c8ee181ab1ef895cdc6aceee2ea65fa3343af1136",
+      ".agents/pstack/reread.mjs": "769e2ea97b963aab3784736f13da54439a7d2ba9350df3f01e0928827485b34c",
+      ".agents/pstack/seats.mjs": "4e121f4ae04aee6c5112264cb4663e598c97a1fd734f94e052a207be1c2baf87",
+      ".agents/pstack/decisions-check.mjs": "eb9c69cf55c6b39589e04e56d0cf5f62830269142335963cd37f2302bf8e4c73",
+      ".agents/pstack/levels.mjs": "5de83d2f1f7590d1f464137e9a43279246705d60e956b58cc3655fe9621b5498",
+      ".agents/pstack/page-stop.mjs": "dbe341605ec9fb9d8465f8c403867af6473eda8b2996649d93967cf0ff62a64f",
+      ".agents/pstack/plan-page.mjs": "1f331bfe9f58ffdddaedd01f07d33aafea9dbd19279208cbf3b0c49269f100dc",
+      ".agents/pstack/status.mjs": "eb66de88cdf526ea780c01a149e383467d8a7bb1cbdb0530b428be268be54c76",
+      ".agents/pstack/tasks.mjs": "2b18f963ffd4708bc3219c45c8429e08c1a23ef10712ceba42e9469dade524cc",
+      ".agents/pstack/guard.mjs": "19075254bcc67145856af613d51db216835be91a01ed807891379cd05536db5d",
+      ".agents/pstack/land.mjs": "77ffec516382447a03f05e4b227495a199cc3ab50ce852820bccfcf0a6166152",
+      ".agents/pstack/review.mjs": "f5a547dd16cfba377aa9773916de4d6a5469fa58abb73115dd5a0674a1881ba3",
+      ".agents/pstack/setup.mjs": "60580894488429641eb51c552fbdf84c8f0572f3e2c442b225a55a8902ea7e82",
+      ".agents/pstack/rules/browser.md": "203448f902ae52896b555894d8a5686db05b3a226e655a40df0f5bfd7766a401",
+      ".agents/pstack/rules/chips.md": "29b474b3dcc4c6c90af1a5eebce422d0f667054847c608c48cb80ca5f14ad402",
+      ".agents/pstack/rules/land.md": "b6b44d5d06c23b833310290cf59ad6a9f2d28a329a2f714d79de8027be6c51ef",
+      ".agents/pstack/rules/long-runs.md": "86bc2be5b45e56e24887e7979c9f53d831a8a367e79e918350484a92c4d7cbdf",
+      ".agents/pstack/rules/pages.md": "0a98f2adef7cf214590bdc87a3523a09acbde553e9fbb80e59c631d127d41f0c",
+      ".agents/pstack/rules/panel.md": "1c1c63355712cba11f32a29fbd808cce593b363ec88bb3f206aae996d9bbf868",
+      ".agents/pstack/rules/reflect.md": "d6f0bfe0fab7020de86b55937765626180d86e9b56c9652f39039271e05d5ef5",
+      ".agents/pstack/rules/tests.md": "27ebed8ef550763ceafa3c641b43bcb5966e911a52d33959e34d6b4c6e74d072",
+      ".agents/pstack/rules/time.md": "d8b71c88e04580ad18936d5c96cc07a22f28c889fbe807ec4370b6a66fa0923b",
+      ".agents/pstack/rules/title.md": "1d5152a96964564d66224b484e34127d1e64b1b21783a46385350751583ff821"
+    },
+    "source": "f232729395e0142ed78c0e7b1bedb89e286e0608"
+  },
+  "pageTopic": {
+    "field": "review_scopes",
+    "hub": "docs/research/review-scopes/{topic}.json"
+  },
+  "reviews": [
+    {
+      "id": "api-plan",
+      "rule": "A plan that changes a public API runs `architect` to pick the target, then a panel on the finished plan."
+    },
+    {
+      "id": "api-build",
+      "rule": "A build of an `api-plan` plan gets a panel on its diff."
+    },
+    {
+      "id": "push",
+      "rule": "A push that changes a public API or Plite core, or deletes behavior, gets a panel on its diff first."
+    },
+    {
+      "id": "external-pr",
+      "rule": "Someone else's PR, asked for as \"review PR <number>\", gets a review-only panel on its diff, briefed with its body, linked issue and plan."
+    }
+  ]
+}

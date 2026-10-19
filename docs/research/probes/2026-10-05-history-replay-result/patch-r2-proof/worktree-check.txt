@@ -1,0 +1,8 @@
+# worktree /private/tmp/claude-501/-Users-zbeyens-git-plate-2/77220dd0-ee8b-48e9-a5a3-6b1b40c6c371/scratchpad/wt-patch (HEAD + this checkout's packages/plitejs src and test + reworked patch): bun test history partition files
+ 154 pass
+ 0 fail
+Ran 154 tests across 5 files. [685.00ms]
+# exit: 0
+# tsc --noEmit -p packages/plitejs/tsconfig.json
+# tsc exit: 0
+0

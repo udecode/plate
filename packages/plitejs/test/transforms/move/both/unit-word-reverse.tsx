@@ -1,0 +1,25 @@
+/** @jsx jsx */
+
+import { jsx } from '../../..';
+
+jsx;
+
+export const run = (editor) => {
+  editor.selection.move({ reverse: true, unit: 'word' });
+};
+export const input = (
+  <editor>
+    <block>
+      one tw
+      <cursor />o three
+    </block>
+  </editor>
+);
+export const output = (
+  <editor>
+    <block>
+      one <cursor />
+      two three
+    </block>
+  </editor>
+);

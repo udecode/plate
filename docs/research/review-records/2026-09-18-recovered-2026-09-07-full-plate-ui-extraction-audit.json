@@ -1,0 +1,52 @@
+{
+  "id": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "autocomplete",
+    "basic",
+    "callout",
+    "canvas",
+    "collaboration",
+    "dnd",
+    "documents",
+    "drawing",
+    "emoji",
+    "footnote",
+    "html",
+    "link",
+    "list",
+    "math",
+    "media",
+    "slash",
+    "table",
+    "tags",
+    "toc",
+    "ui",
+    "uploads"
+  ],
+  "reviewBasis": [],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+    "sha256": "6d646330ca469daf7ae2069855d7427dafb6ff29a1ba8a23e7ab97c233d98181"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical implementation completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md",
+        "sha256": "6d646330ca469daf7ae2069855d7427dafb6ff29a1ba8a23e7ab97c233d98181",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md"
+  ]
+}

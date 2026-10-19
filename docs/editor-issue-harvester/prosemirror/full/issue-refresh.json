@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "repository": "ProseMirror/prosemirror",
+  "provider": "gitcrawl 0.5.0 backed by GitHub REST metadata",
+  "rawCommand": "gitcrawl search issues \"\" -R ProseMirror/prosemirror --state all --json number,title,state,url,labels,updatedAt --limit 10000",
+  "stateCoverage": "all",
+  "providerLimit": 10000,
+  "providerLimitReached": false,
+  "refreshedAt": "2026-07-25T22:59:04Z",
+  "rawPath": ".tmp/editor-issue-harvester/prosemirror/raw/issues-refresh-2026-07-26.json",
+  "rawSha256": "6841f999f95f6a39773b6ba889b2b63f102a892b26282b92953652f8a7cef67d",
+  "cursorDeltaSemantics": "Counts include only rows whose lastMetadataRefreshAt matches refreshedAt.",
+  "previousLedgerCount": 1420,
+  "providerIssueCount": 1418,
+  "hostVerification": {
+    "closedIssueCount": 1309,
+    "countCommand": "gh api graphql -f query='query { repository(owner:\"ProseMirror\", name:\"prosemirror\") { all: issues { totalCount } open: issues(states:OPEN) { totalCount } closed: issues(states:CLOSED) { totalCount } } }' --jq '.data.repository'",
+    "issueCount": 1420,
+    "omissionCommand": "gh api graphql -f query='query { repository(owner:\"ProseMirror\", name:\"prosemirror\") { i1238: issue(number:1238){number state title updatedAt url labels(first:100){nodes{name}}} i1271: issue(number:1271){number state title updatedAt url labels(first:100){nodes{name}}} } }' --jq '.data.repository'",
+    "omittedIssues": [
+      {
+        "labels": [],
+        "number": 1238,
+        "state": "CLOSED",
+        "title": "Inline nodes with editable content behave unexpectedly ",
+        "updatedAt": "2022-02-04T15:06:56Z",
+        "url": "https://github.com/ProseMirror/prosemirror/issues/1238"
+      },
+      {
+        "labels": [],
+        "number": 1271,
+        "state": "CLOSED",
+        "title": "Backspacing the last character in a paragraph hangs on iOS Safari  ",
+        "updatedAt": "2022-06-29T14:57:54Z",
+        "url": "https://github.com/ProseMirror/prosemirror/issues/1271"
+      }
+    ],
+    "openIssueCount": 111,
+    "provider": "GitHub GraphQL v4 metadata",
+    "verifiedAt": "2026-07-25T23:13:33Z"
+  },
+  "resultingLedgerCount": 1420,
+  "addedUncheckedCount": 0,
+  "addedUncheckedIssues": [],
+  "metadataChangedNeedsRereadCount": 11,
+  "metadataChangedNeedsReread": [
+    {
+      "fields": [
+        "labels"
+      ],
+      "number": 229
+    },
+    {
+      "fields": [
+        "labels"
+      ],
+      "number": 232
+    },
+    {
+      "fields": [
+        "labels"
+      ],
+      "number": 239
+    },
+    {
+      "fields": [
+        "labels"
+      ],
+      "number": 249
+    },
+    {
+      "fields": [
+        "labels"
+      ],
+      "number": 285
+    },
+    {
+      "fields": [
+        "labels"
+      ],
+      "number": 290
+    },
+    {
+      "fields": [
+        "labels"
+      ],
+      "number": 321
+    },
+    {
+      "fields": [
+        "labels"
+      ],
+      "number": 675
+    },
+    {
+      "fields": [
+        "labels"
+      ],
+      "number": 736
+    },
+    {
+      "fields": [
+        "labels"
+      ],
+      "number": 755
+    },
+    {
+      "fields": [
+        "labels"
+      ],
+      "number": 845
+    }
+  ],
+  "providerMissingLiveVerifiedCount": 2,
+  "providerMissingLiveVerified": [
+    1238,
+    1271
+  ]
+}

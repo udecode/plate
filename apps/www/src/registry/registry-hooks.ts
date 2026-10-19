@@ -1,0 +1,55 @@
+import type { Registry } from 'shadcn/schema';
+
+export const registryHooks: Registry['items'] = [
+  {
+    dependencies: ['@floating-ui/react', 'platejs'],
+    files: [
+      {
+        path: 'hooks/use-floating-rect.ts',
+        type: 'registry:hook',
+      },
+    ],
+    name: 'use-floating-rect',
+    type: 'registry:hook',
+  },
+  {
+    files: [
+      {
+        path: 'hooks/use-object-url.ts',
+        type: 'registry:hook',
+      },
+    ],
+    name: 'use-object-url',
+    type: 'registry:hook',
+  },
+  {
+    files: [
+      {
+        path: 'hooks/use-debounce.ts',
+        type: 'registry:hook',
+      },
+    ],
+    name: 'use-debounce',
+    type: 'registry:hook',
+  },
+  {
+    files: [
+      {
+        path: 'hooks/use-mobile.ts',
+        type: 'registry:hook',
+      },
+    ],
+    name: 'use-mobile',
+    type: 'registry:hook',
+  },
+  {
+    files: [
+      {
+        path: 'hooks/use-mounted.ts',
+        type: 'registry:hook',
+      },
+    ],
+    name: 'use-mounted',
+    type: 'registry:hook',
+  },
+];

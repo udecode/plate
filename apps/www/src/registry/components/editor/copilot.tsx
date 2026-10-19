@@ -1,0 +1,97 @@
+'use client';
+
+import type { Element } from 'platejs';
+import { CopilotPlugin } from 'platejs/ai/react';
+import { useEditor, useElement, usePluginStore } from 'platejs/react';
+import * as React from 'react';
+
+export function GhostText() {
+  const editor = useEditor();
+  const element = useElement();
+
+  const isSuggested = usePluginStore(
+    CopilotPlugin,
+    'isSuggested',
+    editor.key(element)
+  );
+
+  if (!isSuggested) return null;
+
+  return <GhostTextContent />;
+}
+
+function GhostTextContent() {
+  const suggestionText = usePluginStore(CopilotPlugin, 'suggestionText');
+  const text = suggestionText
+    ?.replaceAll(/(\*\*|__)(.*?)\1/g, '$2')
+    .replaceAll(/(\*|_)(.*?)\1/g, '$2')
+    .replaceAll(/\[([^\]]+)]\([^)]+\)/g, '$1')
+    .replaceAll(/`(.+?)`/g, '$1');
+
+  return (
+    <span
+      className="pointer-events-none text-muted-foreground/70 max-sm:hidden"
+      contentEditable={false}
+    >
+      {text}
+    </span>
+  );
+}
+
+export const CopilotKit = [
+  CopilotPlugin.configure(({ update }) => ({
+    initialState: {
+      completeOptions: {
+        api: '/api/ai/copilot',
+        body: {
+          system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
+  
+  Rules:
+  - Continue the text naturally up to the next punctuation mark (., ,, ;, :, ?, or !).
+  - Maintain style and tone. Don't repeat given text.
+  - For unclear context, provide the most likely continuation.
+  - Handle code snippets, lists, or structured text if needed.
+  - Don't include """ in your response.
+  - CRITICAL: Always end with a punctuation mark.
+  - CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.
+  - If no context is provided or you can't generate a continuation, return "0" without explanation.`,
+        },
+        onFinish: (_, completion) => {
+          if (completion === '0') update.reject();
+        },
+      },
+      debounceDelay: 500,
+      renderGhostText: GhostText,
+      getPrompt: ({ editor }) => {
+        const contextEntry = editor.read.nodes.block();
+
+        if (!contextEntry) return '';
+
+        const result = editor.api.markdown.serialize({
+          document: { children: [contextEntry[0] as Element] },
+        });
+
+        if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+        return `Continue the text up to the next punctuation mark:
+  """
+  ${result.data}
+  """`;
+      },
+    },
+    shortcuts: {
+      accept: {
+        keys: 'tab',
+      },
+      acceptNextWord: {
+        keys: 'mod+right',
+      },
+      reject: {
+        keys: 'escape',
+      },
+      triggerSuggestion: {
+        keys: 'ctrl+space',
+      },
+    },
+  })),
+];

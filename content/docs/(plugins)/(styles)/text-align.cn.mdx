@@ -1,0 +1,164 @@
+---
+title: 文本对齐
+docs:
+  - route: /docs/components/align-toolbar-button
+    title: 对齐工具栏按钮
+---
+
+<ComponentPreview name="align-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 为段落、标题等块级元素设置文本对齐方式
+- 支持左对齐、右对齐、居中对齐和两端对齐
+- 向目标块元素注入 `textAlign` 属性
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的文本对齐实现方式是使用 `AlignKit`。它包含预配置的 `BaseTextAlignPlugin`，可安全地用于客户端和服务端渲染，并作用于段落、标题、图片和媒体元素。
+
+<ComponentSource name="align" />
+
+- 配置 `Paragraph`、`Heading`、`Image` 和 `Media` 元素支持 `textAlign` 属性
+- 支持对齐值：`start`、`left`、`center`、`right`、`end`、`justify`
+- 媒体元素把 `start`、`left` 和 `justify` 放在左侧，把 `end` 和 `right` 放在右侧，`center` 或未设置对齐时居中
+
+### 添加套件
+
+将套件添加到插件列表：
+
+```tsx
+import { createEditor } from "platejs/react";
+import { AlignKit } from "@/components/editor/align";
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    ...AlignKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装
+
+```bash
+npm install platejs
+```
+
+### 添加插件
+
+在创建编辑器时，将 `BaseTextAlignPlugin` 加入 Plate 插件数组。
+
+```tsx
+import { BaseTextAlignPlugin } from "platejs";
+import { createEditor } from "platejs/react";
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    BaseTextAlignPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+可以配置 `BaseTextAlignPlugin` 来指定可以保存对齐属性的元素。
+
+```tsx
+import { BaseTextAlignPlugin, PLUGINS } from "platejs";
+import { createEditor } from "platejs/react";
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    BaseTextAlignPlugin.configure({
+      targetPlugins: [
+        PLUGINS.heading,
+        PLUGINS.paragraph,
+      ],
+    }),
+  ],
+});
+```
+
+- `targetPlugins`: 指定哪些元素插件类型可以保存对齐属性
+
+`targetPlugins` 是 schema 的唯一目标配置。插件会从该列表派生渲染和 HTML 解析所需的注入目标。
+
+### 添加工具栏按钮
+
+工具栏控件需要单独安装：
+
+```bash
+npx shadcn@latest add @plate/align-toolbar-button
+```
+
+然后可以在[工具栏](/docs/toolbar)中添加 [`AlignToolbarButton`](/docs/components/align-toolbar-button) 来控制文本对齐。
+
+</Steps>
+
+## 插件
+
+### `BaseTextAlignPlugin`
+
+用于设置块级元素内文本对齐的插件。它允许 `targetPlugins` 指定的元素保存 `textAlign` 属性。没有 `textAlign` 的块跟随其容器的对齐方式。
+
+<API name="BaseTextAlignPlugin">
+  <APIOptions type="object">
+    <APIItem name="inject.nodeProps.styleKey" type="string" optional>
+      样式使用的 CSS 属性名 - **默认值:** `'textAlign'`
+    </APIItem>
+    <APIItem name="targetPlugins" type="readonly (PluginReference | string)[]" optional>
+      可以保存对齐属性的元素插件 descriptor 或动态 name；注入目标由此派生 - **默认值:**
+      `[BaseParagraphPlugin]`
+    </APIItem>
+  </APIOptions>
+</API>
+
+## 转换方法
+
+### `editor.update.textAlign.set`
+
+为已配置为此插件目标的选定块节点设置对齐方式。`set` 会保存收到的每个值，包括 `start`，即使在已对齐的容器中也会对齐到起始边。
+
+<API name="editor.update.textAlign.set">
+  <APIParameters>
+    <APIItem name="value" type="Alignment">
+      对齐值：`'start'`、`'left'`、`'center'`、`'right'`、`'end'` 或 `'justify'`
+    </APIItem>
+    <APIItem name="options" type="object" optional>
+      传给 `editor.update.textAlign.set` 的节点更新选项
+    </APIItem>
+  </APIParameters>
+</API>
+
+### `editor.update.textAlign.clear`
+
+移除匹配块上的对齐属性。
+
+```tsx
+editor.update.textAlign.clear({ at: [] });
+```
+
+<API name="editor.update.textAlign.clear">
+  <APIParameters>
+    <APIItem name="options" type="object" optional>
+      传给 `editor.update.textAlign.clear` 的节点更新选项
+    </APIItem>
+  </APIParameters>
+</API>

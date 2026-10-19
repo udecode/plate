@@ -1,0 +1,90 @@
+'use client';
+
+import { BaseCommentsPlugin } from 'platejs/comments';
+import { CommentsPlugin } from 'platejs/comments/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
+
+import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
+import { BaseBasicBlocksKit } from '@/registry/components/editor/basic-blocks-static';
+import { commentDecorationAttributes } from '@/registry/components/editor/comment-static';
+import { AllCommentsButton } from '@/registry/components/editor/comment-toolbar-button';
+import { DiscussionKit } from '@/registry/components/editor/discussion';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { EditorStatic } from '@/registry/components/editor/editor-static';
+import { LinkKit } from '@/registry/components/editor/link';
+import { BaseLinkKit } from '@/registry/components/editor/link-static';
+import { Toolbar } from '@/registry/components/editor/toolbar';
+import {
+  createCommentSnapshot,
+  commentUsers,
+  commentValue,
+} from '@/registry/examples/values/comment-value';
+
+const snapshot = createCommentSnapshot(commentValue.slice(0, 2));
+
+export default function CommentReviewDemo() {
+  const editor = useCreateEditor({
+    plugins: [
+      ...BasicBlocksKit,
+      ...LinkKit,
+      ...DiscussionKit,
+      CommentsPlugin.configure({
+        initialState: {
+          users: commentUsers,
+          initialComments: snapshot.comments,
+        },
+      }),
+    ],
+    initialValue: snapshot.document,
+    userId: 'alice',
+  });
+  const staticEditor = useCreateEditor({
+    plugins: [
+      ...BaseBasicBlocksKit,
+      ...BaseLinkKit,
+      BaseCommentsPlugin.configure({
+        initialState: { initialComments: snapshot.comments },
+        decorate: { attributes: commentDecorationAttributes },
+      }),
+    ],
+    initialValue: snapshot.document,
+  });
+
+  return (
+    <div className="flex w-full flex-col gap-6 p-4 sm:p-6">
+      <section className="flex flex-col gap-2">
+        <h3 className="text-sm font-medium">Read-only document</h3>
+        <p className="text-sm text-muted-foreground">
+          Open highlights to read and reply. The document itself cannot be
+          edited.
+        </p>
+        <EditorRoot editor={editor} readOnly>
+          <EditorContainer className="h-auto rounded-md border">
+            <Toolbar className="border-b px-3 py-1">
+              <AllCommentsButton />
+            </Toolbar>
+            <Editor
+              aria-label="Read-only comments document"
+              className="h-auto px-[clamp(24px,8%,48px)] pb-6"
+              readOnly
+              variant="demo"
+            />
+          </EditorContainer>
+        </EditorRoot>
+      </section>
+      <section className="flex flex-col gap-2">
+        <h3 className="text-sm font-medium">Static snapshot</h3>
+        <p className="text-sm text-muted-foreground">
+          The same initial document and ranges, rendered without editing or
+          thread controls.
+        </p>
+        <div className="rounded-md border px-8 py-4">
+          <EditorStatic
+            aria-label="Static comments document"
+            editor={staticEditor}
+          />
+        </div>
+      </section>
+    </div>
+  );
+}

@@ -1,0 +1,122 @@
+{
+  "id": "2026-09-18-comments-attachment-design-complete",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "comments"
+  ],
+  "reviewBasis": [
+    "2026-09-18-comments-attachment-and-discovery",
+    "2026-09-18-comments-attachment-design-gate"
+  ],
+  "workKind": "design",
+  "plan": {
+    "path": "docs/plans/2026-09-18-comments-attachment-discovery.md",
+    "sha256": "56eed6e6cf15ff75d1d41009589326b347ba85eb57dc673c3e60064bbf00581f"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Completed the comments attachment and document-level discovery design. Selected the existing AuthoredIndex as the canonical successor-lineage owner, carried semantic public-revert positions into native capture, retained current Comments APIs, and specified one lazy All comments dialog. The materially different source-transform candidate passes54/54 selected correctness cases and every frozen scale gate; product implementation remains separate.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/plans/artifacts/comments-attachment-discovery/canonical-design.json",
+        "sha256": "1ed88a7ea61115a3a7dc28468dc80955cb7745e52b7b438f71d0baf3fb8e948c",
+        "claim": "Accepted native owners, hard cuts, identity model, complexity and prototype limits."
+      },
+      {
+        "path": "docs/plans/artifacts/comments-attachment-discovery/canonical-readiness.json",
+        "sha256": "edaecf153fddf9bc00e1088de260b50e2333817e85edae0744164edb81e6652e",
+        "claim": "Frozen checker passes54 correctness cases,38 matched benchmark cohorts and3 distinct/shared lineage cohorts."
+      },
+      {
+        "path": "docs/plans/artifacts/comments-attachment-discovery/canonical-proof-candidate.json",
+        "sha256": "2cef31ac0fa6e1d42786d9411baffc0b16075d98263c328a87e7b0c2ba2dd72b",
+        "claim": "All30 common native range, replacement, history, association and projection cases pass."
+      },
+      {
+        "path": "docs/plans/artifacts/comments-attachment-discovery/prepared-adversarial-canonical.json",
+        "sha256": "242249c898bf718d967ad0730e7cf66aba110e295a1c85b29ce4c8fb82299c7c",
+        "claim": "All21 saved-history, partial restoration, abort, lifecycle and decision cases pass."
+      },
+      {
+        "path": "docs/plans/artifacts/comments-attachment-discovery/canonical-extra-proof-candidate.json",
+        "sha256": "38e1418a911686f73bf64f937b76a0a956e72ca218e67b7957c77e5814d7925c",
+        "claim": "Substring successor and public-revert edit, undo, redo and reload cases pass3/3."
+      },
+      {
+        "path": "docs/plans/artifacts/comments-attachment-discovery/native-benchmark-canonical-canonical4.json",
+        "sha256": "dfc2911bcce103a62545e7786e7aa855f615727c6923a6ef4e02a3466bdef20e",
+        "claim": "Final38-row candidate packet passes frozen absolute and matched-relative scale budgets."
+      },
+      {
+        "path": "docs/plans/artifacts/comments-attachment-discovery/canonical-scale-candidate.json",
+        "sha256": "f5e3e1c3c685ef00c2e5982addcab7238f8577826154eebe1097ba53640a111f",
+        "claim": "Ten thousand distinct targets, ten thousand shared depth100 targets and100 distinct depth100 lineages pass cold and warm budgets."
+      },
+      {
+        "path": "docs/plans/artifacts/comments-attachment-discovery/ui-design.md",
+        "sha256": "dc30d2fb4e2547fa60676953f8100ec7081cbe3425aaa6e7b1a103013a06564a",
+        "claim": "Complete copied UI interaction, lifecycle, optional-plugin boundary and adoption inventory."
+      },
+      {
+        "path": "docs/plans/artifacts/comments-attachment-discovery/ui-projection-result.json",
+        "sha256": "bbac138512c2b89552cea3c4eb897b99045309924036da197af65d0a88e9b498",
+        "claim": "All12 document-discovery projection cohorts pass through10000 records."
+      }
+    ],
+    "limits": "Design and disposable source-transform proof only. Product source, existing package suites, browser behavior, cross-root movement, mounted React focus, memory/GC and installed registry output remain implementation gates. Ordinary fragmented replacement timing remains a production rerun gate."
+  },
+  "source": {
+    "files": {
+      "packages/platejs/src/features/comments/BaseCommentsPlugin.ts": "57d6fae1de3913816e2e7eeea7e48f1b24b8468f661240ccb4dc53ef8fecc13c",
+      "apps/www/src/registry/components/editor/comment.tsx": "bf8bc2b39b19a12e128815d8e5ec5e4b7e23a152c0b1a74c88bcacd066e8e55d",
+      "apps/www/src/registry/examples/comment-persistence-demo.tsx": "6e544da9d8164f479d3c5c03d33349cc9b96a4626dc9d5da358de1dc372c6fa1",
+      "apps/www/src/registry/examples/comment-overlap-demo.tsx": "fde0083db6a2966277dc0d930e7d8bb956d2299f39365bd41393868ba07ba02f",
+      "packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts": "a77fcd4a0cb45c75bbf920ca753d2901d6a5c8d0e97becbcda33588b7ae70ff6",
+      "apps/www/tests/browser/comment.spec.ts": "620cb42bd4d855dc30b13e3ec9567ac9daa200ee15055067f37f954af56a63f1",
+      "apps/www/playwright.config.ts": "a205a2ae686426226a8e49bf5f5a4bdb81accc8dc495ac38ca568f4ebaa252bf",
+      "apps/www/package.json": "dedd5e93b76023363430b12bb4e9a46d05ab1f71a5ad2f25878967c8058fce90",
+      "packages/plitejs/src/core/anchor.ts": "36385eca35d9083ca79d6d12c805e510a064a17953be66598604d8b44033bf41",
+      "packages/plitejs/src/annotations/store.ts": "be8c9bb3da66efb45929a8cfaa78467fde7d574f61dd4f022658b7c1403557a2",
+      "packages/plitejs/src/authored/authored.ts": "f9d98b60994c7bcc42b63e171c8fddd7aded9c2aff0b22fb5e05f2cdb6bde4e7",
+      "packages/platejs/src/react/features/comments/CommentsPlugin.ts": "130d085946462f34e7afd4b364ae9fde303063e2bbf0858472e37669a7432043",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "6198a6f95c4279640455d80ec45d5e4bc9e8a51b7b9f1ddde75431b09f051a2f",
+      "apps/www/src/registry/components/editor/discussion.tsx": "20ea8be55c3b61f27633a893d6b8a3410408096f7c59f488eb5a793e54ba5224",
+      "packages/plitejs/src/react/editable/runtime-root-engine.ts": "c198dfef455c142c6f48995795780d4a938101fb10995145454ff908eeea5317",
+      "packages/plitejs/test/react/editable-read-only-transition.test.tsx": "413a48f910d3680bca4ce5ca6d4585f1e1d51b6252e6909faa5ac4a25925c75f",
+      "packages/plitejs/src/core/authored-document-capability.ts": "7f9fd479ed43f007cc22c6a2ef0ecb9c8db73b13e047c7aa24f7ace0a94ae07f",
+      "packages/platejs/src/migrations/documentMigrations.ts": "8cd04175965665e18ec2a1d35bf22b8bddb05e6526f0a78d2473bc87976a6385",
+      "packages/platejs/test/public-package-import-smoke.slow.ts": "3316856885f98ade1d0859a04d853517f9edad580fc5f5b4dd1429d3a2813a5d",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "9785e2b7e74266092509bec521d76a0738e80775b44b3874e4fd5bd49b68b848",
+      "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff"
+    },
+    "directories": {},
+    "features": {
+      "browser/comment": "6d550374ef57fcd60e7b286bca55cc26bd426e2cd45d3fa7f7700c49edb56860",
+      "example/plite/comment-mode": "14d11a62f1f5a69e9c6afb5663cbf53b655f5968acaae639e4a706df0375a0ed",
+      "example/registry/comment-demo": "55bdbac02bbd3159aa5cfc26f8c451e0929296f50d109873721644bbace06cd3",
+      "example/registry/comment-overlap-demo": "e441a129f16cb8fec26fd57ef724fac403801b566323582a65841e342ea52484",
+      "example/registry/comment-persistence-demo": "ec2fc12c70c841e4f59d4390d8bfea5271381609c7a0809ec11c9b593ba9fd45",
+      "example/registry/comment-review-demo": "78e33e07a9a03389b5fd67e2e5bbec41657c74bfc11ac1025097edaa50d6473a",
+      "example/registry/discussion-demo": "5387dff49b3ba540392aa813a81daa4813a348f53ee9672b4dbdaf276d02dfbd",
+      "example/value/comment-value": "f07d275b1cfc67c63d9a07e61620530e7f386fde4ec133f957fdfde5d36391d0",
+      "export/platejs/./comments": "91fff179933510018188644d236049b70bc001ad42866e254165024f76e8ed9b",
+      "export/platejs/./comments/react": "91fff179933510018188644d236049b70bc001ad42866e254165024f76e8ed9b",
+      "platejs/comments": "b98bd077f92a0b238922143195d1692981ec2f0f44e4f37ffb01394e95e35d97",
+      "ui/comment": "120258284998e7d9a2b63b6f92b3e1436ce1c49d678e7d5b69dc19fb1e8607ff",
+      "ui/comment-toolbar-button": "a844ef3fee43ea803532fba85bbaf599cc6d4613f07e15e4e4180f957c13602d",
+      "ui/discussion": "90f09bad7cf0e6943ce4c133024ef1dac757c623c18211cb732d89bb310264f6"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-18-comments-attachment-discovery.md",
+    "docs/plans/artifacts/comments-attachment-discovery/canonical-design.json",
+    "docs/plans/artifacts/comments-attachment-discovery/canonical-readiness.json",
+    "docs/plans/artifacts/comments-attachment-discovery/ui-design.md"
+  ]
+}

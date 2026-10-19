@@ -1,0 +1,51 @@
+[
+  {
+    "defaultPolicyOk": true,
+    "diagnostics": [
+      {
+        "code": "markdown-property-omitted",
+        "key": "textAlign",
+        "owner": "markdown",
+        "severity": "warning"
+      }
+    ],
+    "label": "aligned paragraph"
+  },
+  {
+    "defaultPolicyOk": true,
+    "diagnostics": [
+      {
+        "code": "markdown-property-omitted",
+        "key": "lineHeight",
+        "owner": "markdown",
+        "severity": "warning"
+      }
+    ],
+    "label": "line height"
+  },
+  {
+    "defaultPolicyOk": true,
+    "diagnostics": [
+      {
+        "code": "markdown-property-omitted",
+        "key": "textIndent",
+        "owner": "markdown",
+        "severity": "warning"
+      }
+    ],
+    "label": "text indent"
+  },
+  {
+    "defaultPolicyOk": true,
+    "diagnostics": [
+      {
+        "code": "markdown-property-omitted",
+        "key": "target",
+        "owner": "link",
+        "severity": "warning"
+      }
+    ],
+    "label": "link pasted from HTML",
+    "linkTarget": "\"_blank\""
+  }
+]

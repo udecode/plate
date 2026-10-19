@@ -1,0 +1,415 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-24-compose-markdown-footnotes",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-24-compose-markdown-footnotes.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Compose runtime-neutral Markdown, editor-owned footnotes, and Tabbable shortcuts",
+  "targets": [
+    {
+      "name": "markdown-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for markdown-kit."
+        }
+      ]
+    },
+    {
+      "name": "editor-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-kit."
+        }
+      ]
+    },
+    {
+      "name": "editor-ai",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/rich-text-editor-value.ts",
+        "apps/www/src/registry/blocks/editor-ai/components/editor/rich-text-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-base-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-base-kit."
+        }
+      ]
+    },
+    {
+      "name": "align-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for align-kit."
+        }
+      ]
+    },
+    {
+      "name": "basic-blocks-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for basic-blocks-kit."
+        }
+      ]
+    },
+    {
+      "name": "basic-marks-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for basic-marks-kit."
+        }
+      ]
+    },
+    {
+      "name": "callout-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for callout-kit."
+        }
+      ]
+    },
+    {
+      "name": "code-block-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-block-kit."
+        }
+      ]
+    },
+    {
+      "name": "code-drawing-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-drawing-kit."
+        }
+      ]
+    },
+    {
+      "name": "column-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for column-kit."
+        }
+      ]
+    },
+    {
+      "name": "comment-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for comment-kit."
+        }
+      ]
+    },
+    {
+      "name": "date-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for date-kit."
+        }
+      ]
+    },
+    {
+      "name": "font-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for font-kit."
+        }
+      ]
+    },
+    {
+      "name": "line-height-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for line-height-kit."
+        }
+      ]
+    },
+    {
+      "name": "link-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for link-kit."
+        }
+      ]
+    },
+    {
+      "name": "list-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for list-kit."
+        }
+      ]
+    },
+    {
+      "name": "math-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for math-kit."
+        }
+      ]
+    },
+    {
+      "name": "media-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-kit."
+        }
+      ]
+    },
+    {
+      "name": "mention-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for mention-kit."
+        }
+      ]
+    },
+    {
+      "name": "suggestion-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for suggestion-kit."
+        }
+      ]
+    },
+    {
+      "name": "table-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for table-kit."
+        }
+      ]
+    },
+    {
+      "name": "toc-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toc-kit."
+        }
+      ]
+    },
+    {
+      "name": "toggle-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toggle-kit."
+        }
+      ]
+    },
+    {
+      "name": "tabbable-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for tabbable-kit."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-24-markdown-footnote-preset",
+      "kind": "wiring",
+      "summary": "Configure Markdown parsing without installing a renderer-specific Footnote preset.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["markdown-kit"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-compose-markdown-footnotes",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-07-24-editor-footnote-composition",
+      "kind": "wiring",
+      "summary": "Compose the shared Markdown parser with the matching live or static Footnote renderers exactly once.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-kit", "editor-ai", "editor-base-kit"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-compose-markdown-footnotes",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-07-24-live-base-kit-independence",
+      "kind": "wiring",
+      "summary": "Install only the presets their copied source composes, without unrelated static/base counterparts.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "align-kit",
+        "basic-blocks-kit",
+        "basic-marks-kit",
+        "callout-kit",
+        "code-block-kit",
+        "code-drawing-kit",
+        "column-kit",
+        "comment-kit",
+        "date-kit",
+        "editor-ai",
+        "editor-base-kit",
+        "editor-kit",
+        "font-kit",
+        "line-height-kit",
+        "link-kit",
+        "list-kit",
+        "markdown-kit",
+        "math-kit",
+        "media-kit",
+        "mention-kit",
+        "suggestion-kit",
+        "table-kit",
+        "toc-kit",
+        "toggle-kit"
+      ],
+      "source": {
+        "line": 18,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-compose-markdown-footnotes",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-07-24-tabbable-indent-shortcuts",
+      "kind": "behavior",
+      "summary": "Preserve Indent support while reserving Tab and Shift+Tab navigation for tabbable elements.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["tabbable-kit"],
+      "source": {
+        "line": 20,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-compose-markdown-footnotes",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

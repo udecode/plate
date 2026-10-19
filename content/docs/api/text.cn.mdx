@@ -1,0 +1,22 @@
+---
+title: 文本节点
+description: Plate 文本节点类型和纯文本函数。
+---
+
+文本节点包含文档文本和叶级标记。纯函数位于 `TextApi`，编辑器文本读取位于
+`editor.read.text` 下。
+
+## 常用方法
+
+从 `platejs` 导入 `TextApi`。
+
+| 方法 | 用途 |
+| --- | --- |
+| `TextApi.isText(value)` | 判断值是否为文本节点。 |
+| `TextApi.isTextList(value)` | 判断值是否为文本节点数组。 |
+| `TextApi.matches(text, props)` | 匹配标记等属性，忽略 `text`。 |
+| `TextApi.equals(text, another)` | 比较文本及属性。 |
+| `TextApi.equals(text, another, { loose: true })` | 只比较属性。 |
+
+持久标记由插件 Schema 声明。临时高亮使用[装饰](/docs/decorations)，
+不会把搜索或光标显示写入文档。

@@ -1,0 +1,150 @@
+---
+title: MCP Server
+description: Use the Model Context Protocol with Plate.
+---
+
+Use the shadcn MCP server with the Plate registry to give your coding tools
+access to editor templates, plugin kits, copied components, and documentation.
+
+## What is MCP?
+
+The Model Context Protocol (MCP) lets coding tools read resources and call tools
+provided by a server. The shadcn server reads the registries configured in your
+project's `components.json`.
+
+## Using MCP with Plate
+
+Use the registry source when asking a coding tool to configure an editor or
+add a feature. For example:
+
+```bash
+"Set up a Plate editor with basic formatting and table support"
+"Help me understand how the EditorRoot AI plugin works"
+"Update my editor components to the latest version"
+```
+
+## How it works
+
+The Plate registry includes:
+
+- Editor templates and plugin configurations
+- UI components and their dependencies
+- Documentation files and migration guides
+- API references and examples
+
+## Local documentation
+
+Follow [Local docs](/docs/installation/docs) to keep a documentation snapshot in
+your project. Check that its APIs match your installed Plate version and update
+the snapshot when you upgrade.
+
+## Setup MCP
+
+Follow these steps to set up MCP with Plate:
+
+### Step 1: install Plate
+
+For an existing shadcn project, add the Plate registry to `components.json`:
+
+```json
+{
+  "registries": {
+    "@plate": "https://platejs.org/r/{style}/{name}.json"
+  }
+}
+```
+
+Then add the basic editor from the `@plate` registry:
+
+```bash
+npx shadcn@latest add @plate/editor-basic
+```
+
+For a new project, create a Base/Nova project with the basic Plate editor:
+
+```bash
+npx shadcn@latest create @plate/editor-basic --preset b0 --base base
+```
+
+### Step 2: configure your IDE
+
+Choose the configuration for your IDE:
+
+#### Cursor
+
+Copy and paste into `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "plate": {
+      "description": "Plate editors, plugins and components",
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
+    }
+  }
+}
+```
+
+#### VS Code
+
+Copy and paste into `.vscode/mcp.json` in your workspace:
+
+```json
+{
+  "servers": {
+    "plate": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
+    }
+  }
+}
+```
+
+#### Claude
+
+Copy and paste into `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "plate": {
+      "description": "Plate editors, plugins and components",
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
+    }
+  }
+}
+```
+
+#### Codex
+
+1. Open or create the file `~/.codex/config.toml`
+2. Add the following configuration:
+
+```toml
+[mcp_servers.plate]
+command = "npx"
+args = ["shadcn@latest", "mcp"]
+```
+
+3. Restart Codex to load the MCP server
+
+## Best practices
+
+1.  **Local Documentation:** Set up local documentation to give AI tools version-specific context. This ensures more accurate assistance, especially for larger projects.
+2.  **AI-Assisted Development:** Let AI handle editor setup, plugin integration, and component additions.
+3.  **Manual Fallback:** Use the [shadcn CLI](/docs/installation/plate-ui) for manual additions when needed (e.g., with small models or outdated documentation).
+4.  **Stay Updated:** Keep both your Plate components and local documentation in sync. Use [Sync copied files](/docs/installation/plate-ui#sync-copied-files) when your AI needs to sync copied registry files.

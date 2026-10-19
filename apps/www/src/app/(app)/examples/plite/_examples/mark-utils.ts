@@ -1,0 +1,18 @@
+import type { BooleanMarksOf } from 'plitejs';
+
+import type { CustomEditor, CustomText, CustomTextKey } from './custom-types.d';
+
+type ActiveMarks = BooleanMarksOf<CustomText>;
+
+const getActiveMarks = (editor: CustomEditor): ActiveMarks | null =>
+  editor.read.marks();
+
+export const toggleMark = (editor: CustomEditor, format: CustomTextKey) => {
+  editor.update.marks.toggle(format);
+};
+
+export const isMarkActive = (editor: CustomEditor, format: CustomTextKey) => {
+  const marks = getActiveMarks(editor);
+
+  return marks ? marks[format] === true : false;
+};

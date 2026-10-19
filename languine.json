@@ -1,0 +1,12 @@
+{
+  "language": {
+    "source": "en",
+    "targets": ["cn"]
+  },
+  "content": [
+    {
+      "source": "content/*.mdx",
+      "target": "content/*.cn.mdx"
+    }
+  ]
+}

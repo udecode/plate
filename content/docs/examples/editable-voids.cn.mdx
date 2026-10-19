@@ -1,0 +1,10 @@
+---
+title: 可编辑空白节点
+---
+
+<ComponentPreview name="editable-voids-demo" />
+
+嵌套编辑器有自己的撤销历史，但键盘无法触达它。在其中按下的撤销和重做快捷键会运行外层编辑器的历史记录。
+
+原生控件和嵌套编辑器无需额外标记。由其他元素构成的组件（例如画布）需要
+[嵌入式组件](/cn/docs/plugin-components#嵌入式组件)中的 `data-editor-root-chrome-ignore` 包裹元素。

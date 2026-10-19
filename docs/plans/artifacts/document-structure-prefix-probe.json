@@ -1,0 +1,64 @@
+{
+  "kind": "disposable-prefix-matcher-probe",
+  "runtime": "bun 1.3.12",
+  "budget": {
+    "maxExtraNanoseconds": 100,
+    "maxNanoseconds": 1000,
+    "maxRelative": 3,
+    "maxVisitedNodesPerCheck": 1
+  },
+  "cohorts": [
+    100,
+    1000,
+    10000,
+    50000
+  ],
+  "samples": 15,
+  "iterations": 200000,
+  "checksum": 32000000,
+  "sourceSha256": {
+    "packages/plitejs/src/core/schema-compiler.ts": "c388727d0ac7383f7698b47517c0a8914e87c351bff1e9cb6a2cce4347195c81",
+    "packages/plitejs/src/core/editor-schema.ts": "79cd52af12d967f48cc13d129eaf16c6de429c694b21b6c31b52c2100040cc0a",
+    "packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts": "90f8ede0834e625214042821797f483eef55fa4f408adb9dab62e484a6fc3a08",
+    "docs/plans/artifacts/document-structure-prefix-probe.ts": "4e978bd233633b263789eac7dd33951634aa2a7c571fbef9fe0aeda0ae61964b"
+  },
+  "results": [
+    {
+      "count": 100,
+      "currentP50Ns": 2.763545,
+      "prefixP50Ns": 2.538125,
+      "currentP95Ns": 2.83396,
+      "prefixP95Ns": 2.955625,
+      "visitedNodesPerCheck": 1,
+      "pass": true
+    },
+    {
+      "count": 1000,
+      "currentP50Ns": 2.776875,
+      "prefixP50Ns": 2.47104,
+      "currentP95Ns": 8.066455,
+      "prefixP95Ns": 4.09271,
+      "visitedNodesPerCheck": 1,
+      "pass": true
+    },
+    {
+      "count": 10000,
+      "currentP50Ns": 2.759375,
+      "prefixP50Ns": 2.495835,
+      "currentP95Ns": 63.535,
+      "prefixP95Ns": 2.569585,
+      "visitedNodesPerCheck": 1,
+      "pass": true
+    },
+    {
+      "count": 50000,
+      "currentP50Ns": 3.39104,
+      "prefixP50Ns": 3.367295,
+      "currentP95Ns": 7.224375,
+      "prefixP95Ns": 10.719795,
+      "visitedNodesPerCheck": 1,
+      "pass": true
+    }
+  ],
+  "result": "pass"
+}

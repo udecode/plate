@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm -w build:www:ci",
+  "git": {
+    "deploymentEnabled": {
+      "**": false,
+      "main": true,
+      "next": false
+    }
+  },
+  "ignoreCommand": "node scripts/vercel-ignore-build.mjs",
+  "installCommand": "pnpm install --frozen-lockfile"
+}

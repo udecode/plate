@@ -1,0 +1,78 @@
+---
+title: 上标
+docs:
+  - route: /docs/basic-marks
+    title: 基础标记
+  - route: /docs/subscript
+    title: 下标
+  - route: /docs/components/mark-toolbar-button
+    title: 标记工具栏按钮
+---
+
+上标是 `script` 标记的 `'sup'` 值。`ScriptPlugin` 同时管理下标和上标，因此切换位置只会替换一个属性值。
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## 特性
+
+- 使用一个 `PLUGINS.script` 属性表示 `'sub' | 'sup'`。
+- 从 `sup` 标签和 `vertical-align: super` 反序列化。
+- `'sup'` 值默认渲染为 `<sup>`。
+- 通过 `ScriptRules` 支持可选的 `^x^` 输入规则。
+
+</PackageInfo>
+
+## 套件使用
+
+`BasicMarksKit` 包含 `ScriptPlugin`、上标输入规则和 `mod+period` 快捷键。
+
+<ComponentSource name="basic-marks" />
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { BasicMarksKit } from '@/components/editor/basic-marks';
+
+export const editor = createEditor({
+  plugins: [...BasicMarksKit],
+});
+```
+
+## 手动使用
+
+安装标记包。
+
+```bash
+npm install platejs
+```
+
+添加共享脚本插件，并配置上标输入规则。
+
+```tsx
+import { ScriptRules } from 'platejs';
+import { ScriptPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
+
+export const editor = createEditor({
+  plugins: [
+    ScriptPlugin.configure({
+      inputRules: [ScriptRules.markdown({ value: 'sup' })],
+    }),
+  ],
+});
+```
+
+```tsx
+editor.update.script.toggle('sup');
+```
+
+## API 参考
+
+| API | 用途 |
+|-----|------|
+| `PLUGINS.script` | `script` 文本属性。 |
+| `ScriptPlugin` | 下标和上标共用的 React 插件。 |
+| `ScriptRules.markdown({ value: 'sup' })` | 创建上标输入规则。 |
+| `editor.update.script.toggle('sup')` | 应用上标；已启用时则移除。 |

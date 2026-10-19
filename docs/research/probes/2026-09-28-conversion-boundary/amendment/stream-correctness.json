@@ -1,0 +1,161 @@
+{
+  "previews": 3730,
+  "rows": [
+    {
+      "checked": 154,
+      "fallbacks": 0,
+      "name": "paragraphs",
+      "reusedObjects": 114
+    },
+    {
+      "checked": 124,
+      "fallbacks": 0,
+      "name": "headings",
+      "reusedObjects": 187
+    },
+    {
+      "checked": 121,
+      "fallbacks": 77,
+      "name": "reference",
+      "reusedObjects": 22
+    },
+    {
+      "checked": 100,
+      "fallbacks": 69,
+      "name": "shortcut",
+      "reusedObjects": 20
+    },
+    {
+      "checked": 136,
+      "fallbacks": 89,
+      "name": "footnote",
+      "reusedObjects": 26
+    },
+    {
+      "checked": 89,
+      "fallbacks": 0,
+      "name": "fence",
+      "reusedObjects": 7
+    },
+    {
+      "checked": 68,
+      "fallbacks": 0,
+      "name": "tildeFence",
+      "reusedObjects": 12
+    },
+    {
+      "checked": 95,
+      "fallbacks": 2,
+      "name": "list",
+      "reusedObjects": 72
+    },
+    {
+      "checked": 78,
+      "fallbacks": 0,
+      "name": "ordered",
+      "reusedObjects": 24
+    },
+    {
+      "checked": 114,
+      "fallbacks": 0,
+      "name": "tags",
+      "reusedObjects": 14
+    },
+    {
+      "checked": 108,
+      "fallbacks": 0,
+      "name": "inlineTags",
+      "reusedObjects": 13
+    },
+    {
+      "checked": 204,
+      "fallbacks": 105,
+      "name": "nestedTags",
+      "reusedObjects": 10
+    },
+    {
+      "checked": 80,
+      "fallbacks": 0,
+      "name": "table",
+      "reusedObjects": 9
+    },
+    {
+      "checked": 57,
+      "fallbacks": 0,
+      "name": "setext",
+      "reusedObjects": 16
+    },
+    {
+      "checked": 62,
+      "fallbacks": 0,
+      "name": "quote",
+      "reusedObjects": 9
+    },
+    {
+      "checked": 151,
+      "fallbacks": 0,
+      "name": "inline",
+      "reusedObjects": 45
+    },
+    {
+      "checked": 66,
+      "fallbacks": 0,
+      "name": "math",
+      "reusedObjects": 20
+    },
+    {
+      "checked": 73,
+      "fallbacks": 0,
+      "name": "unicode",
+      "reusedObjects": 25
+    },
+    {
+      "checked": 72,
+      "fallbacks": 0,
+      "name": "unknownTag",
+      "reusedObjects": 33
+    },
+    {
+      "checked": 57,
+      "fallbacks": 0,
+      "name": "incompleteTag",
+      "reusedObjects": 18
+    },
+    {
+      "checked": 73,
+      "fallbacks": 0,
+      "name": "indentedCode",
+      "reusedObjects": 32
+    },
+    {
+      "checked": 74,
+      "fallbacks": 0,
+      "name": "htmlComment",
+      "reusedObjects": 35
+    },
+    {
+      "checked": 66,
+      "fallbacks": 0,
+      "name": "emoji",
+      "reusedObjects": 16
+    },
+    {
+      "checked": 129,
+      "fallbacks": 14,
+      "name": "details",
+      "reusedObjects": 7
+    },
+    {
+      "checked": 669,
+      "fallbacks": 0,
+      "name": "cjkRich",
+      "reusedObjects": 3354
+    },
+    {
+      "checked": 710,
+      "fallbacks": 0,
+      "name": "rich",
+      "reusedObjects": 2660
+    }
+  ]
+}

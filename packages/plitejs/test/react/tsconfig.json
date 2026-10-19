@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["./**/*"],
+  "exclude": [],
+  "compilerOptions": {
+    "incremental": false,
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "types": ["node", "@testing-library/jest-dom/vitest", "vitest/globals"]
+  }
+}

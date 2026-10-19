@@ -1,0 +1,14 @@
+{
+  "browser": "chromium",
+  "checks": {
+    "bodyExists": true,
+    "cspRequiresTrustedTypes": true,
+    "defaultViewIsNull": true,
+    "headExists": true,
+    "markerPreserved": true,
+    "noSubresourceRequests": true,
+    "scriptDidNotExecute": true
+  },
+  "passed": true,
+  "probeRequests": []
+}

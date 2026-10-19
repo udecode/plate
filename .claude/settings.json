@@ -1,0 +1,74 @@
+{
+  "permissions": {
+    "allow": ["Bash", "Edit", "Skill", "WebFetch", "WebSearch"]
+  },
+  "enableAllProjectMcpServers": true,
+  "autoCompactWindow": 400000,
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -d \"$CLAUDE_PROJECT_DIR\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/hand-drive.mjs\" --hook",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/reread.mjs ] || node .agents/pstack/reread.mjs --hook AGENTS.md \"$HOME/.claude/pstack-models.md\" .claude/settings.json; }",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/head.mjs ] || node .agents/pstack/head.mjs; }",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/setup.mjs ] || node .agents/pstack/setup.mjs --install 'pnpm install --offline'; }",
+            "timeout": 600
+          },
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.agents/skills/cleanup/scripts/scan.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/.agents/skills/cleanup/scripts/scan.mjs\" --brief --repo \"$CLAUDE_PROJECT_DIR\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|MultiEdit|Write|NotebookEdit|mcp__ccd_host__sync_with_base_branch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.agents/pstack/guard.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/.agents/pstack/guard.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "worktree": {
+    "baseRef": "head"
+  },
+  "enabledPlugins": {
+    "pstack@pstack-claude": true,
+    "vercel@claude-plugins-official": false
+  },
+  "extraKnownMarketplaces": {
+    "pstack-claude": {
+      "source": {
+        "source": "github",
+        "repo": "michael-denyer/pstack-claude",
+        "ref": "v0.9.88"
+      }
+    }
+  }
+}

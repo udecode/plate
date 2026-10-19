@@ -1,0 +1,600 @@
+---
+title: 媒体组件
+docs:
+  - route: /docs/components/media-image
+    title: 图片元素
+  - route: /docs/components/media-video
+    title: 视频元素
+  - route: /docs/components/media-audio
+    title: 音频元素
+  - route: /docs/components/media-file
+    title: 文件元素
+  - route: /docs/components/media-embed
+    title: 媒体嵌入元素
+  - route: /docs/components/media-toolbar
+    title: 媒体弹出框
+  - route: /docs/upload
+    title: 上传文件
+  - route: /docs/components/media
+    title: 媒体套件
+  - route: /docs/components/media-toolbar-button
+    title: 媒体工具栏按钮
+  - route: https://pro.platejs.org/docs/examples/media
+    title: 上传功能
+  - route: https://pro.platejs.org/docs/components/media-toolbar
+    title: 媒体工具栏
+---
+
+<ComponentPreview name="media-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+### 媒体支持
+- **文件类型**: 
+  - 图片
+  - 视频
+  - 音频
+  - 其他 (PDF, Word等)
+- **视频平台**: 
+  - 本地视频文件
+  - YouTube, Vimeo, Dailymotion, Youku, Coub
+- **嵌入支持**: 
+  - 推特推文
+
+### 媒体功能
+- 可编辑的标题说明
+- 可调整大小的元素
+
+### 上传功能
+- **多种上传方式**:
+  - 工具栏按钮文件选择器
+  - 从文件系统拖放
+  - 从剪贴板粘贴(图片)
+  - 外部媒体URL嵌入
+- **上传体验**:
+  - 实时进度跟踪
+  - 上传过程中预览
+  - 使用同一个节点身份将草稿位替换为完成的图片、视频、音频或文件
+  - 错误处理
+  - 文件大小验证
+  - 类型验证
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的媒体支持方式是使用 `MediaKit`。它包含预配置的 `ImagePlugin`、
+`VideoPlugin`、`AudioPlugin`、`FilePlugin`、`MediaEmbedPlugin`，以及
+对应的 [Plate UI](/docs/installation/plate-ui) 组件。需要上传本地文件时，再添加
+`UploadKit`，由它负责草稿渲染和上传控件；`MediaKit` 负责已完成的媒体。
+
+<ComponentSource name="media" />
+<ComponentSource name="upload" />
+
+- [`ImageElement`](/docs/components/media-image): 渲染图片元素
+- [`VideoElement`](/docs/components/media-video): 渲染视频元素
+- [`AudioElement`](/docs/components/media-audio): 渲染音频元素
+- [`FileElement`](/docs/components/media-file): 渲染文件元素
+- [`MediaEmbedElement`](/docs/components/media-embed): 渲染嵌入媒体
+- [`UploadElement`](/cn/docs/upload): 渲染 UploadKit 中未绑定、上传中和失败的媒体草稿位
+- [`MediaPreviewDialog`](/docs/components/media-preview-dialog): 提供媒体预览功能
+
+### 添加套件
+
+将套件添加到你的插件中:
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { MediaKit } from '@/components/editor/media';
+import { UploadKit } from '@/components/editor/upload';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    ...MediaKit,
+    ...UploadKit,
+  ],
+});
+```
+
+### 配置上传
+
+安装 Files 网关，并为 `UploadKit` 配置 `FilesClient` 和持久 URL 解析函数。
+客户端、路由、访问策略和环境变量见[上传文件](/cn/docs/upload)。
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install platejs
+```
+
+### 添加插件
+
+在创建编辑器时将媒体插件包含到Plate插件数组中。
+
+```tsx
+import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, VideoPlugin } from 'platejs/media/react';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    ImagePlugin,
+    VideoPlugin,
+    AudioPlugin,
+    FilePlugin,
+    MediaEmbedPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+使用自定义渲染组件配置媒体插件。
+
+```tsx
+import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, VideoPlugin } from 'platejs/media/react';
+import { createEditor } from 'platejs/react';
+import { AudioElement } from '@/components/editor/media-audio';
+import { FileElement } from '@/components/editor/media-file';
+import { ImageElement } from '@/components/editor/media-image';
+import { MediaEmbedElement } from '@/components/editor/media-embed';
+import { VideoElement } from '@/components/editor/media-video';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    ImagePlugin.configure({ component: ImageElement }),
+    VideoPlugin.configure({ component: VideoElement }),
+    AudioPlugin.configure({ component: AudioElement }),
+    FilePlugin.configure({ component: FileElement }),
+    MediaEmbedPlugin.configure({ component: MediaEmbedElement }),
+  ],
+});
+```
+
+- `component`: 为每种媒体类型分配自定义渲染组件
+
+本地文件上传需单独添加 `UploadPlugin`，配置方法见[上传文件](/cn/docs/upload)。
+
+<Callout type="info">
+  **注意：** 在 Markdown 中，只有 `url`、`alt` 和 `title` 的图片写为 `![alt](url "title")`。带有其他属性（例如 `width`）的图片使用 `<img src="…" />`，带标题的图片使用包含 `<img />` 与 `<figcaption>` 的 `<figure>`。视频、音频、文件和嵌入使用各自的标签，例如 `<video src="…">Caption</video>`；嵌入保留规范的 `src` 与 `provider`，以及可选的 `sourceUrl`，使编辑可逆。标题必须是一个 Markdown 段落。白名单内的提供商片段（例如 YouTube、Tweet）在粘贴时会被规范化为 URL。原始 `<script>` 或自定义嵌入外观不在支持范围内——如需保留，请添加自己的规则。
+</Callout>
+
+### 标题
+
+每个图片、音频、视频、文件和嵌入都是非 void 的对象元素。`object: true`
+使资源即使没有标题也属于有效内容，并让整个资源可选中且在结构上隔离。
+媒体元素的直接行内 children 就是标题；媒体插件负责 schema 和行为，不需要单独的
+标题插件、节点类型或 content root。
+
+只需配置媒体插件及其渲染组件：
+
+```tsx
+import { ImagePlugin } from 'platejs/media/react';
+import { ImageElement } from '@/components/editor/media-image';
+
+export const MediaKit = [
+  ImagePlugin.configure({ component: ImageElement }),
+];
+```
+
+让资源 DOM 保持不可编辑，并把媒体元素的普通 children slot 渲染为标题：
+
+```tsx
+<figure>
+  <div contentEditable={false}>{/* 媒体界面 */}</div>
+  <figcaption>{props.children}</figcaption>
+</figure>
+```
+
+通过仅用于构造的 `caption` 字段传入字符串或行内 children：
+
+```tsx
+editor.plugin(ImagePlugin).update.insert({
+  url: 'https://example.com/image.png',
+  caption: 'Plain caption',
+});
+
+editor.plugin(ImagePlugin).update.insert({
+  url: 'https://example.com/diagram.png',
+  caption: [
+    { text: 'Rich ' },
+    { text: 'caption', bold: true },
+  ],
+});
+```
+
+插入命令会把 `caption` 编译成直接 children。文档中只持久化生成的媒体元素：
+
+```ts
+{
+  type: 'image',
+  url: 'https://example.com/image.png',
+  children: [{ text: 'Plain caption' }],
+}
+```
+
+空文本 child 是标题缺失时的规范状态：
+
+```ts
+{
+  type: 'image',
+  url: 'https://example.com/image.png',
+  children: [{ text: '' }],
+}
+```
+
+渲染组件会隐藏空标题，直到光标进入标题，因此选中资源时页面不会跳动。占位符是否可见属于 UI 状态，
+不会改变持久化的元素。
+
+资源焦点和标题编辑使用不同的 selection 状态：
+
+| Selection | 行为 |
+| --- | --- |
+| 媒体路径上的对象 `NodeSelection`，来自点击或用方向键移到资源上，或聚焦其原生控件 | 聚焦资源并显示选中边框和媒体工具栏，空标题保持隐藏；页面显示标题时，前进方向键或 `ArrowDown` 进入标题，Delete 删除整个媒体节点。 |
+| 包含媒体的区块 `NodeSelection`，来自框选、拖拽手柄、Block Menu 或区块方向键 | 绘制共享的蓝色区块高亮，不显示选中边框和工具栏；方向键越过媒体，不进入标题。 |
+| 媒体 children 内的 Plate `TextSelection` | 编辑标题；光标位于标题开头时，后退方向键或 `ArrowUp` 返回资源焦点。 |
+
+在从左到右的文本中，从媒体块前面的文本按 `ArrowRight` 会先选中资源，再按一次才
+进入标题。反向移动依次经过标题、选中的资源和前面的文本。默认标题组件会隐藏空标题，
+方向键会跳过它，媒体工具栏的 Caption 按钮可以把光标放进空标题。左右方向键跟随光标所在
+块或选中媒体的书写方向，因此即使编辑器是从左到右，在从右到左的段落中方向键也会
+反转。
+
+方向键只停在页面实际绘制的标题文本上。界面隐藏标题时，从下方
+的块或下方选中的媒体按 `ArrowUp` 会选中该媒体。从选中的资源按前进方向键或
+`ArrowDown` 会越过隐藏的标题，移到下一个块。界面显示空标题时，从下方按 `ArrowUp`
+会进入该标题。
+媒体工具栏的 Caption 按钮会把光标放进空标题。
+
+复制或剪切媒体 `NodeSelection` 会连同标题传输整个资源；只选择标题文本时，
+粘贴不会重建资源。在标题中按 Enter 会把光标后的文本移到资源之后的新块，
+即资源所在容器在该位置声明的块，多数编辑器中是段落；资源节点仍保持原有身份。
+
+### 上传本地文件
+
+[`UploadPlugin`](/cn/docs/upload) 使用 `files-sdk/client` 的 `FilesClient` 上传
+本地文件。它验证整个批次、创建带 key 的草稿位，并在文档事务提交后启动请求。
+应用通过同步 `getUrl` 将 SDK 上传结果映射为持久的绝对 URL。上传完成后，
+已安装的媒体插件会把草稿位变为图片、视频、音频或文件节点。
+
+使用 `editor.plugin(UploadPlugin).update.submit(files)` 提交新批次；
+`{ slot: key }` 填充现有草稿；`{ after: key }` 等选项指定块位置。
+使用 `editor.plugin(UploadPlugin).api.cancel(key)` 取消单个任务。失败的实时任务
+保留本地 `File` 以便显式重试；重新加载的草稿需要重新选择文件。客户端、进度和
+网关访问策略见[上传文件](/cn/docs/upload)。
+
+### 添加工具栏按钮
+
+你可以将[`MediaToolbarButton`](/docs/components/media-toolbar-button)添加到[Toolbar](/docs/toolbar)以上传和插入媒体。
+
+### 插入工具栏按钮
+
+你可以将这些项添加到[插入工具栏按钮](/docs/toolbar#insert-toolbar-button)来插入媒体元素:
+
+```tsx
+{
+  icon: <ImageIcon />,
+  label: '图片',
+  value: PLUGINS.image,
+}
+```
+
+</Steps>
+
+## Plate Plus
+
+<ComponentPreviewPro name="media-pro" />
+
+## 插件
+
+### `ImagePlugin`
+
+用于非 void、隔离且可通过键盘选择的图片元素。其直接行内 children 存储标题。
+
+<API name="ImagePlugin">
+<APIOptions type="ImagePluginState">
+  <APIItem name="disableEmbedInsert" type="boolean" optional>
+    禁用数据插入时的URL嵌入。
+    - **默认:** `false`
+  </APIItem>
+  <APIItem name="isUrl" type="function" optional>
+    检查文本字符串是否为URL的函数。
+  </APIItem>
+  <APIItem name="transformUrl" type="function" optional>
+    转换URL的函数。
+  </APIItem>
+</APIOptions>
+</API>
+
+`UploadPlugin` 处理粘贴的图片文件；`ImagePlugin` 处理图片 URL。
+
+### `VideoPlugin`
+
+用于非 void、隔离且可通过键盘选择的视频元素。其直接行内 children 存储标题。
+扩展 `MediaPluginState`。
+
+### `AudioPlugin`
+
+用于非 void、隔离且可通过键盘选择的音频元素。其直接行内 children 存储标题。
+扩展 `MediaPluginState`。
+
+视频与音频序列化为 HTML 时使用 `<figure class="editor-video">` 或
+`<figure class="editor-audio">`，其中包含原生 `<video controls>` 或
+`<audio controls>`，以及保存标题的 `<figcaption>`。粘贴的 HTML 也接受裸
+`<video>` 或 `<audio>`，从 `src` 或第一个 `<source>` 读取地址；浏览器 fallback
+文本不会作为标题保留。
+
+### `FilePlugin`
+
+用于非 void、隔离且可通过键盘选择的文件元素。其直接行内 children 存储标题。
+扩展 `MediaPluginState`。
+
+### `MediaEmbedPlugin`
+
+用于非 void、隔离且可通过键盘选择的媒体嵌入元素。其直接行内 children 存储标题。
+扩展 `MediaPluginState`。
+
+### `UploadPlugin`
+
+管理持久化媒体草稿位和编辑器上传任务。`platejs/upload` 中的
+`BaseUploadPlugin` 拥有无 React 的相同状态机；React 插件还会按区块拖拽的放置规则放置拖入的文件。
+
+<API name="UploadPlugin">
+<APIOptions type="UploadPluginState">
+  <APIItem name="client" type="FilesClient | null">
+    由 `files-sdk/client` 的 `createFilesClient` 创建。**默认：** `null`。
+  </APIItem>
+  <APIItem name="getUrl" type="((file: UploadOutcome) => string) | null">
+    同步地将 SDK 上传结果映射为持久的绝对 URL。**默认：** `null`。
+  </APIItem>
+  <APIItem name="rules" type="UploadRules">
+    将 `audio | blob | image | pdf | text | video` 映射到必需的草稿 `kind`，
+    以及可选的 `minFiles`、`maxFiles`、`maxBytes`。
+  </APIItem>
+  <APIItem name="maxFiles" type="number">
+    一个提交批次的最大文件数。**默认：** `Number.POSITIVE_INFINITY`。
+  </APIItem>
+  <APIItem name="onError" type="((failure: UploadFailure) => void) | null">
+    每个被拒批次或失败任务只通知一次。**默认：** `null`。
+  </APIItem>
+</APIOptions>
+</API>
+
+React 版 `UploadPlugin` 会把拖入的文件放在指针所在区块的边缘，并遵循与[区块拖拽](/docs/dnd)相同的放置规则。被拒绝的拖放不会插入任何内容。
+只安装 `BaseUploadPlugin` 的编辑器会像粘贴一样处理拖入的文件，不经过放置规则和否决。
+
+## API
+
+### 上传任务
+
+| 操作 | 契约 |
+| --- | --- |
+| `editor.plugin(UploadPlugin).update.submit(files, options)` | 验证并插入整个批次，提交后启动 SDK 请求。 |
+| `editor.plugin(UploadPlugin).api.cancel(key)` | 中止该实时草稿 key 拥有的任务。 |
+| `editor.plugin(UploadPlugin).store.get('task', key)` | 返回 `UploadTask` 或 `undefined`；通过 `file`、`getSnapshot` 和 `subscribe` 构建进度与重试 UI。 |
+
+只要 `NodeKey`、草稿类型和 `kind` 仍然有效，任务就保留权限。移动草稿不会取消任务；
+删除、改类型、改 `kind`、替换整个文档、重试或清理插件会取消任务。只读模式会阻止新提交，
+但不会取消已经提交的请求。
+
+`UploadFailure` 区分接收、配置、放置、上传和 URL 结果错误。上传错误保留 SDK 的
+`unknown` 错误；无效的 URL 或抛错的 `getUrl` 属于结果错误。任务快照直接使用
+SDK 的 `AggregateProgress`（`loaded`、`total`、`fraction`），不是百分比数值。
+
+## 转换方法
+
+### `editor.plugin(UploadPlugin).update.submit`
+
+<API name="submit">
+<APIParameters>
+  <APIItem name="files" type="File[] | FileList">
+    要整体验证和上传的完整批次。
+  </APIItem>
+  <APIItem name="options" type="UploadSubmitOptions" optional>
+    传入 `{ slot: NodeKey }` 填充一个现有草稿位。否则传入 `BlockInsertOptions`，
+    包括 `at`、`before`、`after`、`replaceEmpty` 或 `select`。两种模式不能混用。
+  </APIItem>
+</APIParameters>
+</API>
+
+草稿位模式复用第一个节点，并把其余文件插入相邻位置。第一个文件必须匹配草稿位的
+`kind`。所有模式都会先验证整个批次，再修改文档。如果草稿放不进目标位置，例如父节点
+已达到子节点上限，整个批次不会插入，并向 `onError` 报告 `does-not-fit` 放置错误。
+
+### `editor.plugin(BaseImagePlugin).update.insert`
+
+在编辑器中插入图片元素。
+
+<API name="insert">
+<APIParameters>
+  <APIItem name="url" type="string">
+    图片 URL。
+  </APIItem>
+  <APIItem name="options" type="NodeInsertOptions" optional>
+    精确路径和选区选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="NodeInsertOptions">
+  <APIItem name="at" type="Location" optional>
+    精确插入目标。省略时插入到选中的块之后。
+  </APIItem>
+  <APIItem name="select" type="boolean" optional>
+    选择插入的图片。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `editor.plugin(BaseMediaEmbedPlugin).update.insert`
+
+转换并规范化 URL，然后插入媒体嵌入元素。
+
+<API name="insert">
+<APIParameters>
+  <APIItem name="url" type="string">
+    媒体 URL 或嵌入代码。
+  </APIItem>
+  <APIItem name="options" type="NodeInsertOptions" optional>
+    精确路径和选区选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="NodeInsertOptions">
+  <APIItem name="at" type="Location" optional>
+    精确插入目标。省略时必须存在当前选区。
+  </APIItem>
+  <APIItem name="select" type="boolean" optional>
+    选择插入的媒体嵌入。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `api.insertUrl`
+
+选定的媒体插件会在应用解析 URL 输入期间保留插入目标。图片、媒体嵌入、音频、视频和文件插件均提供此 API。
+该操作调用已安装的 `update.insert`，包括 URL 验证和应用覆盖逻辑。
+取消输入、URL 无效或目标已删除时返回 `false`；URL 解析 Promise 的错误会传递给调用方。
+
+```tsx
+const inserted = await editor.plugin(BaseImagePlugin).api.insertUrl(
+  getUrlFromDialog,
+  { caption: 'An optional caption', select: true }
+);
+```
+
+`getUrlFromDialog` 由应用提供，返回 URL、`null` 或相应的 Promise。
+选项支持 `caption`、`select` 和一个位置：插入位置 `at`、来源区块 `after` 或目标区块 `before`。`replaceEmpty` 只能与 `after` 一起使用或在不指定位置时使用。
+设置 `replaceEmpty: true` 时，仅在 URL 解析完成后来源区块仍为空时替换它。
+区块移动或期间的文本编辑不会改变目标身份或丢失内容。应用负责 URL 对话框并选择媒体插件。
+
+## Registry Media UI
+
+`media-toolbar` 负责 URL 编辑、提交、取消和焦点恢复。
+每个复制的媒体节点直接读取其类型化元素和编辑器原语状态。
+`media-image` 渲染图片并打开 `media-preview-dialog`；预览对话框负责导航、缩放、平移和下载。
+
+在可编辑的编辑器中，单击 `media-file` 会选中文件，双击会在新标签页打开它。只读编辑器中单击即打开文件。
+图片、文件、音频或视频节点被选中时，`media-toolbar` 在 Edit link、Caption 和删除按钮旁显示 Preview 按钮。
+图片的 Preview 打开 `media-preview-dialog`，其他媒体在新标签页打开文件。
+
+<ComponentSource name="media-toolbar" />
+<ComponentSource name="media-image" />
+<ComponentSource name="media-preview-dialog" />
+
+可调整大小的媒体直接组合 [`platejs/react`](/docs/api/resizable) 的
+`Resizable` 和 `ResizeHandle`。媒体 renderer 通过 scoped plugin update
+提交最终宽度。
+
+## 工具函数
+
+### `parseMediaUrl`
+
+解析媒体 URL 以进行插件特定的处理。
+
+<API name="parseMediaUrl">
+<APIParameters>
+  <APIItem name="url" type="string">
+    要解析的媒体 URL。
+  </APIItem>
+  <APIItem name="options.urlParsers" type="EmbedUrlParser[]">
+    用于识别 URL 的有序解析器。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="EmbedUrlData | undefined">
+  第一个安全的解析结果；没有解析器匹配时返回 `undefined`。
+</APIReturns>
+</API>
+
+### `parseVideoUrl`
+
+解析视频 URL 并提取视频 ID 和提供商特定的嵌入 URL。
+
+<API name="parseVideoUrl">
+<APIParameters>
+  <APIItem name="url" type="string">
+    要解析的视频 URL。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="EmbedUrlData | undefined">
+  如果解析成功，返回包含视频 ID 和提供商的对象；如果 URL 无效或不支持，则返回 undefined。
+</APIReturns>
+</API>
+
+### `parseTwitterUrl`
+
+解析 Twitter URL 并提取推文 ID。
+
+<API name="parseTwitterUrl">
+<APIParameters>
+  <APIItem name="url" type="string">
+    Twitter URL。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="EmbedUrlData | undefined">
+    如果解析成功，返回包含推文 ID 和提供商的对象。
+    如果 URL 无效或不匹配任何支持的视频提供商，则返回 undefined。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `parseIframeUrl`
+
+解析 iframe 嵌入的 URL。
+
+<API name="parseIframeUrl">
+<APIParameters>
+  <APIItem name="url" type="string">
+    iframe 的 URL 或嵌入代码。
+  </APIItem>
+</APIParameters>
+</API>
+
+## 类型
+
+### 媒体元素类型
+
+```tsx
+import type { AudioElement, FileElement, ImageElement, MediaEmbedElement, VideoElement } from 'platejs/media';
+```
+
+每个别名都从其所属插件的 schema 派生。`Element.children` 存储标题的直接行内内容。标题缺失时使用
+`[{ text: '' }]`。
+
+### `UploadElement`
+
+```tsx
+import type { UploadElement } from 'platejs/upload';
+```
+
+`UploadElement` 从 `BaseUploadPlugin` 派生，并且需要严格的
+`kind`：`'audio' | 'file' | 'image' | 'video'`。
+
+### `EmbedUrlData`
+
+```tsx
+export interface EmbedUrlData {
+  id?: string;
+  provider?: string;
+  sourceKind?: 'allowlisted_snippet' | 'iframe' | 'url';
+  sourceUrl?: string;
+  url?: string;
+}
+```

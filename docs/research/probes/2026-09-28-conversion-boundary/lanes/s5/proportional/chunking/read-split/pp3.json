@@ -1,0 +1,314 @@
+[
+  {
+    "cell": "static-rich-10000",
+    "deferred": {
+      "highlighter: early checks and identity hits": 0.03,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.21,
+      "highlighter: plugin and store lookups": 0.06,
+      "highlighter: other": 0.03,
+      "end marker": 0,
+      "wrapper and guard": 0.13
+    },
+    "urgent": {
+      "highlighter: early checks and identity hits": 0,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0,
+      "highlighter: plugin and store lookups": 0,
+      "highlighter: other": 0,
+      "end marker": 0,
+      "wrapper and guard": 0
+    },
+    "total": {
+      "highlighter: early checks and identity hits": 0.03,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.21,
+      "highlighter: plugin and store lookups": 0.06,
+      "highlighter: other": 0.03,
+      "end marker": 0,
+      "wrapper and guard": 0.13
+    },
+    "deferredSum": 0.46,
+    "urgentSum": 0,
+    "totalSum": 0.46
+  },
+  {
+    "cell": "static-cjk-10000",
+    "deferred": {
+      "highlighter: early checks and identity hits": 0.09,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.18,
+      "highlighter: plugin and store lookups": 0.19,
+      "highlighter: other": 0.03,
+      "end marker": 0,
+      "wrapper and guard": 0.05
+    },
+    "urgent": {
+      "highlighter: early checks and identity hits": 0,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0,
+      "highlighter: plugin and store lookups": 0,
+      "highlighter: other": 0,
+      "end marker": 0,
+      "wrapper and guard": 0
+    },
+    "total": {
+      "highlighter: early checks and identity hits": 0.09,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.18,
+      "highlighter: plugin and store lookups": 0.19,
+      "highlighter: other": 0.03,
+      "end marker": 0,
+      "wrapper and guard": 0.05
+    },
+    "deferredSum": 0.54,
+    "urgentSum": 0,
+    "totalSum": 0.54
+  },
+  {
+    "cell": "ai-rich-10000",
+    "deferred": {
+      "highlighter: early checks and identity hits": 0,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.17,
+      "highlighter: plugin and store lookups": 0.06,
+      "highlighter: other": 0,
+      "end marker": 0.16,
+      "wrapper and guard": 0.15
+    },
+    "urgent": {
+      "highlighter: early checks and identity hits": 0,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0,
+      "highlighter: plugin and store lookups": 0,
+      "highlighter: other": 0,
+      "end marker": 0,
+      "wrapper and guard": 0
+    },
+    "total": {
+      "highlighter: early checks and identity hits": 0,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.17,
+      "highlighter: plugin and store lookups": 0.06,
+      "highlighter: other": 0,
+      "end marker": 0.16,
+      "wrapper and guard": 0.15
+    },
+    "deferredSum": 0.54,
+    "urgentSum": 0,
+    "totalSum": 0.54
+  },
+  {
+    "cell": "ai-cjk-10000",
+    "deferred": {
+      "highlighter: early checks and identity hits": 0.13,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.18,
+      "highlighter: plugin and store lookups": 0.12,
+      "highlighter: other": 0,
+      "end marker": 0.17,
+      "wrapper and guard": 0.19
+    },
+    "urgent": {
+      "highlighter: early checks and identity hits": 0,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0,
+      "highlighter: plugin and store lookups": 0,
+      "highlighter: other": 0,
+      "end marker": 0,
+      "wrapper and guard": 0
+    },
+    "total": {
+      "highlighter: early checks and identity hits": 0.14,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.18,
+      "highlighter: plugin and store lookups": 0.12,
+      "highlighter: other": 0,
+      "end marker": 0.17,
+      "wrapper and guard": 0.19
+    },
+    "deferredSum": 0.79,
+    "urgentSum": 0,
+    "totalSum": 0.8
+  },
+  {
+    "cell": "static-rich-50000",
+    "deferred": {
+      "highlighter: early checks and identity hits": 0.18,
+      "highlighter: re-path (atBlockPath)": 0.01,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.1,
+      "highlighter: plugin and store lookups": 0.23,
+      "highlighter: other": 0.01,
+      "end marker": 0,
+      "wrapper and guard": 0.12
+    },
+    "urgent": {
+      "highlighter: early checks and identity hits": 0,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0,
+      "highlighter: plugin and store lookups": 0,
+      "highlighter: other": 0,
+      "end marker": 0,
+      "wrapper and guard": 0
+    },
+    "total": {
+      "highlighter: early checks and identity hits": 0.18,
+      "highlighter: re-path (atBlockPath)": 0.01,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.1,
+      "highlighter: plugin and store lookups": 0.23,
+      "highlighter: other": 0.01,
+      "end marker": 0,
+      "wrapper and guard": 0.12
+    },
+    "deferredSum": 0.65,
+    "urgentSum": 0,
+    "totalSum": 0.65
+  },
+  {
+    "cell": "ai-rich-50000",
+    "deferred": {
+      "highlighter: early checks and identity hits": 0.14,
+      "highlighter: re-path (atBlockPath)": 0.02,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.09,
+      "highlighter: plugin and store lookups": 0.21,
+      "highlighter: other": 0.01,
+      "end marker": 0.37,
+      "wrapper and guard": 0.27
+    },
+    "urgent": {
+      "highlighter: early checks and identity hits": 0,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0,
+      "highlighter: plugin and store lookups": 0,
+      "highlighter: other": 0,
+      "end marker": 0.01,
+      "wrapper and guard": 0
+    },
+    "total": {
+      "highlighter: early checks and identity hits": 0.14,
+      "highlighter: re-path (atBlockPath)": 0.02,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.09,
+      "highlighter: plugin and store lookups": 0.21,
+      "highlighter: other": 0.01,
+      "end marker": 0.38,
+      "wrapper and guard": 0.28
+    },
+    "deferredSum": 1.11,
+    "urgentSum": 0.01,
+    "totalSum": 1.13
+  },
+  {
+    "cell": "static-cjk-50000",
+    "deferred": {
+      "highlighter: early checks and identity hits": 0.2,
+      "highlighter: re-path (atBlockPath)": 0.01,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.08,
+      "highlighter: plugin and store lookups": 0.55,
+      "highlighter: other": 0.03,
+      "end marker": 0,
+      "wrapper and guard": 0.29
+    },
+    "urgent": {
+      "highlighter: early checks and identity hits": 0,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0,
+      "highlighter: plugin and store lookups": 0,
+      "highlighter: other": 0,
+      "end marker": 0,
+      "wrapper and guard": 0
+    },
+    "total": {
+      "highlighter: early checks and identity hits": 0.2,
+      "highlighter: re-path (atBlockPath)": 0.01,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.08,
+      "highlighter: plugin and store lookups": 0.55,
+      "highlighter: other": 0.03,
+      "end marker": 0,
+      "wrapper and guard": 0.29
+    },
+    "deferredSum": 1.16,
+    "urgentSum": 0,
+    "totalSum": 1.16
+  },
+  {
+    "cell": "ai-cjk-50000",
+    "deferred": {
+      "highlighter: early checks and identity hits": 0.22,
+      "highlighter: re-path (atBlockPath)": 0.04,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.11,
+      "highlighter: plugin and store lookups": 0.52,
+      "highlighter: other": 0.04,
+      "end marker": 0.36,
+      "wrapper and guard": 0.49
+    },
+    "urgent": {
+      "highlighter: early checks and identity hits": 0,
+      "highlighter: re-path (atBlockPath)": 0,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0,
+      "highlighter: plugin and store lookups": 0,
+      "highlighter: other": 0,
+      "end marker": 0.01,
+      "wrapper and guard": 0.01
+    },
+    "total": {
+      "highlighter: early checks and identity hits": 0.22,
+      "highlighter: re-path (atBlockPath)": 0.04,
+      "highlighter: view.key and index": 0,
+      "highlighter: text": 0,
+      "highlighter: highlight and tokens": 0.11,
+      "highlighter: plugin and store lookups": 0.52,
+      "highlighter: other": 0.04,
+      "end marker": 0.37,
+      "wrapper and guard": 0.5
+    },
+    "deferredSum": 1.78,
+    "urgentSum": 0.02,
+    "totalSum": 1.8
+  }
+]

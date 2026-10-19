@@ -1,0 +1,301 @@
+---
+title: "Transforms"
+description: "Write document, selection, mark, root, effect, and canonical changes through transaction groups."
+---
+
+Plate changes the document inside `editor.update(...)`. The callback receives a
+transaction object named `tx`. Use `tx` for writes and for reads that belong to
+the command you are running.
+
+For one write, use the direct update method:
+
+```javascript
+editor.update.text.insert("some words");
+```
+
+Use the callback form when a command composes multiple writes, reads transaction
+state, adjusts update tags, or registers post-commit work.
+
+## Transaction groups
+
+```javascript
+editor.update((tx) => {
+  tx.nodes.unwrap({
+    at: [],
+    match: (node) =>
+      ElementApi.isElement(node) &&
+      node.children.every((child) => ElementApi.isElement(child)),
+    mode: "all",
+  });
+});
+```
+
+The core transaction groups are:
+
+- `tx.nodes` for inserting, removing, moving, wrapping, unwrapping, and setting
+  nodes
+- `tx.fragment` for reading, inserting, and deleting fragments
+- `tx.text` for inserting and deleting text
+- `tx.break` for inserting block and soft breaks
+- `tx.selection` for changing the model selection
+- `tx.marks` for changing text marks
+- `tx.value` for complete document replacement and `tx.roots` for targeted
+  named-root changes
+- `tx.setField` and `tx.effects` for typed document meta and integration effects
+- `tx.changes` for applying canonical document changes at adapter boundaries
+
+Commands should stay inside one update when the changes belong to one user
+action. Plate publishes one canonical change and one commit when the update
+finishes.
+
+Use `editor.update.value.repair()` only for an intentional all-root maintenance
+pass over raw data or newly installed corrections. Normal commands run
+changed-range corrections automatically.
+
+See [Transforms API](/docs/api/editor-transforms) for method options and the complete
+transaction reference.
+
+## Value replacement
+
+Use `editor.update.value.replace(...)` for one-shot imports, reset buttons, and
+controlled external replacements.
+
+```javascript
+editor.update({ history: "skip" }).value.replace({
+  children: [{ type: "paragraph", children: [{ text: "Imported" }] }],
+  selection: "start",
+});
+```
+
+Pass `roots` and `meta` in the same input for a complete multi-root document.
+Use the callback form when the replacement composes with other commands in one
+transaction.
+
+## Selection
+
+Use `tx.selection` to set, clear, collapse, or move the selection.
+
+```javascript
+editor.update((tx) => {
+  tx.selection.set({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [1, 0], offset: 2 },
+  });
+});
+```
+
+Move the cursor backward by three words:
+
+```javascript
+editor.update((tx) => {
+  tx.selection.move({
+    distance: 3,
+    reverse: true,
+    unit: "word",
+  });
+});
+```
+
+Read selection with `editor.read(...)` when you are outside an update:
+
+```javascript
+const selection = editor.read((state) => state.selection());
+```
+
+## Text
+
+Insert text at the current transaction target:
+
+```javascript
+editor.update((tx) => {
+  tx.text.insert("some words");
+});
+```
+
+Insert text at an explicit point:
+
+```javascript
+editor.update((tx) => {
+  tx.text.insert("some words", {
+    at: { path: [0, 0], offset: 3 },
+  });
+});
+```
+
+Delete a range:
+
+```javascript
+editor.update((tx) => {
+  tx.text.delete({
+    at: {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 2 },
+    },
+  });
+});
+```
+
+## Nodes
+
+Insert a text node at an explicit path:
+
+```javascript
+editor.update((tx) => {
+  tx.nodes.insert(
+    {
+      text: "A new string of text.",
+    },
+    {
+      at: [0, 1],
+    }
+  );
+});
+```
+
+Move a node:
+
+```javascript
+editor.update((tx) => {
+  tx.nodes.move({
+    at: [0, 0],
+    to: [0, 1],
+  });
+});
+```
+
+Set a property on matching text nodes:
+
+```javascript
+editor.update((tx) => {
+  tx.nodes.set(
+    { bold: true },
+    {
+      at: [],
+      match: (node) => TextApi.isText(node) && node.italic !== true,
+    }
+  );
+});
+```
+
+When you already have the exact node, pass it as `at`. The node type narrows the
+properties accepted by `set`.
+
+```typescript
+editor.update.nodes.set({ icon: "🔥" }, { at: calloutElement });
+```
+
+## Marks
+
+Use `tx.marks` for text formatting commands.
+
+```javascript
+editor.update.marks.toggle("bold");
+```
+
+You can read marks inside the same command:
+
+```javascript
+editor.update((tx) => {
+  const marks = tx.marks();
+
+  if (marks?.code) {
+    tx.marks.remove("code");
+  } else {
+    tx.marks.add("code", true);
+  }
+});
+```
+
+## Canonical changes
+
+Canonical change application is still a transaction. Import remote or stored
+changes through `tx.changes.apply(...)` so replay follows the same correction,
+history, effect, and subscription boundary as local commands.
+
+```javascript
+editor.update({ tags: "remote-import" }, (tx) => {
+  tx.changes.apply(DocumentChange.fromJSON(remoteChange));
+});
+```
+
+## The `at` option
+
+When `at` is omitted, selection-sensitive methods use the transaction target.
+When `at` is provided, Plate uses that exact location and does not import or
+refresh browser selection.
+
+```javascript
+editor.update((tx) => {
+  tx.text.insert("some words");
+});
+
+editor.update((tx) => {
+  tx.text.insert("some words", {
+    at: { path: [0, 0], offset: 3 },
+  });
+});
+```
+
+`at` can be a `Path`, `Point`, `Range`, text node, or element node. Node targets
+resolve to their current path in the active editor root.
+
+```javascript
+editor.update((tx) => {
+  tx.text.insert("some words", {
+    at: {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 3 },
+    },
+  });
+});
+```
+
+## The `match` option
+
+Node methods accept an independent structural `type` selector and optional
+`match` predicate.
+
+```javascript
+editor.update((tx) => {
+  tx.nodes.move({
+    at: [2],
+    type: "callout",
+    match: (node, path) => path.length === 2,
+    to: [5],
+  });
+});
+```
+
+The `match` function can examine the node, the path, or surrounding structure
+through transaction read helpers.
+
+Use `type` for exact structural identity and arrays of structural identities.
+
+```javascript
+const callout = editor.read.nodes.find({
+  type: "callout",
+});
+
+const tableNode = editor.read.nodes.find({
+  type: ["table", "table_cell"],
+});
+```
+
+Use a predicate for computed policies such as block, text, or empty checks, and
+whenever TypeScript should narrow the matched node.
+
+## Normalization
+
+Keep structural commands in one `editor.update(...)` call. Plate normalizes the
+result before publishing the commit.
+
+```javascript
+editor.update((tx) => {
+  tx.nodes.unwrap({ match: isList });
+  tx.nodes.set({ type: "list-item" });
+  tx.nodes.wrap({ type: "bulleted-list", children: [] });
+});
+```
+
+Runtime internals may use lower-level helpers, but public document changes and
+change application stay inside the transaction boundary.

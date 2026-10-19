@@ -1,0 +1,98 @@
+---
+title: 尾部块
+---
+
+<ComponentPreview name="basic-blocks-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 在文档末尾或指定嵌套层级维护所需块
+- 空编辑器保护
+- 通过 `initialState.match` 匹配当前最后一个节点
+- 通过 `initialState.insert` 包装生成的插入
+- 标准 registry editor plugins 默认安装该插件
+
+</PackageInfo>
+
+## 手动使用
+
+<Steps>
+
+### 添加插件
+
+```tsx
+import { ElementApi, TrailingBlockPlugin } from 'platejs';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    TrailingBlockPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+该插件开箱即用，具有合理的默认配置，但也可以针对特定用例进行配置：
+
+```tsx
+import { TrailingBlockPlugin } from 'platejs';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    TrailingBlockPlugin.configure({
+      initialState: {
+        type: 'paragraph', // 段落块
+        match: (node) =>
+          ElementApi.isElement(node) && node.type === 'blockquote',
+      },
+    }),
+  ],
+});
+```
+
+**配置选项：**
+
+- `type`: 要插入的尾部块类型（默认为段落）
+- `level`: 查找最后一个节点的嵌套层级（默认为 `0`）
+- `match`: 限制触发插入的最后一个节点
+- `insert`: 包装或替换生成的插入
+
+</Steps>
+
+## 插件
+
+### `TrailingBlockPlugin`
+
+确保在文档末尾或指定嵌套层级始终存在特定块类型的插件。
+
+**核心行为：**
+- 当最后一个节点不符合预期类型时自动添加尾部块
+- 通过编辑器规范化机制维护文档结构
+- 通过 `level` 选项支持嵌套结构
+- 防止空文档，确保至少存在一个块
+- 通过 `match` 控制尾部块的添加时机
+
+<API name="TrailingBlockPlugin">
+<APIOptions>
+  <APIItem name="level" type="number" optional>
+    应添加尾部节点的层级，第一层级为0。
+    - **默认值:** `0`
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    要插入的尾部块类型。
+    - **默认值:** `'p'` (段落)
+  </APIItem>
+  <APIItem name="match" type="NodeMatch" optional>
+    限制触发插入的最后一个节点。
+  </APIItem>
+  <APIItem name="insert" type="(defaultInsert: () => void) => void" optional>
+    包装生成的插入。回调负责调用 `defaultInsert()`。
+  </APIItem>
+</APIOptions>
+</API>

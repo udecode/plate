@@ -1,0 +1,235 @@
+import { NodeApi } from '../../../core';
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from '../__tests__/createTestEditor';
+
+describe('paragraph breaks preservation', () => {
+  const editor = createTestEditor();
+
+  it('keeps consecutive trailing breaks without adding a backslash', () => {
+    const document = parseTestMarkdown(editor, 'a<br/><br/>\n\nEND\n');
+    const result = serializeTestMarkdown(editor, { document });
+
+    expect(parseTestMarkdown(editor, result.data)).toEqual(document);
+  });
+
+  it('keeps a trailing line break after bold text', () => {
+    const serialized = serializeTestMarkdown(editor, {
+      document: {
+        children: [
+          { children: [{ bold: true, text: 'a\n' }], type: 'paragraph' },
+        ],
+      },
+    }).data;
+
+    expect(
+      NodeApi.string(parseTestMarkdown(editor, serialized).children[0])
+    ).toBe('a\n');
+  });
+
+  it('preserve empty paragraphs during serialization and deserialization', () => {
+    const originalValue = [
+      {
+        children: [
+          {
+            text: 'line 1',
+          },
+        ],
+        type: 'paragraph',
+      },
+      {
+        children: [
+          {
+            text: '',
+          },
+        ],
+        type: 'paragraph',
+      },
+      {
+        children: [
+          {
+            text: 'line 2',
+          },
+        ],
+        type: 'paragraph',
+      },
+      {
+        children: [
+          {
+            text: 'line 3',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ];
+
+    // Serialize to markdown
+    const serialized = serializeTestMarkdown(editor, {
+      document: { children: originalValue },
+    }).data;
+
+    // Check that zero-width space is used in serialization
+    expect(serialized).toContain('\u200B');
+    expect(serialized).toMatch(/line 1\n\n\u200B\n\nline 2\n\nline 3/);
+
+    // Deserialize back to Plate AST
+    const deserialized = parseTestMarkdown(editor, serialized);
+
+    // Check that the empty paragraph is preserved
+    expect(deserialized.children).toHaveLength(4);
+    expect(deserialized.children[1]).toMatchObject({
+      children: [{ text: '' }],
+      type: 'paragraph',
+    });
+
+    // The structure should match the original
+    expect(deserialized.children).toEqual(originalValue);
+  });
+
+  it('preserve multiple consecutive empty paragraphs', () => {
+    const originalValue = [
+      {
+        children: [{ text: 'line 1' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: '' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: '' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'line 2' }],
+        type: 'paragraph',
+      },
+    ];
+
+    const serialized = serializeTestMarkdown(editor, {
+      document: { children: originalValue },
+    }).data;
+    const deserialized = parseTestMarkdown(editor, serialized);
+
+    expect(deserialized.children).toHaveLength(4);
+    expect(deserialized.children[1].children[0].text).toBe('');
+    expect(deserialized.children[2].children[0].text).toBe('');
+  });
+
+  it('handle mixed empty and non-empty paragraphs', () => {
+    const originalValue = [
+      {
+        children: [{ text: '' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'line 1' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: '' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: '' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'line 2' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: '' }],
+        type: 'paragraph',
+      },
+    ];
+
+    const serialized = serializeTestMarkdown(editor, {
+      document: { children: originalValue },
+    }).data;
+    const deserialized = parseTestMarkdown(editor, serialized);
+
+    expect(deserialized.children).toHaveLength(6);
+    expect(deserialized.children[0].children[0].text).toBe('');
+    expect(deserialized.children[2].children[0].text).toBe('');
+    expect(deserialized.children[3].children[0].text).toBe('');
+    expect(deserialized.children[5].children[0].text).toBe('');
+  });
+
+  it('does not affect paragraphs with actual content', () => {
+    const originalValue = [
+      {
+        children: [
+          { text: 'This is ' },
+          { bold: true, text: 'bold' },
+          { text: ' text' },
+        ],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: '' }],
+        type: 'paragraph',
+      },
+      {
+        children: [
+          { text: 'This is ' },
+          { italic: true, text: 'italic' },
+          { text: ' text' },
+        ],
+        type: 'paragraph',
+      },
+    ];
+
+    const serialized = serializeTestMarkdown(editor, {
+      document: { children: originalValue },
+    }).data;
+    const deserialized = parseTestMarkdown(editor, serialized);
+
+    expect(deserialized.children).toHaveLength(3);
+    expect(deserialized.children[0].children).toHaveLength(3);
+    expect(deserialized.children[0].children[1]).toMatchObject({
+      bold: true,
+      text: 'bold',
+    });
+    expect(deserialized.children[2].children[1]).toMatchObject({
+      italic: true,
+      text: 'italic',
+    });
+  });
+
+  it('handle zero-width space in regular text content', () => {
+    const originalValue = [
+      {
+        children: [{ text: 'text with \u200B zero-width space' }],
+        type: 'paragraph',
+      },
+    ];
+
+    const serialized = serializeTestMarkdown(editor, {
+      document: { children: originalValue },
+    }).data;
+    const deserialized = parseTestMarkdown(editor, serialized);
+
+    // The zero-width space in actual text content should be preserved
+    expect(deserialized.children[0].children[0].text).toBe(
+      'text with \u200B zero-width space'
+    );
+  });
+
+  it('writes a newline inside marked text as a hard break', () => {
+    expect(
+      serializeTestMarkdown(editor, {
+        document: {
+          children: [
+            {
+              children: [{ kbd: true, text: 'Ctrl\nC' }],
+              type: 'paragraph',
+            },
+          ],
+        },
+      }).data
+    ).toBe('<kbd>Ctrl</kbd>\\\n<kbd>C</kbd>\n');
+  });
+});

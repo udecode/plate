@@ -1,0 +1,132 @@
+import {
+  createTestEditor,
+  parseTestMarkdown,
+  serializeTestMarkdown,
+} from '../__tests__/createTestEditor';
+
+describe('editor.api.markdown.serialize - mention', () => {
+  it('serialize mentions to link format', () => {
+    const editor = createTestEditor();
+    editor.update.value.replace({
+      children: [
+        {
+          children: [
+            { text: 'Hello ' },
+            {
+              ref: 'alice',
+              children: [{ text: '' }],
+              type: 'mention',
+              label: 'alice',
+            },
+            { text: ' how are you?' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    const markdown = serializeTestMarkdown(editor).data;
+    expect(markdown).toBe('Hello [alice](mention:alice) how are you?\n');
+  });
+
+  it('serialize multiple mentions', () => {
+    const editor = createTestEditor();
+    editor.update.value.replace({
+      children: [
+        {
+          children: [
+            {
+              ref: 'bob',
+              children: [{ text: '' }],
+              type: 'mention',
+              label: 'bob',
+            },
+            { text: ' mentioned ' },
+            {
+              ref: 'charlie',
+              children: [{ text: '' }],
+              type: 'mention',
+              label: 'charlie',
+            },
+            { text: ' in the discussion' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    const markdown = serializeTestMarkdown(editor).data;
+    expect(markdown).toBe(
+      '[bob](mention:bob) mentioned [charlie](mention:charlie) in the discussion\n'
+    );
+  });
+
+  it('serialize mentions with spaces using link format', () => {
+    const editor = createTestEditor();
+    editor.update.value.replace({
+      children: [
+        {
+          children: [
+            { text: 'Hey ' },
+            {
+              ref: 'john_doe',
+              children: [{ text: '' }],
+              type: 'mention',
+              label: 'John Doe',
+            },
+            { text: ' check this out' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    const markdown = serializeTestMarkdown(editor).data;
+    expect(markdown).toBe('Hey [John Doe](mention:john_doe) check this out\n');
+  });
+
+  it('round-trips link mentions and keeps bare handles as text', () => {
+    const editor = createTestEditor();
+
+    const originalMarkdown = 'Hello [Jane Smith](mention:jane_smith) and @bob!';
+    const value = parseTestMarkdown(editor, originalMarkdown);
+    editor.update.value.replace(value);
+    const serializedMarkdown = serializeTestMarkdown(editor).data;
+
+    expect(serializedMarkdown).toBe(
+      'Hello [Jane Smith](mention:jane_smith) and @bob!\n'
+    );
+  });
+
+  it('serialize complex mentions with special characters', () => {
+    const editor = createTestEditor();
+    editor.update.value.replace({
+      children: [
+        {
+          children: [
+            { text: 'Assigned to ' },
+            {
+              ref: 'qa_team_us',
+              children: [{ text: '' }],
+              type: 'mention',
+              label: 'QA Team (US)',
+            },
+            { text: ' and ' },
+            {
+              ref: 'dev-team',
+              children: [{ text: '' }],
+              type: 'mention',
+              label: 'dev-team',
+            },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    const markdown = serializeTestMarkdown(editor).data;
+    expect(markdown).toBe(
+      'Assigned to [QA Team (US)](mention:qa_team_us) and [dev-team](mention:dev-team)\n'
+    );
+  });
+});

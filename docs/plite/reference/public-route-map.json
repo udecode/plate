@@ -1,0 +1,23 @@
+{
+  "/docs/plite/concepts/08-extensions": "/docs/plite/concepts/08-plugins",
+  "/docs/plite/general/docs-proof-map": "/docs/plite/general/contributing#plite-proof-lanes",
+  "/docs/plite/libraries/plite-history/history-extension-setup": "/docs/plite/libraries/plite-history/history-plugin-setup",
+  "/docs/forced-layout": "/docs/schema#require-a-title",
+  "/docs/code-drawing": "/docs/code-block#diagrams",
+  "/docs/components/code-drawing": "/docs/code-block#diagrams",
+  "/docs/examples/code-drawing": "/docs/code-block#diagrams",
+  "/docs/api/plite/editor-api": "/docs/api/editor-api",
+  "/docs/api/plite/editor-transforms": "/docs/api/editor-transforms",
+  "/docs/api/plite/node": "/docs/api/node",
+  "/docs/api/plite/element": "/docs/api/element",
+  "/docs/api/plite/text": "/docs/api/text",
+  "/docs/api/plite/path": "/docs/api/path",
+  "/docs/api/plite/point": "/docs/api/point",
+  "/docs/api/plite/range": "/docs/api/range",
+  "/docs/api/plite/location": "/docs/api/location",
+  "/docs/api/plite/document-change": "/docs/api/document-change",
+  "/docs/api/plite/location-ref": "/docs/api/anchor",
+  "/docs/api/plite": "/docs/api/plate",
+  "/docs/migration/v48": "/docs/releases",
+  "/docs/migration": "/docs/releases"
+}

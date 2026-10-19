@@ -1,0 +1,29 @@
+flushPassiveEffects: 115.0 ms per profile over 3 profiles
+by inclusive (ms per profile):
+     115.0  flushPassiveEffects@5319583e-150745cd7583489c.js:313573
+     114.4  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+     114.4  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+     114.0  commitHookEffectListMount@5319583e-150745cd7583489c.js:216333
+     114.0  t4@885-0f38e168d8e57a26.js:6351
+     114.0  scrollAIPreviewEnd@885-0f38e168d8e57a26.js:5337
+     112.9  getBoundingClientRect@:-1
+       1.0  querySelector@:-1
+       0.4  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482
+       0.4  recursivelyTraversePassiveUnmountEffects@5319583e-150745cd7583489c.js:279976
+       0.3  commitPassiveUnmountEffectsInsideOfDeletedTree_begin@5319583e-150745cd7583489c.js:281961
+       0.3  detachFiberAfterEffects@5319583e-150745cd7583489c.js:243458
+       0.3  detachDeletedInstance@5319583e-150745cd7583489c.js:22034
+       0.2  releaseRootPooledCache@5319583e-150745cd7583489c.js:313164
+       0.0  t2@885-0f38e168d8e57a26.js:9527
+       0.0  resolveDOMNode@1233-726a72fff91f8c4c.js:962762
+       0.0  resolveDOMNode@1233-726a72fff91f8c4c.js:942581
+       0.0  isEditor@1233-726a72fff91f8c4c.js:579519
+by self (ms per profile):
+     112.9  getBoundingClientRect@:-1
+       1.0  querySelector@:-1
+       0.4  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+       0.3  detachDeletedInstance@5319583e-150745cd7583489c.js:22034
+       0.2  releaseRootPooledCache@5319583e-150745cd7583489c.js:313164
+       0.0  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482
+       0.0  t4@885-0f38e168d8e57a26.js:6351
+       0.0  isEditor@1233-726a72fff91f8c4c.js:579519

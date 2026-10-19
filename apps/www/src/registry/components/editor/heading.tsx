@@ -1,0 +1,35 @@
+'use client';
+
+import { cva } from 'class-variance-authority';
+import {
+  type HeadingPlugin,
+  type EditorElementProps,
+  EditorElement,
+} from 'platejs/react';
+import * as React from 'react';
+
+export const headingVariants = cva('relative mb-1', {
+  variants: {
+    level: {
+      1: 'mt-[1.6em] pb-1 font-bold font-heading text-4xl',
+      2: 'mt-[1.4em] pb-px font-heading font-semibold text-2xl tracking-tight',
+      3: 'mt-[1em] pb-px font-heading font-semibold text-xl tracking-tight',
+      4: 'mt-[0.75em] font-heading font-semibold text-lg tracking-tight',
+      5: 'mt-[0.75em] font-semibold text-lg tracking-tight',
+      6: 'mt-[0.75em] font-semibold text-base tracking-tight',
+    },
+  },
+});
+
+export function HeadingElement(
+  props: EditorElementProps<typeof HeadingPlugin>
+) {
+  const { level } = props.element;
+  const tag = `h${level}` as const;
+
+  return (
+    <EditorElement as={tag} className={headingVariants({ level })} {...props}>
+      {props.children}
+    </EditorElement>
+  );
+}

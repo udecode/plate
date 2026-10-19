@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-07-list-wrappers",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-07-list-wrappers.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Render task markers directly in list wrappers",
+  "targets": [
+    {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/components/editor/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list-static",
+      "files": [
+        "apps/www/src/registry/components/editor/block-list-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-07-block-list-render-task-markers-directly-c241592c",
+      "kind": "wiring",
+      "summary": "Render task markers directly in list wrappers",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-list", "block-list-static"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-07",
+          "entry": "2026-09-07-list-wrappers",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

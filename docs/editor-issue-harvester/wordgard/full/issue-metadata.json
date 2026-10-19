@@ -1,0 +1,663 @@
+{
+  "checkedAt": "2026-09-09T17:59:27.205228+00:00",
+  "stateCoverage": "all",
+  "issues": [
+    {
+      "number": 1,
+      "title": "Multiple instances of the \"Add a link\" dialog",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/1",
+      "labels": "",
+      "updatedAt": "2026-08-13T19:46:01+02:00",
+      "metadataStatus": "needs-reread; existing semantic decision preserved"
+    },
+    {
+      "number": 2,
+      "title": "Look into how browsers handle text direction in lists",
+      "state": "OPEN",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/2",
+      "labels": "",
+      "updatedAt": "2026-08-13T19:46:01+02:00",
+      "metadataStatus": "needs-reread; existing semantic decision preserved"
+    },
+    {
+      "number": 3,
+      "title": "Firefox Android issues",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/3",
+      "labels": "",
+      "updatedAt": "2026-07-04T20:07:56+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 4,
+      "title": "Cursor mismatch on Android with Google Voice Typing",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/4",
+      "labels": "",
+      "updatedAt": "2026-07-24T15:47:55+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 5,
+      "title": "leftover code from the CM6",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/5",
+      "labels": "",
+      "updatedAt": "2026-07-04T08:21:29+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 6,
+      "title": "TypeScript declaration error: Property `isTextblock` does not exist on type `Plot`",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/6",
+      "labels": "",
+      "updatedAt": "2026-07-04T19:50:21+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 7,
+      "title": "Can't delete text across ranges in Origin Tracking example",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/7",
+      "labels": "",
+      "updatedAt": "2026-07-04T20:17:28+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 8,
+      "title": "iOS autocorrect removes the word and doesn\u2019t replace it as expected",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/8",
+      "labels": "",
+      "updatedAt": "2026-07-29T22:02:37+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 9,
+      "title": "Create a footnote example",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/9",
+      "labels": "",
+      "updatedAt": "2026-07-14T23:46:40+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 10,
+      "title": "Create a CodeMirror-for-editing-code-blocks example",
+      "state": "OPEN",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/10",
+      "labels": "",
+      "updatedAt": "2026-07-05T13:17:17+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 11,
+      "title": "Create a user interface for choosing a value for `CodeBlockLanguage`",
+      "state": "OPEN",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/11",
+      "labels": "",
+      "updatedAt": "2026-07-05T13:18:47+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 12,
+      "title": "Provide a practical collaborative editing system",
+      "state": "OPEN",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/12",
+      "labels": "",
+      "updatedAt": "2026-07-09T23:29:58+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 13,
+      "title": "Look into supporting autocompletion in the core lib",
+      "state": "OPEN",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/13",
+      "labels": "",
+      "updatedAt": "2026-07-05T13:20:27+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 14,
+      "title": "Cannot change menu bar's `top`",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/14",
+      "labels": "",
+      "updatedAt": "2026-07-13T22:32:36+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 15,
+      "title": "After use Ctrl+A to select all, Ctrl+X cause a \"ValidationError\"",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/15",
+      "labels": "",
+      "updatedAt": "2026-07-08T10:30:09+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 16,
+      "title": "Range wrapper decorations don't redraw when their attributes change",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/16",
+      "labels": "",
+      "updatedAt": "2026-07-11T11:26:12+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 17,
+      "title": "Point decoration at the end of the document isn't redrawn when it changes",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/17",
+      "labels": "",
+      "updatedAt": "2026-07-11T10:57:33+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 18,
+      "title": "A lower decoration change is lost when a higher one changes too",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/18",
+      "labels": "",
+      "updatedAt": "2026-07-11T10:57:33+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 19,
+      "title": "coordsAtPos returns the block's far edge instead of the caret's line start next to a block widget",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/19",
+      "labels": "",
+      "updatedAt": "2026-07-24T15:43:31+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 20,
+      "title": "Arrow / line-boundary movement crashes on a doc that is its own textblock",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/20",
+      "labels": "",
+      "updatedAt": "2026-07-11T10:57:33+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 21,
+      "title": "Caret drawn after the trailing space when arrowing across a soft wrap",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/21",
+      "labels": "",
+      "updatedAt": "2026-07-11T11:25:56+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 22,
+      "title": "`GardState.readOnly.of(true)` only partially working",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/22",
+      "labels": "",
+      "updatedAt": "2026-07-24T15:43:15+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 23,
+      "title": "Extra space at start of line with iOS swipe input",
+      "state": "OPEN",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/23",
+      "labels": "",
+      "updatedAt": "2026-07-24T15:42:00+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 24,
+      "title": "iOS swipe input deleted character-by-character",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/24",
+      "labels": "",
+      "updatedAt": "2026-07-24T15:42:58+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 25,
+      "title": "Error when moving cursor through inline plot",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/25",
+      "labels": "",
+      "updatedAt": "2026-08-03T19:23:52+02:00",
+      "metadataStatus": "needs-reread; existing semantic decision preserved"
+    },
+    {
+      "number": 26,
+      "title": "Pasting code from vscode to wordgard editor cause an error.",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/26",
+      "labels": "",
+      "updatedAt": "2026-07-22T15:49:38+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 27,
+      "title": "Make key bindings discoverable, somehow",
+      "state": "OPEN",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/27",
+      "labels": "",
+      "updatedAt": "2026-07-24T17:38:32+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 28,
+      "title": "Editor silently stops applying input after an exception during flush()",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/28",
+      "labels": "",
+      "updatedAt": "2026-07-30T17:15:14+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 29,
+      "title": "Setting any attribute on `contentDOM` crashes mutation processing",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/29",
+      "labels": "",
+      "updatedAt": "2026-07-30T17:23:45+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 30,
+      "title": "Attributes.compare doesn't score attributes that only exist in the new element",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/30",
+      "labels": "",
+      "updatedAt": "2026-07-30T17:24:15+02:00",
+      "metadataStatus": "unchanged"
+    },
+    {
+      "number": 31,
+      "title": "RangeSet.compareRange misses ranges that start before the compared window",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/31",
+      "labels": "",
+      "updatedAt": "2026-08-09T11:05:17+02:00",
+      "metadataStatus": "needs-reread; existing semantic decision preserved"
+    },
+    {
+      "number": 32,
+      "title": "main doesn't build: unresolved names in src/schema/code.ts",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/32",
+      "labels": "",
+      "updatedAt": "2026-08-04T18:28:42+02:00",
+      "metadataStatus": "needs-reread; existing semantic decision preserved"
+    },
+    {
+      "number": 33,
+      "title": "Adding link on footnote superscript has buggy tooltips",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/33",
+      "labels": "",
+      "updatedAt": "2026-08-14T15:13:42+02:00",
+      "metadataStatus": "needs-reread; existing semantic decision preserved"
+    },
+    {
+      "number": 34,
+      "title": "Target of link dialog is unclear",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/34",
+      "labels": "",
+      "updatedAt": "2026-08-06T16:11:54+02:00",
+      "metadataStatus": "needs-reread; existing semantic decision preserved"
+    },
+    {
+      "number": 35,
+      "title": "Suggestion: Make link editor a tooltip instead of dialog",
+      "state": "OPEN",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/35",
+      "labels": "",
+      "updatedAt": "2026-08-06T16:11:54+02:00",
+      "metadataStatus": "needs-reread; existing semantic decision preserved"
+    },
+    {
+      "number": 36,
+      "title": "Bug: The decoration of the nodes cannot be correctly re-rendered.",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/36",
+      "labels": "",
+      "updatedAt": "2026-08-09T13:26:39+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 37,
+      "title": "Widgets cannot handle input events",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/37",
+      "labels": "",
+      "updatedAt": "2026-08-09T19:58:45+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 38,
+      "title": "Cannot append or prepend to an inline plot",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/38",
+      "labels": "",
+      "updatedAt": "2026-08-13T16:21:21+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 39,
+      "title": "Cursor size incorrect around superscript",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/39",
+      "labels": "",
+      "updatedAt": "2026-08-13T16:23:50+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 40,
+      "title": "Correction.onMarks crashing on untoggling mark on last word in paragraph",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/40",
+      "labels": "",
+      "updatedAt": "2026-08-10T12:53:28+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 41,
+      "title": "`main` still fails to build: `codeBlockLanguage` is not exported",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/41",
+      "labels": "",
+      "updatedAt": "2026-08-05T14:48:31+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 42,
+      "title": "Add `doc.iterateBackwards`",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/42",
+      "labels": "",
+      "updatedAt": "2026-08-10T17:13:44+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 43,
+      "title": "Build exits successfully after TypeScript errors",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/43",
+      "labels": "",
+      "updatedAt": "2026-08-05T14:50:23+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 44,
+      "title": "Rendered DOM is not updated when attributes are added to an existing element",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/44",
+      "labels": "",
+      "updatedAt": "2026-08-07T14:52:42+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 45,
+      "title": "TableMap rejects valid table nodes with marks",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/45",
+      "labels": "",
+      "updatedAt": "2026-08-06T12:40:00+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 46,
+      "title": "Invalid PURE annotations on namespace initializers",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/46",
+      "labels": "",
+      "updatedAt": "2026-08-10T21:12:37+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 47,
+      "title": "Typing after an inline leaf inserts text before it",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/47",
+      "labels": "",
+      "updatedAt": "2026-08-11T09:57:55+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 48,
+      "title": "Correction.onContent in selection changes selection",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/48",
+      "labels": "",
+      "updatedAt": "2026-08-11T10:24:50+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 49,
+      "title": "Support cursor styling based on the active marks",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/49",
+      "labels": "",
+      "updatedAt": "2026-08-13T16:22:42+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 50,
+      "title": "domAtPos falls back to WG-CONTENT at the end of a nested content hole",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/50",
+      "labels": "",
+      "updatedAt": "2026-08-18T07:53:00+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 51,
+      "title": "Publish prereleases for testing",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/51",
+      "labels": "",
+      "updatedAt": "2026-09-04T19:45:53+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 52,
+      "title": "Inline plot cursor positions on mobile",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/52",
+      "labels": "",
+      "updatedAt": "2026-08-22T14:29:51+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 53,
+      "title": "End insertion is rendered outside a nested content hole",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/53",
+      "labels": "",
+      "updatedAt": "2026-08-21T16:41:54+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 54,
+      "title": "RangeSet.map mis-maps any range that spans a change",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/54",
+      "labels": "",
+      "updatedAt": "2026-08-21T21:14:26+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 55,
+      "title": "RangeSet.map never maps a range that ends at the end of the document",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/55",
+      "labels": "",
+      "updatedAt": "2026-08-22T17:23:25+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 56,
+      "title": "PointSet.create inserts out-of-order point too early",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/56",
+      "labels": "",
+      "updatedAt": "2026-08-22T20:18:36+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 57,
+      "title": "Insertion after end of inline plot duplicated",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/57",
+      "labels": "",
+      "updatedAt": "2026-08-24T10:01:31+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 58,
+      "title": "addAtomicityChanges sorts positions as strings",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/58",
+      "labels": "",
+      "updatedAt": "2026-08-24T10:00:21+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 59,
+      "title": "Menu bar buttons submit a surrounding form (missing type=\"button\")",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/59",
+      "labels": "",
+      "updatedAt": "2026-08-24T13:46:18+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 60,
+      "title": "A gap in a table row goes unreported when covered slots follow it",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/60",
+      "labels": "",
+      "updatedAt": "2026-08-25T16:17:29+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 61,
+      "title": "Pos.resolve's cache retains every document it ever resolved",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/61",
+      "labels": "",
+      "updatedAt": "2026-08-27T07:19:14+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 62,
+      "title": "findNormalAt loops forever when a backward scan enters an empty plot",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/62",
+      "labels": "",
+      "updatedAt": "2026-08-27T12:52:12+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 63,
+      "title": "Text Decoration.Tag.Widget inserts text at wrong position",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/63",
+      "labels": "",
+      "updatedAt": "2026-08-28T21:26:16+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 64,
+      "title": "Support `Plot.Spec.toText` or custom `Leaf.Text`",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/64",
+      "labels": "",
+      "updatedAt": "2026-08-28T21:16:51+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 65,
+      "title": "Undoing a corrected change re-runs the correction and breaks the history below it",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/65",
+      "labels": "",
+      "updatedAt": "2026-08-28T13:02:16+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 66,
+      "title": "Consider supporting overlap in range sets",
+      "state": "OPEN",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/66",
+      "labels": "",
+      "updatedAt": "2026-08-28T16:58:08+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 67,
+      "title": "Insert around raw-text widget duplicated",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/67",
+      "labels": "",
+      "updatedAt": "2026-08-29T11:25:54+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 68,
+      "title": "Deleting forward into a list item that holds more than one block builds an invalid document",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/68",
+      "labels": "",
+      "updatedAt": "2026-08-30T20:17:20+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 69,
+      "title": "Supported browsers",
+      "state": "OPEN",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/69",
+      "labels": "",
+      "updatedAt": "2026-09-02T18:17:37+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 70,
+      "title": "macOS Ctrl-K deletes text without making it available to Ctrl-Y (yank)",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/70",
+      "labels": "",
+      "updatedAt": "2026-09-06T08:52:37+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 71,
+      "title": "Inserting line break (shift+enter) does not advance cursor to new line",
+      "state": "CLOSED",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/71",
+      "labels": "",
+      "updatedAt": "2026-09-06T21:29:22+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 72,
+      "title": "Menu.Submenu doesn't work under shadow DOM",
+      "state": "OPEN",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/72",
+      "labels": "",
+      "updatedAt": "2026-09-08T17:03:10+02:00",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 73,
+      "title": "Immediate typing after Select All can use the previous DOM selection",
+      "state": "OPEN",
+      "url": "https://code.haverbeke.berlin/wordgard/wordgard/issues/73",
+      "labels": "",
+      "updatedAt": "2026-09-09T17:58:14+02:00",
+      "metadataStatus": "new-unchecked"
+    }
+  ]
+}

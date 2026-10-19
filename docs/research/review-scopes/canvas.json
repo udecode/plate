@@ -1,0 +1,44 @@
+{
+  "id": "canvas",
+  "title": "Embedded drawing canvases",
+  "question": "Which document value and interaction contract should an embedded canvas expose without leaking its editor runtime?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "Embedded canvas values and identity must fit the document contract before external-runtime interaction is chosen.",
+  "last": false,
+  "opportunity": {
+    "score": 6,
+    "reason": "Canvas serialization and focus ownership differ from source-to-diagram rendering."
+  },
+  "owners": [
+    "packages/platejs/src/excalidraw/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/excalidraw.tsx",
+    "apps/www/src/registry/components/editor/insert-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/slash.tsx",
+    "apps/www/src/registry/examples/excalidraw-demo.tsx",
+    "apps/www/src/registry/examples/values/cn/excalidraw-value.tsx",
+    "apps/www/src/registry/examples/values/excalidraw-value.tsx",
+    "apps/www/tests/browser/excalidraw.spec.ts",
+    "packages/platejs/package.json",
+    "packages/platejs/src/excalidraw/",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/excalidraw.tsx"
+  ],
+  "proof": [
+    "apps/www/tests/browser/excalidraw.spec.ts"
+  ],
+  "evidenceInputs": [
+    "apps/www/playwright.config.ts",
+    "apps/www/package.json"
+  ],
+  "relatedScopes": [
+    "accessibility",
+    "geometry",
+    "html"
+  ]
+}

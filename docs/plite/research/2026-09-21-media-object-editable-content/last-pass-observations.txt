@@ -1,0 +1,9 @@
+bun test v1.3.12 (700fc117)
+
+docs/plite/research/2026-09-21-media-object-editable-content/last-pass-observations.test.ts:
+[{"isolating":false,"result":[{"type":"paragraph","children":[{"text":"apt"}]}],"slice":{"content":[{"type":"sliceProbeOpen","children":[{"text":"apt"}]}],"openEnd":1,"openStart":1}},{"isolating":true,"result":[{"type":"sliceProbeClosed","children":[{"text":"apt"}]}],"slice":{"content":[{"type":"sliceProbeClosed","children":[{"text":"apt"}]}],"openEnd":0,"openStart":0}}]
+
+ 1 pass
+ 0 fail
+ 4 expect() calls
+Ran 1 test across 1 file. [252.00ms]

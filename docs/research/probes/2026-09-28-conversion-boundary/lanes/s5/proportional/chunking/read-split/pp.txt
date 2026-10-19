@@ -1,0 +1,62 @@
+static-rich-10000: source reads per commit, deferred 0.59 ms, urgent 0.09 ms, total 0.76 ms
+  highlighter: early checks and identity hits      deferred   0.06  urgent   0.03  total    0.1
+  highlighter: view.key and index                  deferred   0.24  urgent      0  total   0.24
+  highlighter: highlight and tokens                deferred    0.2  urgent      0  total    0.2
+  highlighter: plugin and store lookups            deferred   0.06  urgent   0.03  total    0.1
+  highlighter: other                               deferred      0  urgent      0  total   0.01
+  wrapper and guard                                deferred   0.03  urgent   0.03  total   0.11
+static-cjk-10000: source reads per commit, deferred 0.98 ms, urgent 0.44 ms, total 1.39 ms
+  highlighter: early checks and identity hits      deferred   0.09  urgent   0.13  total   0.21
+  highlighter: view.key and index                  deferred   0.49  urgent      0  total   0.49
+  highlighter: highlight and tokens                deferred   0.21  urgent      0  total   0.21
+  highlighter: plugin and store lookups            deferred   0.13  urgent   0.13  total   0.26
+  wrapper and guard                                deferred   0.06  urgent   0.18  total   0.22
+ai-rich-10000: source reads per commit, deferred 1.01 ms, urgent 0 ms, total 1.01 ms
+  highlighter: early checks and identity hits      deferred   0.03  urgent      0  total   0.03
+  highlighter: view.key and index                  deferred   0.36  urgent      0  total   0.36
+  highlighter: highlight and tokens                deferred    0.2  urgent      0  total    0.2
+  highlighter: plugin and store lookups            deferred   0.03  urgent      0  total   0.03
+  end marker                                       deferred   0.27  urgent      0  total   0.27
+  wrapper and guard                                deferred   0.12  urgent      0  total   0.12
+ai-cjk-10000: source reads per commit, deferred 1.81 ms, urgent 0.01 ms, total 1.82 ms
+  highlighter: early checks and identity hits      deferred    0.1  urgent      0  total    0.1
+  highlighter: view.key and index                  deferred   0.67  urgent      0  total   0.67
+  highlighter: highlight and tokens                deferred   0.19  urgent      0  total   0.19
+  highlighter: plugin and store lookups            deferred   0.16  urgent      0  total   0.16
+  highlighter: other                               deferred   0.03  urgent      0  total   0.03
+  end marker                                       deferred    0.5  urgent   0.01  total   0.51
+  wrapper and guard                                deferred   0.16  urgent      0  total   0.16
+static-rich-50000: source reads per commit, deferred 1.38 ms, urgent 1.91 ms, total 3.29 ms
+  highlighter: early checks and identity hits      deferred   0.09  urgent   0.28  total   0.37
+  highlighter: re-path (atBlockPath)               deferred      0  urgent   0.02  total   0.02
+  highlighter: view.key and index                  deferred   0.84  urgent      0  total   0.84
+  highlighter: highlight and tokens                deferred    0.1  urgent      0  total    0.1
+  highlighter: plugin and store lookups            deferred   0.17  urgent   0.88  total   1.05
+  highlighter: other                               deferred   0.01  urgent   0.05  total   0.06
+  wrapper and guard                                deferred   0.17  urgent   0.68  total   0.85
+ai-rich-50000: source reads per commit, deferred 2.43 ms, urgent 0.02 ms, total 2.45 ms
+  highlighter: early checks and identity hits      deferred   0.15  urgent      0  total   0.15
+  highlighter: re-path (atBlockPath)               deferred   0.01  urgent      0  total   0.01
+  highlighter: view.key and index                  deferred   0.85  urgent      0  total   0.85
+  highlighter: highlight and tokens                deferred   0.07  urgent      0  total   0.07
+  highlighter: plugin and store lookups            deferred   0.18  urgent   0.01  total   0.19
+  highlighter: other                               deferred   0.02  urgent      0  total   0.02
+  end marker                                       deferred   0.86  urgent   0.01  total   0.87
+  wrapper and guard                                deferred   0.29  urgent      0  total   0.29
+static-cjk-50000: source reads per commit, deferred 2.74 ms, urgent 4.43 ms, total 7.13 ms
+  highlighter: early checks and identity hits      deferred   0.15  urgent   0.72  total   0.87
+  highlighter: re-path (atBlockPath)               deferred   0.01  urgent   0.02  total   0.03
+  highlighter: view.key and index                  deferred   1.66  urgent      0  total   1.66
+  highlighter: highlight and tokens                deferred   0.08  urgent      0  total   0.08
+  highlighter: plugin and store lookups            deferred   0.46  urgent   2.05  total    2.5
+  highlighter: other                               deferred   0.04  urgent   0.17  total    0.2
+  wrapper and guard                                deferred   0.34  urgent   1.47  total   1.79
+ai-cjk-50000: source reads per commit, deferred 4.75 ms, urgent 0.04 ms, total 4.78 ms
+  highlighter: early checks and identity hits      deferred   0.22  urgent      0  total   0.22
+  highlighter: re-path (atBlockPath)               deferred   0.02  urgent      0  total   0.02
+  highlighter: view.key and index                  deferred   1.65  urgent      0  total   1.65
+  highlighter: highlight and tokens                deferred   0.08  urgent      0  total   0.08
+  highlighter: plugin and store lookups            deferred   0.54  urgent   0.01  total   0.54
+  highlighter: other                               deferred   0.04  urgent      0  total   0.04
+  end marker                                       deferred   1.63  urgent   0.02  total   1.65
+  wrapper and guard                                deferred   0.57  urgent   0.01  total   0.58

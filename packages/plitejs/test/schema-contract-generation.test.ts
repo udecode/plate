@@ -1,0 +1,762 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import {
+  defineEditorSchema,
+  diffEditorSchemaContracts,
+  property,
+  readEditorSchemaContract,
+  restoreEditorSchemaContract,
+  schema,
+  target,
+} from 'plitejs';
+
+import { createEditorSchemaContract } from '../src/core/schema-compiler';
+import {
+  compileEditorSchemaContributions,
+  type EditorSchemaContributionRecord,
+} from '../src/internal';
+
+describe('generated editor schema contract', () => {
+  it('includes required prefix properties in identity and restored grammar', () => {
+    const compile = (level: number) => {
+      const article = defineEditorSchema('schema:prefix-contract', {
+        elements: {
+          heading: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            properties: { level: property.number({ required: true }) },
+          },
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
+        },
+        root: schema.content.prefix(
+          [{ element: 'heading', properties: { level } }],
+          schema.content.type('paragraph', { min: 1 })
+        ),
+        unknown: 'reject',
+      });
+      const records = [
+        { contribution: article.schema, pluginName: article.name },
+      ];
+
+      return { compiled: compileEditorSchemaContributions(records), records };
+    };
+    const first = compile(1);
+    const second = compile(2);
+    const firstContract = createEditorSchemaContract(first.compiled);
+    const secondContract = createEditorSchemaContract(second.compiled);
+    const restored = restoreEditorSchemaContract(
+      JSON.parse(JSON.stringify(firstContract)),
+      first.records
+    );
+
+    assert.deepEqual(createEditorSchemaContract(restored), firstContract);
+    assert.notEqual(firstContract.fingerprint, secondContract.fingerprint);
+    assert.equal(
+      diffEditorSchemaContracts(firstContract, secondContract)
+        .requiresMigration,
+      true
+    );
+    assert.throws(() =>
+      compileEditorSchemaContributions([
+        {
+          contribution: defineEditorSchema('schema:invalid-prefix', {
+            elements: {
+              heading: {
+                content: schema.content.text(),
+                properties: { level: property.number() },
+              },
+            },
+            root: schema.content.prefix(
+              [{ element: 'heading', properties: { unknown: 1 } }],
+              schema.content.type('heading')
+            ),
+          }).schema,
+          pluginName: 'invalid-prefix',
+        },
+      ])
+    );
+  });
+
+  const Article = defineEditorSchema('schema:article-contract', {
+    elements: {
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        properties: {
+          level: property.number(),
+          token: property.string({ generate: () => 'token' }),
+        },
+        structure: { kind: 'outline', level: 'level' },
+      },
+      section: {
+        content: schema.content.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      },
+    },
+    id: 'article-contract',
+    properties: [
+      schema.elementProperty('align', property.enum(['left', 'right']), {
+        target: target.type('paragraph'),
+      }),
+    ],
+    root: schema.content.type('section', { min: 1 }),
+    unknown: 'reject',
+    version: 1,
+  });
+  const records: readonly EditorSchemaContributionRecord[] = [
+    { contribution: Article.schema, pluginName: Article.name },
+  ];
+
+  it('carries ownsExit in the contract only where a schema declares it', () => {
+    const compile = (ownsExit: boolean) => {
+      const notes = defineEditorSchema('schema:notes-contract', {
+        elements: {
+          code: schema.element.textBlock(ownsExit ? { ownsExit } : {}),
+          paragraph: { content: schema.content.text() },
+        },
+        id: 'notes-contract',
+        root: schema.content.types(['paragraph', 'code'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      });
+      const contributions = [
+        { contribution: notes.schema, pluginName: notes.name },
+      ];
+
+      return {
+        compiled: compileEditorSchemaContributions(contributions),
+        contributions,
+      };
+    };
+    const declared = compile(true);
+    const plain = compile(false);
+    const declaredContract = createEditorSchemaContract(declared.compiled);
+    const plainContract = createEditorSchemaContract(plain.compiled);
+    const roundTrip = (
+      contract: typeof declaredContract,
+      contributions: typeof declared.contributions
+    ) =>
+      restoreEditorSchemaContract(
+        JSON.parse(JSON.stringify(contract)),
+        contributions
+      ).elements.byType.get('code')?.behavior.ownsExit;
+
+    assert.deepEqual(
+      [
+        'ownsExit' in
+          (plainContract.elements.byType.find(({ type }) => type === 'code')
+            ?.behavior ?? {}),
+        roundTrip(declaredContract, declared.contributions),
+        roundTrip(plainContract, plain.contributions),
+      ],
+      [false, true, false]
+    );
+  });
+
+  const Media = defineEditorSchema('schema:media-contract', {
+    elements: {
+      divider: { void: 'block' },
+      image: schema.element.textBlock({ object: true }),
+      paragraph: { content: schema.content.text() },
+    },
+    id: 'media-contract',
+    root: schema.content.types(['paragraph', 'divider', 'image'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  });
+  const mediaRecords: readonly EditorSchemaContributionRecord[] = [
+    { contribution: Media.schema, pluginName: Media.name },
+  ];
+  const mediaContractJson = () =>
+    JSON.parse(
+      JSON.stringify(
+        createEditorSchemaContract(
+          compileEditorSchemaContributions(mediaRecords)
+        )
+      )
+    );
+
+  it('restores exit ownership of voids and objects from a contract that omits it', () => {
+    const contract = mediaContractJson();
+    const restored = restoreEditorSchemaContract(contract, mediaRecords);
+
+    assert.deepEqual(
+      ['divider', 'image'].flatMap((type) => [
+        'ownsExit' in
+          contract.elements.byType.find(
+            (element: { type: string }) => element.type === type
+          ).behavior,
+        restored.elements.byType.get(type)?.behavior.ownsExit,
+      ]),
+      [false, true, false, true]
+    );
+  });
+
+  it('rejects a contract that adds ownsExit to a void or an object', () => {
+    const readWithOwnsExit = (type: string) => {
+      const contract = mediaContractJson();
+
+      contract.elements.byType.find(
+        (element: { type: string }) => element.type === type
+      ).behavior.ownsExit = true;
+
+      return readEditorSchemaContract(contract);
+    };
+
+    assert.deepEqual(['divider', 'image'].map(readWithOwnsExit), [
+      undefined,
+      undefined,
+    ]);
+  });
+
+  it('reads a contract object whose element behavior holds an undefined ownsExit', () => {
+    const contract = mediaContractJson();
+
+    for (const { behavior } of contract.elements.byType) {
+      behavior.ownsExit = undefined;
+    }
+
+    assert.equal(
+      readEditorSchemaContract(contract)?.fingerprint,
+      contract.fingerprint
+    );
+  });
+
+  it('keeps the stored value and fingerprint of an untyped ownsExit declaration', () => {
+    const compile = (ownsExit: unknown) => {
+      const notes = defineEditorSchema('schema:notes-untyped', {
+        elements: {
+          code: schema.element.textBlock({ ownsExit: ownsExit as boolean }),
+          paragraph: { content: schema.content.text() },
+        },
+        id: 'notes-untyped',
+        root: schema.content.types(['paragraph', 'code'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      });
+      const compiled = compileEditorSchemaContributions([
+        { contribution: notes.schema, pluginName: notes.name },
+      ]);
+
+      return [
+        createEditorSchemaContract(compiled).elements.byType.find(
+          ({ type }) => type === 'code'
+        )?.behavior.ownsExit,
+        compiled.identity.fingerprint,
+      ];
+    };
+
+    assert.deepEqual(
+      ['yes', 1].map((ownsExit) => compile(ownsExit)),
+      [
+        ['yes', 'fnv1a64:2a7cb5456c6303bf'],
+        [1, 'fnv1a64:d28b88d86152dcf9'],
+      ]
+    );
+  });
+
+  it('classifies a newly declared ownsExit as a migration-required element change', () => {
+    const compile = (ownsExit: boolean) =>
+      createEditorSchemaContract(
+        compileEditorSchemaContributions([
+          {
+            contribution: defineEditorSchema('schema:notes-diff', {
+              elements: {
+                code: schema.element.textBlock(ownsExit ? { ownsExit } : {}),
+                paragraph: { content: schema.content.text() },
+              },
+              id: 'notes-diff',
+              root: schema.content.types(['paragraph', 'code'], {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+              unknown: 'reject',
+              version: 1,
+            }).schema,
+            pluginName: 'schema:notes-diff',
+          },
+        ])
+      );
+    const diff = diffEditorSchemaContracts(compile(false), compile(true));
+
+    assert.deepEqual(
+      [diff.requiresMigration, diff.changes.map(({ kind }) => kind)],
+      [true, ['element-changed']]
+    );
+  });
+
+  it('round-trips deterministic structural data and rebinds validators', () => {
+    const compiled = compileEditorSchemaContributions(records);
+    const contract = createEditorSchemaContract(compiled);
+    const json = JSON.stringify(contract);
+    const parsed = JSON.parse(json) as unknown;
+    const restored = restoreEditorSchemaContract(parsed, records);
+
+    assert.equal(contract.fingerprint, compiled.identity.fingerprint);
+    assert.equal(contract.elements.byType[0]?.structure?.kind, 'outline');
+    assert.deepEqual(createEditorSchemaContract(restored), contract);
+    assert.equal(JSON.stringify(createEditorSchemaContract(restored)), json);
+  });
+
+  it('reads back the JSON copy of a contract with every void kind', () => {
+    const Editor = defineEditorSchema('schema:void-contract', {
+      elements: {
+        date: {
+          properties: { value: property.string({ required: true }) },
+          void: 'inline',
+        },
+        hr: { void: 'block' },
+        mention: {
+          properties: {
+            label: property.string(),
+            ref: property.string({ required: true }),
+          },
+          void: 'markable-inline',
+        },
+        paragraph: {
+          content: schema.content.any(
+            [
+              schema.content.text(),
+              schema.content.type('date'),
+              schema.content.type('mention'),
+            ],
+            { default: 'text', min: 1 }
+          ),
+        },
+      },
+      id: 'void-contract',
+      properties: [schema.textProperty('bold', property.boolean())],
+      root: schema.content.types(['hr', 'paragraph']),
+      unknown: 'reject',
+      version: 1,
+    });
+    const contract = createEditorSchemaContract(
+      compileEditorSchemaContributions([
+        { contribution: Editor.schema, pluginName: Editor.name },
+      ])
+    );
+
+    assert.deepEqual(
+      readEditorSchemaContract(JSON.parse(JSON.stringify(contract))),
+      contract
+    );
+  });
+
+  it('rejects malformed, stale, and unknown contract formats', () => {
+    const contract = createEditorSchemaContract(
+      compileEditorSchemaContributions(records)
+    );
+
+    assert.equal(readEditorSchemaContract(null), undefined);
+    assert.equal(
+      readEditorSchemaContract({ ...contract, formatVersion: 2 }),
+      undefined
+    );
+    assert.equal(
+      readEditorSchemaContract({ ...contract, fingerprint: 'fnv1a64:stale' }),
+      undefined
+    );
+    const [firstElement, ...remainingElements] = contract.elements.byType;
+
+    assert.ok(firstElement?.content);
+    const changedContent = {
+      ...contract,
+      elements: {
+        ...contract.elements,
+        byType: [
+          {
+            ...firstElement,
+            content: {
+              ...firstElement.content,
+              min: firstElement.content.min + 1,
+            },
+          },
+          ...remainingElements,
+        ],
+      },
+    };
+
+    assert.equal(readEditorSchemaContract(changedContent), undefined);
+    assert.equal(
+      readEditorSchemaContract({
+        ...contract,
+        unknown: contract.unknown === 'reject' ? 'preserve' : 'reject',
+      }),
+      undefined
+    );
+    const [firstProperty, ...remainingProperties] = contract.properties.byId;
+
+    assert.ok(firstProperty);
+    assert.equal(
+      readEditorSchemaContract({
+        ...contract,
+        properties: {
+          ...contract.properties,
+          byId: [
+            {
+              ...firstProperty,
+              role: firstProperty.role === 'content' ? 'metadata' : 'content',
+            },
+            ...remainingProperties,
+          ],
+        },
+      }),
+      undefined
+    );
+    assert.equal(
+      readEditorSchemaContract({
+        ...contract,
+        primaryRoot: {
+          ...contract.primaryRoot,
+          content: {
+            ...contract.primaryRoot.content,
+            allowsText: !contract.primaryRoot.content.allowsText,
+          },
+        },
+      }),
+      undefined
+    );
+    const missingElementTables = { ...contract, elements: {} };
+
+    assert.equal(readEditorSchemaContract(missingElementTables), undefined);
+    const invalidCopyLifecycle = structuredClone(contract) as any;
+
+    invalidCopyLifecycle.properties.lifecycle[0][1].copy = 'retain';
+    assert.equal(readEditorSchemaContract(invalidCopyLifecycle), undefined);
+    const generatedContract = createEditorSchemaContract(
+      compileEditorSchemaContributions([
+        ...records,
+        {
+          contribution: {
+            properties: [
+              schema.elementProperty(
+                'generatedId',
+                property.string({ generate: () => 'generated' }),
+                { target: target.type('paragraph') }
+              ),
+            ],
+          },
+          pluginName: 'generated-contract-property',
+        },
+      ])
+    );
+    const generatedProperty = generatedContract.properties.byId.find(
+      ({ descriptor }) => descriptor.generated
+    );
+
+    assert.ok(generatedProperty);
+    for (const generated of ['true', 1, false]) {
+      const invalid = structuredClone(generatedContract) as any;
+      const invalidProperty = invalid.properties.byId.find(
+        (entry: any) => entry.id === generatedProperty.id
+      );
+
+      invalidProperty.descriptor.generated = generated;
+      assert.equal(readEditorSchemaContract(invalid), undefined);
+    }
+    const cyclicDescriptor: Record<string, unknown> = {
+      kind: 'set',
+      omitDefault: false,
+      required: false,
+    };
+
+    cyclicDescriptor.item = cyclicDescriptor;
+    const cyclicDescriptorContract = structuredClone(contract) as any;
+
+    cyclicDescriptorContract.properties.byId[0].descriptor = cyclicDescriptor;
+    assert.equal(readEditorSchemaContract(cyclicDescriptorContract), undefined);
+    assert.throws(
+      () => restoreEditorSchemaContract({}, records),
+      /Invalid generated editor schema contract/
+    );
+    assert.throws(
+      () => restoreEditorSchemaContract(missingElementTables, records),
+      /Invalid generated editor schema contract/
+    );
+    const populatedChildrenIndex = contract.elements.allowedChildren.findIndex(
+      ([, types]) => types.length > 0
+    );
+
+    assert.notEqual(populatedChildrenIndex, -1);
+    const changedDerivedTable = {
+      ...contract,
+      elements: {
+        ...contract.elements,
+        allowedChildren: contract.elements.allowedChildren.map(
+          ([program, types], index) =>
+            index === populatedChildrenIndex
+              ? ([program, []] as const)
+              : ([program, types] as const)
+        ),
+      },
+    };
+
+    assert.throws(
+      () => restoreEditorSchemaContract(changedDerivedTable, records),
+      /does not match its source contributions/
+    );
+  });
+
+  it('classifies compatible additions and migration-required restrictions', () => {
+    const compile = (
+      contribution: EditorSchemaContributionRecord['contribution']
+    ) =>
+      createEditorSchemaContract(
+        compileEditorSchemaContributions([
+          { contribution, pluginName: 'schema:diff-contract' },
+        ])
+      );
+    const Before = defineEditorSchema('schema:diff-before', {
+      elements: {
+        note: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      id: 'diff-contract',
+      properties: [
+        schema.elementProperty('label', property.string(), {
+          target: target.type('paragraph'),
+        }),
+      ],
+      root: schema.content.type('paragraph', { min: 1 }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const Additive = defineEditorSchema('schema:diff-additive', {
+      elements: {
+        aside: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        note: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      id: 'diff-contract',
+      properties: [
+        schema.elementProperty('label', property.string(), {
+          target: target.type('paragraph'),
+        }),
+        schema.elementProperty('tone', property.string(), {
+          target: target.type('paragraph'),
+        }),
+      ],
+      root: schema.content.type('paragraph', { min: 1 }),
+      unknown: 'preserve',
+      version: 2,
+    });
+    const Restricted = defineEditorSchema('schema:diff-restricted', {
+      elements: {
+        memo: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      id: 'diff-contract',
+      properties: [
+        schema.elementProperty('title', property.string(), {
+          target: target.type('paragraph'),
+        }),
+        schema.elementProperty('slug', property.string({ required: true }), {
+          target: target.type('paragraph'),
+        }),
+      ],
+      root: schema.content.type('paragraph', { min: 2 }),
+      unknown: 'reject',
+      version: 3,
+    });
+    const Bounded = defineEditorSchema('schema:diff-bounded', {
+      elements: Before.schema.elements,
+      id: 'diff-contract',
+      properties: Before.schema.properties,
+      root: schema.content.type('paragraph', { max: 2, min: 1 }),
+      unknown: 'reject',
+      version: 4,
+    });
+    const Defaulted = defineEditorSchema('schema:diff-defaulted', {
+      elements: Before.schema.elements,
+      id: 'diff-contract',
+      properties: [
+        ...Before.schema.properties,
+        schema.elementProperty('weight', property.number({ default: 400 }), {
+          target: target.type('paragraph'),
+        }),
+      ],
+      root: Before.schema.root,
+      unknown: 'reject',
+      version: 5,
+    });
+    const Generated = defineEditorSchema('schema:diff-generated', {
+      elements: Before.schema.elements,
+      id: 'diff-contract',
+      properties: [
+        ...Before.schema.properties,
+        schema.elementProperty(
+          'generatedId',
+          property.string({ generate: () => 'generated' }),
+          { target: target.type('paragraph') }
+        ),
+      ],
+      root: Before.schema.root,
+      unknown: 'reject',
+      version: 6,
+    });
+    const Renamed = defineEditorSchema('schema:diff-renamed', {
+      elements: Before.schema.elements,
+      id: 'diff-contract',
+      properties: [
+        schema.elementProperty('title', property.string(), {
+          target: target.type('paragraph'),
+        }),
+      ],
+      root: Before.schema.root,
+      unknown: 'reject',
+      version: 7,
+    });
+    const additive = diffEditorSchemaContracts(
+      compile(Before.schema),
+      compile(Additive.schema)
+    );
+    const restricted = diffEditorSchemaContracts(
+      compile(Before.schema),
+      compile(Restricted.schema)
+    );
+    const bounded = diffEditorSchemaContracts(
+      compile(Before.schema),
+      compile(Bounded.schema)
+    );
+    const defaulted = diffEditorSchemaContracts(
+      compile(Before.schema),
+      compile(Defaulted.schema)
+    );
+    const generated = diffEditorSchemaContracts(
+      compile(Before.schema),
+      compile(Generated.schema)
+    );
+    const renamed = diffEditorSchemaContracts(
+      compile(Before.schema),
+      compile(Renamed.schema)
+    );
+
+    assert.equal(additive.requiresMigration, false);
+    assert.deepEqual(
+      additive.changes.map(({ kind }) => kind),
+      ['element-added', 'property-added', 'unknown-policy-expanded']
+    );
+    assert.equal(restricted.requiresMigration, true);
+    assert.ok(
+      restricted.changes.some(({ kind }) => kind === 'element-renamed')
+    );
+    assert.ok(
+      restricted.changes.some(({ kind }) => kind === 'property-required')
+    );
+    assert.ok(
+      restricted.changes.some(({ kind }) => kind === 'root-content-restricted')
+    );
+    assert.equal(bounded.requiresMigration, true);
+    assert.ok(
+      bounded.changes.some(({ kind }) => kind === 'root-content-restricted')
+    );
+    assert.equal(defaulted.requiresMigration, true);
+    assert.ok(
+      defaulted.changes.some(
+        ({ impact, kind }) =>
+          kind === 'property-added' && impact === 'migration-required'
+      )
+    );
+    assert.equal(generated.requiresMigration, true);
+    assert.ok(
+      generated.changes.some(
+        ({ impact, kind }) =>
+          kind === 'property-added' && impact === 'migration-required'
+      )
+    );
+    assert.ok(
+      renamed.changes.some(
+        ({ from, kind, to }) =>
+          kind === 'property-renamed' && from === 'label' && to === 'title'
+      )
+    );
+  });
+
+  it('diffs every target-specific property and ignores contributor provenance', () => {
+    const innerArticle = defineEditorSchema(
+      'schema:target-specific-properties',
+      {
+        elements: {
+          paragraph: { content: schema.content.text() },
+          quote: { content: schema.content.text() },
+        },
+        id: 'target-specific-properties',
+        properties: [
+          schema.elementProperty('tone', property.string(), {
+            target: target.type('paragraph'),
+          }),
+          schema.elementProperty('tone', property.string(), {
+            target: target.type('quote'),
+          }),
+        ],
+        root: schema.content.types(['paragraph', 'quote']),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
+    const ParagraphOnly = defineEditorSchema(
+      'schema:target-specific-properties',
+      {
+        ...innerArticle.schema,
+        properties: [innerArticle.schema.properties[0]],
+      }
+    );
+    const QuoteOnly = defineEditorSchema('schema:target-specific-properties', {
+      ...innerArticle.schema,
+      properties: [innerArticle.schema.properties[1]],
+    });
+    const compile = (
+      contribution: EditorSchemaContributionRecord['contribution'],
+      pluginName: string
+    ) =>
+      createEditorSchemaContract(
+        compileEditorSchemaContributions([{ contribution, pluginName }])
+      );
+    const previous = compile(innerArticle.schema, 'left-contributor');
+    const relabeled = compile(innerArticle.schema, 'right-contributor');
+
+    assert.deepEqual(
+      diffEditorSchemaContracts(previous, relabeled).changes,
+      []
+    );
+    for (const contribution of [ParagraphOnly.schema, QuoteOnly.schema]) {
+      const restricted = diffEditorSchemaContracts(
+        previous,
+        compile(contribution, 'right-contributor')
+      );
+
+      assert.equal(restricted.requiresMigration, true);
+      assert.equal(
+        restricted.changes.filter(({ kind }) => kind === 'property-removed')
+          .length,
+        1
+      );
+    }
+  });
+});

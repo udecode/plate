@@ -1,0 +1,21 @@
+{
+  "id": "2026-09-04-comments-ownership",
+  "scope": "comments",
+  "kind": "historical",
+  "date": "2026-09-04",
+  "question": "What belongs to durable comment data, anchor mapping and application discussion UI?",
+  "model": null,
+  "method": "historical-import-v1; original method and evidence remain at references",
+  "trigger": "Backfill material prior work for automatic repeat-review lookup.",
+  "summary": "Keep thin Comments with editor-bound anchor projection; cut duplicate activation, suggestion lifecycle and broad publication.",
+  "verdict": "pursue",
+  "relation": "initial",
+  "previous": null,
+  "alternatives": [],
+  "proofLimits": "The audit retained application-owned thread data and keyed Discussion presentation. A later package-data request changes that boundary.",
+  "references": [
+    "docs/plans/2026-09-04-comments-source-and-api-architecture-audit.md",
+    "docs/plans/artifacts/comments-source-api-audit/audit.md"
+  ],
+  "source": null
+}

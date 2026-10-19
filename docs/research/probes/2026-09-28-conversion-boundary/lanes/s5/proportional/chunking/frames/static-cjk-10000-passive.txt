@@ -1,0 +1,10 @@
+flushPassiveEffects: 0.4 ms per profile over 3 profiles
+by inclusive (ms per profile):
+       0.4  flushPassiveEffects@5319583e-150745cd7583489c.js:313573
+       0.4  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+       0.4  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+       0.0  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482
+       0.0  recursivelyTraversePassiveUnmountEffects@5319583e-150745cd7583489c.js:279976
+by self (ms per profile):
+       0.4  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+       0.0  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482

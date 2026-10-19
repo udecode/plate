@@ -1,0 +1,259 @@
+---
+title: 插件快捷键
+description: 配置 Plate 插件的键盘快捷键。
+---
+
+插件快捷键把按键组合映射到插件方法或显式处理函数。Plate 在插件设置阶段把它们编译为一个不可变的有序表，每个可编辑根节点只安装一个分发器。
+
+## 快捷键解析规则
+
+当按键事件报告 `isComposing`，或带有 keyCode `229`（WebKit 为确认输入法组合的 Enter 发送的代码）时，Plate 不运行任何快捷键。插件的 `onKeyDown` 处理函数仍会收到该事件。
+
+每个插件拥有一个 `shortcuts` 对象。Plate 使用 `${plugin.name}.${shortcutName}` 作为编译后的快捷键标识。
+
+没有 `handler` 时，Plate 查找同名的公开方法：
+
+1. 只有一个更新方法：自动使用 `update`。
+2. 只有一个 API 方法：自动使用 `api`。
+3. 两者都存在：必须设置 `target: 'update' | 'api'`。
+4. 两者都不存在：插件编译会报告无效快捷键。
+
+显式 `target` 必须指向存在的方法。自定义 `handler` 自己负责分发，因此不能同时设置 `target`。
+
+请在被链接的方法之后声明无 `handler` 的快捷键。TypeScript 根据当前插件描述符已经
+携带的能力进行验证，所以 constructor 中的 `update` 或 `api` 贡献应位于
+`.extend({ shortcuts })` 之前。这个真实类型依赖正是示例使用后续阶段的原因。
+自定义处理函数不需要同名方法。
+
+| 字段 | 含义 |
+| --- | --- |
+| `keys` | 由 Plate 的跨 realm 匹配器编译的按键组合，例如 `'mod+b'` 或 `'mod+b'`。 |
+| `handler` | 接收 `{ editor, event, eventDetails }` 的显式处理函数。 |
+| `target` | 同名更新方法和 API 方法同时存在时，用 `'update'` 或 `'api'` 消除歧义。 |
+| `priority` | 快捷键的局部优先级；默认为 `0`。 |
+| `preventDefault` | 已处理快捷键的浏览器默认行为策略。省略时，Plate 调用 `preventDefault()` 和 `stopPropagation()`。 |
+| `null` | 删除这个命名快捷键。 |
+
+## 链接更新方法
+
+快捷键名称与插件 update method 名称相同时，可以直接链接：
+
+```tsx title="plugins/signature-plugin.tsx" showLineNumbers
+import { definePlugin } from 'platejs/react';
+
+export const SignaturePlugin = definePlugin('signature', {
+  update: ({ tx }) => ({
+    insertSignature: () => {
+      tx.text.insert(' - EditorRoot');
+    },
+  }),
+})
+  .extend({
+    shortcuts: {
+      insertSignature: {
+        keys: 'mod+shift+s',
+      },
+    },
+  });
+```
+
+按下 `Mod+Shift+S` 会运行 `editor.update((tx) => tx.signature.insertSignature())`。
+
+## 链接 API 方法
+
+只有同名 API 方法存在时，Plate 自动使用 API 路径：
+
+```tsx title="plugins/inspect-plugin.tsx" showLineNumbers
+import { definePlugin } from 'platejs/react';
+
+export const InspectPlugin = definePlugin('inspect', {
+  api: ({ editor }) => ({
+    logText: () => {
+      editor.api.debug.info('Editor text', editor.read.text.string([]));
+    },
+  }),
+})
+  .extend({
+    shortcuts: {
+      logText: {
+        keys: 'mod+alt+l',
+      },
+    },
+  });
+```
+
+按下 `Mod+Alt+L` 会调用 `editor.api.inspect.logText()`。
+
+<Callout type="info" title="消除同名方法歧义">
+  Update method 和 API method 同名时，设置 `target: 'update'` 或
+  `target: 'api'`。每个插件只有一个 API group；`editor.api.inspect` 和
+  `editor.plugin(InspectPlugin).api` 是同一个 immutable object 的两个 typed
+  access path。
+</Callout>
+
+## 自定义处理函数
+
+需要键盘事件、自定义分支或不适合作为插件方法的行为时，使用 `handler`。不要同时设置 `target`。
+
+```tsx title="plugins/draft-plugin.tsx" showLineNumbers
+import { definePlugin } from 'platejs/react';
+
+export const DraftPlugin = definePlugin('draft', {
+  shortcuts: {
+    saveDraft: {
+      keys: 'mod+s',
+      handler: ({ editor }) => {
+        const text = editor.read.text.string([]);
+
+        if (text.trim().length === 0) return false;
+
+        editor.api.debug.info('Draft text', text);
+
+        return true;
+      },
+    },
+  },
+});
+```
+
+返回 `false` 表示未处理，Plate 不会阻止该按键事件。`preventDefault` 省略时，返回 `true` 或 `undefined` 表示已处理。
+
+## 默认事件行为
+
+| 配置 | 行为 |
+| --- | --- |
+| 省略 `preventDefault`，且处理结果不是 `false` | Plate 调用 `event.preventDefault()` 和 `event.stopPropagation()`。 |
+| 返回 `false` | Plate 不修改事件，并尝试下一个匹配的快捷键。 |
+| `preventDefault: false` 且事件已处理 | Plate 停止快捷键分发，但保留浏览器默认行为。 |
+| `preventDefault: true`，或判断函数返回 `true` | Plate 调用 `event.preventDefault()`。 |
+
+普通编辑器命令应省略 `preventDefault`。
+
+## 配置已有快捷键
+
+通过名称修改按键：
+
+```tsx title="plugins/basic-marks.tsx" showLineNumbers
+import { BoldPlugin } from 'platejs/react';
+
+export const AppBoldPlugin = BoldPlugin.configure({
+  shortcuts: {
+    toggle: {
+      keys: 'mod+shift+b',
+    },
+  },
+});
+```
+
+将快捷键设为 `null` 可删除它：
+
+```tsx title="plugins/basic-marks.tsx" showLineNumbers
+import { ItalicPlugin } from 'platejs/react';
+
+export const AppItalicPlugin = ItalicPlugin.configure({
+  shortcuts: {
+    toggle: null,
+  },
+});
+```
+
+## 多个快捷键
+
+一个插件可以声明多个命名快捷键。每个名称应与要调用的方法一致。
+
+```tsx title="plugins/review-plugin.tsx" showLineNumbers
+import { definePlugin } from 'platejs/react';
+
+export const ReviewPlugin = definePlugin('review', {
+  update: ({ tx }) => ({
+    accept: () => tx.text.insert('Accepted'),
+    reject: () => tx.text.insert('Rejected'),
+  }),
+})
+  .extend({
+    shortcuts: {
+      accept: { keys: 'mod+alt+a' },
+      reject: { keys: 'mod+alt+r' },
+    },
+  });
+```
+
+编译后的标识分别是 `review.accept` 和 `review.reject`。
+
+## 优先级
+
+快捷键优先级默认为 `0`。多个处理函数使用相同按键时，可以为需要优先执行的快捷键设置更高的 `priority`。
+
+```tsx title="plugins/priority-plugin.tsx" showLineNumbers
+import { definePlugin } from 'platejs/react';
+
+export const PriorityPlugin = definePlugin('commandMenu', {
+  shortcuts: {
+    openCommandMenu: {
+      keys: 'mod+k',
+      priority: 200,
+      handler: ({ editor }) => {
+        editor.api.debug.info('Open command menu');
+
+        return true;
+      },
+    },
+  },
+});
+```
+
+Plate 按快捷键优先级、插件应用顺序、声明顺序排列编译表。第一个已处理的路径胜出。
+
+## 编辑器级快捷键
+
+`createEditor({ shortcuts })` 把快捷键附加到根插件。仅将它用于不属于任何功能插件的编辑器级命令。
+
+```tsx title="editor.ts" showLineNumbers
+import { createEditor } from 'platejs/react';
+
+export const editor = createEditor({
+  shortcuts: {
+    reportWordCount: {
+      keys: 'mod+shift+w',
+      handler: ({ editor }) => {
+        const words = editor.read.text.string([]).trim().split(/\s+/).filter(Boolean);
+
+        editor.api.debug.info('Word count', words.length);
+
+        return true;
+      },
+    },
+  },
+});
+```
+
+功能行为应优先由对应插件拥有快捷键。
+
+## 默认快捷键
+
+| 插件 | 快捷键名称 | 按键 |
+| --- | --- | --- |
+| `BoldPlugin` | `toggle` | `Mod+B` |
+| `ItalicPlugin` | `toggle` | `Mod+I` |
+| `UnderlinePlugin` | `toggle` | `Mod+U` |
+| `ParagraphPlugin` | `toggle` | `Mod+Alt+0`、`Mod+Shift+0` |
+| `CopilotPlugin` | `accept` | `Tab` |
+| `CopilotPlugin` | `reject` | `Escape` |
+
+## API 参考
+
+```ts title="Shortcut 类型"
+type Shortcut = Omit<EditorShortcut, 'handler' | 'target'> & (
+  | {
+      handler: (context: {
+        editor: Editor;
+        event: KeyboardEvent;
+        eventDetails: HotkeysEvent;
+      }) => boolean | void;
+      target?: never;
+    }
+  | { handler?: never; target?: 'api' | 'update' }
+);
+```
+
+`target` 与 `handler` 互斥。

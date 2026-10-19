@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-10-discussion-focus-touch",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-10-discussion-focus-touch.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-10",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep discussions usable after suggestion actions and on touch screens",
+  "targets": [
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-10-discussion-keep-discussions-usable-after-b24ce965",
+      "kind": "fix",
+      "summary": "Keep discussions usable after suggestion actions and on touch screens",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion", "block-menu"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-10",
+          "entry": "2026-09-10-discussion-focus-touch",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

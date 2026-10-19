@@ -1,0 +1,17 @@
+# fnm exec --using=v22 -- pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/document-state.test.ts tests/plite-browser/donor/examples/richtext.test.ts --grep undo
+├ ○ /mobile-lab
+├ ○ /runtime-entrypoints
+└ ○ /suggestion-first-paint
+
+
+○  (Static)  prerendered as static content
+●  (SSG)     prerendered as static HTML (uses generateStaticParams)
+
+plite serving 470 files (19460783 bytes) from /Users/zbeyens/git/plate-2/apps/plite/out on http://127.0.0.1:3102
+[chromium 1/1] tests/plite-browser/donor/examples/document-state.test.ts, tests/plite-browser/donor/examples/richtext.test.ts (9 tests, 4 workers, normal)
+
+Running 9 tests using 4 workers
+·········
+  9 passed (2.6s)
+chromium: 9 passed, 0 skipped, 1 bounded batches, 3.8s
+# exit: 0

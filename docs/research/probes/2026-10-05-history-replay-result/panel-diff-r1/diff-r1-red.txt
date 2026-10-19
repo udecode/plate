@@ -1,0 +1,14 @@
+# red: foreign-realm owner promise, current code
+AssertionError: false == true
+(fail) immutable history branches > waits on an owner promise from another realm [12.35ms]
+ 0 pass
+ 1 fail
+# exit: 1
+# sync owner throw, current code
+ 1 pass
+ 0 fail
+# exit: 0
+# mutation: no try/catch around the synchronous owner call
+(fail) immutable history branches > settles a synchronous owner throw in the call [10.56ms]
+ 0 pass
+ 1 fail

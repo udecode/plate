@@ -1,0 +1,257 @@
+---
+title: Plate UI
+description: Install, customize, and sync copied Plate UI components.
+---
+
+Plate UI is the copied component layer for Plate. Use the shadcn CLI for the
+fastest setup, or install components manually when you need more control.
+
+## CLI installation (recommended)
+
+This is the fastest way to integrate Plate UI's core dependencies and base styles.
+
+<Steps>
+
+### Install Plate UI
+
+<Callout type="info">
+  If you are not using Next.js, refer to the official [shadcn/ui installation guides](https://ui.shadcn.com/docs/installation) for your specific framework before proceeding.
+</Callout>
+
+```bash
+npx shadcn@latest add @plate/plate-ui
+```
+
+### Basic usage 
+
+With Plate UI's core installed, proceed to the guide specific to your framework:
+
+*   **[Next.js Guide](./next)** - For server-side rendered applications (Next, Remix, etc.)
+*   **[React Guide](./react)** - For single-page applications (Vite, React Router, etc.)
+
+</Steps>
+
+## Manual installation
+
+If you prefer a step-by-step approach or are not using the shadcn CLI, follow these steps:
+
+<Steps>
+
+### Install Plate
+
+```bash
+npm install platejs
+```
+
+<Callout type="note" title="Plugin Dependencies">
+  Plate features live at `platejs/*` import subpaths. Install the optional peer
+  libraries required by the features you use. For example, AI needs
+  `@ai-sdk/react`, `ai`, and the Markdown peer libraries. Each feature page
+  lists its peers; the CLI installs them with copied components.
+</Callout>
+
+### Configure CSS variables
+
+Add the following CSS variables to your global stylesheet:
+
+```css title="app/globals.css"
+:root {
+  /* Base brand color for EditorRoot UI components */
+  --brand: oklch(0.623 0.214 259.815);
+}
+
+.dark {
+  --brand: oklch(0.707 0.165 254.624);
+}
+```
+
+### Add components
+
+With Plate UI's core installed, you can now add individual Plate UI components to build your editor interface. For example, to add the `FixedToolbar` and a `MarkToolbarButton`:
+
+```bash
+npx shadcn@latest add @plate/fixed-toolbar @plate/mark-toolbar-button
+```
+
+Import and use them in your editor:
+
+```tsx showLineNumbers title="components/editor.tsx"
+import { BoldPlugin, EditorRoot } from "platejs/react";
+import { FixedToolbar } from "@/components/editor/fixed-toolbar";
+import { MarkToolbarButton } from "@/components/editor/mark-toolbar-button";
+// ... other imports
+
+export function MyEditor() {
+  // ... editor setup
+  return (
+    <EditorRoot editor={editor}>
+      <FixedToolbar>
+        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">B</MarkToolbarButton>
+        {/* ... other toolbar buttons ... */}
+      </FixedToolbar>
+      {/* ... Editor component ... */}
+    </EditorRoot>
+  );
+}
+```
+
+Explore the available [UI Components](/docs/components) and [Plugin Components](/docs/plugin-components) to customize your editor nodes (like paragraphs, headings, etc.) and build a feature-rich editing experience.
+
+### Basic usage 
+
+With Plate UI's core installed, proceed to the guide specific to your framework:
+
+*   **[Next.js Guide](./next)** - For server-side rendered applications (Next, Remix, etc.)
+*   **[React Guide](./react)** - For single-page applications (Vite, React Router, etc.)
+
+</Steps>
+
+## Sync copied files
+
+Plate UI components live in your app after installation. Use this workflow when
+an agent needs to merge upstream registry file changes into local copies while
+keeping app-specific edits.
+
+For release review, use [Releases](/docs/releases). For scoped sync data, use
+the raw registry JSON.
+
+<Steps>
+
+### Install the skill
+
+```bash
+npx skills add sync-plate-ui
+```
+
+### Pick the JSON source
+
+Use the index for ordered update events. Use the component map when you need the
+events for one copied registry item.
+
+- [Index JSON](/registry/changelog/index.json)
+- [Components JSON](/registry/changelog/components.json)
+
+### Prompt your agent
+
+```text
+Use sync-plate-ui to sync code-block from:
+https://platejs.org/registry/changelog/index.json
+```
+
+</Steps>
+
+### Agent contract
+
+- Use `/registry/changelog/index.json` for ordered Plate UI update events.
+- Use `/registry/changelog/components.json` to find events by registry item.
+- Open event JSON for the PR, release dependency, target files, and migration
+  notes.
+- Merge upstream file changes into the app copy; keep intentional local changes.
+
+## Component types
+
+When installing Plate UI components, you'll encounter different types of components with consistent naming patterns. Here's what they mean:
+
+### Feature kits
+
+Feature kits are the easiest way to add complete functionality to your editor. They bundle all necessary plugin configurations, UI components (including node renderers and toolbar items), and their underlying npm dependencies for a specific feature.
+
+```bash
+# Install the complete AI feature suite, including configuration and UI
+npx shadcn@latest add @plate/ai
+
+# Install drag and drop functionality with all its parts
+npx shadcn@latest add @plate/dnd
+```
+
+<Callout type="note">
+  When in doubt about what individual components you need, start with a feature kit. It's designed to provide a working feature out-of-the-box. You can always customize or remove parts later.
+</Callout>
+
+### Components
+
+#### Node components
+
+These components are responsible for rendering specific types of content (elements or leaves) in your editor. If you need to create your own or customize existing ones, see the [Plugin Components guide](/docs/plugin-components).
+
+```bash
+# Install the component for rendering blockquotes
+npx shadcn@latest add @plate/blockquote
+
+# Install the component for rendering code text
+npx shadcn@latest add @plate/code
+```
+
+#### Toolbar components
+
+Toolbar components add interactive controls like buttons and dropdowns to your editor's toolbar.
+
+```bash
+# Add an alignment dropdown for your toolbar
+npx shadcn@latest add @plate/align-toolbar-button
+
+# Add a toolbar button for AI features
+npx shadcn@latest add @plate/ai-toolbar-button
+
+# Add a color picker dropdown for your toolbar
+npx shadcn@latest add @plate/font-color-toolbar-button
+```
+
+#### Other components
+
+Finally, Plate UI includes more advanced editor components as overlays, menus, block wrappers, etc.
+
+```bash
+# Install a menu for AI features
+npx shadcn@latest add @plate/ai-menu
+
+# Install a draggable component for reordering blocks
+npx shadcn@latest add @plate/dnd
+```
+
+These components are typically included as part of their respective Feature Kits but can be installed individually for custom setups.
+
+### Editor templates
+
+These are pre-configured editor setups, often tailored for specific use cases or as a comprehensive starting point. You can explore all available [Editor Templates](/editors).
+
+```bash
+# Install an AI-enabled editor template
+npx shadcn@latest add @plate/editor-ai
+
+# Install a basic editor template
+npx shadcn@latest add @plate/editor-basic
+```
+
+### API routes
+
+These items provide server-side components or API route handlers necessary for certain features.
+
+```bash
+# Install AI-related API routes
+npx shadcn@latest add @plate/ai-api
+
+# Install a complete persistent upload provider
+npx shadcn@latest add @plate/upload-r2
+npx shadcn@latest add @plate/upload-s3
+```
+
+Choose one persistent provider. Each item installs `@plate/upload` and the
+shared gateway policy. Use `@plate/upload-browser` for browser-local demos,
+or install `@plate/files-api` directly when building a custom provider recipe.
+Persistent routes need storage credentials and an application access policy.
+See [Upload Files](/docs/upload) before accepting upload requests.
+
+### Documentation
+
+Documentation files for various Plate features, guides, and API references can also be added to your local project. This is especially useful for keeping version-specific documentation alongside your code and for providing context to AI tools through MCP. Learn more about [setting up local documentation](/docs/installation/docs).
+
+```bash
+# Add AI documentation
+npx shadcn@latest add @plate/ai-docs
+
+# Add Plate Plugin documentation
+npx shadcn@latest add @plate/plugin-docs
+```
+
+These items consists of Markdown files, which can be integrated into your own documentation system or made available for local search and AI consumption.

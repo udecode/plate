@@ -1,0 +1,1182 @@
+import {
+  DocumentChange,
+  invertEffect,
+  mapEffect,
+  type Editor,
+  type EditorDocumentValue,
+  type EditorEffect,
+  type EditorSchemaIdentity,
+  SelectionApi,
+  type Value,
+} from '..';
+import {
+  type AnchorHistoryRecovery,
+  mapAnchorHistoryRecovery,
+} from '../core/anchor-state';
+import {
+  getInternalDocumentChangeClassificationEntries,
+  getInternalDocumentChangeRootKeys,
+} from '../core/change/document-change';
+import { getEditorRuntimeOwner } from '../core/editor-runtime';
+import { MAIN_ROOT_KEY } from '../core/public-root';
+import { areEditorSchemaIdentitiesEqual } from '../core/schema-compiler';
+import type { AnyEditor } from '../interfaces/editor';
+import type { Batch, History } from './history';
+import type { HistoryBatchGroup } from './history-merge-policy';
+import {
+  historyReplaySchemaOf,
+  recordHistoryReplay,
+  mapHistoryReplay,
+  mapHistorySelection,
+  type HistoryReplay,
+} from './history-replay';
+
+type HistoryStack = 'redos' | 'undos';
+
+const failInvariant = (message: string): never => {
+  throw new Error(message);
+};
+
+type PendingMapping<V extends Value> = Readonly<{
+  /** The value `change` produced, so replay need not apply it again. */
+  after: EditorDocumentValue<V>;
+  change: DocumentChange;
+  textOnly: boolean;
+}>;
+
+type MappingJournal<V extends Value> = Readonly<{
+  entry: PendingMapping<V>;
+  previous: MappingJournal<V> | null;
+}>;
+
+type HistoryBranch<V extends Value> = Readonly<{
+  anchorCeiling: number;
+  base: EditorDocumentValue<V>;
+  batch: Batch<V>;
+  depth: number;
+  group: HistoryBatchGroup | null;
+  identity: object;
+  mappings: MappingJournal<V> | null;
+  next: HistoryBranch<V> | null;
+  recovery: AnchorHistoryRecovery | null;
+  replay: HistoryReplay<EditorDocumentValue<V>>;
+}>;
+
+type ResolvedHistoryEntry<V extends Value> = Readonly<{
+  anchorCeiling: number;
+  base: EditorDocumentValue<V>;
+  batch: Batch<V>;
+  group: HistoryBatchGroup | null;
+  identity: object;
+  recovery: AnchorHistoryRecovery | null;
+  replay: HistoryReplay<EditorDocumentValue<V>>;
+}>;
+
+type PendingHistoryReplay<V extends Value> = Readonly<{
+  activation: object;
+  claimVersion: number;
+  direction: 'redo' | 'undo';
+  edited: boolean;
+  entry: ResolvedHistoryEntry<V> | null;
+  identity: object;
+  phase: 'attached' | 'detached' | 'dropped';
+  replayMappings: MappingJournal<V> | null;
+  request: number;
+  undoAnchor: object | null;
+}>;
+
+type HistoryStore<V extends Value> = Readonly<{
+  maxDepth: number;
+  pendingReplay: PendingHistoryReplay<V> | null;
+  redos: HistoryBranch<V> | null;
+  revision: number;
+  schema: EditorSchemaIdentity;
+  snapshot: History<V> | null;
+  undos: HistoryBranch<V> | null;
+}>;
+
+const HISTORY = new WeakMap<AnyEditor, HistoryStore<Value>>();
+const HISTORY_DRAFTS = new WeakMap<
+  AnyEditor,
+  Array<{ state: HistoryStore<Value> | undefined }>
+>();
+const PUBLISHED_HISTORY_READ_DEPTH = new WeakMap<AnyEditor, number>();
+
+const getHistoryDraft = (editor: AnyEditor) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  if ((PUBLISHED_HISTORY_READ_DEPTH.get(owner) ?? 0) > 0) return undefined;
+
+  return HISTORY_DRAFTS.get(owner)?.at(-1);
+};
+
+export const withHistoryStateDraft = <T>(
+  editor: AnyEditor,
+  state: HistoryStore<Value> | undefined,
+  fn: () => T
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const drafts = HISTORY_DRAFTS.get(owner) ?? [];
+  const draft = { state };
+
+  drafts.push(draft);
+  HISTORY_DRAFTS.set(owner, drafts);
+
+  try {
+    return { result: fn(), state: draft.state } as const;
+  } finally {
+    drafts.pop();
+    if (drafts.length === 0) HISTORY_DRAFTS.delete(owner);
+  }
+};
+
+export const withPublishedHistoryState = <T>(
+  editor: AnyEditor,
+  fn: () => T
+): T => {
+  const owner = getEditorRuntimeOwner(editor);
+  const depth = PUBLISHED_HISTORY_READ_DEPTH.get(owner) ?? 0;
+
+  PUBLISHED_HISTORY_READ_DEPTH.set(owner, depth + 1);
+  try {
+    return fn();
+  } finally {
+    if (depth === 0) PUBLISHED_HISTORY_READ_DEPTH.delete(owner);
+    else PUBLISHED_HISTORY_READ_DEPTH.set(owner, depth);
+  }
+};
+
+export const captureHistoryState = (editor: AnyEditor) => {
+  const draft = getHistoryDraft(editor);
+
+  return draft ? draft.state : HISTORY.get(getEditorRuntimeOwner(editor));
+};
+
+export const restoreHistoryState = (
+  editor: AnyEditor,
+  state: HistoryStore<Value> | undefined
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const draft = getHistoryDraft(owner);
+
+  if (draft) {
+    draft.state = state;
+  } else if (state) {
+    HISTORY.set(owner, state);
+  } else {
+    HISTORY.delete(owner);
+  }
+};
+
+const createStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> => ({
+  maxDepth: 100,
+  pendingReplay: null,
+  redos: null,
+  revision: 0,
+  schema: editor.read.schema.identity(),
+  snapshot: null,
+  undos: null,
+});
+
+const getStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> => {
+  const owner = getEditorRuntimeOwner(editor);
+  const draft = getHistoryDraft(owner);
+  let store = (draft ? draft.state : HISTORY.get(owner)) as
+    | HistoryStore<V>
+    | undefined;
+
+  if (!store) {
+    store = createStore(editor);
+    if (draft) draft.state = store;
+    else HISTORY.set(owner, store);
+  }
+
+  return store;
+};
+
+const setStore = <V extends Value>(
+  editor: Editor<V>,
+  store: HistoryStore<V>
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const draft = getHistoryDraft(owner);
+
+  if (draft) draft.state = store;
+  else HISTORY.set(owner, store);
+};
+
+const publish = <V extends Value>(
+  editor: Editor<V>,
+  store: HistoryStore<V>,
+  patch: Partial<
+    Pick<
+      HistoryStore<V>,
+      'maxDepth' | 'pendingReplay' | 'redos' | 'schema' | 'undos'
+    >
+  >
+) => {
+  const next = Object.freeze({
+    ...store,
+    ...patch,
+    revision: store.revision + 1,
+    snapshot: null,
+  });
+
+  setStore(editor, next);
+
+  return next;
+};
+
+const cloneFrozen = <T>(value: T): T => {
+  const clone = structuredClone(value);
+  const pending: object[] = clone && typeof clone === 'object' ? [clone] : [];
+  const seen = new WeakSet<object>();
+
+  while (pending.length > 0) {
+    const item = pending.pop() ?? failInvariant('Expected value to be defined');
+
+    if (seen.has(item)) continue;
+    seen.add(item);
+    for (const nested of Object.values(item)) {
+      if (nested && typeof nested === 'object') pending.push(nested);
+    }
+    Object.freeze(item);
+  }
+
+  return clone;
+};
+
+const omitPrimaryPointRoot = <T extends { readonly root?: string }>(
+  point: T
+) => {
+  if (point.root !== MAIN_ROOT_KEY) return point;
+
+  const { root: _root, ...rest } = point;
+
+  return rest;
+};
+
+const omitPrimarySelectionRoot = <T extends Batch['selectionAfter']>(
+  selection: T
+): T =>
+  !selection || SelectionApi.isNode(selection)
+    ? selection
+    : {
+        ...selection,
+        anchor: omitPrimaryPointRoot(selection.anchor),
+        focus: omitPrimaryPointRoot(selection.focus),
+      };
+
+const additionalRoot = (root: string | undefined) =>
+  root && root !== MAIN_ROOT_KEY ? root : undefined;
+
+export const freezeHistoryBatch = <V extends Value>(
+  batch: Batch<V>
+): Batch<V> => {
+  const { selectionAfterRoot, selectionBeforeRoot, ...value } = batch;
+  const afterRoot = additionalRoot(selectionAfterRoot);
+  const beforeRoot = additionalRoot(selectionBeforeRoot);
+
+  return Object.freeze({
+    ...value,
+    effects: Object.freeze(
+      batch.effects.map((effect) => Object.freeze({ ...effect }))
+    ),
+    selectionAfter: cloneFrozen(omitPrimarySelectionRoot(batch.selectionAfter)),
+    ...(afterRoot ? { selectionAfterRoot: afterRoot } : {}),
+    selectionBefore: cloneFrozen(
+      omitPrimarySelectionRoot(batch.selectionBefore)
+    ),
+    ...(beforeRoot ? { selectionBeforeRoot: beforeRoot } : {}),
+  });
+};
+
+const freezeBatch = freezeHistoryBatch;
+
+const branch = <V extends Value>(
+  batch: Batch<V>,
+  base: EditorDocumentValue<V>,
+  replay: HistoryReplay<EditorDocumentValue<V>>,
+  next: HistoryBranch<V> | null,
+  mappings: MappingJournal<V> | null = null,
+  group: HistoryBatchGroup | null = null,
+  recovery: AnchorHistoryRecovery | null = null,
+  anchorCeiling = 0,
+  identity: object = {}
+): HistoryBranch<V> =>
+  Object.freeze({
+    anchorCeiling,
+    base,
+    batch: freezeBatch({ ...batch, change: replay.change }),
+    replay,
+    depth: (next?.depth ?? 0) + 1,
+    group,
+    identity,
+    mappings,
+    next,
+    recovery,
+  });
+
+const clipBranch = <V extends Value>(
+  value: HistoryBranch<V> | null,
+  maxDepth: number
+): HistoryBranch<V> | null => {
+  if (!value || maxDepth === 0) return null;
+  if (value.depth <= maxDepth) return value;
+
+  const kept: Array<HistoryBranch<V>> = [];
+  let current: HistoryBranch<V> | null = value;
+
+  while (current && kept.length < maxDepth) {
+    kept.push(current);
+    current = current.next;
+  }
+
+  let clipped: HistoryBranch<V> | null = null;
+  for (const item of kept.toReversed()) {
+    clipped = branch(
+      item.batch,
+      item.base,
+      item.replay,
+      clipped,
+      item.mappings,
+      item.group,
+      item.recovery,
+      item.anchorCeiling,
+      item.identity
+    );
+  }
+
+  return clipped;
+};
+
+const pushBranch = <V extends Value>(
+  value: HistoryBranch<V> | null,
+  batchValue: Batch<V>,
+  base: EditorDocumentValue<V>,
+  replay: HistoryReplay<EditorDocumentValue<V>>,
+  maxDepth: number,
+  group: HistoryBatchGroup | null = null,
+  recovery: AnchorHistoryRecovery | null = null,
+  anchorCeiling = 0,
+  identity: object = {}
+) =>
+  branch(
+    batchValue,
+    base,
+    replay,
+    clipBranch(value, maxDepth - 1),
+    null,
+    group,
+    recovery,
+    anchorCeiling,
+    identity
+  );
+
+const addMapping = <V extends Value>(
+  value: HistoryBranch<V> | null,
+  entry: PendingMapping<V>
+): HistoryBranch<V> | null => {
+  if (!value) return null;
+
+  const previous = value.mappings;
+  const mappings =
+    previous?.entry.textOnly && entry.textOnly
+      ? Object.freeze({
+          entry: Object.freeze({
+            after: entry.after,
+            change: previous.entry.change.compose(entry.change),
+            textOnly: true,
+          }),
+          previous: previous.previous,
+        })
+      : Object.freeze({ entry, previous });
+
+  return Object.freeze({ ...value, mappings });
+};
+
+const journalEntries = <V extends Value>(
+  journal: MappingJournal<V>
+): ReadonlyArray<PendingMapping<V>> => {
+  const entries: Array<PendingMapping<V>> = [];
+
+  for (
+    let item: MappingJournal<V> | null = journal;
+    item;
+    item = item.previous
+  ) {
+    entries.push(item.entry);
+  }
+
+  return entries.reverse();
+};
+
+const retainMappedCompositionGroup = (
+  group: HistoryBatchGroup | null
+): HistoryBatchGroup | null => {
+  if (group?.native?.composition === undefined) return null;
+
+  const shared = {
+    native: group.native,
+    ...(group.scope ? { scope: group.scope } : {}),
+  };
+
+  return group.root === undefined
+    ? Object.freeze({ ...shared, kind: 'effects', root: undefined })
+    : Object.freeze({ ...shared, kind: 'document', root: group.root });
+};
+
+const resolveHead = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V>
+): HistoryBranch<V> | null => {
+  if (!value.mappings) return value;
+
+  let batchBase = value.base;
+  let batchValue = value.batch;
+  let { replay } = value;
+  let { next } = value;
+  let { recovery } = value;
+
+  for (const mapping of journalEntries(value.mappings)) {
+    const nextBase = replay.record().after;
+    const mapped = mapHistoryReplay(
+      historyReplaySchemaOf(editor),
+      replay,
+      batchBase,
+      mapping
+    );
+    const mappedBatchBase = mapping.after;
+    const mappedNextBase = mapped.replay.record().after;
+    ({ replay } = mapped);
+
+    recovery = mapAnchorHistoryRecovery(
+      recovery,
+      'after',
+      mapping.change,
+      batchBase,
+      mappedBatchBase
+    );
+    recovery = mapAnchorHistoryRecovery(
+      recovery,
+      'before',
+      mapped.rest,
+      nextBase,
+      mappedNextBase
+    );
+
+    batchValue = freezeBatch<V>({
+      ...batchValue,
+      change: replay.change,
+      effects: batchValue.effects.flatMap((effect) => {
+        const mappedEffect = mapEffect(effect, mapping.change);
+
+        return mappedEffect ? [mappedEffect] : [];
+      }),
+      selectionAfter: mapHistorySelection(
+        editor,
+        batchValue.selectionAfter,
+        replay.direction === 'undo' ? mapping.change : mapped.rest,
+        replay.direction === 'undo' ? batchBase : nextBase,
+        replay.direction === 'undo' ? mappedBatchBase : mappedNextBase,
+        batchValue.selectionAfterRoot ?? MAIN_ROOT_KEY
+      ),
+      selectionBefore: mapHistorySelection(
+        editor,
+        batchValue.selectionBefore,
+        replay.direction === 'undo' ? mapped.rest : mapping.change,
+        replay.direction === 'undo' ? nextBase : batchBase,
+        replay.direction === 'undo' ? mappedNextBase : mappedBatchBase,
+        batchValue.selectionBeforeRoot ?? MAIN_ROOT_KEY
+      ),
+    });
+    if (!mapped.rest.empty) {
+      next = addMapping<V>(next, {
+        after: mappedNextBase,
+        change: mapped.rest,
+        textOnly: false,
+      });
+    }
+    batchBase = mappedBatchBase;
+  }
+
+  if (batchValue.change.empty && batchValue.effects.length === 0) return next;
+
+  return branch<V>(
+    batchValue,
+    batchBase,
+    replay,
+    next,
+    null,
+    retainMappedCompositionGroup(value.group),
+    recovery,
+    value.anchorCeiling,
+    value.identity
+  );
+};
+
+const resolveTop = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V> | null
+): HistoryBranch<V> | null => {
+  let current = value;
+
+  while (current?.mappings) current = resolveHead(editor, current);
+
+  return current;
+};
+
+const resolveAll = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V> | null
+) => {
+  const newest: Array<ResolvedHistoryEntry<V>> = [];
+  let current = value;
+
+  while (current) {
+    current = resolveTop(editor, current);
+    if (!current) break;
+    newest.push({
+      anchorCeiling: current.anchorCeiling,
+      base: current.base,
+      batch: current.batch,
+      group: current.group,
+      identity: current.identity,
+      recovery: current.recovery,
+      replay: current.replay,
+    });
+    current = current.next;
+  }
+
+  let resolved: HistoryBranch<V> | null = null;
+  for (let index = newest.length - 1; index >= 0; index--) {
+    const entry = newest[index];
+
+    resolved = branch(
+      entry.batch,
+      entry.base,
+      entry.replay,
+      resolved,
+      null,
+      entry.group,
+      entry.recovery,
+      entry.anchorCeiling,
+      entry.identity
+    );
+  }
+
+  return {
+    batches: Object.freeze(newest.toReversed().map((entry) => entry.batch)),
+    branch: resolved,
+    entries: Object.freeze(newest),
+  };
+};
+
+const rebuildBranch = <V extends Value>(
+  entries: ReadonlyArray<ResolvedHistoryEntry<V>>,
+  maxDepth: number
+) => {
+  let value: HistoryBranch<V> | null = null;
+
+  for (const entry of entries.slice(0, maxDepth).toReversed()) {
+    value = branch(
+      entry.batch,
+      entry.base,
+      entry.replay,
+      value,
+      null,
+      entry.group,
+      entry.recovery,
+      entry.anchorCeiling,
+      entry.identity
+    );
+  }
+
+  return value;
+};
+
+const replacePendingReplay = <V extends Value>(
+  editor: Editor<V>,
+  store: HistoryStore<V>,
+  pendingReplay: PendingHistoryReplay<V> | null,
+  patch: Partial<Pick<HistoryStore<V>, 'redos' | 'undos'>> = {}
+) => {
+  setStore(
+    editor,
+    Object.freeze({
+      ...store,
+      ...patch,
+      pendingReplay,
+    })
+  );
+};
+
+export const beginHistoryReplay = <V extends Value>(
+  editor: Editor<V>,
+  input: Readonly<{
+    activation: object;
+    claimVersion: number;
+    direction: 'redo' | 'undo';
+    identity: object;
+    request: number;
+    undoAnchor: object | null;
+  }>
+) => {
+  const store = getStore(editor);
+
+  if (store.pendingReplay) {
+    throw new Error('History replay is already pending.');
+  }
+
+  replacePendingReplay(
+    editor,
+    store,
+    Object.freeze({
+      ...input,
+      edited: false,
+      entry: null,
+      phase: 'attached',
+      replayMappings: null,
+    })
+  );
+};
+
+export const readPendingHistoryReplay = (editor: Editor) =>
+  getStore(editor).pendingReplay;
+
+export const dropPendingHistoryReplayEntry = (editor: Editor) => {
+  const store = getStore(editor);
+  const pending = store.pendingReplay;
+
+  if (!pending || pending.phase === 'dropped') return;
+
+  replacePendingReplay(
+    editor,
+    store,
+    Object.freeze({
+      ...pending,
+      entry: null,
+      phase: 'dropped',
+    })
+  );
+};
+
+export const queuePendingHistoryReplayMapping = <V extends Value>(
+  editor: Editor<V>,
+  change: DocumentChange,
+  after: EditorDocumentValue<V>
+) => {
+  if (change.empty) return;
+
+  const store = getStore(editor);
+  const pending = store.pendingReplay;
+
+  if (!pending || pending.phase !== 'attached') return;
+
+  replacePendingReplay(
+    editor,
+    store,
+    Object.freeze({
+      ...pending,
+      replayMappings: Object.freeze({
+        entry: Object.freeze({
+          after,
+          change,
+          textOnly: isTextOnlyMapping(change),
+        }),
+        previous: pending.replayMappings,
+      }),
+    })
+  );
+};
+
+export const markPendingHistoryReplayEdited = <V extends Value>(
+  editor: Editor<V>
+) => {
+  const store = getStore(editor);
+  const pending = store.pendingReplay;
+
+  if (!pending) return false;
+  if (pending.edited) return true;
+
+  if (pending.direction !== 'redo' || pending.phase !== 'attached') {
+    replacePendingReplay(
+      editor,
+      store,
+      Object.freeze({ ...pending, edited: true })
+    );
+    return true;
+  }
+
+  const redos = resolveAll(editor, store.redos);
+  const entry =
+    redos.entries.find(
+      (candidate) => candidate.identity === pending.identity
+    ) ?? null;
+
+  replacePendingReplay(
+    editor,
+    store,
+    Object.freeze({
+      ...pending,
+      edited: true,
+      entry,
+      phase: entry ? 'detached' : 'dropped',
+    }),
+    { redos: redos.branch }
+  );
+
+  return true;
+};
+
+export const settlePendingHistoryReplay = <V extends Value>(
+  editor: Editor<V>,
+  input: Readonly<{
+    change?: DocumentChange;
+    effects?: readonly EditorEffect[];
+    request: number;
+    status: 'applied' | 'blocked';
+  }>
+) => {
+  const store = getStore(editor);
+  const pending = store.pendingReplay;
+
+  if (!pending || pending.request !== input.request) {
+    throw new Error('History replay settlement has no matching claim.');
+  }
+
+  if (input.status === 'blocked') {
+    replacePendingReplay(editor, store, null);
+    return null;
+  }
+  if (!input.change || !input.effects) {
+    throw new Error('Applied history replay settlement requires a batch.');
+  }
+
+  const undos = resolveAll(editor, store.undos);
+  const redos = resolveAll(editor, store.redos);
+  const source = pending.direction === 'undo' ? undos.entries : redos.entries;
+  const attached = source.find(
+    (candidate) => candidate.identity === pending.identity
+  );
+  const claimed =
+    pending.phase === 'detached' ? pending.entry : (attached ?? null);
+
+  if (!claimed) {
+    replacePendingReplay(editor, store, null, {
+      redos: redos.branch,
+      undos: undos.branch,
+    });
+    return null;
+  }
+
+  let nextUndos = [...undos.entries];
+  let nextRedos = [...redos.entries];
+  let insertionIndex: number | null = null;
+  let replayBase = claimed.base;
+  let replayEffects = pending.replayMappings
+    ? journalEntries(pending.replayMappings).reduce(
+        (mapped, mapping) =>
+          mapped.flatMap((effect) => {
+            const next = mapEffect(effect, mapping.change);
+
+            return next ? [next] : [];
+          }),
+        [...input.effects]
+      )
+    : [...input.effects];
+
+  if (pending.direction === 'undo') {
+    nextUndos = nextUndos.filter(
+      (candidate) => candidate.identity !== pending.identity
+    );
+  } else {
+    nextRedos = nextRedos.filter(
+      (candidate) => candidate.identity !== pending.identity
+    );
+    if (pending.edited) {
+      insertionIndex = pending.undoAnchor
+        ? nextUndos.findIndex(
+            (candidate) => candidate.identity === pending.undoAnchor
+          )
+        : nextUndos.length;
+
+      if (insertionIndex >= 0 && insertionIndex < store.maxDepth) {
+        const latestUndo = nextUndos.at(-1);
+
+        replayBase =
+          nextUndos[insertionIndex]?.base ??
+          (latestUndo
+            ? latestUndo.batch.change.apply(latestUndo.base)
+            : claimed.base);
+        const correction = DocumentChange.between(claimed.base, replayBase);
+
+        if (!correction.empty) {
+          replayEffects = replayEffects.flatMap((effect) => {
+            const mapped = mapEffect(effect, correction);
+
+            return mapped ? [mapped] : [];
+          });
+        }
+      }
+    }
+  }
+
+  const replayed = Object.freeze({
+    ...claimed,
+    base: replayBase,
+    replay: recordHistoryReplay(
+      historyReplaySchemaOf(editor),
+      replayBase,
+      input.change,
+      pending.direction === 'undo' ? 'redo' : 'undo'
+    ),
+    batch: Object.freeze({
+      ...claimed.batch,
+      change: input.change,
+      effects: replayEffects.toReversed().map(invertEffect),
+    }),
+  });
+
+  if (pending.direction === 'undo') {
+    if (!pending.edited) nextRedos.unshift(replayed);
+  } else if (!pending.edited) {
+    nextUndos.unshift(replayed);
+  } else if (
+    insertionIndex !== null &&
+    insertionIndex >= 0 &&
+    insertionIndex < store.maxDepth
+  ) {
+    nextUndos.splice(insertionIndex, 0, replayed);
+  }
+
+  publish(editor, store, {
+    pendingReplay: null,
+    redos: rebuildBranch(nextRedos, store.maxDepth),
+    undos: rebuildBranch(nextUndos, store.maxDepth),
+  });
+
+  return claimed.identity;
+};
+
+const fromBatches = <V extends Value>(
+  editor: Editor<V>,
+  direction: 'undo' | 'redo',
+  batches: ReadonlyArray<Batch<V>>,
+  base: EditorDocumentValue<V>,
+  maxDepth: number
+) => {
+  const entries: Array<{
+    base: EditorDocumentValue<V>;
+    batch: Batch<V>;
+  }> = [];
+  let currentBase = base;
+
+  for (const batchValue of batches.slice(-maxDepth).toReversed()) {
+    entries.push({ base: currentBase, batch: batchValue });
+    currentBase = batchValue.change.apply(currentBase);
+  }
+
+  let value: HistoryBranch<V> | null = null;
+  for (const entry of entries.toReversed()) {
+    value = branch(
+      entry.batch,
+      entry.base,
+      recordHistoryReplay(
+        historyReplaySchemaOf(editor),
+        entry.base,
+        entry.batch.change,
+        direction
+      ),
+      value
+    );
+  }
+
+  return value;
+};
+
+/** Publish activation options and the live schema as one history revision. */
+export const configureHistoryState = <V extends Value>(
+  editor: Editor<V>,
+  maxDepth: number,
+  schema: EditorSchemaIdentity = editor.read.schema.identity()
+) => {
+  const store = getStore(editor);
+  const schemaChanged = !areEditorSchemaIdentitiesEqual(store.schema, schema);
+
+  if (store.maxDepth === maxDepth && !schemaChanged) return false;
+
+  publish(editor, store, {
+    maxDepth,
+    redos: schemaChanged ? null : clipBranch(store.redos, maxDepth),
+    schema,
+    undos: schemaChanged ? null : clipBranch(store.undos, maxDepth),
+  });
+
+  return schemaChanged;
+};
+
+/** Reset both branches when a configuration publishes a new schema identity. */
+export const synchronizeHistorySchema = <V extends Value>(editor: Editor<V>) =>
+  configureHistoryState(editor, getStore(editor).maxDepth);
+
+export const getWorkingHistory = <V extends Value>(
+  editor: Editor<V>
+): History<V> => {
+  const store = getStore(editor);
+
+  if (store.snapshot) return store.snapshot;
+
+  const redos = resolveAll(editor, store.redos);
+  const undos = resolveAll(editor, store.undos);
+  const snapshot = Object.freeze({
+    redos: redos.batches,
+    revision: store.revision,
+    schema: store.schema,
+    undos: undos.batches,
+  });
+
+  setStore(
+    editor,
+    Object.freeze({
+      ...store,
+      redos: redos.branch,
+      snapshot,
+      undos: undos.branch,
+    })
+  );
+
+  return snapshot;
+};
+
+export const getHistory = <V extends Value>(editor: Editor<V>): History<V> =>
+  withPublishedHistoryState(editor, () => getWorkingHistory(editor));
+
+export const peekHistoryEntry = <V extends Value>(
+  editor: Editor<V>,
+  stack: HistoryStack
+) => {
+  const store = getStore(editor);
+  const resolved = resolveTop(editor, store[stack]);
+
+  if (resolved !== store[stack]) {
+    setStore(
+      editor,
+      Object.freeze({
+        ...store,
+        [stack]: resolved,
+        snapshot: null,
+      })
+    );
+  }
+
+  return resolved
+    ? Object.freeze({
+        anchorCeiling: resolved.anchorCeiling,
+        base: resolved.base,
+        batch: resolved.batch,
+        group: resolved.group,
+        identity: resolved.identity,
+        recovery: resolved.recovery,
+      })
+    : undefined;
+};
+
+export const peekHistoryBatch = <V extends Value>(
+  editor: Editor<V>,
+  stack: HistoryStack
+) => peekHistoryEntry(editor, stack)?.batch;
+
+export const writeHistory = <V extends Value>(
+  editor: Editor<V>,
+  stack: HistoryStack,
+  batchValue: Batch<V>,
+  current: EditorDocumentValue<V>,
+  options: Readonly<{
+    anchorCeiling?: number;
+    clearRedos?: boolean;
+    group?: HistoryBatchGroup | null;
+    recovery?: AnchorHistoryRecovery | null;
+  }> = {}
+) => {
+  const store = getStore(editor);
+
+  publish(editor, store, {
+    [stack]: pushBranch(
+      store[stack],
+      batchValue,
+      current,
+      recordHistoryReplay(
+        historyReplaySchemaOf(editor),
+        current,
+        batchValue.change,
+        stack === 'undos' ? 'undo' : 'redo'
+      ),
+      store.maxDepth,
+      options.group ?? null,
+      options.recovery ?? null,
+      options.anchorCeiling ?? 0
+    ),
+    ...(options.clearRedos ? { redos: null } : {}),
+  });
+};
+
+export const replaceHistoryHead = <V extends Value>(
+  editor: Editor<V>,
+  stack: HistoryStack,
+  batchValue: Batch<V>,
+  current: EditorDocumentValue<V>,
+  options: Readonly<{
+    anchorCeiling?: number;
+    clearRedos?: boolean;
+    group?: HistoryBatchGroup | null;
+    recovery?: AnchorHistoryRecovery | null;
+  }> = {}
+) => {
+  const store = getStore(editor);
+  const resolved = resolveTop(editor, store[stack]);
+
+  if (!resolved) throw new Error(`Missing ${stack} history batch.`);
+
+  publish(editor, store, {
+    [stack]: branch(
+      batchValue,
+      current,
+      recordHistoryReplay(
+        historyReplaySchemaOf(editor),
+        current,
+        batchValue.change,
+        stack === 'undos' ? 'undo' : 'redo'
+      ),
+      resolved.next,
+      null,
+      options.group ?? null,
+      options.recovery ?? null,
+      options.anchorCeiling ?? resolved.anchorCeiling,
+      resolved.identity
+    ),
+    ...(options.clearRedos ? { redos: null } : {}),
+  });
+};
+
+export const completeHistoryAction = <V extends Value>(
+  editor: Editor<V>,
+  source: HistoryStack,
+  destination: HistoryStack,
+  batchValue: Batch<V>,
+  current: EditorDocumentValue<V>,
+  discardRedos = false
+) => {
+  const store = getStore(editor);
+  const resolved = resolveTop(editor, store[source]);
+
+  if (!resolved) throw new Error(`Missing ${source} history batch.`);
+
+  let nextSource = resolveTop(editor, resolved.next);
+
+  if (nextSource) {
+    const correction = DocumentChange.between(nextSource.base, current);
+
+    if (!correction.empty) {
+      nextSource = addMapping(nextSource, {
+        after: current,
+        change: correction,
+        textOnly: isTextOnlyMapping(correction),
+      });
+    }
+  }
+
+  publish(editor, store, {
+    [destination]: pushBranch(
+      store[destination],
+      batchValue,
+      current,
+      recordHistoryReplay(
+        historyReplaySchemaOf(editor),
+        current,
+        batchValue.change,
+        destination === 'undos' ? 'undo' : 'redo'
+      ),
+      store.maxDepth,
+      resolved.group,
+      resolved.recovery,
+      resolved.anchorCeiling,
+      resolved.identity
+    ),
+    [source]: nextSource,
+    ...(discardRedos ? { redos: null } : {}),
+  });
+};
+
+export const clearHistoryStack = <V extends Value>(
+  editor: Editor<V>,
+  stack: HistoryStack
+) => {
+  const store = getStore(editor);
+
+  if (!store[stack]) return;
+  publish(editor, store, { [stack]: null });
+};
+
+const isTextOnlyMapping = (change: DocumentChange) => {
+  const classifications = [
+    ...getInternalDocumentChangeClassificationEntries(change),
+  ];
+
+  return (
+    change.createRoots.size === 0 &&
+    change.deleteRoots.size === 0 &&
+    getInternalDocumentChangeRootKeys(change).length > 0 &&
+    classifications.length > 0 &&
+    classifications.every(
+      ([, classification]) =>
+        classification.text &&
+        !classification.properties &&
+        !classification.structure
+    )
+  );
+};
+
+export const queueHistoryMapping = <V extends Value>(
+  editor: Editor<V>,
+  change: DocumentChange,
+  after: EditorDocumentValue<V>
+) => {
+  if (change.empty) return;
+
+  const store = getStore(editor);
+  const mapping = Object.freeze({
+    after,
+    change,
+    textOnly: isTextOnlyMapping(change),
+  });
+
+  publish(editor, store, {
+    redos: addMapping(store.redos, mapping),
+    undos: addMapping(store.undos, mapping),
+  });
+};
+
+export const clearHistoryState = (editor: Editor) => {
+  HISTORY.delete(getEditorRuntimeOwner(editor));
+};
+
+export const replaceHistoryState = <V extends Value>(
+  editor: Editor<V>,
+  value: Pick<History<V>, 'redos' | 'schema' | 'undos'>,
+  current: EditorDocumentValue<V> = editor.read.value()
+) => {
+  const store = getStore(editor);
+  const next = Object.freeze({
+    ...store,
+    redos: fromBatches(editor, 'redo', value.redos, current, store.maxDepth),
+    revision: store.revision + 1,
+    schema: value.schema,
+    snapshot: null,
+    undos: fromBatches(editor, 'undo', value.undos, current, store.maxDepth),
+  });
+
+  setStore(editor, next);
+
+  return getWorkingHistory(editor);
+};

@@ -1,0 +1,17 @@
+flushPassiveEffects: 4.8 ms per profile over 3 profiles
+by inclusive (ms per profile):
+       4.8  flushPassiveEffects@5319583e-150745cd7583489c.js:313573
+       3.0  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+       3.0  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+       1.9  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482
+       1.9  recursivelyTraversePassiveUnmountEffects@5319583e-150745cd7583489c.js:279976
+       0.4  restoreNestedViewTransitions@5319583e-150745cd7583489c.js:230457
+       0.3  commitPassiveUnmountEffectsInsideOfDeletedTree_begin@5319583e-150745cd7583489c.js:281961
+       0.3  detachFiberAfterEffects@5319583e-150745cd7583489c.js:243458
+       0.3  detachDeletedInstance@5319583e-150745cd7583489c.js:22034
+by self (ms per profile):
+       2.5  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+       1.1  recursivelyTraversePassiveUnmountEffects@5319583e-150745cd7583489c.js:279976
+       0.4  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482
+       0.4  restoreNestedViewTransitions@5319583e-150745cd7583489c.js:230457
+       0.3  detachDeletedInstance@5319583e-150745cd7583489c.js:22034

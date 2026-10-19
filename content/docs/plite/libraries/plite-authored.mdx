@@ -1,0 +1,146 @@
+---
+title: Plite Authored Changes
+description: Review attributed suggestions and derive accepted and proposed previews.
+---
+
+`plitejs/authored` owns attributed suggestions. Document nodes hold review marks, and document records hold review contexts and decisions. Previews derive accepted or proposed content and throw on a plain edit, but some other writes still change the document, such as an update that makes a decision, undo and redo, and remote collaboration changes.
+
+## Install
+
+```tsx
+import { createEditor, createEditorView } from 'plitejs';
+import { authored } from 'plitejs/authored';
+import { history } from 'plitejs/history';
+
+const editor = createEditor({
+  plugins: [
+    authored({
+      authorId: () => session.user.id,
+    }),
+    history(),
+  ],
+  initialValue,
+});
+
+const reviewView = createEditorView(editor, {
+  authored: { intent: 'propose' },
+});
+```
+
+The author callback must return a nonempty author ID for every write. The application owns authentication.
+
+## Views
+
+| Policy | Content and input |
+| --- | --- |
+| `{ intent: 'edit' }` | Show the document with review marks and apply edits directly. |
+| `{ intent: 'propose' }` | Show the document with review marks and record input as suggestions. |
+| `{ preview: 'accepted' }` | Content with every pending suggestion rejected. Throws on a plain edit; see below. |
+| `{ preview: 'proposed' }` | Content with every pending suggestion accepted. Throws on a plain edit; see below. |
+
+Call `view.api.authored.setView(policy)` to change one view. The source editor and sibling views keep their own policies and selections. Preview views throw on a plain edit, but some other writes still change the document, such as an update that makes a decision, undo and redo, and remote collaboration changes. Switching views does not decide suggestions. A switch requested during composition applies after composition ends.
+
+## Propose and decide
+
+```tsx
+let id = '';
+
+reviewView.update((tx) => {
+  id = tx.authored.propose();
+  tx.text.insert('draft');
+});
+
+const change = editor.read.authored.change(id);
+if (change) {
+  const result = editor.update.authored.decide({
+    action: 'accept',
+    changes: [change],
+  });
+}
+```
+
+Pass `{ changeId: id }` to `tx.authored.propose(...)` to name the proposal or add the transaction's writes to the pending change with that ID. Decisions use the revisions of the changes you read. A `blocked` result names in `with` the changes to decide together; pass several decisions in one call to decide them together. Handle every `AuthoredResult` status.
+
+Proposing the deletion of a block that owns a content root strikes the block and keeps the root unmarked until the deletion is decided. [Authored changes](/docs/authored-changes#configure-a-view) covers accepting and rejecting it.
+
+## Import a comparison
+
+```tsx
+import { proposeAuthoredComparison } from 'plitejs/authored';
+import { compare } from 'plitejs/diff';
+
+const incomingDraft = [
+  { type: 'paragraph', children: [{ text: 'Revised sentence.' }] },
+];
+const comparison = await compare({
+  before: editor.read.value(),
+  after: incomingDraft,
+  schema: editor.read.schema,
+});
+const result = proposeAuthoredComparison(editor, { comparison });
+```
+
+Import validates the baseline, schema, document metadata, and selected groups before creating one native pending proposal. Pass `groupIds` to select groups; import includes their required dependency groups. The result maps comparison groups to the authored change ID. The input must be a `TwoWayComparison`.
+
+## Query changes
+
+```tsx
+const page = editor.read.authored.changes({
+  authorId: 'alice',
+  cursor,
+  limit: 50,
+});
+const inRange = editor.read.authored.changes({ at: range });
+const change = editor.read.authored.change(id);
+```
+
+`changes(query)` reads pending changes in document order, 50 at a time by default and at most 200. Narrow it with `at`, `authorId` or `group`, and pass the page's `cursor` to read the next page. `AuthoredChange` exposes stable identity, author, `createdAt`, revision, kind, and current ranges. Use `change(id)` for keyed readers.
+
+## Review cards
+
+A review card groups one author's adjacent pending changes:
+
+```tsx
+const [card] = editor.read.authored.groups({ at: [0] });
+
+if (card) {
+  const result = editor.update.authored.decide({
+    action: 'accept',
+    groups: [card],
+  });
+}
+```
+
+`groups({ at })` returns card summaries in document order: `id`, `authorId`, `createdAt`, `changeCount`, and `revision`. A card's ID is its oldest change. `groupOf(changeId)` returns the card that holds a change, and `changes({ group: card.id })` pages its changes. A card decision reads as `stale` once the card's ID or revision moved. `view.api.authored.subscribeChanges(listener)` passes `{ blocks, changed, groups, removed }` for each commit that changes the review.
+
+## Local history
+
+Use local undo and redo from `plitejs/history` for interaction history. They can reverse an authored transaction and restore its mapped selection, but they do not act as collaborative review decisions.
+
+## Persistence and collaboration
+
+Save `editor.read.value()` as one document, including node review marks and document records. An editor with authored installed validates those marks and records on load.
+
+Install `yjs` from `plitejs/yjs` on every peer to synchronize marked content and document records through the ordinary Yjs binding.
+
+## Format helpers
+
+`plitejs/authored` exports pure document transforms. Use `projectAuthoredDocument(document, { projection })` for a result containing `document`, `diagnostics`, `pending`, and `ok`, with projection `accepted` or `proposed`. Use `projectAuthoredRange(document, projectedDocument, range)` to map a stored-document range onto a projected document; it returns `null` when the projection keeps none of that content.
+
+## API reference
+
+| Surface | Purpose |
+| --- | --- |
+| `tx.authored.propose(options?)` | Record the active transaction's writes as a proposal. |
+| `read.authored.view()` | Read the current view policy. |
+| `read.authored.change(id)` | Read one pending change. |
+| `read.authored.changes(query?)` | Read a page of pending changes in document order. |
+| `read.authored.details(id)` | Read one change with its semantic parts. |
+| `read.authored.groups({ at })` | Read summaries of the cards touching a place. |
+| `read.authored.groupOf(changeId)` | Read the card that holds a change. |
+| `read.authored.reviewOf(node)` | Read a stored node's pending marks. |
+| `update.authored.decide(decision)` | Accept or reject changes or cards. |
+| `update.authored.withdraw(changes)` | Remove your own pending changes and record no decision. |
+| `api.authored.setView(policy)` | Set one view's authored policy. |
+| `api.authored.subscribeChanges(listener)` | Receive one delta for each commit that changes the review. |
+| `api.authored.subscribeRefusals(listener)` | Receive each proposal write or view switch the editor refused. |

@@ -1,0 +1,75 @@
+{
+ "base": "http://localhost:3606",
+ "during": [
+  {
+   "draft": true,
+   "draftTextTail": "ets with inline code formatting for easy",
+   "ends": 1,
+   "endText": [
+    "y"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "ets with inline code formatting for easy",
+   "ends": 1,
+   "endText": [
+    "y"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "rmatting for easy readability.Add links﻿",
+   "ends": 0,
+   "endText": []
+  },
+  {
+   "draft": true,
+   "draftTextTail": "atting for easy readability.Add links to",
+   "ends": 1,
+   "endText": [
+    "o"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": " to external resources or references.Use",
+   "ends": 1,
+   "endText": [
+    "e"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "2E = mc^2E=mc2﻿ for scientific notation.",
+   "ends": 1,
+   "endText": [
+    "."
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "on.Heading 1Heading 2Heading 3Blockquote",
+   "ends": 1,
+   "endText": [
+    "e"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "Unordered list item 1Unordered list item",
+   "ends": 1,
+   "endText": [
+    "m"
+   ]
+  }
+ ],
+ "after": {
+  "draft": true,
+  "draftTextTail": " rule﻿Header 1Header 2Row 1DataRow 2Data",
+  "ends": 1,
+  "endText": [
+   "a"
+  ]
+ }
+}

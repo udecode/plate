@@ -1,0 +1,1 @@
+First pass of the ai-rich cells: their CPU profiles lost JS stacks under load ~10, so the frozen summarizer marks them inconclusive. Kept as recorded; the cells were rerun at lower load.

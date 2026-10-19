@@ -1,0 +1,1013 @@
+import path from 'node:path';
+
+export const entrypointRuntimes = Object.freeze(['headless', 'ssr', 'client']);
+const entrypointRuntimeSet = new Set(entrypointRuntimes);
+
+const withRuntime = (runtime) => (entrypoint) => ({
+  ...entrypoint,
+  runtime,
+});
+
+const headless = withRuntime('headless');
+const ssr = withRuntime('ssr');
+const client = withRuntime('client');
+
+const directory = (
+  source,
+  dependencies = [],
+  externalDependencies = [],
+  options = {}
+) => ({
+  dependencies,
+  externalDependencies,
+  peerDependencies: [],
+  public: true,
+  source,
+  sourceKind: 'directory',
+  ...options,
+});
+
+const file = (
+  source,
+  dependencies = [],
+  externalDependencies = [],
+  options = {}
+) => ({
+  dependencies,
+  externalDependencies,
+  peerDependencies: [],
+  public: true,
+  source,
+  sourceKind: 'file',
+  ...options,
+});
+
+const root = (dependencies = [], externalDependencies = [], options = {}) => ({
+  dependencies,
+  externalDependencies,
+  peerDependencies: [],
+  public: true,
+  source: null,
+  sourceKind: 'root',
+  ...options,
+});
+
+const privateDirectory = (
+  source,
+  dependencies = [],
+  externalDependencies = [],
+  options = {}
+) =>
+  directory(source, dependencies, externalDependencies, {
+    public: false,
+    ...options,
+  });
+
+const privateRoot = (
+  dependencies = [],
+  externalDependencies = [],
+  options = {}
+) => root(dependencies, externalDependencies, { public: false, ...options });
+
+export const rootFeatureDependencies = Object.freeze({
+  'basic-nodes': [],
+  'basic-styles': [],
+  'code-block': ['dom'],
+  indent: ['standard/basic-nodes'],
+  link: [],
+  list: ['standard/basic-nodes', 'standard/indent'],
+});
+
+export const publicFeatureDependencies = Object.freeze({
+  callout: [],
+  combobox: [],
+  comments: [],
+  date: [],
+  details: ['standard/basic-nodes'],
+  upload: ['dom'],
+  find: [],
+  footnote: ['combobox'],
+  layout: [],
+  lint: [],
+  media: ['dom'],
+  mention: ['combobox'],
+  suggestion: ['authored'],
+  table: ['dom'],
+  toc: ['standard/basic-nodes'],
+});
+
+export const publicFeatureReactEntrypoints = Object.freeze([
+  'callout',
+  'comments',
+  'date',
+  'details',
+  'upload',
+  'footnote',
+  'layout',
+  'media',
+  'mention',
+  'suggestion',
+  'table',
+  'toc',
+]);
+
+export const publicReactOnlyEntrypoints = Object.freeze([
+  'combobox',
+  'resizable',
+]);
+
+const standardReactDependencies = {
+  combobox: ['combobox'],
+  suggestion: ['authored'],
+  table: ['dom'],
+};
+
+const standardReactPeerDependencies = {
+  'basic-nodes': ['react'],
+  combobox: ['react'],
+  list: ['react'],
+  resizable: ['react'],
+  suggestion: ['react'],
+  table: ['react'],
+  details: ['react'],
+};
+
+const rootReactFeatures = [
+  'basic-nodes',
+  'basic-styles',
+  'code-block',
+  'indent',
+  'link',
+  'list',
+];
+
+const rootFeatureEntrypoints = Object.fromEntries([
+  ...Object.entries(rootFeatureDependencies).map(([name, dependencies]) => [
+    `standard/${name}`,
+    headless(
+      privateDirectory(`features/${name}`, ['core', ...dependencies], [])
+    ),
+  ]),
+  ...rootReactFeatures.map((name) => [
+    `standard/${name}/react`,
+    client(
+      privateDirectory(
+        `react/features/${name}`,
+        [
+          'core',
+          'react-core',
+          `standard/${name}`,
+          ...(standardReactDependencies[name] ?? []),
+        ],
+        [],
+        { peerDependencies: standardReactPeerDependencies[name] ?? [] }
+      )
+    ),
+  ]),
+]);
+
+const publicFeatureEntrypoints = Object.fromEntries([
+  ...Object.entries(publicFeatureDependencies).map(([name, dependencies]) => [
+    name,
+    headless(
+      directory(
+        `features/${name}`,
+        ['core', ...dependencies],
+        name === 'comments' ? ['plitejs/annotations'] : [],
+        name === 'combobox'
+          ? {}
+          : {
+              ...(name === 'upload' ? { peerDependencies: ['files-sdk'] } : {}),
+              runtimeProof: 'plate-plugin',
+            }
+      )
+    ),
+  ]),
+  ...publicFeatureReactEntrypoints.map((name) => [
+    `${name}/react`,
+    client(
+      directory(
+        `react/features/${name}`,
+        [
+          'core',
+          'react-core',
+          name,
+          ...(standardReactDependencies[name] ?? []),
+        ],
+        [],
+        {
+          peerDependencies: standardReactPeerDependencies[name] ?? [],
+          runtimeProof: 'plate-plugin-client',
+        }
+      )
+    ),
+  ]),
+  ...publicReactOnlyEntrypoints.map((name) => [
+    `${name}/react`,
+    client(
+      directory(
+        `react/features/${name}`,
+        ['core', 'react-core', ...(standardReactDependencies[name] ?? [])],
+        [],
+        {
+          peerDependencies: standardReactPeerDependencies[name] ?? [],
+        }
+      )
+    ),
+  ]),
+]);
+
+const singletonPartitions = (entrypointNames) =>
+  Object.fromEntries(
+    entrypointNames.map((entrypointName) => [
+      entrypointName.replaceAll('/', '-'),
+      [entrypointName],
+    ])
+  );
+
+export const entrypointDags = {
+  platejs: {
+    entrypoints: {
+      compiler: headless(directory('compiler', ['core'])),
+      ai: headless(
+        directory('ai', ['core', 'markdown', 'table'], [], {
+          peerDependencies: ['fastest-levenshtein'],
+        })
+      ),
+      'ai/react': client(
+        directory(
+          'ai/react',
+          [
+            'ai',
+            'authored',
+            'core',
+            'markdown',
+            'react-core',
+            'standard/list',
+            'table',
+          ],
+          [],
+          { peerDependencies: ['@ai-sdk/react', 'ai', 'react'] }
+        )
+      ),
+      authored: headless(directory('authored', ['core'], ['plitejs/authored'])),
+      core: headless(
+        privateRoot(['dom', 'history'], ['plitejs', 'plitejs/internal'])
+      ),
+      'code-block/codemirror': client(
+        directory('code-block/codemirror', ['react-core'], [], {
+          peerDependencies: [
+            '@codemirror/language',
+            '@codemirror/state',
+            '@codemirror/view',
+          ],
+        })
+      ),
+      diff: headless(
+        directory('diff', [], ['plitejs/diff'], {
+          peerDependencies: ['diff-match-patch-ts'],
+        })
+      ),
+      dom: client(directory('dom', [], ['plitejs/dom'])),
+      'docx/paste': client(
+        directory('docx/paste', ['core', 'docx-html', 'docx-internal'], [], {
+          peerDependencies: ['juice'],
+        })
+      ),
+      'docx-internal': client(
+        privateDirectory('docx/internal', ['authored', 'core'], [], {
+          peerDependencies: ['jszip'],
+        })
+      ),
+      'docx/export': client(
+        directory(
+          'docx/export',
+          [
+            'authored',
+            'standard/basic-nodes',
+            'callout',
+            'standard/code-block',
+            'core',
+            'docx-internal',
+            'footnote',
+            'layout',
+            'math',
+            'static',
+            'toc',
+          ],
+          [],
+          {
+            peerDependencies: [
+              'color-name',
+              'html-to-vdom',
+              'jszip',
+              'juice',
+              'katex',
+              'mime-types',
+              'react',
+              'virtual-dom',
+              'xmlbuilder2',
+            ],
+          }
+        )
+      ),
+      'docx/import': client(
+        directory(
+          'docx/import',
+          ['authored', 'core', 'docx-html', 'docx-internal'],
+          [],
+          {
+            peerDependencies: ['jszip', 'mammoth'],
+          }
+        )
+      ),
+      'docx-html': client(
+        privateDirectory('docx/html', ['core', 'docx-internal'], [], {
+          peerDependencies: ['validator'],
+        })
+      ),
+      excalidraw: headless(directory('excalidraw', ['core'])),
+      'excalidraw/react': client(
+        directory(
+          'excalidraw/react',
+          ['core', 'excalidraw', 'react-core'],
+          [],
+          {
+            peerDependencies: ['@excalidraw/excalidraw', 'react'],
+          }
+        )
+      ),
+      history: headless(directory('history', [], ['plitejs/history'])),
+      html: client(
+        directory('html', ['core'], [], {
+          runtimeProof: 'plate-plugin-client',
+        })
+      ),
+      'html/server': ssr(
+        directory('html/server', ['core'], [], {
+          peerDependencies: ['linkedom'],
+          runtimeProof: 'plate-html-server',
+        })
+      ),
+      hyperscript: headless(
+        directory('hyperscript', [], ['plitejs/hyperscript'])
+      ),
+      markdown: headless(
+        directory('markdown', ['authored', 'core', 'standard/list'], [], {
+          peerDependencies: ['remark-parse', 'remark-stringify', 'unified'],
+        })
+      ),
+      math: headless(directory('math', ['core'])),
+      'math/react': client(
+        directory('math/react', ['core', 'math', 'react-core'])
+      ),
+      migrations: headless(
+        directory('migrations', [
+          'authored',
+          'callout',
+          'core',
+          'date',
+          'details',
+          'dom',
+          'excalidraw',
+          'footnote',
+          'history',
+          'layout',
+          'math',
+          'media',
+          'mention',
+          'standard/basic-nodes',
+          'standard/basic-styles',
+          'standard/code-block',
+          'standard/indent',
+          'standard/link',
+          'standard/list',
+          'table',
+          'toc',
+        ])
+      ),
+      pagination: headless(
+        directory('pagination', [], ['plitejs/pagination'], {
+          peerDependencies: ['@chenglou/pretext'],
+        })
+      ),
+      'pagination/react': client(
+        directory(
+          'pagination/react',
+          ['pagination', 'react-core'],
+          ['plitejs/pagination/react'],
+          { peerDependencies: ['@chenglou/pretext', 'react', 'react-dom'] }
+        )
+      ),
+      'react-core': client(
+        privateDirectory(
+          'react',
+          ['core', 'dom', 'history', 'static'],
+          ['plitejs/annotations', 'plitejs/react'],
+          { peerDependencies: ['react', 'react-dom'] }
+        )
+      ),
+      'react/virtualized': client(
+        file(
+          'react/virtualized',
+          ['react-core'],
+          ['plitejs/react/virtualized'],
+          {
+            peerDependencies: ['@tanstack/react-virtual', 'react', 'react-dom'],
+          }
+        )
+      ),
+      react: client(
+        file('react/index', [
+          'react-core',
+          'root-shared',
+          ...rootReactFeatures.map((name) => `standard/${name}/react`),
+        ])
+      ),
+      root: headless(file('index', ['root-shared'])),
+      'root-shared': headless(
+        file(
+          'root',
+          [
+            'authored',
+            'core',
+            ...Object.keys(rootFeatureDependencies).map(
+              (name) => `standard/${name}`
+            ),
+          ],
+          [],
+          { public: false }
+        )
+      ),
+      static: ssr(
+        directory(
+          'static',
+          ['authored', 'core', 'dom'],
+          ['plitejs/internal', 'plitejs/react'],
+          {
+            peerDependencies: ['react', 'react-dom'],
+            runtimeProof: 'plate-static-html',
+          }
+        )
+      ),
+      testing: headless(directory('testing', [], ['plitejs/testing'])),
+      ...rootFeatureEntrypoints,
+      ...publicFeatureEntrypoints,
+      tabbable: headless(
+        directory('tabbable', ['core'], [], {
+          peerDependencies: ['tabbable'],
+        })
+      ),
+      'tabbable/react': client(
+        directory('tabbable/react', ['core', 'react-core', 'tabbable'], [], {
+          peerDependencies: ['react', 'tabbable'],
+        })
+      ),
+      yjs: headless(directory('yjs', [], ['plitejs/yjs'])),
+      'yjs/react': client(
+        directory('yjs/react', ['core', 'react-core'], ['plitejs/yjs/react'], {
+          peerDependencies: ['react'],
+        })
+      ),
+    },
+    fallbackEntrypoint: 'core',
+    packageRoot: 'packages/platejs',
+    sourceMarker: '/packages/platejs/src/',
+    taskPartitions: {
+      core: ['core'],
+      migrations: ['migrations'],
+      proxies: ['diff', 'dom', 'history', 'hyperscript', 'pagination'],
+      'pagination-react': ['pagination/react'],
+      react: ['react'],
+      'react-core': ['react-core'],
+      'react-virtualized': ['react/virtualized'],
+      root: ['root', 'root-shared'],
+      static: ['static'],
+      ...singletonPartitions([
+        ...Object.keys(rootFeatureDependencies).map(
+          (name) => `standard/${name}`
+        ),
+        ...rootReactFeatures.map((name) => `standard/${name}/react`),
+        ...Object.keys(publicFeatureDependencies),
+        ...publicFeatureReactEntrypoints.map((name) => `${name}/react`),
+        ...publicReactOnlyEntrypoints.map((name) => `${name}/react`),
+        'ai',
+        'ai/react',
+        'authored',
+        'code-block/codemirror',
+        'compiler',
+        'docx/export',
+        'docx/import',
+        'docx/paste',
+        'docx-html',
+        'docx-internal',
+        'excalidraw',
+        'excalidraw/react',
+        'html',
+        'html/server',
+        'markdown',
+        'math',
+        'math/react',
+        'tabbable',
+        'tabbable/react',
+        'testing',
+        'yjs',
+        'yjs/react',
+      ]),
+    },
+  },
+  plitejs: {
+    entrypoints: {
+      annotations: headless(directory('annotations', ['root'])),
+      authored: headless(directory('authored', ['root', 'diff'])),
+      diff: headless(
+        directory('diff', ['root'], [], {
+          peerDependencies: ['diff-match-patch-ts'],
+        })
+      ),
+      dom: client(directory('dom', ['root'])),
+      history: headless(directory('history', ['root'])),
+      hyperscript: headless(directory('hyperscript', ['root'])),
+      internal: headless(file('internal/index', ['root'])),
+      pagination: headless(
+        directory('pagination', ['root'], [], {
+          peerDependencies: ['@chenglou/pretext'],
+        })
+      ),
+      'pagination/react': client(
+        file('pagination/react', ['root', 'pagination', 'react'], [], {
+          peerDependencies: ['react', 'react-dom'],
+        })
+      ),
+      react: client(
+        directory('react', ['root', 'dom', 'annotations'], [], {
+          peerDependencies: ['react', 'react-dom'],
+        })
+      ),
+      'react/virtualized': client(
+        file(
+          'react/virtualized',
+          ['root', 'react', 'react-virtualized-core'],
+          [],
+          {
+            peerDependencies: ['@tanstack/react-virtual', 'react', 'react-dom'],
+          }
+        )
+      ),
+      'react-virtualized-core': client(
+        privateDirectory('react/virtualized', ['root', 'react'], [], {
+          peerDependencies: ['@tanstack/react-virtual', 'react', 'react-dom'],
+        })
+      ),
+      root: headless(root()),
+      testing: headless(directory('testing', ['root', 'hyperscript'])),
+      yjs: headless(
+        directory('yjs', ['root'], [], {
+          peerDependencies: ['diff-match-patch-ts', 'yjs'],
+        })
+      ),
+      'yjs/react': client(
+        directory('yjs/react', ['root', 'react', 'yjs'], [], {
+          peerDependencies: ['react'],
+        })
+      ),
+    },
+    packageRoot: 'packages/plitejs',
+    sourceMarker: '/packages/plitejs/src/',
+    taskPartitions: {
+      authored: ['authored'],
+      core: ['annotations', 'internal', 'root'],
+      diff: ['diff'],
+      dom: ['dom'],
+      history: ['history'],
+      pagination: ['pagination', 'pagination/react'],
+      react: ['react'],
+      'react-virtualized': ['react/virtualized', 'react-virtualized-core'],
+      testing: ['hyperscript', 'testing'],
+      yjs: ['yjs', 'yjs/react'],
+    },
+  },
+  '@platejs/test': {
+    contractPartition: 'root',
+    entrypoints: {
+      browser: client(directory('browser')),
+      device: headless(
+        privateDirectory('device', ['playwright', 'proof', 'root'], [], {
+          peerDependencies: ['@playwright/test'],
+        })
+      ),
+      playwright: headless(
+        directory(
+          'playwright',
+          ['browser', 'proof', 'root'],
+          ['platejs', 'platejs/testing'],
+          {
+            peerDependencies: ['@playwright/test'],
+          }
+        )
+      ),
+      proof: headless(directory('proof')),
+      react: client(
+        directory('react', [], ['platejs/react'], {
+          peerDependencies: ['@testing-library/react', 'react', 'react-dom'],
+        })
+      ),
+      root: headless(root([], ['platejs', 'platejs/testing'])),
+    },
+    packageRoot: 'packages/test',
+    sourceMarker: '/packages/test/src/',
+    taskPartitions: {
+      browser: ['browser'],
+      device: ['device'],
+      playwright: ['playwright'],
+      proof: ['proof'],
+      react: ['react'],
+      root: ['root'],
+    },
+  },
+};
+
+const sourceExtension = /\.(?:[cm]?[jt]sx?)$/u;
+
+export const normalizePath = (value) => value.replaceAll('\\', '/');
+
+export const normalizeSourcePath = (value) =>
+  normalizePath(value).replace(sourceExtension, '');
+
+export const dependencyName = (specifier) =>
+  specifier.startsWith('@')
+    ? specifier.split('/').slice(0, 2).join('/')
+    : specifier.split('/')[0];
+
+const isWithinSourceRoot = (relativePath) =>
+  relativePath !== '..' && !relativePath.startsWith('../');
+
+export const assertEntrypointDags = (dags = entrypointDags) => {
+  const runtimeProofs = {
+    client: new Set(['plate-plugin-client']),
+    headless: new Set(['plate-plugin']),
+    ssr: new Set(['plate-html-server', 'plate-static-html']),
+  };
+
+  for (const [packageName, definition] of Object.entries(dags)) {
+    const { entrypoints } = definition;
+
+    if (!entrypoints.root || entrypoints.root.public === false) {
+      throw new Error(`${packageName} must define one root entrypoint.`);
+    }
+
+    const taskSlugs = new Set();
+    const partitionedEntrypoints = new Set();
+
+    for (const [entrypointName, entrypoint] of Object.entries(entrypoints)) {
+      const taskSlug = entrypointTaskSlug(entrypointName);
+
+      if (!entrypointRuntimeSet.has(entrypoint.runtime)) {
+        throw new Error(
+          `${packageName}/${entrypointName} must declare runtime as ${entrypointRuntimes.join(
+            ', '
+          )}.`
+        );
+      }
+      if (
+        entrypoint.public !== false &&
+        entrypoint.runtime === 'ssr' &&
+        (typeof entrypoint.runtimeProof !== 'string' ||
+          entrypoint.runtimeProof.length === 0)
+      ) {
+        throw new Error(
+          `${packageName}/${entrypointName} must declare an SSR runtime proof.`
+        );
+      }
+      if (
+        entrypoint.runtimeProof !== undefined &&
+        !runtimeProofs[entrypoint.runtime].has(entrypoint.runtimeProof)
+      ) {
+        throw new Error(
+          `${packageName}/${entrypointName} declares unknown ${entrypoint.runtime} runtime proof ${entrypoint.runtimeProof}.`
+        );
+      }
+
+      if (taskSlugs.has(taskSlug)) {
+        throw new Error(
+          `${packageName} entrypoint task slug ${taskSlug} is ambiguous.`
+        );
+      }
+      taskSlugs.add(taskSlug);
+
+      for (const dependency of entrypoint.dependencies) {
+        if (!(dependency in entrypoints)) {
+          throw new Error(
+            `${packageName}/${entrypointName} references unknown entrypoint ${dependency}.`
+          );
+        }
+      }
+
+      for (const dependency of entrypoint.externalDependencies) {
+        const target = resolvePublicEntrypoint(dependency, dags);
+
+        if (!target || target.packageName === packageName) {
+          throw new Error(
+            `${packageName}/${entrypointName} references invalid external entrypoint ${dependency}.`
+          );
+        }
+      }
+
+      for (const dependency of entrypoint.peerDependencies ?? []) {
+        if (
+          typeof dependency !== 'string' ||
+          dependency.length === 0 ||
+          dependency.includes('/') !== dependency.startsWith('@')
+        ) {
+          throw new Error(
+            `${packageName}/${entrypointName} references invalid peer dependency ${String(
+              dependency
+            )}.`
+          );
+        }
+      }
+    }
+
+    for (const [partitionName, partitionEntrypoints] of Object.entries(
+      definition.taskPartitions
+    )) {
+      if (partitionEntrypoints.length === 0) {
+        throw new Error(
+          `${packageName}/${partitionName} task partition is empty.`
+        );
+      }
+
+      for (const entrypointName of partitionEntrypoints) {
+        if (!(entrypointName in entrypoints)) {
+          throw new Error(
+            `${packageName}/${partitionName} task partition references unknown entrypoint ${entrypointName}.`
+          );
+        }
+        if (partitionedEntrypoints.has(entrypointName)) {
+          throw new Error(
+            `${packageName}/${entrypointName} belongs to multiple task partitions.`
+          );
+        }
+        partitionedEntrypoints.add(entrypointName);
+      }
+    }
+
+    for (const entrypointName of Object.keys(entrypoints)) {
+      if (!partitionedEntrypoints.has(entrypointName)) {
+        throw new Error(
+          `${packageName}/${entrypointName} has no task partition.`
+        );
+      }
+    }
+  }
+
+  const visiting = new Set();
+  const visited = new Set();
+  const visit = (packageName, entrypointName) => {
+    const nodeId = `${packageName}/${entrypointName}`;
+
+    if (visiting.has(nodeId)) {
+      throw new Error(
+        `Entrypoint dependencies contain a cycle through ${nodeId}.`
+      );
+    }
+    if (visited.has(nodeId)) return;
+
+    visiting.add(nodeId);
+
+    const entrypoint = dags[packageName].entrypoints[entrypointName];
+
+    for (const dependency of entrypoint.dependencies) {
+      visit(packageName, dependency);
+    }
+    for (const dependency of entrypoint.externalDependencies) {
+      const target = resolvePublicEntrypoint(dependency, dags);
+
+      visit(target.packageName, target.entrypointName);
+    }
+
+    visiting.delete(nodeId);
+    visited.add(nodeId);
+  };
+
+  for (const [packageName, definition] of Object.entries(dags)) {
+    for (const entrypointName of Object.keys(definition.entrypoints)) {
+      visit(packageName, entrypointName);
+    }
+  }
+};
+
+export const entrypointTaskSlug = (entrypointName) =>
+  entrypointName.replaceAll('/', '-');
+
+export const partitionTypecheckTask = (partitionName) =>
+  `typecheck:partition:${partitionName}`;
+
+export const entrypointTaskPartition = (packageName, entrypointName) => {
+  const partition = Object.entries(
+    entrypointDags[packageName].taskPartitions
+  ).find(([, entrypoints]) => entrypoints.includes(entrypointName))?.[0];
+
+  if (!partition) {
+    throw new Error(`${packageName}/${entrypointName} has no task partition.`);
+  }
+
+  return partition;
+};
+
+export const findPackageSource = (filename) => {
+  const normalizedFilename = normalizeSourcePath(filename);
+
+  for (const [packageName, definition] of Object.entries(entrypointDags)) {
+    const markerIndex = normalizedFilename.lastIndexOf(definition.sourceMarker);
+
+    if (markerIndex === -1) continue;
+
+    return {
+      definition,
+      packageName,
+      relativePath: normalizedFilename.slice(
+        markerIndex + definition.sourceMarker.length
+      ),
+      sourceRoot: normalizedFilename.slice(
+        0,
+        markerIndex + definition.sourceMarker.length - 1
+      ),
+    };
+  }
+
+  return null;
+};
+
+export const classifyEntrypoint = (definition, relativePath) => {
+  const normalizedRelativePath = normalizeSourcePath(relativePath);
+  const ownedEntrypoints = Object.entries(definition.entrypoints)
+    .filter(([, entrypoint]) => entrypoint.sourceKind !== 'root')
+    .toSorted(
+      ([, left], [, right]) => right.source.length - left.source.length
+    );
+
+  for (const [entrypointName, entrypoint] of ownedEntrypoints) {
+    if (
+      entrypoint.sourceKind === 'file' &&
+      (normalizedRelativePath === entrypoint.source ||
+        `${normalizedRelativePath}/index` === entrypoint.source)
+    ) {
+      return entrypointName;
+    }
+
+    if (
+      entrypoint.sourceKind === 'directory' &&
+      (normalizedRelativePath === entrypoint.source ||
+        normalizedRelativePath.startsWith(`${entrypoint.source}/`))
+    ) {
+      return entrypointName;
+    }
+  }
+
+  return definition.fallbackEntrypoint ?? 'root';
+};
+
+const isEntrypointEntry = (entrypoint, relativePath) => {
+  const entry =
+    entrypoint.sourceKind === 'root'
+      ? 'index'
+      : entrypoint.sourceKind === 'file'
+        ? entrypoint.source
+        : `${entrypoint.source}/index`;
+
+  return [relativePath, path.posix.join(relativePath, 'index')].includes(entry);
+};
+
+export const resolveEntrypointEdge = (filename, importSource) => {
+  const packageSource = findPackageSource(filename);
+
+  if (!packageSource) return null;
+
+  if (!importSource.startsWith('.')) {
+    const target = resolvePublicEntrypoint(importSource);
+
+    if (!target) {
+      const peerDependency = dependencyName(importSource);
+      const modeledPeers = new Set(
+        Object.values(packageSource.definition.entrypoints).flatMap(
+          (entrypoint) => entrypoint.peerDependencies ?? []
+        )
+      );
+
+      if (!modeledPeers.has(peerDependency)) return null;
+
+      return {
+        definition: packageSource.definition,
+        escapedSourceRoot: false,
+        from: classifyEntrypoint(
+          packageSource.definition,
+          packageSource.relativePath
+        ),
+        packageName: packageSource.packageName,
+        peerImport: true,
+        publicImport: false,
+        to: peerDependency,
+        toPackageName: null,
+      };
+    }
+
+    return {
+      definition: packageSource.definition,
+      escapedSourceRoot: false,
+      from: classifyEntrypoint(
+        packageSource.definition,
+        packageSource.relativePath
+      ),
+      packageName: packageSource.packageName,
+      peerImport: false,
+      publicImport: true,
+      to: target.entrypointName,
+      toEntry: true,
+      toPackageName: target.packageName,
+    };
+  }
+
+  const resolvedTarget = normalizeSourcePath(
+    path.resolve(path.dirname(filename), importSource)
+  );
+  const targetRelativePath = path.posix.relative(
+    packageSource.sourceRoot,
+    resolvedTarget
+  );
+  const from = classifyEntrypoint(
+    packageSource.definition,
+    packageSource.relativePath
+  );
+
+  if (!isWithinSourceRoot(targetRelativePath)) {
+    return {
+      definition: packageSource.definition,
+      escapedSourceRoot: true,
+      from,
+      packageName: packageSource.packageName,
+      publicImport: false,
+      to: null,
+      toPackageName: packageSource.packageName,
+    };
+  }
+
+  const to = classifyEntrypoint(packageSource.definition, targetRelativePath);
+
+  return {
+    definition: packageSource.definition,
+    escapedSourceRoot: false,
+    from,
+    packageName: packageSource.packageName,
+    peerImport: false,
+    publicImport: false,
+    to,
+    toEntry:
+      targetRelativePath !== packageSource.relativePath &&
+      isEntrypointEntry(
+        packageSource.definition.entrypoints[to],
+        targetRelativePath
+      ),
+    toPackageName: packageSource.packageName,
+  };
+};
+
+export const resolvePublicEntrypoint = (specifier, dags = entrypointDags) => {
+  for (const [packageName, definition] of Object.entries(dags)) {
+    if (specifier === packageName) {
+      return { entrypointName: 'root', packageName };
+    }
+    if (!specifier.startsWith(`${packageName}/`)) continue;
+
+    const entrypointName = specifier.slice(packageName.length + 1);
+
+    if (
+      entrypointName in definition.entrypoints &&
+      definition.entrypoints[entrypointName].public !== false
+    ) {
+      return { entrypointName, packageName };
+    }
+  }
+
+  return null;
+};
+
+export const getPublicEntrypointRuntimeRows = (dags = entrypointDags) =>
+  Object.entries(dags)
+    .flatMap(([packageName, definition]) =>
+      Object.entries(definition.entrypoints)
+        .filter(([, entrypoint]) => entrypoint.public !== false)
+        .map(([entrypointName, entrypoint]) => ({
+          entrypointName,
+          packageName,
+          runtime: entrypoint.runtime,
+          runtimeProof: entrypoint.runtimeProof,
+          specifier:
+            entrypointName === 'root'
+              ? packageName
+              : `${packageName}/${entrypointName}`,
+        }))
+    )
+    .sort((left, right) => left.specifier.localeCompare(right.specifier, 'en'));
+
+assertEntrypointDags();

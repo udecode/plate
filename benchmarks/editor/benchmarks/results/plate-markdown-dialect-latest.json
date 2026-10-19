@@ -1,0 +1,710 @@
+{
+  "adoptionGate": {
+    "correctnessPassed": true,
+    "extensionAttributionPassed": true,
+    "nonB4HasFailure": false,
+    "passed": true,
+    "rule": "Adopt when conversion is identical, no non-B4 budget clearly fails, and the Plate tag extension is no slower than the paired plain tokenizer within the frozen noise band. Absolute B4 failures remain contract failures."
+  },
+  "attribution": {
+    "b4Inline": {
+      "candidateFasterAtEverySize": true,
+      "control": [
+        {
+          "candidateRatio": 2.7661749296423377,
+          "from": 500,
+          "plainRatio": 3.023832225411472,
+          "plainVerdict": "fail",
+          "to": 1000
+        },
+        {
+          "candidateRatio": 3.1159594092235534,
+          "from": 1000,
+          "plainRatio": 3.278429501488527,
+          "plainVerdict": "fail",
+          "to": 2000
+        },
+        {
+          "candidateRatio": 3.3210895751336427,
+          "from": 2000,
+          "plainRatio": 3.3884765151806673,
+          "plainVerdict": "fail",
+          "to": 4000
+        }
+      ],
+      "interpretation": "The frozen B4 budget remains red. Plain CommonMark has the same superlinear shape and is slower at every measured size, so the Plate tag extension passes the adopted attribution gate without erasing the absolute failure.",
+      "scalingTracksPlainWithinNoiseBand": true
+    }
+  },
+  "benchmark": "plate-markdown-dialect",
+  "candidateArtifactSha256": "27c96fd0fdc0064731c2c6721f49356d1ba100c2c5b888735ad12c00a5d34b4b",
+  "commands": {
+    "baseline": "ROOT=<origin-next checkout> MODE=baseline SOURCE_REF=<origin/next commit> OUT=<baseline.json> bun --preload <origin-next checkout>/config/plite-source-aliases.ts benchmarks/editor/benchmarks/plate-markdown-dialect-benchmark.ts",
+    "candidate": "ROOT=<candidate checkout> MODE=candidate SOURCE_REF=<candidate identity> BASELINE=<baseline.json> OUT=<candidate.json> bun --preload <candidate checkout>/config/plite-source-aliases.ts benchmarks/editor/benchmarks/plate-markdown-dialect-benchmark.ts",
+    "compare": "MODE=compare BASELINE=<baseline.json> CANDIDATE=<candidate.json> OUT=benchmarks/editor/benchmarks/results/plate-markdown-dialect-latest.json bun benchmarks/editor/benchmarks/plate-markdown-dialect-benchmark.ts"
+  },
+  "comparisons": [
+    {
+      "bound": 1.1,
+      "id": "B1 legacy large",
+      "ratio": 0.9658294077709476,
+      "verdict": "pass"
+    },
+    {
+      "bound": 1.1,
+      "id": "B1 legacy normal",
+      "ratio": 0.9556508209538519,
+      "verdict": "pass"
+    },
+    {
+      "bound": 1.1,
+      "id": "B1 legacy stress",
+      "ratio": 0.9317287864953505,
+      "verdict": "pass"
+    },
+    {
+      "bound": 1.25,
+      "id": "B2 prose",
+      "ratio": 0.9955886227836817,
+      "verdict": "pass"
+    },
+    {
+      "bound": 1.25,
+      "id": "B2 streaming",
+      "ratio": 0.9619886643974216,
+      "verdict": "pass"
+    },
+    {
+      "bound": 1.5,
+      "id": "B3 mdast large",
+      "ratio": 1.3840074869145516,
+      "verdict": "inconclusive"
+    },
+    {
+      "bound": 1.5,
+      "id": "B3 mdast prose",
+      "ratio": 1.0376650545830368,
+      "verdict": "pass"
+    },
+    {
+      "bound": 1.5,
+      "id": "B3 production parse per-KB growth normal to stress",
+      "ratio": 1.284675450864092,
+      "verdict": "pass"
+    },
+    {
+      "bound": 2.5,
+      "id": "B4 inline tags 500->1000",
+      "ratio": 2.7661749296423377,
+      "verdict": "fail"
+    },
+    {
+      "bound": 2.5,
+      "id": "B4 inline tags 1000->2000",
+      "ratio": 3.1159594092235534,
+      "verdict": "fail"
+    },
+    {
+      "bound": 2.5,
+      "id": "B4 inline tags 2000->4000",
+      "ratio": 3.3210895751336427,
+      "verdict": "fail"
+    },
+    {
+      "bound": 2.5,
+      "id": "B4 nested tags 500->1000",
+      "ratio": 2.2333825701639656,
+      "verdict": "pass"
+    },
+    {
+      "bound": 1.1,
+      "id": "supplemental serialize",
+      "ratio": 0.9700139750748498,
+      "verdict": "pass"
+    }
+  ],
+  "contract": {
+    "budgets": {
+      "b1LegacyRatio": 1.1,
+      "b2PlainRatio": 1.25,
+      "b3MdastRatio": 1.5,
+      "b3PerKbGrowthRatio": 1.5,
+      "b4DoublingRatio": 2.5,
+      "supplementalSerializeRatio": 1.1
+    },
+    "cohorts": {
+      "inlineTags": [500, 1000, 2000, 4000],
+      "legacyCopies": {
+        "large": 100,
+        "normal": 5,
+        "stress": 400
+      },
+      "nestedTags": [500, 1000],
+      "proseUnits": 200,
+      "streamBytes": 10000,
+      "streamChunkBytes": 64
+    },
+    "noiseBand": 0.1,
+    "sampling": {
+      "defaultRuns": 7,
+      "defaultWarmups": 1,
+      "scalingRuns": 9,
+      "scalingWarmups": 3,
+      "streamingRuns": 3,
+      "stressRuns": 3
+    },
+    "version": 1
+  },
+  "contractSha256": "2c235f94b2b26a3031525b201c838e87d81e9fef7ce3a2949aed41809883d7e0",
+  "correctness": {
+    "legacyDocumentsIdentical": true,
+    "proseDocumentIdentical": true,
+    "roundTripsLossless": true,
+    "streamingDocumentIdentical": true
+  },
+  "createdAt": "2026-09-28T15:52:27.501Z",
+  "environment": {
+    "arch": "arm64",
+    "bun": "1.3.12",
+    "cpu": "Apple M5 Max",
+    "platform": "darwin",
+    "release": "25.3.0"
+  },
+  "limitations": [
+    "Headless synchronous conversion timing on one host; browser rendering and AI request latency are outside this benchmark.",
+    "Baseline and candidate run in separate processes, so near-bound results remain inconclusive under the frozen 10% noise rule.",
+    "p99 is omitted because the frozen sample counts are too small to support it."
+  ],
+  "passed": true,
+  "runs": {
+    "baseline": {
+      "benchmark": "plate-markdown-dialect",
+      "contract": {
+        "budgets": {
+          "b1LegacyRatio": 1.1,
+          "b2PlainRatio": 1.25,
+          "b3MdastRatio": 1.5,
+          "b3PerKbGrowthRatio": 1.5,
+          "b4DoublingRatio": 2.5,
+          "supplementalSerializeRatio": 1.1
+        },
+        "cohorts": {
+          "inlineTags": [500, 1000, 2000, 4000],
+          "legacyCopies": {
+            "large": 100,
+            "normal": 5,
+            "stress": 400
+          },
+          "nestedTags": [500, 1000],
+          "proseUnits": 200,
+          "streamBytes": 10000,
+          "streamChunkBytes": 64
+        },
+        "noiseBand": 0.1,
+        "sampling": {
+          "defaultRuns": 7,
+          "defaultWarmups": 1,
+          "scalingRuns": 9,
+          "scalingWarmups": 3,
+          "streamingRuns": 3,
+          "stressRuns": 3
+        },
+        "version": 1
+      },
+      "contractSha256": "2c235f94b2b26a3031525b201c838e87d81e9fef7ce3a2949aed41809883d7e0",
+      "createdAt": "2026-09-28T15:51:12.185Z",
+      "environment": {
+        "arch": "arm64",
+        "bun": "1.3.12",
+        "cpu": "Apple M5 Max",
+        "platform": "darwin",
+        "release": "25.3.0"
+      },
+      "fixture": {
+        "legacyUnit": "<callout icon=\"💡\">\n  Tip with **bold** and <u>underline</u>.\n</callout>\n\n\n<details>\n  <summary>\n    Title _x_\n  </summary>\n\n  Body paragraph.\n\n  * item\n</details>\n\n\n<columnGroup>\n  <column width=\"50%\">\n    Left **bold**\n  </column>\n\n  <column width=\"50%\">\n    <callout icon=\"🔥\">\n      Deep\n    </callout>\n  </column>\n</columnGroup>\n\n\nText with <kbd>Ctrl</kbd>, <sup>2</sup>, <sub>i</sub>, <mark>hi</mark>, ~~x~~.\n\n\nColors <span style=\"color: red;\">red</span>, <span style=\"background-color: yellow;\">bg</span>, <span style=\"font-size: 20px;\">big</span>.\n\n\n<toc />\n\n\n* one\n  * nested <u>u</u>\n* two <kbd>k</kbd>\n\n\n> quote with <kbd>k</kbd> and <u>u</u>\n\n\n| a        | b            |\n| -------- | ------------ |\n| <u>x</u> | <kbd>y</kbd> |\n\n\nFootnote[^1].\n\n[^1]: Note with <u>u</u>.\n\n\n```js\nconst a = <div/>;\n```\n\n\n$$\nx^2\n$$\n\nInline $a<b$ math.\n\n\n# Heading\n\nPlain paragraph with [a link](https://example.com) and `code`.\n\n1. one\n2. two\n",
+        "legacyUnitSha256": "1111681b227f0338044978cbf110e5a6ee2aeca3f50c6b18adfd44e93c48d124",
+        "proseSha256": "945d0bf1649f638bc6983781324f47648c42e2a407b5e047855e16956c6bd009"
+      },
+      "guards": {
+        "legacy": {
+          "large": "1f967f1eb0d242c63512c38ef78f2f9787c8591feee8d5c92ac1e83ebffb6d8f",
+          "normal": "c1b8467fa0ab07e705996d358110181d74b5c137abfb8396e39616d883d0e490",
+          "stress": "a64ec322707a54b9178a1c430587f6174dca72d917eca4c7b202e80147ed120d"
+        },
+        "prose": "45dc4b2a4f058c1cdf47a831efaf089ed2e6d00031d45ac1c1a701ff36a66375",
+        "roundTrip": {
+          "large": true,
+          "normal": true,
+          "stress": true
+        },
+        "streaming": "27161420ba6889ecce9b527e003ba957b0092441883d0a18e76e987e83c4b7b5"
+      },
+      "metrics": {
+        "legacyParse": {
+          "large": {
+            "max": 580.0277080000001,
+            "min": 520.9336250000001,
+            "p50": 540.0294169999997,
+            "p75": 567.7956250000002,
+            "p95": 580.0277080000001,
+            "samples": [
+              580.0277080000001, 547.51675, 540.0294169999997,
+              567.7956250000002, 537.6494579999999, 520.9336250000001,
+              526.6085839999996
+            ]
+          },
+          "normal": {
+            "max": 26.97808299999997,
+            "min": 22.639999999999418,
+            "p50": 24.91029200000048,
+            "p75": 26.2543340000002,
+            "p95": 26.97808299999997,
+            "samples": [
+              26.97808299999997, 23.751999999999498, 26.2543340000002,
+              22.639999999999418, 25.9644159999998, 24.91029200000048,
+              23.111291999999594
+            ]
+          },
+          "stress": {
+            "max": 2681.5348329999997,
+            "min": 2577.62425,
+            "p50": 2626.968583,
+            "p75": 2681.5348329999997,
+            "p95": 2681.5348329999997,
+            "samples": [2577.62425, 2626.968583, 2681.5348329999997]
+          }
+        },
+        "prose": {
+          "max": 163.69395799999984,
+          "min": 147.02933399999893,
+          "p50": 154.65691700000025,
+          "p75": 158.1853749999991,
+          "p95": 163.69395799999984,
+          "samples": [
+            158.1853749999991, 154.65691700000025, 163.69395799999984,
+            153.28966700000092, 147.02933399999893, 150.67762500000026,
+            155.00124999999753
+          ]
+        },
+        "serialize": {
+          "max": 246.80791600000157,
+          "min": 229.06641699999818,
+          "p50": 236.5282499999994,
+          "p75": 246.36691699999938,
+          "p95": 246.80791600000157,
+          "samples": [
+            246.36691699999938, 242.70708399999785, 231.64958300000217,
+            235.81424999999945, 229.06641699999818, 246.80791600000157,
+            236.5282499999994
+          ]
+        },
+        "streaming": {
+          "max": 2937.9843340000007,
+          "min": 2890.243666999999,
+          "p50": 2928.2383329999975,
+          "p75": 2937.9843340000007,
+          "p95": 2937.9843340000007,
+          "samples": [2890.243666999999, 2928.2383329999975, 2937.9843340000007]
+        }
+      },
+      "role": "baseline",
+      "sourceAfter": {
+        "fileCount": 876,
+        "gitHead": "e33ad94aea93a5b3eeb264b89519215dcd0957ad",
+        "relevantSourceSha256": "07106ce130657fcfe3ec77b75749a2da746e7533e953da501a9fbac3911c07e6",
+        "runnerSha256": "ba2976c9f6ba6c17cd21a5869a3483740a7d3285bb58863573a54445ecc955eb",
+        "sourceRef": "e33ad94aea"
+      },
+      "sourceBefore": {
+        "fileCount": 876,
+        "gitHead": "e33ad94aea93a5b3eeb264b89519215dcd0957ad",
+        "relevantSourceSha256": "07106ce130657fcfe3ec77b75749a2da746e7533e953da501a9fbac3911c07e6",
+        "runnerSha256": "ba2976c9f6ba6c17cd21a5869a3483740a7d3285bb58863573a54445ecc955eb",
+        "sourceRef": "e33ad94aea"
+      },
+      "sourceUnchanged": true,
+      "version": 1
+    },
+    "candidate": {
+      "benchmark": "plate-markdown-dialect",
+      "contract": {
+        "budgets": {
+          "b1LegacyRatio": 1.1,
+          "b2PlainRatio": 1.25,
+          "b3MdastRatio": 1.5,
+          "b3PerKbGrowthRatio": 1.5,
+          "b4DoublingRatio": 2.5,
+          "supplementalSerializeRatio": 1.1
+        },
+        "cohorts": {
+          "inlineTags": [500, 1000, 2000, 4000],
+          "legacyCopies": {
+            "large": 100,
+            "normal": 5,
+            "stress": 400
+          },
+          "nestedTags": [500, 1000],
+          "proseUnits": 200,
+          "streamBytes": 10000,
+          "streamChunkBytes": 64
+        },
+        "noiseBand": 0.1,
+        "sampling": {
+          "defaultRuns": 7,
+          "defaultWarmups": 1,
+          "scalingRuns": 9,
+          "scalingWarmups": 3,
+          "streamingRuns": 3,
+          "stressRuns": 3
+        },
+        "version": 1
+      },
+      "contractSha256": "2c235f94b2b26a3031525b201c838e87d81e9fef7ce3a2949aed41809883d7e0",
+      "createdAt": "2026-09-28T15:52:00.934Z",
+      "environment": {
+        "arch": "arm64",
+        "bun": "1.3.12",
+        "cpu": "Apple M5 Max",
+        "platform": "darwin",
+        "release": "25.3.0"
+      },
+      "fixture": {
+        "legacyUnit": "<callout icon=\"💡\">\n  Tip with **bold** and <u>underline</u>.\n</callout>\n\n\n<details>\n  <summary>\n    Title _x_\n  </summary>\n\n  Body paragraph.\n\n  * item\n</details>\n\n\n<columnGroup>\n  <column width=\"50%\">\n    Left **bold**\n  </column>\n\n  <column width=\"50%\">\n    <callout icon=\"🔥\">\n      Deep\n    </callout>\n  </column>\n</columnGroup>\n\n\nText with <kbd>Ctrl</kbd>, <sup>2</sup>, <sub>i</sub>, <mark>hi</mark>, ~~x~~.\n\n\nColors <span style=\"color: red;\">red</span>, <span style=\"background-color: yellow;\">bg</span>, <span style=\"font-size: 20px;\">big</span>.\n\n\n<toc />\n\n\n* one\n  * nested <u>u</u>\n* two <kbd>k</kbd>\n\n\n> quote with <kbd>k</kbd> and <u>u</u>\n\n\n| a        | b            |\n| -------- | ------------ |\n| <u>x</u> | <kbd>y</kbd> |\n\n\nFootnote[^1].\n\n[^1]: Note with <u>u</u>.\n\n\n```js\nconst a = <div/>;\n```\n\n\n$$\nx^2\n$$\n\nInline $a<b$ math.\n\n\n# Heading\n\nPlain paragraph with [a link](https://example.com) and `code`.\n\n1. one\n2. two\n",
+        "legacyUnitSha256": "1111681b227f0338044978cbf110e5a6ee2aeca3f50c6b18adfd44e93c48d124",
+        "proseSha256": "945d0bf1649f638bc6983781324f47648c42e2a407b5e047855e16956c6bd009"
+      },
+      "guards": {
+        "legacy": {
+          "large": "1f967f1eb0d242c63512c38ef78f2f9787c8591feee8d5c92ac1e83ebffb6d8f",
+          "normal": "c1b8467fa0ab07e705996d358110181d74b5c137abfb8396e39616d883d0e490",
+          "stress": "a64ec322707a54b9178a1c430587f6174dca72d917eca4c7b202e80147ed120d"
+        },
+        "prose": "45dc4b2a4f058c1cdf47a831efaf089ed2e6d00031d45ac1c1a701ff36a66375",
+        "roundTrip": {
+          "large": true,
+          "normal": true,
+          "stress": true
+        },
+        "streaming": "27161420ba6889ecce9b527e003ba957b0092441883d0a18e76e987e83c4b7b5"
+      },
+      "metrics": {
+        "legacyParse": {
+          "large": {
+            "max": 535.682458,
+            "min": 487.5132920000001,
+            "p50": 521.5762919999999,
+            "p75": 533.81025,
+            "p95": 535.682458,
+            "samples": [
+              521.5762919999999, 535.682458, 519.9230000000002, 533.81025,
+              488.1861250000002, 525.0493749999996, 487.5132920000001
+            ]
+          },
+          "normal": {
+            "max": 24.33312500000011,
+            "min": 22.190166999999747,
+            "p50": 23.80554100000063,
+            "p75": 24.252042000000074,
+            "p95": 24.33312500000011,
+            "samples": [
+              23.50433300000077, 22.190166999999747, 23.860874999999396,
+              22.264250000000175, 24.252042000000074, 23.80554100000063,
+              24.33312500000011
+            ]
+          },
+          "stress": {
+            "max": 2468.498375000001,
+            "min": 2206.9677500000007,
+            "p50": 2447.6222500000003,
+            "p75": 2468.498375000001,
+            "p95": 2468.498375000001,
+            "samples": [
+              2206.9677500000007, 2447.6222500000003, 2468.498375000001
+            ]
+          }
+        },
+        "mdast": {
+          "inlineScaling": [
+            {
+              "candidate": {
+                "max": 4.687208000003011,
+                "min": 4.515833999997994,
+                "p50": 4.59229200000118,
+                "p75": 4.6560000000026776,
+                "p95": 4.687208000003011,
+                "samples": [
+                  4.687208000003011, 4.6560000000026776, 4.6284579999992275,
+                  4.520499999998719, 4.5500409999949625, 4.679749999995693,
+                  4.59229200000118, 4.515833999997994, 4.542457999996259
+                ]
+              },
+              "elements": 500,
+              "plain": {
+                "max": 7.4525830000056885,
+                "min": 6.895917000001646,
+                "p50": 7.182207999998354,
+                "p75": 7.310709000004863,
+                "p95": 7.4525830000056885,
+                "samples": [
+                  6.95233300000109, 7.310709000004863, 7.370457999997598,
+                  7.199500000002445, 7.4525830000056885, 7.182207999998354,
+                  6.901040999997349, 6.895917000001646, 6.983458000002429
+                ]
+              },
+              "size": 500
+            },
+            {
+              "candidate": {
+                "max": 19.432832999998936,
+                "min": 12.038166999998793,
+                "p50": 12.703083000000333,
+                "p75": 12.84004200000345,
+                "p95": 19.432832999998936,
+                "samples": [
+                  19.432832999998936, 12.81933299999946, 13.21091599999636,
+                  12.84004200000345, 12.599750000001222, 12.038166999998793,
+                  12.483541999994486, 12.703083000000333, 12.636624999999185
+                ]
+              },
+              "elements": 1000,
+              "plain": {
+                "max": 27.64274999999907,
+                "min": 21.193583000000217,
+                "p50": 21.7177920000031,
+                "p75": 21.996500000001106,
+                "p95": 27.64274999999907,
+                "samples": [
+                  21.7177920000031, 21.193583000000217, 21.45366600000125,
+                  21.997207999993407, 21.996500000001106, 21.62658399999782,
+                  27.64274999999907, 21.611707999996725, 21.747583000003942
+                ]
+              },
+              "size": 1000
+            },
+            {
+              "candidate": {
+                "max": 47.53504200000316,
+                "min": 37.71725000000151,
+                "p50": 39.582290999998804,
+                "p75": 40.09108300000662,
+                "p95": 47.53504200000316,
+                "samples": [
+                  39.582290999998804, 40.09108300000662, 37.71725000000151,
+                  39.54920900000434, 39.59412500000326, 47.53504200000316,
+                  45.644749999999476, 39.16529199999786, 38.2355830000015
+                ]
+              },
+              "elements": 2000,
+              "plain": {
+                "max": 78.62487500000134,
+                "min": 66.15958300000057,
+                "p50": 71.20025000000169,
+                "p75": 74.17575000000215,
+                "p95": 78.62487500000134,
+                "samples": [
+                  68.65387499999633, 78.62487500000134, 72.96925000000192,
+                  74.17575000000215, 66.15958300000057, 67.18216699999903,
+                  66.90783300000476, 71.20025000000169, 75.39004099999875
+                ]
+              },
+              "size": 2000
+            },
+            {
+              "candidate": {
+                "max": 137.0703749999957,
+                "min": 129.42075000000477,
+                "p50": 131.45633400000224,
+                "p75": 132.763457999994,
+                "p95": 137.0703749999957,
+                "samples": [
+                  130.77770800000144, 136.75004099999933, 131.45633400000224,
+                  129.7455839999966, 130.95887499999662, 129.42075000000477,
+                  132.763457999994, 137.0703749999957, 131.63987500000076
+                ]
+              },
+              "elements": 4000,
+              "plain": {
+                "max": 248.8202500000043,
+                "min": 239.72683400000096,
+                "p50": 241.26037499999802,
+                "p75": 245.23291700000118,
+                "p95": 248.8202500000043,
+                "samples": [
+                  239.72683400000096, 241.73691600000166, 248.09904200000165,
+                  248.8202500000043, 241.06824999999662, 239.9939579999991,
+                  241.26037499999802, 245.23291700000118, 240.05241700000624
+                ]
+              },
+              "size": 4000
+            }
+          ],
+          "large": {
+            "candidate": {
+              "max": 107.28745899999922,
+              "min": 101.19087500000023,
+              "p50": 104.4441250000018,
+              "p75": 105.28591699999379,
+              "p95": 107.28745899999922,
+              "samples": [
+                104.4441250000018, 103.83841599999869, 101.19087500000023,
+                104.76458300000377, 102.82708299999649, 105.28591699999379,
+                107.28745899999922
+              ]
+            },
+            "plain": {
+              "max": 83.05095800000709,
+              "min": 57.850665999998455,
+              "p50": 75.46499999999651,
+              "p75": 79.82795899999473,
+              "p95": 83.05095800000709,
+              "samples": [
+                76.33812500000204, 83.05095800000709, 75.46499999999651,
+                79.82795899999473, 57.850665999998455, 66.88133399999788,
+                67.90908399999898
+              ]
+            }
+          },
+          "nestedScaling": [
+            {
+              "candidate": {
+                "max": 5.600916999996116,
+                "min": 4.159208999997645,
+                "p50": 4.823624999997264,
+                "p75": 5.187958000002254,
+                "p95": 5.600916999996116,
+                "samples": [
+                  5.187958000002254, 4.983874999998079, 4.359875000001921,
+                  4.689916000002995, 4.4294169999993755, 4.159208999997645,
+                  5.600916999996116, 5.199541000001773, 4.823624999997264
+                ]
+              },
+              "elements": 500,
+              "plain": {
+                "max": 6.95829099999537,
+                "min": 3.968542000002344,
+                "p50": 4.685000000004948,
+                "p75": 4.814209000003757,
+                "p95": 6.95829099999537,
+                "samples": [
+                  4.312291999995068, 4.085166999997455, 6.95829099999537,
+                  5.205874999999651, 4.685000000004948, 4.814209000003757,
+                  4.757124999996449, 4.165207999998529, 3.968542000002344
+                ]
+              },
+              "size": 500
+            },
+            {
+              "candidate": {
+                "max": 11.698374999999942,
+                "min": 10.285499999998137,
+                "p50": 10.773000000001048,
+                "p75": 10.864708000000974,
+                "p95": 11.698374999999942,
+                "samples": [
+                  10.604833999997936, 10.559667000001355, 10.790374999996857,
+                  10.717917000001762, 10.773000000001048, 11.458417000001646,
+                  10.285499999998137, 10.864708000000974, 11.698374999999942
+                ]
+              },
+              "elements": 1000,
+              "plain": {
+                "max": 11.140083999998751,
+                "min": 8.914124999995693,
+                "p50": 10.063166000007186,
+                "p75": 10.736124999995809,
+                "p95": 11.140083999998751,
+                "samples": [
+                  9.548540999996476, 10.801375000002736, 10.063166000007186,
+                  8.914124999995693, 9.698124999995343, 10.736124999995809,
+                  10.281624999995984, 9.340292000000773, 11.140083999998751
+                ]
+              },
+              "size": 1000
+            }
+          ],
+          "prose": {
+            "candidate": {
+              "max": 30.252375000003667,
+              "min": 21.298291999999492,
+              "p50": 24.193333000002895,
+              "p75": 28.579666999998153,
+              "p95": 30.252375000003667,
+              "samples": [
+                26.972083000000566, 28.579666999998153, 30.252375000003667,
+                21.298291999999492, 23.29587499999616, 23.974541000003228,
+                24.193333000002895
+              ]
+            },
+            "plain": {
+              "max": 26.278458000000683,
+              "min": 21.186792000000423,
+              "p50": 23.315166000000318,
+              "p75": 24.208832999996957,
+              "p95": 26.278458000000683,
+              "samples": [
+                21.186792000000423, 22.536333999996714, 23.187833000003593,
+                23.315166000000318, 23.883458999996947, 24.208832999996957,
+                26.278458000000683
+              ]
+            }
+          }
+        },
+        "prose": {
+          "max": 170.61720800000148,
+          "min": 149.55574999999953,
+          "p50": 153.9746670000004,
+          "p75": 156.6088749999999,
+          "p95": 170.61720800000148,
+          "samples": [
+            152.17158299999937, 149.55574999999953, 151.7432919999992,
+            154.1715830000012, 156.6088749999999, 153.9746670000004,
+            170.61720800000148
+          ]
+        },
+        "serialize": {
+          "max": 240.9272920000003,
+          "min": 221.4000840000008,
+          "p50": 229.43570799999725,
+          "p75": 233.96237499999916,
+          "p95": 240.9272920000003,
+          "samples": [
+            224.7410830000008, 221.4000840000008, 240.9272920000003,
+            229.43570799999725, 229.37095800000316, 232.6337910000002,
+            233.96237499999916
+          ]
+        },
+        "streaming": {
+          "max": 2854.4349169999987,
+          "min": 2812.253582999998,
+          "p50": 2816.9320829999997,
+          "p75": 2854.4349169999987,
+          "p95": 2854.4349169999987,
+          "samples": [2816.9320829999997, 2854.4349169999987, 2812.253582999998]
+        }
+      },
+      "role": "candidate",
+      "sourceAfter": {
+        "fileCount": 864,
+        "gitHead": "e33ad94aea93a5b3eeb264b89519215dcd0957ad",
+        "relevantSourceSha256": "34d89537e9128544040f09968a1c22f7d6b0c0fd3cd6b20633639d08c2fbc009",
+        "runnerSha256": "ba2976c9f6ba6c17cd21a5869a3483740a7d3285bb58863573a54445ecc955eb",
+        "sourceRef": "working-tree-20260928T1751"
+      },
+      "sourceBefore": {
+        "fileCount": 864,
+        "gitHead": "e33ad94aea93a5b3eeb264b89519215dcd0957ad",
+        "relevantSourceSha256": "34d89537e9128544040f09968a1c22f7d6b0c0fd3cd6b20633639d08c2fbc009",
+        "runnerSha256": "ba2976c9f6ba6c17cd21a5869a3483740a7d3285bb58863573a54445ecc955eb",
+        "sourceRef": "working-tree-20260928T1751"
+      },
+      "sourceUnchanged": true,
+      "version": 1
+    }
+  },
+  "baselineArtifactSha256": "9bd90e631eeef905cbdbc7a75cab658171c4fbc73481f137d0564f691c761476",
+  "verdicts": {
+    "absoluteBudget": "fail",
+    "plateExtensionAdoption": "pass"
+  },
+  "version": 1
+}

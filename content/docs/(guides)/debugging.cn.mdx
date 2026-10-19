@@ -1,0 +1,211 @@
+---
+title: 调试
+description: Plate 中的调试。
+---
+
+## 使用 DebugPlugin
+
+当你创建 Plate 编辑器时，`DebugPlugin` 会自动包含在内。你可以通过编辑器的 API 访问其方法：
+
+```ts
+const editor = createEditor({
+  plugins: [/* your plugins */],
+});
+
+editor.api.debug.log('This is a log message');
+editor.api.debug.info('This is an info message');
+editor.api.debug.warn('This is a warning');
+editor.api.debug.error('This is an error');
+```
+
+### 日志级别
+
+`DebugPlugin` 支持四种日志级别：
+
+1. `log`：用于一般日志记录
+2. `info`：用于信息性消息
+3. `warn`：用于警告
+4. `error`：用于错误
+
+你可以设置最小日志级别来控制显示哪些消息：
+
+```ts
+const editor = createEditor({
+  plugins: [
+    DebugPlugin.configure({
+      initialState: {
+        logLevel: 'warn', // 仅显示警告和错误
+      },
+    }),
+  ],
+});
+```
+
+### 初始 State
+
+在 `DebugPlugin` store 中设置以下初始字段：
+
+- `isProduction`：设置为 `true` 以在生产环境中禁用日志记录。
+- `logLevel`：设置最小日志级别（`'error'`、`'warn'`、`'info'` 或 `'log'`）。
+- `logger`：为每个日志级别提供自定义日志记录函数。
+- `throwErrors`：设置为 `true` 以抛出错误而不是记录它们（默认：`true`）。
+
+配置示例：
+
+```ts
+const editor = createEditor({
+  plugins: [
+    DebugPlugin.configure({
+      initialState: {
+        isProduction: process.env.NODE_ENV === 'production',
+        logLevel: 'info',
+        logger: {
+          error: (message, type, details) => {
+            // 自定义错误日志记录
+            console.error(`Custom Error: ${message}`, type, details);
+          },
+          // ... 其他级别的自定义日志记录器
+        },
+        throwErrors: false,
+      },
+    }),
+  ],
+});
+```
+
+### 错误处理
+
+默认情况下，当调用 `error` 时，`DebugPlugin` 会抛出错误。你可以捕获这些错误并按需处理：
+
+```ts
+try {
+  editor.api.debug.error('An error occurred', 'CUSTOM_ERROR', { details: 'Additional information' });
+} catch (error) {
+  if (error instanceof EditorError) {
+    console.debug(error.type); // 'CUSTOM_ERROR'
+    console.debug(error.message); // '[CUSTOM_ERROR] An error occurred'
+  }
+}
+```
+
+要记录错误而不是抛出它们，请在配置中将 `throwErrors` 设置为 `false`。
+
+### 最佳实践
+
+1. 为不同类型的消息使用适当的日志级别。
+2. 在生产环境中，将 `isProduction` 设置为 `true` 以禁用非必要的日志记录。
+3. 使用自定义日志记录器与您首选的日志记录服务集成。
+4. 在记录时包含相关详细信息，以便于调试。
+5. 使用错误类型来分类和处理不同的错误场景。
+
+## 其他调试策略
+
+除了使用 DebugPlugin，还有其他有效的方法来调试你的 Plate 编辑器：
+
+### 1. 记录已提交的变更
+
+使用插件根级 `on.commit` 观察已发布的规范变更：
+
+```ts
+import { definePlugin } from 'platejs/react';
+
+const LoggingPlugin = definePlugin('logging', {
+  on: {
+    commit({ commit }) {
+      console.debug('Document change:', commit.changes);
+    },
+  },
+});
+
+const editor = createEditor({
+  plugins: [LoggingPlugin],
+});
+```
+
+`commit.changes` 是历史记录、协作和订阅者共享的文档变更事实。需要查看选择或影响范围时，可以同时检查提交上的选择字段和 `commit.changed` 查询。
+
+### 2. 移除可疑插件
+
+如果你遇到问题，尝试逐个移除插件以隔离问题：
+
+```ts
+const editor = createEditor({
+  plugins: [
+    // 注释或移除可疑插件
+    // HeadingPlugin,
+    // BoldPlugin,
+    // ...其他插件
+  ],
+});
+```
+
+逐步添加插件，直到找出导致问题的那个。
+
+### 3. 使用 React DevTools
+
+React DevTools 对于调试 Plate 组件非常有用：
+
+1. 安装 React DevTools 浏览器扩展。
+2. 打开你的应用和 DevTools。
+3. 导航到 Components 标签页。
+4. 检查 Plate 组件、它们的 props 和状态。
+
+### 4. 使用浏览器 DevTools 断点
+
+使用浏览器 DevTools 在代码中设置断点：
+
+1. 在浏览器中打开你的应用并打开 DevTools。
+2. 导航到 Sources 标签页。
+3. 找到你的源文件并点击你想要设置断点的行号。
+4. 与编辑器交互以触发断点。
+5. 检查变量并逐步执行代码。
+
+### 5. 创建最小可重现示例
+
+如果你遇到复杂问题：
+
+1. 选择一个[模板](/docs/installation)。
+2. 仅添加必要的插件和组件来重现问题。
+3. 如果问题仍然存在，在 [GitHub 上提交问题](https://github.com/udecode/plate/issues/new?assignees=&labels=bug&projects=&template=bug.yml)或在 [Discord](https://discord.gg/mAZRuBzGM3) 上分享你的示例。
+
+### 6. 使用 Redux DevTools 进行 zustand 存储
+
+Zustand 以及 zustand-x 可以与 Redux DevTools 浏览器扩展一起使用。它对于跟踪 zustand 存储中的状态变化非常有用。
+
+按照 [zustand 文档](https://zustand.docs.pmnd.rs/middlewares/devtools) 开始使用 Redux DevTools 和 zustand。
+
+## 调试错误类型
+
+`editor.api.debug.error(message, type, details)` 使用传入的类型作为日志前缀。
+开发环境中启用 `throwErrors` 时会抛出 `EditorError`，默认类型为 `DEFAULT`。
+应用可以传入自己的字符串来标记诊断信息。
+
+插件配置还会校验描述符、依赖关系和 schema 所有权：
+
+| 信息 | 检查项 |
+| --- | --- |
+| `USE_CREATE_PLUGIN` | 使用 `definePlugin` 或 `definePlugin` 创建插件。 |
+| `Pass a plugin descriptor, not its name.` | 在 `dependencies` 中传入描述符，而不是字符串。 |
+| `requires disabled plugin` | 保持必需的依赖插件启用。 |
+| `Circular plugin dependency` | 移除错误信息中列出的依赖循环。 |
+| `cannot declare both schema.element and schema.mark` | 每个插件只声明一种 schema 角色。 |
+
+依赖会通过描述符自动安装，无需在应用的插件列表中重复添加必需依赖。
+
+## 隐去调试值 [#scrubbing-values]
+
+Plate 默认隐去错误详情中的文本字段。其他文档字段也需要隐藏时，设置
+调试值处理函数：
+
+```ts
+import { setDebugValueScrubber } from 'platejs';
+
+setDebugValueScrubber((key, value) => {
+  if (key === 'text' || key === 'src') return '[redacted]';
+  return value;
+});
+```
+
+回调类型为 `(key: string, value: unknown) => unknown`，在默认文本隐藏逻辑
+之前执行。返回原值时，该值仍会经过默认处理。传入 `null` 或 `undefined`
+恢复默认处理函数。

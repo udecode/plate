@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-11-codemirror-selection",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-11-codemirror-selection.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-11",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep CodeMirror keyboard selection aligned with text edits",
+  "targets": [
+    {
+      "name": "code-block-codemirror",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-codemirror.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-11-codemirror-selection-1",
+      "kind": "fix",
+      "summary": "Keep Home, End, arrow selection and deletion aligned after focus changes and composition. Use Tab and Shift+Tab for indentation, with Enter and Shift+Enter for an indented newline.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block-codemirror"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-11",
+          "entry": "2026-09-11-codemirror-selection",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,0 +1,4 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+history:clone-legacy-slate-stack	github/ianstormtaylor/slate	history:legacy-adjacent-merge:covered	Legacy Slate is weaker than v2 for skipped edits; do not copy its plugin model.	Reopen only if v2 intentionally restores old public compatibility.
+history:lexical-full-state-snapshot	github/facebook/lexical	history:composition-merge-policy:covered	Lexical stores full editor states; Slate v2 should preserve operation/state-patch history instead.	Reopen only for API planning, not for this oracle packet.
+

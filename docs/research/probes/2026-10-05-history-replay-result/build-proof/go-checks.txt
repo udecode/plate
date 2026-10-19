@@ -1,0 +1,12 @@
+# pnpm --filter plitejs test:partition:react
+ Test Files  93 passed (93)
+      Tests  1418 passed (1418)
+# exit: 0
+# pnpm --filter plitejs typecheck
+# exit: 0
+# pnpm exec ultracite fix/check + oxlint --type-aware on 2 files
+Finished in 27ms on 2 files using 18 threads.
+All matched files use the correct format.
+Finished in 25ms on 2 files using 18 threads.
+# ultracite check exit: 0
+# oxlint exit: 0

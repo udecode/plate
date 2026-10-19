@@ -1,0 +1,361 @@
+---
+title: 剪贴板与粘贴
+description: 通过 Plate editor、DOM 与 plugin layer 处理 copy、paste、drop 与 fitted slice replacement。
+---
+
+Clipboard operation 横跨 browser event、Plate fragment、transaction 与 DOM。
+每个 policy 应由实际拥有该边界的 surface 处理。
+
+## 选择正确的 surface
+
+| 需求 | Surface | Owner |
+| --- | --- | --- |
+| 单个 editor 需要本地 paste/drop hook | plugin `on.paste` 或 `on.drop` | `platejs/react` |
+| 可复用 package 拥有 paste/drop policy | `domCommands.insertData` interceptor | `platejs/dom` |
+| Browser MIME representation 需要 decode/encode | `dataTransferFormats` 中的 `DataTransferFormat` | `platejs/dom` |
+| Framework 需要导入 `DataTransfer` | `editor.api.dom.clipboard.insertData(data)` | `platejs/dom` |
+| 已解析的结构化内容需要运行粘贴策略 | `editor.update.slice.replace(slice)` | `platejs` |
+| 事务内直接适配内容 | `tx.slice.replace(slice)` | `platejs` |
+| Detached parent 需要 fit content | `state.slice.fitContent(slice, { parent, root? })` | `platejs` |
+
+Local event interception 使用 plugin `on` handler。所有安装该 plugin 的 React
+surface 都应复用同一策略时，使用 DOM insert-data command。
+
+## Runtime pipeline
+
+1. Browser 生成带 `DataTransfer` 的 paste、copy、cut、dragstart 或 drop event。
+2. `EditorContent` handler 可以处理 event，或让 Plate 继续。
+3. `domCommands.insertData` interceptor 可以 claim、transform 或 delegate。
+4. Plate 依次尝试 internal fragment、注册的 DataTransfer format 与 plain text。
+5. 替换命令运行已安装的处理器，再通过 `editorReads.slice.landing` 决定最终切片，并可为空块提出整块替换。
+6. 切片在目标处适配，并通过一次规范替换提交。
+
+## Plugin clipboard policy
+
+Feature 拥有可复用 DOM import 规则时，intercept `domCommands.insertData`。
+
+```ts
+import { definePlugin } from 'platejs';
+import { domCommands } from 'platejs/dom';
+
+const PasteTodoPlugin = definePlugin('pasteTodo', {
+  commands: ({ around }) => [
+    around(domCommands.insertData, ({ input, next, state }) => {
+      const text = input.getData('text/plain');
+
+      if (!text.startsWith('todo:')) return next();
+
+      return state.transaction((tx) => {
+        tx.text.insert(text.slice('todo:'.length).trim());
+      });
+    }),
+  ],
+});
+```
+
+Interceptor 通过 `input` 接收 `DataTransfer`，并返回纯 transaction spec。Plate
+应继续 internal slice、DataTransfer-format 与 plain-text 路径时，返回 `next()`。
+Headless command 从 `ContentSlice` 开始，不让 `DataTransfer` 离开 DOM boundary。
+
+### 粘贴落在哪里
+
+命令处理器委托之后，`editorReads.slice.landing` 决定粘贴落地的内容。输入中的
+`source` 是处理器给出的切片，`slice` 是符合 `maxLength` 的部分，`target` 是解析出的
+目标。粘贴替换掉的文本不计入限制。空块中的折叠光标得到 `empty`，其他情况得到
+`context`，并带有粘贴起点所在的块。粘贴到选中的块上时会整块替换这些块，
+`context` 中的块是第一个选中块起点处最内层的块，例如引用块中的第一个段落。
+读取的 `state` 读取粘贴落入的根，例如图注所在的根，
+所以 `target.block` 中的路径属于该根。返回要落地的 `slice`，也可以加上
+`replaceEmpty`，用整块内容替换 `empty` 目标。Plate 会用同样的方式截断返回的
+`slice`：扣除被替换的文本后，截到符合 `maxLength` 的部分。
+
+文本拖拽会在放下的位置通过同一个读取落地，但不运行命令处理器。粘贴或复制文本的拖拽（例如来自另一个编辑器或只读视图）的输入 `intent` 为 `copy`，在同一文档内移动文本的拖拽为 `move`。移动携带的正是删除其范围会移除的内容；当删除不会移除任何内容时（例如范围只包含一个空行），移动以 `no-op` 拒绝。当 `maxLength` 会截断移动，或落地会改变被移动内容的文本或标记，或改变其携带的区块的类型或属性（声明为 `landing: 'rebase'` 或 `'adopt'` 的元素属性除外，例如列表项的层级或所属列表）时，移动以 `lossy` 拒绝且不做任何改变。移动不检查被移动文本在落点处并入的区块及其外层区块，但会检查它携带的其他所有区块，包括空的最后一个区块。封闭区块（例如标题）不会并入任何区块。移动落在空区块中时，被移动的区块可以继承被替换区块的属性。
+
+```ts
+import { definePlugin, editorReads } from 'platejs';
+
+const calloutPaste = definePlugin('calloutPaste', {
+  readMiddleware: ({ around }) => [
+    around(editorReads.slice.landing, ({ input, next }) => {
+      const landing = next();
+      const { target } = input;
+
+      if (
+        target.kind !== 'empty' ||
+        target.block[0].type !== 'callout' ||
+        landing.slice.content.length < 2
+      ) {
+        return landing;
+      }
+
+      return {
+        ...landing,
+        replaceEmpty: { omitTargetProperties: ['icon'], slice: landing.slice },
+      };
+    }),
+  ],
+});
+```
+
+使用这个插件时，粘贴两个或更多块会替换空 callout，单行文本仍落在 callout 内。Plate 按 schema 和
+`maxLength` 检查这个提议，放不下时落地 `slice`。替换内容的第一个块在类型相同时保留
+目标的全部属性，文本块换类型时保留 schema 允许的属性，对象块或 void 块不保留任何属性。
+`omitTargetProperties` 再去掉其中一些，例如第一个粘贴块本身是 callout 时的 `icon`。
+改写 `slice` 的 middleware 必须同时改写或移除 `replaceEmpty`。
+
+## DOM clipboard API
+
+```ts
+editor.api.dom.clipboard.insertData(dataTransfer);
+editor.api.dom.clipboard.insertFragmentData(dataTransfer);
+editor.api.dom.clipboard.insertTextData(dataTransfer);
+editor.api.dom.clipboard.readSlice(dataTransfer);
+editor.api.dom.clipboard.writeSelection(dataTransfer);
+editor.api.dom.clipboard.writeSlice(dataTransfer, { slice });
+```
+
+`readSlice` 区分 `{ kind: 'absent' }`、`{ kind: 'invalid', source }` 与
+`{ kind: 'slice', slice }`。`writeSlice` 写入一份精确 `ContentSlice` 与可选
+browser MIME representation。调用方显式提供的 representation 具有 authority，
+包括故意写入的空 string。
+
+Plate 写入 plain text、HTML 与 internal Plate fragment payload。Fragment MIME
+使用 `application/${clipboardFormatKey}`，避免配置不同的 editor 盲目导入彼此
+的 internal JSON。
+
+## 自定义 DataTransfer format
+
+`DataTransferFormat` 把一个 browser MIME type 作为完整 payload 读取或写入。App
+在 clipboard 中放入自己的 type，或某个 source 需要在 Plate HTML parser 之前清理
+时，注册一个 format。单个 node 与 mark 的 mapping 属于 plugin 的 `formats`；
+参阅 [Serializing](/docs/serializing)。
+
+```ts
+import { ContentSlice, NodeApi, definePlugin } from 'platejs';
+
+const MAX_NOTES_LENGTH = 1_000_000;
+
+const readNotes = (data: string): string[] | null => {
+  try {
+    const payload = JSON.parse(data);
+
+    if (payload?.version !== 1 || !Array.isArray(payload.notes)) return null;
+
+    return payload.notes.filter((note: unknown) => typeof note === 'string');
+  } catch {
+    return null;
+  }
+};
+
+export const NotesTransferPlugin = definePlugin('notesTransfer', {
+  dataTransferFormats: [
+    {
+      mimeType: 'application/x-acme-notes+json',
+      // priority 越高越先运行；排在通用 text/plain reader 之前。
+      priority: 50,
+      // 该 plugin 不拥有 node type，因此 claim 整个 schema。
+      scope: 'document',
+      accept: ({ data }) => data.length <= MAX_NOTES_LENGTH,
+      decode: ({ data }) => {
+        const notes = readNotes(data);
+
+        if (!notes) return null;
+
+        return ContentSlice.closed(
+          notes.map((text) => ({ type: 'paragraph', children: [{ text }] }))
+        );
+      },
+      encode: ({ slice }) => {
+        const notes = slice.content
+          .map((node) => NodeApi.string(node))
+          .filter(Boolean);
+
+        if (notes.length === 0) return null;
+
+        return JSON.stringify({ version: 1, notes });
+      },
+    },
+  ],
+});
+```
+
+每条 declaration 有一个 `mimeType`，并至少提供 `decode` 或 `encode` 之一。
+
+| 字段 | Contract |
+| --- | --- |
+| `mimeType` | 从 `DataTransfer` 读取与写入的 MIME type。每个 plugin 只声明一次，`decode` 与 `encode` 放在同一个 object 中。 |
+| `accept(context)` | 可选。返回 `false` 时，在 `decode` 运行前跳过该 format。 |
+| `decode(context)` | 返回 `ContentSlice`，或返回 `null` 让下一个 format 读取 payload。 |
+| `encode(context)` | 返回要写入的 string，或返回 `null` 把该 MIME type 留给下一个 encoder。 |
+| `priority` | 可选，默认 `0`。数值越高越先运行。 |
+| `scope` | `'document'` claim 整个 schema。省略时，format claim plugin 自己的 element type 与 property，因此 plugin 必须拥有其一。 |
+
+`accept` 与 `decode` 接收 `{ data, mimeType, report, snapshot, state }`：该
+MIME type 的 payload、报告 paste 遗漏内容的 function、transfer 上所有 type 与
+file 的只读 snapshot，以及只读 editor state。`encode` 接收 `{ mimeType, slice, state }`。两者还会获得 plugin 的
+`name`、`pluginState`、`registry` 与 `schema`。Callback 不接收 editor、live
+`DataTransfer` 或 transaction。Plate 以 `plate:<plugin>:<mimeType>` 作为每个
+format 的 key。
+
+### 报告 paste 遗漏的内容
+
+在 `accept` 或 `decode` 中调用 `report(diagnostic)` 说明 payload 丢失了什么。
+Diagnostic 为 `{ impact, message }`：粘贴内容被遗漏或失去含义时为 `'lossy'`；
+丢弃 metadata 等无害清理为 `'lossless'`。`report` 只在 callback 运行期间有效。
+
+```ts
+decode: ({ data, report }) => {
+  const { droppedEmbeds, slice } = parseNotes(data);
+
+  if (droppedEmbeds > 0) {
+    report({ impact: 'lossy', message: 'Embedded notes were left out.' });
+  }
+
+  return slice;
+},
+```
+
+返回 `null` 或 `false` 且不报告时保持静默。`accept` 或 `decode` 抛出时，Plate
+丢弃该 format 的报告，并把 error 发送到 `lifecycleErrorSink`。
+
+### `null`、`false` 与 throw
+
+- `accept` 返回 `false`：该 format 不适用于当前情况。用于 parse 前的低成本检查。
+- `decode` 返回 `null`：payload 来自其他来源、格式错误或为空。Clipboard data
+  不可信，遇到错误输入时返回 `null`，不要 throw。
+- `encode` 返回 `null`：该 slice 对这个 MIME type 没有可写内容。同一 type 的
+  下一个 encoder 仍可写入。
+- Throw 表示 bug。Plate 捕获异常并发送到 editor 的 `lifecycleErrorSink`，然后
+  继续下一个 format，因此出错的 format 不会阻止 paste 或 copy。`decode` 返回
+  无效的 `ContentSlice`，或 `encode` 返回既非 string 也非 `null` 的值时，按同样
+  方式报告。
+
+```ts
+const editor = createEditor({
+  plugins: [NotesTransferPlugin],
+  lifecycleErrorSink: (error) => {
+    if ('source' in error && error.source === 'data-transfer-format') {
+      reportBug(error.cause, { key: error.key, phase: error.phase });
+    }
+  },
+});
+```
+
+Format error 带有 `key`、`mimeType`、`pluginName` 与 `phase`（`'accept'`、
+`'decode'` 或 `'encode'`）。未配置 sink 时，Plate 将其发送到 `reportError`；没有
+`reportError` 的环境改用 `console.error`。
+
+### Paste 顺序
+
+Paste 依次尝试以下步骤，直到某一步插入内容：
+
+1. `domCommands.insertData` interceptor。
+2. Plate 自身的 fragment payload。
+3. MIME type 出现在 transfer 上的已声明 format，先按 `priority` 从高到低，再按
+   plugin name 排序。
+4. Plate 的 HTML format。
+5. Plain text。
+
+Plate 在实际 insertion range 处 fit 每个 decoded slice，并保留其 open edge 与
+detached root。无法 fit 的 slice 不写入任何内容，由下一个 format 继续尝试。
+Plain text 是最终 fallback。
+
+MIME type、方向与 priority 都相同的 format 必须 claim 互不重叠的 schema。Claim
+重叠会在创建 editor 时抛出，因此同一 MIME type 的两个 document-scope format
+需要不同的 priority。
+
+### Copy 顺序
+
+Copy 按相同顺序运行 encoder，每个 MIME type 只写入一次：第一个返回 string 的
+encoder 生效。因此已声明的 `text/html` 或 `text/plain` encoder 会替代 Plate
+内置 encoder，返回 `null` 则回退到内置 encoder。`platejs/dom` 的
+`writeDataTransferFragment(editor, data, slice)` 把 encoder 运行到任意
+`setData` target，并返回已写入的 MIME type。
+
+### HTML paste
+
+Plate 的 HTML format 按 `editor.api.html.parseSlice` 加 `lossPolicy: 'allow'`
+的方式解析。
+任何 mapping 运行前，它会移除 comment、metadata、script、style sheet、embedded
+object、SVG 与 MathML、event handler、`srcdoc` 与 `srcset`、不符合其用途的 URL
+（参阅 [HTML](/docs/html)），以及会加载资源的 `style`
+attribute。没有已安装 mapping 的 embedded
+media 只保留 fallback content。没有可插入内容时，HTML format 仍会报告它移除的内容，
+然后返回 `null`，由 plain text 处理 paste。
+
+### Paste 结果
+
+对 Plate 内置 format 处理的每次 paste，`EditorContent` 调用一次
+`onPasteResult`：粘贴内容 commit 之后（`inserted: true`），或没有 format 能插入
+时（`inserted: false`）。
+
+```tsx
+<EditorContent
+  onPasteResult={({ diagnostics, inserted }) => {
+    if (diagnostics.some(({ impact }) => impact === 'lossy')) {
+      toast.warning(
+        inserted
+          ? 'Some pasted content was left out.'
+          : 'The pasted content could not be inserted.'
+      );
+    }
+  }}
+/>
+```
+
+`diagnostics` 包含被插入内容的 format 的报告。之前无法使用的 format 报告的损失
+会保留在列表中，除非被插入的 format 解码的是同一 MIME type：与 HTML 文本相同的
+plain text 并不能恢复 HTML 丢失的内容。
+
+只会调用接收 paste 的 editor surface，且仅在其仍挂载时调用。`onPaste` 或
+`domCommands.insertData` handler 不经内置 format 处理 paste 时、drop 时，以及单独
+调用 `editor.api.dom.clipboard.insertData`（内容插入时返回 `true`，没有可用 format 时返回 `false`，编辑器拒绝 update 时返回 `undefined`）时都不会调用
+`onPasteResult`。在 paste 期间通过 `insertData` 插入的 `onPaste` handler 会收到该次
+插入的结果。
+
+Plate 和 Registry `Editor` 默认不显示 paste 结果 UI。仅当应用能够解释损失或提供有用
+的恢复操作时，才添加 `onPasteResult`。
+
+Paste 结果不会指明处理 paste 的 format。某个 source 持续丢失内容时，添加缺失的
+mapping：在所属 plugin 的 `formats` 中添加 HTML rule，或为该 MIME type 添加
+format。
+
+## Fragment 与 slice replacement
+
+在已有事务中直接适配已知闭合内容时，使用 `tx.fragment.replace`。它不运行粘贴命令策略。需要运行 List 等插件的粘贴策略时，使用单次 `editor.update.fragment.replace(...)`。
+
+```ts
+editor.update((tx) => {
+  tx.fragment.replace([
+    { type: 'paragraph', children: [{ text: 'Pasted paragraph' }] },
+  ]);
+});
+```
+
+需要保留 open edge 或 detached secondary root 时使用 `ContentSlice`：
+
+```ts
+import { ContentSlice } from 'platejs';
+
+const slice = ContentSlice.fromJSON({
+  content: decodedContent,
+  openEnd: 1,
+  openStart: 1,
+  roots: { 'note:1': decodedNote },
+});
+
+editor.update.slice.replace(slice);
+```
+
+直接 HTML/Markdown `parseSlice` 产生闭合、无 root 的 slice。只有 native fragment
+transport 可以为 open edge 与 detached root 提供 authority。Destination-specific
+fit 在 insertion owner 处发生。
+
+## Browser proof
+
+真实 clipboard defect 需要覆盖失败所在层：model content、DOM payload、focus、
+native selection 与 follow-up typing。只验证 model 不能证明 browser event 或
+clipboard payload 正确。
+
+参阅 [Browser](/docs/browser)、[Editing Behavior](/docs/editing-behavior) 与
+[DOM Coverage Boundaries](/docs/dom-coverage)。

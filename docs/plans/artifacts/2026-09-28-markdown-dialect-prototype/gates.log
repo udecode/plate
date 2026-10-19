@@ -1,0 +1,106 @@
+
+[1mMarkdown dialect prototype — CommonMark + registered Plate tags[0m
+
+[32mPASS[0m [1mG0 registry covers installed tag mappings[0m
+   decode sources: 37; unregistered non-MDAST: none
+
+[32mPASS[0m [1mG1 CommonMark identity (spec 0.31.2, 652 examples)[0m
+   CommonMark: 648 identical, 4 differ by containing a registered tag [2m[166, 167, 168, 475][0m, 0 unexpected 
+   +GFM+math: 648 identical, 4 registered-tag diffs, 0 unexpected 
+
+[32mPASS[0m [1mG2 grammar is total (20k fuzz strings; totality, not fidelity)[0m
+   candidate mdast throws: 0 
+   Plate parse returns ok under lossPolicy 'allow' (no fidelity claim) — candidate 19999/20000, current MDX kit 8653/20000
+   Plate parse() throws — candidate {"EditorSchemaValidationError":1} [2m"&quot;'callout*/\nimg#\nimg<adiv-`https://x.y&quot;  iconcolumn[{icon\n\n<toc>}]  calloutx|a&quot;xx\"\n" → EditorSchemaValidationError: Editor element "toc" at [1] cannot contain "paragraph".[0m; current {}
+
+[32mPASS[0m [1mG3 legacy MDX output reads identically (13 docs)[0m
+   candidate: 13/13; MDAST html pairer (kill check): 9/13
+   [2msources the current kit itself rejects: src13: EditorSchemaValidationError: Schema element property "indent" cannot target element "callout".[0m
+
+[31mFAIL[0m [1mG4 hand-written nesting reads correctly (8 fixtures)[0m
+   candidate reads 7/8 (identical to MDX or MDX rejects); MDAST pairer identical: 1/8; MDX itself failed/threw on 3
+   [2m"<columnGroup>\n<column width=\"50%\">\nleft\n</column>\n<column width=\"50%\">\nright\n</column>\n</columnGroup>" → MDX ok, candidate ok, pairer ok[0m
+   [2m"<details>\n<summary>Title</summary>\n\nbody **x**\n\n</details>" → MDX ok, candidate ok, pairer ok[0m
+   [2m"<details>\n<summary>Title</summary>\nbody\n</details>" → MDX throws, candidate ok, pairer ok[0m
+     improvement (MDX rejects, candidate reads): {"children":[{"type":"details","children":[{"type":"summary","children":[{"text":"Title"}]},{"type":"paragraph","children":[{"text":"body"}]}]}]}
+   [2m"<callout icon=\"💡\">\nhello **world**\n</callout>" → MDX ok, candidate ok, pairer ok[0m
+   [2m"<callout icon=\"💡\">hello</callout>" → MDX throws, candidate ok, pairer ok[0m
+     improvement (MDX rejects, candidate reads): {"children":[{"icon":"💡","type":"callout","children":[{"text":"hello"}]}]}
+   [2m"- item\n\n  <callout>\n  in list\n  </callout>" → MDX throws, candidate throws, pairer ok[0m
+     candidate does not read this fixture (throws)
+   [2m"> <callout>\n> quoted\n> </callout>" → MDX ok, candidate ok, pairer ok[0m
+   [2m"para\n<callout>\ninterrupt\n</callout>" → MDX ok, candidate ok, pairer ok[0m
+
+[32mPASS[0m [1mG5 unclosed tags stay open to EOF; every prefix parses[0m
+   '<callout icon="x">\n\nhello **wor' → mdxJsxFlowElement unclosed=true children=paragraph
+   1000 prefixes: candidate ok 991, throws 0; current MDX + incomplete-stream recovery ok 1000
+   prefixes whose candidate document shows a partial tag as text: 253; with trimIncompleteTagTail: 0
+   candidate non-ok prefixes by first diagnostic: {"markdown-invalid-source: Markdown could not be parsed: Summary children must be inline Mar":9}
+
+[32mPASS[0m [1mG6 tag-element boundaries slice exactly to their source[0m
+   38 elements checked; bad: 0 ; split-paragraph remainders not checked (approximate)
+   document with unknown HTML → candidate: ok=true {"children":[{"type":"paragraph","children":[{"text":"Intro paragraph."}]},{"icon":"💡","type":"callout","children":[{"text":"ok"}]},{"type":"paragraph","children":[{"text":"Then <blink>x</blink> "},{"code":true,"text":"…
+                                 current:   ok=false [{"action":"replaced","code":"markdown-unsupported-node","message":"Markdown node \"blink\" has no installed mapping and was preserved as source text.","nodeType":"blink","owner":"markdown","phase":"parse","severity":"er…
+
+[32mPASS[0m [1mG7 CommonMark-friendly writer round-trips like MDX[0m
+   round trips equal to MDX round trip: 13/13; lines indented ≥4 outside fences: 0; current MDX kit reads new output identically: 13/13
+   text with braces → new writer "Hello {name} and a < b and x\\<y\n" → MDX kit markdown-unsupported-node; candidate ok
+   [2msample (columns):
+<columnGroup>
+
+<column width="50%">
+
+Left **bold**
+
+</column>
+
+<column width="50%">
+
+<callout icon="🔥">
+
+Deep
+
+</callout>
+
+</column>
+
+</columnGroup>
+[0m
+
+[32mPASS[0m [1mG8 previously rejected/corrupted inputs[0m
+   "Array<string> is a type"
+      current: FAIL markdown-invalid-source
+      cand:    ok {"children":[{"type":"paragraph","children":[{"text":"Array<string> is a type"}]}]}
+   "x<y and 3<4"
+      current: FAIL markdown-invalid-source
+      cand:    ok {"children":[{"type":"paragraph","children":[{"text":"x<y and 3<4"}]}]}
+   "see <https://example.com>"
+      current: FAIL markdown-invalid-source
+      cand:    ok {"children":[{"type":"paragraph","children":[{"text":"see "},{"type":"link","url":"https://example.com","child…
+   "Hello {name}, cost is {"
+      current: FAIL markdown-invalid-source
+      cand:    ok {"children":[{"type":"paragraph","children":[{"text":"Hello {name}, cost is {"}]}]}
+   "a\n\n<!-- note -->\n\nb"
+      current: FAIL markdown-unsupported-node
+      cand:    ok {"children":[{"type":"paragraph","children":[{"text":"a"}]},{"type":"paragraph","children":[{"text":"<!-- note…
+   "text\n\n    const x = 1;\n\nmore"
+      current: ok {"children":[{"type":"paragraph","children":[{"text":"text"}]},{"type":"paragraph","children":[{"text":"const …
+      cand:    ok {"children":[{"type":"paragraph","children":[{"text":"text"}]},{"type":"codeBlock","children":[{"text":"const …
+   "| a | b |\n| - | - |\n| x<br>y | z |"
+      current: ok {"children":[{"type":"table","children":[{"type":"tableRow","children":[{"header":true,"type":"tableCell","chi…
+      cand:    ok {"children":[{"type":"table","children":[{"type":"tableRow","children":[{"header":true,"type":"tableCell","chi…
+   "`<img src=x>`"
+      current: ok {"children":[{"type":"paragraph","children":[{"code":true,"text":"<img src=\"x\" />"}]}]}
+      cand:    ok {"children":[{"type":"paragraph","children":[{"code":true,"text":"<img src=x>"}]}]}
+   "a <callout>b</callout> c"
+      current: EditorSchemaValidationError: Editor element "paragraph" at [0] cannot contain "callout".
+      cand:    ok {"children":[{"type":"paragraph","children":[{"text":"a <callout>b</callout> c"}]}]}
+
+[32mPASS[0m [1mB cost (single-run timings; smoke check only, Benchmark owns measurement)[0m
+   AI-style answer 2.5 KB, 79 accumulated prefixes (current path truncates, so not comparable): current+recovery 189 ms (ok 79/79), candidate+tail trim 396 ms (ok 79/79)
+   same answer, final strict parse: current ok=false (markdown-invalid-source), candidate ok=true
+   full Plate parse of 40 KB: current MDX 206.2 ms, candidate 195.9 ms
+   mdast only: CommonMark+GFM+math 27.5 ms, + Plate tags 30.4 ms
+   streaming 32 accumulated prefixes of 1.0 KB: current+recovery 81 ms, candidate 76 ms
+
+exit=0

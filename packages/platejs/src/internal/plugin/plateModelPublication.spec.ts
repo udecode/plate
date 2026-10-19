@@ -1,0 +1,560 @@
+import { compileEditor } from '../../compiler/compileEditor';
+import {
+  createEditorView,
+  createEditor as createPliteEditor,
+  defineRuntimePlugin,
+  type Editor as RuntimeEditor,
+} from '../../facade';
+import type {
+  BasePluginInput,
+  Editor,
+  InternalBaseEditorWithInstalledPlugins,
+} from '../../lib/editor';
+import { createEditor } from '../../lib/editor';
+import { definePlugin } from '../../lib/plugin';
+import { defineInputRule } from '../../lib/plugins/input-rules';
+import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
+import {
+  getCompiledPlateModel,
+  getCompiledPlatePlugin,
+  getPlateModelPublication,
+  getPlateRuntime,
+  hasCompiledPlatePluginCandidate,
+  setCompiledPlatePluginCandidate,
+  withCompiledPlatePluginApiCandidate,
+  withCompiledPlatePluginCandidate,
+} from './compilePlateModel';
+import { getPluginStore } from './pluginStore';
+
+describe('Plate model publication', () => {
+  it.each([0, false, 'paint', ['paint'], () => ({ className: 'paint' })])(
+    'rejects non-object content presentation from JavaScript',
+    (attributes) => {
+      const config = Object.fromEntries([['contentAttributes', attributes]]);
+      const Paint = definePlugin('invalidContentPaint', { render: config });
+      expect(() => createEditor({ plugins: [Paint] })).toThrow(/attribute/i);
+    }
+  );
+  it('publishes immutable content attributes after ordinary plugin configuration', () => {
+    const Paint = definePlugin('publishedContentPaint', {
+      render: {
+        contentAttributes: {
+          className: 'base',
+          'data-base': true,
+          style: { color: 'red', backgroundColor: 'white' },
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [
+        Paint.configure({
+          render: {
+            contentAttributes: {
+              className: 'configured',
+              style: { color: 'blue' },
+            },
+          },
+        }),
+      ],
+    });
+    const { contentAttributes } = getPlateRuntime(editor).pluginCache;
+
+    expect(contentAttributes.editable).toEqual({
+      className: 'configured',
+      'data-base': true,
+      style: { color: 'blue', backgroundColor: 'white' },
+    });
+    expect(contentAttributes.readOnly).toEqual(contentAttributes.editable);
+    expect(Object.isFrozen(contentAttributes)).toBe(true);
+    expect(Object.isFrozen(contentAttributes.editable)).toBe(true);
+    expect(Object.isFrozen(contentAttributes.editable.style)).toBe(true);
+  });
+
+  it.each([
+    'data-editor',
+    'data-editor-node',
+    'data-editor-root',
+    'data-editor-viewport-selection',
+    'data-readonly',
+    'aria-disabled',
+    'aria-multiline',
+    'aria-readonly',
+    'placeholder',
+    'onClick',
+    'children',
+    'ref',
+    'contentEditable',
+  ])(
+    'rejects unsafe or core-owned content attributes from JavaScript: %s',
+    (name) => {
+      const attributes = JSON.parse(JSON.stringify({ [name]: 'override' }));
+      const Paint = definePlugin('unsafeContentPaint', {
+        render: { contentAttributes: attributes },
+      });
+      expect(() => createEditor({ plugins: [Paint] })).toThrow(/attribute/i);
+    }
+  );
+
+  it('exposes the compiling plugin set to native API factories', () => {
+    let observedRuntime: ReturnType<typeof getPlateRuntime> | undefined;
+    let observedPlugin: unknown;
+    const ObserverPlugin = defineRuntimePlugin('publishedBeforePlugins', {
+      api: ({ editor: runtimeEditor }) => {
+        observedRuntime = getPlateRuntime(runtimeEditor);
+        observedPlugin = getCompiledPlatePlugin(
+          runtimeEditor as unknown as InternalBaseEditorWithInstalledPlugins<
+            any,
+            any
+          >,
+          'publishedBeforePlugins'
+        );
+
+        return {};
+      },
+    });
+    const Plugin = definePlugin('publishedBeforePlugins', {
+      shortcuts: {
+        run: { handler: () => {}, keys: 'mod+k' },
+      },
+    }).extend(ObserverPlugin);
+    const editor = createEditor({ plugins: [Plugin] });
+
+    expect(observedRuntime?.pluginList.length).toBeGreaterThan(0);
+    expect(observedPlugin).toMatchObject({
+      name: 'publishedBeforePlugins',
+    });
+    expect(
+      getPlateRuntime(editor).pluginList.find(
+        (plugin) => plugin.name === 'publishedBeforePlugins'
+      )
+    ).toBe(getCompiledPlatePlugin(editor, Plugin));
+  });
+
+  it('clears private construction state when the initial value throws', () => {
+    let leaked: Editor | undefined;
+    const StatefulPlugin = definePlugin('statefulInitialValue', {
+      initialState: { count: 1 },
+    });
+
+    expect(() =>
+      createEditor({
+        initialValue: ({ editor }) => {
+          leaked = editor;
+          throw new Error('load failed');
+        },
+        plugins: [StatefulPlugin],
+      })
+    ).toThrow('load failed');
+    expect({
+      publication: getPlateModelPublication(leaked!),
+      store: getPluginStore(leaked!, StatefulPlugin.name),
+    }).toEqual({ publication: undefined, store: undefined });
+  });
+
+  it.each([
+    [
+      'createEditor',
+      (plugins: readonly BasePluginInput[]) => createEditor({ plugins }),
+    ],
+    [
+      'compileEditor',
+      (plugins: readonly BasePluginInput[]) => compileEditor({ plugins }),
+    ],
+  ])(
+    'clears earlier plugin stores when %s fails on a state and selector collision',
+    (_label, build) => {
+      let host: Editor | undefined;
+      const CapturingPlugin = definePlugin('capturingStore', {
+        initialState: { count: 1 },
+      }).extend(({ editor }) => {
+        host = editor;
+
+        return {};
+      });
+      const CollidingPlugin = definePlugin('collidingStore', {
+        initialState: { value: 2 },
+        selectors: { value: (state) => state.value * 2 },
+      });
+
+      expect(() => build([CapturingPlugin, CollidingPlugin])).toThrow(
+        'defines "value" as both state and selector'
+      );
+      expect(getPluginStore(host!, CapturingPlugin.name)).toBeUndefined();
+    }
+  );
+
+  it('publishes canonical dependency identities per editor', () => {
+    const Dependency = definePlugin('canonicalDependency', {
+      initialState: { n: 1 },
+    });
+    const Child = definePlugin('canonicalChild', {
+      initialState: { n: 1 },
+    });
+    const Parent = definePlugin('canonicalParent', {
+      dependencies: [Dependency, Child],
+    });
+    const createConfiguredEditor = (dependencyN: number, childN: number) =>
+      createEditor({
+        plugins: [
+          Parent,
+          Dependency.configure({ initialState: { n: dependencyN } }),
+          Child.configure({ initialState: { n: childN } }),
+        ],
+      });
+    const first = createConfiguredEditor(2, 3);
+    const second = createConfiguredEditor(4, 5);
+    const firstParent = getCompiledPlatePlugin(first, Parent)!;
+    const firstDependency = getCompiledPlatePlugin(first, Dependency)!;
+    const firstChild = getCompiledPlatePlugin(first, Child)!;
+    const secondParent = getCompiledPlatePlugin(second, Parent)!;
+    const secondDependency = getCompiledPlatePlugin(second, Dependency)!;
+    const secondChild = getCompiledPlatePlugin(second, Child)!;
+
+    expect(firstParent.dependencies[0]).toBe(firstDependency);
+    expect(firstParent.dependencies[1]).toBe(firstChild);
+    expect(firstDependency.initialState.n).toBe(2);
+    expect(firstChild.initialState.n).toBe(3);
+    expect(secondParent.dependencies[0]).toBe(secondDependency);
+    expect(secondParent.dependencies[1]).toBe(secondChild);
+    expect(secondDependency.initialState.n).toBe(4);
+    expect(secondChild.initialState.n).toBe(5);
+    expect(firstDependency).not.toBe(secondDependency);
+    expect(firstChild).not.toBe(secondChild);
+  });
+
+  it('shares one Plate publication and plugin store across root views', () => {
+    const Plugin = definePlugin('rootViewOwner', {
+      initialState: { enabled: true },
+    });
+    const editor = createEditor({ plugins: [Plugin] });
+    const view = createEditorView(
+      editor as unknown as RuntimeEditor
+    ) as unknown as Editor;
+    const other = createEditor({ plugins: [Plugin] });
+
+    expect(view).not.toBe(editor);
+    expect(getPlateModelPublication(view)).toBe(
+      getPlateModelPublication(editor)
+    );
+    expect(getPlateRuntime(view)).toBe(getPlateRuntime(editor));
+    expect(getCompiledPlatePlugin(view, Plugin.name)).toBe(
+      getCompiledPlatePlugin(editor, Plugin)
+    );
+    expect(getPluginStore(view, Plugin.name)).toBe(
+      getPluginStore(editor, Plugin.name)
+    );
+    expect(view.plugin(Plugin).store.get('enabled')).toBe(true);
+    expect(view.plugin(BaseParagraphPlugin).schema.type).toBe('paragraph');
+    expect(view.plugin).toBe(view.plugin);
+    expect(view.plugin).not.toBe(editor.plugin);
+    expect(view.read.schema.element(BaseParagraphPlugin)).toBe(
+      editor.read.schema.element(BaseParagraphPlugin)
+    );
+    expect(view.read.schema.isBlockContent(editor.read.children()[0])).toBe(
+      true
+    );
+    view.plugin(Plugin).store.set({ enabled: false });
+    expect(editor.plugin(Plugin).store.get('enabled')).toBe(false);
+    expect(getPlateModelPublication(view)).not.toBe(
+      getPlateModelPublication(other)
+    );
+    expect(getPluginStore(view, Plugin.name)).not.toBe(
+      getPluginStore(other, Plugin.name)
+    );
+  });
+
+  it('keeps private compiled registries safe for reserved property names', () => {
+    const Plugin = definePlugin('toString', {
+      inputRules: [
+        defineInputRule({
+          apply: () => {},
+          target: 'insertText',
+          trigger: 'constructor',
+        }),
+      ],
+    });
+    const editor = createEditor({ plugins: [Plugin] });
+    const runtime = getPlateRuntime(editor);
+    const rawEditor =
+      createPliteEditor() as unknown as InternalBaseEditorWithInstalledPlugins<
+        any,
+        any
+      >;
+
+    expect(Reflect.get(runtime.plugins, 'toString')).toBe(
+      getCompiledPlatePlugin(editor, Plugin)
+    );
+    expect(Reflect.get(runtime.plugins, 'constructor')).toBeUndefined();
+    expect(
+      Reflect.get(runtime.inputRules.plugins, 'toString').rules
+    ).toHaveLength(1);
+    expect(
+      Reflect.get(runtime.inputRules.insertText.byTrigger, 'constructor')
+    ).toHaveLength(1);
+    expect(getCompiledPlateModel(rawEditor).byName.constructor).toBeUndefined();
+
+    withCompiledPlatePluginCandidate(rawEditor, [], () => {
+      setCompiledPlatePluginCandidate(rawEditor, Plugin);
+
+      expect(getCompiledPlatePlugin(rawEditor, 'constructor')).toBeUndefined();
+      expect(getCompiledPlatePlugin(rawEditor, 'toString')).toBe(Plugin);
+    });
+  });
+
+  it('restores an outer plugin candidate after a nested candidate scope', () => {
+    const Outer = definePlugin('outerCandidate', {});
+    const OuterReplacement = definePlugin('outerCandidate', {});
+    const Inner = definePlugin('innerCandidate', {});
+    const editor = createPliteEditor();
+
+    withCompiledPlatePluginCandidate(editor, [Outer], () => {
+      setCompiledPlatePluginCandidate(editor, OuterReplacement);
+
+      withCompiledPlatePluginCandidate(editor, [Inner], () => {
+        expect(getCompiledPlatePlugin(editor, Inner.name)).toBe(Inner);
+        expect(getCompiledPlatePlugin(editor, Outer.name)).toBeUndefined();
+      });
+
+      expect(getCompiledPlatePlugin(editor, Outer.name)).toBe(OuterReplacement);
+      expect(getCompiledPlatePlugin(editor, Inner.name)).toBeUndefined();
+    });
+
+    expect(hasCompiledPlatePluginCandidate(editor)).toBe(false);
+    expect(() => getCompiledPlatePlugin(editor, Outer.name)).toThrow(
+      'Plate runtime is not installed'
+    );
+  });
+
+  it('snapshots schema identity instead of retaining mutable caller input', () => {
+    const identity = {
+      id: 'plate-test:core:internal-plugin-identity-snapshot',
+      version: 1,
+    };
+    const editor = createEditor({ schema: identity });
+
+    identity.id = 'mutated';
+    identity.version = 2;
+
+    expect(getPlateModelPublication(editor)?.identity).toEqual({
+      id: 'plate-test:core:internal-plugin-identity-snapshot',
+      version: 1,
+    });
+    expect(Object.isFrozen(getPlateModelPublication(editor)?.identity)).toBe(
+      true
+    );
+    expect(editor.read.schema.identity()).toMatchObject({
+      id: 'plate-test:core:internal-plugin-identity-snapshot',
+      version: 1,
+    });
+  });
+
+  it('keeps root and keyed API projection scoped to its owning plugin', () => {
+    const FirstPlugin = definePlugin('firstApi', {
+      api: () => ({
+        firstNested: { read: () => 'first-nested' },
+        firstOwn: () => 'first-own',
+        firstRoot: () => 'first-root',
+      }),
+    });
+    const SecondPlugin = definePlugin('secondApi', {
+      api: () => ({
+        secondOwn: () => 'second-own',
+        secondRoot: () => 'second-root',
+      }),
+    });
+    const editor = createEditor({
+      plugins: [FirstPlugin, SecondPlugin],
+    });
+    const first = editor.plugin(FirstPlugin);
+    const second = editor.plugin(SecondPlugin);
+
+    expect(first.api.firstOwn()).toBe('first-own');
+    expect(editor.api.firstApi.firstOwn()).toBe('first-own');
+    expect(first.api).toBe(editor.api.firstApi);
+    expect(Object.isFrozen(first.api)).toBe(true);
+    expect(first.api.firstRoot()).toBe('first-root');
+    expect(editor.api.firstApi.firstNested.read()).toBe('first-nested');
+    expect(Object.isFrozen(editor.api.firstApi.firstNested)).toBe(true);
+    expect(() =>
+      Object.defineProperty(editor.api.firstApi.firstNested, 'read', {
+        value: () => 'mutated',
+      })
+    ).toThrow();
+    expect(Reflect.get(first.api, 'secondRoot')).toBeUndefined();
+    expect(Reflect.get(first.api, 'secondOwn')).toBeUndefined();
+    expect(second.api.secondOwn()).toBe('second-own');
+    expect(editor.api.secondApi.secondOwn()).toBe('second-own');
+    expect(second.api).toBe(editor.api.secondApi);
+    expect(second.api.secondRoot()).toBe('second-root');
+    expect(Reflect.get(editor.api, 'firstRoot')).toBeUndefined();
+    expect(Reflect.get(editor.api, 'secondRoot')).toBeUndefined();
+    expect(Reflect.get(second.api, 'firstRoot')).toBeUndefined();
+    expect(Reflect.get(second.api, 'firstOwn')).toBeUndefined();
+  });
+
+  it('projects compiled plugin API into transaction plugin factories', () => {
+    const writes: string[] = [];
+    const Plugin = definePlugin('txCandidateApi', {
+      api: () => ({ current: () => 'compiled' }),
+    }).extend(({ api }) => ({
+      update: () => ({
+        write: () => {
+          writes.push(api.current());
+        },
+      }),
+    }));
+    const editor = createEditor({ plugins: [Plugin] });
+
+    editor.plugin(Plugin).update.write();
+
+    expect(writes).toEqual(['compiled']);
+  });
+
+  it('keeps runtime closures on the live plugin store', () => {
+    const Plugin = definePlugin('liveRuntimeClosure', {
+      initialState: { enabled: false },
+    }).extend(({ store }) => ({
+      shortcuts: {
+        run: {
+          handler: () => store.get().enabled,
+          keys: 'mod+k',
+        },
+      },
+    }));
+    const editor = createEditor({ plugins: [Plugin] });
+    const run = () =>
+      getPlateRuntime(editor).shortcuts['liveRuntimeClosure.run']?.handler?.(
+        {} as never
+      );
+
+    expect(run()).toBe(false);
+
+    editor.plugin(Plugin).store.set({ enabled: true });
+
+    expect(run()).toBe(true);
+  });
+
+  it('publishes configured initialState before contextual stages', () => {
+    const Plugin = definePlugin('contextualState', {
+      initialState: { label: 'one', projection: '' },
+      targetPlugins: ['descriptorTarget'],
+    })
+      .extend(({ store, plugin }) => ({
+        initialState: {
+          projection: `${store.get().label}:${plugin.targetPlugins.join(',')}`,
+        },
+      }))
+      .configure({
+        initialState: { label: 'descriptor' },
+      });
+    const editor = createEditor({ plugins: [Plugin] });
+
+    expect(editor.plugin(Plugin).store.get('projection')).toBe(
+      'descriptor:descriptorTarget'
+    );
+  });
+
+  it('rejects mutation of the published plugin projection', () => {
+    const plugin = definePlugin('publishedProjection', {});
+    const editor = createEditor({ plugins: [plugin] });
+    const publishedPlugin = getCompiledPlatePlugin(editor, plugin)!;
+
+    expect(Object.isFrozen(publishedPlugin)).toBe(true);
+    expect(() =>
+      Object.defineProperty(publishedPlugin, 'name', {
+        value: 'mutated',
+      })
+    ).toThrow();
+    expect(editor.plugin(plugin).name).toBe('publishedProjection');
+  });
+
+  it('deep-freezes published shortcut and input-rule indexes', () => {
+    const Plugin = definePlugin('frozenRuntimeIndexes', {}).configure({
+      inputRules: [
+        {
+          apply: () => {},
+          target: 'insertText',
+          trigger: '*',
+        },
+      ],
+      shortcuts: {
+        current: { handler: () => undefined, keys: 'mod+k' },
+      },
+    });
+    const editor = createEditor({ plugins: [Plugin] });
+    const { inputRules, shortcuts } = getPlateModelPublication(editor)!;
+    const shortcut = shortcuts['frozenRuntimeIndexes.current'];
+    const pluginRules = inputRules.plugins.frozenRuntimeIndexes;
+    const [rule] = pluginRules.rules;
+
+    expect(Object.isFrozen(shortcuts)).toBe(true);
+    expect(Object.isFrozen(shortcut)).toBe(true);
+    expect(Object.isFrozen(inputRules)).toBe(true);
+    expect(Object.isFrozen(inputRules.insertBreak)).toBe(true);
+    expect(Object.isFrozen(inputRules.insertData)).toBe(true);
+    expect(Object.isFrozen(inputRules.insertText)).toBe(true);
+    expect(Object.isFrozen(inputRules.insertText.all)).toBe(true);
+    expect(Object.isFrozen(inputRules.insertText.byTrigger)).toBe(true);
+    expect(Object.isFrozen(inputRules.insertText.byTrigger['*'])).toBe(true);
+    expect(Object.isFrozen(inputRules.plugins)).toBe(true);
+    expect(Object.isFrozen(pluginRules)).toBe(true);
+    expect(Object.isFrozen(pluginRules.rules)).toBe(true);
+    expect(Object.isFrozen(rule)).toBe(true);
+    expect(() =>
+      Object.defineProperty(rule, 'priority', { value: -1 })
+    ).toThrow();
+  });
+
+  it('deep-freezes published plugin-cache indexes', () => {
+    const editor = createEditor({
+      plugins: [definePlugin('frozenModelIndexes', {})],
+    });
+    const { pluginCache } = getPlateModelPublication(editor)!;
+
+    expect(Object.isFrozen(pluginCache)).toBe(true);
+    expect(Object.isFrozen(pluginCache.decorate)).toBe(true);
+    expect(Object.isFrozen(pluginCache.on)).toBe(true);
+    expect(Object.isFrozen(pluginCache.inject)).toBe(true);
+    expect(Object.isFrozen(pluginCache.inject.nodeProps)).toBe(true);
+    expect(Object.isFrozen(pluginCache.inject.nodeProps.element)).toBe(true);
+    expect(Object.isFrozen(pluginCache.inject.nodeProps.text)).toBe(true);
+    expect(Object.isFrozen(pluginCache.node)).toBe(true);
+    expect(Object.isFrozen(pluginCache.slots)).toBe(true);
+    expect(Object.isFrozen(pluginCache.slots.wrapContent)).toBe(true);
+    expect(Object.isFrozen(pluginCache.rules)).toBe(true);
+    for (const candidates of Object.values(pluginCache.rules)) {
+      expect(Object.isFrozen(candidates)).toBe(true);
+    }
+    expect(Object.isFrozen(pluginCache.useViewElementAttributes)).toBe(true);
+    expect(() =>
+      Object.defineProperty(pluginCache.node, 'mutated', { value: 'mutated' })
+    ).toThrow();
+  });
+
+  it('never falls through an active candidate to stale publication state', () => {
+    const plugin = definePlugin('candidateLookup', {
+      initialState: { label: 'one' },
+    }).extend(({ store }) => ({
+      api: () => ({ current: () => store.get().label }),
+    }));
+    const firstEditor = createEditor({ plugins: [plugin] });
+    const secondEditor = createEditor({ plugins: [plugin] });
+    const firstPublished = getCompiledPlatePlugin(firstEditor, plugin)!;
+    const secondPublished = getCompiledPlatePlugin(secondEditor, plugin)!;
+
+    withCompiledPlatePluginCandidate(secondEditor, [secondPublished], () => {
+      expect(secondEditor.plugin(firstPublished).installed).toBe(false);
+      expect(() => secondEditor.plugin(firstPublished).initialState).toThrow(
+        'descriptor is not installed'
+      );
+    });
+    withCompiledPlatePluginCandidate(secondEditor, [], () => {
+      expect(() => secondEditor.plugin(plugin).name).toThrow(/not installed/i);
+    });
+    withCompiledPlatePluginApiCandidate(secondEditor, {}, () => {
+      expect(
+        Reflect.get(secondEditor.plugin(plugin).api, 'current')
+      ).toBeUndefined();
+    });
+  });
+});

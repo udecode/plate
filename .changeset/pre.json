@@ -1,0 +1,21 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@platejs/test": "54.0.0-beta.0",
+    "@platejs/cli": "54.0.0-beta.0",
+    "platejs": "53.1.2",
+    "plite": "0.0.0-private",
+    "plitejs": "0.0.1",
+    "www": "0.0.1"
+  },
+  "changesets": [
+    "auto-main-to-next-sync-platejs-ai",
+    "auto-main-to-next-sync-platejs-core",
+    "auto-main-to-next-sync-platejs-markdown",
+    "auto-main-to-next-sync-platejs-utils",
+    "auto-main-to-next-sync-platejs",
+    "prepare-v54-beta-core",
+    "prepare-v54-beta-plite"
+  ]
+}

@@ -1,0 +1,48 @@
+---
+title: 锚点
+description: Plate 中可随文档变更映射的路径、点和范围。
+---
+
+通过 `editor.anchor(value, options)` 创建锚点。每次提交
+`DocumentChange` 时，锚点都会映射其路径、点或范围；调用 `release()`
+后停止跟踪。
+
+使用 `deletion: "nearest"` 的持久锚点会在已保存历史的撤销和重做中，
+恢复操作前后的精确位置。
+
+路径和点接受 `"backward"` 或 `"forward"` 关联方式，范围还接受 `"inward"` 和 `"outward"`。范围默认使用 `"inward"`，因此在任一边缘插入的文本都位于锚定范围之外；路径和点默认使用 `"forward"`。对于属于命名文档根的无根值，传入 `root`。
+
+## 使用
+
+```ts
+const anchor = editor.anchor(point, { deletion: 'nearest' });
+editor.update.text.insert('Hello');
+const current = anchor.resolve();
+anchor.release();
+```
+
+锚点属于创建它的编辑器模型和文档根。删除映射可以返回 `null`；读取结果后再
+执行依赖该位置的操作。
+
+## 读取视图
+
+#### `anchor.resolve(view?: Editor): TValue | null`
+
+省略 `view` 时，在捕获锚点的视图中解析。显式传入同一编辑器模型、同一文档根
+的其他视图时，读取该视图当前投影中的位置。其他模型或文档根会抛出错误。
+一个保留目标可以在不同投影视图中解析到不同位置，也可能在某个视图中不可用；
+解析不会创建新锚点或切换任何视图的投影。
+
+```ts
+const target = editor.anchor(point, { deletion: 'nearest' });
+const current = target.resolve();
+const inOtherView = target.resolve(otherView);
+const finalValue = target.release();
+```
+
+此处的 `otherView` 是同一模型、同一文档根的另一个视图。`resolve` 不停止跟踪。
+在已中止事务中捕获的锚点不可用。释放后的锚点在所有视图中均返回 `null`。
+`release()` 返回捕获视图中的当前值，并永久释放共享目标，而不只是某个投影视图。
+
+事务内临时位置使用 `tx.anchor(...)`，其生命周期限定在当前事务，并仅提供无参数
+的 `resolve()`。参见[位置](/docs/locations)和[历史](/docs/history)。

@@ -1,0 +1,47 @@
+import { useCallback, useState } from 'react';
+
+import type { Value } from '../..';
+import { subscribeEditableRuntimeFocus } from '../editable/editable-dom-runtime';
+import {
+  type AnyEditor,
+  subscribeEditorViewState,
+} from '../editable/runtime-editor-api';
+import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
+
+export const useRuntimeFocusState = <
+  V extends Value,
+  TPlugins extends readonly unknown[],
+>(
+  editor: ReactRuntimeEditor<V, TPlugins>
+) => {
+  const [focused, setFocused] = useState(() => ReactEditor.isFocused(editor));
+  const [focusVersion, setFocusVersion] = useState(0);
+  const refreshFocused = useCallback(() => {
+    setFocused(ReactEditor.isFocused(editor));
+  }, [editor]);
+  const publishFocusState = useCallback(() => {
+    refreshFocused();
+    setFocusVersion((version) => version + 1);
+  }, [refreshFocused]);
+
+  useIsomorphicLayoutEffect(() => {
+    refreshFocused();
+
+    const unsubscribeFocus = subscribeEditableRuntimeFocus(
+      editor,
+      publishFocusState
+    );
+    const unsubscribeViewState = subscribeEditorViewState(
+      editor as unknown as AnyEditor,
+      refreshFocused
+    );
+
+    return () => {
+      unsubscribeFocus();
+      unsubscribeViewState();
+    };
+  }, [editor, publishFocusState, refreshFocused]);
+
+  return { focused, focusVersion, refreshFocused };
+};

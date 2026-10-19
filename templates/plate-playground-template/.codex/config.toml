@@ -1,0 +1,3 @@
+[mcp_servers.plate]
+command = "npx"
+args = [ "-y", "shadcn@latest", "mcp" ]

@@ -1,0 +1,11 @@
+
+ai-cjk-50000
+  baseline  warmup  task 1057.17 dom 1055.6 | parse 75.09 txn 263.61 react 655.43 | gc minor 40/33.06 major 0/0 | heap before 797.38 MB, live 262.34 MB
+  candidate warmup  task 1091.29 dom 1089.7 | parse 93.19 txn 284.67 react 639.54 | gc minor 42/31.81 major 0/0 | heap before 253.01 MB, live 158.61 MB
+  baseline  pair-0  task 1089.22 dom 1087.6 | parse 73.16 txn 296.62 react 652.03 | gc minor 41/37.53 major 0/0 | heap before 846.78 MB, live 257 MB
+  candidate pair-0  task 1104.21 dom 1102.6 | parse 95.53 txn 284.46 react 656.69 | gc minor 42/34.99 major 0/0 | heap before 224.2 MB, live 159.91 MB
+  candidate pair-1  task 1101.96 dom null | parse 91.98 txn 291.5 react 645.6 | gc minor 42/32.23 major 0/0 | heap before 265.06 MB, live 158.48 MB
+  baseline  pair-1  task 1061.7 dom 1060 | parse 75.31 txn 271.26 react 649.27 | gc minor 41/33.88 major 0/0 | heap before 784.89 MB, live 223.47 MB
+  baseline  pair-2  task 1086.41 dom 1084.9 | parse 75.32 txn 291.02 react 653.2 | gc minor 40/35.5 major 0/0 | heap before 891.61 MB, live 255.52 MB
+  candidate pair-2  task 1108.52 dom 1106.8 | parse 97.93 txn 284.29 react 642.29 | gc minor 42/32.76 major 0/0 | heap before 253.72 MB, live 156.47 MB
+  r(final task, GC in task) = -0.03; r(final task, heap before) = -0.73

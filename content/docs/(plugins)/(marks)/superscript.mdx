@@ -1,0 +1,123 @@
+---
+title: Superscript
+description: Format inline text above the baseline.
+docs:
+  - route: /docs/basic-marks
+    title: Basic Marks
+  - route: /docs/subscript
+    title: Subscript
+  - route: /docs/components/more-toolbar-button
+    title: More Toolbar Button
+  - route: /docs/plugin-shortcuts
+    title: Plugin Shortcuts
+---
+
+Superscript is the `'sup'` value of Plate's `script` mark. `ScriptPlugin` owns both script positions, so switching to subscript replaces the value instead of coordinating two boolean marks.
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- One `script` leaf property with `'sub' | 'sup'` values, owned by the `PLUGINS.script` capability.
+- Directional selection affinity.
+- HTML deserialization from `sup` and `vertical-align: super`.
+- `<sup>` rendering for the `'sup'` value.
+- Optional `^x^` input rule through `ScriptRules`.
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Add basic marks
+
+`BasicMarksKit` includes `ScriptPlugin`, the superscript input rule, and a `mod+period` shortcut.
+
+<ComponentSource name="basic-marks" />
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { BasicMarksKit } from '@/components/editor/basic-marks';
+
+export const editor = createEditor({
+  plugins: [...BasicMarksKit],
+});
+```
+
+### Add a toolbar control
+
+Pass the shared plugin and the superscript value to `MarkToolbarButton`.
+
+```tsx
+import { ScriptPlugin } from 'platejs/react';
+import { SuperscriptIcon } from 'lucide-react';
+
+import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
+
+export function SuperscriptToolbarButton() {
+  return (
+    <MarkToolbarButton
+      plugin={ScriptPlugin}
+      value="sup"
+      tooltip="Superscript"
+    >
+      <SuperscriptIcon />
+    </MarkToolbarButton>
+  );
+}
+```
+
+</Steps>
+
+## Manual usage
+
+Install the mark package.
+
+```bash
+npm install platejs
+```
+
+Add the shared script plugin and configure only the input rule you need.
+
+```tsx
+import { ScriptRules } from 'platejs';
+import { ScriptPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
+
+export const editor = createEditor({
+  plugins: [
+    ScriptPlugin.configure({
+      inputRules: [ScriptRules.markdown({ value: 'sup' })],
+    }),
+  ],
+});
+```
+
+Toggle superscript from application code with the typed value.
+
+```tsx
+editor.update.script.toggle('sup');
+```
+
+## Ownership
+
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BaseScriptPlugin` | `platejs` | Declares the enum mark, HTML mapping, selection rule, and typed toggle. |
+| `ScriptPlugin` | `platejs/react` | Renders `'sub'` as `<sub>` and `'sup'` as `<sup>`. |
+| `ScriptRules.markdown` | `platejs` | Creates a value-aware `~x~` or `^x^` input rule. |
+| `BasicMarksKit` | Registry | Configures both input rules and shortcuts. |
+| `MarkToolbarButton` | Registry UI | Toggles the requested script value. |
+
+## API Reference
+
+| API | Use |
+|-----|-----|
+| `editor.plugin(ScriptPlugin).schema.key` | The configured text property (default: `script`). |
+| `ScriptPlugin` | Shared React plugin for subscript and superscript. |
+| `ScriptRules.markdown({ value: 'sup' })` | Creates the superscript input rule. |
+| `editor.update.script.toggle('sup')` | Applies superscript or removes it when already active. |

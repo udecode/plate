@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-12-link-draft-addresses",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-12-link-draft-addresses.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-12",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Refuse link form drafts that do not read as an address",
+  "targets": [
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-12-link-draft-addresses-03d5349e",
+      "kind": "behavior",
+      "summary": "Remove the `forceSubmit` state. The form saves a new or changed address that starts with `http://` or `https://`, has another scheme such as `mailto:`, or starts with `/`, `./`, `../`, `#` or `?`. It stays open on any other draft, such as `www.example.com`, and when `allowedSchemes` refuses the address. Editing only the link text keeps the stored address.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-12",
+          "entry": "2026-10-12-link-draft-addresses",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

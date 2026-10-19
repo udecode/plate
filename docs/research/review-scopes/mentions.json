@@ -1,0 +1,43 @@
+{
+  "id": "mentions",
+  "title": "Mentions and referenced entities",
+  "question": "Which entity identity and insertion behavior belong in the document, and which lookup/display policy belongs to an application?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "Entity identity and persisted reference values determine mention insertion, paste and display contracts.",
+  "last": false,
+  "opportunity": {
+    "score": 7,
+    "reason": "Entity references have persistence and paste semantics beyond generic combobox navigation."
+  },
+  "owners": [
+    "packages/platejs/src/features/mention/"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/inlines.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/mentions.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "apps/www/src/registry/components/editor/mention-static.tsx",
+    "apps/www/src/registry/components/editor/mention.tsx",
+    "apps/www/src/registry/examples/values/cn/mention-value.tsx",
+    "apps/www/src/registry/examples/values/mention-value.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/features/mention/",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/mention.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/mentions.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/features/mention/lib/BaseMentionPlugin.spec.tsx"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "autocomplete",
+    "clipboard",
+    "accessibility"
+  ]
+}

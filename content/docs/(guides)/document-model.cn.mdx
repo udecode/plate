@@ -1,0 +1,171 @@
+---
+title: Plate 文档模型
+description: Plate 文档、节点、Schema、迁移和格式适配器的规范 JSON 合约。
+---
+
+Plate 保存编辑器原生 JSON。Plate 定义树结构，Plate 插件添加由 Schema 校验的属性，Codec 负责与外部格式互转。
+
+## 核心树
+
+~~~ts
+type Text = { text: string };
+type Element = {
+  type: string;
+  children: Array<Element | Text>;
+};
+type EditorDocumentValue = {
+  children: Element[];
+  roots?: Record<string, Element[]>;
+  meta?: Record<string, unknown>;
+};
+~~~
+
+功能属性平铺在所属节点上。运行时 NodeKey 不写入文档。
+
+文档顶层只包含 `children`、`roots`、`meta` 和 `records`。`records` 保存插件声明的键控记录集，例如审阅记录。所有加载路径都会拒绝其他顶层字段，应用数据请存入 `meta`。
+
+## 应用 Schema
+
+~~~ts
+type PersistedDocumentInput = {
+  document: EditorDocumentValue;
+  schema: { id: string; version: number; fingerprint: string };
+  selection?: Selection | 'start' | 'end';
+};
+~~~
+
+应用 Schema 决定合法的元素类型、mark、属性、内容和 root。Plate 的标准非空段落语法
+不需要 `root`。使用已有的描述符感知内容构造器声明自定义主 root：
+
+~~~ts
+const EditorSchema = {
+  root: schema.content.element(SectionPlugin, { min: 1 }),
+} as const;
+~~~
+
+最小值必须显式提供正整数。描述符必须匹配已安装的插件；
+`schema.content.elements` 的第一个描述符是默认值。Root 语法参与 schema 指纹和生成的
+`Value`，基数仍由运行时校验。
+
+`defineDocumentMigrations` 将递增迁移链绑定到应用 Schema。运行时和 CLI 都在 Schema
+适配前调用同一个 `migrateDocument`。命名 Schema 的 root 语法变化时，应递增版本并迁移
+已存储文档。迁移步骤的文档只包含 `children`、`roots`、`meta` 和 `records`；其他已存储的顶层字段
+会进入该步骤的 `legacy` 记录，由步骤提升到 `meta`，没有任何步骤提升的字段会被
+`migrateDocument` 拒绝。`migrateV54` 将冻结的 v53.3.6 结构迁移到 v54，包括最终 AST
+约束，并把每个旧代码块的行元素序列合并为一个带换行符的文本子节点。如果链接或媒体存储的
+URL 被当前 Schema 拒绝，迁移会将其链接文本、标题、`alt` 文本或文件名保留为普通内容。已存储的
+提及、表情、斜杠命令和脚注输入节点会变为普通文本形式的触发符与已输入的查询。以文本保存的行高
+会转换为数字，例如 `"107%"` 变为 `1.07`，`"150%"` 或 `"1.5em"` 变为 `1.5`。迁移会丢弃已保存的
+`"normal"`、`"12pt"` 等长度、零、负数和无法解析的文本，且不报告，这些块随后跟随主题行高。
+迁移暂不转换修改格式或块属性的 v53 建议，例如加粗或对齐的修改，v54 无法打开或处理这些建议。
+升级前请在 Plate v53 中接受或拒绝这些建议。
+
+`migrateListIdentity` 为每个列表项保存 `listId`，每段相邻项一个 id，使不带列表 id 保存的文档保持原有编号。把它注册在首次包含列表插件 `listId` 和 `listLevels` 的 Schema 版本下。
+
+## 代表性功能结构
+
+Plate 包定义局部节点结构，应用安装的插件元组和 Schema 决定完整语法。需要提交精确 `Value` 类型时使用 `plate generate`。
+
+~~~ts
+type HeadingElement = {
+  type: 'heading';
+  level: 1 | 2 | 3 | 4 | 5 | 6;
+  children: Text[];
+};
+type CodeBlockElement = {
+  type: 'codeBlock';
+  language?: string;
+  children: [Text];
+};
+type TableElement = {
+  type: 'table';
+  columnWidths?: Array<number | null>;
+  children: TableRowElement[];
+};
+type TableRowElement = {
+  type: 'tableRow';
+  height?: number;
+  children: TableCellElement[];
+};
+type TableCellElement = {
+  type: 'tableCell';
+  backgroundColor?: string;
+  borders?: Partial<Record<
+    'top' | 'right' | 'bottom' | 'left',
+    { color?: string; style?: string; width?: number }
+  >>;
+  colSpan?: number;
+  rowSpan?: number;
+  header?: boolean;
+  children: Element[];
+};
+type ListItemProperties = {
+  listType: 'bulleted' | 'numbered' | 'task';
+  listStyle?: string;
+  listStart?: number;
+  listRestart?: number;
+  checked?: boolean;
+  indent?: number;
+};
+type DateElement = {
+  type: 'date';
+  value: string;
+  children: Text[];
+};
+type MentionElement = {
+  type: 'mention';
+  ref: string;
+  label?: string;
+  children: Text[];
+};
+type FootnoteReferenceElement = {
+  type: 'footnoteReference';
+  ref: string;
+  children: Text[];
+};
+type EquationElement = {
+  type: 'equation' | 'inlineEquation';
+  latex: string;
+  children: Text[];
+};
+type ImageElement = {
+  type: 'image';
+  url: string;
+  naturalWidth?: number;
+  naturalHeight?: number;
+  children: Text[];
+};
+type VideoElement = {
+  type: 'video';
+  url: string;
+  provider?: string;
+  children: Text[];
+};
+~~~
+
+listStart 保存条件作者意图：仅在该项是有序序列第一项时生效，被忽略时仍保留。listRestart 强制该项开启新序列。editor.read.list.ordinal(element) 计算显示编号，普通编辑不会重写后续节点。
+
+列表起始值和重启值是有符号安全整数。元素 `id` 标识一个持久化节点实例，`ref` 表示持久化关联，运行时身份继续使用 `NodeKey`。
+
+表格列宽只有一个所有者：TableElement.columnWidths。HTML 单元格宽度在导入时归一到该数组，`null` 表示未知宽度。图片的 naturalWidth 和 naturalHeight 保存源图片尺寸；媒体 width 保存用户选择的渲染宽度。媒体标题直接存于 children。上传草稿以 `{ type: 'upload', kind, children }` 持久化到 Plate JSON；`File`、任务、进度和错误保留在编辑器状态。上传完成后，普通媒体节点保存持久 URL。外部 HTML、Markdown 和静态输出会省略未完成草稿。
+
+## 与标准的关系
+
+| 模型 | Plate 的关系 |
+| --- | --- |
+| Slate | 使用相同的实用后代结构，并增加编译后的应用 Schema。 |
+| ProseMirror | 采用相同的 Schema 优先原则，但保留扁平的编辑器原生 JSON。 |
+| UNIST | 只共享树术语；Plate 不要求 position 或 data。 |
+| MDAST | Markdown 外部 AST。Codec 将 heading.level 映射到 depth，将 codeBlock.language 映射到 lang。 |
+| Portable Text | 可移植性参考，不是 Plate 的存储格式。 |
+| Block Protocol | 块嵌入协议，不是富文本 AST 合约。 |
+
+Codec 和适配器负责将文档契约映射为外部格式。
+
+## 结构约束
+
+Root 包含块。元素包含块子节点或内联/文本子节点，具体语法由编译后的 Schema 决定。内容允许文本的元素不会为空，因此清空的行会保留一个空文本作为锚点，void 也会保留其内部的空文本。只允许块的内容可以为空。属性相同的相邻文本叶子会合并，内联节点两侧的文本间隔提供有效的光标位置。
+
+空行不保存格式。在空光标处输入的文本使用选区的待定 mark，因此光标停留在清空的粗体行时，输入仍为粗体；光标离开或文档重新加载后，该行变为普通文本。`createEditor` 以同样的规范形式加载初始值，像编辑一样合并文本、补全间隔并添加锚点。
+
+Mark 是文本节点上由 Schema 声明的属性。Decoration 可以把文本节点拆分为渲染叶子片段，而不改变这些持久化属性。校验和适配请参阅 [Schema](/docs/schema)，Schema 合法写入之后的语义修正请参阅[编辑行为](/docs/editing-behavior#normalize-behavior)。

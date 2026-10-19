@@ -1,0 +1,315 @@
+{
+  "K0": {},
+  "K1": {},
+  "K12": {},
+  "K4": {},
+  "K7": {
+    "docs/plans/topics/correct.md": [
+      "- `tooling/config/bunTestSetup.ts` sets `_FUMADOCS_MDX=1`, so no Bun test process runs fumadocs codegen into `apps/www/.source` while other test files read it. -> apps/www/.source"
+    ],
+    "docs/plans/topics/distribution.md": [
+      "- `check-plate-schema-adoption.mjs:5394` looks for `packages/platejs/src/index.ts`, but the root is `index.tsx`, so that rule never fires. owner: zbeyens, tracked in `docs/plans/topics/correct.md` Open work. stop: the rule reads the real root file. -> packages/platejs/src/index.ts",
+      "- `packages/plitejs/src/react/internal/index.ts`, a barrel with no entry, export or importer, is deleted. The `react/internal` entry in `apps/plite/next.config.ts`'s shared alias list stays, because it also serves `platejs/react/internal`. -> packages/plitejs/src/react/internal/index.ts"
+    ],
+    "docs/plans/topics/dnd.md": [
+      "| `packages/platejs/src/dnd/` and the `platejs/dnd/react` export | Plite native drag and the copied kit | `plan` Phase 3 | -> packages/platejs/src/dnd/"
+    ],
+    "docs/plans/topics/plan-page.md": [
+      "- An agent reads a page from its rendered file or its plan and subject files, never from the published page, and only a page whose work is still active is published again. Ellie's workflow guide lives at `docs/development/agent-workflow.md` and plate-2's at `docs/development/agent-skills.md`. -> docs/development/agent-workflow.md",
+      "- Three open plans that other sessions held during the two-row migration still ask the older brief questions and refuse to render: plate-2's `docs/plans/2026-10-05-plate-beside-pstack.md`, which also stops the 16 other plans on the pstack page, plate-2's `docs/plans/2026-10-05-reads-review.md` and Ellie's `docs/plans/2026-10-05-mvp-next.md`. plate-2's `docs/plans/2026-10-05-markdown-remark-find-replace-benchmark.md` still lacks an Attention line. owner: the sessions that hold them, tracked here. -> docs/plans/2026-10-05-mvp-next.md"
+    ],
+    "docs/plans/topics/pstack.md": [
+      "- `tooling/scripts/review-ledger.mjs` stays one module of about 2,300 lines after the 2026-10-04 ledger redesign; its diff panel proposed splitting store, derivation, views, writing and `check` into `tooling/scripts/review-ledger/` and moving `searchResearch` into its own module. owner: Ziad, tracked here. -> tooling/scripts/review-ledger/",
+      "- Another session's open plan, `docs/plans/2026-10-05-history-sync-replay-result.md`, cites `node .agents/rules/plate-next/scripts/version.mjs validate` as a checked proof and `best-api.mdc`'s replay rule as evidence; this build deleted the script and moved the rule to `docs/vision/plate.md` and `docs/vision/plite.md`. owner: Ziad, tracked here. -> .agents/rules/plate-next/scripts/version.mjs"
+    ],
+    "docs/research/history/2026-09-18-feature-history-exercises.md": [
+      "rg -n '2026-09-18|Strict|cleanup|repair|execution|historical|unknown|edge-paste' docs/research/features/table.md docs/research/features/suggestions.md docs/research/features/comments.md -> docs/research/features/comments.md",
+      "rg -n '2026-09-18|Strict|cleanup|repair|execution|historical|unknown|edge-paste' docs/research/features/table.md docs/research/features/suggestions.md docs/research/features/comments.md -> docs/research/features/suggestions.md",
+      "rg -n '2026-09-18|Strict|cleanup|repair|execution|historical|unknown|edge-paste' docs/research/features/table.md docs/research/features/suggestions.md docs/research/features/comments.md -> docs/research/features/table.md",
+      "rg -n 'strict-mode-execution-recovery|table-edge-paste-regression|authored-direct-editing-with-visible-suggestions|comments-attachment-discovery|Subsequent|## History' docs/research/features/table.md docs/research/features/suggestions.md docs/research/features/comments.md -> docs/research/features/comments.md",
+      "rg -n 'strict-mode-execution-recovery|table-edge-paste-regression|authored-direct-editing-with-visible-suggestions|comments-attachment-discovery|Subsequent|## History' docs/research/features/table.md docs/research/features/suggestions.md docs/research/features/comments.md -> docs/research/features/suggestions.md",
+      "rg -n 'strict-mode-execution-recovery|table-edge-paste-regression|authored-direct-editing-with-visible-suggestions|comments-attachment-discovery|Subsequent|## History' docs/research/features/table.md docs/research/features/suggestions.md docs/research/features/comments.md -> docs/research/features/table.md",
+      "sed -n '1,90p' docs/research/features/comments.md -> docs/research/features/comments.md",
+      "sed -n '1,90p' docs/research/features/suggestions.md -> docs/research/features/suggestions.md",
+      "sed -n '1,90p' docs/research/features/table.md -> docs/research/features/table.md"
+    ],
+    "docs/research/probes/2026-09-28-conversion-boundary/safety/README.md": [
+      "bun test ./docs/research/probes/2026-09-28-conversion-boundary/safety/probe.test.ts > docs/research/probes/2026-09-28-conversion-boundary/safety/probe.log 2>&1 -> docs/research/probes/2026-09-28-conversion-boundary/safety/probe.log",
+      "PROBE_OUTPUT=results-after.json bun test ./docs/research/probes/2026-09-28-conversion-boundary/safety/probe.test.ts > docs/research/probes/2026-09-28-conversion-boundary/safety/probe-after.log 2>&1 -> docs/research/probes/2026-09-28-conversion-boundary/safety/probe-after.log"
+    ],
+    "docs/research/probes/2026-09-28-conversion-boundary/safety/review.md": [
+      "bun test ./docs/research/probes/2026-09-28-conversion-boundary/safety/probe.test.ts > docs/research/probes/2026-09-28-conversion-boundary/safety/probe.log 2>&1 -> docs/research/probes/2026-09-28-conversion-boundary/safety/probe.log"
+    ],
+    "docs/research/probes/2026-09-28-conversion-boundary/streaming/BROWSER-REPORT.md": [
+      "`/Users/zbeyens/git/plate-2/apps/www`, with `PLATE_WWW_DEV_SOURCE=1` and -> /Users/zbeyens/git/plate-2/apps/www",
+      "PLAYWRIGHT_BASE_URL=http://localhost:3297 pnpm --filter www test:www-browser:chromium --config /Users/zbeyens/git/plate-2/docs/plans/artifacts/2026-09-28-conversion-boundary/streaming/browser.config.ts -> /Users/zbeyens/git/plate-2/docs/plans/artifacts/2026-09-28-conversion-boundary/streaming/browser.config.ts"
+    ],
+    "docs/research/probes/2026-10-05-history-replay-result/arena/label-A.md": [
+      "(A copy of this package is also saved at `/Users/zbeyens/.claude/plans/architect-runner-plite-merry-piglet.md`.) -> /Users/zbeyens/.claude/plans/architect-runner-plite-merry-piglet.md"
+    ],
+    "docs/research/probes/2026-10-05-history-replay-result/arena/runner-prompt.md": [
+      "- `docs/plans/artifacts/2026-10-05-history-sync-replay-result/grounding-how.md`: traced model of the current flow. -> docs/plans/artifacts/2026-10-05-history-sync-replay-result/grounding-how.md",
+      "- `docs/research/probes/2026-10-05-history-replay-result/history-timing.log` and `survey.tsv`: probe output on HEAD and survey data. -> docs/research/probes/2026-10-05-history-replay-result/history-timing.log",
+      "You are a read-only design runner. Do not edit, create or delete any file in the repository. Do not run anything that writes (no test suites, no installs, no formatters). Reading files and running read-only commands such as `git grep`, `rg`, `sed -n` and `cat` is fine. Return your whole candidate design package in your final reply; the orchestrator saves it. The repository is `/Users/zbeyens/git/plate-2` (branch `next`, the Plate v2 beta redesign, where breaking public APIs is allowed and compatibility never picks the target). -> /Users/zbeyens/git/plate-2"
+    ],
+    "docs/research/probes/2026-10-05-history-replay-result/panel-diff-r1/prompt-d1.md": [
+      "- `docs/plans/artifacts/2026-10-05-history-sync-replay-result/sweep.diff`: the mechanical caller migration across about 90 test and example files (dropping `void`/`await` before history calls, sync `act` wrappers, Comments tests reading `settled`). Several of these files carried another session's uncommitted sweep that added `void`; this run removed it again. -> docs/plans/artifacts/2026-10-05-history-sync-replay-result/sweep.diff",
+      "- `docs/plans/artifacts/2026-10-05-history-sync-replay-result/task.diff`: product code, the core tests, docs, doctrine, changeset and the Plate Next version entry. -> docs/plans/artifacts/2026-10-05-history-sync-replay-result/task.diff",
+      "The repository is `/Users/zbeyens/git/plate-2` (branch `next`, the Plate v2 beta; breaking public APIs are allowed). Other sessions edit the working tree, so read source from the frozen review commit `36edccc43f3ec3bde272bac6740ab42909bdef99` with `git show 36edccc4:<path>`. Its parent is HEAD `36c2f43170`. -> /Users/zbeyens/git/plate-2"
+    ],
+    "docs/research/probes/2026-10-05-history-replay-result/panel-diff-r2/d2-opus.md": [
+      "**Location**: `docs/plite/reference/public-docs/libraries/plite-history/history-editor.mdx:66` -> docs/plite/reference/public-docs/libraries/plite-history/history-editor.mdx"
+    ],
+    "docs/research/probes/2026-10-05-history-replay-result/panel-diff-r2/d2-sol.md": [
+      "**Location**: `packages/plitejs/src/history/history-plugin.ts:967–975` and `987–988` at `59e7c44b`. -> packages/plitejs/src/history/history-plugin.ts:967–975"
+    ],
+    "docs/research/probes/2026-10-05-history-replay-result/panel-diff-r2/prompt-d2.md": [
+      "Re-review only what changed since round 1: `docs/plans/artifacts/2026-10-05-history-sync-replay-result/delta-r2.diff` (the same as `git diff 36edccc4 59e7c44b`, without the probe receipts and decision log). Round 1's findings are in `docs/research/probes/2026-10-05-history-replay-result/panel-diff-r1/` (`d1-opus.md`, `d1-astra.md`, `d1-sol.md`), and the lead's dispositions are the `panel` rows of `docs/plans/2026-10-05-history-sync-replay-result.decisions.tsv` at the frozen commit. -> docs/plans/artifacts/2026-10-05-history-sync-replay-result/delta-r2.diff",
+      "The repository is `/Users/zbeyens/git/plate-2`. Other sessions edit the working tree, so read every file from the frozen round-2 commit `59e7c44b03ef4a9d0d668662dfb13aa55688de54` with `git show 59e7c44b:<path>`. Round 1 reviewed `36edccc43f3ec3bde272bac6740ab42909bdef99`. -> /Users/zbeyens/git/plate-2"
+    ],
+    "docs/research/probes/2026-10-05-history-replay-result/panel-r1/prompt-r1.md": [
+      "The repository is `/Users/zbeyens/git/plate-2` (branch `next`, the Plate v2 beta redesign; breaking public APIs is allowed and compatibility never picks the target). Other sessions edit the working tree, so read every file from the frozen review commit `eca7f8e90bedef25610956e3b1c95ca6b9823c42` with `git show eca7f8e9:<path>`. That commit is HEAD plus this plan's files. -> /Users/zbeyens/git/plate-2"
+    ],
+    "docs/research/probes/2026-10-05-history-replay-result/panel-r1/r1-astra.md": [
+      "**Evidence**: `git show eca7f8e9:docs/research/probes/2026-10-05-history-replay-result/history-timing.log` and the corresponding `settle-failure.log` command both fail because the paths are absent from that commit. The directory tree contains the probe sources. Those sources support inspection of the experiment, but cannot verify the reported output, execution identity, or exit status. -> eca7f8e9:docs/research/probes/2026-10-05-history-replay-result/history-timing.log",
+      "**Location**: `docs/plans/2026-10-05-history-sync-replay-result.md:84–94`. -> docs/plans/2026-10-05-history-sync-replay-result.md:84–94"
+    ],
+    "docs/research/probes/2026-10-05-history-replay-result/panel-r1/r1-sol.md": [
+      "**Evidence**: Both `git show eca7f8e9:docs/research/probes/2026-10-05-history-replay-result/history-timing.log` and the corresponding `settle-failure.log` lookup fail because neither path exists in that commit. The scripts are present, but scripts do not establish successful execution, control output, or the reported rejection count. -> eca7f8e9:docs/research/probes/2026-10-05-history-replay-result/history-timing.log",
+      "**Evidence**: The frozen tree contains `Promise<HistoryResult>` signatures in `docs/plite/reference/public-docs/libraries/plite-history/history-editor.mdx:35,39` and `history.mdx:128,132`. The latter contains `await undo()` at line 20, and `libraries/plite-react/hooks.mdx:178` teaches the same pattern. These paths are absent from the adoption list. The subject page’s current API examples also need a scheduled update. -> docs/plite/reference/public-docs/libraries/plite-history/history-editor.mdx",
+      "**Location**: [Plan:195](/Users/zbeyens/git/plate-2/docs/plans/2026-10-05-history-sync-replay-result.md:195). -> /Users/zbeyens/git/plate-2/docs/plans/2026-10-05-history-sync-replay-result.md:195",
+      "**Location**: [Plan:84-94](/Users/zbeyens/git/plate-2/docs/plans/2026-10-05-history-sync-replay-result.md:84). -> /Users/zbeyens/git/plate-2/docs/plans/2026-10-05-history-sync-replay-result.md:84"
+    ],
+    "docs/research/probes/2026-10-05-history-replay-result/panel-r2/prompt-r2.md": [
+      "Read the round-1 findings and how the lead applied them: `git show ed996682:docs/research/probes/2026-10-05-history-replay-result/panel-r1/r1-opus.md` (and `r1-astra.md`, `r1-sol.md`), and the `panel` rows in `git show ed996682:docs/plans/2026-10-05-history-sync-replay-result.decisions.tsv`. New receipts: `history-timing.txt`, `settle-failure.txt`, `settlement.ts` and `settlement.txt` under `docs/research/probes/2026-10-05-history-replay-result/`. -> ed996682:docs/plans/2026-10-05-history-sync-replay-result.decisions.tsv",
+      "Read the round-1 findings and how the lead applied them: `git show ed996682:docs/research/probes/2026-10-05-history-replay-result/panel-r1/r1-opus.md` (and `r1-astra.md`, `r1-sol.md`), and the `panel` rows in `git show ed996682:docs/plans/2026-10-05-history-sync-replay-result.decisions.tsv`. New receipts: `history-timing.txt`, `settle-failure.txt`, `settlement.ts` and `settlement.txt` under `docs/research/probes/2026-10-05-history-replay-result/`. -> ed996682:docs/research/probes/2026-10-05-history-replay-result/panel-r1/r1-opus.md",
+      "The repository is `/Users/zbeyens/git/plate-2` (branch `next`). Other sessions edit the working tree, so read every file from the frozen round-2 commit `ed99668287101a779b041102c11af0ade926d055` with `git show ed996682:<path>`. Round 1 reviewed `eca7f8e90bedef25610956e3b1c95ca6b9823c42`; round 2's commit is round 1's plus the fixes. -> /Users/zbeyens/git/plate-2"
+    ],
+    "docs/research/probes/2026-10-05-history-replay-result/panel-r2/r2-astra.md": [
+      "**Evidence**: Register a throwing `subscribeAttachments` listener, then undo a range comment’s creation. `setThread` deletes the thread and anchor before calling `annotations.refresh` at line 713. The annotation store invokes change listeners without a boundary (`packages/plitejs/src/annotations/store.ts:306–307`), reaching Comments’ unprotected listener loop at line 439. This happens **before** the proposed `publish` boundary. `replayCreation` catches the exception and returns `comments-mutation-failed`; retry then returns `comments-thread-changed` because the thread is already absent. -> packages/plitejs/src/annotations/store.ts:306–307"
+    ],
+    "docs/research/probes/2026-10-05-history-replay-result/survey.tsv": [
+      "guidance\ttypescript-eslint no-floating-promises\tallowForKnownSafeCalls / allowForKnownSafePromises\tn/a\tUnhandled Promise statements are reported; escape hatches exist for library calls whose rejections the library handles\t/Users/zbeyens/git/typescript-eslint/packages/eslint-plugin/docs/rules/no-floating-promises.mdx:11-21,177-240; src/rules/no-floating-promises.ts:93-95 @28c1f20 -> /Users/zbeyens/git/typescript-eslint/packages/eslint-plugin/docs/rules/no-floating-promises.mdx:11-21",
+      "library\tBlockNote\teditor.undo(): boolean\tsync\tcreateThread is async and server-first: awaits threadStore.createThread, then sets the mark (PM history). Undo removes only the mark; thread stays in store; marks reconcile via orphan attr\t/Users/zbeyens/git/BlockNote/packages/core/src/editor/BlockNoteEditor.ts:1108-1117; packages/core/src/comments/extension.ts:120-160,366-382; comments/mark.ts:15-25 @1e26f1c -> /Users/zbeyens/git/BlockNote/packages/core/src/editor/BlockNoteEditor.ts:1108-1117",
+      "library\tBlockNote\teditor.undo(): boolean\tsync\tcreateThread is async and server-first: awaits threadStore.createThread, then sets the mark (PM history). Undo removes only the mark; thread stays in store; marks reconcile via orphan attr\t/Users/zbeyens/git/BlockNote/packages/core/src/editor/BlockNoteEditor.ts:1108-1117; packages/core/src/comments/extension.ts:120-160,366-382; comments/mark.ts:15-25 @1e26f1c -> packages/core/src/comments/extension.ts",
+      "library\tCodeMirror 6 (@codemirror/commands)\tundo: StateCommand = ({state, dispatch}) => boolean\tsync\tinvertedEffects facet stores StateEffects so non-document state is undone with the doc, still pure state\t/Users/zbeyens/git/codemirror-commands/src/history.ts:16-21,117-134; codemirror-state/src/extension.ts:10 @5b9bac9 -> /Users/zbeyens/git/codemirror-commands/src/history.ts:16-21",
+      "library\tLexical (@lexical/history)\teditor.dispatchCommand(UNDO_COMMAND): boolean; CommandListener<P> = (payload, editor) => boolean\tsync\tRestores a whole EditorState snapshot tagged HISTORIC_TAG. Playground CommentStore is outside history: undo only unwraps the MarkNode\t/Users/zbeyens/git/lexical/packages/lexical-history/src/index.ts:415-449,572-579; packages/lexical/src/LexicalEditor.ts:604,1584; lexical-playground/src/plugins/CommentPlugin/index.tsx:752-805 @dd5c41b -> /Users/zbeyens/git/lexical/packages/lexical-history/src/index.ts:415-449",
+      "library\tLexical (@lexical/history)\teditor.dispatchCommand(UNDO_COMMAND): boolean; CommandListener<P> = (payload, editor) => boolean\tsync\tRestores a whole EditorState snapshot tagged HISTORIC_TAG. Playground CommentStore is outside history: undo only unwraps the MarkNode\t/Users/zbeyens/git/lexical/packages/lexical-history/src/index.ts:415-449,572-579; packages/lexical/src/LexicalEditor.ts:604,1584; lexical-playground/src/plugins/CommentPlugin/index.tsx:752-805 @dd5c41b -> packages/lexical/src/LexicalEditor.ts",
+      "library\tLiveblocks\troom.history.undo: () => void\tsync\tStorage plus presence with addToHistory: true. Comments not in history: useCreateThread returns the thread synchronously as an optimistic update; server result replaces it; onMutationFailure removes it\tscratch clone liveblocks @ee1b008: packages/liveblocks-core/src/room.ts:255-281; packages/liveblocks-react/src/room.tsx:248-275,1974-2058,2076 -> packages/liveblocks-core/src/room.ts",
+      "library\tLiveblocks\troom.history.undo: () => void\tsync\tStorage plus presence with addToHistory: true. Comments not in history: useCreateThread returns the thread synchronously as an optimistic update; server result replaces it; onMutationFailure removes it\tscratch clone liveblocks @ee1b008: packages/liveblocks-core/src/room.ts:255-281; packages/liveblocks-react/src/room.tsx:248-275,1974-2058,2076 -> packages/liveblocks-react/src/room.tsx",
+      "library\tMonaco (ITextModel)\tundo(): void | Promise<void>; pushStackElement(): void; ICustomEdit.undo(): Promise<void> | void\tunion (text edits resolve sync)\tSame IUndoRedoService\t/Users/zbeyens/git/vscode/src/vs/monaco.d.ts:2347,2385,2394,8464-8469; src/vs/editor/common/model/textModel.ts:1604-1614 -> /Users/zbeyens/git/vscode/src/vs/monaco.d.ts:2347",
+      "library\tProseMirror (prosemirror-history)\tundo: Command = (state, dispatch?, view?) => boolean\tsync\tTracks steps and selection only; tr.setMeta(\"addToHistory\", false) excludes a transaction; plugins detect isHistoryTransaction(tr); side effects live outside history\t/Users/zbeyens/git/prosemirror/history/src/history.ts:391-447 (buildCommand, undo, redo, isHistoryTransaction); prosemirror/state/src/transaction.ts:18 @c7f2f1d -> /Users/zbeyens/git/prosemirror/history/src/history.ts:391-447",
+      "library\tQuill\thistory.undo(): void\tsync\tuserOnly option skips non-user (api) changes\t/Users/zbeyens/git/quill/packages/quill/src/modules/history.ts:28,47,85-150 @539cbff -> /Users/zbeyens/git/quill/packages/quill/src/modules/history.ts:28",
+      "library\tSlate (slate-history)\teditor.undo: () => void\tsync\tOperations only; HistoryEditor.withoutSaving excludes ops\t/Users/zbeyens/git/slate/packages/slate-history/src/history-editor.ts:17-21,120 @945a484 -> /Users/zbeyens/git/slate/packages/slate-history/src/history-editor.ts:17-21",
+      "library\tTiptap (UndoRedo extension)\tcommands.undo(): boolean; chain()...run(): boolean\tsync\tThin wrapper over prosemirror-history; with Collaboration, docs say to disable it and use Yjs undo\t/Users/zbeyens/git/tiptap/packages/extensions/src/undo-redo/undo-redo.ts:56-68; packages/core/src/types.ts:626,819-823 @91c51be; tiptap-docs/src/content/tracked-changes/guides/comments-integration.mdx:83-86 -> /Users/zbeyens/git/tiptap/packages/extensions/src/undo-redo/undo-redo.ts:56-68",
+      "library\tTiptap (UndoRedo extension)\tcommands.undo(): boolean; chain()...run(): boolean\tsync\tThin wrapper over prosemirror-history; with Collaboration, docs say to disable it and use Yjs undo\t/Users/zbeyens/git/tiptap/packages/extensions/src/undo-redo/undo-redo.ts:56-68; packages/core/src/types.ts:626,819-823 @91c51be; tiptap-docs/src/content/tracked-changes/guides/comments-integration.mdx:83-86 -> packages/core/src/types.ts",
+      "library\ttldraw / Loro\ttldraw undo(): this; Loro undo() -> LoroResult<bool>\tsync\tLoro: on_push/on_pop callbacks carry UndoItemMeta\t/Users/zbeyens/git/tldraw packages/editor/src/lib/editor/Editor.ts:1551 @e8f61ac; /Users/zbeyens/git/loro/crates/loro-internal/src/undo.rs:194-199,764 -> /Users/zbeyens/git/loro/crates/loro-internal/src/undo.rs:194-199",
+      "library\ttldraw / Loro\ttldraw undo(): this; Loro undo() -> LoroResult<bool>\tsync\tLoro: on_push/on_pop callbacks carry UndoItemMeta\t/Users/zbeyens/git/tldraw packages/editor/src/lib/editor/Editor.ts:1551 @e8f61ac; /Users/zbeyens/git/loro/crates/loro-internal/src/undo.rs:194-199,764 -> /Users/zbeyens/git/tldraw",
+      "library\ttldraw / Loro\ttldraw undo(): this; Loro undo() -> LoroResult<bool>\tsync\tLoro: on_push/on_pop callbacks carry UndoItemMeta\t/Users/zbeyens/git/tldraw packages/editor/src/lib/editor/Editor.ts:1551 @e8f61ac; /Users/zbeyens/git/loro/crates/loro-internal/src/undo.rs:194-199,764 -> packages/editor/src/lib/editor/Editor.ts",
+      "library\tVS Code IUndoRedoService\tservice undo(resource | UndoRedoSource): Promise<void> | void; element undo(): Promise<void> | void; workspace element prepareUndoRedo?(): Promise<IDisposable> | IDisposable | void; confirmBeforeUndo?: boolean\tunion: sync or async per element\tPer-stack lock; repeated undo while locked is dropped with a warning; stack pointer moves before invoke; failure flushes affected stacks and notifies; never rejects to caller\t/Users/zbeyens/git/vscode/src/vs/platform/undoRedo/common/undoRedo.ts:17-72,186-189; undoRedoService.ts:710-740,940-1028,1068-1113 @df2411c -> /Users/zbeyens/git/vscode/src/vs/platform/undoRedo/common/undoRedo.ts:17-72",
+      "library\tYjs UndoManager\tundo(): StackItem | null\tsync\ttrackedOrigins limits capture to listed origins (remote/server origins not undone); stack-item-added/popped events carry stackItem.meta Map for extra state (selection etc.); undoing flag true only during the sync call\t/Users/zbeyens/git/yjs/src/utils/UndoManager.js:137,151-155,196,212-215,342-366 @da05230 -> /Users/zbeyens/git/yjs/src/utils/UndoManager.js:137"
+    ],
+    "docs/research/review-documents.json": [
+      "\"rationale\": \"- Fix the failing regression in `packages/suggestion/src/lib/withSuggestion.spec.tsx`. - Scope: suggestion-mode `deleteBackward('character')` on a previous mention-shaped inline void. - Goal: backspace should mark the mention as a remove suggestion instead of doing nothing. ## Plan 1. Keep the new failing spec red as the guardrail. 2. Inspect the mention vs link delete path in `deleteSuggestion`. 3. Apply the narrowest package fix in `packages/su\", -> packages/su",
+      "\"rationale\": \"- Fix the failing regression in `packages/suggestion/src/lib/withSuggestion.spec.tsx`. - Scope: suggestion-mode `deleteBackward('character')` on a previous mention-shaped inline void. - Goal: backspace should mark the mention as a remove suggestion instead of doing nothing. ## Plan 1. Keep the new failing spec red as the guardrail. 2. Inspect the mention vs link delete path in `deleteSuggestion`. 3. Apply the narrowest package fix in `packages/su\", -> packages/suggestion/src/lib/withSuggestion.spec.tsx",
+      "\"rationale\": \"# Bug repair and verification workflow Status: Complete — scoped workflow repair, not product certification ## Outcome and scope Repair the bug-fix/verification decision chain under the user's September 16 request: explicit pokayoke in `.agents/AGENTS.md`, durable ownership and regression prevention, proportionate first-principles escalation, and truthful proof. Audit only the fix/verification skills, their shared sources and callers. No product \", -> .agents/AGENTS.md",
+      "\"rationale\": \"# Documents: Plate source audit Read-only sidecar consolidation, 2026-09-14. Repository: `/Users/zbeyens/git/plate-2`. Method: Verdict and Redesign from First Principles. Main owns external research, durable review records, four DOCX package-partition runs, and the authority reproduction. This sidecar did not change product/research/ledger files, run builds, create goals, consult external sources, or duplicate main's reproduction. This fi\", -> /Users/zbeyens/git/plate-2",
+      "\"rationale\": \"# Maintain Verify Plate Outcome: **blocked**. The unscoped source audit and live-attempt ledger are complete. Full measurement coverage and replay of several benchmark harness edits remain blocked. Verified local corrections are retained alongside explicitly unverified candidates; the complete change set is not ready to publish. Scope: Verify Plate source, canonical verification inventories and harnesses in `/Users/zbeyens/git/plate-2`, branch `n\", -> /Users/zbeyens/git/plate-2",
+      "\"rationale\": \"# Pandoc and docx-preview: bounded DOCX source audit Completed 2026-09-14. Upstream tips rechecked at **2026-09-14T18:08:39Z**. Scope: Pandoc and docx-preview only; independent inspection of local source and test assertions. **13 implementation/test files, two license files, and two short package metadata reads**; no expanded corpus or runtime. Machine-readable companion: [documents-oss-pandoc-preview.json](/Users/zbeyens/git/plate-2/docs/plite/r\", -> /Users/zbeyens/git/plate-2/docs/plite/r",
+      "\"rationale\": \"Complete a read-only audit of the copied editor UI/package boundary under the repaired extraction rule. Semantic invariants and durable neutral lifecycles qualify with one consumer; visual composition remains local. Task source: User: \\\"ok full audit first with that new rule\\\" after the table ownership cut. Primary template: docs/plans/templates/task.md \", -> docs/plans/templates/task.md",
+      "\"rationale\": \"Complete the phase-4 `table` slice only. Add high-ROI non-React logic coverage for merge-heavy table behavior plus the remaining small sizing and selection helpers in `packages/table/src/lib`. ## Checklist - [completed] Audit table merge and transform seams plus current test helpers - [completed] Add merge-focused table lib specs - [completed] Add size and selection helper specs - [completed] Fix any real runtime bug exposed by the new specs - [c\", -> packages/table/src/lib",
+      "\"rationale\": \"Finish `packages/suggestion` Plate Next package review. Done when 49/49 Suggestion source/spec files score 100, stale Slate/Plate compatibility API audits are clean, the required Plite substrate gap is covered by Plite tests, and focused package proof passes. \", -> packages/suggestion",
+      "\"rationale\": \"Fix `/examples/tables` so moving right from the end of the first table cell lands at offset `0` in the second cell, not offset `1`. ## Scope - Code repo: `/Users/zbeyens/git/plite`. - Plan repo: `/Users/zbeyens/git/plate-2`. - Primary route: `/examples/tables`. - Primary behavior: horizontal keyboard navigation across table cell boundaries must preserve cell-boundary affinity. ## Findings - User report: focus first cell, press ArrowRight, caret m\", -> /Users/zbeyens/git/plate-2",
+      "\"rationale\": \"Fix `/examples/tables` so moving right from the end of the first table cell lands at offset `0` in the second cell, not offset `1`. ## Scope - Code repo: `/Users/zbeyens/git/plite`. - Plan repo: `/Users/zbeyens/git/plate-2`. - Primary route: `/examples/tables`. - Primary behavior: horizontal keyboard navigation across table cell boundaries must preserve cell-boundary affinity. ## Findings - User report: focus first cell, press ArrowRight, caret m\", -> /Users/zbeyens/git/plite",
+      "\"rationale\": \"Move date suggestion styling out of `apps/www/src/registry/ui/date-node.tsx` so the node no longer imports suggestion helpers directly. Suggestion state should be injected from the suggestion plugin layer. ## Scope - Add a test that proves suggestion styling reaches the date trigger through plugin injection. - Refactor `date-node` to expose a stable trigger slot only. - Update suggestion rendering to inject date-specific styling through `inject.n\", -> apps/www/src/registry/ui/date-node.tsx",
+      "\"rationale\": \"Put each kit's required root wrapper on its existing feature plugin. The user accepted this cut on September 7 with “ok go”. Work stays local in `/Users/zbeyens/git/plate-2` on `next`. Completion threshold: Both companion plugin identities are gone; the existing AI session and exact-view DnD lifetimes pass focused proof; current teaching and generated consumers match the direct slot ownership. Verification surface: AI and DnD lifecycle suites, re\", -> /Users/zbeyens/git/plate-2",
+      "\"rationale\": \"Re-audit `packages/table` against `origin/main` and the Plate Next laws; classify every behavior/API/ownership deviation as intentional migration, real drift, or an exact Plite/Plate gap. \", -> packages/table",
+      "\"rationale\": \"Review `packages/basic-nodes`; done when all 39 package files score 100, `check:core` includes the package, and focused package proof passes. \", -> packages/basic-nodes",
+      "\"rationale\": \"Review and migrate `packages/basic-styles` to the Plite-first Plate v2 shape, then close every package source/spec file at score 100 before moving to the next package. Plate Next source: - Prompt: `[$plate-next] next package`. - Mode: package review. - Package: `packages/basic-styles`. - Rule: no next package until all package rows are score 100 or explicitly deferred. - Boundary: package sources/specs, package manifest, smallest Plite owner gap,\", -> packages/basic-styles",
+      "\"rationale\": \"Review and repair every `packages/table` source/type-test file for a clean Plate v2 package on Plite, with score-100 or explicit deferral per file. \", -> packages/table",
+      "\"rationale\": \"Select the smallest truthful table API and a concrete adoption plan for complete-content preservation, root-aware explicit targets, and exact-view selection ownership. Completion threshold: Source-linked public decisions, complete implementation of the accepted 21-method contract and content/selection laws, package/UI/docs/doctrine adoption, and passing required source, package, browser and frozen runtime proof. Publication remains outside this r\", -> content/selection"
+    ],
+    "docs/research/review-scopes/ai.json": [
+      "\"apps/www/src/app/api/ai/command/route.ts\", -> apps/www/src/app/api/ai/command/route.ts",
+      "\"apps/www/src/app/api/ai/command/route.ts\", -> apps/www/src/app/api/ai/command/route.ts",
+      "\"apps/www/src/app/api/ai/copilot/route.ts\", -> apps/www/src/app/api/ai/copilot/route.ts",
+      "\"apps/www/src/app/api/ai/copilot/route.ts\", -> apps/www/src/app/api/ai/copilot/route.ts",
+      "\"docs/plans/artifacts/ai-preview-ownership/candidate-probe.test.ts\", -> docs/plans/artifacts/ai-preview-ownership/candidate-probe.test.ts",
+      "\"docs/plans/artifacts/ai-preview-ownership/candidate-summary.json\", -> docs/plans/artifacts/ai-preview-ownership/candidate-summary.json",
+      "\"docs/plans/artifacts/ai-preview-ownership/final-source.json\", -> docs/plans/artifacts/ai-preview-ownership/final-source.json"
+    ],
+    "docs/research/review-scopes/annotations.json": [
+      "\"docs/plans/artifacts/annotations-review/core.log\", -> docs/plans/artifacts/annotations-review/core.log",
+      "\"docs/plans/artifacts/annotations-review/deletion-probe.ts\", -> docs/plans/artifacts/annotations-review/deletion-probe.ts",
+      "\"docs/plans/artifacts/annotations-review/deletion-result.json\", -> docs/plans/artifacts/annotations-review/deletion-result.json",
+      "\"docs/plans/artifacts/annotations-review/proof.json\", -> docs/plans/artifacts/annotations-review/proof.json",
+      "\"docs/plans/artifacts/annotations-review/react.log\" -> docs/plans/artifacts/annotations-review/react.log"
+    ],
+    "docs/research/review-scopes/authored.json": [
+      "\"docs/plans/artifacts/authored-loadable-state/checkpoint-probe-v2.mjs.sources.json\", -> docs/plans/artifacts/authored-loadable-state/checkpoint-probe-v2.mjs.sources.json",
+      "\"docs/plans/artifacts/authored-loadable-state/checkpoint-probe.ts\", -> docs/plans/artifacts/authored-loadable-state/checkpoint-probe.ts",
+      "\"docs/plans/artifacts/authored-loadable-state/retained-content.ts\", -> docs/plans/artifacts/authored-loadable-state/retained-content.ts",
+      "\"docs/plans/artifacts/authored-loadable-state/retained-probe.mjs.sources.json\", -> docs/plans/artifacts/authored-loadable-state/retained-probe.mjs.sources.json",
+      "\"docs/plans/artifacts/authored-loadable-state/retained-probe.ts\", -> docs/plans/artifacts/authored-loadable-state/retained-probe.ts",
+      "\"docs/plans/artifacts/authored-loadable-state/run-order.json\", -> docs/plans/artifacts/authored-loadable-state/run-order.json",
+      "\"docs/plans/artifacts/authored-loadable-state/summary.json\", -> docs/plans/artifacts/authored-loadable-state/summary.json",
+      "\"docs/plans/artifacts/authored-reload-performance/fixture-10000-proposed.json\" -> docs/plans/artifacts/authored-reload-performance/fixture-10000-proposed.json",
+      "\"docs/plans/artifacts/authored-reload-prosemirror/summary.json\", -> docs/plans/artifacts/authored-reload-prosemirror/summary.json"
+    ],
+    "docs/research/review-scopes/clipboard.json": [
+      "\"docs/plans/artifacts/clipboard-production-benchmark.json\" -> docs/plans/artifacts/clipboard-production-benchmark.json",
+      "\"docs/plans/artifacts/clipboard-review-proof.md\" -> docs/plans/artifacts/clipboard-review-proof.md",
+      "\"docs/plans/artifacts/clipboard-root-preservation-probe.ts\", -> docs/plans/artifacts/clipboard-root-preservation-probe.ts",
+      "\"docs/plans/artifacts/clipboard-root-preservation-results.json\", -> docs/plans/artifacts/clipboard-root-preservation-results.json"
+    ],
+    "docs/research/review-scopes/commands.json": [
+      "\"docs/plans/artifacts/plite-core-api-review/consumer-census.json\", -> docs/plans/artifacts/plite-core-api-review/consumer-census.json",
+      "\"docs/plans/artifacts/plite-core-api-review/verification.json\", -> docs/plans/artifacts/plite-core-api-review/verification.json",
+      "\"docs/plans/artifacts/plite-core-cuts/production-probe-results.json\", -> docs/plans/artifacts/plite-core-cuts/production-probe-results.json",
+      "\"docs/plans/artifacts/plite-core-cuts/production-work-counts.json\" -> docs/plans/artifacts/plite-core-cuts/production-work-counts.json",
+      "\"docs/plans/artifacts/plite-core-cuts/verification.json\", -> docs/plans/artifacts/plite-core-cuts/verification.json"
+    ],
+    "docs/research/review-scopes/conversion-boundary.json": [
+      "\"docs/research/probes/2026-09-28-conversion-boundary/property-probe.log\", -> docs/research/probes/2026-09-28-conversion-boundary/property-probe.log"
+    ],
+    "docs/research/review-scopes/distribution.json": [
+      "\"docs/plans/artifacts/plate-core-api-review/execution-verification.json\" -> docs/plans/artifacts/plate-core-api-review/execution-verification.json"
+    ],
+    "docs/research/review-scopes/exports.json": [
+      "\"docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx\", -> docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx"
+    ],
+    "docs/research/review-scopes/external-text.json": [
+      "\"docs/plans/artifacts/2026-09-15-external-text-plan/scale-adopted.json\" -> docs/plans/artifacts/2026-09-15-external-text-plan/scale-adopted.json",
+      "\"docs/plans/artifacts/2026-09-15-external-text-review/adapter-ordering.probe.test.ts\", -> docs/plans/artifacts/2026-09-15-external-text-review/adapter-ordering.probe.test.ts",
+      "\"docs/plans/artifacts/2026-09-15-external-text-review/proof.md\" -> docs/plans/artifacts/2026-09-15-external-text-review/proof.md",
+      "\"docs/plans/artifacts/2026-09-15-external-text-review/synchronous-candidate.ts\", -> docs/plans/artifacts/2026-09-15-external-text-review/synchronous-candidate.ts"
+    ],
+    "docs/research/review-scopes/geometry.json": [
+      "\"docs/plans/artifacts/transient-projection-scalability/node-benchmark.json\", -> docs/plans/artifacts/transient-projection-scalability/node-benchmark.json"
+    ],
+    "docs/research/review-scopes/history.json": [
+      "\"docs/plans/artifacts/2026-09-15-history-design/ai-timing-corrected-receipt.md\", -> docs/plans/artifacts/2026-09-15-history-design/ai-timing-corrected-receipt.md",
+      "\"docs/plans/artifacts/2026-09-15-history-design/production-harness-receipt.md\" -> docs/plans/artifacts/2026-09-15-history-design/production-harness-receipt.md",
+      "\"docs/plans/artifacts/2026-09-15-history-design/proof.md\", -> docs/plans/artifacts/2026-09-15-history-design/proof.md",
+      "\"docs/plans/artifacts/2026-09-15-history-design/publication-merge-receipt.md\", -> docs/plans/artifacts/2026-09-15-history-design/publication-merge-receipt.md",
+      "\"docs/plans/artifacts/2026-09-15-history-design/publication-timing-receipt.md\", -> docs/plans/artifacts/2026-09-15-history-design/publication-timing-receipt.md",
+      "\"docs/plans/artifacts/2026-09-15-history-design/scale-final-receipt.md\", -> docs/plans/artifacts/2026-09-15-history-design/scale-final-receipt.md",
+      "\"docs/plans/artifacts/2026-09-15-history-review/availability.probe.test.ts\", -> docs/plans/artifacts/2026-09-15-history-review/availability.probe.test.ts",
+      "\"docs/plans/artifacts/2026-09-15-history-review/grouping.probe.test.ts\", -> docs/plans/artifacts/2026-09-15-history-review/grouping.probe.test.ts",
+      "\"docs/plans/artifacts/2026-09-15-history-review/proof.md\", -> docs/plans/artifacts/2026-09-15-history-review/proof.md",
+      "\"docs/plans/artifacts/2026-09-15-history-review/transaction.probe.test.ts\", -> docs/plans/artifacts/2026-09-15-history-review/transaction.probe.test.ts"
+    ],
+    "docs/research/review-scopes/large-documents.json": [
+      "\"docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/virtual-boundaries-probe.json\", -> docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/virtual-boundaries-probe.json",
+      "\"docs/plans/artifacts/large-documents-api-design/call-sites.tsx\", -> docs/plans/artifacts/large-documents-api-design/call-sites.tsx",
+      "\"docs/plans/artifacts/large-documents-api-design/candidates.md\", -> docs/plans/artifacts/large-documents-api-design/candidates.md",
+      "\"docs/plans/artifacts/large-documents-api-design/owner-manifest.json\", -> docs/plans/artifacts/large-documents-api-design/owner-manifest.json",
+      "\"docs/plans/artifacts/large-documents-api-design/probe-contract.json\", -> docs/plans/artifacts/large-documents-api-design/probe-contract.json",
+      "\"docs/plans/artifacts/large-documents-api-design/probe-result.json\", -> docs/plans/artifacts/large-documents-api-design/probe-result.json",
+      "\"docs/plans/artifacts/large-documents-api-design/tsconfig.json\", -> docs/plans/artifacts/large-documents-api-design/tsconfig.json",
+      "\"docs/plans/artifacts/large-documents-api-review/consumer-census.json\", -> docs/plans/artifacts/large-documents-api-review/consumer-census.json",
+      "\"docs/plans/artifacts/large-documents-api-review/verification.json\", -> docs/plans/artifacts/large-documents-api-review/verification.json",
+      "\"docs/plans/artifacts/large-documents-deep/bundle-result.json\", -> docs/plans/artifacts/large-documents-deep/bundle-result.json",
+      "\"docs/plans/artifacts/large-documents-deep/call-sites.tsx\", -> docs/plans/artifacts/large-documents-deep/call-sites.tsx",
+      "\"docs/plans/artifacts/large-documents-deep/consumer-paths.json\", -> docs/plans/artifacts/large-documents-deep/consumer-paths.json",
+      "\"docs/plans/artifacts/large-documents-deep/current-contract-result.json\", -> docs/plans/artifacts/large-documents-deep/current-contract-result.json",
+      "\"docs/plans/artifacts/large-documents-deep/missing-peer-result.json\", -> docs/plans/artifacts/large-documents-deep/missing-peer-result.json",
+      "\"docs/plans/artifacts/large-documents-deep/owner-manifest.json\", -> docs/plans/artifacts/large-documents-deep/owner-manifest.json",
+      "\"docs/plans/artifacts/large-documents-deep/p0-p4-final-package-probe.mjs\" -> docs/plans/artifacts/large-documents-deep/p0-p4-final-package-probe.mjs",
+      "\"docs/plans/artifacts/large-documents-deep/page-plan-contract.json\", -> docs/plans/artifacts/large-documents-deep/page-plan-contract.json",
+      "\"docs/plans/artifacts/large-documents-deep/page-plan-result.json\", -> docs/plans/artifacts/large-documents-deep/page-plan-result.json",
+      "\"docs/plans/artifacts/large-documents-deep/ssr-result.json\", -> docs/plans/artifacts/large-documents-deep/ssr-result.json",
+      "\"docs/plans/artifacts/large-documents-deep/tsconfig.json\", -> docs/plans/artifacts/large-documents-deep/tsconfig.json"
+    ],
+    "docs/research/review-scopes/model.json": [
+      "\".agents/skills/best-api/rules/schema-and-identity.md\", -> .agents/skills/best-api/rules/schema-and-identity.md"
+    ],
+    "docs/research/review-scopes/pagination.json": [
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/api-sketch.tsx\", -> docs/plans/artifacts/2026-09-15-pagination-design/api-sketch.tsx",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/check-links.mjs\", -> docs/plans/artifacts/2026-09-15-pagination-design/check-links.mjs",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/font-probe.json\", -> docs/plans/artifacts/2026-09-15-pagination-design/font-probe.json",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/font-probe.test.ts\", -> docs/plans/artifacts/2026-09-15-pagination-design/font-probe.test.ts",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/fragmentation-probe.json\", -> docs/plans/artifacts/2026-09-15-pagination-design/fragmentation-probe.json",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/fragmentation-probe.test.ts\", -> docs/plans/artifacts/2026-09-15-pagination-design/fragmentation-probe.test.ts",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/geometry-probe.json\", -> docs/plans/artifacts/2026-09-15-pagination-design/geometry-probe.json",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/geometry-probe.test.ts\", -> docs/plans/artifacts/2026-09-15-pagination-design/geometry-probe.test.ts",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/lifetime-probe.json\", -> docs/plans/artifacts/2026-09-15-pagination-design/lifetime-probe.json",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/lifetime-probe.test.tsx\", -> docs/plans/artifacts/2026-09-15-pagination-design/lifetime-probe.test.tsx",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/link-check.json\" -> docs/plans/artifacts/2026-09-15-pagination-design/link-check.json",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/paint-probe.json\", -> docs/plans/artifacts/2026-09-15-pagination-design/paint-probe.json",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/paint-probe.test.tsx\", -> docs/plans/artifacts/2026-09-15-pagination-design/paint-probe.test.tsx",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/scale-probe.json\", -> docs/plans/artifacts/2026-09-15-pagination-design/scale-probe.json",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/scale-probe.test.ts\", -> docs/plans/artifacts/2026-09-15-pagination-design/scale-probe.test.ts",
+      "\"docs/plans/artifacts/2026-09-15-pagination-design/type-proof.json\", -> docs/plans/artifacts/2026-09-15-pagination-design/type-proof.json",
+      "\"docs/plans/artifacts/2026-09-15-pagination-review/contract-probe.json\", -> docs/plans/artifacts/2026-09-15-pagination-review/contract-probe.json",
+      "\"docs/plans/artifacts/2026-09-15-pagination-review/contract-probe.test.ts\", -> docs/plans/artifacts/2026-09-15-pagination-review/contract-probe.test.ts",
+      "\"docs/plans/artifacts/2026-09-15-pagination-review/proof.md\", -> docs/plans/artifacts/2026-09-15-pagination-review/proof.md",
+      "\"docs/plans/artifacts/2026-09-16-pagination-implementation/production-cost.json\", -> docs/plans/artifacts/2026-09-16-pagination-implementation/production-cost.json",
+      "\"docs/plans/artifacts/2026-09-16-pagination-implementation/production-cost.test.ts\", -> docs/plans/artifacts/2026-09-16-pagination-implementation/production-cost.test.ts"
+    ],
+    "docs/research/review-scopes/performance.json": [
+      "\"docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/prior-candidate-reconciliation.md\", -> docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/prior-candidate-reconciliation.md"
+    ],
+    "docs/research/review-scopes/persistence.json": [
+      "\"docs/plans/artifacts/2026-09-16-persistence-review/contract-probe.json\" -> docs/plans/artifacts/2026-09-16-persistence-review/contract-probe.json",
+      "\"docs/plans/artifacts/2026-09-16-persistence-review/contract-probe.test.ts\", -> docs/plans/artifacts/2026-09-16-persistence-review/contract-probe.test.ts"
+    ],
+    "docs/research/review-scopes/plate-api.json": [
+      "\"docs/plans/artifacts/parameterized-plugin-factories/benchmark.json\" -> docs/plans/artifacts/parameterized-plugin-factories/benchmark.json",
+      "\"docs/plans/artifacts/parameterized-plugin-factories/benchmark.json\", -> docs/plans/artifacts/parameterized-plugin-factories/benchmark.json",
+      "\"docs/plans/artifacts/plate-core-api-review/execution-verification.json\", -> docs/plans/artifacts/plate-core-api-review/execution-verification.json",
+      "\"docs/plans/artifacts/plate-core-api-review/production-reference-probe-result.json\", -> docs/plans/artifacts/plate-core-api-review/production-reference-probe-result.json",
+      "\"docs/plans/artifacts/plate-core-api-review/production-transaction-probe-result.json\", -> docs/plans/artifacts/plate-core-api-review/production-transaction-probe-result.json",
+      "\"docs/plans/artifacts/shared-plugin-identity-feasibility/production-result.json\", -> docs/plans/artifacts/shared-plugin-identity-feasibility/production-result.json"
+    ],
+    "docs/research/review-scopes/reads.json": [
+      "\"docs/plans/artifacts/reads-api-review/path-membership-probe.mjs\" -> docs/plans/artifacts/reads-api-review/path-membership-probe.mjs"
+    ],
+    "docs/research/review-scopes/runtime.json": [
+      "\"docs/plans/artifacts/plite-core-api-review/verification.json\", -> docs/plans/artifacts/plite-core-api-review/verification.json"
+    ],
+    "docs/research/review-scopes/schema.json": [
+      "\"docs/plans/artifacts/plite-core-api-review/verification.json\", -> docs/plans/artifacts/plite-core-api-review/verification.json"
+    ],
+    "docs/research/review-scopes/state.json": [
+      "\"docs/plans/artifacts/plite-core-api-review/consumer-census.json\", -> docs/plans/artifacts/plite-core-api-review/consumer-census.json",
+      "\"docs/plans/artifacts/plite-core-api-review/facet-probe-contract.json\", -> docs/plans/artifacts/plite-core-api-review/facet-probe-contract.json",
+      "\"docs/plans/artifacts/plite-core-api-review/facet-probe-results.json\", -> docs/plans/artifacts/plite-core-api-review/facet-probe-results.json",
+      "\"docs/plans/artifacts/plite-core-api-review/facet-work-results.json\", -> docs/plans/artifacts/plite-core-api-review/facet-work-results.json",
+      "\"docs/plans/artifacts/plite-core-api-review/verification.json\", -> docs/plans/artifacts/plite-core-api-review/verification.json",
+      "\"docs/plans/artifacts/plite-core-api-review/without-facets.ts\", -> docs/plans/artifacts/plite-core-api-review/without-facets.ts",
+      "\"docs/plans/artifacts/plite-core-cuts/production-probe-results.json\", -> docs/plans/artifacts/plite-core-cuts/production-probe-results.json",
+      "\"docs/plans/artifacts/plite-core-cuts/production-work-counts.json\" -> docs/plans/artifacts/plite-core-cuts/production-work-counts.json",
+      "\"docs/plans/artifacts/plite-core-cuts/verification.json\", -> docs/plans/artifacts/plite-core-cuts/verification.json"
+    ],
+    "docs/research/review-scopes/suggestions.json": [
+      "\"docs/plans/artifacts/2026-09-13-suggestion-decoration-probe-result.json\", -> docs/plans/artifacts/2026-09-13-suggestion-decoration-probe-result.json",
+      "\"docs/plans/artifacts/2026-09-13-suggestion-package-execution.json\" -> docs/plans/artifacts/2026-09-13-suggestion-package-execution.json",
+      "\"docs/plans/artifacts/content-attributes-probe/footnote-overlay.json\", -> docs/plans/artifacts/content-attributes-probe/footnote-overlay.json",
+      "\"docs/plans/artifacts/content-attributes-probe/probe.tsx\", -> docs/plans/artifacts/content-attributes-probe/probe.tsx",
+      "\"docs/plans/artifacts/content-attributes-probe/production.json\", -> docs/plans/artifacts/content-attributes-probe/production.json",
+      "\"docs/plans/artifacts/content-attributes-probe/prototype.json\", -> docs/plans/artifacts/content-attributes-probe/prototype.json"
+    ],
+    "docs/research/review-scopes/table.json": [
+      "\"docs/plans/artifacts/2026-09-17-table-design/mutation/retained-insert-decision.md\", -> docs/plans/artifacts/2026-09-17-table-design/mutation/retained-insert-decision.md",
+      "\"docs/plans/artifacts/2026-09-17-table-design/mutation/retained-insert-production-deferred-selection-summary.json\" -> docs/plans/artifacts/2026-09-17-table-design/mutation/retained-insert-production-deferred-selection-summary.json",
+      "\"docs/plans/artifacts/2026-09-17-table-design/view/results.json\", -> docs/plans/artifacts/2026-09-17-table-design/view/results.json",
+      "\"docs/plans/artifacts/2026-09-17-table-host-delivery-benchmark/final-comparison.json\", -> docs/plans/artifacts/2026-09-17-table-host-delivery-benchmark/final-comparison.json"
+    ],
+    "docs/research/review-scopes/transactions.json": [
+      "\"docs/plans/artifacts/transactions-api-review/synchronous-boundary-probe.mjs\", -> docs/plans/artifacts/transactions-api-review/synchronous-boundary-probe.mjs"
+    ],
+    "docs/research/review-scopes/ui.json": [
+      "\"apps/www/public/rd/link.json\", -> apps/www/public/rd/link.json",
+      "\"docs/plans/artifacts/2026-09-17-ui-review/coverage.json\", -> docs/plans/artifacts/2026-09-17-ui-review/coverage.json",
+      "\"docs/plans/artifacts/2026-09-17-ui-review/proof.json\", -> docs/plans/artifacts/2026-09-17-ui-review/proof.json"
+    ],
+    "docs/research/review-scopes/uploads.json": [
+      "\"docs/plans/artifacts/2026-09-18-uploads-review/observations.test.ts\", -> docs/plans/artifacts/2026-09-18-uploads-review/observations.test.ts",
+      "\"docs/plans/artifacts/2026-09-18-uploads-review/observations.txt\", -> docs/plans/artifacts/2026-09-18-uploads-review/observations.txt",
+      "\"docs/plans/artifacts/official-files-sdk-integration/implementation-proof.json\" -> docs/plans/artifacts/official-files-sdk-integration/implementation-proof.json",
+      "\"docs/plans/artifacts/official-files-sdk-integration/production-run-2026-09-20T06-36-10-066Z-summary.json\" -> docs/plans/artifacts/official-files-sdk-integration/production-run-2026-09-20T06-36-10-066Z-summary.json",
+      "\"docs/plans/artifacts/official-files-sdk-integration/testing-methodology-evidence.md\", -> docs/plans/artifacts/official-files-sdk-integration/testing-methodology-evidence.md"
+    ]
+  }
+}

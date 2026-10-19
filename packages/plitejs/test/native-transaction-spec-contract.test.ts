@@ -1,0 +1,319 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import {
+  createEditor,
+  definePlugin,
+  SelectionApi,
+  type TransactionSpec,
+  txLocate,
+} from 'plitejs';
+
+import { applyTransactionSpec } from '../src/core/public-state';
+import { getNodeKeyDOMValue } from '../src/internal';
+
+const createTextEditor = (text = 'ab') =>
+  createEditor({
+    initialSelection: SelectionApi.text({
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    }),
+    initialValue: [{ type: 'paragraph', children: [{ text }] }],
+  });
+
+const createInsertSpec = (
+  editor: ReturnType<typeof createTextEditor>,
+  text = '!'
+) =>
+  editor.read((state) =>
+    state.transaction((tx) => {
+      tx.text.insert(text);
+
+      assert.equal(editor.read.text.string([]), 'ab');
+      assert.equal(tx.text.string([]), `a${text}b`);
+    })
+  );
+
+describe('native transaction spec contract', () => {
+  it('builds against a detached draft while ambient editor reads stay committed', () => {
+    const editor = createTextEditor();
+    let commits = 0;
+    const profiledIds: string[] = [];
+    const profilerGlobal = globalThis as typeof globalThis & {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
+        record?: (event: { id: string; kind: string }) => void;
+      };
+    };
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
+    let spec: TransactionSpec;
+
+    editor.subscribeCommit(() => (commits += 1) - 1);
+
+    try {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
+        record(event) {
+          if (event.kind === 'core-time') profiledIds.push(event.id);
+        },
+      };
+
+      spec = createInsertSpec(editor);
+
+      assert.equal(editor.read.text.string([]), 'ab');
+
+      editor.update(() => applyTransactionSpec(editor, spec));
+    } finally {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
+    }
+
+    assert.equal(editor.read.text.string([]), 'a!b');
+    assert.equal(commits, 1);
+    assert.equal(
+      profiledIds.filter((id) => id === 'transaction-node-keys').length,
+      1
+    );
+    assert.equal(
+      profiledIds.filter((id) => id === 'transaction-callback').length,
+      1
+    );
+  });
+
+  it('does not consume node keys while building a discarded structural spec', () => {
+    const withDiscardedSpec = createTextEditor();
+    const control = createTextEditor();
+
+    for (const editor of [withDiscardedSpec, control]) {
+      assert.ok(editor.key([0]));
+      assert.ok(editor.key([0, 0]));
+    }
+
+    withDiscardedSpec.read((state) =>
+      state.transaction((tx) => {
+        tx.nodes.insert(
+          { type: 'paragraph', children: [{ text: 'discarded' }] },
+          { at: [1] }
+        );
+
+        assert.ok(tx.key([1]));
+        assert.ok(tx.key([1, 0]));
+      })
+    );
+
+    for (const editor of [withDiscardedSpec, control]) {
+      editor.update((tx) => {
+        tx.nodes.insert(
+          { type: 'paragraph', children: [{ text: 'published' }] },
+          { at: [1] }
+        );
+      });
+    }
+
+    assert.equal(
+      getNodeKeyDOMValue(withDiscardedSpec.key([1])!),
+      getNodeKeyDOMValue(control.key([1])!)
+    );
+    assert.equal(
+      getNodeKeyDOMValue(withDiscardedSpec.key([1, 0])!),
+      getNodeKeyDOMValue(control.key([1, 0])!)
+    );
+  });
+
+  it('keeps prepared fresh-node identity through same-spec movement and acceptance', () => {
+    const editor = createTextEditor();
+    let preparedKey: ReturnType<typeof editor.key>;
+    const spec = editor.read((state) =>
+      state.transaction((tx) => {
+        tx.nodes.insert(
+          { type: 'paragraph', children: [{ text: 'prepared' }] },
+          { at: [1] }
+        );
+        preparedKey = tx.key([1]);
+
+        assert.ok(preparedKey?.startsWith('p'));
+        assert.equal(editor.read.nodes.path(preparedKey), undefined);
+
+        tx.nodes.move({ at: preparedKey, to: [0] });
+
+        assert.equal(tx.key([0]), preparedKey);
+      })
+    );
+
+    editor.update(() => applyTransactionSpec(editor, spec));
+
+    assert.equal(editor.key([0]), preparedKey);
+    assert.deepEqual(editor.read.nodes.get(preparedKey!), [
+      { type: 'paragraph', children: [{ text: 'prepared' }] },
+      [0],
+    ]);
+  });
+
+  it('keeps the keys a draft reads for nodes it wrote through acceptance', () => {
+    const editor = createTextEditor();
+    const paragraphKey = editor.key([0]);
+    let drafted: Array<ReturnType<typeof editor.key>> = [];
+    const spec = editor.read((state) =>
+      state.transaction((tx) => {
+        tx.text.insert('!');
+        tx.nodes.wrap({ type: 'quote', children: [] }, { at: [0] });
+        const [quote] = tx.nodes.get([0], { type: 'quote' })!;
+        const [paragraph] = tx.nodes.get([0, 0], { type: 'paragraph' })!;
+
+        drafted = [tx.key(quote), tx.key(paragraph)];
+      })
+    );
+
+    editor.update(() => applyTransactionSpec(editor, spec));
+
+    assert.deepEqual(drafted, [editor.key([0]), paragraphKey]);
+    assert.equal(editor.key([0, 0]), paragraphKey);
+  });
+
+  it('carries afterCommit handlers through spec extension and runs them once', () => {
+    const events: string[] = [];
+    const callbackPlugin = definePlugin('specCallback', {
+      update: ({ context, editor, tx }) => ({
+        insert: txLocate(false, (text: string) => {
+          tx.text.insert(text);
+          context.afterCommit(() => {
+            events.push(`${text}:${editor.read.text.string([])}`);
+          });
+        }),
+      }),
+    });
+    const editor = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      }),
+      initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+      plugins: [callbackPlugin],
+    });
+    const base = editor.read((state) =>
+      state.transaction((tx) => tx.specCallback.insert('!'))
+    );
+    const extended = editor.read((state) =>
+      state.transaction.extend(base, (tx) => tx.specCallback.insert('?'))
+    );
+
+    assert.deepEqual(events, []);
+    editor.update(() => applyTransactionSpec(editor, extended));
+
+    assert.equal(editor.read.text.string([]), 'a!?b');
+    assert.deepEqual(events, ['!:a!?b', '?:a!?b']);
+  });
+
+  it('drops spec afterCommit handlers on discard, staleness, and rollback', () => {
+    const events: string[] = [];
+    const callbackPlugin = definePlugin('discardedSpecCallback', {
+      update: ({ context, tx }) => ({
+        insert: txLocate(false, (text: string) => {
+          tx.text.insert(text);
+          context.afterCommit(() => events.push(text));
+        }),
+      }),
+    });
+    const create = () =>
+      createEditor({
+        initialSelection: SelectionApi.text({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        }),
+        initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+        plugins: [callbackPlugin],
+      });
+    const discardedEditor = create();
+
+    discardedEditor.read((state) =>
+      state.transaction((tx) => tx.discardedSpecCallback.insert('discarded'))
+    );
+    assert.deepEqual(events, []);
+
+    const staleEditor = create();
+    const stale = staleEditor.read((state) =>
+      state.transaction((tx) => tx.discardedSpecCallback.insert('stale'))
+    );
+
+    staleEditor.update.text.insert('live');
+    assert.throws(
+      () => staleEditor.update(() => applyTransactionSpec(staleEditor, stale)),
+      /stale transaction spec/
+    );
+
+    const rollbackEditor = create();
+    const rolledBack = rollbackEditor.read((state) =>
+      state.transaction((tx) => tx.discardedSpecCallback.insert('rollback'))
+    );
+
+    assert.throws(
+      () =>
+        rollbackEditor.update(() => {
+          applyTransactionSpec(rollbackEditor, rolledBack);
+          throw new Error('abort');
+        }),
+      /abort/
+    );
+    assert.deepEqual(events, []);
+  });
+
+  it('keeps a prepared spec reusable after its first application rolls back', () => {
+    const editor = createTextEditor();
+    const spec = createInsertSpec(editor);
+    let commits = 0;
+
+    editor.subscribeCommit(() => (commits += 1) - 1);
+    assert.throws(
+      () =>
+        editor.update(() => {
+          applyTransactionSpec(editor, spec);
+          throw new Error('abort');
+        }),
+      /abort/
+    );
+    assert.equal(editor.read.text.string([]), 'ab');
+
+    editor.update(() => applyTransactionSpec(editor, spec));
+
+    assert.equal(editor.read.text.string([]), 'a!b');
+    assert.equal(commits, 1);
+  });
+
+  it('rejects repeated and sibling base specs without publishing either draft', () => {
+    for (const sibling of [false, true]) {
+      const editor = createTextEditor();
+      const first = createInsertSpec(editor);
+      const second = sibling ? createInsertSpec(editor, '?') : first;
+      let commits = 0;
+
+      editor.subscribeCommit(() => (commits += 1) - 1);
+      assert.throws(
+        () =>
+          editor.update(() => {
+            applyTransactionSpec(editor, first);
+            applyTransactionSpec(editor, second);
+          }),
+        /stale transaction spec/
+      );
+      assert.equal(editor.read.text.string([]), 'ab');
+      assert.equal(commits, 0);
+    }
+  });
+
+  it('rejects stale and cross-editor specs before mutation', () => {
+    const source = createTextEditor();
+    const other = createTextEditor();
+    const stale = createInsertSpec(source);
+
+    assert.throws(
+      () => other.update(() => applyTransactionSpec(other, stale)),
+      /different editor/
+    );
+    assert.equal(other.read.text.string([]), 'ab');
+
+    source.update.text.insert('x');
+
+    assert.throws(
+      () => source.update(() => applyTransactionSpec(source, stale)),
+      /stale transaction spec/
+    );
+    assert.equal(source.read.text.string([]), 'axb');
+  });
+});

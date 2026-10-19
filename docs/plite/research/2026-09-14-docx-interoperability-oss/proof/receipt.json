@@ -1,0 +1,77 @@
+{
+  "scope": "documents",
+  "date": "2026-09-14",
+  "sourceMode": "Bun source aliases and DOM test globals from repository bunfig.toml; no built package or native Word claim",
+  "mainExecuted": [
+    {
+      "command": "pnpm --filter platejs test:partition:docx-import",
+      "passed": 3,
+      "failed": 0,
+      "files": 1,
+      "log": "import-tests.log"
+    },
+    {
+      "command": "pnpm --filter platejs test:partition:docx-export",
+      "passed": 92,
+      "failed": 0,
+      "files": 13,
+      "log": "export-tests.log"
+    },
+    {
+      "command": "pnpm --filter platejs test:partition:docx",
+      "passed": 19,
+      "failed": 0,
+      "files": 1,
+      "log": "paste-tests.log"
+    },
+    {
+      "command": "pnpm --filter platejs test:partition:docx-html",
+      "passed": 9,
+      "failed": 0,
+      "files": 1,
+      "log": "html-tests.log"
+    },
+    {
+      "command": "bun test ./docs/plite/research/2026-09-14-docx-interoperability-oss/reproductions/sidecar-authority.spec.ts",
+      "passed": 2,
+      "failed": 0,
+      "files": 1,
+      "expectations": 9,
+      "log": "sidecar-repro.log",
+      "kind": "historical bug observation; passing confirms current defects, not correct behavior"
+    }
+  ],
+  "workerObserved": [
+    {
+      "command": "bun test ./packages/platejs/src/docx",
+      "passed": 123,
+      "failed": 0,
+      "files": 16,
+      "additionalCoverage": 0,
+      "evidence": "../shards/plate-audit.md"
+    },
+    {
+      "command": "bun test ./apps/www/src/registry/examples/docx-demo.spec.tsx ./packages/platejs/src/docx/import/lib/importDocx.slow.tsx ./apps/www/src/__tests__/package-integration/docx.roundtrip.slow.tsx",
+      "passed": 12,
+      "failed": 0,
+      "files": 3,
+      "expectations": 14,
+      "additionalCoverage": 12,
+      "evidence": "../shards/plate-audit.md"
+    }
+  ],
+  "uniqueExistingTests": 135,
+  "historicalBugObservations": 2,
+  "observations": [
+    "With unchanged editor/authored.json and body XML changed from ORIGINAL to EDITED, import returns ORIGINAL and warnings []; removing only the sidecar yields EDITED.",
+    "An edit immediately after starting review export appears in native JSON as ORIGINALLATE while emitted Word XML contains only ORIGINAL."
+  ],
+  "harnessCorrection": "The initial temporary harness resolved jszip from the workspace root and failed before any test. Resolving from packages/platejs/package.json corrected the harness. Product partitions were already passing. The durable relative-import reproducer was replayed successfully.",
+  "limits": [
+    "No product changes; confirmed defects remain.",
+    "Tests do not establish arbitrary DOCX preservation or complete formatting roundtrip; one fixture only asserts nonempty formatting output.",
+    "No browser clipboard, native Word/LibreOffice, external edit/reopen, current packed-install, full slow-suite or performance replay.",
+    "Zero upstream tests or benchmarks executed; upstream test source was inspected only.",
+    "The extra fixture tests are worker-observed, not a separate main rerun; duplicate 123-test execution is not counted twice."
+  ]
+}

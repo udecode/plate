@@ -1,0 +1,55 @@
+'use client';
+
+import { useTheme } from 'next-themes';
+import React from 'react';
+import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
+import {
+  coldarkDark,
+  ghcolors,
+} from 'react-syntax-highlighter/dist/cjs/styles/prism';
+
+import { useMounted } from '@/registry/hooks/use-mounted';
+
+const SyntaxHighlighter =
+  Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
+
+const preSelector = 'pre[class*="language-"]';
+const codeSelector = 'code[class*="language-"]';
+
+function normalizeTheme(theme: Record<string, React.CSSProperties>) {
+  const {
+    background: _preBackground,
+    backgroundColor: _preBackgroundColor,
+    border: _preBorder,
+    ...preStyle
+  } = theme[preSelector] ?? {};
+  const {
+    background: _codeBackground,
+    backgroundColor: _codeBackgroundColor,
+    ...codeStyle
+  } = theme[codeSelector] ?? {};
+
+  return {
+    ...theme,
+    [codeSelector]: codeStyle,
+    [preSelector]: preStyle,
+  };
+}
+
+const lightTheme = normalizeTheme(ghcolors);
+const darkTheme = normalizeTheme(coldarkDark);
+
+export function ThemedSyntaxHighlighter({
+  children,
+  ...props
+}: Omit<SyntaxHighlighterProps, 'style'>) {
+  const mounted = useMounted();
+  const { resolvedTheme } = useTheme();
+  const theme = mounted && resolvedTheme === 'dark' ? darkTheme : lightTheme;
+
+  return (
+    <SyntaxHighlighter {...props} style={theme}>
+      {children}
+    </SyntaxHighlighter>
+  );
+}

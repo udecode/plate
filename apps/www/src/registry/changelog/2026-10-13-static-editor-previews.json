@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-13-static-editor-previews",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-13-static-editor-previews.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Read-only previews and HTML export create their editor with createEditor or useCreateEditor",
+  "targets": [
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-review-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-review-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "markdown-streaming-demo",
+      "files": ["apps/www/src/registry/examples/markdown-streaming-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "html-export",
+      "files": [
+        "apps/www/src/registry/blocks/html-export/page.tsx",
+        "apps/www/src/registry/components/editor/html-export-kit.ts",
+        "apps/www/src/registry/components/editor/html-export-schema-kit.ts",
+        "apps/www/src/registry/components/editor/html-export.tsx",
+        "apps/www/src/registry/examples/values/align-value.tsx",
+        "apps/www/src/registry/examples/values/basic-blocks-value.tsx",
+        "apps/www/src/registry/examples/values/basic-marks-value.tsx",
+        "apps/www/src/registry/examples/values/column-value.tsx",
+        "apps/www/src/registry/examples/values/date-value.tsx",
+        "apps/www/src/registry/examples/values/equation-value.tsx",
+        "apps/www/src/registry/examples/values/font-value.tsx",
+        "apps/www/src/registry/examples/values/indent-value.tsx",
+        "apps/www/src/registry/examples/values/line-height-value.tsx",
+        "apps/www/src/registry/examples/values/link-value.tsx",
+        "apps/www/src/registry/examples/values/list-value.tsx",
+        "apps/www/src/registry/examples/values/media-value.tsx",
+        "apps/www/src/registry/examples/values/mention-value.tsx",
+        "apps/www/src/registry/examples/values/suggestion-value.tsx",
+        "apps/www/src/registry/examples/values/table-value.tsx",
+        "apps/www/src/registry/examples/values/toc-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-13-comment-previews-create-their-editor-3f94348f",
+      "kind": "wiring",
+      "summary": "Create each read-only preview editor with `useCreateEditor` from `platejs/react`, with the same plugins and dependencies as before.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment", "comment-review-demo", "markdown-streaming-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-13",
+          "entry": "2026-10-13-static-editor-previews",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-13-html-export-create-editor",
+      "kind": "wiring",
+      "summary": "Create the server page's export editor with `createEditor` from `platejs` and the client preview's editor with `useCreateEditor` from `platejs/react`, and keep rendering both through `EditorStatic`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["html-export"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-13",
+          "entry": "2026-10-13-static-editor-previews",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

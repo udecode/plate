@@ -1,0 +1,69 @@
+---
+title: 受控编辑器值
+description: 控制初始值、持久化、替换和异步初始化。
+---
+
+Plate 不是普通的受控文本输入。编辑器拥有内容、选择、历史、插件状态和规范化。本指南关注安全的控制点：初始值、变更持久化、显式替换、重置和延迟初始化。
+
+<Callout type="warning" title="不要控制每一次按键">
+  不要把 `editor.read.children()` 镜像到 React state 后在每次变更时再传回编辑器。
+  这会和 Plate 的选择、历史和规范化相冲突，把普通输入变成整篇文档替换。
+</Callout>
+
+| 目标 | API |
+| --- | --- |
+| 设置初始内容。 | `useCreateEditor` 或 `createEditor` 的 `initialValue`。 |
+| 持久化编辑。 | `<EditorRoot onValueChange>` 或 `<EditorRoot onCommit>`。 |
+| 从编辑器外部替换内容。 | `editor.update((tx) => tx.value.replace({ children: value }))`。 |
+| 恢复初始内容。 | `editor.update((tx) => tx.value.replace({ children: initialValue }))`。 |
+| 延迟初始化。 | `skipInitialization: true` 加一次显式 `editor.update(...)`。 |
+
+### 延迟初始化
+
+当协作层、多步骤加载器或异步请求拥有启动时机时，使用 `skipInitialization`。数据准备好后，用一次事务替换内容并设置选择。完整文档替换只对当前输入执行 schema 适配。历史持久化数据必须先通过 `migrateDocument` 转换，再进入替换事务。
+
+```tsx
+function AsyncControlledEditor() {
+  const [initialValue, setInitialValue] = React.useState();
+  const [loading, setLoading] = React.useState(true);
+  const editor = useCreateEditor({
+    skipInitialization: true,
+  });
+
+  React.useEffect(() => {
+    // 模拟异步获取
+    setTimeout(() => {
+      setInitialValue([
+        {
+          type: 'paragraph',
+          children: [{ text: '已加载异步值！' }],
+        },
+      ]);
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  React.useEffect(() => {
+    if (!loading && initialValue) {
+      editor.update((tx) => {
+        tx.value.replace({ children: initialValue });
+        const end = tx.points.end([]);
+
+        if (end) tx.selection.set(end);
+      });
+    }
+  }, [loading, initialValue, editor]);
+
+  if (loading) return <div>加载中…</div>;
+
+  return (
+    <EditorRoot editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </EditorRoot>
+  );
+}
+```
+
+<ComponentPreview name="controlled-demo" padding="md" />

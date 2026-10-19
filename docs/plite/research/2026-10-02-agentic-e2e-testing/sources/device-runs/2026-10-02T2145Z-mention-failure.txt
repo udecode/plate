@@ -1,0 +1,19 @@
+mention-taps.device.ts, repeat 4 of the 2026-10-02T21:45Z run (the one failure in 35).
+Copied from the run's error-context.md before later runs wiped the output directory.
+
+Error: Gboard does not show the en letter panel; switch with device.keyboard.use('en').
+
+Error: The device witness rejected this trace:
+- missing-pointer at tap 0,0:7: the touch never reached the page
+- missing-key at Space: the Space tap produced no keydown
+- missing-key at @: the @ tap produced no keydown
+- missing-key at b: the b tap produced no keydown
+- missing-key at i: the i tap produced no keydown
+- missing-pointer at tap "Biggs Darklighter": the touch never reached the page
+
+Page snapshot of the owned tab: - textbox [active] [ref=e2]
+
+Chrome's DevTools list after the run showed three calibration tabs
+(http://localhost:8790/?calibrate=...) that calibrate had opened by intent and
+never closed. That another tab took the touches is inferred from the empty
+trace on the owned tab; no artifact shows which tab Chrome had in front.

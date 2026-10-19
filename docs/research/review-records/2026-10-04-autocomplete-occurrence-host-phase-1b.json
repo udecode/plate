@@ -1,0 +1,143 @@
+{
+  "id": "2026-10-04-autocomplete-occurrence-host-phase-1b",
+  "kind": "execution",
+  "date": "2026-10-04",
+  "scopes": [
+    "autocomplete",
+    "native"
+  ],
+  "reviewBasis": [
+    "2026-10-02-autocomplete-input-element-rechallenge",
+    "2026-09-12-native-input-authority"
+  ],
+  "workKind": "implementation",
+  "previous": [
+    "2026-10-04-autocomplete-occurrence-host-phase-1a"
+  ],
+  "plan": "docs/plans/2026-10-03-autocomplete-occurrence-host.md",
+  "outcome": "partial",
+  "summary": "Phase 1b of the occurrence-host plan moved typed-text recognition and preedit text into public Plite calls, in the working tree; Phases 2 and 3 have not run. Plite reports text a mounted Editable committed with typing intent through api.react.subscribeTypedText, naming the text just before the commit's caret, and reads the DOM text before the caret through api.dom.textToCaret. Android's pending diffs keep their input type, the input-event fallback reports its Editable, a DOM repair that leaves the caret elsewhere opens no typing scope, and a commit whose document an earlier listener changed reports nothing. Plate's combobox owner opens an occurrence only from a report for its own Editable and stops reading Plite's private tags and placeholder characters. Phase 1b adds no Android flush, so a merged diff of typed and pasted text reports nothing. The api-build panel ran four rounds, two past its cap, and the round-5 patch shipped unreviewed on the owner's word.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "packages/plitejs/test/react/typed-text.test.tsx",
+        "sha256": "ed6e8da507dbf5c64d80bd6e70d1678828e81770a0deb889972c865875929a46",
+        "claim": "18 of 18 on the linted final bytes, covering the listener, unmounted, focus, leaf-edge, nested-editor, Android order and burst, a listener edit during delivery, a listener commit that keeps the report and a captured repair that leaves the caret elsewhere."
+      },
+      {
+        "path": "packages/platejs/src/react/features/combobox/useCombobox.spec.tsx",
+        "sha256": "4fe223907e4678867584a71eb9378f81f640a3153928b8c22673cb589085d064",
+        "claim": "25 of 25 on the linted final bytes, including the focus gate, a listener that writes a trigger over typed text, a listener that leaves an untyped equal trigger, and role churn with a 75-character query."
+      },
+      {
+        "path": "apps/www/tests/browser/combobox.spec.ts",
+        "sha256": "47815639a105693d747e6dadf78c1b0249f3d7f05fd6a7ba5b2452ce02765d1c",
+        "claim": "Five warm repeats with no retries on the www dev server with source aliases: Chromium 70, Firefox 55 and WebKit 55 passed, the 15 skips in Firefox and WebKit being Chromium-only composition cases; WebKit counts its port-3000 run."
+      },
+      {
+        "path": "apps/plite/tests/device/mention-taps.device.ts",
+        "sha256": "5f5d0543ef6d8881d39647d7430d53b294d71b735ba08b0c1b6a9dee57e0237e",
+        "claim": "5 of 5 on emulator-5554 (Pixel_9_API_36_Play) through Gboard, served from this checkout at HEAD 36c2f43170 plus the working tree."
+      },
+      {
+        "path": "apps/www/scripts/run-combobox-typing-probe.mts",
+        "sha256": "3fc168434095943cbde47e7f1149bb045d4094f138a7d7f660402b16eef847b9",
+        "claim": "The A/A on the final harness passed in six cohorts within 0.2 ms; candidate medians stayed within -0.5 to +1.15 ms of the baseline, but no candidate run met the full keep rule under load from other sessions."
+      }
+    ],
+    "limits": "The calibrated benchmark is partial: load averages of 3.5 to 4.7 from other sessions widened the candidate IQRs past the A/A's, the back-to-back rerun's own A/A failed for query and footnote-20, footnote-2000's median is +1.15 ms at 0.5% of its p95, and the known-bad control ran on the harness before sample attribution changed. No panel reviewed the round-5 patch. Physical-device IME, real WebKit IME confirmation and screen readers stay unproven, as the subject's Open work lists."
+  },
+  "references": [
+    "docs/plans/2026-10-03-autocomplete-occurrence-host.md"
+  ],
+  "inputs": {
+    ".agents/skills/best-api/SKILL.md": "37454413261df1248082645183ea1bb9054e71852599c81618122e454753e958",
+    "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+    "apps/plite/tests/plite-browser/donor/examples/richtext.test.ts": "7f311d657e2a67fe2efa3da2bd29494a5715e1f215d5a1d9703f5494c2cc821c",
+    "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+    "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+    "apps/www/src/app/(app)/examples/plite/_examples/android-tests.tsx": "0ccbd38146065632c2f7a289c07c3d2959be44d8127880562a7b169fa3b8a64a",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx": "f825dffef40c231c42a5c21ee39172b27dc1bd0d074d8427db86374ca6ca8bc5",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts": "d60822d4b05739cc272304056ebc403044809f42a465c0a8dc4be669dfc5d28b",
+    "apps/www/src/registry/components/editor/emoji.tsx": "e6e4fac67b3185c33abe092e572349d1fdc7d64a5478e82b310544ef3343dd62",
+    "apps/www/src/registry/components/editor/footnote.tsx": "418db79d21607129d8aed5f2824369e6f9b8b7c7b788843e862522a2c7af84cd",
+    "apps/www/src/registry/components/editor/inline-combobox.tsx": "f06c84db4fcf9041291d3103fb9d8b6fdb3848decfba8b3611f270897cf4a616",
+    "apps/www/src/registry/components/editor/mention.tsx": "847298e9959a636a5d4ae6d94c6a250c1d19f39bd461d3e60d44d8aa56c89cb4",
+    "apps/www/src/registry/components/editor/select-command.tsx": "ac3ec41fc0eca2bbd8a0e8165d51b3e79756ea6272edf65e7fb32d13ab2b1404",
+    "apps/www/src/registry/components/editor/select-editor.tsx": "236f074cffcbb83efc1fb913a8f20f88fe12ef8c5ee69eb0c564699ac3f58e15",
+    "apps/www/src/registry/components/editor/slash.tsx": "34962503e2176d4da528d8410c016c0c5c842b17703c5fed620610b5dcf7c56f",
+    "apps/www/src/registry/hooks/use-debounce.ts": "256b01505a863d67b278345b66a9b8340faf68247028da04fab201335a4560e4",
+    "apps/www/tests/browser/combobox.spec.ts": "47815639a105693d747e6dadf78c1b0249f3d7f05fd6a7ba5b2452ce02765d1c",
+    "apps/www/tests/browser/homepage-ime.spec.ts": "94c7774d6e12fbf2be650cb46a91bbe213a9ce3984171547d14d448be69c5fef",
+    "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+    "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+    "config/plite-source-test-setup.ts": "ac5d29afcfd6ffc44f80620b912514a813124b36b30b61703340b79c2b346355",
+    "docs/plans/2026-08-22-plite-long-ime-history-atomicity-regression.md": "e3c32f44433bbcaf113903e7c90e5dfa33c55358bf12b80bc775926b3ab724ab",
+    "docs/plans/5066-hard-cut-native-input-cliff.md": "84d2aadaf23e37ca57191a38936bafce31d762c24650d7d2bb9e64c58ef1084f",
+    "docs/research/probes/2026-09-30-autocomplete/current-boundaries.spec.tsx": "625b0888371e4bf0dfe9b134352255f9e6bd4c8780473722bc9718c8f015b4ad",
+    "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+    "docs/vision/plate.md": "4a0e6c187965994850a77771ed954d644f9a255a2d776966d33ec82c9cef5f3b",
+    "docs/vision/plite.md": "11403962f2412939a0372ba6db5a5d0cddd021ae45e2650d83a02a2e625d8e96",
+    "packages/platejs/package.json": "9ef060d69055e74235e5fdf648bf23249fd028654271706eb4de35d72a9dbaac",
+    "packages/platejs/src/dom/": "c51533a2c97a40afc131a8f9ca521d7d1c3a6d2e41d4be99e77bd88c6ee98437",
+    "packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts": "54a593415938be2971ef5f300da816c85ce48c95958162402d92ede08911b3ac",
+    "packages/platejs/src/emoji/lib/createEmojiSearch.ts": "20432336ba8ca2402da9de3635f6224dda3e2796459f7c5b05422077031f51f9",
+    "packages/platejs/src/features/combobox/": "32364fdeb49c58bdb2b6567b0f47be440f37a9e67931d7f2efdbb65b5f6a0ffc",
+    "packages/platejs/src/features/combobox/lib/filterWords.spec.ts": "0b3952c969655f44f54b455e3f4a6ca757bc406b50186f13316f111656f8a8f6",
+    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": "26409780d782910ba62246ef82e7f92fdac22b4c8e25204d740047f8e9a97a99",
+    "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts": "cbee93dafefa0d3dcebeae594d5ccdea7a442169f4d93b01cc9d2cd277a9ac98",
+    "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts": "c7b50621af092622a1cd8009879b5bec2b199e6efdc02c47f409abead954fa0e",
+    "packages/platejs/src/lib/plugins/input-rules/": "843ec27ec27d7f2384df19a6a29f09ae7f316cdf799161ef19f36f74c8b10523",
+    "packages/platejs/src/migrations/migratePlateV54Inputs.spec.ts": "699aa46634ce27a09f10a3b09c8063bf73cfef346492b048d2b92c2d4303c069",
+    "packages/platejs/src/react/features/combobox/": "74473b7e0e6fd96cb053abf47f319ed326ffa29bc70b28bafb8bdbe075f397f3",
+    "packages/platejs/src/react/features/combobox/useCombobox.spec.tsx": "4fe223907e4678867584a71eb9378f81f640a3153928b8c22673cb589085d064",
+    "packages/platejs/src/react/utils/pipeRenderText.internal.tsx": "8ae267221d1cdee45d8185f89007d8d919027d78fc0172541755336df2a5e655",
+    "packages/platejs/src/utils/plate-keys.ts": "903edb678b7e057cbb7a3ed7c3f7fa2c618cc5023dcfe886d383a3f303a01e17",
+    "packages/platejs/type-tests/combobox-input-contracts.ts": "52b2bb02a0108f67ca453f86a725bde924af133d29b3bc549a35295f33183c1b",
+    "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+    "packages/plitejs/src/core/command-registry.ts": "0ca28b54f1f36e8e10d491e1e04c2dc8a1de436e3797c48a999d4dd0c09ba181",
+    "packages/plitejs/src/dom/": "83e784bcc7fa6d595dd5d54f0ba1ac9977a7d4ea5dca331320184fdc09ed2ed3",
+    "packages/plitejs/src/dom/plugin/dom-integrity-observer.ts": "a85674cb905c1c3e1e9db2f8319ece1e6f3b573f7eca2104ef3ca3b769bf2749",
+    "packages/plitejs/src/react/dom-text-sync.ts": "22c7f935e7d71b31f85c41b217fe9d28444431f5dc52d1ace7beec7485546fb8",
+    "packages/plitejs/src/react/editable/browser-handle.ts": "be722ba18a00d7b0d7c0eec6013df479b8e45a2fead03498308b3fd97e7bdf5d",
+    "packages/plitejs/src/react/editable/composition-state.ts": "31e5383b7bddbcc5d3732d0925e351ffbb36857d0188b104ac0a35ca499cf284",
+    "packages/plitejs/src/react/editable/decoration-repair-bridge.ts": "f9b03227d19e877f777d94a3b036de28b91f66f6212147001519ff8c2e80c1c8",
+    "packages/plitejs/src/react/editable/dom-input-event.ts": "6db50967c184e90738f6b2f34686e664f68be42b99e14365d24c2e18d37bc3a0",
+    "packages/plitejs/src/react/editable/dom-repair-queue.ts": "017ee515f3a8a898ca8e2ce4a1942157e61897ad36db2504a71cfdceb205127a",
+    "packages/plitejs/src/react/editable/dom-repair-text.ts": "a28b79ce71e46e3d85c3c731bc0b83a46ab035efa764fdf422bea4cc8454562a",
+    "packages/plitejs/src/react/editable/editable-dom-runtime.ts": "59ca612806408a802097d10b1e3ddb5887b451eef056205e6f2da38315bdfd7d",
+    "packages/plitejs/src/react/editable/editing-epoch-adapter.ts": "26b88280d5d1f058a26ced8e3c1101a5cfaf555d08e84ffaacc75d24ea97416a",
+    "packages/plitejs/src/react/editable/editing-kernel.ts": "87aa289f92e8a218536472989fb9954d41b7232bf7e4c7688580bc4669ec7d3d",
+    "packages/plitejs/src/react/editable/input-controller.ts": "0a0de1251689da7ebc59c74fc36dfd5cd1ef8b84237d65124094c48e53a6e0f9",
+    "packages/plitejs/src/react/editable/input-router.ts": "01d5f21c990a18d87a48c63d71e3528b98adbaaa4a867f434b8bdb89c9f998ef",
+    "packages/plitejs/src/react/editable/input-state.ts": "f6a3e69b62d65e6e18d7a72a2f85b4df70aed33576750b39527ecfd8a83a644a",
+    "packages/plitejs/src/react/editable/install-browser-handle.ts": "7f3117c8b26cc2009658b9bfcd2b6b1fb973903309fbb3cc064566da1406c2bd",
+    "packages/plitejs/src/react/editable/interaction-owner.ts": "60dd84b8a5b1c814b157683d47bc2aecaecb29cb3cca9a34d2d6a7371785ff77",
+    "packages/plitejs/src/react/editable/keyboard-input-strategy.ts": "c8043eee1ed9c8e8c494f98884616761e6c1d87e885809cdc8f830178c028348",
+    "packages/plitejs/src/react/editable/model-input-strategy.ts": "be41f7812c8a40f0d4ac8153b48e947a225a1aa141f4f0627ebc0f6995287a00",
+    "packages/plitejs/src/react/editable/mutation-block-editing.ts": "fbfa12293ab5c47a961dbd0981c0a5442b5abcf532606561d9c604350c559de9",
+    "packages/plitejs/src/react/editable/mutation-controller.ts": "72aa1d97ff44fe8d8e06f8a353268130dd69a05e76c50f3f3cd675d2829cbe3a",
+    "packages/plitejs/src/react/editable/mutation-full-block-editing.ts": "989086cea58243e18eb9be8234ed69ee77759333dbd07fad4af01c2087f0e260",
+    "packages/plitejs/src/react/editable/native-input-strategy.ts": "09411eb3436332529f84aa6c7eac9071eaa6e51a689122e566002baab843ff0f",
+    "packages/plitejs/src/react/editable/native-text-input-delta.ts": "1a418732f59349af7cc584b93343064d0b19ea8f8a392dac7fe9937928e9df7d",
+    "packages/plitejs/src/react/editable/runtime-android-engine.ts": "4ff0cd3570a2eac03497ee677d56c5a93402e3723d64a61c3d521a5482ebeaa7",
+    "packages/plitejs/src/react/editable/runtime-before-input-events.ts": "e9226eddf82e42c0674898c9ca5c4363697eeb1ca4f9903f457b743bf4fe3aaa",
+    "packages/plitejs/src/react/editable/runtime-browser-handle-events.ts": "9bbd6e5d9d9ffe1ea46f3680838b275e0207323d134724784a61acaee25cabfd",
+    "packages/plitejs/src/react/editable/runtime-composition-events.ts": "61cc72f45dd9059b490cfb12237f37ea8b58617797c1d904e204f25f117caf39",
+    "packages/plitejs/src/react/editable/runtime-event-engine.ts": "4cfb6cb51c289687da302cacf5a6e50fa99d3105605f9c2f28942f5856c11c3d",
+    "packages/plitejs/src/react/editable/runtime-input-events.ts": "26bf22fb8e66a769e7995c617c02165b4bc7a1843b749263f0be3759879922d9",
+    "packages/plitejs/src/react/editable/runtime-keyboard-events.ts": "d8502b6b97ededc3e141176e621a7d330efd901b5a11a545c1ce63de7b9edb86",
+    "packages/plitejs/src/react/editable/runtime-mutation-state.ts": "f6415adf1acf5bf8b21008033a377b5cfbef5a3ac161fb26e277679f535a3504",
+    "packages/plitejs/src/react/editable/runtime-repair-engine.ts": "1705a53f9ad8cdc03233e835f652c0dddc959bfec6a785b2bd81c68d89557d80",
+    "packages/plitejs/src/react/hooks/android-input-manager/android-input-manager.ts": "14597cb9c5d3876717d91830b4a6d2fbb6acbe5488580533d2ea7785be48c62f",
+    "packages/plitejs/test/dom/dom-selection.test.ts": "16173949fd0d110c2c2ee071fed0c5437a0e2966bd246fdd6d0e277cdc749e44",
+    "packages/plitejs/test/react/composition-state-contract.test.ts": "385f92e94d5a31a9794a10f2e89d8390ce48550c7d171cf25a5a274b0ad43fc1",
+    "packages/plitejs/test/react/input-router-contract.test.tsx": "93b343b4179c5593c315a5e4e20a5bb60969fa4ae02a31d47de362eed45723a4",
+    "packages/plitejs/tsconfig.json": "4a0b4f2b6be89151687c0739424a0337e5d272737f083134ccb062a348a64ff0",
+    "tooling/config/bunTestSetup.ts": "dba875bbf80a3d863e1b98a3ca4b4e20ffd0623fee83c9c02648b63120a802f4",
+    "tooling/config/tsconfig.test.json": "fe02ec41ff9a189e8a08bc65e1f38dfb5bf8a8acd778a5228af98f1f816376c4"
+  },
+  "upstreams": [],
+  "digest": "31f83e9346e2d97151110a402be62ae7ea30a3c1f1fcdd6b5a8962e896cd78c5"
+}

@@ -1,0 +1,107 @@
+--- a/packages/platejs/src/ai/react/AIChatPlugin.ts
++++ b/packages/platejs/src/ai/react/AIChatPlugin.ts
+@@ -1642,7 +1642,6 @@
+           invalidatePreview();
+           return;
+         }
+-        const previous = previewParse;
+         const parsed = content
+           ? commandEditor.api.markdown.parseSlice(
+               content,
+@@ -1650,11 +1649,10 @@
+               // strict and invalidates a response it cannot represent. Both
+               // continue the latest partial result.
+               final
+-                ? { previous: previous?.result }
++                ? {}
+                 : {
+                     lossPolicy: 'allow',
+                     partial: true,
+-                    previous: previous?.result,
+                   }
+             )
+           : null;
+@@ -1674,16 +1672,10 @@
+           invalidatePreview();
+           return;
+         }
+-        const reused = previous?.result.ok ? previous.result.slice.content : [];
+-
+         previewOwner = { final, requestId: ownerRequestId };
+-        // The store keeps its own copy of each value. Handing back its copy of
+-        // every block the parser reused keeps that block's identity for readers.
+         context.store.set({
+           _blockKey: targetKey,
+-          previewValue: previewValue.map((node, index) =>
+-            node === reused[index] ? (previous?.stored[index] ?? node) : node
+-          ),
++          previewValue,
+         });
+         if (parsed && !final) {
+           previewParse = {
+--- a/apps/www/src/registry/components/editor/ai-menu.tsx
++++ b/apps/www/src/registry/components/editor/ai-menu.tsx
+@@ -117,31 +117,8 @@
+     )
+   );
+ 
+-  const published = React.useRef<readonly Descendant[]>([]);
+-
+   React.useLayoutEffect(() => {
+-    const previous = published.current;
+-    let start = 0;
+-
+-    // A continued parse returns unchanged leading blocks as the same objects:
+-    // keep them and replace only the tail. With nothing shared, replacing the
+-    // value is cheaper.
+-    while (start < document.length && previous[start] === document[start]) {
+-      start += 1;
+-    }
+-    if (start === 0) {
+-      aiEditor
+-        .update({ history: 'skip' })
+-        .value.replace({ children: document });
+-    } else {
+-      aiEditor.update({ history: 'skip' }, (tx) => {
+-        tx.nodes.replaceChildren(document.slice(start), {
+-          at: [],
+-          index: start,
+-        });
+-      });
+-    }
+-    published.current = document;
++    aiEditor.update({ history: 'skip' }).value.replace({ children: document });
+   }, [aiEditor, document]);
+ 
+   React.useEffect(() => {
+--- a/apps/www/src/registry/examples/markdown-streaming-demo.tsx
++++ b/apps/www/src/registry/examples/markdown-streaming-demo.tsx
+@@ -440,7 +440,7 @@
+     const target = preview === 'static' ? editorStatic : editor;
+     const result = target.api.markdown.parseSlice(
+       draft,
+-      final ? { previous } : { lossPolicy: 'allow', partial: true, previous }
++      final ? {} : { lossPolicy: 'allow', partial: true }
+     );
+     const nodes = result.ok ? result.slice.content : [];
+ 
+@@ -764,18 +764,7 @@
+   published: readonly Descendant[],
+   nodes: readonly Descendant[]
+ ) {
+-  let start = 0;
+-
+-  while (start < nodes.length && published[start] === nodes[start]) {
+-    start += 1;
+-  }
+-  if (start === 0) {
+-    editor.update({ history: 'skip' }).value.replace({ children: nodes });
+-  } else {
+-    editor.update({ history: 'skip' }, (tx) => {
+-      tx.nodes.replaceChildren(nodes.slice(start), { at: [], index: start });
+-    });
+-  }
++  editor.update({ history: 'skip' }).value.replace({ children: nodes });
+ }
+ 
+ // Cancel, replacement and unmount abort arrivals and drop the pending

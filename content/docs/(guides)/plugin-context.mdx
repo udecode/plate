@@ -1,0 +1,301 @@
+---
+title: Plugin Context
+description: Use editor, plugin, store, API, and transaction context inside Plate plugins.
+---
+
+Plugin context is the object Plate passes to plugin configuration callbacks,
+events, native capabilities, transaction commands, and render components. It gives you
+the resolved editor, current plugin name and schema handles, `api`, and plugin store
+without reaching through global state. Use it inside plugin-owned code; use
+editor methods or React hooks when code runs outside a plugin callback.
+
+## Context shape
+
+`PluginContext` extends the shared plugin context with a React
+`Editor`. The same helper names are available in headless Plate base plugins,
+but the editor type is `Editor`.
+
+| Property | Use for |
+| --- | --- |
+| `editor` | The resolved editor instance. |
+| `plugin` | The resolved plugin configuration for the current plugin. |
+| `name` | Capability identity and API/update namespace. Never use it as an element type or property key. |
+| `schema.type` | Persisted identity for an element-owning plugin. |
+| `schema.key` | Persisted identity for a primary-property plugin. |
+| `schema.properties` | Compiled handles for additional properties declared by the current plugin. |
+| `api` | API owned by the current plugin. |
+| `read` | State-bound reads owned by the current plugin. |
+| `update` | One-shot updates owned by the current plugin. |
+| `store` | Read, update, or subscribe to the current plugin's editor-local state. |
+| `defineFormats(map)` | Bind self-owned HTML, Markdown, and plain-text mappings to this plugin's inferred schema. |
+| `defineFormats(TargetPlugin, map)` | Bind a foreign mapping to an exact descriptor and inject its target. |
+
+## Plugin methods
+
+Event callbacks receive context plus the event or lifecycle payload. Use the
+context helpers instead of closing over editor state.
+
+```ts title="counter-plugin.ts" showLineNumbers
+import { definePlugin } from 'platejs/react';
+
+export type CounterPluginState = {
+  count: number;
+  enabled: boolean;
+};
+
+export const CounterPlugin = definePlugin('counter', {
+  initialState: {
+    count: 0,
+    enabled: true,
+  } satisfies CounterPluginState,
+  on: {
+    keyDown: ({ event, name, store }) => {
+      if (!store.get('enabled')) return;
+
+      if (event.key === '+') {
+        store.set((state) => {
+          state.count += 1;
+        });
+        console.info(`${name} count incremented`);
+      }
+    },
+  },
+});
+```
+
+`store` is scoped to `CounterPlugin` in this example.
+
+## Plugin callbacks
+
+Configuration, native capability, selector, API, transaction, and editor override
+callbacks also receive plugin context.
+
+```ts title="counter-plugin.ts" showLineNumbers
+import { definePlugin } from 'platejs/react';
+
+export type CounterPluginState = {
+  count: number;
+};
+
+export const CounterPlugin = definePlugin('counter', {
+  initialState: {
+    count: 0,
+  } satisfies CounterPluginState,
+  api: ({ store }) => ({
+    isEmpty: () => store.get('count') === 0,
+  }),
+  selectors: {
+    label: (state) => `Count: ${state.count}`,
+  },
+});
+```
+
+Selectors are readable through `store.get` and subscribable through
+`usePluginStore`. They are pure state-first functions and cannot read the
+editor or another plugin.
+
+## Property mutations
+
+Inside `update`, pass a property patch object. Plate infers each key and value
+from the current plugin and its required dependencies:
+
+```ts
+const LineHeightPlugin = definePlugin('lineHeight', {
+  schema: {
+    properties: {
+      lineHeight: schema.elementProperty(property.number()),
+    },
+  },
+  update: ({ tx }) => ({
+    set: txLocate(false, (value: number) =>
+      tx.nodes.set({ lineHeight: value })
+    ),
+    unset: () => tx.nodes.unset('lineHeight'),
+  }),
+});
+```
+
+Use the property handle's exact key as a computed object key for an aliased
+property. Prefix families and cross-node behavior belong in a semantic plugin
+update method.
+
+## Native capability inference
+
+Declare editor fields directly in the constructor or a staged
+`.extend()` callback. Their capability-specific helpers and Plate plugin
+context are inferred together. Extract domain inputs instead of the whole
+Plate plugin context.
+
+Use `definePlugin` from `platejs` only for independently
+reusable standalone Plate descriptors. See
+[Plugin Methods](/docs/plugin-methods#commands).
+
+## Format mapping inference
+
+Use `defineFormats` in the constructor's `formats` callback. That callback has
+its own narrow authoring context: `defineFormats` and the plugin's static
+`schema` bindings. It cannot read a live editor or store. Runtime mapping
+callbacks receive a frozen `pluginState`, mapping `registry`, schema view, and
+the context for that conversion operation.
+
+```ts title="strong-plugin.ts" showLineNumbers
+import { definePlugin, property } from 'platejs';
+
+export const StrongPlugin = definePlugin('strong', {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
+        decode: () => true,
+        decodeOnly: true,
+        match: [{ tag: 'strong' }],
+      },
+    }),
+  schema: { mark: property.boolean() },
+});
+```
+
+The one-argument form owns self mappings. For a foreign contribution, call
+`defineFormats(TargetPlugin, map)`; Plate injects the target into every HTML
+rule. The semantic keys are `html`, `markdown`, and `plainText`. Use one HTML
+rule or a non-empty ordered rule tuple. Register whole-payload browser MIME
+handling through `dataTransferFormats`, not `defineFormats`. Do not annotate
+mapping callback parameters.
+
+## Another plugin
+
+Use `editor.plugin(Plugin)` when plugin-owned code needs another plugin's
+consumer portal.
+
+```ts title="link-aware-plugin.ts" showLineNumbers
+import { LinkPlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
+
+export const LinkAwarePlugin = definePlugin('linkAware', {
+  dependencies: [LinkPlugin],
+  on: {
+    keyDown: ({ editor, event }) => {
+      if (event.key !== 'Enter') return;
+
+      const link = editor.plugin(LinkPlugin);
+
+      console.info(`Link element type: ${link.schema.type}`);
+    },
+  },
+});
+```
+
+Declare a dependency when the plugin cannot work without that capability. Plate
+installs dependencies before their dependents, so the portal is available in
+the handler. Keep cross-plugin writes rare; they couple two plugins tightly.
+
+## React components
+
+Use `useEditor()` inside a component rendered under `<EditorRoot>`, then call
+`editor.plugin(Plugin)` on the returned editor. The combined expression
+`useEditor().plugin(Plugin)` opens the plugin's flat consumer portal.
+
+```tsx title="counter-badge.tsx" showLineNumbers
+import { useEditor, usePluginStore } from 'platejs/react';
+
+import { CounterPlugin } from './counter-plugin';
+
+export function CounterBadge() {
+  const { name } = useEditor().plugin(CounterPlugin);
+  const count = usePluginStore(CounterPlugin, 'count');
+  const label = usePluginStore(CounterPlugin, 'label');
+
+  return (
+    <span data-plugin-name={name}>
+      {label} ({count})
+    </span>
+  );
+}
+```
+
+Use a selector callback when a component needs a derived value from several
+state fields.
+
+```tsx title="counter-badge.tsx" showLineNumbers
+import { usePluginStore } from 'platejs/react';
+
+import { CounterPlugin } from './counter-plugin';
+
+export function CounterStatus() {
+  const status = usePluginStore(CounterPlugin, (state) =>
+    state.count === 0 ? 'empty' : 'active'
+  );
+
+  return <span>{status}</span>;
+}
+```
+
+To subscribe to another editor registered under the same `<EditorController>`,
+pass its ID to the selector overload:
+
+```tsx title="counter-badge.tsx" showLineNumbers
+import { usePluginStore } from 'platejs/react';
+
+import { CounterPlugin } from './counter-plugin';
+
+export function CounterBadge({ editorId }: { editorId: string }) {
+  const count = usePluginStore(CounterPlugin, (state) => state.count, {
+    id: editorId,
+  });
+
+  return <span>{count}</span>;
+}
+```
+
+## Store state
+
+Plugin state is stored per editor. Updating one editor's plugin store does not
+update another editor.
+
+```ts title="counter-plugin.ts" showLineNumbers
+export const CounterPluginWithInitialCount = CounterPlugin.extend(
+  ({ store }) => ({
+    initialState: {
+      count: store.get().count + 1,
+    },
+  })
+);
+```
+
+`store.set` accepts either a partial object or a draft callback.
+
+```ts title="counter-actions.ts" showLineNumbers
+import type { Editor } from 'platejs/react';
+
+import { CounterPlugin } from './counter-plugin';
+
+export function resetCounter(editor: Editor) {
+  const { store } = editor.plugin(CounterPlugin);
+
+  store.set({
+    count: 1,
+  });
+
+  store.set((draft) => {
+    draft.count += 1;
+  });
+}
+```
+
+Plate throws when `store.get` or `usePluginStore` targets a missing state field
+or selector.
+
+Always pass the plugin descriptor to `usePluginStore`.
+A name-only object has no state contract for TypeScript
+to infer.
+
+## API Reference
+
+| Helper | Scope | Notes |
+| --- | --- | --- |
+| `editor.plugin(plugin)` | Any editor code. | Opens the installed plugin's typed consumer portal. |
+| `useEditor().plugin(plugin)` | React under `<EditorRoot>`. | Returns the installed plugin's flat consumer portal. |
+| `usePluginStore(plugin, key, ...args)` | React under `<EditorRoot>`. | Subscribes to one state field or named selector. |
+| `usePluginStore(plugin, selector, options?)` | React under `<EditorRoot>` or a registered editor under `<EditorController>`. | Subscribes to a value derived from plugin state on the provider’s selected editor. Use `useEditorPluginStore(editor, plugin, selector)` for an explicit editor. |
+
+For plugin plugin methods, see [Plugin Methods](/docs/plugin-methods). For
+plugin configuration, see [Plugin](/docs/plugin).

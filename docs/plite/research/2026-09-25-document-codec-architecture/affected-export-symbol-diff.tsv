@@ -1,0 +1,72 @@
+entrypoint	before	after	action	note
+plitejs,plitejs/react,platejs,platejs/react	PropertyJsonValue	EditorJsonValue	merge	One canonical immutable JSON value type owns persistence and schema JSON.
+plitejs,plitejs/react,platejs,platejs/react	EditorValueCodec.version	EditorValuePersistence.version	move	Version ownership is separate from the current encode/decode pair.
+plitejs,plitejs/react,platejs,platejs/react	EditorValueCodec.legacyDecoders	EditorValuePersistence.legacyDecoders	move	Historical inputs are decode-only persistence policy.
+plitejs,plitejs/react,platejs,platejs/react	EditorValueCodec.decode	EditorValueCodec.decode	reshape	The current decoder preserves the exact live type and accepts unknown input.
+plitejs,plitejs/react,platejs,platejs/react	EditorValueCodec.encode	EditorValueCodec.encode	reshape	The current encoder preserves its exact EditorJsonValue subtype.
+plitejs,plitejs/react,platejs,platejs/react	-	EditorValuePersistence	add	The descriptor owns the current codec, version, and legacy decoders.
+plitejs,plitejs/react,platejs,platejs/react	-	EditorValueDecoder	add	Legacy decoders do not pretend to own an encode direction.
+plitejs,plitejs/react,platejs,platejs/react	-	defineValuePersistence	add	Standalone versioned persistence declarations retain encoded inference.
+plitejs/dom,platejs/dom	HostCodec	DataTransferFormat	rename	Browser payload negotiation is not a document codec.
+plitejs/dom,platejs/dom	HostDataSource	DataTransferSnapshot	rename	The operation owns one immutable browser payload snapshot.
+plitejs/dom,platejs/dom	HostCodecParseContext	DataTransferDecodeContext	rename	Decode receives the payload, snapshot, MIME type, and frozen state.
+plitejs/dom,platejs/dom	HostCodecSerializeContext	DataTransferEncodeContext	rename	Encode receives one ContentSlice, MIME type, and frozen state.
+plitejs/dom,platejs/dom	HostCodecSchemaTarget	DataTransferSchemaClaim	rename	Stable claims make conflicts deterministic.
+plitejs/dom,platejs/dom	HostCodecPhase	DataTransferFormatPhase	rename	Lifecycle failures name accept, decode, encode, or notify.
+plitejs/dom,platejs/dom	HostCodec.format	DataTransferFormat.mimeType	rename	The field is a MIME type.
+plitejs/dom,platejs/dom	HostCodec.query	DataTransferFormat.accept	rename	False delegates without reporting a failure.
+plitejs/dom,platejs/dom	HostCodec.parse	DataTransferFormat.decode	rename	Decode returns a typed slice result or delegates.
+plitejs/dom,platejs/dom	HostCodec.serialize	DataTransferFormat.encode	rename	Encode returns a typed data result or delegates.
+plitejs/dom,platejs/dom	HostCodec.owns	DataTransferFormat.claims	rename	The declaration claims schema resources rather than ownership of a format family.
+plitejs/dom,platejs/dom	hostCodecs	dataTransferFormats	rename	Plugin registration uses the browser-transfer owner.
+plitejs/dom,platejs/dom	createHostDataTransactionSpec	createDataTransferTransactionSpec	rename	The private transaction builder follows the public owner.
+plitejs/dom,platejs/dom	insertHostData	insertDataTransfer	rename	The private insertion operation follows the public owner.
+plitejs/dom,platejs/dom	writeHostFragmentData	writeDataTransferFragment	rename	The public writer states its ContentSlice and DataTransfer job.
+plitejs/dom,platejs/dom	-	DataTransferDecodeResult	add	Expected decode failures and warnings stay in the result.
+plitejs/dom,platejs/dom	-	DataTransferEncodeResult	add	Expected encode failures and warnings stay in the result.
+plitejs/dom,platejs/dom	-	DataTransferDiagnostic	add	Transfer formats report expected loss without lifecycle side channels.
+plitejs/dom,platejs/dom	-	DataTransferAttempt	add	Negotiation preserves rejected, selected, unfit, and written attempts.
+plitejs/dom,platejs/dom	-	DataTransferReport	add	Applications receive one post-settlement operation report.
+platejs,platejs/react	BasePlugin.codecs	BasePlugin.formats	rename	Feature declarations use semantic format mappings.
+platejs,platejs/react	defineCodecs	defineFormats	rename	The authoring helper infers schema-bound mappings.
+platejs,platejs/react	PluginCodecMapDeclaration	PluginFormatMapDeclaration	rename	The type describes partial per-format mappings.
+platejs,platejs/react	DefinePluginCodecs	DefinePluginFormats	rename	The helper type follows the mapping vocabulary.
+platejs,platejs/react	PluginCodecNode	PluginFormatNode	rename	The inferred node comes from the mapping target schema.
+platejs,platejs/react	MarkdownNodeCodec	MarkdownNodeMapping	rename	Markdown feature projections are partial mappings.
+platejs,platejs/react	MarkdownNodeCodecInput	MarkdownNodeMappingInput	rename	Markdown author input follows the mapping vocabulary.
+platejs,platejs/react	PlainTextNodeCodec	PlainTextNodeMapping	rename	Plain text is one-way projection.
+platejs,platejs/react	PlainTextNodeCodecInput	PlainTextNodeMappingInput	rename	Plain-text author input follows the mapping vocabulary.
+platejs,platejs/react	HtmlCodecHooks	-	delete	The mixed wrapper combined HTML preparation with transfer policy; only html.prepareDocument remains.
+platejs/html	HtmlApi.deserializeDocument	HtmlApi.parse	rename	The default parser owns a complete document.
+platejs/html	HtmlApi.deserialize	HtmlApi.parseSlice	rename	Insertion parsing returns a ContentSlice.
+platejs/html	HtmlApi.serialize	HtmlApi.serialize	reshape	Serialization returns an impossible-state diagnosed result and requires explicit authored projection.
+platejs/html	parseHtmlDocument	parseHtml	rename	The complete-document operation is the default.
+platejs/html	-	parseHtmlSlice	add	Rootless insertion is a distinct closed-slice operation.
+platejs/html	serializeHtml	serializeHtml	reshape	Detached serialization takes document, plugins, schema, projection, and loss policy.
+platejs/html	HtmlParserOptions	HtmlParseOptions	rename	The policy includes limits, schema, plugins, whitespace, and loss handling.
+platejs/html	-	HtmlDocumentParseResult	add	Success has a schema-valid document; failure has errors and no carrier.
+platejs/html	-	HtmlSliceParseResult	add	Success has a closed rootless slice; failure has errors and no carrier.
+platejs/html	-	HtmlSerializeResult	add	Failure cannot expose publishable data.
+platejs/html	parseAuthoredHtmlDocument	-	delete	Exact authored review state uses the native authored JSON format.
+platejs/html	deserializeAuthoredHtml	-	delete	HTML carries visible semantic syntax only.
+platejs/html	renderAuthoredHtml	-	delete	Projection is an option on semantic serialization rather than a second transport.
+platejs/html/server	-	parseHtml	add	Node parsing shares the HTML contract through an optional LinkeDOM peer.
+platejs/html/server	-	parseHtmlSlice	add	Node slice parsing shares the rootless ContentSlice contract.
+platejs/markdown	MarkdownApi.deserialize	MarkdownApi.parse	rename	The default parser owns a complete document and returns diagnostics.
+platejs/markdown	MarkdownApi.deserializeInline	MarkdownApi.parseInline	rename	Inline parsing returns a ContentSlice result.
+platejs/markdown	-	MarkdownApi.parseSlice	add	Rootless block insertion is separate from inline parsing.
+platejs/markdown	MarkdownApi.serialize	MarkdownApi.serialize	reshape	Serialization returns a diagnosed result and requires explicit authored projection.
+platejs/markdown	deserializeMd	parseMarkdown	rename	Detached complete-document parsing is public and schema typed.
+platejs/markdown	-	parseMarkdownSlice	add	Detached rootless block parsing returns a closed ContentSlice.
+platejs/markdown	-	parseMarkdownInline	add	Detached inline parsing returns a closed ContentSlice.
+platejs/markdown	serializeMd	serializeMarkdown	rename	Detached serialization returns a diagnosed result.
+platejs/markdown	DeserializeMdOptions	MarkdownParseOptions	rename	The direct options carry plugins and optional schema.
+platejs/markdown	SerializeMdOptions	MarkdownSerializeOptions	rename	The direct options carry plugins, schema, projection, and loss policy.
+platejs/markdown	DeserializeMdContext	-	make-private	Parser implementation context is not an application contract.
+platejs/markdown	SerializeMdContext	-	make-private	Serializer implementation context is not an application contract.
+platejs/markdown	MdRules	-	make-private	Compiled mapping rules stay behind feature-owned formats.
+platejs/markdown	MdNodeParser	-	make-private	Node-parser machinery stays package private.
+platejs/markdown	parseAuthoredMarkdownDocument	-	delete	Exact authored review state uses the native authored JSON format.
+platejs/markdown	serializeAuthored	-	delete	Projection is an option on semantic serialization rather than a second transport.
+platejs/docx/import	importDocx(editor, source, options)	importDocx(source, { plugins, schema, ...options })	reshape	The async import captures a complete detached target before its first await.
+platejs/docx/export	exportToDocx	exportDocx	rename	The package operation uses the same verb-first name as importDocx.

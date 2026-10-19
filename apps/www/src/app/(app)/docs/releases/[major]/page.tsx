@@ -1,0 +1,87 @@
+import type { Metadata } from 'next';
+
+import { notFound } from 'next/navigation';
+
+import releaseIndexData from '@/generated/release-index.json';
+import { getPlateUiReleaseChangesByTag } from '@/lib/plate-ui-release-changes';
+import {
+  getOlderReleaseMajorGroups,
+  type ReleaseIndexRelease,
+} from '@/lib/releases';
+import { ReleasePageContent } from '../release-page-content';
+
+
+const releases = releaseIndexData as ReleaseIndexRelease[];
+const olderMajorGroups = getOlderReleaseMajorGroups(releases);
+const plateUiChangesByTag = getPlateUiReleaseChangesByTag();
+
+export function generateStaticParams() {
+  return olderMajorGroups.map((group) => ({
+    major: group.major,
+  }));
+}
+
+export async function generateMetadata({
+  params,
+}: ({
+  params: Promise<{
+    major: string;
+  }>;
+})): Promise<Metadata> {
+  const { major } = await params;
+  const group = getOlderMajorGroup(major);
+
+  if (!group) return {};
+
+  const title = `v${group.major} Releases`;
+  const description = `Release history for Plate v${group.major}.`;
+
+  return {
+    description,
+    openGraph: {
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`,
+        },
+      ],
+      title,
+      type: 'article',
+      url: `/docs/releases/${group.major}`,
+    },
+    title,
+    twitter: {
+      card: 'summary_large_image',
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`,
+        },
+      ],
+    },
+  };
+}
+
+export default async function ReleaseMajorPage({
+  params,
+}: ({
+  params: Promise<{
+    major: string;
+  }>;
+})) {
+  const { major } = await params;
+  const group = getOlderMajorGroup(major);
+
+  if (!group) notFound();
+
+  return (
+    <ReleasePageContent
+      plateUiChangesByTag={plateUiChangesByTag}
+      releases={group.releases}
+      showLatestPlateUiChanges={false}
+      title={`v${group.major} Releases`}
+    />
+  );
+}
+
+function getOlderMajorGroup(major: string) {
+  return olderMajorGroups.find((group) => group.major === major);
+}

@@ -1,0 +1,173 @@
+[
+  {
+    "cell": "ai-cjk-50000",
+    "a": {
+      "baseline": 7744.1,
+      "candidate": 294,
+      "candidateVsBaseline": 0.038,
+      "reference": 398.8,
+      "rawDeltaPercent": -26.3,
+      "baselineDriftPercent": -7,
+      "normalizedDeltaPercent": 2.7
+    },
+    "b": {
+      "baseline": 28990,
+      "candidate": 186.9,
+      "candidateVsBaseline": 0.007,
+      "reference": 192.9,
+      "rawDeltaPercent": -3.1,
+      "baselineDriftPercent": -6.2,
+      "normalizedDeltaPercent": 16.7
+    },
+    "c": {
+      "baseline": 7033.4,
+      "candidate": 8468.5,
+      "candidateVsBaseline": 1.263,
+      "reference": 11429.6,
+      "rawDeltaPercent": -25.9,
+      "baselineDriftPercent": -6.1,
+      "normalizedDeltaPercent": 21.6
+    },
+    "busy": {
+      "baseline": 49884.5,
+      "candidate": 10876.3,
+      "candidateVsBaseline": 0.219,
+      "reference": 14420.3,
+      "rawDeltaPercent": -24.6,
+      "baselineDriftPercent": -7,
+      "normalizedDeltaPercent": 15.3
+    },
+    "final": {
+      "baseline": 619.2,
+      "candidate": 225.8,
+      "candidateVsBaseline": 0.364,
+      "reference": 370.4,
+      "rawDeltaPercent": -39,
+      "baselineDriftPercent": -38.3,
+      "normalizedDeltaPercent": 5.8
+    },
+    "arrival": {
+      "baseline": 495.6,
+      "candidate": 183.8,
+      "candidateVsBaseline": 0.389,
+      "reference": 230,
+      "rawDeltaPercent": -20.1,
+      "baselineDriftPercent": -15.2,
+      "normalizedDeltaPercent": 10.2
+    }
+  },
+  {
+    "cell": "ai-rich-50000",
+    "a": {
+      "baseline": 4894.4,
+      "candidate": 235.7,
+      "candidateVsBaseline": 0.048,
+      "reference": 242.1,
+      "rawDeltaPercent": -2.6,
+      "baselineDriftPercent": -0.4,
+      "normalizedDeltaPercent": -2
+    },
+    "b": {
+      "baseline": 15892.8,
+      "candidate": 107.9,
+      "candidateVsBaseline": 0.007,
+      "reference": 103.1,
+      "rawDeltaPercent": 4.7,
+      "baselineDriftPercent": -0.3,
+      "normalizedDeltaPercent": 16.7
+    },
+    "c": {
+      "baseline": 3856.7,
+      "candidate": 4486,
+      "candidateVsBaseline": 1.14,
+      "reference": 4418.6,
+      "rawDeltaPercent": 1.5,
+      "baselineDriftPercent": -2.7,
+      "normalizedDeltaPercent": 2.3
+    },
+    "busy": {
+      "baseline": 28210.9,
+      "candidate": 6301.4,
+      "candidateVsBaseline": 0.224,
+      "reference": 6185,
+      "rawDeltaPercent": 1.9,
+      "baselineDriftPercent": -0.9,
+      "normalizedDeltaPercent": 5.7
+    },
+    "final": {
+      "baseline": 387,
+      "candidate": 153.1,
+      "candidateVsBaseline": 0.392,
+      "reference": 151.1,
+      "rawDeltaPercent": 1.3,
+      "baselineDriftPercent": 3,
+      "normalizedDeltaPercent": -3
+    },
+    "arrival": {
+      "baseline": 279.9,
+      "candidate": 94,
+      "candidateVsBaseline": 0.345,
+      "reference": 96.8,
+      "rawDeltaPercent": -2.9,
+      "baselineDriftPercent": 4.3,
+      "normalizedDeltaPercent": 0.3
+    }
+  },
+  {
+    "cell": "static-cjk-50000",
+    "a": {
+      "baseline": 9780,
+      "candidate": 315,
+      "candidateVsBaseline": 0.032,
+      "reference": 555.1,
+      "rawDeltaPercent": -43.3,
+      "baselineDriftPercent": -33.9,
+      "normalizedDeltaPercent": -5.9
+    },
+    "b": {
+      "baseline": 36294.2,
+      "candidate": 83.8,
+      "candidateVsBaseline": 0.002,
+      "reference": 150.7,
+      "rawDeltaPercent": -44.4,
+      "baselineDriftPercent": -36.3,
+      "normalizedDeltaPercent": 0
+    },
+    "c": {
+      "baseline": 9536.5,
+      "candidate": 10478.4,
+      "candidateVsBaseline": 1.075,
+      "reference": 15367,
+      "rawDeltaPercent": -31.8,
+      "baselineDriftPercent": -24.8,
+      "normalizedDeltaPercent": -9.6
+    },
+    "busy": {
+      "baseline": 67306.5,
+      "candidate": 16302.7,
+      "candidateVsBaseline": 0.237,
+      "reference": 24893.3,
+      "rawDeltaPercent": -34.5,
+      "baselineDriftPercent": -33.4,
+      "normalizedDeltaPercent": -3.7
+    },
+    "final": {
+      "baseline": 395.1,
+      "candidate": 36.6,
+      "candidateVsBaseline": 0.096,
+      "reference": 39,
+      "rawDeltaPercent": -6.2,
+      "baselineDriftPercent": -1.2,
+      "normalizedDeltaPercent": -2
+    },
+    "arrival": {
+      "baseline": 426.9,
+      "candidate": 86.6,
+      "candidateVsBaseline": 0.203,
+      "reference": 98.3,
+      "rawDeltaPercent": -11.9,
+      "baselineDriftPercent": -23.7,
+      "normalizedDeltaPercent": 15.3
+    }
+  }
+]

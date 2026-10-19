@@ -1,0 +1,2125 @@
+import { act, render } from '@testing-library/react';
+import { ElementApi, TextApi, SelectionApi } from 'plitejs';
+import type { Value } from 'plitejs';
+
+import {
+  DOMCoverage,
+  EDITOR_TO_ELEMENT,
+  EDITOR_TO_KEY_TO_ELEMENT,
+  EDITOR_TO_WINDOW,
+  ELEMENT_TO_NODE,
+  IS_NODE_MAP_DIRTY,
+  IS_FOCUSED,
+  NODE_TO_ELEMENT,
+} from '../../src/dom/internal';
+import * as domRangeResolver from '../../src/dom/plugin/dom-editor';
+import { getNodeKey as editorGetNodeKey } from '../../src/internal';
+import { applyDOMCoverageSelectionPolicy } from '../../src/react/editable/dom-coverage-selection';
+import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
+import {
+  createEditableInputController,
+  createEditableInputControllerState,
+  setEditableModelSelectionPreference,
+} from '../../src/react/editable/input-controller';
+import {
+  applyEditableClick,
+  applyEditableMouseDown,
+  syncSelectionForBeforeInput,
+  useEditableSelectionReconciler,
+} from '../../src/react/editable/selection-reconciler';
+import { ReactEditor } from '../../src/react/plugin/react-editor';
+import { createEditor } from '../../src/react/plugin/with-react';
+import {
+  createMainRootPliteViewSelection,
+  readPliteViewSelection,
+  writePliteViewSelection,
+} from '../../src/react/view-selection';
+import {
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '../../src/testing';
+import { readTextSelection } from './read-text-selection';
+
+test('initial unselected mounts do not read native selection between sibling view layouts', () => {
+  const editor = createEditor<Value>({
+    initialValue: [{ type: 'paragraph', children: [{ text: 'text' }] }],
+  });
+  const runtime = new EditableDOMRuntime({ editor });
+  const findRoot = vi
+    .spyOn(ReactEditor, 'resolveDocumentOrShadowRoot')
+    .mockReturnValue(document);
+  const Harness = () => {
+    useEditableSelectionReconciler({
+      viewportBackedSelection: false,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
+    });
+    return <div ref={(node) => runtime.setRoot(node)}>text</div>;
+  };
+  try {
+    const rendered = render(<Harness />);
+    expect(findRoot).not.toHaveBeenCalled();
+    rendered.rerender(<Harness />);
+    expect(findRoot).toHaveBeenCalledTimes(1);
+    rendered.unmount();
+  } finally {
+    runtime.destroy();
+    findRoot.mockRestore();
+  }
+});
+
+test.each(['before-frame', 'after-frame'] as const)(
+  'explicit blur cancels Android selection reapplication %s',
+  (phase) => {
+    vi.useFakeTimers();
+    const editor = createEditor<Value>({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
+    });
+    const runtime = new EditableDOMRuntime({ editor });
+    const { rootRef } = runtime;
+    Object.defineProperty(runtime, 'isAndroidHost', { value: true });
+    const queued: Array<{ label: string; callback: () => void }> = [];
+    vi.spyOn(runtime.domPhaseScheduler, 'schedule').mockImplementation(
+      (_phase, label, callback) => {
+        queued.push({ label, callback });
+        return () => {};
+      }
+    );
+    runtime.androidInputManagerRef.current = {
+      flush: vi.fn(),
+      prepareDOMTeardown: vi.fn(),
+      scheduleFlush: vi.fn(),
+      hasPendingDiffs: () => false,
+      hasPendingAction: () => false,
+      hasPendingChanges: () => false,
+      isFlushing: () => 'action',
+      handleUserSelect: vi.fn(),
+      handleDOMBeforeInput: vi.fn(),
+      handleKeyDown: vi.fn(),
+      handleDomMutations: vi.fn(),
+      handleInput: () => false,
+    };
+    function Harness() {
+      useEditableSelectionReconciler({
+        viewportBackedSelection: false,
+        runtime,
+        scrollSelectionIntoView: vi.fn(),
+      });
+      return (
+        <div
+          aria-label="Android selection fixture"
+          ref={rootRef}
+          role="textbox"
+          tabIndex={0}
+        >
+          <span>abc</span>
+        </div>
+      );
+    }
+    const mounted = render(<Harness />);
+    const root = runtime.rootRef.current!;
+    const text = root.querySelector('span')!.firstChild!;
+    const selection = document.getSelection()!;
+    const range = document.createRange();
+    range.setStart(text, 0);
+    range.setEnd(text, 1);
+    vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+      document
+    );
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
+    vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(range);
+    const selectionWrite = vi.spyOn(selection, 'setBaseAndExtent');
+    const focus = vi.spyOn(root, 'focus');
+    try {
+      root.focus();
+      IS_FOCUSED.set(editor, true);
+      act(() => {
+        editor.update((tx) => {
+          tx.selection.set({
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 0 },
+            focus: { path: [0, 0], offset: 1 },
+          });
+        });
+        mounted.rerender(<Harness />);
+      });
+      expect(selectionWrite).toHaveBeenCalled();
+      const frame = queued.find(
+        (task) => task.label === 'android-selection-reapply-frame'
+      );
+      expect(frame).toBeDefined();
+      if (phase === 'after-frame') {
+        act(() => frame!.callback());
+      }
+      const pending =
+        phase === 'before-frame'
+          ? frame
+          : queued.findLast(
+              (task) => task.label === 'android-selection-spellcheck-refresh'
+            );
+      expect(pending).toBeDefined();
+      editor.api.dom.blur();
+      selectionWrite.mockClear();
+      focus.mockClear();
+      act(() => pending!.callback());
+      expect(focus).not.toHaveBeenCalled();
+      expect(selectionWrite).not.toHaveBeenCalled();
+      expect(editor.api.dom.isFocused()).toBe(false);
+      expect(document.activeElement === root).toBe(false);
+    } finally {
+      mounted.unmount();
+      runtime.destroy();
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    }
+  }
+);
+
+test('beforeinput preserves pending native text repair selection over mismatched DOM selection', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const leaf = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('one');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  leaf.append(string);
+  textHost.append(leaf);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [1, 0], offset: 1 },
+      focus: { path: [1, 0], offset: 1 },
+    },
+  });
+
+  const modelSelection = readTextSelection(editor);
+
+  try {
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(text, 0, text, 0);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'x',
+      editor,
+      editorElement: root,
+      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: true,
+      pendingNativeTextInputRepairPathKey: '1,0',
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+    });
+
+    expect(result.native).toBe(false);
+    expect(result.selection).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
+  } finally {
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('beforeinput keeps a projected view selection authoritative over the DOM caret', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('one');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    },
+  });
+
+  const modelSelection = readTextSelection(editor);
+  const viewSelection = createMainRootPliteViewSelection({
+    anchor: { path: [0, 0], offset: 1 },
+    focus: { path: [0, 0], offset: 2 },
+  });
+
+  if (!viewSelection) {
+    throw new Error('Expected projected view selection');
+  }
+
+  try {
+    writePliteViewSelection(editor, viewSelection);
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(text, 0, text, 0);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'x',
+      editor,
+      editorElement: root,
+      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: true,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+    });
+
+    expect(result.native).toBe(false);
+    expect(result.selection).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
+    expect(readPliteViewSelection(editor)).toBe(viewSelection);
+  } finally {
+    writePliteViewSelection(editor, null);
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('beforeinput ignores stale backward target range while model owns insert', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('This abcdefmixed block carries ');
+  const targetRange = document.createRange();
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'This abcdefmixed block carries ' }],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 'This abcdef'.length },
+      focus: { path: [0, 0], offset: 'This abcdef'.length },
+    },
+  });
+
+  const modelSelection = readTextSelection(editor);
+
+  try {
+    targetRange.setStart(text, 1);
+    targetRange.setEnd(text, 1);
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(text, 1, text, 1);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'g',
+      editor,
+      editorElement: root,
+      event: {
+        getTargetRanges: () => [targetRange],
+      } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: false,
+      preferModelSelectionForInput: true,
+      root: document,
+      selection: modelSelection,
+    });
+
+    expect(result.native).toBe(false);
+    expect(result.selection).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
+  } finally {
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('beforeinput preserves model selection for decorated text target ranges', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('Premirror Milestone 1 test document');
+  const targetRange = document.createRange();
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  textHost.setAttribute('data-editor-dom-sync-reason', 'decoration');
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'Premirror Milestone 1 test document' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'This abcdefmixed block carries rich text.' }],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [1, 0], offset: 'This abcdef'.length },
+      focus: { path: [1, 0], offset: 'This abcdef'.length },
+    },
+  });
+
+  const modelSelection = readTextSelection(editor);
+
+  try {
+    targetRange.setStart(text, 1);
+    targetRange.setEnd(text, 1);
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(root, 0, root, 0);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'g',
+      editor,
+      editorElement: root,
+      event: {
+        getTargetRanges: () => [targetRange],
+      } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: true,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+    });
+
+    expect(result.native).toBe(false);
+    expect(result.selection).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
+  } finally {
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('mouse down clears stale model-owned text input guards without reclassifying the click', () => {
+  const editor = createEditor<Value>();
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: true },
+    state: createEditableInputControllerState(),
+  });
+  const target = document.createElement('span');
+  const calls: Array<{
+    activeIntent: string | null;
+    guard: number;
+    preferModelSelection: boolean;
+    selectionSource: string;
+  }> = [];
+
+  inputController.state.activeIntent = 'composition';
+  inputController.state.modelOwnedTextInputGuard = 1;
+  inputController.state.selectionSource = 'model-owned';
+
+  applyEditableMouseDown({
+    editor,
+    event: {
+      preventDefault: vi.fn(),
+      target,
+    } as any,
+    inputController,
+    onMouseDown: () => {
+      calls.push({
+        activeIntent: inputController.state.activeIntent,
+        guard: inputController.state.modelOwnedTextInputGuard ?? 0,
+        preferModelSelection:
+          inputController.preferModelSelectionForInputRef.current,
+        selectionSource: inputController.state.selectionSource,
+      });
+    },
+  });
+
+  expect(calls).toEqual([
+    {
+      activeIntent: 'composition',
+      guard: 0,
+      preferModelSelection: false,
+      selectionSource: 'dom-current',
+    },
+  ]);
+  expect(inputController.state.selectionChangeOrigin).toBe('native-user');
+});
+
+test('mouse down ends a stale keyboard selection-move intent', () => {
+  const editor = createEditor<Value>();
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: false },
+    state: createEditableInputControllerState(),
+  });
+
+  inputController.state.activeIntent = 'native-selection-move';
+
+  applyEditableMouseDown({
+    editor,
+    event: {
+      preventDefault: vi.fn(),
+      target: document.createElement('span'),
+    } as any,
+    inputController,
+  });
+
+  expect(inputController.state.activeIntent).toBeNull();
+  expect(inputController.state.selectionChangeOrigin).toBe('native-user');
+});
+
+test('beforeinput returns same-path pending native text repair DOM range without importing it', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('oXXXne');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    },
+  });
+
+  const modelSelection = readTextSelection(editor);
+
+  try {
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(text, 4, text, 4);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'X',
+      editor,
+      editorElement: root,
+      event: {
+        getTargetRanges: () => {
+          throw new Error('pending native repair should skip target ranges');
+        },
+      } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: true,
+      pendingNativeTextInputRepairOffset: 4,
+      pendingNativeTextInputRepairPathKey: '0,0',
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+    });
+
+    expect(result.native).toBe(true);
+    expect(result.selection).toEqual({
+      anchor: { path: [0, 0], offset: 4 },
+      focus: { path: [0, 0], offset: 4 },
+    });
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
+  } finally {
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('beforeinput imports same-path native selection when pending repair owns a different offset', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('oXXXne');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    },
+  });
+
+  try {
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(text, 2, text, 2);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'Y',
+      editor,
+      editorElement: root,
+      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: true,
+      pendingNativeTextInputRepairOffset: 4,
+      pendingNativeTextInputRepairPathKey: '0,0',
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: readTextSelection(editor),
+    });
+
+    expect(result.native).toBe(false);
+    expect(result.selection).toEqual(editorGetSelection(editor));
+  } finally {
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('beforeinput imports backward native text caret when no pending repair owns it', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('oXXXne');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'oXXXne' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 4 },
+      focus: { path: [0, 0], offset: 4 },
+    },
+  });
+
+  const modelSelection = readTextSelection(editor);
+
+  try {
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(text, 3, text, 3);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'X',
+      editor,
+      editorElement: root,
+      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: true,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+    });
+
+    expect(result.native).toBe(false);
+    expect(result.selection).toEqual({
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+    expect(editorGetSelection(editor)).toEqual({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+  } finally {
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('beforeinput ignores an ahead DOM caret while text input is model-owned', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('abcdef');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abcdef' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 2 },
+    },
+  });
+
+  const modelSelection = readTextSelection(editor);
+
+  try {
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(text, 3, text, 3);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'd',
+      editor,
+      editorElement: root,
+      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: true,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+      textInputOwnership: 'model',
+    });
+
+    expect(result).toEqual({
+      native: false,
+      nativeBlocker: 'model-owned-dom-selection',
+      selection: modelSelection,
+    });
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
+
+    const nativeUserResult = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'd',
+      editor,
+      editorElement: root,
+      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: true,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+      selectionChangeOrigin: 'native-user',
+      textInputOwnership: 'model',
+    });
+
+    expect(nativeUserResult).toEqual({
+      native: false,
+      nativeBlocker: 'dom-selection-import',
+      selection: {
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+    });
+  } finally {
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('beforeinput ignores repair-induced backward text caret when no pending repair owns it', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('This abcdefmixed block carries ');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'This abcdefmixed block carries ' }],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 'This abcdef'.length },
+      focus: { path: [0, 0], offset: 'This abcdef'.length },
+    },
+  });
+
+  const modelSelection = readTextSelection(editor);
+
+  try {
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(text, 0, text, 0);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'g',
+      editor,
+      editorElement: root,
+      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: false,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+      selectionChangeOrigin: 'repair-induced',
+    });
+
+    expect(result.native).toBe(false);
+    expect(result.selection).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
+  } finally {
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('beforeinput ignores text host target ranges while the node map is dirty', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('one');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [1, 0], offset: 1 },
+      focus: { path: [1, 0], offset: 1 },
+    },
+  });
+
+  const modelSelection = readTextSelection(editor);
+  const targetRange = {
+    collapsed: false,
+    endContainer: text,
+    endOffset: 3,
+    startContainer: text,
+    startOffset: 0,
+  } as unknown as StaticRange;
+
+  try {
+    domSelection.removeAllRanges();
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+    IS_NODE_MAP_DIRTY.set(editor, true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: '. ',
+      editor,
+      editorElement: root,
+      event: {
+        getTargetRanges: () => [targetRange],
+      } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: false,
+      preferModelSelectionForInput: true,
+      root: document,
+      selection: modelSelection,
+    });
+
+    expect(result.selection).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
+  } finally {
+    IS_NODE_MAP_DIRTY.delete(editor);
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('beforeinput keeps current text host target ranges while the node map is dirty', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('one');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [1, 0], offset: 1 },
+      focus: { path: [1, 0], offset: 1 },
+    },
+  });
+
+  const nodeKey = editorGetNodeKey(editor, [0, 0]);
+
+  if (!nodeKey) {
+    throw new Error('Expected text node key');
+  }
+
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  textHost.setAttribute('data-editor-node-key', nodeKey);
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  const targetRange = {
+    collapsed: false,
+    endContainer: text,
+    endOffset: 3,
+    startContainer: text,
+    startOffset: 0,
+  } as unknown as StaticRange;
+  const targetPliteRange = {
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 3 },
+  };
+  const targetSelection = {
+    kind: 'text' as const,
+    ...targetPliteRange,
+  };
+
+  try {
+    domSelection.removeAllRanges();
+    IS_NODE_MAP_DIRTY.set(editor, true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: '. ',
+      editor,
+      editorElement: root,
+      event: {
+        getTargetRanges: () => [targetRange],
+      } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: false,
+      preferModelSelectionForInput: true,
+      root: document,
+      selection: readTextSelection(editor),
+    });
+
+    expect(result.selection).toEqual(targetPliteRange);
+    expect(editorGetSelection(editor)).toEqual(targetSelection);
+  } finally {
+    IS_NODE_MAP_DIRTY.delete(editor);
+    root.remove();
+    domSelection.removeAllRanges();
+  }
+});
+
+test('beforeinput uses event target range instead of later live DOM selection', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const firstTextHost = document.createElement('span');
+  const firstString = document.createElement('span');
+  const firstText = document.createTextNode('one');
+  const secondTextHost = document.createElement('span');
+  const secondString = document.createElement('span');
+  const secondText = document.createTextNode('two');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [1, 0], offset: 1 },
+      focus: { path: [1, 0], offset: 1 },
+    },
+  });
+
+  firstTextHost.setAttribute('data-editor-node', 'text');
+  firstTextHost.setAttribute('data-editor-path', '0,0');
+  firstString.setAttribute('data-editor-string', 'true');
+  firstString.append(firstText);
+  firstTextHost.append(firstString);
+
+  secondTextHost.setAttribute('data-editor-node', 'text');
+  secondTextHost.setAttribute('data-editor-path', '1,0');
+  secondString.setAttribute('data-editor-string', 'true');
+  secondString.append(secondText);
+  secondTextHost.append(secondString);
+
+  root.append(firstTextHost, secondTextHost);
+  document.body.append(root);
+
+  const eventTargetRange = {
+    collapsed: false,
+    endContainer: firstText,
+    endOffset: 3,
+    startContainer: firstText,
+    startOffset: 0,
+  } as unknown as StaticRange;
+  const eventRange = {
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 3 },
+  };
+  const eventSelection = {
+    kind: 'text' as const,
+    ...eventRange,
+  };
+
+  try {
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(secondText, 1, secondText, 1);
+    IS_NODE_MAP_DIRTY.set(editor, false);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: null,
+      editor,
+      editorElement: root,
+      event: {
+        getTargetRanges: () => [eventTargetRange],
+      } as unknown as InputEvent,
+      inputType: 'deleteContentBackward',
+      isCompositionChange: false,
+      native: true,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: readTextSelection(editor),
+    });
+
+    expect(result.native).toBe(false);
+    expect(result.selection).toEqual(eventRange);
+    expect(editorGetSelection(editor)).toEqual(eventSelection);
+  } finally {
+    IS_NODE_MAP_DIRTY.delete(editor);
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('beforeinput resolves block-spanning element target ranges before live selection fallback', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const firstBlock = document.createElement('p');
+  const firstTextHost = document.createElement('span');
+  const firstLeaf = document.createElement('span');
+  const firstString = document.createElement('span');
+  const firstText = document.createTextNode('one');
+  const secondBlock = document.createElement('p');
+  const secondTextHost = document.createElement('span');
+  const secondLeaf = document.createElement('span');
+  const secondString = document.createElement('span');
+  const secondText = document.createTextNode('two');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [1, 0], offset: 1 },
+      focus: { path: [1, 0], offset: 1 },
+    },
+  });
+
+  root.setAttribute('contenteditable', 'true');
+  root.setAttribute('data-editor', 'true');
+  firstBlock.setAttribute('data-editor-node', 'element');
+  firstBlock.setAttribute('data-editor-path', '0');
+  firstTextHost.setAttribute('data-editor-node', 'text');
+  firstTextHost.setAttribute('data-editor-path', '0,0');
+  firstLeaf.setAttribute('data-editor-leaf', 'true');
+  firstString.setAttribute('data-editor-string', 'true');
+  secondBlock.setAttribute('data-editor-node', 'element');
+  secondBlock.setAttribute('data-editor-path', '1');
+  secondTextHost.setAttribute('data-editor-node', 'text');
+  secondTextHost.setAttribute('data-editor-path', '1,0');
+  secondLeaf.setAttribute('data-editor-leaf', 'true');
+  secondString.setAttribute('data-editor-string', 'true');
+
+  firstString.append(firstText);
+  firstLeaf.append(firstString);
+  firstTextHost.append(firstLeaf);
+  firstBlock.append(firstTextHost);
+  secondString.append(secondText);
+  secondLeaf.append(secondString);
+  secondTextHost.append(secondLeaf);
+  secondBlock.append(secondTextHost);
+  root.append(firstBlock, secondBlock);
+  document.body.append(root);
+
+  const editableElements = [
+    root,
+    firstBlock,
+    firstTextHost,
+    firstLeaf,
+    firstString,
+    secondBlock,
+    secondTextHost,
+    secondLeaf,
+    secondString,
+  ];
+
+  for (const element of editableElements) {
+    Object.defineProperty(element, 'isContentEditable', {
+      configurable: true,
+      value: true,
+    });
+  }
+
+  const [firstBlockNode] = editor.read((state) => state.nodes.get([0]))!;
+  const [firstTextNode] = editor.read((state) => state.nodes.get([0, 0]))!;
+  const [secondBlockNode] = editor.read((state) => state.nodes.get([1]))!;
+  const [secondTextNode] = editor.read((state) => state.nodes.get([1, 0]))!;
+  if (
+    !ElementApi.isElement(firstBlockNode) ||
+    !ElementApi.isElement(secondBlockNode) ||
+    !TextApi.isText(firstTextNode) ||
+    !TextApi.isText(secondTextNode)
+  ) {
+    throw new Error('Expected two block elements and their text nodes');
+  }
+  const keyToElement: NonNullable<
+    ReturnType<typeof EDITOR_TO_KEY_TO_ELEMENT.get>
+  > = new WeakMap();
+
+  EDITOR_TO_ELEMENT.set(editor, root);
+  EDITOR_TO_KEY_TO_ELEMENT.set(editor, keyToElement);
+  EDITOR_TO_WINDOW.set(editor, window);
+  ELEMENT_TO_NODE.set(root, editor);
+  ELEMENT_TO_NODE.set(firstBlock, firstBlockNode);
+  ELEMENT_TO_NODE.set(firstTextHost, firstTextNode);
+  ELEMENT_TO_NODE.set(secondBlock, secondBlockNode);
+  ELEMENT_TO_NODE.set(secondTextHost, secondTextNode);
+  NODE_TO_ELEMENT.set(editor, root);
+  NODE_TO_ELEMENT.set(firstBlockNode, firstBlock);
+  NODE_TO_ELEMENT.set(firstTextNode, firstTextHost);
+  NODE_TO_ELEMENT.set(secondBlockNode, secondBlock);
+  NODE_TO_ELEMENT.set(secondTextNode, secondTextHost);
+  keyToElement.set(editor.api.dom.findKey(firstBlockNode), firstBlock);
+  keyToElement.set(editor.api.dom.findKey(firstTextNode), firstTextHost);
+  keyToElement.set(editor.api.dom.findKey(secondBlockNode), secondBlock);
+  keyToElement.set(editor.api.dom.findKey(secondTextNode), secondTextHost);
+  IS_NODE_MAP_DIRTY.set(editor, false);
+
+  const targetRange = document.createRange();
+  targetRange.setStart(firstBlock, 0);
+  targetRange.setEnd(secondBlock, secondBlock.childNodes.length);
+
+  try {
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(secondText, 1, secondText, 1);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: null,
+      editor,
+      editorElement: root,
+      event: {
+        getTargetRanges: () => [targetRange],
+      } as unknown as InputEvent,
+      inputType: 'deleteContentBackward',
+      isCompositionChange: false,
+      native: true,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: readTextSelection(editor),
+    });
+
+    const eventRange = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 3 },
+    };
+    const eventSelection = {
+      kind: 'text' as const,
+      ...eventRange,
+    };
+
+    expect(result.native).toBe(false);
+    expect(result.selection).toEqual(eventRange);
+    expect(editorGetSelection(editor)).toEqual(eventSelection);
+  } finally {
+    root.remove();
+    domSelection.removeAllRanges();
+    EDITOR_TO_ELEMENT.delete(editor);
+    EDITOR_TO_KEY_TO_ELEMENT.delete(editor);
+    EDITOR_TO_WINDOW.delete(editor);
+    IS_NODE_MAP_DIRTY.delete(editor);
+    ELEMENT_TO_NODE.delete(root);
+    ELEMENT_TO_NODE.delete(firstBlock);
+    ELEMENT_TO_NODE.delete(firstTextHost);
+    ELEMENT_TO_NODE.delete(secondBlock);
+    ELEMENT_TO_NODE.delete(secondTextHost);
+    NODE_TO_ELEMENT.delete(editor);
+    NODE_TO_ELEMENT.delete(firstBlockNode);
+    NODE_TO_ELEMENT.delete(firstTextNode);
+    NODE_TO_ELEMENT.delete(secondBlockNode);
+    NODE_TO_ELEMENT.delete(secondTextNode);
+  }
+});
+
+test('beforeinput does not import only the first range from multiple target ranges', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const firstTextHost = document.createElement('span');
+  const firstString = document.createElement('span');
+  const firstText = document.createTextNode('one');
+  const secondTextHost = document.createElement('span');
+  const secondString = document.createElement('span');
+  const secondText = document.createTextNode('two');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [1, 0], offset: 2 },
+    },
+  });
+
+  firstTextHost.setAttribute('data-editor-node', 'text');
+  firstTextHost.setAttribute('data-editor-path', '0,0');
+  firstString.setAttribute('data-editor-string', 'true');
+  firstString.append(firstText);
+  firstTextHost.append(firstString);
+
+  secondTextHost.setAttribute('data-editor-node', 'text');
+  secondTextHost.setAttribute('data-editor-path', '1,0');
+  secondString.setAttribute('data-editor-string', 'true');
+  secondString.append(secondText);
+  secondTextHost.append(secondString);
+
+  root.append(firstTextHost, secondTextHost);
+  document.body.append(root);
+
+  const firstTargetRange = {
+    collapsed: false,
+    endContainer: firstText,
+    endOffset: 3,
+    startContainer: firstText,
+    startOffset: 1,
+  } as unknown as StaticRange;
+  const secondTargetRange = {
+    collapsed: false,
+    endContainer: secondText,
+    endOffset: 2,
+    startContainer: secondText,
+    startOffset: 0,
+  } as unknown as StaticRange;
+  const modelSelection = readTextSelection(editor);
+
+  try {
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(firstText, 1, secondText, 2);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: null,
+      editor,
+      editorElement: root,
+      event: {
+        getTargetRanges: () => [firstTargetRange, secondTargetRange],
+      } as unknown as InputEvent,
+      inputType: 'deleteContentBackward',
+      isCompositionChange: false,
+      native: true,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+    });
+
+    expect(result.native).toBe(true);
+    expect(result.selection).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
+  } finally {
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('selection reconciler preserves node selection while clearing native selection', () => {
+  vi.useFakeTimers();
+
+  const editor = createEditor<Value>();
+  const runtime = new EditableDOMRuntime({ editor });
+  const { rootRef } = runtime;
+  runtime.inputController.preferModelSelectionForInputRef.current = true;
+  runtime.androidInputManagerRef.current = null;
+  let renderTick = 0;
+  const selection = SelectionApi.nodes([[0], [1]], { mode: 'block' });
+
+  editorReplace(editor, {
+    children: [
+      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: 'two' }], type: 'paragraph' },
+    ],
+    selection,
+  });
+
+  const Harness = () => {
+    useEditableSelectionReconciler({
+      viewportBackedSelection: false,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
+    });
+
+    return (
+      <div data-render-tick={renderTick} ref={rootRef}>
+        <span>one</span>
+        <span>two</span>
+      </div>
+    );
+  };
+
+  try {
+    const { container, rerender } = render(<Harness />);
+    const firstText = container.querySelector('span')?.firstChild;
+    const secondText = container.querySelectorAll('span')[1]?.firstChild;
+    const domSelection = document.getSelection();
+
+    if (!firstText || !secondText || !domSelection) {
+      throw new Error('Expected rendered text and document selection');
+    }
+
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(firstText, 0, secondText, 3);
+
+    vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
+    vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+      document
+    );
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
+    const resolveDOMRange = vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot');
+    vi.spyOn(ReactEditor, 'isComposing').mockReturnValue(false);
+
+    act(() => {
+      renderTick += 1;
+      rerender(<Harness />);
+    });
+
+    expect(editorGetSelection(editor)).toEqual(selection);
+    expect(domSelection.rangeCount).toBe(0);
+    expect(resolveDOMRange).not.toHaveBeenCalled();
+
+    act(() => {
+      editor.update((tx) => {
+        tx.text.insert('x', { at: { offset: 0, path: [1, 0] } });
+      });
+      renderTick += 1;
+      rerender(<Harness />);
+    });
+
+    expect(editorGetSelection(editor)).toEqual(selection);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 4, path: [1, 0] },
+    });
+    expect(domSelection.rangeCount).toBe(0);
+    expect(resolveDOMRange).not.toHaveBeenCalled();
+  } finally {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  }
+});
+
+test('selection reconciler clears the updating guard when DOM export throws', () => {
+  vi.useFakeTimers();
+
+  const editor = createEditor<Value>();
+  const runtime = new EditableDOMRuntime({ editor });
+  const { rootRef } = runtime;
+  const { state } = runtime;
+  runtime.inputController.preferModelSelectionForInputRef.current = true;
+  runtime.androidInputManagerRef.current = null;
+  let renderTick = 0;
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 1 },
+    },
+  });
+
+  const Harness = () => {
+    useEditableSelectionReconciler({
+      viewportBackedSelection: false,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
+    });
+
+    return (
+      <div data-render-tick={renderTick} ref={rootRef}>
+        <span>abc</span>
+      </div>
+    );
+  };
+
+  try {
+    const { container, rerender } = render(<Harness />);
+    const textNode = container.querySelector('span')?.firstChild;
+    const domSelection = document.getSelection();
+
+    if (!textNode || !domSelection) {
+      throw new Error('Expected rendered text and document selection');
+    }
+
+    const domRange = document.createRange();
+    domRange.setStart(textNode, 0);
+    domRange.setEnd(textNode, 1);
+
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(textNode, 0, textNode, 0);
+
+    vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
+    vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+      document
+    );
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
+    vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(
+      domRange
+    );
+    vi.spyOn(ReactEditor, 'isComposing').mockReturnValue(false);
+    vi.spyOn(domSelection, 'setBaseAndExtent').mockImplementation(() => {
+      throw new Error('stale DOM bridge');
+    });
+
+    act(() => {
+      renderTick += 1;
+      rerender(<Harness />);
+    });
+
+    expect(state.isUpdatingSelection).toBe(true);
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+
+    expect(state.isUpdatingSelection).toBe(false);
+    expect(state.selectionChangeOrigin).toBe('programmatic-export');
+  } finally {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  }
+});
+
+test('selection reconciler clamps stale DOM range offsets after text shortening', () => {
+  vi.useFakeTimers();
+
+  const editor = createEditor<Value>();
+  const runtime = new EditableDOMRuntime({ editor });
+  const { rootRef } = runtime;
+  const { state } = runtime;
+  runtime.inputController.preferModelSelectionForInputRef.current = true;
+  runtime.androidInputManagerRef.current = null;
+  let renderTick = 0;
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 4 },
+      focus: { path: [0, 0], offset: 4 },
+    },
+  });
+
+  const Harness = () => {
+    useEditableSelectionReconciler({
+      viewportBackedSelection: false,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
+    });
+
+    return (
+      <div data-render-tick={renderTick} ref={rootRef}>
+        <span>abc</span>
+      </div>
+    );
+  };
+
+  try {
+    const { container, rerender } = render(<Harness />);
+    const textNode = container.querySelector('span')?.firstChild;
+    const domSelection = document.getSelection();
+
+    if (!textNode || !domSelection) {
+      throw new Error(
+        'Expected shortened rendered text and document selection'
+      );
+    }
+
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(textNode, 0, textNode, 0);
+
+    vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
+    vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+      document
+    );
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
+    const staleRange = document.createRange();
+    staleRange.setStart(textNode, 0);
+    staleRange.collapse(true);
+    Object.defineProperties(staleRange, {
+      startOffset: { value: 4 },
+      endOffset: { value: 4 },
+    });
+    vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(
+      staleRange
+    );
+    vi.spyOn(ReactEditor, 'isComposing').mockReturnValue(false);
+    const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
+
+    act(() => {
+      renderTick += 1;
+      rerender(<Harness />);
+    });
+
+    expect(setBaseAndExtent).toHaveBeenLastCalledWith(textNode, 3, textNode, 3);
+    expect(state.selectionChangeOrigin).toBe('programmatic-export');
+  } finally {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  }
+});
+
+test('selection reconciler keeps DOM coverage skip selections model-owned', () => {
+  vi.useFakeTimers();
+
+  const editor = createEditor<Value>();
+  const runtime = new EditableDOMRuntime({ editor });
+  const coverage = runtime.domCoverage;
+  const { rootRef } = runtime;
+  const { state } = runtime;
+  runtime.inputController.preferModelSelectionForInputRef.current = true;
+  runtime.androidInputManagerRef.current = null;
+  let renderTick = 0;
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'hidden', children: [{ text: 'secret' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [2, 0], offset: 0 },
+    },
+  });
+  coverage.registerBoundary({
+    anchor: { type: 'placeholder' },
+    boundaryId: 'hidden-block',
+    copyPolicy: 'model',
+    coveredPathRanges: [{ anchor: [1], focus: [1] }],
+    coveredRuntimeRanges: [],
+    ownerPath: [],
+    ownerNodeKey: null,
+    reason: 'app-hidden',
+    selectionPolicy: 'skip',
+    state: 'intentionally-hidden',
+    version: 1,
+  });
+
+  const Harness = () => {
+    useEditableSelectionReconciler({
+      viewportBackedSelection: false,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
+    });
+
+    return (
+      <div data-render-tick={renderTick} ref={rootRef}>
+        <span>one</span>
+        <button type="button">hidden shell</button>
+        <span>two</span>
+      </div>
+    );
+  };
+
+  try {
+    const { container, rerender } = render(<Harness />);
+    const firstText = container.querySelector('span')?.firstChild;
+    const domSelection = document.getSelection();
+
+    if (!firstText || !domSelection) {
+      throw new Error('Expected rendered text and document selection');
+    }
+
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(firstText, 3, firstText, 3);
+
+    vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
+    vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+      document
+    );
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
+    const resolveDOMRange = vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot');
+
+    act(() => {
+      renderTick += 1;
+      rerender(<Harness />);
+    });
+
+    expect(domSelection.rangeCount).toBe(0);
+    expect(resolveDOMRange).not.toHaveBeenCalled();
+    expect(state.selectionChangeOrigin).toBe('programmatic-export');
+    expect(state.isUpdatingSelection).toBe(true);
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+
+    expect(state.isUpdatingSelection).toBe(false);
+  } finally {
+    coverage.destroy();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  }
+});
+
+test('DOM coverage selection materializes every covered materialize boundary with range roles', () => {
+  const editor = createEditor<Value>();
+  const coverage = DOMCoverage.create(editor);
+  const materialized: string[] = [];
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'anchor' }] },
+      { type: 'paragraph', children: [{ text: 'before' }] },
+      { type: 'paragraph', children: [{ text: 'middle' }] },
+      { type: 'paragraph', children: [{ text: 'after' }] },
+      { type: 'paragraph', children: [{ text: 'focus' }] },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 'anchor'.length },
+      focus: { path: [4, 0], offset: 0 },
+    },
+  });
+
+  for (const [boundaryId, path] of [
+    ['hidden-anchor', [0]],
+    ['hidden-middle', [2]],
+    ['hidden-focus', [4]],
+  ] as const) {
+    coverage.registerBoundary({
+      anchor: { type: 'placeholder' },
+      boundaryId,
+      copyPolicy: 'model',
+      coveredPathRanges: [{ anchor: path, focus: path }],
+      coveredRuntimeRanges: [],
+      ownerPath: [],
+      ownerNodeKey: null,
+      reason: 'app-hidden',
+      selectionPolicy: 'materialize',
+      state: 'intentionally-hidden',
+      version: 1,
+    });
+  }
+
+  coverage.setMaterializeHandler((boundary, reason, options) => {
+    materialized.push(
+      `${boundary.boundaryId}:${reason}:${options.rangeRole ?? 'none'}`
+    );
+    return true;
+  });
+
+  const domSelection = document.getSelection();
+  const selection = readTextSelection(editor);
+
+  try {
+    if (!domSelection || !selection) {
+      throw new Error('Expected document and editor selection');
+    }
+
+    expect(
+      applyDOMCoverageSelectionPolicy({
+        coverage,
+        domSelection,
+        editor,
+        selection,
+      })
+    ).toBe(true);
+    expect(materialized.sort()).toEqual([
+      'hidden-anchor:selection:anchor',
+      'hidden-focus:selection:focus',
+      'hidden-middle:selection:interior',
+    ]);
+  } finally {
+    coverage.destroy();
+  }
+});
+
+test('forced DOM coverage export rebuilds a fresh native range', () => {
+  const editor = createEditor<Value>();
+  const coverage = DOMCoverage.create(editor);
+  const textNode = document.createTextNode('abc');
+  const domRange = document.createRange();
+
+  domRange.setStart(textNode, 0);
+  domRange.setEnd(textNode, 2);
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 2 },
+    },
+  });
+  coverage.registerBoundary({
+    anchor: { type: 'placeholder' },
+    boundaryId: 'covered-paragraph',
+    copyPolicy: 'model',
+    coveredPathRanges: [{ anchor: [0], focus: [0] }],
+    coveredRuntimeRanges: [],
+    ownerPath: [],
+    ownerNodeKey: null,
+    reason: 'app-hidden',
+    selectionPolicy: 'skip',
+    state: 'intentionally-hidden',
+    version: 1,
+  });
+
+  const domSelection = document.getSelection();
+  const selection = readTextSelection(editor);
+
+  try {
+    if (!domSelection || !selection) {
+      throw new Error('Expected document and editor selection');
+    }
+
+    vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(
+      domRange
+    );
+    const addRange = vi.spyOn(domSelection, 'addRange');
+    const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
+
+    expect(
+      applyDOMCoverageSelectionPolicy({
+        coverage,
+        domSelection,
+        editor,
+        forceDOMRangeRebuild: true,
+        selection,
+      })
+    ).toBe(true);
+    expect(addRange).toHaveBeenCalledWith(domRange);
+    expect(setBaseAndExtent).toHaveBeenCalledWith(textNode, 0, textNode, 2);
+  } finally {
+    coverage.destroy();
+    vi.restoreAllMocks();
+  }
+});
+
+test('selection reconciler preserves visible anchor text across DOM coverage boundaries', () => {
+  vi.useFakeTimers();
+
+  const editor = createEditor<Value>();
+  const runtime = new EditableDOMRuntime({ editor });
+  const coverage = runtime.domCoverage;
+  const { rootRef } = runtime;
+  const { state } = runtime;
+  runtime.inputController.preferModelSelectionForInputRef.current = true;
+  runtime.androidInputManagerRef.current = null;
+  let renderTick = 0;
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'hidden', children: [{ text: 'secret' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [2, 0], offset: 1 },
+    },
+  });
+  coverage.registerBoundary({
+    anchor: { type: 'placeholder' },
+    boundaryId: 'hidden-block',
+    copyPolicy: 'model',
+    coveredPathRanges: [{ anchor: [1], focus: [1] }],
+    coveredRuntimeRanges: [],
+    ownerPath: [],
+    ownerNodeKey: null,
+    reason: 'app-hidden',
+    selectionPolicy: 'skip',
+    state: 'intentionally-hidden',
+    version: 1,
+  });
+
+  const Harness = () => {
+    useEditableSelectionReconciler({
+      viewportBackedSelection: false,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
+    });
+
+    return (
+      <div
+        data-editor="true"
+        data-render-tick={renderTick}
+        data-selection-test-root
+        ref={rootRef}
+      >
+        <span data-editor-node="text" data-editor-path="0,0">
+          <span data-editor-leaf="true">
+            <span data-editor-string="true">one</span>
+          </span>
+        </span>
+        <button type="button">hidden shell</button>
+        <span data-editor-node="text" data-editor-path="2,0">
+          <span data-editor-leaf="true">
+            <span data-editor-string="true">two</span>
+          </span>
+        </span>
+      </div>
+    );
+  };
+
+  try {
+    const { container, rerender } = render(<Harness />);
+    const root = container.querySelector(
+      '[data-selection-test-root]'
+    ) as HTMLElement | null;
+    const [firstString, secondString] = container.querySelectorAll(
+      '[data-editor-string]'
+    );
+    const firstElement = firstString?.closest(
+      '[data-editor-node]'
+    ) as HTMLElement | null;
+    const secondElement = secondString?.closest(
+      '[data-editor-node]'
+    ) as HTMLElement | null;
+    const firstText = firstString?.firstChild;
+    const secondText = secondString?.firstChild;
+    const domSelection = document.getSelection();
+
+    if (
+      !root ||
+      !firstElement ||
+      !secondElement ||
+      !firstText ||
+      !secondText ||
+      !domSelection
+    ) {
+      throw new Error('Expected rendered text and document selection');
+    }
+
+    const [firstNode] = editor.read((innerState) =>
+      innerState.nodes.get([0, 0])
+    )!;
+    const [secondNode] = editor.read((innerState2) =>
+      innerState2.nodes.get([2, 0])
+    )!;
+    if (!TextApi.isText(firstNode) || !TextApi.isText(secondNode)) {
+      throw new Error('Expected the selected text nodes');
+    }
+    const keyToElement: NonNullable<
+      ReturnType<typeof EDITOR_TO_KEY_TO_ELEMENT.get>
+    > = new WeakMap();
+
+    EDITOR_TO_ELEMENT.set(editor, root);
+    EDITOR_TO_KEY_TO_ELEMENT.set(editor, keyToElement);
+    EDITOR_TO_WINDOW.set(editor, window);
+    ELEMENT_TO_NODE.set(root, editor);
+    ELEMENT_TO_NODE.set(firstElement, firstNode);
+    ELEMENT_TO_NODE.set(secondElement, secondNode);
+    NODE_TO_ELEMENT.set(editor, root);
+    NODE_TO_ELEMENT.set(firstNode, firstElement);
+    NODE_TO_ELEMENT.set(secondNode, secondElement);
+    keyToElement.set(editor.api.dom.findKey(firstNode), firstElement);
+    keyToElement.set(editor.api.dom.findKey(secondNode), secondElement);
+
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(firstText, 1, firstText, 1);
+
+    vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
+    vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(
+      document
+    );
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
+    const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
+
+    act(() => {
+      renderTick += 1;
+      rerender(<Harness />);
+    });
+
+    expect(setBaseAndExtent).toHaveBeenLastCalledWith(
+      firstText,
+      1,
+      secondText,
+      1
+    );
+    expect(state.selectionChangeOrigin).toBe('programmatic-export');
+    expect(state.isUpdatingSelection).toBe(true);
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+
+    expect(state.isUpdatingSelection).toBe(false);
+  } finally {
+    coverage.destroy();
+    EDITOR_TO_ELEMENT.delete(editor);
+    EDITOR_TO_KEY_TO_ELEMENT.delete(editor);
+    EDITOR_TO_WINDOW.delete(editor);
+    NODE_TO_ELEMENT.delete(editor);
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  }
+});
+
+test('read-only triple-click stays native and does not update model selection', () => {
+  const editor = createEditor<Value>();
+  const runtime = new EditableDOMRuntime({ editor });
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: true },
+    state: createEditableInputControllerState(),
+  });
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    },
+  });
+
+  const target = document.createElement('span');
+  target.setAttribute('data-editor-node', 'element');
+  target.setAttribute('data-editor-path', '0');
+  document.body.append(target);
+
+  const update = vi.spyOn(editor, 'update');
+
+  try {
+    applyEditableClick({
+      domPhaseScheduler: runtime.domPhaseScheduler,
+      editor,
+      event: {
+        defaultPrevented: false,
+        detail: 3,
+        isDefaultPrevented: () => false,
+        isPropagationStopped: () => false,
+        target,
+      } as any,
+      inputController,
+      readOnly: true,
+    });
+
+    expect(update).not.toHaveBeenCalled();
+    expect(editorGetSelection(editor)).toEqual({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    });
+  } finally {
+    runtime.destroy();
+    target.remove();
+    update.mockRestore();
+  }
+});
+
+test('trailing click preserves an authoritative node selection', () => {
+  const editor = createEditor<Value>();
+  const runtime = new EditableDOMRuntime({ editor });
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: false },
+    state: createEditableInputControllerState(),
+  });
+  const selection = SelectionApi.nodes([[0], [1]], { mode: 'block' });
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+    selection,
+  });
+  setEditableModelSelectionPreference({
+    inputController,
+    preferModelSelection: true,
+    reason: 'model-command',
+    selectionSource: 'model-owned',
+  });
+
+  const target = document.createElement('span');
+  document.body.append(target);
+
+  try {
+    applyEditableClick({
+      domPhaseScheduler: runtime.domPhaseScheduler,
+      editor,
+      event: {
+        defaultPrevented: false,
+        detail: 1,
+        isDefaultPrevented: () => false,
+        isPropagationStopped: () => false,
+        target,
+      } as any,
+      inputController,
+      onClick: () => true,
+      readOnly: false,
+    });
+
+    expect(editorGetSelection(editor)).toEqual(selection);
+    expect(inputController.preferModelSelectionForInputRef.current).toBe(true);
+    expect(inputController.state.selectionSource).toBe('model-owned');
+  } finally {
+    runtime.destroy();
+    target.remove();
+  }
+});

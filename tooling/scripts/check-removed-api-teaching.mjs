@@ -1,0 +1,175 @@
+import { spawnSync } from 'node:child_process';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+import { generatedPrefixes, releaseNotePrefixes } from './teaching-sweep.mjs';
+
+const manifestPath = 'apps/www/src/generated/api-reference-manifest.json';
+const notAfterScopeOrPath = '(^|[^@A-Za-z0-9_./-])';
+const notBeforeLongerPath = '($|[^A-Za-z0-9_/-])';
+
+const teachingPaths = [
+  '.agents/playbooks',
+  '.agents/rules',
+  'AGENTS.md',
+  'CODING_STANDARDS.md',
+  'README.md',
+  'VISION.md',
+  'apps',
+  'content/docs',
+  'docs/development',
+  'docs/editor-behavior',
+  'docs/plans/topics',
+  'docs/research/sources',
+  'docs/vision',
+  'packages',
+];
+const pathspecs = [
+  ...teachingPaths,
+  ...[...generatedPrefixes, ...releaseNotePrefixes].map(
+    (prefix) => `:(exclude)${prefix}`
+  ),
+  ':(exclude,glob)**/CHANGELOG.md',
+];
+
+export const findRemovedApiTeaching = ({ base, cwd = process.cwd() }) => {
+  const git = (args) =>
+    spawnSync('git', args, {
+      cwd,
+      encoding: 'utf-8',
+      maxBuffer: 256 * 1024 * 1024,
+    });
+  const root = git(['rev-parse', '--show-toplevel']).stdout.trim();
+  const commit = git([
+    'rev-parse',
+    '--verify',
+    '--quiet',
+    `${base}^{commit}`,
+  ]).stdout.trim();
+  if (!commit) throw new Error(`cannot resolve the base commit ${base}`);
+
+  const readBase = (path) => {
+    const result = git(['show', `${commit}:${path}`]);
+    return result.status === 0 ? result.stdout : null;
+  };
+  const readHead = (path) => {
+    try {
+      return readFileSync(join(root, path), 'utf-8');
+    } catch {
+      return null;
+    }
+  };
+  const baseManifest = readBase(manifestPath);
+  const headManifest = readHead(manifestPath);
+  if (baseManifest === null || headManifest === null) {
+    throw new Error(
+      `${manifestPath} is missing ${baseManifest === null ? `at ${base}` : 'from the working tree'}`
+    );
+  }
+
+  const exportedNames = (manifest) =>
+    new Set(
+      Object.values(JSON.parse(manifest).packages).flatMap(({ symbols }) =>
+        Object.values(symbols).map(({ name }) => name)
+      )
+    );
+  const entrypoints = (read, directories) =>
+    new Set(
+      directories.flatMap((directory) => {
+        const manifest = read(`packages/${directory}/package.json`);
+        if (manifest === null) return [];
+        const { exports = {}, name } = JSON.parse(manifest);
+        return Object.keys(exports)
+          .filter(
+            (key) =>
+              key.startsWith('./') &&
+              !key.includes('*') &&
+              key !== './package.json'
+          )
+          .map((key) => `${name}/${key.slice(2)}`);
+      })
+    );
+  const baseDirectories = git([
+    'ls-tree',
+    '-d',
+    '--name-only',
+    commit,
+    'packages/',
+  ])
+    .stdout.split('\n')
+    .filter(Boolean)
+    .map((path) => path.slice('packages/'.length));
+  const headDirectories = readdirSync(join(root, 'packages'), {
+    withFileTypes: true,
+  })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+
+  const headNames = exportedNames(headManifest);
+  const names = [...exportedNames(baseManifest)]
+    .filter((name) => !headNames.has(name))
+    .sort((left, right) => left.localeCompare(right));
+  const headEntrypoints = entrypoints(readHead, headDirectories);
+  const specifiers = [...entrypoints(readBase, baseDirectories)]
+    .filter((specifier) => !headEntrypoints.has(specifier))
+    .sort((left, right) => left.localeCompare(right));
+
+  const grep = (flags, patterns) => {
+    if (patterns.length === 0) return [];
+    const result = git([
+      'grep',
+      '--untracked',
+      '-n',
+      '-I',
+      '--full-name',
+      '--no-color',
+      ...flags,
+      ...patterns.flatMap((pattern) => ['-e', pattern]),
+      '--',
+      ...pathspecs,
+    ]);
+    if (result.status !== 0 && result.status !== 1) {
+      throw new Error(
+        result.stderr.trim() || `git grep exited ${result.status}`
+      );
+    }
+    return result.stdout.split('\n').filter(Boolean);
+  };
+  const hits = [
+    ...grep(['-w', '-F'], names),
+    ...grep(
+      ['-E'],
+      specifiers.map(
+        (specifier) =>
+          `${notAfterScopeOrPath}${specifier.replace(/[$()*+.?[\\\]^{|}]/g, '\\$&')}${notBeforeLongerPath}`
+      )
+    ),
+  ];
+  return { hits: [...new Set(hits)].sort(), names, specifiers };
+};
+
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  const base = process.env.PLATE_BASELINE_BASE || 'HEAD';
+  let found;
+  try {
+    found = findRemovedApiTeaching({ base });
+  } catch (error) {
+    console.error(`[removed-api-teaching] ${error.message}`);
+    process.exit(2);
+  }
+  const removed = [...found.names, ...found.specifiers];
+  if (found.hits.length > 0) {
+    console.error(
+      `[removed-api-teaching] ${found.hits.length} lines still name an export removed since ${base} (${removed.join(', ')}). Teach what replaced it, or delete the line:`
+    );
+    for (const hit of found.hits) console.error(`  ${hit.slice(0, 200)}`);
+    process.exit(1);
+  }
+  console.info(
+    `[removed-api-teaching] no teaching file names the ${removed.length} exports removed since ${base}.`
+  );
+}

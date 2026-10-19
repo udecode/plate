@@ -1,0 +1,26 @@
+--- wt-si-a/apps/www/src/registry/components/editor/ai-menu.tsx	2026-09-30 03:44:52
++++ wt-si-d/apps/www/src/registry/components/editor/ai-menu.tsx	2026-09-30 05:18:22
+@@ -156,12 +156,17 @@
+   return (
+     <div ref={draftRef} data-editor-ai-draft="">
+       {preview}
+-      {streaming && (!last || !TextApi.isText(last) || !last.text) && (
+-        <span
+-          data-editor-ai-end=""
+-          className="inline-block size-3 rounded-full bg-purple-600 align-middle"
+-        />
+-      )}
++      {/* Style-isolation variant D: the fallback marker span is always the
++          last child, so EditorStatic's root never flips :last-child. */}
++      <span
++        hidden={!(streaming && (!last || !TextApi.isText(last) || !last.text))}
++        data-editor-ai-end={
++          streaming && (!last || !TextApi.isText(last) || !last.text)
++            ? ''
++            : undefined
++        }
++        className="inline-block size-3 rounded-full bg-purple-600 align-middle"
++      />
+     </div>
+   );
+ }

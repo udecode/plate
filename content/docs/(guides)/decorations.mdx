@@ -1,0 +1,68 @@
+---
+title: Decorations and annotations
+description: Paint transient ranges and retain application-owned range identities.
+---
+
+Use decorations for transient text paint and annotations for ranges with durable identity.
+
+## Decorate text
+
+The [Find plugin](/docs/find) supplies search ranges and refreshes them as the query or document changes. Configure its appearance on the owning plugin:
+
+```tsx title="search-editor.tsx" showLineNumbers
+import { BaseFindPlugin } from 'platejs/find';
+import { EditorContent, EditorRoot, useCreateEditor } from 'platejs/react';
+
+const FindPlugin = BaseFindPlugin.configure({
+  decorate: { attributes: { className: 'rounded bg-yellow-200' } },
+});
+
+export function SearchEditor() {
+  const editor = useCreateEditor({ plugins: [FindPlugin] });
+
+  return (
+    <EditorRoot editor={editor}>
+      <input
+        aria-label="Find text"
+        onChange={(event) => editor.plugin(FindPlugin).api.search(event.target.value)}
+      />
+      <EditorContent />
+    </EditorRoot>
+  );
+}
+```
+
+Plate collects decoration ranges from installed plugins. Keep paint on `plugin.decorate`; the editor root does not accept a separate application decoration source.
+
+The [Preview Markdown example](/docs/examples/preview-markdown) shows a custom reader that returns keyed ranges for syntax tokens. The [Linting plugin](/docs/lint) paints your rules' findings the same way and refreshes a block when a late server reply changes them.
+
+## Custom sources
+
+A plugin's `decorate.read({ entry, ...context })` returns keyed ranges with render-safe attributes. `decorate.observe({ refresh, ...context })` subscribes to external changes and returns cleanup. Static rendering reads the source without subscribing.
+
+Keep range keys stable and unique within the source. Attributes support `className`, `style`, `aria-*`, and `data-*`. React markup and event handlers belong in components.
+
+Use `decorate.attributes` for presentation without copying an existing reader. Its inferred callback receives `entry` and `decoration` as well as plugin context. `null` clears inherited presentation. Classes concatenate, styles merge shallowly, and later values win for other attributes.
+
+Document edits already refresh affected entries. External owners call `refresh({ nodeKeys })` with exact changed inputs; use `{ nodeKeys: 'all' }` only when the owner cannot identify them. Selection-only changes do not reread document decoration sources.
+
+A read depends on its entry, the nodes inside it, and state the source observes. An edit inside an element rereads the element too, so a source can return ranges for an element's descendants from the element's own entry. The code highlighter reads each code block once this way instead of once per text node.
+
+A static render of another document (`EditorStatic`'s `document`) reads that document through the context editor. Annotation ranges appear only on nodes the rendered document shares with the editor. State that belongs to the live session, such as remote cursors, search matches and authored changes, shows nothing there.
+
+Whole-element paint uses `render.useViewElementAttributes`. It runs once per enabled plugin per mounted view and returns sparse `{ key, attributes }` entries. Keep per-node render and attribute callbacks free of hooks.
+
+## Annotations
+
+Annotations attach IDs and application data to anchors. `useAnnotationStore`
+resolves them in one exact mounted view. Pass its store explicitly to
+`useAnnotation(store, id)` or `useAnnotations(store)`.
+
+Annotation data does not paint text by itself. The feature that knows the visual states supplies its plugin's decoration reader. Keep comment bodies, permissions, and audit events in their application store.
+
+See [Annotations](/docs/annotations) for local anchors, external stores, channels, deletion policy, and refresh behavior.
+
+Document content stays in nodes, named roots, and document metadata. Decoration
+ranges and selection geometry are view data. Keep annotations in their
+application-owned store, and read them with `useAnnotation` or `useAnnotations`.
+See [React Hooks](/docs/api/react-hooks) for exact hook contracts.

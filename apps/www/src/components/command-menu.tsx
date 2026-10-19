@@ -1,0 +1,125 @@
+'use client';
+
+import type { DialogProps } from '@radix-ui/react-dialog';
+import { usePathname } from 'next/navigation';
+import * as React from 'react';
+
+import { CommandMenuDialog } from '@/components/command-menu-dialog';
+import { Button } from '@/components/ui/button';
+import {
+  preloadDocsSidebar,
+  useLazyDocsSidebar,
+} from '@/hooks/use-lazy-docs-sidebar';
+import { useLocale } from '@/hooks/useLocale';
+import { isMainDocsHref, selectDocsSidebar } from '@/lib/docs-sidebar';
+import { cn } from '@/lib/utils';
+import { useMounted } from '@/registry/hooks/use-mounted';
+import type { MainNavItem } from '@/types/nav';
+
+const i18n = {
+  cn: {
+    searchDocumentation: '搜索文档...',
+    searchShort: '搜索...',
+  },
+  en: {
+    searchDocumentation: 'Search documentation...',
+    searchShort: 'Search...',
+  },
+};
+
+export function CommandMenu({
+  navItems,
+  ...props
+}: Omit<DialogProps, 'onOpenChange' | 'open'> & {
+  navItems: MainNavItem[];
+}) {
+  const locale = useLocale();
+  const content = i18n[locale];
+  const [open, setOpen] = React.useState(false);
+  const isHydrated = useMounted();
+  const openRef = React.useRef(open);
+  const pathname = usePathname() ?? '';
+  const sidebar = useLazyDocsSidebar(locale, open);
+  const sidebarNav = selectDocsSidebar(sidebar, pathname).sections;
+
+  React.useEffect(() => {
+    openRef.current = open;
+  }, [open]);
+
+  const updateOpen = React.useCallback(
+    (nextOpen: boolean) => {
+      setOpen(nextOpen);
+
+      if (!nextOpen) {
+        return;
+      }
+
+      preloadDocsSidebar(locale);
+    },
+    [locale]
+  );
+
+  React.useEffect(() => {
+    const down = (event: KeyboardEvent) => {
+      if (
+        !(
+          (event.key === 'k' && (event.metaKey || event.ctrlKey)) ||
+          event.key === '/'
+        )
+      ) {
+        return;
+      }
+
+      if (
+        (event.target instanceof HTMLElement &&
+          event.target.isContentEditable) ||
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement ||
+        event.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      updateOpen(!openRef.current);
+    };
+
+    document.addEventListener('keydown', down);
+
+    return () => {
+      document.removeEventListener('keydown', down);
+    };
+  }, [updateOpen]);
+
+  return (
+    <>
+      <Button
+        data-command-menu-trigger
+        disabled={!isHydrated}
+        variant="outline"
+        className={cn(
+          'relative h-8 w-full justify-start rounded-lg border-none bg-muted pl-3 text-foreground shadow-none transition-colors hover:bg-muted/50 md:w-48 lg:w-40 xl:w-64 dark:bg-card'
+        )}
+        onClick={() => {
+          updateOpen(true);
+        }}
+        {...props}
+      >
+        <span className="hidden xl:inline-flex">
+          {content.searchDocumentation}
+        </span>
+        <span className="inline-flex xl:hidden">{content.searchShort}</span>
+      </Button>
+
+      {open ? (
+        <CommandMenuDialog
+          isPlateDocsHref={(href) => isMainDocsHref(sidebar, href)}
+          navItems={navItems}
+          open={open}
+          sidebarNav={sidebarNav}
+          onOpenChange={updateOpen}
+        />
+      ) : null}
+    </>
+  );
+}

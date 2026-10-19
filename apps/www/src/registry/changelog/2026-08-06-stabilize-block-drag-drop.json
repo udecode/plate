@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-06-stabilize-block-drag-drop",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-06-stabilize-block-drag-drop.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-06",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep direct block drag and drop stable",
+  "targets": [
+    {
+      "name": "block-draggable",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for block-draggable."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-06-block-draggable-keep-direct-drag-drop-0c7acb48",
+      "kind": "fix",
+      "summary": "Keep direct block drag and drop stable",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-draggable"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-06",
+          "entry": "2026-08-06-stabilize-block-drag-drop",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,0 +1,234 @@
+---
+title: 协作
+description: 使用 Yjs 实现实时协作
+toc: true
+---
+
+<ComponentPreview name="collaboration-demo" />
+
+预览通过无需凭证的本地房间运行两个独立编辑器。房间在任一编辑器连接前，只初始化一次中央
+`Y.Doc`。每个编辑器再把自己的 `Y.Doc` 和 Awareness 接入 Plate。
+
+<PackageInfo>
+
+## 功能特性
+
+- **应用拥有传输：** Hocuspocus、WebSocket、WebRTC、IndexedDB、认证、持久化、房间名和 provider 生命周期都由应用负责。
+- **显式就绪状态：** 应用的本地或远程文档源就绪后，绑定才接纳编辑。
+- **Awareness 与光标：** Yjs Awareness 传输光标位置和经过校验的元数据。复制的光标组件渲染选区、光标和标签。
+- **多根文档：** 一个 Yjs 事务可以同步主 `children`、命名 `roots` 和带根信息的选区。
+- **规范历史记录：** 本地与远程更改使用同一条 Plate 更改路径。Plate History 只把本地提交作为本地撤销项。
+
+</PackageInfo>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install platejs yjs
+```
+
+再安装应用使用的 provider。例如：
+
+```bash
+npm install @hocuspocus/provider
+```
+
+### 创建 provider 和就绪适配器
+
+Provider 包留在应用边界。绑定只接收 provider 的确切 `Y.Doc`、可选的 Awareness，
+以及显式就绪源；它不会连接、断开或销毁 provider。
+
+Provider 版本的事件契约可能不同，因此 Hocuspocus 就绪适配器放在应用代码中：
+
+```tsx
+import type { HocuspocusProvider } from "@hocuspocus/provider";
+import type { YjsInitialReadiness } from "platejs/yjs";
+
+const createHocuspocusInitialReadiness = (
+  provider: HocuspocusProvider
+): YjsInitialReadiness => ({
+  doc: provider.document,
+  getSnapshot: () => provider.synced,
+  subscribe(listener) {
+    const onSynced = () => listener();
+    provider.on("synced", onSynced);
+
+    let active = true;
+    return () => {
+      if (!active) return;
+      active = false;
+      provider.off("synced", onSynced);
+    };
+  },
+});
+```
+
+`initialReady: true` 表示这个文档世代的本地或持久化加载已经完成；它不代表应用有权初始化空房间。
+
+### 添加 Plate 插件
+
+同一房间内的所有 peer 必须使用相同的编译后 schema 身份。持久房间应使用稳定的 schema
+`id` 和 `version`。非空且没有 schema 元数据的房间会直接失败。已认领且有内容的房间在整个生命周期内保持其 schema 身份，因此在任何使用新 schema 的 peer 加入之前，先运行显式的版本化文档迁移，并在 schema 语义变化时提升 schema `version`。
+
+```tsx
+import { createEditor } from "platejs/react";
+import { YjsPlugin } from "platejs/yjs/react";
+
+const Collaboration = YjsPlugin.create({
+  doc: provider.document,
+  initialReady: createHocuspocusInitialReadiness(provider),
+  awareness: provider.awareness,
+  rootName: roomId,
+  cursorData: { validate: isCollaborator },
+});
+
+const editor = createEditor({
+  schema: { id: "yjs-example", version: 1 },
+  plugins: [Collaboration],
+  initialValue,
+});
+```
+
+`doc` 和 `initialReady` 是必填项。传入 `awareness` 时，`awareness.doc` 必须与 `doc`
+是同一对象。只有带 Awareness 的绑定才拥有 presence 方法和光标 hooks。
+
+编辑器同时记录建议或评论时，为每位协作者传入 `createEditor({ userId })`。未传入时，
+所有协作者都以本地用户 `'local'` 写入，编辑器会在开发环境中于首次写入或评论时警告一次。
+仅用 Yjs 做持久化的单人编辑器可以传入任意稳定 ID。`userId` 在编辑器生命周期内固定。
+一个 `Y.Doc` 中的每个 `rootName` 同时只由一个活动编辑器绑定。`useCreateEditor`
+创建的编辑器在组件卸载或替换它时释放绑定，因此重新挂载或新的 `id` 可以再次绑定同一
+`rootName`。`createEditor` 创建的编辑器持有绑定，直到调用 `editor.destroy()`。
+
+`rootName` 命名整个协作文档：主文档子节点位于 `rootName`，命名根位于 `${rootName}:roots`；一次修改多个根的提交会成为一个 Yjs 事务和一个历史批次；awareness 会拒绝 anchor 和 focus 位于不同根的选择。
+
+普通服务端房间应在服务端保存规范 Yjs 更新，并省略 `seed`。只有应用已经为全新的空房间选定唯一
+初始化所有者时，才使用 `seed: true`。同步到空副本不能证明 seed 所有权；多个 seeder
+可能产生重复内容。
+
+### 添加复制的光标 UI
+
+```bash
+npx shadcn@latest add @plate/remote-cursor-overlay
+```
+
+复制的组件导出 factory，让每个编辑器传入自己的绑定资源：
+
+```tsx
+import { CollaborationPlugin } from "@/components/editor/remote-cursor-overlay";
+
+const Collaboration = CollaborationPlugin.create({
+  doc: provider.document,
+  initialReady: createHocuspocusInitialReadiness(provider),
+  awareness: provider.awareness,
+  rootName: roomId,
+  cursorData: { validate: isCollaborator },
+});
+```
+
+`CollaborationPlugin` 会为创建的每个 Yjs descriptor 添加选区样式和 `afterEditable` 光标覆盖层。
+颜色、透明度和标签都可以在复制的文件中调整。
+
+如需自定义光标 UI，`platejs/yjs/react` 导出复制组件所用的 hooks：`useYjsRemoteCursorIds(editor)` 读取稳定的成员列表，`useYjsRemoteCursor(editor, clientId)` 读取单个光标，`useYjsRemoteCursorGeometry(editor, clientId, { editableRef })` 在该视图中读取其几何信息。
+
+如需自行绘制远程选区，用 `editor.api.yjs.remoteCursors()` 读取当前快照，并用 `editor.api.yjs.subscribeRemoteCursors(listener)` 让绘制失效；它只在解析后的远程光标变化时触发。它的清理函数是幂等的，随所属视图一起释放。
+
+### 根据 admission 状态控制编辑
+
+连接状态直接从 provider 读取。Yjs admission hook 表示文档绑定状态：
+
+```tsx
+import { useYjsAdmissionStatus } from "platejs/yjs/react";
+
+const status = useYjsAdmissionStatus(editor);
+
+return (
+  <Editor
+    readOnly={status.state !== "ready"}
+    aria-busy={status.state === "waiting"}
+  />
+);
+```
+
+应用应显示 `error` 状态。在修复底层原因后，可以调用
+`editor.api.yjs.retryImport()` 重试。UI 负责避免令人困惑的输入；绑定本身也会在
+waiting 或 error 时拒绝文档提交。
+
+### 发布 presence 并控制 provider
+
+```tsx
+editor.api.yjs.setCursorData({ name: "Ada", color: "#7c3aed" });
+
+const disconnect = () => {
+  editor.api.yjs.clearSelection();
+  provider.disconnect();
+};
+
+const reconnect = async () => {
+  await provider.connect();
+  if (editor.api.yjs.admissionStatus().state === "ready") {
+    editor.api.yjs.syncSelection();
+  }
+};
+```
+
+`syncSelection()` 读取当前挂载视图的选择。共享 provider 断开某个视图前，先调用
+`clearSelection()` 撤回该视图的选择。Provider 状态、错误和清理由应用负责。首次
+admission 会自动发布当前选择；显式 reconnect 调用适用于已经 admission 的绑定。
+
+</Steps>
+
+## 共享 effect 与压缩
+
+每个独立的共享 effect 都声明 `collabReplay`：`"live"` 用于只向活跃 peer 投递一次的事件，`"latest"` 只用于定义了 `collabSnapshot(state)` 的绝对、幂等值。`"live"` effect 绝不能是持久共享状态的唯一来源。长会话应为每个协作文档设置一个稳定的 `sharedEffectCompaction.authorityId`；所有活跃接收方确认后它会建立检查点，后加入的 peer 恢复 `"latest"` 值，不会重放已过期的 `"live"` 事件；`editor.api.yjs.retireSharedEffectPeer(clientId)` 用于释放宿主确认已永久离开的 peer。同一协作文档使用不同的 `sharedEffectCompaction.authorityId` 会被拒绝；只能通过宿主隔离的显式文档迁移转移压缩权限。
+
+## 所有权
+
+| 关注点                            | 所有者                                 |
+| --------------------------------- | -------------------------------------- |
+| `Y.Doc`、就绪状态和 seed 权限     | 应用                                   |
+| Provider 连接、认证、持久化和清理 | 应用                                   |
+| 文档 admission 和 Yjs 转换        | `platejs/yjs`                          |
+| 光标元数据和远程光标快照          | 提供 Awareness 时由 `platejs/yjs` 负责 |
+| 选择、编辑和撤销/重做             | `platejs` 与 `platejs/history`         |
+| 光标展示                          | 复制的 `remote-cursor-overlay` 组件    |
+
+## 后端
+
+### Hocuspocus
+
+在应用代码中创建 `HocuspocusProvider`，把 `provider.document` 和
+`provider.awareness` 传给插件。服务器 URL、token、房间名、连接状态和销毁逻辑都放在
+provider 旁边。
+
+### WebRTC
+
+在应用代码中创建 `y-webrtc` provider，把它的确切文档和 Awareness 对象传给绑定。
+生产环境的信令和 TURN 基础设施仍由应用负责。
+
+### IndexedDB
+
+使用 `y-indexeddb` 恢复 `Y.Doc`，完成后再声明初始就绪。IndexedDB 本身不提供远程
+Awareness 或光标传输。
+
+## 排错
+
+- 确认 `awareness.doc === doc`。
+- 确认所有协作者使用相同的 Yjs 根名和 Plate schema 身份。
+- 在应用 UI 或日志中显示 provider 连接和认证错误。
+- `seed: true` 只交给一个由应用选定的所有者。
+- 从共享 provider 分离视图前先清空选择。
+- 显示 admission 错误，并只在修复原因后调用 `retryImport()`。
+
+## 相关资源
+
+- [History](/docs/history)
+- [Yjs](https://github.com/yjs/yjs)
+- [Hocuspocus](https://tiptap.dev/hocuspocus)
+- [y-webrtc](https://github.com/yjs/y-webrtc)
+- [y-indexeddb](https://github.com/yjs/y-indexeddb)
+- [协作示例](/docs/examples/collaboration-example)
+- [Editor](/docs/editor)

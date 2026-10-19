@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-07-editor-user",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-07-editor-user.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Read the current user from the editor's userId",
+  "targets": [
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "import-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/import-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mode-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mode-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-overlap-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-overlap-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-persistence-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-persistence-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-review-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-review-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion-demo",
+      "files": ["apps/www/src/registry/examples/discussion-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-demo",
+      "files": ["apps/www/src/registry/examples/suggestion-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-format-demo",
+      "files": ["apps/www/src/registry/examples/suggestion-format-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-persistence-demo",
+      "files": [
+        "apps/www/src/registry/examples/suggestion-persistence-demo.tsx",
+        "apps/www/src/registry/examples/values/suggestion-document.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "playground-demo",
+      "files": ["apps/www/src/registry/examples/playground-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "version-history-demo",
+      "files": ["apps/www/src/registry/examples/version-history-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-demo",
+      "files": [
+        "apps/www/src/registry/examples/ai-demo.tsx",
+        "apps/www/src/registry/examples/values/ai-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-ai",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/rich-text-editor-value.ts",
+        "apps/www/src/registry/blocks/editor-ai/components/editor/rich-text-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-07-comment-current-user-from-editor-cfc8f9a2",
+      "kind": "behavior",
+      "summary": "Read the current user from `editor.userId`, so comments, replies and suggestion colors follow the editor's user.",
+      "details": [],
+      "migrationNotes": [
+        "Remove currentUserId from CommentsPlugin initialState and pass the same user as createEditor({ userId })."
+      ],
+      "targets": ["comment", "suggestion", "import-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-07",
+          "entry": "2026-10-07-editor-user",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-07-mode-toolbar-button-local-user-3f1c2a7e",
+      "kind": "behavior",
+      "summary": "Offer Suggestion mode whenever `SuggestionPlugin` is installed, including editors without a `userId`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["mode-toolbar-button"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-07",
+          "entry": "2026-10-07-editor-user",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-07-examples-editor-user-8a4d61b0",
+      "kind": "behavior",
+      "summary": "Name the user once with the editor's `userId`, or run as the local user without one.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "comment-demo",
+        "comment-overlap-demo",
+        "comment-persistence-demo",
+        "comment-review-demo",
+        "discussion-demo",
+        "suggestion-demo",
+        "suggestion-format-demo",
+        "suggestion-persistence-demo",
+        "playground-demo",
+        "version-history-demo",
+        "ai-demo",
+        "editor-ai"
+      ],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-07",
+          "entry": "2026-10-07-editor-user",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

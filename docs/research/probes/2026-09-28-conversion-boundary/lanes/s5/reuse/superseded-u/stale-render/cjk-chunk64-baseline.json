@@ -1,0 +1,15 @@
+{
+ "base": "http://localhost:3604",
+ "chunk": 64,
+ "equal": true,
+ "streamedToc": "第 0 步",
+ "freshToc": "第 0 步",
+ "streamedOls": [],
+ "freshOls": [],
+ "streamedHljs": 298,
+ "freshHljs": 298,
+ "tokensEqual": true,
+ "tokenSpans": 248,
+ "streamedCellBorders": 200,
+ "freshCellBorders": 200
+}

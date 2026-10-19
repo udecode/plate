@@ -1,0 +1,72 @@
+'use client';
+
+import { CheckIcon, ClipboardIcon } from '@radix-ui/react-icons';
+import type { ComponentProps } from 'react';
+import * as React from 'react';
+
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { type Event, trackEvent } from '@/lib/events';
+import { cn } from '@/lib/utils';
+
+export function BlockCopyButton({
+  className,
+  code,
+  event,
+  name,
+  ...props
+}: {
+  code: string;
+  event: Event['name'];
+  name: string;
+} & ComponentProps<typeof Button>) {
+  const [hasCopied, setHasCopied] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!hasCopied) return undefined;
+
+    const timeout = setTimeout(() => {
+      setHasCopied(false);
+    }, 2000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [hasCopied]);
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            size="icon"
+            variant="outline"
+            className={cn('size-7 rounded-[6px] [&_svg]:size-3.5', className)}
+            onClick={() => {
+              void navigator.clipboard.writeText(code);
+              trackEvent({
+                name: event,
+                properties: {
+                  name,
+                },
+              });
+              setHasCopied(true);
+            }}
+            {...props}
+          >
+            <span className="sr-only">Copy</span>
+            {hasCopied ? <CheckIcon /> : <ClipboardIcon />}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent className="bg-zinc-950 text-white">
+          Copy code
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}

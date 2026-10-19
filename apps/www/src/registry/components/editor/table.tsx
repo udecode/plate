@@ -1,0 +1,1068 @@
+'use client';
+
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  CombineIcon,
+  EraserIcon,
+  Grid2X2Icon,
+  GripVertical,
+  PaintBucketIcon,
+  Rows3Icon,
+  SquareSplitHorizontalIcon,
+  Trash2Icon,
+  XIcon,
+} from 'lucide-react';
+import {
+  type EditorElementProps,
+  EditorElement,
+  useEditor,
+  useEditorReadOnly,
+  useEditorSelector,
+  useElement,
+  useElementSelected,
+  useFocusedLast,
+  useElementSelector,
+  usePath,
+} from 'platejs/react';
+import {
+  TableCellPlugin,
+  TablePlugin,
+  TableRowPlugin,
+  useTableResize,
+} from 'platejs/table/react';
+import * as React from 'react';
+
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import {
+  HandleActionsMenu,
+  startBlockDrag,
+} from '@/registry/components/editor/dnd';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuTrigger,
+} from '@/registry/components/editor/dropdown-menu';
+import {
+  FloatingPopover,
+  FloatingPopoverAnchor,
+  FloatingPopoverContent,
+} from '@/registry/components/editor/floating-popover';
+import {
+  Toolbar,
+  ToolbarButton,
+  ToolbarGroup,
+  ToolbarMenuGroup,
+} from '@/registry/components/editor/toolbar';
+
+import {
+  ColorDropdownMenuItems,
+  DEFAULT_COLORS,
+} from './font-color-toolbar-button';
+
+type TableResizeDirection = 'bottom' | 'right';
+
+type TableResizeStartOptions = {
+  colIndex: number;
+  direction: TableResizeDirection;
+  handleKey: string;
+  rowIndex: number;
+};
+
+type TableResizeContextValue = {
+  hasMultiRowSelection: boolean;
+  rowSizeOverrides: Map<number, number>;
+  clearResizePreview: (handleKey: string) => void;
+  showResizePreview: (
+    event: React.PointerEvent<HTMLDivElement>,
+    options: TableResizeStartOptions
+  ) => void;
+  startResize: (
+    event: React.PointerEvent<HTMLDivElement>,
+    options: TableResizeStartOptions
+  ) => void;
+};
+
+const TABLE_CONTROL_COLUMN_WIDTH = 16;
+
+const TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT = 1200;
+
+const TABLE_MULTI_SELECTION_TOOLBAR_DELAY_MS = 150;
+
+const TableResizeContext = React.createContext<TableResizeContextValue | null>(
+  null
+);
+
+function useTableResizeContext() {
+  const context = React.useContext(TableResizeContext);
+
+  if (!context) {
+    throw new Error('TableResizeContext is missing');
+  }
+
+  return context;
+}
+
+const paintIndicator = (
+  ref: React.RefObject<HTMLDivElement | null>,
+  offset: number | null
+) => {
+  const indicator = ref.current;
+
+  if (!indicator) return;
+  indicator.style.display = offset === null ? 'none' : 'block';
+  if (offset === null) indicator.style.removeProperty('left');
+  else indicator.style.left = `${offset}px`;
+};
+
+export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
+  const { children } = props;
+  const editor = useEditor();
+  const { api } = useEditor().plugin(TablePlugin);
+  const readOnly = useEditorReadOnly();
+  const blockSelected = useElementSelected({ mode: 'node' });
+  const hasControls = !readOnly;
+  const controlColumnWidth = hasControls ? TABLE_CONTROL_COLUMN_WIDTH : 0;
+  const dragIndicatorRef = React.useRef<HTMLDivElement>(null);
+  const hoverIndicatorRef = React.useRef<HTMLDivElement>(null);
+  const tableRef = React.useRef<HTMLTableElement>(null);
+  const [colSizeOverrides, setColSizeOverrides] = React.useState(
+    new Map<number, number>()
+  );
+  const [rowSizeOverrides, setRowHeightOverrides] = React.useState(
+    new Map<number, number>()
+  );
+  const overrideRowSize = React.useCallback(
+    (index: number, size: number | null) => {
+      setRowHeightOverrides((overrides) => {
+        const next = new Map(overrides);
+
+        if (size === null) next.delete(index);
+        else next.set(index, size);
+
+        return next;
+      });
+    },
+    [setRowHeightOverrides]
+  );
+  const marginLeft = props.element.marginLeft ?? 0;
+  const baseColSizes = api.columnWidths(props.element);
+  const columnWidths = baseColSizes.map(
+    (width, index) => colSizeOverrides.get(index) ?? width
+  );
+
+  const deferColumnResize =
+    (columnWidths?.length ?? 0) * (props.element.children?.length ?? 0) >
+    TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT;
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const tableNodeKey = props.editor.key(props.element);
+  const hasExpandedCellSelection = useEditorSelector((innerEditor) => {
+    const view = innerEditor.plugin(TablePlugin).read.selection();
+
+    return Boolean(view?.tableKey === tableNodeKey && view.cells.length > 1);
+  });
+  const hasMultiRowSelection = useEditorSelector((innerEditor) => {
+    const view = innerEditor.plugin(TablePlugin).read.selection();
+
+    return Boolean(
+      view?.rectangular &&
+      view.tableKey === tableNodeKey &&
+      view.cells.length > 1 &&
+      view.bounds.maxRow > view.bounds.minRow
+    );
+  });
+  const activeHandleKeyRef = React.useRef<string | null>(null);
+  const activeRowElementRef = React.useRef<HTMLTableRowElement | null>(null);
+  const previewHandleKeyRef = React.useRef<string | null>(null);
+
+  const clearResize = () => {
+    activeHandleKeyRef.current = null;
+    previewHandleKeyRef.current = null;
+    if (activeRowElementRef.current) {
+      delete activeRowElementRef.current.dataset.tableResizing;
+      activeRowElementRef.current = null;
+    }
+    paintIndicator(dragIndicatorRef, null);
+    paintIndicator(hoverIndicatorRef, null);
+    setColSizeOverrides(new Map());
+    setRowHeightOverrides(new Map());
+  };
+  const beginResize = useTableResize({
+    element: props.element,
+    tableRef,
+    onResizeEnd: clearResize,
+    onResize: (resize) => {
+      if (resize.edge === 'bottom') {
+        overrideRowSize(resize.rowIndex, resize.height);
+        return;
+      }
+
+      const first = resize.columns[0];
+      const offset =
+        controlColumnWidth +
+        baseColSizes
+          .slice(0, first.colIndex)
+          .reduce((total, width) => total + width, 0) +
+        first.width;
+
+      paintIndicator(
+        deferColumnResize ? dragIndicatorRef : hoverIndicatorRef,
+        offset
+      );
+      if (deferColumnResize) return;
+      setColSizeOverrides(
+        new Map(resize.columns.map(({ colIndex, width }) => [colIndex, width]))
+      );
+    },
+  });
+  const showResizePreview = React.useCallback(
+    (
+      event: React.PointerEvent<HTMLDivElement>,
+      { direction, handleKey }: TableResizeStartOptions
+    ) => {
+      if (
+        activeHandleKeyRef.current ||
+        event.buttons !== 0 ||
+        direction === 'bottom'
+      ) {
+        return;
+      }
+      const wrapper = wrapperRef.current;
+
+      if (!wrapper) return;
+      previewHandleKeyRef.current = handleKey;
+      const handleRect = event.currentTarget.getBoundingClientRect();
+      paintIndicator(
+        hoverIndicatorRef,
+        handleRect.left -
+          wrapper.getBoundingClientRect().left +
+          handleRect.width / 2
+      );
+    },
+    []
+  );
+  const clearResizePreview = React.useCallback((handleKey: string) => {
+    if (
+      activeHandleKeyRef.current ||
+      previewHandleKeyRef.current !== handleKey
+    ) {
+      return;
+    }
+    previewHandleKeyRef.current = null;
+    paintIndicator(hoverIndicatorRef, null);
+  }, []);
+  const startResize = React.useCallback(
+    (
+      event: React.PointerEvent<HTMLDivElement>,
+      { colIndex, direction, handleKey, rowIndex }: TableResizeStartOptions
+    ) => {
+      if (
+        !beginResize(
+          event,
+          direction === 'bottom'
+            ? { edge: 'bottom', rowIndex }
+            : { edge: 'right', colIndex }
+        )
+      ) {
+        return;
+      }
+
+      activeHandleKeyRef.current = handleKey;
+      previewHandleKeyRef.current = null;
+      const table = tableRef.current;
+      const row = table?.rows.item(rowIndex);
+
+      activeRowElementRef.current = row ?? null;
+      if (row) row.dataset.tableResizing = 'true';
+      if (direction === 'bottom' || !table) return;
+      if (!deferColumnResize) {
+        setRowHeightOverrides(
+          new Map(
+            Array.from(table.rows, (entry, index) => [
+              index,
+              entry.getBoundingClientRect().height,
+            ])
+          )
+        );
+      }
+      paintIndicator(hoverIndicatorRef, null);
+      paintIndicator(
+        deferColumnResize ? dragIndicatorRef : hoverIndicatorRef,
+        controlColumnWidth +
+          baseColSizes
+            .slice(0, colIndex + 1)
+            .reduce((total, width) => total + width, 0)
+      );
+    },
+    [
+      baseColSizes,
+      beginResize,
+      controlColumnWidth,
+      deferColumnResize,
+      setRowHeightOverrides,
+    ]
+  );
+  const tableResizeContext = React.useMemo(
+    () => ({
+      clearResizePreview,
+      hasMultiRowSelection,
+      rowSizeOverrides,
+      showResizePreview,
+      startResize,
+    }),
+    [
+      clearResizePreview,
+      hasMultiRowSelection,
+      rowSizeOverrides,
+      showResizePreview,
+      startResize,
+    ]
+  );
+  const resolvedColSizes = columnWidths;
+  const tableStyle = React.useMemo(
+    () => ({
+      width: `${
+        resolvedColSizes.reduce((total, colSize) => total + colSize, 0) +
+        controlColumnWidth
+      }px`,
+    }),
+    [controlColumnWidth, resolvedColSizes]
+  );
+
+  const content = (
+    <EditorElement
+      {...props}
+      attributes={{
+        ...props.attributes,
+        'data-node-selection-highlight': 'self',
+      }}
+      className={cn('overflow-x-auto py-5', hasControls && '-ml-4')}
+      style={{ paddingLeft: marginLeft }}
+    >
+      <TableResizeContext value={tableResizeContext}>
+        <div
+          ref={wrapperRef}
+          className="relative w-fit [&:active:not(:has([data-table-resize-handle]:active))_[data-table-resize-handle]]:cursor-text"
+        >
+          <div
+            ref={dragIndicatorRef}
+            className="pointer-events-none absolute inset-y-0 z-36 hidden w-[3px] -translate-x-[1.5px] bg-ring/70"
+            contentEditable={false}
+          />
+          <div
+            ref={hoverIndicatorRef}
+            className="pointer-events-none absolute inset-y-0 z-35 hidden w-[3px] -translate-x-[1.5px] bg-ring/80"
+            contentEditable={false}
+          />
+          {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- [P0 behavior-boundary] A new table interaction collapses the prior expanded cell selection. */}
+          <table
+            ref={tableRef}
+            className={cn(
+              'mr-0 ml-px table h-px table-fixed border-collapse',
+              blockSelected &&
+                '[&_:is(td,th)[data-editor-node-key]]:before:z-10 [&_:is(td,th)[data-editor-node-key]]:before:bg-(--node-selection-tint)',
+              hasExpandedCellSelection && '[&_*::selection]:bg-transparent'
+            )}
+            style={tableStyle}
+            onMouseDown={() => {
+              if (
+                (editor.plugin(TablePlugin).read.selection()?.cells.length ??
+                  0) > 1
+              ) {
+                editor.update.selection.collapse();
+              }
+            }}
+          >
+            {resolvedColSizes.length > 0 && (
+              <colgroup>
+                {hasControls && (
+                  <col
+                    style={{
+                      maxWidth: TABLE_CONTROL_COLUMN_WIDTH,
+                      minWidth: TABLE_CONTROL_COLUMN_WIDTH,
+                      width: TABLE_CONTROL_COLUMN_WIDTH,
+                    }}
+                  />
+                )}
+                {resolvedColSizes.map((colSize, index) => (
+                  <col
+                    key={index}
+                    style={{
+                      maxWidth: colSize,
+                      minWidth: colSize,
+                      width: colSize,
+                    }}
+                  />
+                ))}
+              </colgroup>
+            )}
+            <tbody className="min-w-full">{children}</tbody>
+          </table>
+        </div>
+      </TableResizeContext>
+    </EditorElement>
+  );
+
+  if (readOnly) {
+    return content;
+  }
+
+  return <TableFloatingToolbar>{content}</TableFloatingToolbar>;
+}
+
+function TableFloatingToolbar({
+  children,
+  ...props
+}: React.ComponentProps<typeof FloatingPopoverContent>) {
+  const selectedCellCount = useEditorSelector(
+    (editor) => editor.plugin(TablePlugin).read.selection()?.cells.length ?? 0
+  );
+  const selected = useElementSelected();
+  const collapsedInside = useEditorSelector(
+    (editor) => selected && editor.read.selection.isCollapsed()
+  );
+  const isFocusedLast = useFocusedLast();
+  const isCollapsedToolbarOpen = isFocusedLast && collapsedInside;
+  const isExpandedSelectionPending =
+    isFocusedLast && !collapsedInside && selectedCellCount > 1;
+  const isToolbarOpen = isCollapsedToolbarOpen || isExpandedSelectionPending;
+
+  return (
+    <FloatingPopover open={isToolbarOpen} modal={false}>
+      <FloatingPopoverAnchor element={children as React.ReactElement} />
+      {isCollapsedToolbarOpen && (
+        <TableFloatingToolbarContent {...props} collapsedInside />
+      )}
+      {isExpandedSelectionPending && (
+        <DelayedExpandedSelectionTableFloatingToolbarContent {...props} />
+      )}
+    </FloatingPopover>
+  );
+}
+
+function DelayedExpandedSelectionTableFloatingToolbarContent(
+  props: React.ComponentProps<typeof FloatingPopoverContent>
+) {
+  const [isReady, setIsReady] = React.useState(false);
+
+  React.useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setIsReady(true);
+    }, TABLE_MULTI_SELECTION_TOOLBAR_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  if (!isReady) return null;
+
+  return <TableFloatingToolbarContent {...props} />;
+}
+
+function TableFloatingToolbarContent({
+  collapsedInside = false,
+  ...props
+}: React.ComponentProps<typeof FloatingPopoverContent> & {
+  collapsedInside?: boolean;
+}) {
+  const editor = useEditor();
+  const element = useElement(TablePlugin);
+  const canMergeSelection = useEditorSelector((innerEditor) =>
+    innerEditor.plugin(TablePlugin).read.canMerge()
+  );
+  const canSplitSelection = useEditorSelector((innerEditor) =>
+    innerEditor.plugin(TablePlugin).read.canSplit()
+  );
+  const canMerge = !collapsedInside && canMergeSelection;
+  const canSplit = canSplitSelection;
+
+  if (!collapsedInside && !canMerge && !canSplit) return null;
+
+  return (
+    <FloatingPopoverContent
+      className="w-auto border-0 bg-transparent p-0 shadow-none ring-0"
+      onInitialFocus={(e) => {
+        e.preventDefault();
+      }}
+      contentEditable={false}
+      {...props}
+    >
+      <Toolbar
+        className="scrollbar-hide flex w-auto max-w-[80vw] flex-row overflow-x-auto rounded-md border bg-popover p-1 shadow-md print:hidden"
+        contentEditable={false}
+      >
+        <ToolbarGroup>
+          <ColorDropdownMenu tooltip="Background color">
+            <PaintBucketIcon />
+          </ColorDropdownMenu>
+          {canMerge && (
+            <ToolbarButton
+              onClick={() => {
+                editor.plugin(TablePlugin).update.merge();
+              }}
+              tooltip="Merge cells"
+            >
+              <CombineIcon />
+            </ToolbarButton>
+          )}
+          {canSplit && (
+            <ToolbarButton
+              onClick={() => {
+                editor.plugin(TablePlugin).update.split();
+              }}
+              tooltip="Split cell"
+            >
+              <SquareSplitHorizontalIcon />
+            </ToolbarButton>
+          )}
+
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger>
+              <ToolbarButton tooltip="Cell borders">
+                <Grid2X2Icon />
+              </ToolbarButton>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuPortal>
+              <TableBordersDropdownMenuContent />
+            </DropdownMenuPortal>
+          </DropdownMenu>
+
+          {collapsedInside && (
+            <ToolbarGroup>
+              <ToolbarButton
+                onClick={() => {
+                  editor.update.nodes.remove({ at: element });
+                  editor.api.dom.focus();
+                }}
+                tooltip="Delete table"
+              >
+                <Trash2Icon />
+              </ToolbarButton>
+            </ToolbarGroup>
+          )}
+        </ToolbarGroup>
+
+        {collapsedInside && (
+          <ToolbarGroup>
+            <ToolbarButton
+              onClick={() => {
+                editor.plugin(TablePlugin).update.insertRow({ before: true });
+              }}
+              tooltip="Insert row before"
+            >
+              <ArrowUp />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => {
+                editor.plugin(TablePlugin).update.insertRow();
+              }}
+              tooltip="Insert row after"
+            >
+              <ArrowDown />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => {
+                editor.plugin(TablePlugin).update.removeRow();
+              }}
+              tooltip="Delete row"
+            >
+              <XIcon />
+            </ToolbarButton>
+          </ToolbarGroup>
+        )}
+
+        {collapsedInside && (
+          <ToolbarGroup>
+            <ToolbarButton
+              onClick={() => {
+                editor
+                  .plugin(TablePlugin)
+                  .update.insertColumn({ before: true });
+              }}
+              tooltip="Insert column before"
+            >
+              <ArrowLeft />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => {
+                editor.plugin(TablePlugin).update.insertColumn();
+              }}
+              tooltip="Insert column after"
+            >
+              <ArrowRight />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => {
+                editor.plugin(TablePlugin).update.removeColumn();
+              }}
+              tooltip="Delete column"
+            >
+              <XIcon />
+            </ToolbarButton>
+          </ToolbarGroup>
+        )}
+      </Toolbar>
+    </FloatingPopoverContent>
+  );
+}
+
+function TableBordersDropdownMenuContent(
+  props: React.ComponentProps<typeof DropdownMenuContent>
+) {
+  const editor = useEditor();
+  const borderStates = useEditorSelector((innerEditor) =>
+    innerEditor.plugin(TablePlugin).read.borders()
+  );
+
+  if (!borderStates) return null;
+
+  return (
+    <DropdownMenuContent
+      className="min-w-[220px]"
+      onFinalFocus={(e) => {
+        e.preventDefault();
+        editor.api.dom.focus();
+      }}
+      align="start"
+      side="right"
+      sideOffset={0}
+      {...props}
+    >
+      <DropdownMenuGroup>
+        <DropdownMenuCheckboxItem
+          checked={borderStates.top === true}
+          onCheckedChange={() => {
+            editor.plugin(TablePlugin).update.toggleBorders({ border: 'top' });
+          }}
+        >
+          <BorderIcon side="top" />
+          <div>Top Border</div>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={borderStates.right === true}
+          onCheckedChange={() => {
+            editor
+              .plugin(TablePlugin)
+              .update.toggleBorders({ border: 'right' });
+          }}
+        >
+          <BorderIcon side="right" />
+          <div>Right Border</div>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={borderStates.bottom === true}
+          onCheckedChange={() => {
+            editor
+              .plugin(TablePlugin)
+              .update.toggleBorders({ border: 'bottom' });
+          }}
+        >
+          <BorderIcon side="bottom" />
+          <div>Bottom Border</div>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={borderStates.left === true}
+          onCheckedChange={() => {
+            editor.plugin(TablePlugin).update.toggleBorders({ border: 'left' });
+          }}
+        >
+          <BorderIcon side="left" />
+          <div>Left Border</div>
+        </DropdownMenuCheckboxItem>
+      </DropdownMenuGroup>
+
+      <DropdownMenuGroup>
+        <DropdownMenuCheckboxItem
+          checked={borderStates.none === true}
+          onCheckedChange={() => {
+            editor.plugin(TablePlugin).update.toggleBorders({ border: 'none' });
+          }}
+        >
+          <BorderIcon side="none" />
+          <div>No Border</div>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={borderStates.outer === true}
+          onCheckedChange={() => {
+            editor
+              .plugin(TablePlugin)
+              .update.toggleBorders({ border: 'outer' });
+          }}
+        >
+          <BorderIcon side="outer" />
+          <div>Outside Borders</div>
+        </DropdownMenuCheckboxItem>
+      </DropdownMenuGroup>
+    </DropdownMenuContent>
+  );
+}
+
+function ColorDropdownMenu({
+  children,
+  tooltip,
+}: {
+  children: React.ReactNode;
+  tooltip: string;
+}) {
+  const [open, setOpen] = React.useState(false);
+
+  const editor = useEditor();
+
+  const onUpdateColor = React.useCallback(
+    (color: string) => {
+      setOpen(false);
+      editor.plugin(TablePlugin).update.setCellBackground({ color });
+    },
+    [editor]
+  );
+
+  const onClearColor = React.useCallback(() => {
+    setOpen(false);
+    editor.plugin(TablePlugin).update.setCellBackground({ color: null });
+  }, [editor]);
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+      <DropdownMenuTrigger>
+        <ToolbarButton tooltip={tooltip}>{children}</ToolbarButton>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="start">
+        <ToolbarMenuGroup label="Colors">
+          <ColorDropdownMenuItems
+            className="px-2"
+            colors={DEFAULT_COLORS}
+            updateColor={onUpdateColor}
+          />
+        </ToolbarMenuGroup>
+        <DropdownMenuGroup>
+          <DropdownMenuItem className="p-2" onClick={onClearColor}>
+            <EraserIcon />
+            <span>Clear</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export function TableRowElement({
+  children,
+  ...props
+}: EditorElementProps<typeof TableRowPlugin>) {
+  const readOnly = useEditorReadOnly();
+  const rowIndex = usePath((path) => path.at(-1));
+
+  if (rowIndex === undefined) {
+    throw new Error('Table row path must include an index.');
+  }
+  const rowSize = useElementSelector(TableRowPlugin, (node) => node.height);
+  const { hasMultiRowSelection, rowSizeOverrides } = useTableResizeContext();
+  const rowMinHeight = rowSizeOverrides.get(rowIndex) ?? rowSize;
+  const hasControls = !readOnly;
+
+  return (
+    <EditorElement
+      {...props}
+      as="tr"
+      className={cn(
+        'group/row data-[table-resizing=true]:[&>td>.editor-row-drag-handle]:opacity-0',
+        // Opacity on the row would trap the handle's z-index below the table's
+        // block gutter, and Chrome cancels a drag whose origin gets covered.
+        hasControls
+          ? 'data-editor-dragging:[&>:not(:first-child)]:opacity-50'
+          : 'data-editor-dragging:opacity-50'
+      )}
+      style={
+        {
+          '--tableRowMinHeight': rowMinHeight ? `${rowMinHeight}px` : undefined,
+        } as React.CSSProperties
+      }
+    >
+      {hasControls && (
+        <td
+          className="relative z-51 w-4 max-w-4 min-w-4 p-0 select-none hover:[&>.editor-row-drag-handle]:opacity-100"
+          contentEditable={false}
+        >
+          {!hasMultiRowSelection && <RowDragHandle />}
+        </td>
+      )}
+      {children}
+    </EditorElement>
+  );
+}
+
+function RowDragHandle() {
+  const editor = useEditor();
+  const element = useElement(TableRowPlugin);
+  const selected = useElementSelected();
+  const [open, setOpen] = React.useState(false);
+  const move = (to: 'next' | 'previous', announce: string) => {
+    editor.api.transfer.move({
+      announce,
+      nodes: [editor.key(element)],
+      to,
+    });
+  };
+
+  return (
+    <>
+      <Button
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label="Drag row or open row actions"
+        draggable
+        variant="outline"
+        className={cn(
+          // Any overflow past the control column would cover the first cell's
+          // block handle and keep this column hovered.
+          '-translate-y-1/2 absolute top-1/2 left-0 h-6 w-4 overflow-hidden p-0 has-[>svg]:px-0 focus-visible:ring-0 focus-visible:ring-offset-0',
+          'cursor-grab active:cursor-grabbing',
+          'editor-row-drag-handle opacity-0 transition-opacity duration-100',
+          selected && '[@media(hover:none)]:opacity-100'
+        )}
+        onClick={() => {
+          setOpen(true);
+        }}
+        onDragStart={(event) => startBlockDrag(editor, event, element)}
+      >
+        <GripVertical className="text-muted-foreground" />
+      </Button>
+      <HandleActionsMenu
+        actions={[
+          {
+            icon: Rows3Icon,
+            label: 'Select row',
+            run: () => {
+              const range = editor.read.ranges.get(element);
+
+              if (range) editor.update.selection.set(range);
+            },
+          },
+          {
+            icon: ArrowUp,
+            label: 'Move up',
+            run: () => move('previous', 'Moved up'),
+          },
+          {
+            icon: ArrowDown,
+            label: 'Move down',
+            run: () => move('next', 'Moved down'),
+          },
+        ]}
+        className="top-1/2 left-0 h-6 w-4 -translate-y-1/2"
+        open={open}
+        onOpenChange={setOpen}
+      />
+    </>
+  );
+}
+
+export function TableCellElement(
+  props: EditorElementProps<typeof TableCellPlugin>
+) {
+  const editor = useEditor();
+  const readOnly = useEditorReadOnly();
+  const { element } = props;
+  const isHeader = element.header === true;
+
+  const cellInfo = useElementSelector(
+    TablePlugin,
+    () => editor.plugin(TablePlugin).read.cell({ at: element }),
+    {
+      equalityFn: (next, previous) =>
+        next?.col === previous?.col &&
+        next?.row === previous?.row &&
+        next?.colSpan === previous?.colSpan &&
+        next?.rowSpan === previous?.rowSpan &&
+        next?.borders === previous?.borders,
+    }
+  );
+  const indices = cellInfo ?? { col: 0, row: 0 };
+  const borders = cellInfo?.borders;
+  const colSpan = cellInfo?.colSpan ?? element.colSpan ?? 1;
+  const rowSpan = cellInfo?.rowSpan ?? element.rowSpan ?? 1;
+  const colIndex = indices.col + colSpan - 1;
+  const rowIndex = indices.row + rowSpan - 1;
+
+  return (
+    <EditorElement
+      {...props}
+      as={isHeader ? 'th' : 'td'}
+      className={cn(
+        'relative h-full overflow-visible border-none bg-background p-0',
+        element.backgroundColor ? 'bg-(--cellBackground)' : 'bg-background',
+        isHeader && 'text-left font-normal *:m-0',
+        'before:size-full',
+        'data-[table-cell-selected=true]:before:z-10',
+        'data-[table-cell-selected=true]:before:bg-brand/5',
+        "before:absolute before:box-border before:select-none before:content-['']",
+        borders?.bottom.width && 'before:border-b before:border-b-border',
+        borders?.right.width && 'before:border-r before:border-r-border',
+        borders?.left?.width && 'before:border-l before:border-l-border',
+        borders?.top?.width && 'before:border-t before:border-t-border'
+      )}
+      style={
+        {
+          '--cellBackground': element.backgroundColor,
+        } as React.CSSProperties
+      }
+      attributes={{
+        ...props.attributes,
+        colSpan,
+        rowSpan,
+      }}
+    >
+      <div
+        className="relative z-20 box-border h-full px-3 py-2"
+        style={
+          rowSpan === 1
+            ? { minHeight: 'var(--tableRowMinHeight, 0px)' }
+            : undefined
+        }
+      >
+        {props.children}
+      </div>
+
+      {!readOnly && (
+        <TableCellResizeControls colIndex={colIndex} rowIndex={rowIndex} />
+      )}
+    </EditorElement>
+  );
+}
+
+function TableCellResizeControls({
+  colIndex,
+  rowIndex,
+}: {
+  colIndex: number;
+  rowIndex: number;
+}) {
+  const { clearResizePreview, showResizePreview, startResize } =
+    useTableResizeContext();
+  const rightHandleKey = `right:${rowIndex}:${colIndex}`;
+  const bottomHandleKey = `bottom:${rowIndex}:${colIndex}`;
+
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 z-30 select-none"
+      contentEditable={false}
+      data-editor-root-chrome-ignore="true"
+      suppressContentEditableWarning={true}
+    >
+      <div
+        className="pointer-events-auto absolute -top-2 -right-1 z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
+        data-table-resize-handle="column-end"
+        onPointerEnter={(event) => {
+          showResizePreview(event, {
+            colIndex,
+            direction: 'right',
+            handleKey: rightHandleKey,
+            rowIndex,
+          });
+        }}
+        onPointerMove={(event) => {
+          showResizePreview(event, {
+            colIndex,
+            direction: 'right',
+            handleKey: rightHandleKey,
+            rowIndex,
+          });
+        }}
+        onPointerLeave={() => {
+          clearResizePreview(rightHandleKey);
+        }}
+        onPointerDown={(event) => {
+          startResize(event, {
+            colIndex,
+            direction: 'right',
+            handleKey: rightHandleKey,
+            rowIndex,
+          });
+        }}
+      />
+      <div
+        className="pointer-events-auto absolute -bottom-1 left-0 z-40 h-2 w-full cursor-row-resize touch-none"
+        data-table-resize-handle="row-end"
+        onPointerEnter={(event) => {
+          showResizePreview(event, {
+            colIndex,
+            direction: 'bottom',
+            handleKey: bottomHandleKey,
+            rowIndex,
+          });
+        }}
+        onPointerMove={(event) => {
+          showResizePreview(event, {
+            colIndex,
+            direction: 'bottom',
+            handleKey: bottomHandleKey,
+            rowIndex,
+          });
+        }}
+        onPointerLeave={() => {
+          clearResizePreview(bottomHandleKey);
+        }}
+        onPointerDown={(event) => {
+          startResize(event, {
+            colIndex,
+            direction: 'bottom',
+            handleKey: bottomHandleKey,
+            rowIndex,
+          });
+        }}
+      />
+    </div>
+  );
+}
+
+export const TableKit = [
+  TablePlugin.configure({
+    component: TableElement,
+    initialState: { defaultTableWidth: 600 },
+  }),
+  TableRowPlugin.configure({ component: TableRowElement }),
+  TableCellPlugin.configure({ component: TableCellElement }),
+];
+
+function BorderIcon({
+  side,
+}: {
+  side: 'top' | 'right' | 'bottom' | 'left' | 'none' | 'outer';
+}) {
+  const border = {
+    top: 'M1 1h12',
+    right: 'M13 1v12',
+    bottom: 'M1 13h12',
+    left: 'M1 1v12',
+    none: '',
+    outer: 'M1 1h12v12H1z',
+  }[side];
+
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height="15"
+      viewBox="0 0 15 15"
+      width="15"
+    >
+      <path
+        d="M1 1h12v12H1z M7 1v12 M1 7h12"
+        stroke="currentColor"
+        strokeDasharray="0 2"
+        strokeLinecap="round"
+      />
+      <path d={border} stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}

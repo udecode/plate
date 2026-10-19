@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-24-keep-editor-contracts-app-owned",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-24-keep-editor-contracts-app-owned.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "remove",
+  "summary": "Keep exact editor contracts application-owned",
+  "targets": [
+    {
+      "name": "editor-plugins",
+      "files": ["apps/www/src/registry/components/editor/plugins.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-24-keep-editor-contracts-app-owned",
+      "kind": "remove",
+      "summary": "Install the authored editor kit without generated TypeScript or schema snapshots. Generate exact contracts from the application's customized plugin module and enforce `plate generate --check <entry>` in CI.",
+      "details": [],
+      "migrationNotes": [
+        "Delete unused plugins.generated.ts and plugins.schema.json files. If the app needs exact contracts, install @platejs/cli, regenerate from its local plugin module, and enforce plate generate --check <entry> in CI."
+      ],
+      "targets": ["editor-plugins"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-24",
+          "entry": "2026-08-24-keep-editor-contracts-app-owned",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

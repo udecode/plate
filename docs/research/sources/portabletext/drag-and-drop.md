@@ -1,0 +1,5 @@
+# Portable Text: drag and drop
+
+## Drag selection and drop targets
+
+- **Drag and drop.** Four Portable Text files (33 indexed test and describe names) under `portabletext/editor@ad2a52d13d9f:packages/editor` pin drag selection and drop targets (report.md:121, 155). Dragging a node outside the current selection drags only that node, and dragging inside an expanded selection drags the whole selection (`src/selectors/drag-selection.test.ts`). A collapsed drop inside the drag origin, at either of its edges, or onto a block object inside it is suppressed, while a drop after the origin's end goes through (`tests/event.drag.drop.self-drop.test.tsx`). The drop target matches by full path, so a deep block that shares a key with a root block is not mistaken for it (`src/editor/resolve-element-drop-position.test.ts`). `tests/event.drag.drop.test.tsx` drags inline and block objects, including moving a block object between table cells without duplicating it. The harvest takes drag and drop into Plite only with real browser drag rows, never on model tests alone (report.md:142).

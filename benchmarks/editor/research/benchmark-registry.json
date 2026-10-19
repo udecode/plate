@@ -1,0 +1,135 @@
+{
+  "version": 2,
+  "policy": {
+    "activeArtifactRule": "Active benchmark evidence is every artifact in benchmarks/targets/slate-v2.json that declares evidence metadata.",
+    "discardRule": "Unregistered benchmark JSON files are ignored historical output.",
+    "retiredRule": "A retired definition keeps its original identity and links to a related live target. The live target never inherits its receipts or measurements."
+  },
+  "discardUnregistered": [
+    {
+      "root": "../../tmp",
+      "match": "benchmark"
+    },
+    {
+      "root": "../../packages/slate-react/tmp",
+      "match": "benchmark"
+    }
+  ],
+  "workloads": [
+    {
+      "id": "react-rerender-breadth",
+      "workload": "React selection, leaf, ancestor, source-scoped invalidation render breadth",
+      "targets": ["react-rerender-breadth"]
+    },
+    {
+      "id": "react-huge-document-overlays",
+      "workload": "Huge-document overlay toggle, requested viewport mount, and active edit locality",
+      "targets": ["react-huge-document-overlays"]
+    },
+    {
+      "id": "react-huge-document-browser-trace",
+      "workload": "Chromium DOM count, heap, long-frame, and interaction traces",
+      "targets": [
+        "react-huge-document-browser-trace",
+        "react-huge-document-slate-browser-trace"
+      ]
+    },
+    {
+      "id": "browser-rich-text-replay-coverage",
+      "workload": "Chromium Playwright richtext, tables, inlines, and paste-html browser replay coverage",
+      "targets": ["browser-rich-text-replay-coverage"]
+    },
+    {
+      "id": "core-current",
+      "workload": "Slate v2 core normalization, query and anchor observation, transforms, selection, store",
+      "targets": [
+        "core-normalization-current",
+        "core-query-anchor-observation",
+        "core-node-transforms",
+        "core-text-selection",
+        "core-editor-store"
+      ]
+    },
+    {
+      "id": "core-compare",
+      "workload": "Current-vs-legacy core huge-document, normalization, and observation comparisons",
+      "targets": [
+        "core-huge-document-compare",
+        "core-normalization-compare",
+        "core-observation-compare"
+      ]
+    },
+    {
+      "id": "core-rich-text-operations-compare",
+      "workload": "Headless rich-text editing, transforms, selection, and navigation operations from the Slate test corpus",
+      "targets": ["core-rich-text-operations-compare"]
+    },
+    {
+      "id": "clipboard-large-payload",
+      "workload": "Large paste/copy, 10,000-line paste, and 50,000-block cut pressure",
+      "targets": ["clipboard-large-payload"]
+    },
+    {
+      "id": "collab-readiness",
+      "workload": "Remote replay, bookmark rebase, canonical replacement, history skip, cleanup",
+      "targets": ["collab-readiness"]
+    },
+    {
+      "id": "history-compare",
+      "workload": "Undo/redo typing and fragment history comparison",
+      "targets": ["history-compare"]
+    },
+    {
+      "id": "issue-6038-transaction-execution",
+      "workload": "Issue-shaped transaction execution replay and op-family lanes",
+      "targets": []
+    }
+  ],
+  "retired": [
+    {
+      "id": "core-query-ref-observation",
+      "relatedTarget": "core-query-anchor-observation",
+      "kind": "current",
+      "category": "slate-core-query-ref-observation",
+      "library": "slate-v2:core-current",
+      "path": "tmp/slate-query-ref-observation-benchmark.json",
+      "decision": "How expensive are query, ref, and observation paths?"
+    },
+    {
+      "id": "core-refs-projection",
+      "relatedTarget": "core-anchors-projection",
+      "kind": "current",
+      "category": "slate-core-refs-projection",
+      "library": "slate-v2:core-current",
+      "path": "tmp/slate-refs-projection-benchmark.json",
+      "decision": "How expensive are refs and projection paths?"
+    },
+    {
+      "id": "issue-6038-transaction-execution",
+      "relatedTarget": "plite-transaction-execution",
+      "kind": "current",
+      "category": "slate-6038-transaction-execution",
+      "library": "slate-v2:transaction-execution",
+      "path": "tmp/bench-slate-6038.json",
+      "decision": "Does the issue #6038 transaction execution replay stay healthy?"
+    },
+    {
+      "id": "core-transaction-current",
+      "relatedTarget": "plite-transaction-execution",
+      "kind": "current",
+      "category": "slate-core-transaction-current",
+      "library": "slate-v2:core-current",
+      "path": "tmp/slate-transaction-benchmark.json",
+      "decision": "How expensive is the current-only transaction path?"
+    },
+    {
+      "id": "history-retained-memory",
+      "relatedTarget": "plite-history-retained-memory",
+      "kind": "current",
+      "category": "slate-history-retained-memory",
+      "library": "slate-v2:history-memory",
+      "path": "tmp/slate-history-retained-memory-benchmark.json",
+      "decision": "How much retained memory does history keep?"
+    }
+  ]
+}

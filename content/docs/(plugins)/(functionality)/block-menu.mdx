@@ -1,0 +1,79 @@
+---
+title: Block Menu
+description: Context-menu actions for nodes in the editor selection.
+docs:
+  - route: /docs/api/selection
+    title: Selection API
+  - route: /docs/components/block-menu
+    title: Block Context Menu
+  - route: /docs/examples/block-menu
+    title: Demo
+  - route: https://pro.platejs.org/docs/examples/block-menu
+    title: Plus
+---
+
+Block Menu is copied UI. It keeps only menu presentation state in React and
+applies actions to nodes from the editor selection.
+
+<ComponentPreview name="block-menu-demo" />
+
+## Add the kit
+
+`BlockMenuKit` renders `BlockContextMenu` above the editable. The copied
+`Editor` component renders node-selection presentation.
+
+<ComponentSource name="block-menu" />
+
+```tsx
+import { createEditor } from "platejs/react";
+
+import { BlockMenuKit } from "@/components/editor/block-menu";
+
+export const editor = createEditor({
+  plugins: [...BlockMenuKit],
+});
+```
+
+Install `platejs/ai` only when the menu keeps the Ask AI action.
+
+## Selection behavior
+
+Right-clicking a selectable element creates a one-node block selection when
+the node is not already selected, or when it holds an object selection such as
+a clicked image. An existing multi-node selection stays intact
+when its selected node opens the menu.
+
+The menu restores editable focus when it closes. Touch devices render the
+children without the context-menu wrapper, and read-only editors do not open
+the menu.
+
+Disable the menu on a specific surface with
+`data-editor-open-context-menu={false}`:
+
+```tsx
+<EditorElement data-editor-open-context-menu={false} {...props}>
+  {children}
+</EditorElement>
+```
+
+## Actions
+
+The registry component reads the exact block selection and sends each mutation
+to its feature owner:
+
+| Action               | Owner                 |
+| -------------------- | --------------------- |
+| Ask AI               | `AIChatPlugin`        |
+| Delete and duplicate | editor node transforms |
+| Text and heading     | block and feature transforms |
+| Quote                | `BaseBlockquotePlugin` |
+| Indent and outdent   | `BaseIndentPlugin`    |
+| Align                | `BaseTextAlignPlugin` |
+
+The menu hides actions whose plugins are absent. It keeps installed structural
+actions disabled when the current selection shape is unsupported.
+
+`BlockContextMenu` is the public copied component. There is no menu-state or
+separate selection package API.
+
+<ComponentPreviewPro name="block-menu-pro" />

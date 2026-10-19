@@ -1,0 +1,26 @@
+# Plite Roadmap Public README Alignment
+
+> Supporting plan. For current queue and roadmap truth, see [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/master-roadmap.md).
+
+## Goal
+
+- Remove one last public claim contradiction from the Plite docs.
+
+## Finding
+
+- The root README still called Plite an "experimental replacement-candidate
+  stack".
+- That was stale against the current release-readiness read:
+  - credible replacement candidate
+  - not yet an honest blanket replacement
+
+## Patch
+
+- Align the root README with the current public verdict.
+- Keep the narrow anchor-surface warning.
+- Do not reopen the broader roadmap stack for this.
+
+## Verification
+
+- [x] `yarn prettier --check /Users/zbeyens/git/plite/Readme.md`
+- [x] grep confirms the stale experimental wording is gone from the public docs

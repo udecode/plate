@@ -1,0 +1,1598 @@
+import type { Paragraph as MdParagraph } from 'mdast';
+// Core type contracts for base plugins and their editor plugins.
+import {
+  type DefinitionOf,
+  HistoryPlugin,
+  type Path,
+  type RenderStaticNodeWrapper,
+  createEditor,
+  definePlugin,
+  locateAt,
+  txLocate,
+  txOnly,
+  txSelection,
+} from 'platejs';
+
+import {
+  ContentSlice,
+  editorReads,
+  property,
+  schema,
+  target,
+} from '../src/core';
+import { defineRuntimePlugin } from '../src/facade';
+import { type History, history } from '../src/history';
+import { toReactPlugin } from '../src/react/plugin/toReactPlugin';
+
+type IsAny<T> = 0 extends 1 & T ? true : false;
+type Equal<TLeft, TRight> =
+  (<T>() => T extends TLeft ? 1 : 2) extends <T>() => T extends TRight ? 1 : 2
+    ? true
+    : false;
+
+const baseFactoryPlugin = defineRuntimePlugin('factoryPlugin', {});
+const baseReadPlugin = defineRuntimePlugin('baseReadPluginOwner', {
+  readMiddleware: ({ around }) => [
+    around(editorReads.slice.export, ({ next }) => next()),
+  ],
+});
+
+definePlugin('baseReadPluginOwner', {}).extend(baseReadPlugin);
+
+const MinimalDefinitionPlugin = definePlugin('minimalDefinition', {});
+const ScopedUpdatePolicyPlugin = definePlugin('scopedUpdatePolicy', {
+  update: ({ tx }) => ({
+    write: txLocate(false, (text: string) => tx.text.insert(text)),
+  }),
+}).extend(({ update }) => ({
+  api: () => ({
+    write: (text: string) => update({ history: 'skip' }).write(text),
+    validatePolicyArgs: () => {
+      // @ts-expect-error Policy selection preserves the operation's argument type.
+      update({ history: 'skip' }).write(1);
+      // @ts-expect-error An unknown history policy is rejected.
+      update({ history: 'discard-everything' }).write('text');
+    },
+  }),
+}));
+toReactPlugin(ScopedUpdatePolicyPlugin).extend(({ update }) => ({
+  api: () => ({
+    writeMerged: (text: string) => update({ history: 'merge' }).write(text),
+  }),
+}));
+const DirectUpdatePlugin = definePlugin('directUpdate', {
+  update: ({ tx }) => ({
+    callable: Object.assign(() => {}, { child: () => {} }),
+    control: txOnly(() => {}),
+    echo: txLocate(false, <TValue>(value: TValue) => value),
+    write: txLocate(false, (text: string) => tx.text.insert(text)),
+  }),
+}).extend(({ update }) => ({
+  api: () => ({
+    write: (text: string) => {
+      update.write(text);
+      update({ tags: 'paste' }).callable.child();
+      // @ts-expect-error ctx.update opens its own update, so it has no transaction-only methods.
+      update.control();
+      // @ts-expect-error The policy form opens its own update too.
+      update({ tags: 'paste' }).control();
+    },
+  }),
+}));
+const directUpdateEditor = createEditor({ plugins: [DirectUpdatePlugin] });
+const directUpdatePortal = directUpdateEditor.plugin(DirectUpdatePlugin).update;
+const directEcho = directUpdatePortal.echo({ count: 1 });
+const directEchoIsInferred: Equal<typeof directEcho, { count: number }> = true;
+
+directUpdatePortal.callable.child();
+// @ts-expect-error A portal call opens its own update, so it has no transaction-only methods.
+directUpdatePortal.control();
+// @ts-expect-error The policy form opens its own update too.
+directUpdatePortal({ tags: 'paste' }).control();
+directUpdateEditor.update((tx) => {
+  tx.directUpdate.control();
+  tx.plugin(DirectUpdatePlugin).control();
+  tx.plugin('directUpdate').control();
+});
+
+void directEchoIsInferred;
+
+definePlugin('declaredUpdateMethods', {
+  update: ({ tx }) => ({
+    clear: txLocate(locateAt(0), (_options: { at?: Path } = {}) => {}),
+    group: { write: txLocate(false, (text: string) => tx.text.insert(text)) },
+    reset: () => {},
+    select: txSelection((_offset: number) => {}),
+    write: txLocate(false, (text: string) => tx.text.insert(text)),
+  }),
+});
+definePlugin('undeclaredUpdateMethod', {
+  // @ts-expect-error A method that takes arguments must declare txLocate, txSelection or txOnly.
+  update: ({ tx }) => ({
+    write: (text: string) => tx.text.insert(text),
+  }),
+});
+definePlugin('undeclaredGroupUpdateMethod', {
+  // @ts-expect-error A grouped method that takes arguments must declare one too.
+  update: ({ tx }) => ({
+    group: {
+      write: (text: string) => tx.text.insert(text),
+    },
+  }),
+});
+definePlugin('undeclaredStageUpdateMethod', {}).extend({
+  // @ts-expect-error An extend stage's method that takes arguments must declare one too.
+  update: ({ tx }) => ({
+    write: (text: string) => tx.text.insert(text),
+  }),
+});
+
+type MinimalDefinition = DefinitionOf<typeof MinimalDefinitionPlugin>;
+declare const minimalDefinition: MinimalDefinition;
+const minimalDefinitionName: 'minimalDefinition' = minimalDefinition.name;
+const minimalDefinitionOmitsApi: 'api' extends keyof MinimalDefinition
+  ? false
+  : true = true;
+
+void minimalDefinitionName;
+void minimalDefinitionOmitsApi;
+
+const ConstructorDependencyPlugin = definePlugin('constructorDependency', {
+  api: () => ({ value: () => 1 as const }),
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+});
+const ConstructorInferencePlugin = definePlugin('constructorInference', {
+  api: ({ editor, store }) => ({
+    value: () => {
+      editor.plugin(ConstructorDependencyPlugin).api.value() satisfies 1;
+      void (store.get().mode satisfies 'busy' | 'idle');
+
+      return 2 as const;
+    },
+  }),
+  dependencies: [ConstructorDependencyPlugin],
+  initialState: ({ editor }) => {
+    editor.plugin(ConstructorDependencyPlugin).api.value() satisfies 1;
+
+    return {
+      count: 0,
+      mode: 'idle',
+    };
+  },
+  schema: ({ initialState, plugins }) => ({
+    element: {
+      content: plugins.blockContent({
+        default: ConstructorDependencyPlugin,
+        min: initialState.count,
+      }),
+    },
+  }),
+  shortcuts: {
+    run: { keys: 'mod+r' },
+  },
+  update: ({ editor, store, tx }) => ({
+    run: () => {
+      editor.plugin(ConstructorDependencyPlugin).api.value() satisfies 1;
+      void (store.get().count satisfies number);
+      void (tx satisfies object);
+
+      return 3 as const;
+    },
+  }),
+});
+type ConstructorInferenceDefinition = DefinitionOf<
+  typeof ConstructorInferencePlugin
+>;
+declare const constructorInferenceDefinition: ConstructorInferenceDefinition;
+const constructorInferenceName: 'constructorInference' =
+  constructorInferenceDefinition.name;
+const constructorDependencyName: 'constructorDependency' =
+  constructorInferenceDefinition.dependencies[0].name;
+const constructorCount: number =
+  constructorInferenceDefinition.initialState.count;
+const constructorMode: 'busy' | 'idle' =
+  constructorInferenceDefinition.initialState.mode;
+const constructorSchemaContent =
+  constructorInferenceDefinition.schema.element!.content;
+const constructorShortcuts: true = constructorInferenceDefinition.shortcuts;
+const constructorInferenceEditor = createEditor({
+  plugins: [ConstructorInferencePlugin],
+});
+const constructorApiResult: 2 =
+  constructorInferenceEditor.api.constructorInference.value();
+const constructorUpdateResult: 3 | undefined =
+  constructorInferenceEditor.update.constructorInference.run();
+
+void constructorApiResult;
+void constructorCount;
+void constructorDependencyName;
+void constructorInferenceName;
+void constructorSchemaContent;
+void constructorMode;
+void constructorShortcuts;
+void constructorUpdateResult;
+
+const AuthoredEmptyPlugin = definePlugin('authoredEmpty', {
+  api: () => ({}),
+  conflicts: [],
+  dependencies: [],
+  initialState: {},
+  read: () => ({}),
+  selectors: {},
+  shortcuts: {},
+  targetPlugins: [],
+  update: () => ({}),
+});
+type AuthoredEmptyDefinition = DefinitionOf<typeof AuthoredEmptyPlugin>;
+declare const authoredEmptyDefinition: AuthoredEmptyDefinition;
+
+void (authoredEmptyDefinition.api satisfies {});
+void (authoredEmptyDefinition.conflicts satisfies readonly []);
+void (authoredEmptyDefinition.dependencies satisfies readonly []);
+void (authoredEmptyDefinition.initialState satisfies {});
+void (authoredEmptyDefinition.read satisfies {});
+void (authoredEmptyDefinition.selectors satisfies {});
+void (authoredEmptyDefinition.shortcuts satisfies true);
+void (authoredEmptyDefinition.targetPlugins satisfies readonly []);
+void (authoredEmptyDefinition.update satisfies {});
+
+const authoredBaseTargets = [MinimalDefinitionPlugin, 'heading'] as const;
+const configuredBaseTargets = [ConstructorDependencyPlugin, 'toggle'] as const;
+const AuthoredBaseTargetsPlugin = definePlugin('authoredBaseTargets', {
+  targetPlugins: authoredBaseTargets,
+});
+const ConfiguredBaseTargetsPlugin = AuthoredBaseTargetsPlugin.configure({
+  targetPlugins: configuredBaseTargets,
+});
+type AuthoredBaseTargetsDefinition = DefinitionOf<
+  typeof AuthoredBaseTargetsPlugin
+>;
+type ConfiguredBaseTargetsDefinition = DefinitionOf<
+  typeof ConfiguredBaseTargetsPlugin
+>;
+declare const authoredBaseTargetsDefinition: AuthoredBaseTargetsDefinition;
+declare const configuredBaseTargetsDefinition: ConfiguredBaseTargetsDefinition;
+const exactAuthoredBaseTargets: readonly [
+  typeof MinimalDefinitionPlugin,
+  'heading',
+] = authoredBaseTargetsDefinition.targetPlugins;
+const exactConfiguredBaseTargets: readonly [
+  typeof MinimalDefinitionPlugin,
+  'heading',
+] = configuredBaseTargetsDefinition.targetPlugins;
+// @ts-expect-error Configuration does not rewrite the authored definition witness.
+const invalidConfiguredBaseTarget: typeof ConstructorDependencyPlugin =
+  configuredBaseTargetsDefinition.targetPlugins[0];
+
+void exactAuthoredBaseTargets;
+void exactConfiguredBaseTargets;
+void invalidConfiguredBaseTarget;
+
+definePlugin('candidateValidation', {
+  validate: (context) => {
+    const candidateName: string = context.name;
+
+    // @ts-expect-error Validation receives the candidate context, not plugin configuration.
+    void context.config;
+    void candidateName;
+  },
+});
+
+definePlugin('readFactoryBoundary', {
+  read: (context) => {
+    // @ts-expect-error Read middleware registration belongs in readMiddleware.
+    void context.around;
+
+    return {};
+  },
+});
+
+const BoldPlugin = definePlugin('bold', {
+  api: ({ store }) => ({
+    toggleBold: () => store.get().hotkey,
+  }),
+  initialState: {
+    enabled: true as const,
+    hotkey: 'mod+b',
+  },
+});
+
+const FormatContractPlugin = definePlugin('formatContract', {
+  initialState: { label: 'snapshot' as const },
+  dataTransferFormats: [
+    {
+      mimeType: 'application/x-format-contract',
+      scope: 'document',
+      decode: ({
+        data,
+        mimeType,
+        name,
+        pluginState,
+        registry,
+        schema: schemaView,
+        snapshot,
+      }) => {
+        const exactData: string = data;
+        const exactFormat: string = mimeType;
+        const exactLabel: 'snapshot' = pluginState.label;
+        const exactName: 'formatContract' = name;
+        const exactTypes: readonly string[] = snapshot.types;
+
+        void exactData;
+        void exactFormat;
+        void exactLabel;
+        void exactName;
+        void exactTypes;
+        void (registry.has(FormatContractPlugin) satisfies boolean);
+        void (schemaView.getVocabulary()
+          .elementTypes satisfies readonly string[]);
+
+        return ContentSlice.closed([{ text: data }]);
+      },
+      encode: ({ mimeType, pluginState, slice, state }) => {
+        const exactFormat: string = mimeType;
+        const exactLabel: 'snapshot' = pluginState.label;
+        const exactOpenStart: number = slice.openStart;
+        const exactSchema: object = state.schema;
+
+        void exactFormat;
+        void exactLabel;
+        void exactOpenStart;
+        void exactSchema;
+
+        return 'encoded';
+      },
+    },
+  ],
+});
+
+definePlugin('invalidContextualDataTransferFormat', {
+  // @ts-expect-error DataTransfer declarations are static; operation callbacks receive captured state.
+  dataTransferFormats: ({ editor }) => {
+    void editor;
+
+    return [];
+  },
+});
+
+const MarkdownFormatContractPlugin = definePlugin('markdownFormatContract', {
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      properties: {
+        align: property.string(),
+      },
+    },
+  },
+  formats: ({ defineFormats, schema: innerSchema }) =>
+    defineFormats({
+      html: {
+        decode: () => ({}),
+        encode: ({ content }) => ({ children: content, tag: 'p' }),
+        match: [{ tag: 'p' }],
+      },
+      markdown: {
+        decode: ({ node }) => {
+          const exactSource: MdParagraph = node;
+          const sourceIsAny: IsAny<typeof node> = false;
+          const targetType: string = innerSchema.type;
+
+          void exactSource;
+          void sourceIsAny;
+          void targetType;
+
+          // @ts-expect-error Paragraph source discriminants stay exact.
+          const headingSourceType: 'heading' = node.type;
+          void headingSourceType;
+
+          return {
+            align: 'left',
+            children: [{ text: '' }],
+            type: innerSchema.type,
+          };
+        },
+        encode: ({ node }) => {
+          const exactAlign: string | undefined = node.align;
+          const exactType: string = node.type;
+          const targetIsAny: IsAny<typeof node> = false;
+
+          void exactAlign;
+          void exactType;
+          void targetIsAny;
+
+          // @ts-expect-error Schema-owned align stays string-valued.
+          const numericAlign: number | undefined = node.align;
+          void numericAlign;
+
+          return { children: [], type: 'paragraph' };
+        },
+        node: 'paragraph',
+      },
+    }),
+});
+
+void MarkdownFormatContractPlugin;
+
+const MarkdownSchemaFactoryParagraphPlugin = definePlugin(
+  'markdownSchemaFactoryParagraph',
+  {
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+    },
+  }
+);
+
+const MarkdownSchemaFactoryFormatContractPlugin = definePlugin(
+  'markdownSchemaFactoryFormatContract',
+  {
+    schema: ({ plugins }) => ({
+      element: {
+        content: plugins.blockContent({
+          default: MarkdownSchemaFactoryParagraphPlugin,
+          min: 1,
+        }),
+        properties: {
+          align: property.string(),
+        },
+      },
+    }),
+    formats: ({ defineFormats, schema: innerSchema2 }) =>
+      defineFormats({
+        html: {
+          decode: () => ({}),
+          encode: ({ content, node }) => {
+            const contentIsAny: IsAny<typeof content> = false;
+            const exactAlign: string | undefined = node.align;
+            const targetIsAny: IsAny<typeof node> = false;
+
+            void contentIsAny;
+            void exactAlign;
+            void targetIsAny;
+
+            // @ts-expect-error Schema-owned align stays string-valued.
+            const numericAlign: number | undefined = node.align;
+            void numericAlign;
+
+            return { children: content, tag: 'p' };
+          },
+          match: [{ tag: 'p' }],
+        },
+        markdown: {
+          decode: ({ node }) => {
+            const exactSource: MdParagraph = node;
+            const sourceIsAny: IsAny<typeof node> = false;
+            const targetType: string = innerSchema2.type;
+
+            void exactSource;
+            void sourceIsAny;
+            void targetType;
+
+            // @ts-expect-error Paragraph source discriminants stay exact.
+            const headingSourceType: 'heading' = node.type;
+            void headingSourceType;
+
+            return {
+              align: 'left',
+              children: [{ text: '' }],
+              type: innerSchema2.type,
+            };
+          },
+          encode: ({ node }) => {
+            const exactAlign: string | undefined = node.align;
+            const exactType: string = node.type;
+            const targetIsAny: IsAny<typeof node> = false;
+
+            void exactAlign;
+            void exactType;
+            void targetIsAny;
+
+            // @ts-expect-error Schema-owned align stays string-valued.
+            const numericAlign: number | undefined = node.align;
+            void numericAlign;
+
+            return { children: [], type: 'paragraph' };
+          },
+          node: 'paragraph',
+        },
+      }),
+  }
+);
+
+void MarkdownSchemaFactoryFormatContractPlugin;
+
+const MarkdownMarkFormatContractPlugin = definePlugin(
+  'markdownMarkFormatContract',
+  {
+    schema: { mark: property.string() },
+    formats: ({ defineFormats }) =>
+      defineFormats({
+        html: {
+          decode: ({ element }) => element.style.color || undefined,
+          encode: ({ value }) => ({
+            style: { color: value },
+            tag: 'span',
+          }),
+          match: [{ style: { color: '*' } }],
+        },
+        markdown: {
+          decode: ({ marks }) => {
+            void marks;
+
+            return 'red';
+          },
+          wrap: ({ node, value }) => {
+            const exactText: string = node.text;
+            const exactValue: string = value;
+
+            void exactText;
+            void exactValue;
+
+            return {
+              attributes: [],
+              name: 'span',
+              type: 'mdxJsxTextElement',
+            };
+          },
+          tag: 'span',
+        },
+      }),
+  }
+);
+
+void MarkdownMarkFormatContractPlugin;
+
+const MarkdownMarkValueContractPlugin = definePlugin(
+  'markdownMarkValueContract',
+  {
+    schema: { mark: property.boolean() },
+    formats: ({ defineFormats }) =>
+      defineFormats({
+        markdown: [
+          {
+            // @ts-expect-error Mark mappings return their schema value, not Plate nodes.
+            decode: ({ decode, node }) => decode(node.children),
+            tag: 'span',
+          },
+          {
+            // @ts-expect-error Mark mappings compose, so they take no priority.
+            priority: 1,
+            tag: 'b',
+          },
+        ],
+      }),
+  }
+);
+
+void MarkdownMarkValueContractPlugin;
+
+const MarkdownDeclaredMarkContractPlugin = definePlugin(
+  'markdownDeclaredMarkContract',
+  {
+    schema: { mark: property.enum(['sub', 'sup']) },
+    formats: ({ defineFormats }) =>
+      defineFormats({
+        markdown: [
+          { tag: 'sub', value: 'sub' },
+          { tag: 'sup', value: 'sup' },
+          // @ts-expect-error `value` must be a value of the mark's property.
+          { tag: 'small', value: 'small' },
+          // @ts-expect-error Element attribute names do not apply to marks.
+          { attributes: { mark: 'x' }, tag: 'span' },
+        ],
+      }),
+  }
+);
+
+void MarkdownDeclaredMarkContractPlugin;
+
+const MarkdownStyleMarkContractPlugin = definePlugin(
+  'markdownStyleMarkContract',
+  {
+    schema: { mark: property.string() },
+    formats: ({ defineFormats }) =>
+      defineFormats({
+        markdown: [
+          { style: 'color', tag: 'span' },
+          // @ts-expect-error A CSS-valued mark is written as a tag.
+          { node: 'strong', style: 'color' },
+        ],
+      }),
+  }
+);
+
+void MarkdownStyleMarkContractPlugin;
+
+const MarkdownDeclaredTagContractPlugin = definePlugin(
+  'markdownDeclaredTagContract',
+  {
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        properties: {
+          url: property.string({ required: true }),
+          width: property.number(),
+        },
+      },
+    },
+    formats: ({ defineFormats, schema: { type } }) =>
+      defineFormats({
+        markdown: [
+          { attributes: { url: 'src' }, tag: type },
+          {
+            encode: ({ encodeNodeAttributes, node, preserve }) => {
+              preserve('url', 'width');
+              // @ts-expect-error Claims name this plugin's own properties.
+              preserve('indent');
+
+              void node;
+
+              return {
+                attributes: encodeNodeAttributes(),
+                children: [],
+                name: type,
+                type: 'mdxJsxFlowElement',
+              };
+            },
+          },
+          // @ts-expect-error Attribute names map this plugin's own properties.
+          { attributes: { indent: 'level' }, tag: type },
+          // @ts-expect-error `value` declares a mark, not an element.
+          { tag: 'valued', value: true },
+        ],
+      }),
+  }
+);
+
+void MarkdownDeclaredTagContractPlugin;
+
+const HtmlParagraphContractPlugin = definePlugin('htmlParagraphContract', {
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
+        decode: ({ element }) => {
+          const readonlyElement: Readonly<HTMLElement> = element;
+
+          // @ts-expect-error Decode callbacks receive a read-only DOM view.
+          element.id = 'mutated';
+
+          void readonlyElement;
+
+          return {};
+        },
+        encode: ({ content, node }) => {
+          const exactType: 'htmlParagraphContract' = node.type;
+
+          void exactType;
+
+          return { children: content, tag: 'p' };
+        },
+        match: [{ tag: 'p' }],
+      },
+    }),
+});
+
+type StaticWrapperPluginState = {
+  label: string | null;
+};
+
+const erasedStaticWrapper: RenderStaticNodeWrapper = ({ element }) =>
+  element ? ({ children }) => children : null;
+
+const StaticWrapperPlugin = definePlugin('staticWrapper', {
+  initialState: (): StaticWrapperPluginState => ({ label: null }),
+  schema: () => ({
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  }),
+});
+
+StaticWrapperPlugin.configure({
+  slots: {
+    wrapNodeChildren: erasedStaticWrapper,
+  },
+});
+
+void HtmlParagraphContractPlugin;
+
+HtmlParagraphContractPlugin.configure({
+  // @ts-expect-error Terminal configuration cannot replace authored schema.
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+});
+
+const assertSchemaCreationOwnership = () => {
+  const Base = definePlugin('schemaCreationOnly', {});
+
+  // @ts-expect-error Descriptor schema is immutable after creation.
+  Base.schema = null;
+  Base.extend({
+    // @ts-expect-error Static stages cannot declare schema.
+    schema: { mark: property.boolean() },
+  });
+  Base.configure({
+    // @ts-expect-error Terminal configuration cannot declare schema.
+    schema: { mark: property.boolean() },
+  });
+
+  const EditorRoot = toReactPlugin(Base);
+
+  EditorRoot.extend({
+    // @ts-expect-error Plate static stages cannot declare schema.
+    schema: { mark: property.boolean() },
+  });
+  toReactPlugin(Base, {
+    // @ts-expect-error Base-to-Plate conversion cannot declare schema.
+    schema: { mark: property.boolean() },
+  });
+};
+
+void assertSchemaCreationOwnership;
+
+const assertForeignHtmlTarget = () => {
+  const Target = definePlugin('foreignTarget', {
+    schema: { mark: property.boolean() },
+  });
+
+  const Owner = definePlugin('foreignTargetOwner', {
+    formats: ({ defineFormats }) =>
+      defineFormats(Target, {
+        html: {
+          decode: () => true,
+          decodeOnly: true,
+          match: [{ tag: 'strong' }],
+        },
+      }),
+  });
+
+  void Owner;
+};
+
+void assertForeignHtmlTarget;
+
+const HtmlBoldContractPlugin = definePlugin('htmlBoldContract', {
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
+        decode: ({ element }) =>
+          element.tagName === 'STRONG' ? true : undefined,
+        encode: ({ node, value }) => {
+          const exactText: string = node.text;
+          const exactValue: boolean = value;
+
+          void exactText;
+          void exactValue;
+
+          return value ? { tag: 'strong' } : null;
+        },
+        match: [{ tag: ['strong', 'b'] }],
+      },
+    }),
+});
+
+void HtmlBoldContractPlugin;
+
+definePlugin('rawHtmlMappingContract', {
+  // @ts-expect-error Format declarations must be branded by defineFormats. @plate-schema-adoption-negative-format
+  formats: () => ({
+    html: {
+      decode: () => true,
+      decodeOnly: true,
+      match: [{ tag: 'strong' }],
+    },
+  }),
+});
+
+definePlugin('tupleHtmlMappingContract', {
+  schema: { mark: property.boolean() },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: [
+        {
+          decode: () => true,
+          decodeOnly: true,
+          match: [{ tag: 'strong' }],
+        },
+        {
+          decode: () => true,
+          decodeOnly: true,
+          match: [{ tag: 'b' }],
+        },
+      ],
+    }),
+});
+
+definePlugin('invalidHtmlMarkOutput', {
+  schema: { mark: property.boolean() },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      // @ts-expect-error Mark encoders return a childless wrapper with a tag.
+      html: {
+        decode: () => true,
+        encode: () => ({ style: { fontWeight: 'bold' } }),
+        match: [{ tag: 'strong' }],
+      },
+    }),
+});
+
+const HtmlAlignContractPlugin = definePlugin('htmlAlignContract', {
+  schema: {
+    properties: {
+      align: schema.elementProperty(property.string(), {
+        target: target.type('htmlParagraphContract'),
+      }),
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
+        decode: ({ element }) => element.style.textAlign || undefined,
+        encode: ({ node, value }) => {
+          const exactType: string = node.type;
+          const exactValue: string = value;
+
+          void exactType;
+          void exactValue;
+
+          return { style: { textAlign: value } };
+        },
+        match: [{ style: { textAlign: '*' } }],
+      },
+    }),
+});
+
+void HtmlAlignContractPlugin;
+
+definePlugin('invalidHtmlPropertyOutput', {
+  schema: {
+    properties: {
+      align: schema.elementProperty(property.string(), {
+        target: target.type('htmlParagraphContract'),
+      }),
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      // @ts-expect-error Ordinary element-property encoders cannot replace the tag.
+      html: {
+        decode: () => 'left',
+        encode: () => ({ tag: 'p' }),
+        match: [{ style: { textAlign: '*' } }],
+      },
+    }),
+});
+
+const HtmlListContractPlugin = definePlugin('htmlListContract', {
+  schema: {
+    properties: {
+      listStart: schema.elementProperty(property.number(), {
+        target: target.type('htmlParagraphContract'),
+      }),
+      listStyle: schema.elementProperty(property.string(), {
+        target: target.type('htmlParagraphContract'),
+      }),
+    },
+  },
+  targetPlugins: [HtmlParagraphContractPlugin],
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
+        createsElement: true,
+        decode: ({ element }) => ({
+          listStart: Number(element.getAttribute('start')) || undefined,
+          listStyle: element.tagName === 'OL' ? 'decimal' : 'disc',
+        }),
+        encode: ({ content, node, preserve }) => {
+          const exactStart: number | undefined = node.listStart;
+          const exactStyle: string | undefined = node.listStyle;
+          const configuredType: string = node.type;
+
+          void exactStart;
+          void exactStyle;
+          void configuredType;
+          preserve('listStart', 'listStyle');
+          // @ts-expect-error A mapping claims only its target's properties.
+          preserve('indent');
+
+          // @ts-expect-error A target-name list can resolve more than one element type.
+          const stalePrimaryType: 'htmlParagraphContract' = node.type;
+
+          void stalePrimaryType;
+
+          return {
+            children: [
+              {
+                children: content,
+                patchTarget: true,
+                tag: 'li',
+              },
+            ],
+            tag: 'ol',
+          };
+        },
+        match: [{ tag: ['ol', 'ul'] }],
+      },
+    }),
+});
+
+void HtmlListContractPlugin;
+
+const HtmlMixedListContractPlugin = definePlugin('htmlMixedListContract', {
+  schema: {
+    properties: {
+      listStart: schema.elementProperty(property.number(), {
+        target: target.type('htmlParagraphContract'),
+      }),
+      listStyle: schema.elementProperty(property.string(), {
+        target: target.type('htmlParagraphContract'),
+      }),
+    },
+  },
+  targetPlugins: [HtmlParagraphContractPlugin],
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: [
+        {
+          createsElement: true,
+          decode: ({ element }) => ({
+            listStart: Number(element.getAttribute('start')) || undefined,
+            listStyle: element.tagName === 'OL' ? 'decimal' : 'disc',
+          }),
+          encode: ({ content, node }) => ({
+            children: content,
+            tag: node.listStyle === 'decimal' ? 'ol' : 'ul',
+          }),
+          match: [{ tag: ['ol', 'ul'] }],
+        },
+        {
+          decode: ({ element }) => ({
+            listStart: undefined,
+            listStyle: element.dataset.listStyle,
+          }),
+          decodeOnly: true,
+          match: [{ attributes: { 'data-list-style': true } }],
+        },
+      ],
+    }),
+});
+
+void HtmlMixedListContractPlugin;
+
+const PrefixHtmlContractPlugin = definePlugin('prefixHtmlContract', {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      // @ts-expect-error HTML formats require exact owned schema-property keys.
+      html: {
+        decode: () => ({}),
+        decodeOnly: true,
+        match: [{ tag: 'p' }],
+      },
+    }),
+  schema: {
+    properties: {
+      data: schema.elementProperty(
+        schema.key.prefix('data-'),
+        property.string(),
+        {
+          target: target.type('htmlParagraphContract'),
+        }
+      ),
+    },
+  },
+});
+
+void PrefixHtmlContractPlugin;
+
+const ConfiguredHtmlForeignTarget = definePlugin(
+  'configuredHtmlForeignTarget',
+  {
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        properties: { variant: property.string() },
+      },
+    },
+  }
+).configure({});
+
+const HtmlForeignContractPlugin = definePlugin('htmlForeignContract', {
+  formats: ({ defineFormats }) =>
+    defineFormats(ConfiguredHtmlForeignTarget, {
+      html: {
+        decode: ({ element }) => ({ variant: element.dataset.variant }),
+        encode: ({ content, node }) => {
+          const exactType: 'configuredHtmlForeignTarget' = node.type;
+          const exactVariant: string | undefined = node.variant;
+
+          void exactType;
+          void exactVariant;
+
+          return { children: content, tag: 'aside' };
+        },
+        match: [{ tag: 'aside' }],
+      },
+    }),
+});
+
+void HtmlForeignContractPlugin;
+
+definePlugin('invalidForeignCreatesElement', {
+  formats: ({ defineFormats }) =>
+    defineFormats(HtmlAlignContractPlugin, {
+      // @ts-expect-error Foreign property formats cannot create element identity.
+      html: {
+        createsElement: true,
+        decode: () => 'left',
+        encode: () => ({ style: { textAlign: 'left' } }),
+        match: [{ tag: 'p' }],
+      },
+    }),
+});
+
+definePlugin('arrayFormatContract', {
+  dataTransferFormats: [
+    {
+      mimeType: 'application/x-array-contract',
+      // @ts-expect-error DataTransfer decode returns an exact ContentSlice, never an array.
+      decode: () => [{ text: 'invalid' }],
+      scope: 'document',
+    },
+  ],
+});
+
+const manualIdentityFormat = [
+  {
+    decode: () => null,
+    mimeType: 'application/x-identity-contract',
+    owner: 'manual',
+    scope: 'document',
+  },
+] as const;
+
+definePlugin('identityFormatContract', {
+  // @ts-expect-error DataTransfer format owner identity is inferred from the plugin.
+  dataTransferFormats: manualIdentityFormat,
+});
+
+definePlugin('invalidGenericHtmlContract', {
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      // @ts-expect-error Generic product formats cannot claim text/html.
+      html: {
+        decode: () => null,
+        scope: 'document',
+      },
+    }),
+});
+
+definePlugin('documentMarkdownFormatContract', {
+  dataTransferFormats: [
+    {
+      mimeType: 'text/markdown',
+      decode: ({ data }) => ContentSlice.closed([{ text: data }]),
+      scope: 'document',
+    },
+  ],
+});
+
+const ConfiguredFormatContractPlugin = FormatContractPlugin.configure({});
+
+// @ts-expect-error Consumer configuration is terminal for format authoring.
+ConfiguredFormatContractPlugin.extend(({ defineFormats }) => ({
+  formats: defineFormats({}),
+}));
+
+const ConfiguredHtmlContractPlugin = HtmlParagraphContractPlugin.configure({});
+
+// @ts-expect-error Consumer configuration is terminal for HTML format authoring.
+ConfiguredHtmlContractPlugin.extend(({ defineFormats }) => ({
+  formats: defineFormats({
+    html: {
+      decode: () => ({}),
+      decodeOnly: true,
+      match: [{ tag: 'p' }],
+    },
+  }),
+}));
+
+const UnifiedListPlugin = definePlugin('unifiedList', {
+  initialState: {
+    prefix: 'list' as const,
+  },
+  read: ({ state }) => ({
+    getPrevious: (type: 'bulleted' | 'numbered') =>
+      `list:${state.children().length}:${type}`,
+  }),
+}).extend(({ store, read }) => {
+  const readPrevious: string = read.getPrevious('bulleted');
+
+  void readPrevious;
+
+  return {
+    corrections: [
+      {
+        event: 'content',
+        correct({ tx }) {
+          const correctionRead: string = tx.unifiedList.getPrevious('bulleted');
+
+          void correctionRead;
+        },
+      },
+    ],
+    on: {
+      transactionChange({ tx }) {
+        const changeRead: string = tx.unifiedList.getPrevious('numbered');
+
+        void changeRead;
+      },
+    },
+    update: ({ tx }) => ({
+      toggle: txLocate(
+        false,
+        (options: { type: 'bulleted' | 'numbered' }) =>
+          `${store.get().prefix}:${tx.unifiedList.getPrevious(options.type)}`
+      ),
+    }),
+  };
+});
+
+const UnifiedListDependentPlugin = definePlugin('unifiedListDependent', {
+  dependencies: [UnifiedListPlugin],
+}).extend(({ editor }) => {
+  const dependencyRead: string =
+    editor.read.unifiedList.getPrevious('bulleted');
+
+  void dependencyRead;
+
+  return {};
+});
+
+const unifiedListEditor = createEditor({
+  plugins: [UnifiedListDependentPlugin],
+});
+const unifiedListRead: string =
+  unifiedListEditor.read.unifiedList.getPrevious('bulleted');
+const unifiedListUpdate: string | undefined =
+  unifiedListEditor.update.unifiedList.toggle({
+    type: 'numbered',
+  });
+unifiedListEditor.update((tx) => {
+  const activeRead: string = tx.unifiedList.getPrevious('bulleted');
+
+  void activeRead;
+});
+unifiedListEditor.read((state) =>
+  state.transaction((tx) => {
+    const specRead: string = tx.unifiedList.getPrevious('numbered');
+
+    void specRead;
+  })
+);
+// @ts-expect-error Read methods are not one-shot editor updates.
+unifiedListEditor.update.unifiedList.getPrevious('bulleted');
+const unifiedListPortal = unifiedListEditor.plugin(UnifiedListPlugin);
+const unifiedListPortalRead: string =
+  unifiedListPortal.read.getPrevious('bulleted');
+const unifiedListPortalUpdate: string = unifiedListPortal.update.toggle({
+  type: 'numbered',
+});
+
+void unifiedListPortalRead;
+void unifiedListPortalUpdate;
+void unifiedListRead;
+void unifiedListUpdate;
+
+type CalloutPluginState = {
+  dismissible: boolean;
+  variant: 'info' | 'warning';
+};
+
+const calloutInitialState: CalloutPluginState = {
+  dismissible: false,
+  variant: 'info',
+};
+
+const CalloutPlugin = definePlugin('callout', {
+  api: ({ store }) => ({
+    getVariant: () => store.get().variant,
+    setVariant: (variant: 'info' | 'warning') => {
+      store.set({ variant });
+    },
+  }),
+  initialState: calloutInitialState,
+});
+
+const ConfiguredCalloutPlugin = CalloutPlugin.configure({
+  initialState: {
+    dismissible: true,
+    variant: 'warning',
+  },
+});
+
+CalloutPlugin.configure(({ store, plugin }) => {
+  const configuredVariant: 'info' | 'warning' = store.get().variant;
+  const configuredDismissible: boolean | undefined =
+    plugin.initialState.dismissible;
+
+  void configuredDismissible;
+  void configuredVariant;
+
+  return { initialState: { variant: 'warning' } };
+});
+
+const ShortcutTargetPlugin = definePlugin('shortcutTargetContracts', {
+  api: () => ({
+    api: () => true,
+    both: () => true,
+  }),
+  update: () => ({
+    both: () => true,
+    update: () => true,
+  }),
+});
+
+const DeclaredBaseTxPlugin = definePlugin('declaredBaseTx', {
+  update: () => ({
+    run: txLocate(
+      false,
+      (value: 'typed', initialState: { count?: number } = {}) => {
+        const exactValue: 'typed' = value;
+        const exactCount: number | undefined = initialState.count;
+
+        return exactValue.length + (exactCount ?? 0);
+      }
+    ),
+  }),
+});
+
+void DeclaredBaseTxPlugin;
+
+ShortcutTargetPlugin.extend({
+  shortcuts: {
+    api: { keys: 'mod+a' },
+    both: { keys: 'mod+b', target: 'api' },
+    custom: { handler: () => true, keys: 'mod+c' },
+    update: { keys: 'mod+u' },
+  },
+});
+
+definePlugin('explicitShortcutContracts', {
+  update: () => ({ run: () => true }),
+}).extend({
+  shortcuts: { run: { keys: 'mod+r' } },
+});
+
+ShortcutTargetPlugin.extend({
+  shortcuts: {
+    // @ts-expect-error Update/API collisions require an explicit target.
+    both: { keys: 'mod+b' },
+  },
+});
+
+ShortcutTargetPlugin.extend({
+  shortcuts: {
+    // @ts-expect-error Unknown commands require a custom handler.
+    missing: { keys: 'mod+m' },
+  },
+});
+
+ShortcutTargetPlugin.extend({
+  shortcuts: {
+    // @ts-expect-error API-only commands cannot target update.
+    api: { keys: 'mod+a', target: 'update' },
+  },
+});
+
+ShortcutTargetPlugin.extend({
+  shortcuts: {
+    // @ts-expect-error Custom shortcut callbacks own routing and reject target.
+    invalidHandlerTarget: {
+      handler: () => true,
+      keys: 'mod+i',
+      target: 'api',
+    },
+  },
+});
+
+const FactoryPlugin = definePlugin('factoryPlugin', {
+  initialState: {
+    enabled: true,
+  },
+})
+  .extend(baseFactoryPlugin)
+  .extend(({ store }) => {
+    const enabled: boolean = store.get().enabled;
+
+    void enabled;
+
+    return {};
+  });
+
+const FactoryStatePlugin = definePlugin('factoryState', {
+  initialState: ({ editor }): { enabled: boolean } => ({
+    enabled: editor.id.length > 0,
+  }),
+  read: ({ state }) => ({
+    hasContent: () => state.children().length > 0,
+  }),
+});
+const factoryStateEditor = createEditor({
+  plugins: [FactoryStatePlugin],
+});
+const factoryStatePlugin = factoryStateEditor.plugin(FactoryStatePlugin);
+const factoryEnabled: boolean =
+  factoryStateEditor.plugin(FactoryStatePlugin).initialState.enabled;
+const factoryHasContent: boolean = factoryStatePlugin.read.hasContent();
+
+void factoryEnabled;
+void factoryHasContent;
+
+definePlugin('contextualInput', {
+  initialState: {
+    tone: 'warm' as const,
+  },
+  on: {
+    textChange: ({ plugin, text }) => {
+      const exactTone: 'warm' = plugin.initialState.tone;
+      const nextText: string = text;
+
+      void exactTone;
+      void nextText;
+    },
+  },
+  inject: {
+    nodeProps: {
+      transformProps: ({ plugin, props }) => {
+        const exactTone: 'warm' = plugin.initialState.tone;
+
+        void exactTone;
+
+        return props;
+      },
+    },
+  },
+});
+
+const InlineHistoryPlugin = definePlugin('inlineHistory', {})
+  .extend(history())
+  .extend(({ read }) => {
+    read().undos satisfies readonly unknown[];
+
+    return {
+      api: () => ({
+        undoCount: () => read().undos.length,
+      }),
+    };
+  });
+
+type CustomHistoryValue = readonly [
+  {
+    children: readonly [{ text: string }];
+    type: 'custom-history';
+  },
+];
+
+const basePlateEditor = createEditor({
+  plugins: [BoldPlugin, ConfiguredCalloutPlugin, FactoryPlugin],
+});
+
+const inlineHistoryEditor = createEditor({
+  plugins: [InlineHistoryPlugin],
+});
+const customHistoryEditor = createEditor({
+  initialValue: [
+    {
+      children: [{ text: '' }],
+      type: 'custom-history',
+    },
+  ],
+  plugins: [InlineHistoryPlugin],
+});
+const customHistory: History<CustomHistoryValue> =
+  customHistoryEditor.read.history();
+
+const coreHistoryEditor = createEditor({
+  plugins: [HistoryPlugin],
+});
+
+const OriginalOverridePlugin = definePlugin('originalOverride', {
+  api: () => ({
+    overrideLabel: () => 'original' as const,
+    scopedLabel: () => 'scoped' as const,
+  }),
+}).extend(({ api }) => {
+  const rootLabel: 'original' = api.overrideLabel();
+
+  // @ts-expect-error staged plugin API arguments stay typed in plugin contexts
+  api.overrideLabel('invalid');
+
+  void rootLabel;
+
+  return {
+    api: () => ({
+      pluginScopedLabel: () => 'plugin-scoped' as const,
+    }),
+  };
+});
+
+const ResolvedOverrideContextPlugin = definePlugin(
+  'resolvedOverrideContext',
+  {}
+).extend(({ plugin }) => {
+  const overrideIsAny: IsAny<typeof plugin.override> = false;
+  const targetOverride = plugin.override.someTarget;
+
+  void overrideIsAny;
+  void targetOverride;
+
+  return {};
+});
+
+const ReplacementOverridePlugin = definePlugin('replacementOverride', {
+  api: ({ editor }) => ({
+    overrideLabel: () =>
+      `overridden:${editor.api.originalOverride.scopedLabel()}`,
+  }),
+  dependencies: [OriginalOverridePlugin],
+});
+
+const overrideEditor = createEditor({
+  plugins: [OriginalOverridePlugin, ReplacementOverridePlugin],
+});
+
+const boldHotkey: string = basePlateEditor.api.bold.toggleBold();
+const boldEnabled: true = basePlateEditor
+  .plugin(BoldPlugin)
+  .store.get().enabled;
+const calloutVariant: 'info' | 'warning' = basePlateEditor
+  .plugin(ConfiguredCalloutPlugin)
+  .store.get().variant;
+const calloutDismissible: boolean | undefined = basePlateEditor
+  .plugin(ConfiguredCalloutPlugin)
+  .store.get().dismissible;
+const calloutPluginVariant: 'info' | 'warning' =
+  basePlateEditor.api.callout.getVariant();
+const overrideLabel: string =
+  overrideEditor.api.replacementOverride.overrideLabel();
+const scopedLabel: 'scoped' = overrideEditor.api.originalOverride.scopedLabel();
+const portalPluginScopedLabel: 'plugin-scoped' = overrideEditor
+  .plugin(OriginalOverridePlugin)
+  .api.pluginScopedLabel();
+const rootPluginScopedLabel: 'plugin-scoped' =
+  overrideEditor.api.originalOverride.pluginScopedLabel();
+type OverrideEditorApiKeys = keyof typeof overrideEditor.api;
+const originalOverrideApiKey: Extract<
+  OverrideEditorApiKeys,
+  'originalOverride'
+> = 'originalOverride';
+// @ts-expect-error descriptors do not expose an installed plugin portal
+OriginalOverridePlugin.api.pluginScopedLabel();
+// @ts-expect-error plugin-scoped API does not leak into editor.api
+overrideEditor.api.pluginScopedLabel();
+
+const ExtendedFullPlugin = definePlugin('extendFull', {
+  api: () => ({ baseApi: () => 'base' as const }),
+  initialState: { baseOption: true as const },
+  read: () => ({ baseRead: () => 'base-read' as const }),
+  selectors: { baseSelector: () => true },
+  update: () => ({ baseUpdate: () => 'base-update' as const }),
+}).extend(({ api, read }) => ({
+  api: () => ({
+    extraApi: () => `${api.baseApi()}:extra` as const,
+  }),
+  initialState: { extraOption: 1 as const },
+  read: () => ({
+    extraRead: () => `${read.baseRead()}:extra` as const,
+  }),
+  selectors: { extraSelector: () => 3 as const },
+  update: ({ tx }) => ({
+    extraUpdate: txLocate(
+      false,
+      (value: 'update') => `${tx.extendFull.baseUpdate()}:${value}` as const
+    ),
+  }),
+}));
+type ExtendedFullDefinition = DefinitionOf<typeof ExtendedFullPlugin>;
+declare const extendedFullDefinition: ExtendedFullDefinition;
+const extendedFullName: 'extendFull' = extendedFullDefinition.name;
+const extendedFullEditor = createEditor({
+  plugins: [ExtendedFullPlugin],
+});
+const extendedFullBaseOption: true = extendedFullEditor
+  .plugin(ExtendedFullPlugin)
+  .store.get().baseOption;
+const extendedFullExtraOption: 1 = extendedFullEditor
+  .plugin(ExtendedFullPlugin)
+  .store.get().extraOption;
+const extendedFullBaseApi: 'base' = extendedFullEditor.api.extendFull.baseApi();
+const extendedFullExtraApi: 'base:extra' =
+  extendedFullEditor.api.extendFull.extraApi();
+const extendedFullBaseRead: 'base-read' =
+  extendedFullEditor.read.extendFull.baseRead();
+const extendedFullExtraRead: 'base-read:extra' =
+  extendedFullEditor.read.extendFull.extraRead();
+const extendedFullBaseSelector: boolean = extendedFullEditor
+  .plugin(ExtendedFullPlugin)
+  .store.get('baseSelector');
+const extendedFullExtraSelector: 3 = extendedFullEditor
+  .plugin(ExtendedFullPlugin)
+  .store.get('extraSelector');
+const extendedFullExtraUpdate: 'base-update:update' | undefined =
+  extendedFullEditor.update.extendFull.extraUpdate('update');
+
+basePlateEditor.api.callout.setVariant('info');
+basePlateEditor.api.callout.setVariant('warning');
+inlineHistoryEditor.api.history.undo();
+inlineHistoryEditor.update({ history: 'skip' }, () => {});
+coreHistoryEditor.api.history.redo();
+coreHistoryEditor.update({ history: 'merge' }, () => {});
+
+void boldEnabled;
+void boldHotkey;
+void calloutDismissible;
+void calloutPluginVariant;
+void calloutVariant;
+void originalOverrideApiKey;
+void customHistory;
+void overrideLabel;
+void portalPluginScopedLabel;
+void rootPluginScopedLabel;
+void ResolvedOverrideContextPlugin;
+void scopedLabel;
+void extendedFullName;
+void extendedFullBaseApi;
+void extendedFullBaseOption;
+void extendedFullBaseRead;
+void extendedFullBaseSelector;
+void extendedFullExtraApi;
+void extendedFullExtraOption;
+void extendedFullExtraRead;
+void extendedFullExtraSelector;
+void extendedFullExtraUpdate;
+
+// @ts-expect-error invalid configured option value
+CalloutPlugin.configure({ initialState: { variant: 'danger' } });
+
+// @ts-expect-error invalid merged editor api
+basePlateEditor.api.notReal();
+
+// @ts-expect-error wrong argument type for merged api
+basePlateEditor.api.callout.setVariant('danger');
+
+// @ts-expect-error boolean option must stay boolean
+basePlateEditor.plugin(BoldPlugin).store.get().enabled = 'yes';
+
+// @ts-expect-error consumer portals do not expose callback-only editor context
+void basePlateEditor.plugin(BoldPlugin).editor;
+
+// @ts-expect-error consumer portals do not expose format authoring helpers
+void basePlateEditor.plugin(BoldPlugin).defineFormats;
+
+const originalOverridePortalApi = overrideEditor.plugin(
+  OriginalOverridePlugin
+).api;
+// @ts-expect-error plugin portal API is scoped, not wrapped by plugin name
+originalOverridePortalApi.originalOverride.pluginScopedLabel();
+
+// @ts-expect-error selectors stay in the plugin store, not update
+extendedFullEditor.update.extendFull.extraSelector();
+
+// @ts-expect-error update methods stay out of the plugin store
+extendedFullEditor.plugin(ExtendedFullPlugin).store.get('extraUpdate');

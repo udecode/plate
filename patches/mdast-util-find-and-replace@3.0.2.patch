@@ -1,0 +1,77 @@
+diff --git a/lib/index.js b/lib/index.js
+index af84ba6..266a3ce 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -80,8 +80,19 @@ export function findAndReplace(tree, list, options) {
+   const ignored = convert(settings.ignore || [])
+   const pairs = toPairs(list)
+   let pairIndex = -1
++  /**
++   * `visitParents` walks children in order and continues after the nodes
++   * `handler` inserts, so a lookup in a parent usually finds its child at or
++   * after the last index found there.
++   * A parent reached from more than one place, or a `replace` that changes
++   * siblings, may miss and falls back to a full search.
++   *
++   * @type {WeakMap<Parents, number>}
++   */
++  let lastIndexByParent
+ 
+   while (++pairIndex < pairs.length) {
++    lastIndexByParent = new WeakMap()
+     visitParents(tree, 'text', visitor)
+   }
+ 
+@@ -93,13 +104,10 @@ export function findAndReplace(tree, list, options) {
+ 
+     while (++index < parents.length) {
+       const parent = parents[index]
+-      /** @type {Array<Nodes> | undefined} */
+-      const siblings = grandparent ? grandparent.children : undefined
+-
+       if (
+         ignored(
+           parent,
+-          siblings ? siblings.indexOf(parent) : undefined,
++          grandparent ? indexOf(grandparent, parent) : undefined,
+           grandparent
+         )
+       ) {
+@@ -114,6 +122,26 @@ export function findAndReplace(tree, list, options) {
+     }
+   }
+ 
++  /**
++   * Find `child` in `parent`, starting from the last index found there.
++   *
++   * @param {Parents} parent
++   *   Node whose children to search.
++   * @param {Nodes} child
++   *   Node to find in `parent`.
++   * @returns {number}
++   *   Index of `child` in `parent`.
++   */
++  function indexOf(parent, child) {
++    /** @type {Array<Nodes>} */
++    const siblings = parent.children
++    let index = siblings.indexOf(child, lastIndexByParent.get(parent))
++
++    if (index === -1) index = siblings.indexOf(child)
++    lastIndexByParent.set(parent, index)
++    return index
++  }
++
+   /**
+    * Handle a text node which is not in an ignored parent.
+    *
+@@ -129,9 +157,7 @@ export function findAndReplace(tree, list, options) {
+     const find = pairs[pairIndex][0]
+     const replace = pairs[pairIndex][1]
+     let start = 0
+-    /** @type {Array<Nodes>} */
+-    const siblings = parent.children
+-    const index = siblings.indexOf(node)
++    const index = indexOf(parent, node)
+     let change = false
+     /** @type {Array<PhrasingContent>} */
+     let nodes = []

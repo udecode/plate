@@ -1,0 +1,28 @@
+---
+title: 位置
+description: Plate 位置和节点目标契约。
+---
+
+`Location` 是 `Path`、`Point` 或 `Range`。接受 `at` 的公开读取和修改
+方法还可以通过 `NodeTarget` 接受实时后代节点。
+
+## 类型
+
+```ts
+import type { Location, NodeTarget, Span } from 'platejs';
+
+type ModelLocation = Location; // Path | Point | Range
+type PathSpan = Span; // [Path, Path]
+```
+
+`NodeTarget` 也接受当前文档中的实时节点，避免组件为已有节点重复查找路径。
+`LocationApi.isLocation` 和 `SpanApi.isSpan` 提供结构检查；它们不保证该位置
+仍在当前文档中。跨提交保存位置时使用[锚点](/docs/api/anchor)。
+
+## Span
+
+`Span` 是两个路径组成的只读元组：`readonly [Path, Path]`。它用于限定节点
+遍历的起止路径；文本偏移量属于 `Point` 和 `Range`，不包含在 `Span` 中。
+
+从 `platejs` 导入 `SpanApi`，通过 `SpanApi.isSpan(value)` 检查其结构。
+该检查不读取编辑器，也不保证两个路径仍指向当前文档中的节点。

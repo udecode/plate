@@ -1,0 +1,31 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "code-block-diagram-mermaid",
+  "title": "Code Block Diagram Mermaid",
+  "description": "Draw Mermaid code blocks.",
+  "dependencies": [
+    "pele"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/code-block-diagram.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/code-block-diagram-mermaid.ts",
+      "content": "import type { DiagramRenderer } from '@/registry/components/editor/code-block-diagram';\n\n/**\n * Draws Mermaid with Pele. Settings come only from the diagram text, and\n * Mermaid themes do not apply.\n */\nexport const mermaidRenderer: DiagramRenderer = {\n  label: 'Mermaid',\n  languages: ['mermaid'],\n  render: async (source) => {\n    const { renderAsync } = await import('pele/lazy');\n\n    const { svg } = await renderAsync(source);\n\n    return svg;\n  },\n};\n",
+      "type": "registry:component",
+      "target": "@components/editor/code-block-diagram-mermaid.ts"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/code-block#diagrams"
+      }
+    ],
+    "examples": [
+      "code-block-diagram-demo"
+    ]
+  },
+  "type": "registry:component"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-18-recovered-2026-09-15-docx-retained-source-preservation",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "documents"
+  ],
+  "reviewBasis": [],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-15-docx-retained-source-preservation.md",
+    "sha256": "eb07b32292bc6c0c2072e15c44d045fe4b6d9b0a978bc01a63cf53ccc80926a5"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical implementation completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-15-docx-retained-source-preservation.md",
+        "sha256": "eb07b32292bc6c0c2072e15c44d045fe4b6d9b0a978bc01a63cf53ccc80926a5",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-15-docx-retained-source-preservation.md"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "unional.vscode-sort-package-json",
+    "oxc.oxc-vscode",
+    "Anthropic.claude-code",
+    "bradlc.vscode-tailwindcss",
+    "oven.bun-vscode"
+  ]
+}

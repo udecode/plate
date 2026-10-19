@@ -1,0 +1,282 @@
+{
+ "A ai-cjk-50000": [
+  {
+   "run": "AB",
+   "commits": 210,
+   "ULT": 3100.35,
+   "Layout": 208.72,
+   "Paint": 263.75,
+   "PrePaint": 120.52,
+   "big": 36,
+   "bigMs": 2790.9,
+   "elements": 1109808
+  },
+  {
+   "run": "AB",
+   "commits": 208,
+   "ULT": 2548.67,
+   "Layout": 209.33,
+   "Paint": 260.34,
+   "PrePaint": 117.76,
+   "big": 29,
+   "bigMs": 2234.0,
+   "elements": 904054
+  },
+  {
+   "run": "AC",
+   "commits": 209,
+   "ULT": 2651.67,
+   "Layout": 209.15,
+   "Paint": 264.57,
+   "PrePaint": 120.88,
+   "big": 31,
+   "bigMs": 2288.5,
+   "elements": 943576
+  },
+  {
+   "run": "AC",
+   "commits": 208,
+   "ULT": 2409.03,
+   "Layout": 205.92,
+   "Paint": 260.2,
+   "PrePaint": 119.87,
+   "big": 30,
+   "bigMs": 2096.2,
+   "elements": 852338
+  },
+  {
+   "run": "AD",
+   "commits": 210,
+   "ULT": 2989.64,
+   "Layout": 209.6,
+   "Paint": 263.17,
+   "PrePaint": 119.73,
+   "big": 38,
+   "bigMs": 2684.0,
+   "elements": 1059017
+  },
+  {
+   "run": "AD",
+   "commits": 207,
+   "ULT": 2762.23,
+   "Layout": 208.46,
+   "Paint": 261.17,
+   "PrePaint": 119.16,
+   "big": 32,
+   "bigMs": 2361.6,
+   "elements": 984773
+  }
+ ],
+ "B ai-cjk-50000": [
+  {
+   "run": "AB",
+   "commits": 212,
+   "ULT": 3040.03,
+   "Layout": 205.89,
+   "Paint": 239.44,
+   "PrePaint": 116.01,
+   "big": 38,
+   "bigMs": 2739.4,
+   "elements": 1109429
+  },
+  {
+   "run": "AB",
+   "commits": 209,
+   "ULT": 2626.86,
+   "Layout": 211.32,
+   "Paint": 244.91,
+   "PrePaint": 121.53,
+   "big": 32,
+   "bigMs": 2256.9,
+   "elements": 943859
+  }
+ ],
+ "C ai-cjk-50000": [
+  {
+   "run": "AC",
+   "commits": 208,
+   "ULT": 2916.76,
+   "Layout": 215.35,
+   "Paint": 261.52,
+   "PrePaint": 121.65,
+   "big": 33,
+   "bigMs": 2590.8,
+   "elements": 1013233
+  },
+  {
+   "run": "AC",
+   "commits": 206,
+   "ULT": 2612.95,
+   "Layout": 215.61,
+   "Paint": 261.97,
+   "PrePaint": 121.95,
+   "big": 25,
+   "bigMs": 2262.9,
+   "elements": 905345
+  }
+ ],
+ "D ai-cjk-50000": [
+  {
+   "run": "AD",
+   "commits": 195,
+   "ULT": 349.8,
+   "Layout": 203.24,
+   "Paint": 250.81,
+   "PrePaint": 112.95,
+   "big": 1,
+   "bigMs": 132.7,
+   "elements": 104996
+  },
+  {
+   "run": "AD",
+   "commits": 195,
+   "ULT": 353.04,
+   "Layout": 205.13,
+   "Paint": 252.35,
+   "PrePaint": 114.31,
+   "big": 1,
+   "bigMs": 133.4,
+   "elements": 105126
+  }
+ ],
+ "A ai-rich-50000": [
+  {
+   "run": "AB",
+   "commits": 201,
+   "ULT": 1371.77,
+   "Layout": 112.77,
+   "Paint": 201.62,
+   "PrePaint": 66.22,
+   "big": 21,
+   "bigMs": 1191.3,
+   "elements": 495016
+  },
+  {
+   "run": "AB",
+   "commits": 201,
+   "ULT": 1088.15,
+   "Layout": 117.35,
+   "Paint": 207.49,
+   "PrePaint": 69.1,
+   "big": 15,
+   "bigMs": 820.4,
+   "elements": 379116
+  },
+  {
+   "run": "AC",
+   "commits": 202,
+   "ULT": 1213.7,
+   "Layout": 113.7,
+   "Paint": 204.26,
+   "PrePaint": 66.15,
+   "big": 17,
+   "bigMs": 1027.5,
+   "elements": 436175
+  },
+  {
+   "run": "AC",
+   "commits": 200,
+   "ULT": 1299.28,
+   "Layout": 111.45,
+   "Paint": 201.14,
+   "PrePaint": 63.83,
+   "big": 19,
+   "bigMs": 1119.3,
+   "elements": 464961
+  },
+  {
+   "run": "AD",
+   "commits": 202,
+   "ULT": 1449.68,
+   "Layout": 112.19,
+   "Paint": 205.09,
+   "PrePaint": 66.77,
+   "big": 21,
+   "bigMs": 1266.8,
+   "elements": 521108
+  },
+  {
+   "run": "AD",
+   "commits": 201,
+   "ULT": 1262.81,
+   "Layout": 113.04,
+   "Paint": 203.74,
+   "PrePaint": 66.96,
+   "big": 19,
+   "bigMs": 1080.0,
+   "elements": 450635
+  }
+ ],
+ "B ai-rich-50000": [
+  {
+   "run": "AB",
+   "commits": 199,
+   "ULT": 975.57,
+   "Layout": 110.02,
+   "Paint": 179.81,
+   "PrePaint": 65.77,
+   "big": 13,
+   "bigMs": 737.5,
+   "elements": 349807
+  },
+  {
+   "run": "AB",
+   "commits": 201,
+   "ULT": 1079.93,
+   "Layout": 110.57,
+   "Paint": 178.35,
+   "PrePaint": 66.37,
+   "big": 15,
+   "bigMs": 817.1,
+   "elements": 388616
+  }
+ ],
+ "C ai-rich-50000": [
+  {
+   "run": "AC",
+   "commits": 204,
+   "ULT": 1833.32,
+   "Layout": 119.25,
+   "Paint": 201.26,
+   "PrePaint": 65.27,
+   "big": 22,
+   "bigMs": 1575.4,
+   "elements": 654221
+  },
+  {
+   "run": "AC",
+   "commits": 201,
+   "ULT": 1417.1,
+   "Layout": 121.06,
+   "Paint": 201.97,
+   "PrePaint": 67.08,
+   "big": 15,
+   "bigMs": 1187.9,
+   "elements": 498619
+  }
+ ],
+ "D ai-rich-50000": [
+  {
+   "run": "AD",
+   "commits": 196,
+   "ULT": 254.09,
+   "Layout": 112.74,
+   "Paint": 204.37,
+   "PrePaint": 65.95,
+   "big": 1,
+   "bigMs": 88.9,
+   "elements": 73714
+  },
+  {
+   "run": "AD",
+   "commits": 196,
+   "ULT": 256.13,
+   "Layout": 109.9,
+   "Paint": 202.96,
+   "PrePaint": 65.58,
+   "big": 1,
+   "bigMs": 91.1,
+   "elements": 73748
+  }
+ ]
+}

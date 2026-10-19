@@ -1,0 +1,236 @@
+{
+ "ta": {
+  "strip": [
+   {
+    "label": "Open features menu",
+    "bounds": [
+     5,
+     1541,
+     115,
+     1657
+    ]
+   },
+   {
+    "label": "hel",
+    "bounds": [
+     115,
+     1541,
+     387,
+     1657
+    ]
+   },
+   {
+    "label": "hel",
+    "bounds": [
+     115,
+     1541,
+     387,
+     1657
+    ]
+   },
+   {
+    "label": "hello",
+    "bounds": [
+     387,
+     1541,
+     693,
+     1657
+    ]
+   },
+   {
+    "label": "hello",
+    "bounds": [
+     387,
+     1541,
+     693,
+     1657
+    ]
+   },
+   {
+    "label": "&#128075; emoji",
+    "bounds": [
+     693,
+     1541,
+     829,
+     1657
+    ]
+   },
+   {
+    "label": "&#128075; emoji",
+    "bounds": [
+     693,
+     1541,
+     829,
+     1657
+    ]
+   },
+   {
+    "label": "&#129303; emoji",
+    "bounds": [
+     829,
+     1541,
+     965,
+     1657
+    ]
+   },
+   {
+    "label": "&#129303; emoji",
+    "bounds": [
+     829,
+     1541,
+     965,
+     1657
+    ]
+   },
+   {
+    "label": "Use voice typing",
+    "bounds": [
+     965,
+     1541,
+     1075,
+     1657
+    ]
+   }
+  ],
+  "typedValue": "hel",
+  "typedEvents": [
+   "keydown:Unidentified:",
+   "beforeinput:insertText:h",
+   "input:insertText:h",
+   "keyup:Unidentified:",
+   "keydown:Unidentified:",
+   "beforeinput:insertText:e",
+   "input:insertText:e",
+   "keyup:Unidentified:",
+   "keydown:Unidentified:",
+   "beforeinput:insertText:l",
+   "input:insertText:l",
+   "keyup:Unidentified:"
+  ],
+  "tapped": "hello",
+  "afterValue": "hello ",
+  "stripTapEvents": [
+   "keydown:Unidentified:null:t",
+   "beforeinput:insertText:\"lo \":t",
+   "input:insertText:\"lo \":t",
+   "keyup:Unidentified:null:t"
+  ]
+ },
+ "ce": {
+  "strip": [
+   {
+    "label": "Open features menu",
+    "bounds": [
+     5,
+     1541,
+     115,
+     1657
+    ]
+   },
+   {
+    "label": "Hel",
+    "bounds": [
+     115,
+     1541,
+     387,
+     1657
+    ]
+   },
+   {
+    "label": "Hel",
+    "bounds": [
+     115,
+     1541,
+     387,
+     1657
+    ]
+   },
+   {
+    "label": "Hello",
+    "bounds": [
+     387,
+     1541,
+     693,
+     1657
+    ]
+   },
+   {
+    "label": "Hello",
+    "bounds": [
+     387,
+     1541,
+     693,
+     1657
+    ]
+   },
+   {
+    "label": "&#128075; emoji",
+    "bounds": [
+     693,
+     1541,
+     829,
+     1657
+    ]
+   },
+   {
+    "label": "&#128075; emoji",
+    "bounds": [
+     693,
+     1541,
+     829,
+     1657
+    ]
+   },
+   {
+    "label": "&#129303; emoji",
+    "bounds": [
+     829,
+     1541,
+     965,
+     1657
+    ]
+   },
+   {
+    "label": "&#129303; emoji",
+    "bounds": [
+     829,
+     1541,
+     965,
+     1657
+    ]
+   },
+   {
+    "label": "Use voice typing",
+    "bounds": [
+     965,
+     1541,
+     1075,
+     1657
+    ]
+   }
+  ],
+  "typedValue": "Hel",
+  "typedEvents": [
+   "keydown:Unidentified:",
+   "beforeinput:insertText:H",
+   "input:insertText:H",
+   "keyup:Unidentified:",
+   "keydown:Unidentified:",
+   "beforeinput:insertText:e",
+   "input:insertText:e",
+   "keyup:Unidentified:",
+   "keydown:Unidentified:",
+   "beforeinput:insertText:l",
+   "input:insertText:l",
+   "keyup:Unidentified:"
+  ],
+  "tapped": "Hello",
+  "afterValue": "Hello ",
+  "stripTapEvents": [
+   "keydown:Unidentified:null:t",
+   "beforeinput:insertText:\"lo \":t",
+   "input:insertText:\"lo \":t",
+   "keyup:Unidentified:null:t"
+  ]
+ }
+}

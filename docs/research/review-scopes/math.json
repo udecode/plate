@@ -1,0 +1,57 @@
+{
+  "id": "math",
+  "title": "Math and equations",
+  "question": "How should math value, delimiters, inline selection and rendering compose?",
+  "dependsOn": [
+    "model"
+  ],
+  "prerequisiteReason": "The document contract determines persisted math values and inline/block identity.",
+  "last": false,
+  "opportunity": {
+    "score": 6,
+    "reason": "Formula editing has independent inline/native and codec cases."
+  },
+  "owners": [
+    "packages/platejs/src/math/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/equation-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/insert-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/math-static.tsx",
+    "apps/www/src/registry/components/editor/math.lifecycle.spec.tsx",
+    "apps/www/src/registry/components/editor/math.spec.tsx",
+    "apps/www/src/registry/components/editor/math.tsx",
+    "apps/www/src/registry/components/editor/math.type.spec.ts",
+    "apps/www/src/registry/components/editor/slash.tsx",
+    "apps/www/src/registry/examples/values/cn/equation-value.tsx",
+    "apps/www/src/registry/examples/values/equation-value.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/ai/react/AIChatPlugin.streaming.spec.ts",
+    "packages/platejs/src/math/index.ts",
+    "packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx",
+    "packages/platejs/src/math/lib/BaseEquationPlugin.ts",
+    "packages/platejs/src/math/lib/index.ts",
+    "packages/platejs/src/math/react/",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/math.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "accessibility",
+    "markdown",
+    "html"
+  ],
+  "historyCandidates": [
+    "docs/plans/2026-07-12-plate-next-list-markdown-math-package-reviews.md",
+    "docs/plans/2026-04-10-math-trigger-execution.md",
+    "docs/plans/2026-04-10-math-delimiter-trigger-roadmap-slice.md",
+    "docs/plans/2026-04-10-math-delimiter-trigger-implementation-plan.md",
+    "docs/plans/2026-04-09-editor-spec-math-delimiter-triggers.md",
+    "docs/plans/2026-03-23-basic-styles-and-math-coverage-pass.md"
+  ]
+}

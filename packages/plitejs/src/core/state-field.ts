@@ -1,0 +1,200 @@
+import type {
+  EditorStateField,
+  StateFieldDescriptor,
+  StateFieldTransition,
+} from '../interfaces/editor';
+import type { EditorJsonValue } from '../interfaces/json';
+import { getDefined } from '../internal/get-defined';
+import { cloneFrozen } from './clone';
+import { compilePlugin } from './plugin';
+import { defineEffect } from './transaction-values';
+import {
+  decodeVersionedValue,
+  encodeVersionedValue,
+  normalizeEditorValuePersistence,
+} from './value-codec';
+
+type SerializedStateFieldTransition<TEncoded extends EditorJsonValue> =
+  Readonly<{
+    previousValue: TEncoded;
+    value: TEncoded;
+  }>;
+
+/**
+ * Creates an editor-scoped state field from a keyed descriptor.
+ *
+ * State fields register when their plugin is installed and are read through
+ * the editor state API.
+ */
+export const defineStateField = <
+  TValue,
+  TEncoded extends EditorJsonValue = EditorJsonValue,
+>(
+  descriptor: StateFieldDescriptor<TValue, TEncoded>
+): EditorStateField<TValue, TEncoded> => {
+  if (!descriptor.key) throw new Error('State field key cannot be empty.');
+
+  const normalizedDescriptor = Object.freeze({
+    ...descriptor,
+    compare: descriptor.compare ?? Object.is,
+    ...(descriptor.persist
+      ? { persist: normalizeEditorValuePersistence(descriptor.persist) }
+      : {}),
+    ...(descriptor.initial !== undefined &&
+    typeof descriptor.initial !== 'function'
+      ? { initial: cloneFrozen(descriptor.initial) }
+      : {}),
+  });
+
+  if (
+    normalizedDescriptor.collab === 'shared' &&
+    !normalizedDescriptor.persist
+  ) {
+    throw new Error(
+      `Shared state field "${normalizedDescriptor.key}" requires persistence.`
+    );
+  }
+  const transitionCodec = normalizedDescriptor.persist
+    ? normalizeEditorValuePersistence<
+        StateFieldTransition<TValue>,
+        SerializedStateFieldTransition<TEncoded>
+      >({
+        decode(value) {
+          if (
+            typeof value !== 'object' ||
+            value === null ||
+            !Object.hasOwn(value, 'previousValue') ||
+            !Object.hasOwn(value, 'value')
+          ) {
+            throw new Error(
+              `Invalid state field "${descriptor.key}" transition.`
+            );
+          }
+
+          return Object.freeze({
+            previousValue: getDefined(normalizedDescriptor.persist).decode(
+              (value as Record<string, unknown>).previousValue
+            ),
+            value: getDefined(normalizedDescriptor.persist).decode(
+              (value as Record<string, unknown>).value
+            ),
+          });
+        },
+        encode: ({ previousValue, value }) => ({
+          previousValue: getDefined(normalizedDescriptor.persist).encode(
+            previousValue
+          ),
+          value: getDefined(normalizedDescriptor.persist).encode(value),
+        }),
+        ...(normalizedDescriptor.persist.legacyDecoders
+          ? {
+              legacyDecoders: Object.fromEntries(
+                Object.entries(normalizedDescriptor.persist.legacyDecoders).map(
+                  ([version, decode]) => [
+                    version,
+                    (value: unknown) => {
+                      if (
+                        typeof value !== 'object' ||
+                        value === null ||
+                        !Object.hasOwn(value, 'previousValue') ||
+                        !Object.hasOwn(value, 'value')
+                      ) {
+                        throw new Error(
+                          `Invalid state field "${descriptor.key}" transition.`
+                        );
+                      }
+
+                      return Object.freeze({
+                        previousValue: decode(
+                          (value as Record<string, unknown>).previousValue
+                        ),
+                        value: decode((value as Record<string, unknown>).value),
+                      });
+                    },
+                  ]
+                )
+              ),
+            }
+          : {}),
+        version: normalizedDescriptor.persist.version,
+      })
+    : undefined;
+  const effectOptions = {
+    history: normalizedDescriptor.history,
+    key: `state:${normalizedDescriptor.key}`,
+  };
+  let field!: EditorStateField<TValue, TEncoded>;
+  const effect =
+    normalizedDescriptor.collab === 'shared'
+      ? defineEffect<StateFieldTransition<TValue>>({
+          ...effectOptions,
+          persist: getDefined(transitionCodec),
+          collab: 'shared',
+          collabReplay: 'latest',
+          collabSnapshot: (state) => {
+            const value = state.getField(field);
+
+            return { previousValue: value, value };
+          },
+          invert: ({ previousValue, value }) => ({
+            previousValue: value,
+            value: previousValue,
+          }),
+        })
+      : defineEffect<StateFieldTransition<TValue>>({
+          ...effectOptions,
+          ...(transitionCodec ? { persist: transitionCodec } : {}),
+          collab: 'local',
+          invert: ({ previousValue, value }) => ({
+            previousValue: value,
+            value: previousValue,
+          }),
+        });
+  const definition = {
+    ...normalizedDescriptor,
+    deserialize(value) {
+      if (!normalizedDescriptor.persist) {
+        throw new Error(
+          `State field "${normalizedDescriptor.key}" does not define persistence.`
+        );
+      }
+
+      return decodeVersionedValue(
+        normalizedDescriptor.persist,
+        value,
+        `state field "${normalizedDescriptor.key}"`
+      );
+    },
+    effectTypes: Object.freeze([effect]),
+    effect,
+    stateFields: [] as ReadonlyArray<EditorStateField<TValue>>,
+    name: `state-field:${normalizedDescriptor.key}`,
+    reduce(value, nextEffect) {
+      if (nextEffect.type === effect) return nextEffect.value.value;
+
+      return normalizedDescriptor.reduce?.(value, nextEffect) ?? value;
+    },
+    serialize(value) {
+      if (!normalizedDescriptor.persist) {
+        throw new Error(
+          `State field "${normalizedDescriptor.key}" does not define persistence.`
+        );
+      }
+
+      return encodeVersionedValue(
+        normalizedDescriptor.persist,
+        value,
+        `state field "${normalizedDescriptor.key}"`
+      );
+    },
+  } satisfies EditorStateField<TValue, TEncoded>;
+
+  field = definition;
+  definition.stateFields = Object.freeze([field]);
+  field = compilePlugin(definition) as unknown as EditorStateField<
+    TValue,
+    TEncoded
+  >;
+
+  return field;
+};

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-16-fixed-toolbar-caret-scroll",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-16-fixed-toolbar-caret-scroll.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-16",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep keyboard navigation visible below fixed toolbars",
+  "targets": [
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-16-fixed-toolbar-keep-keyboard-navigation-visible-2a5388a5",
+      "kind": "fix",
+      "summary": "Keep keyboard navigation visible below fixed toolbars.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["fixed-toolbar"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-16",
+          "entry": "2026-09-16-fixed-toolbar-caret-scroll",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

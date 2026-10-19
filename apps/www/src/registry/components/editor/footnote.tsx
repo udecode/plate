@@ -1,0 +1,504 @@
+'use client';
+
+import { PathApi, type Path } from 'platejs';
+import {
+  FootnotePlugin,
+  FootnoteDefinitionPlugin,
+} from 'platejs/footnote/react';
+import {
+  type EditableSiblingProps,
+  type Editor,
+  type EditorElementProps,
+  EditorElement,
+  useEditor,
+  useEditorFocused,
+  useEditorReadOnly,
+  useEditorSelector,
+  useElementSelected,
+  usePath,
+} from 'platejs/react';
+import * as React from 'react';
+
+import { Button } from '@/components/ui/button';
+import {
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
+import { cn } from '@/lib/utils';
+import {
+  FloatingPopover,
+  FloatingPopoverAnchor,
+  FloatingPopoverContent,
+} from '@/registry/components/editor/floating-popover';
+import {
+  InlineCombobox,
+  InlineComboboxContent,
+  InlineComboboxEmpty,
+  InlineComboboxGroup,
+  InlineComboboxItem,
+  useInlineComboboxQuery,
+} from '@/registry/components/editor/inline-combobox';
+
+const NUMERIC_FOOTNOTE_QUERY = /^\d+$/;
+
+const focusFootnoteControl = (editor: Editor, path?: Path) => {
+  const key = path && editor.key(path);
+
+  if (key) {
+    editor.api.dom
+      .resolveDOMNode(key)
+      ?.querySelector<HTMLButtonElement>('button')
+      ?.focus({ preventScroll: true });
+  }
+};
+
+const getFootnotePreviewLabel = (text?: string) => {
+  const normalized = text?.replace(/\s+/g, ' ').trim();
+
+  if (!normalized) return 'Empty footnote';
+
+  return normalized.length > 48
+    ? `${normalized.slice(0, 45).trimEnd()}...`
+    : normalized;
+};
+
+const getReferenceContextLabel = (
+  editor: Editor,
+  path: Path,
+  index: number
+) => {
+  const parentEntry = editor.read.nodes.parent(path);
+  const fallback = `Reference ${index + 1}`;
+
+  if (!parentEntry) return fallback;
+
+  const text = editor.read.text.string(parentEntry[1]);
+  const normalized = text.replace(/\s+/g, ' ').trim();
+
+  if (!normalized) return fallback;
+
+  return normalized.length > 56
+    ? `${normalized.slice(0, 53).trimEnd()}...`
+    : normalized;
+};
+
+export function FootnoteReferenceElement(
+  props: EditorElementProps<typeof FootnotePlugin>
+) {
+  const { element } = props;
+  const path = usePath();
+  const editor = useEditor();
+  const readOnly = useEditorReadOnly();
+  const {
+    api: footnoteNavigation,
+    read: footnoteApi,
+    update: footnoteUpdate,
+  } = editor.plugin(FootnotePlugin);
+  const ref = element.ref ?? '';
+  const [hoverOpen, setHoverOpen] = React.useState(false);
+  const focused = useEditorFocused();
+  const fallbackResolved =
+    ref && footnoteApi ? footnoteApi.isResolved({ ref }) : false;
+  const fallbackPreviewText =
+    ref && footnoteApi ? footnoteApi.definitionText({ ref }) : undefined;
+  const livePreview = useEditorSelector(() => {
+    if (!hoverOpen || !ref) return null;
+
+    return {
+      isResolved: footnoteApi.isResolved({ ref }),
+      previewText: footnoteApi.definitionText({ ref }),
+    };
+  });
+  const isResolved = livePreview?.isResolved ?? fallbackResolved;
+  const previewText = livePreview?.previewText ?? fallbackPreviewText;
+  const selected = useElementSelected({ mode: 'text' });
+  const isSelectionInsideAtom = useEditorSelector((currentEditor) => {
+    const selection = currentEditor.read.selection();
+
+    if (!path || !selection) return false;
+
+    return (
+      PathApi.equals(selection.anchor.path, path.concat([0])) &&
+      PathApi.equals(selection.focus.path, path.concat([0])) &&
+      selection.anchor.offset === selection.focus.offset
+    );
+  });
+
+  return (
+    <EditorElement
+      {...props}
+      as="sup"
+      className="group/footnote-ref mx-0.5 align-super"
+      attributes={{
+        ...props.attributes,
+        contentEditable: false,
+        draggable: true,
+      }}
+    >
+      {props.children}
+      <HoverCard open={hoverOpen} onOpenChange={setHoverOpen}>
+        <HoverCardTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              'cursor-pointer rounded-xs font-medium text-primary text-xs focus:ring-2 focus:ring-ring focus:ring-offset-1 group-data-[nav-target=true]/footnote-ref:bg-(--color-highlight)',
+              (selected && focused) || isSelectionInsideAtom
+                ? 'ring-2 ring-ring ring-offset-1'
+                : null
+            )}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              if (
+                readOnly &&
+                isResolved &&
+                footnoteNavigation.focusDefinition({ ref })
+              ) {
+                focusFootnoteControl(
+                  editor,
+                  footnoteApi.definition({ ref })?.[1]
+                );
+              }
+            }}
+            onMouseDown={(event) => {
+              if (readOnly) return;
+
+              if (event.metaKey || event.ctrlKey) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (isResolved) {
+                  footnoteNavigation.focusDefinition({ ref });
+
+                  return;
+                }
+
+                footnoteUpdate.createDefinition({ ref });
+              }
+            }}
+          >
+            [{ref}]
+          </button>
+        </HoverCardTrigger>
+        {previewText ? (
+          <HoverCardContent className="w-80">
+            <div className="space-y-1">
+              <div className="text-sm leading-relaxed text-muted-foreground">
+                {previewText}
+              </div>
+            </div>
+          </HoverCardContent>
+        ) : ref && (isResolved || !readOnly) ? (
+          <HoverCardContent className="w-80">
+            <div className="space-y-2">
+              {isResolved ? (
+                <div className="text-sm leading-relaxed">
+                  No preview available.
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-6 rounded-xs px-2 text-[11px]"
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    footnoteUpdate.createDefinition({ ref });
+                    setHoverOpen(false);
+                  }}
+                >
+                  Create definition for [^{ref}]
+                </Button>
+              )}
+            </div>
+          </HoverCardContent>
+        ) : null}
+      </HoverCard>
+    </EditorElement>
+  );
+}
+
+export function FootnoteDefinitionElement(
+  props: EditorElementProps<typeof FootnoteDefinitionPlugin>
+) {
+  const { element } = props;
+  const path = usePath();
+  const editor = useEditor();
+  const readOnly = useEditorReadOnly();
+  const {
+    api: footnoteNavigation,
+    read: footnoteApi,
+    update: footnoteUpdate,
+  } = editor.plugin(FootnotePlugin);
+  const ref = element.ref ?? '';
+  const definitionState = useEditorSelector(() => {
+    const isDuplicateDefinition =
+      !!path && !!footnoteApi.isDuplicateDefinition?.({ path });
+    const referenceItems =
+      !isDuplicateDefinition && ref
+        ? footnoteApi.references({ ref }).map((entry, index) => ({
+            index,
+            label: getReferenceContextLabel(editor, entry[1], index),
+          }))
+        : [];
+
+    return {
+      duplicateReplacementRef: isDuplicateDefinition
+        ? footnoteApi.nextRef?.()
+        : undefined,
+      isDuplicateDefinition,
+      path,
+      referenceItems,
+    };
+  });
+  const isDuplicateDefinition = !!definitionState?.isDuplicateDefinition;
+  const duplicateReplacementRef = definitionState?.duplicateReplacementRef;
+  const [referencePickerOpen, setReferencePickerOpen] = React.useState(false);
+  const referenceItems = definitionState?.referenceItems ?? [];
+  const hasMultipleReferences = referenceItems.length > 1;
+  const focusReference = (index = 0) => {
+    if (footnoteNavigation.focusReference({ ref, index }) && readOnly) {
+      focusFootnoteControl(editor, footnoteApi.references({ ref })[index]?.[1]);
+    }
+  };
+
+  return (
+    <EditorElement
+      {...props}
+      className={cn(
+        'mt-1.5 flex items-start gap-1.5 data-[nav-target=true]:rounded-md data-[nav-target=true]:bg-(--color-highlight)',
+        isDuplicateDefinition &&
+          'rounded-md border border-amber-500/30 bg-amber-500/5 px-2 py-2'
+      )}
+    >
+      <div contentEditable={false}>
+        {isDuplicateDefinition ? (
+          <div className="min-w-3 text-xs text-amber-700 tabular-nums">
+            {ref}
+          </div>
+        ) : (
+          <FloatingPopover
+            open={referencePickerOpen}
+            onOpenChange={setReferencePickerOpen}
+          >
+            <FloatingPopoverAnchor
+              element={
+                <button
+                  type="button"
+                  aria-expanded={
+                    hasMultipleReferences ? referencePickerOpen : undefined
+                  }
+                  aria-haspopup={hasMultipleReferences ? 'dialog' : undefined}
+                  aria-label={`Back to reference ${ref}`}
+                  className="min-w-3 cursor-pointer rounded-xs text-xs text-muted-foreground tabular-nums underline-offset-2 hover:text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (!readOnly) return;
+
+                    if (hasMultipleReferences) {
+                      setReferencePickerOpen((open) => !open);
+                    } else {
+                      focusReference();
+                    }
+                  }}
+                  onMouseDown={(event) => {
+                    if (readOnly) return;
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    if (hasMultipleReferences) {
+                      setReferencePickerOpen((open) => !open);
+
+                      return;
+                    }
+
+                    footnoteNavigation.focusReference({ ref });
+                  }}
+                >
+                  {ref}
+                </button>
+              }
+            />
+
+            {hasMultipleReferences && referencePickerOpen ? (
+              <FloatingPopoverContent
+                className="w-72 p-0"
+                align="start"
+                sideOffset={8}
+                onFinalFocus={(event) => {
+                  event.preventDefault();
+                }}
+                onInitialFocus={(event) => {
+                  if (!readOnly) event.preventDefault();
+                }}
+              >
+                <Command tabIndex={readOnly ? 0 : undefined}>
+                  <CommandList>
+                    <CommandGroup>
+                      {referenceItems.map(
+                        (item: { index: number; label: string }) => (
+                          <CommandItem
+                            key={`${ref}-${item.index}`}
+                            className="cursor-pointer gap-2"
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                            }}
+                            onSelect={() => {
+                              setReferencePickerOpen(false);
+                              focusReference(item.index);
+                            }}
+                          >
+                            <span className="font-mono text-xs text-muted-foreground">
+                              {item.index + 1}
+                            </span>
+                            <span className="truncate">{item.label}</span>
+                          </CommandItem>
+                        )
+                      )}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </FloatingPopoverContent>
+            ) : null}
+          </FloatingPopover>
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        {isDuplicateDefinition ? (
+          <div
+            contentEditable={false}
+            className="mb-2 flex flex-wrap items-center gap-2"
+          >
+            {!readOnly && duplicateReplacementRef && path ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-6 rounded-xs border-amber-500/40 px-2 text-[11px] text-amber-700 hover:bg-amber-500/10 hover:text-amber-800"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  footnoteUpdate.normalizeDuplicateDefinition({
+                    ref: duplicateReplacementRef,
+                    path,
+                  });
+                }}
+              >
+                Renumber to [^{duplicateReplacementRef}]
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+        {props.children}
+      </div>
+    </EditorElement>
+  );
+}
+
+export function FootnoteCombobox({ editableRef }: EditableSiblingProps) {
+  return (
+    <InlineCombobox
+      editableRef={editableRef}
+      filter={false}
+      plugin={FootnotePlugin}
+    >
+      <FootnoteComboboxContent />
+    </InlineCombobox>
+  );
+}
+
+function FootnoteComboboxContent() {
+  const { read: footnoteApi } = useEditor().plugin(FootnotePlugin);
+  const query = useInlineComboboxQuery().trim();
+  const refs = footnoteApi.refs?.() ?? [];
+  const nextRef = footnoteApi.nextRef?.() ?? '1';
+  const numericQuery = NUMERIC_FOOTNOTE_QUERY.test(query) ? query : '';
+  const proposedRef = numericQuery || nextRef;
+  const showCreateOption = !refs.includes(proposedRef);
+
+  const filteredRefs = refs.filter((ref: string) => {
+    if (!query) return true;
+
+    const preview = footnoteApi.definitionText?.({ ref }) ?? '';
+
+    return (
+      ref.includes(query) || preview.toLowerCase().includes(query.toLowerCase())
+    );
+  });
+
+  return (
+    <InlineComboboxContent className="my-1.5 w-72">
+      {showCreateOption || filteredRefs.length > 0 ? null : (
+        <InlineComboboxEmpty>No footnotes</InlineComboboxEmpty>
+      )}
+
+      <InlineComboboxGroup>
+        {showCreateOption && (!query || numericQuery) ? (
+          <InlineComboboxItem
+            value={`new-${proposedRef}`}
+            onSelect={(tx) => {
+              if (
+                numericQuery &&
+                tx.plugin(FootnotePlugin).definition({ ref: numericQuery })
+              ) {
+                return false;
+              }
+
+              tx.plugin(FootnotePlugin).insert({
+                focusDefinition: false,
+                ...(numericQuery ? { ref: numericQuery } : {}),
+              });
+              return undefined;
+            }}
+          >
+            <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
+              <span className="font-mono text-muted-foreground">
+                [^{proposedRef}]
+              </span>
+              <span className="truncate">: New footnote...</span>
+            </span>
+          </InlineComboboxItem>
+        ) : null}
+
+        {filteredRefs.map((ref: string) => (
+          <InlineComboboxItem
+            key={ref}
+            value={`footnote-${ref}`}
+            onSelect={(tx) => {
+              tx.plugin(FootnotePlugin).insert({ focusDefinition: false, ref });
+            }}
+          >
+            <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
+              <span className="font-mono text-muted-foreground">[^{ref}]</span>
+              <span className="truncate">
+                :{' '}
+                {getFootnotePreviewLabel(footnoteApi.definitionText?.({ ref }))}
+              </span>
+            </span>
+          </InlineComboboxItem>
+        ))}
+      </InlineComboboxGroup>
+    </InlineComboboxContent>
+  );
+}
+
+export const FootnoteKit = [
+  FootnotePlugin.configure({
+    component: FootnoteReferenceElement,
+    slots: { afterEditable: FootnoteCombobox },
+  }),
+  FootnoteDefinitionPlugin.configure({ component: FootnoteDefinitionElement }),
+];

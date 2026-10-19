@@ -1,0 +1,20 @@
+{
+  "id": "2026-07-23-api-model",
+  "scope": "model",
+  "kind": "historical",
+  "date": "2026-07-23",
+  "question": "Which native owner should hold schema-valid state, identity, reads and atomic updates?",
+  "model": null,
+  "method": "historical-import-v1; original public-API assessment",
+  "trigger": "Backfill the dated API review without inheriting its current-state claims.",
+  "summary": "The July assessment retained read/update ownership while identifying extension identity and host-boundary debt.",
+  "verdict": null,
+  "previous": null,
+  "relation": "initial",
+  "alternatives": [],
+  "proofLimits": "This is a July source assessment, not a current score or completed implementation. Renamed public owners and later doctrine require reconciliation on the next review.",
+  "references": [
+    "docs/analysis/best-api-review.md"
+  ],
+  "source": null
+}

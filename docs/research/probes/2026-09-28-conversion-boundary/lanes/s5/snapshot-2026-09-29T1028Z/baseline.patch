@@ -1,0 +1,113 @@
+--- a/packages/platejs/src/ai/react/AIChatPlugin.ts
++++ b/packages/platejs/src/ai/react/AIChatPlugin.ts
+@@ -1642,7 +1642,6 @@
+           invalidatePreview();
+           return;
+         }
+-        const previous = previewParse;
+         const parsed = content
+           ? commandEditor.api.markdown.parseSlice(
+               content,
+@@ -1654,7 +1653,6 @@
+                 : {
+                     lossPolicy: 'allow',
+                     partial: true,
+-                    previous: previous?.result,
+                   }
+             )
+           : null;
+@@ -1674,16 +1672,10 @@
+           invalidatePreview();
+           return;
+         }
+-        const reused = previous?.result.ok ? previous.result.slice.content : [];
+-
+         previewOwner = { final, requestId: ownerRequestId };
+-        // The store keeps its own copy of each value. Handing back its copy of
+-        // every block the parser reused keeps that block's identity for readers.
+         context.store.set({
+           _blockKey: targetKey,
+-          previewValue: previewValue.map((node, index) =>
+-            node === reused[index] ? (previous?.stored[index] ?? node) : node
+-          ),
++          previewValue,
+         });
+         if (parsed && !final) {
+           previewParse = {
+--- a/apps/www/src/registry/components/editor/ai-menu.tsx
++++ b/apps/www/src/registry/components/editor/ai-menu.tsx
+@@ -117,31 +117,8 @@
+     )
+   );
+ 
+-  const published = React.useRef<readonly Descendant[]>([]);
+-
+   React.useLayoutEffect(() => {
+-    const previous = published.current;
+-    let start = 0;
+-
+-    // A continued parse returns unchanged leading blocks as the same objects:
+-    // keep them and replace only the tail. With nothing shared, replacing the
+-    // value is cheaper.
+-    while (start < document.length && previous[start] === document[start]) {
+-      start += 1;
+-    }
+-    if (start === 0) {
+-      aiEditor
+-        .update({ history: 'skip' })
+-        .value.replace({ children: document });
+-    } else {
+-      aiEditor.update({ history: 'skip' }, (tx) => {
+-        tx.nodes.replaceChildren(document.slice(start), {
+-          at: [],
+-          index: start,
+-        });
+-      });
+-    }
+-    published.current = document;
++    aiEditor.update({ history: 'skip' }).value.replace({ children: document });
+   }, [aiEditor, document]);
+ 
+   React.useEffect(() => {
+--- a/apps/www/src/registry/examples/markdown-streaming-demo.tsx
++++ b/apps/www/src/registry/examples/markdown-streaming-demo.tsx
+@@ -390,35 +390,15 @@
+     const target = preview === 'static' ? editorStatic : editor;
+     const result = target.api.markdown.parseSlice(
+       draft,
+-      final
+-        ? {}
+-        : { lossPolicy: 'allow', partial: true, previous: stream?.previous }
++      final ? {} : { lossPolicy: 'allow', partial: true }
+     );
+     const nodes = result.ok ? result.slice.content : [];
+ 
+     if (stream) stream.previous = result.ok ? result : undefined;
+     if (preview === 'static') {
+-      const previous = staticNodes.current;
+-      let start = 0;
+-
+-      // A continued parse returns unchanged leading blocks as the same
+-      // objects: keep them and replace only the tail. With nothing shared,
+-      // replacing the value is cheaper.
+-      while (start < nodes.length && previous[start] === nodes[start]) {
+-        start += 1;
+-      }
+-      if (start === 0) {
+-        editorStatic
+-          .update({ history: 'skip' })
+-          .value.replace({ children: nodes });
+-      } else {
+-        editorStatic.update({ history: 'skip' }, (tx) => {
+-          tx.nodes.replaceChildren(nodes.slice(start), {
+-            at: [],
+-            index: start,
+-          });
+-        });
+-      }
++      editorStatic
++        .update({ history: 'skip' })
++        .value.replace({ children: nodes });
+       staticNodes.current = nodes;
+     } else {
+       // The editable kit records every ordinary write as an authored change,

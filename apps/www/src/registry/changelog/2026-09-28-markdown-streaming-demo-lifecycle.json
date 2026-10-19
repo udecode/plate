@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-28-markdown-streaming-demo-lifecycle",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-28-markdown-streaming-demo-lifecycle.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Stream Markdown previews without AI chat and update only changed preview blocks",
+  "targets": [
+    {
+      "name": "markdown-streaming-demo",
+      "files": ["apps/www/src/registry/examples/markdown-streaming-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-28-markdown-streaming-stream-through-without-ai-4f3a3fc5",
+      "kind": "behavior",
+      "summary": "Stream Markdown with `editor.api.markdown.parseSlice` instead of the AI chat preview: previews hide an unfinished trailing tag, Finish and Stop parse the draft strictly once, every parse continues the latest preview, and reset cancels without a final parse. The static preview renders each parse as the `document` of `EditorView` without editing its editor; the editable preview installs content plugins only and replaces only the changed blocks. The Markdown source, chunk size and delay are editable.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["markdown-streaming-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-28",
+          "entry": "2026-09-28-markdown-streaming-demo-lifecycle",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-29-ai-menu-preview-changed-blocks-0e455cba",
+      "kind": "behavior",
+      "summary": "Render the AI draft as the `document` of the static preview editor instead of copying it into that editor on every chunk. The streaming end marker covers only the draft's last character, so it appears once when code highlighting splits the last line.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-menu"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-28",
+          "entry": "2026-09-28-markdown-streaming-demo-lifecycle",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

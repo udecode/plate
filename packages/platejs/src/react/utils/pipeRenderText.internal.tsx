@@ -1,0 +1,235 @@
+import { clsx } from 'clsx';
+import * as React from 'react';
+
+import { failInvariant } from '../../internal/failInvariant';
+import {
+  getCompiledPlateModelBinding,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import { createTextInjectionMatcher } from '../../internal/plugin/pluginInjectNodeProps';
+import type { AnyBasePlugin, EditableProps } from '../../lib';
+import { getPluginNodeClass } from '../../lib';
+import { EditorText } from '../components/plate-nodes';
+import type { Editor } from '../editor/Editor';
+import { useRedrawWithBlock } from '../internal/block-redraws';
+import { usePlateRenderContext } from '../internal/plate-context';
+import {
+  setDOMTextSyncRendererCapability,
+  setRetainedTextFlowRendererCapability,
+} from '../plite-react';
+import { getRenderNodeProps } from './getRenderNodeProps.internal';
+import { type RenderText, pluginRenderText } from './pluginRenderText.internal';
+
+type SimpleRenderText = {
+  className?: string;
+  plugin: AnyBasePlugin;
+  tag: keyof HTMLElementTagNameMap;
+  textKey: string;
+};
+
+type RenderTextEntry = {
+  requiresModelTextSync: boolean;
+  renderText: RenderText;
+  textKey: string;
+};
+
+type TextAttributesEntry = {
+  plugin: AnyBasePlugin;
+  textKey: string;
+};
+
+const isTextMarkActive = (marks: Record<string, unknown>, textKey: string) =>
+  Object.hasOwn(marks, textKey) &&
+  marks[textKey] !== false &&
+  marks[textKey] !== undefined;
+
+/** @see {@link RenderText} */
+export const pipeRenderText = (
+  modelEditor: Editor,
+  renderTextProp?: EditableProps['renderText']
+): EditableProps['renderText'] => {
+  const renderTexts: RenderTextEntry[] = [];
+  const renderTextByKey = new Map<string, true>();
+  const simpleRenderTexts: SimpleRenderText[] = [];
+  const simpleRenderTextByKey = new Map<string, true>();
+  const textAttributeEntries: TextAttributesEntry[] = [];
+  const plateRuntime = getPlateRuntime(modelEditor);
+  const hasInjectNodeProps =
+    plateRuntime.pluginCache.inject.nodeProps.text.length > 0;
+  const isTextInjectionActive = createTextInjectionMatcher(modelEditor);
+
+  plateRuntime.pluginList.forEach((plugin) => {
+    const binding = getCompiledPlateModelBinding(modelEditor, plugin);
+
+    if (binding?.kind === 'mark' && binding.markPlacement === 'text') {
+      const { component } = plugin;
+      const canUsePlainText =
+        (component === undefined || typeof component === 'string') &&
+        !plugin.render.attributes;
+
+      if (canUsePlainText) {
+        const entry = {
+          className: getPluginNodeClass(plugin.name) || undefined,
+          plugin,
+          tag: typeof component === 'string' ? component : 'span',
+          textKey:
+            binding.propertyKey ??
+            failInvariant('Expected value to be defined'),
+        };
+
+        simpleRenderTexts.push(entry);
+        simpleRenderTextByKey.set(entry.textKey, true);
+      } else {
+        const entry = {
+          requiresModelTextSync: Boolean(
+            (component && typeof component !== 'string') ||
+            plugin.render.attributes
+          ),
+          renderText: pluginRenderText(modelEditor, plugin),
+          textKey:
+            binding.propertyKey ??
+            failInvariant('Expected value to be defined'),
+        };
+
+        renderTexts.push(entry);
+        renderTextByKey.set(entry.textKey, true);
+      }
+    }
+
+    if (plugin.render.mark?.textAttributes && binding?.propertyKey) {
+      textAttributeEntries.push({ plugin, textKey: binding.propertyKey });
+    }
+  });
+
+  if (
+    !hasInjectNodeProps &&
+    simpleRenderTexts.length === 0 &&
+    renderTexts.length === 0 &&
+    textAttributeEntries.length === 0
+  ) {
+    if (renderTextProp) {
+      return renderTextProp;
+    }
+
+    return setRetainedTextFlowRendererCapability(
+      setDOMTextSyncRendererCapability(
+        ({ attributes, ...props }) => (
+          <span {...attributes}>{props.children}</span>
+        ),
+        () => true
+      ),
+      () => true
+    );
+  }
+
+  const canUsePlainOuterText =
+    !hasInjectNodeProps && !renderTextProp && textAttributeEntries.length === 0;
+
+  const Renderer = ({
+    nodeProps,
+  }: {
+    nodeProps: Parameters<NonNullable<EditableProps['renderText']>>[0];
+  }) => {
+    const { attributes: initialAttributes, ...props } = nodeProps;
+    const { editor, wrap } = usePlateRenderContext(modelEditor);
+    useRedrawWithBlock();
+    let attributes = initialAttributes;
+    let { children } = props;
+    const readOnly = editor.read.view.isReadOnly();
+    const text = props.text as Record<string, unknown>;
+    let hasActiveSimpleRenderText = false;
+    let hasActiveRenderText = false;
+
+    for (const textKey in text) {
+      if (!Object.hasOwn(text, textKey)) continue;
+
+      if (!hasActiveSimpleRenderText && simpleRenderTextByKey.has(textKey)) {
+        hasActiveSimpleRenderText = true;
+      }
+
+      if (!hasActiveRenderText && renderTextByKey.has(textKey)) {
+        hasActiveRenderText = true;
+      }
+
+      if (hasActiveSimpleRenderText && hasActiveRenderText) break;
+    }
+
+    if (hasActiveSimpleRenderText) {
+      for (const {
+        className,
+        plugin,
+        tag: Tag,
+        textKey,
+      } of simpleRenderTexts) {
+        if (!isTextMarkActive(text, textKey)) continue;
+        if (isEditOnly(readOnly, plugin, 'render')) continue;
+
+        children = <Tag className={className}>{children}</Tag>;
+      }
+    }
+
+    if (hasActiveRenderText) {
+      for (const { renderText: RenderText, textKey } of renderTexts) {
+        if (!isTextMarkActive(text, textKey)) continue;
+
+        children = <RenderText {...(props as any)}>{children}</RenderText>;
+      }
+    }
+
+    textAttributeEntries.forEach(({ plugin, textKey }) => {
+      if (isTextMarkActive(props.text, textKey)) {
+        const textAttributes = plugin.render.mark?.textAttributes;
+        const pluginTextProps =
+          typeof textAttributes === 'function'
+            ? textAttributes({ ...props, children } as any)
+            : (textAttributes ?? {});
+
+        attributes = {
+          ...attributes,
+          ...pluginTextProps,
+          ...(pluginTextProps.className && {
+            className: clsx(attributes.className, pluginTextProps.className),
+          }),
+        };
+      }
+    });
+
+    if (canUsePlainOuterText) {
+      return wrap(<span {...attributes}>{children}</span>);
+    }
+
+    if (renderTextProp) {
+      return wrap(renderTextProp({ attributes, ...props, children }));
+    }
+
+    const ctxProps = getRenderNodeProps({
+      editor,
+      props: { attributes, ...props, children } as any,
+      readOnly,
+    });
+
+    return wrap(<EditorText {...ctxProps}>{children}</EditorText>);
+  };
+  const resolveDOMTextSync: Parameters<
+    typeof setDOMTextSyncRendererCapability
+  >[1] = ({ marks }) =>
+    !renderTextProp &&
+    !isTextInjectionActive(marks) &&
+    !renderTexts.some(
+      ({ requiresModelTextSync, textKey }) =>
+        requiresModelTextSync && isTextMarkActive(marks, textKey)
+    ) &&
+    !textAttributeEntries.some(({ textKey }) =>
+      isTextMarkActive(marks, textKey)
+    );
+
+  return setRetainedTextFlowRendererCapability(
+    setDOMTextSyncRendererCapability(
+      (props) => <Renderer nodeProps={props} />,
+      resolveDOMTextSync
+    ),
+    ({ marks }) =>
+      Object.keys(marks).length === 0 && resolveDOMTextSync({ marks })
+  );
+};

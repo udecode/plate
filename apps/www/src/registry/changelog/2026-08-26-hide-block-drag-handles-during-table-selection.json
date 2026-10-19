@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-26-hide-block-drag-handles-during-table-selection",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-26-hide-block-drag-handles-during-table-selection.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Scope drag handles during table cell selection",
+  "targets": [
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-26-dnd-block-drag-handles-during-bc75946e",
+      "kind": "fix",
+      "summary": "Hide block and cell drag handles during table cell selection. Keep row drag handles for selections within one row, and hide them across rows.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd", "table"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-26",
+          "entry": "2026-08-26-hide-block-drag-handles-during-table-selection",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

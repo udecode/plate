@@ -1,0 +1,939 @@
+import type { Draft } from 'mutative';
+
+/** Shared type contracts for Plate plugin definitions. */
+import type {
+  DefinitionOf as RuntimeDefinitionOf,
+  RuntimePluginDependencyReference,
+  RuntimePluginDefinition,
+  RuntimePluginReference,
+  EditorDirectUpdate,
+  EditorReadMethodTree,
+  Editor as RuntimeEditor,
+  Element,
+  Path,
+  PropertyValueDescriptor,
+  SchemaContent,
+  SchemaContentOptions,
+  SchemaContentRootContribution,
+  SchemaElement,
+  SchemaProperty,
+  SchemaPropertyDefinition,
+  SchemaPropertyHandle,
+  SchemaTextPropertyOptions,
+  Text,
+  EditorSchemaSourceProvider,
+  RuntimePluginDependencyReferenceFor,
+  RuntimePluginInstalledCapabilitiesOf,
+} from '../../facade';
+import type { AnyObject } from '../types/AnyObject';
+import type { Nullable } from '../types/Nullable';
+import type {
+  InferPluginAdditionalSchemaPropertyHandles,
+  InferPluginElementType,
+  InferPluginMarkKey,
+  InferPluginSchema,
+  InferPluginSchemaContribution,
+} from './pluginSchemaModel.internal';
+
+declare const pluginDefinition: unique symbol;
+
+/** Exact normalized definition witness carried by every plugin descriptor. */
+export interface PluginDefinitionWitness<D> {
+  readonly [pluginDefinition]: (definition: D) => D;
+}
+
+type ExactPluginDefinitionOf<P> =
+  P extends PluginDefinitionWitness<infer D> ? D : never;
+
+/**
+ * Compact inferred definition carried by every Base plugin descriptor.
+ *
+ * Author callbacks are normalized to their capability results before reaching
+ * this boundary, so declarations do not serialize callback graphs.
+ */
+export type BasePluginDefinition = Readonly<{
+  activate?: true;
+  api?: object;
+  dataTransferFormats?: true;
+  formats?: true;
+  commands?: true;
+  conflicts?: ReadonlyArray<Readonly<{ enabled?: boolean; name: string }>>;
+  contributions?: true;
+  corrections?: true;
+  decorate?: true;
+  dependencies?: ReadonlyArray<Readonly<{ enabled?: boolean; name: string }>>;
+  editOnly?: true;
+  effectTypes?: true;
+  enabled?: boolean;
+  initialState?: object;
+  inject?: true;
+  inputRules?: true;
+  name: string;
+  on?: true;
+  override?: true;
+  read?: EditorReadMethodTree;
+  readMiddleware?: true;
+  render?: true;
+  rules?: true;
+  schema?: PluginSchemaDeclaration;
+  selectors?: object;
+  shortcuts?: true;
+  stateFields?: true;
+  targetPlugins?: ReadonlyArray<PluginReference | string>;
+  update?: object;
+  validate?: true;
+}>;
+
+/** Erased runtime boundary for heterogeneous plugin definitions. */
+export type AnyBasePluginDefinition = BasePluginDefinition;
+
+type PublicDependencyReference<P> =
+  P extends PluginReference<infer TName>
+    ? PluginReference<TName>
+    : P extends Readonly<{
+          enabled: infer TEnabled extends boolean;
+          name: infer TName extends string;
+        }>
+      ? Readonly<{ enabled: TEnabled; name: TName }>
+      : P extends Readonly<{ name: infer TName extends string }>
+        ? Readonly<{ name: TName }>
+        : RuntimePluginDependencyReference;
+
+type PublicDependencyReferences<TReferences> =
+  TReferences extends readonly unknown[]
+    ? {
+        readonly [TIndex in keyof TReferences]: PublicDependencyReference<
+          TReferences[TIndex]
+        >;
+      }
+    : readonly [];
+
+type PublicPluginDefinition<D extends AnyBasePluginDefinition> = Readonly<{
+  [
+    TKey in keyof D as TKey extends '__pluginWritableProperties' ? never : TKey
+  ]: TKey extends 'conflicts' | 'dependencies'
+    ? PublicDependencyReferences<D[TKey]>
+    : D[TKey];
+}>;
+
+/** Extract the exact normalized public definition from a Base or Plate descriptor. */
+export type DefinitionOf<P> = P extends unknown
+  ? [ExactPluginDefinitionOf<P>] extends [never]
+    ? RuntimeDefinitionOf<P> extends infer D extends AnyBasePluginDefinition
+      ? D
+      : never
+    : ExactPluginDefinitionOf<P> extends infer D extends AnyBasePluginDefinition
+      ? PublicPluginDefinition<D>
+      : never
+  : never;
+
+type IsAny<T> = 0 extends 1 & T ? true : false;
+
+type HasSchemaProperties<C extends AnyBasePluginDefinition> = [
+  keyof InferPluginAdditionalSchemaPropertyHandles<C>,
+] extends [never]
+  ? false
+  : true;
+
+/** Primary persisted identity exposed by one exact consumer portal. */
+export type PluginConsumerSchemaView<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = [InferPluginElementType<C>] extends [never]
+  ? [InferPluginMarkKey<C>] extends [never]
+    ? never
+    : Readonly<{ key: InferPluginMarkKey<C> }>
+  : Readonly<{ type: InferPluginElementType<C> }>;
+
+type DynamicPluginAuthorSchemaView = Readonly<{
+  key?: string;
+  properties?: Readonly<Record<string, SchemaPropertyHandle>>;
+  type?: string;
+}>;
+
+type ExactPluginAuthorSchemaView<C extends AnyBasePluginDefinition> = ([
+  InferPluginElementType<C>,
+] extends [never]
+  ? [InferPluginMarkKey<C>] extends [never]
+    ? Readonly<Record<never, never>>
+    : Readonly<{ key: InferPluginMarkKey<C> }>
+  : Readonly<{ type: InferPluginElementType<C> }>) &
+  (HasSchemaProperties<C> extends true
+    ? Readonly<{
+        properties: InferPluginAdditionalSchemaPropertyHandles<C>;
+      }>
+    : Readonly<Record<never, never>>);
+
+/** Resolved schema data available while authoring one plugin. */
+export type PluginAuthorSchemaView<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> =
+  IsAny<C> extends true
+    ? DynamicPluginAuthorSchemaView
+    : C extends Readonly<{ schema: PluginSchemaDeclaration }>
+      ? ExactPluginAuthorSchemaView<C>
+      : string extends C['name']
+        ? DynamicPluginAuthorSchemaView
+        : ExactPluginAuthorSchemaView<C>;
+
+type PluginConsumerSchemaField<C extends AnyBasePluginDefinition> = [
+  PluginConsumerSchemaView<C>,
+] extends [never]
+  ? Readonly<Record<never, never>>
+  : Readonly<{ schema: PluginConsumerSchemaView<C> }>;
+
+type PluginAuthorSchemaField<C extends AnyBasePluginDefinition> = [
+  keyof PluginAuthorSchemaView<C>,
+] extends [never]
+  ? Readonly<Record<never, never>>
+  : Readonly<{ schema: PluginAuthorSchemaView<C> }>;
+
+export type BaseInjectProps = {
+  /**
+   * Object whose keys are node values and values are classNames which will be
+   * extended.
+   */
+  classNames?: Record<string, string>;
+  /** Node key to map to the styles. */
+  nodeKey?: string;
+  /**
+   * Style key to override.
+   *
+   * @default nodeKey
+   */
+  styleKey?: string;
+  /**
+   * Text this injection runs on. `'nodeKey'` runs it, `query` and transforms
+   * included, only on text whose node key value is not null or undefined, and
+   * on every text when no node key resolves. `'all'` runs it on every text and
+   * overrides an inherited `'nodeKey'`. Elements are unaffected.
+   *
+   * @default 'all'
+   */
+  textScope?: 'all' | 'nodeKey';
+};
+
+export type PluginBase<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = EditorSchemaSourceProvider<() => InferPluginSchemaContribution<C>> & {
+  /** Component or intrinsic HTML tag rendered for this plugin's schema node. */
+  component?: NodeComponent;
+  /** Unique name for this plugin. */
+  name: C['name'];
+  /** Plugins that must be installed before this plugin. */
+  dependencies: InferDependencies<C>;
+  inject: Nullable<{
+    /** Plugins whose element children are excluded. */
+    excludeBelowPlugins?: ReadonlyArray<PluginReference | string>;
+    /** Plugins whose elements are excluded. */
+    excludePlugins?: ReadonlyArray<PluginReference | string>;
+    /** Whether to filter blocks */
+    isBlock?: boolean;
+    /** Whether to filter elements */
+    isElement?: boolean;
+    /** Whether to filter leaves */
+    isLeaf?: boolean;
+    /** Filter nodes with path above this level. */
+    maxLevel?: number;
+  }>;
+  /** Initial value used to create this plugin's editor-local store. */
+  initialState: InferPluginStoreState<C>;
+  override: {};
+  /** Plugins targeted by this plugin's schema and render behavior. */
+  readonly targetPlugins: InferTargetPlugins<C>;
+  render: Nullable<{
+    mark?: Readonly<{
+      /** Optional secondary leaf renderer when the primary component is placed around text. */
+      leafComponent?: NodeComponent;
+      /** Render the primary component around each leaf or once around the text node. */
+      placement?: 'leaf' | 'text';
+    }>;
+    /**
+     * Whether rendering this plugin's element reads content after the element,
+     * such as a table of contents listing every heading. Static rendering
+     * reuses a block while it and every block before it are unchanged; these
+     * elements render again whenever the document changes.
+     */
+    readsDocument?: boolean;
+  }>;
+  slots: Nullable<{
+    /** Wraps the Editable content and its lifecycle effects. */
+    wrapContent?: NodeComponent<{ children: any }>;
+    /** Wraps the complete editor root for the mounted view. */
+    wrapRoot?: NodeComponent<{ children: any }>;
+  }>;
+  rules: {
+    /**
+     * Defines actions on insert break based on block state.
+     *
+     * - `'default'`: Default behavior
+     * - `'exit'`: Leave the nearest structure through `tx.break.exit`, landing
+     *   a block after it. A text block that should be left before its
+     *   container, such as a callout, declares `ownsExit` in its schema.
+     * - `'lift'`: Lift the current block out of the nearest matching ancestor
+     * - `'reset'`: Reset block to default paragraph type
+     * - `'lineBreak'`: Insert newline character
+     * - `'deleteExit'`: Delete backward, then leave the nearest structure as
+     *   `'exit'` does
+     */
+    break?: BreakRules<C>;
+    /**
+     * Defines actions on delete based on block state.
+     *
+     * - `'default'`: Default behavior
+     * - `'lift'`: Lift the current block out of the nearest matching ancestor
+     * - `'reset'`: Reset block to default paragraph type
+     */
+    delete?: DeleteRules<C>;
+    /** Defines the behavior of merging nodes. */
+    merge?: MergeRules<C>;
+    /** Defines the behavior of normalizing nodes. */
+    normalize?: NormalizeRules<C>;
+    /** Defines the behavior of selection. */
+    selection?: SelectionRules;
+  };
+  /** Pure declarative contribution to the editor schema. */
+  readonly schema: InferPluginSchema<C>;
+  /** Selectors for the plugin. */
+  selectors: InferSelectors<C>;
+  /**
+   * Configures edit-only behavior for various plugin functionalities.
+   *
+   * - If `true` (boolean):
+   *
+   *   - `render`, `on`, and `inject.nodeProps` are active only when the
+   *       editor is NOT read-only.
+   * - If an object ({@link EditOnlyConfig}): Allows fine-grained control:
+   *
+   *   - `render`: Edit-only by default (true if not specified). Set to `false` to
+   *       always be active.
+   *   - `on`: Edit-only by default (true if not specified). Set to `false` to
+   *       always be active.
+   *   - `inject` (for `inject.nodeProps`): Edit-only by default (true if not
+   *       specified). Set to `false` to always be active.
+   */
+  editOnly?: EditOnlyConfig | boolean;
+  /**
+   * Enables or disables the plugin. Used by Plate to determine if the plugin
+   * should be used.
+   */
+  enabled?: InferEnabled<C>;
+};
+
+declare const platePluginReference: unique symbol;
+
+export interface PluginReference<
+  TName extends string = string,
+> extends RuntimePluginReference {
+  /** Plate-owned type projection over the shared plugin descriptor identity. */
+  readonly [platePluginReference]: true;
+  readonly name: TName;
+}
+
+declare const pluginDependency: unique symbol;
+
+/** Exact source carried by an inferred Plate dependency without expanding it. */
+export interface PluginDependency<in out TPlugin> {
+  /**
+   * Nominal dependency source.
+   *
+   * @internal
+   */
+  readonly [pluginDependency]: (plugin: TPlugin) => TPlugin;
+}
+
+/**
+ * Recover the exact source behind one compact Plate dependency.
+ *
+ * @internal
+ */
+export type PluginDependencySource<P> =
+  P extends PluginDependency<infer TPlugin> ? TPlugin : never;
+
+type NormalizeRuntimeDefinition<TDefinition> =
+  TDefinition extends RuntimePluginDefinition
+    ? Readonly<{
+        [
+          TKey in keyof TDefinition as TKey extends
+            | 'schema'
+            | keyof BasePluginDefinition
+            ? TKey extends 'schema'
+              ? never
+              : TKey
+            : never
+        ]: TDefinition[TKey];
+      }> &
+        Readonly<{ name: TDefinition['name'] }>
+    : never;
+
+type DependencyInstalledDefinitionOf<P> = NormalizeRuntimeDefinition<
+  RuntimePluginInstalledCapabilitiesOf<P>
+>;
+
+type RuntimeDependencyInstalledDefinitionOf<P> = [
+  DependencyInstalledDefinitionOf<P>,
+] extends [never]
+  ? DependencyInstalledDefinitionOf<RuntimePluginDependencyReferenceFor<P>>
+  : DependencyInstalledDefinitionOf<P>;
+
+type SourcePluginDefinitionOf<TSource> = TSource extends AnyBasePluginDefinition
+  ? TSource
+  : ExactPluginDefinitionOf<TSource> extends infer D extends
+        AnyBasePluginDefinition
+    ? D
+    : never;
+
+type SourcePluginInstalledDefinitionOf<P> =
+  PluginDependencySource<P> extends infer TSource
+    ? [TSource] extends [never]
+      ? never
+      : SourcePluginDefinitionOf<TSource> extends infer D extends
+            AnyBasePluginDefinition
+        ?
+            | D
+            | (D extends {
+                dependencies: infer TDependencies extends readonly unknown[];
+              }
+                ? SourcePluginInstalledDefinitionOf<TDependencies[number]>
+                : never)
+        : never
+    : never;
+
+type PluginDependencyInstalledDefinitionOf<P> = [
+  SourcePluginInstalledDefinitionOf<P>,
+] extends [never]
+  ? ExactPluginDefinitionOf<P> | RuntimeDependencyInstalledDefinitionOf<P>
+  : SourcePluginInstalledDefinitionOf<P>;
+
+type PluginBlockContentOptions = Omit<SchemaContentOptions, 'default'> &
+  Readonly<{
+    default?: PluginReference | SchemaContentOptions['default'];
+  }>;
+
+export type PluginSchemaReferences = Readonly<{
+  /** Plate normal-flow block content, excluding nested structural elements. */
+  blockContent: (options?: PluginBlockContentOptions) => SchemaContent;
+}>;
+
+export type PluginSchemaContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = Readonly<{
+  initialState: Readonly<InferPluginStoreState<C>>;
+  name: C['name'];
+  plugins: PluginSchemaReferences;
+  targetElementTypes: readonly string[];
+}>;
+
+export type PluginSchemaMark =
+  | PropertyValueDescriptor
+  | Readonly<
+      SchemaTextPropertyOptions & {
+        key?: string;
+        property: PropertyValueDescriptor;
+      }
+    >;
+
+export type PluginSchemaElement = SchemaElement &
+  Readonly<{
+    /** Whether this element is legal in Plate normal block content. */
+    blockContent?: boolean;
+    /** Default persisted discriminator before closed-application overrides. */
+    type?: string;
+  }>;
+
+export type PluginSchemaPropertyMap = Readonly<
+  Record<string, SchemaPropertyDefinition | SchemaProperty>
+>;
+
+type PluginElementSchemaDeclaration = Readonly<{
+  contentRoots?: readonly SchemaContentRootContribution[];
+  element: PluginSchemaElement;
+  mark?: never;
+  properties?: PluginSchemaPropertyMap;
+}>;
+
+type PluginSchemaText = Readonly<{
+  contentRoots?: readonly SchemaContentRootContribution[];
+  element?: never;
+  mark: PluginSchemaMark;
+  properties?: PluginSchemaPropertyMap;
+}>;
+
+type PluginSchemaProperties = Readonly<{
+  contentRoots?: readonly SchemaContentRootContribution[];
+  element?: never;
+  mark?: never;
+  properties: PluginSchemaPropertyMap;
+}>;
+
+type PluginSchemaContentRoots = Readonly<{
+  contentRoots: readonly SchemaContentRootContribution[];
+  element?: never;
+  mark?: never;
+  properties?: PluginSchemaPropertyMap;
+}>;
+
+export type PluginSchemaDeclaration =
+  | PluginSchemaContentRoots
+  | PluginElementSchemaDeclaration
+  | PluginSchemaProperties
+  | PluginSchemaText;
+
+/** A frozen schema contribution or a pure configured contribution factory. */
+export type PluginSchema<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> =
+  | ((context: PluginSchemaContext<C>) => PluginSchemaDeclaration)
+  | PluginSchemaDeclaration;
+
+type PluginRuntimeContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = Readonly<{
+  /** API owned by the current plugin, without the plugin-name namespace wrapper. */
+  api: InferOwnApi<C>;
+  /** Whether this plugin is installed and enabled in the target editor. */
+  installed: boolean;
+  /** Capability identity and API/update namespace. */
+  name: C['name'];
+  /** One-shot updates owned by the current plugin, without its name namespace. */
+  update: EditorDirectUpdate<InferOwnUpdate<C>>;
+  /** State-bound reads owned by the current plugin. */
+  read: InferOwnRead<C>;
+  /** Mutable editor-local state and pure named selectors owned by this plugin. */
+  store: PluginStore<C>;
+}>;
+
+/** Consumer capabilities projected by one exact plugin portal. */
+export type PluginPortalContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = PluginRuntimeContext<C> & PluginConsumerSchemaField<C>;
+
+/** Capabilities and compiled schema handles available in author callbacks. */
+export type PluginBaseContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = PluginRuntimeContext<C> & PluginAuthorSchemaField<C>;
+
+export type BaseTransformOptions = GetInjectNodePropsOptions & {
+  nodeValue?: unknown;
+  value?: unknown;
+};
+
+// -----------------------------------------------------------------------------
+
+type StructuralRulePluginPortal<P extends PluginReference> = [
+  DefinitionOf<P>,
+] extends [never]
+  ? PluginPortalContext
+  : PluginPortalContext<DefinitionOf<P>>;
+
+/** Read-only editor capabilities available while resolving a structural rule. */
+export type StructuralRuleEditor = Omit<RuntimeEditor, 'plugin'> & {
+  plugin<const P extends PluginReference>(
+    plugin: P
+  ): StructuralRulePluginPortal<P>;
+};
+
+export type StructuralRuleContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = {
+  editor: StructuralRuleEditor;
+  node: Element;
+  path: Path;
+  plugin: PluginReference<C['name']>;
+} & PluginBaseContext<C>;
+
+type StructuralRuleResolver<TAction, C extends AnyBasePluginDefinition> = {
+  bivarianceHack(context: StructuralRuleContext<C>): TAction | undefined;
+}['bivarianceHack'];
+
+export type RuleDecision<
+  TAction,
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = TAction | StructuralRuleResolver<TAction, C>;
+
+type BreakAction =
+  | 'default'
+  | 'deleteExit'
+  | 'exit'
+  | 'lift'
+  | 'none'
+  | 'reset';
+
+export type BreakRules<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = {
+  /** Action when Enter is pressed in an empty block. */
+  empty?: RuleDecision<BreakAction, C>;
+  /**
+   * Action when Enter is pressed at the end of an empty line. This is typically
+   * used with `default: 'lineBreak'`.
+   *
+   * Example:
+   *
+   * ```tsx
+   *     <blockquote>
+   *     This is some text\n
+   *     |
+   *     </blockquote>
+   * ```
+   *
+   * Plugin resolution refuses a static `'exit'` or `'deleteExit'` on a text
+   * block that is not an object and whose schema element does not declare
+   * `ownsExit: true`, because exit from a nested block would land after its
+   * container instead of after the block. A rule written as a function is not
+   * checked.
+   */
+  emptyLineEnd?: RuleDecision<'default' | 'deleteExit' | 'exit', C>;
+  /**
+   * Default action when Enter is pressed. Defaults to splitting the block.
+   * Use `'none'` to handle Enter without changing the document.
+   */
+  default?: RuleDecision<
+    'default' | 'deleteExit' | 'exit' | 'lineBreak' | 'none',
+    C
+  >;
+  /**
+   * If true, the new block after splitting resets to its container's default
+   * type. When the container has no default it can become, the split stays
+   * and the new block keeps its type.
+   */
+  splitReset?: RuleDecision<boolean, C>;
+};
+
+export type MergeRules<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = {
+  /** Whether to remove the node when it's empty. */
+  removeEmpty?: RuleDecision<boolean, C>;
+};
+
+export type NormalizeRules<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = {
+  /** Whether to remove nodes with empty text. */
+  removeEmpty?: RuleDecision<boolean, C>;
+};
+
+export type DeleteRules<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = {
+  /**
+   * Action when Backspace is pressed at the start of the block. This applies
+   * whether the block is empty or not.
+   *
+   * Example:
+   *
+   * ```tsx
+   *     <blockquote>
+   *     |Text
+   *     </blockquote>
+   * ```
+   */
+  start?: RuleDecision<'default' | 'lift' | 'reset', C>;
+  /**
+   * Action when a deletion starts from or leaves the block empty. `'reset'`
+   * converts the emptied block to its container's default type; when the
+   * container has no default it can become, the deletion stays and the block
+   * keeps its type.
+   */
+  empty?: RuleDecision<'default' | 'reset', C>;
+};
+
+export type SelectionRules = {
+  /**
+   * Defines the selection behavior at the boundaries of nodes.
+   *
+   * - `directional`: Selection affinity is determined by the direction of cursor
+   *   movement. Maintains inward or outward affinity based on approach.
+   * - `outward`: Forces outward affinity. Typing at the edge of a mark will not
+   *   apply the mark to new text.
+   * - `hard`: Creates a 'hard' edge that requires two key presses to move across.
+   *   Uses offset-based navigation.
+   * - `default`: Uses the editor's default behavior.
+   */
+  affinity?: 'default' | 'directional' | 'hard' | 'outward';
+};
+
+export type EditOnlyConfig = {
+  /**
+   * If true, `on` DOM event handlers are only active when the editor is not
+   * read-only. Commit, transaction, node, and text observations always run.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  on?: boolean;
+  /**
+   * If true, `inject.nodeProps` is only active when the editor is not
+   * read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  inject?: boolean;
+  /**
+   * If true, `render` functions are only active when the editor is not
+   * read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  render?: boolean;
+  /**
+   * If true, structural slots are only active when the editor is not read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  slots?: boolean;
+};
+
+export type GetInjectNodePropsOptions = {
+  /** Existing className. */
+  className?: string;
+
+  /** Style value or className key. */
+  element?: Element;
+
+  /** Current node path when the node is rendered with path context. */
+  path?: Path;
+
+  /** Existing style. */
+  style?: AnyObject;
+
+  /** Style value or className key. */
+  text?: Text;
+};
+
+export type GetInjectNodePropsReturnType = AnyObject & {
+  className?: string;
+  style?: AnyObject;
+};
+
+export type InferName<P> = P extends { name: infer N } ? N : never;
+
+export type InferApi<P> = P extends { api: infer A extends object } ? A : {};
+
+export type InferRead<P> = P extends {
+  read: infer R extends EditorReadMethodTree;
+}
+  ? R
+  : {};
+
+export type InferUpdate<P> = P extends { update: infer U extends object }
+  ? U
+  : {};
+
+export type InferEnabled<P> = P extends { enabled?: infer E }
+  ? IsAny<E> extends true
+    ? boolean
+    : Extract<E, boolean> extends never
+      ? boolean
+      : Extract<E, boolean>
+  : boolean;
+
+export type InferTargetPlugins<P extends AnyBasePluginDefinition> =
+  string extends P['name']
+    ? ReadonlyArray<PluginReference | string>
+    : P extends {
+          targetPlugins: infer TPlugins extends ReadonlyArray<
+            PluginReference | string
+          >;
+        }
+      ? TPlugins
+      : readonly [];
+
+export type InferDependencies<P> = P extends {
+  dependencies?: infer D extends ReadonlyArray<
+    RuntimePluginReference | PluginReference
+  >;
+}
+  ? D
+  : readonly [];
+
+export type InferConflicts<P> = P extends {
+  conflicts?: infer D extends ReadonlyArray<
+    RuntimePluginReference | PluginReference
+  >;
+}
+  ? D
+  : readonly [];
+
+type InferDependencyDefinition<P> = Extract<
+  PluginDependencyInstalledDefinitionOf<P>,
+  AnyBasePluginDefinition
+>;
+
+export type InferDependencyDefinitions<C extends AnyBasePluginDefinition> =
+  InferDependencyDefinition<InferDependencies<C>[number]>;
+
+export type InferOwnApi<P extends AnyBasePluginDefinition> = InferApi<P>;
+
+/** Runtime state shape after plugin descriptors become nominal references. */
+export type NormalizePluginState<T> =
+  IsAny<T> extends true
+    ? T
+    : T extends RuntimeEditor
+      ? T
+      : T extends PluginReference<infer TName>
+        ? PluginReference<TName>
+        : T extends (...args: never[]) => unknown
+          ? T
+          : T extends readonly unknown[]
+            ? {
+                readonly [TIndex in keyof T]: NormalizePluginState<T[TIndex]>;
+              }
+            : T extends Readonly<Record<string, unknown>>
+              ? { readonly [TKey in keyof T]: NormalizePluginState<T[TKey]> }
+              : T;
+
+export type InferPluginStoreState<P> = P extends {
+  initialState: infer StoreState;
+}
+  ? StoreState
+  : {};
+
+export type InferSelectors<P> = P extends { selectors: infer S } ? S : {};
+
+export type PluginSelector<
+  TState extends object = object,
+  TArgs extends unknown[] = unknown[],
+  TResult = unknown,
+> = (state: Readonly<TState>, ...args: TArgs) => TResult;
+
+export type PluginSelectors<TState extends object = object> = Record<
+  string,
+  PluginSelector<TState, never[]>
+>;
+
+type PluginSelectorMethod<TSelector> = TSelector extends (
+  state: any,
+  ...args: infer TArgs
+) => infer TResult
+  ? (...args: TArgs) => TResult
+  : never;
+
+/** Public selector call shape without the implementation-only state input. */
+export type PluginSelectorMethods<TSelectors extends object> = {
+  [TKey in keyof TSelectors]: PluginSelectorMethod<TSelectors[TKey]>;
+};
+
+type NormalizedPluginSelector<
+  TState extends object,
+  TSelector,
+> = TSelector extends (...args: infer TArgs) => infer TResult
+  ? PluginSelector<TState, TArgs, TResult>
+  : never;
+
+/** Rebind selector methods to one compact, nameable plugin state. */
+export type NormalizePluginSelectors<
+  TState extends object,
+  TSelectors extends object,
+> = {
+  [TKey in keyof TSelectors]: NormalizedPluginSelector<
+    TState,
+    TSelectors[TKey]
+  >;
+};
+
+export type PluginSelectorArgs<T> = T extends (
+  state: infer _TState,
+  ...args: infer TArgs
+) => unknown
+  ? TArgs
+  : never;
+
+export type PluginSelectorReturn<T> = T extends (
+  state: infer _TState,
+  ...args: never[]
+) => infer TResult
+  ? TResult
+  : never;
+
+type IsBroadPluginDefinition<C extends AnyBasePluginDefinition> =
+  IsAny<C> extends true
+    ? true
+    : [keyof InferPluginStoreState<C>] extends [never]
+      ? [keyof InferSelectors<C>] extends [never]
+        ? true
+        : false
+      : false;
+
+type PluginStoreKey<C extends AnyBasePluginDefinition> =
+  IsBroadPluginDefinition<C> extends true
+    ? PropertyKey
+    : keyof InferPluginStoreState<C> | keyof InferSelectors<C>;
+
+type PluginStoreValue<
+  C extends AnyBasePluginDefinition,
+  K extends PluginStoreKey<C>,
+> = K extends keyof InferSelectors<C>
+  ? IsBroadPluginDefinition<C> extends true
+    ? unknown
+    : PluginSelectorReturn<InferSelectors<C>[K]>
+  : IsBroadPluginDefinition<C> extends true
+    ? unknown
+    : K extends keyof InferPluginStoreState<C>
+      ? InferPluginStoreState<C>[K]
+      : never;
+
+export type PluginStore<
+  C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
+> = {
+  /** Read the complete current plugin state. */
+  get(): Readonly<InferPluginStoreState<C>>;
+  /** Read one state field or evaluate one named selector. */
+  get<K extends PluginStoreKey<C>>(
+    key: K,
+    ...args: IsBroadPluginDefinition<C> extends true
+      ? unknown[]
+      : K extends keyof InferSelectors<C>
+        ? PluginSelectorArgs<InferSelectors<C>[K]>
+        : []
+  ): PluginStoreValue<C, K>;
+  /** Replace fields or update the current plugin state through a draft. */
+  set(
+    value:
+      | Partial<InferPluginStoreState<C>>
+      | ((state: Draft<InferPluginStoreState<C>>) => void)
+  ): void;
+  /** Subscribe to raw state changes. */
+  subscribe: (
+    listener: (
+      state: InferPluginStoreState<C>,
+      previousState: InferPluginStoreState<C>
+    ) => void
+  ) => () => void;
+};
+
+export type InferPluginReadGroups<P extends AnyBasePluginDefinition> = {
+  readonly [TName in P['name']]: InferRead<P>;
+};
+
+export type InferPluginUpdateGroups<P extends AnyBasePluginDefinition> = {
+  readonly [TName in P['name']]: InferUpdate<P>;
+};
+
+export type InferOwnRead<P extends AnyBasePluginDefinition> = InferRead<P>;
+
+export type InferOwnUpdate<P extends AnyBasePluginDefinition> = InferUpdate<P>;
+
+/**
+ * Renders a component for editor nodes declared by `schema.element` or
+ * `schema.mark` that match this plugin's type. This is the primary render
+ * method for plugin-specific node content.
+ *
+ * @default DefaultElement for elements, DefaultLeaf for leaves
+ */
+export type NodeComponent<T = any> =
+  | ((props: T) => any)
+  | (new (props: T) => any)
+  | keyof HTMLElementTagNameMap;
+
+export type WithAnyName<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> =
+  IsAny<C['name']> extends true
+    ? C
+    : string extends C['name']
+      ? C
+      : Omit<C, 'name'> & { name: string };
+
+export type WithRequiredName<P = {}> =
+  | (P extends { name: string } ? P : never)
+  | { name: string };

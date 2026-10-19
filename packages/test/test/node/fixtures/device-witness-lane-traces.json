@@ -1,0 +1,1674 @@
+[
+  {
+    "name": "korean-placeholder",
+    "events": [
+      {
+        "clientX": 24.761905670166016,
+        "clientY": 102.85714721679688,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "H1",
+            "parentPath": null,
+            "parentSignature": "h1[0]",
+            "path": null,
+            "text": "Custom Placeholder"
+          },
+          "anchorOffset": 0,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "H1",
+            "parentPath": null,
+            "parentSignature": "h1[0]",
+            "path": null,
+            "text": "Custom Placeholder"
+          },
+          "focusOffset": 0,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 1,
+        "targetRanges": [],
+        "timestamp": 1790977738391,
+        "type": "pointerdown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "SPAN",
+            "parentNodeName": "SPAN",
+            "parentPath": null,
+            "parentSignature": "span[0][text=0,0]",
+            "path": "0,0",
+            "text": ""
+          },
+          "anchorOffset": 0,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "SPAN",
+            "parentNodeName": "SPAN",
+            "parentPath": null,
+            "parentSignature": "span[0][text=0,0]",
+            "path": "0,0",
+            "text": ""
+          },
+          "focusOffset": 0,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 2,
+        "targetRanges": [],
+        "timestamp": 1790977746944,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "SPAN",
+            "parentNodeName": "SPAN",
+            "parentPath": null,
+            "parentSignature": "span[0][text=0,0]",
+            "path": "0,0",
+            "text": ""
+          },
+          "anchorOffset": 0,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "SPAN",
+            "parentNodeName": "SPAN",
+            "parentPath": null,
+            "parentSignature": "span[0][text=0,0]",
+            "path": "0,0",
+            "text": ""
+          },
+          "focusOffset": 0,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 3,
+        "targetRanges": [],
+        "timestamp": 1790977746946,
+        "type": "compositionstart"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅇ",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "SPAN",
+            "parentNodeName": "SPAN",
+            "parentPath": null,
+            "parentSignature": "span[0][text=0,0]",
+            "path": "0,0",
+            "text": ""
+          },
+          "anchorOffset": 0,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "SPAN",
+            "parentNodeName": "SPAN",
+            "parentPath": null,
+            "parentSignature": "span[0][text=0,0]",
+            "path": "0,0",
+            "text": ""
+          },
+          "focusOffset": 0,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 4,
+        "targetRanges": [],
+        "timestamp": 1790977746946,
+        "type": "compositionupdate"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅇ",
+        "domDelta": null,
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "SPAN",
+            "parentNodeName": "SPAN",
+            "parentPath": null,
+            "parentSignature": "span[0][text=0,0]",
+            "path": "0,0",
+            "text": ""
+          },
+          "anchorOffset": 0,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "SPAN",
+            "parentNodeName": "SPAN",
+            "parentPath": null,
+            "parentSignature": "span[0][text=0,0]",
+            "path": "0,0",
+            "text": ""
+          },
+          "focusOffset": 0,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 5,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "SPAN",
+              "parentNodeName": "SPAN",
+              "parentPath": null,
+              "parentSignature": "span[0][text=0,0]",
+              "path": "0,0",
+              "text": ""
+            },
+            "endOffset": 0,
+            "rects": [],
+            "start": {
+              "nodeName": "SPAN",
+              "parentNodeName": "SPAN",
+              "parentPath": null,
+              "parentSignature": "span[0][text=0,0]",
+              "path": "0,0",
+              "text": ""
+            },
+            "startOffset": 0
+          }
+        ],
+        "timestamp": 1790977746946,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅇ",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": null,
+                "parentSignature": "span[0][text=0,0]",
+                "text": "ㅇ"
+              },
+              "before": null,
+              "type": "added"
+            }
+          ]
+        },
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": null,
+            "parentSignature": "span[0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇ"
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": null,
+            "parentSignature": "span[0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇ"
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 6,
+        "targetRanges": [],
+        "timestamp": 1790977746989,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇ"
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇ"
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 7,
+        "targetRanges": [],
+        "timestamp": 1790977747542,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇ"
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇ"
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 8,
+        "targetRanges": [],
+        "timestamp": 1790977747546,
+        "type": "compositionstart"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅏ",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇ"
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇ"
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 9,
+        "targetRanges": [],
+        "timestamp": 1790977747546,
+        "type": "compositionupdate"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅏ",
+        "domDelta": null,
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇ"
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇ"
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 10,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "ㅇ"
+            },
+            "endOffset": 1,
+            "rects": [
+              {
+                "height": 18.666664123535156,
+                "width": 0,
+                "x": 38.71428680419922,
+                "y": 93.52381134033203
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "ㅇ"
+            },
+            "startOffset": 1
+          }
+        ],
+        "timestamp": 1790977747546,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅏ",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-4",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "ㅇㅏ"
+              },
+              "before": {
+                "id": "text-4",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "ㅇ"
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏ"
+          },
+          "anchorOffset": 2,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏ"
+          },
+          "focusOffset": 2,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 11,
+        "targetRanges": [],
+        "timestamp": 1790977747549,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅏ",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": false,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏ"
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏ"
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 12,
+        "targetRanges": [],
+        "timestamp": 1790977747567,
+        "type": "compositionend"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏ"
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏ"
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 13,
+        "targetRanges": [],
+        "timestamp": 1790977748133,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏ"
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏ"
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 14,
+        "targetRanges": [],
+        "timestamp": 1790977748134,
+        "type": "compositionstart"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㄴ",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏ"
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏ"
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 15,
+        "targetRanges": [],
+        "timestamp": 1790977748134,
+        "type": "compositionupdate"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㄴ",
+        "domDelta": null,
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏ"
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏ"
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 16,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "ㅇㅏ"
+            },
+            "endOffset": 1,
+            "rects": [
+              {
+                "height": 18.666664123535156,
+                "width": 0,
+                "x": 38.71428680419922,
+                "y": 93.52381134033203
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "ㅇㅏ"
+            },
+            "startOffset": 1
+          }
+        ],
+        "timestamp": 1790977748134,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㄴ",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-4",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "ㅇㄴㅏ"
+              },
+              "before": {
+                "id": "text-4",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "ㅇㅏ"
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㄴㅏ"
+          },
+          "anchorOffset": 2,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㄴㅏ"
+          },
+          "focusOffset": 2,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 17,
+        "targetRanges": [],
+        "timestamp": 1790977748136,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴ"
+          },
+          "anchorOffset": 3,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴ"
+          },
+          "focusOffset": 3,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 18,
+        "targetRanges": [],
+        "timestamp": 1790977748751,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴ"
+          },
+          "anchorOffset": 3,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴ"
+          },
+          "focusOffset": 3,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 19,
+        "targetRanges": [],
+        "timestamp": 1790977748751,
+        "type": "compositionstart"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㄴ",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴ"
+          },
+          "anchorOffset": 3,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴ"
+          },
+          "focusOffset": 3,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 20,
+        "targetRanges": [],
+        "timestamp": 1790977748751,
+        "type": "compositionupdate"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㄴ",
+        "domDelta": null,
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴ"
+          },
+          "anchorOffset": 3,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴ"
+          },
+          "focusOffset": 3,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 21,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "ㅇㅏㄴ"
+            },
+            "endOffset": 3,
+            "rects": [
+              {
+                "height": 18.666664123535156,
+                "width": 0,
+                "x": 68.1547622680664,
+                "y": 93.52381134033203
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "ㅇㅏㄴ"
+            },
+            "startOffset": 3
+          }
+        ],
+        "timestamp": 1790977748752,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㄴ",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-4",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "ㅇㅏㄴㄴ"
+              },
+              "before": {
+                "id": "text-4",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "ㅇㅏㄴ"
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴ"
+          },
+          "anchorOffset": 4,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴ"
+          },
+          "focusOffset": 4,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 22,
+        "targetRanges": [],
+        "timestamp": 1790977748753,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㄴ",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": false,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴ"
+          },
+          "anchorOffset": 3,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴ"
+          },
+          "focusOffset": 3,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 23,
+        "targetRanges": [],
+        "timestamp": 1790977748768,
+        "type": "compositionend"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴ"
+          },
+          "anchorOffset": 3,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴ"
+          },
+          "focusOffset": 3,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 24,
+        "targetRanges": [],
+        "timestamp": 1790977749351,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴ"
+          },
+          "anchorOffset": 3,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴ"
+          },
+          "focusOffset": 3,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 25,
+        "targetRanges": [],
+        "timestamp": 1790977749351,
+        "type": "compositionstart"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅕ",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴ"
+          },
+          "anchorOffset": 3,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴ"
+          },
+          "focusOffset": 3,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 26,
+        "targetRanges": [],
+        "timestamp": 1790977749351,
+        "type": "compositionupdate"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅕ",
+        "domDelta": null,
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴ"
+          },
+          "anchorOffset": 3,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴ"
+          },
+          "focusOffset": 3,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 27,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "ㅇㅏㄴㄴ"
+            },
+            "endOffset": 3,
+            "rects": [
+              {
+                "height": 18.666664123535156,
+                "width": 0,
+                "x": 68.1547622680664,
+                "y": 93.52381134033203
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "ㅇㅏㄴㄴ"
+            },
+            "startOffset": 3
+          }
+        ],
+        "timestamp": 1790977749351,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅕ",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-4",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "ㅇㅏㄴㅕㄴ"
+              },
+              "before": {
+                "id": "text-4",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "ㅇㅏㄴㄴ"
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㅕㄴ"
+          },
+          "anchorOffset": 4,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㅕㄴ"
+          },
+          "focusOffset": 4,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 28,
+        "targetRanges": [],
+        "timestamp": 1790977749353,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕ"
+          },
+          "anchorOffset": 5,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕ"
+          },
+          "focusOffset": 5,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 29,
+        "targetRanges": [],
+        "timestamp": 1790977749951,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕ"
+          },
+          "anchorOffset": 5,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕ"
+          },
+          "focusOffset": 5,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 30,
+        "targetRanges": [],
+        "timestamp": 1790977749951,
+        "type": "compositionstart"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅇ",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕ"
+          },
+          "anchorOffset": 5,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕ"
+          },
+          "focusOffset": 5,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 31,
+        "targetRanges": [],
+        "timestamp": 1790977749951,
+        "type": "compositionupdate"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅇ",
+        "domDelta": null,
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕ"
+          },
+          "anchorOffset": 5,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕ"
+          },
+          "focusOffset": 5,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 32,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "ㅇㅏㄴㄴㅕ"
+            },
+            "endOffset": 5,
+            "rects": [
+              {
+                "height": 18.666664123535156,
+                "width": 0,
+                "x": 97.5952377319336,
+                "y": 93.52381134033203
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "ㅇㅏㄴㄴㅕ"
+            },
+            "startOffset": 5
+          }
+        ],
+        "timestamp": 1790977749951,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅇ",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-4",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "ㅇㅏㄴㄴㅕㅇ"
+              },
+              "before": {
+                "id": "text-4",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "ㅇㅏㄴㄴㅕ"
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕㅇ"
+          },
+          "anchorOffset": 6,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕㅇ"
+          },
+          "focusOffset": 6,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 33,
+        "targetRanges": [],
+        "timestamp": 1790977749953,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "ㅇ",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": false,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕㅇ"
+          },
+          "anchorOffset": 5,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕㅇ"
+          },
+          "focusOffset": 5,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 34,
+        "targetRanges": [],
+        "timestamp": 1790977749968,
+        "type": "compositionend"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Enter",
+        "keyCode": 13,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕㅇ"
+          },
+          "anchorOffset": 5,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "ㅇㅏㄴㄴㅕㅇ"
+          },
+          "focusOffset": 5,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 35,
+        "targetRanges": [],
+        "timestamp": 1790977752966,
+        "type": "keydown"
+      }
+    ],
+    "steps": [
+      {
+        "kind": "content",
+        "label": "tap 0,0:0",
+        "target": {
+          "x": 25,
+          "y": 102.85714340209961
+        },
+        "seqEnd": 2,
+        "seqStart": 1
+      },
+      {
+        "key": "Unidentified",
+        "kind": "key",
+        "label": "이응",
+        "seqEnd": 7,
+        "seqStart": 2
+      },
+      {
+        "key": "Unidentified",
+        "kind": "key",
+        "label": "아",
+        "seqEnd": 13,
+        "seqStart": 7
+      },
+      {
+        "key": "Unidentified",
+        "kind": "key",
+        "label": "니은",
+        "seqEnd": 18,
+        "seqStart": 13
+      },
+      {
+        "key": "Unidentified",
+        "kind": "key",
+        "label": "니은",
+        "seqEnd": 24,
+        "seqStart": 18
+      },
+      {
+        "key": "Unidentified",
+        "kind": "key",
+        "label": "여",
+        "seqEnd": 29,
+        "seqStart": 24
+      },
+      {
+        "key": "Unidentified",
+        "kind": "key",
+        "label": "이응",
+        "seqEnd": 35,
+        "seqStart": 29
+      },
+      {
+        "key": "Enter",
+        "kind": "key",
+        "label": "입력",
+        "seqEnd": 36,
+        "seqStart": 35
+      }
+    ]
+  }
+]

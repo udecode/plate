@@ -1,0 +1,16 @@
+static-rich-10000: static decoration reads 28 ms (direct 25.9, under visit 1.9) | wrappers ["read@1233-726a72fff91f8c4c.js:1495997"] | Children ["Children@1656-507afe1003872559.js:20471"]
+  by source body (median ms per stream): read@7460-e221bf65b958d854.js:279021 24.6 | (wrapper and guard) 4.3
+static-cjk-10000: static decoration reads 55.1 ms (direct 39.1, under visit 16.2) | wrappers ["read@1233-726a72fff91f8c4c.js:1495997"] | Children ["Children@1656-507afe1003872559.js:20471"]
+  by source body (median ms per stream): read@7460-e221bf65b958d854.js:279021 47.4 | (wrapper and guard) 8.4
+ai-rich-10000: static decoration reads 42 ms (direct 36.4, under visit 5.6) | wrappers ["read@1233-726a72fff91f8c4c.js:1495997"] | Children ["Children@1656-507afe1003872559.js:20471"]
+  by source body (median ms per stream): read@7460-e221bf65b958d854.js:279021 27.1 | read@885-0f38e168d8e57a26.js:4743 10.6 | (wrapper and guard) 4.7
+ai-cjk-10000: static decoration reads 73 ms (direct 44.9, under visit 26.4) | wrappers ["read@1233-726a72fff91f8c4c.js:1495997"] | Children ["Children@1656-507afe1003872559.js:20471"]
+  by source body (median ms per stream): read@7460-e221bf65b958d854.js:279021 46.3 | read@885-0f38e168d8e57a26.js:4743 20.1 | (wrapper and guard) 6.3
+static-rich-50000: static decoration reads 639.4 ms (direct 465.2, under visit 174.2) | wrappers ["read@1233-726a72fff91f8c4c.js:1495997"] | Children ["Children@1656-507afe1003872559.js:20471"]
+  by source body (median ms per stream): read@7460-e221bf65b958d854.js:279021 467.7 | (wrapper and guard) 165.6
+ai-rich-50000: static decoration reads 492.8 ms (direct 311.5, under visit 181.3) | wrappers ["read@1233-726a72fff91f8c4c.js:1495997"] | Children ["Children@1656-507afe1003872559.js:20471"]
+  by source body (median ms per stream): read@7460-e221bf65b958d854.js:279021 254.4 | read@885-0f38e168d8e57a26.js:4743 171.2 | (wrapper and guard) 56.5 | atBlockPath@7460-e221bf65b958d854.js:279460 0
+static-cjk-50000: static decoration reads 1431.7 ms (direct 692.3, under visit 715.4) | wrappers ["read@1233-726a72fff91f8c4c.js:1495997"] | Children ["Children@1656-507afe1003872559.js:20471"]
+  by source body (median ms per stream): read@7460-e221bf65b958d854.js:279021 1079.7 | (wrapper and guard) 352
+ai-cjk-50000: static decoration reads 969.4 ms (direct 524.4, under visit 445.1) | wrappers ["read@1233-726a72fff91f8c4c.js:1495997"] | Children ["Children@1656-507afe1003872559.js:20471"]
+  by source body (median ms per stream): read@7460-e221bf65b958d854.js:279021 518.6 | read@885-0f38e168d8e57a26.js:4743 334.6 | (wrapper and guard) 116.5

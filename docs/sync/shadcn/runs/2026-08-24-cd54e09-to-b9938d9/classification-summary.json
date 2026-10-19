@@ -1,0 +1,155 @@
+{
+  "rows": 6342,
+  "changeTypeCounts": {
+    "A": 1188,
+    "D": 4797,
+    "M": 266,
+    "R": 91
+  },
+  "statusCounts": {
+    "A": 1188,
+    "D": 4797,
+    "M": 266,
+    "R050": 2,
+    "R051": 2,
+    "R052": 1,
+    "R055": 1,
+    "R057": 2,
+    "R059": 2,
+    "R060": 2,
+    "R062": 2,
+    "R063": 1,
+    "R065": 2,
+    "R067": 1,
+    "R069": 1,
+    "R070": 1,
+    "R071": 1,
+    "R075": 1,
+    "R076": 1,
+    "R077": 1,
+    "R079": 1,
+    "R080": 1,
+    "R081": 1,
+    "R082": 2,
+    "R083": 6,
+    "R084": 1,
+    "R085": 1,
+    "R086": 1,
+    "R087": 2,
+    "R088": 2,
+    "R090": 2,
+    "R091": 3,
+    "R092": 2,
+    "R093": 3,
+    "R094": 4,
+    "R095": 3,
+    "R096": 6,
+    "R097": 5,
+    "R100": 21
+  },
+  "subsystemCounts": {
+    "base-registry-source": 374,
+    "create-style-infrastructure": 8,
+    "docs-content": 239,
+    "docs-engine": 15,
+    "docs-shell": 6,
+    "generated-output-policy": 1,
+    "generated-registry-index": 29,
+    "generated-registry-output": 3827,
+    "preview-route": 8,
+    "product-component": 17,
+    "registry-contract": 5,
+    "registry-directory": 1,
+    "theme-style": 982,
+    "ui-calendar": 2,
+    "upstream-assets": 6,
+    "upstream-examples": 678,
+    "upstream-product": 127,
+    "upstream-product-library": 5,
+    "upstream-registry-content": 9,
+    "workspace-config": 3
+  },
+  "decisionCounts": {
+    "exclude-upstream": 1832,
+    "no-op": 3857,
+    "plate-fork": 251,
+    "smart-merge": 402
+  },
+  "changeTypeDecisionCounts": {
+    "A": {
+      "exclude-upstream": 723,
+      "no-op": 27,
+      "plate-fork": 100,
+      "smart-merge": 338
+    },
+    "D": {
+      "exclude-upstream": 979,
+      "no-op": 3818
+    },
+    "M": {
+      "exclude-upstream": 60,
+      "no-op": 12,
+      "plate-fork": 146,
+      "smart-merge": 48
+    },
+    "R": {
+      "exclude-upstream": 70,
+      "plate-fork": 5,
+      "smart-merge": 16
+    }
+  },
+  "changeTypeSubsystemCounts": {
+    "A": {
+      "base-registry-source": 336,
+      "create-style-infrastructure": 1,
+      "docs-content": 97,
+      "docs-engine": 1,
+      "generated-registry-index": 27,
+      "preview-route": 3,
+      "product-component": 4,
+      "theme-style": 1,
+      "ui-calendar": 1,
+      "upstream-assets": 5,
+      "upstream-examples": 660,
+      "upstream-product": 44,
+      "upstream-product-library": 3,
+      "upstream-registry-content": 5
+    },
+    "D": {
+      "generated-registry-output": 3818,
+      "product-component": 1,
+      "theme-style": 973,
+      "upstream-examples": 1,
+      "upstream-product": 4
+    },
+    "M": {
+      "base-registry-source": 22,
+      "create-style-infrastructure": 7,
+      "docs-content": 141,
+      "docs-engine": 14,
+      "docs-shell": 6,
+      "generated-output-policy": 1,
+      "generated-registry-index": 2,
+      "generated-registry-output": 9,
+      "preview-route": 1,
+      "product-component": 12,
+      "registry-contract": 5,
+      "registry-directory": 1,
+      "theme-style": 8,
+      "ui-calendar": 1,
+      "upstream-assets": 1,
+      "upstream-examples": 12,
+      "upstream-product": 14,
+      "upstream-product-library": 2,
+      "upstream-registry-content": 4,
+      "workspace-config": 3
+    },
+    "R": {
+      "base-registry-source": 16,
+      "docs-content": 1,
+      "preview-route": 4,
+      "upstream-examples": 5,
+      "upstream-product": 65
+    }
+  }
+}

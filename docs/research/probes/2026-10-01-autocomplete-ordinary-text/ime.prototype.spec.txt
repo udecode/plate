@@ -1,0 +1,26 @@
+// PROTOTYPE, throwaway: does composing text reach the model before commit?
+import { test } from '@playwright/test';
+import { openExample } from '@platejs/test/playwright';
+
+test('prototype: composing text and the model', async ({ page }) => {
+  const editor = await openExample(page, 'plite/custom-placeholder', {
+    ready: { editor: 'visible', placeholder: 'visible' },
+  });
+  await editor.focus();
+  await page.keyboard.type('Hi @s');
+  const read = () =>
+    editor.root.evaluate((element) => {
+      const handle = (element as unknown as Record<string, any>).__pliteBrowserHandle;
+      return { dom: element.textContent, model: handle.getBlockTexts(), selection: handle.getModelSelection() };
+    });
+  const typed = await read();
+  const client = await page.context().newCDPSession(page);
+  await client.send('Input.imeSetComposition', { selectionEnd: 1, selectionStart: 1, text: 'す' });
+  const composing = await read();
+  await client.send('Input.imeSetComposition', { selectionEnd: 2, selectionStart: 2, text: 'すず' });
+  const composingMore = await read();
+  await client.send('Input.insertText', { text: 'すず' });
+  await page.waitForTimeout(100);
+  const committed = await read();
+  console.log(`PROTOTYPE_IME ${JSON.stringify({ committed, composing, composingMore, typed })}`);
+});

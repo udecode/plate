@@ -1,0 +1,46 @@
+{
+  "at": "2026-09-10T13:19:17.984771+00:00",
+  "ledgers": {
+    "query-ledger.tsv": {
+      "rows": 18,
+      "columns": 9,
+      "bad_rows": []
+    },
+    "rejected-ledger.tsv": {
+      "rows": 6,
+      "columns": 5,
+      "bad_rows": []
+    },
+    "decisions.tsv": {
+      "rows": 4,
+      "columns": 6,
+      "bad_rows": []
+    },
+    "promoted-ledger.tsv": {
+      "rows": 1,
+      "columns": 6,
+      "bad_rows": []
+    },
+    "repo-registry.tsv": {
+      "rows": 15,
+      "columns": 11,
+      "bad_rows": []
+    },
+    "lead-ledger.tsv": {
+      "rows": 8,
+      "columns": 15,
+      "bad_rows": []
+    },
+    "read-log.tsv": {
+      "rows": 55,
+      "columns": 8,
+      "bad_rows": []
+    }
+  },
+  "fingerprinted_files": 43,
+  "fingerprint_drift": [],
+  "probe_observations": 2,
+  "local_links": "pass",
+  "errors": [],
+  "scope": "artifact and current-source observation verification; no native or scale certification"
+}

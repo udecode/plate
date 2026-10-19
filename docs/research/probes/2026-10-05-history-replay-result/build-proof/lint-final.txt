@@ -1,0 +1,11 @@
+# pnpm exec ultracite fix <104 task files>
+Finished in 146ms on 103 files using 18 threads.
+# exit: 0
+# pnpm exec ultracite check <same>
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 132ms on 103 files using 18 threads.
+# exit: 0
+# pnpm exec oxlint --type-aware <same>
+# exit: 0

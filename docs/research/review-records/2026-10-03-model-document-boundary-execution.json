@@ -1,0 +1,111 @@
+{
+  "id": "2026-10-03-model-document-boundary-execution",
+  "kind": "execution",
+  "date": "2026-10-03",
+  "scopes": [
+    "model"
+  ],
+  "reviewBasis": [
+    "2026-09-11-model-document-boundary"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-11-model-document-boundary-patch.md",
+    "sha256": "3783c84314cfc1faf5f3bf37e28a7b881498ce92f10f5237dfa3758ea6219bd7"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "One private Plite owner, assertEditorDocumentShape in packages/plitejs/src/core/document-shape.ts, validates the document object, primary children, metadata, named-root map and root arrays. Initial-value normalization, schema.assertDocument, schema fitting and the authored checkpoint call it, and construction, direct and persisted replacement, Yjs load, Markdown, HTML, docx, history and diff reach it through those owners. The patch landed in e0c1500b95.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "docs/research/probes/2026-10-03-model-document-boundary/focused-rerun.txt",
+        "sha256": "562408c1c4ffea6710b4ab15d9bc92ed9f317e8a23b1040f0b5abac38eaf7372",
+        "claim": "bun test of schema-identity-contract, schema-definition, schema-compiler-laws and value-codec on 2026-10-03: 49 pass, 0 fail. The malformed-container regression also ran alone by name (1 pass, 9 filtered) beside a name that matched no test (0 run)."
+      },
+      {
+        "path": "packages/plitejs/test/schema-identity-contract.test.ts",
+        "sha256": "3320c5ca6829ad63dfd3097cc90348226167e8113885618059d877ac168dc6da",
+        "claim": "Holds 'rejects malformed document containers at every document ingress': eight malformed documents through construction, assertDocument, fitDocument, direct and persisted replacement, in raw and closed-schema editors, with atomicity checks on both replacements."
+      },
+      {
+        "path": "docs/research/probes/2026-10-03-model-document-boundary/ingress-census.tsv",
+        "sha256": "bc3624613529a1488f4794c107bdcf716752ad2c365c598fa064d1eb4c295d53",
+        "claim": "Static census of every Plite and Plate document ingress: each reaches assertEditorDocumentShape except Plate migrateDocument, whose assertOwnedDocument, added in 3a7b31d737 after the patch, repeats the same rules."
+      }
+    ],
+    "limits": "The September red run's receipt sits in the ignored docs/plans/artifacts tree and is not rebound; this record proves the current green state and the routing by static census only. The migrateDocument duplicate and unknown top-level keys lie outside the patch's scope; review 2026-10-03-model-document-admission covers them."
+  },
+  "source": {
+    "files": {
+      "packages/plitejs/src/core/schema-definition.ts": "26479d4284e4f9641c809e0febde7473bea42292637f3b516ac9146ba0fb7f51",
+      "packages/plitejs/src/core/document-shape.ts": "a127cae04ed51d3ffd04a00a91757698a2522d178a38bf9db150f60dc8975d6a",
+      "packages/plitejs/src/core/initial-value.ts": "7c5658a56d2849a46f6c507ddf9b3986c6d053a3b8d69a3203028cb6c5ea6ac0",
+      "packages/plitejs/src/interfaces/element.ts": "f8d458cfe763abfebcfb19cf95fd1d55fe3f8e0790883ab0303d536697206962",
+      "packages/plitejs/src/core/editor-schema.ts": "f58500ad41fd460a00a587bb9ffb2ff72ce4b2a9b106a3390cb806c90b2430c9",
+      "packages/plitejs/src/core/schema-compiler.ts": "66130cdd98936c2700a72274482aeb8a4283fa77ea246b72b7b1095166f44d6b",
+      "packages/plitejs/src/interfaces/editor.ts": "9f46f0711f22f9dde8c3e9f470a2d122f571aa3fc2b20d5039278a2b3ca03bc1",
+      "packages/plitejs/src/utils/node-keys.ts": "86cbfa4fed5b2ffbbb5a8fd35ad0a4973d26662ff0ccf72ee55de17f31a2b508",
+      "packages/plitejs/src/create-editor.ts": "e1932e46c9eeb4a628cdc7e51049ae5f888940f1e08e04e568da3dc013414919",
+      "packages/plitejs/src/core/public-state.ts": "1d8e01c2269216ae0ddaa5da189ad1b6daada371d0cc721b8d9d76e52743bbfa",
+      "packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts": "ca404bb0cf7cec71543d46549a31094ffc67c9df07c5b05a3c89b174dddf3fe9",
+      "packages/platejs/src/internal/plugin/compilePlateModel.ts": "326cd9dae47df6c70342e74032a02807caa947cf1007b25c730af0fa12f61793",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "ceea6f0aecf1128634f6245f4a8c10939578276de897e30b9959c7adf5625eb3",
+      "packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts": "80e4504bec9be55642374c3600bb335bbb1ba234c884b0957a451da850f57a67",
+      "apps/www/src/app/(app)/examples/plite/_examples/richtext.tsx": "5cd19463f1acdf1e36e396c901bd0114eaa8f1a6f5ac8cecc85ba2793b705f4c",
+      "apps/www/src/app/(app)/examples/plite/_examples/multi-root-document.tsx": "eceda0d6deca51415f7bb5de84a9ff804fae87ac39294c35caec7c58ce6e3df5",
+      "packages/plitejs/test/schema-identity-contract.test.ts": "3320c5ca6829ad63dfd3097cc90348226167e8113885618059d877ac168dc6da",
+      "packages/plitejs/test/schema-definition.test.ts": "19e4bb03eb8324af03d6a82b2f6f10b7a006b538d2b1b0d2b584c5d49ad69338",
+      "packages/plitejs/test/schema-compiler-laws.test.ts": "74b76a7e10004d5f3fb1d4da21efa3dbdbfa6bacd3ef9132147975c3e38e965c",
+      "packages/plitejs/test/node-key-view-contract.test.ts": "0586191f49759810442a69addfcb87548c61b300d85cccb3aa036599788f8e88",
+      "packages/plitejs/test/value-codec.test.ts": "5c1854ee9fec2d48b34da99f8e3afa08e44994c69b4e9a16e41fb175fafc97b0",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/tsconfig.json": "4a0b4f2b6be89151687c0739424a0337e5d272737f083134ccb062a348a64ff0",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "config/plite-source-test-setup.ts": "ac5d29afcfd6ffc44f80620b912514a813124b36b30b61703340b79c2b346355",
+      "config/plite-test-jsx.js": "c3f46dd2258e36c41a0ba1a77f52fd0592936493cfd56e00db740e4b97612e4a",
+      "config/workspace-source-entries.mjs": "07fd635afc33e4a04880e27505ae20174546a8b649160c8a88e2156248ae5f64",
+      "tooling/config/bunTestSetup.ts": "dba875bbf80a3d863e1b98a3ca4b4e20ffd0623fee83c9c02648b63120a802f4",
+      "docs/vision/plite.md": "86776b4a31ef09f05325364028d861fcb77a404c3ae0f294707eef8d23d7d488",
+      ".agents/skills/best-api/rules/schema-and-identity.md": "281c59635c606127d6ddc5b075aa98b07b456c9ea15ea7cd9b0393f00684a688",
+      "content/docs/(guides)/schema.mdx": "6b17137c026b81366fdee84ff1e8ca70e02ad0dcdcda32452b231ed43a8bee78",
+      "packages/platejs/src/migrations/documentMigrations.ts": "6a823432296edd3372d0e79aa0186f2ef10ce461b57801264302e6485bae5a99",
+      "docs/research/probes/2026-10-03-model-document-boundary/unknown-keys.ts": "553631b2caf78681c65faf2ba89be55b7508957d0975295280be7380a9993514",
+      "docs/research/probes/2026-10-03-model-document-boundary/unknown-keys.txt": "34fad8543fc325413011ac59514095661de583c795b3a4278e13655815651cd4",
+      "docs/research/probes/2026-10-03-model-document-boundary/ingress-census.tsv": "bc3624613529a1488f4794c107bdcf716752ad2c365c598fa064d1eb4c295d53",
+      "docs/research/probes/2026-10-03-model-document-boundary/focused-rerun.txt": "562408c1c4ffea6710b4ab15d9bc92ed9f317e8a23b1040f0b5abac38eaf7372",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3"
+    },
+    "directories": {
+      "packages/platejs/src/lib/editor": "5cec268e810dde503e00fe7f035c5a70a71cb5b16b9a490d5958cbde830ddba3"
+    },
+    "features": {
+      "export/plitejs/.": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "export/plitejs/./internal": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "export/plitejs/./package.json": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "plitejs/core/clone": "a54b7111e8cda2f1ba1e86e1065d735e0a303a5694b7cc46c78dd6008322698b",
+      "plitejs/core/document-shape": "171627e51c5acee1c36f64beac20eb77e23ef51b7c4d15058575a16988bd5d2f",
+      "plitejs/core/editor-schema": "429660bc2669bf82a958e71abe681628d6aa290240d3b16f56ea90a3d8de4dd4",
+      "plitejs/core/index": "8faf5989f48025a9e3cc58c9ce69e679815b9bc220caae38f73e424d8674190a",
+      "plitejs/core/initial-value": "6e9ba0707138033d267b4cc106e71a335fe409629ebe7db95def368be6475c38",
+      "plitejs/core/representation": "c6d3ac6b4d1aa808459b2744d4bada19b3b4a46bd0258c65a16dddb64ce1d6bd",
+      "plitejs/core/schema-definition": "e3b53fa04717f62ee4cede9524114061867ee569fd48c4992ddaff7baffae9fd",
+      "plitejs/core/schema-source.internal": "48f411704d605ee118597022a23485260f172ce30232caabf975ad4024caf5bc",
+      "plitejs/core/schema-validation": "089c78dc20984cfa7ebb653c159fb2a07d3b0ffe27d1954b15d3bfb7ade602c3",
+      "plitejs/entrypoints": "7ba12746cb3b4c6abbc99d2d699380a65f11347d373940756c7dd2f448a593f3",
+      "plitejs/interfaces": "45cec44c995dcdd4012e7e4796f2648a5ef58a854f76d70fe7ad35020f31d342",
+      "plitejs/internal": "3eef6bb44ffbf3da0fa931c22be0f90cd85a882a528f4449878c0a79774cc8d0",
+      "plitejs/types": "cb45a630ddfed3cde4d06c75ef7fd6d3c99b147f09b1a34f0723b00066d74ec0",
+      "plitejs/utils": "a72f54e415d3b285e8b352c9ee506b2886ca6bddbeb369059948900f6887c545"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-11-model-document-boundary-patch.md",
+    "docs/research/decisions/model-document-boundary.md"
+  ]
+}

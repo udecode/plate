@@ -1,0 +1,639 @@
+---
+title: Media
+docs:
+  - route: https://pro.platejs.org/docs/examples/media
+    title: Plus
+  - route: /docs/components/media-image
+    title: Image Element
+  - route: /docs/components/media-video
+    title: Video Element
+  - route: /docs/components/media-audio
+    title: Audio Element
+  - route: /docs/components/media-file
+    title: File Element
+  - route: /docs/components/media-embed
+    title: Media Embed Element
+  - route: /docs/components/media-toolbar
+    title: Media Popover
+  - route: /docs/upload
+    title: Upload Files
+  - route: /docs/components/media
+    title: Media Kit
+  - route: /docs/components/media-toolbar-button
+    title: Media Toolbar Button
+---
+
+<ComponentPreview name="media-demo" />
+
+<PackageInfo>
+
+## Features
+
+### Media support
+- **File types**: 
+  - Image
+  - Video
+  - Audio
+  - Others (PDF, Word, etc.)
+- **Video providers**:
+  - Local video files
+  - YouTube, Vimeo, Dailymotion, Youku, Coub
+- **Embed providers**: 
+  - Tweets
+
+### Media features
+- Editable captions
+- Resizable elements
+- Embed URLs are normalized into `url` and `provider`, with an optional `sourceUrl` preserved for reversible editing.
+
+### Upload
+- **Multiple upload methods**:
+  - Toolbar button with file picker
+  - Drag and drop from file system
+  - Paste from clipboard (images)
+  - URL embedding for external media
+- **Upload experience**:
+  - Real-time progress tracking
+  - Preview during upload
+  - Replaces each keyed draft slot with the completed image, video, audio, or file
+  - Error handling
+  - File size validation
+  - Type validation
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add comprehensive media support is with the `MediaKit`,
+which includes pre-configured `ImagePlugin`, `VideoPlugin`, `AudioPlugin`,
+`FilePlugin`, and `MediaEmbedPlugin` with their
+[Plate UI](/docs/installation/plate-ui) components.
+Add `UploadKit` when the editor accepts local files. It owns the draft renderer
+and upload controls; `MediaKit` owns completed media.
+
+<ComponentSource name="media" />
+<ComponentSource name="upload" />
+
+- [`ImageElement`](/docs/components/media-image): Renders image elements.
+- [`VideoElement`](/docs/components/media-video): Renders video elements.
+- [`AudioElement`](/docs/components/media-audio): Renders audio elements.
+- [`FileElement`](/docs/components/media-file): Renders file elements.
+- [`MediaEmbedElement`](/docs/components/media-embed): Renders embedded media.
+- [`UploadElement`](/docs/upload): Renders UploadKit's unbound, uploading, and failed draft slots.
+- [`MediaPreviewDialog`](/docs/components/media-preview-dialog): Provides media preview functionality.
+
+### Add kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { MediaKit } from '@/components/editor/media';
+import { UploadKit } from '@/components/editor/upload';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...MediaKit,
+    ...UploadKit,
+  ],
+});
+```
+
+### Configure uploads
+
+Install the Files gateway and configure `UploadKit` with a `FilesClient` and a
+durable URL resolver. See [Upload files](/docs/upload) for the client, route,
+access policy, and environment setup.
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs
+```
+
+### Add plugins
+
+Include the media plugins in your Plate plugins array when creating the editor.
+
+```tsx
+import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, VideoPlugin } from 'platejs/media/react';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ImagePlugin,
+    VideoPlugin,
+    AudioPlugin,
+    FilePlugin,
+    MediaEmbedPlugin,
+  ],
+});
+```
+
+### Configure plugins
+
+Configure the media plugins with custom renderers.
+
+```tsx
+import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, VideoPlugin } from 'platejs/media/react';
+import { createEditor } from 'platejs/react';
+import { AudioElement } from '@/components/editor/media-audio';
+import { FileElement } from '@/components/editor/media-file';
+import { ImageElement } from '@/components/editor/media-image';
+import { MediaEmbedElement } from '@/components/editor/media-embed';
+import { VideoElement } from '@/components/editor/media-video';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ImagePlugin.configure({ component: ImageElement }),
+    VideoPlugin.configure({ component: VideoElement }),
+    AudioPlugin.configure({ component: AudioElement }),
+    FilePlugin.configure({ component: FileElement }),
+    MediaEmbedPlugin.configure({ component: MediaEmbedElement }),
+  ],
+});
+```
+
+- `component`: Assigns custom components to render each media type.
+
+For local file uploads, add `UploadPlugin` separately as shown in
+[Upload files](/docs/upload).
+
+<Callout type="info">
+  **Note:** In Markdown, an image with only `url`, `alt`, and `title` is written as `![alt](url "title")`. An image with other properties, such as `width`, uses `<img src="…" />`, and a captioned image uses `<figure>` with `<img />` and `<figcaption>`. Video, audio, file, and embed use their own tags, such as `<video src="…">Caption</video>`; embeds keep the canonical `src` and `provider`, plus an optional `sourceUrl` so edits remain reversible. A caption must be one Markdown paragraph. Allowlisted provider snippets (e.g. YouTube, Tweet) are reduced to canonical URLs on paste. Raw `<script>` or custom embed chrome is out of scope — add your own rules if you need to preserve it.
+</Callout>
+
+### Captions
+
+Every image, audio, video, file, and embed is a non-void object element.
+The object role makes the asset selectable, meaningful even with an empty
+caption, and structurally isolating. Its direct inline children are the caption; the
+media plugin owns the schema and behavior, with no separate caption plugin,
+node type, or content root.
+
+Configure only the media plugin and its renderer:
+
+```tsx
+import { ImagePlugin } from 'platejs/media/react';
+import { ImageElement } from '@/components/editor/media-image';
+
+export const MediaKit = [
+  ImagePlugin.configure({ component: ImageElement }),
+];
+```
+
+Keep the asset DOM non-editable and render the media element's ordinary child
+slot as the caption:
+
+```tsx
+<figure>
+  <div contentEditable={false}>{/* media chrome */}</div>
+  <figcaption>{props.children}</figcaption>
+</figure>
+```
+
+Pass a string or inline children through the construction-only `caption` field:
+
+```tsx
+editor.plugin(ImagePlugin).update.insert({
+  url: 'https://example.com/image.png',
+  caption: 'Plain caption',
+});
+
+editor.plugin(ImagePlugin).update.insert({
+  url: 'https://example.com/diagram.png',
+  caption: [
+    { text: 'Rich ' },
+    { text: 'caption', bold: true },
+  ],
+});
+```
+
+The insert command compiles `caption` into direct children. Persist only the
+resulting media element:
+
+```ts
+{
+  type: 'image',
+  url: 'https://example.com/image.png',
+  children: [{ text: 'Plain caption' }],
+}
+```
+
+An empty text child is the canonical absent-caption state:
+
+```ts
+{
+  type: 'image',
+  url: 'https://example.com/image.png',
+  children: [{ text: '' }],
+}
+```
+
+The renderer keeps that empty caption hidden until the caret enters it, so
+selecting the asset does not shift the page.
+Placeholder visibility is UI state and does not change the persisted element.
+Shared media nodes persist `url`, optional rendered `width`, and direct caption children. Only `FileElement` adds optional `name`; Image, Audio, Video, and Media Embed do not inherit filename metadata.
+
+Asset focus and caption editing are separate selection states:
+
+| Selection | Behavior |
+| --- | --- |
+| Object `NodeSelection` at the media path, from clicking or arrowing onto the asset or focusing its native controls | Focuses the asset and shows its selection ring and media toolbar while an empty caption stays hidden, lets the forward arrow or `ArrowDown` enter a caption the page shows, and lets Delete remove the media node. |
+| Block `NodeSelection` holding the media, from a marquee drag, the drag handle, Block Menu or block arrow keys | Paints the shared blue block highlight with no ring or toolbar; arrow keys move past the media instead of entering its caption. |
+| Plate `TextSelection` inside the media children | Edits the caption; the backward arrow or `ArrowUp` at its start returns focus to the asset. |
+
+In left-to-right text, `ArrowRight` from the text before a media block selects
+the asset before the next press enters its caption. Moving back visits the
+caption, then the selected asset, then the preceding text. The stock caption
+hides an empty caption, so arrow keys skip it, and the media toolbar's Caption
+button puts the caret in it. Left and right follow the direction of the block that
+holds the caret, or of the selected media, so they reverse in a right-to-left
+paragraph even inside a left-to-right editor.
+
+Arrow keys stop only on caption text the page draws. When your UI hides a caption, `ArrowUp` from the block below or from a
+selected media below selects the media. The forward arrow or `ArrowDown` from
+the selected asset moves past the hidden caption to the next block. When your
+UI shows an empty caption, `ArrowUp` from below enters it.
+
+Copying or cutting the media `NodeSelection` transfers the asset and caption
+together. Selecting only caption text transfers that text without the asset.
+Enter in a caption moves its unselected suffix into a fresh block after the
+media element: the block the media's container declares there, a paragraph in
+most editors. This also applies when the selection extends into the next
+paragraph; the media asset keeps its identity.
+
+### Upload local files
+
+[`UploadPlugin`](/docs/upload) uses a `FilesClient` from `files-sdk/client` to
+upload local files. It validates a batch, authors keyed draft slots, and starts
+requests after the document transaction commits. The application supplies a
+synchronous `getUrl` that turns each SDK upload outcome into a durable absolute
+URL. A completed slot becomes an image, video, audio, or file node through the
+installed media plugin.
+
+Use `editor.plugin(UploadPlugin).update.submit(files)` for a new batch,
+`{ slot: key }` for an existing draft, or block placement options such as
+`{ after: key }`. Cancel one task with `editor.plugin(UploadPlugin).api.cancel(key)`.
+Failed live tasks retain their local `File` for an explicit retry. Reloaded
+drafts have no local file and need a new selection. See [Upload files](/docs/upload)
+for setup, task progress, and the gateway access policy.
+
+### Add toolbar button
+
+You can add [`MediaToolbarButton`](/docs/components/media-toolbar-button) to your [Toolbar](/docs/toolbar) to upload and insert media.
+
+### Insert toolbar button
+
+You can add these items to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert media elements:
+
+```tsx
+{
+  icon: <ImageIcon />,
+  label: 'Image',
+  value: PLUGINS.image,
+}
+```
+
+</Steps>
+
+## Plate Plus
+
+<ComponentPreviewPro name="media-pro" />
+
+## Plugins
+
+### `ImagePlugin`
+
+Plugin for non-void object image elements whose direct
+inline children store captions.
+
+<API name="ImagePlugin">
+<APIOptions type="ImagePluginState">
+  <APIItem name="disableEmbedInsert" type="boolean" optional>
+    Disables URL embed on data insertion.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="isUrl" type="function" optional>
+    A function to check whether a text string is a URL.
+  </APIItem>
+  <APIItem name="transformUrl" type="function" optional>
+    A function to transform the URL.
+  </APIItem>
+</APIOptions>
+</API>
+
+`UploadPlugin` handles pasted image files. `ImagePlugin` handles image URLs.
+
+### `VideoPlugin`
+
+Plugin for non-void object video elements whose direct
+inline children store captions. Extends `MediaPluginState`.
+
+### `AudioPlugin`
+
+Plugin for non-void object audio elements whose direct
+inline children store captions. Extends `MediaPluginState`.
+
+Video and audio serialize to HTML as `<figure class="editor-video">` or
+`<figure class="editor-audio">`, holding a native `<video controls>` or
+`<audio controls>` and a `<figcaption>` for the caption. Pasted HTML also
+accepts a bare `<video>` or `<audio>`, reading `src` or its first `<source>`;
+browser fallback text is not kept as a caption.
+
+### `FilePlugin`
+
+Plugin for non-void object file elements whose direct
+inline children store captions. Extends `MediaPluginState`.
+
+### `MediaEmbedPlugin`
+
+Plugin for non-void object media embed elements whose
+direct inline children store captions. Extends `MediaPluginState`.
+
+### `UploadPlugin`
+
+Plugin for persisted media draft slots and editor-owned upload tasks. The
+headless `BaseUploadPlugin` from `platejs/upload` owns the same state machine;
+the React plugin also lands dropped files through the block-drag landing rules.
+
+<API name="UploadPlugin">
+<APIOptions type="UploadPluginState">
+  <APIItem name="client" type="FilesClient | null">
+    The client created by `createFilesClient` from `files-sdk/client`.
+    **Default:** `null`.
+  </APIItem>
+  <APIItem name="getUrl" type="((file: UploadOutcome) => string) | null">
+    Synchronously maps an SDK outcome to a durable absolute URL.
+    **Default:** `null`.
+  </APIItem>
+  <APIItem name="rules" type="UploadRules">
+    Maps `audio | blob | image | pdf | text | video` to a required draft
+    `kind` and optional `minFiles`, `maxFiles`, and `maxBytes` limits.
+  </APIItem>
+  <APIItem name="maxFiles" type="number">
+    Maximum files in one submitted batch. **Default:**
+    `Number.POSITIVE_INFINITY`.
+  </APIItem>
+  <APIItem name="onError" type="((failure: UploadFailure) => void) | null">
+    Receives each rejected batch or failed task once. **Default:** `null`.
+  </APIItem>
+</APIOptions>
+</API>
+
+The React `UploadPlugin` lands dropped files at the block edge under the pointer,
+through the same landing rules as a [block drag](/docs/dnd). A refused drop
+inserts nothing. An editor with only `BaseUploadPlugin` treats a dropped file
+like a pasted one, without landing rules or vetoes.
+
+## API
+
+### Upload tasks
+
+| Operation | Contract |
+| --- | --- |
+| `editor.plugin(UploadPlugin).update.submit(files, options)` | Validates and inserts one complete batch, then starts its SDK requests after commit. |
+| `editor.plugin(UploadPlugin).api.cancel(key)` | Aborts the task owned by that live draft key. |
+| `editor.plugin(UploadPlugin).store.get('task', key)` | Returns `UploadTask` or `undefined`; its `file`, `getSnapshot`, and `subscribe` support progress and retry UI. |
+
+A task remains authoritative while its `NodeKey`, draft type, and `kind`
+remain live. Moving the draft preserves authority. Removal, retagging,
+whole-document replacement, retry, or plugin cleanup aborts it. Read-only mode
+blocks new submissions but does not cancel a request that already committed.
+
+`UploadFailure` distinguishes admission, configuration, placement, upload, and
+URL-result failures. Upload failures retain the SDK error as `unknown`; an invalid or
+throwing `getUrl` is a result failure. The task snapshot uses the SDK's
+`AggregateProgress` (`loaded`, `total`, `fraction`) rather than a percent value.
+
+## Transforms
+
+### `editor.plugin(UploadPlugin).update.submit`
+
+<API name="submit">
+<APIParameters>
+  <APIItem name="files" type="File[] | FileList">
+    The complete batch to validate and upload.
+  </APIItem>
+  <APIItem name="options" type="UploadSubmitOptions" optional>
+    Pass `{ slot: NodeKey }` to fill one existing draft. Otherwise pass
+    `BlockInsertOptions`, including `at`, `before`, `after`, `replaceEmpty`, or
+    `select`. Slot and insertion options are mutually exclusive.
+  </APIItem>
+</APIParameters>
+</API>
+
+Slot mode reuses the first draft and inserts any additional files next to it.
+The first file must resolve to the slot's `kind`. Every mode validates the
+whole batch before changing the document. When the drafts do not fit where
+they would land, such as in a parent at its child limit, the batch inserts
+nothing and `onError` gets a `does-not-fit` placement failure.
+
+### `editor.plugin(BaseImagePlugin).update.insert`
+
+Inserts an image element into the editor.
+
+<API name="insert">
+<APIParameters>
+  <APIItem name="url" type="string">
+    The image URL.
+  </APIItem>
+  <APIItem name="options" type="NodeInsertOptions" optional>
+    Exact-path and selection options.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="NodeInsertOptions">
+  <APIItem name="at" type="Location" optional>
+    Exact insertion target. When omitted, the image is inserted after the
+    selected block.
+  </APIItem>
+  <APIItem name="select" type="boolean" optional>
+    Select the inserted image.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `editor.plugin(BaseMediaEmbedPlugin).update.insert`
+
+Transforms and normalizes a URL, then inserts a media embed.
+
+<API name="insert">
+<APIParameters>
+  <APIItem name="url" type="string">
+    A media URL or embed snippet.
+  </APIItem>
+  <APIItem name="options" type="NodeInsertOptions" optional>
+    Exact-path and selection options.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="NodeInsertOptions">
+  <APIItem name="at" type="Location" optional>
+    Exact insertion target. When omitted, the current selection is required.
+  </APIItem>
+  <APIItem name="select" type="boolean" optional>
+    Select the inserted embed.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `api.insertUrl`
+
+The selected media plugin captures the insertion target while the application
+resolves URL input. Image, embed, audio, video and file plugins expose this API.
+The operation calls the installed `update.insert`, including its URL validation
+and application overrides. It returns `false` for cancelled or invalid input or
+a removed target. A rejected resolver promise propagates to the caller.
+
+```tsx
+const inserted = await editor.plugin(BaseImagePlugin).api.insertUrl(
+  getUrlFromDialog,
+  { caption: 'An optional caption', select: true }
+);
+```
+
+`getUrlFromDialog` is an application function returning a URL, `null`, or a promise
+of either. Options take `caption`, `select` and one placement: an insertion
+`at` location, an `after` source block or a `before` block. `replaceEmpty`
+works only with `after` or no placement. With `replaceEmpty: true`, the captured
+source is replaced only if it is still empty when the URL resolves. Moves and
+intervening text edits preserve the source identity and content.
+The application owns the URL dialog and selects the media plugin.
+
+## Registry media UI
+
+`media-toolbar` owns URL editing, submission, cancellation, and focus restore.
+Each copied media node reads its typed element and primitive editor state
+directly. `media-image` renders the image and opens
+`media-preview-dialog`, which owns preview navigation, scale, translation, and
+download behavior.
+
+In an editable editor, a click on `media-file` selects the file and a
+double-click opens it in a new tab. A read-only editor opens the file on a
+click. While an image, file, audio or video node is selected, `media-toolbar`
+shows a Preview button beside its Edit link, Caption and delete buttons.
+Preview opens `media-preview-dialog` for an image and opens the file in a new
+tab for the other media.
+
+<ComponentSource name="media-toolbar" />
+<ComponentSource name="media-image" />
+<ComponentSource name="media-preview-dialog" />
+
+For resizable media, compose the direct `Resizable` and `ResizeHandle`
+components from [`platejs/react`](/docs/api/resizable). The media renderer
+commits the final width through its scoped plugin update.
+
+## Utilities
+
+### `parseMediaUrl`
+
+Parses a media URL for plugin-specific handling.
+
+<API name="parseMediaUrl">
+<APIParameters>
+  <APIItem name="url" type="string">
+    The media URL to parse.
+  </APIItem>
+  <APIItem name="options.urlParsers" type="EmbedUrlParser[]">
+    Ordered parsers used to recognize the URL.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="EmbedUrlData | undefined">
+  The first safe parser result, or `undefined` when no parser matches.
+</APIReturns>
+</API>
+
+### `parseVideoUrl`
+
+Parses a video URL and extracts the video ID and provider-specific embed URL.
+
+<API name="parseVideoUrl">
+<APIParameters>
+  <APIItem name="url" type="string">
+    The video URL to parse.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="EmbedUrlData | undefined">
+  An object containing the video ID and provider if parsing is successful, undefined if URL is invalid or unsupported.
+</APIReturns>
+</API>
+
+### `parseTwitterUrl`
+
+Parses a Twitter URL and extracts the tweet ID.
+
+<API name="parseTwitterUrl">
+<APIParameters>
+  <APIItem name="url" type="string">
+    The Twitter URL.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="EmbedUrlData | undefined">
+    An object containing the tweet ID and provider if the parsing is successful.
+    Returns undefined if the URL is not valid or does not match any supported video providers.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `parseIframeUrl`
+
+Parses the URL of an iframe embed.
+
+<API name="parseIframeUrl">
+<APIParameters>
+  <APIItem name="url" type="string">
+    The URL or embed code of the iframe.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Types
+
+### Media element types
+
+```tsx
+import type { AudioElement, FileElement, ImageElement, MediaEmbedElement, VideoElement } from 'platejs/media';
+```
+
+Each alias is derived from its owning plugin schema. `Element.children` stores
+the caption's direct inline content. Use
+`[{ text: '' }]` when the caption is absent.
+
+### `UploadElement`
+
+```tsx
+import type { UploadElement } from 'platejs/upload';
+```
+
+`UploadElement` is derived from `BaseUploadPlugin` and requires a
+strict `kind`: `'audio' | 'file' | 'image' | 'video'`.
+
+### `EmbedUrlData`
+
+```tsx
+export interface EmbedUrlData {
+  id?: string;
+  provider?: string;
+  sourceKind?: 'allowlisted_snippet' | 'iframe' | 'url';
+  sourceUrl?: string;
+  url?: string;
+}
+```

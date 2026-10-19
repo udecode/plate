@@ -1,0 +1,83 @@
+[
+ {
+  "run": 1,
+  "condition": "no-dump",
+  "value": "hello",
+  "events": 20,
+  "signature": "keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified",
+  "workloadMs": 7.6,
+  "boundServices": ""
+ },
+ {
+  "run": 1,
+  "condition": "after-dump",
+  "value": "hello",
+  "events": 20,
+  "signature": "keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified",
+  "workloadMs": 7.6,
+  "boundServices": ""
+ },
+ {
+  "run": 1,
+  "condition": "after-force-stop",
+  "value": "hello",
+  "events": 20,
+  "signature": "keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified",
+  "workloadMs": 10.1,
+  "boundServices": ""
+ },
+ {
+  "run": 2,
+  "condition": "no-dump",
+  "value": "hello",
+  "events": 20,
+  "signature": "keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified",
+  "workloadMs": 7.5,
+  "boundServices": ""
+ },
+ {
+  "run": 2,
+  "condition": "after-dump",
+  "value": "hello",
+  "events": 20,
+  "signature": "keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified",
+  "workloadMs": 8,
+  "boundServices": ""
+ },
+ {
+  "run": 2,
+  "condition": "after-force-stop",
+  "value": "hello",
+  "events": 20,
+  "signature": "keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified",
+  "workloadMs": 8.4,
+  "boundServices": ""
+ },
+ {
+  "run": 3,
+  "condition": "no-dump",
+  "value": "hello",
+  "events": 20,
+  "signature": "keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified",
+  "workloadMs": 9.7,
+  "boundServices": ""
+ },
+ {
+  "run": 3,
+  "condition": "after-dump",
+  "value": "hello",
+  "events": 20,
+  "signature": "keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified",
+  "workloadMs": 7.8,
+  "boundServices": ""
+ },
+ {
+  "run": 3,
+  "condition": "after-force-stop",
+  "value": "hello",
+  "events": 20,
+  "signature": "keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified keydown:Unidentified beforeinput:insertText input:insertText keyup:Unidentified",
+  "workloadMs": 10.5,
+  "boundServices": ""
+ }
+]

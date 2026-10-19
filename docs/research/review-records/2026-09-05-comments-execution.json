@@ -1,0 +1,20 @@
+{
+  "id": "2026-09-05-comments-execution",
+  "scope": "comments",
+  "kind": "historical",
+  "date": "2026-09-05",
+  "question": "What belongs to durable comment data, anchor mapping and application discussion UI?",
+  "model": null,
+  "method": "historical-import-v1; original method and evidence remain at references",
+  "trigger": "Backfill material prior work for automatic repeat-review lookup.",
+  "summary": "C1–C7 execution records package, copied UI, consumer and proof changes.",
+  "verdict": null,
+  "relation": "historical-context",
+  "previous": "2026-09-04-comments-ownership",
+  "alternatives": [],
+  "proofLimits": "Execution evidence is historical; this import does not certify final adoption or replay its browser/scale results.",
+  "references": [
+    "docs/plans/2026-09-05-comments-complete-source-and-api-execution.md"
+  ],
+  "source": null
+}

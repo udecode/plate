@@ -1,0 +1,224 @@
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+
+import { fireEvent, render, renderHook } from '@testing-library/react';
+import * as React from 'react';
+
+const useEditorMock = mock();
+const useElementMock = mock();
+
+mock.module('platejs/react', () => ({
+  useEditor: () => useEditorMock(),
+  useElement: () => useElementMock(),
+  useEditorSelector: (selector: (editor: unknown) => unknown) =>
+    selector(useEditorMock()),
+  usePath: () => [0],
+}));
+
+mock.module('@/components/ui/button', () => ({
+  Button: ({
+    children,
+    ...props
+  }: React.ComponentProps<'button'> & { asChild?: boolean }) => (
+    <button type="button" {...props}>
+      {children}
+    </button>
+  ),
+}));
+
+mock.module('@/lib/utils', () => ({
+  cn: (...values: Array<string | false | null | undefined>) =>
+    values.filter(Boolean).join(' '),
+}));
+
+const captionCaret = {
+  anchor: { offset: 0, path: [0, 0] },
+  focus: { offset: 0, path: [0, 0] },
+};
+
+const readSelection = (
+  range: typeof captionCaret | null,
+  nodes: unknown[] = []
+) =>
+  Object.assign(() => undefined, {
+    nodes: { get: () => undefined },
+    selection: Object.assign(() => range, { nodes: () => nodes }),
+  });
+
+describe('Caption', () => {
+  beforeEach(() => {
+    useEditorMock.mockReset();
+    useEditorMock.mockReturnValue({ read: readSelection(null) });
+    useElementMock.mockReset();
+  });
+
+  afterAll(() => {
+    mock.restore();
+  });
+
+  it('keeps empty direct caption content mounted while media is inactive', async () => {
+    const { Caption } = await import(
+      `./caption?test=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(
+      <Caption
+        element={{ children: [{ text: '' }], type: 'image' }}
+        slots={{} as any}
+      >
+        <span data-testid="caption-content">Hidden caption</span>
+      </Caption>
+    );
+
+    expect(view.container.querySelector('figcaption')?.hidden).toBe(true);
+    expect(view.getByTestId('caption-content')).toBeTruthy();
+  });
+
+  it('reveals an empty caption while the caret is inside it', async () => {
+    useEditorMock.mockReturnValue({ read: readSelection(captionCaret) });
+    const { Caption } = await import(
+      `./caption?test=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(
+      <Caption
+        element={{ children: [{ text: '' }], type: 'image' }}
+        slots={{} as any}
+      >
+        <span data-testid="caption-content" />
+      </Caption>
+    );
+
+    const caption = view.container.querySelector('figcaption');
+
+    expect(caption?.hidden).toBe(false);
+    expect(caption?.getAttribute('data-placeholder')).toBe(
+      'Write a caption...'
+    );
+    expect(view.getAllByTestId('caption-content')).toHaveLength(1);
+  });
+
+  it('renders non-empty direct children exactly once without selection', async () => {
+    const { Caption } = await import(
+      `./caption?visible=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(
+      <Caption
+        element={{ children: [{ text: 'Visible caption' }], type: 'image' }}
+        slots={{} as any}
+      >
+        <span data-testid="caption-content">Visible caption</span>
+      </Caption>
+    );
+
+    expect(view.getAllByTestId('caption-content')).toHaveLength(1);
+    expect(
+      view.getByTestId('caption-content').closest('figcaption')
+    ).toBeTruthy();
+  });
+
+  it('treats only a caret inside the caption as caption focus', async () => {
+    const { useCaptionFocused } = await import(
+      `./caption?selection=${Math.random().toString(36).slice(2)}`
+    );
+
+    useEditorMock.mockReturnValue({
+      read: readSelection(captionCaret, [[{ type: 'image' }, [0]]]),
+    });
+    const nodeSelection = renderHook(() => useCaptionFocused([0]));
+
+    expect(nodeSelection.result.current).toBe(false);
+    nodeSelection.unmount();
+
+    useEditorMock.mockReturnValue({ read: readSelection(captionCaret) });
+    const captionSelection = renderHook(() => useCaptionFocused([0]));
+
+    expect(captionSelection.result.current).toBe(true);
+    captionSelection.unmount();
+
+    useEditorMock.mockReturnValue({ read: readSelection(captionCaret) });
+    const otherSelection = renderHook(() => useCaptionFocused([1]));
+
+    expect(otherSelection.result.current).toBe(false);
+  });
+
+  it('selects and focuses the first caption point', async () => {
+    const point = { offset: 0, path: [2, 0, 0] };
+    const focus = mock();
+    const setSelection = mock();
+    const element = {
+      children: [{ text: 'Caption' }],
+      type: 'image',
+    };
+
+    useEditorMock.mockReturnValue({
+      api: { dom: { focus } },
+      read: { points: { start: mock(() => point) } },
+      update: { selection: { set: setSelection } },
+    });
+    useElementMock.mockReturnValue(element);
+
+    const { CaptionButton } = await import(
+      `./caption?button=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(<CaptionButton>Caption</CaptionButton>);
+
+    fireEvent.click(view.getByRole('button', { name: 'Caption' }));
+
+    expect(setSelection).toHaveBeenCalledWith(point);
+    expect(focus).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not focus a caption without an editable point', async () => {
+    const focus = mock();
+    const setSelection = mock();
+
+    useEditorMock.mockReturnValue({
+      api: { dom: { focus } },
+      read: { points: { start: mock(() => null) } },
+      update: { selection: { set: setSelection } },
+    });
+    useElementMock.mockReturnValue({ children: [], type: 'image' });
+
+    const { CaptionButton } = await import(
+      `./caption?empty-button=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(<CaptionButton>Caption</CaptionButton>);
+
+    fireEvent.click(view.getByRole('button', { name: 'Caption' }));
+
+    expect(setSelection).not.toHaveBeenCalled();
+    expect(focus).not.toHaveBeenCalled();
+  });
+});
+
+describe('CaptionStatic', () => {
+  it('renders non-empty direct children exactly once', async () => {
+    const { CaptionStatic } = await import(
+      `./caption-static?visible=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(
+      <CaptionStatic
+        element={{ children: [{ text: 'Caption' }], type: 'image' }}
+      >
+        <span data-testid="caption-content">Caption</span>
+      </CaptionStatic>
+    );
+
+    expect(view.getAllByTestId('caption-content')).toHaveLength(1);
+    expect(
+      view.getByTestId('caption-content').closest('figcaption')
+    ).toBeTruthy();
+  });
+
+  it('omits empty direct caption content', async () => {
+    const { CaptionStatic } = await import(
+      `./caption-static?empty=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(
+      <CaptionStatic element={{ children: [{ text: '' }], type: 'image' }}>
+        <span data-testid="caption-content" />
+      </CaptionStatic>
+    );
+
+    expect(view.queryByTestId('caption-content')).toBeNull();
+    expect(view.container.querySelector('figcaption')).toBeNull();
+  });
+});

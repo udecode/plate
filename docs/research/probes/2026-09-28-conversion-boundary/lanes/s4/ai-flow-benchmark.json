@@ -1,0 +1,537 @@
+{
+  "baseline": "a7750ad388 AIChatPlugin + value.replace",
+  "environment": {
+    "arch": "arm64",
+    "bun": "1.3.12",
+    "cpu": "Apple M5 Max",
+    "platform": "darwin"
+  },
+  "packets": [
+    {
+      "kind": "rich",
+      "pair": 0,
+      "size": 10000,
+      "sourceHash": "fab656e0bc4e40b92b1780587b26080729957634729053493d06b98f4f81f4d6",
+      "baseline": {
+        "arm": "baseline",
+        "final": {
+          "render": 43.452290999999605,
+          "setPreview": 11.690833999999995
+        },
+        "finalValue": "bb8c810dad83cfea4db7410d5605f8875260e0bcca447d0363830fe1605a13f3",
+        "previews": 49,
+        "renderMs": {
+          "p50": 23.256374999999935,
+          "p95": 36.921875,
+          "sum": 1040.2371269999994
+        },
+        "reused": 0,
+        "reusedPossible": 5749,
+        "setPreviewMs": {
+          "p50": 6.177957999999762,
+          "p95": 11.655291999999918,
+          "sum": 312.6928320000011
+        },
+        "stepsHash": "9aab04d19c0c974f327169486b16d94817e58bdca2a404f48b53da5f74c059e1",
+        "workMs": 1408.073084
+      },
+      "candidate": {
+        "arm": "candidate",
+        "final": {
+          "render": 38.901458000000275,
+          "setPreview": 12.320958999999675
+        },
+        "finalValue": "bb8c810dad83cfea4db7410d5605f8875260e0bcca447d0363830fe1605a13f3",
+        "previews": 49,
+        "renderMs": {
+          "p50": 1.625290999999379,
+          "p95": 2.80737500000032,
+          "sum": 96.6698400000032
+        },
+        "reused": 5486,
+        "reusedPossible": 5749,
+        "setPreviewMs": {
+          "p50": 0.9731659999997646,
+          "p95": 1.452792000000045,
+          "sum": 49.71066199999768
+        },
+        "stepsHash": "9aab04d19c0c974f327169486b16d94817e58bdca2a404f48b53da5f74c059e1",
+        "workMs": 197.60291900000084
+      }
+    },
+    {
+      "kind": "rich",
+      "pair": 1,
+      "size": 10000,
+      "sourceHash": "fab656e0bc4e40b92b1780587b26080729957634729053493d06b98f4f81f4d6",
+      "candidate": {
+        "arm": "candidate",
+        "final": {
+          "render": 46.158791999999266,
+          "setPreview": 12.51916700000038
+        },
+        "finalValue": "bb8c810dad83cfea4db7410d5605f8875260e0bcca447d0363830fe1605a13f3",
+        "previews": 49,
+        "renderMs": {
+          "p50": 1.6396669999994629,
+          "p95": 2.2784169999995356,
+          "sum": 89.29549999999927
+        },
+        "reused": 5486,
+        "reusedPossible": 5749,
+        "setPreviewMs": {
+          "p50": 0.9610420000008162,
+          "p95": 1.3491249999997308,
+          "sum": 48.147916000001715
+        },
+        "stepsHash": "9aab04d19c0c974f327169486b16d94817e58bdca2a404f48b53da5f74c059e1",
+        "workMs": 196.12137500000063
+      },
+      "baseline": {
+        "arm": "baseline",
+        "final": {
+          "render": 39.87700000000041,
+          "setPreview": 12.482124999999542
+        },
+        "finalValue": "bb8c810dad83cfea4db7410d5605f8875260e0bcca447d0363830fe1605a13f3",
+        "previews": 49,
+        "renderMs": {
+          "p50": 22.977791000000252,
+          "p95": 42.902791000000434,
+          "sum": 1136.4909100000004
+        },
+        "reused": 0,
+        "reusedPossible": 5749,
+        "setPreviewMs": {
+          "p50": 7.138999999999214,
+          "p95": 17.769208000000617,
+          "sum": 384.86083599999984
+        },
+        "stepsHash": "9aab04d19c0c974f327169486b16d94817e58bdca2a404f48b53da5f74c059e1",
+        "workMs": 1573.7108710000002
+      }
+    },
+    {
+      "kind": "rich",
+      "pair": 2,
+      "size": 10000,
+      "sourceHash": "fab656e0bc4e40b92b1780587b26080729957634729053493d06b98f4f81f4d6",
+      "baseline": {
+        "arm": "baseline",
+        "final": {
+          "render": 51.3558750000002,
+          "setPreview": 13.007332999999562
+        },
+        "finalValue": "bb8c810dad83cfea4db7410d5605f8875260e0bcca447d0363830fe1605a13f3",
+        "previews": 49,
+        "renderMs": {
+          "p50": 24.740249999999833,
+          "p95": 49.8457499999995,
+          "sum": 1177.8902500000004
+        },
+        "reused": 0,
+        "reusedPossible": 5749,
+        "setPreviewMs": {
+          "p50": 6.258709000000636,
+          "p95": 18.837540999999874,
+          "sum": 369.9135409999981
+        },
+        "stepsHash": "9aab04d19c0c974f327169486b16d94817e58bdca2a404f48b53da5f74c059e1",
+        "workMs": 1612.1669989999982
+      },
+      "candidate": {
+        "arm": "candidate",
+        "final": {
+          "render": 36.42183399999885,
+          "setPreview": 11.303666000001613
+        },
+        "finalValue": "bb8c810dad83cfea4db7410d5605f8875260e0bcca447d0363830fe1605a13f3",
+        "previews": 49,
+        "renderMs": {
+          "p50": 1.69879199999923,
+          "p95": 2.621334000000388,
+          "sum": 86.15866999999616
+        },
+        "reused": 5486,
+        "reusedPossible": 5749,
+        "setPreviewMs": {
+          "p50": 0.9992499999989377,
+          "p95": 1.4854999999997744,
+          "sum": 78.7286699999986
+        },
+        "stepsHash": "9aab04d19c0c974f327169486b16d94817e58bdca2a404f48b53da5f74c059e1",
+        "workMs": 212.61283999999523
+      }
+    },
+    {
+      "kind": "rich",
+      "pair": 0,
+      "size": 50000,
+      "sourceHash": "a7680b9c25a219953123ad360b04ab2f2ec8e3edf6248b4bd78a7279be22bb8d",
+      "baseline": {
+        "arm": "baseline",
+        "final": {
+          "render": 268.90633300000627,
+          "setPreview": 79.88862499999232
+        },
+        "finalValue": "d2ea5a5ad80b5abc8f917f1074c665ba5e64d2009992f09b87c29253e66482ae",
+        "previews": 245,
+        "renderMs": {
+          "p50": 108.18795799999498,
+          "p95": 239.75212499999907,
+          "sum": 28225.746582000036
+        },
+        "reused": 0,
+        "reusedPossible": 144784,
+        "setPreviewMs": {
+          "p50": 33.03299999999581,
+          "p95": 81.8705420000042,
+          "sum": 8946.076201999902
+        },
+        "stepsHash": "8688c68e636c20bf5d825cd63a5560d37e03244905429eedbaa1f37ee02e6926",
+        "workMs": 37520.61774199994
+      },
+      "candidate": {
+        "arm": "candidate",
+        "final": {
+          "render": 247.0690409999952,
+          "setPreview": 72.1732090000005
+        },
+        "finalValue": "d2ea5a5ad80b5abc8f917f1074c665ba5e64d2009992f09b87c29253e66482ae",
+        "previews": 245,
+        "renderMs": {
+          "p50": 2.042249999998603,
+          "p95": 4.69862500000454,
+          "sum": 578.7276229999261
+        },
+        "reused": 143469,
+        "reusedPossible": 144784,
+        "setPreviewMs": {
+          "p50": 1.6368750000110595,
+          "p95": 2.963332999992417,
+          "sum": 428.590664000003
+        },
+        "stepsHash": "8688c68e636c20bf5d825cd63a5560d37e03244905429eedbaa1f37ee02e6926",
+        "workMs": 1326.5605369999248
+      }
+    },
+    {
+      "kind": "rich",
+      "pair": 1,
+      "size": 50000,
+      "sourceHash": "a7680b9c25a219953123ad360b04ab2f2ec8e3edf6248b4bd78a7279be22bb8d",
+      "candidate": {
+        "arm": "candidate",
+        "final": {
+          "render": 226.44574999999895,
+          "setPreview": 68.13845800000126
+        },
+        "finalValue": "d2ea5a5ad80b5abc8f917f1074c665ba5e64d2009992f09b87c29253e66482ae",
+        "previews": 245,
+        "renderMs": {
+          "p50": 2.278666999991401,
+          "p95": 5.4670830000104615,
+          "sum": 674.3775429999077
+        },
+        "reused": 143469,
+        "reusedPossible": 144784,
+        "setPreviewMs": {
+          "p50": 1.8230419999890728,
+          "p95": 3.1580419999954756,
+          "sum": 480.6602090000233
+        },
+        "stepsHash": "8688c68e636c20bf5d825cd63a5560d37e03244905429eedbaa1f37ee02e6926",
+        "workMs": 1449.6219599999313
+      },
+      "baseline": {
+        "arm": "baseline",
+        "final": {
+          "render": 212.2316250000149,
+          "setPreview": 63.71241699997336
+        },
+        "finalValue": "d2ea5a5ad80b5abc8f917f1074c665ba5e64d2009992f09b87c29253e66482ae",
+        "previews": 245,
+        "renderMs": {
+          "p50": 115.13300000000163,
+          "p95": 230.026291999995,
+          "sum": 29582.345497999806
+        },
+        "reused": 0,
+        "reusedPossible": 144784,
+        "setPreviewMs": {
+          "p50": 34.29266700000153,
+          "p95": 74.10545800000546,
+          "sum": 9159.23924500015
+        },
+        "stepsHash": "8688c68e636c20bf5d825cd63a5560d37e03244905429eedbaa1f37ee02e6926",
+        "workMs": 39017.528784999944
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 0,
+      "size": 10000,
+      "sourceHash": "573588a01d1f8ce00cf951acf2d352ca95194335f98fe725307762bdf62e14d2",
+      "baseline": {
+        "arm": "baseline",
+        "final": {
+          "render": 98.46654199998011,
+          "setPreview": 19.227667000028305
+        },
+        "finalValue": "e07161b4394d65e6f23e7fedc68d090e9e5cb056b8cbb9cd0dc64736a9b843d4",
+        "previews": 49,
+        "renderMs": {
+          "p50": 42.61045899998862,
+          "p95": 81.961707999988,
+          "sum": 2121.8957500000834
+        },
+        "reused": 0,
+        "reusedPossible": 7264,
+        "setPreviewMs": {
+          "p50": 10.089000000007218,
+          "p95": 22.9340830000001,
+          "sum": 525.6710030000249
+        },
+        "stepsHash": "59c11f7549bb3df4fabf805c24cefb214fc07a54d1a54a4c6aa88d9d08df1d15",
+        "workMs": 2765.2609620001167
+      },
+      "candidate": {
+        "arm": "candidate",
+        "final": {
+          "render": 81.15766699999222,
+          "setPreview": 39.05687500000931
+        },
+        "finalValue": "e07161b4394d65e6f23e7fedc68d090e9e5cb056b8cbb9cd0dc64736a9b843d4",
+        "previews": 49,
+        "renderMs": {
+          "p50": 2.465374999999767,
+          "p95": 4.247750000009546,
+          "sum": 132.65870800006087
+        },
+        "reused": 6946,
+        "reusedPossible": 7264,
+        "setPreviewMs": {
+          "p50": 1.3127499999827705,
+          "p95": 1.6820409999927506,
+          "sum": 65.18938099977095
+        },
+        "stepsHash": "59c11f7549bb3df4fabf805c24cefb214fc07a54d1a54a4c6aa88d9d08df1d15",
+        "workMs": 318.06263099983335
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 1,
+      "size": 10000,
+      "sourceHash": "573588a01d1f8ce00cf951acf2d352ca95194335f98fe725307762bdf62e14d2",
+      "candidate": {
+        "arm": "candidate",
+        "final": {
+          "render": 82.38483399999677,
+          "setPreview": 19.199958000011975
+        },
+        "finalValue": "e07161b4394d65e6f23e7fedc68d090e9e5cb056b8cbb9cd0dc64736a9b843d4",
+        "previews": 49,
+        "renderMs": {
+          "p50": 2.460625000006985,
+          "p95": 4.838749999995343,
+          "sum": 154.22529100006795
+        },
+        "reused": 6946,
+        "reusedPossible": 7264,
+        "setPreviewMs": {
+          "p50": 1.2934999999997672,
+          "p95": 1.6465000000025611,
+          "sum": 64.76712399994722
+        },
+        "stepsHash": "59c11f7549bb3df4fabf805c24cefb214fc07a54d1a54a4c6aa88d9d08df1d15",
+        "workMs": 320.5772070000239
+      },
+      "baseline": {
+        "arm": "baseline",
+        "final": {
+          "render": 78.8853329999838,
+          "setPreview": 44.12712499999907
+        },
+        "finalValue": "e07161b4394d65e6f23e7fedc68d090e9e5cb056b8cbb9cd0dc64736a9b843d4",
+        "previews": 49,
+        "renderMs": {
+          "p50": 41.40783300000476,
+          "p95": 92.52141600000323,
+          "sum": 2177.6456210000615
+        },
+        "reused": 0,
+        "reusedPossible": 7264,
+        "setPreviewMs": {
+          "p50": 10.52995799999917,
+          "p95": 26.72704200001317,
+          "sum": 552.3965409999946
+        },
+        "stepsHash": "59c11f7549bb3df4fabf805c24cefb214fc07a54d1a54a4c6aa88d9d08df1d15",
+        "workMs": 2853.054620000039
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 2,
+      "size": 10000,
+      "sourceHash": "573588a01d1f8ce00cf951acf2d352ca95194335f98fe725307762bdf62e14d2",
+      "baseline": {
+        "arm": "baseline",
+        "final": {
+          "render": 79.10637499997392,
+          "setPreview": 19.8314160000009
+        },
+        "finalValue": "e07161b4394d65e6f23e7fedc68d090e9e5cb056b8cbb9cd0dc64736a9b843d4",
+        "previews": 49,
+        "renderMs": {
+          "p50": 44.77291699999478,
+          "p95": 86.9859169999836,
+          "sum": 2216.5303740000236
+        },
+        "reused": 0,
+        "reusedPossible": 7264,
+        "setPreviewMs": {
+          "p50": 9.542249999998603,
+          "p95": 36.739042000001064,
+          "sum": 564.4539150000492
+        },
+        "stepsHash": "59c11f7549bb3df4fabf805c24cefb214fc07a54d1a54a4c6aa88d9d08df1d15",
+        "workMs": 2879.9220800000476
+      },
+      "candidate": {
+        "arm": "candidate",
+        "final": {
+          "render": 109.60612499999115,
+          "setPreview": 18.664749999996275
+        },
+        "finalValue": "e07161b4394d65e6f23e7fedc68d090e9e5cb056b8cbb9cd0dc64736a9b843d4",
+        "previews": 49,
+        "renderMs": {
+          "p50": 2.47141699999338,
+          "p95": 4.424082999990787,
+          "sum": 133.3417489999847
+        },
+        "reused": 6946,
+        "reusedPossible": 7264,
+        "setPreviewMs": {
+          "p50": 1.3234170000068843,
+          "p95": 1.72575000001234,
+          "sum": 66.2891219999583
+        },
+        "stepsHash": "59c11f7549bb3df4fabf805c24cefb214fc07a54d1a54a4c6aa88d9d08df1d15",
+        "workMs": 327.9017459999304
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 0,
+      "size": 50000,
+      "sourceHash": "e61e9f79a72ed47f8ec107a83fb2db5515e1a0750851a4c7fd1691bd56527eb4",
+      "baseline": {
+        "arm": "baseline",
+        "final": {
+          "render": 488.9593750000349,
+          "setPreview": 171.77333299996099
+        },
+        "finalValue": "78464473b7e71c490f78ef18a6fdd88fd29132affef7f9b3e7aafe87e48edad2",
+        "previews": 245,
+        "renderMs": {
+          "p50": 218.1298329999845,
+          "p95": 479.93358399998397,
+          "sum": 60341.75403799969
+        },
+        "reused": 0,
+        "reusedPossible": 182116,
+        "setPreviewMs": {
+          "p50": 51.82324999998673,
+          "p95": 129.47329100000206,
+          "sum": 14282.123340000166
+        },
+        "stepsHash": "1b250cc19f82739fc6323e0053310eaaa02b4595848436ede6aaa02b39a6d938",
+        "workMs": 75284.61008599986
+      },
+      "candidate": {
+        "arm": "candidate",
+        "final": {
+          "render": 474.88287500001024,
+          "setPreview": 198.95033399999375
+        },
+        "finalValue": "78464473b7e71c490f78ef18a6fdd88fd29132affef7f9b3e7aafe87e48edad2",
+        "previews": 245,
+        "renderMs": {
+          "p50": 3.245374999998603,
+          "p95": 12.266082999994978,
+          "sum": 1108.7331229998963
+        },
+        "reused": 180517,
+        "reusedPossible": 182116,
+        "setPreviewMs": {
+          "p50": 2.2244590000482276,
+          "p95": 3.553875000041444,
+          "sum": 616.5359620003728
+        },
+        "stepsHash": "1b250cc19f82739fc6323e0053310eaaa02b4595848436ede6aaa02b39a6d938",
+        "workMs": 2399.102294000273
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 1,
+      "size": 50000,
+      "sourceHash": "e61e9f79a72ed47f8ec107a83fb2db5515e1a0750851a4c7fd1691bd56527eb4",
+      "candidate": {
+        "arm": "candidate",
+        "final": {
+          "render": 500.1394169999985,
+          "setPreview": 119.20129199995426
+        },
+        "finalValue": "78464473b7e71c490f78ef18a6fdd88fd29132affef7f9b3e7aafe87e48edad2",
+        "previews": 245,
+        "renderMs": {
+          "p50": 3.716874999983702,
+          "p95": 14.327209000010043,
+          "sum": 1216.7212069998495
+        },
+        "reused": 180517,
+        "reusedPossible": 182116,
+        "setPreviewMs": {
+          "p50": 2.7548330000136048,
+          "p95": 4.3085830000345595,
+          "sum": 692.4005780001753
+        },
+        "stepsHash": "1b250cc19f82739fc6323e0053310eaaa02b4595848436ede6aaa02b39a6d938",
+        "workMs": 2528.4624939999776
+      },
+      "baseline": {
+        "arm": "baseline",
+        "final": {
+          "render": 501.8570409999811,
+          "setPreview": 177.86912500002654
+        },
+        "finalValue": "78464473b7e71c490f78ef18a6fdd88fd29132affef7f9b3e7aafe87e48edad2",
+        "previews": 245,
+        "renderMs": {
+          "p50": 221.2817080000532,
+          "p95": 459.81379200000083,
+          "sum": 56613.49908400007
+        },
+        "reused": 0,
+        "reusedPossible": 182116,
+        "setPreviewMs": {
+          "p50": 52.945207999960985,
+          "p95": 110.47616600000765,
+          "sum": 13549.08491599973
+        },
+        "stepsHash": "1b250cc19f82739fc6323e0053310eaaa02b4595848436ede6aaa02b39a6d938",
+        "workMs": 70842.3101659998
+      }
+    }
+  ],
+  "sampling": {
+    "arrivalMs": 10,
+    "cadenceMs": 32,
+    "chunkCharacters": 64,
+    "note": "Headless, shared host. One unrecorded warmup per arm, then alternating pairs: three at 10 KB, two at 50 KB. setPreview covers the parse and the store publication; render is the preview editor publication."
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-09-find-view-ownership",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-09-find-view-ownership.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-09",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Find opens and focuses the requested editor view",
+  "targets": [
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "find-demo",
+      "files": [
+        "apps/www/src/registry/examples/find-demo.tsx",
+        "apps/www/src/registry/examples/values/find-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-09-find-view-ownership",
+      "kind": "fix",
+      "summary": "Find opens independently in each editor view. Custom opening controls use `useFind` inside Editable slots, while `BaseFindPlugin` supplies shared queries and results. The demo includes a second view of the same document.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["find", "find-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-09",
+          "entry": "2026-09-09-find-view-ownership",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

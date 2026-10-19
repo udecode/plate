@@ -1,0 +1,1753 @@
+import type { Registry } from 'shadcn/schema';
+
+export const examples: Registry['items'] = [
+  {
+    description: 'Upload files through a browser-local or R2-backed gateway.',
+    files: [{ path: 'examples/upload-demo.tsx', type: 'registry:example' }],
+    meta: { docs: [{ route: '/docs/upload' }] },
+    name: 'upload-demo',
+    title: 'Upload Files',
+    type: 'registry:example',
+  },
+  {
+    name: 'suggestion-format-demo',
+    title: 'Formatting and Block Suggestions',
+    description:
+      'Review proposed formatting and inserted paragraphs with local history.',
+    type: 'registry:example',
+    files: [
+      { path: 'examples/suggestion-format-demo.tsx', type: 'registry:example' },
+    ],
+    meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
+  },
+  {
+    name: 'suggestion-view-demo',
+    title: 'Suggestion Projections',
+    description:
+      'Compare accepted, proposed, and markup content in a read-only document.',
+    type: 'registry:example',
+    files: [
+      { path: 'examples/suggestion-view-demo.tsx', type: 'registry:example' },
+      {
+        path: 'examples/values/suggestion-document.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
+  },
+  {
+    name: 'suggestion-persistence-demo',
+    title: 'Save and Reload Suggestions',
+    description:
+      'Save proposals and discussion threads together in an in-memory snapshot.',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'examples/suggestion-persistence-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/suggestion-document.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
+  },
+  {
+    name: 'suggestion-demo',
+    title: 'Suggestions',
+    description:
+      'Propose text edits, review insertions and deletions, and undo decisions.',
+    type: 'registry:example',
+    files: [{ path: 'examples/suggestion-demo.tsx', type: 'registry:example' }],
+    meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
+  },
+  {
+    name: 'comment-demo',
+    title: 'Comments',
+    description:
+      'Create comments, reply in threads, and resolve conversations.',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'examples/comment-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/comment-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/comment',
+          title: 'Comments',
+        },
+      ],
+    },
+    registryDependencies: ['@plate/suggestion'],
+  },
+  {
+    name: 'comment-overlap-demo',
+    title: 'Overlapping Comments',
+    description:
+      'Edit overlapping comment ranges and follow them through undo and redo.',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'examples/comment-overlap-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/comment-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/comment',
+          title: 'Comments',
+        },
+      ],
+    },
+    registryDependencies: ['@plate/suggestion'],
+  },
+  {
+    name: 'comment-persistence-demo',
+    title: 'Save and Reload Comments',
+    description:
+      'Save a local document snapshot with comments and retry a simulated failed reply.',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'examples/comment-persistence-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/comment-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/comment',
+          title: 'Comments',
+        },
+      ],
+    },
+    registryDependencies: ['@plate/suggestion'],
+  },
+  {
+    name: 'comment-review-demo',
+    title: 'Read-only and Static Comments',
+    description:
+      'Read comments on a read-only document and render static highlights.',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'examples/comment-review-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/comment-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/comment',
+          title: 'Comments',
+        },
+      ],
+    },
+    registryDependencies: ['@plate/suggestion'],
+  },
+  {
+    dependencies: ['@platejs/test'],
+    description: 'Renders AI ghost text suggestions at the cursor position.',
+    files: [
+      { path: 'examples/copilot-demo.tsx', type: 'registry:example' },
+      {
+        path: 'examples/values/copilot-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/copilot',
+          title: 'Copilot',
+        },
+      ],
+    },
+    name: 'copilot-demo',
+    registryDependencies: ['@plate/ai', '@plate/dnd'],
+    type: 'registry:example',
+  },
+  {
+    dependencies: ['@hookform/resolvers', 'react-hook-form', 'zod'],
+    description: 'A form with a select editor component for managing labels.',
+    files: [
+      {
+        path: 'examples/select-editor-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/multi-select',
+        },
+      ],
+    },
+    name: 'select-editor-demo',
+    title: 'Select Editor Form',
+    type: 'registry:example',
+  },
+  {
+    files: [
+      {
+        path: 'examples/controlled-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'controlled-demo',
+    registryDependencies: ['@plate/editor-plugins'],
+    type: 'registry:example',
+  },
+  {
+    dependencies: ['@faker-js/faker', 'platejs', 'slate', 'slate-react'],
+    files: [
+      {
+        path: 'examples/huge-document-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/huge-document-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'huge-document-demo',
+    type: 'registry:example',
+  },
+  {
+    dependencies: ['@platejs/test'],
+    files: [
+      {
+        path: 'examples/hundreds-editors-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/multi-editors-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'hundreds-editors-demo',
+    registryDependencies: ['@plate/editor-plugins'],
+    type: 'registry:example',
+  },
+  {
+    dependencies: ['@platejs/test'],
+    files: [
+      {
+        path: 'examples/multiple-editors-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/basic-blocks-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/basic-marks-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/media-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'multiple-editors-demo',
+    registryDependencies: ['@plate/editor-plugins'],
+    type: 'registry:example',
+  },
+  {
+    dependencies: ['platejs/authored', 'platejs'],
+    files: [
+      {
+        path: 'examples/version-history-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'version-history-demo',
+    type: 'registry:example',
+  },
+  {
+    dependencies: ['platejs', '@platejs/test', 'prismjs'],
+    files: [
+      {
+        path: 'examples/preview-markdown-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/preview-md-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'preview-markdown-demo',
+    registryDependencies: ['@plate/editor-plugins'],
+    type: 'registry:example',
+  },
+  {
+    dependencies: ['remark-emoji', 'platejs', 'remark-gfm', 'remark-math'],
+    files: [
+      {
+        path: 'examples/markdown-to-editor-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'markdown-to-editor-demo',
+    registryDependencies: ['@plate/ai', '@plate/dnd'],
+    type: 'registry:example',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'examples/markdown-streaming-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'markdown-streaming-demo',
+    registryDependencies: ['@plate/editor-static'],
+    type: 'registry:example',
+  },
+  {
+    dependencies: ['platejs'],
+    description:
+      'Two-peer Yjs collaboration with cursors, reconnect, schema guards, and history.',
+    files: [
+      {
+        path: 'examples/collaboration-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'collaboration-demo',
+    registryDependencies: ['@plate/editor-plugins'],
+    type: 'registry:example',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'examples/installation-next-04-value-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'installation-next-demo',
+    registryDependencies: ['@plate/editor-plugins'],
+    type: 'registry:example',
+  },
+  {
+    dependencies: ['platejs', '@platejs/test'],
+    files: [
+      { path: 'examples/tabbable-demo.tsx', type: 'registry:example' },
+      {
+        path: 'examples/values/tabbable-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'tabbable-demo',
+    registryDependencies: ['@plate/ai', '@plate/dnd'],
+    type: 'registry:example',
+  },
+];
+
+export const demoExamples: Registry['items'] = (
+  [
+    {
+      dependencies: ['platejs', '@platejs/test'],
+      files: [
+        {
+          path: 'examples/table-nomerge-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/table-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'table-nomerge-demo',
+      registryDependencies: ['@plate/editor', '@plate/ai', '@plate/dnd'],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'A drawing component powered by Excalidraw.',
+      files: [
+        {
+          path: 'examples/excalidraw-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/excalidraw-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/excalidraw',
+            title: 'Excalidraw',
+          },
+        ],
+      },
+      name: 'excalidraw-demo',
+      registryDependencies: [
+        '@plate/excalidraw',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      title: 'Excalidraw',
+      type: 'registry:example',
+    },
+    {
+      description: 'Restrict the editor to a single block.',
+      files: [
+        {
+          path: 'examples/single-block-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'single-block-demo',
+      registryDependencies: [
+        'checkbox',
+        'label',
+        '@plate/basic-blocks',
+        '@plate/editor',
+      ],
+      title: 'Single Block',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      files: [
+        {
+          path: 'examples/editable-voids-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/editable-voids-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'editable-voids-demo',
+      registryDependencies: [
+        '@plate/editor',
+        'input',
+        'label',
+        'radio-group',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['platejs', '@platejs/test'],
+      description:
+        'Find text with keyboard navigation and transient highlights.',
+      files: [
+        {
+          path: 'examples/find-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/find-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'find-demo',
+      registryDependencies: [
+        'button',
+        '@plate/editor',
+        '@plate/editor-plugins',
+        '@plate/find',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['platejs', '@platejs/test'],
+      description:
+        'Lint rules with a findings panel, caret fixes, F8 navigation and a delayed server rule.',
+      files: [
+        {
+          path: 'examples/lint-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/lint-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: { iframeHeight: 900 },
+      name: 'lint-demo',
+      registryDependencies: [
+        'button',
+        '@plate/editor',
+        '@plate/editor-plugins',
+        '@plate/lint',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['platejs'],
+      description:
+        'Shows the live editor selection while an owned control has focus.',
+      files: [
+        {
+          path: 'examples/inactive-selection-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'inactive-selection-demo',
+      registryDependencies: ['@plate/basic-nodes', '@plate/editor', 'button'],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description:
+        'AI menu with commands, streaming responses in a preview or directly into the editor.',
+      files: [
+        { path: 'examples/ai-demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/ai-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/ai',
+            title: 'AI',
+          },
+        ],
+      },
+      name: 'ai-demo',
+      registryDependencies: [
+        '@plate/ai',
+        '@plate/discussion',
+        '@plate/editor',
+        '@plate/dnd',
+      ],
+      title: 'AI',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Text alignment controls for blocks.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/align-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'align-demo',
+      registryDependencies: [
+        '@plate/align',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Apply formatting automatically using shortcodes.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/autoformat-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'autoformat-demo',
+      registryDependencies: [
+        '@plate/autoformat',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      title: 'Autoformat',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description:
+        'Basic block elements like headings, quotes, and code blocks.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/basic-blocks-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/basic-blocks',
+            title: 'Basic Elements',
+          },
+        ],
+      },
+      name: 'basic-blocks-demo',
+      registryDependencies: [
+        '@plate/basic-blocks',
+        '@plate/blockquote',
+        '@plate/heading',
+        '@plate/paragraph',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description:
+        'Basic text formatting marks like bold, italic, and underline.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/basic-marks-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/basic-marks',
+            title: 'Basic Marks',
+          },
+        ],
+      },
+      name: 'basic-marks-demo',
+      registryDependencies: [
+        '@plate/code',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Basic block elements and text marks.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/basic-nodes-value.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/basic-blocks-value.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/basic-marks-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/basic-blocks',
+            title: 'Basic Elements',
+          },
+        ],
+        keywords: ['element', 'leaf'],
+      },
+      name: 'basic-nodes-demo',
+      registryDependencies: [
+        '@plate/basic-nodes',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Block-level context menu with formatting options.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/block-menu-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/block-menu',
+            title: 'Block Menu',
+          },
+        ],
+      },
+      name: 'block-menu-demo',
+      registryDependencies: [
+        '@plate/block-menu',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Visual node selection backed by editor selection.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/node-selection-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'node-selection-demo',
+      registryDependencies: ['@plate/editor', '@plate/ai', '@plate/dnd'],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Column layout.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/column-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/column',
+            title: 'Column',
+          },
+        ],
+      },
+      name: 'column-demo',
+      registryDependencies: [
+        '@plate/column',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Display code with syntax highlighting.',
+      files: [
+        { path: 'examples/code-block-demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/code-block-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/code-block',
+            title: 'Code Block',
+          },
+        ],
+      },
+      name: 'code-block-demo',
+      registryDependencies: [
+        '@plate/code-block',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Render a 10,000-line code block with native Plate DOM.',
+      files: [
+        {
+          path: 'examples/code-block-huge-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/huge-code-block-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/code-block',
+            title: 'Code Block',
+          },
+        ],
+      },
+      name: 'code-block-huge-demo',
+      registryDependencies: [
+        '@plate/code-block',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Render a 10,000-line code block with CodeMirror.',
+      files: [
+        {
+          path: 'examples/code-block-codemirror-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/huge-code-block-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/code-block',
+            title: 'Code Block',
+          },
+        ],
+      },
+      name: 'code-block-codemirror-demo',
+      registryDependencies: [
+        '@plate/code-block-codemirror',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description:
+        'Draw Mermaid, Graphviz and Flowchart code blocks below their source.',
+      files: [
+        {
+          path: 'examples/code-block-diagram-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/code-block-diagram-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/code-block#diagrams',
+            title: 'Code Block',
+          },
+        ],
+      },
+      name: 'code-block-diagram-demo',
+      registryDependencies: [
+        '@plate/code-block-diagram',
+        '@plate/code-block-diagram-mermaid',
+        '@plate/code-block-diagram-graphviz',
+        '@plate/code-block-diagram-flowchart',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      title: 'Code Block Diagram',
+      type: 'registry:example',
+    },
+    {
+      description:
+        'Edit shared code through native Plate and CodeMirror views.',
+      files: [
+        {
+          path: 'examples/code-block-views-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'code-block-views-demo',
+      registryDependencies: ['@plate/code-block-codemirror', '@plate/editor'],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Display callouts with different variants and icons.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/callout-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/callout',
+            title: 'Callout',
+          },
+        ],
+      },
+      name: 'callout-demo',
+      registryDependencies: [
+        '@plate/callout',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      title: 'Callout',
+      type: 'registry:example',
+    },
+    {
+      description:
+        "Review each block's comments and suggestions in Floating Discussion.",
+      files: [
+        { path: 'examples/discussion-demo.tsx', type: 'registry:example' },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/comment',
+            title: 'Comments',
+          },
+          {
+            route: '/docs/discussion',
+            title: 'Discussion',
+          },
+          {
+            route: '/docs/suggestion',
+            title: 'Suggestion',
+          },
+        ],
+      },
+      name: 'discussion-demo',
+      registryDependencies: [
+        '@plate/comment',
+        '@plate/discussion',
+        '@plate/editor',
+        '@plate/editor-plugins',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      title: 'Discussion',
+      type: 'registry:example',
+    },
+    {
+      description:
+        'Plate content on measured pages, with plugin elements, marks, comments and drag handles.',
+      files: [
+        { path: 'examples/pagination-demo.tsx', type: 'registry:example' },
+      ],
+      meta: {
+        docs: [{ route: '/docs/pagination', title: 'Pagination' }],
+      },
+      name: 'pagination-demo',
+      registryDependencies: [
+        '@plate/basic-blocks',
+        '@plate/basic-marks',
+        '@plate/comment',
+        '@plate/discussion',
+        '@plate/dnd',
+        '@plate/link',
+        '@plate/table',
+      ],
+      title: 'Pagination',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Inline date elements with calendar selection interface.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/date-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/date',
+            title: 'Date',
+          },
+        ],
+      },
+      name: 'date-demo',
+      registryDependencies: [
+        '@plate/date',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description:
+        'GFM footnote references and definitions as dedicated editor nodes.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/footnote-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/footnote',
+            title: 'Footnote',
+          },
+        ],
+      },
+      name: 'footnote-demo',
+      registryDependencies: [
+        '@plate/editor',
+        '@plate/highlight-style',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      title: 'Footnote',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description:
+        'Implements draggable functionality for editor blocks, including drag handles and drop indicators.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/dnd-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/dnd',
+            title: 'Drag & Drop',
+          },
+        ],
+      },
+      name: 'dnd-demo',
+      registryDependencies: ['@plate/dnd', '@plate/editor', '@plate/ai'],
+      title: 'Drag & Drop',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description:
+        'Drags blocks between two views of one document, where they move, and into another editor, where they copy.',
+      files: [
+        {
+          path: 'examples/dnd-multi-editor-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/dnd-multi-editor-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/dnd',
+            title: 'Drag & Drop',
+          },
+        ],
+      },
+      name: 'dnd-multi-editor-demo',
+      registryDependencies: [
+        '@plate/basic-nodes',
+        '@plate/dnd',
+        '@plate/editor',
+      ],
+      title: 'Drag & Drop Between Editors',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Drags table rows, columns and the blocks inside columns.',
+      files: [
+        {
+          path: 'examples/dnd-table-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/dnd-table-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/dnd',
+            title: 'Drag & Drop',
+          },
+        ],
+      },
+      name: 'dnd-table-demo',
+      registryDependencies: [
+        '@plate/basic-nodes',
+        '@plate/column',
+        '@plate/dnd',
+        '@plate/editor',
+        '@plate/table',
+      ],
+      title: 'Drag & Drop in Tables and Columns',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Emoji insertion via toolbar or colon-triggered combobox.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/emoji-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/emoji',
+            title: 'Emoji',
+          },
+        ],
+      },
+      name: 'emoji-demo',
+      registryDependencies: [
+        '@plate/emoji',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'LaTeX equations with inline and block formats.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/equation-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/equation',
+            title: 'Equation',
+          },
+        ],
+      },
+      name: 'equation-demo',
+      registryDependencies: [
+        '@plate/math',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Exit a large block using a shortcut.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/exit-break-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'exit-break-demo',
+      registryDependencies: [
+        '@plate/exit-break',
+        '@plate/editor',
+        '@plate/table-demo',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      title: 'Exit Break',
+      type: 'registry:example',
+    },
+    // {
+    //
+    //     description: 'LaTeX equations with inline and block formats.',
+    //     docs: [
+    //       {
+    //         route: '/docs/equation',
+    //         title: 'Equation',
+    //       },
+    //     ],
+    //   },
+    //   files: [
+    // {type: 'registry:example',path:  //     'examples/demo.tsx',}
+    // {type: 'registry:example',path:  //     'components/editor/math.tsx',}
+    // {type: 'registry:example',path:  //     'examples/values/equation-value.tsx',}
+    //   ],
+    //   name: 'equation-demo',
+    //   registryDependencies: [],
+    //   type: 'registry:example',
+    // },
+    {
+      dependencies: ['@platejs/test'],
+      description:
+        'Floating toolbar with text formatting and AI assistance options.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/floating-toolbar-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/ai',
+            title: 'AI',
+          },
+        ],
+      },
+      name: 'floating-toolbar-demo',
+      registryDependencies: ['@plate/editor', '@plate/ai', '@plate/dnd'],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Color picker for text and background colors.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/font-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'font-demo',
+      registryDependencies: ['@plate/editor', '@plate/ai', '@plate/dnd'],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      //
+      //   description: 'Customize text indentation.',
+      //   docs: [
+      //     {
+      //       route: '/docs/indent',
+      //       title: 'Indent',
+      //     },
+      //   ],
+      // },
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/indent-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'indent-demo',
+      registryDependencies: [
+        '@plate/list',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Turn any block into a list item.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/list-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/indent',
+            title: 'Indent',
+          },
+          {
+            route: '/docs/list',
+            title: 'List',
+          },
+        ],
+      },
+      name: 'list-demo',
+      registryDependencies: [
+        '@plate/list',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Line height adjustment controls.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/line-height-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'line-height-demo',
+      registryDependencies: [
+        '@plate/line-height',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Hyperlinks with toolbar insertion and URL pasting support.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/link-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/link',
+            title: 'Link',
+          },
+        ],
+      },
+      name: 'link-demo',
+      registryDependencies: [
+        '@plate/link',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Media embedding and management.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/media-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'media-demo',
+      registryDependencies: [
+        '@plate/media',
+        '@plate/upload',
+        '@plate/media-audio',
+        '@plate/media-embed',
+        '@plate/media-file',
+        '@plate/media-image',
+        '@plate/media-video',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Mention functionality for referencing users or entities.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/mention-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/mention',
+            title: 'Mention',
+          },
+        ],
+      },
+      name: 'mention-demo',
+      registryDependencies: [
+        '@plate/mention',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      files: [{ path: 'examples/demo.tsx', type: 'registry:example' }],
+      name: 'block-placeholder-demo',
+      registryDependencies: [
+        '@plate/block-placeholder',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test', 'lucide-react'],
+      description: 'Copy paste from DOCX to Plate.',
+      files: [
+        { path: 'examples/docx-demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/deserialize-docx-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'docx-demo',
+      registryDependencies: [
+        '@plate/docx',
+        '@plate/docx-source',
+        '@plate/editor',
+        '@plate/editor-plugins',
+        '@plate/export-toolbar-button',
+        '@plate/fixed-toolbar',
+        '@plate/import-toolbar-button',
+        '@plate/toolbar',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      title: 'Serializing Docx',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Copy paste from HTML to Plate.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/deserialize-html-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'html-demo',
+      registryDependencies: ['@plate/editor', '@plate/ai', '@plate/dnd'],
+      title: 'Serializing HTML',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Copy paste from Markdown to Plate.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/deserialize-md-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'markdown-demo',
+      registryDependencies: [
+        '@plate/markdown',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      title: 'Serializing Markdown',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description:
+        'Slash command menu for quick insertion of various content types.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/slash-command-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/slash-command',
+            title: 'Slash Command',
+          },
+        ],
+      },
+      name: 'slash-command-demo',
+      registryDependencies: [
+        '@plate/slash',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description:
+        'Use plugin rules to customize the common editing behaviors.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/plugin-rules-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'plugin-rules-demo',
+      registryDependencies: ['@plate/editor', '@plate/ai', '@plate/dnd'],
+      title: 'Plugin Rules',
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description:
+        'Customizable tables with resizable columns and row merging options.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/table-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/table',
+            title: 'Table',
+          },
+        ],
+      },
+      name: 'table-demo',
+      registryDependencies: [
+        '@plate/table',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Dynamic TOC with in-document element for easy navigation.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/toc-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/toc',
+            title: 'TOC',
+          },
+        ],
+      },
+      name: 'toc-demo',
+      registryDependencies: [
+        '@plate/toc',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      title: 'Table of Contents',
+      type: 'registry:example',
+    },
+    {
+      description: 'Collapsible content blocks.',
+      files: [{ path: 'examples/demo.tsx', type: 'registry:example' }],
+      name: 'details-demo',
+      registryDependencies: [
+        '@plate/details',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+  ] as Registry['items']
+).map((item) => ({
+  ...item,
+  meta: {
+    ...item.meta,
+    registry: false,
+  },
+}));
+
+export const internalExamples: Registry['items'] = (
+  [
+    {
+      files: [
+        {
+          path: 'examples/document-migration-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'document-migration-demo',
+      registryDependencies: [
+        '@plate/editor',
+        '@plate/editor-plugins',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        { path: 'examples/playground-demo.tsx', type: 'registry:example' },
+      ],
+      name: 'playground-demo',
+      registryDependencies: [
+        '@plate/code-block-diagram',
+        '@plate/code-block-diagram-mermaid',
+        '@plate/code-block-diagram-graphviz',
+        '@plate/code-block-diagram-flowchart',
+        '@plate/comment',
+        '@plate/discussion',
+        '@plate/editor',
+        '@plate/editor-plugins',
+        '@plate/excalidraw',
+        '@plate/upload-browser',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      files: [{ path: 'examples/demo.tsx', type: 'registry:example' }],
+      name: 'demo',
+      registryDependencies: ['@plate/editor', '@plate/ai', '@plate/dnd'],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        { path: 'examples/pro-iframe-demo.tsx', type: 'registry:example' },
+      ],
+      name: 'pro-iframe-demo',
+      type: 'registry:example',
+    },
+    {
+      files: [
+        { path: 'examples/potion-iframe-demo.tsx', type: 'registry:example' },
+      ],
+      name: 'potion-iframe-demo',
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/installation-next-01-editor-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'installation-next-01-editor-demo',
+      registryDependencies: ['@plate/editor'],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['platejs'],
+      files: [
+        {
+          path: 'examples/installation-next-02-marks-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'installation-next-02-marks-demo',
+      registryDependencies: [
+        '@plate/editor',
+        '@plate/fixed-toolbar',
+        '@plate/mark-toolbar-button',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['platejs'],
+      files: [
+        {
+          path: 'examples/installation-next-03-elements-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'installation-next-03-elements-demo',
+      registryDependencies: [
+        '@plate/editor',
+        '@plate/fixed-toolbar',
+        '@plate/mark-toolbar-button',
+        '@plate/heading',
+        '@plate/blockquote',
+      ],
+      type: 'registry:example',
+    },
+    // Editor (not used?)
+    {
+      files: [
+        {
+          path: 'examples/editor-default.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'editor-default',
+      registryDependencies: [
+        '@plate/editor',
+        '@plate/editor-plugins',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/editor-disabled.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'editor-disabled',
+      registryDependencies: ['@plate/editor'],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/editor-full-width.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'editor-full-width',
+      registryDependencies: ['@plate/editor', '@plate/ai', '@plate/dnd'],
+      type: 'registry:example',
+    },
+  ] as Registry['items']
+).map((item) => ({
+  ...item,
+  meta: {
+    ...item.meta,
+    registry: false,
+  },
+}));
+
+export const registryExamples: Registry['items'] = (
+  [...examples, ...demoExamples, ...internalExamples] as Registry['items']
+).map((example) => ({
+  ...example,
+}));

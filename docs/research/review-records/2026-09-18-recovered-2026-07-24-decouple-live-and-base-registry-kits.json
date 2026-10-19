@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-18-recovered-2026-07-24-decouple-live-and-base-registry-kits",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "ui"
+  ],
+  "reviewBasis": [],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-07-24-decouple-live-and-base-registry-kits.md",
+    "sha256": "bda7f5297a6eb925cbc91e5846459b563fbe36b38c860eb0fd5679bfac782f2a"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical implementation completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-07-24-decouple-live-and-base-registry-kits.md",
+        "sha256": "bda7f5297a6eb925cbc91e5846459b563fbe36b38c860eb0fd5679bfac782f2a",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-07-24-decouple-live-and-base-registry-kits.md"
+  ]
+}

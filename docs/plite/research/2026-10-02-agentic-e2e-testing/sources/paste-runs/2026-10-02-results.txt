@@ -1,0 +1,31 @@
+# Paste specs on the final oracle (harness-input.ts paste-tagged commit that changes the document), 2026-10-02
+# Files: tests/plite-browser/donor/examples/editable-voids.test.ts tests/plite-browser/donor/examples/huge-document.test.ts tests/plite-browser/donor/examples/inlines.test.ts tests/plite-browser/donor/examples/markdown-shortcuts.test.ts tests/plite-browser/donor/examples/multi-root-document.test.ts tests/plite-browser/donor/examples/paste-html.test.ts tests/plite-browser/donor/examples/plaintext.test.ts tests/plite-browser/donor/examples/plate-schema-descriptors.test.ts tests/plite-browser/donor/examples/richtext.test.ts tests/plite-browser/donor/examples/tables.test.ts 
+# Excluded: projects rich Plate descriptors to standalone HTML | restores Apple converted spaces before an IME follow-up
+
+## apps/plite: node scripts/run-plite-browser.mjs project <project> <files> --grep-invert <excluded>
+chromium exit 0
+firefox exit 0
+mobile exit 0
+webkit exit 0
+chromium: 382 passed, 4 skipped, 39 bounded batches, 166.6s
+firefox: 341 passed, 45 skipped, 39 bounded batches, 224.5s
+mobile: 156 passed, 230 skipped, 39 bounded batches, 91.5s
+webkit: 353 passed, 33 skipped, 39 bounded batches, 181.2s
+
+## apps/plite mobile-webkit with its proxy-only matcher widened: playwright test -c <widened config> <files> --grep-invert <excluded>
+  9 failed
+  27 skipped
+  350 passed (1.1m)
+failures (the same nine as the 17:06 run): two paste tests skip only the 'webkit' project by name, so they also run on mobile WebKit, which their beforeinput trace and clipboard read do not support; seven are caret, navigation and copy tests that fail on iPhone 13 emulation:
+  1) [mobile-webkit] › tests/plite-browser/donor/examples/multi-root-document.test.ts:1009:7 › multi-root document example › moves the native caret into body text at the clicked coordinate after typing in header 
+  2) [mobile-webkit] › tests/plite-browser/donor/examples/multi-root-document.test.ts:1144:7 › multi-root document example › moves body caret to the clicked body coordinate after another root was focused 
+  3) [mobile-webkit] › tests/plite-browser/donor/examples/paste-html.test.ts:581:7 › paste html example › does not fallback insert after same-plain-text native HTML paste 
+  4) [mobile-webkit] › tests/plite-browser/donor/examples/paste-html.test.ts:650:7 › paste html example › pastes copied rendered Plite content as an internal fragment before HTML import 
+  5) [mobile-webkit] › tests/plite-browser/donor/examples/plaintext.test.ts:1050:7 › plaintext example › copies and cuts selected plain text with keyboard shortcuts 
+  6) [mobile-webkit] › tests/plite-browser/donor/examples/plaintext.test.ts:1087:7 › plaintext example › copies a visually wrapped long paragraph without hard-wrap newlines 
+  7) [mobile-webkit] › tests/plite-browser/donor/examples/richtext.test.ts:4574:7 › On richtext example › keeps ArrowDown then ArrowRight in the browser-selected paragraph 
+  8) [mobile-webkit] › tests/plite-browser/donor/examples/richtext.test.ts:4632:7 › On richtext example › keeps DOM caret synced at the first-line ArrowUp boundary 
+  9) [mobile-webkit] › tests/plite-browser/donor/examples/richtext.test.ts:4714:7 › On richtext example › keeps navigation and mutation chained through browser editing state 
+
+## apps/www: playwright test tests/browser/table-resize.spec.ts --project=chromium --project=firefox --project=webkit
+  15 passed (47.1s)

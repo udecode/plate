@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "repository": "facebook/lexical",
+  "provider": "GitHub GraphQL v4",
+  "rawCommand": "gh api graphql paginated repository.issues(first:100, orderBy:CREATED_AT ASC)",
+  "stateCoverage": "all",
+  "providerLimit": null,
+  "providerLimitReached": false,
+  "refreshedAt": "2026-07-29T13:25:57.084Z",
+  "rawPath": null,
+  "rawSha256": "431f2d1104a59400bcf06186d75ce5084b664548cc2ab0b38451e480ac7953e9",
+  "cursorDeltaSemantics": "Counts include only rows whose lastMetadataRefreshAt matches refreshedAt.",
+  "previousLedgerCount": 2782,
+  "providerIssueCount": 2786,
+  "hostVerification": {
+    "issueCount": 2786,
+    "openIssueCount": 313,
+    "closedIssueCount": 2473,
+    "provider": "same paginated GitHub GraphQL v4 response",
+    "verifiedAt": "2026-07-29T13:25:57.084Z",
+    "countCommand": "same paginated query",
+    "omissionCommand": null,
+    "omittedIssues": []
+  },
+  "resultingLedgerCount": 2786,
+  "addedUncheckedCount": 4,
+  "addedUncheckedIssues": [
+    8880,
+    8881,
+    8885,
+    8886
+  ],
+  "metadataChangedNeedsRereadCount": 0,
+  "metadataChangedNeedsReread": [],
+  "providerMissingLiveVerifiedCount": 0,
+  "providerMissingLiveVerified": []
+}

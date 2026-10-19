@@ -1,0 +1,86 @@
+---
+'plitejs': major
+---
+
+- Add immutable `TransactionSpec` and versioned `DocumentChange` APIs for atomic, serializable updates, with explicit primary and named-root changes and no public primary-root sentinel
+- Compile closed schemas from plugin `schema` declarations with shared `property.*` laws, structural content fitting, stable identity, and typed element, group, root, and property queries
+- Declare independently meaningful blocks with editable children using `object: true`; compiled objects are selectable, isolating, and non-empty, while child text selection remains open for transfer and generic split cannot clone the owner
+- Define literal string domains with `property.enum(...)`
+- Avoid redundant editable renders when a controlled read-only prop already determines the effective input policy
+- Bind structural slice fitting to each compiled schema revision through one private, immutable fitter artifact
+- Publish derived schema identities as `{ kind: 'derived', fingerprint }` and application-named lineage as `{ kind: 'named', id, version, fingerprint }`; fingerprints cover compiled semantics only
+- Accept persisted complete-document envelopes with exact schema identity at the root editor boundary and reject them from scoped editor views
+- Report schema failures through `EditorSchemaValidationError` with root, path, node, property, and contributor provenance
+- Add immutable `{ content, openStart, openEnd, roots? }` `ContentSlice` values with complete referenced root graphs, contextual `state.slice` fitting, closed `fragment.replace`, open `slice.replace`, and detached-parent `fitContent`
+- Carry element-owned named roots through content slices, enforce one owner for exclusive roots, preserve shared aliases and cycles, namespace cross-source collisions deterministically, and apply owner/root cleanup, cut, undo, and redo atomically
+- Reconfigure plugin slots and install dynamic plugins atomically, requiring an explicit document migration when the candidate schema rejects the current document
+- Activate candidate plugins against isolated state, publish the complete plugin set atomically, and restore every document, field, anchor, and registry fact when activation fails
+- Initialize final-document resources with activation-owned `beforePublish` callbacks; synchronous failures roll back before publication, while `afterPublish` observes committed state
+- Define semantic commands with `defineCommand` and register pure `false | TransactionSpec` handlers through plugin `commands: ({ handle, around }) => [...]` factories
+- Let host input runtimes probe pure command handlers without publishing, so pass-through policy preserves native input and material policy fails closed
+- Dispatch command-backed updates through immutable transaction specs, including plugin-aware `state.transaction(...)` builders and `tx.command`
+- Execute update callbacks, plugin writes and transaction-spec callbacks synchronously; reject thenable results before publishing a commit or returning a spec
+- Expose frozen snapshot identities through `snapshot.index.entries()`, `keyAt()`, and `pathOf()` with bounded lazy structural mapping
+- Project detached complete documents with the pure `projectAuthoredDocument` and `projectAuthoredRange` helpers. A projection returns the `accepted` or `proposed` document, its diagnostics and the number of pending changes it decided, and `projectAuthoredRange` maps a range of the stored document onto a projection.
+- Keep Editing writes direct when normalization touches adjacent pending structure; only writes to pending content become reviewable.
+- Give every live descendant, including text, an editor-scoped `NodeKey`. Read it with `editor.key(nodeOrLocation)`, resolve it with `editor.read.nodes.path(nodeKey)`, and pass it to generic `NodeTarget` reads and updates. Node keys are unique across one editor's roots and carry private runtime ownership, so a key from another editor fails closed even when public editor IDs and local allocation order match. Path lookup stays scoped to the current editor or view root. Pass `root` to `tx.nodes.replaceChildren` to replace children at a path in a named root. Node keys never enter values, slices, history, or collaboration payloads.
+- Keep schema-bound initialization and common structural transforms local to the changed document region, reducing large-document startup and edit latency.
+- Render transient inline paint through ordered `<Plite decorations>` sources that observe once, read by node, and return keyed render-safe attributes. Keep durable annotations and out-of-flow widgets as separate lifetimes.
+- Read resolved annotations by `NodeKey` with `getAnnotationsAt(nodeKey)`. Annotation change subscribers receive exact `ids`, affected `nodeKeys`, and an `editor`, `external`, `refresh`, or `annotation` reason so consumers can invalidate only changed content.
+- Create framework-owned annotation stores through `plitejs/annotations`. React components keep hook-owned lifecycle through `usePliteAnnotationStore`; `plitejs/react` does not expose the imperative constructor.
+- Preserve exact `property.*` descriptor inference in packed declarations and reject declaration artifacts whose generic `Readonly` arguments were erased.
+- Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands
+- Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling
+- Support text selection and one directional exact `NodeSelection` with canonical `paths`, `anchorPath`, `focusPath`, and an optional named root. Preserve node selection through mapping, history, collaboration, marks, and slices without plugin-defined selection kinds.
+- Validate unknown selection values against the built-in selection shapes and current document through `editor.read.selection.isValid(value)`
+- Track persistent Path, Point, and Range values with `editor.anchor`; use auto-released `tx.anchor` handles for locations needed only inside one update or transaction builder
+- Resolve one retained anchor in another view of the same model and root with `anchor.resolve(view)`. Annotation indexes follow their exact view and observe the editor only while subscribed; passive reads stay current without retaining subscriptions.
+- Default bare public editor, read, update, transaction, and view types to the core-only plugin tuple. Use the explicit internal `AnyEditor` boundary when runtime infrastructure intentionally erases installed capabilities.
+- Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
+- Build plugin read method trees once per published configuration, keep their methods live across document commits and transaction drafts, and reject document-derived read data properties
+- Infer update callback transactions exclusively from the editor's installed plugins, infer command dispatch from the command descriptor, and return `unknown` when a schema property is addressed by a raw string instead of a typed property handle
+- Select plugin transaction methods inside an active update through `tx.plugin(pluginOrName)`, using descriptors for exact installed identity or names for package-decoupled lookup without opening a nested update
+- Type node-property mutations as atomic `nodes.set(props, options)` patches and removals as `nodes.unset(key, options)`. Use exact schema-property handle keys as computed object keys for aliases. Prefix handles cannot address one property.
+- Keep forced correction targets distinct by draft path before runtime node keys are published, so initialization repairs every matching node inside the same atomic bootstrap spec without emitting a commit.
+- Add schema property copy policy and generated construction/canonical presence. Plugin-authored property keys are invariant; closed applications may retarget a property but cannot alias its storage key.
+- Name installed plugin namespace projections `EditorInstalledReadGroups` and `EditorInstalledUpdateGroups`
+- Keep state-backed read methods available inside active and speculative transactions without exposing them as one-shot editor updates
+- Add document replacement, block-relative insertion, live location targets, structural type selectors, function-only node predicates, and explicit selection predicates
+- Export the `documentReplacement` annotation so package-owned resources can revoke authority on equal-content whole-document replacement.
+- Read the nearest schema block with `nodes.block()` and every relevant block with `nodes.blocks()`. `nodes.block()` returns `undefined` when its target names no node. Mutate semantic blocks through `blocks.duplicate`, `blocks.insert`, `blocks.set`, and props-first `blocks.toggle`; keep generic structural lifting under `nodes.lift`.
+- Insert blocks after or before a block, or at a path, with `blocks.insert`. Its options take one placement, and `replaceEmpty` only with `after` or no placement. It returns the keys of the top-level blocks that landed, in order, or `undefined` with nothing changed when the blocks do not fit their landing parent, such as a parent at its child limit.
+- Reset targeted blocks to their immediate parent or document-root schema default with `blocks.reset({ at?, unset? })`, preserving children, selection, live node keys, and lifecycle-approved properties without regenerating them. `unset` removes named properties the default does not set. Reset checks every target first and returns `false` with nothing changed when a target has no default it can become: its parent or root declares no element default or declares text, the default lacks a required property nothing supplies, its type change leaves the block's content without one, or the default is not allowed at the target's position. Turning blocks off with `blocks.toggle` resets them the same way.
+- Apply a different property patch to each selected block with `blocks.set((node) => patch)`. Every patch is checked before any is written, and `blocks.set` returns `false` when one is refused or nothing changes.
+- Infer node read and mutation targets from `type` selectors or type-guard `match` predicates. Remove caller-selected node result generics and shallow object matchers. Keep `at` independent from the selected node type, and put insertion split-target selection under `split: { type, match }`.
+- Replace the complete serializable document solely through `tx.value.replace({ children, roots, meta, selection })`; remove omitted roots, reset omitted persisted meta, and clear omitted selection
+- Add explicit document repair and mutually exclusive mark toggles
+- Declare mutually exclusive property groups in schema so toggles, canonicalization, history, and collaboration share one invariant
+- Resolve plugin dependencies and conflicts by descriptor, install required dependencies transitively with reference-counted cleanup, and expose typed dependency APIs through `editor.plugin(descriptor).api`
+- Apply a root transaction policy to one descriptor-owned update through `editor.plugin(descriptor).update(policy).method()`
+- Let host layers project additional transaction-view capabilities through private Plite internals without expanding raw Plite's public transaction API
+- Keep root Plite dependency references shallow and non-generic as `{ name, enabled? }`. Plate plugin references carry the same sole `name` identity. Keep name-keyed capability/provider inference private, without recursively encoding exact dependency ancestry. Static portals prove name and capability equivalence; runtime portals prove exact installed descriptor identity.
+- Add descriptor-owned typed plugin contributions for package-specific contribution channels
+- Define package-owned contribution channels with `definePluginPoint(...)` and collect ordered values through `context.getContributions(...)`
+- Intercept core-owned pure reads through descriptor-based plugin `read` middleware, with transaction-draft state, single delegation, and complete generator cleanup
+- Group prefixless change callbacks under `on`; declare owner-local methods through `read` and `update`, core read wrappers through `readMiddleware`, candidate validation through `validate`, and descriptor collections as `stateFields`, `effectTypes`, and `facetProviders`
+- Infer one exact definition from every `definePlugin(name, definition)` author object, carry that sole public definition generic through `Plugin<D>`, omit undeclared fields from the inferred descriptor, and expose `DefinitionOf<typeof Plugin>` as the public definition extractor
+- Use `definePlugin(name, definition)` and `defineEditorSchema(name, definition)` as the only plugin/schema descriptor factories. Descriptors are nominal, immutable values; installing the same descriptor twice is idempotent, while divergent same-name descriptors reject.
+- Return the public `Editor` directly from `createEditor()`. Create root-scoped views with `createEditorView(editor, options)` and add live capabilities with `editor.install(plugin)`; layered editors retain their complete caller capabilities through root-scoped views, while raw Plite editors infer their installed plugin tuple. No public runtime wrapper or live `.extend()` API exists.
+- Expose `PluginTypeProvider` as the public value-sensitive capability bridge and keep higher-kinded encoding, normalized installed capabilities, and transitive dependency expansion private
+- Infer descriptor-owned element shapes with `ElementOf<typeof Plugin>`; remove the two-owner `SchemaElementOf` and `SchemaElementShapeOf` extractors
+- Keep immutable author inputs in the descriptor factory closure instead of an plugin `config` channel
+- Construct missing root and nested content only from authored `SchemaContent.default` declarations; remove the separate default-block option and implicit paragraph fallback. An element default can also set properties, such as `{ type: 'heading', properties: { level: 2 } }`, and a default with any other key throws
+- Accept document `maxLength` only when creating the editor
+- Resolve functional plugin APIs against each editor view root and preserve the complete root-scoped read surface, including exported selection slices
+- Declare every plugin API through an `api` factory, including context-free API objects; contextual factories receive one `{ editor, root, getContributions }` object
+- Keep merge, selectability, and exported-slice policy on typed `editorReads` descriptors instead of plugin-specific root hooks
+- Read the active plain model range through `selection()`, exact selected nodes through `selection.nodes()`, and every exact range through `selection.ranges()`
+- Initialize editors synchronously through `initialValue` or an editor-context callback and publish non-cancellable commit contexts with the resulting immutable snapshot
+- Derive complete raw-schema identity when `id` and `version` are omitted, and expose a non-null derived or named identity from `editor.read.schema.identity()`
+- Freeze pure descriptor namespaces and preserve exact custom property values and defaults from inline `validate` predicates paired with a positive-integer `validationVersion`
+- Reject values without a string `type` from `ElementApi.isElement` and transitive `NodeApi` predicates
+- Address compiled element and property identity through nominal `SchemaElementHandle` and `SchemaPropertyHandle` values. Property handles retain persisted key, placement, compiled id, and inferred value type.
+- Compile deterministic closed-application overrides before relationships. Element type, content, groups, and property targets may change; ambiguous overrides reject instead of using source order.
+- Serialize deterministic schema contracts, classify structural diffs, and restore validator-backed runtime schemas from committed contracts. Contract readers recompute the structural fingerprint from authoritative content, and restoration rejects any derived table that differs from the source contributions.
+
+**Migration:** Replace `@platejs/slate` with `plitejs` and migrate Slate transforms and operations to `editor.read`, `editor.update`, or active transaction APIs. Replace `defineExtension({ name, ...definition })` with `definePlugin(name, definition)`, pass a name to `defineEditorSchema`, call `createEditorView(editor, options)` with the editor itself, and replace live `editor.extend(extension)` with `editor.install(plugin)`. Register state fields through a nominal plugin's `stateFields` collection instead of passing field handles as plugins. Replace calls such as `nodes.find<Foo>({ match: { type: 'foo' } })` with `nodes.find({ type: fooHandle, match: (foo, path) => ... })`.

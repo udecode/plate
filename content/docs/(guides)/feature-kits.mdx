@@ -1,0 +1,148 @@
+---
+title: Feature Kits
+description: Use registry kits to add groups of Plate plugins and UI wiring.
+---
+
+Feature kits are app-owned registry files that group related Plate plugins, components, shortcuts, input rules, and helper UI.
+Use them to start from working Plate UI wiring, then edit the installed kit when your app needs different behavior.
+
+## Kit types
+
+| Kit type | Example | Use for |
+| --- | --- | --- |
+| Client/UI kit | `basic-nodes`, `table`, `media` | Editable React editors with Plate UI components. |
+| Base kit | `basic-blocks-static`, `table-static` | Static rendering and server-safe editor setup. |
+| Full editor kit | `editor-plugins` | A complete client editor feature stack. |
+| Full base kit | `editor-plugins-static` | A broad static/base plugin stack. |
+
+Feature kits live directly under `components/editor` after installation. The
+file and registry item use the feature name, while the exported value keeps the
+`Kit` suffix: `link.tsx` exports `LinkKit`. They are normal TypeScript files in
+your app, not package exports locked inside `node_modules`.
+
+## Use a kit
+
+Install the kit through the Plate registry, then import it from your app.
+
+```tsx title="components/editor.tsx" showLineNumbers
+import { EditorRoot, useCreateEditor } from 'platejs/react';
+
+import { BasicNodesKit } from '@/components/editor/basic-nodes';
+import { TableKit } from '@/components/editor/table';
+import { Editor, EditorContainer } from '@/components/editor/editor';
+
+export function MyEditor() {
+  const editor = useCreateEditor({
+    plugins: [...BasicNodesKit, ...TableKit],
+  });
+
+  return (
+    <EditorRoot editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </EditorRoot>
+  );
+}
+```
+
+`BasicNodesKit` composes `BasicBlocksKit` and `BasicMarksKit`. For example,
+`BasicBlocksKit` wires paragraph, headings, blockquote, and horizontal rule
+plugins to their Plate UI components; `BasicMarksKit` wires marks, input rules,
+shortcuts, and mark leaf components.
+
+## Choose the right kit
+
+| Need | Start with |
+| --- | --- |
+| Paragraphs, headings, blockquotes, marks. | `basic-nodes` |
+| Tables with table UI components. | `table` |
+| Completed images, video, audio, files, embeds, captions. | `media` |
+| Local file uploads and draft slots. | One `upload-*` provider with `media` |
+| Comments and discussions. | `comment` plus `discussion` |
+| AI menu, AI nodes, cursor overlay, and Markdown support. | `ai` |
+| Full editable editor stack. | `editor-plugins` |
+| Static or server-rendered output. | `editor-plugins-static` or focused `*-static` files |
+
+Plugin pages show the recommended kit in their installation section. Use the kit
+source when you need the exact plugin list, imported UI components, shortcuts,
+or registry dependencies.
+
+## Base kits
+
+Base kits use base plugins and static components. They are the right starting
+point for [Static Rendering](/docs/static) and other non-editable pipelines
+that a bundler builds. `BaseEditorKit` includes `math-static`, which imports the
+KaTeX stylesheet. Plain Node throws on that import, so a
+[Node.js](/docs/installation/node) process passes base plugins instead.
+
+```ts title="editor.ts"
+import { createEditor } from 'platejs';
+
+import { BaseEditorKit } from '@/components/editor/plugins-static';
+
+const editor = createEditor({
+  plugins: BaseEditorKit,
+});
+```
+
+Use client kits in editable React editors. Use base kits when React editor hooks,
+editable components, floating UI, or browser-only behavior should stay out of
+the runtime.
+
+## Customize a kit
+
+Because kits are copied into your app, the cleanest customization is usually to
+edit the installed kit file.
+
+```tsx title="components/editor/my-basic.tsx"
+import { HeadingPlugin } from 'platejs/react';
+import { ParagraphPlugin } from 'platejs/react';
+
+import { HeadingElement } from '@/components/editor/heading';
+import { ParagraphElement } from '@/components/editor/paragraph';
+
+export const MyBasicKit = [
+  ParagraphPlugin.configure({ component: ParagraphElement }),
+  HeadingPlugin.configure({
+    component: HeadingElement,
+  }),
+];
+```
+
+Use manual plugin setup when you only need a small part of a kit, when the app
+does not use Plate UI components, or when a feature needs a different dependency
+boundary.
+
+## Registry names
+
+Kits are exported composition values. Registry items and files use feature
+names and install directly into `components/editor`.
+
+| Registry item | Installs |
+| --- | --- |
+| `basic-nodes` | `BasicNodesKit`, `BasicBlocksKit`, and `BasicMarksKit` dependencies. |
+| `table` | `TableKit` and table UI components. |
+| `media` | `MediaKit` and completed-media UI. |
+| `upload` | `UploadKit` and the draft upload UI; compose it with `MediaKit`. |
+| `upload-browser` | Browser-local upload configuration for demos and disposable editors. |
+| `upload-r2` | `UploadKit`, the shared Files gateway, and a Cloudflare R2 route. |
+| `upload-s3` | `UploadKit`, the shared Files gateway, and an Amazon S3 route. |
+| `files-api` | Provider-neutral Files SDK gateway policy for custom provider recipes. |
+| `editor-plugins` | The full editable editor kit. |
+| `editor-plugins-static` | The full static/base kit. |
+
+`editor-plugins` installs the authored `EditorKit` source only. When an app
+needs exact generated `Editor` or `Value` contracts, generate them from its
+customized plugin module and run `plate generate --check <entry>` in CI. See
+[Exact Generated Editor Types](/docs/editor#exact-generated-editor-types).
+
+## Next steps
+
+| Task | Guide |
+| --- | --- |
+| Install registry items. | [Plate UI](/docs/installation/plate-ui) |
+| Configure editor creation. | [Editor Configuration](/docs/editor) |
+| Compose plugin APIs and options. | [Plugin Methods](/docs/plugin-methods) |
+| Render without an editable React editor. | [Static Rendering](/docs/static) |
+| Upload local files. | [Upload Files](/docs/upload) |

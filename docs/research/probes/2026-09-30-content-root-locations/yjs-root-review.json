@@ -1,0 +1,19 @@
+{
+  "scenario": "Canonical primary/named remote cursors at identical local paths",
+  "primaryCursor": {
+    "primaryPaint": 1,
+    "captionPaint": 0
+  },
+  "captionCursor": {
+    "primaryPaint": 0,
+    "captionPaint": 1
+  },
+  "wireConstruction": "Public syncSelection produces opaque state; existing FakeAwareness copies it unchanged.",
+  "source": {
+    "packages/platejs/src/yjs/react/YjsPlugin.tsx": "eb457690722ebca3d29e0f2bb66b7df27a030a9c5743327ed958916b7d0c7956",
+    "packages/platejs/src/internal/plugin/getPlateDecorationSources.ts": "420941860ea1976b72cbc76b10115f431a09d81494cb9917b171644c2389b97b",
+    "packages/plitejs/test/yjs/support/provider.ts": "37eb1447ded66ff3f5a6c5064d99c807440b0c88211541d0d9d9d7609db9cf6f",
+    "docs/research/probes/2026-09-30-content-root-locations/yjs-root-review.ts": "a2724d957fe4fac470e50815ab7f8d691361d419850a87cf6bc08ce1913fef85"
+  },
+  "limits": "Source-built Plate decoration boundary with one fake awareness instance; no network, browser or geometry proof."
+}

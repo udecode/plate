@@ -1,0 +1,38 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "toc",
+  "title": "Table of Contents",
+  "description": "A table of contents component with links to document headings.",
+  "dependencies": [
+    "platejs",
+    "class-variance-authority",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/highlight-style.json",
+    "button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/toc.tsx",
+      "content": "'use client';\n\nimport { cva } from 'class-variance-authority';\nimport type { NodeKey } from 'platejs';\nimport { BaseDetailsPlugin } from 'platejs/details';\nimport {\n  type EditorElementProps,\n  NavigationFeedbackPlugin,\n  EditorElement,\n  useEditor,\n  useEditorSelector,\n  useElementSelected,\n} from 'platejs/react';\nimport { TocPlugin } from 'platejs/toc/react';\nimport * as React from 'react';\n\nimport { Button } from '@/components/ui/button';\n\nconst headingItemVariants = cva(\n  'block h-auto w-full cursor-pointer truncate rounded-none px-0.5 py-1.5 text-left font-medium text-muted-foreground underline decoration-[0.5px] underline-offset-4 hover:bg-accent hover:text-foreground',\n  {\n    variants: {\n      depth: {\n        1: 'pl-0.5',\n        2: 'pl-[26px]',\n        3: 'pl-[50px]',\n      },\n    },\n  }\n);\n\nexport function TocElement({\n  isScroll = true,\n  topOffset = 80,\n  ...props\n}: EditorElementProps<typeof TocPlugin> & {\n  isScroll?: boolean;\n  topOffset?: number;\n}) {\n  const editor = useEditor();\n  const navigation = useEditor().plugin(NavigationFeedbackPlugin);\n  const details = editor.plugin(BaseDetailsPlugin);\n  const openDetailsHolding = (key: NodeKey) => {\n    const path = (details.installed && editor.read.nodes.path(key)) || [];\n    const closedKeys = path.flatMap((childIndex, depth) => {\n      const ancestor = path.slice(0, depth);\n      const isTitle = childIndex === 0;\n      const detailsKey =\n        depth > 0 &&\n        !isTitle &&\n        editor.read.nodes.get(ancestor, { type: BaseDetailsPlugin })\n          ? editor.key(ancestor)\n          : undefined;\n\n      return detailsKey && !details.store.get('openKeys').has(detailsKey)\n        ? [detailsKey]\n        : [];\n    });\n\n    for (const detailsKey of closedKeys) {\n      details.api.setOpen(detailsKey, true);\n    }\n\n    return closedKeys.length > 0;\n  };\n  const selected = useElementSelected({ mode: 'text' });\n  const headingList = useEditorSelector(\n    (innerEditor) => innerEditor.plugin(TocPlugin).read.headings(),\n    {\n      equalityFn: (previous, next) =>\n        previous !== null &&\n        previous.length === next.length &&\n        previous.every((heading, index) => {\n          const nextHeading = next[index];\n\n          return (\n            heading.key === nextHeading?.key &&\n            heading.depth === nextHeading.depth &&\n            heading.title === nextHeading.title &&\n            heading.type === nextHeading.type\n          );\n        }),\n      shouldUpdate: (change) => !change || change.changed.hasAny('document'),\n    }\n  );\n\n  return (\n    <EditorElement {...props} className=\"mb-1 p-0\">\n      <div\n        className=\"rounded-sm data-[selected=true]:bg-primary/10\"\n        contentEditable={false}\n        data-selected={selected}\n      >\n        {headingList.length > 0 ? (\n          headingList.map((item) => (\n            <Button\n              key={item.key}\n              variant=\"ghost\"\n              className={headingItemVariants({\n                depth: item.depth as 1 | 2 | 3,\n              })}\n              onClick={(event) => {\n                event.preventDefault();\n\n                const navigate = () => {\n                  const entry = editor.read.nodes.get(item.key);\n\n                  if (!entry) return;\n\n                  const element = editor.api.dom.resolveDOMNode(entry[0]);\n\n                  if (!element) return;\n\n                  element.style.scrollMarginTop = `${topOffset}px`;\n\n                  if (isScroll) {\n                    editor.api.dom.scrollIntoView(entry[1], {\n                      behavior: 'smooth',\n                      block: 'start',\n                      scrollMode: 'always',\n                    });\n                  }\n                  navigation.api.flashTarget({\n                    key: item.key,\n                    attributes: {\n                      className: 'rounded-md bg-(--color-highlight)',\n                    },\n                  });\n                };\n\n                if (openDetailsHolding(item.key)) {\n                  requestAnimationFrame(navigate);\n                } else {\n                  navigate();\n                }\n              }}\n            >\n              {item.title}\n            </Button>\n          ))\n        ) : (\n          <div className=\"text-sm text-gray-500\">\n            Create a heading to display the table of contents.\n          </div>\n        )}\n      </div>\n      {props.children}\n    </EditorElement>\n  );\n}\n\nexport const TocKit = [\n  TocPlugin.configure({\n    component: TocElement,\n  }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/toc.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/toc"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/toc"
+      }
+    ],
+    "examples": [
+      "toc-demo",
+      "toc-pro"
+    ]
+  },
+  "type": "registry:component"
+}

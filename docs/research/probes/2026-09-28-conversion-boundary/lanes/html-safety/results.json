@@ -1,0 +1,1376 @@
+[
+  {
+    "name": "markdown/link-js",
+    "result": {
+      "parsed": {
+        "diagnostics": [
+          {
+            "code": "markdown-unsafe-content",
+            "impact": "lossless",
+            "message": "Markdown link destination is not safe to open and was removed; its label was kept.",
+            "nodeType": "link",
+            "phase": "parse",
+            "severity": "warning",
+            "source": {
+              "end": {
+                "column": 33,
+                "line": 1,
+                "offset": 32
+              },
+              "excerpt": "[LABEL](javascript:alert%281%29)",
+              "nodeType": "link",
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              }
+            }
+          }
+        ],
+        "document": {
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "LABEL"
+                }
+              ]
+            }
+          ]
+        },
+        "ok": true
+      },
+      "serialized": {
+        "data": "LABEL\n",
+        "diagnostics": [],
+        "ok": true
+      }
+    }
+  },
+  {
+    "name": "markdown/image-js",
+    "result": {
+      "parsed": {
+        "diagnostics": [
+          {
+            "code": "markdown-unsafe-content",
+            "impact": "lossy",
+            "message": "Markdown image source is not an allowed image source; the image was removed and its alt text kept.",
+            "nodeType": "image",
+            "phase": "parse",
+            "severity": "error",
+            "source": {
+              "end": {
+                "column": 32,
+                "line": 1,
+                "offset": 31
+              },
+              "excerpt": "![ALT](javascript:alert%281%29)",
+              "nodeType": "image",
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              }
+            }
+          }
+        ],
+        "ok": false
+      },
+      "serialized": null
+    }
+  },
+  {
+    "name": "markdown/video-js",
+    "result": {
+      "parsed": {
+        "diagnostics": [
+          {
+            "action": "unwrapped",
+            "code": "markdown-unsupported-node",
+            "message": "<video> has an invalid \"src\" value; the element was removed and its content kept.",
+            "nodeType": "video",
+            "owner": "video",
+            "phase": "parse",
+            "severity": "error",
+            "source": {
+              "end": {
+                "column": 36,
+                "line": 1,
+                "offset": 35
+              },
+              "excerpt": "<video src=\"javascript:alert(1)\" />",
+              "nodeType": "mdxJsxFlowElement",
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              }
+            }
+          }
+        ],
+        "ok": false
+      },
+      "serialized": null
+    }
+  },
+  {
+    "name": "markdown/script",
+    "result": {
+      "parsed": {
+        "diagnostics": [
+          {
+            "action": "replaced",
+            "code": "markdown-unsupported-node",
+            "message": "Markdown raw HTML has no installed mapping and was kept as text.",
+            "nodeType": "html",
+            "owner": "markdown",
+            "phase": "parse",
+            "severity": "error",
+            "source": {
+              "end": {
+                "column": 26,
+                "line": 1,
+                "offset": 25
+              },
+              "excerpt": "<script>alert(1)</script>",
+              "nodeType": "html",
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              }
+            }
+          }
+        ],
+        "ok": false
+      },
+      "serialized": null
+    }
+  },
+  {
+    "name": "markdown/image-png",
+    "result": {
+      "parsed": {
+        "diagnostics": [],
+        "document": {
+          "children": [
+            {
+              "alt": "ALT",
+              "type": "image",
+              "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+              "children": [
+                {
+                  "text": ""
+                }
+              ]
+            }
+          ]
+        },
+        "ok": true
+      },
+      "serialized": {
+        "data": "![ALT](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=)\n",
+        "diagnostics": [],
+        "ok": true
+      }
+    }
+  },
+  {
+    "name": "html/link-js/reject",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 49,
+            "excerpt": "<a href=\"javascript:alert(1)\">LABEL</a>",
+            "kind": "source",
+            "startCodeUnit": 10
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "Before LABEL After"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/link-js/allow",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 49,
+            "excerpt": "<a href=\"javascript:alert(1)\">LABEL</a>",
+            "kind": "source",
+            "startCodeUnit": 10
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "Before LABEL After"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/link-control/reject",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 53,
+            "excerpt": "<a href=\"java&#9;script:alert(1)\">LABEL</a>",
+            "kind": "source",
+            "startCodeUnit": 10
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "Before LABEL After"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/link-control/allow",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 53,
+            "excerpt": "<a href=\"java&#9;script:alert(1)\">LABEL</a>",
+            "kind": "source",
+            "startCodeUnit": 10
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "Before LABEL After"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/script-event/reject",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "element",
+          "message": "Removed unsafe HTML element <script>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 25,
+            "excerpt": "<script>alert(1)</script>",
+            "kind": "source",
+            "startCodeUnit": 0
+          }
+        },
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "attribute",
+          "message": "Removed unsafe HTML attribute \"onclick\" from <p>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 55,
+            "excerpt": "<p onclick=\"alert(1)\">SAFE</p>",
+            "kind": "source",
+            "startCodeUnit": 25
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "SAFE"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/script-event/allow",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "element",
+          "message": "Removed unsafe HTML element <script>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 25,
+            "excerpt": "<script>alert(1)</script>",
+            "kind": "source",
+            "startCodeUnit": 0
+          }
+        },
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "attribute",
+          "message": "Removed unsafe HTML attribute \"onclick\" from <p>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 55,
+            "excerpt": "<p onclick=\"alert(1)\">SAFE</p>",
+            "kind": "source",
+            "startCodeUnit": 25
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "SAFE"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/svg-content/reject",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossy",
+          "kind": "element",
+          "message": "Removed unsafe HTML element <svg>.",
+          "severity": "error",
+          "source": {
+            "endCodeUnit": 39,
+            "excerpt": "<svg><text>LOST</text></svg>",
+            "kind": "source",
+            "startCodeUnit": 11
+          }
+        }
+      ],
+      "ok": false
+    }
+  },
+  {
+    "name": "html/svg-content/allow",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossy",
+          "kind": "element",
+          "message": "Removed unsafe HTML element <svg>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 39,
+            "excerpt": "<svg><text>LOST</text></svg>",
+            "kind": "source",
+            "startCodeUnit": 11
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "SAFE"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/image-svg/reject",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossy",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"src\" from <img>.",
+          "severity": "error",
+          "source": {
+            "endCodeUnit": 46,
+            "excerpt": "<img src=\"data:image/svg+xml;base64,PHN2Zy8+\">",
+            "kind": "source",
+            "startCodeUnit": 0
+          }
+        },
+        {
+          "action": "replaced",
+          "code": "html-schema-repair",
+          "impact": "lossless",
+          "inputs": [],
+          "message": "HTML schema repair \"insert-required-content\" was lossless.",
+          "outputs": [
+            {
+              "path": [
+                0
+              ],
+              "root": "main"
+            }
+          ],
+          "owner": "grammar",
+          "repair": "insert-required-content",
+          "severity": "warning"
+        }
+      ],
+      "ok": false
+    }
+  },
+  {
+    "name": "html/image-svg/allow",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossy",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"src\" from <img>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 46,
+            "excerpt": "<img src=\"data:image/svg+xml;base64,PHN2Zy8+\">",
+            "kind": "source",
+            "startCodeUnit": 0
+          }
+        },
+        {
+          "action": "replaced",
+          "code": "html-schema-repair",
+          "impact": "lossless",
+          "inputs": [],
+          "message": "HTML schema repair \"insert-required-content\" was lossless.",
+          "outputs": [
+            {
+              "path": [
+                0
+              ],
+              "root": "main"
+            }
+          ],
+          "owner": "grammar",
+          "repair": "insert-required-content",
+          "severity": "warning"
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/image-png/reject",
+    "result": {
+      "diagnostics": [],
+      "document": {
+        "children": [
+          {
+            "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+            "type": "image",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/image-png/allow",
+    "result": {
+      "diagnostics": [],
+      "document": {
+        "children": [
+          {
+            "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+            "type": "image",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/image-blob/reject",
+    "result": {
+      "diagnostics": [],
+      "document": {
+        "children": [
+          {
+            "url": "blob:https://example.test/id",
+            "type": "image",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/image-blob/allow",
+    "result": {
+      "diagnostics": [],
+      "document": {
+        "children": [
+          {
+            "url": "blob:https://example.test/id",
+            "type": "image",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/href-blob/reject",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 51,
+            "excerpt": "<a href=\"blob:https://example.test/id\">LABEL</a>",
+            "kind": "source",
+            "startCodeUnit": 3
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "LABEL"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/href-blob/allow",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 51,
+            "excerpt": "<a href=\"blob:https://example.test/id\">LABEL</a>",
+            "kind": "source",
+            "startCodeUnit": 3
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "LABEL"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/video-data/reject",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossy",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"src\" from <video>.",
+          "severity": "error",
+          "source": {
+            "endCodeUnit": 48,
+            "excerpt": "<video src=\"data:video/mp4;base64,AAAA\"></video>",
+            "kind": "source",
+            "startCodeUnit": 0
+          }
+        },
+        {
+          "action": "replaced",
+          "code": "html-schema-repair",
+          "impact": "lossless",
+          "inputs": [],
+          "message": "HTML schema repair \"insert-required-content\" was lossless.",
+          "outputs": [
+            {
+              "path": [
+                0
+              ],
+              "root": "main"
+            }
+          ],
+          "owner": "grammar",
+          "repair": "insert-required-content",
+          "severity": "warning"
+        }
+      ],
+      "ok": false
+    }
+  },
+  {
+    "name": "html/video-data/allow",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossy",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"src\" from <video>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 48,
+            "excerpt": "<video src=\"data:video/mp4;base64,AAAA\"></video>",
+            "kind": "source",
+            "startCodeUnit": 0
+          }
+        },
+        {
+          "action": "replaced",
+          "code": "html-schema-repair",
+          "impact": "lossless",
+          "inputs": [],
+          "message": "HTML schema repair \"insert-required-content\" was lossless.",
+          "outputs": [
+            {
+              "path": [
+                0
+              ],
+              "root": "main"
+            }
+          ],
+          "owner": "grammar",
+          "repair": "insert-required-content",
+          "severity": "warning"
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/video-blob/reject",
+    "result": {
+      "diagnostics": [],
+      "document": {
+        "children": [
+          {
+            "url": "blob:https://example.test/id",
+            "type": "video",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/video-blob/allow",
+    "result": {
+      "diagnostics": [],
+      "document": {
+        "children": [
+          {
+            "url": "blob:https://example.test/id",
+            "type": "video",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/video-control/reject",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"src\" from <video>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 74,
+            "excerpt": "<video src=\"java&#9;script:alert(1)\"></video>",
+            "kind": "source",
+            "startCodeUnit": 29
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "CAPTION"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/video-control/allow",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"src\" from <video>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 74,
+            "excerpt": "<video src=\"java&#9;script:alert(1)\"></video>",
+            "kind": "source",
+            "startCodeUnit": 29
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "CAPTION"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html-egress/link-js/reject",
+    "threw": "EditorSchemaValidationError: Editor element property \"url\" fails custom property validation."
+  },
+  {
+    "name": "html-egress/link-js/allow",
+    "threw": "EditorSchemaValidationError: Editor element property \"url\" fails custom property validation."
+  },
+  {
+    "name": "html-egress/image-js/reject",
+    "threw": "EditorSchemaValidationError: Editor element property \"url\" fails custom property validation."
+  },
+  {
+    "name": "html-egress/image-js/allow",
+    "threw": "EditorSchemaValidationError: Editor element property \"url\" fails custom property validation."
+  },
+  {
+    "name": "html-egress/video-js/reject",
+    "threw": "EditorSchemaValidationError: Editor element property \"url\" fails custom property validation."
+  },
+  {
+    "name": "html-egress/video-js/allow",
+    "threw": "EditorSchemaValidationError: Editor element property \"url\" fails custom property validation."
+  },
+  {
+    "name": "html-egress/image-png/reject",
+    "result": {
+      "data": "<figure class=\"editor-image\"><img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=\"><figcaption></figcaption></figure>",
+      "diagnostics": [],
+      "ok": true
+    }
+  },
+  {
+    "name": "html-egress/image-png/allow",
+    "result": {
+      "data": "<figure class=\"editor-image\"><img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=\"><figcaption></figcaption></figure>",
+      "diagnostics": [],
+      "ok": true
+    }
+  },
+  {
+    "name": "html-egress/image-blob/reject",
+    "result": {
+      "data": "<figure class=\"editor-image\"><img src=\"blob:https://example.test/id\"><figcaption></figcaption></figure>",
+      "diagnostics": [],
+      "ok": true
+    }
+  },
+  {
+    "name": "html-egress/image-blob/allow",
+    "result": {
+      "data": "<figure class=\"editor-image\"><img src=\"blob:https://example.test/id\"><figcaption></figcaption></figure>",
+      "diagnostics": [],
+      "ok": true
+    }
+  },
+  {
+    "name": "html-egress/video-data/reject",
+    "threw": "EditorSchemaValidationError: Editor element property \"url\" fails custom property validation."
+  },
+  {
+    "name": "html-egress/video-data/allow",
+    "threw": "EditorSchemaValidationError: Editor element property \"url\" fails custom property validation."
+  },
+  {
+    "name": "link-render-vs-data",
+    "result": {
+      "attributes": {},
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "type": "link",
+                "url": "javascript:alert(1)",
+                "children": [
+                  {
+                    "text": "LABEL"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "paste/html",
+    "result": {
+      "inserted": true,
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "Before LABEL After"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "paste/markdown",
+    "result": {
+      "inserted": true,
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "LABEL"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "paste/word",
+    "result": {
+      "inserted": true,
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "Before LABEL After"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "docx/default/reject",
+    "result": {
+      "comments": [],
+      "diagnostics": [
+        {
+          "action": "unwrapped",
+          "code": "unsupported-content",
+          "feature": "content",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning"
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "Before LABEL After"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "docx/custom/reject",
+    "result": {
+      "comments": [],
+      "diagnostics": [
+        {
+          "action": "unwrapped",
+          "code": "unsupported-content",
+          "feature": "content",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning"
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "captured": "ABSENT",
+            "type": "captureParagraph",
+            "children": [
+              {
+                "text": "Before LABEL After"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "docx/default/allow",
+    "result": {
+      "comments": [],
+      "diagnostics": [
+        {
+          "action": "unwrapped",
+          "code": "unsupported-content",
+          "feature": "content",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning"
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "Before LABEL After"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "docx/custom/allow",
+    "result": {
+      "comments": [],
+      "diagnostics": [
+        {
+          "action": "unwrapped",
+          "code": "unsupported-content",
+          "feature": "content",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning"
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "captured": "ABSENT",
+            "type": "captureParagraph",
+            "children": [
+              {
+                "text": "Before LABEL After"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "html/custom-comparator",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning",
+          "source": {
+            "endCodeUnit": 49,
+            "excerpt": "<a href=\"javascript:alert(1)\">LABEL</a>",
+            "kind": "source",
+            "startCodeUnit": 10
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "captured": "ABSENT",
+            "type": "captureParagraph",
+            "children": [
+              {
+                "text": "Before LABEL After"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "docx/safe-control",
+    "result": {
+      "comments": [],
+      "diagnostics": [],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "Before "
+              },
+              {
+                "url": "https://example.test/",
+                "type": "link",
+                "children": [
+                  {
+                    "text": "LABEL"
+                  }
+                ]
+              },
+              {
+                "text": " After"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "docx/export-default-js-link",
+    "threw": "EditorSchemaValidationError: Editor element property \"url\" fails custom property validation."
+  },
+  {
+    "name": "markdown/script-allow",
+    "result": {
+      "diagnostics": [
+        {
+          "action": "replaced",
+          "code": "markdown-unsupported-node",
+          "message": "Markdown raw HTML has no installed mapping and was kept as text.",
+          "nodeType": "html",
+          "owner": "markdown",
+          "phase": "parse",
+          "severity": "warning",
+          "source": {
+            "end": {
+              "column": 26,
+              "line": 1,
+              "offset": 25
+            },
+            "excerpt": "<script>alert(1)</script>",
+            "nodeType": "html",
+            "start": {
+              "column": 1,
+              "line": 1,
+              "offset": 0
+            }
+          }
+        }
+      ],
+      "document": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "<script>alert(1)</script>"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    }
+  },
+  {
+    "name": "clipboard-egress/link-js",
+    "result": {
+      "written": [
+        "text/html",
+        "text/plain"
+      ],
+      "data": {
+        "text/html": "<p><span>LABEL</span></p>",
+        "text/plain": "LABEL (javascript:alert(1))"
+      }
+    }
+  },
+  {
+    "name": "clipboard-egress/image-js",
+    "result": {
+      "written": [
+        "text/plain"
+      ],
+      "data": {
+        "text/plain": "javascript:alert(1)"
+      }
+    }
+  },
+  {
+    "name": "docx/retained-exact-js-link",
+    "result": {
+      "importedDocument": {
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "Before LABEL After"
+              }
+            ]
+          }
+        ]
+      },
+      "importDiagnostics": [
+        {
+          "action": "unwrapped",
+          "code": "unsupported-content",
+          "feature": "content",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning"
+        },
+        {
+          "code": "source-unavailable",
+          "message": "The DOCX source cannot be retained because word/_rels/document.xml.rels references an external resource (hyperlink); export will generate the document from editor content.",
+          "part": "word/_rels/document.xml.rels",
+          "reason": "ineligible",
+          "severity": "warning"
+        }
+      ],
+      "exportDiagnostics": [],
+      "relationships": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">\n  <Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering\" Target=\"numbering.xml\"/>\n  <Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>\n  <Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings\" Target=\"settings.xml\"/>\n  <Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings\" Target=\"webSettings.xml\"/>\n  <Relationship Id=\"rId5\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable\" Target=\"fontTable.xml\"/>\n  <Relationship Id=\"rId6\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\" TargetMode=\"Internal\"/>\n</Relationships>"
+    }
+  },
+  {
+    "name": "docx/custom-component-data-href",
+    "result": {
+      "ok": true,
+      "diagnostics": [
+        {
+          "action": "unwrapped",
+          "code": "unsupported-content",
+          "feature": "link",
+          "message": "An unsafe link destination was removed and its text was kept.",
+          "severity": "warning"
+        }
+      ],
+      "relationships": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">\n  <Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering\" Target=\"numbering.xml\"/>\n  <Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>\n  <Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings\" Target=\"settings.xml\"/>\n  <Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings\" Target=\"webSettings.xml\"/>\n  <Relationship Id=\"rId5\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable\" Target=\"fontTable.xml\"/>\n  <Relationship Id=\"rId6\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\" TargetMode=\"Internal\"/>\n</Relationships>"
+    }
+  },
+  {
+    "name": "html/custom-component-data-href-comparator",
+    "result": {
+      "data": "<a>CUSTOM</a>",
+      "diagnostics": [
+        {
+          "model": {
+            "path": [
+              0
+            ],
+            "root": "main"
+          },
+          "action": "removed",
+          "code": "html-unsafe-content",
+          "impact": "lossless",
+          "kind": "url",
+          "message": "Removed unsafe HTML attribute \"href\" from <a>.",
+          "severity": "warning"
+        }
+      ],
+      "ok": true
+    }
+  }
+]

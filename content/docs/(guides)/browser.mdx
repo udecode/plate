@@ -1,0 +1,156 @@
+---
+title: "Browser"
+description: "Use the first-party browser proof harness for editor behavior tests."
+---
+
+`@platejs/test` is Plate's test distribution. This guide covers its browser,
+Playwright, and proof entrypoints for model state, rendered DOM, native
+selection, focus, screenshots, traces, clipboard, and replayable scenarios. It
+is test infrastructure, not the product editing API; application code builds
+editors with `platejs`.
+
+## Install
+
+```text
+npm install -D @platejs/test @playwright/test
+```
+
+## Imports
+
+Use the environment-specific subpath:
+
+- `@platejs/test/playwright` for Playwright editor harnesses.
+- `@platejs/test/proof` for pure proof contracts, raw-mobile receipt
+  validation, capability classifiers, and selection serialization helpers.
+- `@platejs/test/browser` for DOM selection snapshots and zero-width
+  placeholder inspection in browser-capable test environments.
+
+The Node-safe `@platejs/test` root owns headless fixtures and JSX test builders.
+Use the [Unit Testing Plate](/docs/unit-testing) guide for those APIs and the
+React test helpers.
+
+## Setup
+
+The app under test installs the browser handle once, at module scope in a test
+or development entry, before its first editor mounts. Production entries never
+call it, so their bundles drop the handle.
+
+```ts
+import { installBrowserHandle } from "platejs/react";
+
+installBrowserHandle();
+```
+
+Each Playwright project names how clipboard paste helpers deliver a paste.
+`'native'` writes the clipboard and presses the paste shortcut, `'event'`
+dispatches synthetic paste events, and `'handle'` calls the editor directly as
+a labeled stand-in. A paste fails when its transport did not apply it.
+
+```ts
+import type { BrowserTestOptions } from "@platejs/test/playwright";
+import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig<BrowserTestOptions>({
+  projects: [
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        clipboardTransport: "native",
+        permissions: ["clipboard-read", "clipboard-write"],
+      },
+    },
+    {
+      name: "webkit",
+      use: { ...devices["Desktop Safari"], clipboardTransport: "event" },
+    },
+  ],
+});
+```
+
+## First test
+
+```ts
+import { expect, test } from "@playwright/test";
+import { openExample } from "@platejs/test/playwright";
+
+test("types through the Browser path", async ({ page }) => {
+  const editor = await openExample(page, "plaintext", {
+    ready: { editor: "visible" },
+  });
+
+  await editor.focus();
+  await editor.type("Hello from @platejs/test");
+
+  await editor.assert.text("Hello from @platejs/test");
+  await editor.assert.noDoubleSelectionHighlight();
+  expect(await editor.get.selectedText()).toBe("");
+});
+```
+
+`openExample` waits for the mounted editor-ready contract before actions run.
+Prefer `editor.type(...)`, semantic selection helpers, clipboard helpers, and
+native event traces over raw Playwright DOM shortcuts when the claim is editor
+behavior.
+
+Do not use `locator.fill()` for contenteditable behavior. It can bypass the
+editor path you are trying to prove. Use keyboard input, clipboard helpers, or
+the Browser harness action that matches the claim.
+
+## Proof contracts
+
+Browser proof should usually assert more than model state:
+
+| Claim                            | Useful proof                                                             |
+| -------------------------------- | ------------------------------------------------------------------------ |
+| Model state changed correctly    | model text, block text, operations, or commit metadata                   |
+| Browser caret is correct         | DOM caret, DOM selection, or native selection snapshot                   |
+| Visible selection is sane        | displayed selection snapshot and no double-highlight                     |
+| Editor stayed active             | focus ownership                                                          |
+| Native input path is the bug     | native event trace for input, paste, selection, or IME                   |
+| Visual evidence matters          | screenshot or JSON artifact                                              |
+| The editor still works afterward | follow-up typing after navigation, paste, undo, selection, or DOM repair |
+
+Feature contracts group browser behavior families by the owning Plate feature
+area. Use them to keep example coverage honest without turning one manual route
+check into a fake global guarantee.
+
+## Low-level helpers
+
+Use low-level helpers when a test needs to locate the editable or inspect a
+rendered node by path. Editor actions stay on the curated harness so volatile
+browser-handle method names do not become public API.
+
+```ts
+import {
+  getBrowserEditable,
+  locateBrowserBlock,
+  locateBrowserText,
+} from "@platejs/test/playwright";
+```
+
+| Helper                    | Use                                                            |
+| ------------------------- | -------------------------------------------------------------- |
+| `getBrowserEditable` | Locate the first editor root in a page, frame, or scoped area. |
+| `locateBrowserBlock` | Locate a rendered block by Plate path.                         |
+| `locateBrowserText`  | Locate a rendered text node by Plate path.                     |
+
+Prefer the harness methods when they already express the behavior. They keep
+model, DOM, native-selection, and screenshot proof in one place instead of
+spreading selectors through tests.
+
+## Replayable and imperative scenarios
+
+Canonical scenarios contain serializable steps. They can be replayed, reduced,
+and attached as evidence to repository-owned release proof.
+
+Use `scenario.runImperative(...)` only when browser work cannot be represented
+by the canonical step union. The imperative lane preserves one trace for
+interleaved setup and actions, but its result is explicitly non-replayable and
+cannot satisfy replay, reduction, or release gates.
+
+A Playwright mobile viewport does not prove raw-device behavior. Raw-device
+claims require a real device runner and an artifact that records the resolved
+device, OS, and capability scope. Proxy browser lanes remain useful evidence,
+but they do not claim native mobile clipboard, human soft-keyboard, glide
+typing, or voice input.

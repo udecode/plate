@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-18-recovered-2026-09-12-suggestions-docs-demo",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "suggestions"
+  ],
+  "reviewBasis": [],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-12-suggestions-docs-demo.md",
+    "sha256": "8e4a9423d696226c2b2f9d7e3e1d607583bf419583fd7d90b1378ed850b6cc63"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical implementation completion from the plan. Complete The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-12-suggestions-docs-demo.md",
+        "sha256": "8e4a9423d696226c2b2f9d7e3e1d607583bf419583fd7d90b1378ed850b6cc63",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-12-suggestions-docs-demo.md"
+  ]
+}

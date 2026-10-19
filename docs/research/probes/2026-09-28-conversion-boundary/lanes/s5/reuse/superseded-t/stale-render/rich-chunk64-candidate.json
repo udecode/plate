@@ -1,0 +1,11 @@
+{
+ "base": "http://localhost:3601",
+ "chunk": 64,
+ "equal": true,
+ "streamedToc": "Step 0",
+ "freshToc": "Step 0",
+ "streamedOls": [],
+ "freshOls": [],
+ "streamedHljs": 47,
+ "freshHljs": 47
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-10-details-selection",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-10-details-selection.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-10",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Select individual Details body blocks with a selection rectangle",
+  "targets": [
+    {
+      "name": "details",
+      "files": ["apps/www/src/registry/components/editor/details.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-10-details-select-individual-body-blocks-3b07ae48",
+      "kind": "fix",
+      "summary": "Select individual Details body blocks with a selection rectangle",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["details"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-10",
+          "entry": "2026-10-10-details-selection",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

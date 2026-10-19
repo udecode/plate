@@ -1,0 +1,81 @@
+{
+  "id": "2026-09-24-exports-authored-capture-conflict-design",
+  "kind": "execution",
+  "date": "2026-09-24",
+  "scopes": [
+    "exports"
+  ],
+  "reviewBasis": [
+    "2026-09-24-exports-model-switch-final-audit"
+  ],
+  "workKind": "design",
+  "plan": {
+    "path": "docs/plans/2026-09-24-exports-authored-capture-and-conflict-fidelity.md",
+    "sha256": "09fd9edcc387c01a2cb81f86ef3abf3dd9ed535b924d3301ddf5e6bb95e4bf35"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Completed the decision-ready exports adoption design. Delete the split-source snapshot option; capture one authored revision before asynchronous format work; expose a benchmark-earned readAuthoredProjection helper for clean accepted/proposed consumers; report pending and conflicted counts separately; refuse tracked-review DOCX when conflicts cannot be represented faithfully; repair the authored runtime guard; and return export-menu toggling to the dropdown primitive. Suggestion author admission remains a separate authored/suggestions scope. No product implementation is claimed.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-24-exports-authored-capture-and-conflict-fidelity.md",
+        "sha256": "09fd9edcc387c01a2cb81f86ef3abf3dd9ed535b924d3301ddf5e6bb95e4bf35",
+        "claim": "Records the final public API, conflict policy, hard cuts, adoption slices, release classification and implementation proof matrix. The Autogoal completion checker passed."
+      },
+      {
+        "path": "docs/plans/artifacts/2026-09-24-exports-review/projection-performance.probe.ts",
+        "sha256": "65faadf102882ca28050a95acb83139fa39035bc889d56c818a14de656c578c1",
+        "claim": "Disposable matched-source benchmark comparing the current full format snapshot with a projection-only capture across normal, large, stress and pathological cohorts, with exact-result guards."
+      },
+      {
+        "path": "docs/plans/artifacts/2026-09-24-exports-review/projection-performance.packet-1.json",
+        "sha256": "c9b3bc73b1024e7be67b414bf18f3fe097b33fed0f87b378747b6f59200abfea",
+        "claim": "Executable packet: every frozen budget passed; large p95 improved 78.2%, stress p95 improved 72.5%, and candidate markup/property segment work was zero."
+      },
+      {
+        "path": "docs/plans/artifacts/2026-09-24-exports-review/projection-performance.receipt.md",
+        "sha256": "a251e844718dc61b305c1451348eb34b21fe60d15489e3d4ab093c80a70a5e00",
+        "claim": "Human-readable benchmark receipt with source identity, environment, frozen thresholds, interpretation and proof limits."
+      }
+    ],
+    "limits": "Design and local owner-microbenchmark proof only. No product API, adapter, menu, docs, changeset or registry changelog has been implemented. No conflict-format artifact, browser interaction, Microsoft Word, Base UI, cross-browser, final production-source performance or full-suite proof is claimed."
+  },
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "ce1295de4542cabe8e32d3d232fb876e2fcdfd58125c8d83a780a851d66d7005",
+      "apps/www/src/registry/examples/docx-demo.tsx": "b149d67140f4199c71ce377b28e70860db6ceace532dab270eeafd9bbd894b82",
+      "apps/www/src/registry/blocks/html-export/page.tsx": "378bf330f000d9d942290ee2387649ceffd257450d94c35e576a2be97cabae25",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/authoredHtml.ts": "4778f24dd2f41245df7f0f50a787af7547f4199139dc253308ac68f6b960c038",
+      "packages/platejs/src/static/renderStaticHtml.tsx": "d598a7e01d0feb6f344e4ecfba0eba085c53d95828a809cb925bcbc6d7f4aa46",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "cfed5c6917dcb7f77a202b02cc9615232a7c8d1682d34742959a0c715f69f57f",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "db8ad5e16b2df9f6b12abf8d092deaab5761dc870c7a06c89f4dbb4187f5b542",
+      "packages/platejs/src/docx/export/lib/exportToDocx.tsx": "6a7e2f3cc15080d2a6175f088a1ccf5cbe1657a8e6c03b2ca37a89fd7f19efc8",
+      "packages/platejs/type-tests/authored-format-contracts.ts": "10bd2cd997e957390c7263240f167867d31266333e8c551f8c45bf76c6608ab2",
+      "packages/plitejs/src/authored/format.ts": "91e275d9586acbfa8b75eb7ee69a7b193190eea6b83e29c1435bbae5652cd9e6",
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/registry-editor.ts": "95491326193b354802a076551bb117fc05f2f1431bd29f4635dac7e4a6b80cf4",
+      "content/docs/examples/export.mdx": "894b42766520c95adf3c241fddb33aabe2f69eecdee9208eb186a64bb84bbab2",
+      "content/docs/(guides)/authored-changes.mdx": "5e090b31478870b8f96b206d36af9ced364d0d539474b273711926f8a897ef79",
+      "docs/vision/plate.md": "8e21e0c1783d79d5f5c4389af7e79e6455de92b3f22b494dbd506695828ec4dc",
+      "docs/vision/plite.md": "aefd3df5a578003e90fffa6688c317bdbb49837b80cb4874863f8decdecf31f8",
+      "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx": "b5b339dbfc850d6d14cf8474ac019ffd03fd9a919a5423c3428dc969b45935c8",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "271bdf6da40799f15a72c7237e96434f431f949b7d72ec2a6b541f952da7eb4b"
+    },
+    "directories": {},
+    "features": {
+      "ui/export-toolbar-button": "35329fe8688be3028b742d972c693f828bdade01836c631f9f9869b2bc571204"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-24-exports-authored-capture-and-conflict-fidelity.md",
+    "docs/plans/artifacts/2026-09-24-exports-review/projection-performance.receipt.md",
+    "docs/research/decisions/export-fidelity.md"
+  ]
+}

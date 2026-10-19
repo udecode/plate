@@ -1,0 +1,636 @@
+import { readFileSync } from 'node:fs';
+
+import { registrySchema } from 'shadcn/schema';
+
+import registryShadcnData from '../registry-shadcn.json';
+import { PLATE_DEFAULT_REGISTRY_STYLE } from '../src/lib/plate-registry-styles';
+import { getRegistryMetadata } from '../src/lib/registry-metadata';
+import { registryFeatures } from '../src/registry/registry-features';
+import {
+  toPublicRegistryDependencySpecifier,
+  toRegistryDependencySpecifier,
+} from './registry-dependencies.mts';
+import {
+  isImportableRegistrySource,
+  parseModuleImports,
+} from './registry-imports.mts';
+import { createRegistryInstalledTargetResolver } from './registry-installed-targets.mts';
+
+const ABSOLUTE_URL_REGEX = /^https?:\/\//;
+const JSON_SUFFIX_REGEX = /\.json$/;
+const EDITOR_COMPONENT_PATH_SEGMENT = 'components/editor/';
+const EDITOR_COMPONENT_TARGET_PREFIX = '@components/editor/';
+const PLATE_PUBLIC_REGISTRY_BASE_URL = `https://platejs.org/r/${PLATE_DEFAULT_REGISTRY_STYLE}`;
+const BASELINE_PACKAGES = new Set([
+  'class-variance-authority',
+  'clsx',
+  'lucide-react',
+  'next',
+  'platejs',
+  'react',
+  'react-dom',
+  'server-only',
+  'tailwind-merge',
+]);
+const HOST_PROVIDED_ALIASES = new Set(['@/lib/utils']);
+const REMOVED_FAMILY_ITEM_NAMES = new Set([
+  'ai-chat-editor',
+  'ai-node',
+  'block-context-menu',
+  'block-draggable',
+  'block-suggestion',
+  'blockquote-node',
+  'callout-node',
+  'code-node',
+  'code-block-node',
+  'column-node',
+  'comment-node-static',
+  'date-node',
+  'emoji-node',
+  'equation-node',
+  'excalidraw-node',
+  'fixed-toolbar-buttons',
+  'floating-toolbar-buttons',
+  'footnote-node',
+  'ghost-text',
+  'heading-node',
+  'highlight-node',
+  'hr-node',
+  'kbd-node',
+  'link-node',
+  'media-audio-node',
+  'media-embed-node',
+  'media-file-node',
+  'media-image-node',
+  'media-placeholder-node',
+  'media-video-node',
+  'media-upload-toast',
+  'mention-node',
+  'slash-node',
+  'suggestion-node',
+  'paragraph-node',
+  'search-highlight-node',
+  'table-node',
+  'tag-node',
+  'toc-node',
+  'toggle-node',
+]);
+
+const sourceRegistry = getRegistryMetadata();
+const normalizedRegistry = registrySchema.parse({
+  ...sourceRegistry,
+  items: sourceRegistry.items.map((item) => ({
+    ...item,
+    registryDependencies: item.registryDependencies?.map(
+      toRegistryDependencySpecifier
+    ),
+  })),
+});
+const publicRegistry = registrySchema.parse({
+  ...sourceRegistry,
+  items: sourceRegistry.items.map((item) => ({
+    ...item,
+    registryDependencies: item.registryDependencies?.map((dependency) =>
+      toPublicRegistryDependencySpecifier(
+        dependency,
+        PLATE_PUBLIC_REGISTRY_BASE_URL
+      )
+    ),
+  })),
+});
+
+const itemsByName = new Map(
+  normalizedRegistry.items.map((item) => [item.name, item])
+);
+const publicItemsByName = new Map(
+  publicRegistry.items.map((item) => [item.name, item])
+);
+const shadcnItemsByName = new Map(
+  registryShadcnData.items.map((item) => [item.name, item])
+);
+const runtimeItemsByName = new Map(
+  sourceRegistry.items.map((item) => [item.name, item])
+);
+const unbackedBaseKitDependencies: string[] = [];
+const liveKitBaseImports: string[] = [];
+const shallowFeatureSplits: string[] = [];
+
+type RegistryDependencyTarget =
+  | { kind: 'plate'; name: string }
+  | { kind: 'shadcn'; name: string };
+
+function getRegistryDependencyTarget(
+  dependency: string
+): RegistryDependencyTarget | null {
+  const canonicalDependency = toRegistryDependencySpecifier(dependency);
+
+  if (canonicalDependency.startsWith('@plate/')) {
+    return {
+      kind: 'plate',
+      name: canonicalDependency.slice('@plate/'.length),
+    };
+  }
+  if (!ABSOLUTE_URL_REGEX.test(canonicalDependency)) {
+    return shadcnItemsByName.has(canonicalDependency)
+      ? { kind: 'shadcn', name: canonicalDependency }
+      : null;
+  }
+
+  const url = new URL(canonicalDependency);
+  const name = url.pathname.split('/').at(-1)?.replace(JSON_SUFFIX_REGEX, '');
+
+  if (!name) return null;
+
+  const isPlateRegistry =
+    url.hostname === 'platejs.org' ||
+    url.hostname === 'localhost' ||
+    url.hostname === '127.0.0.1';
+
+  if (isPlateRegistry && itemsByName.has(name)) {
+    return { kind: 'plate', name };
+  }
+  if (url.hostname === 'ui.shadcn.com' && shadcnItemsByName.has(name)) {
+    return { kind: 'shadcn', name };
+  }
+
+  return null;
+}
+
+function getRegistryFileImportSources(filePath: string) {
+  if (!isImportableRegistrySource(filePath)) return [];
+
+  return parseModuleImports(
+    readFileSync(
+      new URL(`../src/registry/${filePath}`, import.meta.url),
+      'utf-8'
+    ),
+    { filePath }
+  ).map((entry) => entry.specifier);
+}
+
+function getDependencyPackageName(dependency: string) {
+  if (dependency.startsWith('@')) {
+    const packageEnd = dependency.indexOf('@', dependency.indexOf('/') + 1);
+
+    return packageEnd === -1 ? dependency : dependency.slice(0, packageEnd);
+  }
+
+  return dependency.split('@')[0];
+}
+
+function getImportPackageName(specifier: string) {
+  if (
+    specifier.startsWith('.') ||
+    specifier.startsWith('/') ||
+    specifier.startsWith('@/') ||
+    specifier.startsWith('node:')
+  ) {
+    return null;
+  }
+
+  if (specifier.startsWith('@')) {
+    return specifier.split('/').slice(0, 2).join('/');
+  }
+
+  return specifier.split('/')[0];
+}
+
+function importsRegistryItem(importSources: string[], itemName: string) {
+  return importSources.some(
+    (specifier) => specifier.split('/').at(-1) === itemName
+  );
+}
+
+for (const item of sourceRegistry.items) {
+  for (const dependency of item.registryDependencies ?? []) {
+    assert(
+      !dependency.startsWith('@shadcn/'),
+      `Expected source item ${
+        item.name
+      } to use bare shadcn dependency ${dependency.slice(
+        '@shadcn/'.length
+      )} instead of ${dependency}`
+    );
+  }
+
+  const files = (item.files ?? []).map((file) => ({
+    imports: getRegistryFileImportSources(file.path),
+    path: file.path,
+  }));
+
+  for (const dependency of item.registryDependencies ?? []) {
+    if (!dependency.endsWith('-base-kit')) continue;
+
+    const dependencyName = dependency.slice('@plate/'.length);
+
+    if (
+      !files.some((file) => importsRegistryItem(file.imports, dependencyName))
+    ) {
+      unbackedBaseKitDependencies.push(`${item.name} -> ${dependency}`);
+    }
+  }
+
+  if (!item.name.endsWith('-kit') || item.name.endsWith('-base-kit')) {
+    continue;
+  }
+
+  for (const file of files) {
+    if (
+      file.imports.some((specifier) =>
+        specifier.split('/').at(-1)?.endsWith('-base-kit')
+      )
+    ) {
+      liveKitBaseImports.push(`${item.name}:${file.path}`);
+    }
+  }
+}
+
+for (const item of registryFeatures) {
+  if (item.name.includes('-classic')) continue;
+
+  const featureName = item.name.replace(/-static$/, '');
+  const staticSuffix = item.name.endsWith('-static') ? '-static' : '';
+
+  for (const file of item.files ?? []) {
+    const fileName = file.path
+      .split('/')
+      .at(-1)
+      ?.replace(/\.[^.]+$/, '');
+
+    if (fileName && REMOVED_FAMILY_ITEM_NAMES.has(fileName)) {
+      shallowFeatureSplits.push(`${item.name}:${file.path}`);
+    }
+
+    for (const specifier of getRegistryFileImportSources(file.path)) {
+      const importedName = specifier
+        .split('/')
+        .at(-1)
+        ?.replace(/\.[^.]+$/, '');
+      const isGenericFamilySplit = [
+        `${featureName}-node${staticSuffix}`,
+        `${featureName}-buttons`,
+        `${featureName}-toast`,
+      ].includes(importedName ?? '');
+
+      if (
+        importedName &&
+        (REMOVED_FAMILY_ITEM_NAMES.has(importedName) || isGenericFamilySplit)
+      ) {
+        shallowFeatureSplits.push(`${item.name}:${file.path} -> ${specifier}`);
+      }
+    }
+  }
+}
+
+for (const itemName of REMOVED_FAMILY_ITEM_NAMES) {
+  if (itemsByName.has(itemName)) shallowFeatureSplits.push(itemName);
+}
+
+for (const item of sourceRegistry.items) {
+  if (item.name.endsWith('-node')) {
+    shallowFeatureSplits.push(item.name);
+  }
+
+  for (const file of item.files ?? []) {
+    const fileName = file.path.split('/').at(-1) ?? '';
+
+    if (/-node(?:-static)?\.[cm]?[jt]sx?$/.test(fileName)) {
+      shallowFeatureSplits.push(`${item.name}:${file.path}`);
+    }
+  }
+}
+
+assert(
+  shallowFeatureSplits.length === 0,
+  [
+    'Expected modern registry items and files to use semantic feature names without -node implementation suffixes or shallow sibling owners.',
+    ...shallowFeatureSplits,
+  ].join('\n')
+);
+
+assert(
+  unbackedBaseKitDependencies.length === 0 && liveKitBaseImports.length === 0,
+  [
+    'Expected base-kit registry dependencies to be source-backed and live kits to stay independent from base presets.',
+    ...unbackedBaseKitDependencies,
+    ...liveKitBaseImports,
+  ].join('\n')
+);
+
+const installedTargetResolver =
+  createRegistryInstalledTargetResolver(normalizedRegistry);
+
+function getInstalledPackages(itemName: string) {
+  const packages = new Set(BASELINE_PACKAGES);
+  const visitedPlateItems = new Set<string>();
+  const visitedShadcnItems = new Set<string>();
+
+  const visitShadcnItem = (dependencyName: string) => {
+    if (visitedShadcnItems.has(dependencyName)) return;
+    visitedShadcnItems.add(dependencyName);
+
+    const item = shadcnItemsByName.get(dependencyName);
+    if (!item) return;
+
+    for (const dependency of item.dependencies ?? []) {
+      packages.add(getDependencyPackageName(dependency));
+    }
+
+    if ('registryDependencies' in item) {
+      for (const dependency of item.registryDependencies ?? []) {
+        const target = getRegistryDependencyTarget(dependency);
+
+        if (target?.kind === 'plate') visitPlateItem(target.name);
+        if (target?.kind === 'shadcn') visitShadcnItem(target.name);
+      }
+    }
+  };
+
+  const visitPlateItem = (dependencyName: string) => {
+    if (visitedPlateItems.has(dependencyName)) return;
+    visitedPlateItems.add(dependencyName);
+
+    const item = itemsByName.get(dependencyName);
+    if (!item) return;
+
+    for (const dependency of item.dependencies ?? []) {
+      packages.add(getDependencyPackageName(dependency));
+    }
+
+    for (const dependency of item.registryDependencies ?? []) {
+      const target = getRegistryDependencyTarget(dependency);
+
+      if (target?.kind === 'plate') visitPlateItem(target.name);
+      if (target?.kind === 'shadcn') visitShadcnItem(target.name);
+    }
+  };
+
+  visitPlateItem(itemName);
+
+  return packages;
+}
+
+const duplicateDependencies: string[] = [];
+const missingPackageDependencies: string[] = [];
+const unresolvedCopiedImports: string[] = [];
+
+for (const item of normalizedRegistry.items) {
+  const dependencies = item.dependencies ?? [];
+  const registryDependencies = item.registryDependencies ?? [];
+
+  if (new Set(dependencies).size !== dependencies.length) {
+    duplicateDependencies.push(`${item.name}: dependencies`);
+  }
+  if (new Set(registryDependencies).size !== registryDependencies.length) {
+    duplicateDependencies.push(`${item.name}: registryDependencies`);
+  }
+
+  if (runtimeItemsByName.get(item.name)?.meta?.registry === false) continue;
+
+  const installedPackages = getInstalledPackages(item.name);
+
+  for (const file of item.files ?? []) {
+    const imports = getRegistryFileImportSources(file.path);
+
+    for (const specifier of imports) {
+      if (specifier.startsWith('@/components/ui/')) continue;
+
+      if (HOST_PROVIDED_ALIASES.has(specifier)) continue;
+
+      const copiedOwners = installedTargetResolver.resolveCopiedOwners(
+        file,
+        specifier
+      );
+
+      if (
+        !copiedOwners &&
+        (specifier.startsWith('.') || specifier.startsWith('@/'))
+      ) {
+        unresolvedCopiedImports.push(
+          `${item.name}:${file.path} -> ${specifier}`
+        );
+        continue;
+      }
+
+      if (copiedOwners) continue;
+
+      const packageName = getImportPackageName(specifier);
+
+      if (packageName && !installedPackages.has(packageName)) {
+        missingPackageDependencies.push(
+          `${item.name}:${file.path} -> ${packageName}`
+        );
+      }
+    }
+  }
+}
+
+assert(
+  duplicateDependencies.length === 0 &&
+    missingPackageDependencies.length === 0 &&
+    unresolvedCopiedImports.length === 0,
+  [
+    'Expected every published registry source import to resolve to a copied file and an installable package closure.',
+    ...duplicateDependencies,
+    ...missingPackageDependencies,
+    ...unresolvedCopiedImports,
+  ].join('\n')
+);
+
+function assert(condition: unknown, message: string) {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
+function toEditorComponentTarget(filePath: string) {
+  const segmentIndex = filePath.indexOf(EDITOR_COMPONENT_PATH_SEGMENT);
+
+  assert(
+    segmentIndex !== -1,
+    `Expected ${filePath} to include ${EDITOR_COMPONENT_PATH_SEGMENT}`
+  );
+
+  return `${EDITOR_COMPONENT_TARGET_PREFIX}${filePath.slice(
+    segmentIndex + EDITOR_COMPONENT_PATH_SEGMENT.length
+  )}`;
+}
+
+assert(itemsByName.has('plate-ui'), 'Expected plate-ui registry item');
+assert(itemsByName.has('editor-basic'), 'Expected editor-basic registry item');
+
+const editorBasic = itemsByName.get('editor-basic');
+assert(
+  editorBasic?.registryDependencies?.includes('@plate/plate-ui'),
+  'Expected editor-basic to depend on namespaced plate-ui registry item after normalization'
+);
+
+const publicEditorBasic = publicItemsByName.get('editor-basic');
+assert(
+  publicEditorBasic?.registryDependencies?.includes(
+    `${PLATE_PUBLIC_REGISTRY_BASE_URL}/plate-ui.json`
+  ),
+  'Expected public editor-basic to keep direct URL installs on the same Plate registry base'
+);
+assert(
+  !publicEditorBasic?.registryDependencies?.some((dependency) =>
+    dependency.startsWith('@plate/')
+  ),
+  'Expected public editor-basic to avoid @plate self-dependencies'
+);
+
+const runtimeEditorBasic = runtimeItemsByName.get('editor-basic');
+assert(
+  runtimeEditorBasic?.registryDependencies?.includes('@plate/plate-ui'),
+  'Expected runtime editor-basic to depend on namespaced plate-ui'
+);
+
+for (const item of normalizedRegistry.items) {
+  for (const file of item.files ?? []) {
+    if (!file.path.includes(EDITOR_COMPONENT_PATH_SEGMENT)) {
+      continue;
+    }
+
+    assert(
+      file.target === toEditorComponentTarget(file.path),
+      `Expected ${item.name} file ${file.path} to install under the configured components alias for relative editor imports`
+    );
+  }
+}
+
+const staticEditorPlugins = itemsByName.get('editor-plugins-static');
+const staticEditorPluginsFile = staticEditorPlugins?.files?.[0];
+assert(
+  staticEditorPluginsFile?.target === '@components/editor/plugins-static.ts',
+  'Expected static editor plugins to install in the configured components editor directory'
+);
+
+for (const dependency of staticEditorPlugins?.registryDependencies ?? []) {
+  if (!dependency.startsWith('@plate/')) {
+    continue;
+  }
+
+  const dependencyName = dependency.slice('@plate/'.length);
+  const dependencyItem = itemsByName.get(dependencyName);
+  const dependencyFile = dependencyItem?.files?.[0];
+
+  assert(
+    dependencyFile?.path &&
+      dependencyFile.target === toEditorComponentTarget(dependencyFile.path) &&
+      dependencyFile.target.startsWith('@components/editor/') &&
+      !dependencyFile.target.includes('/plugins/'),
+    `Expected static editor dependency ${dependency} to install flat in the configured components editor directory`
+  );
+}
+
+const editorAi = itemsByName.get('editor-ai');
+assert(
+  editorAi?.files?.some(
+    (file) =>
+      file.path === 'blocks/editor-ai/components/editor/rich-text-editor.tsx' &&
+      file.target === '@components/editor/rich-text-editor.tsx'
+  ),
+  'Expected editor-ai rich-text-editor to install under the configured components editor directory'
+);
+assert(
+  editorBasic?.files?.some(
+    (file) =>
+      file.path ===
+        'blocks/editor-basic/components/editor/rich-text-editor.tsx' &&
+      file.target === '@components/editor/rich-text-editor.tsx'
+  ),
+  'Expected editor-basic rich-text-editor to install under the configured components editor directory'
+);
+
+const excalidraw = itemsByName.get('excalidraw');
+assert(
+  excalidraw?.meta?.examples?.includes('excalidraw-demo'),
+  'Expected excalidraw to expose its existing registry demo'
+);
+
+for (const item of normalizedRegistry.items) {
+  for (const dependency of item.registryDependencies ?? []) {
+    assert(
+      !dependency.startsWith('@shadcn/'),
+      `Expected ${item.name} to use bare shadcn dependency ${dependency.slice(
+        '@shadcn/'.length
+      )} instead of ${dependency}`
+    );
+
+    const target = getRegistryDependencyTarget(dependency);
+
+    if (target?.kind === 'plate') {
+      assert(
+        itemsByName.has(target.name),
+        `Expected ${item.name} Plate dependency ${dependency} to reference a registry item`
+      );
+
+      continue;
+    }
+
+    if (target?.kind === 'shadcn') continue;
+
+    if (
+      dependency.startsWith('@') ||
+      dependency.startsWith('/') ||
+      dependency.startsWith('./') ||
+      dependency.startsWith('../') ||
+      ABSOLUTE_URL_REGEX.test(dependency)
+    ) {
+      continue;
+    }
+
+    assert(
+      shadcnItemsByName.has(dependency),
+      `Expected bare dependency ${dependency} in ${item.name} to be a shadcn registry item`
+    );
+  }
+}
+
+for (const item of publicRegistry.items) {
+  for (const dependency of item.registryDependencies ?? []) {
+    assert(
+      !dependency.startsWith('@shadcn/'),
+      `Expected public ${
+        item.name
+      } to use bare shadcn dependency ${dependency.slice(
+        '@shadcn/'.length
+      )} instead of ${dependency}`
+    );
+
+    assert(
+      !dependency.startsWith('@plate/'),
+      `Expected public ${item.name} to use same-base URL dependency instead of ${dependency}`
+    );
+
+    if (dependency.startsWith(`${PLATE_PUBLIC_REGISTRY_BASE_URL}/`)) {
+      const itemName = dependency
+        .slice(`${PLATE_PUBLIC_REGISTRY_BASE_URL}/`.length)
+        .replace(/\.json$/, '');
+
+      assert(
+        publicItemsByName.has(itemName),
+        `Expected public ${item.name} Plate dependency ${dependency} to reference a registry item`
+      );
+
+      continue;
+    }
+
+    if (
+      dependency.startsWith('@') ||
+      dependency.startsWith('/') ||
+      dependency.startsWith('./') ||
+      dependency.startsWith('../') ||
+      ABSOLUTE_URL_REGEX.test(dependency)
+    ) {
+      continue;
+    }
+
+    assert(
+      shadcnItemsByName.has(dependency),
+      `Expected public bare dependency ${dependency} in ${item.name} to be a shadcn registry item`
+    );
+  }
+}
+
+console.info('Registry source check passed.');

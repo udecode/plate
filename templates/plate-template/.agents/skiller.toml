@@ -1,0 +1,27 @@
+default_agents = [ "claude-code", "codex" ]
+
+[rules]
+merge_strategy = "cursor"
+
+[backup]
+enabled = false
+
+[skills]
+enabled = true
+
+[gitignore]
+enabled = false
+
+[mcp]
+enabled = true
+merge_strategy = "merge"
+
+[mcp_servers.plate]
+command = "npx"
+args = [ "-y", "shadcn@latest", "mcp" ]
+
+[agents.claude-code]
+enabled = true
+
+[agents.codex]
+enabled = true

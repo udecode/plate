@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>census</title>
+<style>body{font:18px sans-serif;margin:16px} textarea,div[contenteditable]{display:block;width:90%;min-height:60px;border:1px solid #888;margin:12px 0;padding:6px}</style></head>
+<body>
+<textarea id="ta" placeholder="textarea" autocapitalize="off"></textarea>
+<div id="ce" contenteditable="true">bare contenteditable</div>
+<script>
+window.__probe=[]; let seq=0;
+const push=(id,e)=>window.__probe.push({seq:++seq,id,type:e.type,trusted:e.isTrusted,t:performance.now(),data:e.data??null,inputType:e.inputType??null,key:e.key??null,keyCode:e.keyCode??null,isComposing:e.isComposing??null,x:e.clientX??null,y:e.clientY??null});
+for (const id of ['ta','ce']) { const el=document.getElementById(id);
+ for (const type of ['keydown','keyup','beforeinput','input','compositionstart','compositionupdate','compositionend','pointerdown','pointerup']) el.addEventListener(type,(e)=>push(id,e),true); }
+</script></body></html>

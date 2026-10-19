@@ -1,0 +1,12 @@
+import './anchor-contract';
+import './anchor-mapping-contract';
+import './clipboard-contract';
+import './collab-anchor-position-contract';
+import './document-state-effect-contract';
+import './normalization-contract';
+import './range-anchor-contract';
+import './rooted-transaction-contract';
+import './schema-contract';
+import './screen-reader-announcement-contract';
+import './selection-rebase-contract';
+import './text-units-contract';

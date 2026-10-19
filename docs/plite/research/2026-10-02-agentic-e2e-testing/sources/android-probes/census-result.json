@@ -1,0 +1,162 @@
+{
+ "ta": {
+  "letters": {
+   "value": "teh",
+   "events": [
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"t\"",
+    "input:insertText:\"t\"",
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"e\"",
+    "input:insertText:\"e\"",
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"h\"",
+    "input:insertText:\"h\""
+   ]
+  },
+  "spaceAutocorrect": {
+   "value": "teh ",
+   "events": [
+    "keydown:Unidentified",
+    "beforeinput:insertText:\" \"",
+    "input:insertText:\" \""
+   ]
+  },
+  "enter": {
+   "value": "teh \n",
+   "events": [
+    "keydown:Enter",
+    "beforeinput:insertLineBreak",
+    "input:insertLineBreak"
+   ]
+  },
+  "lettersAfterEnter": {
+   "value": "teh \nhelo",
+   "events": [
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"h\"",
+    "input:insertText:\"h\"",
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"e\"",
+    "input:insertText:\"e\"",
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"l\"",
+    "input:insertText:\"l\"",
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"o\"",
+    "input:insertText:\"o\""
+   ]
+  },
+  "stripReplace": {
+   "tapped": "hello",
+   "value": "teh \nhello ",
+   "events": [
+    "keydown:Unidentified",
+    "beforeinput:deleteContentBackward",
+    "input:deleteContentBackward",
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"lo \"",
+    "input:insertText:\"lo \""
+   ]
+  },
+  "backspace": {
+   "value": "teh \nhello",
+   "events": [
+    "keydown:Backspace",
+    "beforeinput:deleteContentBackward",
+    "input:deleteContentBackward"
+   ]
+  },
+  "backspaceTwice": {
+   "value": "teh \nhel",
+   "events": [
+    "keydown:Backspace",
+    "beforeinput:deleteContentBackward",
+    "input:deleteContentBackward",
+    "keydown:Backspace",
+    "beforeinput:deleteContentBackward",
+    "input:deleteContentBackward"
+   ]
+  }
+ },
+ "ce": {
+  "letters": {
+   "value": "Teh",
+   "events": [
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"T\"",
+    "input:insertText:\"T\"",
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"e\"",
+    "input:insertText:\"e\"",
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"h\"",
+    "input:insertText:\"h\""
+   ]
+  },
+  "spaceAutocorrect": {
+   "value": "Teh ",
+   "events": [
+    "keydown:Unidentified",
+    "beforeinput:insertText:\" \"",
+    "input:insertText:\" \""
+   ]
+  },
+  "enter": {
+   "value": "Teh \n\n",
+   "events": [
+    "keydown:Enter",
+    "beforeinput:insertParagraph",
+    "input:insertParagraph"
+   ]
+  },
+  "lettersAfterEnter": {
+   "value": "Teh \nHelo",
+   "events": [
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"H\"",
+    "input:insertText:\"H\"",
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"e\"",
+    "input:insertText:\"e\"",
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"l\"",
+    "input:insertText:\"l\"",
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"o\"",
+    "input:insertText:\"o\""
+   ]
+  },
+  "stripReplace": {
+   "tapped": "Hello",
+   "value": "Teh \nHello ",
+   "events": [
+    "keydown:Unidentified",
+    "beforeinput:deleteContentBackward",
+    "input:deleteContentBackward",
+    "keydown:Unidentified",
+    "beforeinput:insertText:\"lo \"",
+    "input:insertText:\"lo \""
+   ]
+  },
+  "backspace": {
+   "value": "Teh \nHello",
+   "events": [
+    "keydown:Backspace",
+    "beforeinput:deleteContentBackward",
+    "input:deleteContentBackward"
+   ]
+  },
+  "backspaceTwice": {
+   "value": "Teh \nHel",
+   "events": [
+    "keydown:Backspace",
+    "beforeinput:deleteContentBackward",
+    "input:deleteContentBackward",
+    "keydown:Backspace",
+    "beforeinput:deleteContentBackward",
+    "input:deleteContentBackward"
+   ]
+  }
+ }
+}

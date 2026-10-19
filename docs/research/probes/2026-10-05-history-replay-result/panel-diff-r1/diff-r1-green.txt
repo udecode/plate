@@ -1,0 +1,4 @@
+# green: history partition after the fix
+ 154 pass
+ 0 fail
+# exit: 0

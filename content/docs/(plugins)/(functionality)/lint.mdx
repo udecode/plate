@@ -1,0 +1,408 @@
+---
+title: Linting
+description: Check text blocks with your own rules, underline findings by severity, and fix them from a popover or a list.
+docs:
+  - route: /docs/components/lint
+    title: Lint Component
+  - route: /docs/examples/lint
+    title: Lint Demo
+---
+
+<ComponentPreview name="lint-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Checks only the text blocks a commit changed, and calls each rule once per changed block.
+- Reads a block's text through inline elements and leaves out non-content text, such as struck suggestions.
+- Paints findings as decorations, so nothing is written into the document or its history.
+- Lists findings in document order, and rebuilds the list only after findings change or blocks move.
+- Applies a fix as its own undo step, and refuses a finding whose text has changed.
+- Keeps a server reply only while its block matches the one it sent, marks and properties included.
+- Moves between findings with `F8` and `Shift+F8` in the kit.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npx shadcn@latest add @plate/lint
+```
+
+### Add Kit
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { LintKit } from '@/components/editor/lint';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...LintKit,
+  ],
+});
+```
+
+</Steps>
+
+`LintKit` configures `BaseLintPlugin` with two example rules, `fillerWords` and
+`commaSpacing`, underline classes per severity, the `F8` and `Shift+F8` keys and
+`LintPopover`. The same file exports `useLintFindings` and `useLintFindingAt`
+for your own lint UI.
+
+<ComponentSource name="lint" />
+
+## Rules
+
+A rule checks one text block. `check` receives the block's content text and
+returns matches with UTF-16 offsets into that text, a message and optional
+fixes. It also receives the block and the editor, so a rule can skip code:
+
+```ts
+import { BaseCodeBlockPlugin, type Editor, type Element } from 'platejs';
+import type { LintRule } from 'platejs/lint';
+
+const isProse = (editor: Editor, block: Element) => {
+  const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+  return !codeBlock.installed || block.type !== codeBlock.schema.type;
+};
+
+export const commaSpacing: LintRule = {
+  id: 'style/comma-spacing',
+  severity: 'error',
+  check: (text, { block, editor }) =>
+    isProse(editor, block)
+      ? Array.from(text.matchAll(/ , ?/g), (match) => ({
+          start: match.index,
+          end: match.index + match[0].length,
+          message: 'Remove the space before commas.',
+          fixes: [', '],
+        }))
+      : [],
+};
+```
+
+`severity` is `'error'`, `'warning'` or `'info'`. The plugin drops a match whose
+offsets are not integers inside the text, or that selects nothing. When a rule
+throws, the block keeps the findings of its other rules and the store's `error`
+holds the failure.
+
+Set the rules through `initialState`, or pass new rules to `api.run`:
+
+```ts
+editor.plugin(BaseLintPlugin).api.run([commaSpacing, fillerWords]);
+```
+
+## Server rules
+
+A rule whose `check` returns a promise is a server rule. Abort the request
+through `signal`:
+
+```ts
+const terminology: LintRule = {
+  id: 'server/terminology',
+  severity: 'info',
+  check: async (text, { signal }) => {
+    const response = await fetch('/api/lint', {
+      body: JSON.stringify({ text }),
+      method: 'POST',
+      signal,
+    });
+
+    return response.json();
+  },
+};
+```
+
+The plugin keeps a reply only while the block matches the one it sent,
+including its type, marks and inline elements. When the block changes before
+the reply arrives, the plugin drops the
+reply and sends the latest block, even when the old request failed. Typing in a block hides that block's server findings until the reply for
+its new text arrives. Each block and rule has at most one request in flight, and
+each rule at most four. The rest wait, and a block whose text changed since its
+last request goes ahead of blocks not checked yet. `clear`, `run` and
+removing the block abort the request through `signal`. A rejected request sets
+the store's `error`.
+
+## Findings list
+
+`api.findings()` returns the findings in document order, as the same array until
+the store's `version` moves. Subscribe to the store to read it in React:
+
+```tsx
+import { BaseLintPlugin } from 'platejs/lint';
+import { useEditor } from 'platejs/react';
+import * as React from 'react';
+
+export function useLintFindings() {
+  const lint = useEditor().plugin(BaseLintPlugin);
+
+  return React.useSyncExternalStore(
+    lint.store.subscribe,
+    lint.api.findings,
+    lint.api.findings
+  );
+}
+```
+
+A finding holds its `id`, `ruleId`, `severity`, `message`, matched `text` and
+`fixes`, with no offsets. Pass its `id` to `select` or `fix`:
+
+```tsx
+function LintList() {
+  const lint = useEditor().plugin(BaseLintPlugin);
+  const findings = useLintFindings();
+
+  return (
+    <ol>
+      {findings.slice(0, 50).map((finding) => (
+        <li key={finding.id}>
+          <button onClick={() => lint.update.select(finding.id)} type="button">
+            {finding.message}
+          </button>
+          {finding.fixes.length > 0 && (
+            <button onClick={() => lint.update.fix(finding.id)} type="button">
+              Fix
+            </button>
+          )}
+        </li>
+      ))}
+    </ol>
+  );
+}
+```
+
+Ids survive an edit in the same block that leaves its findings unchanged, such
+as typing before a finding. Any other change to the block's findings, from an
+edit or a server reply, gives all of them new ids, and `fix` and `select` return
+`false` for an old one.
+
+## Collaboration and suggestions
+
+A collaborator's edit commits like a local one, so the plugin re-checks each
+block it changes. In a suggesting editor, a fix becomes a suggestion like any
+other edit. The replaced text stays as a struck suggestion that rules never see,
+and the inserted fix counts as content.
+
+## Caret popover
+
+`useLintFindingAt` returns the finding under the selection focus. It reads again
+after store changes and commits, so a server reply that lands under a still
+caret opens `LintPopover`:
+
+```tsx
+export function useLintFindingAt() {
+  const editor = useEditor();
+  const lint = editor.plugin(BaseLintPlugin);
+  const subscribe = React.useCallback(
+    (onChange: () => void) => {
+      const offStore = lint.store.subscribe(onChange);
+      const offCommit = editor.subscribeCommit(onChange);
+
+      return () => {
+        offStore();
+        offCommit();
+      };
+    },
+    [editor, lint]
+  );
+
+  return React.useSyncExternalStore(subscribe, lint.api.at, lint.api.at);
+}
+```
+
+`LintPopover` opens while the editor is focused and editable. It shows the
+message, the rule id, one button per fix and **Fix and next**, which applies the
+first fix and selects the next finding. Its buttons keep focus in the editor,
+so typing continues after the fixed text.
+
+## Keyboard behavior
+
+| Key | Behavior |
+| --- | --- |
+| `F8` | Select the next finding, wrapping to the first. |
+| `Shift+F8` | Select the previous finding, wrapping to the last. |
+
+When findings overlap, `F8` and the popover reach the first one.
+
+## Manual Usage
+
+Use the headless plugin without the copied UI:
+
+```ts
+import { createEditor } from 'platejs';
+import { BaseLintPlugin } from 'platejs/lint';
+
+const editor = createEditor({
+  initialValue,
+  plugins: [
+    BaseLintPlugin.configure({ initialState: { rules: [commaSpacing] } }),
+  ],
+});
+const lint = editor.plugin(BaseLintPlugin);
+
+const [first] = lint.api.findings();
+
+if (first) lint.update.fix(first.id);
+```
+
+In React, lift it with `toReactPlugin` and style its decorations through
+`decorate.attributes`. Each decoration carries `data-lint-id`, `data-lint-rule`
+and `data-lint-severity`:
+
+```tsx
+import { BaseLintPlugin } from 'platejs/lint';
+import { toReactPlugin } from 'platejs/react';
+
+const LintPlugin = toReactPlugin(BaseLintPlugin).configure({
+  initialState: { rules: [commaSpacing] },
+  decorate: {
+    attributes: {
+      className:
+        'underline decoration-wavy data-[lint-severity=error]:decoration-destructive',
+    },
+  },
+});
+```
+
+The plugin checks the main document only, not text in nested editable areas
+inside blocks.
+
+## Plugins
+
+### `BaseLintPlugin`
+
+<API name="BaseLintPlugin">
+<APIOptions>
+  <APIItem name="initialState.rules" type="readonly LintRule[]" optional>
+    The rules to run. Default: `[]`.
+  </APIItem>
+  <APIItem name="initialState.active" type="boolean" optional>
+    Whether the plugin lints. `clear` sets it to `false` and `run` to `true`.
+    Default: `true`.
+  </APIItem>
+</APIOptions>
+</API>
+
+The store also holds `version`, which moves whenever the findings list changes,
+and `error`, the last rule failure.
+
+## API Reference
+
+### `api.findings`
+
+<API name="findings">
+<APIReturns>
+  <APIItem name="return" type="readonly LintFinding[]">
+    Findings in document order, the same array until `version` moves. Empty
+    while the plugin is cleared.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.at`
+
+<API name="at">
+<APIReturns>
+  <APIItem name="return" type="LintFinding | null">
+    The finding under the selection focus, read from its block alone.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.run`
+
+Lint the whole document again and repaint.
+
+<API name="run">
+<APIParameters>
+  <APIItem name="rules" type="readonly LintRule[]" optional>
+    Rules that replace the current ones.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `api.clear`
+
+Stop linting, drop every finding and abort server requests until the next
+`run`.
+
+### `update.fix`
+
+Replace a finding's text with one of its fixes, as its own undo step.
+
+<API name="fix">
+<APIParameters>
+  <APIItem name="id" type="string">
+    The finding's id.
+  </APIItem>
+  <APIItem name="index" type="number" optional>
+    The fix to apply. Default: `0`.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    Whether the fix was applied. `false` when the finding or the fix is gone.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `update.select`
+
+<API name="select">
+<APIParameters>
+  <APIItem name="id" type="string">
+    The finding to select.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    Whether the finding still exists and was selected.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `update.move`
+
+<API name="move">
+<APIParameters>
+  <APIItem name="delta" type="-1 | 1">
+    Select the previous or next finding from the selection, wrapping.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    Whether a finding was selected.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `LintRule`
+
+<API name="LintRule">
+<APIAttributes>
+  <APIItem name="id" type="string">
+    The rule's id, copied to each finding as `ruleId`.
+  </APIItem>
+  <APIItem name="severity" type="'error' | 'info' | 'warning'">
+    The severity of the rule's findings.
+  </APIItem>
+  <APIItem name="check" type="(text: string, context: { block: Element; editor: Editor; signal: AbortSignal }) => Iterable<LintMatch> | PromiseLike<Iterable<LintMatch>>">
+    Checks one block's content text. Each `LintMatch` is
+    `{ start, end, message, fixes? }`, with UTF-16 offsets into `text`.
+  </APIItem>
+</APIAttributes>
+</API>
+
+## Related docs
+
+- [Find](/docs/find)
+- [Plugin Shortcuts](/docs/plugin-shortcuts)
+- [Authored Changes](/docs/authored-changes)

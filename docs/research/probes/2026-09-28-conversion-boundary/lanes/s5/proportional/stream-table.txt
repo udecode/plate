@@ -1,0 +1,72 @@
+ai-cjk-10000 (complete)
+  baseline  warmup  load  2.8 a 363.4 b 1336.5 c 265.1 busy 2663.6 final 108 | blockDecor 9.03 assert 94.47 view 0 json 252.16 update 1338.14 projRead 382.19
+  candidate warmup  load  2.6 a 49.3 b 22.4 c 283.7 busy 833.5 final 54.3 | blockDecor 12.07 assert 18.61 view 22.36 json 3.08 update 1.82 projRead 131.72
+  baseline  pair-0  load  2.5 a 361.2 b 1324.1 c 263.6 busy 2648.3 final 110.3 | blockDecor 12.21 assert 96.26 view 0 json 232.76 update 1325.86 projRead 388.26
+  candidate pair-0  load  2.5 a 55 b 21 c 295.1 busy 822.4 final 54.8 | blockDecor 12.09 assert 17.27 view 21.03 json 2.86 update 1.18 projRead 133.81
+  candidate pair-1  load  2.3 a 52.8 b 20 c 297.7 busy 826.7 final 53.7 | blockDecor 14.67 assert 16.22 view 19.97 json 4.57 update 1.7 projRead 131.04
+  baseline  pair-1  load  2.2 a 357.4 b 1343.5 c 264.5 busy 2605.5 final 107.9 | blockDecor 18.02 assert 94.99 view 0 json 262.54 update 1345.43 projRead 371.97
+  baseline  pair-2  load  2.1 a 355.3 b 1341 c 265.3 busy 2664.9 final 109.2 | blockDecor 12.92 assert 93.48 view 0 json 248.96 update 1342.15 projRead 375.22
+  candidate pair-2  load    2 a 53.8 b 13.6 c 289.8 busy 880.1 final 50.1 | blockDecor 11.31 assert 13.61 view 13.61 json 4.21 update 1.77 projRead 130.08
+ai-cjk-50000 (complete)
+  baseline  warmup  load  1.9 a 7335.2 b 28265.5 c 1603.4 busy 44963.3 final 547 | blockDecor 194.52 assert 2063.78 view 0 json 5445.72 update 28266.66 projRead 6906.75
+  candidate warmup  load  1.7 a 271.4 b 181.7 c 2034.5 busy 6819.7 final 179.8 | blockDecor 284.58 assert 175.42 view 181.72 json 46.37 update 1.74 projRead 1005.71
+  baseline  pair-0  load  1.9 a 7446.7 b 28293.3 c 1610.9 busy 45449.3 final 483 | blockDecor 228.75 assert 2088.24 view 0 json 5488.38 update 28294.51 projRead 7023.08
+  candidate pair-0  load    2 a 273.4 b 166.7 c 2095.1 busy 6958.8 final 179.1 | blockDecor 274.81 assert 161.7 view 166.72 json 37.68 update 1.68 projRead 1033.26
+  candidate pair-1  load  2.6 a 276.8 b 180 c 2077.1 busy 6694.6 final 180.7 | blockDecor 281.44 assert 171.31 view 179.96 json 28.21 update 1.64 projRead 1046.57
+  baseline  pair-1  load  2.4 a 7345.5 b 28235.2 c 1627 busy 44831.9 final 535.1 | blockDecor 208.16 assert 2034.99 view 0 json 5490.54 update 28236.97 projRead 6929.59
+  baseline  pair-2  load  2.3 a 7452.2 b 28001.3 c 1623 busy 44990.1 final 535.4 | blockDecor 212.13 assert 2049.93 view 0 json 5512.9 update 28002.57 projRead 7051.61
+  candidate pair-2  load  2.1 a 277.7 b 178.8 c 2039.6 busy 6477.3 final 148.2 | blockDecor 253.02 assert 165.1 view 178.76 json 33.31 update 1.57 projRead 1023.7
+ai-rich-10000 (complete)
+  baseline  warmup  load  2.6 a 225.6 b 756.1 c 171.5 busy 1491.5 final 69.6 | blockDecor 4.57 assert 46.84 view 0 json 105.87 update 757.36 projRead 245.39
+  candidate warmup  load  2.6 a 39.8 b 5 c 203.1 busy 594.6 final 33.6 | blockDecor 5.5 assert 3.75 view 5 json 1.25 update 1.66 projRead 75.86
+  baseline  pair-0  load  2.4 a 226.1 b 756 c 170.2 busy 1486.9 final 71.8 | blockDecor 5.08 assert 48.55 view 0 json 126.68 update 757.19 projRead 246.73
+  candidate pair-0  load  2.4 a 44.3 b 7.5 c 200 busy 564 final 31 | blockDecor 3.75 assert 3.74 view 7.49 json 0.23 update 1.82 projRead 71.71
+  candidate pair-1  load  2.5 a 41.2 b 8.5 c 201 busy 566 final 33.9 | blockDecor 3.76 assert 8.51 view 8.51 json 3.34 update 1.22 projRead 78.93
+  baseline  pair-1  load  2.4 a 224.9 b 761.7 c 158.4 busy 1485.5 final 71.6 | blockDecor 3.37 assert 50.71 view 0 json 117.83 update 762.83 projRead 238.74
+  baseline  pair-2  load  2.4 a 220.3 b 755.8 c 166.4 busy 1488 final 72.3 | blockDecor 3.09 assert 49.96 view 0 json 124.34 update 757.51 projRead 233.88
+  candidate pair-2  load  2.7 a 41.1 b 8.7 c 190.9 busy 554.2 final 30 | blockDecor 1.83 assert 8.79 view 8.71 json 0.57 update 1.76 projRead 87.98
+ai-rich-50000 (complete)
+  baseline  warmup  load  2.6 a 4592.6 b 15001.6 c 1050.7 busy 24875.1 final 281.2 | blockDecor 54.53 assert 1021.35 view 0 json 2527.21 update 15002.76 projRead 4456.3
+  candidate warmup  load  2.4 a 220.4 b 88.9 c 1166.2 busy 4699.3 final 115.5 | blockDecor 83.38 assert 82.68 view 88.94 json 12.4 update 1.79 projRead 466.87
+  baseline  pair-0  load  2.4 a 4543.5 b 14928.1 c 1020.4 busy 24764.4 final 282.5 | blockDecor 45.89 assert 1045.77 view 0 json 2598.2 update 14929.87 projRead 4422.17
+  candidate pair-0  load  2.4 a 210.8 b 104.8 c 1167.7 busy 3835 final 113.4 | blockDecor 81.47 assert 92.21 view 104.75 json 21.79 update 1.17 projRead 443.49
+  candidate pair-1  load  2.8 a 220.4 b 96.2 c 1142.6 busy 3961.5 final 121.4 | blockDecor 84.27 assert 91.32 view 96.24 json 22.73 update 1.43 projRead 464.62
+  baseline  pair-1  load  2.4 a 4530.4 b 14689.5 c 1012.1 busy 24479.7 final 306.4 | blockDecor 61.49 assert 1040.86 view 0 json 2558.97 update 14690.77 projRead 4384.54
+  baseline  pair-2  load    2 a 4449.4 b 14901.5 c 1017.2 busy 24184 final 304.2 | blockDecor 48.06 assert 1082.76 view 0 json 2597.89 update 14903.09 projRead 4312.96
+  candidate pair-2  load  1.9 a 222.5 b 92.7 c 1152.2 busy 4219.2 final 114.8 | blockDecor 79.8 assert 85.93 view 92.66 json 18.38 update 1.81 projRead 461.46
+static-cjk-10000 (complete)
+  baseline  warmup  load  1.6 a 325.2 b 1162.9 c 228.7 busy 2215 final 75.5 | blockDecor 9.17 assert 80.94 view 0 json 207.67 update 1162.86 projRead 347.43
+  candidate warmup  load  1.6 a 52 b 11.2 c 275.6 busy 704.5 final 10.7 | blockDecor 18.82 assert 7.37 view 11.19 json 0.19 update 0 projRead 102.49
+  baseline  pair-0  load  1.5 a 326.4 b 1183.6 c 225.4 busy 2227.2 final 75.8 | blockDecor 10.56 assert 88.73 view 0 json 199.33 update 1183.64 projRead 352.91
+  candidate pair-0  load  2.2 a 41.3 b 16.6 c 289.1 busy 712 final 8.8 | blockDecor 7.77 assert 15.13 view 16.63 json 0 update 0 projRead 118.42
+  candidate pair-1  load    2 a 49.1 b 14.9 c 277.7 busy 706.8 final 6.5 | blockDecor 7.54 assert 14.94 view 14.94 json 1.24 update 0 projRead 116.23
+  baseline  pair-1  load  1.9 a 336.2 b 1242.3 c 235.5 busy 2306.5 final 70.9 | blockDecor 8.2 assert 85.57 view 0 json 215.79 update 1242.33 projRead 365.9
+  baseline  pair-2  load  1.9 a 338.8 b 1250.4 c 232.3 busy 2314.1 final 70.2 | blockDecor 7.89 assert 95.32 view 0 json 255.08 update 1250.42 projRead 372.73
+  candidate pair-2  load  1.9 a 48.9 b 12.5 c 292.1 busy 704.7 final 11.2 | blockDecor 11.32 assert 10.01 view 12.51 json 1.25 update 0 projRead 110.16
+static-cjk-50000 (complete)
+  baseline  warmup  load  1.8 a 6931.9 b 25978.3 c 2008.9 busy 42166.5 final 347.9 | blockDecor 186.13 assert 1979.62 view 0 json 5066.9 update 25978.29 projRead 7059.74
+  candidate warmup  load  9.1 a 241.3 b 57.6 c 2520.4 busy 5742.7 final 24.2 | blockDecor 225.16 assert 42.56 view 57.62 json 17.65 update 0 projRead 754.29
+  baseline  pair-0  load  4.8 a 6865 b 25482.4 c 2043.1 busy 41356.9 final 350.3 | blockDecor 174.33 assert 1984.25 view 0 json 4965.38 update 25482.39 projRead 6985.38
+  candidate pair-0  load    4 a 239 b 87.7 c 2399.8 busy 5539.8 final 19.6 | blockDecor 231.54 assert 69.88 view 87.73 json 17.61 update 0 projRead 755.04
+  candidate pair-1  load  3.5 a 244 b 70.3 c 2405.2 busy 5509.3 final 25.4 | blockDecor 195.87 assert 65.53 view 70.3 json 14.45 update 0 projRead 762.08
+  baseline  pair-1  load  3.4 a 6904.4 b 25743.5 c 2062.8 busy 41725.8 final 346.6 | blockDecor 180.17 assert 2012.71 view 0 json 5029.36 update 25743.51 projRead 7053.1
+  baseline  pair-2  load    3 a 6936.2 b 25878.6 c 2027.9 busy 41736.1 final 351.4 | blockDecor 150.68 assert 2014.09 view 0 json 5026.09 update 25878.61 projRead 7086.84
+  candidate pair-2  load  2.5 a 249.7 b 72.4 c 2416.8 busy 5520.4 final 28.2 | blockDecor 227.03 assert 57.68 view 72.39 json 16.92 update 0 projRead 749.97
+static-rich-10000 (complete)
+  baseline  warmup  load  1.4 a 209.2 b 650 c 155.8 busy 1328 final 47.3 | blockDecor 1.26 assert 44.99 view 0 json 94.17 update 650.01 projRead 227.78
+  candidate warmup  load  1.6 a 31.7 b 6 c 182.9 busy 495.4 final 6.2 | blockDecor 6.28 assert 3.5 view 6 json 0 update 0 projRead 54.53
+  baseline  pair-0  load  1.7 a 213.8 b 633.3 c 145.3 busy 1317.1 final 47.1 | blockDecor 4.79 assert 46.28 view 0 json 111.53 update 633.27 projRead 231.29
+  candidate pair-0  load  1.7 a 40.5 b 6.3 c 177.3 busy 481.2 final 5.6 | blockDecor 5.01 assert 6.25 view 6.25 json 7.03 update 0 projRead 62
+  candidate pair-1  load  1.7 a 38.9 b 11.2 c 186.5 busy 508.2 final 6.7 | blockDecor 1.26 assert 8.71 view 11.21 json 1.24 update 0 projRead 63.18
+  baseline  pair-1  load  1.6 a 219.2 b 641.7 c 148.1 busy 1322.6 final 47.5 | blockDecor 2.51 assert 50.22 view 0 json 97.1 update 641.74 projRead 233.54
+  baseline  pair-2  load  1.5 a 209.5 b 639.7 c 143.8 busy 1303.2 final 46.7 | blockDecor 2.52 assert 42.75 view 0 json 102.04 update 639.72 projRead 227.85
+  candidate pair-2  load  1.5 a 41.3 b 6.3 c 190.6 busy 500.9 final 7 | blockDecor 6.27 assert 6.25 view 6.25 json 1.39 update 0 projRead 66.71
+static-rich-50000 (complete)
+  baseline  warmup  load    2 a 4176.8 b 12844.6 c 1368.6 busy 22428.1 final 183.8 | blockDecor 26.33 assert 989.03 view 1.25 json 2226.61 update 12843.3 projRead 4252.6
+  candidate warmup  load  2.5 a 182.1 b 41.2 c 1711.7 busy 3904.8 final 7.1 | blockDecor 68.67 assert 34.93 view 41.23 json 20.01 update 0 projRead 271.23
+  baseline  pair-0  load  2.9 a 4146 b 12874 c 1398.7 busy 22468.1 final 179.8 | blockDecor 38.18 assert 1000.04 view 0 json 2293.03 update 12874 projRead 4219.08
+  candidate pair-0  load  3.1 a 186.9 b 44.8 c 1701.3 busy 3936.8 final 7 | blockDecor 59.6 assert 34.79 view 44.78 json 14.76 update 0 projRead 292.69
+  candidate pair-1  load  3.2 a 187 b 45.4 c 1684.6 busy 3903.2 final 6.9 | blockDecor 55.54 assert 42.48 view 45.44 json 15.05 update 0 projRead 284.96
+  baseline  pair-1  load  2.9 a 4151.7 b 12989.7 c 1376.8 busy 22599.2 final 181.1 | blockDecor 37.71 assert 994.69 view 0 json 2337.44 update 12989.72 projRead 4215.66
+  baseline  pair-2  load  2.4 a 4191.2 b 13033.9 c 1377.3 busy 22723.7 final 180.6 | blockDecor 23.84 assert 1004.14 view 0 json 2342.17 update 13033.89 projRead 4255.81
+  candidate pair-2  load  2.7 a 188 b 44.3 c 1725.8 busy 3912.2 final 10.3 | blockDecor 60.61 assert 38.85 view 44.26 json 14.45 update 0 projRead 283.34

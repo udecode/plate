@@ -1,0 +1,134 @@
+'use client';
+
+import { createEditor, type Value } from 'platejs';
+import type { CommentsJSON, CommentThread } from 'platejs/comments';
+import { CommentsPlugin } from 'platejs/comments/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
+
+import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
+import { createCommentValue } from '@/registry/components/editor/comment';
+import {
+  AllCommentsButton,
+  CommentToolbarButton,
+} from '@/registry/components/editor/comment-toolbar-button';
+import { DiscussionKit } from '@/registry/components/editor/discussion';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  RedoToolbarButton,
+  UndoToolbarButton,
+} from '@/registry/components/editor/history-toolbar-button';
+import { Toolbar } from '@/registry/components/editor/toolbar';
+import { commentUsers } from '@/registry/examples/values/comment-value';
+
+export default function CommentOverlapDemo() {
+  const editor = useCreateEditor({
+    plugins: [
+      ...BasicBlocksKit,
+      ...DiscussionKit,
+      CommentsPlugin.configure({
+        initialState: {
+          users: commentUsers,
+          initialComments,
+        },
+      }),
+    ],
+    initialValue: fixture.read.value(),
+    userId: 'alice',
+  });
+
+  return (
+    <EditorRoot editor={editor}>
+      <EditorContainer className="h-[360px]">
+        <Toolbar className="border-b px-3 py-1">
+          <UndoToolbarButton aria-label="Undo" />
+          <RedoToolbarButton aria-label="Redo" />
+          <CommentToolbarButton />
+          <AllCommentsButton />
+        </Toolbar>
+        <Editor
+          aria-label="Overlapping comments document"
+          className="h-auto min-h-[280px] px-[clamp(24px,8%,48px)] pb-16"
+          variant="demo"
+        />
+      </EditorContainer>
+    </EditorRoot>
+  );
+}
+
+const text =
+  'Edit these overlapping comments, then undo and redo your changes.';
+const value: Value = [
+  { type: 'paragraph', children: [{ text }] },
+  {
+    type: 'paragraph',
+    children: [
+      {
+        text: 'Click “overlapping” to open both threads. Delete the first paragraph’s text and use its comment button to find the conversations again.',
+      },
+    ],
+  },
+];
+
+const threads: CommentThread[] = [
+  {
+    id: 'wording',
+    userId: 'alice',
+    createdAt: '2026-09-10T10:00:00.000Z',
+    resolution: null,
+    status: 'published',
+    excerpt: 'these overlapping',
+    target: { type: 'range' },
+    messages: [
+      {
+        id: 'wording-message',
+        userId: 'alice',
+        createdAt: '2026-09-10T10:00:00.000Z',
+        body: createCommentValue('Let’s keep this wording concise.'),
+      },
+    ],
+  },
+  {
+    id: 'context',
+    userId: 'bob',
+    createdAt: '2026-09-10T10:01:00.000Z',
+    resolution: null,
+    status: 'published',
+    excerpt: 'overlapping comments',
+    target: { type: 'range' },
+    messages: [
+      {
+        id: 'context-message',
+        userId: 'bob',
+        createdAt: '2026-09-10T10:01:00.000Z',
+        body: createCommentValue(
+          'This thread shares the word “overlapping” with Alice’s.'
+        ),
+      },
+    ],
+  },
+];
+
+const fixture = createEditor({ initialValue: value });
+const initialComments: CommentsJSON = {
+  kind: 'comments',
+  version: 1,
+  threads,
+  ranges: [
+    {
+      anchor: { path: [0, 0], offset: 5 },
+      focus: { path: [0, 0], offset: 22 },
+    },
+    {
+      anchor: { path: [0, 0], offset: 11 },
+      focus: { path: [0, 0], offset: 31 },
+    },
+  ].map((range, index) => {
+    const anchor = fixture.anchor(range, {
+      association: 'inward',
+      deletion: 'nearest',
+    });
+    const saved = fixture.anchor.save(anchor);
+    anchor.release();
+    return { threadId: threads[index].id, range: saved };
+  }),
+};

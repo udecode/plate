@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-19-stabilize-suggestion-popover-anchor",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-19-stabilize-suggestion-popover-anchor.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Accept anchored removal suggestions without crashing the editor",
+  "targets": [
+    {
+      "name": "block-discussion",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for block-discussion."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-19-block-discussion-keep-suggestion-actions-stable-0035da46",
+      "kind": "fix",
+      "summary": "Accept anchored removal suggestions without crashing the editor.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-discussion"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-19",
+          "entry": "2026-08-19-stabilize-suggestion-popover-anchor",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

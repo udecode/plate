@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "examples-huge-document-docs",
+  "title": "Huge Document",
+  "description": "Documentation for Huge Document",
+  "files": [
+    {
+      "path": "../../content/docs/examples/huge-document.mdx",
+      "content": "---\ntitle: Huge Document\n---\n\n<ComponentPreview name=\"huge-document-demo\" />\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/examples/huge-document.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

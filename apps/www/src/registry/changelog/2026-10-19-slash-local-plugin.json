@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-19-slash-local-plugin",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-19-slash-local-plugin.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Define the slash plugin in the copied slash file",
+  "targets": [
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji",
+      "files": ["apps/www/src/registry/components/editor/emoji.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention",
+      "files": ["apps/www/src/registry/components/editor/mention.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-19-slash-define-plugin-copied-file-e6c5a1cf",
+      "kind": "behavior",
+      "summary": "Define `SlashPlugin` in the copied file with the `/` trigger policy and the code-block check, and let each item return its command's result.",
+      "details": [],
+      "migrationNotes": [
+        "Import SlashPlugin from the copied slash file; Plate does not export it."
+      ],
+      "targets": ["slash"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-19",
+          "entry": "2026-10-19-slash-local-plugin",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-19-inline-combobox-command-result-4b7d2e90",
+      "kind": "behavior",
+      "summary": "Let `InlineComboboxItem`'s `onSelect` return a command's `true` or `false`; only `false` keeps the query.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["inline-combobox"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-19",
+          "entry": "2026-10-19-slash-local-plugin",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-19-combobox-popup-props-8c1f5a37",
+      "kind": "behavior",
+      "summary": "Type each popup's props with Plate's `EditableSiblingProps`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["emoji", "mention", "footnote"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-19",
+          "entry": "2026-10-19-slash-local-plugin",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

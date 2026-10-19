@@ -1,0 +1,345 @@
+{
+  "cell": "static-cjk-50000",
+  "chunkCharacters": 64,
+  "chunks": 778,
+  "composition": "static",
+  "environment": {
+    "browser": "149.0.7827.55",
+    "cpu": "Apple M5 Max",
+    "cpus": 18
+  },
+  "fixture": "cjk",
+  "size": 50000,
+  "sourceHash": "e61e9f79a72ed47f8ec107a83fb2db5515e1a0750851a4c7fd1691bd56527eb4",
+  "sourceUtf8Bytes": 64820,
+  "startedAt": "2026-09-29T00:50:11.079Z",
+  "status": "complete",
+  "streams": [
+    {
+      "arm": "baseline",
+      "finalTextSha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+      "loadavg": [
+        3.57568359375,
+        3.42041015625,
+        3.30615234375
+      ],
+      "page": {
+        "arrivals": 778,
+        "finalBlocks": 1481,
+        "finalMs": 851.2,
+        "latencyP50Ms": 453.1,
+        "latencyP95Ms": 835.5,
+        "outputBatches": 197,
+        "previews": 196,
+        "survival": {
+          "eligible": 143630,
+          "kept": 143630,
+          "ratio": 1
+        },
+        "previewTimers": 195,
+        "wallMs": 93660.6
+      },
+      "timedOut": false,
+      "trace": {
+        "finalTaskMs": 851.35,
+        "longestTaskMs": 1081.4,
+        "previewTasks": 195,
+        "previewTasksWithOutput": 195,
+        "publishMs": 85229.91,
+        "publishTasks": 197,
+        "taskName": "RunTask",
+        "tasks": 16232,
+        "totalMs": 89494.35,
+        "windowMs": 93701.27
+      },
+      "order": 0,
+      "role": "warmup"
+    },
+    {
+      "arm": "candidate",
+      "finalTextSha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+      "loadavg": [
+        3.416015625,
+        3.39404296875,
+        3.30224609375
+      ],
+      "page": {
+        "arrivals": 778,
+        "finalBlocks": 1481,
+        "finalMs": 863.6,
+        "latencyP50Ms": 275.4,
+        "latencyP95Ms": 500.7,
+        "outputBatches": 196,
+        "previews": 195,
+        "survival": {
+          "eligible": 143414,
+          "kept": 143414,
+          "ratio": 1
+        },
+        "previewTimers": 194,
+        "wallMs": 59801.9
+      },
+      "timedOut": false,
+      "trace": {
+        "finalTaskMs": 863.75,
+        "longestTaskMs": 863.75,
+        "previewTasks": 194,
+        "previewTasksWithOutput": 194,
+        "publishMs": 51817.37,
+        "publishTasks": 196,
+        "taskName": "RunTask",
+        "tasks": 21938,
+        "totalMs": 55566.88,
+        "windowMs": 59833.37
+      },
+      "order": 1,
+      "role": "warmup"
+    },
+    {
+      "arm": "baseline",
+      "finalTextSha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+      "loadavg": [
+        2.7509765625,
+        3.09423828125,
+        3.1865234375
+      ],
+      "page": {
+        "arrivals": 778,
+        "finalBlocks": 1481,
+        "finalMs": 836.9,
+        "latencyP50Ms": 452.8,
+        "latencyP95Ms": 844.3,
+        "outputBatches": 197,
+        "previews": 196,
+        "survival": {
+          "eligible": 143398,
+          "kept": 143398,
+          "ratio": 1
+        },
+        "previewTimers": 195,
+        "wallMs": 94100.4
+      },
+      "timedOut": false,
+      "trace": {
+        "finalTaskMs": 836.95,
+        "longestTaskMs": 985.52,
+        "previewTasks": 195,
+        "previewTasksWithOutput": 195,
+        "publishMs": 85694.06,
+        "publishTasks": 197,
+        "taskName": "RunTask",
+        "tasks": 14983,
+        "totalMs": 89890.25,
+        "windowMs": 94143.45
+      },
+      "order": 2,
+      "role": "pair-0"
+    },
+    {
+      "arm": "candidate",
+      "finalTextSha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+      "loadavg": [
+        2.0224609375,
+        2.8271484375,
+        3.07763671875
+      ],
+      "page": {
+        "arrivals": 778,
+        "finalBlocks": 1481,
+        "finalMs": 852.4,
+        "latencyP50Ms": 274.3,
+        "latencyP95Ms": 490.4,
+        "outputBatches": 196,
+        "previews": 195,
+        "survival": {
+          "eligible": 143394,
+          "kept": 143394,
+          "ratio": 1
+        },
+        "previewTimers": 194,
+        "wallMs": 58706.1
+      },
+      "timedOut": false,
+      "trace": {
+        "finalTaskMs": 852.44,
+        "longestTaskMs": 852.44,
+        "previewTasks": 194,
+        "previewTasksWithOutput": 194,
+        "publishMs": 50778.48,
+        "publishTasks": 196,
+        "taskName": "RunTask",
+        "tasks": 19606,
+        "totalMs": 54355.01,
+        "windowMs": 58749.72
+      },
+      "order": 3,
+      "role": "pair-0"
+    },
+    {
+      "arm": "candidate",
+      "finalTextSha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+      "loadavg": [
+        1.68408203125,
+        2.572265625,
+        2.96142578125
+      ],
+      "page": {
+        "arrivals": 778,
+        "finalBlocks": 1481,
+        "finalMs": 858.9,
+        "latencyP50Ms": 275.5,
+        "latencyP95Ms": 492.4,
+        "outputBatches": 196,
+        "previews": 195,
+        "survival": {
+          "eligible": 143448,
+          "kept": 143448,
+          "ratio": 1
+        },
+        "previewTimers": 194,
+        "wallMs": 58796
+      },
+      "timedOut": false,
+      "trace": {
+        "finalTaskMs": 858.9,
+        "longestTaskMs": 858.9,
+        "previewTasks": 194,
+        "previewTasksWithOutput": 194,
+        "publishMs": 50914.81,
+        "publishTasks": 196,
+        "taskName": "RunTask",
+        "tasks": 21144,
+        "totalMs": 54443.13,
+        "windowMs": 58833.33
+      },
+      "order": 4,
+      "role": "pair-1"
+    },
+    {
+      "arm": "baseline",
+      "finalTextSha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+      "loadavg": [
+        2.35400390625,
+        2.53759765625,
+        2.89990234375
+      ],
+      "page": {
+        "arrivals": 778,
+        "finalBlocks": 1481,
+        "finalMs": 820.4,
+        "latencyP50Ms": 445.8,
+        "latencyP95Ms": 814.1,
+        "outputBatches": 197,
+        "previews": 196,
+        "survival": {
+          "eligible": 143449,
+          "kept": 143449,
+          "ratio": 1
+        },
+        "previewTimers": 195,
+        "wallMs": 92689.6
+      },
+      "timedOut": false,
+      "trace": {
+        "finalTaskMs": 820.39,
+        "longestTaskMs": 1020.11,
+        "previewTasks": 195,
+        "previewTasksWithOutput": 195,
+        "publishMs": 84184.35,
+        "publishTasks": 197,
+        "taskName": "RunTask",
+        "tasks": 16896,
+        "totalMs": 88438.22,
+        "windowMs": 92716.99
+      },
+      "order": 5,
+      "role": "pair-1"
+    },
+    {
+      "arm": "baseline",
+      "finalTextSha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+      "loadavg": [
+        1.8984375,
+        2.3017578125,
+        2.763671875
+      ],
+      "page": {
+        "arrivals": 778,
+        "finalBlocks": 1481,
+        "finalMs": 821.1,
+        "latencyP50Ms": 448.2,
+        "latencyP95Ms": 825.6,
+        "outputBatches": 197,
+        "previews": 196,
+        "survival": {
+          "eligible": 143477,
+          "kept": 143477,
+          "ratio": 1
+        },
+        "previewTimers": 195,
+        "wallMs": 93368.1
+      },
+      "timedOut": false,
+      "trace": {
+        "finalTaskMs": 821.27,
+        "longestTaskMs": 1040.01,
+        "previewTasks": 195,
+        "previewTasksWithOutput": 195,
+        "publishMs": 85076.51,
+        "publishTasks": 197,
+        "taskName": "RunTask",
+        "tasks": 15874,
+        "totalMs": 89139.11,
+        "windowMs": 93395
+      },
+      "order": 6,
+      "role": "pair-2"
+    },
+    {
+      "arm": "candidate",
+      "finalTextSha256": "aedd05ac73564d321e68d6b206754c2922ee10c28279ca6e68fe438c325be6f2",
+      "loadavg": [
+        2.59033203125,
+        2.51025390625,
+        2.810546875
+      ],
+      "page": {
+        "arrivals": 778,
+        "finalBlocks": 1481,
+        "finalMs": 851.5,
+        "latencyP50Ms": 275.2,
+        "latencyP95Ms": 492.8,
+        "outputBatches": 196,
+        "previews": 195,
+        "survival": {
+          "eligible": 143165,
+          "kept": 143165,
+          "ratio": 1
+        },
+        "previewTimers": 194,
+        "wallMs": 58544.3
+      },
+      "timedOut": false,
+      "trace": {
+        "finalTaskMs": 851.61,
+        "longestTaskMs": 851.61,
+        "previewTasks": 194,
+        "previewTasksWithOutput": 194,
+        "publishMs": 50639.83,
+        "publishTasks": 196,
+        "taskName": "RunTask",
+        "tasks": 20286,
+        "totalMs": 54101.65,
+        "windowMs": 58573.74
+      },
+      "order": 7,
+      "role": "pair-2"
+    }
+  ],
+  "urls": {
+    "baseline": "http://localhost:3532",
+    "candidate": "http://localhost:3531"
+  },
+  "finishedAt": "2026-09-29T01:01:32.634Z",
+  "matrixSpentMs": 1570429
+}

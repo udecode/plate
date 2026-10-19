@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "examples-version-history-docs",
+  "title": "Version History",
+  "description": "Save document revisions, compare them, and restore one.",
+  "files": [
+    {
+      "path": "../../content/docs/examples/version-history.mdx",
+      "content": "---\ntitle: Version History\ndescription: Save document revisions, compare them, and restore one.\n---\n\nThis example saves snapshots of the editor's document as revisions. Edit the text, save a revision to compare it with the previous one, or restore any saved revision.\n\nFor application revision previews and restores with comments, see [Comments and versions](/docs/plate/comment#document-history-and-versions).\n\n## Demo\n\n<ComponentPreview name=\"version-history-demo\" height=\"1000px\" />\n\n## Source\n\n<ComponentSource name=\"version-history-demo\" />\n\n## Usage\n\n- `editor.read.value()` captures the complete document as one revision.\n- `tx.value.replace(revision)` restores a saved revision as one undoable update.\n- `compare(...)` from `platejs/diff` compares two immutable saved revisions without changing the editor.\n- The copied `Diff` component shows comparison groups, effects, filters, and navigation.\n- The copied `BasicMarksKit` provides rich-text marks for the editable document.\n\n## Compare saved revisions\n\nThe demo captures an initial snapshot. Edit the document and select **Save revision** to compare the two latest snapshots. Saving another revision starts a new comparison and cancels the obsolete one. The comparison is read-only. To turn a validated comparison into a pending proposal, use [`proposeAuthoredComparison(...)`](/docs/plate/authored-changes#import-a-compared-revision).\n\n## Restore a revision\n\n**Restore** replaces the document with that saved revision in one update:\n\n```tsx\neditor.update((tx) => tx.value.replace(revision));\n```\n\nThe saved revisions stay in application state, so restoring one keeps the others.\n\n## Persist revisions\n\nSave each `editor.read.value()` snapshot as one document. To load a revision into a fresh editor, pass it as `initialValue`:\n\n```tsx\nconst saved = editor.read.value();\n\nconst reloaded = createEditor({\n  plugins: BasicMarksKit,\n  initialValue: saved,\n});\n```\n\nThe fresh editor starts with empty local undo and redo stacks. If the document has comments, save `CommentsJSON` through `comments.toJSON()` with the same revision and load it through `initialComments`; document undo does not rewind the discussion.\n\nSee [Authored Changes](/docs/plate/authored-changes) to propose and review changes instead of replacing the document.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/examples/version-history.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

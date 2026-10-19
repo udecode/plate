@@ -1,0 +1,1149 @@
+import type { Registry } from 'shadcn/schema';
+
+export const editorComponents: Registry['items'] = [
+  {
+    dependencies: [],
+    description: 'Live editor frame, scroll container, and content components.',
+    files: [
+      { path: 'components/editor/editor.tsx', type: 'registry:component' },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/api/core/plate-components',
+          title: 'Node Selection',
+        },
+        { route: 'https://pro.platejs.org/docs/components/editor' },
+      ],
+      examples: [
+        'editor-default',
+        'editor-disabled',
+        'editor-full-width',
+        'node-selection-demo',
+      ],
+    },
+    name: 'editor',
+    title: 'Editor',
+    type: 'registry:component',
+  },
+  {
+    dependencies: [],
+    description: 'Server-safe static editor component.',
+    files: [
+      {
+        path: 'components/editor/editor-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'editor-static',
+    title: 'Static Editor',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs/diff'],
+    description:
+      'Structural document comparison with evidence, diagnostics, filtering, navigation, and text granularity.',
+    files: [{ path: 'components/editor/diff.tsx', type: 'registry:component' }],
+    meta: {
+      examples: ['version-history-demo'],
+    },
+    name: 'diff',
+    title: 'Diff',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'cmdk'],
+    description: 'A menu for AI-powered content generation and insertion.',
+    files: [
+      { path: 'components/editor/ai-menu.tsx', type: 'registry:component' },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/ai', title: 'AI' },
+        {
+          route: 'https://pro.platejs.org/docs/components/ai-menu',
+          title: 'AI Menu',
+        },
+      ],
+      examples: ['ai-demo', 'ai-pro'],
+      label: 'New',
+    },
+    name: 'ai-menu',
+    registryDependencies: [
+      '@plate/comment',
+      '@plate/editor',
+      '@plate/use-chat',
+    ],
+    title: 'AI Menu',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A toolbar button for accessing AI features.',
+    files: [
+      {
+        path: 'components/editor/ai-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/ai', title: 'AI' },
+        { route: 'https://pro.platejs.org/docs/components/ai-toolbar-button' },
+      ],
+      examples: ['ai-demo', 'floating-toolbar-demo', 'ai-pro'],
+      label: 'New',
+    },
+    name: 'ai-toolbar-button',
+    title: 'AI Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A dropdown menu for text alignment controls.',
+    files: [
+      {
+        path: 'components/editor/align-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/text-align' }],
+      examples: ['align-demo'],
+    },
+    name: 'align-toolbar-button',
+    title: 'Align Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'use-file-picker@2.1.2', 'sonner'],
+    description: 'A toolbar button to import editor content from a file.',
+    files: [
+      {
+        path: 'components/editor/import-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/docx', title: 'DOCX' }],
+      examples: ['basic-nodes-demo'],
+      label: 'New',
+    },
+    name: 'import-toolbar-button',
+    title: 'Import Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'lucide-react', 'sonner'],
+    description:
+      'A toolbar button for exporting editor content as HTML, Markdown, or Word.',
+    files: [
+      {
+        path: 'components/editor/export-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/examples/export', title: 'Export' }],
+      examples: ['docx-demo'],
+      label: 'New',
+    },
+    name: 'export-toolbar-button',
+    registryDependencies: ['@plate/editor'],
+    title: 'Export Toolbar Button',
+    type: 'registry:component',
+  },
+
+  {
+    dependencies: ['platejs'],
+    description: 'Inline caption UI for media elements.',
+    files: [
+      { path: 'components/editor/caption.tsx', type: 'registry:component' },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/media', title: 'Media' },
+        { route: 'https://pro.platejs.org/docs/components/caption' },
+      ],
+      examples: [
+        'media-demo',
+        // 'upload-demo'
+      ],
+    },
+    name: 'caption',
+    title: 'Caption',
+    type: 'registry:component',
+  },
+  {
+    dependencies: [],
+    files: [
+      {
+        path: 'components/editor/caption-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'caption-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'lodash'],
+    description:
+      'A color picker toolbar button with text and background color controls.',
+    devDependencies: ['@types/lodash'],
+    files: [
+      {
+        path: 'components/editor/font-color-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/font' },
+        {
+          route:
+            'https://pro.platejs.org/docs/components/font-color-toolbar-button',
+        },
+      ],
+      examples: ['font-demo'],
+    },
+    name: 'font-color-toolbar-button',
+    title: 'Font Color Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['lucide-react', 'platejs'],
+    description:
+      'Toolbar controls for creating comments and discovering every published conversation.',
+    files: [
+      {
+        path: 'components/editor/comment-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/comment' },
+        {
+          route:
+            'https://pro.platejs.org/docs/components/comment-toolbar-button',
+        },
+      ],
+      examples: ['discussion-demo', 'floating-toolbar-demo'],
+    },
+    name: 'comment-toolbar-button',
+    title: 'Comment Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'fzf@0.5.2'],
+    description: 'An editor to select tags.',
+    files: [
+      {
+        path: 'components/editor/select-editor.tsx',
+        type: 'registry:component',
+      },
+      {
+        path: 'components/editor/tag.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/multi-select' }],
+      examples: ['select-editor-demo'],
+      label: 'New',
+    },
+    name: 'select-editor',
+    title: 'Select Editor',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'frimousse@0.4.0'],
+    description: 'A searchable emoji picker with frequent emoji storage.',
+    files: [
+      {
+        path: 'components/editor/emoji-picker.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/emoji' }],
+      examples: ['emoji-demo', 'emoji-pro'],
+    },
+    name: 'emoji-picker',
+    title: 'Emoji Picker',
+    type: 'registry:component',
+  },
+  {
+    dependencies: [],
+    description: 'An emoji picker toolbar button.',
+    files: [
+      {
+        path: 'components/editor/emoji-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/emoji' },
+        { route: 'https://pro.platejs.org/docs/components/emoji-picker' },
+      ],
+      examples: ['emoji-demo', 'emoji-pro'],
+    },
+    name: 'emoji-toolbar-button',
+    title: 'Emoji Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: [],
+    description: 'Toolbar buttons for undo and redo operations.',
+    files: [
+      {
+        path: 'components/editor/history-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/history',
+          title: 'History',
+        },
+      ],
+      examples: ['basic-nodes-demo'],
+    },
+    name: 'history-toolbar-button',
+    title: 'History Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'Toolbar controls for bulleted, numbered, and todo lists.',
+    files: [
+      {
+        path: 'components/editor/list-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/list' }],
+      examples: ['list-demo'],
+    },
+    name: 'list-toolbar-button',
+    title: 'List Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'Toolbar controls for block indentation.',
+    files: [
+      {
+        path: 'components/editor/indent-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/indent' }],
+      examples: ['indent-demo'],
+    },
+    name: 'indent-toolbar-button',
+    title: 'Indent Toolbar Buttons',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@ariakit/react', 'platejs'],
+    description: 'A combobox for inline suggestions.',
+    files: [
+      {
+        path: 'components/editor/inline-combobox.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/combobox' },
+        { route: 'https://pro.platejs.org/docs/components/inline-combobox' },
+      ],
+      examples: ['mention-demo', 'slash-command-demo', 'emoji-demo'],
+    },
+    name: 'inline-combobox',
+    title: 'Inline Combobox',
+    type: 'registry:component',
+  },
+  {
+    dependencies: [],
+    description: 'A menu for inserting different types of blocks.',
+    files: [
+      {
+        path: 'components/editor/insert-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      examples: ['basic-nodes-demo'],
+    },
+    name: 'insert-toolbar-button',
+    title: 'Insert Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A menu for controlling text line spacing.',
+    files: [
+      {
+        path: 'components/editor/line-height-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/line-height' }],
+      examples: ['line-height-demo'],
+    },
+    name: 'line-height-toolbar-button',
+    title: 'Line Height Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A toolbar control for link management.',
+    files: [
+      {
+        path: 'components/editor/link-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/link' },
+        {
+          route: 'https://pro.platejs.org/docs/components/link-toolbar-button',
+        },
+      ],
+      examples: ['link-demo', 'link-pro'],
+    },
+    name: 'link-toolbar-button',
+    title: 'Link Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A toolbar control for basic text formatting.',
+    files: [
+      {
+        path: 'components/editor/mark-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/basic-marks' }],
+      examples: ['basic-marks-demo', 'basic-nodes-pro'],
+    },
+    name: 'mark-toolbar-button',
+    title: 'Mark Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A toolbar interface for media settings.',
+    files: [
+      {
+        path: 'components/editor/media-toolbar.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/media' }],
+      examples: ['media-demo', 'media-pro'],
+    },
+    name: 'media-toolbar',
+    registryDependencies: ['@plate/media-preview-dialog'],
+    title: 'Media Toolbar',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'use-file-picker@2.1.2', 'sonner'],
+    description: 'Toolbar button for inserting and managing media.',
+    files: [
+      {
+        path: 'components/editor/media-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/media' }],
+      examples: ['media-demo', 'media-pro'],
+    },
+    name: 'media-toolbar-button',
+    registryDependencies: ['@plate/upload'],
+    title: 'Media Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'sonner'],
+    description:
+      'A menu for switching between editor modes and deciding every suggestion.',
+    files: [
+      {
+        path: 'components/editor/mode-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      examples: ['basic-nodes-demo'],
+    },
+    name: 'mode-toolbar-button',
+    registryDependencies: ['@plate/suggestion'],
+    title: 'Mode Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A menu for additional text formatting options.',
+    files: [
+      {
+        path: 'components/editor/more-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: 'https://pro.platejs.org/docs/components/more-toolbar-button',
+        },
+      ],
+      examples: ['basic-marks-demo', 'basic-nodes-pro'],
+    },
+    name: 'more-toolbar-button',
+    title: 'More Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A resizable wrapper with resize handles.',
+    files: [
+      {
+        path: 'components/editor/resize-handle.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/api/resizable' },
+        { route: 'https://pro.platejs.org/docs/components/resizable' },
+      ],
+      examples: ['media-demo', 'media-pro'],
+    },
+    name: 'resize-handle',
+    title: 'Resize Handle',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A menu for table manipulation and formatting.',
+    files: [
+      {
+        path: 'components/editor/table-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/table' }],
+      examples: ['table-demo'],
+    },
+    name: 'table-toolbar-button',
+    title: 'Table Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A toolbar button for wrapping or unwrapping Details blocks.',
+    files: [
+      {
+        path: 'components/editor/details-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/details' }],
+      examples: ['details-demo'],
+    },
+    name: 'details-toolbar-button',
+    title: 'Details Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A menu for converting between different block types.',
+    files: [
+      {
+        path: 'components/editor/turn-into-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route:
+            'https://pro.platejs.org/docs/components/turn-into-toolbar-button',
+        },
+      ],
+      examples: ['basic-nodes-demo', 'basic-nodes-pro'],
+    },
+    name: 'turn-into-toolbar-button',
+    title: 'Turn Into Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'Copied Yjs selection highlights, carets, and labels.',
+    files: [
+      {
+        path: 'components/editor/remote-cursor-overlay.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/yjs' }],
+      examples: ['collaboration-demo'],
+    },
+    name: 'remote-cursor-overlay',
+    title: 'Remote Cursor Overlay',
+    type: 'registry:component',
+  },
+  {
+    description: 'Provider-neutral context menu behavior for Plate UI.',
+    files: [
+      {
+        path: 'bases/base/context-menu.tsx',
+        target: '@components/editor/context-menu.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'editor-context-menu',
+    title: 'Editor Context Menu',
+    type: 'registry:component',
+  },
+  {
+    description: 'Provider-neutral dropdown menu behavior for Plate UI.',
+    files: [
+      {
+        path: 'bases/base/dropdown-menu.tsx',
+        target: '@components/editor/dropdown-menu.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'editor-dropdown-menu',
+    title: 'Editor Dropdown Menu',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'Provider-neutral anchored floating content for Plate UI.',
+    files: [
+      {
+        path: 'bases/base/floating-popover.tsx',
+        target: '@components/editor/floating-popover.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'floating-popover',
+    title: 'Floating Popover',
+    type: 'registry:component',
+  },
+  {
+    description:
+      'A customizable toolbar component with various button styles and group',
+    files: [
+      {
+        path: 'bases/base/toolbar.tsx',
+        target: '@components/editor/toolbar.tsx',
+        type: 'registry:component',
+      },
+      {
+        path: 'components/editor/toolbar-overlay.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      // Add links here if needed
+    },
+    name: 'toolbar',
+    title: 'Toolbar',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A toolbar button for toggling suggestion mode in the editor.',
+    files: [
+      {
+        path: 'components/editor/suggestion-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/suggestion' }],
+    },
+    name: 'suggestion-toolbar-button',
+    registryDependencies: ['@plate/suggestion'],
+    title: 'Suggestion Toolbar Button',
+    type: 'registry:component',
+  },
+];
+
+export const editorNodes: Registry['items'] = [
+  {
+    dependencies: ['platejs'],
+    description: 'List components.',
+    files: [
+      { path: 'components/editor/block-list.tsx', type: 'registry:component' },
+    ],
+    meta: {
+      docs: [{ route: '/docs/list' }],
+      examples: ['list-demo'],
+    },
+    name: 'block-list',
+    title: 'List',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/block-list-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'block-list-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A quote component for block quotes.',
+    files: [
+      {
+        path: 'components/editor/blockquote.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/blockquote' },
+        { route: 'https://pro.platejs.org/docs/components/blockquote' },
+      ],
+      examples: ['basic-blocks-demo', 'basic-nodes-pro'],
+    },
+    name: 'blockquote',
+    title: 'Blockquote',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/blockquote-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'blockquote-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'An inline component for code snippets.',
+    files: [{ path: 'components/editor/code.tsx', type: 'registry:component' }],
+    meta: {
+      docs: [
+        { route: '/docs/code' },
+        { route: 'https://pro.platejs.org/docs/components/code' },
+      ],
+      examples: ['basic-marks-demo'],
+    },
+    name: 'code',
+    title: 'Code',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      { path: 'components/editor/code-static.tsx', type: 'registry:component' },
+    ],
+    name: 'code-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A toolbar button for inserting and editing equations.',
+    files: [
+      {
+        path: 'components/editor/equation-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: 'http://localhost:3000/docs/equation',
+          title: 'Equation',
+        },
+      ],
+      examples: ['equation-demo', 'floating-toolbar-demo'],
+    },
+    name: 'equation-toolbar-button',
+    title: 'Equation Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A toolbar control for adjusting font size.',
+    files: [
+      {
+        path: 'components/editor/font-size-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/font' }],
+      examples: ['font-demo'],
+    },
+    name: 'font-size-toolbar-button',
+    title: 'Font Size Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A heading with multiple level support.',
+    files: [
+      {
+        path: 'components/editor/heading.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/heading' },
+        { route: 'https://pro.platejs.org/docs/components/heading' },
+      ],
+      examples: ['basic-blocks-demo', 'basic-nodes-pro'],
+    },
+    name: 'heading',
+    title: 'Heading',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/heading-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'heading-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A text highlighter with customizable colors.',
+    files: [
+      {
+        path: 'components/editor/highlight.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/highlight' }],
+      examples: ['basic-marks-demo'],
+    },
+    name: 'highlight',
+    registryDependencies: ['@plate/highlight-style'],
+    title: 'Highlight',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/highlight-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'highlight-static',
+    registryDependencies: ['@plate/highlight-style'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A horizontal rule component with focus states.',
+    files: [
+      {
+        path: 'components/editor/horizontal-rule.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/horizontal-rule' },
+        { route: 'https://pro.platejs.org/docs/components/horizontal-rule' },
+      ],
+      examples: ['basic-blocks-demo'],
+    },
+    name: 'horizontal-rule',
+    title: 'Horizontal Rule',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/horizontal-rule-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'horizontal-rule-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description:
+      'Image element with lazy loading, resizing capabilities, and optional caption.',
+    files: [
+      {
+        path: 'components/editor/media-image.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/media' },
+        { route: '/docs/api/resizable' },
+        { route: 'https://pro.platejs.org/docs/components/image-node' },
+      ],
+      examples: ['media-demo', 'media-pro'],
+    },
+    name: 'media-image',
+    title: 'Media Image',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/media-image-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'media-image-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A modal component for previewing and manipulating images.',
+    files: [
+      {
+        path: 'components/editor/media-preview-dialog.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/media' },
+        { route: 'https://pro.platejs.org/docs/components/image-preview' },
+      ],
+      examples: ['media-demo', 'media-pro'],
+    },
+    name: 'media-preview-dialog',
+    title: 'Media Preview Dialog',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A component for styling keyboard shortcuts.',
+    files: [{ path: 'components/editor/kbd.tsx', type: 'registry:component' }],
+    meta: {
+      docs: [{ route: '/docs/kbd', title: 'Keyboard Input' }],
+      examples: ['basic-marks-demo'],
+    },
+    name: 'kbd',
+    title: 'Keyboard Input',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      { path: 'components/editor/kbd-static.tsx', type: 'registry:component' },
+    ],
+    name: 'kbd-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'An audio player component with caption support.',
+    files: [
+      {
+        path: 'components/editor/media-audio.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/media' },
+        {
+          route: 'https://pro.platejs.org/docs/components/media-audio',
+        },
+      ],
+      examples: ['media-demo', 'media-pro'],
+    },
+    name: 'media-audio',
+    registryDependencies: ['@plate/resize-handle'],
+    title: 'Media Audio',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/media-audio-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'media-audio-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'react-tweet', 'react-lite-youtube-embed'],
+    description:
+      'A component for embedded media content with resizing and caption support.',
+    files: [
+      {
+        path: 'components/editor/media-embed.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/media' },
+        { route: '/docs/api/resizable' },
+        {
+          route: 'https://pro.platejs.org/docs/components/media-embed',
+        },
+      ],
+      examples: ['media-demo', 'media-pro'],
+    },
+    name: 'media-embed',
+    title: 'Media Embed',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/media-embed-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'media-embed-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description:
+      'A file attachment component with download capability and caption.',
+    files: [
+      {
+        path: 'components/editor/media-file.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/media' },
+        { route: 'https://pro.platejs.org/docs/components/media-file' },
+      ],
+      examples: ['media-demo', 'media-pro'],
+    },
+    name: 'media-file',
+    registryDependencies: ['@plate/resize-handle'],
+    title: 'Media File',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/media-file-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'media-file-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'react-player@3.3.1', 'react-lite-youtube-embed'],
+    description:
+      'A video player component with YouTube and file upload support.',
+    files: [
+      {
+        path: 'components/editor/media-video.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/media' },
+        { route: '/docs/api/resizable' },
+        {
+          route: 'https://pro.platejs.org/docs/components/media-video',
+        },
+      ],
+      examples: ['media-demo', 'media-pro'],
+    },
+    name: 'media-video',
+    title: 'Media Video',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/media-video-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'media-video-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: [],
+    description: 'A paragraph block with background color support.',
+    files: [
+      {
+        path: 'components/editor/paragraph.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/basic-blocks' },
+        { route: 'https://pro.platejs.org/docs/components/paragraph' },
+      ],
+      examples: ['basic-blocks-demo', 'basic-nodes-pro'],
+    },
+    name: 'paragraph',
+    title: 'Paragraph',
+    type: 'registry:component',
+  },
+  {
+    dependencies: [],
+    files: [
+      {
+        path: 'components/editor/paragraph-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'paragraph-static',
+    type: 'registry:component',
+  },
+];
+
+export const registryEditor: Registry['items'] = [
+  ...editorComponents,
+  ...editorNodes,
+];

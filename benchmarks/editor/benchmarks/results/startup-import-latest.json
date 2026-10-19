@@ -1,0 +1,20 @@
+{
+  "name": "startup-import",
+  "generatedAt": "2026-06-02T11:46:12.998Z",
+  "node": "v24.14.1",
+  "runs": 7,
+  "rows": [
+    {
+      "category": "startup",
+      "fixture": "package-root",
+      "library": "project",
+      "status": "ok",
+      "medianMs": 6.896208000000005,
+      "p95Ms": 7.136832999999999,
+      "exportCount": 16,
+      "budgetP95Ms": 100,
+      "budgetExports": 32,
+      "problem": ""
+    }
+  ]
+}

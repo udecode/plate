@@ -1,0 +1,124 @@
+{
+  "id": "2026-09-28-paste-proof-and-media-html",
+  "kind": "execution",
+  "date": "2026-09-28",
+  "scopes": [
+    "imports",
+    "exports"
+  ],
+  "reviewBasis": [
+    "2026-09-28-imports-paste-loss-reporting-review",
+    "2026-09-27-exports-adversarial-audit-feedback"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-28-paste-proof-and-media-html.md",
+    "sha256": "e73da4430d93a2ffc5f1ed94ac5da0ea23f8adc9376ff6e3928f502fde6a0d2a"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Closed the remaining paste proof and media gaps. A committed kit spec pastes through the real EditorKit with sonner mocked and proves one warning per lossy paste and none for mapped video, Docs metadata or decorative icons. The www Playwright config gains Firefox and WebKit projects; clipboard permissions are granted only in Chromium, and the clipboard spec passes in all three engines, native and synthetic. Video and audio gain HTML mappings: figure.editor-video and figure.editor-audio with native controls and a figcaption, plus bare media decode from src or the first source without fallback text, at figure priorities distinct from image and media embed. Removing graphics inside an aria-hidden subtree is lossless, so icon SVG pastes quietly while unmarked SVG, MathML and objects stay lossy.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/plans/artifacts/2026-09-28-paste-proof-and-media-html/gates.json",
+        "sha256": "6f30d5991760b42f30c9a59d6cc20903f85b40dbe474a6c61a240bdff42c68d4",
+        "claim": "Final tree: plitejs 13/13 and 21/21, platejs 90/90, contracts and 141/141, www typecheck, kit spec 8/8, entrypoint, changelog, Plate Next v246, clipboard spec 6/6 in Chromium, Firefox and WebKit, diff check."
+      },
+      {
+        "path": "apps/www/src/registry/components/editor/plugins.spec.tsx",
+        "sha256": "7e0f577622abaf885bdac89a0ed140cfabb73362b7d2d71101c45b2a9510f9cf",
+        "claim": "EditorKit warns once for SVG text and uninsertable content and not for a mapped video, Docs metadata or decorative heading icons; kept content is asserted."
+      },
+      {
+        "path": "apps/www/tests/browser/clipboard.spec.ts",
+        "sha256": "0df9866bf795235a0b66d91de81e94050f7ca5ec25e300f903b7f514c0a166e5",
+        "claim": "Native and synthetic HTML paste keeps heading, bold, link, sanitized text and a pasted video in every engine."
+      },
+      {
+        "path": "packages/platejs/src/features/media/lib/BaseMediaPluginContracts.spec.ts",
+        "sha256": "df05641daa25c633105f5c67d8893d76c7642677cfa4363fdd9dee03790c3487",
+        "claim": "Video and audio round-trip with captions through clipboard HTML; bare media with source children decodes without fallback text."
+      },
+      {
+        "path": "packages/platejs/src/html/html.spec.ts",
+        "sha256": "cca7d2ebb539e1e23d2c6490bcb17d95b3d78106f50ce1e4fc0145bf23ec6adf",
+        "claim": "aria-hidden graphics are lossless removals; SVG text and object fallback remain lossy."
+      }
+    ],
+    "limits": "Playwright's WebKit build is not Safari. The rendered toast is proven by earlier normal-mode receipts; the committed proof mocks sonner at the kit callback. Unmarked icon SVG still warns because it is dropped."
+  },
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "f4ef29918d176ec0822b7193d2e59908c1cc6e89bfaf0cb6c7b811b20c3b2af1",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "20628cd7957c1d69b568623185dd095c524a51215440238121100bc7bcf5d28b",
+      "packages/platejs/src/docx/import/lib/importDocx.ts": "2751ce59b5d206bef6af5bc5a61a9fedf0086b783aad5a3473a675f90467e337",
+      "apps/www/src/registry/components/editor/import-toolbar-button.tsx": "999850e12b5fbd28d2287c194b469deb7f631a5598fbbc16fafda397beab2318",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "a3faa5e9d4077cf39e655b0001bd660d742f9a5c00e8cb71e1e9e20f58cbac07",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "ce017969c0a1d0f5798538c9274348a6dbb65b0d91a3024bc85bb8037948a3b0",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.spec.ts": "b381d6363dcccb2002cfafeb1b391567df78efebd214d06dd6f68d7cf776eb49",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "091294c8ca17a2ee26721bc57c1bdef55d0aa8945db7e1286801e80054e1c948",
+      "packages/platejs/src/docx/import/lib/importDocx.spec.ts": "f3b5bcc14f508661ae8d80c1b22e06a0db88d047571cf00941a9b15213864ec6",
+      "docs/analysis/editor-architecture-candidates.md": "14a88723e948ca14db76a0a585c0c5561c1d396abb5ade4ba8d31c620e79765d",
+      "docs/research/decisions/documents-conversion-fidelity.md": "5fb0180c2b81cfae47ed40abd33e344f5685a6e684219dbd558d05235c4d065d",
+      "docs/research/decisions/persistence-ownership.md": "ba8d50f5450f067eb6f3ea0096ee7fd408be03da09fbbb8c18df5df0d4138866",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "6e9232116ec17850ea276145afc73a9f424b5a3d91b49d0bd4e24aa4f030a1da",
+      "packages/platejs/src/lib/plugins/html/htmlAst.ts": "e969f11cc9dcabd27f8dcff623c16e9b1b064279cf45ae4c359d0bc90f389a37",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "dffc576c3a974de9d6a4240a6769a5fb25ae62e340a481634a139ffc3da274ad",
+      "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts": "77787a74cbf9d9d79d8edf7f22f18570e8e6c6969fbda188006252a5a9800345",
+      "packages/platejs/src/docx/export/lib/exportDocx.tsx": "4d30d2506f7a5c0ad61659fe406e9ff204faaa91783ec169a7061167b1390395",
+      "packages/platejs/src/csv/lib/CsvPlugin.ts": "856a1765f506f1d1df06d897bff42628b7238e0ed8b73cba5aaaf57b23f267e3",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "04fa79bafc401c06ed19fb2b233eed20504fa44d8d7381601f76d42011724096",
+      "packages/plitejs/src/core/persisted-document.ts": "e605b0ed6d719d0b68f393bf531bd64e257fbe402851c77463fbbfac40281575",
+      "packages/platejs/src/migrations/documentMigrations.ts": "6a823432296edd3372d0e79aa0186f2ef10ce461b57801264302e6485bae5a99",
+      "content/docs/(guides)/serializing.mdx": "df772d4f701ccc2bcca35fff60797c31694aa564ba14ac912ee0d5111efe43f1",
+      "content/docs/(plugins)/(serializing)/html.mdx": "848c032261951da9328e48255f872505f08d5733666a2e8ceaf36f9f15039d09",
+      "content/docs/(plugins)/(serializing)/markdown.mdx": "8ce874a4eb33a0c0b38ec1b913d2fc695bfcc9120d28e39e83c3db01f7810857",
+      "content/docs/(plugins)/(serializing)/docx.mdx": "e34d1299002a355297c9d91235e73625917c93c7702d1806540af99fff9dac40",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "b454aad2b2feff4f1d9e47e0205006fd264b4509f5deb86408a998fcd892c446",
+      "apps/www/src/registry/examples/docx-demo.tsx": "4df0970d5c0eaab610d8789c0dd654fbb46b871a84107f0d6addc5bf5c502afd",
+      "apps/www/src/registry/blocks/html-export/page.tsx": "3f372041ba2ce7c7fa5a4d185798223fa36e462dc129fd91e622da49ba0334ae",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/renderStaticHtml.tsx": "86497d4b05fda7a51d6389e21f89731a1ddaefc714765c4b93e48713c554523b",
+      "packages/platejs/type-tests/authored-format-contracts.ts": "7bd40f4e3a7df8e0c9fa517e3e944e00610ea1653396ec2428894a19daa6063d",
+      "packages/plitejs/src/authored/format.ts": "eaa1a2e0ce3cedeea9df0a9f6241214c08cfc97776038a833fac5567770b706c",
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/registry-editor.ts": "95491326193b354802a076551bb117fc05f2f1431bd29f4635dac7e4a6b80cf4",
+      "content/docs/examples/export.mdx": "ea8211b880a268e0c1eb81c7efcbcb31f866f0d84c5204da14813d2f24cfc255",
+      "content/docs/(guides)/authored-changes.mdx": "385093cfb7fc0fae3b201cd9ae63934b6ae90bbcb449194c3a3624a570262320",
+      "docs/vision/plate.md": "5679e514ccf73ebed9192d344360119ef9b830a30199c74046c24e1c2324309c",
+      "docs/vision/plite.md": "21f35b28f19ba7cae3bea6168c790d4c4ee22a0536dceb6af9e33f25994bf73a",
+      "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx": "b5b339dbfc850d6d14cf8474ac019ffd03fd9a919a5423c3428dc969b45935c8",
+      "apps/www/src/registry/components/editor/docx-export.tsx": "85830dfdc863f1fe81778e52e755852c9605a9e722c964f9a0bb3d9c7a76abbe",
+      "apps/www/src/app/(app)/docs/examples/server-side/page.tsx": "4c98d9abf30942dea6ef6f850ae8b5fc3e174effbae19009098cb38f554a3877",
+      "packages/platejs/src/static/editor/withStatic.tsx": "a7049ff7b1f5a91235238bb502a9c39c05220eebcb6d74c85afaff9467e70d33",
+      "packages/platejs/src/static/components/PlateStatic.tsx": "d6f8e0684e0fbd3030382abbf5823b00f5e71cfee7690f0ea190bc8c33eded80",
+      "packages/platejs/src/lib/editor/withPlite.ts": "051872d0215d8489865c57878c710c5906f011b59e7f84ce335f34f8542bc9a5",
+      "packages/platejs/src/internal/plugin/compilePlateModel.ts": "326cd9dae47df6c70342e74032a02807caa947cf1007b25c730af0fa12f61793",
+      "packages/platejs/src/internal/plugin/compilePlateFormats.ts": "6eae7b90a4a90cba006a162ac1c16b5a895cbb2c8cb43378f090e931ba8df2f9",
+      "packages/platejs/src/markdown/lib/types.ts": "f8efa62b4313eab9bcb199b585f98ea8facac6b3a1de89b5df872cdd9fc7f1ec",
+      "packages/plitejs/src/authored/checkpoint.ts": "adadcfedbd7a0c75d4cec96af91f7665091155ee3613148832c7bdf023925b2a",
+      "content/docs/api/node.mdx": "6cf96d7dfb56d46a82ec64d540ec7ee3355a2756dca5b3b7444bc729592f5008",
+      "packages/plitejs/src/interfaces/node.ts": "e75fafa20ae004deb7db029c784bd30323408bea5fd244905a2018c626b96166",
+      "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts": "5167f3b8d2770b765ac51f404159b9ad42aeab68b63489846aeadae2653b8c3f",
+      "packages/platejs/src/react/features/table/TablePlugin.tsx": "b1ab39fbb540828b32839c1123a5b6fec45d622f55032c73f00db6e36984a26a",
+      "packages/platejs/src/static/renderStaticHtml.node-props.spec.ts": "3f117091c0d4225cf97e3bf29413931cb94a21e0163e4a08f23eb3b498395e53",
+      "docs/plite/research/2026-09-24-export-architecture/shards/002-final-reassessment.md": "612865507a714a57495d19399a63fc79c4329c68381c0837b989209b9b79e0b4"
+    },
+    "directories": {},
+    "features": {
+      "example/plite/parse-html": "8ebfcea1d39948b0fd313147864130c49ad8bfe56035bdeb84a2c37c0304fc66",
+      "plitejs/core/plain-text": "a1ced6bc55a354d3c2a5fee11384907e01b7c913af4a2ef95939ee752bf9c92b",
+      "ui/export-toolbar-button": "9cc42e7754393c96a7275858520c7fd836cd762cadd1f3964ead22455a45ed7f"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-28-paste-proof-and-media-html.md",
+    "docs/research/review-records/2026-09-28-paste-loss-reporting-repairs.json"
+  ]
+}

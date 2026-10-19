@@ -1,0 +1,155 @@
+{
+  "scope": "Seven bounded upstream semantic witnesses, not Plite production tests or comparative quality/performance proof.",
+  "runtime": "bun 1.3.12",
+  "sourceFiles": 28,
+  "sourceIdentityVerifiedBeforeAndAfter": true,
+  "scriptSha256": "d6e1025f4cba41460cdaf768d3de0873efba7cb9aa1c70b1ada17a477f4d6b94",
+  "passed": [
+    "identified-array-move-and-interior-edit-roundtrip",
+    "unidentified-array-comparison-does-not-establish-move",
+    "index-patch-does-not-validate-reordered-baseline",
+    "merge-output-erases-nonconflicting-branch-labels",
+    "merged-regions-omit-unilateral-deletion-review-row",
+    "conflict-retains-three-content-alternatives",
+    "fuzzy-text-patch-accepts-different-same-length-baseline"
+  ],
+  "observations": {
+    "identifiedMove": {
+      "0": {
+        "text": [
+          "Gamma",
+          "Gamma!"
+        ]
+      },
+      "_t": "a",
+      "_2": [
+        "",
+        0,
+        3
+      ]
+    },
+    "unidentifiedMove": {
+      "0": {
+        "id": [
+          "a",
+          "c"
+        ],
+        "text": [
+          "Alpha",
+          "Gamma!"
+        ]
+      },
+      "1": {
+        "id": [
+          "b",
+          "a"
+        ],
+        "text": [
+          "Beta",
+          "Alpha"
+        ]
+      },
+      "2": {
+        "id": [
+          "c",
+          "b"
+        ],
+        "text": [
+          "Gamma",
+          "Beta"
+        ]
+      },
+      "_t": "a"
+    },
+    "wrongBaseline": [
+      {
+        "id": "blue"
+      },
+      {
+        "id": "coral"
+      }
+    ],
+    "branchRegions": [
+      {
+        "stable": true,
+        "buffer": "a",
+        "bufferStart": 0,
+        "bufferLength": 1,
+        "bufferContent": [
+          "start-local"
+        ]
+      },
+      {
+        "stable": true,
+        "buffer": "o",
+        "bufferStart": 1,
+        "bufferLength": 1,
+        "bufferContent": [
+          "bridge"
+        ]
+      },
+      {
+        "stable": true,
+        "buffer": "b",
+        "bufferStart": 2,
+        "bufferLength": 1,
+        "bufferContent": [
+          "finish-remote"
+        ]
+      }
+    ],
+    "flattened": [
+      {
+        "ok": [
+          "start-local",
+          "bridge",
+          "finish-remote"
+        ]
+      }
+    ],
+    "deletionRegions": [
+      {
+        "stable": true,
+        "buffer": "o",
+        "bufferStart": 0,
+        "bufferLength": 1,
+        "bufferContent": [
+          "start"
+        ]
+      },
+      {
+        "stable": true,
+        "buffer": "o",
+        "bufferStart": 2,
+        "bufferLength": 1,
+        "bufferContent": [
+          "finish"
+        ]
+      }
+    ],
+    "conflict": [
+      {
+        "conflict": {
+          "a": [
+            "local"
+          ],
+          "aIndex": 0,
+          "o": [
+            "base"
+          ],
+          "oIndex": 0,
+          "b": [
+            "remote"
+          ],
+          "bIndex": 0
+        }
+      }
+    ],
+    "fuzzyPatch": [
+      "The brown boat moves quickly.",
+      [
+        true
+      ]
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+plite replace selection end | accept | {"keys":["children"],"text":"HELLO","selection":{"anchor":{"offset":5,"path":[0,0]},"focus":{"offset":5,"path":[0,0]}}}
+plate replace selection end | accept | {"keys":["children"],"text":"HELLO","selection":{"anchor":{"offset":5,"path":[0,0]},"focus":{"offset":5,"path":[0,0]}}}
+plite replace document key (contract test) | accept | {"keys":["children"],"text":"HELLO"}
+control: plate construction through value | accept | {"keys":["children"],"text":""}
+plate construction extra JSON | accept | {"keys":["children"],"text":"HELLO"}
+plate construction extra non-JSON | accept | {"keys":["children"],"text":"HELLO"}
+plate construction raw selection | accept | {"keys":["children"],"text":"HELLO","selection":null}
+plite construction raw selection | accept | {"keys":["children"],"text":"HELLO","selection":null}
+transform input on editor replace | accept | {"transformSaw":["children","extra"]}
+transform input on root view replace | accept | {"transformSaw":["children","roots","selection"]}
+reconfigure migrate returns extra JSON | accept | {"keys":["children"],"text":"HELLO"}
+reconfigure migrate returns extra non-JSON | accept | {"keys":["children"],"text":"HELLO"}
+reconfigure migrate returns selection | accept | {"keys":["children"],"text":"HELLO"}
+reconfigure migrate returns control meta | reject | Schema migrations cannot replace editor state-field metadata.
+migrateDocument lifts title | accept | {"children":[{"type":"paragraph","children":[{"text":"HELLO"}]}],"meta":{"title":"T"}}
+migrateDocument stray key | accept | {"children":[{"type":"paragraph","children":[{"text":"HELLO"}]}]}
+migrateDocument raw selection | accept | {"children":[{"type":"paragraph","children":[{"text":"HELLO"}]}]}

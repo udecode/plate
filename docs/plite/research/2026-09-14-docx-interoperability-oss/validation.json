@@ -1,0 +1,19 @@
+{
+  "status": "historical-receipt-redacted",
+  "scope": "documents",
+  "date": "2026-09-14",
+  "tsvRows": {
+    "query-ledger.tsv": 6,
+    "rejected-ledger.tsv": 6,
+    "promoted-ledger.tsv": 8,
+    "repo-registry.tsv": 6,
+    "lead-ledger.tsv": 9,
+    "read-log.tsv": 57,
+    "corpus-ledger.tsv": 6
+  },
+  "selectedExternalFilesVerified": 47,
+  "mainLocalReadHashesVerified": 10,
+  "corpora": 6,
+  "errors": [],
+  "limits": "Historical validation receipt. Source rows were redacted afterward; links and hashes require current verification before reuse."
+}

@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "incremental": true,
+    "noEmit": false,
+    "outDir": "../.turbo/entrypoint-types/core",
+    "rootDir": "../src",
+    "sourceMap": false,
+    "tsBuildInfoFile": "../.turbo/entrypoint-types/core.tsbuildinfo"
+  },
+  "exclude": [
+    "../src/authored/**/*",
+    "../src/diff/**/*",
+    "../src/dom/**/*",
+    "../src/history/**/*",
+    "../src/hyperscript/**/*",
+    "../src/pagination/**/*",
+    "../src/pagination/react.*",
+    "../src/react/**/*",
+    "../src/react/virtualized.*",
+    "../src/react/virtualized/**/*",
+    "../src/testing/**/*",
+    "../src/yjs/**/*",
+    "../src/yjs/react/**/*",
+    "../src/**/*.spec.*",
+    "../src/**/*.test.*",
+    "../src/**/*.slow.*",
+    "../src/**/*-contract.*",
+    "../src/**/__tests__/**"
+  ],
+  "extends": "../tsconfig.json",
+  "include": [
+    "../src/annotations/**/*",
+    "../src/internal/index.*",
+    "../src/**/*"
+  ],
+  "references": []
+}

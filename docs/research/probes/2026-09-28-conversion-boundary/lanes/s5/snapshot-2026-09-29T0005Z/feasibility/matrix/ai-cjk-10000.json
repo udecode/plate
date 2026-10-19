@@ -1,0 +1,105 @@
+{
+  "cell": "ai-cjk-10000",
+  "chunkCharacters": 64,
+  "chunks": 156,
+  "composition": "ai",
+  "environment": {
+    "browser": "149.0.7827.55",
+    "cpu": "Apple M5 Max",
+    "cpus": 18
+  },
+  "fixture": "cjk",
+  "size": 10000,
+  "sourceHash": "573588a01d1f8ce00cf951acf2d352ca95194335f98fe725307762bdf62e14d2",
+  "sourceUtf8Bytes": 13000,
+  "startedAt": "2026-09-29T00:24:22.224Z",
+  "status": "complete",
+  "streams": [
+    {
+      "arm": "baseline",
+      "finalTextSha256": "d9a5734485a19d3bdc6c7a25b743f83e1a649e2e07c1bea8f3f5714cad6d623d",
+      "loadavg": [
+        1.8876953125,
+        1.76220703125,
+        2.013671875
+      ],
+      "page": {
+        "arrivals": 156,
+        "finalBlocks": 300,
+        "finalMs": 226,
+        "latencyP50Ms": 179.8,
+        "latencyP95Ms": 348.5,
+        "outputBatches": 13,
+        "previews": 12,
+        "survival": {
+          "eligible": 1098,
+          "kept": 1098,
+          "ratio": 1
+        },
+        "previewTimers": 12,
+        "wallMs": 1788.5
+      },
+      "timedOut": false,
+      "trace": {
+        "finalTaskMs": 226.88,
+        "longestTaskMs": 226.88,
+        "previewTasks": 11,
+        "previewTasksWithOutput": 11,
+        "publishMs": 1323.8,
+        "publishTasks": 13,
+        "taskName": "RunTask",
+        "tasks": 901,
+        "totalMs": 1417.61,
+        "windowMs": 1830.6
+      },
+      "order": 0,
+      "role": "warmup"
+    },
+    {
+      "arm": "candidate",
+      "finalTextSha256": "d9a5734485a19d3bdc6c7a25b743f83e1a649e2e07c1bea8f3f5714cad6d623d",
+      "loadavg": [
+        1.81640625,
+        1.74951171875,
+        2.00732421875
+      ],
+      "page": {
+        "arrivals": 156,
+        "finalBlocks": 300,
+        "finalMs": 229.5,
+        "latencyP50Ms": 121.2,
+        "latencyP95Ms": 282.1,
+        "outputBatches": 16,
+        "previews": 15,
+        "survival": {
+          "eligible": 1643,
+          "kept": 1643,
+          "ratio": 1
+        },
+        "previewTimers": 15,
+        "wallMs": 1822.1
+      },
+      "timedOut": false,
+      "trace": {
+        "finalTaskMs": 230.63,
+        "longestTaskMs": 230.63,
+        "previewTasks": 14,
+        "previewTasksWithOutput": 14,
+        "publishMs": 1256.92,
+        "publishTasks": 16,
+        "taskName": "RunTask",
+        "tasks": 488,
+        "totalMs": 1344.58,
+        "windowMs": 1857.71
+      },
+      "order": 1,
+      "role": "warmup"
+    }
+  ],
+  "urls": {
+    "baseline": "http://localhost:3532",
+    "candidate": "http://localhost:3531"
+  },
+  "finishedAt": "2026-09-29T00:24:28.734Z",
+  "matrixSpentMs": 13400
+}

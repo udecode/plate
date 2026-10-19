@@ -1,0 +1,34 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+
+export const input = (
+  <editor>
+    <element>
+      w<anchor />
+      or
+      <focus />d
+    </element>
+  </editor>
+);
+export const output = {
+  children: [
+    {
+      type: 'fixture-block',
+      children: [
+        {
+          text: 'word',
+        },
+      ],
+    },
+  ],
+  selection: {
+    anchor: {
+      path: [0, 0],
+      offset: 1,
+    },
+    focus: {
+      path: [0, 0],
+      offset: 3,
+    },
+  },
+};

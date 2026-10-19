@@ -1,0 +1,1 @@
+Snapshot u (2026-09-29T20:19:48Z, fingerprint e560c21aa90f3964). Superseded by the top-level reuse/ run on snapshot v, which adds the document-view read guard (withDocumentViewRead), table path resolution under a read projection, and the end marker on the last character. The costs here are block reuse with whole-block decoration reads before the guard.

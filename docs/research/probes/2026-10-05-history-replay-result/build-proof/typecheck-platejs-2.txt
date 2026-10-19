@@ -1,0 +1,2 @@
+# pnpm --filter platejs typecheck
+# exit: 0

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-08-editor-ui-lifetime",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-08-editor-ui-lifetime.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Limit floating toolbar positioning to visible controls and restore the multiple-editor image demo",
+  "targets": [
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "multiple-editors-demo",
+      "files": [
+        "apps/www/src/registry/examples/multiple-editors-demo.tsx",
+        "apps/www/src/registry/examples/values/basic-blocks-value.tsx",
+        "apps/www/src/registry/examples/values/basic-marks-value.tsx",
+        "apps/www/src/registry/examples/values/media-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-08-floating-toolbar-visible-positioning",
+      "kind": "fix",
+      "summary": "Measure selection geometry while the toolbar is visible, preserving dismissal, focus and reopening after selection changes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-toolbar"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-editor-ui-lifetime",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-08-multiple-editor-media-dnd",
+      "kind": "wiring",
+      "summary": "Bind each editor to its own document, share formatting through the active editor, and include the image editor's drag-and-drop integration.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["multiple-editors-demo"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-editor-ui-lifetime",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

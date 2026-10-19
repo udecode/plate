@@ -1,0 +1,5 @@
+# ProseMirror: media and embeds
+
+## Captioned media
+
+- ProseMirror keeps content grammar, `atom`, `selectable` and `isolating` as separate node-spec facts, and a node view's `contentDOM` hands its editable children back to the editor, so a selectable non-leaf node with `contentDOM` is the direct-children way to build an object with an editable caption. The basic schema's `image` is a leaf, so a captioned figure is an application schema plus node view. `atom` changes selection and commands but does not by itself make every descendant DOM node uneditable, as the maintainer clarified (https://discuss.prosemirror.net/t/cursor-movement-on-node-with-atom-true/1252). Evidence: `ProseMirror/prosemirror-model@6264de06:src/schema.ts`, `ProseMirror/prosemirror-view@ca4c78e9:src/viewdesc.ts`, `src/input.ts` and `src/capturekeys.ts`, `ProseMirror/prosemirror-commands@52a84a84:src/commands.ts`, `ProseMirror/prosemirror-schema-basic@6daea265:src/schema-basic.ts`. Source: `docs/plite/research/2026-09-21-media-object-editable-content/README.md:107`, `:113` (2026-09-21; upstream tests read, not run).

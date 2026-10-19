@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-06-fix-block-selection-drag",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-06-fix-block-selection-drag.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-06",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix mouse-drag block selection",
+  "targets": [
+    {
+      "name": "block-draggable",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for block-draggable."
+        }
+      ]
+    },
+    {
+      "name": "block-selection",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for block-selection."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-06-block-draggable-fix-mouse-drag-selection-71841b03",
+      "kind": "fix",
+      "summary": "Fix mouse-drag block selection",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-draggable", "block-selection"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-06",
+          "entry": "2026-08-06-fix-block-selection-drag",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,0 +1,16 @@
+static-rich-10000: static decoration reads 160.3 ms (direct 17.3, under visit 143) | wrappers ["read@1233-d7221846cb52d028.js:1489006"] | Children ["Children@1656-febeafc2a3d9e172.js:19733"]
+  by source body (median ms per stream): read@7460-ff76fe78154806aa.js:278822 117.6 | (wrapper and guard) 42.7
+static-cjk-10000: static decoration reads 289.4 ms (direct 21.9, under visit 263.9) | wrappers ["read@1233-d7221846cb52d028.js:1489006"] | Children ["Children@1656-febeafc2a3d9e172.js:19733"]
+  by source body (median ms per stream): read@7460-ff76fe78154806aa.js:278822 195.7 | (wrapper and guard) 93.7
+ai-rich-10000: static decoration reads 108.6 ms (direct 22.5, under visit 86.1) | wrappers ["read@1233-d7221846cb52d028.js:1489006"] | Children ["Children@1656-febeafc2a3d9e172.js:19733"]
+  by source body (median ms per stream): read@7460-ff76fe78154806aa.js:278822 60.6 | (wrapper and guard) 32.6 | read@885-fda09e4a8c4a07b2.js:4743 10
+ai-cjk-10000: static decoration reads 149.2 ms (direct 19.8, under visit 131.5) | wrappers ["read@1233-d7221846cb52d028.js:1489006"] | Children ["Children@1656-febeafc2a3d9e172.js:19733"]
+  by source body (median ms per stream): read@7460-ff76fe78154806aa.js:278822 88.9 | (wrapper and guard) 45.3 | read@885-fda09e4a8c4a07b2.js:4743 14.9
+static-rich-50000: static decoration reads 3751.3 ms (direct 432.6, under visit 3347.8) | wrappers ["read@1233-d7221846cb52d028.js:1489006"] | Children ["Children@1656-febeafc2a3d9e172.js:19733"]
+  by source body (median ms per stream): read@7460-ff76fe78154806aa.js:278822 2579.3 | (wrapper and guard) 1165.7 | get@1233-d7221846cb52d028.js:526312 1.3 | (anon)@1233-d7221846cb52d028.js:643313 1.3 | key@1233-d7221846cb52d028.js:644814 0 | l@1233-d7221846cb52d028.js:563786 0
+ai-rich-50000: static decoration reads 1628.3 ms (direct 200.9, under visit 1427.4) | wrappers ["read@1233-d7221846cb52d028.js:1489006"] | Children ["Children@1656-febeafc2a3d9e172.js:19733"]
+  by source body (median ms per stream): read@7460-ff76fe78154806aa.js:278822 873.7 | (wrapper and guard) 546.9 | read@885-fda09e4a8c4a07b2.js:4743 195.8 | get@1233-d7221846cb52d028.js:526312 1.3 | isText@1233-d7221846cb52d028.js:573599 0 | key@1233-d7221846cb52d028.js:644814 0
+static-cjk-50000: static decoration reads 5693 ms (direct 465.1, under visit 5220.8) | wrappers ["read@1233-d7221846cb52d028.js:1489006"] | Children ["Children@1656-febeafc2a3d9e172.js:19733"]
+  by source body (median ms per stream): read@7460-ff76fe78154806aa.js:278822 3859.9 | (wrapper and guard) 1830.8 | get@1233-d7221846cb52d028.js:526312 2.5 | key@1233-d7221846cb52d028.js:644814 0 | isParent@1233-d7221846cb52d028.js:2109633 0
+ai-cjk-50000: static decoration reads 2649.5 ms (direct 224.3, under visit 2431.5) | wrappers ["read@1233-d7221846cb52d028.js:1489006"] | Children ["Children@1656-febeafc2a3d9e172.js:19733"]
+  by source body (median ms per stream): read@7460-ff76fe78154806aa.js:278822 1399.6 | (wrapper and guard) 983.4 | read@885-fda09e4a8c4a07b2.js:4743 291.1 | isResolvingPlatePlugin@1233-d7221846cb52d028.js:1009589 0 | G@1233-d7221846cb52d028.js:880783 0 | hasCompiledPlateModelCandidate@1233-d7221846cb52d028.js:1007919 0

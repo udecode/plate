@@ -1,0 +1,29 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "tabbable-demo",
+  "dependencies": [
+    "platejs",
+    "@platejs/test",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/ai.json",
+    "https://platejs.org/r/dnd.json",
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/editor-plugins.json",
+    "https://platejs.org/r/tabbable.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/tabbable-demo.tsx",
+      "content": "'use client';\n\nimport {\n  type EditorElementProps,\n  definePlugin,\n  EditorRoot,\n  EditorElement,\n  useCreateEditor,\n  useEditorFocused,\n  useElementSelected,\n} from 'platejs/react';\n\nimport { cn } from '@/lib/utils';\nimport {\n  Editor,\n  EditorContainer,\n  EditorFrame,\n} from '@/registry/components/editor/editor';\nimport { EditorKit } from '@/registry/components/editor/plugins';\nimport { TabbableKit } from '@/registry/components/editor/tabbable';\nimport { tabbableValue } from '@/registry/examples/values/tabbable-value';\n\nconst TabbableElementPlugin = definePlugin('tabbableElement', {\n  schema: { element: { void: 'block' } },\n});\n\nexport default function TabbableDemo() {\n  const editor = useCreateEditor({\n    plugins: [\n      ...EditorKit,\n      ...TabbableKit,\n      TabbableElementPlugin.configure({ component: TabbableElement }),\n    ],\n    initialValue: tabbableValue,\n  });\n\n  return (\n    <EditorRoot editor={editor}>\n      <EditorFrame className=\"h-[650px]\">\n        <EditorContainer>\n          <Editor />\n        </EditorContainer>\n      </EditorFrame>\n    </EditorRoot>\n  );\n}\n\nexport function TabbableElement({\n  children,\n  ...props\n}: EditorElementProps<typeof TabbableElementPlugin>) {\n  const selected = useElementSelected();\n  const focused = useEditorFocused();\n\n  return (\n    <EditorElement {...props}>\n      <div\n        className={cn(\n          'mb-2 p-2',\n          selected && focused\n            ? 'border-2 border-blue-500'\n            : 'border border-gray-200'\n        )}\n        contentEditable={false}\n      >\n        <p>This is a void element.</p>\n        <button type=\"button\">Button 1</button>{' '}\n        <button type=\"button\">Button 2</button>\n      </div>\n      {children}\n    </EditorElement>\n  );\n}\n",
+      "type": "registry:example"
+    },
+    {
+      "path": "src/registry/examples/values/tabbable-value.tsx",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test';\nimport type { Value } from 'platejs';\n\njsx;\n\nexport const tabbableValue: Value = (\n  <fragment>\n    <hheading level={2}>Tabbable</hheading>\n    <hp>\n      Ensure a smooth tab navigation experience within your editor with the\n      Tabbable plugin.\n    </hp>\n    <hp>\n      Properly handle tab orders for void nodes, allowing for seamless\n      navigation and interaction. Without this plugin, DOM elements inside void\n      nodes come after the editor in the tab order.\n    </hp>\n    <element type=\"tabbableElement\">\n      <htext />\n    </element>\n    <element type=\"tabbableElement\">\n      <htext />\n    </element>\n    <hp>Place your cursor here and try pressing tab or shift+tab.</hp>\n    <hp indent={1} listType=\"bulleted\">\n      List item 1\n    </hp>\n    <hp indent={1} listType=\"bulleted\">\n      List item 2\n    </hp>\n    <hp indent={1} listType=\"bulleted\">\n      List item 3\n    </hp>\n    <hcodeblock language=\"javascript\">\n      if (true) {'{'}\n      {'\\n'}\n      {'// <-'} Place cursor at start of line and press tab\n      {'\\n'}\n      {'}'}\n    </hcodeblock>\n    <hp>\n      In this example, the plugin is disabled when the cursor is inside a list\n      or a code block. You can customise this using the{' '}\n      <htext code>query</htext> option.\n    </hp>\n    <element type=\"tabbableElement\">\n      <htext />\n    </element>\n    <hp>\n      When you press tab at the end of the editor, the focus should go to the\n      button below.\n    </hp>\n  </fragment>\n);\n",
+      "type": "registry:example"
+    }
+  ],
+  "type": "registry:example"
+}

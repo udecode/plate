@@ -1,0 +1,66 @@
+'use client';
+
+import {
+  SingleBlockPlugin,
+  SingleLinePlugin,
+  TrailingBlockPlugin,
+} from 'platejs';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
+import * as React from 'react';
+
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+
+export default function SingleBlockDemo() {
+  const [isSingleBlock, setIsSingleBlock] = React.useState(true);
+
+  const editor = useCreateEditor(
+    {
+      plugins: [
+        ...BasicBlocksKit,
+        TrailingBlockPlugin,
+        isSingleBlock ? SingleBlockPlugin : SingleLinePlugin,
+      ],
+      initialValue: [
+        {
+          children: [
+            {
+              text: `Try typing or pasting text with multiple lines. ${
+                isSingleBlock
+                  ? String.raw`With Single Block mode, line breaks become soft breaks (\n).`
+                  : 'With Single Line mode, all line breaks are removed.'
+              }`,
+            },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    },
+    [isSingleBlock]
+  );
+
+  return (
+    <div className="space-y-4">
+      <EditorRoot editor={editor}>
+        <div className="flex items-center space-x-2 p-2">
+          <Checkbox
+            id="single-block-mode"
+            checked={isSingleBlock}
+            onCheckedChange={(checked) => {
+              setIsSingleBlock(checked === 'indeterminate' ? false : checked);
+            }}
+          />
+          <Label htmlFor="single-block-mode">
+            {String.raw`Single Block Mode (allows line breaks as \n)`}
+          </Label>
+        </div>
+
+        <EditorContainer className="h-[650px]">
+          <Editor />
+        </EditorContainer>
+      </EditorRoot>
+    </div>
+  );
+}

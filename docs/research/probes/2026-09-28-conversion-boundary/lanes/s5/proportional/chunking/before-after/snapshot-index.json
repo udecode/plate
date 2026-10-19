@@ -1,0 +1,22 @@
+{
+  "pp": {
+    "static-rich-10000": 6.4,
+    "static-rich-50000": 130.4,
+    "static-cjk-10000": 16.5,
+    "static-cjk-50000": 267.2,
+    "ai-rich-10000": 11.8,
+    "ai-rich-50000": 128.0,
+    "ai-cjk-10000": 19.3,
+    "ai-cjk-50000": 259.3
+  },
+  "pp3": {
+    "static-rich-10000": 0.0,
+    "static-rich-50000": 0.0,
+    "static-cjk-10000": 14.5,
+    "static-cjk-50000": 250.7,
+    "ai-rich-10000": 0.0,
+    "ai-rich-50000": 0.0,
+    "ai-cjk-10000": 15.2,
+    "ai-cjk-50000": 280.3
+  }
+}

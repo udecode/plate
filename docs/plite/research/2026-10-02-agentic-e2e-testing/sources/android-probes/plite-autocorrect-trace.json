@@ -1,0 +1,1841 @@
+{
+  "case": "apps/plite/tests/device/autocorrect-empty.device.ts",
+  "modelText": "BecuasegoBecause ",
+  "run": "2026-10-02T21:45Z device lane run, repeat 1",
+  "pages": [
+    {
+      "events": [
+        {
+          "clientX": 24.761905670166016,
+          "clientY": 102.85714721679688,
+          "data": null,
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": null,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "H1",
+              "parentPath": null,
+              "parentSignature": "h1[0]",
+              "path": null,
+              "text": "Custom Placeholder"
+            },
+            "anchorOffset": 0,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "H1",
+              "parentPath": null,
+              "parentSignature": "h1[0]",
+              "path": null,
+              "text": "Custom Placeholder"
+            },
+            "focusOffset": 0,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 1,
+          "targetRanges": [],
+          "timestamp": 1790977682488,
+          "type": "pointerdown"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": null,
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": false,
+          "isTrusted": true,
+          "key": "Unidentified",
+          "keyCode": 229,
+          "selection": {
+            "anchor": {
+              "nodeName": "SPAN",
+              "parentNodeName": "SPAN",
+              "parentPath": null,
+              "parentSignature": "span[0][text=0,0]",
+              "path": "0,0",
+              "text": ""
+            },
+            "anchorOffset": 0,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "SPAN",
+              "parentNodeName": "SPAN",
+              "parentPath": null,
+              "parentSignature": "span[0][text=0,0]",
+              "path": "0,0",
+              "text": ""
+            },
+            "focusOffset": 0,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 2,
+          "targetRanges": [],
+          "timestamp": 1790977687481,
+          "type": "keydown"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "B",
+          "domDelta": null,
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "SPAN",
+              "parentNodeName": "SPAN",
+              "parentPath": null,
+              "parentSignature": "span[0][text=0,0]",
+              "path": "0,0",
+              "text": ""
+            },
+            "anchorOffset": 0,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "SPAN",
+              "parentNodeName": "SPAN",
+              "parentPath": null,
+              "parentSignature": "span[0][text=0,0]",
+              "path": "0,0",
+              "text": ""
+            },
+            "focusOffset": 0,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 3,
+          "targetRanges": [
+            {
+              "collapsed": true,
+              "end": {
+                "nodeName": "SPAN",
+                "parentNodeName": "SPAN",
+                "parentPath": null,
+                "parentSignature": "span[0][text=0,0]",
+                "path": "0,0",
+                "text": ""
+              },
+              "endOffset": 0,
+              "rects": [],
+              "start": {
+                "nodeName": "SPAN",
+                "parentNodeName": "SPAN",
+                "parentPath": null,
+                "parentSignature": "span[0][text=0,0]",
+                "path": "0,0",
+                "text": ""
+              },
+              "startOffset": 0
+            }
+          ],
+          "timestamp": 1790977687483,
+          "type": "beforeinput"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": null,
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": false,
+          "isTrusted": true,
+          "key": "Unidentified",
+          "keyCode": 229,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "B"
+            },
+            "anchorOffset": 1,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "B"
+            },
+            "focusOffset": 1,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 4,
+          "targetRanges": [],
+          "timestamp": 1790977688079,
+          "type": "keydown"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "e",
+          "domDelta": null,
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "B"
+            },
+            "anchorOffset": 1,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "B"
+            },
+            "focusOffset": 1,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 5,
+          "targetRanges": [
+            {
+              "collapsed": true,
+              "end": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "B"
+              },
+              "endOffset": 1,
+              "rects": [
+                {
+                  "height": 18.666664123535156,
+                  "width": 0,
+                  "x": 33.96428680419922,
+                  "y": 93.52381134033203
+                }
+              ],
+              "start": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "B"
+              },
+              "startOffset": 1
+            }
+          ],
+          "timestamp": 1790977688079,
+          "type": "beforeinput"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "e",
+          "domDelta": {
+            "textNodes": [
+              {
+                "after": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Be"
+                },
+                "before": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "B"
+                },
+                "type": "modified"
+              }
+            ]
+          },
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Be"
+            },
+            "anchorOffset": 2,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Be"
+            },
+            "focusOffset": 2,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 6,
+          "targetRanges": [],
+          "timestamp": 1790977688084,
+          "type": "input"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": null,
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": false,
+          "isTrusted": true,
+          "key": "Unidentified",
+          "keyCode": 229,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Be"
+            },
+            "anchorOffset": 2,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Be"
+            },
+            "focusOffset": 2,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 7,
+          "targetRanges": [],
+          "timestamp": 1790977688681,
+          "type": "keydown"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "c",
+          "domDelta": null,
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Be"
+            },
+            "anchorOffset": 2,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Be"
+            },
+            "focusOffset": 2,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 8,
+          "targetRanges": [
+            {
+              "collapsed": true,
+              "end": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "Be"
+              },
+              "endOffset": 2,
+              "rects": [
+                {
+                  "height": 18.666664123535156,
+                  "width": 0,
+                  "x": 42.4523811340332,
+                  "y": 93.52381134033203
+                }
+              ],
+              "start": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "Be"
+              },
+              "startOffset": 2
+            }
+          ],
+          "timestamp": 1790977688681,
+          "type": "beforeinput"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "c",
+          "domDelta": {
+            "textNodes": [
+              {
+                "after": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Bec"
+                },
+                "before": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Be"
+                },
+                "type": "modified"
+              }
+            ]
+          },
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Bec"
+            },
+            "anchorOffset": 3,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Bec"
+            },
+            "focusOffset": 3,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 9,
+          "targetRanges": [],
+          "timestamp": 1790977688683,
+          "type": "input"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": null,
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": false,
+          "isTrusted": true,
+          "key": "Unidentified",
+          "keyCode": 229,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Bec"
+            },
+            "anchorOffset": 3,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Bec"
+            },
+            "focusOffset": 3,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 10,
+          "targetRanges": [],
+          "timestamp": 1790977689282,
+          "type": "keydown"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "u",
+          "domDelta": null,
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Bec"
+            },
+            "anchorOffset": 3,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Bec"
+            },
+            "focusOffset": 3,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 11,
+          "targetRanges": [
+            {
+              "collapsed": true,
+              "end": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "Bec"
+              },
+              "endOffset": 3,
+              "rects": [
+                {
+                  "height": 18.666664123535156,
+                  "width": 0,
+                  "x": 50.8273811340332,
+                  "y": 93.52381134033203
+                }
+              ],
+              "start": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "Bec"
+              },
+              "startOffset": 3
+            }
+          ],
+          "timestamp": 1790977689282,
+          "type": "beforeinput"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "u",
+          "domDelta": {
+            "textNodes": [
+              {
+                "after": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Becu"
+                },
+                "before": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Bec"
+                },
+                "type": "modified"
+              }
+            ]
+          },
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becu"
+            },
+            "anchorOffset": 4,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becu"
+            },
+            "focusOffset": 4,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 12,
+          "targetRanges": [],
+          "timestamp": 1790977689285,
+          "type": "input"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": null,
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": false,
+          "isTrusted": true,
+          "key": "Unidentified",
+          "keyCode": 229,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becu"
+            },
+            "anchorOffset": 4,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becu"
+            },
+            "focusOffset": 4,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 13,
+          "targetRanges": [],
+          "timestamp": 1790977689883,
+          "type": "keydown"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "a",
+          "domDelta": null,
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becu"
+            },
+            "anchorOffset": 4,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becu"
+            },
+            "focusOffset": 4,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 14,
+          "targetRanges": [
+            {
+              "collapsed": true,
+              "end": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "Becu"
+              },
+              "endOffset": 4,
+              "rects": [
+                {
+                  "height": 18.666664123535156,
+                  "width": 0,
+                  "x": 59.64285659790039,
+                  "y": 93.52381134033203
+                }
+              ],
+              "start": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "Becu"
+              },
+              "startOffset": 4
+            }
+          ],
+          "timestamp": 1790977689884,
+          "type": "beforeinput"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "a",
+          "domDelta": {
+            "textNodes": [
+              {
+                "after": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Becua"
+                },
+                "before": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Becu"
+                },
+                "type": "modified"
+              }
+            ]
+          },
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becua"
+            },
+            "anchorOffset": 5,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becua"
+            },
+            "focusOffset": 5,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 15,
+          "targetRanges": [],
+          "timestamp": 1790977689887,
+          "type": "input"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": null,
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": false,
+          "isTrusted": true,
+          "key": "Unidentified",
+          "keyCode": 229,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becua"
+            },
+            "anchorOffset": 5,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becua"
+            },
+            "focusOffset": 5,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 16,
+          "targetRanges": [],
+          "timestamp": 1790977690487,
+          "type": "keydown"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "s",
+          "domDelta": null,
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becua"
+            },
+            "anchorOffset": 5,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becua"
+            },
+            "focusOffset": 5,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 17,
+          "targetRanges": [
+            {
+              "collapsed": true,
+              "end": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "Becua"
+              },
+              "endOffset": 5,
+              "rects": [
+                {
+                  "height": 18.666664123535156,
+                  "width": 0,
+                  "x": 68.35118865966797,
+                  "y": 93.52381134033203
+                }
+              ],
+              "start": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "Becua"
+              },
+              "startOffset": 5
+            }
+          ],
+          "timestamp": 1790977690487,
+          "type": "beforeinput"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "s",
+          "domDelta": {
+            "textNodes": [
+              {
+                "after": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Becuas"
+                },
+                "before": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Becua"
+                },
+                "type": "modified"
+              }
+            ]
+          },
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuas"
+            },
+            "anchorOffset": 6,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuas"
+            },
+            "focusOffset": 6,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 18,
+          "targetRanges": [],
+          "timestamp": 1790977690489,
+          "type": "input"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": null,
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": false,
+          "isTrusted": true,
+          "key": "Unidentified",
+          "keyCode": 229,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuas"
+            },
+            "anchorOffset": 6,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuas"
+            },
+            "focusOffset": 6,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 19,
+          "targetRanges": [],
+          "timestamp": 1790977691087,
+          "type": "keydown"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "e",
+          "domDelta": null,
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuas"
+            },
+            "anchorOffset": 6,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuas"
+            },
+            "focusOffset": 6,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 20,
+          "targetRanges": [
+            {
+              "collapsed": true,
+              "end": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "Becuas"
+              },
+              "endOffset": 6,
+              "rects": [
+                {
+                  "height": 18.666664123535156,
+                  "width": 0,
+                  "x": 76.60714721679688,
+                  "y": 93.52381134033203
+                }
+              ],
+              "start": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "Becuas"
+              },
+              "startOffset": 6
+            }
+          ],
+          "timestamp": 1790977691088,
+          "type": "beforeinput"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "e",
+          "domDelta": {
+            "textNodes": [
+              {
+                "after": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Becuase"
+                },
+                "before": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Becuas"
+                },
+                "type": "modified"
+              }
+            ]
+          },
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuase"
+            },
+            "anchorOffset": 7,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuase"
+            },
+            "focusOffset": 7,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 21,
+          "targetRanges": [],
+          "timestamp": 1790977691090,
+          "type": "input"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "",
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": null,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuase"
+            },
+            "anchorOffset": 7,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuase"
+            },
+            "focusOffset": 7,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 22,
+          "targetRanges": [],
+          "timestamp": 1790977691678,
+          "type": "compositionstart"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "Becuase",
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": null,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuase"
+            },
+            "anchorOffset": 7,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuase"
+            },
+            "focusOffset": 7,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 23,
+          "targetRanges": [],
+          "timestamp": 1790977691678,
+          "type": "compositionupdate"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": null,
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": true,
+          "isTrusted": true,
+          "key": "Unidentified",
+          "keyCode": 229,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuase"
+            },
+            "anchorOffset": 7,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuase"
+            },
+            "focusOffset": 7,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 24,
+          "targetRanges": [],
+          "timestamp": 1790977691679,
+          "type": "keydown"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "Because ",
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": null,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuase"
+            },
+            "anchorOffset": 0,
+            "collapsed": false,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuase"
+            },
+            "focusOffset": 7,
+            "rangeCount": 1,
+            "selectedText": "Becuase"
+          },
+          "seq": 25,
+          "targetRanges": [],
+          "timestamp": 1790977691679,
+          "type": "compositionupdate"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "Because ",
+          "domDelta": null,
+          "inputType": "insertCompositionText",
+          "isComposing": true,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuase"
+            },
+            "anchorOffset": 0,
+            "collapsed": false,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Becuase"
+            },
+            "focusOffset": 7,
+            "rangeCount": 1,
+            "selectedText": "Becuase"
+          },
+          "seq": 26,
+          "targetRanges": [
+            {
+              "collapsed": false,
+              "end": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "Becuase"
+              },
+              "endOffset": 7,
+              "rects": [
+                {
+                  "height": 18.666664123535156,
+                  "width": 61.095237731933594,
+                  "x": 24,
+                  "y": 93.52381134033203
+                }
+              ],
+              "start": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "Becuase"
+              },
+              "startOffset": 0
+            }
+          ],
+          "timestamp": 1790977691679,
+          "type": "beforeinput"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "Because ",
+          "domDelta": {
+            "textNodes": [
+              {
+                "after": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Because "
+                },
+                "before": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "Becuase"
+                },
+                "type": "modified"
+              }
+            ]
+          },
+          "inputType": "insertCompositionText",
+          "isComposing": true,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Because "
+            },
+            "anchorOffset": 8,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "Because "
+            },
+            "focusOffset": 8,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 27,
+          "targetRanges": [],
+          "timestamp": 1790977691681,
+          "type": "input"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "Because ",
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": null,
+          "isTrusted": false,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuaseBecause "
+            },
+            "anchorOffset": 7,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuaseBecause "
+            },
+            "focusOffset": 7,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 28,
+          "targetRanges": [],
+          "timestamp": 1790977691684,
+          "type": "compositionend"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": null,
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": false,
+          "isTrusted": true,
+          "key": "Unidentified",
+          "keyCode": 229,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuaseBecause "
+            },
+            "anchorOffset": 7,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuaseBecause "
+            },
+            "focusOffset": 7,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 29,
+          "targetRanges": [],
+          "timestamp": 1790977692286,
+          "type": "keydown"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "g",
+          "domDelta": null,
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuaseBecause "
+            },
+            "anchorOffset": 7,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuaseBecause "
+            },
+            "focusOffset": 7,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 30,
+          "targetRanges": [
+            {
+              "collapsed": true,
+              "end": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "BecuaseBecause "
+              },
+              "endOffset": 7,
+              "rects": [
+                {
+                  "height": 18.666664123535156,
+                  "width": 0,
+                  "x": 85.08928680419922,
+                  "y": 93.52381134033203
+                }
+              ],
+              "start": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "BecuaseBecause "
+              },
+              "startOffset": 7
+            }
+          ],
+          "timestamp": 1790977692286,
+          "type": "beforeinput"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "g",
+          "domDelta": {
+            "textNodes": [
+              {
+                "after": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "BecuasegBecause "
+                },
+                "before": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "BecuaseBecause "
+                },
+                "type": "modified"
+              }
+            ]
+          },
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuasegBecause "
+            },
+            "anchorOffset": 8,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuasegBecause "
+            },
+            "focusOffset": 8,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 31,
+          "targetRanges": [],
+          "timestamp": 1790977692289,
+          "type": "input"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": null,
+          "domDelta": null,
+          "inputType": null,
+          "isComposing": false,
+          "isTrusted": true,
+          "key": "Unidentified",
+          "keyCode": 229,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuasegBecause "
+            },
+            "anchorOffset": 8,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuasegBecause "
+            },
+            "focusOffset": 8,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 32,
+          "targetRanges": [],
+          "timestamp": 1790977692876,
+          "type": "keydown"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "o",
+          "domDelta": null,
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuasegBecause "
+            },
+            "anchorOffset": 8,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuasegBecause "
+            },
+            "focusOffset": 8,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 33,
+          "targetRanges": [
+            {
+              "collapsed": true,
+              "end": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "BecuasegBecause "
+              },
+              "endOffset": 8,
+              "rects": [
+                {
+                  "height": 18.666664123535156,
+                  "width": 0,
+                  "x": 94.07738494873047,
+                  "y": 93.52381134033203
+                }
+              ],
+              "start": {
+                "nodeName": "#text",
+                "parentNodeName": "SPAN",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "path": "0,0",
+                "text": "BecuasegBecause "
+              },
+              "startOffset": 8
+            }
+          ],
+          "timestamp": 1790977692876,
+          "type": "beforeinput"
+        },
+        {
+          "clientX": null,
+          "clientY": null,
+          "data": "o",
+          "domDelta": {
+            "textNodes": [
+              {
+                "after": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "BecuasegoBecause "
+                },
+                "before": {
+                  "id": "text-3",
+                  "parentPath": "0,0",
+                  "parentSignature": "span[0][path=0,0][text=0,0]",
+                  "text": "BecuasegBecause "
+                },
+                "type": "modified"
+              }
+            ]
+          },
+          "inputType": "insertText",
+          "isComposing": false,
+          "isTrusted": true,
+          "key": null,
+          "keyCode": null,
+          "selection": {
+            "anchor": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuasegoBecause "
+            },
+            "anchorOffset": 9,
+            "collapsed": true,
+            "focus": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "BecuasegoBecause "
+            },
+            "focusOffset": 9,
+            "rangeCount": 1,
+            "selectedText": ""
+          },
+          "seq": 34,
+          "targetRanges": [],
+          "timestamp": 1790977692878,
+          "type": "input"
+        }
+      ],
+      "steps": [
+        {
+          "kind": "content",
+          "label": "tap 0,0:0",
+          "target": {
+            "x": 25,
+            "y": 102.85714340209961
+          },
+          "seqEnd": 2,
+          "seqStart": 1
+        },
+        {
+          "key": "Unidentified",
+          "kind": "key",
+          "label": "b",
+          "seqEnd": 4,
+          "seqStart": 2
+        },
+        {
+          "key": "Unidentified",
+          "kind": "key",
+          "label": "e",
+          "seqEnd": 7,
+          "seqStart": 4
+        },
+        {
+          "key": "Unidentified",
+          "kind": "key",
+          "label": "c",
+          "seqEnd": 10,
+          "seqStart": 7
+        },
+        {
+          "key": "Unidentified",
+          "kind": "key",
+          "label": "u",
+          "seqEnd": 13,
+          "seqStart": 10
+        },
+        {
+          "key": "Unidentified",
+          "kind": "key",
+          "label": "a",
+          "seqEnd": 16,
+          "seqStart": 13
+        },
+        {
+          "key": "Unidentified",
+          "kind": "key",
+          "label": "s",
+          "seqEnd": 19,
+          "seqStart": 16
+        },
+        {
+          "key": "Unidentified",
+          "kind": "key",
+          "label": "e",
+          "seqEnd": 22,
+          "seqStart": 19
+        },
+        {
+          "key": "Unidentified",
+          "kind": "key",
+          "label": "Space",
+          "seqEnd": 29,
+          "seqStart": 22
+        },
+        {
+          "key": "Unidentified",
+          "kind": "key",
+          "label": "g",
+          "seqEnd": 32,
+          "seqStart": 29
+        },
+        {
+          "key": "Unidentified",
+          "kind": "key",
+          "label": "o",
+          "seqEnd": 35,
+          "seqStart": 32
+        }
+      ]
+    }
+  ],
+  "violations": []
+}

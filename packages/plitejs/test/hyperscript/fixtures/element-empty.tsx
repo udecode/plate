@@ -1,0 +1,7 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+
+export const input = <element />;
+export const output = {
+  children: [],
+};

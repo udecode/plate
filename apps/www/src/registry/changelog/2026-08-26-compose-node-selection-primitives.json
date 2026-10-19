@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-26-compose-node-selection-primitives",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-26-compose-node-selection-primitives.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Compose editor node selection from package primitives",
+  "targets": [
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-26-editor-compose-node-selection-from-a314d420",
+      "kind": "wiring",
+      "summary": "Compose node-selection highlighting and drag selection with `NodeSelectionHighlight` and `NodeSelectionDrag` from `platejs/react`. Link their API and demo from the Editor registry page.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-26",
+          "entry": "2026-08-26-compose-node-selection-primitives",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

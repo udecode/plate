@@ -1,0 +1,20 @@
+recalcs 421, total 161.7 ms; >10k-element recalcs 0 = 0.0 ms, element counts []
+scheduled invalidations before the big recalcs (count, change, node):
+style recalc invalidations before the big recalcs (reason, extra):
+nodes with those recalc invalidations:
+all scheduled invalidations in the window:
+   152  pseudo last-child            SPAN
+    96  pseudo last-child            DIV class='editor-paragraph m-0 px-0 py-1…'
+    37  pseudo last-child            DIV class='editor-codeBlock py-1 **:[.hljs-addition]:bg-[#f0fff4] **:[.…'
+    30  pseudo last-child            DIV class='editor-paragraph editor-indent-1 editor-listType-bulleted m-…'
+    16  pseudo last-child            DIV class='editor-editor group/editor relative w-full cursor-text selec…'
+    15  pseudo last-child            A class='editor-link font-medium text-primary underline decoration-pr…'
+    12  pseudo hover                 DIV class='relative hover:[&>.editor-gutterLeft]:opacity-100…'
+     9  pseudo last-child            H2 class='editor-heading relative mb-1 mt-[1.4em] pb-px font-heading f…'
+     1  pseudo last-child            DIV class='flex w-full justify-between…'
+     1  attr aria-selected           DIV id='radix-_r_6_' class='relative flex cursor-pointer select-none items-center gap-2 …'
+     1  attr data-selected           DIV id='radix-_r_6_' class='relative flex cursor-pointer select-none items-center gap-2 …'
+     1  attr aria-selected           DIV id='radix-_r_8_' class='relative flex cursor-pointer select-none items-center gap-2 …'
+     1  attr data-selected           DIV id='radix-_r_8_' class='relative flex cursor-pointer select-none items-center gap-2 …'
+     1  attr style                   DIV id='placeholder'
+     1  pseudo last-child            DIV class='ignore-click-outside/toolbar relative w-full cursor-text sel…'

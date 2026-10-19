@@ -1,0 +1,207 @@
+---
+title: Date
+description: Inline void date elements with one authored string value.
+docs:
+  - route: /docs/components/date
+    title: Date Element
+  - route: https://pro.platejs.org/docs/components/date
+    title: Plus
+---
+
+Date adds inline void elements that display a date label inside text. One required `value` preserves either a canonical `YYYY-MM-DD` date or authored text such as `sometime next week`.
+
+<ComponentPreview name="date-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Inline void `date` element.
+- `date.insert` transaction command.
+- One required `value` for canonical dates or authored date text.
+- Calendar editing in the registry UI.
+- Static renderer for read-only output.
+- Markdown round-trip through `<date value="YYYY-MM-DD" />` and child-text date tags.
+
+</PackageInfo>
+
+## Fast path
+
+<Steps>
+
+### Add the kit
+
+`DateKit` installs `DatePlugin` with the registry `DateElement`.
+
+<ComponentSource name="date" />
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { DateKit } from '@/components/editor/date';
+
+export const editor = createEditor({
+  plugins: DateKit,
+});
+```
+
+### Render the element
+
+`date` owns the inline wrapper, display label, popover, calendar picker, and static element.
+
+<ComponentSource name="date" />
+
+### Add an insert action
+
+The registry insert toolbar maps `PLUGINS.date` to the plugin-owned update.
+
+```tsx title="components/editor/transforms.ts"
+import { BaseDatePlugin } from 'platejs/date';
+import { PLUGINS } from 'platejs';
+
+export const insertInlineMap = {
+  [PLUGINS.date]: (editor) =>
+    editor.plugin(BaseDatePlugin).update.insert({}, { select: true }),
+};
+```
+
+</Steps>
+
+## Ownership
+
+| Layer | Owner | What It Does |
+|-------|-------|--------------|
+| `platejs` | Package | Exports `BaseDatePlugin` and date value helpers. |
+| `platejs/react` | Package | Exports `DatePlugin`. |
+| `date` | Registry | Adds `DatePlugin.configure({ component: DateElement })`. |
+| `date-static` | Registry | Adds `BaseDatePlugin.configure({ component: DateElementStatic })`. |
+| `date` | Registry UI | Renders the editable popover/calendar element and static element. |
+| `platejs/markdown` | Package | Converts `<date>` Markdown tags to the package-owned `value`. |
+
+`BaseDatePlugin` is inline and void. The text child exists only to satisfy Plate's element shape.
+
+## Manual setup
+
+<Steps>
+
+### Install package
+
+```bash
+npm install platejs
+```
+
+### Add the plugin
+
+Use the React plugin when the editor renders the calendar popover.
+
+```tsx
+import { DatePlugin } from 'platejs/date/react';
+import { createEditor } from 'platejs/react';
+
+import { DateElement } from '@/components/editor/date';
+
+export const editor = createEditor({
+  plugins: [DatePlugin.configure({ component: DateElement })],
+});
+```
+
+### Add static rendering
+
+Use the base kit when rendering read-only output with `platejs/static`.
+
+<ComponentSource name="date-static" />
+
+### Insert a date
+
+`DatePlugin` exposes date insertion through the `date` transaction group.
+
+```tsx
+editor.update((tx) =>
+  tx.date.insert({ value: '2026-03-23' }, { select: true })
+);
+```
+
+</Steps>
+
+## Value shape
+
+Date elements store one non-empty authored string. Parsing is derived from that value rather than persisted as a second field.
+
+```tsx
+const value = [
+  {
+    children: [
+      { text: 'Due ' },
+      {
+        children: [{ text: '' }],
+        type: 'date',
+        value: '2026-03-23',
+      },
+      { text: '.' },
+    ],
+    type: 'paragraph',
+  },
+];
+```
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `type` | `'date'` | Persisted element type owned by `BaseDatePlugin`. |
+| `children` | `[{ text: '' }]` | Required Plate child for the inline void element. |
+| `value` | `string` | Required canonical date or authored date text. |
+
+## Date normalization
+
+`normalizeDateValue` returns the one persisted string.
+
+| Input | Stored Value |
+|-------|--------------|
+| `Date` object | `formatDateValue(value)` when the object is valid. |
+| `YYYY-MM-DD` | The trimmed string. |
+| Invalid canonical string | The trimmed authored string. |
+| `Mon Mar 23 2026` | `'2026-03-23'` when JavaScript can parse it. |
+| Blank string | `undefined`; no Date node is constructed. |
+| Other text | The trimmed authored string. |
+
+`getDateDisplayLabel(value)` returns `Today`, `Yesterday`, `Tomorrow`, a localized long date, or the authored string.
+
+## Picker behavior
+
+The registry element is display-only while read-only. In editable mode, clicking the inline label opens a calendar popover.
+
+| State | Behavior |
+|-------|----------|
+| canonical `value` | The trigger shows a relative or localized date label. |
+| other `value` | The trigger shows the authored string. |
+| calendar selection | The node is set to `{ value: formatDateValue(date) }`. |
+
+The registry element uses `contentEditable={false}` on the inline wrapper, so users edit the date through the calendar instead of typing inside the void node.
+
+## Markdown
+
+Canonical values serialize as a self-closing date tag with a `value` attribute.
+
+```md
+Date: <date value="2026-03-23" />
+```
+
+Other authored values serialize as child text.
+
+```md
+Date: <date>sometime next week</date>
+```
+
+The HTML parser also accepts child text such as `<date>Mon Mar 23 2026</date>` and normalizes it to `value: '2026-03-23'` when the date is safe to parse.
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseDatePlugin` | `platejs` | Headless inline void date plugin. |
+| `DatePlugin` | `platejs/react` | React date plugin. |
+| `editor.plugin(BaseDatePlugin).update.insert(input?, options?)` | `BaseDatePlugin` update | Inserts a date with separate date input and node placement options. |
+| `normalizeDateValue(value)` | `platejs` | Returns the canonical or authored string, or `undefined` for empty/invalid input. |
+| `formatDateValue(date)` | `platejs` | Formats a `Date` object as `YYYY-MM-DD`. |
+| `parseCanonicalDateValue(value)` | `platejs` | Parses only valid canonical date strings. |
+| `getDateDisplayLabel(value, options?)` | `platejs` | Builds the visible date label. |
+| `DateElement` | `platejs` | Element shape with one required `value`. |

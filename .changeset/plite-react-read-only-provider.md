@@ -1,0 +1,33 @@
+---
+'plitejs': major
+---
+
+Add Plite React integration with strict editor and element hooks, typed `usePliteCommand` dispatch, latest-value selectors, revision-based external view data, provider-lifetime `onCommit` observation, and read-only state for shell components outside a `<Plite>` root.
+
+- Preserve focused-root selection across child editors, read-only sibling views, and lifecycle target changes
+- Coordinate DOM reads, writes, selection repair, Android input latency, and external mutation recovery through one bounded scheduler per mounted root
+- Keep printable single-character typing native for internally proven live leaf pipelines and pass-through command middleware; use model input for unknown custom renderers and material commands
+- Invalidate explicit runtime-state chrome selectors synchronously while preserving equality and commit-filter suppression
+- Run public keydown handlers before built-in editor commands so a handled event can override undo, redo, Enter, and other runtime commands
+- Remount unsynchronized custom text shells after structural history repair while retaining derived projected DOM text sync for safe renderers
+- Re-export the model-owned caret after composition repair renders only while the focused snapshot version and selection remain current
+- Refresh expanded Blink selections after document changes so formatting updates cannot retain stale painted highlight geometry
+- Keep `NodeSelection` model-only with no native browser range, and expose exact node selection through `useElementSelected({ mode: 'node' })`
+- Let selectable object owners receive node focus from non-editable chrome, enter editable children with ArrowDown while the page draws them, and regain owner focus with ArrowUp at the leading boundary
+- Skip object children the page hides during arrow-key movement in both directions
+- Isolate optional decoration, annotation, widget, and render-callback failures
+- Preserve inline decorated-range data in projection slices
+- Infer React editor values from complete installed schemas and expose typed interactive content-root slots
+- Keep `useEditor()` non-generic and let selector hooks infer only their result; resolve exact plugin capabilities through `editor.plugin(Plugin)`
+- Preserve complete element-owned root graphs through projected clipboard serialization and insertion, including shared aliases, cycles, and deterministic cross-source collisions
+- Resolve projected clipboard ranges against the canonical runtime so root-scoped editor views copy and cut their own model content
+- Cancel superseded delayed focus restoration when undo or redo crosses roots
+- Install the exact DOM descriptor through `react({ dom })` and consume its clipboard and input-runtime services without name-based runtime lookup
+- Install the default DOM descriptor when `createReactEditor()` is called directly; keep `react({ dom })` as the low-level custom DOM composition surface
+- Hydrate separate server and client editor runtimes with deterministic local node tokens, then publish full runtime-owned keys after mounting
+- Route keyboard default-action ownership through the DOM host-facts selector
+- Write each transaction announcement into at most one of the editor's live regions, however many views of it are mounted
+- Keep placeholder and drop-cursor presentation in applications while retaining structural DOM, geometry, and selection behavior in Plite React
+- Resolve physical left/right caret and word movement through the DOM visual-point API in the direction of the block that holds the caret, preserving affinity across mixed-direction text
+- Collapse an expanded selection with left or right according to the direction of the block that holds the caret
+- Remove view-level `Editable` maximum-length configuration; set `maxLength` when creating the editor

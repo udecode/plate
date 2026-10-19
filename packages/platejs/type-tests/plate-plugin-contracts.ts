@@ -1,0 +1,647 @@
+import { type DefinitionOf, txLocate, txOnly } from 'platejs';
+import {
+  createEditor,
+  definePlugin,
+  type ViewElementAttributes,
+  useEditor,
+  usePluginStore,
+} from 'platejs/react';
+
+import { ContentSlice } from '../src/core';
+import { createPluginContext } from '../src/react/plugin/createPluginContext.internal';
+
+type IsAny<T> = 0 extends 1 & T ? true : false;
+type AssertFalse<T extends false> = T;
+type AssertTrue<T extends true> = T;
+
+const ConfiguredPlateFormatContractPlugin = definePlugin(
+  'configuredPlateFormatContract',
+  {
+    dataTransferFormats: [
+      {
+        mimeType: 'application/x-plate-codec-contract',
+        decode: () => ContentSlice.closed([{ text: 'value' }]),
+        scope: 'document',
+      },
+    ],
+  }
+).configure({});
+
+// @ts-expect-error Consumer configuration is terminal for React format authoring.
+ConfiguredPlateFormatContractPlugin.extend(({ defineFormats }) => ({
+  formats: defineFormats({}),
+}));
+
+export const MinimalPlateDefinitionPlugin = definePlugin(
+  'minimalPlateDefinition',
+  {
+    editOnly: true,
+  }
+);
+type MinimalPlateDefinition = DefinitionOf<typeof MinimalPlateDefinitionPlugin>;
+declare const minimalPlateDefinition: MinimalPlateDefinition;
+const exactMinimalPlateDefinitionName: 'minimalPlateDefinition' =
+  minimalPlateDefinition.name;
+type MinimalPlateDefinitionHasInject = AssertFalse<
+  'inject' extends keyof MinimalPlateDefinition ? true : false
+>;
+type MinimalPlateDefinitionHasOn = AssertFalse<
+  'on' extends keyof MinimalPlateDefinition ? true : false
+>;
+type MinimalPlateDefinitionHasRender = AssertFalse<
+  'render' extends keyof MinimalPlateDefinition ? true : false
+>;
+type MinimalPlateRuntimeHasInject = AssertTrue<
+  'inject' extends keyof typeof MinimalPlateDefinitionPlugin ? true : false
+>;
+type MinimalPlateRuntimeHasOn = AssertTrue<
+  'on' extends keyof typeof MinimalPlateDefinitionPlugin ? true : false
+>;
+type MinimalPlateRuntimeHasRender = AssertTrue<
+  'render' extends keyof typeof MinimalPlateDefinitionPlugin ? true : false
+>;
+
+void exactMinimalPlateDefinitionName;
+
+export type {
+  MinimalPlateDefinitionHasInject,
+  MinimalPlateDefinitionHasOn,
+  MinimalPlateDefinitionHasRender,
+  MinimalPlateRuntimeHasInject,
+  MinimalPlateRuntimeHasOn,
+  MinimalPlateRuntimeHasRender,
+};
+
+const ObjectStateInferencePlugin = definePlugin('objectStateInference', {
+  api: ({ editor, store }) => {
+    const editorIsAny: IsAny<typeof editor> = false;
+    const pluginState = store.get();
+    const pluginStateIsAny: IsAny<typeof pluginState> = false;
+    const pluginStateModeIsAny: IsAny<typeof pluginState.mode> = false;
+    const exactMode: 'object' = pluginState.mode;
+
+    void editorIsAny;
+    void pluginStateIsAny;
+    void pluginStateModeIsAny;
+
+    return {
+      getMode: () => exactMode,
+    };
+  },
+  initialState: {
+    mode: 'object' as const,
+  },
+  read: ({ editor, store }) => {
+    const editorIsAny: IsAny<typeof editor> = false;
+    const pluginState = store.get();
+    const pluginStateIsAny: IsAny<typeof pluginState> = false;
+    const pluginStateModeIsAny: IsAny<typeof pluginState.mode> = false;
+    const exactMode: 'object' = pluginState.mode;
+
+    void editorIsAny;
+    void pluginStateIsAny;
+    void pluginStateModeIsAny;
+
+    return {
+      getMode: () => exactMode,
+    };
+  },
+});
+
+const ObjectStateFirstInferencePlugin = definePlugin(
+  'objectStateFirstInference',
+  {
+    initialState: {
+      mode: 'objectStateFirst' as const,
+    },
+    api: ({ editor, store }) => {
+      const editorIsAny: IsAny<typeof editor> = false;
+      const pluginState = store.get();
+      const pluginStateModeIsAny: IsAny<typeof pluginState.mode> = false;
+      const exactMode: 'objectStateFirst' = pluginState.mode;
+
+      void editorIsAny;
+      void pluginStateModeIsAny;
+
+      return {
+        getMode: () => exactMode,
+      };
+    },
+    read: ({ editor, store }) => {
+      const editorIsAny: IsAny<typeof editor> = false;
+      const pluginState = store.get();
+      const pluginStateModeIsAny: IsAny<typeof pluginState.mode> = false;
+      const exactMode: 'objectStateFirst' = pluginState.mode;
+
+      void editorIsAny;
+      void pluginStateModeIsAny;
+
+      return {
+        getMode: () => exactMode,
+      };
+    },
+  }
+);
+
+const ExplicitFactoryStateInferencePlugin = definePlugin(
+  'explicitFactoryStateInference',
+  {
+    initialState: ({ editor }): { mode: 'explicitFactory' } => {
+      const editorIsAny: IsAny<typeof editor> = false;
+      const editorId: string = editor.id;
+
+      void editorId;
+      void editorIsAny;
+
+      return { mode: 'explicitFactory' };
+    },
+  }
+).extend(({ editor, store }) => {
+  const editorIsAny: IsAny<typeof editor> = false;
+  const pluginState = store.get();
+  const pluginStateIsAny: IsAny<typeof pluginState> = false;
+  const pluginStateModeIsAny: IsAny<typeof pluginState.mode> = false;
+  const exactMode: 'explicitFactory' = pluginState.mode;
+
+  void editorIsAny;
+  void pluginStateIsAny;
+  void pluginStateModeIsAny;
+
+  return {
+    api: () => ({
+      getMode: () => exactMode,
+    }),
+    read: () => ({
+      getMode: () => exactMode,
+    }),
+  };
+});
+
+const InferredFactoryStateInferencePlugin = definePlugin(
+  'inferredFactoryStateInference',
+  {
+    initialState: ({ editor }) => {
+      const editorIsAny: IsAny<typeof editor> = false;
+      const editorId: string = editor.id;
+
+      void editorId;
+      void editorIsAny;
+
+      return { mode: 'inferredFactory' as const };
+    },
+  }
+).extend(({ editor, store }) => {
+  const editorIsAny: IsAny<typeof editor> = false;
+  const pluginState = store.get();
+  const pluginStateIsAny: IsAny<typeof pluginState> = false;
+  const pluginStateModeIsAny: IsAny<typeof pluginState.mode> = false;
+  const exactMode: 'inferredFactory' = pluginState.mode;
+
+  void editorIsAny;
+  void pluginStateIsAny;
+  void pluginStateModeIsAny;
+
+  return {
+    api: () => ({
+      getMode: () => exactMode,
+    }),
+    read: () => ({
+      getMode: () => exactMode,
+    }),
+  };
+});
+
+export const SequentialPlatePlugin = definePlugin('sequentialPlate', {
+  api: () => ({ first: () => 1 as const }),
+  initialState: { count: 1 },
+  read: () => ({ first: () => 1 as const }),
+  update: () => ({ first: () => 1 as const }),
+})
+  .extend(({ api, read, store }) => {
+    api.first() satisfies 1;
+    read.first() satisfies 1;
+    void (store.get().count satisfies number);
+
+    return {
+      api: () => ({ second: () => 2 as const }),
+      initialState: { second: true },
+      read: () => ({ second: () => 2 as const }),
+      selectors: {
+        second: (state) => state.count + 1,
+      },
+      update: ({ tx }) => ({
+        second: () => {
+          tx.sequentialPlate.first() satisfies 1;
+
+          return 2 as const;
+        },
+      }),
+    };
+  })
+  .extend(({ api, read, store }) => {
+    api.second() satisfies 2;
+    read.second() satisfies 2;
+    void (store.get().second satisfies boolean);
+
+    return {
+      api: () => ({ third: () => 3 as const }),
+      initialState: { third: 'ready' as const },
+      read: () => ({ third: () => 3 as const }),
+      update: ({ tx }) => ({
+        third: () => {
+          tx.sequentialPlate.second() satisfies 2;
+
+          return 3 as const;
+        },
+      }),
+    };
+  });
+
+const sequentialPlateEditor = createEditor({
+  plugins: [SequentialPlatePlugin],
+});
+sequentialPlateEditor.api.sequentialPlate.third() satisfies 3;
+sequentialPlateEditor.read.sequentialPlate.third() satisfies 3;
+sequentialPlateEditor.update.sequentialPlate.third() satisfies 3 | undefined;
+void (sequentialPlateEditor.plugin(SequentialPlatePlugin).store.get()
+  .third satisfies 'ready');
+void (sequentialPlateEditor
+  .plugin(SequentialPlatePlugin)
+  .store.get('second') satisfies number);
+// @ts-expect-error Sequential stages keep exact API members.
+sequentialPlateEditor.api.sequentialPlate.missing();
+
+definePlugin('apiBeforeFactoryState', {
+  // @ts-expect-error Factory state consumers belong in a following .extend().
+  api: () => ({}),
+  initialState: ({ editor }) => ({
+    mode: editor.id.length > 0,
+  }),
+});
+
+definePlugin('apiAfterFactoryState', {
+  initialState: ({ editor }) => ({
+    mode: editor.id.length > 0,
+  }),
+  // @ts-expect-error Factory state consumers belong in a following .extend().
+  api: () => ({}),
+});
+
+type ObjectStateInferenceDefinition = DefinitionOf<
+  typeof ObjectStateInferencePlugin
+>;
+type ObjectStateFirstInferenceDefinition = DefinitionOf<
+  typeof ObjectStateFirstInferencePlugin
+>;
+type ExplicitFactoryStateInferenceDefinition = DefinitionOf<
+  typeof ExplicitFactoryStateInferencePlugin
+>;
+type InferredFactoryStateInferenceDefinition = DefinitionOf<
+  typeof InferredFactoryStateInferencePlugin
+>;
+declare const objectStateInferenceDefinition: ObjectStateInferenceDefinition;
+declare const objectStateFirstInferenceDefinition: ObjectStateFirstInferenceDefinition;
+declare const explicitFactoryStateInferenceDefinition: ExplicitFactoryStateInferenceDefinition;
+declare const inferredFactoryStateInferenceDefinition: InferredFactoryStateInferenceDefinition;
+const objectDefinitionModeIsAny: IsAny<
+  typeof objectStateInferenceDefinition.initialState.mode
+> = false;
+const objectStateFirstDefinitionModeIsAny: IsAny<
+  typeof objectStateFirstInferenceDefinition.initialState.mode
+> = false;
+const explicitFactoryDefinitionModeIsAny: IsAny<
+  typeof explicitFactoryStateInferenceDefinition.initialState.mode
+> = false;
+const inferredFactoryDefinitionModeIsAny: IsAny<
+  typeof inferredFactoryStateInferenceDefinition.initialState.mode
+> = false;
+
+void objectDefinitionModeIsAny;
+void objectStateFirstDefinitionModeIsAny;
+void explicitFactoryDefinitionModeIsAny;
+void inferredFactoryDefinitionModeIsAny;
+
+const PlateTargetPlugin = definePlugin('plateTarget', {});
+const authoredPlateTargets = [PlateTargetPlugin, 'heading'] as const;
+const configuredPlateTargets = ['quote', PlateTargetPlugin] as const;
+const AuthoredPlateTargetsPlugin = definePlugin('authoredPlateTargets', {
+  targetPlugins: authoredPlateTargets,
+});
+const ConfiguredPlateTargetsPlugin = AuthoredPlateTargetsPlugin.configure({
+  targetPlugins: configuredPlateTargets,
+});
+type AuthoredPlateTargetsDefinition = DefinitionOf<
+  typeof AuthoredPlateTargetsPlugin
+>;
+type ConfiguredPlateTargetsDefinition = DefinitionOf<
+  typeof ConfiguredPlateTargetsPlugin
+>;
+declare const authoredPlateTargetsDefinition: AuthoredPlateTargetsDefinition;
+declare const configuredPlateTargetsDefinition: ConfiguredPlateTargetsDefinition;
+const exactAuthoredPlateTargets: readonly [
+  typeof PlateTargetPlugin,
+  'heading',
+] = authoredPlateTargetsDefinition.targetPlugins;
+const exactConfiguredPlateTargets: readonly [
+  typeof PlateTargetPlugin,
+  'heading',
+] = configuredPlateTargetsDefinition.targetPlugins;
+// @ts-expect-error Configuration does not rewrite the authored definition witness.
+const invalidConfiguredPlateTarget: 'quote' =
+  configuredPlateTargetsDefinition.targetPlugins[0];
+
+void exactAuthoredPlateTargets;
+void exactConfiguredPlateTargets;
+void invalidConfiguredPlateTarget;
+
+const toolbarInitialState: { floating: boolean } = {
+  floating: true,
+};
+
+const ToolbarPlugin = definePlugin('toolbar', {
+  api: ({ store }) => ({
+    isFloating: () => store.get().floating,
+    toggleFloating: () => store.get().floating,
+  }),
+  initialState: toolbarInitialState,
+});
+
+const MentionPlugin = definePlugin('mention', {
+  api: ({ store }) => ({
+    getTrigger: () => store.get().trigger,
+  }),
+  initialState: {
+    trigger: '@' as const,
+  },
+});
+
+const ExplicitPlugin = definePlugin('explicitPlugin', {
+  api: ({ store }) => ({
+    isEnabled: () => store.get().enabled,
+  }),
+  initialState: {
+    enabled: false,
+  },
+});
+
+const DeclaredPlateTxPlugin = definePlugin('declaredPlateTx', {
+  update: () => ({
+    run: txLocate(
+      false,
+      (value: 'typed', initialState: { count?: number } = {}) => {
+        const exactValue: 'typed' = value;
+        const exactCount: number | undefined = initialState.count;
+
+        return exactValue.length + (exactCount ?? 0);
+      }
+    ),
+  }),
+});
+
+void DeclaredPlateTxPlugin;
+
+const ReactOnPlugin = definePlugin('reactOn', {
+  initialState: {
+    mode: 'inline' as 'inline' | 'block',
+  },
+  on: {
+    keyDown: ({ event }) => {
+      const key: string = event.key;
+
+      void key;
+    },
+  },
+});
+
+const DependencyApiPlugin = definePlugin('dependencyApi', {
+  api: () => ({
+    read: () => true as const,
+  }),
+});
+
+const DependencyEditorApiPlugin = definePlugin('dependencyEditorApi', {
+  api: () => ({
+    read: () => true as const,
+  }),
+});
+
+const DependentComponentPlugin = definePlugin('dependentComponent', {
+  dependencies: [DependencyApiPlugin, DependencyEditorApiPlugin],
+  slots: { afterEditable: DependencyStatus },
+});
+
+function DependencyStatus() {
+  const dependency = useEditor().plugin(DependencyApiPlugin);
+  const dependencyEditor = useEditor().plugin(DependencyEditorApiPlugin);
+  const dependencyIsAny: IsAny<typeof dependency> = false;
+  const dependencyValue: true = dependency.api.read();
+  const dependencyEditorValue: true = dependencyEditor.api.read();
+
+  void dependencyIsAny;
+  void dependencyEditorValue;
+  void dependencyValue;
+
+  return null;
+}
+
+const ViewElementAttributesPlugin = definePlugin('viewElementAttributes', {
+  initialState: { active: true },
+  render: {
+    useViewElementAttributes: ({ editor, plugin, view }) => {
+      const editorIsAny: IsAny<typeof editor> = false;
+      const pluginIsAny: IsAny<typeof plugin> = false;
+      const viewIsAny: IsAny<typeof view> = false;
+      const active = usePluginStore(plugin, (state) => state.active);
+      const key = view.key([0]);
+
+      void editorIsAny;
+      void pluginIsAny;
+      void viewIsAny;
+
+      return active && key
+        ? [
+            {
+              attributes: {
+                'data-active': 'true',
+                style: { '--view-opacity': 1 },
+              },
+              key,
+            },
+          ]
+        : [];
+    },
+  },
+});
+
+const invalidViewElementAttributes = {
+  // @ts-expect-error Event handlers are not safe view attributes.
+  onClick: () => {},
+} satisfies ViewElementAttributes;
+
+void invalidViewElementAttributes;
+
+const PlateReadContextPlugin = definePlugin('plateReadContext', {
+  read: ({ state }) => ({
+    childCount: () => state.children().length,
+  }),
+})
+  .extend({
+    render: {
+      useViewElementAttributes: ({ read, view }) => {
+        const childCount: number = read.childCount();
+        const key = view.key([0]);
+
+        return key
+          ? [{ key, attributes: { 'data-child-count': childCount } }]
+          : [];
+      },
+    },
+  })
+  .configure({
+    on: {
+      focus: ({ read }) => {
+        const childCount: number = read.childCount();
+
+        void childCount;
+      },
+    },
+  });
+
+const plateEditor = createEditor({
+  plugins: [ToolbarPlugin, MentionPlugin, ReactOnPlugin],
+});
+declare const reactOnKeyDownEvent: Parameters<
+  NonNullable<(typeof ReactOnPlugin.on)['keyDown']>
+>[0]['event'];
+ReactOnPlugin.on.keyDown?.({
+  ...createPluginContext(plateEditor, ReactOnPlugin),
+  event: reactOnKeyDownEvent,
+});
+
+const createdPlateEditor = createEditor({
+  plugins: [
+    ToolbarPlugin,
+    MentionPlugin,
+    ExplicitPlugin,
+    ReactOnPlugin,
+    DependentComponentPlugin,
+    ViewElementAttributesPlugin,
+  ],
+});
+const stateInferenceEditor = createEditor({
+  plugins: [
+    ObjectStateInferencePlugin,
+    ObjectStateFirstInferencePlugin,
+    ExplicitFactoryStateInferencePlugin,
+    InferredFactoryStateInferencePlugin,
+  ],
+});
+const emptyApiEditor = createEditor({
+  plugins: [definePlugin('emptyApi', {})],
+});
+
+const floating: boolean = plateEditor.api.toolbar.toggleFloating();
+const nestedFloating: boolean = plateEditor.api.toolbar.isFloating();
+const mentionTrigger: '@' = plateEditor.api.mention.getTrigger();
+const createdFloating: boolean =
+  createdPlateEditor.api.toolbar.toggleFloating();
+const createdMentionTrigger: '@' = createdPlateEditor.api.mention.getTrigger();
+const explicitPluginPortalEnabled: boolean = createdPlateEditor
+  .plugin(ExplicitPlugin)
+  .api.isEnabled();
+const explicitPluginRootEnabled: boolean =
+  createdPlateEditor.api.explicitPlugin.isEnabled();
+const dependencyApiValue: boolean = createdPlateEditor.api.dependencyApi.read();
+const objectApiMode: 'object' =
+  stateInferenceEditor.api.objectStateInference.getMode();
+const objectReadMode: 'object' =
+  stateInferenceEditor.read.objectStateInference.getMode();
+const objectStateFirstApiMode: 'objectStateFirst' =
+  stateInferenceEditor.api.objectStateFirstInference.getMode();
+const objectStateFirstReadMode: 'objectStateFirst' =
+  stateInferenceEditor.read.objectStateFirstInference.getMode();
+const explicitFactoryApiMode: 'explicitFactory' =
+  stateInferenceEditor.api.explicitFactoryStateInference.getMode();
+const explicitFactoryReadMode: 'explicitFactory' =
+  stateInferenceEditor.read.explicitFactoryStateInference.getMode();
+const inferredFactoryApiMode: 'inferredFactory' =
+  stateInferenceEditor.api.inferredFactoryStateInference.getMode();
+const inferredFactoryReadMode: 'inferredFactory' =
+  stateInferenceEditor.read.inferredFactoryStateInference.getMode();
+const htmlValue = createdPlateEditor.api.html.parseSlice('<p>HTML</p>');
+type CreatedPlateEditorApiKeys = keyof typeof createdPlateEditor.api;
+const explicitPluginApiKey: Extract<
+  CreatedPlateEditorApiKeys,
+  'explicitPlugin'
+> = 'explicitPlugin';
+const toolbarFloating: boolean = createdPlateEditor
+  .plugin(ToolbarPlugin)
+  .store.get().floating;
+const createdMentionOption: '@' = createdPlateEditor
+  .plugin(MentionPlugin)
+  .store.get().trigger;
+
+void createdFloating;
+void createdMentionOption;
+void createdMentionTrigger;
+void dependencyApiValue;
+void explicitFactoryApiMode;
+void explicitFactoryReadMode;
+void explicitPluginApiKey;
+void explicitPluginPortalEnabled;
+void explicitPluginRootEnabled;
+void floating;
+void htmlValue;
+void mentionTrigger;
+void nestedFloating;
+void objectApiMode;
+void objectReadMode;
+void objectStateFirstApiMode;
+void objectStateFirstReadMode;
+void PlateReadContextPlugin;
+void toolbarFloating;
+void inferredFactoryApiMode;
+void inferredFactoryReadMode;
+
+// @ts-expect-error invalid merged editor api
+plateEditor.api.notReal();
+
+// @ts-expect-error wrong plugin API call
+createdPlateEditor.api.toolbar.isFloating(true);
+
+// @ts-expect-error empty plugin APIs do not publish a root namespace
+void emptyApiEditor.api.emptyApi;
+
+const explicitPluginPortalApi = createdPlateEditor.plugin(ExplicitPlugin).api;
+// @ts-expect-error plugin portal API is scoped, not wrapped by plugin name
+explicitPluginPortalApi.explicitPlugin.isEnabled();
+
+// @ts-expect-error literal option type must stay stable
+createdPlateEditor.plugin(MentionPlugin).store.get().trigger = '#';
+
+definePlugin('reactUndeclaredUpdateMethod', {
+  // @ts-expect-error A method that takes arguments must declare txLocate, txSelection or txOnly.
+  update: ({ tx }) => ({
+    write: (text: string) => tx.text.insert(text),
+  }),
+});
+definePlugin('reactUndeclaredStageUpdateMethod', {}).extend({
+  // @ts-expect-error An extend stage's method that takes arguments must declare one too.
+  update: ({ tx }) => ({
+    write: (text: string) => tx.text.insert(text),
+  }),
+});
+
+const ReactDirectUpdatePlugin = definePlugin('reactDirectUpdate', {
+  update: () => ({
+    control: txOnly(() => {}),
+    direct: () => {},
+  }),
+});
+const reactDirectUpdatePortal = createEditor({
+  plugins: [ReactDirectUpdatePlugin],
+}).plugin(ReactDirectUpdatePlugin).update;
+
+reactDirectUpdatePortal.direct();
+// @ts-expect-error A portal call opens its own update, so it has no transaction-only methods.
+reactDirectUpdatePortal.control();

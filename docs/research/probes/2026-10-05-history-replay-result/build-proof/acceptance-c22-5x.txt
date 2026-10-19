@@ -1,0 +1,20 @@
+# run 1: fnm exec --using=22 -- pnpm --filter www exec playwright test tests/browser/comment.spec.ts --config playwright.config.ts --project=chromium --grep 'local comment creation shares document undo order'
+  ✓  1 [chromium] › tests/browser/comment.spec.ts:977:5 › local comment creation shares document undo order and keeps composer history local (5.8s)
+  1 passed (33.9s)
+# exit: 0
+# run 2: fnm exec --using=22 -- pnpm --filter www exec playwright test tests/browser/comment.spec.ts --config playwright.config.ts --project=chromium --grep 'local comment creation shares document undo order'
+  ✓  1 [chromium] › tests/browser/comment.spec.ts:977:5 › local comment creation shares document undo order and keeps composer history local (5.4s)
+  1 passed (27.9s)
+# exit: 0
+# run 3: fnm exec --using=22 -- pnpm --filter www exec playwright test tests/browser/comment.spec.ts --config playwright.config.ts --project=chromium --grep 'local comment creation shares document undo order'
+  ✓  1 [chromium] › tests/browser/comment.spec.ts:977:5 › local comment creation shares document undo order and keeps composer history local (3.9s)
+  1 passed (28.6s)
+# exit: 0
+# run 4: fnm exec --using=22 -- pnpm --filter www exec playwright test tests/browser/comment.spec.ts --config playwright.config.ts --project=chromium --grep 'local comment creation shares document undo order'
+  ✓  1 [chromium] › tests/browser/comment.spec.ts:977:5 › local comment creation shares document undo order and keeps composer history local (6.7s)
+  1 passed (36.0s)
+# exit: 0
+# run 5: fnm exec --using=22 -- pnpm --filter www exec playwright test tests/browser/comment.spec.ts --config playwright.config.ts --project=chromium --grep 'local comment creation shares document undo order'
+  ✓  1 [chromium] › tests/browser/comment.spec.ts:977:5 › local comment creation shares document undo order and keeps composer history local (4.4s)
+  1 passed (35.2s)
+# exit: 0

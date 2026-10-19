@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-18-default-playground-editing",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-18-default-playground-editing.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Start the Playground in Editing mode while keeping seeded suggestions visible",
+  "targets": [
+    {
+      "name": "playground-demo",
+      "files": ["apps/www/src/registry/examples/playground-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-18-playground-start-editing-mode-cb10df75",
+      "kind": "behavior",
+      "summary": "Start the Playground in Editing mode while keeping seeded suggestions visible.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["playground-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-18",
+          "entry": "2026-09-18-default-playground-editing",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

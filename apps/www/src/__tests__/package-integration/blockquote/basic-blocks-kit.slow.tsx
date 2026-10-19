@@ -1,0 +1,50 @@
+/** @jsx jsxt */
+
+import { jsxt } from '@platejs/test';
+import { createEditor as createProductEditor } from 'platejs';
+
+import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
+
+jsxt;
+
+const createEditor = ({
+  offset,
+  path = [0, 0],
+  text,
+  value = [{ children: [{ text }], type: 'paragraph' }],
+}: {
+  offset: number;
+  path?: number[];
+  text?: string;
+  value?: any[];
+}) =>
+  createProductEditor({
+    plugins: BasicBlocksKit,
+    selection: {
+      kind: 'text',
+      anchor: { offset, path },
+      focus: { offset, path },
+    },
+    initialValue: value,
+  } as any);
+
+const insertText = (editor: ReturnType<typeof createEditor>, text: string) => {
+  editor.update.text.insert(text);
+};
+
+describe('BasicBlocksKit blockquote autoformat', () => {
+  it('promotes `> ` into a blockquote at the root in the shipped kit surface', () => {
+    const editor = createEditor({ offset: 1, text: '>hello' });
+
+    insertText(editor, ' ');
+
+    expect(editor.read.children()[0]).toMatchObject({
+      children: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
+      type: 'blockquote',
+    });
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [0, 0, 0] },
+      focus: { offset: 0, path: [0, 0, 0] },
+    });
+  });
+});

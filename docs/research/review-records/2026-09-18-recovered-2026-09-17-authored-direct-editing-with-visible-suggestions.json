@@ -1,0 +1,35 @@
+{
+  "id": "2026-09-18-recovered-2026-09-17-authored-direct-editing-with-visible-suggestions",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "suggestions",
+    "authored"
+  ],
+  "reviewBasis": [
+    "2026-09-17-suggestions-authored-editing-final"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-17-authored-direct-editing-with-visible-suggestions.md",
+    "sha256": "550a295fd94d866d94d0f24ec5b18b2c8571b1699e0ce30b1aa2e06a86563e24"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical implementation completion from the plan. Complete. Native, Plate, product-root, documentation, doctrine and browser proof are closed. The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-17-authored-direct-editing-with-visible-suggestions.md",
+        "sha256": "550a295fd94d866d94d0f24ec5b18b2c8571b1699e0ce30b1aa2e06a86563e24",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-17-authored-direct-editing-with-visible-suggestions.md"
+  ]
+}

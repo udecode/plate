@@ -1,0 +1,241 @@
+---
+title: "Annotations"
+description: "Attach durable range identities to editor text and read them from React UI."
+---
+
+Annotations attach durable ranges to editor text and publish them to sidebars
+and other React UI. Use [Decorations and annotations](/docs/decorations) for
+the broader choice between transient paint and retained range identity.
+
+## When to use annotations
+
+Use annotations when a range has identity beyond a single render pass: review
+comments, issue markers, tracked external diagnostics, resolved threads, or
+other application-owned ranges.
+
+Use decorations for transient paint such as search matches. Position floating
+UI from the mounted view's selection or range geometry.
+
+## Annotation shape
+
+```ts
+import type { Anchor, Range } from "platejs";
+
+type AnnotationAnchor = Pick<Anchor<Range>, "resolve">;
+
+type Annotation<TData> = {
+  anchor: AnnotationAnchor;
+  data?: TData;
+  id: string;
+};
+```
+
+`anchor` resolves the current range in the store's exact editor view. A local `Anchor<Range>` satisfies this contract.
+Adapters can use the same contract for service-owned anchors, remote positions,
+or document-embedded ids.
+
+Each store passes its editor to `anchor.resolve(editor)`. Stores for different
+views of the same model can share one retained anchor while reading different
+ranges. A projection change in one view does not change another store's view.
+
+Getters refresh ranges lazily after document or projection changes and
+otherwise reuse the index. Passive reads do not subscribe. Observation starts
+with the first subscriber and stops when the last unsubscribes.
+
+`useAnnotationStore` owns its store's activation and cleanup. The headless
+`createAnnotationStore` constructor returns an owned store with `destroy()` for
+framework adapters that own a non-React lifetime.
+
+`data` is application metadata. It is returned by `useAnnotation` and
+`useAnnotations`.
+
+Inline paint belongs to the owning plugin's `decorate` field. The feature that owns the
+visual states converts resolved annotations into keyed decoration attributes.
+
+## Local anchors
+
+Use `editor.anchor` when the anchor belongs to the local editor runtime.
+
+```tsx
+const anchor = editor.anchor(
+  {
+    anchor: { path: [0, 0], offset: 3 },
+    focus: { path: [0, 0], offset: 18 },
+  },
+  { association: "inward", deletion: "nearest" }
+);
+
+const annotations = [
+  { anchor, data: { label: "Comment 1" }, id: "comment-1" },
+];
+```
+
+Use `nearest` for durable annotations. Complete deletion collapses the range to
+a valid position, while saved undo and redo restore its exact endpoints.
+
+When annotations come from React state, pass the current array. A new array
+identity refreshes the store automatically.
+
+```tsx
+const annotations = comments.map((comment) => ({
+  anchor: comment.anchor,
+  data: comment,
+  id: comment.id,
+}));
+
+function CommentsView() {
+  const view = useEditorContext();
+  const annotationStore = useAnnotationStore(view, annotations);
+
+  return <CommentsSidebar store={annotationStore} />;
+}
+```
+
+Create the store inside `EditorRoot` when its ranges belong to that mounted
+view. Pass the store explicitly so its data type and ownership stay visible.
+
+```tsx
+<EditorRoot editor={editor}>
+  <EditorContent />
+  <CommentsView />
+</EditorRoot>;
+
+function CommentsSidebar({ store }: { store: AnnotationStore<Comment> }) {
+  const snapshot = useAnnotations(store);
+
+  return snapshot.allIds.map((id) => {
+    const comment = snapshot.byId.get(id);
+
+    return <CommentThread key={id} comment={comment} />;
+  });
+}
+```
+
+Release anchors when the app removes the annotation.
+
+```tsx
+anchor.release();
+```
+
+## External comment stores
+
+Comment bodies, permissions, resolved state, and audit events belong to the app
+or sync service. The Plate document value owns document content.
+Use [Document Meta](/docs/document-meta) for document metadata
+and settings that should persist with the document.
+
+```tsx
+const comments = useCommentChannel();
+
+const annotations = comments.map((comment) => ({
+  anchor: comment.anchor,
+  data: {
+    body: comment.body,
+    label: comment.label,
+    status: comment.status,
+  },
+  id: comment.id,
+}));
+```
+
+External changes to annotation membership or data require `refresh`; passive
+getter freshness tracks document and projection changes. When an external store
+knows which comments changed, refresh those ids.
+
+```tsx
+annotationStore.refresh({
+  ids: [threadId],
+  reason: "annotation",
+});
+```
+
+Refresh semantics:
+
+- omit `ids` for a full refresh
+- pass an empty array for a no-op
+- pass ids to re-resolve only those annotations
+
+Annotation IDs must be unique within a store. Duplicate IDs throw as invalid
+input. If reading or resolving an external source fails, correct the source and
+call `refresh()` to reactivate it.
+
+## Comment channels
+
+Use separate channels for the document and the comments.
+
+```tsx
+// Writer lane: document channel.
+writerEditor.update((tx) => {
+  tx.text.insert("hello", { at });
+});
+
+// Reviewer lane: annotation channel.
+commentsMap.set(threadId, {
+  anchor,
+  body,
+  status: "open",
+});
+
+annotationStore.refresh({ ids: [threadId], reason: "annotation" });
+```
+
+A read-only reviewer can select text, create a comment anchor, and update a
+thread without document-write permission. The adapter resolves the anchor
+against the current document snapshot for rendering.
+
+The `comment-mode` example renders this as two panes:
+
+- edit mode on the left, editable document channel
+- comment mode on the right, read-only document with writable comments
+- shared external comment state
+- shared anchors resolved in each pane's exact editor view
+
+The comment-mode controls do not call `editor.update` or mutate the
+document.
+
+## External anchor adapter
+
+An external adapter can keep the document and comments in separate stores.
+
+```ts
+import type { Editor, Range } from "platejs";
+
+type ExternalAnnotationAnchor = {
+  resolve(view?: Editor): Range | null;
+};
+
+const anchor = externalAnnotationAdapter.anchorFromRange(editor, range);
+
+commentChannel.set(threadId, {
+  anchor,
+  body,
+  status: "open",
+});
+```
+
+The adapter owns mapping, drift recovery, deletion policy, and permissions.
+Resolve into the supplied view's coordinates. Omitting the view uses the
+capture view; an explicit view must belong to the same model and document root.
+The application releases a native anchor through its own retained handle; the
+annotation store only borrows `resolve`. See [Anchor API](/docs/api/anchor) for
+release and aborted-capture behavior.
+
+## Document-embedded ids
+
+Document-embedded ids are useful when the product wants comments to copy, paste,
+serialize, or travel with document content.
+
+Use this as an adapter strategy, not as the default storage model for comment
+bodies or permissions. The document may store a lightweight id; the comment
+thread still belongs to the app or sync service.
+
+## Performance rules
+
+Keep annotation rows stable when their range and app data do not change.
+
+Use `refresh({ ids })` for external comment updates when the changed ids are
+known. Fall back to `refresh()` when the external source cannot provide ids.
+
+Targeted subscribers wake only when their resolved range or data changes.
+Decoration subscribers are independent and wake only when merged text
+attributes change.

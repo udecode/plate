@@ -1,0 +1,406 @@
+[
+  {
+    "cell": "ai-cjk-50000",
+    "status": "complete",
+    "medians": {
+      "baseline": {
+        "load1": 3.7,
+        "a": 7797.4,
+        "b": 29404.7,
+        "c": 7145.5,
+        "busy": 50635.7,
+        "finalMs": 630.5,
+        "functions": {
+          "assertDocument": 2087.5,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 5786,
+          "parseSlice": 7106.2,
+          "staticBlockDecorations": 2018,
+          "updateEditor": 29406,
+          "withEditorDocumentProjection": 7932.1
+        }
+      },
+      "candidate": {
+        "load1": 3.4,
+        "a": 283.1,
+        "b": 189.9,
+        "c": 7822.4,
+        "busy": 10215.9,
+        "finalMs": 222,
+        "functions": {
+          "assertDocument": 178.9,
+          "getStaticDocumentView": 189.9,
+          "isEditorJsonValue": 31.6,
+          "parseSlice": 242.2,
+          "staticBlockDecorations": 2575.3,
+          "updateEditor": 1.2,
+          "withEditorDocumentProjection": 1702.4
+        }
+      }
+    },
+    "streams": [
+      {
+        "arm": "baseline",
+        "role": "warmup",
+        "load1": 3.9,
+        "a": 7841.4,
+        "b": 30146.5,
+        "c": 7306.9,
+        "busy": 51584,
+        "finalMs": 589.1,
+        "wallS": 57.5,
+        "functions": {
+          "assertDocument": 2122.61,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 5750.87,
+          "parseSlice": 7119.14,
+          "staticBlockDecorations": 2047.64,
+          "updateEditor": 30148.1,
+          "withEditorDocumentProjection": 7919.04
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "warmup",
+        "load1": 4.3,
+        "a": 324.2,
+        "b": 188.6,
+        "c": 7710.6,
+        "busy": 10227.1,
+        "finalMs": 218.2,
+        "wallS": 15.8,
+        "functions": {
+          "assertDocument": 179.74,
+          "getStaticDocumentView": 188.57,
+          "isEditorJsonValue": 36.39,
+          "parseSlice": 259.58,
+          "staticBlockDecorations": 2528.6,
+          "updateEditor": 1.76,
+          "withEditorDocumentProjection": 1719.27
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-0",
+        "load1": 3.3,
+        "a": 7797.4,
+        "b": 29522.6,
+        "c": 7124,
+        "busy": 50635.7,
+        "finalMs": 578.1,
+        "wallS": 56.5,
+        "functions": {
+          "assertDocument": 2087.51,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 5644.53,
+          "parseSlice": 7106.18,
+          "staticBlockDecorations": 2020.66,
+          "updateEditor": 29524.53,
+          "withEditorDocumentProjection": 7932.05
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-0",
+        "load1": 3.4,
+        "a": 285.5,
+        "b": 191.5,
+        "c": 7495.7,
+        "busy": 9901,
+        "finalMs": 227.4,
+        "wallS": 15.5,
+        "functions": {
+          "assertDocument": 178.87,
+          "getStaticDocumentView": 191.5,
+          "isEditorJsonValue": 25.31,
+          "parseSlice": 249.85,
+          "staticBlockDecorations": 2570.07,
+          "updateEditor": 1.91,
+          "withEditorDocumentProjection": 1706.67
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-1",
+        "load1": 3.1,
+        "a": 283.1,
+        "b": 189.9,
+        "c": 7822.4,
+        "busy": 10215.9,
+        "finalMs": 222,
+        "wallS": 15.8,
+        "functions": {
+          "assertDocument": 182.34,
+          "getStaticDocumentView": 189.86,
+          "isEditorJsonValue": 39.05,
+          "parseSlice": 242.2,
+          "staticBlockDecorations": 2578.9,
+          "updateEditor": 1.24,
+          "withEditorDocumentProjection": 1664.62
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-1",
+        "load1": 3.7,
+        "a": 7855,
+        "b": 29404.7,
+        "c": 8506.8,
+        "busy": 52471.3,
+        "finalMs": 639.4,
+        "wallS": 58.3,
+        "functions": {
+          "assertDocument": 2078.2,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 5786.03,
+          "parseSlice": 7157.9,
+          "staticBlockDecorations": 2014.95,
+          "updateEditor": 29405.95,
+          "withEditorDocumentProjection": 7937.32
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-2",
+        "load1": 3.8,
+        "a": 7758.7,
+        "b": 29373.1,
+        "c": 7145.5,
+        "busy": 50468.7,
+        "finalMs": 630.5,
+        "wallS": 56.3,
+        "functions": {
+          "assertDocument": 2117.03,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 5805.64,
+          "parseSlice": 7058.23,
+          "staticBlockDecorations": 2017.97,
+          "updateEditor": 29374.37,
+          "withEditorDocumentProjection": 7809.11
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-2",
+        "load1": 4,
+        "a": 274.7,
+        "b": 171.8,
+        "c": 7984.9,
+        "busy": 10355.8,
+        "finalMs": 221.6,
+        "wallS": 16,
+        "functions": {
+          "assertDocument": 161.76,
+          "getStaticDocumentView": 171.8,
+          "isEditorJsonValue": 31.62,
+          "parseSlice": 239.74,
+          "staticBlockDecorations": 2575.25,
+          "updateEditor": 1.21,
+          "withEditorDocumentProjection": 1702.41
+        }
+      }
+    ]
+  },
+  {
+    "cell": "static-cjk-50000",
+    "status": "complete",
+    "medians": {
+      "baseline": {
+        "load1": 6,
+        "a": 9132.7,
+        "b": 34060.4,
+        "c": 9161.5,
+        "busy": 63171.2,
+        "finalMs": 379.5,
+        "functions": {
+          "assertDocument": 2630.8,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 6756.1,
+          "parseSlice": 9132.7,
+          "staticBlockDecorations": 5313.3,
+          "updateEditor": 34060.4,
+          "withEditorDocumentProjection": 10960.2
+        }
+      },
+      "candidate": {
+        "load1": 9.9,
+        "a": 357.4,
+        "b": 106.2,
+        "c": 11195.2,
+        "busy": 18262.3,
+        "finalMs": 37.8,
+        "functions": {
+          "assertDocument": 82.3,
+          "getStaticDocumentView": 106.2,
+          "isEditorJsonValue": 23.8,
+          "parseSlice": 357.4,
+          "staticBlockDecorations": 6884,
+          "updateEditor": 0,
+          "withEditorDocumentProjection": 3499.7
+        }
+      }
+    },
+    "streams": [
+      {
+        "arm": "baseline",
+        "role": "warmup",
+        "load1": 7.8,
+        "a": 11962.1,
+        "b": 44421.3,
+        "c": 10209.6,
+        "busy": 80822.3,
+        "finalMs": 480.2,
+        "wallS": 81.4,
+        "functions": {
+          "assertDocument": 3395.54,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 8611.69,
+          "parseSlice": 11962.11,
+          "staticBlockDecorations": 5705.76,
+          "updateEditor": 44421.33,
+          "withEditorDocumentProjection": 14023.98
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "warmup",
+        "load1": 12.1,
+        "a": 596.5,
+        "b": 166.9,
+        "c": 17129.2,
+        "busy": 27150.8,
+        "finalMs": 64.6,
+        "wallS": 27.3,
+        "functions": {
+          "assertDocument": 152.99,
+          "getStaticDocumentView": 166.89,
+          "isEditorJsonValue": 54.79,
+          "parseSlice": 596.54,
+          "staticBlockDecorations": 10788.06,
+          "updateEditor": 0,
+          "withEditorDocumentProjection": 5335.86
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-0",
+        "load1": 8.9,
+        "a": 15495.5,
+        "b": 57320.6,
+        "c": 13050.8,
+        "busy": 103604.6,
+        "finalMs": 476.6,
+        "wallS": 103.9,
+        "functions": {
+          "assertDocument": 4458.98,
+          "getStaticDocumentView": 2.06,
+          "isEditorJsonValue": 10849.9,
+          "parseSlice": 15495.5,
+          "staticBlockDecorations": 7360.11,
+          "updateEditor": 57318.54,
+          "withEditorDocumentProjection": 18038.19
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-0",
+        "load1": 9.9,
+        "a": 357.4,
+        "b": 106.2,
+        "c": 11195.2,
+        "busy": 18262.3,
+        "finalMs": 42,
+        "wallS": 18.7,
+        "functions": {
+          "assertDocument": 82.25,
+          "getStaticDocumentView": 106.18,
+          "isEditorJsonValue": 23.76,
+          "parseSlice": 357.35,
+          "staticBlockDecorations": 6883.95,
+          "updateEditor": 0,
+          "withEditorDocumentProjection": 3499.66
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-1",
+        "load1": 9.9,
+        "a": 424.4,
+        "b": 112.5,
+        "c": 12332.6,
+        "busy": 20097.5,
+        "finalMs": 35.4,
+        "wallS": 20.4,
+        "functions": {
+          "assertDocument": 91.3,
+          "getStaticDocumentView": 112.46,
+          "isEditorJsonValue": 33.36,
+          "parseSlice": 424.39,
+          "staticBlockDecorations": 7475.89,
+          "updateEditor": 0,
+          "withEditorDocumentProjection": 3665.03
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-1",
+        "load1": 6,
+        "a": 8972.2,
+        "b": 33814.7,
+        "c": 9116.3,
+        "busy": 62409.5,
+        "finalMs": 379.5,
+        "wallS": 63,
+        "functions": {
+          "assertDocument": 2626.62,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 6756.06,
+          "parseSlice": 8972.22,
+          "staticBlockDecorations": 5313.31,
+          "updateEditor": 33814.73,
+          "withEditorDocumentProjection": 10752.7
+        }
+      },
+      {
+        "arm": "baseline",
+        "role": "pair-2",
+        "load1": 4.8,
+        "a": 9132.7,
+        "b": 34060.4,
+        "c": 9161.5,
+        "busy": 63171.2,
+        "finalMs": 377.2,
+        "wallS": 63.7,
+        "functions": {
+          "assertDocument": 2630.83,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 6484.81,
+          "parseSlice": 9132.7,
+          "staticBlockDecorations": 5209.21,
+          "updateEditor": 34060.41,
+          "withEditorDocumentProjection": 10960.24
+        }
+      },
+      {
+        "arm": "candidate",
+        "role": "pair-2",
+        "load1": 4.3,
+        "a": 295.6,
+        "b": 82.8,
+        "c": 10003.7,
+        "busy": 15514.5,
+        "finalMs": 37.8,
+        "wallS": 16.1,
+        "functions": {
+          "assertDocument": 65.22,
+          "getStaticDocumentView": 82.79,
+          "isEditorJsonValue": 20.84,
+          "parseSlice": 295.64,
+          "staticBlockDecorations": 6251.81,
+          "updateEditor": 0,
+          "withEditorDocumentProjection": 2957.01
+        }
+      }
+    ]
+  }
+]

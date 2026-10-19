@@ -1,0 +1,82 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "incremental": true,
+    "noEmit": false,
+    "outDir": "../.turbo/entrypoint-types/migrations",
+    "rootDir": "../src",
+    "sourceMap": false,
+    "tsBuildInfoFile": "../.turbo/entrypoint-types/migrations.tsbuildinfo"
+  },
+  "exclude": [
+    "../src/**/*.spec.*",
+    "../src/**/*.test.*",
+    "../src/**/*.slow.*",
+    "../src/**/*-contract.*",
+    "../src/**/__tests__/**"
+  ],
+  "extends": "../tsconfig.json",
+  "include": ["../src/migrations/**/*"],
+  "references": [
+    {
+      "path": "./authored.json"
+    },
+    {
+      "path": "./callout.json"
+    },
+    {
+      "path": "./core.json"
+    },
+    {
+      "path": "./date.json"
+    },
+    {
+      "path": "./details.json"
+    },
+    {
+      "path": "./excalidraw.json"
+    },
+    {
+      "path": "./footnote.json"
+    },
+    {
+      "path": "./layout.json"
+    },
+    {
+      "path": "./math.json"
+    },
+    {
+      "path": "./media.json"
+    },
+    {
+      "path": "./mention.json"
+    },
+    {
+      "path": "./standard-basic-nodes.json"
+    },
+    {
+      "path": "./standard-basic-styles.json"
+    },
+    {
+      "path": "./standard-code-block.json"
+    },
+    {
+      "path": "./standard-indent.json"
+    },
+    {
+      "path": "./standard-link.json"
+    },
+    {
+      "path": "./standard-list.json"
+    },
+    {
+      "path": "./table.json"
+    },
+    {
+      "path": "./toc.json"
+    }
+  ]
+}

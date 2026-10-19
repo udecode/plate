@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-15-slash-keeps-query-on-refusal",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-15-slash-keeps-query-on-refusal.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-15",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the slash query when a chosen block cannot be inserted",
+  "targets": [
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-15-slash-keep-query-when-chosen-3282246e",
+      "kind": "fix",
+      "summary": "Keep the typed query and the open menu when the chosen block does not fit where it would land, instead of throwing a schema error.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["slash"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-15",
+          "entry": "2026-10-15-slash-keeps-query-on-refusal",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

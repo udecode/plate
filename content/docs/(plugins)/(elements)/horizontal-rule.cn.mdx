@@ -1,0 +1,117 @@
+---
+title: 水平分隔线
+docs:
+  - route: /docs/components/horizontal-rule
+    title: Hr 元素
+---
+
+<ComponentPreview name="basic-blocks-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 插入水平线来分隔内容或表示主题转换
+- 在独占一行时输入三个破折号 (`---`) 可自动转换为水平分隔线
+- 默认渲染为 `<hr>` HTML 元素
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+添加水平分隔线插件最快的方式是使用 `BasicBlocksKit`，该套件包含预配置的 `HorizontalRulePlugin` 以及其他基础块元素及其 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="basic-blocks" />
+
+- [`HrElement`](/docs/components/horizontal-rule): 渲染水平分隔线元素
+
+### 添加套件
+
+将套件添加到你的插件中：
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicBlocksKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install platejs
+```
+
+### 添加插件
+
+在创建编辑器时，将 `HorizontalRulePlugin` 包含到 Plate 插件数组中。
+
+```tsx
+import { HorizontalRuleRules } from 'platejs';
+import { HorizontalRulePlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    HorizontalRulePlugin,
+  ],
+});
+```
+
+### 配置插件
+
+你可以配置 `HorizontalRulePlugin` 的自动格式化规则，将输入的特定模式（如 `---`）自动转换为水平分隔线。
+
+```tsx
+import { HorizontalRulePlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    HorizontalRulePlugin.configure({
+      inputRules: [HorizontalRuleRules.markdown({ variant: '-' })],
+    }),
+  ],
+});
+```
+
+- `HorizontalRuleRules.markdown({ variant: '-' })`: 启用 `---`
+
+分隔线标记必须是块中唯一的内容；在已有文本旁输入（如 `---abc`）或在提及等行内元素旁输入，都会保持原样。转换后，光标进入分隔线之后的新块。这个块是容器声明的默认块，与光标在分隔线上时按 Enter 添加的块相同：大多数编辑器中是段落，引用块内是引用的默认块。如果 schema 不允许在此放置分隔线，或分隔线之后放不下新块，标记也保持原样。
+
+### 插入工具栏按钮
+
+你可以将此项目添加到 [插入工具栏按钮](/docs/toolbar#insert-toolbar-button) 中来插入水平分隔线：
+
+```tsx
+{
+  icon: <MinusIcon />,
+  label: 'Divider',
+  value: PLUGINS.horizontalRule,
+}
+```
+
+</Steps>
+
+## 插件
+
+### `HorizontalRulePlugin`
+
+用于插入水平分隔线来分隔内容的插件。水平分隔线是 void 元素，默认渲染为 `<hr>` 标签。

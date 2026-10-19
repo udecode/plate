@@ -1,0 +1,21 @@
+{
+  "id": "2026-09-04-code-external-text",
+  "scope": "code",
+  "kind": "historical",
+  "date": "2026-09-04",
+  "question": "Which owner should hold code text, editing, syntax rendering and large-block layout?",
+  "model": null,
+  "method": "historical-import-v1; original method and evidence remain at references",
+  "trigger": "Backfill material prior work for automatic repeat-review lookup.",
+  "summary": "Keep one Text and the external-text protocol; cut whole-block Lowlight transport into CodeMirror.",
+  "verdict": "pursue",
+  "relation": "initial",
+  "previous": null,
+  "alternatives": [],
+  "proofLimits": "The audit identifies oracle and mount costs. Old timings have different hosts/cohorts and do not certify the current renderer.",
+  "references": [
+    "docs/plans/2026-09-04-code-block-external-text-architecture-audit.md",
+    "docs/plans/artifacts/2026-09-04-code-block-external-text-architecture-audit/review.md"
+  ],
+  "source": null
+}

@@ -1,0 +1,228 @@
+---
+title: 缩进
+docs:
+  - route: /docs/components/indent-toolbar-button
+    title: 缩进工具栏按钮
+---
+
+<ComponentPreview name="indent-demo" />
+
+<PackageInfo>
+
+## 特性
+
+- 使用 Tab/Shift+Tab 快捷键为块级元素添加缩进。
+- 应用具有可自定义偏移量和单位的统一缩进。
+- 向目标块级元素注入 `indent` 属性。
+- 支持最大缩进深度控制。
+
+</PackageInfo>
+
+## Kit 使用
+
+<Steps>
+
+### 安装
+
+添加缩进功能最快的方法是使用 `IndentKit`，它包含预配置的 `IndentPlugin`，支持文本、Details、媒体和其他常用块。表格不在其中，因为表格保留自己的左边距。
+
+<ComponentSource name="indent" />
+
+- 配置段落、标题、引用块、代码块、Details、图片、音频、视频、文件、媒体嵌入、上传、提示框、分栏组、公式、Excalidraw、分隔线和目录元素以支持 `indent` 属性，使包含这些块的 Details 正文可以转换为列表。
+- 设置自定义缩进间距为 `24px`。
+- 提供 Tab/Shift+Tab 快捷键用于缩进和取消缩进。
+
+### 添加 Kit
+
+将 kit 添加到你的插件中：
+
+```tsx
+import { createEditor } from "platejs/react";
+import { IndentKit } from "@/components/editor/indent";
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...IndentKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install platejs
+```
+
+### 添加插件
+
+在创建编辑器时，将 `IndentPlugin` 包含在你的 Plate 插件数组中。
+
+```tsx
+import { IndentPlugin } from "platejs/react";
+import { createEditor } from "platejs/react";
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    IndentPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+你可以配置 `IndentPlugin` 以针对特定元素并自定义缩进行为。
+
+```tsx
+import { IndentPlugin } from "platejs/react";
+import { PLUGINS } from "platejs";
+import { createEditor } from "platejs/react";
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    IndentPlugin.configure({
+      targetPlugins: [
+        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
+        PLUGINS.paragraph,
+        PLUGINS.blockquote,
+      ],
+      inject: {
+        nodeProps: {
+          styleKey: "marginLeft",
+        },
+      },
+      initialState: {
+        offset: 24,
+        unit: "px",
+        indentMax: 10,
+      },
+    }),
+  ],
+});
+```
+
+- `inject.nodeProps.styleKey`：将注入的属性映射到 CSS `marginLeft` 属性。
+- `targetPlugins`：可存储缩进属性的元素插件 descriptor 或动态 name。
+- `initialState.offset`：缩进偏移量（像素）（默认：`24`）。
+- `initialState.unit`：缩进值的单位（默认：`'px'`）。
+- `initialState.indentMax`：允许的最大缩进次数。
+
+### 添加工具栏按钮
+
+你可以将 [`IndentToolbarButton`](/docs/components/indent-toolbar-button) 添加到你的[工具栏](/docs/toolbar)中以控制缩进。
+
+</Steps>
+
+## 插件
+
+### `IndentPlugin`
+
+用于缩进块级元素的插件。它向 `targetPlugins` 指定的元素注入 `indent` 属性并应用 `marginLeft` 样式。
+
+<API name="IndentPlugin">
+  <APIOptions type="object">
+    <APIItem name="inject.nodeProps.styleKey" type="string" optional>
+      用于样式的 CSS 属性名称。 - **默认值：** `'marginLeft'`
+    </APIItem>
+    <APIItem name="targetPlugins" type="readonly (PluginReference | string)[]" optional>
+      用于缩进存储和注入的元素插件 descriptor 或动态 name。 - **默认值：**
+      `[BaseParagraphPlugin]`
+    </APIItem>
+    <APIItem name="initialState.offset" type="number" optional>
+      在 `(offset * element.indent) + unit` 中使用的缩进偏移量。 - **默认值：**
+      `24`
+    </APIItem>
+    <APIItem name="initialState.unit" type="string" optional>
+      在 `(offset * element.indent) + unit` 中使用的缩进单位。 - **默认值：**
+      `'px'`
+    </APIItem>
+    <APIItem name="initialState.indentMax" type="number" optional>
+      允许的最大缩进次数。
+    </APIItem>
+  </APIOptions>
+</API>
+
+## API
+
+### `editor.plugin(IndentPlugin).update.increase`
+
+缩进编辑器中的选定块。
+
+<API name="increase">
+  <APIOptions type="IndentChangeOptions" optional>
+    用于缩进块的选项。
+  </APIOptions>
+</API>
+
+### `editor.plugin(IndentPlugin).update.decrease`
+
+减少选定块的缩进。
+
+<API name="decrease">
+  <APIOptions type="IndentChangeOptions" optional>
+    用于取消缩进块的选项。
+  </APIOptions>
+</API>
+
+## 类型
+
+### `IndentChangeOptions`
+
+用于提供设置文本块缩进的选项。
+
+<API name="IndentChangeOptions">
+  <APIOptions>
+    <APIItem name="nodes" type="EditorNodesOptions<Element>" optional>
+      节点查询和更新选项；`match` 可以进一步限制目标块。
+    </APIItem>
+  </APIOptions>
+</API>
+
+## 工具栏按钮
+
+工具栏组件直接调用 descriptor-scoped update：
+
+```tsx
+import { IndentPlugin, useEditor } from 'platejs/react';
+
+const editor = useEditor();
+const { update } = editor.plugin(IndentPlugin);
+
+<>
+  <ToolbarButton onClick={() => update.increase()}>Indent</ToolbarButton>
+  <ToolbarButton onClick={() => update.decrease()}>Outdent</ToolbarButton>
+</>
+```
+
+## 首行缩进
+
+`TextIndentPlugin` 只缩进块的第一行。它把缩进步数存在 `textIndent` 中，并按 `offset * textIndent + unit`
+绘制 CSS `text-indent`，所以负数步数是悬挂缩进。没有 kit 安装它，需要自己添加：
+
+```tsx
+import { TextIndentPlugin } from "platejs/react";
+import { createEditor } from "platejs/react";
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    TextIndentPlugin,
+  ],
+});
+
+editor.update.textIndent.set(1);
+editor.update.textIndent.clear({ at: [] });
+```
+
+`set(value, options?)` 在匹配的目标块上保存步数，`clear(options?)` 删除它。两者都接受 Plate 节点更新选项，
+用于指定目标范围和匹配器。默认目标是段落，可以用 `targetPlugins` 修改；`initialState.offset` 和
+`initialState.unit` 设置每一步的大小，默认是 `24` 和 `'px'`。Word 导出把步数写成首行缩进，负数时写成悬挂缩进，
+列表段落上会跳过。

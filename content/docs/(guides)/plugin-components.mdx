@@ -1,0 +1,234 @@
+---
+title: Plugin Components
+description: Render Plate plugin nodes with React components.
+---
+
+Plugin components are the React rendering layer for Plate node plugins. Use
+Plate UI components first when the registry already has the node you need, then
+customize with `EditorElement` or `EditorLeaf` and bind it through
+`.configure({ component })`. This page shows the one component binding path.
+
+## Start with Plate UI
+
+Plate UI components are copied into your app. That makes them the fastest path
+for production styling and the safest starting point for customization.
+
+| Start here | Use when |
+| --- | --- |
+| [Plate UI](/docs/installation/plate-ui) | You want registry components copied into your app. |
+| [Feature Kits](/docs/feature-kits) | You want plugin groups that already wire components, shortcuts, and options. |
+| This page | You are writing or replacing a component by hand. |
+
+The package owns plugin behavior. Your app owns copied component files and their
+styles.
+
+## Component primitives
+
+Use `EditorElement` for element nodes and `EditorLeaf` for mark or leaf nodes.
+Both components merge editor attributes and node props, `className`, and
+`style` onto the rendered DOM element.
+
+<Callout type="info" title="Render children">
+  Always render `children`. Plate needs the children in the DOM even when the
+  element is void or the visible UI comes from surrounding controls.
+</Callout>
+
+### EditorElement
+
+Element components render block, inline, and void element nodes.
+
+```tsx title="components/editor/blockquote.tsx" showLineNumbers
+'use client';
+
+import type { BlockquotePlugin } from 'platejs/react';
+import { type EditorElementProps, EditorElement } from 'platejs/react';
+
+export function BlockquoteElement({
+  children,
+  ...props
+}: EditorElementProps<typeof BlockquotePlugin>) {
+  return (
+    <EditorElement
+      as="blockquote"
+      className="my-1 border-l-2 pl-6 italic"
+      {...props}
+    >
+      {children}
+    </EditorElement>
+  );
+}
+```
+
+`EditorElement` renders a `div` by default. Pass `as` when the node should render
+as a specific HTML element.
+
+### EditorLeaf
+
+Leaf components render marked and decorated text ranges.
+
+```tsx title="components/editor/code.tsx" showLineNumbers
+'use client';
+
+import type { CodePlugin } from 'platejs/react';
+import { type EditorLeafProps, EditorLeaf } from 'platejs/react';
+
+export function CodeLeaf({
+  children,
+  ...props
+}: EditorLeafProps<typeof CodePlugin>) {
+  return (
+    <EditorLeaf
+      as="code"
+      className="whitespace-pre-wrap rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm"
+      {...props}
+    >
+      {children}
+    </EditorLeaf>
+  );
+}
+```
+
+`EditorLeaf` renders a `span` by default. Use it for plugins that declare
+`schema.mark`.
+
+## Register components
+
+Declare `component` in a new Plate plugin, or include it in the existing
+descriptor's single terminal `.configure()` call.
+
+### Existing plugin
+
+Use `.configure({ component })` to attach a React component to a plugin.
+
+```tsx title="components/editor/plugins.tsx" showLineNumbers
+import {
+  BlockquotePlugin,
+  CodePlugin,
+} from 'platejs/react';
+
+import { BlockquoteElement } from '@/components/editor/blockquote';
+import { CodeLeaf } from '@/components/editor/code';
+
+export const plugins = [
+  BlockquotePlugin.configure({ component: BlockquoteElement }),
+  CodePlugin.configure({ component: CodeLeaf }),
+];
+```
+
+### Component with consumer overrides
+
+When the same plugin also needs rules, shortcuts, initial state, or input rules,
+put every override in that same terminal `.configure()` call.
+
+```tsx title="components/editor/plugins.tsx" showLineNumbers
+import { CodeRules } from 'platejs';
+import { CodePlugin } from 'platejs/react';
+
+import { CodeLeaf } from '@/components/editor/code';
+
+export const plugins = [
+  CodePlugin.configure({
+    component: CodeLeaf,
+    inputRules: [CodeRules.markdown()],
+    shortcuts: { toggle: { keys: 'mod+e' } },
+  }),
+];
+```
+
+## Intrinsic components
+
+Bind an HTML tag directly when the default `EditorElement` or `EditorLeaf`
+behavior is enough.
+
+```ts title="quote-plugin.ts" showLineNumbers
+import { schema } from 'platejs';
+import { definePlugin } from 'platejs/react';
+
+export const QuotePlugin = definePlugin('quote', {
+  component: 'blockquote',
+  schema: {
+    element: { content: schema.content.text({ default: 'text', min: 1 }) },
+  },
+});
+```
+
+Reach for a custom component once you need classes, nested controls, popovers,
+toolbars, resize handles, or plugin state inside the render tree.
+
+## Embedded widgets
+
+A void element can host a widget that handles its own pointer, keyboard,
+clipboard, and focus, such as a drawing canvas. Wrap the widget in an element
+with `contentEditable={false}` and `data-editor-root-chrome-ignore="true"`.
+
+```tsx showLineNumbers
+'use client';
+
+import type { ExcalidrawPlugin } from 'platejs/excalidraw/react';
+import { type EditorElementProps, EditorElement } from 'platejs/react';
+
+export function ExcalidrawElement({
+  children,
+  ...props
+}: EditorElementProps<typeof ExcalidrawPlugin>) {
+  return (
+    <EditorElement {...props}>
+      <div contentEditable={false} data-editor-root-chrome-ignore="true">
+        {/* Render the canvas here. */}
+      </div>
+      {children}
+    </EditorElement>
+  );
+}
+```
+
+Inside the marked wrapper, the editor leaves pointer, keyboard, clipboard, and
+focus events and DOM changes to the widget. It treats native controls such as
+`input`, `textarea`, and `button` the same way. A click outside the wrapper
+still selects the node. The [Excalidraw](/docs/excalidraw) element is
+a complete example.
+
+<Callout type="info" title="Keys the editor still takes">
+  Outside an IME composition, the editor takes Undo and Redo shortcuts before
+  the widget's own key handlers run, in a marked widget, a native control, or a
+  nested editor alike. An editable editor runs its own history for them, even
+  when it has nothing to undo. A read-only editor only stops them, so a native
+  text field still applies the browser's own undo. The editor also takes
+  Shift+Arrow keys from a nested editor, and from any widget while its own
+  selection is in another root. While it holds a selection it draws itself,
+  such as one that spans roots, it also takes Backspace, Delete, and Enter from
+  any widget, unless Alt, Ctrl, or Meta is held.
+</Callout>
+
+## Styling
+
+Prefer component-local styles. Plate also adds a `editor-<node-type>` class while
+rendering plugin nodes, so global CSS can target stable node types when you need
+editor-wide styling.
+
+```css title="app/globals.css"
+.editor-paragraph {
+  margin-block: 0.25rem;
+}
+
+.editor-code {
+  border-radius: 0.375rem;
+  font-family: var(--font-mono);
+}
+```
+
+Use global selectors sparingly. Component files are easier to copy, inspect, and
+replace from the registry.
+
+## API Reference
+
+| API | Use for | Notes |
+| --- | --- | --- |
+| `EditorElement` | Element nodes. | Defaults to `div`; accepts `as`, `className`, `style`, and Plate render props. |
+| `EditorLeaf` | Marked and decorated text. | Defaults to `span`; use with plugins that declare `schema.mark`. |
+| `plugin.configure({ component: Component })` | Ordinary node component binding. | Include the component and every consumer override in the same terminal call. |
+| `plugin.configure({ component: 'tag' })` | Default wrapper with an intrinsic tag. | Accepts an HTML tag such as `'blockquote'`, `'strong'`, or `'code'`. |
+| `data-editor-root-chrome-ignore="true"` | A wrapper around a widget that owns its input. | Pair with `contentEditable={false}`; Undo and Redo shortcuts still reach the editor. |
+
+For plugin method details, see [Plugin Methods](/docs/plugin-methods). For static
+rendering components, see [Static Rendering](/docs/static).

@@ -1,0 +1,298 @@
+---
+title: Plate 单元测试
+description: 学习如何对 Plate 编辑器和插件进行单元测试。
+---
+
+本指南概述了使用 `@platejs/test` 对 Plate 插件和组件进行单元测试的最佳实践。
+
+## 安装
+
+```bash
+npm install -D platejs @platejs/test
+```
+
+只有在测试导入 `@platejs/test/react` 时，才安装 React 测试 peer：
+
+```bash
+npm install -D react react-dom @testing-library/react
+```
+
+## 设置测试
+
+使用 `.tsx` 文件，并通过以下 pragma 选择经典 JSX 运行时和测试工厂：
+
+```typescript
+/** @jsxRuntime classic */
+/** @jsx jsx */
+
+import {
+  jsx,
+  projectTestSelectionRange,
+  type TestEditorFixture,
+} from '@platejs/test';
+
+jsx; // so Biome doesn't remove unused imports
+```
+
+这允许你使用 JSX 语法创建编辑器值。
+
+## 创建测试用例
+
+### 编辑器状态表示
+
+使用 JSX 表示编辑器状态：
+
+```typescript
+const input = (
+  <editor>
+    <hp>
+      Hello<cursor /> world
+    </hp>
+  </editor>
+) as TestEditorFixture;
+```
+
+节点元素如 `<hp />`、`<hheading />`、`<htable />` 表示不同类型的节点。
+
+特殊元素如 `<cursor />`、`<anchor />` 和 `<focus />` 表示选区状态。
+
+### 测试转换
+
+1. 创建输入状态
+2. 定义预期输出状态
+3. 使用 `createEditor` 设置编辑器
+4. 直接应用转换
+5. 断言编辑器的新状态
+
+测试粗体格式的示例：
+
+```typescript
+it('should apply bold formatting', () => {
+  const input = (
+    <editor>
+      <hp>
+        Hello <anchor />
+        world
+        <focus />
+      </hp>
+    </editor>
+  ) as TestEditorFixture;
+
+  const output = (
+    <editor>
+      <hp>
+        Hello <htext bold>world</htext>
+      </hp>
+    </editor>
+  ) as TestEditorFixture;
+
+  const editor = createEditor({
+    plugins: [BoldPlugin],
+    initialValue: input.children,
+    selection: input.selection,
+  });
+
+  editor.update((tx) => {
+    tx.marks.toggle('bold');
+  });
+
+  expect(editor.read.children()).toEqual(output.children);
+});
+```
+
+### 测试选区
+
+测试操作如何影响编辑器的选区：
+
+```typescript
+it('should collapse selection on backspace', () => {
+  const input = (
+    <editor>
+      <hp>
+        He<anchor />llo wor<focus />ld
+      </hp>
+    </editor>
+  ) as TestEditorFixture;
+
+  const output = (
+    <editor>
+      <hp>
+        He<cursor />ld
+      </hp>
+    </editor>
+  ) as TestEditorFixture;
+
+  const editor = createEditor({
+    initialValue: input.children,
+    selection: input.selection,
+  });
+
+  editor.update((tx) => {
+    tx.text.deleteBackward({ unit: 'character' });
+  });
+
+  expect(editor.read.children()).toEqual(output.children);
+  expect(editor.read.selection()).toEqual(
+    projectTestSelectionRange(output.selection)
+  );
+});
+```
+
+## 测试键盘事件
+
+当你需要直接测试键盘处理程序时：
+
+```typescript
+import { createEditor, definePlugin } from 'platejs/react';
+
+it('should call the keyDown handler', () => {
+  const input = (
+    <editor>
+      <hp>
+        Hello <anchor />world<focus />
+      </hp>
+    </editor>
+  ) as TestEditorFixture;
+
+  // Create a mock handler to verify it's called
+  const keyDownMock = jest.fn();
+
+  const TestPlugin = definePlugin('test', {
+    on: {
+      keyDown: keyDownMock,
+    },
+  });
+
+  const editor = createEditor({
+    initialValue: input.children,
+    selection: input.selection,
+    plugins: [TestPlugin],
+  });
+
+  // Create the keyboard event
+  const event = new KeyboardEvent('keydown', {
+    key: 'Enter',
+  }) as any;
+
+  // 通过类型化 portal 解析已安装的描述符
+  const testPlugin = editor.plugin(TestPlugin);
+
+  testPlugin.on.keyDown?.({
+    ...testPlugin,
+    event,
+  });
+
+  // Verify the handler was called
+  expect(keyDownMock).toHaveBeenCalled();
+});
+```
+
+## 测试复杂场景
+
+对于像表格这样的复杂插件，通过直接应用转换来测试各种场景：
+
+```typescript
+describe('Table plugin', () => {
+  it('should insert a table', () => {
+    const input = (
+      <editor>
+        <hp>
+          Test<cursor />
+        </hp>
+      </editor>
+    ) as TestEditorFixture;
+
+    const output = (
+      <editor>
+        <hp>Test</hp>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <cursor />
+              </hp>
+            </htd>
+            <htd>
+              <hp></hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp></hp>
+            </htd>
+            <htd>
+              <hp></hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditorFixture;
+
+    const editor = createEditor({
+      initialValue: input.children,
+      selection: input.selection,
+      plugins: [TablePlugin],
+    });
+
+    editor.update((tx) => {
+      tx.insert.table({ colCount: 2, rowCount: 2 });
+    });
+
+    expect(editor.read.children()).toEqual(output.children);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(output.selection)
+    );
+  });
+});
+```
+
+## 测试带选项的插件
+
+测试不同插件选项如何影响行为：
+
+```typescript
+describe('when keepSelectedTextOnPaste is disabled', () => {
+  it('replaces the selected text with the pasted url', () => {
+    const input = (
+      <editor>
+        <hp>
+          start <anchor />
+          of regular text
+          <focus />
+        </hp>
+      </editor>
+    ) as TestEditorFixture;
+
+    const output = (
+      <editor>
+        <hp>
+          start <ha url="https://google.com">https://google.com</ha>
+          <htext />
+        </hp>
+      </editor>
+    ) as TestEditorFixture;
+
+    const editor = createEditor({
+      plugins: [
+        LinkPlugin.configure({
+          initialState: {
+            keepSelectedTextOnPaste: false,
+          },
+        }),
+      ],
+      initialValue: input.children,
+      selection: input.selection,
+    });
+
+    editor.api.dom.clipboard.insertData({
+      getData: (type: string) => (type === 'text/plain' ? 'https://google.com' : ''),
+    } as any);
+
+    expect(editor.read.children()).toEqual(output.children);
+  });
+});
+```
+
+## Mock 与真实转换
+
+虽然 mock 对于隔离特定行为很有用，但 Plate 测试通常会在转换后评估实际的编辑器 children 和选区。这种方法确保插件能与整个编辑器状态正确协作。

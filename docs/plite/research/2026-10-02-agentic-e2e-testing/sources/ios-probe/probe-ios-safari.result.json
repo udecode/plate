@@ -1,0 +1,14 @@
+{
+  "ranAt": "2026-10-02T20:23:00Z",
+  "appium": "3.3.0",
+  "xcuitestDriver": "10.43.1 from ~/.appium",
+  "xcode": "26.6 (17F113)",
+  "simulator": "iPhone 17 Pro, iOS 26.4 runtime",
+  "session": "refused before Safari opened",
+  "error": "Unable to start WebDriverAgent session: connect ECONNREFUSED 127.0.0.1:8100; xcodebuild exited with code 70",
+  "cause": "xcodebuild build-for-testing of WebDriverAgentRunner: iOS 26.5 is not installed. Please download and install the platform from Xcode > Settings > Components.",
+  "unanswered": [
+    "whether WDA's attached client changes Safari's events",
+    "the soft-keyboard event shape in iOS Safari under Plite"
+  ]
+}

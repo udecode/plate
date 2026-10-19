@@ -1,0 +1,17 @@
+# bun --config=./bunfig.toml --cwd=. test ./packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts
+ 58 pass
+ 0 fail
+Ran 58 tests across 1 file. [939.00ms]
+# exit: 0
+# pnpm --filter plitejs test
+ Tasks:    20 successful, 21 total
+Failed:    plitejs#test
+# exit: 1
+# pnpm --filter platejs test
+ Tasks:    138 successful, 138 total
+# exit: 0
+# note: run 1 above ran all 20 plitejs partitions successfully; only the plitejs#test aggregate failed, and that aggregate only checks that every partition is a cache HIT (tooling/scripts/run-entrypoint-package-task.mjs assertDependencyCache). Inferred cause: another session edited a partition input between the partition runs and the check.
+# pnpm --filter plitejs test (run 2)
+ Tasks:    21 successful, 21 total
+Cached:    20 cached, 21 total
+# exit: 0

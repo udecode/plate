@@ -1,0 +1,217 @@
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import { createEditor as createRuntimeEditor } from '../editor';
+import type { Shortcuts } from '../plugin';
+import { dispatchPlateShortcut } from './dispatchPlateShortcut.internal';
+
+const createEditor = (shortcuts: Shortcuts) =>
+  createRuntimeEditor({ shortcuts });
+
+const dispatch = ({
+  editor,
+  event = {},
+  phase = 'keydown',
+}: {
+  editor: ReturnType<typeof createEditor>;
+  event?: KeyboardEventInit;
+  phase?: 'keydown' | 'keyup';
+}) => {
+  const keyboardEvent = new KeyboardEvent(phase, {
+    bubbles: true,
+    cancelable: true,
+    ...event,
+  });
+
+  dispatchPlateShortcut(
+    editor,
+    keyboardEvent,
+    phase,
+    getPlateRuntime(editor).shortcutTable
+  );
+
+  return keyboardEvent;
+};
+
+describe('dispatchPlateShortcut', () => {
+  it('runs no shortcut for a composing key or an IME-confirm Enter', () => {
+    const enter = mock();
+    const editor = createEditor({ enter: { handler: enter, keys: 'enter' } });
+    const composing = dispatch({
+      editor,
+      event: { code: 'Enter', isComposing: true, key: 'Enter' },
+    });
+    const confirm = dispatch({
+      editor,
+      event: { code: 'Enter', key: 'Enter', keyCode: 229 },
+    });
+
+    expect(enter).not.toHaveBeenCalled();
+    expect(composing.defaultPrevented).toBe(false);
+    expect(confirm.defaultPrevented).toBe(false);
+  });
+
+  it('dispatches the first handled shortcut in priority order', () => {
+    const fallback = mock();
+    const specific = mock();
+    const editor = createEditor({
+      fallback: { handler: fallback, keys: 'ctrl+k' },
+      specific: {
+        handler: specific,
+        keys: 'ctrl+k',
+        priority: 100,
+      },
+    });
+    const event = dispatch({
+      editor,
+      event: { code: 'KeyK', ctrlKey: true, key: 'k' },
+    });
+
+    expect(specific).toHaveBeenCalledTimes(1);
+    expect(fallback).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('falls through when a higher-priority handler declines', () => {
+    const fallback = mock();
+    const specific = mock(() => false);
+    const editor = createEditor({
+      fallback: { handler: fallback, keys: 'ctrl+k' },
+      specific: {
+        handler: specific,
+        keys: 'ctrl+k',
+        priority: 100,
+      },
+    });
+
+    dispatch({
+      editor,
+      event: { code: 'KeyK', ctrlKey: true, key: 'k' },
+    });
+
+    expect(specific).toHaveBeenCalledTimes(1);
+    expect(fallback).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps unhandled shortcuts native', () => {
+    const editor = createEditor({
+      save: {
+        handler: () => false,
+        keys: 'ctrl+s',
+        preventDefault: true,
+      },
+    });
+    const event = dispatch({
+      editor,
+      event: { code: 'KeyS', ctrlKey: true, key: 's' },
+    });
+
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('respects explicit preventDefault policy', () => {
+    const editor = createEditor({
+      allowBrowser: {
+        handler: () => {},
+        keys: 'ctrl+a',
+        preventDefault: false,
+      },
+      suppressBrowser: {
+        handler: () => {},
+        keys: 'ctrl+s',
+        preventDefault: true,
+      },
+    });
+
+    expect(
+      dispatch({
+        editor,
+        event: { code: 'KeyA', ctrlKey: true, key: 'a' },
+      }).defaultPrevented
+    ).toBe(false);
+    expect(
+      dispatch({
+        editor,
+        event: { code: 'KeyS', ctrlKey: true, key: 's' },
+      }).defaultPrevented
+    ).toBe(true);
+  });
+
+  it('passes matched event details to the handler', () => {
+    const handler = mock();
+    const editor = createEditor({
+      save: {
+        description: 'Save',
+        handler,
+        keys: 'ctrl+shift+s',
+      },
+    });
+
+    dispatch({
+      editor,
+      event: {
+        code: 'KeyS',
+        ctrlKey: true,
+        key: 's',
+        shiftKey: true,
+      },
+    });
+
+    expect(handler).toHaveBeenCalledWith({
+      editor,
+      event: expect.any(KeyboardEvent),
+      eventDetails: expect.objectContaining({
+        ctrl: true,
+        description: 'Save',
+        keys: ['s'],
+        shift: true,
+      }),
+    });
+  });
+
+  it('dispatches keyup-only shortcuts once', () => {
+    const handler = mock();
+    const editor = createEditor({
+      inspect: { handler, keys: 'ctrl+i', keyup: true },
+    });
+    const event = { code: 'KeyI', ctrlKey: true, key: 'i' };
+
+    dispatch({ editor, event });
+    expect(handler).not.toHaveBeenCalled();
+
+    dispatch({ editor, event, phase: 'keyup' });
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects AltGraph while matching non-Latin physical keys', () => {
+    const altGraph = mock();
+    const undo = mock();
+    const editor = createEditor({
+      altGraph: { handler: altGraph, keys: 'ctrl+alt+e' },
+      undo: { handler: undo, keys: 'ctrl+z' },
+    });
+    const altGraphEvent = new KeyboardEvent('keydown', {
+      altKey: true,
+      bubbles: true,
+      cancelable: true,
+      code: 'KeyE',
+      ctrlKey: true,
+      key: '€',
+    });
+
+    Object.defineProperty(altGraphEvent, 'getModifierState', {
+      value: (key: string) => key === 'AltGraph',
+    });
+    dispatchPlateShortcut(
+      editor,
+      altGraphEvent,
+      'keydown',
+      getPlateRuntime(editor).shortcutTable
+    );
+    dispatch({
+      editor,
+      event: { code: 'KeyZ', ctrlKey: true, key: 'я' },
+    });
+
+    expect(altGraph).not.toHaveBeenCalled();
+    expect(undo).toHaveBeenCalledTimes(1);
+  });
+});

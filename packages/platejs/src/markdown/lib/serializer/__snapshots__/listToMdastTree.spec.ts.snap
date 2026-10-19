@@ -1,0 +1,44 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`listToMdastTree handle todo lists correctly 1`] = `
+{
+  "children": [
+    {
+      "checked": true,
+      "children": [
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "todo 1",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "spread": false,
+      "type": "listItem",
+    },
+    {
+      "checked": false,
+      "children": [
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "todo 2",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "spread": false,
+      "type": "listItem",
+    },
+  ],
+  "ordered": false,
+  "spread": false,
+  "start": undefined,
+  "type": "list",
+}
+`;

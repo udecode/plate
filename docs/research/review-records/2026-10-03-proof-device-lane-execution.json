@@ -1,0 +1,117 @@
+{
+  "id": "2026-10-03-proof-device-lane-execution",
+  "kind": "execution",
+  "date": "2026-10-03",
+  "scopes": [
+    "proof"
+  ],
+  "reviewBasis": [
+    "2026-10-02-proof-agentic-e2e-review"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-10-02-proof-device-lane.md",
+    "sha256": "2961db377694b4565ea2727e32ec0f64494e15e01aa84727538f0d2d79de13bf"
+  },
+  "binding": "current",
+  "outcome": "partial",
+  "summary": "Built the plan's local proof lanes with no GitHub Actions minutes. Harness pastes go through one per-project clipboardTransport and fail unless a newer paste-tagged commit changes the document; the browser handle and kernel-trace retention attach only after installBrowserHandle() from plitejs/react, re-exported by platejs/react. A private Android lane in packages/test/src/device types with real Gboard touches over adb behind a guarded DevTools relay, gates each case on a structural witness, records known product failures by their observed values, and leaves the device as found. A macOS lane for #5137 is built but has not run. Two rounds of a three-seat panel and two decision-trail reviews were applied.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "docs/plite/research/2026-10-02-agentic-e2e-testing/sources/device-runs/2026-10-02T2315Z-final/five-runs-summary.json",
+        "sha256": "57bb468b8d142233349e7b563cf5c0567445f72ec16f5906a620403878e70b4b",
+        "claim": "Cold-boot five warm runs on the final code: 35 expected, 0 unexpected, 0 flaky, retries 0 on Pixel_9_API_36_Play with Gboard 17.0.14; known failures read their recorded values 5 of 5 and 10 of 10; the guard refused 45 commands including Target.exposeDevToolsProtocol."
+      },
+      {
+        "path": "docs/plite/research/2026-10-02-agentic-e2e-testing/sources/device-runs/2026-10-02T2315Z-final/sequence.log",
+        "sha256": "ce9d2a48a32ba92caffd83d6739ecce96dcd2394852ae72bd2b29f89251516a4",
+        "claim": "Same sequence: a deliberate failure moved the next test to a new worker that read the owned tab; a runner killed by exact pid left a stale lock doctor refused; restore took it over and removed the tab, ports, Korean layout and journal; the before and after snapshots match except the subtype Android normalizes."
+      },
+      {
+        "path": "docs/plite/research/2026-10-02-agentic-e2e-testing/sources/paste-runs/2026-10-02-results.txt",
+        "sha256": "728c04ab0ce760f6cc275a00bc8f339690a64ef89f0be94d31a6b008864d75f2",
+        "claim": "Paste specs on the final oracle: chromium 382, firefox 341, mobile 156, webkit 353 passed with no failures; widened mobile WebKit 350 passed with the same nine non-transport failures; www table-resize 15 passed."
+      },
+      {
+        "path": "docs/plite/research/2026-10-02-agentic-e2e-testing/sources/paste-runs/2026-10-02-collection.txt",
+        "sha256": "1580c9abbdb858ff0d35a73848fd795b96667662bb29e1acff6edd6ec00c3624",
+        "claim": "The ten paste spec files collect 386 tests on all five Plite projects."
+      },
+      {
+        "path": "packages/test/test/node/device-witness.test.ts",
+        "sha256": "bc2fc66ca0b7535375e292274374668bd689d33b556480acd605fa6dab65c3ee",
+        "claim": "Witness unit test over recorded emulator traces and one lane trace: 12 pass; each rule it pins failed its case when removed."
+      },
+      {
+        "path": "docs/plite/research/2026-10-02-agentic-e2e-testing/review/execution-panel/round2-gpt-6.1-sol.md",
+        "sha256": "8522fa6e33bd8946cbf8e35d0e096a02bead76eff9f8bca0c6411c674f0f13d0",
+        "claim": "Panel round 2, one of three seats; rounds 1 and 2 are logged under phase panel with every finding applied, dismissed or deferred with an owner."
+      }
+    ],
+    "limits": "The #5137 macOS lane never selected Pinyin - Simplified, so neither its helper typing nor its gated spec ran. iOS is quarantined: Xcode 26.6 needs the iOS 26.5 platform. A production platejs/react import still carries the handle, and no check guards the plitejs/react production bundle. The DOM-only production control and two benchmark drivers did not run. Device proof covers one emulator and Gboard 17.0.14; physical phones and other keyboards are unproven. The Apple converted spaces paste test was attributed under the old transport in this tree, not at HEAD. Deferred panel items: canceled-beforeinput pairing, restored-tab cleanup, a typed last-commit read and rebuilding the recorder on the lane."
+  },
+  "source": {
+    "files": {
+      "packages/test/src/proof/feature-contracts.ts": "e7de07cfcb33499e0b9c81e6f5dd8fd1eb51f4fab6b636ba3582d905b5bd7d6b",
+      "apps/plite/scripts/plite-browser-runner.mjs": "d85706bd249efcfa947c67c34e0e2a76ee0282e9dcfd4cef2ea19a5666fc20ca",
+      "apps/plite/scripts/plite-browser-runner.test.mjs": "2f1796b5e4a669623b71e7cd257c30d884c41b8fd08395317b3c7ade40c33247",
+      "packages/test/src/proof/first-party-browser-contracts.ts": "56de527b8e12dcf486b9993cde2d47ff1b8cb86a96580ecc70ff3958921b60c8",
+      "packages/test/test/proof/proof.test.ts": "852191c2e1ca7fb91ba122dc337afcba134734fd26173a4bab85f25dab62c659",
+      "packages/test/test/proof/raw-mobile-proof.test.ts": "c1fbea03a1f86c7a2e56fcf075d4b0b93251a8c4530d439cdf657dd8879e54b5",
+      "packages/test/src/playwright/harness-input.ts": "3eca1b53013da6bf01cd0dcc7086673ba60949680cd4faec781000985ce6196e",
+      "packages/test/src/playwright/harness.ts": "c967605fe599a5678716c19127f00f8174c57264cc03c76acb0e425b8c1175df",
+      "packages/test/src/playwright/ime.ts": "0bcaba0f2e33b67e31d899a62c19d9040090ee0cf2e1a39dd28cc7ca6eaa5459",
+      "packages/test/src/proof/raw-mobile-proof.ts": "27fb408e54733ba698665f4c0789e21975621ed30448ac559e7c133891e317d6",
+      "packages/test/README.md": "33e8d00838363d3bf9e850cf8f9dcfed80c6f86eff801dcbad5f7782c6e63520",
+      "apps/plite/playwright.config.ts": "4a3abbbb0b06fbd79b239ae068185043f7389c6b4f23bd78202a24d5b6b62f60",
+      "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+      ".github/workflows/plite-ci.yml": "a91dd4d67cae68cae24d2f0e770ef38f83f181dffed47b63e776e6019f6ecb2d",
+      "packages/plitejs/src/react/editable/browser-handle.ts": "be722ba18a00d7b0d7c0eec6013df479b8e45a2fead03498308b3fd97e7bdf5d",
+      "packages/plitejs/src/react/editable/runtime-event-engine.ts": "4cfb6cb51c289687da302cacf5a6e50fa99d3105605f9c2f28942f5856c11c3d",
+      ".agents/rules/verify.mdc": "8363e318f2964c8b78ebafa4aaf6e7a33f86501257fed13a29f50e078eb75f09",
+      "VISION.md": "620e57044c438a2c9d6ded4480038a258bfe10ac35708080a91df1821919547e",
+      "docs/vision/common.md": "18a0131a934d253be3ad0e1833521be9b55f9e3334404681b6254d320ebad3fb",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3"
+    },
+    "directories": {},
+    "features": {
+      "capability/debug": "15523d483fb6079e075f0901d46776f93546e4ee12079ceaa17539ef7149d35f",
+      "export/platejs/./hyperscript": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/platejs/./testing": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "export/plitejs/./hyperscript": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "export/plitejs/./testing": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "export/test/.": "9b501a92606a2ae95590722850330e787bffc7abb7fa2ed97623d88212de2e0f",
+      "export/test/./browser": "9b501a92606a2ae95590722850330e787bffc7abb7fa2ed97623d88212de2e0f",
+      "export/test/./package.json": "9b501a92606a2ae95590722850330e787bffc7abb7fa2ed97623d88212de2e0f",
+      "export/test/./playwright": "9b501a92606a2ae95590722850330e787bffc7abb7fa2ed97623d88212de2e0f",
+      "export/test/./proof": "9b501a92606a2ae95590722850330e787bffc7abb7fa2ed97623d88212de2e0f",
+      "export/test/./react": "9b501a92606a2ae95590722850330e787bffc7abb7fa2ed97623d88212de2e0f",
+      "platejs/hyperscript": "9b2232a359148ca6716727b795f9c5458e1f1178bc1595586fc6ab4f1ad18302",
+      "platejs/proof-and-packaging": "9b47572690194726274967cb2a4c076c1500a700e13a78af088fc9c435b19c66",
+      "platejs/testing": "334a88a0f9b678981cc033df98c5c1e936e951a88b87c177086de53c81fb88fb",
+      "plitejs/hyperscript": "4b1ba4b2198696c89902e9fbdeb4ca4f4b9aeb53526ac02615999ebce9de74e6",
+      "plitejs/proof-and-packaging": "cff61e4d49faaa041ecc54e52f7d379bf544b12bfb0137586fb8168fdd457b88",
+      "plitejs/testing": "fea0a523f7390b15cb35d18b8347fd645b02bde98c342240c29f5c4ad152ee7e",
+      "test/browser": "431d819e182f93c359427b13c3e4623b74323faadbf540abbb6115064134d1c3",
+      "test/device": "d974babcada5beb147374bae88ec64fb416475544502313ba846510f2b58ccda",
+      "test/entrypoints": "f02e42914d03598d8cc39255508fe5fcfbd582cec41cbca6f05f6448e25fa359",
+      "test/internal": "d86b64fecea986e1e1e10f2145011f6cf7f9ec25a751525453bbff2d3b255343",
+      "test/playwright": "9fc12a3e4689fe468ceb442c486050a2f851c3e7e25019f8964fc38dbe1eefbc",
+      "test/proof": "9961f3441897574eec57f12f2bd8fbd0c3e8ed9fb8460a1f80172b76261a0002",
+      "test/proof-and-packaging": "1d3cc6145d9198ac4f945456fa3e8208931854e5746071031de3c158635dfb01",
+      "test/react": "5862a9316dca0bd5e194e792da270fca91cb29e88216c2987c9dbb9ef68ec478",
+      "tooling/browser-proof": "53bc25ded3c70c6e96447482cfa61bd2e84af09c87cb4191bcf7d4c6da70c91d"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-10-02-proof-device-lane.md",
+    "docs/plans/2026-10-02-proof-device-lane.decisions.tsv",
+    "docs/plans/topics/proof.md",
+    "docs/plite/research/2026-10-02-agentic-e2e-testing/shards/010-android-lane-probes.md",
+    "docs/plite/research/2026-10-02-agentic-e2e-testing/review/execution-trail/codex-gpt-6.1-sol.md"
+  ]
+}

@@ -1,0 +1,176 @@
+[
+  {
+    "cell": "ai-cjk-50000",
+    "a": {
+      "splice": 331,
+      "projection": 301.7,
+      "rawDeltaPercent": -8.9,
+      "baselineDriftPercent": 1.9,
+      "ratioToBaseline": {
+        "splice": 0.044,
+        "projection": 0.039
+      },
+      "normalizedDeltaPercent": -11.4
+    },
+    "b": {
+      "splice": 1034.7,
+      "projection": 2090.6,
+      "rawDeltaPercent": 102,
+      "baselineDriftPercent": 5.1,
+      "ratioToBaseline": {
+        "splice": 0.037,
+        "projection": 0.072
+      },
+      "normalizedDeltaPercent": 94.6
+    },
+    "c": {
+      "splice": 50109.9,
+      "projection": 44053.2,
+      "rawDeltaPercent": -12.1,
+      "baselineDriftPercent": 4.9,
+      "ratioToBaseline": {
+        "splice": 0.994,
+        "projection": 0.832
+      },
+      "normalizedDeltaPercent": -16.3
+    },
+    "busy": {
+      "splice": 57130.2,
+      "projection": 51720.3,
+      "rawDeltaPercent": -9.5,
+      "baselineDriftPercent": 5.6,
+      "ratioToBaseline": {
+        "splice": 0.601,
+        "projection": 0.514
+      },
+      "normalizedDeltaPercent": -14.5
+    },
+    "final": {
+      "splice": 684.4,
+      "projection": 607.3,
+      "rawDeltaPercent": -11.3,
+      "baselineDriftPercent": 4.2,
+      "ratioToBaseline": {
+        "splice": 0.663,
+        "projection": 0.558
+      },
+      "normalizedDeltaPercent": -15.8
+    }
+  },
+  {
+    "cell": "static-cjk-50000",
+    "a": {
+      "splice": 350.5,
+      "projection": 259.9,
+      "rawDeltaPercent": -25.8,
+      "baselineDriftPercent": 0.8,
+      "ratioToBaseline": {
+        "splice": 0.05,
+        "projection": 0.037
+      },
+      "normalizedDeltaPercent": -26
+    },
+    "b": {
+      "splice": 743.4,
+      "projection": 1944.1,
+      "rawDeltaPercent": 161.5,
+      "baselineDriftPercent": 4.9,
+      "ratioToBaseline": {
+        "splice": 0.029,
+        "projection": 0.072
+      },
+      "normalizedDeltaPercent": 148.3
+    },
+    "c": {
+      "splice": 46649.7,
+      "projection": 42492.3,
+      "rawDeltaPercent": -8.9,
+      "baselineDriftPercent": 3.8,
+      "ratioToBaseline": {
+        "splice": 0.987,
+        "projection": 0.853
+      },
+      "normalizedDeltaPercent": -13.6
+    },
+    "busy": {
+      "splice": 54837.1,
+      "projection": 50950.6,
+      "rawDeltaPercent": -7.1,
+      "baselineDriftPercent": 4.9,
+      "ratioToBaseline": {
+        "splice": 0.611,
+        "projection": 0.536
+      },
+      "normalizedDeltaPercent": -12.3
+    },
+    "final": {
+      "splice": 502.7,
+      "projection": 450.2,
+      "rawDeltaPercent": -10.4,
+      "baselineDriftPercent": 2.5,
+      "ratioToBaseline": {
+        "splice": 0.608,
+        "projection": 0.533
+      },
+      "normalizedDeltaPercent": -12.3
+    }
+  },
+  {
+    "cell": "static-rich-50000",
+    "a": {
+      "splice": 273.8,
+      "projection": 214.8,
+      "rawDeltaPercent": -21.5,
+      "baselineDriftPercent": 15.2,
+      "ratioToBaseline": {
+        "splice": 0.063,
+        "projection": 0.043
+      },
+      "normalizedDeltaPercent": -31.7
+    },
+    "b": {
+      "splice": 439.9,
+      "projection": 1048.5,
+      "rawDeltaPercent": 138.3,
+      "baselineDriftPercent": 18,
+      "ratioToBaseline": {
+        "splice": 0.033,
+        "projection": 0.069
+      },
+      "normalizedDeltaPercent": 109.1
+    },
+    "c": {
+      "splice": 24218.2,
+      "projection": 23038.6,
+      "rawDeltaPercent": -4.9,
+      "baselineDriftPercent": 19.8,
+      "ratioToBaseline": {
+        "splice": 0.996,
+        "projection": 0.795
+      },
+      "normalizedDeltaPercent": -20.2
+    },
+    "busy": {
+      "splice": 28783.5,
+      "projection": 29141.4,
+      "rawDeltaPercent": 1.2,
+      "baselineDriftPercent": 21.3,
+      "ratioToBaseline": {
+        "splice": 0.614,
+        "projection": 0.512
+      },
+      "normalizedDeltaPercent": -16.6
+    },
+    "final": {
+      "splice": 247.4,
+      "projection": 237,
+      "rawDeltaPercent": -4.2,
+      "baselineDriftPercent": 2.9,
+      "ratioToBaseline": {
+        "splice": 0.591,
+        "projection": 0.54
+      },
+      "normalizedDeltaPercent": -8.6
+    }
+  }
+]

@@ -1,0 +1,188 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "www-drive",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DRIVE_DIR=docs/plans/artifacts/drive",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3519"
+      ],
+      "port": 3519
+    },
+    {
+      "name": "www-dev-frozen",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3297"
+      ],
+      "port": 3297
+    },
+    {
+      "name": "www-authored-proof",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3311"
+      ],
+      "port": 3311
+    },
+    {
+      "name": "www-onfocus",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3412"
+      ],
+      "port": 3412
+    },
+    {
+      "name": "www-link-href",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3341"
+      ],
+      "port": 3341
+    },
+    {
+      "name": "www-media",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3423"
+      ],
+      "port": 3423
+    },
+    {
+      "name": "www-frame-proof",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DRIVE_DIR=docs/plans/artifacts/drive",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3539"
+      ],
+      "port": 3539
+    },
+    {
+      "name": "www-basic-review",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3463"
+      ],
+      "port": 3463
+    },
+    {
+      "name": "www-plite-docs-drive",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DRIVE_DIR=docs/plans/artifacts/drive",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3527"
+      ],
+      "port": 3527
+    },
+    {
+      "name": "www-plite-drive",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DRIVE_DIR=docs/plans/artifacts/drive",
+        "PLATE_WWW_PLITE=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3653"
+      ],
+      "port": 3653
+    }
+  ]
+}

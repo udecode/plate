@@ -1,0 +1,113 @@
+import cloneDeep from 'lodash/cloneDeep.js';
+import type { InitialValue } from 'platejs';
+
+import { calloutValue } from '@/registry/examples/values/callout-value';
+import { playgroundValue } from '@/registry/examples/values/playground-value';
+
+import { aiValue } from './ai-value';
+import { alignValue } from './align-value';
+import { autoformatValue } from './autoformat-value';
+import { basicBlocksValue } from './basic-blocks-value';
+import { basicMarksValue } from './basic-marks-value';
+import { basicNodesValue } from './basic-nodes-value';
+import { blockMenuValue } from './block-menu-value';
+import { nodeSelectionValue } from './node-selection-value';
+import { codeBlockValue } from './code-block-value';
+import { columnValue } from './column-value';
+import { copilotValue } from './copilot-value';
+import { dateValue } from './date-value';
+import { deserializeDocxValue } from './deserialize-docx-value';
+import { deserializeHtmlValue } from './deserialize-html-value';
+import { deserializeMdValue } from './deserialize-md-value';
+import { dndValue } from './dnd-value';
+import { editableVoidsValue } from './editable-voids-value';
+import { emojiValue } from './emoji-value';
+import { equationValue } from './equation-value';
+import { excalidrawValue } from './excalidraw-value';
+import { exitBreakValue } from './exit-break-value';
+import { findValue } from './find-value';
+import { floatingToolbarValue } from './floating-toolbar-value';
+import { fontValue } from './font-value';
+import { footnoteValue } from './footnote-value';
+import { iframeValue } from './iframe-value';
+import { indentValue } from './indent-value';
+import { lineHeightValue } from './line-height-value';
+import { linkValue } from './link-value';
+import { listValue } from './list-value';
+import { mediaValue } from './media-value';
+import { mentionValue } from './mention-value';
+import { blockPlaceholderValue } from './placeholder-value';
+import { pluginRulesValue } from './plugin-rules-value';
+import { previewMdValue } from './preview-md-value';
+import { slashCommandValue } from './slash-command-value';
+import { tabbableValue } from './tabbable-value';
+import { tableValue } from './table-value';
+import { tocValue } from './toc-value';
+import { detailsValue } from './details-value';
+import {
+  codeBlockPreviewValue,
+  hugeCodeBlockValue,
+} from './huge-code-block-value';
+
+const values = {
+  ai: aiValue,
+  autoformat: autoformatValue,
+  'basic-blocks': basicBlocksValue,
+  'basic-marks': basicMarksValue,
+  'basic-nodes': basicNodesValue,
+  'block-menu': blockMenuValue,
+  // 'multi-editors': multiEditorsValue,
+  'block-placeholder': blockPlaceholderValue,
+  'node-selection': nodeSelectionValue,
+  callout: calloutValue,
+  'code-block': codeBlockValue,
+  'code-block-codemirror': hugeCodeBlockValue,
+  'code-block-huge': hugeCodeBlockValue,
+  'code-block-preview': codeBlockPreviewValue,
+  column: columnValue,
+  copilot: copilotValue,
+  date: dateValue,
+  dnd: dndValue,
+  docx: deserializeDocxValue,
+  'editable-voids': editableVoidsValue,
+  emoji: emojiValue,
+  // upload: uploadValue,
+  equation: equationValue,
+  // equation: equationValue,
+  excalidraw: excalidrawValue,
+  'exit-break': exitBreakValue,
+  find: findValue,
+  'floating-toolbar': floatingToolbarValue,
+  font: fontValue,
+  footnote: footnoteValue,
+  html: deserializeHtmlValue,
+  // 'huge-document': hugeDocumentValue,
+  iframe: iframeValue,
+  indent: indentValue,
+  'line-height': lineHeightValue,
+  link: linkValue,
+  list: listValue,
+  markdown: deserializeMdValue,
+  media: mediaValue,
+  // 'media-toolbar': mediaToolbarValue,
+  mention: mentionValue,
+  playground: playgroundValue,
+  'plugin-rules': pluginRulesValue,
+  'preview-markdown': previewMdValue,
+  'slash-command': slashCommandValue,
+  tabbable: tabbableValue,
+  table: tableValue,
+  align: alignValue,
+  toc: tocValue,
+  details: detailsValue,
+};
+
+export const DEMO_VALUES = values;
+
+export function createValue<const TId extends keyof typeof DEMO_VALUES>(
+  id: TId
+): (typeof DEMO_VALUES)[TId];
+export function createValue(id: string): InitialValue;
+export function createValue(id: string): InitialValue {
+  return cloneDeep(DEMO_VALUES[id as keyof typeof DEMO_VALUES]);
+}

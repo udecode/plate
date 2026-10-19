@@ -1,0 +1,53 @@
+renderRootSync: 54.0 ms per profile over 3 profiles
+by inclusive (ms per profile):
+      54.0  renderRootSync@5319583e-150745cd7583489c.js:296619
+      52.3  workLoopSync@5319583e-150745cd7583489c.js:298201
+      49.2  beginWork@5319583e-150745cd7583489c.js:187718
+      43.2  updateFunctionComponent@5319583e-150745cd7583489c.js:162671
+      42.7  renderWithHooks@5319583e-150745cd7583489c.js:109327
+      28.3  performUnitOfWork@5319583e-150745cd7583489c.js:301134
+      19.7  exports.useMemo@3370-ab6f5e713678b725.js:249183
+      19.7  AIChatEditor@885-0f38e168d8e57a26.js:5726
+      19.2  useCreateEditor@4373-030fd4499fccaf9a.js:107807
+      19.2  useMemo@5319583e-150745cd7583489c.js:139112
+      19.2  (anon)@4373-030fd4499fccaf9a.js:108120 «»
+      19.2  withPlate_createEditor@4404-60ef0133fcd53fe0.js:1086467
+      18.8  (anon)@4404-60ef0133fcd53fe0.js:1086654 «»
+      18.8  applyEditor@1233-726a72fff91f8c4c.js:1300382
+      18.0  withPlatePluginPortalCandidates@1233-726a72fff91f8c4c.js:1296471
+      18.0  withPluginPortalCandidates@1233-726a72fff91f8c4c.js:792302
+      17.6  withEditorApplicationSchemaCandidate@1233-726a72fff91f8c4c.js:979781
+      14.2  withSchemaCandidate@1233-726a72fff91f8c4c.js:1300147
+      13.8  (anon)@1233-726a72fff91f8c4c.js:1300205 «»
+      13.8  (anon)@1233-726a72fff91f8c4c.js:1301300 «»
+      13.8  (anon)@1233-726a72fff91f8c4c.js:1301306 «»
+      13.1  withDocumentViewRead@1233-726a72fff91f8c4c.js:37387
+      13.0  withCompiledPlateModelCandidate@1233-726a72fff91f8c4c.js:1017119
+      11.7  (anon)@1233-726a72fff91f8c4c.js:1301581 «»
+      11.7  initializePluginEntries@1233-726a72fff91f8c4c.js:1116742
+by self (ms per profile):
+       2.3  _object_spread_props@3370-ab6f5e713678b725.js:174957
+       1.6  propagateParentContextChanges@5319583e-150745cd7583489c.js:76288
+       1.3  withEditorDocumentProjection@1233-726a72fff91f8c4c.js:1521877
+       1.1  collectOpaquePluginHostResources@1233-726a72fff91f8c4c.js:967117
+       1.0  completeWork@5319583e-150745cd7583489c.js:200744
+       1.0  AIMenu@885-0f38e168d8e57a26.js:8548
+       1.0  canonicalJson@1233-726a72fff91f8c4c.js:1928801
+       1.0  getPlugin@1233-726a72fff91f8c4c.js:523130
+       0.9  stableStringify@1233-726a72fff91f8c4c.js:1929675
+       0.9  (anon)@1656-507afe1003872559.js:12469 «»
+       0.8  resolve@4373-030fd4499fccaf9a.js:426901
+       0.8  assertDataTransferFormatTargetAvailable@1233-726a72fff91f8c4c.js:1170787
+       0.8  markUpdateLaneFromFiberToRoot@5319583e-150745cd7583489c.js:60900
+       0.8  checkScheduledUpdateOrContext@5319583e-150745cd7583489c.js:185256
+       0.8  cloneFrozenDeclaration@1233-726a72fff91f8c4c.js:1824399
+       0.8  canonicalCompiledPropertyConstruction@1233-726a72fff91f8c4c.js:2025584
+       0.7  (anon)@1233-726a72fff91f8c4c.js:1277097 «»
+       0.7  shouldSetTextContent@5319583e-150745cd7583489c.js:363468
+       0.6  renderRootSync@5319583e-150745cd7583489c.js:296619
+       0.6  clonePropertyDescriptor@1233-726a72fff91f8c4c.js:1960956
+       0.6  cloneValue@1233-726a72fff91f8c4c.js:691264
+       0.6  withRootRead@1233-726a72fff91f8c4c.js:617287
+       0.5  bubbleProperties@5319583e-150745cd7583489c.js:199974
+       0.5  getOwnerDocumentFromRootContainer@5319583e-150745cd7583489c.js:362931
+       0.5  areHookInputsEqual@5319583e-150745cd7583489c.js:109146

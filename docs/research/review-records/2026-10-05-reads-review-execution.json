@@ -1,0 +1,119 @@
+{
+  "id": "2026-10-05-reads-review-execution",
+  "kind": "execution",
+  "date": "2026-10-05",
+  "scopes": [
+    "reads"
+  ],
+  "reviewBasis": [
+    "2026-10-04-reads-audit"
+  ],
+  "workKind": "implementation",
+  "previous": [],
+  "plan": "docs/plans/2026-10-05-reads-review.md",
+  "outcome": "partial",
+  "summary": "Plite keeps editor.subscribeCommit((commit, snapshot) => ...) as the one public way to observe a published commit. The build deleted editor.subscribe on root editors and createEditorView views, the subscribe and subscribeCommit helpers in plitejs/testing, plitejs/internal and platejs/testing, and the root SnapshotListener and EditorCommitSource type exports. The Plite React provider publishes through getEditorRuntime(editor).subscribe, the function editor.subscribe forwarded to, so its order after app commit listeners holds, and a new test pins that order. The internal snapshot listener always receives a commit, and the commit-absent branches are gone. 47 test calls, 4 benchmark calls, a research probe, two docs pages, two internal docs, the API reference config and the generated registry output moved to the surviving API, with plitejs and platejs changesets. The outcome is partial because the generated API reference manifest still lists the two removed types: its generator fails at HEAD on an unclassified HistoryApi export that the history work owns.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "packages/plitejs/test/react/plite-runtime-provider-contract.test.tsx",
+        "claim": "'Plite onCommit runs after commit listeners registered after mount' passed on the build and failed with the order reversed when plite.tsx subscribed the provider through editor.subscribeCommit in a detached worktree.",
+        "sha256": "2282dd954e7f23acdceb18f61d5275bffbd3013ac3f3c611869f7d23eb78abe0"
+      },
+      {
+        "path": "packages/plitejs/test/update-after-commit-contract.ts",
+        "claim": "The snapshot-phase error routing case registers through getEditorRuntime(editor).subscribe; runtime-contracts.test.ts failed only that case when the runEditorObserver guard was removed from notifyListeners on the build tree.",
+        "sha256": "6dba01359fc790387c151e406c9c89701ee39ebd137e0383293a13df46ee236a"
+      },
+      {
+        "path": ".changeset/plite-commit-subscription.md",
+        "claim": "The plitejs release note names every removed export and the argument-swap migration.",
+        "sha256": "0a5119190f081e410a948a177daa51ae0eb689cbb4c854fe2ac18862770dc2f1"
+      },
+      {
+        "path": ".changeset/plate-commit-subscription.md",
+        "claim": "The platejs release note names every removed export and the argument-swap migration.",
+        "sha256": "149dfdbcdad5379ff23860ce09a9c9bb6536a3fd5d9fbebaabf4a45f98f8ec14"
+      }
+    ],
+    "limits": "Both package typechecks, the plitejs bun and React suites, the Plate import smoke test, lint on the 31 task TypeScript files, the www sub-steps after api-reference:check and a docs preview passed on the mixed working tree, which also held another session's uncommitted history edits. pnpm check fails lint, test-slow and www, and each fails the same way at HEAD in a detached worktree; the www HEAD log was deleted when the session restarted. The generated API reference manifest was not regenerated. The order probes ran in jsdom on one decorated root view. The editor-store and huge-document benchmark lanes and the dnd probe were migrated without a run. External downstream apps were not searched. Nothing is committed."
+  },
+  "references": [
+    "docs/plans/2026-10-05-reads-review.md"
+  ],
+  "inputs": {
+    "VISION.md": "4d7543c6dc9993c53dd3555139cacd3adea973b26b47444dbb11153387d5851a",
+    "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+    "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+    "apps/www/tests/browser/runtime-read-performance.spec.ts": "6a8180a1855f06ab7030468b134bd7af467f4d3ded1899ec2ec7d6d9a42d1363",
+    "apps/www/tests/browser/runtime-read-regressions.spec.ts": "12b1520d222267ad50e4a125ae0b3d2a799e40ad05d0fd0ad00c145667054488",
+    "apps/www/tests/browser/table-element-subscriptions.spec.ts": "825ceca9322980375a7a6fee28b8c467a573c268c24b7d250785675654bd5742",
+    "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+    "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+    "docs/plans/artifacts/reads-api-review/path-membership-probe.mjs": "c2b640d666dacd3b28cc4b786ea75a987cd012df68bbd40d53baeed72e238ae6",
+    "docs/vision/common.md": "8bcf2cea8ce52972356c8fd1655b5800b17ffcee2ff22483f825c8b6414a444b",
+    "docs/vision/plate.md": "acb22ec7579606c7844e3a3e028a6194e369d17f6112c65388e6d1c6cc9b8e1b",
+    "docs/vision/plite.md": "9caeabad5b1665259a0cfea7fdca9e4982a96c0a06f96544bffa2711bbe23219",
+    "packages/platejs/src/facade.ts": "d938cb03b49b7e66dcf5cedad514f2925af8d2960f22c4e4ea5db33e1a5ff1d8",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": "3119f481d73cdc9103e130b54ed5c423f85c6b7d3884cac510d668d537a1281a",
+    "packages/platejs/src/react/stores/element/usePath.ts": "6380199fc45f17e3be13caf502ae01b4f814c8e049ba4256b7cd3761be88e1b6",
+    "packages/platejs/src/react/stores/plate/useEditorSelector.ts": "cfe39c7a49e73bb376e026182c92bc33e4f8b5166fc714e6e5ba07d60b5ec671",
+    "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+    "packages/plitejs/src/core/change/document-change.ts": "3ce815e12a547089e16da06a860a8dfd846be84fadfdeb60d97ffafb3f5009f5",
+    "packages/plitejs/src/core/change/document-index.ts": "10fe17c10cd35239e5f30a95708d3ee5aa984747c95c7e890801fba2f00080a9",
+    "packages/plitejs/src/core/commit.ts": "1be86183d11ddcff651f3e53c8fcdac83bbb3a11f6ae9eef4bc3f3dc62eeb9c7",
+    "packages/plitejs/src/core/document-view-read.ts": "22f3b6c95addd65b0fba349253e82bd01279b187e16aac4dd30b861af1697b13",
+    "packages/plitejs/src/core/editor-read-execution.ts": "16da1ddbd83c8654ef5c43f7f3f80f461907bca2be8bffd32f7cb1cc7a25935a",
+    "packages/plitejs/src/core/editor-read-runtime.ts": "d4ef5cab82f800d42fbf313abf6e6db60e949d8474bbe97c00aed8f0f4918931",
+    "packages/plitejs/src/core/editor-reads.ts": "467228221bea6e7aea2d8c89dec4cdc2c4e245e60c444fb4c169cf8e78f63041",
+    "packages/plitejs/src/core/listener-state.ts": "eba3a87abac97cb3d0017a65f623a20765a068f1c2a9e11ea905b89d95082c2c",
+    "packages/plitejs/src/core/public-state.ts": "ea0cbb7d7ca2ef4aead6f2514b6799be3a10dd4bbd7c33e89777713bb7437f7c",
+    "packages/plitejs/src/core/read-definition.ts": "7c90f693f09ba37bbff847699ff4c3c95253b641c071473ea8e69ca7296b497b",
+    "packages/plitejs/src/core/read-registry.ts": "46a9a3df80d32f3bb72bf2ca878aa3b4d825dc34efac4b9b1b0305ec46d44bb0",
+    "packages/plitejs/src/core/resolved-token-cursor.ts": "411273d6ac6c5d4a51dd3dd1647aa82b5c23091b9044c589ffebf7cdbacd0764",
+    "packages/plitejs/src/core/snapshot-index.ts": "1cacfc6032f4850c234e79cc5c53671969900366d4c85fc5ee7101fd9df17b46",
+    "packages/plitejs/src/editor-runtime-view.ts": "2b9e6ba43cbb19bfd18046e863fe3d79a8ede9d0356028896697ee9d4ab5cc2a",
+    "packages/plitejs/src/editor/above.ts": "073845b639253ee7d24e2f37c6d1068d743f08046d94647f9f9c2cbb9d387076",
+    "packages/plitejs/src/editor/first.ts": "25c73e4d968cbf5f910474a7653bd12e02fa63c5d37ace10030677f86c3e0f8c",
+    "packages/plitejs/src/editor/fragment.ts": "f780f22b5de7b53c6476235e0c6b181dfacf5f42ac15d7bf0842b7fca70327c8",
+    "packages/plitejs/src/editor/get-void.ts": "85a0509339bb8a8d0e8a6bfd840f9894b2807f0dc8d511a538ea7060c9d69638",
+    "packages/plitejs/src/editor/has-blocks.ts": "657febf5637e29ac949b2bcf368e05ce0477f0a06b5db2dc6b051fb0c13ba642",
+    "packages/plitejs/src/editor/has-inlines.ts": "311f01043a60dc6676dedcb119127983f4a61c5fe4c10664e281410f099efbb9",
+    "packages/plitejs/src/editor/has-path.ts": "7c7e36f206b072e049eb9d1f1e0e4c9905603a61f0ede27cad3eb8854e48b15c",
+    "packages/plitejs/src/editor/has-texts.ts": "647ed0da77214255b21a58c44eed8a0d6f782890af85ba863e386a1f5272be75",
+    "packages/plitejs/src/editor/index.ts": "008aebcf1ecb62518866e39376b458e2422ab53a0a73b36b34aad6c478f2b6e8",
+    "packages/plitejs/src/editor/is-block.ts": "2cbe40043ff8ed818dd264d74f5fed4e5273316399b574e1d057163b785da6ed",
+    "packages/plitejs/src/editor/is-editor.ts": "fb18a3f5e0bc270a8395b17cbd8cca8fc98acbc1405a4f28ccd19a66bb840220",
+    "packages/plitejs/src/editor/is-empty.ts": "6f497a797cc98ae3f34c5b6a83eb2bf864d48ff4d6bc283952e4eda9466fd1bd",
+    "packages/plitejs/src/editor/last.ts": "d99f40d8e15c21dfaef88e0d702bc19960f4fd73f3482de9fb7c9fd8c972f06b",
+    "packages/plitejs/src/editor/leaf.ts": "ef9bb4569e6d49dec434a2d8d68819a5289570f6f47d307b5ddf662a0105a04b",
+    "packages/plitejs/src/editor/levels.ts": "3e7eb878f2b7561a206702d04e78e04dfa1bb8a54a48ab18c9771229d5d184c3",
+    "packages/plitejs/src/editor/marks.ts": "c04c4b56d03f4354d71e06f16207ce24708ca4fad6c86d33e152c182bc980b83",
+    "packages/plitejs/src/editor/node.ts": "ee7dc18e60f6f1956922fb8acaf0005969973c02c2a63ccf9442d95d6a867e11",
+    "packages/plitejs/src/editor/nodes.ts": "3c351b88fb275abb109a1b3976c591126f14da3f759ae9416f1abbfe3ac6b379",
+    "packages/plitejs/src/editor/parent.ts": "1e416cc2218f24fa11da0d905941729aa819ef42c69c2f9b3246e99910616566",
+    "packages/plitejs/src/editor/path.ts": "5612743781915906f089c2cd5adf04bf8b804e23545d4c92e1c64879a0fe5917",
+    "packages/plitejs/src/editor/string.ts": "920402d433072f8e9d2ccec22f23b1d3086e9a6825c9a4a0652d62419fc6b450",
+    "packages/plitejs/src/interfaces/editor.ts": "1eca0418ec929175eb0eacd91e728f3f99feaddb67e935a29ff26e1c661329f5",
+    "packages/plitejs/src/react/components/plite.tsx": "e2b7eab0df3b9609452a15760b357d879394060d97721e6e3334e658bdbc507b",
+    "packages/plitejs/src/react/editable/runtime-editor-api.ts": "61c9e6d97137e16cc97ef02836b7854b673626f8551434f8219b6fbb26e01373",
+    "packages/plitejs/src/react/editable/runtime-live-state.ts": "4941a37c364b1a6b303624d69daddd30e4439858a698a3a8832b97338eabe1b7",
+    "packages/plitejs/src/react/hooks/use-editor-runtime-state.ts": "fc2888e4cbac5fbb5b6e4496c357ed431b3a701f5ef7ba9a5cef97840d09a1f2",
+    "packages/plitejs/src/react/hooks/use-editor-selector.tsx": "d1b5eb84f7eaf4cf9178c36596c6f5333a150240de5126cdba612b7680dbe79f",
+    "packages/plitejs/src/react/hooks/use-generic-selector.tsx": "1cd5bbaa123679be873e0bb4e6d68af6499bbcb3abb0e67c58352a9738594e7a",
+    "packages/plitejs/src/react/hooks/use-node-selector.tsx": "21d75dba801a0890a2d2148482f6d13beb250ec5381923b9aae887e230a687c9",
+    "packages/plitejs/test/commit-metadata-contract.ts": "e5ac3e7b0387dca8e9e72dd69cf591de464eb21bb66cbb3c54c1f4768d64147a",
+    "packages/plitejs/test/node-key-view-contract.test.ts": "0586191f49759810442a69addfcb87548c61b300d85cccb3aa036599788f8e88",
+    "packages/plitejs/test/react/node-selector-context-contract.test.tsx": "65c14f0ff5177d383ebc9b0966f624529f902fd2279b80e2e38e36aef63ecf94",
+    "packages/plitejs/test/react/use-editor-runtime-state.test.tsx": "c8a31eb7903f99191b73d1adb88bbb76a33eb39566627e4f8e67eede1eb9bdad",
+    "packages/plitejs/test/react/vitest-setup.ts": "aad016736b109572f3985e0cd87c738c9dc5cdae1f80c41852070b4a3d2b16fc",
+    "packages/plitejs/test/read-middleware-contract.test.ts": "25c50663a192654a6640ea2784e4d50b6ed33128f3c9fe1c216cdd4b75650322",
+    "packages/plitejs/test/read-view-lifecycle-contract.test.ts": "309251b885b2c527dcd210d655e4b376f2b7718cd65168bc88656c9910984113",
+    "packages/plitejs/tsconfig.json": "4a0b4f2b6be89151687c0739424a0337e5d272737f083134ccb062a348a64ff0",
+    "packages/plitejs/vitest.config.mjs": "c4831d8ab6b6fab76a2dc0dbf5cfae26345e1efb001ad1a8d28e96356cc9445d",
+    "tooling/config/bunTestSetup.ts": "78934332794a18076bb3c132e1240e4c7c96e52fb9071d1cdf4741cf40aa9844"
+  },
+  "upstreams": [],
+  "digest": "bc2090d4956973f150691dd74668df2785ff9eccd16a64fbdf2149365f82d956"
+}

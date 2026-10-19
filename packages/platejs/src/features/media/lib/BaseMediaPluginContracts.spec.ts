@@ -1,0 +1,841 @@
+import {
+  type DefinitionOf,
+  PLUGINS,
+  type PropertyValueOf,
+  SelectionApi,
+  createEditor,
+  definePlugin,
+  schema,
+} from '../../../core';
+import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
+import { BaseBlockquotePlugin } from '../../basic-nodes/lib/BaseBlockPlugins';
+import { BaseHeadingPlugin } from '../../basic-nodes/lib/BaseHeadingPlugins';
+import { BaseTextAlignPlugin } from '../../basic-styles/lib/BaseStylePlugins';
+import type { BaseUploadPlugin } from '../../upload/lib/BaseUploadPlugin';
+import {
+  type AlignedMediaInsertInput,
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseVideoPlugin,
+  type FileInsertInput,
+  type ImageInsertInput,
+  type ProviderMediaInsertInput,
+  type mediaElementProperties,
+} from './BaseMediaPlugin';
+import type { ImageElement } from './image/BaseImagePlugin';
+import { BaseImagePlugin } from './image/BaseImagePlugin';
+import { BaseMediaEmbedPlugin } from './media-embed/BaseMediaEmbedPlugin';
+
+const TestInlinePlugin = definePlugin('testInline', {
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
+});
+type AssertFalse<T extends false> = T;
+type AssertTrue<T extends true> = T;
+type IsEqual<TLeft, TRight> =
+  (<T>() => T extends TLeft ? 1 : 2) extends <T>() => T extends TRight ? 1 : 2
+    ? true
+    : false;
+type IsAny<T> = 0 extends 1 & T ? true : false;
+
+type _baseImagePluginNotAny = AssertFalse<IsAny<typeof BaseImagePlugin>>;
+type _baseMediaEmbedPluginNotAny = AssertFalse<
+  IsAny<typeof BaseMediaEmbedPlugin>
+>;
+type _baseUploadPluginNotAny = AssertFalse<IsAny<typeof BaseUploadPlugin>>;
+type _mediaWidthValueIsInferred = AssertTrue<
+  IsEqual<PropertyValueOf<typeof mediaElementProperties.width>, number | string>
+>;
+type _audioInsertInputIsExact = AssertTrue<
+  IsEqual<
+    Parameters<DefinitionOf<typeof BaseAudioPlugin>['update']['insert']>[0],
+    AlignedMediaInsertInput
+  >
+>;
+type _audioInsertOmitsAlt = AssertFalse<
+  'alt' extends keyof Parameters<
+    DefinitionOf<typeof BaseAudioPlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _audioInsertOmitsName = AssertFalse<
+  'name' extends keyof Parameters<
+    DefinitionOf<typeof BaseAudioPlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _fileInsertInputIsExact = AssertTrue<
+  IsEqual<
+    Parameters<DefinitionOf<typeof BaseFilePlugin>['update']['insert']>[0],
+    FileInsertInput
+  >
+>;
+type _fileInsertHasName = AssertTrue<
+  'name' extends keyof Parameters<
+    DefinitionOf<typeof BaseFilePlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _imageInsertInputIsExact = AssertTrue<
+  IsEqual<
+    Parameters<DefinitionOf<typeof BaseImagePlugin>['update']['insert']>[0],
+    ImageInsertInput
+  >
+>;
+type _imageInsertHasAlt = AssertTrue<
+  'alt' extends keyof Parameters<
+    DefinitionOf<typeof BaseImagePlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _imageInsertOmitsName = AssertFalse<
+  'name' extends keyof Parameters<
+    DefinitionOf<typeof BaseImagePlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _embedInsertInputIsExact = AssertTrue<
+  IsEqual<
+    Parameters<
+      DefinitionOf<typeof BaseMediaEmbedPlugin>['update']['insert']
+    >[0],
+    ProviderMediaInsertInput
+  >
+>;
+type _embedInsertHasProvider = AssertTrue<
+  'provider' extends keyof Parameters<
+    DefinitionOf<typeof BaseMediaEmbedPlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _embedInsertOmitsName = AssertFalse<
+  'name' extends keyof Parameters<
+    DefinitionOf<typeof BaseMediaEmbedPlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _mediaApiIsPublished = AssertTrue<
+  IsEqual<
+    ReturnType<DefinitionOf<typeof BaseImagePlugin>['api']['normalizeUrl']>,
+    { provider?: string; sourceUrl?: string; url: string } | undefined
+  >
+>;
+
+describe('Base media plugin contracts', () => {
+  it('configures every media node as an object with direct caption children', () => {
+    for (const plugin of [
+      BaseFilePlugin,
+      BaseAudioPlugin,
+      BaseVideoPlugin,
+      BaseImagePlugin,
+      BaseMediaEmbedPlugin,
+    ]) {
+      const editor = createEditor({ plugins: [plugin] });
+      const element = editor.read.schema.element(
+        editor.plugin(plugin).schema.type
+      );
+
+      expect(element?.behavior).toMatchObject({
+        isolating: true,
+        object: true,
+        void: false,
+      });
+      expect(element?.content).toMatchObject({
+        allowsText: true,
+        default: 'text',
+        min: 1,
+      });
+      expect(element?.groups).toContain('block');
+      expect(plugin.dependencies).toEqual([]);
+    }
+  });
+
+  it('accepts direct caption text and rejects block wrappers', () => {
+    const editor = createEditor({
+      plugins: [BaseFilePlugin, TestInlinePlugin],
+    });
+
+    expect(() =>
+      editor.read.schema.assertDocument({
+        children: [
+          {
+            children: [
+              { text: 'Before ' },
+              {
+                children: [{ text: 'inline' }],
+                type: 'testInline',
+              },
+              { text: ' after' },
+            ],
+            type: 'file',
+            url: 'https://platejs.org/file',
+          },
+        ],
+      })
+    ).not.toThrow();
+    expect(() =>
+      editor.read.schema.assertDocument({
+        children: [
+          {
+            children: [{ children: [{ text: '' }], type: 'paragraph' }],
+            type: 'file',
+            url: 'https://platejs.org/file',
+          },
+        ],
+      })
+    ).toThrow();
+  });
+
+  it('splits each media caption into a following paragraph on Enter', () => {
+    const rows = [
+      [BaseFilePlugin, PLUGINS.file],
+      [BaseAudioPlugin, PLUGINS.audio],
+      [BaseVideoPlugin, PLUGINS.video],
+      [BaseImagePlugin, PLUGINS.image],
+      [BaseMediaEmbedPlugin, PLUGINS.mediaEmbed],
+    ] as const;
+
+    const verifyCaptionSplit = <const P extends (typeof rows)[number]>([
+      plugin,
+      type,
+    ]: P) => {
+      const TextAlignPlugin = BaseTextAlignPlugin.configure({
+        targetPlugins: [plugin, PLUGINS.paragraph],
+      });
+      const editor = createEditor({
+        plugins: [plugin, TextAlignPlugin] as const,
+        selection: {
+          kind: 'text',
+          anchor: { offset: 2, path: [0, 0] },
+          focus: { offset: 2, path: [0, 0] },
+        },
+        initialValue: [
+          {
+            children: [{ text: 'hello' }],
+            textAlign: 'center',
+            type,
+            url: 'https://platejs.org/example',
+            width: '55%',
+          },
+          { children: [{ text: 'after' }], type: 'paragraph' },
+        ],
+      });
+
+      editor.update.break.insert();
+
+      expect(editor.read.children()).toEqual([
+        {
+          children: [{ text: 'he' }],
+          textAlign: 'center',
+          type,
+          url: 'https://platejs.org/example',
+          width: '55%',
+        },
+        { children: [{ text: 'llo' }], type: 'paragraph' },
+        { children: [{ text: 'after' }], type: 'paragraph' },
+      ]);
+      expect(editor.read.selection()).toEqual({
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      });
+    };
+
+    rows.forEach(verifyCaptionSplit);
+  });
+
+  it('splits a caption into the block the media parent declares at that position', () => {
+    const TitlePlugin = definePlugin('title', {
+      schema: { element: schema.element.textBlock() },
+    });
+    const image = {
+      children: [{ text: 'hello' }],
+      type: 'image',
+      url: 'https://platejs.org/example',
+    };
+    const headedEditor = createEditor({
+      plugins: [BaseHeadingPlugin, BaseImagePlugin],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          })
+        ),
+      },
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [1, 0] },
+        focus: { offset: 2, path: [1, 0] },
+      },
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        image,
+      ],
+    });
+    const quotedEditor = createEditor({
+      plugins: [TitlePlugin, BaseBlockquotePlugin, BaseImagePlugin],
+      schema: {
+        root: schema.content.group('block', {
+          default: { type: 'title' },
+          min: 1,
+        }),
+      },
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0, 0] },
+        focus: { offset: 2, path: [0, 0, 0] },
+      },
+      initialValue: [{ children: [image], type: 'blockquote' }],
+    });
+
+    headedEditor.update.break.insert();
+    quotedEditor.update.break.insert();
+
+    expect([
+      headedEditor.read.children()[2],
+      quotedEditor.read.children(),
+    ]).toEqual([
+      { children: [{ text: 'llo' }], type: 'paragraph' },
+      [
+        {
+          children: [
+            { ...image, children: [{ text: 'he' }] },
+            { children: [{ text: 'llo' }], type: 'paragraph' },
+          ],
+          type: 'blockquote',
+        },
+      ],
+    ]);
+  });
+
+  it('exits media captions without duplicating the owner across selection shapes', () => {
+    const rows = [
+      [BaseFilePlugin, PLUGINS.file],
+      [BaseAudioPlugin, PLUGINS.audio],
+      [BaseVideoPlugin, PLUGINS.video],
+      [BaseImagePlugin, PLUGINS.image],
+      [BaseMediaEmbedPlugin, PLUGINS.mediaEmbed],
+    ] as const;
+    const cases = [
+      {
+        anchor: [0, 0] as const,
+        anchorOffset: 0,
+        focus: [0, 0] as const,
+        focusOffset: 0,
+        mediaText: '',
+        exitText: 'hello',
+        afterText: 'outside',
+      },
+      {
+        anchor: [0, 0] as const,
+        anchorOffset: 5,
+        focus: [0, 0] as const,
+        focusOffset: 5,
+        mediaText: 'hello',
+        exitText: '',
+        afterText: 'outside',
+      },
+      {
+        anchor: [0, 0] as const,
+        anchorOffset: 1,
+        focus: [0, 0] as const,
+        focusOffset: 4,
+        mediaText: 'h',
+        exitText: 'o',
+        afterText: 'outside',
+      },
+      {
+        anchor: [0, 0] as const,
+        anchorOffset: 4,
+        focus: [0, 0] as const,
+        focusOffset: 1,
+        mediaText: 'h',
+        exitText: 'o',
+        afterText: 'outside',
+      },
+      {
+        anchor: [0, 0] as const,
+        anchorOffset: 2,
+        focus: [1, 0] as const,
+        focusOffset: 2,
+        mediaText: 'he',
+        exitText: '',
+        afterText: 'tside',
+      },
+      {
+        anchor: [1, 0] as const,
+        anchorOffset: 2,
+        focus: [0, 0] as const,
+        focusOffset: 2,
+        mediaText: 'he',
+        exitText: '',
+        afterText: 'tside',
+      },
+    ] as const;
+
+    for (const [plugin, type] of rows) {
+      for (const testCase of cases) {
+        const editor = createEditor({
+          plugins: [plugin],
+          selection: {
+            kind: 'text',
+            anchor: {
+              offset: testCase.anchorOffset,
+              path: [...testCase.anchor],
+            },
+            focus: { offset: testCase.focusOffset, path: [...testCase.focus] },
+          },
+          initialValue: [
+            {
+              children: [{ text: 'hello' }],
+              type,
+              url: 'https://platejs.org/example',
+            },
+            { children: [{ text: 'outside' }], type: 'paragraph' },
+          ],
+        });
+
+        editor.update.break.insert();
+
+        expect(editor.read.children()).toEqual([
+          {
+            children: [{ text: testCase.mediaText }],
+            type,
+            url: 'https://platejs.org/example',
+          },
+          { children: [{ text: testCase.exitText }], type: 'paragraph' },
+          { children: [{ text: testCase.afterText }], type: 'paragraph' },
+        ]);
+        expect(editor.read.selection()).toEqual({
+          anchor: { offset: 0, path: [1, 0] },
+          focus: { offset: 0, path: [1, 0] },
+        });
+      }
+    }
+  });
+
+  it('keeps hard Enter behavior outside media captions', () => {
+    const editor = createEditor({
+      plugins: [BaseImagePlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'Before' }], type: 'paragraph' }],
+    });
+
+    editor.update.break.insert();
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'Bef' }], type: 'paragraph' },
+      { children: [{ text: 'ore' }], type: 'paragraph' },
+    ]);
+  });
+
+  it('stores image alt text as a declared semantic property', () => {
+    const editor = createEditor({
+      plugins: [BaseImagePlugin],
+      initialValue: [
+        {
+          alt: 'Preview',
+          children: [{ text: '' }],
+          type: 'image',
+          url: 'https://platejs.org/example',
+        },
+      ],
+    });
+
+    expect(editor.read.children()[0]).toMatchObject({
+      alt: 'Preview',
+      children: [{ text: '' }],
+    });
+    expect(editor.plugin(BaseImagePlugin).render.attributes).toBeUndefined();
+  });
+
+  it('preserves relative media widths in document data', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseAudioPlugin,
+        BaseFilePlugin,
+        BaseVideoPlugin,
+        BaseImagePlugin,
+        BaseMediaEmbedPlugin,
+      ],
+      initialValue: [
+        {
+          children: [{ text: '' }],
+          type: 'image',
+          url: 'https://platejs.org/example',
+          width: '55%',
+        },
+        {
+          children: [{ text: '' }],
+          type: 'mediaEmbed',
+          url: 'https://platejs.org/embed',
+          width: '65%',
+        },
+        {
+          children: [{ text: '' }],
+          type: 'audio',
+          url: 'https://platejs.org/audio',
+          width: '75%',
+        },
+        {
+          children: [{ text: '' }],
+          type: 'file',
+          url: 'https://platejs.org/file',
+          width: '80%',
+        },
+        {
+          children: [{ text: '' }],
+          type: 'video',
+          url: 'https://platejs.org/video',
+          width: '85%',
+        },
+      ],
+    });
+
+    expect(editor.read.children()).toEqual([
+      expect.objectContaining({ type: 'image', width: '55%' }),
+      expect.objectContaining({ type: 'mediaEmbed', width: '65%' }),
+      expect.objectContaining({ type: 'audio', width: '75%' }),
+      expect.objectContaining({ type: 'file', width: '80%' }),
+      expect.objectContaining({ type: 'video', width: '85%' }),
+    ]);
+    expect(() =>
+      editor.read.schema.assertDocument({
+        children: [
+          {
+            children: [{ text: '' }],
+            type: 'mediaEmbed',
+            url: 'https://platejs.org/example',
+            width: true,
+          },
+        ],
+      })
+    ).toThrow(/element property "width" fails custom property validation/);
+  });
+
+  it('updates media width through descriptor-bound element mutation', () => {
+    const image = {
+      children: [{ text: '' }],
+      type: 'image',
+      url: 'https://platejs.org/example',
+      width: '55%',
+    } satisfies ImageElement;
+    const editor = createEditor({
+      plugins: [BaseImagePlugin],
+      initialValue: [image],
+    });
+    editor.plugin(BaseImagePlugin).update.set({ width: 420 }, { at: [0] });
+    expect(editor.read.children()[0]).toMatchObject({ width: 420 });
+    editor.plugin(BaseImagePlugin).update.set({ width: '64%' }, { at: [0] });
+    expect(editor.read.children()[0]).toMatchObject({ width: '64%' });
+  });
+
+  it('constructs audio, file, and video through one object-input command', () => {
+    const editor = createEditor({
+      plugins: [BaseAudioPlugin, BaseFilePlugin, BaseVideoPlugin],
+      initialValue: [{ children: [{ text: 'after' }], type: 'paragraph' }],
+    });
+
+    editor
+      .plugin(BaseAudioPlugin)
+      .update.insert({ url: 'https://platejs.org/audio.mp3' }, { at: [0] });
+    editor
+      .plugin(BaseFilePlugin)
+      .update.insert(
+        { name: 'report.pdf', url: 'https://platejs.org/report.pdf' },
+        { at: [1] }
+      );
+    editor
+      .plugin(BaseVideoPlugin)
+      .update.insert({ url: 'https://platejs.org/video.mp4' }, { at: [2] });
+
+    expect(editor.read.children()).toMatchObject([
+      { type: 'audio', url: 'https://platejs.org/audio.mp3' },
+      {
+        name: 'report.pdf',
+        type: 'file',
+        url: 'https://platejs.org/report.pdf',
+      },
+      { type: 'video', url: 'https://platejs.org/video.mp4' },
+      { type: 'paragraph' },
+    ]);
+  });
+
+  it('applies the shared URL policy to media insertion', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseAudioPlugin.configure({
+          initialState: {
+            isUrl: (url) => url.startsWith('https://cdn.platejs.org/'),
+            transformUrl: (url) => `https://cdn.platejs.org/${url}`,
+          },
+        }),
+        BaseFilePlugin.configure({
+          initialState: {
+            isUrl: () => false,
+          },
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'after' }], type: 'paragraph' }],
+    });
+
+    editor
+      .plugin(BaseAudioPlugin)
+      .update.insert({ url: 'track.mp3' }, { at: [0] });
+    editor
+      .plugin(BaseFilePlugin)
+      .update.insert({ url: 'unsafe.pdf' }, { at: [1] });
+    // A source the kind cannot load is refused, whatever `isUrl` says.
+    expect(
+      createEditor({
+        plugins: [
+          BaseVideoPlugin.configure({ initialState: { isUrl: () => true } }),
+        ],
+        initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+      })
+        .plugin(BaseVideoPlugin)
+        .update.insert({ url: 'javascript:alert(1)' }, { at: [0] })
+    ).toBe(false);
+
+    expect(editor.read.children()).toMatchObject([
+      { type: 'audio', url: 'https://cdn.platejs.org/track.mp3' },
+      { type: 'paragraph' },
+    ]);
+  });
+
+  it('deserializes images with direct children and requires a source URL', () => {
+    const editor = createEditor({
+      plugins: [BaseImagePlugin],
+    });
+
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        '<img alt="Direct caption owner" src="https://platejs.org/image.png" />'
+      )
+    ).toEqual([
+      {
+        alt: 'Direct caption owner',
+        children: [{ text: '' }],
+        type: 'image',
+        url: 'https://platejs.org/image.png',
+      },
+    ]);
+    expect(parseHtmlSliceContent(editor, '<img alt="missing" />')).toEqual([]);
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        '<img alt="Sized" height="180" src="https://platejs.org/image.png" width="320" />'
+      )
+    ).toEqual([
+      {
+        alt: 'Sized',
+        children: [{ text: '' }],
+        type: 'image',
+        url: 'https://platejs.org/image.png',
+        width: 320,
+      },
+    ]);
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        '<figure class="editor-image"><img alt="Sized" height="180" src="https://platejs.org/image.png" width="320" /><figcaption>Caption</figcaption></figure>'
+      )
+    ).toEqual([
+      {
+        alt: 'Sized',
+        children: [{ text: 'Caption' }],
+        type: 'image',
+        url: 'https://platejs.org/image.png',
+        width: 320,
+      },
+    ]);
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        '<img data-editor-natural-height="360" data-editor-natural-width="640" height="360" src="https://platejs.org/image.png" width="640" />'
+      )
+    ).toEqual([
+      {
+        children: [{ text: '' }],
+        naturalHeight: 360,
+        naturalWidth: 640,
+        type: 'image',
+        url: 'https://platejs.org/image.png',
+      },
+    ]);
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        '<img data-editor-natural-height="180" height="180" src="https://platejs.org/image.png" width="320" />'
+      )
+    ).toEqual([
+      {
+        children: [{ text: '' }],
+        naturalHeight: 180,
+        type: 'image',
+        url: 'https://platejs.org/image.png',
+        width: 320,
+      },
+    ]);
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        '<img data-editor-natural-height="180.5" data-editor-natural-width="320.5" src="https://platejs.org/image.png" />'
+      )
+    ).toEqual([
+      {
+        children: [{ text: '' }],
+        type: 'image',
+        url: 'https://platejs.org/image.png',
+      },
+    ]);
+  });
+
+  it.each([
+    ['video', BaseVideoPlugin],
+    ['audio', BaseAudioPlugin],
+  ] as const)('round-trips %s and its caption through HTML', (tag, plugin) => {
+    const node = {
+      children: [{ text: 'Media caption' }],
+      type: tag,
+      url: `https://platejs.org/clip.${tag === 'video' ? 'mp4' : 'mp3'}`,
+      width: '50%',
+    };
+    const editor = createEditor({
+      plugins: [plugin],
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
+      initialValue: [node],
+    });
+    const data = new DataTransfer();
+
+    editor.api.dom.clipboard.writeSelection(data);
+
+    const figure = new DOMParser()
+      .parseFromString(data.getData('text/html'), 'text/html')
+      .body.querySelector(`figure.editor-${tag}`);
+    const media = figure?.querySelector<HTMLElement>(`:scope > ${tag}`);
+
+    expect(media?.getAttribute('src')).toBe(node.url);
+    expect(media?.hasAttribute('controls')).toBe(true);
+    expect(figure?.querySelector(':scope > figcaption')?.textContent).toBe(
+      'Media caption'
+    );
+    expect(parseHtmlSliceContent(editor, figure!.outerHTML)).toEqual([node]);
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        `<${tag}><source src="${node.url}">Fallback text</${tag}>`
+      )
+    ).toEqual([{ children: [{ text: '' }], type: tag, url: node.url }]);
+  });
+
+  it('encodes a visible image and caption with standard media attributes', () => {
+    const editor = createEditor({
+      plugins: [BaseImagePlugin],
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
+      initialValue: [
+        {
+          alt: 'Plate',
+          children: [{ text: 'Image caption' }],
+          naturalHeight: 360,
+          naturalWidth: 640,
+          type: 'image',
+          url: 'https://platejs.org/image.png',
+          width: '50%',
+        },
+      ],
+    });
+    const data = new DataTransfer();
+
+    editor.api.dom.clipboard.writeSelection(data);
+
+    const document = new DOMParser().parseFromString(
+      data.getData('text/html'),
+      'text/html'
+    );
+    const figure = document.body.querySelector('figure.editor-image');
+
+    const image = figure?.querySelector<HTMLElement>(':scope > img');
+
+    expect(image?.getAttribute('src')).toBe('https://platejs.org/image.png');
+    expect(image?.getAttribute('alt')).toBe('Plate');
+    expect(image?.getAttribute('height')).toBe('360');
+    expect(image?.getAttribute('width')).toBe('640');
+    expect(image?.dataset.editorNaturalHeight).toBe('360');
+    expect(image?.dataset.editorNaturalWidth).toBe('640');
+    expect(image?.style.width).toBe('50%');
+    expect(figure?.querySelector(':scope > figcaption')?.textContent).toBe(
+      'Image caption'
+    );
+    expect(parseHtmlSliceContent(editor, figure!.outerHTML)).toEqual([
+      {
+        alt: 'Plate',
+        children: [{ text: 'Image caption' }],
+        naturalHeight: 360,
+        naturalWidth: 640,
+        type: 'image',
+        url: 'https://platejs.org/image.png',
+        width: '50%',
+      },
+    ]);
+  });
+
+  it('keeps every isolating media owner intact when deleting backward from the next block', () => {
+    const rows = [
+      [BaseFilePlugin, PLUGINS.file],
+      [BaseAudioPlugin, PLUGINS.audio],
+      [BaseVideoPlugin, PLUGINS.video],
+      [BaseImagePlugin, PLUGINS.image],
+      [BaseMediaEmbedPlugin, PLUGINS.mediaEmbed],
+    ] as const;
+
+    const verifyDeleteBoundary = <const P extends (typeof rows)[number]>([
+      plugin,
+      type,
+    ]: P) => {
+      const editor = createEditor({
+        plugins: [plugin] as const,
+        selection: {
+          kind: 'text',
+          anchor: { offset: 0, path: [1, 0] },
+          focus: { offset: 0, path: [1, 0] },
+        },
+        initialValue: [
+          {
+            children: [{ text: '' }],
+            type,
+            url: 'https://platejs.org/example',
+          },
+          { children: [{ text: 'after' }], type: 'paragraph' },
+        ],
+      });
+
+      editor.update.text.deleteBackward({ unit: 'character' });
+
+      expect(editor.read.children()).toHaveLength(2);
+      expect(editor.read.selection()).toEqual({
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      });
+    };
+
+    rows.forEach(verifyDeleteBoundary);
+  });
+});

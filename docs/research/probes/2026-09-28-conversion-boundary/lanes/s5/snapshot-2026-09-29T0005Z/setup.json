@@ -1,0 +1,71 @@
+{
+  "lane": "s5-browser",
+  "date": "2026-09-29",
+  "head": "a7750ad388b2d4626c0a4eef2d3e0e23454010f4",
+  "snapshots": {
+    "matrix": {
+      "takenAt": "2026-09-29T00:05:13Z",
+      "changedOrUntracked": 335,
+      "deleted": 4,
+      "filesSha256List": "snapshot-files.sha256",
+      "listFingerprint": "78552b30a83aba49a7d488e342a2b10bf29d44c95a04aa4d5646eda3e9a8852e",
+      "worktrees": [
+        "scratchpad/s5/wt-cand (candidate = exact snapshot)",
+        "scratchpad/s5/wt-base (snapshot + baseline.patch)"
+      ]
+    },
+    "final": {
+      "takenAt": "2026-09-29T01:39:34Z",
+      "changedOrUntracked": 376,
+      "deleted": 4,
+      "filesSha256List": "reruns/snapshot-final-files.sha256",
+      "listFingerprintPrefix": "e33cfc7e42c7",
+      "worktree": "scratchpad/s5/wt-final",
+      "note": "plus the git-ignored local apps/www/src/app/api/ai/{command,copilot}/route.ts copied from the main checkout"
+    }
+  },
+  "nodeModules": "root node_modules symlinked to the main checkout; each workspace node_modules copied as its own relative symlinks, so workspace packages resolve inside the worktree (www tsconfig paths compile package source regardless)",
+  "commands": {
+    "packages": "pnpm turbo build --filter=plitejs --filter=platejs (8 s candidate, 9 s baseline)",
+    "source": "PLATE_WWW_ASYNC_DOCS=1 pnpm build:source (<1 s)",
+    "wwwPlite": "PLATE_WWW_PLITE=1 PLATE_WWW_WEBPACK=1 PLATE_WWW_ASYNC_DOCS=1 PLATE_WWW_DIST_DIR=.next-s5 NODE_OPTIONS=--max-old-space-size=8192 next build --webpack --debug-build-paths \"src/app/(blocks)/blocks/[name]/page.tsx,src/app/(blocks)/blocks/clipboard-static-proof/page.tsx,src/app/(blocks)/blocks/clipboard-upload-proof/page.tsx,src/app/(app)/page.tsx\" (49 s per arm)",
+    "wwwNonPlite": "same without PLATE_WWW_PLITE, PLATE_WWW_DIST_DIR=.next-s5d, only /blocks/[name] (47 s)",
+    "wwwFinal": "final snapshot, Plite: adds (app)/docs/[[...slug]], (view)/view/[name], api/ai/{command,copilot}, api/files, api/plite/ready (98 s); non-Plite /blocks/[name] (47 s)",
+    "serve": "PLATE_WWW_PLITE=1 PLATE_WWW_DIST_DIR=<dist> next start -p <port>",
+    "matrix": "S5_BENCH=1 S5_HEAP=10000 S5_BASELINE_URL=http://localhost:3532 PLAYWRIGHT_BASE_URL=http://localhost:3531 pnpm --filter www test:www-browser:chromium tests/browser/markdown-streaming-contract.spec.ts -g \"S5 acceptance\"",
+    "aiIdenticalPrefix": "same plus S5_AI_ARRIVAL=chained S5_CELLS=ai- S5_OUT=lanes/s5/ai-chained, budget seeded with the main matrix spend",
+    "summary": "node --experimental-strip-types docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/summarize-matrix.ts [matrix-dir]",
+    "correctness": "PLAYWRIGHT_BASE_URL=<candidate> pnpm --filter www test:www-browser:chromium tests/browser/markdown-streaming-contract.spec.ts",
+    "toast": "PLAYWRIGHT_BASE_URL=<non-Plite candidate> pnpm --filter www test:www-browser:chromium tests/browser/paste-result-toast.spec.ts"
+  },
+  "servers": {
+    "3531": "candidate Plite (matrix)",
+    "3532": "baseline Plite (matrix)",
+    "3533": "candidate Plite --no-mangling (profiling only)",
+    "3534": "candidate non-Plite (toast, 02:05)",
+    "3535": "final Plite without API routes (superseded)",
+    "3536": "final next dev --webpack (docx/clipboard cross-check)",
+    "3537": "final Plite with docs, view and API routes (Task C/D)",
+    "3538": "final non-Plite (toast rerun)"
+  },
+  "environment": {
+    "machine": "Apple M5 Max, 18 cores, 128 GB",
+    "os": "macOS (Darwin 25.3.0)",
+    "node": "v22.22.1",
+    "playwright": "1.61.0",
+    "chromium": "chromium-headless-shell 149.0.7827.55 (Desktop Chrome device, 1280x720)",
+    "firefox": "151.0 (rev 1532)",
+    "webkit": "rev 2311",
+    "processPriority": "benchmark shells ran at nice 5",
+    "loadAverage": "1.7 to 9.6 during the matrix (other agents active), recorded per stream"
+  },
+  "caps": {
+    "perStreamMs": 180000,
+    "matrixMs": 3600000,
+    "spentMs": {
+      "main": 2372488,
+      "aiIdenticalPrefix": 1179235,
+      "total": 3551723
+    }
+  }
+}

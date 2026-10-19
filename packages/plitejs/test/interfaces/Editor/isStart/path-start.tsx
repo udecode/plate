@@ -1,0 +1,20 @@
+import { jsx } from '../../..';
+/** @jsx jsx */
+import { isStart as editorIsStart } from '../../../../src/internal';
+import { getSnapshot as editorGetSnapshot } from '../../../../src/testing';
+
+jsx;
+
+export const input = (
+  <editor>
+    <block>
+      <cursor />
+      one
+    </block>
+  </editor>
+);
+export const test = (editor) => {
+  const { anchor } = editorGetSnapshot(editor).selection;
+  return editorIsStart(editor, anchor, [0]);
+};
+export const output = true;

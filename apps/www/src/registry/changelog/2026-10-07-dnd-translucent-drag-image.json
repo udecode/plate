@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-07-dnd-translucent-drag-image",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-07-dnd-translucent-drag-image.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Fade the block drag image with no background",
+  "targets": [
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-07-dnd-fade-block-drag-image-fb1cea0f",
+      "kind": "behavior",
+      "summary": "Draw the block drag image at half opacity with no background, so only the faded blocks follow the pointer. Column and table row drags use the same image.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-07",
+          "entry": "2026-10-07-dnd-translucent-drag-image",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

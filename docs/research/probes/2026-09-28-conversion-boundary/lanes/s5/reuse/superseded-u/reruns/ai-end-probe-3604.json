@@ -1,0 +1,75 @@
+{
+ "base": "http://localhost:3604",
+ "during": [
+  {
+   "draft": true,
+   "draftTextTail": "ets with inline code formatting for easy",
+   "ends": 1,
+   "endText": [
+    " formatting for easy"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "rmatting for easy readability.Add links﻿",
+   "ends": 0,
+   "endText": []
+  },
+  {
+   "draft": true,
+   "draftTextTail": " to external resources or references.Use",
+   "ends": 1,
+   "endText": [
+    "Use"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "=mc2﻿ for scientific notation.Heading 1﻿",
+   "ends": 1,
+   "endText": [
+    ""
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "eading 3BlockquoteUnordered list item 1﻿",
+   "ends": 1,
+   "endText": [
+    ""
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "em 2Ordered list item 1Ordered list item",
+   "ends": 1,
+   "endText": [
+    "Ordered list item"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "red list item 2Task list item 1Task list",
+   "ends": 1,
+   "endText": [
+    "Task list"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "a2+b2=c2a^2 + b^2 = c^2a2+b2=c2﻿Python# ",
+   "ends": 1,
+   "endText": [
+    "# "
+   ]
+  }
+ ],
+ "after": {
+  "draft": true,
+  "draftTextTail": " rule﻿Header 1Header 2Row 1DataRow 2Data",
+  "ends": 1,
+  "endText": [
+   "Data"
+  ]
+ }
+}

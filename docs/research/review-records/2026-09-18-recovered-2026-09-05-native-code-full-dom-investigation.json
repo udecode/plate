@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-18-recovered-2026-09-05-native-code-full-dom-investigation",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "code"
+  ],
+  "reviewBasis": [],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-05-native-code-full-dom-investigation.md",
+    "sha256": "8e5c625af9f57c63f9b3b8b85451037c470f4b2ba8610127eedacd744ca2aa23"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical implementation completion from the plan. Complete at the user-authorized plateau. No certified timing gain; only verified event-only path subscription repairs remain. All speculative CSS/kernel changes are reverted. The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-05-native-code-full-dom-investigation.md",
+        "sha256": "8e5c625af9f57c63f9b3b8b85451037c470f4b2ba8610127eedacd744ca2aa23",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-05-native-code-full-dom-investigation.md"
+  ]
+}

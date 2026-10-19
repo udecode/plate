@@ -1,0 +1,106 @@
+---
+title: Performance
+description: A recorded Plate vs Slate large-document benchmark and how to measure your current checkout.
+---
+
+Performance is about whether the editor stays usable when the document gets
+large. This page shows a recorded 10k Plate vs Slate snapshot from the docs
+benchmark route and the command for measuring your current checkout.
+
+## Recorded snapshot
+
+This snapshot was captured on June 2, 2026 from the docs benchmark route in
+headless Chrome. The benchmark uses a 10,000-block document with chunked
+rendering enabled.
+
+These numbers describe that checkout and environment. The Slate column measures
+Slate itself, which Plate was built on at that checkout, so the snapshot has no
+Plite numbers. Run the benchmark on the version you use before comparing current
+performance.
+
+| Workload | Slate | Plate core | Plate with basic plugins |
+| --- | ---: | ---: | ---: |
+| Open a mixed document | `524 ms` | `866 ms` | `881 ms` |
+| Type in a mixed document | `26 ms` | `43 ms` | `35 ms` |
+| Open a code-heavy document | `526 ms` | `837 ms` | `1101 ms` |
+
+Read this as a workload snapshot, not as a universal editor score. Mount time,
+typing latency, plugin cost, and document shape are different performance
+questions.
+
+## Run the benchmark
+
+Start the docs app:
+
+<CodeBlockCommand
+  __bunCommand__="bun run --filter www dev"
+  __npmCommand__="npm run dev --workspace www"
+  __pnpmCommand__="pnpm --filter www dev"
+  __yarnCommand__="yarn workspace www dev"
+/>
+
+Then run the public editor benchmark in another terminal:
+
+<CodeBlockCommand
+  __bunCommand__="bun run --filter www perf:editor:public"
+  __npmCommand__="npm run perf:editor:public --workspace www"
+  __pnpmCommand__="pnpm --filter www perf:editor:public"
+  __yarnCommand__="yarn workspace www perf:editor:public"
+/>
+
+The runner writes a compact JSON summary to
+`apps/www/.tmp/editor-perf-public-summary.json`.
+
+## What it measures
+
+The benchmark keeps the public comparison small on purpose:
+
+| Measurement | What it tells you |
+| --- | --- |
+| Opening a mixed document | The cost of mounting a large editor with normal rich-text variety. |
+| Typing in a mixed document | Whether the editor still responds under a large loaded document. |
+| Opening a code-heavy document | The cost of a harder mark-heavy rendering profile. |
+
+Plate core isolates the editor wrapper cost. Plate with basic plugins adds the
+common block and mark plugins many editors start with.
+
+## Read the numbers
+
+Compare like with like:
+
+- use mount numbers for startup cost
+- use typing numbers for interaction cost
+- use the basic plugin column when you care about a real Plate setup
+- rerun the benchmark on your machine before publishing a performance claim
+
+The raw output also includes lower-level Plate diagnostics, such as node-id
+cost. Those are useful for debugging Plate itself, but they are not the public
+story.
+
+## Source
+
+Use the [Huge Document](/docs/examples/huge-document) demo for manual
+inspection. The benchmark route lives at `/dev/editor-perf`, and the runner
+lives in `apps/www/scripts/run-editor-perf.mts`.
+
+## Optimize the measured cost
+
+Profile the complete interaction: typing, selection, paste, undo, and scrolling
+can have different costs. Distinguish transaction work, React subscriptions,
+DOM mounting, and painting before changing the editor's rendering mode.
+
+Keep [corrections](/docs/editing-behavior#correction-timing) local to affected
+entries. Whole-document maintenance belongs in explicit repair, not every
+keystroke. Keep plugin component definitions stable and subscribe UI to the
+smallest state it needs: `useEditorSelection` for selection, `useEditorSelector`
+for derived editor state, and node-scoped hooks for rendered content.
+
+`EditorContent` mounts the complete document. Use
+[`VirtualizedEditorContent`](/docs/virtualized-rendering) only when the measured
+DOM budget requires omission. Offscreen content then needs explicit handling
+for native find, accessibility, printing, and third-party DOM integrations.
+Pagination geometry by itself does not establish a virtualized mounting policy.
+
+Browser painting can dominate a large tree even when transactions and React are
+fast. Measure any `content-visibility` policy in the browsers you support; its
+per-element overhead and accessibility behavior also affect the result.

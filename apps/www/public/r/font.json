@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "font",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/font-size-toolbar-button.json",
+    "https://platejs.org/r/font-color-toolbar-button.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/font.tsx",
+      "content": "'use client';\n\nimport {\n  FontBackgroundColorPlugin,\n  FontColorPlugin,\n  FontFamilyPlugin,\n  FontSizePlugin,\n} from 'platejs/react';\n\nexport const FontKit = [\n  FontColorPlugin,\n  FontBackgroundColorPlugin,\n  FontSizePlugin,\n  FontFamilyPlugin,\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/font.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

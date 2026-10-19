@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "list-static",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/block-list-static.json",
+    "https://platejs.org/r/indent-static.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/list-static.tsx",
+      "content": "import { BaseListPlugin, PLUGINS } from 'platejs';\n\nimport {\n  BlockListStatic,\n  drawsBulletOnRoot,\n} from '@/registry/components/editor/block-list-static';\nimport { BaseIndentKit } from '@/registry/components/editor/indent-static';\n\nexport const BaseListKit = [\n  ...BaseIndentKit,\n  BaseListPlugin.configure({\n    inject: {\n      isElement: true,\n      nodeProps: {\n        nodeKey: 'listType',\n        query: ({ editor, nodeProps }) =>\n          !!nodeProps.element && drawsBulletOnRoot(editor, nodeProps.element),\n        transformProps: ({ element, props }) => ({\n          ...props,\n          role: 'listitem',\n          style: {\n            ...props.style,\n            display: 'list-item',\n            listStyleType: element?.listStyle,\n          },\n        }),\n      },\n    },\n    slots: {\n      wrapNodeChildren: BlockListStatic,\n    },\n    targetPlugins: [\n      PLUGINS.paragraph,\n      PLUGINS.heading,\n      PLUGINS.blockquote,\n      PLUGINS.codeBlock,\n      PLUGINS.details,\n      PLUGINS.image,\n    ],\n  }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/list-static.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

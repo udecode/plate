@@ -1,0 +1,263 @@
+---
+title: 退出块结构
+---
+
+<ComponentPreview name="exit-break-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 通过快捷键从嵌套块结构（如代码块、表格、列）中退出
+- 只退出最近的结构，因此在列中的代码块、提示框、图片或分割线里按 Mod+Enter，新块会插入在该列中
+- 插入外层容器声明的默认块，例如在列中插入段落
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的方式是使用 `ExitBreakKit`，它包含预配置的 `ExitBreakPlugin` 及键盘快捷键。
+
+<ComponentSource name="exit-break" />
+
+### 添加套件
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { ExitBreakKit } from '@/components/editor/exit-break';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件,
+    ...ExitBreakKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 添加插件
+
+```tsx
+import { ExitBreakPlugin } from 'platejs';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件,
+    ExitBreakPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+```tsx
+import { ExitBreakPlugin } from 'platejs';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件,
+    ExitBreakPlugin.configure({
+      shortcuts: {
+        insert: { keys: 'mod+enter' },
+        insertBefore: { keys: 'mod+shift+enter' },
+      },
+    }),
+  ],
+});
+```
+
+- `shortcuts.insert`: 定义退出并在之后插入新块的键盘[快捷键](/docs/plugin-shortcuts)
+- `shortcuts.insertBefore`: 定义退出并在之前插入新块的键盘[快捷键](/docs/plugin-shortcuts)
+
+</Steps>
+
+## 快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Enter">
+    退出当前块结构并在之后插入新块
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + Enter">
+    退出当前块结构并在之前插入新块
+  </KeyTableItem>
+</KeyTable>
+
+## 插件
+
+### `ExitBreakPlugin`
+
+提供通过 [`tx.break.exit`](/docs/api/editor-transforms#txbreakexitoptions) 退出当前块结构的快捷键。
+
+<API name="ExitBreakPlugin">
+<APIOptions>
+  <APIItem name="shortcuts" type="object" optional>
+    键盘快捷键配置
+    <APISubList>
+      <APISubListItem parent="shortcuts" name="insert" type="Shortcut" optional>
+        退出并在之后插入块的快捷键
+        - **示例:** `{ keys: 'mod+enter' }`
+      </APISubListItem>
+      <APISubListItem parent="shortcuts" name="insertBefore" type="Shortcut" optional>
+        退出并在之前插入块的快捷键
+        - **示例:** `{ keys: 'mod+shift+enter' }`
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIOptions>
+</API>
+
+## 工作原理
+
+退出块功能只退出光标周围最近的结构。代码块、提示框、图片和分割线本身就是结构，因此退出会在它们之后插入新块，仍在同一容器中。在其他块中，退出会离开最近一个旁边能放入段落的容器：引用中的段落会离开该引用，列中的段落会离开整个分栏组，因为分栏组只能容纳列。新块是该结构的父节点声明的默认块。
+
+### 退出点判定
+
+触发退出块时：
+
+1. 从光标所在的块开始
+2. 如果该块自己负责退出，就停在该块：分割线这样的 void、图片这样的 object，或声明了 `ownsExit` 的文本块，例如代码块和提示框
+3. 否则向上遍历祖先节点，停在第一个直接位于文档中、或其父节点能容纳文本块（例如段落）的祖先
+4. 在退出点旁插入其父节点的默认块，并把光标移入新块
+
+如果自己负责退出的块的父节点无法在它旁边放入一个普通文本块，退出会跳过该块，转而离开其容器。父节点已无空间或没有默认块，或其默认块需要一个无人提供的属性、不含文本或本身也自己负责退出时，就会这样。在顶层以下，如果某个容器的默认块会把光标放回同类型的容器中，遍历也会跳过该容器。
+
+退出一旦停在某个容器，就不会继续向上。如果该容器的父节点没有声明默认块、已无法容纳更多块，或其默认块需要一个无人提供的属性或不含文本，则不做任何修改。
+
+### 示例
+
+**代码块：**
+```tsx
+<codeBlock>                              // ← 退出点（顶层块）
+  代码|                                  // ← 起始位置
+</codeBlock>
+<paragraph>|</paragraph>                 // ← 在此处插入新段落
+```
+
+**列中的代码块（留在列中）：**
+```tsx
+<columnGroup>
+  <column>
+    <codeBlock>                          // ← 退出点（自己负责退出）
+      代码|                              // ← 起始位置
+    </codeBlock>
+    <paragraph>|</paragraph>             // ← 在此处插入新段落
+  </column>
+</columnGroup>
+```
+
+**列中的图片或分割线：**
+```tsx
+<columnGroup>
+  <column>
+    <image url="...">说明|</image>       // ← 退出点和起始位置
+    <paragraph>|</paragraph>             // ← 在此处插入新段落
+  </column>
+</columnGroup>
+```
+
+**列中的段落（退出整个分栏组）：**
+```tsx
+<columnGroup>                            // ← 退出点（顶层块）
+  <column>                               // 分组只允许列
+    <paragraph>内容|</paragraph>         // ← 起始位置
+  </column>
+</columnGroup>
+<paragraph>|</paragraph>                 // ← 在此处插入新段落
+```
+
+**列中的表格（在表格层级退出）：**
+```tsx
+// 第一次退出
+<columnGroup>
+  <column>                               
+    <table>                              // ← 退出点（列允许块）
+      <tableRow>                         // 表格只允许行
+        <tableCell>                      // 行只允许单元格
+          <paragraph>内容|</paragraph>   // ← 起始位置
+        </tableCell>
+      </tableRow>
+    </table>
+    <paragraph>|</paragraph>             // ← 在此处插入新段落
+  </column>
+</columnGroup>
+
+// 第二次退出
+<columnGroup>                            // ← 退出点（顶层块）
+  <column>                               // 分组只允许列
+    <table>                              
+      <tableRow>
+        <tableCell>
+          <paragraph>内容</paragraph>
+        </tableCell>
+      </tableRow>
+    </table>
+    <paragraph>|</paragraph>             // ← 起始位置
+  </column>
+</columnGroup>
+<paragraph>|</paragraph>                 // ← 在此处插入新段落
+```
+
+### 自定义插件配置
+
+声明每个自定义元素允许的子内容及其默认值。退出会越过其父节点无法容纳段落的祖先（例如行中的单元格），并插入落点父节点声明的默认块：
+
+```tsx
+import { definePlugin, schema } from 'platejs';
+
+// 表格结构
+const CustomTablePlugin = definePlugin('table', {
+  schema: {
+    element: {
+      content: schema.content.type('tr', { min: 1 }),
+    },
+  },
+});
+
+const CustomTableRowPlugin = definePlugin('tr', {
+  schema: {
+    element: {
+      content: schema.content.types(['td', 'th'], {
+        default: { type: 'td' },
+        min: 1,
+      }),
+    },
+  },
+});
+
+const CustomTableCellPlugin = definePlugin('td', {
+  schema: {
+    element: {
+      content: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+    },
+  },
+});
+```
+
+如果某个文本块应该先于其容器被退出，例如类似代码块的自定义块，或 Enter 规则会退出的提示框，就声明 `ownsExit`。未声明时，该块的行为与段落相同，退出会离开其容器：
+
+```tsx
+import { definePlugin, schema } from 'platejs';
+
+const NoticePlugin = definePlugin('notice', {
+  rules: { break: { emptyLineEnd: 'deleteExit' } },
+  schema: {
+    element: schema.element.textBlock({ ownsExit: true }),
+  },
+});
+```
+
+只有文本块可以声明 `ownsExit`。void 和 object 总是自己负责退出。

@@ -1,0 +1,100 @@
+block decoration read total 10397.1 ms over 3 profiles; decorate.read bodies 7289.0 ms; outside the bodies 3108.1 ms
+outside the bodies, by frame (inclusive / self ms):
+    2726.0   1590.9  read@1233-d7221846cb52d028.js:1489006 «param=>{let{editor:view,entry}=param,pluginContext=contextFor(view),context=Object.assign(»
+    2095.0     99.1  (anon)@1656-febeafc2a3d9e172.js:21285 «(child,index)=>visit(child,[...nodePath,index]))};return visit(block,path),decorations})(s»
+     481.8    217.2  withDocumentViewRead@1233-d7221846cb52d028.js:37319
+     402.5    402.5  set@1233-d7221846cb52d028.js:530197
+     255.8    255.8  (anon)@1233-d7221846cb52d028.js:1489213 «()=>Reflect.apply(decorate.read,void 0,[context]));return attributes&&0!==decorations.leng»
+     250.8     31.8  contextFor@1233-d7221846cb52d028.js:1488496
+     217.8     25.2  createPluginContext@1233-d7221846cb52d028.js:514762
+     193.8     44.9  createPluginAccess@1233-d7221846cb52d028.js:514845
+     148.9    148.9  isNominalPluginDescriptor@1233-d7221846cb52d028.js:964329
+      18.2     12.5  isElement@1233-d7221846cb52d028.js:1807558
+       8.8      8.8  getEditorRuntimeOwner@1233-d7221846cb52d028.js:2102681
+       5.7      5.7  isObject@1233-d7221846cb52d028.js:880811
+       2.9      2.9  $@1233-d7221846cb52d028.js:1807384
+       2.5      2.5  read@7460-ff76fe78154806aa.js:278822 «param=>{var _ref,_ref1,_previous_decorations_,_ref2;let highlighted,warning,{editor:view,e»
+       1.3      1.3  d@1233-d7221846cb52d028.js:513304
+source read@7460-ff76fe78154806aa.js:278822 «param=>{var _ref,_ref1,_previous_decorations_,_ref2;let highlighted,warning,{editor:view,e»: inclusive 7282.9 ms, self 891.7 ms
+  first call under the body (-> first named call below it):
+    2339.7      0.0  (anon)@1233-d7221846cb52d028.js:711717 -> parent@1233-d7221846cb52d028.js:1584880 «(){for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++)args[_key]=argum»
+    1345.6     13.8  (anon)@1233-d7221846cb52d028.js:711717 -> (inline) «(){for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++)args[_key]=argum»
+    1072.8      7.5  key@1233-d7221846cb52d028.js:644814 -> key@1233-d7221846cb52d028.js:644814
+     626.5      4.3  get@1233-d7221846cb52d028.js:526312 -> get@1233-d7221846cb52d028.js:526312
+     429.0     70.5  get@1233-d7221846cb52d028.js:529205 -> get@1233-d7221846cb52d028.js:529205
+     393.7      5.0  get@1233-d7221846cb52d028.js:521525 -> get@1233-d7221846cb52d028.js:521525
+      54.8      0.0  highlight@2698-c2ee67ec4838aa66.js:971831 -> highlight@2698-c2ee67ec4838aa66.js:971831
+      49.8     31.8  isText@1233-d7221846cb52d028.js:573599 -> (inline)
+      37.0     15.0  string@1233-d7221846cb52d028.js:575759 -> string@1233-d7221846cb52d028.js:575759
+      11.6     11.6  get@1233-d7221846cb52d028.js:714249 -> get@1233-d7221846cb52d028.js:714249
+       8.7      8.7  getCompiledPlatePlugin@1233-d7221846cb52d028.js:1008037 -> (inline)
+       7.1      3.8  isParent@1233-d7221846cb52d028.js:2109633 -> (inline)
+       6.3      6.3  get@1233-d7221846cb52d028.js:711593 -> get@1233-d7221846cb52d028.js:711593
+       2.4      2.4  hasCompiledPlatePluginCandidate@1233-d7221846cb52d028.js:1007797 -> (inline)
+       1.3      1.3  hasCompiledPlateModelCandidate@1233-d7221846cb52d028.js:1007919 -> (inline)
+       1.3      1.3  isDescriptorInstalled@1233-d7221846cb52d028.js:515662 -> (inline)
+       1.3      1.3  get@1233-d7221846cb52d028.js:1016445 -> get@1233-d7221846cb52d028.js:1016445
+       1.2      0.0  plugin@1233-d7221846cb52d028.js:813923 -> plugin@1233-d7221846cb52d028.js:813923
+       0.9      0.9  parseNodes@7460-ff76fe78154806aa.js:277939 -> (inline)
+  by inclusive:
+    4736.8     13.8  read@1233-d7221846cb52d028.js:711537 «fn=>runRead(fn),createGroup=groupName=>new Proxy({},{get(target,key,receiver){if("string"=»
+    4723.0      8.8  (anon)@1233-d7221846cb52d028.js:643313 «fn=>viewRuntime.read(state=>fn(state)));viewRead.schema=sourceEditor.read.schema;let viewU»
+    4714.2      5.3  read@1233-d7221846cb52d028.js:638309 «fn=>{var _getViewEditor;return(0,_core_document_view_read__WEBPACK_IMPORTED_MODULE_11__.tO»
+    4708.8     69.5  withDocumentViewRead@1233-d7221846cb52d028.js:37319
+    4625.7     14.5  (anon)@1233-d7221846cb52d028.js:638468 «()=>baseRuntime.read(state=>fn((state=>{if(state!==cachedBaseState){var _getViewEditor;cac»
+    4611.2     26.7  read@1233-d7221846cb52d028.js:1110699 «fn=>(0,public_state.O4)(editor1,fn),runCommand:(0,command_registry.my)(()=>editor1),subscr»
+    4583.2     18.3  readEditor@1233-d7221846cb52d028.js:1641703
+    4448.8    305.9  withEditorDocumentProjection@1233-d7221846cb52d028.js:1514913
+    4350.2      0.0  (anon)@1233-d7221846cb52d028.js:1642569 «()=>(0,authored_runtime.mL)(editor,editor,()=>fn(getStateView(editor))))}finally{restoreDr»
+    4350.2      4.9  withAuthoredViewRead@1233-d7221846cb52d028.js:509726
+    4331.1     16.8  (anon)@1233-d7221846cb52d028.js:1642611 «()=>fn(getStateView(editor))))}finally{restoreDraft(),exitRead()}},updateEditor=function(e»
+    4234.3      5.3  (anon)@1233-d7221846cb52d028.js:638489 «state=>fn((state=>{if(state!==cachedBaseState){var _getViewEditor;cachedBaseState=state,ca»
+    4206.7     41.2  (anon)@1233-d7221846cb52d028.js:643334 «state=>fn(state)));viewRead.schema=sourceEditor.read.schema;let viewUpdate=(0,_core_editor»
+    4145.7     35.0  (anon)@1233-d7221846cb52d028.js:611700 «(){for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++)args[_key]=argum»
+    4110.7     23.6  withRootRead@1233-d7221846cb52d028.js:610799
+    3850.2      0.0  read@1233-d7221846cb52d028.js:610854 «()=>(0,_core_public_state__WEBPACK_IMPORTED_MODULE_1__.bq)(editor,viewState.root,fn);retur»
+    3850.2     77.7  withEditorRootChildren@1233-d7221846cb52d028.js:1644038
+    3685.3     13.8  (anon)@1233-d7221846cb52d028.js:711717 «(){for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++)args[_key]=argum»
+    3642.7     67.7  (anon)@1233-d7221846cb52d028.js:611838 «()=>method(...args))},rootGeneratorMethod=(editor,viewState,method)=>function(){for(var _l»
+    3181.5     17.3  (anon)@1233-d7221846cb52d028.js:711830 «state=>{var _state_groupName;let method=null==(_state_groupName=state[groupName])?void 0:_»
+    2647.6     24.8  mapped@1233-d7221846cb52d028.js:2132271
+    2339.7     15.8  parent@1233-d7221846cb52d028.js:1584880
+    2323.9      0.0  withNodeTargetRootRead@1233-d7221846cb52d028.js:1530588
+    2319.1     95.0  (anon)@1233-d7221846cb52d028.js:1585003 «()=>{let at=resolveNodeTargetLocation(editor,target);if(at)return(param=>{let{at:innerAt7,»
+  by self:
+     506.5    506.5  getEditorRuntimeOwner@1233-d7221846cb52d028.js:2102681
+     482.0    398.8  enterEditorRootChildren@1233-d7221846cb52d028.js:1644967
+    4448.8    305.9  withEditorDocumentProjection@1233-d7221846cb52d028.js:1514913
+     338.2    281.0  cache@1233-d7221846cb52d028.js:1456187
+    1236.7    208.7  getPlugin@1233-d7221846cb52d028.js:516642
+     202.5    202.5  _object_without_properties@8255-fdc7096923fb725f.js:52329
+     222.2    174.1  _object_spread@3370-ab6f5e713678b725.js:72578
+     171.8    171.8  getTransactionSpecContext@1233-d7221846cb52d028.js:1517837
+     146.0    146.0  structuredClone@:-1
+     142.6    142.6  (anon)@1233-d7221846cb52d028.js:1645685 «()=>{void 0===previousRoot?CURRENT_CHILDREN_ROOT.delete(editor):CURRENT_CHILDREN_ROOT.set(»
+     157.4    137.8  isPath@1233-d7221846cb52d028.js:2109722
+    1935.6    132.1  (anon)@1233-d7221846cb52d028.js:1585166 «()=>{let entry=readNodeParent(editor,innerAt7,innerOptions9),match=(0,node_match.f)(innerO»
+     357.2    110.7  getCompiledPlatePlugin@1233-d7221846cb52d028.js:1008037
+     464.4    107.2  hasLocationPath@1233-d7221846cb52d028.js:1528418
+     167.2     96.5  isPluginDescriptorSourceOf@1233-d7221846cb52d028.js:514133
+    2319.1     95.0  (anon)@1233-d7221846cb52d028.js:1585003 «()=>{let at=resolveNodeTargetLocation(editor,target);if(at)return(param=>{let{at:innerAt7,»
+      90.5     90.5  normalizeNodeMatch@1233-d7221846cb52d028.js:1452590
+     476.9     89.9  (anon)@1233-d7221846cb52d028.js:1456901 «(node,index)=>{let path=[...pathPrefix,index],nodeKey=(0,_utils_node_keys__WEBPACK_IMPORTE»
+     156.8     87.4  hasCompiledPlateModelCandidate@1233-d7221846cb52d028.js:1007919
+      84.0     84.0  hasEditorRuntime@1233-d7221846cb52d028.js:2102440
+     124.9     83.9  (anon)@1233-d7221846cb52d028.js:1455528 «(node,index)=>{let path=Object.freeze([...pathPrefix,index]);if("children"in node&&Array.i»
+     154.4     81.0  hasCompiledPlatePluginCandidate@1233-d7221846cb52d028.js:1007797
+     158.4     79.3  getPlateModelPublication@1233-d7221846cb52d028.js:1006640
+    3850.2     77.7  withEditorRootChildren@1233-d7221846cb52d028.js:1644038
+source (anon)@1233-d7221846cb52d028.js:643313 «fn=>viewRuntime.read(state=>fn(state)));viewRead.schema=sourceEditor.read.schema;let viewU»: inclusive 2.5 ms, self 2.5 ms
+  first call under the body (-> first named call below it):
+  by inclusive:
+  by self:
+source key@1233-d7221846cb52d028.js:644814: inclusive 2.3 ms, self 2.3 ms
+  first call under the body (-> first named call below it):
+  by inclusive:
+  by self:
+source l@1233-d7221846cb52d028.js:563786: inclusive 1.3 ms, self 1.3 ms
+  first call under the body (-> first named call below it):
+  by inclusive:
+  by self:

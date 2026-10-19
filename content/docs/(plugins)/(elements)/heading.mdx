@@ -1,0 +1,99 @@
+---
+title: Heading
+description: One semantic heading element with levels 1 through 6.
+docs:
+  - route: /docs/components/heading
+    title: Heading Element
+  - route: /docs/basic-blocks
+    title: Basic Blocks
+---
+
+Heading uses one element type and one plugin. The required level property selects H1 through H6 rendering and Markdown depth.
+
+<ComponentPreview name="basic-blocks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- One HeadingPlugin and BaseHeadingPlugin capability.
+- Required level from 1 through 6.
+- One HTML and MDAST codec.
+- Markdown shortcuts from # through ######.
+- Registry shortcuts from mod+alt+1 through mod+alt+6.
+
+</PackageInfo>
+
+## Kit usage
+
+BasicBlocksKit includes HeadingPlugin, the dynamic HeadingElement, all six keyboard shortcuts, and HeadingRules.markdown().
+
+~~~tsx
+import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [...BasicBlocksKit],
+});
+~~~
+
+## Manual usage
+
+~~~tsx
+import { HeadingRules } from 'platejs';
+import { HeadingPlugin } from 'platejs/react';
+
+const plugins = [
+  HeadingPlugin.configure({
+    component: HeadingElement,
+    inputRules: [HeadingRules.markdown()],
+  }),
+];
+~~~
+
+A renderer reads element.level and chooses the matching intrinsic element.
+
+~~~tsx
+import type { EditorElementProps } from 'platejs/react';
+import { HeadingPlugin } from 'platejs/react';
+import { EditorElement } from 'platejs/react';
+
+export function HeadingElement(
+  props: EditorElementProps<typeof HeadingPlugin>
+) {
+  const tag = `h${props.element.level}` as const;
+
+  return <EditorElement as={tag} {...props} />;
+}
+~~~
+
+## Value
+
+~~~ts
+const value = [
+  {
+    type: 'heading',
+    level: 2,
+    children: [{ text: 'Document model' }],
+  },
+];
+~~~
+
+level is semantic Plate data. The HTML mapping maps it to an h1 through h6 tag. The Markdown mapping maps it to MDAST depth.
+
+## Commands
+
+~~~ts
+editor.plugin(HeadingPlugin).update.toggle({ level: 2 });
+~~~
+
+Calling toggle with the active level resets the selected heading to the root default block. Calling it with another level changes the level on the same heading type.
+
+## API Reference
+
+| API | Purpose |
+| --- | --- |
+| BaseHeadingPlugin | Headless heading schema, behavior, format mappings, and update. |
+| HeadingPlugin | React adapter for BaseHeadingPlugin. |
+| HeadingRules.markdown() | One block-start rule for # through ######. |
+| HeadingLevel | 1, 2, 3, 4, 5, or 6. |

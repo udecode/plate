@@ -1,0 +1,4 @@
+# pnpm --filter plitejs test
+# exit: 0
+# pnpm --filter platejs test
+# exit: 0

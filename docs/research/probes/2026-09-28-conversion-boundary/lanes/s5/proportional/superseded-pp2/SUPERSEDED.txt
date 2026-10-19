@@ -1,0 +1,1 @@
+Superseded by the pp3 run in ../: pre-fix code for BaseCodeBlockPlugin, ai-menu and the demo; overlapped the lead's full test suite. Its numbers are kept as the before-fix evidence for the four costs (static urgent passes, the AI end-marker read order, the AI forced layout, the highlighter's view.key index).

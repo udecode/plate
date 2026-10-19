@@ -1,0 +1,1 @@
+Superseded by the pp2 run in ../: this pp matrix measured the pre-fix streaming demo (35ff37f8918718f9) while the lead's full test suites loaded the machine (about 00:47-01:10Z), and static-rerun-pp2-static-only/ was a partial pp2 run made before the lead asked for all 8 cells in one quiet run.

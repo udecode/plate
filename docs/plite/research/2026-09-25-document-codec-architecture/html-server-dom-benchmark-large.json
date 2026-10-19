@@ -1,0 +1,52 @@
+{
+  "contract": {
+    "action": "Construct a DOM adapter, parse one HTML document, and dispose it.",
+    "baseline": "One shared happy-dom Window with identical disabled capabilities.",
+    "correctness": "Both paths preserve element count and sentinel text; source scripts do not execute.",
+    "independentVariables": [
+      "source bytes",
+      "element count",
+      "window constructions"
+    ],
+    "noiseRule": "Interleaved samples; pass every absolute and overhead p95 budget.",
+    "proposed": "One isolated happy-dom Window per platejs/html/server parse, always aborted and closed.",
+    "repeatedUnit": "One source element plus one server DOM Window per operation.",
+    "userOperation": "Detached HTML document or ContentSlice parsing in Node."
+  },
+  "environment": {
+    "architecture": "arm64",
+    "happyDom": "20.8.3",
+    "lockfileSha256": "271bdf6da40799f15a72c7237e96434f431f949b7d72ec2a6b541f952da7eb4b",
+    "node": "v22.22.1",
+    "platform": "darwin"
+  },
+  "result": "pass",
+  "results": [
+    {
+      "budget": {
+        "isolatedP95Ms": 400,
+        "overheadP95Ms": 100,
+        "relativeOverhead": 0.5
+      },
+      "bytes": 356823,
+      "elements": 12002,
+      "isolated": {
+        "max": 143.23741599999994,
+        "p50": 94.14699999999993,
+        "p95": 143.23741599999994
+      },
+      "name": "large",
+      "overhead": {
+        "absoluteMs": -0.9951249999999163,
+        "relative": -0.006899448578666567
+      },
+      "pass": true,
+      "samples": 10,
+      "shared": {
+        "max": 144.23254099999986,
+        "p50": 91.85837500000002,
+        "p95": 144.23254099999986
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+[
+  "TS2883 deleteWordBackward needs Editor from platejs/dist/index",
+  "TS2883 headerView needs InferBaseEditorPlugins from platejs/dist/core",
+  "TS2883 headerView needs InternalBaseEditorWithInstalledPlugins from platejs/dist/core",
+  "TS2883 headerView needs InternalInstalledSchemaDefinitionsProvider from platejs/dist/core",
+  "TS2883 plateEditor needs InferBaseEditorPlugins from platejs/dist/core",
+  "TS2883 plateEditor needs InternalBaseEditorWithInstalledPlugins from platejs/dist/core",
+  "TS2883 plateEditor needs InternalInstalledSchemaDefinitionsProvider from platejs/dist/core",
+  "TS2883 textSchema needs Plugin from platejs/dist/index"
+]

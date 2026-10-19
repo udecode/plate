@@ -1,0 +1,200 @@
+{
+  "environment": {
+    "bun": "1.3.12",
+    "cpu": "Apple M5 Max",
+    "arch": "arm64",
+    "platform": "darwin"
+  },
+  "sampling": {
+    "warmups": 0,
+    "packets": 1,
+    "chunkBytes": 64,
+    "sizeUnit": "decimal bytes",
+    "frozenTargetMet": false,
+    "amendment": "Original five-packet target incomplete; bounded one-pair diagnostic only, not a timing acceptance pass."
+  },
+  "packets": [
+    {
+      "kind": "rich",
+      "size": 10000,
+      "packet": 0,
+      "baseline": {
+        "candidate": false,
+        "publish": false,
+        "stages": {
+          "parse": {
+            "count": 157,
+            "min": 0.5394160000000738,
+            "p50": 6.776000000000295,
+            "p95": 15.871125000000575,
+            "max": 25.23791700000038,
+            "sum": 1207.5585450000026
+          },
+          "fit": {
+            "count": 157,
+            "min": 0.8910829999999805,
+            "p50": 14.93600000000015,
+            "p95": 34.636625000000095,
+            "max": 44.565333000000464,
+            "sum": 2540.694246000003
+          },
+          "publish": {
+            "count": 0,
+            "sum": 0
+          },
+          "prefixCheck": {
+            "count": 157,
+            "min": 0,
+            "p50": 0,
+            "p95": 0,
+            "max": 0,
+            "sum": 0
+          }
+        },
+        "parsedBytes": 793744,
+        "parserReused": 0,
+        "modelReused": 0,
+        "keyReused": 0,
+        "comparisons": 0,
+        "strictFinalMs": 12.190958999999566,
+        "strictFinalOk": true,
+        "outputHash": "0925c7adde58a821b7e6670cb9fc23d024e6d5a1c2e3777e3f324491b82c03f8",
+        "wallIncludingGuardsMs": 3781.9795
+      },
+      "candidate": {
+        "candidate": true,
+        "publish": false,
+        "stages": {
+          "parse": {
+            "count": 157,
+            "min": 0.43445799999972223,
+            "p50": 6.44854099999975,
+            "p95": 12.845124999999825,
+            "max": 15.405875000000378,
+            "sum": 1040.7493729999933
+          },
+          "fit": {
+            "count": 157,
+            "min": 0.4645830000008573,
+            "p50": 13.7515829999993,
+            "p95": 27.328582999999526,
+            "max": 36.182457999999315,
+            "sum": 2269.6388730000035
+          },
+          "publish": {
+            "count": 0,
+            "sum": 0
+          },
+          "prefixCheck": {
+            "count": 157,
+            "min": 0.00004199999966658652,
+            "p50": 0.0013330000001587905,
+            "p95": 0.004957999999533058,
+            "max": 0.012791000000106578,
+            "sum": 0.2719159999878684
+          }
+        },
+        "parsedBytes": 793744,
+        "parserReused": 0,
+        "modelReused": 0,
+        "keyReused": 0,
+        "comparisons": 0,
+        "strictFinalMs": 11.864667000001646,
+        "strictFinalOk": true,
+        "outputHash": "0925c7adde58a821b7e6670cb9fc23d024e6d5a1c2e3777e3f324491b82c03f8",
+        "wallIncludingGuardsMs": 3341.685458
+      }
+    },
+    {
+      "kind": "rich",
+      "size": 50000,
+      "packet": 0,
+      "baseline": {
+        "candidate": false,
+        "publish": false,
+        "stages": {
+          "parse": {
+            "count": 782,
+            "min": 0.41654100000050676,
+            "p50": 34.44104199999856,
+            "p95": 66.99874999999884,
+            "max": 84.50699999999779,
+            "sum": 27147.51852600008
+          },
+          "fit": {
+            "count": 782,
+            "min": 0.39720800000031886,
+            "p50": 73.55245899999863,
+            "p95": 142.85749999999825,
+            "max": 205.22999999999593,
+            "sum": 58976.14645199998
+          },
+          "publish": {
+            "count": 0,
+            "sum": 0
+          },
+          "prefixCheck": {
+            "count": 782,
+            "min": 0,
+            "p50": 0,
+            "p95": 0,
+            "max": 0,
+            "sum": 0
+          }
+        },
+        "parsedBytes": 19593744,
+        "parserReused": 0,
+        "modelReused": 0,
+        "keyReused": 0,
+        "comparisons": 0,
+        "strictFinalMs": 69.79887499999313,
+        "strictFinalOk": true,
+        "outputHash": "4ff687485e476a6018b8167040f17e499111497b5d6422cd274177ca9a2bd69f",
+        "wallIncludingGuardsMs": 86635.285833
+      },
+      "candidate": {
+        "candidate": true,
+        "publish": false,
+        "stages": {
+          "parse": {
+            "count": 782,
+            "min": 0.4249590000108583,
+            "p50": 30.12479099999473,
+            "p95": 65.95145799999591,
+            "max": 127.76987500002724,
+            "sum": 25275.78164100008
+          },
+          "fit": {
+            "count": 782,
+            "min": 0.5139579999959096,
+            "p50": 66.69441700000607,
+            "p95": 140.58775000000605,
+            "max": 250.7139170000155,
+            "sum": 55634.30404600028
+          },
+          "publish": {
+            "count": 0,
+            "sum": 0
+          },
+          "prefixCheck": {
+            "count": 782,
+            "min": 0.00004199999966658652,
+            "p50": 0.002374999996391125,
+            "p95": 0.0064999999885912985,
+            "max": 1.6005829999921843,
+            "sum": 5.1757580002595205
+          }
+        },
+        "parsedBytes": 19593744,
+        "parserReused": 0,
+        "modelReused": 0,
+        "keyReused": 0,
+        "comparisons": 0,
+        "strictFinalMs": 65.508708999987,
+        "strictFinalOk": true,
+        "outputHash": "4ff687485e476a6018b8167040f17e499111497b5d6422cd274177ca9a2bd69f",
+        "wallIncludingGuardsMs": 81373.596083
+      }
+    }
+  ]
+}

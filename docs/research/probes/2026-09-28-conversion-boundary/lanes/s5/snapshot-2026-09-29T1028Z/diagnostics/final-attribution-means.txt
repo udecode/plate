@@ -1,0 +1,12 @@
+static-rich-10000 || b: task 104 (max 125) parse 9 txn 35 react 53 minorGC 3.1 heapBefore 173MB live -MB || c: task 101 (max 104) parse 11 txn 33 react 51 minorGC 3.1 heapBefore 128MB live -MB
+static-cjk-10000 || b: task 183 (max 186) parse 13 txn 57 react 102 minorGC 6.3 heapBefore 212MB live 59MB || c: task 204 (max 213) parse 21 txn 67 react 106 minorGC 5.6 heapBefore 81MB live 60MB
+static-rich-50000 || b: task 446 (max 473) parse 42 txn 128 react 246 minorGC 16.9 heapBefore 358MB live 136MB || c: task 476 (max 495) parse 57 txn 145 react 241 minorGC 16.8 heapBefore 201MB live 85MB
+static-cjk-50000 || b: task 858 (max 896) parse 69 txn 255 react 471 minorGC 37.1 heapBefore 645MB live 246MB || c: task 897 (max 931) parse 87 txn 277 react 477 minorGC 36.0 heapBefore 421MB live 146MB
+editable-rich-10000 || b: task 54 (max 56) parse 8 txn 36 react 4 minorGC 2.5 heapBefore 178MB live -MB || c: task 55 (max 56) parse 10 txn 36 react 4 minorGC 2.4 heapBefore 174MB live -MB
+editable-cjk-10000 || b: task 101 (max 103) parse 14 txn 71 react 8 minorGC 4.7 heapBefore 192MB live 85MB || c: task 127 (max 141) parse 20 txn 91 react 8 minorGC 3.8 heapBefore 155MB live 91MB
+editable-rich-50000 || b: task 225 (max 233) parse 44 txn 153 react 6 minorGC 13.6 heapBefore 547MB live 337MB || c: task 269 (max 352) parse 58 txn 182 react 6 minorGC 16.0 heapBefore 777MB live 283MB
+editable-cjk-50000 || b: task 457 (max 481) parse 70 txn 327 react 11 minorGC 35.7 heapBefore 1129MB live 582MB || c: task 460 (max 484) parse 79 txn 325 react 10 minorGC 35.0 heapBefore 1546MB live 476MB
+ai-rich-10000 || b: task 133 (max 138) parse 9 txn 34 react 79 minorGC 3.0 heapBefore 190MB live 45MB || c: task 135 (max 142) parse 12 txn 35 react 78 minorGC 3.6 heapBefore 153MB live 45MB
+ai-cjk-10000 || b: task 224 (max 233) parse 15 txn 54 react 142 minorGC 5.2 heapBefore 186MB live 71MB || c: task 260 (max 277) parse 24 txn 72 react 149 minorGC 6.4 heapBefore 93MB live 68MB
+ai-rich-50000 || b: task 635 (max 695) parse 52 txn 158 react 387 minorGC 18.5 heapBefore 248MB live 154MB || c: task 638 (max 644) parse 65 txn 161 react 370 minorGC 17.8 heapBefore 156MB live 97MB
+ai-cjk-50000 || b: task 1074 (max 1089) parse 75 txn 281 react 652 minorGC 35.0 heapBefore 830MB live 250MB || c: task 1101 (max 1109) parse 95 txn 286 react 646 minorGC 32.9 heapBefore 249MB live 158MB

@@ -1,0 +1,14 @@
+{
+  "plite-core": {
+    "title": "Plite core",
+    "reason": "Review document/runtime ownership, typed extension composition and command authority together."
+  },
+  "plite-view": {
+    "title": "Plite view architecture",
+    "reason": "Review mounted view lifetime, selection, browser input, focus and geometry as one architecture."
+  },
+  "plate-core": {
+    "title": "Plate core",
+    "reason": "Review the Plate plugin/facade contract together with its public package boundaries."
+  }
+}

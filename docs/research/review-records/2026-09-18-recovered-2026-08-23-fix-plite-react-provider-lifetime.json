@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-18-recovered-2026-08-23-fix-plite-react-provider-lifetime",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "react"
+  ],
+  "reviewBasis": [],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-08-23-fix-plite-react-provider-lifetime.md",
+    "sha256": "60a51bb59bab141e48e3db91c55116a8545abfd1240081050605ac571479572c"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical implementation completion from the plan. complete in this ledger; the unrelated release-proof goal remains blocked and untouched The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-08-23-fix-plite-react-provider-lifetime.md",
+        "sha256": "60a51bb59bab141e48e3db91c55116a8545abfd1240081050605ac571479572c",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-08-23-fix-plite-react-provider-lifetime.md"
+  ]
+}

@@ -1,0 +1,418 @@
+[
+  {
+    "cell": "static-rich-10000",
+    "verdict": "pass",
+    "load": 9.8,
+    "baselineDriftVsU": {
+      "a": -2,
+      "b": 0
+    },
+    "c": {
+      "p2": 998.8,
+      "u": 416.2,
+      "v": 417.3,
+      "w": 382.3
+    },
+    "busy": {
+      "p2": 1489.6,
+      "u": 910.6,
+      "v": 871.9,
+      "w": 854.6
+    },
+    "blockDecorations": {
+      "u": 174.9,
+      "v": 177.8,
+      "w": 151.1
+    },
+    "withDocumentViewRead": {
+      "v": 207.7,
+      "w": 186.8
+    },
+    "final": {
+      "baseline": 66.69,
+      "candidate": 7.72
+    },
+    "arrival": {
+      "baseline": 74,
+      "candidate": 41.7
+    },
+    "abPairs": [
+      [
+        847,
+        39
+      ],
+      [
+        938,
+        48
+      ],
+      [
+        891,
+        48
+      ]
+    ]
+  },
+  {
+    "cell": "static-cjk-10000",
+    "verdict": "pass",
+    "load": 10.8,
+    "baselineDriftVsU": {
+      "a": -1,
+      "b": -3
+    },
+    "c": {
+      "p2": 1868.7,
+      "u": 664.6,
+      "v": 656.1,
+      "w": 632.1
+    },
+    "busy": {
+      "p2": 2530,
+      "u": 1269.6,
+      "v": 1190.1,
+      "w": 1225.4
+    },
+    "blockDecorations": {
+      "u": 287.4,
+      "v": 303,
+      "w": 268.9
+    },
+    "withDocumentViewRead": {
+      "v": 347.9,
+      "w": 321.6
+    },
+    "final": {
+      "baseline": 85.62,
+      "candidate": 11.05
+    },
+    "arrival": {
+      "baseline": 112.3,
+      "candidate": 48.4
+    },
+    "abPairs": [
+      [
+        1637,
+        75
+      ],
+      [
+        1595,
+        65
+      ],
+      [
+        1588,
+        62
+      ]
+    ]
+  },
+  {
+    "cell": "ai-rich-10000",
+    "verdict": "pass",
+    "load": 8.2,
+    "baselineDriftVsU": {
+      "a": -1,
+      "b": -2
+    },
+    "c": {
+      "p2": 1102.5,
+      "u": 361.8,
+      "v": 371.7,
+      "w": 383.3
+    },
+    "busy": {
+      "p2": 1509,
+      "u": 663.4,
+      "v": 684.9,
+      "w": 697
+    },
+    "blockDecorations": {
+      "u": 101.6,
+      "v": 110,
+      "w": 87.4
+    },
+    "withDocumentViewRead": {
+      "v": 147.4,
+      "w": 163.4
+    },
+    "final": {
+      "baseline": 86.95,
+      "candidate": 40.41
+    },
+    "arrival": {
+      "baseline": 82.4,
+      "candidate": 44.3
+    },
+    "abPairs": [
+      [
+        1035,
+        59
+      ],
+      [
+        1008,
+        42
+      ],
+      [
+        1013,
+        50
+      ]
+    ]
+  },
+  {
+    "cell": "ai-cjk-10000",
+    "verdict": "pass",
+    "load": 6.1,
+    "baselineDriftVsU": {
+      "a": -7,
+      "b": -5
+    },
+    "c": {
+      "p2": 2033.1,
+      "u": 620.5,
+      "v": 630.2,
+      "w": 657.1
+    },
+    "busy": {
+      "p2": 2609.3,
+      "u": 1094,
+      "v": 1097.2,
+      "w": 1135.4
+    },
+    "blockDecorations": {
+      "u": 137.3,
+      "v": 140.9,
+      "w": 135.8
+    },
+    "withDocumentViewRead": {
+      "v": 244.1,
+      "w": 235.1
+    },
+    "final": {
+      "baseline": 125.87,
+      "candidate": 56.77
+    },
+    "arrival": {
+      "baseline": 137.3,
+      "candidate": 71.5
+    },
+    "abPairs": [
+      [
+        1764,
+        85
+      ],
+      [
+        1775,
+        85
+      ],
+      [
+        1762,
+        93
+      ]
+    ]
+  },
+  {
+    "cell": "static-rich-50000",
+    "verdict": "pass",
+    "load": 5.3,
+    "baselineDriftVsU": {
+      "a": -7,
+      "b": -7
+    },
+    "c": {
+      "p2": 22627.7,
+      "u": 7092.2,
+      "v": 7061.2,
+      "w": 6355.4
+    },
+    "busy": {
+      "p2": 27431.5,
+      "u": 11035.6,
+      "v": 10873.9,
+      "w": 10087.5
+    },
+    "blockDecorations": {
+      "u": 4183.6,
+      "v": 4139.4,
+      "w": 3471.2
+    },
+    "withDocumentViewRead": {
+      "v": 3797.8,
+      "w": 3069.5
+    },
+    "final": {
+      "baseline": 217.2,
+      "candidate": 24.39
+    },
+    "arrival": {
+      "baseline": 232.9,
+      "candidate": 56.5
+    },
+    "abPairs": [
+      [
+        19118,
+        252
+      ],
+      [
+        20352,
+        246
+      ],
+      [
+        18492,
+        254
+      ]
+    ]
+  },
+  {
+    "cell": "static-cjk-50000",
+    "verdict": "pass",
+    "load": 5,
+    "baselineDriftVsU": {
+      "a": -2,
+      "b": -1
+    },
+    "c": {
+      "p2": 43099.3,
+      "u": 11195.2,
+      "v": 10478.4,
+      "w": 9389.1
+    },
+    "busy": {
+      "p2": 49912,
+      "u": 18262.3,
+      "v": 16302.7,
+      "w": 15097.2
+    },
+    "blockDecorations": {
+      "u": 6884,
+      "v": 6618.4,
+      "w": 5475.2
+    },
+    "withDocumentViewRead": {
+      "v": 5793,
+      "w": 4723.1
+    },
+    "final": {
+      "baseline": 389.81,
+      "candidate": 38.67
+    },
+    "arrival": {
+      "baseline": 429.2,
+      "candidate": 79.9
+    },
+    "abPairs": [
+      [
+        41697,
+        399
+      ],
+      [
+        42778,
+        379
+      ],
+      [
+        44190,
+        405
+      ]
+    ]
+  },
+  {
+    "cell": "ai-rich-50000",
+    "verdict": "pass",
+    "load": 7.5,
+    "baselineDriftVsU": {
+      "a": -4,
+      "b": -3
+    },
+    "c": {
+      "p2": 22457.8,
+      "u": 4418.6,
+      "v": 4486,
+      "w": 4375.1
+    },
+    "busy": {
+      "p2": 25976.4,
+      "u": 6185,
+      "v": 6301.4,
+      "w": 6106.5
+    },
+    "blockDecorations": {
+      "u": 1602,
+      "v": 1687.1,
+      "w": 1474.6
+    },
+    "withDocumentViewRead": {
+      "v": 1719,
+      "w": 1494.9
+    },
+    "final": {
+      "baseline": 412.3,
+      "candidate": 153.6
+    },
+    "arrival": {
+      "baseline": 278.3,
+      "candidate": 87.7
+    },
+    "abPairs": [
+      [
+        20180,
+        341
+      ],
+      [
+        20317,
+        329
+      ],
+      [
+        20315,
+        352
+      ]
+    ]
+  },
+  {
+    "cell": "ai-cjk-50000",
+    "verdict": "pass",
+    "load": 7.8,
+    "baselineDriftVsU": {
+      "a": 4,
+      "b": 5
+    },
+    "c": {
+      "p2": 43941.5,
+      "u": 7822.4,
+      "v": 8468.5,
+      "w": 8083.7
+    },
+    "busy": {
+      "p2": 49353.1,
+      "u": 10215.9,
+      "v": 10876.3,
+      "w": 10794.6
+    },
+    "blockDecorations": {
+      "u": 2575.3,
+      "v": 2680.7,
+      "w": 2510
+    },
+    "withDocumentViewRead": {
+      "v": 2614.6,
+      "w": 2514
+    },
+    "final": {
+      "baseline": 670.31,
+      "candidate": 244.79
+    },
+    "arrival": {
+      "baseline": 571,
+      "candidate": 169.2
+    },
+    "abPairs": [
+      [
+        38936,
+        504
+      ],
+      [
+        39691,
+        548
+      ],
+      [
+        37564,
+        491
+      ]
+    ]
+  }
+]

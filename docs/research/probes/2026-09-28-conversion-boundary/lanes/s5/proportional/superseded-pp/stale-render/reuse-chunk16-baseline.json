@@ -1,0 +1,34 @@
+{
+ "base": "http://localhost:3612",
+ "chunk": 16,
+ "equal": true,
+ "streamedToc": "Reuse probeSection ASection BSection C﻿",
+ "freshToc": "Reuse probeSection ASection BSection C﻿",
+ "streamedOls": [
+  "1:first",
+  "2:second",
+  "1:alpha",
+  "2:beta",
+  "3:gamma",
+  "5:five",
+  "6:six",
+  "7:seven"
+ ],
+ "freshOls": [
+  "1:first",
+  "2:second",
+  "1:alpha",
+  "2:beta",
+  "3:gamma",
+  "5:five",
+  "6:six",
+  "7:seven"
+ ],
+ "streamedHljs": 0,
+ "freshHljs": 0,
+ "tokensEqual": true,
+ "tokenSpans": 0,
+ "streamedCellBorders": 6,
+ "freshCellBorders": 6,
+ "errors": []
+}

@@ -1,0 +1,147 @@
+{
+  "id": "2026-09-28-format-mappings-value-review",
+  "scope": "format-mappings",
+  "kind": "review",
+  "date": "2026-09-28",
+  "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+  "model": "GPT-6 (Codex)",
+  "method": "best-api-review/history-v3",
+  "trigger": "User asks whether another Markdown research/review cycle or an adjacent HTML review is justified, supplying a proposal to derive cross-format tags from the schema.",
+  "requirements": [
+    "Reduce repeated identity, property conversion and child traversal work for current plugin authors while keeping exact inferred schema types.",
+    "Preserve CommonMark plus registered-tag grammar, explicit format diagnostics and canonical schema admission; do not promote existing success counts into fidelity or performance guarantees.",
+    "Keep persisted schema validity distinct from external interchange policy, semantic HTML, component-rendered presentation and native JSON persistence.",
+    "Keep structural HTML, Markdown AST and one-way plain-text jobs honest; exceptions such as URL aliases, captions, list topology, date normalization and secondary roots must remain expressible.",
+    "Retain the already-authorized Markdown correctness/proof closure; this review does not authorize downstream cross-format implementation."
+  ],
+  "evidenceReuse": "Reconciled the corrected Markdown prototype and later design/execution record with live source. Read the HTML compiler/authoring types, Markdown types and runtime, plain-text type, representative features, the export menu and prior HTML compiler plans. No broad external-research sweep or new runtime/benchmark claim. Targeted local prior-art reads compared ProseMirror Markdown/DOM construction and Tiptap Markdown spec factories, media attribute allowlists and missing-handler behavior. Local checkout revisions are captured; none is claimed latest.",
+  "summary": "Pursue a bounded format-mapping authoring design, with HTML as the main comparator. Keep the selected Markdown grammar; another general dialect search has no new decisive requirement. The strongest cut is schema-bound runtime construction and traversal for explicitly declared simple Markdown tags, plus consistent scalar mark values and runtime-owned wrapper children, inside existing format owners. Reject automatic serialization of every installed schema type/property, reuse of custom Plate tags as semantic HTML, and a universal codec/AST/result facade. The supplied proposal overstates parity and wrongly says HTML lacks omitted-property diagnostics; it also mistakes an unassessed ledger scope for no prior HTML authoring work. A full HTML/static audit is not completed by this value review.",
+  "verdict": "pursue",
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-28-markdown-dialect-prototype-correction",
+      "question": "Which canonical mappings preserve document meaning through Markdown parse/serialize, and where must loss be explicit?",
+      "action": "retains",
+      "reason": "Retain selective registered-tag grammar over the failed HTML-node pairer and the stated proof limits. A 13-document corpus and no grammar throws are not universal fidelity or benchmark closure."
+    },
+    {
+      "record": "2026-09-28-markdown-commonmark-dialect-execution",
+      "question": "Which schema-bound construction and property contracts should HTML, Markdown and plain-text feature mappings share without erasing their format semantics?",
+      "action": "reopens",
+      "reason": "Reopen only mapping authoring and completion claims: the report itself leaves failing fixtures and missing browser proof; active mark/attribute repairs are unfinished. Keep grammar selection and format-owned compilation. This cross-format design must not be credited as adoption of the earlier repairs."
+    },
+    {
+      "record": "2026-09-27-exports-adversarial-audit-feedback",
+      "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
+      "action": "retains",
+      "reason": "Retain direct format-owned conversion, schema/projection authority and separation of semantic export from presentation. Do not reopen later-superseded transfer-report policy in this authoring review."
+    }
+  ],
+  "alternatives": [
+    "Keep the selected CommonMark plus registered-tag parser and finish current repairs: retain. There is no new grammar requirement or contradictory recognizer evidence that pays for another broad GitHub search.",
+    "Keep all mapping construction handwritten: loses for simple bound tags and scalar marks, where repeated schema identity, attributes and recursive child handling are owned by the compiler already. Keep callbacks for real format-specific transforms.",
+    "Proposed explicit declaration such as defineFormats({ markdown: { tag: type, properties: [\"width\"] } }): pursue as a design candidate. Existing Markdown compiler can own node construction, declared attribute conversion and schema-directed child traversal; exact syntax and whether an explicit property selection or another bounded policy wins remain open.",
+    "Derive mark/element call shapes from the schema binding and remove redundant role declarations; compare a shared format-neutral property-value contract privately. This may delete more author work than a helper returning the same verbose mapping, without introducing another plugin or namespace.",
+    "Automatically convert every schema type/property to a tag and reuse those tags as HTML: reject. Schema identity/validation does not specify a useful HTML representation, raw attributes versus properties, metadata inclusion, URL aliases, captions, generated IDs or atom text. The existing ElementId metadata/copy law and media URL/caption consumers are concrete counterexamples.",
+    "Route all Markdown tags and raw HTML through the HTML parser: do not adopt wholesale. It would couple a pure syntax path to DOM semantics and conflict with the retained registered-tag dialect; consider a targeted adapter only for a named raw-HTML user job.",
+    "Merge HTML, Markdown, plain text, DOCX and static rendering into one codec or public AST/result: reject. Plain-text projection, semantic interchange, visual rendering and package artifacts have different directions, syntax and lifecycle. Reuse only proven private mechanics at Plate; Plite retains schema/model law.",
+    "Prior art supports explicit reuse rather than schema-wide automatic exposure: ProseMirror parser state constructs nodes at close; Tiptap exposes opt-in Pandoc block/atom Markdown spec factories and Audio supplies allowedAttributes. These are analogues, not the same registered-tag grammar or proof that Plate is the best editor. Tiptap returns an empty string for an unknown renderer; ProseMirror throws by default. Preserve Plate structured refusals instead of copying either failure contract.",
+    "Next owner: $task design plan format-mappings: simplify schema-bound HTML and Markdown authoring, remove repeated construction and traversal, and preserve explicit format semantics. Begin by proving representative tag/property cases and the strongest counterexamples before choosing a generic declaration."
+  ],
+  "proofLimits": "Read-only value assessment of three authoring contracts and representative consumers, not an exhaustive conversion/HTML/static audit. No fresh full tests, browser, native artifact, benchmark or claim to be best among editors. Markdown execution proof remains partial/stale with existing fixture, browser and durable benchmark follow-up. Active working-tree repairs can change captured mapping signatures; this record does not adopt or verify their unfinished implementation. Schema-derived tag DX/runtime wins are design candidates, not measured production improvements. Upstream evidence is source inspection only at recorded local commits; no competitor performance or compatibility experiments were run.",
+  "references": [
+    "packages/platejs/src/lib/plugin/BasePlugin.ts",
+    "packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts",
+    "packages/platejs/src/lib/plugin/PlainTextNodeMapping.ts",
+    "packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts",
+    "packages/platejs/src/features/callout/lib/BaseCalloutPlugin.ts",
+    "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts",
+    "packages/platejs/src/features/date/lib/BaseDatePlugin.ts",
+    "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts",
+    "packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts",
+    "packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts",
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts",
+    "packages/platejs/src/markdown/lib/serializer/reportOmittedProperties.ts",
+    "docs/research/decisions/import-fidelity.md",
+    "docs/research/decisions/export-fidelity.md",
+    "docs/research/decisions/markdown-conversion.md",
+    "docs/plans/2026-07-24-c05-html-codec-vertical.md",
+    "docs/plans/2026-07-26-plate-next-html-plugin-colocation.md",
+    "docs/plans/2026-09-28-markdown-commonmark-dialect-design.md"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/plugin/BasePlugin.ts": "a8de2c15a7b2787f0d40172777b11772ec5b646f3233c7c0e56493700e6ae5b0",
+      "packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts": "7e3360a2c19d1adcb64f53eeae1bac4975558d9f73435c8ca35cf4a997f679cf",
+      "packages/platejs/src/lib/plugin/PlainTextNodeMapping.ts": "39e2113ead3ad1167e72dec90fdf9b18afdef64d9b01af21d45c0ec159eda1da",
+      "packages/platejs/src/internal/plugin/collectPlateNodeMappings.ts": "97e0aac607bf5d2c81dbf2e3fe9c8a15b861e24bd307ae7a96278b8defd18e3d",
+      "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts": "880ffc7f4c2612f79f2114a5b717af33113d6aaf9c205623f06ce3e667177872",
+      "packages/platejs/src/features/callout/lib/BaseCalloutPlugin.ts": "401927cabd172192b66ad857727ed23ca6ffb79fa35b9c475f041fec3ced7b6b",
+      "packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts": "b3c29e58057f6cab52c9286b5ebfcb3722bc1f4b466e9f3c7b5893506a3a8337",
+      "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts": "647be3b7b31b4c63d987086ce2f75b0579c7b5fa93a269f09111178436f8b3cb",
+      "packages/platejs/src/features/date/lib/BaseDatePlugin.ts": "eb5d96ce3990f94bbf98d984780cbdb91363b9fc99273409c56562a6e53864ce",
+      "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "3fecad572a60eb5ff3f1fc8bfc001477ec46e11409881abebccdfda15dc63109",
+      "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts": "b76094cc1cda9dc311da1c8b1e9e3e3beb7c67140c8246be2f3a830ee926547a",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "6e9232116ec17850ea276145afc73a9f424b5a3d91b49d0bd4e24aa4f030a1da",
+      "packages/platejs/src/markdown/lib/internal/markdownMappings.spec.ts": "f3c3b0c6346a51a0906bda0324c3b61f4e760317035e78712f5cdf7947ce5ec5",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.mapping.spec.ts": "34311b4c1712389107d3a58bb651f88b73d813c959d3df2a8b2fd689fe4a9e8f",
+      "packages/platejs/type-tests/base-plugin-contracts.ts": "39f8cf0349e679396d8da32092c756768b086dd82dc6a4c938ceb6a23ae6659b",
+      "packages/platejs/src/markdown/lib/internal/markdownMappings.ts": "db1895ebfbb1abce10c29c5b180b657648f7554a5475cd6996efae55ee08d0fd",
+      "packages/platejs/src/markdown/lib/internal/markdownAttributes.ts": "4e64ff892899b17a4e3f76d33ae8ee246414b03a68fa67e1eb0e31a5b82b9223",
+      "packages/platejs/src/markdown/lib/serializer/reportOmittedProperties.ts": "5bf17c61fc6e4857c5bc0f5a48f69523a01b9df647cf46888ac08565e52da302",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "32db94ebe13e1e605289371cc61f8c2eaa466c56d33fa8dc95c4e4d88351fc39",
+      "packages/platejs/src/lib/plugins/html/htmlConversion.ts": "d1773b10dc3f7c407a44d4927b339cf922394b00e13fc53e5e04d29e32c2e91e",
+      "packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts": "80e4504bec9be55642374c3600bb335bbb1ba234c884b0957a451da850f57a67",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "93e94a042000bcf912c65742beba43c57af7366ac358858d22ae5f3467e296bd",
+      "packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts": "2bb473f86eeffbd1a9b9d32a7d4ac76754ec70bf067b35fcd25f9f3cee93cc9e",
+      "packages/platejs/src/features/toc/lib/BaseTocPlugin.ts": "3c88b402c663a709651addfbf30020affa2a769281b6cfd8ba595419b046f5c2",
+      "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": "f9b30258d49413ffed67207056d21e96b520d578c45c1762c2505cb34948bf90",
+      "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": "e3ffa3025ffc1ef7e88175373d9a1692df72c737cc6deeaaa4d5b8419ba59e63",
+      "packages/platejs/src/plain-text.ts": "386d18638f139fe09fbedd3bb56f14a151d8cf9d7537fcdd59686f962eeceac3",
+      "docs/research/decisions/markdown-conversion.md": "230277af718ca554cdcc4be30eaab66a776f4a677c162f627c9f30f66dcbca27",
+      "docs/research/decisions/import-fidelity.md": "aff1df3b8a48ac6912f90f125e8164953811cc017e532114c5e7a9678772b5a5",
+      "docs/research/decisions/export-fidelity.md": "f613b4530f6862096006d49b7fc26b33a0dd3d2f2573902670fa805255fe59e4",
+      "docs/vision/plate.md": "1417623ecc774d6ee023da11713fca37a2282cb8d4a35bb07448ae9f21e2dc8c",
+      "VISION.md": "bab7532c509648492e9eb708ec50b9121507a4c274fad5c9fc72099118ce6600",
+      "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
+      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
+      "docs/plans/2026-07-24-c05-html-codec-vertical.md": "b8c6482bef621333fbec7cedbd973ff417aff42473c73e69131b0c5a3e614ea9",
+      "docs/plans/2026-07-26-plate-next-html-plugin-colocation.md": "41689c4d1ff48fcbd9dc9298bf032d3ad6caba4b2c41b737273e51493637dc16",
+      "docs/plans/2026-09-28-markdown-commonmark-dialect-design.md": "6f0a6adcde97491c93bbfb3866458dd870a1dc2f211bf003e06d4b98ec5ff41b"
+    },
+    "directories": {},
+    "features": {},
+    "upstreams": [
+      {
+        "checkout": "../prosemirror-markdown",
+        "commit": "221ec60e26bc72005cacdbfc4f0ee43fda143489",
+        "files": {
+          "src/from_markdown.ts": "8f021766089ae38beb47892a8526eb78453cbfc48ee5537ea15bef230cd8283d",
+          "src/to_markdown.ts": "19337ab6dee8b7cb9eb0809efb1b82dd3935d271d2be9b92116e73362b24149a"
+        }
+      },
+      {
+        "checkout": "../prosemirror-model",
+        "commit": "6264de069d8439131e88f8ba06973551916184e4",
+        "files": {
+          "src/from_dom.ts": "b8495dcdd5a593729e3a6237d1620edfebfdda683bf454278d38d5751670d66d"
+        }
+      },
+      {
+        "checkout": "../tiptap",
+        "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+        "files": {
+          "packages/core/src/utilities/markdown/createBlockMarkdownSpec.ts": "8c059b582e0a59e9d2f5261b8ba274542c56acd95b174fffe28da026f2d09b8e",
+          "packages/core/src/utilities/markdown/createAtomBlockMarkdownSpec.ts": "71686fd3e807612d49d9cae6b35505c68ed4e9277d30364338a73b50ad84212c",
+          "packages/extension-audio/src/audio.ts": "de0ecd641d35f6917b98fba87e0276fb5a0a835f90573c5f38c1ff75bef392d2",
+          "packages/markdown/src/MarkdownManager.ts": "3592f9b6fefbd8e4cc206aa6dba7ea5d863a956d573fab7621deb66abf63bebd"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,1377 @@
+{
+  "schema_version": 1,
+  "scope_id": "exports",
+  "assignment": "Lexical, CKEditor5, Quill: bounded local source comparison for export architecture",
+  "checked_at": "2026-09-24",
+  "parent_plan": "docs/plans/2026-09-24-exports-first-principles-research.md",
+  "status": "complete-source-research",
+  "authority": {
+    "allowed": "Read existing sibling clones and write this JSON shard only.",
+    "product_edits": false,
+    "goals_created": false,
+    "plans_created": false,
+    "shared_ledgers_modified": false,
+    "upstream_tests_executed": false
+  },
+  "stop_reason": "Decisive distinct patterns found: immutable state with format-specific serializers; model/data-view processor with clipboard reuse; live DOM/blot HTML rendering with Delta/text extraction. Additional repository-wide sampling would not resolve the parent's remaining local API decision.",
+  "evidence_policy": {
+    "basis": "Local checkout source at recorded HEAD, every relied-on file SHA256 verified against current bytes and git HEAD blob.",
+    "hash_algorithm": "SHA256",
+    "hash_scope": "Whole-file bytes, not excerpt bytes.",
+    "line_ranges": "Inclusive 1-based ranges; source_refs resolve to reads.id.",
+    "call_shapes": "Illustrative compositions of inspected public APIs; not executed examples.",
+    "freshness": "Exact local snapshots only; no fetch/pull/checkout, remote freshness or official upstream ancestry verified.",
+    "research_only": "No runtime, browser, converter-service, native-viewer, benchmark or upstream test proof."
+  },
+  "repos": [
+    {
+      "repo_key": "github.com/facebook/lexical",
+      "local_path": "/Users/zbeyens/git/lexical",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "version": "0.48.0",
+      "version_source": "packages/lexical/package.json:12",
+      "license": "MIT",
+      "source_refs": [
+        "lexical-package",
+        "lexical-license"
+      ],
+      "scope": "Core state, HTML, Markdown, clipboard, headless DOM.",
+      "checkout_modified": false
+    },
+    {
+      "repo_key": "github.com/ckeditor/ckeditor5",
+      "local_path": "/Users/zbeyens/git/ckeditor5",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "version": "48.0.1",
+      "version_source": "package.json:4",
+      "license": "GPL-2.0-or-later OR CKSource commercial terms, per repository license declaration; bundled dependency notices also apply.",
+      "source_refs": [
+        "ck-package",
+        "ck-license",
+        "ck-license-full"
+      ],
+      "scope": "Data controller, processors, data/editing downcast, clipboard and local premium integration snippets.",
+      "checkout_modified": false
+    },
+    {
+      "repo_key": "github.com/slab/quill",
+      "local_path": "/Users/zbeyens/git/quill",
+      "source_revision": "539cbffd0a13b18e9c65eb84dd35e6596e403158",
+      "version": "2.0.3",
+      "version_source": "packages/quill/package.json:3",
+      "license": "BSD-3-Clause",
+      "source_refs": [
+        "quill-package",
+        "quill-license"
+      ],
+      "scope": "Public content APIs, HTML traversal, clipboard and concrete custom video renderer.",
+      "checkout_modified": false
+    }
+  ],
+  "history": {
+    "queries": [
+      "node tooling/scripts/review-ledger.mjs research exports",
+      "Bounded rg for LexicalEditorState, lexical-html, gfmdataprocessor, getSemanticHTML, export-word and export-pdf in existing research."
+    ],
+    "reused": [
+      {
+        "source_ref": "lexical-state-reused",
+        "historical_artifact": "docs/plite/research/2026-09-17-table-substrate-ownership/read-log.tsv:77",
+        "reason": "Exact commit and SHA256 match the previously logged EditorState lines 130-188; existing provenance reused, not a new independent research lead.",
+        "source_refs": [
+          "lexical-history-log",
+          "lexical-state-history",
+          "lexical-state-reused"
+        ]
+      }
+    ],
+    "limits": "Other sampled history hits concerned clipboard test corpora/table nodes, not these export owners. No matching exact export-owner read was found in the bounded lookup. Shared history/ledgers remain parent-owned."
+  },
+  "facts": [
+    {
+      "id": "lexical",
+      "pattern": "Captured immutable EditorState with separate format adapters and an editor-context requirement for HTML.",
+      "normal_call_shapes": [
+        "const state = editor.read(() => editor.getEditorState()); // default read commits pending work",
+        "const json = state.toJSON();",
+        "const text = state.read(() => $getRoot().getTextContent(), {editor});",
+        "const markdown = state.read(() => $convertToMarkdownString(), {editor});",
+        "const html = withDOM(() => state.read(() => $generateHtmlFromNodes(editor), {editor}));"
+      ],
+      "customization_call_shapes": [
+        "createEditor({nodes: [CustomNode], html: {export: new Map([[CustomNode, (editor, node) => ({element: renderCustom(node)})]])}})",
+        "state.read(() => $convertToMarkdownString(customTransformers, optionalElement, true), {editor})",
+        "CustomNode.exportJSON(), CustomNode.exportDOM(editor), CustomNode.getTextContent()",
+        "$convertSelectionToMarkdownString(transformers, selection); $generateHtmlFromNodes(editor, selection)"
+      ],
+      "input_lifecycle": {
+        "fact": "getEditorState returns the committed state. editor.read() defaults to force-commit; latest observes committed state without flushing, pending may observe untransformed work. Committed state is marked read-only; development guards block map mutation and freeze selection. EditorState.clone shares the node map. State JSON contains root, not editor selection.",
+        "async": "State.read installs active state/editor synchronously and restores them in finally. Do not retain the active read scope across await. Holding a captured state permits another later synchronous read; HTML still consults editor configuration, so a state object is not a complete immutable rendering configuration.",
+        "source_refs": [
+          "lexical-editor",
+          "lexical-state-reused",
+          "lexical-read-commit",
+          "lexical-state"
+        ]
+      },
+      "format_boundaries": {
+        "json": "Recursive node.exportJSON plus children and named slots; serialized type/children/slot invariants enforced.",
+        "text": "getTextContent is a node contract; element implementation collects slot and child text and adds block separators. Custom non-text meaning requires its node text representation.",
+        "html": "Synchronous editor+selection API; no selection means full document. Per-node exportDOM or editor html.export mappings; element/after/append/child hooks affect traversal. Default node exportDOM calls createDOM. document/window are required, even with createHeadlessEditor.",
+        "markdown": "Synchronous separate package; per-call ordered transformers, optional element subtree, newline option, separate selection API. It traverses nodes directly, unlike CKEditor's HTML intermediate.",
+        "docx_pdf": "No DOCX/PDF implementation inspected or established in this bounded Lexical package sample.",
+        "source_refs": [
+          "lexical-state",
+          "lexical-node-export",
+          "lexical-text",
+          "lexical-html",
+          "lexical-html-tail",
+          "lexical-md-api",
+          "lexical-md-export",
+          "lexical-headless",
+          "lexical-headless-dom"
+        ]
+      },
+      "clipboard": {
+        "fact": "Clipboard JSON is namespace+selected nodes, distinct from persistent root JSON. MIME-specific handlers produce selected JSON/HTML/plain text. Handler stacks can override MIME output with next() fallback; this registry belongs to clipboard. copyToClipboard is an asynchronous browser transport that can accept prepared data.",
+        "source_refs": [
+          "lexical-clipboard",
+          "lexical-state"
+        ]
+      },
+      "diagnostics_fidelity_review": {
+        "fact": "JSON serialization throws on malformed node contracts. HTML throws when required DOM globals are absent; an exportDOM result without element stops that subtree. Excluded wrappers can flatten to children. Markdown skips transformers without export, accepts first non-null result, flattens unmatched elements, and falls back to decorator text. The inspected string-returning format APIs do not return a loss report.",
+        "review_data": "NodeState and named slots can carry custom data into JSON; no general comments/revision/authorship export guarantee was established. Text/Markdown fallback is not proof of semantic preservation.",
+        "source_refs": [
+          "lexical-state",
+          "lexical-node-export",
+          "lexical-html",
+          "lexical-html-tail",
+          "lexical-md-export"
+        ]
+      },
+      "headless": {
+        "fact": "createHeadlessEditor disables DOM-related editor methods but does not install a DOM. withDOM supplies HappyDOM/global bindings temporarily and explicitly forbids async callback work.",
+        "source_refs": [
+          "lexical-headless",
+          "lexical-headless-dom"
+        ]
+      },
+      "source_refs": [
+        "lexical-editor",
+        "lexical-state-reused",
+        "lexical-html",
+        "lexical-md-api",
+        "lexical-node-export"
+      ]
+    },
+    {
+      "id": "ckeditor5",
+      "pattern": "Model -> data downcast view -> selected data processor; editing rendering and clipboard transport remain separate.",
+      "normal_call_shapes": [
+        "editor.getData()",
+        "editor.getData({rootName: 'header', trim: 'none'})",
+        "editor.data.stringify(modelElementOrFragment, options)",
+        "editor.data.htmlProcessor.toData(editor.data.toView(modelElementOrFragment))"
+      ],
+      "customization_call_shapes": [
+        "editor.conversion.for('dataDowncast').elementToElement({model: 'customBlock', view: 'section'})",
+        "editor.conversion.for('dataDowncast').elementToElement({model: {name: 'customBlock', attributes: ['level']}, view: (modelElement, conversionApi) => conversionApi.writer.createContainerElement('section'), converterPriority: 'high'})",
+        "editor.data.processor = new MarkdownGfmDataProcessor(editor.data.viewDocument)",
+        "markdownProcessor.keepHtml('section')"
+      ],
+      "input_lifecycle": {
+        "fact": "getData reads an editor's current named model root. stringify/toView also accept a ModelElement or ModelDocumentFragment but depend on controller schema, converters, mapper and view document. toView clears/rebuilds mapper bindings; this is not evidence for a context-free immutable JSON document serializer.",
+        "async": "The inspected get/stringify/toView/toData methods return strings/fragments synchronously. No immutable multi-format capture transaction or async converter-service capture timing was established.",
+        "source_refs": [
+          "ck-getdata",
+          "ck-data",
+          "ck-html",
+          "ck-markdown"
+        ]
+      },
+      "format_boundaries": {
+        "html": "Default processor uses ViewDomConverter and BasicHtmlWriter; its constructor creates DOMParser. Data views differ from editing views via separate conversion groups.",
+        "markdown": "Markdown plugin replaces editor.data.processor. The processor converts data view -> HTML -> unified rehype/remark -> Markdown; keepHtml opts particular tags into raw HTML output. This is one configured saved-data format, not a universal export API.",
+        "json_text": "No public lossless JSON document export established in inspected data APIs. Clipboard supplies plain text using viewToPlainText separately from data processor output.",
+        "docx_pdf": "Local read-only demo installs ExportPdf/ExportWord imported from ckeditor5-premium-features. exportPdf config exposes stylesheets, filename, tokenUrl, page size/orientation/margins; exportWord exposes filename/tokenUrl/stylesheets. These are integration examples only.",
+        "source_refs": [
+          "ck-conversion",
+          "ck-html",
+          "ck-markdown",
+          "ck-markdown-plugin",
+          "ck-markdown-renderer",
+          "ck-clipboard",
+          "ck-premium-import",
+          "ck-export-example"
+        ]
+      },
+      "clipboard": {
+        "fact": "Copy/cut extracts a selected fragment with ClipboardMarkersUtils within enqueueChange. Output uses editor.data.toView(fragment, {isClipboardPipeline: true}), then always htmlProcessor for HTML plus viewToPlainText and an editor-id MIME value. Thus replacing the saved-data processor with Markdown does not make clipboard HTML Markdown. Cut deletion and browser MIME writing belong to clipboard.",
+        "source_refs": [
+          "ck-clipboard-fragment",
+          "ck-clipboard"
+        ]
+      },
+      "diagnostics_fidelity_review": {
+        "fact": "getData throws for nonexistent roots and warns on detached roots. Downcast verifies all insert consumables; missing/incorrect converters can throw conversion-model-consumable-not-consumed with item data. That check is scoped to insert events, not a proof that every attribute, marker or target-format property survives. Markdown's public comment describes default removal of HTML tags, with keepHtml opt-in. These APIs do not return a generalized fidelity report.",
+        "review_data": "toView accepts fragment markers or computes markers intersecting an element/root, including collapsed boundary markers. The inspected collection helper does not filter affectsData. Marker ranges plus registered marker conversion do not establish preservation of comment bodies, suggestion metadata, authors, or commercial review features.",
+        "source_refs": [
+          "ck-data",
+          "ck-downcast",
+          "ck-consumable",
+          "ck-markers",
+          "ck-markdown"
+        ]
+      },
+      "headless": {
+        "fact": "Even standalone HtmlDataProcessor instantiation needs DOMParser and its output traverses DOM conversion. MarkdownGfmDataProcessor constructs an HtmlDataProcessor. This source is insufficient to claim DOM-free server execution or that any particular shim fully supports it.",
+        "source_refs": [
+          "ck-html",
+          "ck-markdown"
+        ]
+      },
+      "source_refs": [
+        "ck-getdata",
+        "ck-data",
+        "ck-conversion",
+        "ck-custom-mapping",
+        "ck-markdown"
+      ]
+    },
+    {
+      "id": "quill",
+      "pattern": "Editor instance content methods: Delta/text extraction and semantic HTML traversal of live blots/DOM.",
+      "normal_call_shapes": [
+        "quill.getContents()",
+        "JSON.stringify(quill.getContents())",
+        "quill.getText()",
+        "quill.getSemanticHTML()",
+        "quill.getSemanticHTML(index, length)"
+      ],
+      "customization_call_shapes": [
+        "A custom blot implements html(index, length); convertHTML delegates to it before generic traversal.",
+        "Concrete Video.html() emits an anchor while the editing blot's tagName is IFRAME.",
+        "A Clipboard subclass can override onCopy(range, isCut) returning {html, text}; browser writing/cut deletion occurs in onCaptureCopy."
+      ],
+      "input_lifecycle": {
+        "fact": "getContents returns this.delta.slice(index, index+length); getText filters the slice to string insert operations. These reads are synchronous. No runtime deep-freeze or immutable multi-format snapshot guarantee was established. getSemanticHTML does not accept the returned Delta; it reads current scroll/blots and DOM. Construction needs a browser container, editor root, scroll registry, selection and composition.",
+        "async": "No async conversion/capture phase in these methods. An application delaying separate content and HTML calls has no shared immutable capture demonstrated by this API.",
+        "source_refs": [
+          "quill-api",
+          "quill-editor"
+        ]
+      },
+      "format_boundaries": {
+        "json": "Delta is the structured content return. JSON.stringify is caller-owned transport encoding, not a separate Quill export-format plugin.",
+        "text": "Only string inserts survive; embedded objects are omitted rather than represented as text.",
+        "html": "Per-blot html overrides, escaped text, special list traversal, recursive parent content with DOM outerHTML wrapper, and leaf outerHTML fallback. Semantic HTML is distinct from taking editor root innerHTML but remains DOM-dependent.",
+        "markdown_docx_pdf": "No Markdown/DOCX/PDF exporter inspected or established in these sampled Quill core surfaces.",
+        "source_refs": [
+          "quill-api",
+          "quill-editor",
+          "quill-video"
+        ]
+      },
+      "clipboard": {
+        "fact": "onCopy uses the same getText(range) and getSemanticHTML(range) methods as callers. onCaptureCopy owns selection acquisition, MIME setData and cut deletion.",
+        "source_refs": [
+          "quill-clipboard"
+        ]
+      },
+      "diagnostics_fidelity_review": {
+        "fact": "HTML and text return strings without a structured loss report. Text deliberately drops non-string embeds; video HTML deliberately becomes a link; unknown non-Element leaf DOM fallback returns empty string. Those are concrete format policies, not evidence of universal fidelity.",
+        "review_data": "No comments/revision sidecar or schema-independent review-data preservation established by inspected Delta/HTML/text paths.",
+        "source_refs": [
+          "quill-editor",
+          "quill-video"
+        ]
+      },
+      "headless": {
+        "fact": "The inspected HTML API relies on live blots and DOM and offers no detached Delta-to-HTML entry point. No server/headless runtime was executed.",
+        "source_refs": [
+          "quill-api",
+          "quill-editor"
+        ]
+      },
+      "source_refs": [
+        "quill-api",
+        "quill-editor",
+        "quill-clipboard",
+        "quill-video"
+      ]
+    }
+  ],
+  "compact_comparisons": [
+    {
+      "dimension": "Whole-document vs clipboard compiler",
+      "lexical": "Same HTML walker, optional selection; separate clipboard namespace+nodes JSON and MIME providers.",
+      "ckeditor5": "Same data downcast, clipboard context flag; clipboard chooses HTML processor independently.",
+      "quill": "Same getText/getSemanticHTML with selected range.",
+      "source_refs": [
+        "lexical-html",
+        "lexical-clipboard",
+        "ck-clipboard",
+        "quill-clipboard"
+      ]
+    },
+    {
+      "dimension": "Captured document input",
+      "lexical": "Read-only EditorState supported; HTML additionally needs editor schema/render config.",
+      "ckeditor5": "Model fragment supported but conversion still controller/schema/view bound.",
+      "quill": "Delta data obtainable; built-in HTML still reads live editor blots/DOM.",
+      "source_refs": [
+        "lexical-state-reused",
+        "lexical-editor",
+        "ck-data",
+        "quill-editor"
+      ]
+    },
+    {
+      "dimension": "Customization",
+      "lexical": "JSON/text node methods, HTML export map/node methods, Markdown transformers.",
+      "ckeditor5": "Data-specific schema handlers, priority/creator callbacks, processor choice, keepHtml.",
+      "quill": "Blot html hook plus concrete DOM fallback.",
+      "source_refs": [
+        "lexical-node-export",
+        "lexical-md-export",
+        "ck-conversion",
+        "ck-custom-mapping",
+        "ck-markdown",
+        "quill-editor"
+      ]
+    },
+    {
+      "dimension": "Unsupported content",
+      "lexical": "JSON invariants throw; HTML no element drops subtree; Markdown text/child fallback.",
+      "ckeditor5": "Unconsumed inserts throw; target format still can lose attributes/markup; not a full report.",
+      "quill": "Text omits embeds; HTML delegates or uses DOM fallback; video becomes link.",
+      "source_refs": [
+        "lexical-state",
+        "lexical-html",
+        "lexical-md-export",
+        "ck-downcast",
+        "ck-consumable",
+        "ck-markdown",
+        "quill-editor",
+        "quill-video"
+      ]
+    },
+    {
+      "dimension": "DOM and async boundary",
+      "lexical": "HTML needs DOM; withDOM/read scopes synchronous; clipboard transport Promise separate.",
+      "ckeditor5": "HTML and Markdown processor route requires DOM; premium async internals unknown.",
+      "quill": "Built-in HTML needs live DOM; core output methods synchronous.",
+      "source_refs": [
+        "lexical-headless-dom",
+        "lexical-clipboard",
+        "ck-html",
+        "ck-markdown",
+        "quill-api",
+        "quill-editor"
+      ]
+    }
+  ],
+  "recommendations": {
+    "status": "Candidate architectural conclusions for parent evaluation; no Plite/Plate implementation inspected in this shard and no promotion recorded.",
+    "strongest_cut": {
+      "recommendation": "Reuse the existing semantic HTML compiler for document HTML and clipboard egress, and the detached Markdown serializer for Markdown. Remove a proposed universal ExportPlugin unless a separate current lifecycle job remains after those owners are exposed.",
+      "why": "All three demonstrate reuse between selected and whole-document HTML; all retain meaningful format-specific mapping/fidelity choices. None establishes that JSON/text/Markdown/HTML/Office/PDF should share one mandatory plugin lifecycle.",
+      "constraint": "Whole-document and selection inputs must differ explicitly; preserve clipboard extraction/normalization, custom schema mappings, authored projections and existing format loss policy.",
+      "source_refs": [
+        "lexical-html",
+        "lexical-clipboard",
+        "ck-data",
+        "ck-clipboard",
+        "quill-api",
+        "quill-clipboard"
+      ]
+    },
+    "candidate_leads": [
+      {
+        "lead_key": "exports:reuse-semantic-compiler:document-and-clipboard",
+        "status": "pursue-parent-local-check",
+        "evidence_grade": "A-source",
+        "candidate_owner": "Parent -> existing HTML compiler/Plate public API owner",
+        "recommendation": "Expose whole-document input on the existing compiler; keep MIME writing, cut behavior and selected-fragment context at clipboard boundary.",
+        "counterfactual": "A second document HTML compiler creates duplicate schema coverage without a distinct user job.",
+        "needed_local_proof": "Check that the existing compiler has no selection-only wrapper assumptions and covers custom mappings/diagnostics for whole-document input.",
+        "source_refs": [
+          "lexical-html",
+          "ck-clipboard",
+          "quill-clipboard"
+        ]
+      },
+      {
+        "lead_key": "exports:capture-before-async:revision-consistency",
+        "status": "pursue-parent-local-check",
+        "evidence_grade": "A-source",
+        "candidate_owner": "Parent -> existing Plite immutable document/capture owner",
+        "recommendation": "Accept existing immutable document data plus stable schema/customization dependencies at serializer boundaries; when starting with a live editor, capture once before async asset, conversion or download work.",
+        "counterfactual": "Delete a new ExportSession/ExportPlugin capture owner if an existing immutable snapshot already supplies the required revision and authored projection.",
+        "needed_local_proof": "Ensure detached Markdown and semantic HTML do not reread live editor state/config after await; state alone does not freeze mutable render mappings.",
+        "source_refs": [
+          "lexical-state-reused",
+          "lexical-editor",
+          "lexical-read-commit",
+          "lexical-headless-dom",
+          "ck-data",
+          "quill-editor"
+        ]
+      },
+      {
+        "lead_key": "exports:format-owned-customization:loss-reporting",
+        "status": "pursue-existing-owners",
+        "evidence_grade": "A-source",
+        "candidate_owner": "Parent -> existing per-format serializers",
+        "recommendation": "Keep node/mark mappings and unsupported-content diagnostics next to each converter. Reuse an existing result/diagnostic shape if present; avoid adding a generic export middleware stack merely to standardize names.",
+        "counterfactual": "A universal handler must erase distinct DOM output, Markdown child/text fallback, JSON schema, and external Office/PDF contracts or become a format-tagged dispatcher.",
+        "needed_local_proof": "Require explicit handling for unsupported custom content and distinguish hard serialization errors, intentional flattening, omitted content and preserved semantic output. These repositories show hazards, not a ready-made full fidelity API.",
+        "source_refs": [
+          "lexical-state",
+          "lexical-html",
+          "lexical-md-export",
+          "ck-consumable",
+          "ck-markdown",
+          "quill-editor",
+          "quill-video"
+        ]
+      },
+      {
+        "lead_key": "exports:format-boundaries:optional-renderer-dependencies",
+        "status": "retain-distinct-owner",
+        "evidence_grade": "A-source",
+        "candidate_owner": "Parent -> format packages and caller UI",
+        "recommendation": "Keep browser DOM/CSS, binary conversion and save/clipboard transport optional. Promote semantic document traversal or schema access to Plite only if current independent callers require it; keep Plate node mappings and UI presentation at their existing owners.",
+        "counterfactual": "Do not import DOM or remote conversion dependencies into the common document core just because all operations are called export.",
+        "needed_local_proof": "Check import boundaries of the parent's detached serializers. This shard cannot select final package names without the local census.",
+        "source_refs": [
+          "lexical-headless",
+          "lexical-headless-dom",
+          "ck-html",
+          "ck-markdown",
+          "ck-premium-import",
+          "ck-export-example",
+          "quill-api"
+        ]
+      }
+    ],
+    "candidate_rejections": [
+      {
+        "dedupe_key": "exports:universal-plugin:all-format-lifecycle",
+        "decision": "reject-unless-independent-current-job",
+        "reason": "Existing compiler reuse plus per-format functions handles the demonstrated jobs; clipboard registries and CKEditor's saved-data processor do not establish a universal document-export plugin.",
+        "reopen_condition": "A current consumer requires shared registration/lifetime behavior that cannot live in existing schema/capture/converter owners.",
+        "source_refs": [
+          "lexical-clipboard",
+          "ck-markdown-plugin",
+          "ck-clipboard",
+          "quill-clipboard"
+        ]
+      },
+      {
+        "dedupe_key": "exports:html-as-universal-ir:lossless-all-formats",
+        "decision": "reject-as-universal-law",
+        "reason": "CKEditor Markdown via HTML is one real design; Lexical Markdown traverses nodes directly and structured JSON preserves data beyond visible HTML. Neither proves HTML can preserve review metadata or DOCX semantics universally.",
+        "reopen_condition": "A bounded target format and custom-content set has proved lossless-enough HTML projection and explicit failure policy.",
+        "source_refs": [
+          "ck-markdown",
+          "lexical-md-export",
+          "lexical-state",
+          "ck-markers"
+        ]
+      },
+      {
+        "dedupe_key": "exports:headless-editor-implies-dom-free",
+        "decision": "reject",
+        "reason": "Lexical HTML still requires DOM and synchronous withDOM; CKEditor Markdown wraps an HTML processor with DOMParser; Quill HTML is DOM/blot-based.",
+        "reopen_condition": "A source-backed detached renderer avoids these dependencies, followed by matching runtime proof under parent authority.",
+        "source_refs": [
+          "lexical-html",
+          "lexical-headless",
+          "lexical-headless-dom",
+          "ck-html",
+          "ck-markdown",
+          "quill-editor"
+        ]
+      },
+      {
+        "dedupe_key": "exports:commercial-wrapper-proves-docx-pdf-internals",
+        "decision": "reject",
+        "reason": "CKEditor local integration snippets show import/configuration only. Capture timing, payload shape, review support, service internals and fidelity remain unestablished.",
+        "reopen_condition": "Authorized converter source or direct primary contract evidence becomes available.",
+        "source_refs": [
+          "ck-premium-import",
+          "ck-export-example"
+        ]
+      },
+      {
+        "dedupe_key": "exports:copy-pipeline-is-document-snapshot",
+        "decision": "reject",
+        "reason": "Selection trimming, clipboard markers/namespace, MIME choice and cut lifecycle differ from full saved-document output.",
+        "reopen_condition": "Only reuse the compiler after exposing an explicit full-document input; do not identify clipboard payload with persistent state.",
+        "source_refs": [
+          "lexical-state",
+          "lexical-clipboard",
+          "ck-clipboard-fragment",
+          "ck-clipboard",
+          "quill-clipboard"
+        ]
+      }
+    ]
+  },
+  "limitations": [
+    "No upstream tests or runtime/proxy proof executed; all behavior claims are bounded local-source inspection.",
+    "Source versions are local checkout versions, not verified latest upstream releases; the second lexical-audit sibling was not needed or inspected.",
+    "No commercial CKEditor export converter or service source inspected. Wrapper/examples cannot establish asynchronous capture, server-side HTML payload, DOCX/PDF internals, review-data support or fidelity.",
+    "No claims that absent sampled exporters do not exist elsewhere in a repository or ecosystem.",
+    "No general review-data preservation guarantee in these samples; marker serialization and NodeState are not comment-thread or tracked-revision fidelity proof.",
+    "No custom renderer dependency was assumed immutable merely because document state is immutable.",
+    "No product API names or package ownership promoted here; parent's existing compiler/detached Markdown finding is supplied context, not locally verified by this shard.",
+    "No legal reuse recommendation or third-party implementation copied; license metadata records source declarations.",
+    "Historical EditorState provenance reused; no historical corpus, shared ledger, plan or product file modified."
+  ],
+  "reads": [
+    {
+      "id": "lexical-package",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical/package.json",
+      "lines": [
+        [
+          1,
+          38
+        ]
+      ],
+      "takeaway": "Lexical package identity/version/license.",
+      "hash": "75696887b03dbef111eeeda68625b3d688f4c9f45e6b0e7b5348057404de700d",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical/package.json",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-license",
+      "path": "/Users/zbeyens/git/lexical/LICENSE",
+      "lines": [
+        [
+          1,
+          21
+        ]
+      ],
+      "takeaway": "MIT license text.",
+      "hash": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "LICENSE",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-package",
+      "path": "/Users/zbeyens/git/ckeditor5/package.json",
+      "lines": [
+        [
+          1,
+          32
+        ]
+      ],
+      "takeaway": "CKEditor monorepo version/license.",
+      "hash": "77a281efc3706785d5d7979618243477f17efc1e5e88acc8d0d3d8d2144d1282",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "package.json",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-license",
+      "path": "/Users/zbeyens/git/ckeditor5/LICENSE.md",
+      "lines": [
+        [
+          1,
+          4
+        ]
+      ],
+      "takeaway": "Repository license declarations; not commercial converter license.",
+      "hash": "6226a1b6b05e07d887f516a40bc000bb7617a4fa0f36721234453ca436ba7d23",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "LICENSE.md",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "quill-package",
+      "path": "/Users/zbeyens/git/quill/packages/quill/package.json",
+      "lines": [
+        [
+          1,
+          40
+        ]
+      ],
+      "takeaway": "Quill package identity/version/license.",
+      "hash": "afb68de86d8fc28f76d18a786198e5f8fa766473826b18aef339448440760ed2",
+      "source_revision": "539cbffd0a13b18e9c65eb84dd35e6596e403158",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/quill/package.json",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "quill-license",
+      "path": "/Users/zbeyens/git/quill/LICENSE",
+      "lines": [
+        [
+          1,
+          31
+        ]
+      ],
+      "takeaway": "BSD-3-Clause license text.",
+      "hash": "395c12b616d6f58238b4be39284d4d9221b58dd6e1f1e34d9ab537e34abbb022",
+      "source_revision": "539cbffd0a13b18e9c65eb84dd35e6596e403158",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "LICENSE",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-state-history",
+      "path": "/Users/zbeyens/git/plate-2/docs/plite/research/2026-09-17-table-substrate-ownership/shards/lexical.json",
+      "lines": [
+        [
+          1460,
+          1500
+        ],
+        [
+          75,
+          103
+        ]
+      ],
+      "takeaway": "Existing matching state-read provenance; reuse state lines 130-188 at dd5c41b.",
+      "hash": "83519ca0bcf8791dda88fda19e01f147d7a969128c976b617decd28be3053ff0",
+      "source_revision": "6a6e8f660f10ede916b90e90b2849e02d95e7d84",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "docs/plite/research/2026-09-17-table-substrate-ownership/shards/lexical.json",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-state",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditorState.ts",
+      "lines": [
+        [
+          28,
+          33
+        ],
+        [
+          62,
+          120
+        ]
+      ],
+      "takeaway": "JSON recursion validates node type, element children, and named slots; state read/clone/toJSON portion reused from exact matching historical record.",
+      "hash": "0de44d82e4bdc1b55e64b8182652de440fd8d6bb851697c1596ddb77d59efcbc",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical/src/LexicalEditorState.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-html",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical-html/src/index.ts",
+      "lines": [
+        [
+          249,
+          360
+        ]
+      ],
+      "takeaway": "HTML takes editor and optional selection in active state; needs DOM, uses configured exportDOM and after hook; excludes flatten.",
+      "hash": "fc215e7cd09d5ed67fe4cb6278ff2c2475937872e87aee18abfc77b366e01047",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical-html/src/index.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-md-export",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical-markdown/src/MarkdownExport.ts",
+      "lines": [
+        [
+          39,
+          92
+        ],
+        [
+          342,
+          474
+        ]
+      ],
+      "takeaway": "Markdown uses ordered transformers; null declines, unmatched elements flatten children, text is rendered, no general loss report.",
+      "hash": "4bac8f8aab5e6374d8b34e83d55535f2db548c6d54bc3902850260fadf219322",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical-markdown/src/MarkdownExport.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-license-full",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5/LICENSE.md",
+      "lines": [
+        [
+          1,
+          48
+        ]
+      ],
+      "takeaway": "GPL v2 or later, with alternative commercial license arrangement; converter license not inspected.",
+      "hash": "36a71958376efedd9f9fed622561af7aefb8de6ccaff923ac76e170761fc9064",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5/LICENSE.md",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-data",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-engine/src/controller/datacontroller.ts",
+      "lines": [
+        [
+          123,
+          156
+        ],
+        [
+          173,
+          330
+        ]
+      ],
+      "takeaway": "Model -> data downcast view -> configurable processor; get root/trim options and stringify(fragment); root-relative or fragment markers supplied to downcast.",
+      "hash": "615fc3824c1c87c5db78998960a8a9c7eddb143372d6e3b460f712207d935a1c",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-engine/src/controller/datacontroller.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-html",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-engine/src/dataprocessor/htmldataprocessor.ts",
+      "lines": [
+        [
+          20,
+          85
+        ]
+      ],
+      "takeaway": "HTML data processor needs DOMParser and DOM converter; synchronous view-to-DOM-to-string output.",
+      "hash": "986a7b71cb1c253184378b1440ac05097f665f5c869764af65f16034f5cc0d8b",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-engine/src/dataprocessor/htmldataprocessor.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-markdown",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-markdown-gfm/src/gfmdataprocessor.ts",
+      "lines": [
+        [
+          20,
+          104
+        ]
+      ],
+      "takeaway": "Markdown processor wraps HTML intermediate; keepHtml custom opt-in.",
+      "hash": "1761be9756ce1f251035f406be93a5327a46da4338a22e38b7c39b3816e97a39",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-markdown-gfm/src/gfmdataprocessor.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-markdown-plugin",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-markdown-gfm/src/markdown.ts",
+      "lines": [
+        [
+          10,
+          41
+        ]
+      ],
+      "takeaway": "Markdown plugin replaces editor.data.processor; one data-format policy.",
+      "hash": "e7b9a98e67fc658341863ccad0572b41fc7390620ea2aedff447fe9d8a750b15",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-markdown-gfm/src/markdown.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "quill-api",
+      "path": "/Users/zbeyens/git/quill/packages/quill/src/core/quill.ts",
+      "lines": [
+        [
+          198,
+          230
+        ],
+        [
+          484,
+          487
+        ],
+        [
+          543,
+          563
+        ]
+      ],
+      "takeaway": "Browser DOM construction; getContents Delta; synchronous semantic HTML/text methods delegate to editor.",
+      "hash": "9957a918acb0c54817fb744b4353aaba9e591cecaca8687d64a8fcfd7bf6b094",
+      "source_revision": "539cbffd0a13b18e9c65eb84dd35e6596e403158",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/quill/src/core/quill.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "quill-editor",
+      "path": "/Users/zbeyens/git/quill/packages/quill/src/core/editor.ts",
+      "lines": [
+        [
+          158,
+          162
+        ],
+        [
+          198,
+          219
+        ],
+        [
+          363,
+          415
+        ]
+      ],
+      "takeaway": "Delta slice and string-only getText; semantic HTML traverses live blots, custom html hook, DOM outerHTML fallback.",
+      "hash": "90c87baaca6d5669713e4abc0300c62e3eb79ffe2aa984afe0bf5e8c3fe50457",
+      "source_revision": "539cbffd0a13b18e9c65eb84dd35e6596e403158",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/quill/src/core/editor.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "quill-clipboard",
+      "path": "/Users/zbeyens/git/quill/packages/quill/src/modules/clipboard.ts",
+      "lines": [
+        [
+          171,
+          185
+        ],
+        [
+          228,
+          235
+        ]
+      ],
+      "takeaway": "Clipboard copy adds selected range, MIME writing, cut deletion; reuses semantic HTML and text.",
+      "hash": "8fbfe21f48663f9ec278cceda802f16c5a1629b28027c683c1b7992c02e5c196",
+      "source_revision": "539cbffd0a13b18e9c65eb84dd35e6596e403158",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/quill/src/modules/clipboard.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-state-reused",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditorState.ts",
+      "lines": [
+        [
+          130,
+          188
+        ]
+      ],
+      "takeaway": "Reused historical exact commit/file read (table shard state); verify read callback editor option, read-only clone shares map, toJSON root only.",
+      "reuse": "docs/plite/research/2026-09-17-table-substrate-ownership/read-log.tsv:77",
+      "hash": "0de44d82e4bdc1b55e64b8182652de440fd8d6bb851697c1596ddb77d59efcbc",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical/src/LexicalEditorState.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-editor",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditor.ts",
+      "lines": [
+        [
+          145,
+          180
+        ],
+        [
+          335,
+          346
+        ],
+        [
+          887,
+          904
+        ],
+        [
+          1698,
+          1712
+        ],
+        [
+          1802,
+          1848
+        ]
+      ],
+      "takeaway": "HTML overrides per node class; getEditorState returns committed state; default force-commit read flushes pending work; latest does not flush.",
+      "hash": "b25f4c9273a1a18432be3cbf1c473f9ee2718b8c4edf6829348b9745254084db",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical/src/LexicalEditor.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-updates",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts",
+      "lines": [
+        [
+          482,
+          512
+        ]
+      ],
+      "takeaway": "Parsing marks state read-only and parsed, installs development map guards, and routes parse exceptions to editor onError; not a conversion-loss report.",
+      "hash": "c79c97ab54801fdc2b50ba6c5cb7256a3858e66fd6301a2c428478711cae387a",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical/src/LexicalUpdates.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-md-api",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical-markdown/src/index.ts",
+      "lines": [
+        [
+          105,
+          139
+        ]
+      ],
+      "takeaway": "Whole-document/element and selection Markdown export are distinct functions with per-call transformers.",
+      "hash": "b5818fbd20b562e453464902397923f43f750ea5a8acb0de06e7a6e0923dd9d3",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical-markdown/src/index.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-headless-dom",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical-headless/src/dom.ts",
+      "lines": [
+        [
+          7,
+          59
+        ]
+      ],
+      "takeaway": "withDOM uses HappyDOM globals synchronously; asynchronous work in callback unsafe and globals restored in finally.",
+      "hash": "0f0f0e931e90818e6683f3b9854e2650dacff994b73c73e787ae597f298e76c0",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical-headless/src/dom.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-headless",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical-headless/src/index.ts",
+      "lines": [
+        [
+          7,
+          41
+        ]
+      ],
+      "takeaway": "Headless editor marks headless, disables DOM/editor-root/selection event methods; does not install DOM automatically.",
+      "hash": "a45aa9c89de3171228de5551a644279423a9aeee5cfdd6e9c3030cdd4ecce1f9",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical-headless/src/index.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-clipboard",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical-clipboard/src/clipboard.ts",
+      "lines": [
+        [
+          626,
+          671
+        ],
+        [
+          697,
+          750
+        ],
+        [
+          814,
+          840
+        ],
+        [
+          887,
+          950
+        ]
+      ],
+      "takeaway": "Clipboard selected nodes have namespace+nodes payload and MIME-specific providers; copy transport async Promise distinct from serialization.",
+      "hash": "f0667a903d611c7c03f14bd2071bbf9378acbbd33a1dfc0fd3e99e428b1a0dc6",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical-clipboard/src/clipboard.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-text",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical/src/nodes/LexicalElementNode.ts",
+      "lines": [
+        [
+          495,
+          513
+        ]
+      ],
+      "takeaway": "Element text read includes slots/children and double linebreak block separation.",
+      "hash": "3fc89dfd814089edab2f30469ba8ce7b41795042e75be0428ed83d43480a0d6a",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical/src/nodes/LexicalElementNode.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-export-example",
+      "path": "/Users/zbeyens/git/ckeditor5/docs/_snippets/features/read-only.js",
+      "lines": [
+        [
+          1,
+          92
+        ]
+      ],
+      "takeaway": "Premium export plugin integration/config only: PDF CSS/page options/token and Word CSS/token; no converter implementation.",
+      "hash": "63de72bbcb004b3d90a6d9cfe586a2858c3578a3c4cee37376e9c5bf1d4d31e1",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "docs/_snippets/features/read-only.js",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-conversion",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-engine/src/conversion/conversion.ts",
+      "lines": [
+        [
+          28,
+          64
+        ],
+        [
+          140,
+          158
+        ]
+      ],
+      "takeaway": "Separate editingDowncast/dataDowncast handlers; shared downcast group optional; format-specific rendering ownership.",
+      "hash": "6f51cd1f811e66050450552c5e2c36e5960a0f802af90788252e9b1e6aea724a",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-engine/src/conversion/conversion.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-downcast",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-engine/src/conversion/downcastdispatcher.ts",
+      "lines": [
+        [
+          230,
+          260
+        ]
+      ],
+      "takeaway": "Conversion calls insert handling, then marker handling, then verifies all insert consumables.",
+      "hash": "14c45709e03e2857985a707f790876666d869cc242fa1b78cb2ab31886786fb7",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-engine/src/conversion/downcastdispatcher.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-consumable",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-engine/src/conversion/modelconsumable.ts",
+      "lines": [
+        [
+          262,
+          308
+        ]
+      ],
+      "takeaway": "Missing insert converter triggers CKEditorError with unconsumed item data; not generalized cross-format fidelity reporting.",
+      "hash": "d039020dc5997f991c797a051328d261149f796d73e43de176cafebbe37ff690",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-engine/src/conversion/modelconsumable.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-markdown-renderer",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-markdown-gfm/src/html2markdown/html2markdown.ts",
+      "lines": [
+        [
+          18,
+          110
+        ]
+      ],
+      "takeaway": "HTML-to-Markdown pipeline uses unified rehype/remark synchronously; keep tag handlers emit raw HTML.",
+      "hash": "2d38551680005b5a46c1c77fe26fdc822125618e4b560b2694093f39cd82dbb0",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-markdown-gfm/src/html2markdown/html2markdown.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-clipboard",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-clipboard/src/clipboardpipeline.ts",
+      "lines": [
+        [
+          287,
+          416
+        ]
+      ],
+      "takeaway": "Clipboard output uses selected model fragment, data downcast, independent HTML processor/plain-text serializer and cut deletion.",
+      "hash": "2cef7807d9d5dc4fe005a9b5e97bf4a628b34d2b5d2f261ee2ae10e3ade2646d",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-clipboard/src/clipboardpipeline.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-premium-import",
+      "path": "/Users/zbeyens/git/ckeditor5/docs/_snippets/features/read-only-build.js",
+      "lines": [
+        [
+          1,
+          31
+        ]
+      ],
+      "takeaway": "ExportPdf/ExportWord imported from ckeditor5-premium-features; implementation absent from sampled OSS package paths.",
+      "hash": "c9c77fc3b4a79eaee9d0b5b0f56a17c3be0fdfe45f7245f5dc31db69107b4742",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "docs/_snippets/features/read-only-build.js",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-read-commit",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts",
+      "lines": [
+        [
+          523,
+          565
+        ],
+        [
+          652,
+          681
+        ]
+      ],
+      "takeaway": "readEditorState installs synchronous active editor/state/read-only scope and restores in finally; commit seals pending state with dev map/selection guards.",
+      "hash": "c79c97ab54801fdc2b50ba6c5cb7256a3858e66fd6301a2c428478711cae387a",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical/src/LexicalUpdates.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-getdata",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-core/src/editor/editor.ts",
+      "lines": [
+        [
+          793,
+          828
+        ]
+      ],
+      "takeaway": "Public editor.getData delegates to data.get; rootName/trim and feature options supported.",
+      "hash": "686379d3ec00fb16afd46ac64b89f644b898752ceb73b03a00bdc2a9d59ce2f2",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-core/src/editor/editor.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-markers",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-engine/src/controller/datacontroller.ts",
+      "lines": [
+        [
+          640,
+          673
+        ]
+      ],
+      "takeaway": "Root/element conversion collects intersecting markers and collapsed boundary markers; this helper does not filter affectsData. Complete review threads/authors are not established by marker ranges.",
+      "hash": "615fc3824c1c87c5db78998960a8a9c7eddb143372d6e3b460f712207d935a1c",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-engine/src/controller/datacontroller.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-clipboard-fragment",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-clipboard/src/clipboardpipeline.ts",
+      "lines": [
+        [
+          175,
+          207
+        ]
+      ],
+      "takeaway": "Selected content copy delegates to ClipboardMarkersUtils inside enqueueChange; cut determines whether that operation is undoable.",
+      "hash": "2cef7807d9d5dc4fe005a9b5e97bf4a628b34d2b5d2f261ee2ae10e3ade2646d",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-clipboard/src/clipboardpipeline.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "quill-video",
+      "path": "/Users/zbeyens/git/quill/packages/quill/src/formats/video.ts",
+      "lines": [
+        [
+          1,
+          59
+        ]
+      ],
+      "takeaway": "Concrete custom html override turns editing iframe video into link, illustrating semantic vs editing representation.",
+      "hash": "556ce1aca9954ce94c3971ea3cadfea7c0c3957ce08e392a4b8ad0808991f6e9",
+      "source_revision": "539cbffd0a13b18e9c65eb84dd35e6596e403158",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/quill/src/formats/video.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-history-log",
+      "path": "/Users/zbeyens/git/plate-2/docs/plite/research/2026-09-17-table-substrate-ownership/read-log.tsv",
+      "lines": [
+        [
+          77,
+          77
+        ]
+      ],
+      "takeaway": "Exact matching historical EditorState read reused; commit and SHA256 match current local file.",
+      "hash": "7c9de24327a749cb5a07bef8672a4e36d8bcc1b01565b5526c8e7a1f3c406a77",
+      "source_revision": "6a6e8f660f10ede916b90e90b2849e02d95e7d84",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "docs/plite/research/2026-09-17-table-substrate-ownership/read-log.tsv",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "ck-custom-mapping",
+      "path": "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-engine/src/conversion/downcasthelpers.ts",
+      "lines": [
+        [
+          66,
+          112
+        ],
+        [
+          210,
+          227
+        ]
+      ],
+      "takeaway": "Custom dataDowncast elementToElement mapping supports model-name/attribute dependencies, view name or creator callback, and converter priority.",
+      "hash": "9c4ea55738729c880983be409bfbf26ca9fc3300dff6abe4a806cf507486a8a6",
+      "source_revision": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/ckeditor5-engine/src/conversion/downcasthelpers.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-node-export",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical/src/LexicalNode.ts",
+      "lines": [
+        [
+          605,
+          625
+        ],
+        [
+          1440,
+          1454
+        ],
+        [
+          1515,
+          1549
+        ]
+      ],
+      "takeaway": "Default exportDOM calls createDOM(editor config); default exportJSON includes type/version and NodeState JSON; base getTextContent delegates to slot text.",
+      "hash": "7333bd640649c6237d759f83be5320a310ee98d077ad8915735326801695b798",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical/src/LexicalNode.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    },
+    {
+      "id": "lexical-html-tail",
+      "path": "/Users/zbeyens/git/lexical/packages/lexical-html/src/index.ts",
+      "lines": [
+        [
+          347,
+          372
+        ]
+      ],
+      "takeaway": "HTML after hook can replace exported element; excluded/unselected wrapper appends child fragment instead.",
+      "hash": "fc215e7cd09d5ed67fe4cb6278ff2c2475937872e87aee18abfc77b366e01047",
+      "source_revision": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "hash_scope": "whole-file bytes",
+      "matches_HEAD": true,
+      "repo_relative_path": "packages/lexical-html/src/index.ts",
+      "scope_id": "exports",
+      "checked_at": "2026-09-24"
+    }
+  ]
+}

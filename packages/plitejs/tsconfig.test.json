@@ -1,0 +1,32 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*-contract.ts",
+    "src/**/*-contract.tsx",
+    "test/**/*.spec.ts",
+    "test/**/*.spec.tsx",
+    "test/**/*.test.ts",
+    "test/**/*.test.tsx",
+    "test/**/*-contract.ts",
+    "test/**/*-contract.tsx",
+    "../../tooling/config/global.d.ts"
+  ],
+  "exclude": ["dist", "node_modules"],
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "exactOptionalPropertyTypes": false,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": false,
+    "noEmit": true,
+    "strict": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "skipLibCheck": true,
+    "types": ["node", "bun-types", "bun-types/test-globals"]
+  }
+}

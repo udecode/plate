@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-07-footnote-target-attributes",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-07-footnote-target-attributes.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Use navigation target attributes in footnote renderers",
+  "targets": [
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-07-footnote-navigation-target-attributes-renderers-e668fb5d",
+      "kind": "wiring",
+      "summary": "Use `NavigationFeedbackPlugin` target attributes directly for reference and definition highlights.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["footnote"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-07",
+          "entry": "2026-09-07-footnote-target-attributes",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

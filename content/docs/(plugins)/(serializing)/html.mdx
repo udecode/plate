@@ -1,0 +1,316 @@
+---
+title: HTML
+description: Parse semantic HTML into Plate documents or slices, and serialize Plate documents to HTML.
+---
+
+HTML conversion has two jobs:
+
+- Parse semantic HTML into a complete `EditorDocumentValue` or a closed insertion `ContentSlice`.
+- Serialize a schema-valid Plate document into semantic HTML.
+
+Use `platejs/html` in the browser. Use `platejs/html/server` when Node.js must parse HTML. Static React rendering is a separate presentation job owned by [`platejs/static`](/docs/static).
+
+## Parse HTML
+
+### Installed editor
+
+Install `HtmlPlugin` to reuse the editor's compiled plugins, schema, and plugin state.
+
+```ts
+import { HtmlPlugin } from 'platejs/html';
+import { createEditor } from 'platejs';
+
+const editor = createEditor({
+  plugins: [BaseParagraphPlugin, BaseBoldPlugin, HtmlPlugin],
+});
+
+const result = editor.api.html.parse('<p>Hello <strong>world</strong>.</p>');
+
+if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+editor.update((tx) => tx.value.replace(result.document));
+```
+
+`parse` reads one complete HTML document. If the source contains one
+`[data-editor="true"]` element, its children are the document body. Without a
+marker, Plate reads the HTML `body`. More than one marker is an error.
+
+Use `parseSlice` for insertion. It returns a closed, rootless `ContentSlice` and
+does not treat an editor marker as complete-document authority.
+
+```ts
+const result = editor.api.html.parseSlice('<p>Paste me</p>');
+
+if (result.ok) {
+  editor.update.slice.replace(result.slice);
+  showDiagnostics(result.diagnostics);
+}
+```
+
+The insertion owner fits the slice after a destination exists. Direct HTML
+parsing does not invent open edges or detached roots.
+
+### Detached browser conversion
+
+Use the standalone functions when no configured editor owns the operation.
+Pass the plugins that define the document schema and HTML mappings.
+
+```ts
+import { parseHtml } from 'platejs/html';
+
+const documentResult = parseHtml(source, {
+  plugins: EditorKit,
+});
+```
+
+Detached functions compile the supplied declarations for this call and discard
+the temporary target afterward. They do not activate plugin handlers, effects,
+or React hooks. Slices belong to an insertion target, so parse them with the
+installed `editor.api.html.parseSlice`.
+
+### Node.js
+
+Node.js parsing uses the same parse5 tree and diagnostics through the server
+entrypoint:
+
+```ts
+import { parseHtml } from 'platejs/html/server';
+
+const result = parseHtml(source, { plugins: EditorKit });
+```
+
+Install the optional server DOM peer when a Node process parses HTML:
+
+```bash
+npm install platejs linkedom
+```
+
+Do not import browser parsing from `platejs/html` in Node.js. That entrypoint
+throws an environment error that points to `platejs/html/server`. The server
+entrypoint is ESM.
+
+Browser and server parsing are inert. Plate does not execute scripts, attach the
+tree, load resources, apply CSS, or install DOM globals. Safety checks reject or
+remove executable elements, event attributes, unsafe URLs, external resource
+attributes, CSS resource loads, and unsafe foreign content before feature
+mappings run.
+
+## Serialize HTML
+
+### Installed editor
+
+```ts
+const result = editor.api.html.serialize({
+  projection: 'proposed',
+});
+
+showDiagnostics(result.diagnostics);
+if (result.ok) downloadHtml(result.data);
+```
+
+Pass `document` to serialize a captured document through the installed target:
+
+```ts
+const document = editor.read.value();
+const result = editor.api.html.serialize({ document, projection: 'accepted' });
+```
+
+### Detached conversion
+
+```ts
+import { serializeHtml } from 'platejs/html';
+
+const result = serializeHtml(document, {
+  plugins: EditorKit,
+  projection: 'accepted',
+});
+```
+
+Serialization asserts the input document and the selected authored projection.
+Invalid model data throws because it is a programmer or persistence-boundary
+failure. Expected representational loss returns a diagnosed result.
+
+`lossPolicy` defaults to `'reject'`. Under that policy, unsupported visible
+content returns `{ ok: false, diagnostics }` and no `data`. Use
+`lossPolicy: 'allow'` only when the caller accepts the diagnosed drop,
+replacement, or unwrap.
+
+## Authored content
+
+Semantic HTML supports the visible `accepted` and `proposed` projections. It
+does not embed a hidden Plate document or restore review state from HTML.
+
+A document from an editor with authored changes installed carries authored
+metadata even before any proposal. Both `editor.api.html.serialize` and
+`serializeHtml` throw a `TypeError` for such a document unless `projection` is
+`'accepted'` or `'proposed'`. A document without authored metadata ignores
+`projection`.
+
+```ts
+const proposed = editor.api.html.serialize({ projection: 'proposed' });
+const accepted = editor.api.html.serialize({ projection: 'accepted' });
+```
+
+Persist exact proposals, decisions, roots, and metadata with authored JSON. Use
+DOCX review export when Word revisions are required. See
+[Authored Changes](/docs/authored-changes#export-explicit-projections).
+
+## Define HTML mappings
+
+Declare feature mappings on the plugin that owns the node or mark. The
+constructor's `formats` callback receives only `defineFormats` and static schema
+bindings. Mapping callbacks receive frozen operation state, registry and schema
+views, and a format-specific `report` function; they do not receive a live
+editor or store.
+
+```ts
+import { definePlugin, property, schema } from 'platejs';
+
+const NotePlugin = definePlugin('note', {
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      properties: { variant: property.string() },
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
+        match: [{ tag: 'aside' }],
+        decode: ({ element }) => ({
+          variant: element.dataset.variant ?? 'info',
+        }),
+        encode: ({ content, node, preserve }) => {
+          preserve('variant');
+
+          return {
+            attributes: { 'data-variant': node.variant },
+            children: content,
+            tag: 'aside',
+          };
+        },
+      },
+    }),
+});
+```
+
+- `match` selects source elements. `decode` returns the element's properties,
+  and optionally its `children`; `undefined` declines the element so the next
+  mapping runs.
+- `encode` returns a node spec: `tag`, `attributes`, `style`, and `children`,
+  where `content` places the node's children. `null` omits the element.
+- `preserve(...keys)` claims that the returned output carries these properties
+  of the mapping's target. Claims count only when `encode` returns output.
+  Reading a property claims nothing.
+- `decode` receives its own `preserve(...names)`, which claims that the
+  decoded result carries these attributes of `element` or of descendants it
+  reads, such as `preserve('data-indent')`. Claims count only when `decode`
+  returns a result.
+- A mapping for one mark or element property receives its `value` and returns
+  a wrapper, such as `{ tag: 'strong' }`, or a patch, such as
+  `{ style: { textAlign: value } }`. Output that writes the value represents it;
+  return `null` to leave it unrepresented. A mapping for several properties
+  receives `values` and claims with `preserve`.
+- A mapping for element properties that also stands for a block sets
+  `createsElement: true`, as lists do. Matched content becomes the schema's
+  default block, when that block is one of the plugin's targets, carrying the
+  decoded properties; a matched element holding exactly one block those
+  properties apply to puts them on that block instead. Encoding writes the
+  output in place of the default block's element and around the HTML of the
+  plugin's other targets, so an image, heading or code block in a list
+  serializes inside its `<li>` and parses back with its list properties.
+
+Serialization reports every content property that no mapping represents as
+`html-unsupported-content` with `kind: 'attribute'` and `model.property`. That
+loss warns under every policy. Clipboard copy writes `text/html` only when
+nothing is lost, so a mapping that forgets a claim leaves copied content as
+plain text.
+
+Use `defineFormats(map)` for mappings owned by the current plugin and
+`defineFormats(TargetPlugin, map)` for a foreign target. The semantic key is
+`html`; MIME negotiation does not belong in this map.
+
+If a browser transfer format owns a complete `text/html` payload, register a
+`DataTransferFormat` through `dataTransferFormats`. That owner can inspect the
+whole payload, prepare it, and return
+`decodeHtmlDataTransfer({ ...context, data: prepared })`, which decodes and
+reports as the built-in HTML format does, or return `null` to let the next
+format try. See
+[Clipboard](/docs/clipboard#custom-datatransfer-formats).
+
+## Results and diagnostics
+
+Parse success contains warning diagnostics and exactly one carrier:
+
+```ts
+type HtmlDocumentParseResult<V> =
+  | { ok: true; document: EditorDocumentValue<V>; diagnostics: HtmlWarningDiagnostic[] }
+  | { ok: false; diagnostics: [HtmlErrorDiagnostic, ...HtmlDiagnostic[]] };
+
+type HtmlSliceParseResult<V> =
+  | { ok: true; slice: ContentSlice<V>; diagnostics: HtmlWarningDiagnostic[] }
+  | { ok: false; diagnostics: [HtmlErrorDiagnostic, ...HtmlDiagnostic[]] };
+```
+
+Serialization success contains `data`; failure does not. Configuration errors,
+mapping bugs, and invalid model input throw. Source errors, resource limits,
+schema recovery, safety actions, and expected format loss are returned as
+diagnostics.
+
+Each URL is checked for what it does: an `href` must be safe to open, `img`
+`src` and `poster` must be images, an `iframe` `src` must be an absolute web
+page, and other `src` values must be media. Safety removal reports
+`html-unsafe-content` with an `impact`. A removed link destination keeps its
+label (`action: 'unwrapped'`) and warns under every policy; it is `lossless`
+only when the destination could run script, such as `javascript:` or `data:`.
+An `img` without a usable `src` is replaced by its alt text. Removing
+metadata, scripts, style sheets, event handlers, a script resource URL, or
+graphics inside an `aria-hidden="true"` subtree, such as icon SVG, is
+`lossless`. Removing other SVG, MathML, embedded objects, media sources that
+cannot load, inline frame documents, or resource-loading styles is `lossy`.
+Serialization removes an unsafe attribute or CSS value from its output and
+reports it the same way.
+
+Embedded media (`img`, `video`, `audio`, `iframe`, `canvas`) that no installed
+mapping owns reports `html-unsupported-content`, even when its fallback content
+is kept. A lost property (`kind: 'attribute'` or `'style'`) is a warning under
+every policy; serialization names it in `model.property`. Under the default `lossPolicy: 'reject'`, a lossy removal and a
+lost element are errors.
+
+Parsing reports each attribute Plate's own mappings write, such as
+`data-list-type` or `data-editor-media-provider`, that no installed mapping
+claims. The report is `html-unsupported-content` with `kind: 'attribute'` and
+names the attribute in `source.attribute`; it warns under every policy. An
+element reported lost does not repeat its attributes. The report covers only
+Plate's own attributes: other markup, such as `class`, `style` or `id`, and a
+custom mapping's own `data-*` attributes are not reported. A custom decoder
+that reads one of Plate's attributes claims it with `preserve`.
+
+Parsing defaults to these limits:
+
+| Limit | Default |
+| --- | --- |
+| UTF-8 source bytes | `5 * 1024 * 1024` |
+| Tree nodes | `100_000` |
+| Tree depth | `256` |
+
+Override them with `limits`. Plate enforces the byte limit before parsing and
+the node/depth limits while parse5 builds the tree.
+
+## API Reference
+
+| API | Import | Purpose |
+| --- | --- | --- |
+| `parseHtml(source, options)` | `platejs/html` | Parse one complete document in a browser. |
+| `serializeHtml(document, options)` | `platejs/html` | Serialize a detached document. |
+| `parseHtml(source, options)` | `platejs/html/server` | Parse one complete document in Node.js. |
+| `editor.api.html.parse(source, options?)` | `HtmlPlugin` | Parse with the installed target. |
+| `editor.api.html.parseSlice(source, options?)` | `HtmlPlugin` | Parse a slice with the installed target. |
+| `editor.api.html.serialize(options?)` | `HtmlPlugin` | Serialize the current or supplied document. |
+| `decodeHtmlDataTransfer(context)` | `platejs/html` | Decode a transfer payload as the installed HTML format does, inside a `DataTransferFormat`. |
+
+Direct parse options require `plugins` and accept `schema`, `limits`,
+`lossPolicy`, and `collapseWhitespace`. Direct serialization options require
+`plugins` and accept `schema`, `projection`, and `lossPolicy`. Installed editor
+methods omit `plugins` and `schema` because the plugin captures them from the
+editor.

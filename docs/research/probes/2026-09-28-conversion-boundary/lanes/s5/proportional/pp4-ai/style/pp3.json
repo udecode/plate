@@ -1,0 +1,322 @@
+[
+ {
+  "label": "pp3",
+  "cell": "ai-rich-10000",
+  "streams": [
+   {
+    "role": "pair-0",
+    "load1": 2.4,
+    "commits": 40,
+    "previewElements": 3262,
+    "ult": 2.24,
+    "layout": 0.4,
+    "paint": 0.97,
+    "fullRecalcs": 3,
+    "fullRecalcMs": 55.3,
+    "largestRecalc": 7357,
+    "c": 200.0,
+    "busy": 564.0,
+    "errors": 0
+   },
+   {
+    "role": "pair-1",
+    "load1": 2.5,
+    "commits": 40,
+    "previewElements": 3262,
+    "ult": 2.29,
+    "layout": 0.4,
+    "paint": 0.97,
+    "fullRecalcs": 3,
+    "fullRecalcMs": 56.6,
+    "largestRecalc": 7357,
+    "c": 201.0,
+    "busy": 566.0,
+    "errors": 0
+   },
+   {
+    "role": "pair-2",
+    "load1": 2.7,
+    "commits": 40,
+    "previewElements": 3262,
+    "ult": 2.05,
+    "layout": 0.43,
+    "paint": 1.0,
+    "fullRecalcs": 3,
+    "fullRecalcMs": 49.8,
+    "largestRecalc": 7357,
+    "c": 190.9,
+    "busy": 554.2,
+    "errors": 0
+   }
+  ],
+  "median": {
+   "ult": 2.24,
+   "layout": 0.4,
+   "paint": 0.97,
+   "fullRecalcs": 3,
+   "fullRecalcMs": 55.3,
+   "c": 200.0,
+   "busy": 564.0,
+   "commits": 40,
+   "previewElements": 3262
+  },
+  "range": {
+   "ult": [
+    2.05,
+    2.29
+   ],
+   "fullRecalcs": [
+    3,
+    3
+   ],
+   "c": [
+    190.9,
+    201.0
+   ],
+   "busy": [
+    554.2,
+    566.0
+   ]
+  }
+ },
+ {
+  "label": "pp3",
+  "cell": "ai-cjk-10000",
+  "streams": [
+   {
+    "role": "pair-0",
+    "load1": 2.5,
+    "commits": 40,
+    "previewElements": 4744,
+    "ult": 4.28,
+    "layout": 1.21,
+    "paint": 1.1,
+    "fullRecalcs": 7,
+    "fullRecalcMs": 118.3,
+    "largestRecalc": 10389,
+    "c": 295.1,
+    "busy": 822.4,
+    "errors": 0
+   },
+   {
+    "role": "pair-1",
+    "load1": 2.3,
+    "commits": 40,
+    "previewElements": 4744,
+    "ult": 4.34,
+    "layout": 1.19,
+    "paint": 1.1,
+    "fullRecalcs": 7,
+    "fullRecalcMs": 120.6,
+    "largestRecalc": 10389,
+    "c": 297.7,
+    "busy": 826.7,
+    "errors": 0
+   },
+   {
+    "role": "pair-2",
+    "load1": 2.0,
+    "commits": 41,
+    "previewElements": 4744,
+    "ult": 5.32,
+    "layout": 1.18,
+    "paint": 1.07,
+    "fullRecalcs": 9,
+    "fullRecalcMs": 167.7,
+    "largestRecalc": 10389,
+    "c": 289.8,
+    "busy": 880.1,
+    "errors": 0
+   }
+  ],
+  "median": {
+   "ult": 4.34,
+   "layout": 1.19,
+   "paint": 1.1,
+   "fullRecalcs": 7,
+   "fullRecalcMs": 120.6,
+   "c": 295.1,
+   "busy": 826.7,
+   "commits": 40,
+   "previewElements": 4744
+  },
+  "range": {
+   "ult": [
+    4.28,
+    5.32
+   ],
+   "fullRecalcs": [
+    7,
+    9
+   ],
+   "c": [
+    289.8,
+    297.7
+   ],
+   "busy": [
+    822.4,
+    880.1
+   ]
+  }
+ },
+ {
+  "label": "pp3",
+  "cell": "ai-rich-50000",
+  "streams": [
+   {
+    "role": "pair-0",
+    "load1": 2.4,
+    "commits": 200,
+    "previewElements": 16258,
+    "ult": 6.13,
+    "layout": 0.57,
+    "paint": 1.02,
+    "fullRecalcs": 17,
+    "fullRecalcMs": 1041.1,
+    "largestRecalc": 33677,
+    "c": 1167.7,
+    "busy": 3835.0,
+    "errors": 0
+   },
+   {
+    "role": "pair-1",
+    "load1": 2.8,
+    "commits": 203,
+    "previewElements": 16258,
+    "ult": 6.61,
+    "layout": 0.55,
+    "paint": 1.0,
+    "fullRecalcs": 21,
+    "fullRecalcMs": 1130.6,
+    "largestRecalc": 33677,
+    "c": 1142.6,
+    "busy": 3961.5,
+    "errors": 0
+   },
+   {
+    "role": "pair-2",
+    "load1": 1.9,
+    "commits": 203,
+    "previewElements": 16258,
+    "ult": 7.89,
+    "layout": 0.55,
+    "paint": 0.99,
+    "fullRecalcs": 25,
+    "fullRecalcMs": 1392.8,
+    "largestRecalc": 33677,
+    "c": 1152.2,
+    "busy": 4219.2,
+    "errors": 0
+   }
+  ],
+  "median": {
+   "ult": 6.61,
+   "layout": 0.55,
+   "paint": 1.0,
+   "fullRecalcs": 21,
+   "fullRecalcMs": 1130.6,
+   "c": 1152.2,
+   "busy": 3961.5,
+   "commits": 203,
+   "previewElements": 16258
+  },
+  "range": {
+   "ult": [
+    6.13,
+    7.89
+   ],
+   "fullRecalcs": [
+    17,
+    25
+   ],
+   "c": [
+    1142.6,
+    1167.7
+   ],
+   "busy": [
+    3835.0,
+    4219.2
+   ]
+  }
+ },
+ {
+  "label": "pp3",
+  "cell": "ai-cjk-50000",
+  "streams": [
+   {
+    "role": "pair-0",
+    "load1": 2.0,
+    "commits": 209,
+    "previewElements": 23435,
+    "ult": 12.97,
+    "layout": 1.0,
+    "paint": 1.26,
+    "fullRecalcs": 29,
+    "fullRecalcMs": 2214.5,
+    "largestRecalc": 48963,
+    "c": 2095.1,
+    "busy": 6958.8,
+    "errors": 0
+   },
+   {
+    "role": "pair-1",
+    "load1": 2.6,
+    "commits": 207,
+    "previewElements": 23435,
+    "ult": 11.44,
+    "layout": 1.04,
+    "paint": 1.31,
+    "fullRecalcs": 27,
+    "fullRecalcMs": 1961.9,
+    "largestRecalc": 48963,
+    "c": 2077.1,
+    "busy": 6694.6,
+    "errors": 0
+   },
+   {
+    "role": "pair-2",
+    "load1": 2.1,
+    "commits": 207,
+    "previewElements": 23435,
+    "ult": 10.68,
+    "layout": 1.03,
+    "paint": 1.29,
+    "fullRecalcs": 25,
+    "fullRecalcMs": 1825.3,
+    "largestRecalc": 49091,
+    "c": 2039.6,
+    "busy": 6477.3,
+    "errors": 0
+   }
+  ],
+  "median": {
+   "ult": 11.44,
+   "layout": 1.03,
+   "paint": 1.29,
+   "fullRecalcs": 27,
+   "fullRecalcMs": 1961.9,
+   "c": 2077.1,
+   "busy": 6694.6,
+   "commits": 207,
+   "previewElements": 23435
+  },
+  "range": {
+   "ult": [
+    10.68,
+    12.97
+   ],
+   "fullRecalcs": [
+    25,
+    29
+   ],
+   "c": [
+    2039.6,
+    2095.1
+   ],
+   "busy": [
+    6477.3,
+    6958.8
+   ]
+  }
+ }
+]

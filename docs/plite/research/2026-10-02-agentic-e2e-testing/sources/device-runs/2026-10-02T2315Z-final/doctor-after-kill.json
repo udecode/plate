@@ -1,0 +1,26 @@
+{
+  "gboardVersion": "17.0.14.880768217-release-arm64-v8a",
+  "lockOwner": 20545,
+  "ok": false,
+  "problems": [
+    "stale lock from process 20545; run restore before another run"
+  ],
+  "restorePending": {
+    "changedSettings": [],
+    "createdAt": "2026-10-02T23:15:39.372Z",
+    "forwards": [
+      "tcp:53094"
+    ],
+    "koreanLayoutsBefore": [],
+    "ownedTargets": [
+      "B683024D69BE337C59CAE035EDFDC2F6"
+    ],
+    "reverses": [
+      "tcp:3410"
+    ],
+    "selectedSubtype": "1594443099",
+    "setupCompletedAt": "2026-10-02T23:16:41.647Z",
+    "zenMode": null
+  },
+  "serial": "emulator-5554"
+}

@@ -1,0 +1,445 @@
+---
+title: Copilot
+description: AI-powered text completion suggestions.
+docs:
+  - route: https://pro.platejs.org/docs/examples/copilot
+    title: Plus
+  - route: /docs/components/copilot
+    title: Ghost Text
+---
+
+<ComponentPreview name="copilot-demo" />
+
+Copilot ghost text is transient UI. It becomes ordinary accepted content when the user accepts it; displaying a completion does not create a durable authored change.
+
+<PackageInfo>
+
+## Features
+
+- Renders ghost text suggestions as you type
+- Two trigger modes:
+  - Shortcut (e.g. `Ctrl+Space`). Press again for alternative suggestions.
+  - Debounce mode: automatically triggers after a space at paragraph ends
+- Accept suggestions with Tab or word-by-word with `Cmd+→`
+- Built-in support for Vercel AI SDK completion API
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add Copilot functionality is with the `CopilotKit`, which includes a configured `CopilotPlugin`, its Markdown dependency, and the [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="copilot" />
+
+- [`GhostText`](/docs/components/copilot): Renders the ghost text suggestions.
+
+### Add kit
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { CopilotKit } from '@/components/editor/copilot';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...CopilotKit,
+  ],
+});
+```
+
+Tab accepts a visible completion before indentation or table navigation. Without a completion, Tab keeps its normal editor behavior.
+
+### Add API route
+
+Copilot requires a server-side API endpoint to communicate with the AI model. Add the pre-configured Copilot API route:
+
+<ComponentSource name="copilot-api" />
+
+### Configure environment
+
+Set your AI Gateway key in the environment:
+
+```bash title=".env.local"
+AI_GATEWAY_API_KEY="your-api-key"
+```
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs @ai-sdk/react ai fastest-levenshtein remark-parse remark-stringify unified
+```
+
+### Add plugins
+
+```tsx
+import { CopilotPlugin } from 'platejs/ai/react';
+import { MarkdownPlugin } from 'platejs/markdown';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    MarkdownPlugin,
+    CopilotPlugin,
+  ],
+});
+```
+
+- `MarkdownPlugin`: Required for serializing editor content to send as a prompt.
+- `CopilotPlugin`: Enables AI-powered text completion.
+
+Tab accepts a visible completion before indentation or table navigation. Without a completion, Tab keeps its normal editor behavior.
+
+### Configure plugins
+
+```tsx
+import { CopilotPlugin } from 'platejs/ai/react';
+import { MarkdownPlugin } from 'platejs/markdown';
+import { GhostText } from '@/components/editor/copilot';
+
+const plugins = [
+  // ...otherPlugins,
+  MarkdownPlugin,
+  CopilotPlugin.configure(({ update }) => ({
+    initialState: {
+      completeOptions: {
+        api: '/api/ai/copilot',
+        onFinish: (_, completion) => {
+          if (completion === '0') update.reject();
+        },
+      },
+      debounceDelay: 500,
+      renderGhostText: GhostText,
+    },
+    shortcuts: {
+      accept: { keys: 'tab' },
+      acceptNextWord: { keys: 'mod+right' },
+      reject: { keys: 'escape' },
+      triggerSuggestion: { keys: 'ctrl+space' },
+    },
+  })),
+];
+```
+
+- `completeOptions`: Configures the completion transport.
+  - `api`: Required endpoint for your AI completion route.
+  - `onError`: Handles a current request failure.
+  - `onFinish`: Handles a completed suggestion. The plugin stores it before calling this callback; the example rejects the application's `0` sentinel.
+- `debounceDelay`: The delay in milliseconds for auto-triggering suggestions after the user stops typing.
+- `renderGhostText`: The React component used to display the suggestion inline.
+
+The plugin cancels pending work on Stop, dismissal, readonly transitions, and
+last-view teardown. Late responses cannot publish a suggestion or clear a newer
+request. `GhostText` strips Markdown for display; accepted text uses the original
+completion so inline formatting is preserved.
+- `shortcuts`: Defines keyboard shortcuts for interacting with Copilot suggestions.
+
+### Add API route
+
+Create an API route handler at `app/api/ai/copilot/route.ts` to process AI requests. This endpoint will receive the prompt from the editor and call the AI model.
+
+<ComponentSource name="copilot-api" />
+
+Then, set your `AI_GATEWAY_API_KEY` in `.env.local`.
+
+### System prompt
+
+The system prompt defines the AI's role and behavior. Modify the `body.system` property in `completeOptions`:
+
+```tsx
+CopilotPlugin.configure({
+  initialState: {
+    completeOptions: {
+      api: '/api/ai/copilot',
+      body: {
+        system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
+
+Rules:
+- Continue the text naturally up to the next punctuation mark (., ,, ;, :, ?, or !).
+- Maintain style and tone. Don't repeat given text.
+- For unclear context, provide the most likely continuation.
+- Handle code snippets, lists, or structured text if needed.
+- Don't include """ in your response.
+- CRITICAL: Always end with a punctuation mark.
+- CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.
+- If no context is provided or you can't generate a continuation, return "0" without explanation.`,
+      },
+      // ... other options
+    },
+    // ... other plugin state
+  },
+});
+```
+
+### User prompt
+
+The user prompt (via `getPrompt`) determines what context is sent to the AI. You can customize it to include more context or format it differently:
+
+```tsx
+CopilotPlugin.configure({
+  initialState: {
+    getPrompt: ({ editor }) => {
+      const contextEntry = editor.read.nodes.block({ mode: 'highest' });
+
+      if (!contextEntry) return '';
+
+      const result = editor.api.markdown.serialize({
+        document: { children: [contextEntry[0]] },
+        projection: 'proposed',
+      });
+
+      if (!result.ok) return '';
+
+      return `Continue the text up to the next punctuation mark:
+"""
+${result.data}
+"""`;
+    },
+    // ... other options
+  },
+});
+```
+
+</Steps>
+
+
+
+## Plate Plus
+
+<ComponentPreviewPro name="copilot-pro" />
+
+## Customization
+
+### Switching AI models
+
+Configure different AI models and providers in your API route:
+
+```tsx title="app/api/ai/copilot/route.ts"
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+
+export async function POST(req: NextRequest) {
+  const {
+    model = 'gpt-4o-mini',
+    provider = 'openai',
+    prompt,
+    system
+  } = await req.json();
+
+  let aiProvider;
+
+  switch (provider) {
+    case 'anthropic':
+      aiProvider = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      break;
+    case 'openai':
+    default:
+      aiProvider = createOpenAI({ apiKey: process.env.AI_GATEWAY_API_KEY });
+      break;
+  }
+
+  const result = await generateText({
+    model: aiProvider(model),
+    prompt,
+    system,
+    maxTokens: 50,
+    temperature: 0.7,
+  });
+
+  return NextResponse.json(result);
+}
+```
+
+Configure the model in your `CopilotPlugin`:
+
+```tsx
+CopilotPlugin.configure({
+  initialState: {
+    completeOptions: {
+      api: '/api/ai/copilot',
+      body: {
+        model: 'claude-3-haiku-20240307', // Fast model for completions
+        provider: 'anthropic',
+        system: 'Your system prompt here...',
+      },
+    },
+    // ... other options
+  },
+});
+```
+
+For more AI providers and models, see the [Vercel AI SDK documentation](https://sdk.vercel.ai/providers/ai-sdk-providers).
+
+### Custom trigger conditions
+
+Control when suggestions are automatically triggered:
+
+```tsx
+import { BaseParagraphPlugin } from 'platejs';
+
+CopilotPlugin.configure({
+  initialState: {
+    triggerQuery: ({ editor }) => {
+      // Only trigger in paragraph blocks
+      const block = editor.read.nodes.block();
+      const paragraph = editor.plugin(BaseParagraphPlugin);
+      if (!block || block[0].type !== paragraph.schema.type) return false;
+
+      // Standard checks
+      return (
+        editor.read.selection.isCollapsed() &&
+        editor.read.selection.isAtBlockEnd()
+      );
+    },
+    autoTriggerQuery: ({ editor }) => {
+      // Custom conditions for auto-triggering
+      const block = editor.read.nodes.block();
+      if (!block) return false;
+      const text = editor.read.text.string(block[1]);
+      // Trigger after question words
+      return /\b(what|how|why|when|where)\s*$/i.test(text);
+    },
+    // ... other options
+  },
+});
+```
+
+### Security considerations
+
+Implement security best practices for Copilot API:
+
+```tsx title="app/api/ai/copilot/route.ts"
+export async function POST(req: NextRequest) {
+  const { prompt, system } = await req.json();
+
+  // Validate prompt length
+  if (!prompt || prompt.length > 1000) {
+    return NextResponse.json({ error: 'Invalid prompt' }, { status: 400 });
+  }
+
+  // Rate limiting (implement with your preferred solution)
+  // await rateLimit(req);
+
+  // Content filtering for sensitive content
+  if (containsSensitiveContent(prompt)) {
+    return NextResponse.json({ error: 'Content filtered' }, { status: 400 });
+  }
+
+  // Process AI request...
+}
+```
+
+**Security Guidelines:**
+- **Input Validation**: Limit prompt length and validate content
+- **Rate Limiting**: Prevent abuse with request limits
+- **Content Filtering**: Filter sensitive or inappropriate content
+- **API Key Security**: Never expose API keys client-side
+- **Timeout Handling**: Handle request timeouts gracefully
+
+## Plugins
+
+### `CopilotPlugin`
+
+Plugin for AI-powered text completion suggestions.
+
+<API name="CopilotPlugin">
+<APIOptions>
+  <APIItem name="autoTriggerQuery" type="(options: { editor: Editor }) => boolean" optional>
+    Additional conditions to auto trigger copilot.
+    - **Default:** Checks:
+      - Block above is not empty
+      - Block above ends with a space
+      - No existing suggestion
+  </APIItem>
+  <APIItem name="completeOptions" type="CopilotCompleteOptions | null">
+    AI completion transport. Configure an explicit `api` before triggering a completion.
+  </APIItem>
+  <APIItem name="debounceDelay" type="number" optional>
+    Delay for debouncing auto-triggered suggestions.
+    - **Default:** `0`
+  </APIItem>
+  <APIItem name="getNextWord" type="(options: { text: string }) => { firstWord: string; remainingText: string }" optional>
+    Function to extract the next word from suggestion text.
+  </APIItem>
+  <APIItem name="getPrompt" type="(options: { editor: Editor }) => string" optional>
+    Function to generate the prompt for AI completion.
+    - **Default:** Uses markdown serialization of ancestor node
+  </APIItem>
+  <APIItem name="renderGhostText" type="(() => React.ReactNode) | null" optional>
+    Component to render ghost text suggestions.
+  </APIItem>
+  <APIItem name="triggerQuery" type="(options: { editor: Editor }) => boolean" optional>
+    Conditions to trigger copilot.
+    - **Default:** Checks:
+      - Selection is not expanded
+      - Selection is at block end
+  </APIItem>
+</APIOptions>
+</API>
+
+## Transforms
+
+### `tx.copilot.accept()`
+
+Accepts the current suggestion and applies it to the editor content.
+
+Default Shortcut: `Tab`
+
+### `tx.copilot.acceptNextWord()`
+
+Accepts only the next word of the current suggestion, allowing for granular acceptance of suggestions.
+
+Example Shortcut: `Cmd + →`
+
+## API
+
+### `editor.api.copilot.reject()`
+
+Resets the plugin state to its initial condition:
+Default Shortcut: `Escape`
+
+### `editor.api.copilot.triggerSuggestion()`
+
+Triggers a new suggestion request. The request may be debounced based on the plugin configuration.
+
+Example Shortcut: `Ctrl + Space`
+
+### `editor.api.copilot.setBlockSuggestion()`
+
+Sets suggestion text for a block.
+
+<API name="editor.api.copilot.setBlockSuggestion">
+<APIParameters>
+  <APIItem name="options" type="SetBlockSuggestionOptions">
+    Options for setting the block suggestion.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="SetBlockSuggestionOptions">
+  <APIItem name="text" type="string">
+    The suggestion text to set.
+  </APIItem>
+  <APIItem name="id" type="NodeKey" optional>
+    Target block node key.
+    - **Default:** Current block
+  </APIItem>
+</APIOptions>
+</API>
+
+### `editor.api.copilot.stop()`
+
+Stops ongoing suggestion requests and cleans up:
+
+- Cancels debounced trigger calls
+- Aborts current API request
+- Resets abort controller

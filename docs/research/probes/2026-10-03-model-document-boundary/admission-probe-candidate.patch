@@ -1,0 +1,38 @@
+diff --git a/packages/plitejs/src/core/document-shape.ts b/packages/plitejs/src/core/document-shape.ts
+index 2fa44f472e..79be808f7f 100644
+--- a/packages/plitejs/src/core/document-shape.ts
++++ b/packages/plitejs/src/core/document-shape.ts
+@@ -43,6 +43,12 @@ export function assertEditorDocumentShape(
+   reject: (issue: EditorDocumentShapeIssue) => never
+ ): asserts input is EditorDocumentShape {
+   if (!isRecord(input)) reject({ kind: 'document' });
++  for (const key of Reflect.ownKeys(input)) {
++    const descriptor = Object.getOwnPropertyDescriptor(input, key);
++    if ((key !== 'children' && key !== 'meta' && key !== 'roots') || !descriptor || !('value' in descriptor) || !descriptor.enumerable) {
++      reject({ kind: 'document' });
++    }
++  }
+   if (!Object.hasOwn(input, 'children') || !Array.isArray(input.children)) {
+     reject({ kind: 'children' });
+   }
+diff --git a/packages/plitejs/src/core/public-state.ts b/packages/plitejs/src/core/public-state.ts
+index 11d9214e06..a16a2a4ea4 100644
+--- a/packages/plitejs/src/core/public-state.ts
++++ b/packages/plitejs/src/core/public-state.ts
+@@ -9720,7 +9720,15 @@ const readDirectSnapshotInput = (
+   transformedInput: SnapshotInput
+ ): DirectSnapshotInput => {
+   if (!isPersistedDocumentEnvelope(transformedInput)) {
+-    return transformedInput;
++    const admitted: Record<string, unknown> = {};
++    for (const key of Reflect.ownKeys(transformedInput)) {
++      const descriptor = Object.getOwnPropertyDescriptor(transformedInput, key);
++      if (typeof key !== 'string' || !['children', 'meta', 'roots', 'selection'].includes(key) || !descriptor || !('value' in descriptor) || !descriptor.enumerable) {
++        throw new TypeError(`Editor snapshot field "${String(key)}" is not supported.`);
++      }
++      admitted[key] = descriptor.value;
++    }
++    return Object.freeze(admitted) as unknown as typeof transformedInput;
+   }
+ 
+   const envelope = readExactDataRecord(

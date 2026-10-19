@@ -1,0 +1,243 @@
+import type {
+  Ancestor,
+  Descendant,
+  DescendantIn,
+  Location,
+  Node,
+  NodeEntry,
+  NodeTypeSelector,
+  Path,
+  Point,
+  Text,
+} from '../interfaces';
+import type {
+  AnyEditor as Editor,
+  EditorAboveOptions,
+  EditorCommit,
+  EditorCommitListener,
+  EditorCommitSource,
+  EditorDirectCommandDispatch,
+  PluginReference,
+  PluginDefinitionInput,
+  PluginInput,
+  PluginReconfigureOptions,
+  EditorDocumentValue,
+  EditorLeafOptions,
+  EditorLevelsOptions,
+  EditorNextOptions,
+  EditorParentOptions,
+  EditorPointOptions,
+  EditorPreviousOptions,
+  EditorSnapshot,
+  EditorStateView,
+  EditorStaticApi,
+  EditorUpdateContext,
+  EditorUpdateTransaction,
+  RootKey,
+  NodeKey,
+  Selection,
+  SnapshotListener,
+  Value,
+} from '../interfaces/editor';
+import type { DocumentChange } from './change/document-change';
+import type { NodeList } from './change/document-index';
+import type { InternalEditorSchemaApi } from './editor-schema';
+import type { EditorSchemaContract } from './schema-compiler';
+import type { InternalEditorUpdateOptions } from './update-policy';
+
+type BindEditorMethod<T> = T extends (
+  editor: Editor,
+  ...args: infer Args
+) => infer Result
+  ? (...args: Args) => Result
+  : never;
+
+type RuntimeMethods<TKey extends keyof EditorStaticApi> = {
+  [Key in TKey]: BindEditorMethod<EditorStaticApi[Key]>;
+};
+
+export type InternalEditorReadRuntime = RuntimeMethods<
+  | 'after'
+  | 'before'
+  | 'edges'
+  | 'elementReadOnly'
+  | 'first'
+  | 'fragment'
+  | 'hasBlocks'
+  | 'hasInlines'
+  | 'hasPath'
+  | 'hasTexts'
+  | 'isBlock'
+  | 'isEdge'
+  | 'isEmpty'
+  | 'isEnd'
+  | 'isStart'
+  | 'last'
+  | 'path'
+  | 'positions'
+  | 'projectRange'
+  | 'range'
+  | 'shouldMergeNodesRemovePrevNode'
+  | 'string'
+  | 'unhangRange'
+  | 'void'
+> & {
+  above: <T extends Ancestor>(
+    options?: EditorAboveOptions<T>
+  ) => NodeEntry<T> | undefined;
+  leaf: (at: Location, options?: EditorLeafOptions) => NodeEntry<Text>;
+  levels: <T extends Node>(
+    options?: EditorLevelsOptions<T>
+  ) => Generator<NodeEntry<T>, void, undefined>;
+  next: <T extends Descendant>(
+    options?: EditorNextOptions<T>
+  ) => NodeEntry<T> | undefined;
+  parent: {
+    (
+      at: Location,
+      options: EditorParentOptions & {
+        type: NodeTypeSelector;
+      }
+    ): NodeEntry<Ancestor> | undefined;
+    (
+      at: Location,
+      options?: EditorParentOptions<Ancestor, undefined>
+    ): NodeEntry<Ancestor>;
+  };
+  point: (at: Location, options?: EditorPointOptions) => Point;
+  previous: <T extends Node>(
+    options?: EditorPreviousOptions<T>
+  ) => NodeEntry<T> | undefined;
+};
+
+export type InternalEditorSnapshotRuntime<V extends Value = Value> = {
+  getChildList: () => NodeList<Descendant>;
+  getChildren: () => V;
+  getFragment: () => Array<DescendantIn<V>>;
+  getLastCommit: () => EditorCommit<V> | null;
+  getPathByNodeKey: (nodeKey: NodeKey) => Path | null;
+  getNodeKey: (path: Path) => NodeKey | null;
+  getSelection: () => Selection;
+  getSnapshot: () => EditorSnapshot<V>;
+};
+
+export type InternalEditorTransactionRuntime<V extends Value = Value> = {
+  read: <T>(fn: (state: EditorStateView<V, any>) => T) => T;
+  runCommand: EditorDirectCommandDispatch<Editor<V>>;
+  subscribe: (listener: SnapshotListener<V>) => () => void;
+  subscribeCommit: (listener: EditorCommitListener<V>) => () => void;
+  subscribeSource: (
+    source: EditorCommitSource,
+    listener: SnapshotListener<V>
+  ) => () => void;
+  update: <R = void>(
+    fn: (
+      transaction: EditorUpdateTransaction<V, any>,
+      context: EditorUpdateContext<Editor<V>>
+    ) => R,
+    options?: InternalEditorUpdateOptions
+  ) => R | undefined;
+};
+
+export type InternalPluginRuntime<V extends Value = Value> = {
+  install: (
+    plugin: PluginInput,
+    options?: PluginReconfigureOptions
+  ) => () => void;
+  preparePluginPublication: (
+    entries: readonly InternalPluginPublicationEntry[],
+    options?: PluginReconfigureOptions
+  ) => Readonly<{
+    cleanup: () => void;
+    commit: () => void;
+    configurationChanged: boolean;
+    documentChange: DocumentChange;
+    finalize: () => void;
+    afterPublish: () => void;
+    beforePublish: () => void;
+    rollback: () => void;
+    schemaContract: () => EditorSchemaContract;
+    stage: () => void;
+    validateDocument: (value: EditorDocumentValue) => void;
+  }>;
+  schema: InternalEditorSchemaApi<V>;
+};
+
+export type InternalCompiledPluginPublicationEntry = Readonly<{
+  /** Shared nominal author identity installed by this entry. */
+  descriptor: PluginReference;
+  /** Immutable normalized behavior compiled for this editor. */
+  definition: PluginDefinitionInput & Readonly<{ name: string }>;
+  editor?: Editor;
+  /** Eligible author ancestors that resolve to the installed descriptor. */
+  sources: readonly PluginReference[];
+  /** Optional owner projection for richer package-specific portals. */
+  createPortal?: (editor: Editor, descriptor: PluginReference) => unknown;
+}>;
+
+export type InternalPluginPublicationEntry =
+  | InternalCompiledPluginPublicationEntry
+  | Readonly<{
+      /** Raw author descriptor normalized at the publication boundary. */
+      editor?: Editor;
+      plugin: PluginReference;
+    }>;
+
+export type InternalEditorRuntime<V extends Value = Value> =
+  InternalPluginRuntime<V> &
+    InternalEditorReadRuntime &
+    InternalEditorSnapshotRuntime<V> &
+    InternalEditorTransactionRuntime<V> & {
+      setViewState?: (
+        key: 'composing' | 'focused' | 'readOnly',
+        value: boolean
+      ) => boolean;
+    };
+
+const EDITOR_RUNTIME = new WeakMap<Editor, InternalEditorRuntime>();
+const EDITOR_RUNTIME_OWNER = new WeakMap<Editor, Editor>();
+const EDITOR_RUNTIME_ROOT = new WeakMap<Editor, RootKey>();
+
+export const setEditorRuntime = <V extends Value>(
+  editor: Editor<V>,
+  runtime: InternalEditorRuntime<V>,
+  owner: Editor = editor,
+  root: RootKey = 'main'
+) => {
+  EDITOR_RUNTIME.set(editor, runtime as unknown as InternalEditorRuntime);
+  EDITOR_RUNTIME_OWNER.set(editor, owner);
+  EDITOR_RUNTIME_ROOT.set(editor, root);
+};
+
+export const hasEditorRuntime = (value: unknown): value is Editor =>
+  typeof value === 'object' &&
+  value !== null &&
+  EDITOR_RUNTIME.has(value as Editor);
+
+export const getEditorRuntime = <V extends Value = Value>(
+  editor: Editor<V>
+): InternalEditorRuntime<V> => {
+  const runtime = EDITOR_RUNTIME.get(editor);
+
+  if (!runtime) {
+    throw new Error('Editor runtime has not been initialized');
+  }
+
+  return runtime as unknown as InternalEditorRuntime<V>;
+};
+
+export type EditorRuntimeCarrier = Readonly<{
+  id: string;
+  read: object;
+  update: object;
+}>;
+
+export const getEditorRuntimeOwner = (editor: EditorRuntimeCarrier): Editor =>
+  EDITOR_RUNTIME_OWNER.get(editor as Editor) ?? (editor as Editor);
+
+export const getEditorRuntimeRoot = (editor: Editor): RootKey =>
+  EDITOR_RUNTIME_ROOT.get(editor) ?? 'main';
+
+export const getEditorSchema = <V extends Value>(
+  editor: Editor<V>
+): InternalEditorSchemaApi<V> => getEditorRuntime(editor).schema;

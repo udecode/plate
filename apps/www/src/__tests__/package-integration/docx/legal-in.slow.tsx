@@ -1,0 +1,70 @@
+/** @jsx jsxt */
+
+import { jsxt } from '@platejs/test';
+import { BaseListPlugin } from 'platejs';
+
+import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
+
+jsxt;
+
+const name = 'legal-in';
+
+describe(getDocxTestName(name), () => {
+  testDocxDeserializer({
+    expected: (
+      <editor>
+        <hp textAlign="center">
+          <htext bold>TITLE</htext>
+        </hp>
+        <hp textIndent={1}>
+          <htext />
+        </hp>
+        <hp textAlign="center">
+          <htext bold>Name</htext>
+        </hp>
+        <hp textAlign="justify" textIndent={1}>
+          A
+        </hp>
+        <hp textAlign="justify">
+          <htext bold italic>
+            Bylaws
+          </htext>
+        </hp>
+        <hp textAlign="justify" indent={1}>
+          A
+        </hp>
+        <hp textAlign="justify" indent={1}>
+          B
+        </hp>
+        <hp textAlign="justify">
+          <htext bold italic>
+            Board of Directors
+          </htext>
+        </hp>
+        <hp textAlign="justify" indent={1}>
+          A
+        </hp>
+        <hp textAlign="justify" indent={1}>
+          B
+        </hp>
+        <hp textAlign="center" textIndent={1}>
+          (<htext italic>signature page follows</htext>)
+        </hp>
+        <hp textAlign="justify" textIndent={1}>
+          C
+        </hp>
+        <hp indent={7}>
+          <htext underline>{'\t'}</htext>
+          {'\n'}Name
+        </hp>
+        <hp indent={7}>Date of signature: </hp>
+        <hp indent={7}>
+          <htext />
+        </hp>
+        <hp indent={7}>__________________________________</hp>
+      </editor>
+    ),
+    filename: name,
+    plugins: [BaseListPlugin],
+  });
+});

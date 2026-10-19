@@ -1,0 +1,474 @@
+'use client';
+
+import {
+  createEditor,
+  type Descendant,
+  type EditorDocumentValue,
+  type Range,
+} from 'platejs';
+import {
+  BaseCommentsPlugin,
+  type CommentMutationDecision,
+  type CommentMutationRequest,
+  type CommentsJSON,
+} from 'platejs/comments';
+import { CommentsPlugin } from 'platejs/comments/react';
+import {
+  type EditableHistoryReplayEvent,
+  EditorRoot,
+  useCreateEditor,
+} from 'platejs/react';
+import { BaseSuggestionPlugin } from 'platejs/suggestion';
+import * as React from 'react';
+
+import { Button } from '@/components/ui/button';
+import {
+  commentDecorationAttributes,
+  createCommentValue,
+} from '@/registry/components/editor/comment';
+import { commentDecorationAttributes as staticCommentDecorationAttributes } from '@/registry/components/editor/comment-static';
+import {
+  AllCommentsButton,
+  CommentToolbarButton,
+} from '@/registry/components/editor/comment-toolbar-button';
+import { DiscussionKit } from '@/registry/components/editor/discussion';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
+import { EditorStatic } from '@/registry/components/editor/editor-static';
+import {
+  FixedToolbar,
+  FixedToolbarPlugin,
+} from '@/registry/components/editor/fixed-toolbar';
+import {
+  RedoToolbarButton,
+  UndoToolbarButton,
+} from '@/registry/components/editor/history-toolbar-button';
+import { ModeToolbarButton } from '@/registry/components/editor/mode-toolbar-button';
+import { EditorKit } from '@/registry/components/editor/plugins';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
+import { suggestionValue } from '@/registry/examples/values/suggestion-value';
+
+const commentRanges: readonly Range[] = [
+  {
+    anchor: { offset: 5, path: [0, 0] },
+    focus: { offset: 34, path: [0, 0] },
+  },
+  {
+    anchor: { offset: 24, path: [0, 0] },
+    focus: { offset: 55, path: [0, 0] },
+  },
+];
+
+const createInitialValue = (review: Descendant[]): EditorDocumentValue => ({
+  children: [
+    {
+      children: [
+        {
+          text: 'This paragraph has two overlapping comments backed by persistent editor anchors.',
+        },
+      ],
+      type: 'paragraph',
+    },
+    { type: 'paragraph', children: review },
+  ],
+});
+
+// Alice's insertion and Bob's deletion, as the review marks the authored
+// plugin stores on the suggested text.
+const reviewText = suggestionValue[0].children.map((child, index) =>
+  index === 1
+    ? {
+        ...child,
+        authored: [
+          {
+            at: Date.parse('2026-09-09T12:00:00.000Z'),
+            author: 'alice',
+            change: 'tighten',
+            kind: 'insert',
+          },
+        ],
+      }
+    : index === 3
+      ? {
+          ...child,
+          authored: [
+            {
+              at: Date.parse('2026-09-09T12:01:00.000Z'),
+              author: 'bob',
+              change: 'remove',
+              kind: 'delete',
+            },
+          ],
+        }
+      : child
+);
+
+const createInitialRevision = () => {
+  const fixture = createEditor({
+    plugins: [...BaseEditorKit, BaseSuggestionPlugin],
+    userId: 'alice',
+    initialValue: createInitialValue(reviewText),
+  });
+  const comments: CommentsJSON = {
+    kind: 'comments',
+    version: 1,
+    ranges: commentRanges.map((range, index) => {
+      const anchor = fixture.anchor(range, {
+        association: 'inward',
+        deletion: 'nearest',
+      });
+      const saved = fixture.anchor.save(anchor);
+      anchor.release();
+      return { threadId: index === 0 ? 'ownership' : 'overlap', range: saved };
+    }),
+    threads: [
+      ...commentRanges.map((_, index) => ({
+        createdAt: '2026-09-09T12:00:00.000Z',
+        excerpt:
+          index === 0
+            ? 'paragraph has two overlapping'
+            : 'overlapping comments backed by',
+        id: index === 0 ? 'ownership' : 'overlap',
+        messages: [
+          {
+            body: createCommentValue(
+              index === 0
+                ? 'The first thread stores its body with a document range.'
+                : 'Overlaps stay ordered without nested leaf renderers.'
+            ),
+            createdAt: '2026-09-09T12:00:00.000Z',
+            id: index === 0 ? 'ownership-message' : 'overlap-message',
+            userId: index === 0 ? 'alice' : 'bob',
+          },
+        ],
+        resolution: null,
+        status: 'published' as const,
+        target: { type: 'range' as const },
+        userId: index === 0 ? 'alice' : 'bob',
+      })),
+      {
+        id: 'suggestion-thread',
+        createdAt: '2026-09-09T12:02:00.000Z',
+        excerpt: 'tighten the wording',
+        userId: 'bob',
+        resolution: null,
+        status: 'published',
+        target: { type: 'change', id: 'tighten' },
+        messages: [
+          {
+            id: 'suggestion-message',
+            userId: 'bob',
+            createdAt: '2026-09-09T12:02:00.000Z',
+            body: [
+              {
+                type: 'paragraph',
+                children: [
+                  { text: 'This makes the wording ' },
+                  { text: 'clearer', bold: true },
+                  { text: '.' },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  return { document: fixture.read.value(), comments };
+};
+
+const initialState = {
+  users: {
+    alice: {
+      id: 'alice',
+      name: 'Alice',
+      avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
+    },
+    bob: {
+      id: 'bob',
+      name: 'Bob',
+      avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
+    },
+    charlie: {
+      id: 'charlie',
+      name: 'Charlie',
+      avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
+    },
+  },
+};
+
+const createPersistenceGate = () => {
+  let armed = false;
+  let settle: ((decision: 'apply' | 'block') => void) | undefined;
+
+  return {
+    arm() {
+      armed = true;
+    },
+    settle(decision: 'apply' | 'block') {
+      settle?.(decision);
+    },
+    wait() {
+      if (!armed) return null;
+
+      armed = false;
+
+      return new Promise<'apply' | 'block'>((resolve) => {
+        settle = resolve;
+      }).finally(() => {
+        settle = undefined;
+      });
+    },
+  };
+};
+
+const DiscussionDemoToolbarPlugin = FixedToolbarPlugin.configure({
+  slots: {
+    beforeContainer: () => (
+      <FixedToolbar className="justify-end gap-1">
+        <UndoToolbarButton />
+        <RedoToolbarButton />
+        <CommentToolbarButton />
+        <AllCommentsButton />
+        <ModeToolbarButton />
+      </FixedToolbar>
+    ),
+  },
+});
+
+const DiscussionReviewerToolbarPlugin = FixedToolbarPlugin.configure({
+  slots: {
+    beforeContainer: () => (
+      <FixedToolbar className="justify-end">
+        <AllCommentsButton />
+        <ModeToolbarButton />
+      </FixedToolbar>
+    ),
+  },
+});
+
+export default function DiscussionProof() {
+  const [loadError, setLoadError] = React.useState(false);
+  const [historyReplayEvents, setHistoryReplayEvents] = React.useState<
+    EditableHistoryReplayEvent[]
+  >([]);
+  const [persistenceStatus, setPersistenceStatus] = React.useState<
+    'armed' | 'idle' | 'pending'
+  >('idle');
+  const [persistenceGate] = React.useState(createPersistenceGate);
+  const mutate = React.useCallback(
+    async (
+      request: CommentMutationRequest
+    ): Promise<CommentMutationDecision> => {
+      const pendingDecision =
+        request.operation === 'removeThread' ? persistenceGate.wait() : null;
+
+      if (pendingDecision) {
+        setPersistenceStatus('pending');
+        const decision = await pendingDecision;
+
+        setPersistenceStatus('idle');
+        if (decision === 'block') {
+          return { code: 'proof-refusal', status: 'reject' };
+        }
+      }
+
+      return { status: 'commit', thread: request.proposed };
+    },
+    [persistenceGate]
+  );
+  const [initialRevision] = React.useState(createInitialRevision);
+  const [loaded, setLoaded] = React.useState(initialRevision);
+  const editor = useCreateEditor(
+    {
+      plugins: [
+        ...EditorKit,
+        ...DiscussionKit,
+        DiscussionDemoToolbarPlugin,
+        CommentsPlugin.configure({
+          initialState: {
+            ...initialState,
+            initialComments: loaded.comments,
+            mutate,
+          },
+        }),
+      ],
+      userId: 'alice',
+      initialValue: loaded.document,
+    },
+    [loaded, mutate]
+  );
+  const reviewerEditor = useCreateEditor({
+    plugins: [
+      ...EditorKit,
+      DiscussionReviewerToolbarPlugin,
+      CommentsPlugin.configure({
+        initialState: {
+          ...initialState,
+          initialComments: initialRevision.comments,
+        },
+        decorate: { attributes: commentDecorationAttributes },
+      }),
+    ],
+    userId: 'alice',
+    initialValue: initialRevision.document,
+  });
+  const staticEditor = useCreateEditor({
+    plugins: [
+      ...BaseEditorKit,
+      BaseSuggestionPlugin,
+      BaseCommentsPlugin.configure({
+        initialState: {
+          ...initialState,
+          initialComments: initialRevision.comments,
+        },
+        decorate: { attributes: staticCommentDecorationAttributes },
+      }),
+    ],
+    initialValue: initialRevision.document,
+  });
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div
+        aria-label="Comment data loading"
+        className="flex items-center gap-3"
+        role="group"
+      >
+        <Button
+          onClick={() => {
+            try {
+              const revision = structuredClone({
+                document: editor.read.value(),
+                comments: editor.plugin(CommentsPlugin).api.toJSON(),
+              });
+              const candidate = createEditor({
+                plugins: [
+                  ...EditorKit,
+                  CommentsPlugin.configure({
+                    initialState: {
+                      ...initialState,
+                      initialComments: JSON.parse(
+                        JSON.stringify({
+                          ...revision.comments,
+                          version: loadError ? 1 : 0,
+                        })
+                      ),
+                    },
+                  }),
+                ],
+                initialValue: revision.document,
+              });
+              candidate.plugin(BaseCommentsPlugin).api.getSnapshot();
+              setLoaded(revision);
+              setLoadError(false);
+            } catch {
+              setLoadError(true);
+            }
+          }}
+          size="sm"
+          variant="outline"
+        >
+          {loadError ? 'Reload valid comments' : 'Load invalid comments'}
+        </Button>
+        <span aria-live="polite" className="text-xs text-muted-foreground">
+          {loadError
+            ? 'Invalid comment records rejected'
+            : 'Comment records loaded'}
+        </span>
+      </div>
+
+      <div
+        aria-label="History persistence controls"
+        className="flex items-center gap-2"
+        role="group"
+      >
+        <Button
+          disabled={persistenceStatus === 'pending'}
+          onClick={() => {
+            persistenceGate.arm();
+            setPersistenceStatus('armed');
+          }}
+          size="sm"
+          variant="outline"
+        >
+          Hold next comment removal
+        </Button>
+        <Button
+          disabled={persistenceStatus !== 'pending'}
+          onClick={() => persistenceGate.settle('apply')}
+          size="sm"
+          variant="outline"
+        >
+          Apply pending comment removal
+        </Button>
+        <Button
+          disabled={persistenceStatus !== 'pending'}
+          onClick={() => persistenceGate.settle('block')}
+          size="sm"
+          variant="outline"
+        >
+          Refuse pending comment removal
+        </Button>
+        <output aria-label="History persistence status">
+          {persistenceStatus}
+        </output>
+        <output aria-label="History replay events">
+          {JSON.stringify(historyReplayEvents)}
+        </output>
+      </div>
+
+      <div className="grid gap-4">
+        <div className="min-w-0" data-comment-editor="primary">
+          <EditorRoot editor={editor} key={editor.id}>
+            <EditorFrame className="h-[520px]">
+              <EditorContainer>
+                <Editor
+                  className="px-8"
+                  onHistoryReplay={(event) => {
+                    setHistoryReplayEvents((events) => [...events, event]);
+                  }}
+                  variant="fullWidth"
+                />
+              </EditorContainer>
+            </EditorFrame>
+          </EditorRoot>
+        </div>
+
+        <div
+          className="flex min-w-0 flex-col gap-2"
+          data-comment-editor="reviewer"
+        >
+          <h2 className="text-sm font-medium">Read-only reviewer</h2>
+          <EditorRoot editor={reviewerEditor} readOnly>
+            <EditorFrame className="h-[180px]">
+              <EditorContainer>
+                <Editor
+                  className="size-full px-6 py-3 text-base"
+                  variant="none"
+                />
+              </EditorContainer>
+            </EditorFrame>
+          </EditorRoot>
+        </div>
+
+        <div
+          className="flex min-w-0 flex-col gap-2"
+          data-comment-editor="static"
+        >
+          <h2 className="text-sm font-medium">Static snapshot</h2>
+          <div className="rounded-md border p-6">
+            <EditorStatic
+              aria-label="Static annotated document"
+              className="text-base"
+              editor={staticEditor}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,150 @@
+'use client';
+
+import type { Value } from 'platejs';
+import {
+  BlockquotePlugin,
+  BoldPlugin,
+  HeadingPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+  EditorRoot,
+  useCreateEditor,
+} from 'platejs/react';
+import * as React from 'react';
+
+import { BlockquoteElement } from '@/registry/components/editor/blockquote';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
+import { FixedToolbar } from '@/registry/components/editor/fixed-toolbar';
+import { HeadingElement } from '@/registry/components/editor/heading';
+import { MarkToolbarButton } from '@/registry/components/editor/mark-toolbar-button';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
+
+const initialValue: Value = [
+  {
+    children: [{ text: 'Title' }],
+    level: 3,
+    type: 'heading',
+  },
+  {
+    children: [
+      {
+        children: [{ text: 'This is a quote.' }],
+        type: 'paragraph',
+      },
+    ],
+    type: 'blockquote',
+  },
+  {
+    children: [
+      { text: 'With some ' },
+      { bold: true, text: 'bold' },
+      { text: ' text for emphasis!' },
+    ],
+    type: 'paragraph',
+  },
+];
+
+const storageKey = () =>
+  `nextjs-value-demo-${new Date().toISOString().split('T')[0]}`;
+
+const subscribe = () => () => {};
+const getServerSnapshot = () => undefined;
+
+export default function MyEditorPage() {
+  const savedValue = React.useSyncExternalStore(
+    subscribe,
+    () => localStorage.getItem(storageKey()),
+    getServerSnapshot
+  );
+
+  if (savedValue === undefined) return null;
+
+  return (
+    <ValueEditor value={savedValue ? JSON.parse(savedValue) : initialValue} />
+  );
+}
+
+function ValueEditor({ value }: { value: Value }) {
+  const editor = useCreateEditor({
+    plugins: [
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      HeadingPlugin.configure({ component: HeadingElement }),
+      BlockquotePlugin.configure({ component: BlockquoteElement }),
+    ],
+    initialValue: value,
+  });
+
+  return (
+    <EditorRoot
+      onValueChange={({ value: innerValue }) => {
+        localStorage.setItem(storageKey(), JSON.stringify(innerValue));
+      }}
+      editor={editor}
+    >
+      <EditorFrame>
+        <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
+          <ToolbarButton
+            onClick={() => {
+              editor.plugin(HeadingPlugin).update.toggle({ level: 1 });
+            }}
+          >
+            H1
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => {
+              editor.plugin(HeadingPlugin).update.toggle({ level: 2 });
+            }}
+          >
+            H2
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => {
+              editor.plugin(HeadingPlugin).update.toggle({ level: 3 });
+            }}
+          >
+            H3
+          </ToolbarButton>
+
+          <ToolbarButton
+            onClick={() => {
+              editor.plugin(BlockquotePlugin).update.toggle();
+            }}
+          >
+            Quote
+          </ToolbarButton>
+
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">
+            B
+          </MarkToolbarButton>
+          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">
+            I
+          </MarkToolbarButton>
+          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">
+            U
+          </MarkToolbarButton>
+
+          <div className="flex-1" />
+
+          <ToolbarButton
+            className="px-2"
+            onClick={() => {
+              editor.update.value.replace({ children: initialValue });
+            }}
+          >
+            Reset
+          </ToolbarButton>
+        </FixedToolbar>
+
+        <EditorContainer>
+          <Editor placeholder="Type your amazing content here..." />
+        </EditorContainer>
+      </EditorFrame>
+    </EditorRoot>
+  );
+}

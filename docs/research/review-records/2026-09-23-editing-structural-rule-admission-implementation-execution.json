@@ -1,0 +1,121 @@
+{
+  "id": "2026-09-23-editing-structural-rule-admission-implementation-execution",
+  "kind": "execution",
+  "date": "2026-09-23",
+  "scopes": [
+    "editing"
+  ],
+  "reviewBasis": [
+    "2026-09-23-editing-structural-rule-admission"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-23-structural-input-rule-admission-implementation.md",
+    "sha256": "916c916c49b6c47ed393764400d079af337b9aed8572777c6ea7c1e61af64d94"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Implemented atomic structural input-rule decline with truthful Plite change outcomes, migrated heading, quote, generic block, list, code-fence and horizontal-rule shorthand, removed the shadow validator, and updated public docs and durable doctrine. Source-mode Chromium and focused package tests pass.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-23-structural-input-rule-admission-implementation.md",
+        "sha256": "916c916c49b6c47ed393764400d079af337b9aed8572777c6ea7c1e61af64d94",
+        "claim": "Contemporaneous implementation plan records focused package, type, targeted lint, docs, source-mode Chromium, and scale-probe commands and observed results. The hash binds that report but is not itself a test run."
+      }
+    ],
+    "limits": "Package-wide core lint remains red on unrelated pre-existing diagnostics while touched-file lint is green. The 20-block timing cohort is noisy; the owner-scale proxy lacks an exact old checkout and allocation data, and quote/list lack matched timing runs. Browser proof covers valid heading/list/code-fence input, while forbidden required-title placement is covered at package level."
+  },
+  "source": {
+    "files": {
+      "packages/plitejs/src/core/editor-commands.ts": "c98f11da8706d0ee6b54f3050b45887a3cc4f7332d10482ad178d2f9a40a6714",
+      "packages/plitejs/src/editor/insert-text.ts": "949b7c9ee82232a59b79ad55a0ff88ec41927638fc3ce1dec0ae9f3bb39a3053",
+      "packages/platejs/src/internal/plugin/OverridePlugin.ts": "70b0009e3d7584c7bb01e7a172eb2e7aa04ab7d450a87723ec2961f9706daa0b",
+      "packages/platejs/src/utils/plugins/ExitBreakPlugin.ts": "28252f9c6b6338c8bb3d76f5d63e67a19b0b18dda2a5329a044193a066f372aa",
+      "packages/platejs/src/utils/plugins/SingleBlockPlugin.ts": "3b03404598c178051a2ee81f198d0c916ef31a2e7d25ede39363b67c365b1091",
+      "packages/platejs/src/utils/plugins/SingleLinePlugin.ts": "2a12a0eca2ba0fc39a6cea159f79d4b51f6fbdd7dda67a9bc90cf84736e8097b",
+      "packages/platejs/src/utils/plugins/TrailingBlockPlugin.ts": "50acae58d2e4c2b2915271ddb817617043aae7303d731cdbb39e6c41d8762c1b",
+      "packages/plitejs/test/content-slice-laws.test.ts": "76a3952f8d6686d6fe5282138855193f81c350ece6243aab188d454580ba6dab",
+      "packages/platejs/src/lib/plugin/block-insertion.spec.ts": "efe2726d79ca73fadbeb22569381e01c0a2ffa0dd48fdf80239bb4b6aacec7e1",
+      "apps/www/tests/browser/autoformat.spec.ts": "8eb1927998048c17ac887716458de79b41e161533b66fb36e6e83d6aea1f3a95",
+      "apps/www/playwright.config.ts": "a205a2ae686426226a8e49bf5f5a4bdb81accc8dc495ac38ca568f4ebaa252bf",
+      "apps/www/package.json": "fa379b896cd99a95ecc39dd3eba92fcde63f977d2d74e6e62075fac0d1706757",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/tsconfig.json": "dcc90d02a70c286c9a7c8502092848b145e581b39f57b4ad63e92fc004df53f7",
+      "packages/plitejs/src/core/command-registry.ts": "0ca28b54f1f36e8e10d491e1e04c2dc8a1de436e3797c48a999d4dd0c09ba181",
+      "packages/plitejs/src/core/public-state.ts": "72b78a5bcae1ff77e642e479e573d8b698844b15f9c92be4559fc52980a9a43c",
+      "packages/plitejs/src/core/representation.ts": "8c482a5d910220aa1de4e1c18d1d63cda9863a0343d6a4ccf33ab73707024ca0",
+      "packages/plitejs/src/interfaces/editor.ts": "dbd059c0f1e61a7a8ac2f945a36d7e38b4d9fe80f03e4af222dd7736d9072acb",
+      "packages/platejs/src/lib/plugin/PluginDefinition.ts": "cafde40b25b277788e940435517b58288bf22303a8a82e35dc0ac1e40fe5c040",
+      "packages/platejs/src/internal/plugin/resolvePlugins.ts": "f112860e7986a8e7ba6c7347581bb8b0482795cc4081930dffaf5bdcb982e618",
+      "packages/platejs/src/lib/plugins/getCorePlugins.internal.ts": "04647b757c9030179679fb506acf855e29eedcffc063a75e2bcb78116eb0be1a",
+      "packages/platejs/src/features/code-block/lib/CodeBlockRules.ts": "4a8b1564300eddcba2ae0df99db93c627ea610f3f3cc4316ad752680f1f3cc92",
+      "packages/platejs/src/features/list/lib/BaseListPlugin.ts": "6a1fe38e8915b70550a3a5a3ffb5a3ff6c152f4887038622b539cb6b0e127d64",
+      "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts": "31b2801eae52c590fbf02e2ed38aa4e95c57557bac332a188917f3bbfa28d4b2",
+      "apps/www/src/registry/components/editor/basic-blocks.tsx": "4317ce2eda30f37d3a89288fba26d30862cc17d66503814fbfdf3468221e1882",
+      "apps/www/src/registry/components/editor/basic-marks.tsx": "55921a1b8258db3550d20e888bf33d542df8b5a94314cc6402666420ca7deb55",
+      "apps/www/src/registry/components/editor/code-block.tsx": "295c03a94b95cd1a2029c5376c41d0456dbe23cbd82dd6ce76058db798053775",
+      "apps/www/src/registry/components/editor/list.tsx": "7c905126362567c8c8adc2d3deceea368f1bf74c9923d1bd08e7b399fc1c5aaf",
+      "apps/www/src/registry/components/editor/math.tsx": "6cf1ce253ffb433398dae1d43da2360884795a65bf48324588626b36cf19d33e",
+      "apps/www/src/registry/components/editor/link.tsx": "b2966cd43fd54d832e2fe5b909c7a34ed8d73dd093351fc04f00666c72fbfb6a",
+      "apps/www/src/registry/examples/playground-demo.tsx": "2eff1087e5dc9e5437fba1166dbad3098600e4eb680bb1240facb2a4e1182504",
+      "content/docs/(guides)/plugin-input-rules.mdx": "4307b740e9b708847a32dcf63bdaca6be2584ce9e2e7411a4327af4f650e041a",
+      "content/docs/(guides)/plugin-rules.mdx": "174bffec9379f9381d9550091e9b4df023c7871590e1f2eb8c2387d2b4f7c882",
+      "packages/platejs/src/react/utils/inputRules.spec.tsx": "dff39944d257b192d8095f436962c9c26e2e4ed3bc208cac02e88e1dd7c60398",
+      "packages/platejs/src/lib/plugins/override/OverridePlugin.spec.tsx": "c446c90519ad0a172ce4b56e5484dfe20e009c49af8bea8b6cd38e4cc4eee59a",
+      "packages/plitejs/test/max-length-contract.test.ts": "e028db33363aa97141d7c27ce4faf8254e86f9f7931ee30a7939176bdb81d141",
+      "packages/plitejs/test/command-spec.test.ts": "80aa8fdaf45e8223e3c22c00e633373a266493e8edc83d3a5224c40fdec9c8e2",
+      "packages/platejs/package.json": "97faae906581c775d720a4953a98c5642e0f53f909ed0720ad12c2bfc6576411",
+      "packages/platejs/bunfig.toml": "4b50460498d463e8a9fa0466f24ea99238dff70a939468d1f9b086a018a5a162",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "tooling/config/bunTestSetup.ts": "f792ad47c50664174ee921a394fb2f667c69bb2eb6037c4f1e17bba440c93a0e",
+      "tooling/scripts/run-entrypoint-package-task.mjs": "3a5ee440e6b69eae7a01fc9707d0edc0c3145bd763adf599f71d888c76cdbc00",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "77bf6f360dc7b3199b947dc167649fbc39007b81b4f9bd5364660757e7d4a703"
+    },
+    "directories": {
+      "packages/platejs/src/lib/plugins/input-rules": "6791615e3f7fe34b351984f9045674d1b4e72b73aec834c567d5da41b3c9873a",
+      "packages/platejs/src/features/basic-nodes": "65dd53017953eb664d1a8931f4cfdadc6d654e9fac16e7ce2a718e568f084a21"
+    },
+    "features": {
+      "browser/autoformat": "3929e3d6cc2836d95eac055983be52a359f8c2f7daebf5297d03c6ef0a7ed282",
+      "capability/exitBreak": "99bf5726a8e298b0e6bebf73a2847817f991ec81098a42c8d3f7ca6a9f688c59",
+      "capability/inputRules": "8135a4e0b278b55c07b824cfc66c5a1e164e6fba2a80f496a683a355d802d9b4",
+      "capability/singleBlock": "9ee881f736240d7703d790e4e887204a28dd687991207559b961b122afc44c0e",
+      "capability/singleLine": "2519fa9c316a9573bf3669dc00d3b54297ccf7fff73cce9555c993607418fb48",
+      "capability/trailingBlock": "8082c05b44792d5fb2d154ae9e9734e9b3f51a3677dedc7d1c8db3d90358933c",
+      "example/plite/forced-layout": "bb8fbe260a1a978f53e0d67ec0fad12fba335d17eac0cdf2ab3eebbe79ef142b",
+      "example/plite/plaintext": "ae917c376b0c53d2e848f2359945fd920aa1f5df274bd4e79797201b86d00722",
+      "example/registry/single-block-demo": "229e8c8ee38ffe209e96784e557d8059daaa40e87fd5b5684ac29e46639a003c",
+      "example/value/autoformat-value": "ef744ae3c0185febdebcf6104bb2904b0bb8af9db06cb00814a9e528e950318c",
+      "example/value/exit-break-value": "280ff569f9bd589f29822758299b69f5ce11b29496d5ff12dc9a32cf83d5e089",
+      "example/value/plugin-rules-value": "2b24b656179449276b616a1ddff308d03e4ca77bb8362eda85ed6138982ad5d7",
+      "example/value/soft-break-value": "6dc867143f38f8f6134be2659d451a8d8af583938e61951f7a0c570d6903adc3",
+      "plitejs/core/correction": "46eb237fa5354a36523f9639ba3711e9c16a4eba6a216f05a4c436cabc408527",
+      "plitejs/core/insert-limit": "73cade8e63ee0e2645ae7934ceeeaeee4b050bce94e5b1ac601f55e745574c8b",
+      "plitejs/editor/add-mark": "56e1a2612816d22a6f70da67bcef6fc0f95647d9b111cd5d0a95deefe1c3990d",
+      "plitejs/editor/block-void-break": "7276c8d0d3c6b67693deb4a3a3654320387cf4d0a9ce2abffbe8c7531c2d398f",
+      "plitejs/editor/correct-document": "9f81ccf896001192f179dbf6315887d872f2a14241cf4ec54f5254843851f505",
+      "plitejs/editor/delete-backward": "ca762bcd0c78831ef8583146e5d9b1ad1b91f5e0e36586bee98a4bfc5a5e5b2b",
+      "plitejs/editor/delete-forward": "f5481b97c7b60cfe5f92a75dc9b0b04c97027b117ab86875f7f4ba642d1dbd0d",
+      "plitejs/editor/delete-fragment": "297d6867c1d767e755e8a3ef0f279ff538b1a151331dd8ac5172fb5378e04efa",
+      "plitejs/editor/insert-break": "56651399d6c02f045228e259d1d6885191eb0bb9d3f100e8f20faf0e658e2fbb",
+      "plitejs/editor/insert-soft-break": "49771674e8e89a30872f39b069e8f71cc9ab22ed4c3fcd681ae10e7c2395a259",
+      "plitejs/editor/insert-text": "0537d45688059f30386dbcfac1c400db3b95be7f30cdb21bffae534cdc1f385b",
+      "plitejs/editor/remove-mark": "b6286e4c5f3285f80cfa4c4ff00e72d72c1f433761eac614f47c05f7634c6102",
+      "plitejs/editor/should-merge-nodes-remove-prev-node": "a1091ded84277a73583e58078040d58792e7c53d4159534be0ab52277a91d7d8",
+      "plitejs/editor/toggle-mark": "c9dbe22b35b9045c202f55e7be973dc64bd7f02362a7a2ee082d4b3447ab6096",
+      "plitejs/transforms-node": "639e6c0eb724d7e905483093ed0aa9083dcc16be1734d281eb96ecad68be956e",
+      "plitejs/transforms-text": "c83a6bea18a63d31ece17fad1056440c825d3dbd33c22172a20806a7c55cf64a",
+      "ui/autoformat": "427d8c3ff5f89e5198238113da872c3b017c4dcd9cd2287c96cb28a26b9e0616",
+      "ui/exit-break": "ac405cc596e92edd64cbb3d9330512e60af59793ae010f7f5a374d51eecfdaa0"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-23-structural-input-rule-admission-implementation.md"
+  ]
+}

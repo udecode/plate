@@ -1,0 +1,254 @@
+[
+  {
+    "cell": "static-rich-10000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": false,
+    "textShas": {
+      "baseline": [
+        "f6f95d31f65e9478"
+      ],
+      "candidate": [
+        "f6f95d31f65e9478"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "473ec1a16deaaec2"
+      ],
+      "candidate": [
+        "3f483362410fc688"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        0
+      ],
+      "candidate": [
+        0
+      ]
+    }
+  },
+  {
+    "cell": "static-cjk-10000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": false,
+    "textShas": {
+      "baseline": [
+        "d9a5734485a19d3b"
+      ],
+      "candidate": [
+        "d9a5734485a19d3b"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "9b8edda939c3f6df"
+      ],
+      "candidate": [
+        "704ea2f09f0d7c2f"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        0
+      ],
+      "candidate": [
+        0
+      ]
+    }
+  },
+  {
+    "cell": "ai-rich-10000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": false,
+    "textShas": {
+      "baseline": [
+        "f6f95d31f65e9478"
+      ],
+      "candidate": [
+        "f6f95d31f65e9478"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "737ac395635ca847"
+      ],
+      "candidate": [
+        "2885a46b3d35667d"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        1
+      ],
+      "candidate": [
+        1
+      ]
+    }
+  },
+  {
+    "cell": "ai-cjk-10000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": false,
+    "textShas": {
+      "baseline": [
+        "d9a5734485a19d3b"
+      ],
+      "candidate": [
+        "d9a5734485a19d3b"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "46d5d7753c6a5e06",
+        "6ed7a5c4bd83280c"
+      ],
+      "candidate": [
+        "573885c974daeaa9"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        28,
+        29
+      ],
+      "candidate": [
+        1
+      ]
+    }
+  },
+  {
+    "cell": "static-rich-50000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": false,
+    "textShas": {
+      "baseline": [
+        "9e9d59c16ab2d511"
+      ],
+      "candidate": [
+        "9e9d59c16ab2d511"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "c20ae9614b7147c8"
+      ],
+      "candidate": [
+        "484327b3e91d2eda"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        0
+      ],
+      "candidate": [
+        0
+      ]
+    }
+  },
+  {
+    "cell": "ai-rich-50000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": false,
+    "textShas": {
+      "baseline": [
+        "9e9d59c16ab2d511"
+      ],
+      "candidate": [
+        "9e9d59c16ab2d511"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "38157434f46c9d8a",
+        "cb328aafc98475de",
+        "fe5a115514837aac"
+      ],
+      "candidate": [
+        "b004b49eb55e159c"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        59,
+        80,
+        26
+      ],
+      "candidate": [
+        1
+      ]
+    }
+  },
+  {
+    "cell": "static-cjk-50000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": false,
+    "textShas": {
+      "baseline": [
+        "aedd05ac73564d32"
+      ],
+      "candidate": [
+        "aedd05ac73564d32"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "bf6211239eed883c"
+      ],
+      "candidate": [
+        "100d968f4ac65670"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        0
+      ],
+      "candidate": [
+        0
+      ]
+    }
+  },
+  {
+    "cell": "ai-cjk-50000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": false,
+    "textShas": {
+      "baseline": [
+        "aedd05ac73564d32"
+      ],
+      "candidate": [
+        "aedd05ac73564d32"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "18caa45b2033d526",
+        "167d5f44a5cb8f64",
+        "75f9caddeff75e3b",
+        "90897b8f0a55c318"
+      ],
+      "candidate": [
+        "ffd9dded94e083ef"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        73,
+        75,
+        90,
+        80
+      ],
+      "candidate": [
+        0
+      ]
+    }
+  }
+]

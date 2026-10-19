@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-17-declare-select-editor-update-methods",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-17-declare-select-editor-update-methods.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-17",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Declare where select editor update methods place their arguments",
+  "targets": [
+    {
+      "name": "select-editor",
+      "files": [
+        "apps/www/src/registry/components/editor/select-editor.tsx",
+        "apps/www/src/registry/components/editor/tag.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-17-select-editor-declare-update-methods-8cfe35cd",
+      "kind": "fix",
+      "summary": "Wrap `pick` and `replaceItems` in `txLocate(false, …)`, so the plugin compiles against `platejs`'s check for undeclared update methods.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["select-editor"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-17",
+          "entry": "2026-10-17-declare-select-editor-update-methods",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

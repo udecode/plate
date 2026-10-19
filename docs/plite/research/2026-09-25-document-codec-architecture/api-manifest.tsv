@@ -1,0 +1,664 @@
+entrypoint	symbol	member	kind	source	line
+platejs/ai/react	AIChatDefinition	read	member	packages/platejs/src/ai/react/AIChatPlugin.ts	1878
+platejs/authored	AuthoredEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs/authored	AuthoredPlugin	read	member	packages/plitejs/src/authored/authored.ts	210
+platejs/authored	parseAuthoredDocument		export	packages/plitejs/src/authored/format.ts	429
+platejs/combobox	TriggerComboboxEditor	read	member	packages/platejs/src/features/combobox/lib/triggerCombobox.ts	12
+platejs/csv	CsvParseOptions		export	packages/platejs/src/csv/lib/CsvPlugin.ts	13
+platejs/csv	CsvPluginState	parseOptions	member	packages/platejs/src/csv/lib/CsvPlugin.ts	28
+platejs/csv	DeserializeCsvOptions		export	packages/platejs/src/csv/lib/CsvPlugin.ts	31
+platejs/date	parseCanonicalDateValue		export	packages/platejs/src/features/date/lib/dateValue.ts	11
+platejs/dnd/react	DndDefinition	read	member	packages/platejs/src/dnd/react/DndPlugin.tsx	13
+platejs/docx/export	exportDocx		export	packages/platejs/src/docx/export/lib/exportDocx.tsx	351
+platejs/docx/import	importDocx		export	packages/platejs/src/docx/import/lib/importDocx.ts	1686
+platejs/dom	DataTransferDecodeContext		export	packages/plitejs/src/dom/plugin/data-transfer-format.ts	308
+platejs/dom	DataTransferDecodeResult		export	packages/plitejs/src/dom/plugin/data-transfer-format.ts	77
+platejs/dom	DataTransferEncodeContext		export	packages/plitejs/src/dom/plugin/data-transfer-format.ts	319
+platejs/dom	DataTransferEncodeResult		export	packages/plitejs/src/dom/plugin/data-transfer-format.ts	91
+platejs/dom	DataTransferFormat	decode	member	packages/plitejs/src/dom/plugin/data-transfer-format.ts	340
+platejs/dom	DataTransferFormat	encode	member	packages/plitejs/src/dom/plugin/data-transfer-format.ts	348
+platejs/dom	DOMApi	assertDOMNode	member	packages/plitejs/src/dom/plugin/dom-editor.ts	200
+platejs/dom	DOMApi	assertDOMPoint	member	packages/plitejs/src/dom/plugin/dom-editor.ts	201
+platejs/dom	DOMApi	assertDOMRange	member	packages/plitejs/src/dom/plugin/dom-editor.ts	202
+platejs/dom	DOMApi	assertEventRange	member	packages/plitejs/src/dom/plugin/dom-editor.ts	154
+platejs/dom	DOMApi	assertNode	member	packages/plitejs/src/dom/plugin/dom-editor.ts	203
+platejs/dom	DOMApi	assertPath	member	packages/plitejs/src/dom/plugin/dom-editor.ts	156
+platejs/dom	DOMApi	assertPoint	member	packages/plitejs/src/dom/plugin/dom-editor.ts	204
+platejs/dom	DOMApi	assertRange	member	packages/plitejs/src/dom/plugin/dom-editor.ts	211
+platejs/dom	DOMClipboardApi	readSlice	member	packages/plitejs/src/dom/plugin/dom-editor.ts	241
+platejs/dom	DOMClipboardApi	writeSelection	member	packages/plitejs/src/dom/plugin/dom-editor.ts	248
+platejs/dom	DOMClipboardApi	writeSlice	member	packages/plitejs/src/dom/plugin/dom-editor.ts	251
+platejs/dom	parseDOMClipboardHtml		export	packages/plitejs/src/dom/plugin/dom-html.ts	82
+platejs/dom	writeDataTransferFragment		export	packages/plitejs/src/dom/plugin/data-transfer-format.ts	1113
+platejs/footnote	FootnoteDefinition	read	member	packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts	571
+platejs/history	HistoryPlugin	read	member	packages/plitejs/src/history/history-plugin.ts	154
+platejs/history	HistoryPluginTypes	read	member	packages/plitejs/src/history/history-plugin.ts	140
+platejs/history	HistoryPlugin	validate	member	packages/plitejs/src/history/history-plugin.ts	156
+platejs/html/server	HtmlDocumentParseResult		export	packages/platejs/src/lib/plugins/html/htmlTypes.ts	141
+platejs/html/server	HtmlParseLimits		export	packages/platejs/src/lib/plugins/html/htmlTypes.ts	14
+platejs/html/server	HtmlParseOptions		export	packages/platejs/src/lib/plugins/html/htmlTypes.ts	174
+platejs/html/server	HtmlSliceParseResult		export	packages/platejs/src/lib/plugins/html/htmlTypes.ts	152
+platejs/html/server	parseHtml		export	packages/platejs/src/html/server/index.ts	39
+platejs/html/server	parseHtmlSlice		export	packages/platejs/src/html/server/index.ts	47
+platejs/html	HtmlApi	parse	member	packages/platejs/src/lib/plugins/html/htmlTypes.ts	205
+platejs/html	HtmlApi	parseSlice	member	packages/platejs/src/lib/plugins/html/htmlTypes.ts	209
+platejs/html	HtmlApi	serialize	member	packages/platejs/src/lib/plugins/html/htmlTypes.ts	213
+platejs/html	HtmlDocumentParseResult		export	packages/platejs/src/lib/plugins/html/htmlTypes.ts	141
+platejs/html	HtmlEditorParseOptions		export	packages/platejs/src/lib/plugins/html/htmlTypes.ts	193
+platejs/html	HtmlEditorSerializeOptions		export	packages/platejs/src/lib/plugins/html/htmlTypes.ts	198
+platejs/html	HtmlParseLimits		export	packages/platejs/src/lib/plugins/html/htmlTypes.ts	14
+platejs/html	HtmlParseOptions		export	packages/platejs/src/lib/plugins/html/htmlTypes.ts	174
+platejs/html	HtmlSerializeOptions		export	packages/platejs/src/lib/plugins/html/htmlTypes.ts	184
+platejs/html	HtmlSerializeResult		export	packages/platejs/src/lib/plugins/html/htmlTypes.ts	163
+platejs/html	HtmlSliceParseResult		export	packages/platejs/src/lib/plugins/html/htmlTypes.ts	152
+platejs/html	parseHtml		export	packages/platejs/src/lib/plugins/html/htmlConversion.ts	68
+platejs/html	parseHtmlSlice		export	packages/platejs/src/lib/plugins/html/htmlConversion.ts	76
+platejs/html	serializeHtml		export	packages/platejs/src/lib/plugins/html/htmlConversion.ts	84
+platejs/markdown	AllowNodeConfig	deserialize	member	packages/platejs/src/markdown/lib/types.ts	245
+platejs/markdown	AllowNodeConfig	serialize	member	packages/platejs/src/markdown/lib/types.ts	247
+platejs/markdown	MarkdownApi	parseInline	member	packages/platejs/src/markdown/lib/MarkdownPlugin.ts	73
+platejs/markdown	MarkdownApi	parse	member	packages/platejs/src/markdown/lib/MarkdownPlugin.ts	69
+platejs/markdown	MarkdownApi	parseSlice	member	packages/platejs/src/markdown/lib/MarkdownPlugin.ts	77
+platejs/markdown	MarkdownApi	serialize	member	packages/platejs/src/markdown/lib/MarkdownPlugin.ts	81
+platejs/markdown	MarkdownDefinition	validate	member	packages/platejs/src/markdown/lib/MarkdownPlugin.ts	432
+platejs/markdown	MarkdownDocumentParseResult		export	packages/platejs/src/markdown/lib/types.ts	189
+platejs/markdown	MarkdownEditorSerializeOptions		export	packages/platejs/src/markdown/lib/types.ts	294
+platejs/markdown	MarkdownEditorSerializeOptions	remarkStringifyOptions	member	packages/platejs/src/markdown/lib/types.ts	273
+platejs/markdown	MarkdownParseLimits		export	packages/platejs/src/markdown/lib/types.ts	62
+platejs/markdown	MarkdownParseOptions		export	packages/platejs/src/markdown/lib/types.ts	278
+platejs/markdown	MarkdownParsePolicy		export	packages/platejs/src/markdown/lib/types.ts	250
+platejs/markdown	MarkdownPluginState	remarkStringifyOptions	member	packages/platejs/src/markdown/lib/MarkdownPlugin.ts	65
+platejs/markdown	MarkdownSerializeOptions		export	packages/platejs/src/markdown/lib/types.ts	286
+platejs/markdown	MarkdownSerializeOptions	remarkStringifyOptions	member	packages/platejs/src/markdown/lib/types.ts	273
+platejs/markdown	MarkdownSerializePolicy		export	packages/platejs/src/markdown/lib/types.ts	263
+platejs/markdown	MarkdownSerializePolicy	remarkStringifyOptions	member	packages/platejs/src/markdown/lib/types.ts	273
+platejs/markdown	MarkdownSerializeResult		export	packages/platejs/src/markdown/lib/types.ts	211
+platejs/markdown	MarkdownSliceParseResult		export	packages/platejs/src/markdown/lib/types.ts	200
+platejs/markdown	parseMarkdownInline		export	packages/platejs/src/markdown/lib/MarkdownPlugin.ts	385
+platejs/markdown	parseMarkdown		export	packages/platejs/src/markdown/lib/MarkdownPlugin.ts	359
+platejs/markdown	parseMarkdownSlice		export	packages/platejs/src/markdown/lib/MarkdownPlugin.ts	372
+platejs/markdown	serializeMarkdown		export	packages/platejs/src/markdown/lib/MarkdownPlugin.ts	398
+platejs/media/react	MediaPlugin	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	248
+platejs/media/react	MediaPlugin	read	member	packages/platejs/src/react/plugin/PlatePlugin.ts	777
+platejs/media/react	MediaPlugin	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	260
+platejs/media	EmbedUrlParser		export	packages/platejs/src/features/media/lib/media/parseMediaUrl.ts	11
+platejs/media	parseIframeUrl		export	packages/platejs/src/features/media/lib/media/parseMediaUrl.ts	59
+platejs/media	parseMediaUrl		export	packages/platejs/src/features/media/lib/media/parseMediaUrl.ts	16
+platejs/media	parseTwitterUrl		export	packages/platejs/src/features/media/lib/media/parseMediaUrl.ts	77
+platejs/media	parseVideoUrl		export	packages/platejs/src/features/media/lib/media/parseMediaUrl.ts	276
+platejs/migrations	defineDocumentMigrations		export	packages/platejs/src/migrations/documentMigrations.ts	480
+platejs/migrations	DocumentMigrationContext		export	packages/platejs/src/migrations/documentMigrations.ts	68
+platejs/migrations	DocumentMigration		export	packages/platejs/src/migrations/documentMigrations.ts	80
+platejs/migrations	DocumentMigrationResult		export	packages/platejs/src/migrations/documentMigrations.ts	114
+platejs/migrations	DocumentMigrations	__@documentMigrationsBrand@42896	member	packages/platejs/src/migrations/documentMigrations.ts	107
+platejs/migrations	DocumentMigrationSchema	assertDocument	member	packages/plitejs/src/interfaces/editor.ts	1496
+platejs/migrations	DocumentMigrationSchema	fitDocument	member	packages/plitejs/src/interfaces/editor.ts	1452
+platejs/migrations	DocumentMigrationSchema		export	packages/platejs/src/migrations/documentMigrations.ts	40
+platejs/migrations	DocumentMigrationSelectionContext		export	packages/platejs/src/migrations/documentMigrations.ts	56
+platejs/migrations	DocumentMigrations		export	packages/platejs/src/migrations/documentMigrations.ts	102
+platejs/migrations	DocumentMigrationStepResult		export	packages/platejs/src/migrations/documentMigrations.ts	61
+platejs/migrations	DocumentMigrationTarget		export	packages/platejs/src/migrations/documentMigrations.ts	51
+platejs/migrations	migrateDocument		export	packages/platejs/src/migrations/documentMigrations.ts	652
+platejs/migrations	MigratePlateV54Options		export	packages/platejs/src/migrations/migratePlateV54.ts	22
+platejs/migrations	migrateV54		export	packages/platejs/src/migrations/migratePlateV54.ts	82
+platejs/migrations	PlateV54Migration		export	packages/platejs/src/migrations/migratePlateV54.ts	76
+platejs/pagination/react	PagedEditableProps	aria-readonly	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2609
+platejs/pagination/react	PagedEditableProps	exportparts	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2831
+platejs/pagination/react	PagedEditableProps	readOnly	member	packages/plitejs/src/react/components/editable-text-blocks.tsx	694
+platejs/pagination/react	PageLayoutEngine	invalidate	member	packages/plitejs/src/pagination/index.ts	205
+platejs/pagination/react	pageSettingsCodec		export	packages/plitejs/src/pagination/index.ts	287
+platejs/pagination	PageLayoutEngine	invalidate	member	packages/plitejs/src/pagination/index.ts	205
+platejs/pagination	pageSettingsCodec		export	packages/plitejs/src/pagination/index.ts	287
+platejs/react/virtualized	VirtualizedEditorContentProps	aria-readonly	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2609
+platejs/react/virtualized	VirtualizedEditorContentProps	exportparts	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2831
+platejs/react/virtualized	VirtualizedEditorContentProps	readOnly	member	packages/plitejs/src/react/components/editable-text-blocks.tsx	694
+platejs/react	AncestorIn	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs/react	Ancestor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs/react	BaseLinkDefinition	read	member	packages/platejs/src/features/link/lib/BaseLinkPlugin.ts	681
+platejs/react	BaseListDefinition	read	member	packages/platejs/src/features/list/lib/BaseListPlugin.ts	1635
+platejs/react	BaseNode	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs/react	BasePluginContext	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/react	BasePluginDefinitionInput	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	3036
+platejs/react	BasePluginDefinitionInput	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1430
+platejs/react	BasePluginDefinitionInput	validate	member	packages/plitejs/src/interfaces/editor.ts	3048
+platejs/react	BasePluginDefinition	readMiddleware	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	75
+platejs/react	BasePluginDefinition	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	74
+platejs/react	BasePluginDefinition	validate	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	84
+platejs/react	BasePluginImplementationContext	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/react	BasePluginPortal	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1754
+platejs/react	BasePlugin	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	248
+platejs/react	BasePlugin	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1389
+platejs/react	BasePlugin	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	260
+platejs/react	CodeBlockDefinition	read	member	packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts	1038
+platejs/react	ConfiguredBasePlugin	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	248
+platejs/react	ConfiguredBasePlugin	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1389
+platejs/react	ConfiguredBasePlugin	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	260
+platejs/react	ConfiguredPlugin	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	248
+platejs/react	ConfiguredPlugin	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1389
+platejs/react	ConfiguredPlugin	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	260
+platejs/react	CreateEditorOptions	readOnly	member	packages/platejs/src/lib/editor/withPlite.ts	769
+platejs/react	decodeEditorEffect		export	packages/plitejs/src/core/value-codec.ts	534
+platejs/react	Decorate	read	member	packages/platejs/src/react/plugin/PlatePlugin.ts	274
+platejs/react	DecorationSource	read	member	packages/plitejs/src/interfaces/decoration.ts	36
+platejs/react	defineValueCodec		export	packages/plitejs/src/core/value-codec.ts	345
+platejs/react	DefinitionOf	readMiddleware	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	75
+platejs/react	DefinitionOf	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	74
+platejs/react	DefinitionOf	validate	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	84
+platejs/react	DomApi	assertDOMNode	member	packages/plitejs/src/dom/plugin/dom-editor.ts	200
+platejs/react	DomApi	assertDOMPoint	member	packages/plitejs/src/dom/plugin/dom-editor.ts	201
+platejs/react	DomApi	assertDOMRange	member	packages/plitejs/src/dom/plugin/dom-editor.ts	202
+platejs/react	DomApi	assertEventRange	member	packages/plitejs/src/dom/plugin/dom-editor.ts	154
+platejs/react	DomApi	assertNode	member	packages/plitejs/src/dom/plugin/dom-editor.ts	203
+platejs/react	DomApi	assertPath	member	packages/plitejs/src/dom/plugin/dom-editor.ts	156
+platejs/react	DomApi	assertPoint	member	packages/plitejs/src/dom/plugin/dom-editor.ts	204
+platejs/react	DomApi	assertRange	member	packages/plitejs/src/dom/plugin/dom-editor.ts	211
+platejs/react	EditableProps	readOnly	member	packages/platejs/src/lib/types/EditableProps.ts	13
+platejs/react	EditorContentProps	aria-readonly	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2609
+platejs/react	EditorContentProps	exportparts	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2831
+platejs/react	EditorContentProps	readOnly	member	packages/plitejs/src/react/components/editable-text-blocks.tsx	694
+platejs/react	EditorEffectCollabDecodeContext		export	packages/plitejs/src/interfaces/editor.ts	486
+platejs/react	EditorEffectCollabEncodeContext		export	packages/plitejs/src/interfaces/editor.ts	480
+platejs/react	EditorEffectCollabTransport	decode	member	packages/plitejs/src/interfaces/editor.ts	496
+platejs/react	EditorEffectCollabTransport	encode	member	packages/plitejs/src/interfaces/editor.ts	500
+platejs/react	EditorElementBehavior	readOnly	member	packages/plitejs/src/interfaces/editor.ts	1527
+platejs/react	EditorElementProps	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	248
+platejs/react	EditorElementProps	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	272
+platejs/react	EditorElementProps	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	260
+platejs/react	EditorHTMLProps	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	272
+platejs/react	EditorLeafProps	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	248
+platejs/react	EditorLeafProps	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	272
+platejs/react	EditorLeafProps	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	260
+platejs/react	EditorNodeProps	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	272
+platejs/react	EditorPreviewProps	aria-readonly	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2609
+platejs/react	EditorPreviewProps	exportparts	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2831
+platejs/react	Editor	read	member	packages/platejs/src/lib/editor/pluginRuntimeTypes.ts	2839
+platejs/react	EditorRootProps	readOnly	member	packages/platejs/src/react/components/Plate.tsx	74
+platejs/react	EditorSchemaContractDiff	requiresMigration	member	packages/plitejs/src/core/schema-compiler.ts	5177
+platejs/react	EditorStateField	deserialize	member	packages/plitejs/src/interfaces/editor.ts	474
+platejs/react	EditorStateField	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	3036
+platejs/react	EditorStateField	read	member	packages/plitejs/src/interfaces/editor.ts	3034
+platejs/react	EditorStateField	serialize	member	packages/plitejs/src/interfaces/editor.ts	476
+platejs/react	EditorStateField	validate	member	packages/plitejs/src/interfaces/editor.ts	3048
+platejs/react	EditorStateSchemaApi	assertDocument	member	packages/plitejs/src/interfaces/editor.ts	1496
+platejs/react	EditorStateSchemaApi	assertFragment	member	packages/plitejs/src/interfaces/editor.ts	1503
+platejs/react	EditorStateSchemaApi	fitDocument	member	packages/plitejs/src/interfaces/editor.ts	1452
+platejs/react	EditorStateSliceApi	export	member	packages/plitejs/src/interfaces/editor.ts	754
+platejs/react	EditorStateSliceApi	fitContent	member	packages/plitejs/src/interfaces/editor.ts	761
+platejs/react	EditorStateSliceApi	fit	member	packages/plitejs/src/interfaces/editor.ts	756
+platejs/react	EditorTextProps	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	248
+platejs/react	EditorTextProps	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	272
+platejs/react	EditorTextProps	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	260
+platejs/react	EditorValueCodec	decode	member	packages/plitejs/src/interfaces/editor.ts	403
+platejs/react	EditorValueCodec	encode	member	packages/plitejs/src/interfaces/editor.ts	404
+platejs/react	EditorValueCodec		export	packages/plitejs/src/interfaces/editor.ts	399
+platejs/react	EditorValueDecoder		export	packages/plitejs/src/interfaces/editor.ts	407
+platejs/react	EditorValuePersistence	codec	member	packages/plitejs/src/interfaces/editor.ts	414
+platejs/react	EditorValuePersistence	legacyDecoders	member	packages/plitejs/src/interfaces/editor.ts	415
+platejs/react	EditorViewOptions	readOnly	member	packages/plitejs/src/interfaces/editor.ts	1861
+platejs/react	EditorView	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs/react	encodeEditorEffect		export	packages/plitejs/src/core/value-codec.ts	513
+platejs/react	ExternalTextState	readOnly	member	packages/plitejs/src/react/external-text.ts	27
+platejs/react	HistoryDefinition	read	member	packages/platejs/src/lib/plugins/HistoryPlugin.ts	30
+platejs/react	HistoryDefinition	validate	member	packages/platejs/src/lib/plugins/HistoryPlugin.ts	32
+platejs/react	InputRuleEditor	read	member	packages/platejs/src/lib/plugins/input-rules/types.ts	67
+platejs/react	LinkDefinition	read	member	packages/platejs/src/react/features/link/LinkPlugin.tsx	8
+platejs/react	MarkdownDecodeContext	decodeNodes	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	202
+platejs/react	MarkdownDecodeContext	decode	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	198
+platejs/react	MarkdownDecodeContext	decodeTexts	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	206
+platejs/react	MarkdownDecodeContext		export	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	188
+platejs/react	MarkdownDecodeContext	parseAttributes	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	212
+platejs/react	MarkdownDecodeContext	serializeUnknown	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	215
+platejs/react	MarkdownEncodeContext	encodeBlocks	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	229
+platejs/react	MarkdownEncodeContext	encodeFlow	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	230
+platejs/react	MarkdownEncodeContext	encode	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	225
+platejs/react	MarkdownEncodeContext	encodePhrasing	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	233
+platejs/react	MarkdownEncodeContext		export	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	219
+platejs/react	MarkdownEncodeContext	readPlainInline	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	239
+platejs/react	MarkdownNodeMapping	decode	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	262
+platejs/react	MarkdownNodeMapping	encode	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	250
+platejs/react	NodeIn	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs/react	Node	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs/react	NodeSelectionDragProps	aria-readonly	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2609
+platejs/react	NodeSelectionDragProps	exportparts	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2831
+platejs/react	NodeSelectionHighlightProps	aria-readonly	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2609
+platejs/react	NodeSelectionHighlightProps	exportparts	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2831
+platejs/react	PlainTextEncodeContext		export	packages/platejs/src/lib/plugin/PlainTextNodeMapping.ts	5
+platejs/react	PlainTextNodeMapping	encode	member	packages/platejs/src/lib/plugin/PlainTextNodeMapping.ts	17
+platejs/react	PlainTextSerializeResult		export	packages/platejs/src/plain-text.ts	20
+platejs/react	PluginBaseContext	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/react	PluginCandidateEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs/react	PluginContext	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/react	PluginDefinitionInput	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	3036
+platejs/react	PluginDefinitionInput	read	member	packages/platejs/src/react/plugin/PlatePlugin.ts	530
+platejs/react	PluginDefinitionInput	validate	member	packages/plitejs/src/interfaces/editor.ts	3048
+platejs/react	PluginDefinition	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	2719
+platejs/react	PluginDefinition	read	member	packages/plitejs/src/interfaces/editor.ts	2718
+platejs/react	PluginDefinition	validate	member	packages/plitejs/src/interfaces/editor.ts	2723
+platejs/react	PluginMigrationContext		export	packages/plitejs/src/interfaces/editor.ts	595
+platejs/react	PluginPortal	read	member	packages/platejs/src/react/plugin/PlatePlugin.ts	225
+platejs/react	Plugin	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	248
+platejs/react	Plugin	read	member	packages/platejs/src/react/plugin/PlatePlugin.ts	777
+platejs/react	PluginReconfigureOptions	migrate	member	packages/plitejs/src/interfaces/editor.ts	610
+platejs/react	PluginSchemaElement	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+platejs/react	PluginTypes	read	member	packages/plitejs/src/interfaces/editor.ts	3088
+platejs/react	Plugin	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	260
+platejs/react	PropertyBooleanDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs/react	PropertyEnumDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs/react	PropertyJsonDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs/react	PropertyJsonOptions	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+platejs/react	PropertyNumberDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs/react	PropertySetDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs/react	PropertySetOptions	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+platejs/react	PropertyStringDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs/react	PropertyValidation	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+platejs/react	PropertyValueDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs/react	PropertyValueOptions	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+platejs/react	readEditorSchemaContract		export	packages/plitejs/src/core/schema-compiler.ts	5729
+platejs/react	readEditorSchemaIdentity		export	packages/plitejs/src/core/schema-compiler.ts	187
+platejs/react	readEditorSelection		export	packages/plitejs/src/interfaces/editor.ts	4913
+platejs/react	RenderNodeWrapperProps	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	248
+platejs/react	RenderNodeWrapperProps	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/react	RenderNodeWrapperProps	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	260
+platejs/react	RenderStaticNodeWrapperProps	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1055
+platejs/react	RenderStaticNodeWrapperProps	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/react	RenderStaticNodeWrapperProps	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1055
+platejs/react	RootEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs/react	SchemaElementInput	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+platejs/react	SchemaElement	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+platejs/react	SchemaTextBlockOptions	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+platejs/react	SerializedEditorEffect		export	packages/plitejs/src/interfaces/editor.ts	429
+platejs/react	SerializedEditorSelection		export	packages/plitejs/src/interfaces/editor.ts	437
+platejs/react	SerializedEditorValue		export	packages/plitejs/src/interfaces/editor.ts	421
+platejs/react	serializePlainText		export	packages/platejs/src/plain-text.ts	79
+platejs/react	StructuralRuleContext	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/react	StructuralRuleEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs/react	TransformOptions	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/react	UseRootEditorOptions	readOnly	member	packages/plitejs/src/react/hooks/use-plite-runtime.tsx	876
+platejs/react	ValidateUrlOptions		export	packages/platejs/src/features/link/lib/BaseLinkPlugin.ts	108
+platejs/react	valueCodecs		export	packages/plitejs/src/core/value-codec.ts	417
+platejs/react	WithAnyName	readMiddleware	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	75
+platejs/react	WithAnyName	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	74
+platejs/react	WithAnyName	validate	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	84
+platejs/resizable/react	ResizableProps	aria-readonly	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2609
+platejs/resizable/react	ResizableProps	exportparts	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2831
+platejs/resizable/react	ResizeHandleProps	aria-readonly	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2609
+platejs/resizable/react	ResizeHandleProps	exportparts	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2831
+platejs/static	CreateStaticEditorOptions	readOnly	member	packages/platejs/src/lib/editor/withPlite.ts	769
+platejs/static	EditorElementProps	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/static	EditorHTMLProps	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/static	EditorLeafProps	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/static	EditorNodeProps	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/static	EditorStaticProps	aria-readonly	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2609
+platejs/static	EditorStaticProps	exportparts	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2831
+platejs/static	EditorTextProps	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs/static	RenderElementProps	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	272
+platejs/static	RenderLeafProps	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	272
+platejs/static	RenderNodeProps	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	272
+platejs/static	RenderTextProps	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	272
+platejs/static	StaticEditor	read	member	packages/platejs/src/lib/editor/pluginRuntimeTypes.ts	2839
+platejs/table	TableDefinition	readMiddleware	member	packages/platejs/src/features/table/lib/BaseTablePlugin.ts	2450
+platejs/table	TableDefinition	read	member	packages/platejs/src/features/table/lib/BaseTablePlugin.ts	2450
+platejs/toc	TocDefinition	read	member	packages/platejs/src/features/toc/lib/BaseTocPlugin.ts	87
+platejs/yjs/react	YjsCursorDataSchema	validate	member	packages/plitejs/src/yjs/core/types.ts	46
+platejs/yjs	YjsCursorDataSchema	validate	member	packages/plitejs/src/yjs/core/types.ts	46
+platejs	AncestorIn	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs	Ancestor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs	BaseLinkDefinition	read	member	packages/platejs/src/features/link/lib/BaseLinkPlugin.ts	681
+platejs	BaseListDefinition	read	member	packages/platejs/src/features/list/lib/BaseListPlugin.ts	1635
+platejs	BaseNode	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs	BasePluginContext	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs	BasePluginDefinitionInput	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	3036
+platejs	BasePluginDefinitionInput	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1430
+platejs	BasePluginDefinitionInput	validate	member	packages/plitejs/src/interfaces/editor.ts	3048
+platejs	BasePluginDefinition	readMiddleware	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	75
+platejs	BasePluginDefinition	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	74
+platejs	BasePluginDefinition	validate	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	84
+platejs	BasePluginImplementationContext	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs	BasePluginPortal	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1754
+platejs	BasePlugin	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	248
+platejs	BasePlugin	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1389
+platejs	BasePlugin	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	260
+platejs	CodeBlockDefinition	read	member	packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts	1038
+platejs	ConfiguredBasePlugin	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	248
+platejs	ConfiguredBasePlugin	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1389
+platejs	ConfiguredBasePlugin	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	260
+platejs	CreateEditorOptions	readOnly	member	packages/platejs/src/lib/editor/withPlite.ts	769
+platejs	decodeEditorEffect		export	packages/plitejs/src/core/value-codec.ts	534
+platejs	Decorate	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	308
+platejs	DecorationSource	read	member	packages/plitejs/src/interfaces/decoration.ts	36
+platejs	defineValueCodec		export	packages/plitejs/src/core/value-codec.ts	345
+platejs	DefinitionOf	readMiddleware	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	75
+platejs	DefinitionOf	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	74
+platejs	DefinitionOf	validate	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	84
+platejs	DomApi	assertDOMNode	member	packages/plitejs/src/dom/plugin/dom-editor.ts	200
+platejs	DomApi	assertDOMPoint	member	packages/plitejs/src/dom/plugin/dom-editor.ts	201
+platejs	DomApi	assertDOMRange	member	packages/plitejs/src/dom/plugin/dom-editor.ts	202
+platejs	DomApi	assertEventRange	member	packages/plitejs/src/dom/plugin/dom-editor.ts	154
+platejs	DomApi	assertNode	member	packages/plitejs/src/dom/plugin/dom-editor.ts	203
+platejs	DomApi	assertPath	member	packages/plitejs/src/dom/plugin/dom-editor.ts	156
+platejs	DomApi	assertPoint	member	packages/plitejs/src/dom/plugin/dom-editor.ts	204
+platejs	DomApi	assertRange	member	packages/plitejs/src/dom/plugin/dom-editor.ts	211
+platejs	EditableProps	readOnly	member	packages/platejs/src/lib/types/EditableProps.ts	13
+platejs	EditorEffectCollabDecodeContext		export	packages/plitejs/src/interfaces/editor.ts	486
+platejs	EditorEffectCollabEncodeContext		export	packages/plitejs/src/interfaces/editor.ts	480
+platejs	EditorEffectCollabTransport	decode	member	packages/plitejs/src/interfaces/editor.ts	496
+platejs	EditorEffectCollabTransport	encode	member	packages/plitejs/src/interfaces/editor.ts	500
+platejs	EditorElementBehavior	readOnly	member	packages/plitejs/src/interfaces/editor.ts	1527
+platejs	Editor	read	member	packages/platejs/src/lib/editor/pluginRuntimeTypes.ts	2839
+platejs	EditorSchemaContractDiff	requiresMigration	member	packages/plitejs/src/core/schema-compiler.ts	5177
+platejs	EditorStateField	deserialize	member	packages/plitejs/src/interfaces/editor.ts	474
+platejs	EditorStateField	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	3036
+platejs	EditorStateField	read	member	packages/plitejs/src/interfaces/editor.ts	3034
+platejs	EditorStateField	serialize	member	packages/plitejs/src/interfaces/editor.ts	476
+platejs	EditorStateField	validate	member	packages/plitejs/src/interfaces/editor.ts	3048
+platejs	EditorStateSchemaApi	assertDocument	member	packages/plitejs/src/interfaces/editor.ts	1496
+platejs	EditorStateSchemaApi	assertFragment	member	packages/plitejs/src/interfaces/editor.ts	1503
+platejs	EditorStateSchemaApi	fitDocument	member	packages/plitejs/src/interfaces/editor.ts	1452
+platejs	EditorStateSliceApi	export	member	packages/plitejs/src/interfaces/editor.ts	754
+platejs	EditorStateSliceApi	fitContent	member	packages/plitejs/src/interfaces/editor.ts	761
+platejs	EditorStateSliceApi	fit	member	packages/plitejs/src/interfaces/editor.ts	756
+platejs	EditorValueCodec	decode	member	packages/plitejs/src/interfaces/editor.ts	403
+platejs	EditorValueCodec	encode	member	packages/plitejs/src/interfaces/editor.ts	404
+platejs	EditorValueCodec		export	packages/plitejs/src/interfaces/editor.ts	399
+platejs	EditorValueDecoder		export	packages/plitejs/src/interfaces/editor.ts	407
+platejs	EditorValuePersistence	codec	member	packages/plitejs/src/interfaces/editor.ts	414
+platejs	EditorValuePersistence	legacyDecoders	member	packages/plitejs/src/interfaces/editor.ts	415
+platejs	EditorViewOptions	readOnly	member	packages/plitejs/src/interfaces/editor.ts	1861
+platejs	EditorView	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs	encodeEditorEffect		export	packages/plitejs/src/core/value-codec.ts	513
+platejs	HistoryDefinition	read	member	packages/platejs/src/lib/plugins/HistoryPlugin.ts	30
+platejs	HistoryDefinition	validate	member	packages/platejs/src/lib/plugins/HistoryPlugin.ts	32
+platejs	InputRuleEditor	read	member	packages/platejs/src/lib/plugins/input-rules/types.ts	67
+platejs	MarkdownDecodeContext	decodeNodes	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	202
+platejs	MarkdownDecodeContext	decode	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	198
+platejs	MarkdownDecodeContext	decodeTexts	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	206
+platejs	MarkdownDecodeContext		export	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	188
+platejs	MarkdownDecodeContext	parseAttributes	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	212
+platejs	MarkdownDecodeContext	serializeUnknown	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	215
+platejs	MarkdownEncodeContext	encodeBlocks	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	229
+platejs	MarkdownEncodeContext	encodeFlow	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	230
+platejs	MarkdownEncodeContext	encode	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	225
+platejs	MarkdownEncodeContext	encodePhrasing	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	233
+platejs	MarkdownEncodeContext		export	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	219
+platejs	MarkdownEncodeContext	readPlainInline	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	239
+platejs	MarkdownNodeMapping	decode	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	262
+platejs	MarkdownNodeMapping	encode	member	packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts	250
+platejs	NodeIn	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs	Node	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs	PlainTextEncodeContext		export	packages/platejs/src/lib/plugin/PlainTextNodeMapping.ts	5
+platejs	PlainTextNodeMapping	encode	member	packages/platejs/src/lib/plugin/PlainTextNodeMapping.ts	17
+platejs	PlainTextSerializeResult		export	packages/platejs/src/plain-text.ts	20
+platejs	PluginBaseContext	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs	PluginCandidateEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs	PluginDefinitionInput	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	3036
+platejs	PluginDefinitionInput	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1430
+platejs	PluginDefinitionInput	validate	member	packages/plitejs/src/interfaces/editor.ts	3048
+platejs	PluginDefinition	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	2719
+platejs	PluginDefinition	read	member	packages/plitejs/src/interfaces/editor.ts	2718
+platejs	PluginDefinition	validate	member	packages/plitejs/src/interfaces/editor.ts	2723
+platejs	PluginMigrationContext		export	packages/plitejs/src/interfaces/editor.ts	595
+platejs	PluginPortal	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1754
+platejs	Plugin	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	248
+platejs	Plugin	read	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1389
+platejs	PluginReconfigureOptions	migrate	member	packages/plitejs/src/interfaces/editor.ts	610
+platejs	PluginSchemaElement	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+platejs	PluginTypes	read	member	packages/plitejs/src/interfaces/editor.ts	3088
+platejs	Plugin	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	260
+platejs	PropertyBooleanDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs	PropertyEnumDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs	PropertyJsonDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs	PropertyJsonOptions	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+platejs	PropertyNumberDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs	PropertySetDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs	PropertySetOptions	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+platejs	PropertyStringDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs	PropertyValidation	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+platejs	PropertyValueDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+platejs	PropertyValueOptions	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+platejs	readEditorSchemaContract		export	packages/plitejs/src/core/schema-compiler.ts	5729
+platejs	readEditorSchemaIdentity		export	packages/plitejs/src/core/schema-compiler.ts	187
+platejs	readEditorSelection		export	packages/plitejs/src/interfaces/editor.ts	4913
+platejs	RenderStaticNodeWrapperProps	readMiddleware	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1055
+platejs	RenderStaticNodeWrapperProps	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs	RenderStaticNodeWrapperProps	validate	member	packages/platejs/src/lib/plugin/BasePlugin.ts	1055
+platejs	SchemaElementInput	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+platejs	SchemaElement	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+platejs	SchemaTextBlockOptions	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+platejs	SerializedEditorEffect		export	packages/plitejs/src/interfaces/editor.ts	429
+platejs	SerializedEditorSelection		export	packages/plitejs/src/interfaces/editor.ts	437
+platejs	SerializedEditorValue		export	packages/plitejs/src/interfaces/editor.ts	421
+platejs	serializePlainText		export	packages/platejs/src/plain-text.ts	79
+platejs	StructuralRuleContext	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs	StructuralRuleEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+platejs	TransformOptions	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	489
+platejs	ValidateUrlOptions		export	packages/platejs/src/features/link/lib/BaseLinkPlugin.ts	108
+platejs	valueCodecs		export	packages/plitejs/src/core/value-codec.ts	417
+platejs	WithAnyName	readMiddleware	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	75
+platejs	WithAnyName	read	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	74
+platejs	WithAnyName	validate	member	packages/platejs/src/lib/plugin/PluginDefinition.ts	84
+plitejs/authored	AuthoredEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/authored	AuthoredPlugin	read	member	packages/plitejs/src/authored/authored.ts	210
+plitejs/authored	parseAuthoredDocument		export	packages/plitejs/src/authored/format.ts	429
+plitejs/dom	DataTransferDecodeContext		export	packages/plitejs/src/dom/plugin/data-transfer-format.ts	308
+plitejs/dom	DataTransferDecodeResult		export	packages/plitejs/src/dom/plugin/data-transfer-format.ts	77
+plitejs/dom	DataTransferEncodeContext		export	packages/plitejs/src/dom/plugin/data-transfer-format.ts	319
+plitejs/dom	DataTransferEncodeResult		export	packages/plitejs/src/dom/plugin/data-transfer-format.ts	91
+plitejs/dom	DataTransferFormat	decode	member	packages/plitejs/src/dom/plugin/data-transfer-format.ts	340
+plitejs/dom	DataTransferFormat	encode	member	packages/plitejs/src/dom/plugin/data-transfer-format.ts	348
+plitejs/dom	DOMApi	assertDOMNode	member	packages/plitejs/src/dom/plugin/dom-editor.ts	200
+plitejs/dom	DOMApi	assertDOMPoint	member	packages/plitejs/src/dom/plugin/dom-editor.ts	201
+plitejs/dom	DOMApi	assertDOMRange	member	packages/plitejs/src/dom/plugin/dom-editor.ts	202
+plitejs/dom	DOMApi	assertEventRange	member	packages/plitejs/src/dom/plugin/dom-editor.ts	154
+plitejs/dom	DOMApi	assertNode	member	packages/plitejs/src/dom/plugin/dom-editor.ts	203
+plitejs/dom	DOMApi	assertPath	member	packages/plitejs/src/dom/plugin/dom-editor.ts	156
+plitejs/dom	DOMApi	assertPoint	member	packages/plitejs/src/dom/plugin/dom-editor.ts	204
+plitejs/dom	DOMApi	assertRange	member	packages/plitejs/src/dom/plugin/dom-editor.ts	211
+plitejs/dom	DOMClipboardApi	readSlice	member	packages/plitejs/src/dom/plugin/dom-editor.ts	241
+plitejs/dom	DOMClipboardApi	writeSelection	member	packages/plitejs/src/dom/plugin/dom-editor.ts	248
+plitejs/dom	DOMClipboardApi	writeSlice	member	packages/plitejs/src/dom/plugin/dom-editor.ts	251
+plitejs/dom	DOMEditorClipboardCapability	readSlice	member	packages/plitejs/src/dom/plugin/dom-editor.ts	241
+plitejs/dom	DOMEditorClipboardCapability	writeSelection	member	packages/plitejs/src/dom/plugin/dom-editor.ts	248
+plitejs/dom	DOMEditorClipboardCapability	writeSlice	member	packages/plitejs/src/dom/plugin/dom-editor.ts	251
+plitejs/dom	DOMEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/dom	parseDOMClipboardHtml		export	packages/plitejs/src/dom/plugin/dom-html.ts	82
+plitejs/dom	writeDataTransferFragment		export	packages/plitejs/src/dom/plugin/data-transfer-format.ts	1113
+plitejs/dom	writeDOMFragmentData		export	packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts	359
+plitejs/dom	writeDOMRangeData		export	packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts	513
+plitejs/history	HistoryPlugin	read	member	packages/plitejs/src/history/history-plugin.ts	154
+plitejs/history	HistoryPluginTypes	read	member	packages/plitejs/src/history/history-plugin.ts	140
+plitejs/history	HistoryPlugin	validate	member	packages/plitejs/src/history/history-plugin.ts	156
+plitejs/internal	AnyEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/internal	assertDetachedSelectionSupported		export	packages/plitejs/src/core/selection-protocol.ts	928
+plitejs/internal	assertEditorJsonValue		export	packages/plitejs/src/core/value-codec.ts	553
+plitejs/internal	assertPublicRootKey		export	packages/plitejs/src/core/public-root.ts	12
+plitejs/internal	assertSelectionSupported		export	packages/plitejs/src/core/selection-protocol.ts	660
+plitejs/internal	BaseEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/internal	decodeEditorEffect		export	packages/plitejs/src/core/value-codec.ts	534
+plitejs/internal	decodeEditorSelection		export	packages/plitejs/src/core/selection-protocol.ts	291
+plitejs/internal	decodeVersionedValue		export	packages/plitejs/src/core/value-codec.ts	463
+plitejs/internal	Editor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/internal	encodeEditorEffect		export	packages/plitejs/src/core/value-codec.ts	513
+plitejs/internal	encodeEditorSelection		export	packages/plitejs/src/core/selection-protocol.ts	266
+plitejs/internal	encodeVersionedValue		export	packages/plitejs/src/core/value-codec.ts	450
+plitejs/internal	exportContentSlice		export	packages/plitejs/src/core/editor-read-execution.ts	88
+plitejs/internal	fitSliceChildren		export	packages/plitejs/src/core/public-state.ts	3092
+plitejs/internal	fitSlicePlacements		export	packages/plitejs/src/core/public-state.ts	3317
+plitejs/internal	InternalEditorSchemaApi	assertContentSliceForSchema	member	packages/plitejs/src/core/editor-schema.ts	125
+plitejs/internal	InternalEditorSchemaApi	assertDocument	member	packages/plitejs/src/interfaces/editor.ts	1496
+plitejs/internal	InternalEditorSchemaApi	assertFragment	member	packages/plitejs/src/interfaces/editor.ts	1503
+plitejs/internal	InternalEditorSchemaApi	fitContent	member	packages/plitejs/src/core/editor-schema.ts	163
+plitejs/internal	InternalEditorSchemaApi	fitDocument	member	packages/plitejs/src/interfaces/editor.ts	1452
+plitejs/internal	InternalEditorSchemaApi	fitDocumentWithReport	member	packages/plitejs/src/core/editor-schema.ts	121
+plitejs/internal	InternalEditorSchemaApi	fitDocumentWithSelection	member	packages/plitejs/src/core/editor-schema.ts	110
+plitejs/internal	InternalEditorSchemaApi	fit	member	packages/plitejs/src/core/editor-schema.ts	162
+plitejs/internal	InternalEditorSchemaApi	validateDocumentChange	member	packages/plitejs/src/core/editor-schema.ts	244
+plitejs/internal	InternalEditorSchemaApi	validateTextPropertiesAtValue	member	packages/plitejs/src/core/editor-schema.ts	237
+plitejs/internal	NativeAuthoredDocumentCapability	parse	member	packages/plitejs/src/core/authored-document-capability.ts	50
+plitejs/internal	readEditorSchemaIdentity		export	packages/plitejs/src/core/schema-compiler.ts	187
+plitejs/internal	read		export	packages/plitejs/src/interfaces/editor.ts	4912
+plitejs/internal	serializeStructuralPlainText		export	packages/plitejs/src/core/plain-text.ts	48
+plitejs/internal	StructuralPlainTextEncodeContext		export	packages/plitejs/src/core/plain-text.ts	23
+plitejs/internal	StructuralPlainTextEncoder		export	packages/plitejs/src/core/plain-text.ts	33
+plitejs/pagination/react	PagedEditableProps	aria-readonly	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2609
+plitejs/pagination/react	PagedEditableProps	exportparts	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2831
+plitejs/pagination/react	PagedEditableProps	readOnly	member	packages/plitejs/src/react/components/editable-text-blocks.tsx	694
+plitejs/pagination/react	PageLayoutEngine	invalidate	member	packages/plitejs/src/pagination/index.ts	205
+plitejs/pagination/react	pageSettingsCodec		export	packages/plitejs/src/pagination/index.ts	287
+plitejs/pagination	PageLayoutEngine	invalidate	member	packages/plitejs/src/pagination/index.ts	205
+plitejs/pagination	pageSettingsCodec		export	packages/plitejs/src/pagination/index.ts	287
+plitejs/react/virtualized	VirtualizedEditableProps	aria-readonly	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2609
+plitejs/react/virtualized	VirtualizedEditableProps	exportparts	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2831
+plitejs/react/virtualized	VirtualizedEditableProps	readOnly	member	packages/plitejs/src/react/components/editable-text-blocks.tsx	694
+plitejs/react	AncestorIn	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/react	Ancestor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/react	BaseNode	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/react	CreateEditorOptions	readOnly	member	packages/plitejs/src/interfaces/editor.ts	1903
+plitejs/react	decodeEditorEffect		export	packages/plitejs/src/core/value-codec.ts	534
+plitejs/react	DecorationSource	read	member	packages/plitejs/src/interfaces/decoration.ts	36
+plitejs/react	defineValueCodec		export	packages/plitejs/src/core/value-codec.ts	345
+plitejs/react	EditableProps	aria-readonly	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2609
+plitejs/react	EditableProps	exportparts	member	node_modules/.pnpm/@types+react@19.2.7/node_modules/@types/react/index.d.ts	2831
+plitejs/react	EditableProps	readOnly	member	packages/plitejs/src/react/components/editable-text-blocks.tsx	694
+plitejs/react	EditorEffectCollabDecodeContext		export	packages/plitejs/src/interfaces/editor.ts	486
+plitejs/react	EditorEffectCollabEncodeContext		export	packages/plitejs/src/interfaces/editor.ts	480
+plitejs/react	EditorEffectCollabTransport	decode	member	packages/plitejs/src/interfaces/editor.ts	496
+plitejs/react	EditorEffectCollabTransport	encode	member	packages/plitejs/src/interfaces/editor.ts	500
+plitejs/react	EditorElementBehavior	readOnly	member	packages/plitejs/src/interfaces/editor.ts	1527
+plitejs/react	EditorReadOnlyProviderProps	readOnly	member	packages/plitejs/src/react/hooks/use-editor-read-only.ts	15
+plitejs/react	Editor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/react	EditorRootProps	readOnly	member	packages/plitejs/src/interfaces/editor.ts	1861
+plitejs/react	EditorSchemaContractDiff	requiresMigration	member	packages/plitejs/src/core/schema-compiler.ts	5177
+plitejs/react	EditorStateField	deserialize	member	packages/plitejs/src/interfaces/editor.ts	474
+plitejs/react	EditorStateField	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	3036
+plitejs/react	EditorStateField	read	member	packages/plitejs/src/interfaces/editor.ts	3034
+plitejs/react	EditorStateField	serialize	member	packages/plitejs/src/interfaces/editor.ts	476
+plitejs/react	EditorStateField	validate	member	packages/plitejs/src/interfaces/editor.ts	3048
+plitejs/react	EditorStateSchemaApi	assertDocument	member	packages/plitejs/src/interfaces/editor.ts	1496
+plitejs/react	EditorStateSchemaApi	assertFragment	member	packages/plitejs/src/interfaces/editor.ts	1503
+plitejs/react	EditorStateSchemaApi	fitDocument	member	packages/plitejs/src/interfaces/editor.ts	1452
+plitejs/react	EditorStateSliceApi	export	member	packages/plitejs/src/interfaces/editor.ts	754
+plitejs/react	EditorStateSliceApi	fitContent	member	packages/plitejs/src/interfaces/editor.ts	761
+plitejs/react	EditorStateSliceApi	fit	member	packages/plitejs/src/interfaces/editor.ts	756
+plitejs/react	EditorValueCodec	decode	member	packages/plitejs/src/interfaces/editor.ts	403
+plitejs/react	EditorValueCodec	encode	member	packages/plitejs/src/interfaces/editor.ts	404
+plitejs/react	EditorValueCodec		export	packages/plitejs/src/interfaces/editor.ts	399
+plitejs/react	EditorValueDecoder		export	packages/plitejs/src/interfaces/editor.ts	407
+plitejs/react	EditorValuePersistence	codec	member	packages/plitejs/src/interfaces/editor.ts	414
+plitejs/react	EditorValuePersistence	legacyDecoders	member	packages/plitejs/src/interfaces/editor.ts	415
+plitejs/react	EditorViewOptions	readOnly	member	packages/plitejs/src/interfaces/editor.ts	1861
+plitejs/react	EditorView	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/react	encodeEditorEffect		export	packages/plitejs/src/core/value-codec.ts	513
+plitejs/react	ExternalTextState	readOnly	member	packages/plitejs/src/react/external-text.ts	27
+plitejs/react	NodeIn	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/react	Node	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/react	PluginCandidateEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/react	PluginDefinitionInput	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	3036
+plitejs/react	PluginDefinitionInput	read	member	packages/plitejs/src/interfaces/editor.ts	3034
+plitejs/react	PluginDefinitionInput	validate	member	packages/plitejs/src/interfaces/editor.ts	3048
+plitejs/react	PluginDefinition	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	2719
+plitejs/react	PluginDefinition	read	member	packages/plitejs/src/interfaces/editor.ts	2718
+plitejs/react	PluginDefinition	validate	member	packages/plitejs/src/interfaces/editor.ts	2723
+plitejs/react	PluginMigrationContext		export	packages/plitejs/src/interfaces/editor.ts	595
+plitejs/react	PluginPortal	read	member	packages/plitejs/src/interfaces/editor.ts	2518
+plitejs/react	Plugin	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	2719
+plitejs/react	Plugin	read	member	packages/plitejs/src/interfaces/editor.ts	2718
+plitejs/react	PluginReconfigureOptions	migrate	member	packages/plitejs/src/interfaces/editor.ts	610
+plitejs/react	PluginTypes	read	member	packages/plitejs/src/interfaces/editor.ts	3088
+plitejs/react	Plugin	validate	member	packages/plitejs/src/interfaces/editor.ts	2723
+plitejs/react	PropertyBooleanDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs/react	PropertyEnumDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs/react	PropertyJsonDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs/react	PropertyJsonOptions	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+plitejs/react	PropertyNumberDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs/react	PropertySetDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs/react	PropertySetOptions	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+plitejs/react	PropertyStringDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs/react	PropertyValidation	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+plitejs/react	PropertyValueDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs/react	PropertyValueOptions	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+plitejs/react	readEditorSchemaContract		export	packages/plitejs/src/core/schema-compiler.ts	5729
+plitejs/react	readEditorSchemaIdentity		export	packages/plitejs/src/core/schema-compiler.ts	187
+plitejs/react	readEditorSelection		export	packages/plitejs/src/interfaces/editor.ts	4913
+plitejs/react	RootEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs/react	SchemaElementInput	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+plitejs/react	SchemaElement	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+plitejs/react	SchemaTextBlockOptions	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+plitejs/react	SerializedEditorEffect		export	packages/plitejs/src/interfaces/editor.ts	429
+plitejs/react	SerializedEditorSelection		export	packages/plitejs/src/interfaces/editor.ts	437
+plitejs/react	SerializedEditorValue		export	packages/plitejs/src/interfaces/editor.ts	421
+plitejs/react	UseEditorOptions	readOnly	member	packages/plitejs/src/interfaces/editor.ts	1903
+plitejs/react	UseRootEditorOptions	readOnly	member	packages/plitejs/src/react/hooks/use-plite-runtime.tsx	876
+plitejs/react	valueCodecs		export	packages/plitejs/src/core/value-codec.ts	417
+plitejs/yjs/react	YjsCursorDataSchema	validate	member	packages/plitejs/src/yjs/core/types.ts	46
+plitejs/yjs	YjsCursorDataSchema	validate	member	packages/plitejs/src/yjs/core/types.ts	46
+plitejs	AncestorIn	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs	Ancestor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs	BaseNode	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs	CreateEditorOptions	readOnly	member	packages/plitejs/src/interfaces/editor.ts	1903
+plitejs	decodeEditorEffect		export	packages/plitejs/src/core/value-codec.ts	534
+plitejs	DecorationSource	read	member	packages/plitejs/src/interfaces/decoration.ts	36
+plitejs	defineValueCodec		export	packages/plitejs/src/core/value-codec.ts	345
+plitejs	EditorEffectCollabDecodeContext		export	packages/plitejs/src/interfaces/editor.ts	486
+plitejs	EditorEffectCollabEncodeContext		export	packages/plitejs/src/interfaces/editor.ts	480
+plitejs	EditorEffectCollabTransport	decode	member	packages/plitejs/src/interfaces/editor.ts	496
+plitejs	EditorEffectCollabTransport	encode	member	packages/plitejs/src/interfaces/editor.ts	500
+plitejs	EditorElementBehavior	readOnly	member	packages/plitejs/src/interfaces/editor.ts	1527
+plitejs	Editor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs	EditorSchemaContractDiff	requiresMigration	member	packages/plitejs/src/core/schema-compiler.ts	5177
+plitejs	EditorStateField	deserialize	member	packages/plitejs/src/interfaces/editor.ts	474
+plitejs	EditorStateField	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	3036
+plitejs	EditorStateField	read	member	packages/plitejs/src/interfaces/editor.ts	3034
+plitejs	EditorStateField	serialize	member	packages/plitejs/src/interfaces/editor.ts	476
+plitejs	EditorStateField	validate	member	packages/plitejs/src/interfaces/editor.ts	3048
+plitejs	EditorStateSchemaApi	assertDocument	member	packages/plitejs/src/interfaces/editor.ts	1496
+plitejs	EditorStateSchemaApi	assertFragment	member	packages/plitejs/src/interfaces/editor.ts	1503
+plitejs	EditorStateSchemaApi	fitDocument	member	packages/plitejs/src/interfaces/editor.ts	1452
+plitejs	EditorStateSliceApi	export	member	packages/plitejs/src/interfaces/editor.ts	754
+plitejs	EditorStateSliceApi	fitContent	member	packages/plitejs/src/interfaces/editor.ts	761
+plitejs	EditorStateSliceApi	fit	member	packages/plitejs/src/interfaces/editor.ts	756
+plitejs	EditorValueCodec	decode	member	packages/plitejs/src/interfaces/editor.ts	403
+plitejs	EditorValueCodec	encode	member	packages/plitejs/src/interfaces/editor.ts	404
+plitejs	EditorValueCodec		export	packages/plitejs/src/interfaces/editor.ts	399
+plitejs	EditorValueDecoder		export	packages/plitejs/src/interfaces/editor.ts	407
+plitejs	EditorValuePersistence	codec	member	packages/plitejs/src/interfaces/editor.ts	414
+plitejs	EditorValuePersistence	legacyDecoders	member	packages/plitejs/src/interfaces/editor.ts	415
+plitejs	EditorViewOptions	readOnly	member	packages/plitejs/src/interfaces/editor.ts	1861
+plitejs	EditorView	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs	encodeEditorEffect		export	packages/plitejs/src/core/value-codec.ts	513
+plitejs	NodeIn	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs	Node	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs	PluginCandidateEditor	read	member	packages/plitejs/src/interfaces/editor.ts	1835
+plitejs	PluginDefinitionInput	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	3036
+plitejs	PluginDefinitionInput	read	member	packages/plitejs/src/interfaces/editor.ts	3034
+plitejs	PluginDefinitionInput	validate	member	packages/plitejs/src/interfaces/editor.ts	3048
+plitejs	PluginDefinition	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	2719
+plitejs	PluginDefinition	read	member	packages/plitejs/src/interfaces/editor.ts	2718
+plitejs	PluginDefinition	validate	member	packages/plitejs/src/interfaces/editor.ts	2723
+plitejs	PluginMigrationContext		export	packages/plitejs/src/interfaces/editor.ts	595
+plitejs	PluginPortal	read	member	packages/plitejs/src/interfaces/editor.ts	2518
+plitejs	Plugin	readMiddleware	member	packages/plitejs/src/interfaces/editor.ts	2719
+plitejs	Plugin	read	member	packages/plitejs/src/interfaces/editor.ts	2718
+plitejs	PluginReconfigureOptions	migrate	member	packages/plitejs/src/interfaces/editor.ts	610
+plitejs	PluginTypes	read	member	packages/plitejs/src/interfaces/editor.ts	3088
+plitejs	Plugin	validate	member	packages/plitejs/src/interfaces/editor.ts	2723
+plitejs	PropertyBooleanDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs	PropertyEnumDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs	PropertyJsonDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs	PropertyJsonOptions	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+plitejs	PropertyNumberDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs	PropertySetDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs	PropertySetOptions	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+plitejs	PropertyStringDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs	PropertyValidation	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+plitejs	PropertyValueDescriptor	validate	member	packages/plitejs/src/interfaces/schema.ts	90
+plitejs	PropertyValueOptions	validate	member	packages/plitejs/src/interfaces/schema.ts	38
+plitejs	readEditorSchemaContract		export	packages/plitejs/src/core/schema-compiler.ts	5729
+plitejs	readEditorSchemaIdentity		export	packages/plitejs/src/core/schema-compiler.ts	187
+plitejs	readEditorSelection		export	packages/plitejs/src/interfaces/editor.ts	4913
+plitejs	SchemaElementInput	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+plitejs	SchemaElement	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+plitejs	SchemaTextBlockOptions	readOnly	member	packages/plitejs/src/interfaces/schema.ts	392
+plitejs	SerializedEditorEffect		export	packages/plitejs/src/interfaces/editor.ts	429
+plitejs	SerializedEditorSelection		export	packages/plitejs/src/interfaces/editor.ts	437
+plitejs	SerializedEditorValue		export	packages/plitejs/src/interfaces/editor.ts	421
+plitejs	valueCodecs		export	packages/plitejs/src/core/value-codec.ts	417

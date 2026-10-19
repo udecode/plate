@@ -1,0 +1,119 @@
+{
+  "id": "2026-09-18-comments-attachment-discovery-implementation",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "comments"
+  ],
+  "reviewBasis": [
+    "2026-09-18-comments-attachment-and-discovery",
+    "2026-09-18-comments-attachment-design-gate"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-18-comments-attachment-discovery.md",
+    "sha256": "ebf9197ed4792bab23d2fd424401e978dd2c6e2cacbffecb42f3ef628b97ec0e"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Implemented canonical retained-target lineage and ordinary atomic-replacement mapping, removed stale discussion placement, and added bounded document-level All comments discovery. Comments remains independent of Suggestions and generic Editor; clean Base and Radix installs, the complete Chromium comment suite, source-first types and isolated production scale all pass.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/plans/artifacts/comments-attachment-discovery/implementation-proof.json",
+        "sha256": "3a3ff2bcb231ea7cfcb821db1445c3483a2b8366b222e13073bf581049da7346",
+        "claim": "Focused native, Comments and copied UI tests; full Chromium behavior; source-first types; clean Base/Radix installs; registry and doctrine checks."
+      },
+      {
+        "path": "docs/plans/artifacts/comments-attachment-discovery/production-benchmark-result.json",
+        "sha256": "f3123ecd73511d99a1836a0f52f79e45286b863444dddeeb74e5f6b6fd0b10e1",
+        "claim": "Isolated production retained-target benchmark passes all five frozen correctness and latency cohorts."
+      },
+      {
+        "path": "apps/www/src/registry/changelog/2026-09-18-comment-discovery.json",
+        "sha256": "e411ccaee63c033f24a7b0b55487869ab65be83250c02c9a2b97d5aa22c2f735",
+        "claim": "Copied component release note identifies the installed All comments and exact attachment behavior."
+      }
+    ],
+    "limits": "The aggregate check:plite:dev low-memory www wrapper reaches an unrelated existing TS2589 in HistoryPlugin; the repository 8 GB www typecheck passes the same package-integration configuration. Per-thread message rendering remains unbounded. Changed-baseline Yjs transport, persisted browser undo and non-text targets remain outside scope. No publication or release was performed."
+  },
+  "source": {
+    "files": {
+      "packages/platejs/src/features/comments/BaseCommentsPlugin.ts": "57d6fae1de3913816e2e7eeea7e48f1b24b8468f661240ccb4dc53ef8fecc13c",
+      "apps/www/src/registry/components/editor/comment.tsx": "2e7b5cc74b49228ecee023c23e1d1aa2d7d67485e77cd16c25f0fbdfafc5b7e0",
+      "apps/www/src/registry/examples/comment-persistence-demo.tsx": "1371f7e2326acb2a4e1b9c83777cf2d8e5f4920e690e1fe3da538fc6d935d881",
+      "apps/www/src/registry/examples/comment-overlap-demo.tsx": "67b0ee491620d6c537dc1cd72fff1759b5b1be7d98800bde9447a405a8450efd",
+      "packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts": "a77fcd4a0cb45c75bbf920ca753d2901d6a5c8d0e97becbcda33588b7ae70ff6",
+      "apps/www/tests/browser/comment.spec.ts": "81f4ece27479fa824b83d86f3c359e2286b73b41b930c41426f0772abbf370b4",
+      "apps/www/playwright.config.ts": "a205a2ae686426226a8e49bf5f5a4bdb81accc8dc495ac38ca568f4ebaa252bf",
+      "apps/www/package.json": "cbf35c5e65bb02f4a276eff76cb93a3d10ba4ada0d30152ce9254b71906a4bb7",
+      "packages/plitejs/src/core/anchor.ts": "c78ff5e1665ca4fe9dc2b74391fe185d2ceb65b5125a8fc4521d90e3db558e9f",
+      "packages/plitejs/src/annotations/store.ts": "be8c9bb3da66efb45929a8cfaa78467fde7d574f61dd4f022658b7c1403557a2",
+      "packages/plitejs/src/authored/authored.ts": "cadba3832e0d85ae8d0d51486aa60a63f9e208db8fad61e1d500609678f01f89",
+      "packages/platejs/src/react/features/comments/CommentsPlugin.ts": "130d085946462f34e7afd4b364ae9fde303063e2bbf0858472e37669a7432043",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "6198a6f95c4279640455d80ec45d5e4bc9e8a51b7b9f1ddde75431b09f051a2f",
+      "apps/www/src/registry/components/editor/discussion.tsx": "65458647aab302bc0ccf0896ef6ca402c9f719c3328ba7d5b97d228aac55023b",
+      "packages/plitejs/src/react/editable/runtime-root-engine.ts": "c198dfef455c142c6f48995795780d4a938101fb10995145454ff908eeea5317",
+      "packages/plitejs/test/react/editable-read-only-transition.test.tsx": "413a48f910d3680bca4ce5ca6d4585f1e1d51b6252e6909faa5ac4a25925c75f",
+      "packages/plitejs/src/core/authored-document-capability.ts": "7f9fd479ed43f007cc22c6a2ef0ecb9c8db73b13e047c7aa24f7ace0a94ae07f",
+      "packages/platejs/src/migrations/documentMigrations.ts": "8cd04175965665e18ec2a1d35bf22b8bddb05e6526f0a78d2473bc87976a6385",
+      "packages/platejs/test/public-package-import-smoke.slow.ts": "3316856885f98ade1d0859a04d853517f9edad580fc5f5b4dd1429d3a2813a5d",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "540c4ad1419f4b1d836afc3f9d9b92a9df11d8811ca2ad45c4131ab9dead461d",
+      "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
+      "packages/plitejs/src/authored/state.ts": "6d9f0742f30a8f4d206f2876737aaa57b92e7d5ee7eff81131a37057b452ff5b",
+      "packages/plitejs/src/authored/positions.ts": "8d8d56347badae962aa7c1d2b015e58ddbfb7b7e6d45ea5831676123c6fa2042",
+      "packages/plitejs/src/authored/anchors.ts": "d255fecb6e6688c2414fabed40b30c0ea6840c4bcf96d047ba3834e5d937acf7",
+      "packages/plitejs/src/authored/decisions.ts": "9d2129387158bc0e9835c13b8802fb78a55db9038f9b8decdf988a3b69f6ddfa",
+      "packages/plitejs/src/authored/steps.ts": "547f3f14e63d69d63c984a4bba6b2c597fac2e9e341f61f54301682b9181e589",
+      "packages/plitejs/src/core/change/document-change.ts": "3ce815e12a547089e16da06a860a8dfd846be84fadfdeb60d97ffafb3f5009f5",
+      "packages/plitejs/src/core/anchor-state.ts": "97e8d68f01902732179788f12730d8e1c6b2cee43705c0a0395f8ca00f82ac33",
+      "packages/plitejs/test/authored-anchor-contract.test.ts": "78752dcbe46efeb15c1e592259ab3d6946c8b8b6c7cea5e05a186a95ec2d119d",
+      "apps/www/src/registry/components/editor/comment-toolbar-button.tsx": "c604214df2ff7586b0cd3d7dcd599316fdd15b002702c910e8adc5d70392fd7b",
+      "apps/www/src/registry/components/editor/comment-toolbar-button.spec.tsx": "b39ea4f8cd4d4f5ac609ba29152944675affd8701e229e11a69f8e20bdf56ffd",
+      "apps/www/src/registry/components/editor/comment.spec.tsx": "e58f2d60d4e28e91729ee24b5c9a255bca1c387876ddbbc1731e24de0557eeb4",
+      "apps/www/src/registry/components/editor/discussion.spec.tsx": "702db8b06b51ddfd3356b429a71a4ab1ed4e3edf68b7939832ca69b973f286f5",
+      "apps/www/src/registry/components/editor/fixed-toolbar.tsx": "a4c0b752f9f23ae5698d4efe67cdfb92fec22824aae1f1a26321abc3ba04f3c7",
+      "apps/www/src/registry/registry-components.ts": "520c845e70935935b12f6071ffb16b149b10290ce214dcd73e094311e98ec7c7",
+      "apps/www/src/registry/registry-examples.ts": "9d4e1fab0c46c2029d001492f0eb7a38af35619f821386fd27d1cb0b0c5b6759",
+      "content/docs/(plugins)/(collaboration)/comment.mdx": "e5fa663191129ce932bf86de5b36d997b9a9dc661884616dbb1358b9ce5cad7d",
+      "content/docs/(plugins)/(collaboration)/comment.cn.mdx": "5849cc75635509fd1bee79650089f76a59df8601d32524da6abb3c4da296229e",
+      "content/docs/(plugins)/(collaboration)/discussion.mdx": "e5d3e81ce6c65523b7f37df764230666ebb7d13588601f01799a37f51fc46484",
+      "content/docs/(plugins)/(collaboration)/discussion.cn.mdx": "18fabe55f05de33af2c437ee2b72795ec8fdcbb24c9a062fedab20cb2773e938",
+      "apps/www/src/registry/changelog/entries/2026-09-18-comment-discovery.mdx": "03f754b426d1f88a34e2502d1513937a7ab57338478e41048bf310be45df2082",
+      "apps/www/src/registry/changelog/2026-09-18-comment-discovery.json": "e411ccaee63c033f24a7b0b55487869ab65be83250c02c9a2b97d5aa22c2f735",
+      ".agents/rules/best-api.mdc": "d8a040ad2ab4b9780dfaaa247b22944548d0db8c578a35a3360014be406feb7d",
+      ".agents/rules/plate-next.mdc": "727a22559ac07f0238288b435cd18eb7aa1a53d53e8c66bb61f8aa06d86c03bd",
+      ".agents/rules/plate-next/versions.json": "7b714d2f5492617fcd80af451f4cdaea878485372219e27a6a70c72a8dc38d70",
+      "docs/vision/plate.md": "592e32076331693b1a808e896fe86b2044a9287584fb0f1a677c3fee258f62d7",
+      ".changeset/steady-retained-targets.md": "dc635d3135b3713d8e52cc6b3c910b41d48273afec31e6650e2e2fa446850096"
+    },
+    "directories": {},
+    "features": {
+      "browser/comment": "f80f7726a24345341dbda21eefa3b09ee9cf572e65e624169f77c1acd6dc32a3",
+      "example/plite/comment-mode": "14d11a62f1f5a69e9c6afb5663cbf53b655f5968acaae639e4a706df0375a0ed",
+      "example/registry/comment-demo": "e05d143c1b6cf0fe552515e0949b53eb1a37707c0541e10df900d66965f512fc",
+      "example/registry/comment-overlap-demo": "37491eae0318f0d2a361d5c156efed3cd189e465348201c7230270c431579485",
+      "example/registry/comment-persistence-demo": "413c53091ccb15b092831536f05ff8d8d15bd2078e4627e055194d187b97441f",
+      "example/registry/comment-review-demo": "c2857ec922ba2a2cbb515ac51cf69f12373e491d66aacbef5ac8f2fa8cdb7f7e",
+      "example/registry/discussion-demo": "5387dff49b3ba540392aa813a81daa4813a348f53ee9672b4dbdaf276d02dfbd",
+      "example/value/comment-value": "f07d275b1cfc67c63d9a07e61620530e7f386fde4ec133f957fdfde5d36391d0",
+      "export/platejs/./comments": "91fff179933510018188644d236049b70bc001ad42866e254165024f76e8ed9b",
+      "export/platejs/./comments/react": "91fff179933510018188644d236049b70bc001ad42866e254165024f76e8ed9b",
+      "platejs/comments": "b98bd077f92a0b238922143195d1692981ec2f0f44e4f37ffb01394e95e35d97",
+      "ui/comment": "73d156405e9cceee99226d18fb1cfee2a268f1fb8b0eaff569f497ac0594a47b",
+      "ui/comment-toolbar-button": "3b87bed8d9eb212144d770993c47384837dcd3a8ba63d535aa2d5ecfd7c5d03d",
+      "ui/discussion": "ab587f9d3ff061040266c9fa9a660d8eddf23cfb6c2a4e0dfa98512b6245fe45"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-18-comments-attachment-discovery.md",
+    "docs/plans/artifacts/comments-attachment-discovery/implementation-proof.json",
+    "docs/plans/artifacts/comments-attachment-discovery/production-benchmark-result.json",
+    "docs/plans/artifacts/comments-attachment-discovery/ui-design.md",
+    "apps/www/src/registry/changelog/2026-09-18-comment-discovery.json"
+  ]
+}

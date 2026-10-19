@@ -1,0 +1,67 @@
+--- wt-si-a/apps/www/src/registry/components/editor/ai-menu.tsx	2026-09-30 03:44:52
++++ wt-si-c/apps/www/src/registry/components/editor/ai-menu.tsx	2026-09-30 05:08:40
+@@ -18,7 +18,13 @@
+   Wand,
+   X,
+ } from 'lucide-react';
+-import { ElementApi, isHotkey, NodeApi, TextApi } from 'platejs';
++import {
++  type Decoration,
++  ElementApi,
++  isHotkey,
++  NodeApi,
++  TextApi,
++} from 'platejs';
+ import { BaseAIPlugin } from 'platejs/ai';
+ import { AIChatPlugin } from 'platejs/ai/react';
+ import { CommentsPlugin } from 'platejs/comments/react';
+@@ -57,13 +63,31 @@
+     // decorates. Only the last character carries it, so it stays one element
+     // when other decorations, such as code highlighting, split that text.
+     read: ({ editor, entry: [node, path] }) => {
++      // Style-isolation variant C: the w-era purple decoration on every text.
++      const purple: Decoration[] =
++        TextApi.isText(node) && node.text.length > 0
++          ? [
++              {
++                key: 'ai-preview',
++                range: {
++                  anchor: { path, offset: 0 },
++                  focus: { path, offset: node.text.length },
++                },
++                attributes: {
++                  className:
++                    'border-b-2 border-b-purple-100 bg-purple-50 text-purple-800',
++                },
++              },
++            ]
++          : [];
++
+       if (path.length !== 1 || node !== editor.read.children().at(-1)) {
+-        return [];
++        return purple;
+       }
+ 
+       const [last, lastPath] = NodeApi.last(node, []);
+ 
+-      if (!TextApi.isText(last) || last.text.length === 0) return [];
++      if (!TextApi.isText(last) || last.text.length === 0) return purple;
+ 
+       const textPath = [...path, ...lastPath];
+       const end = last.text.length;
+@@ -72,6 +96,7 @@
+         end - ((last.text.codePointAt(end - 2) ?? 0) > 0xff_ff ? 2 : 1);
+ 
+       return [
++        ...purple,
+         {
+           key: 'ai-preview-end',
+           range: {
+@@ -144,7 +169,6 @@
+         document={previewDocument}
+         editor={aiEditor}
+         className={cn(
+-          '[&_[data-editor-string]]:border-b-2 [&_[data-editor-string]]:border-b-purple-100 [&_[data-editor-string]]:bg-purple-50 [&_[data-editor-string]]:text-purple-800',
+           streaming &&
+             '[&_[data-editor-ai-end]]:after:ml-1.5 [&_[data-editor-ai-end]]:after:inline-block [&_[data-editor-ai-end]]:after:size-3 [&_[data-editor-ai-end]]:after:rounded-full [&_[data-editor-ai-end]]:after:bg-purple-600 [&_[data-editor-ai-end]]:after:align-middle [&_[data-editor-ai-end]]:after:content-[""]'
+         )}

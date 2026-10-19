@@ -1,0 +1,223 @@
+'use client';
+
+import {
+  BaselineIcon,
+  BoldIcon,
+  Code2Icon,
+  HighlighterIcon,
+  ItalicIcon,
+  PaintBucketIcon,
+  StrikethroughIcon,
+  UnderlineIcon,
+  WandSparklesIcon,
+} from 'lucide-react';
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseVideoPlugin,
+} from 'platejs/media';
+import {
+  BoldPlugin,
+  CodePlugin,
+  HighlightPlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  useEditorReadOnly,
+  definePlugin,
+} from 'platejs/react';
+import * as React from 'react';
+
+import { cn } from '@/lib/utils';
+import { ToolbarGroup, Toolbar } from '@/registry/components/editor/toolbar';
+
+import { AIToolbarButton } from './ai-toolbar-button';
+import { AlignToolbarButton } from './align-toolbar-button';
+import {
+  AllCommentsButton,
+  CommentToolbarButton,
+} from './comment-toolbar-button';
+import { DetailsToolbarButton } from './details-toolbar-button';
+import { EmojiToolbarButton } from './emoji-toolbar-button';
+import {
+  DEFAULT_COLORS,
+  FontColorToolbarButton,
+} from './font-color-toolbar-button';
+import { FontSizeToolbarButton } from './font-size-toolbar-button';
+import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
+import {
+  IndentToolbarButton,
+  OutdentToolbarButton,
+} from './indent-toolbar-button';
+import { InsertToolbarButton } from './insert-toolbar-button';
+import { LineHeightToolbarButton } from './line-height-toolbar-button';
+import { LinkToolbarButton } from './link-toolbar-button';
+import {
+  BulletedListToolbarButton,
+  NumberedListToolbarButton,
+  TodoListToolbarButton,
+} from './list-toolbar-button';
+import { MarkToolbarButton } from './mark-toolbar-button';
+import { MediaToolbarButton } from './media-toolbar-button';
+import { ModeToolbarButton } from './mode-toolbar-button';
+import { MoreToolbarButton } from './more-toolbar-button';
+import { TableToolbarButton } from './table-toolbar-button';
+import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
+
+export function FixedToolbarButtons({
+  children,
+}: {
+  children?: React.ReactNode;
+} = {}) {
+  const readOnly = useEditorReadOnly();
+
+  return (
+    <div className="flex w-full">
+      {!readOnly && (
+        <>
+          <ToolbarGroup>
+            <UndoToolbarButton />
+            <RedoToolbarButton />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <AIToolbarButton tooltip="AI commands">
+              <WandSparklesIcon />
+            </AIToolbarButton>
+          </ToolbarGroup>
+
+          {children}
+
+          <ToolbarGroup>
+            <InsertToolbarButton />
+            <TurnIntoToolbarButton />
+            <FontSizeToolbarButton />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">
+              <BoldIcon />
+            </MarkToolbarButton>
+
+            <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">
+              <ItalicIcon />
+            </MarkToolbarButton>
+
+            <MarkToolbarButton
+              plugin={UnderlinePlugin}
+              tooltip="Underline (⌘+U)"
+            >
+              <UnderlineIcon />
+            </MarkToolbarButton>
+
+            <MarkToolbarButton
+              plugin={StrikethroughPlugin}
+              tooltip="Strikethrough (⌘+⇧+X)"
+            >
+              <StrikethroughIcon />
+            </MarkToolbarButton>
+
+            <MarkToolbarButton plugin={CodePlugin} tooltip="Code (⌘+E)">
+              <Code2Icon />
+            </MarkToolbarButton>
+
+            <FontColorToolbarButton
+              colors={DEFAULT_COLORS}
+              plugin={FontColorPlugin}
+              tooltip="Text color"
+            >
+              <BaselineIcon />
+            </FontColorToolbarButton>
+
+            <FontColorToolbarButton
+              colors={DEFAULT_COLORS}
+              plugin={FontBackgroundColorPlugin}
+              tooltip="Background color"
+            >
+              <PaintBucketIcon />
+            </FontColorToolbarButton>
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <AlignToolbarButton />
+
+            <NumberedListToolbarButton />
+            <BulletedListToolbarButton />
+            <TodoListToolbarButton />
+            <DetailsToolbarButton />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <LinkToolbarButton />
+            <TableToolbarButton />
+            <EmojiToolbarButton />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <MediaToolbarButton plugin={BaseImagePlugin} />
+            <MediaToolbarButton plugin={BaseVideoPlugin} />
+            <MediaToolbarButton plugin={BaseAudioPlugin} />
+            <MediaToolbarButton plugin={BaseFilePlugin} />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <LineHeightToolbarButton />
+            <OutdentToolbarButton />
+            <IndentToolbarButton />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <MoreToolbarButton />
+          </ToolbarGroup>
+        </>
+      )}
+
+      <div className="grow" />
+
+      <ToolbarGroup>
+        <MarkToolbarButton plugin={HighlightPlugin} tooltip="Highlight">
+          <HighlighterIcon />
+        </MarkToolbarButton>
+        <CommentToolbarButton />
+        <AllCommentsButton />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
+        <ModeToolbarButton />
+      </ToolbarGroup>
+    </div>
+  );
+}
+
+export function FixedToolbar({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<typeof Toolbar>) {
+  return (
+    <Toolbar
+      {...props}
+      ref={ref}
+      className={cn(
+        'scrollbar-hide z-50 w-full shrink-0 justify-between overflow-x-auto rounded-t-lg border-b border-b-border bg-background/95 p-1 backdrop-blur-sm supports-backdrop-blur:bg-background/60',
+        className
+      )}
+      data-slot="fixed-toolbar"
+    />
+  );
+}
+
+export const FixedToolbarPlugin = definePlugin('fixedToolbar', {
+  slots: {
+    beforeContainer: () => (
+      <FixedToolbar>
+        <FixedToolbarButtons />
+      </FixedToolbar>
+    ),
+  },
+});
+
+export const FixedToolbarKit = [FixedToolbarPlugin] as const;

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-12-suggestions-docs-demo",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-12-suggestions-docs-demo.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-12",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Review proposed insertions and deletions in the Suggestions demo",
+  "targets": [
+    {
+      "name": "suggestion-demo",
+      "files": ["apps/www/src/registry/examples/suggestion-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-12-suggestion-review-proposed-insertions-deletions-1a911e97",
+      "kind": "new",
+      "summary": "Review proposed insertions and deletions in the Suggestions demo",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["suggestion-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-12",
+          "entry": "2026-09-12-suggestions-docs-demo",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

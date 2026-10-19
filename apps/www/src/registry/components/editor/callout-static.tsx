@@ -1,0 +1,95 @@
+import { BaseCalloutPlugin } from 'platejs/callout';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
+import * as React from 'react';
+
+import { cn } from '@/lib/utils';
+
+export function CalloutElementStatic({
+  children,
+  ...props
+}: EditorElementProps<typeof BaseCalloutPlugin>) {
+  return (
+    <EditorElement
+      className={cn('my-1 flex rounded-sm bg-muted p-4 pl-3')}
+      style={{
+        backgroundColor: props.element.backgroundColor,
+      }}
+      {...props}
+    >
+      <div className="flex w-full gap-2 rounded-md">
+        <div
+          className="size-6 text-[18px] select-none"
+          style={{
+            fontFamily:
+              '"Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols',
+          }}
+        >
+          <span data-editor-prevent-deserialization>
+            {props.element.icon || '💡'}
+          </span>
+        </div>
+        <div className="w-full">{children}</div>
+      </div>
+    </EditorElement>
+  );
+}
+
+/**
+ * DOCX-compatible callout component using table layout for side-by-side icon and content.
+ */
+export function CalloutElementDocx({
+  children,
+  ...props
+}: EditorElementProps<typeof BaseCalloutPlugin>) {
+  const backgroundColor = props.element.backgroundColor || '#f4f4f5';
+  const icon = props.element.icon || '💡';
+
+  return (
+    <EditorElement {...props}>
+      <table
+        style={{
+          width: '100%',
+          borderCollapse: 'collapse',
+          border: 'none',
+          backgroundColor,
+          borderRadius: '4px',
+          marginTop: '4pt',
+          marginBottom: '4pt',
+        }}
+      >
+        <tbody>
+          <tr>
+            <td
+              style={{
+                width: '30px',
+                verticalAlign: 'top',
+                padding: '8px 4px 8px 8px',
+                border: 'none',
+                fontSize: '18px',
+                fontFamily:
+                  '"Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols',
+              }}
+            >
+              <span data-editor-prevent-deserialization>{icon}</span>
+            </td>
+            <td
+              style={{
+                verticalAlign: 'top',
+                padding: '8px 8px 8px 4px',
+                border: 'none',
+              }}
+            >
+              {children}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </EditorElement>
+  );
+}
+
+export const BaseCalloutKit = [
+  BaseCalloutPlugin.configure({
+    component: CalloutElementStatic,
+  }),
+];

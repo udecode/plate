@@ -1,0 +1,205 @@
+---
+title: Table of Contents
+docs:
+  - route: https://pro.platejs.org/docs/examples/toc
+    title: Plus
+  - route: components/toc
+    title: Toc Element
+---
+
+<ComponentPreview name="toc-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Automatically generates a table of contents from document headings
+- Smooth scrolling to headings
+- Keyboard-accessible heading navigation with `Enter` and `Space`
+
+TOC tracks headings with editor-scoped `NodeKey` values. It does not require
+persisted element IDs or install `ElementIdPlugin`.
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add table of contents functionality is with the `TocKit`, which includes pre-configured `TocPlugin` with the [Plate UI](/docs/installation/plate-ui) component.
+
+<ComponentSource name="toc" />
+
+- [`TocElement`](/docs/components/toc): Renders table of contents elements.
+
+### Add kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { TocKit } from '@/components/editor/toc';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...TocKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs
+```
+
+### Add plugins
+
+Include `TocPlugin` and `HeadingPlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { TocPlugin } from 'platejs/toc/react';
+import { HeadingPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    HeadingPlugin,
+    TocPlugin,
+  ],
+});
+```
+
+### Configure plugin
+
+Configure the `TocPlugin` with custom component and scroll options.
+
+```tsx
+import { TocPlugin } from 'platejs/toc/react';
+import { HeadingPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
+import { TocElement } from '@/components/editor/toc';
+import { HeadingElement } from '@/components/editor/heading';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    HeadingPlugin.configure({ component: HeadingElement }),
+    TocPlugin.configure({
+      component: (props) => <TocElement {...props} topOffset={80} isScroll />,
+    }),
+  ],
+});
+```
+
+- `.configure({ component })`: Assigns [`TocElement`](/docs/components/toc) to render table of contents elements.
+- `TocElement.topOffset`: Sets the top offset when scrolling to headings.
+- `TocElement.isScroll`: Enables scrolling behavior to headings.
+
+### Insert toolbar button
+
+You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert table of contents elements:
+
+```tsx
+{
+  icon: <TableOfContentsIcon />,
+  label: 'Table of contents',
+  value: PLUGINS.toc,
+}
+```
+
+### Scroll container setup
+
+Use [EditorContainer](/docs/components/editor) for the editor's scrolling region.
+For a custom layout, render `EditorContainer` inside `<EditorRoot>` and apply your
+scrolling styles to it. `EditorContainer` registers that region with the editor.
+
+```tsx
+import { EditorContainer, EditorContent } from 'platejs/react';
+
+function Layout() {
+  return (
+    <EditorContainer className="h-[600px] overflow-y-auto">
+      <EditorContent />
+    </EditorContainer>
+  );
+}
+```
+
+</Steps>
+
+## Plate Plus
+
+<ComponentPreviewPro name="toc-pro" />
+
+## Plugins
+
+### `TocPlugin`
+
+Plugin for generating table of contents.
+
+<API name="TocPlugin">
+<APIOptions>
+  <APIItem name="queryHeading" type="((state: EditorStateView) => Heading[]) | null" optional>
+    Custom function to query headings. Defaults to `null`, which uses the built-in query.
+  </APIItem>
+</APIOptions>
+</API>
+
+
+### `TocElement`
+
+Scroll options belong to the copied view. The heading query belongs to `TocPlugin`.
+
+<API name="TocElement">
+<APIOptions>
+  <APIItem name="isScroll" type="boolean" optional>
+    Enable scrolling behavior.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="topOffset" type="number" optional>
+    Top offset when scrolling to heading.
+    - **Default:** `80`
+  </APIItem>
+</APIOptions>
+</API>
+
+## Transforms
+
+### `editor.plugin(BaseTocPlugin).update.insert`
+
+Insert table of contents element.
+
+```ts
+import { BaseTocPlugin } from 'platejs/toc';
+
+editor.plugin(BaseTocPlugin).update.insert();
+```
+
+<API name="editor.plugin(BaseTocPlugin).update.insert">
+<APIParameters>
+  <APIItem name="props" type="NodeProps<ElementOf<typeof BaseTocPlugin>>" optional>
+    Initial table-of-contents element properties.
+  </APIItem>
+  <APIItem name="options" type="NodeInsertNodesOptions" optional>
+    Standard node insertion options such as `at` and `select`.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Registry UI
+
+The copied [`toc`](/docs/components/toc) component owns scrolling and
+navigation feedback. Keep those product-facing interaction choices beside the
+renderer; the package plugin owns heading discovery through
+`editor.plugin(TocPlugin).read.headings()`.

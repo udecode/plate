@@ -1,0 +1,64 @@
+{
+  "id": "search",
+  "title": "Find and navigation",
+  "question": "How should search matches, current selection and document navigation share indexed reads?",
+  "dependsOn": [
+    "reads",
+    "selection"
+  ],
+  "prerequisiteReason": "Canonical read ownership and rebased locations constrain search result identity and navigation.",
+  "last": true,
+  "opportunity": {
+    "score": 8,
+    "reason": "Performance history contains costly match and decoration invalidation paths worth reconciling."
+  },
+  "owners": [
+    "packages/platejs/src/features/find/"
+  ],
+  "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/linting.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/search-highlighting.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "apps/www/src/registry/components/editor/find.spec.tsx",
+    "apps/www/src/registry/components/editor/find.tsx",
+    "apps/www/src/registry/examples/find-demo.tsx",
+    "apps/www/src/registry/examples/values/cn/find-value.tsx",
+    "apps/www/src/registry/examples/values/find-value.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/features/find/",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/find.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/features/find/lib/BaseFindPlugin.spec.ts"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "annotations",
+    "large-documents",
+    "geometry"
+  ],
+  "historyCandidates": [
+    "docs/plans/2026-09-09-find-view-ownership.md",
+    "docs/plans/2026-09-09-find-range-scrolling.md",
+    "docs/plans/2026-09-09-find-controller-cut.md",
+    "docs/plans/2026-09-03-find-plate-code-block-product-benchmark-gap.md",
+    "docs/plans/2026-08-31-merge-find-into-single-owner.md",
+    "docs/plans/2026-08-31-fix-hidden-find-bar.md",
+    "docs/plans/2026-08-31-collapse-find-index-into-find-owner.md",
+    "docs/plans/2026-08-30-cursor-find-overlay-execution.md",
+    "docs/plans/2026-08-30-cursor-find-overlay-architecture.md",
+    "docs/plans/2026-08-18-find-non-huge-performance-issues-versus-main.md",
+    "docs/plans/2026-07-25-remove-redundant-find-replace-adapter.md",
+    "docs/plans/2026-07-12-plate-next-excalidraw-find-replace-floating-package-reviews.md",
+    "docs/plans/2026-06-16-architecture-candidate-finder.md",
+    "docs/plans/2026-05-18-clawpatch-valid-findings-fix.md",
+    "docs/plans/2026-04-16-withreact-recovery.findings.md",
+    "docs/plans/2026-04-16-plite-transforms-node-drift-review.findings.md",
+    "docs/plans/2026-04-07-debug-toc-demo-nav-findings.md",
+    "docs/plans/2026-03-27-review-liangzr-findpath-perf-v2.md"
+  ]
+}

@@ -1,0 +1,11 @@
+[test]
+# Preload scripts execute BEFORE any test file
+# Redirect workspace exports to source before installing DOM test globals.
+preload = [
+  "./config/plite-source-aliases.ts",
+  "./tooling/config/bunTestSetup.ts",
+]
+# Use test-specific tsconfig for path mappings (e.g., @/registry/*)
+tsconfig = "./tooling/config/tsconfig.test.json"
+# Keep the inner loop quiet. Full pass spam is slower and useless.
+onlyFailures = true

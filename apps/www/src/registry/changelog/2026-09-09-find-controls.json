@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-09-find-controls",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-09-find-controls.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-09",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Use FindPlugin for custom controls and return focus when closing Find.",
+  "targets": [
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-09-find-controls",
+      "kind": "wiring",
+      "summary": "Call custom controls through `FindPlugin` and subscribe to individual search fields. Closing the bar returns focus to its editor view; mounting another command button preserves the current query.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["find"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-09",
+          "entry": "2026-09-09-find-controls",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

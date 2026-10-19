@@ -1,0 +1,34 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "align-toolbar-button",
+  "title": "Align Toolbar Button",
+  "description": "A dropdown menu for text alignment controls.",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/editor-dropdown-menu.json",
+    "https://platejs.org/r/toolbar.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/align-toolbar-button.tsx",
+      "content": "'use client';\n\nimport {\n  AlignCenterIcon,\n  AlignJustifyIcon,\n  AlignLeftIcon,\n  AlignRightIcon,\n} from 'lucide-react';\nimport { type Alignment, ElementApi } from 'platejs';\nimport {\n  TextAlignPlugin,\n  useEditor,\n  useSelectionFragmentProp,\n} from 'platejs/react';\nimport * as React from 'react';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuRadioGroup,\n  DropdownMenuRadioItem,\n  DropdownMenuTrigger,\n} from '@/registry/components/editor/dropdown-menu';\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nconst items = [\n  {\n    icon: AlignLeftIcon,\n    value: 'left',\n  },\n  {\n    icon: AlignCenterIcon,\n    value: 'center',\n  },\n  {\n    icon: AlignRightIcon,\n    value: 'right',\n  },\n  {\n    icon: AlignJustifyIcon,\n    value: 'justify',\n  },\n] as const satisfies ReadonlyArray<{\n  icon: React.ComponentType;\n  value: Alignment;\n}>;\n\nexport function AlignToolbarButton() {\n  const editor = useEditor();\n  const value = useSelectionFragmentProp({\n    getProp: (node) =>\n      ElementApi.isElement(node) ? (node.textAlign ?? 'start') : undefined,\n  });\n\n  const [open, setOpen] = React.useState(false);\n  const IconValue =\n    items.find((item) => item.value === value)?.icon ?? AlignLeftIcon;\n\n  return (\n    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>\n      <DropdownMenuTrigger>\n        <ToolbarButton pressed={open} tooltip=\"Align\" isDropdown>\n          <IconValue />\n        </ToolbarButton>\n      </DropdownMenuTrigger>\n\n      <DropdownMenuContent className=\"min-w-0\" align=\"start\">\n        <DropdownMenuRadioGroup\n          value={typeof value === 'string' ? value : ''}\n          onValueChange={(innerValue2) => {\n            const alignment = items.find(\n              (item) => item.value === innerValue2\n            )?.value;\n\n            if (!alignment) return;\n\n            editor.plugin(TextAlignPlugin).update.set(alignment);\n          }}\n        >\n          {items.map(({ icon: Icon, value: itemValue }) => (\n            <DropdownMenuRadioItem\n              key={itemValue}\n              className=\"pl-2 data-[state=checked]:bg-accent *:first:[span]:hidden\"\n              finalFocus={() => editor.api.dom.focus()}\n              value={itemValue}\n            >\n              <Icon />\n            </DropdownMenuRadioItem>\n          ))}\n        </DropdownMenuRadioGroup>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/align-toolbar-button.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/text-align"
+      }
+    ],
+    "examples": [
+      "align-demo"
+    ]
+  },
+  "type": "registry:component"
+}

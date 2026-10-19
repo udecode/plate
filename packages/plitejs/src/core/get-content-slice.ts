@@ -1,0 +1,217 @@
+import type {
+  ContentSlice as ContentSliceValue,
+  AnyEditor as Editor,
+  Value,
+} from '../interfaces/editor';
+import { ElementApi } from '../interfaces/element';
+import { type Descendant, NodeApi } from '../interfaces/node';
+import { type Point, PointApi } from '../interfaces/point';
+import { type Range, RangeApi } from '../interfaces/range';
+import { SelectionApi, type NodeSelection } from '../interfaces/selection';
+import { ContentSlice, createContentSliceFromFragment } from './content-slice';
+import { getEditorRuntimeRoot, getEditorSchema } from './editor-runtime';
+import { getCompiledEditorSchemaFromApi } from './editor-schema';
+import { getEditorDocumentRoots } from './public-state';
+import { dissolveOpenEndMatter } from './slice-end-matter';
+
+const getOpenDepth = (editor: Editor, point: Point) => {
+  const ancestorPaths = point.path
+    .slice(0, -1)
+    .map((_part, index) => point.path.slice(0, index + 1));
+  const barrierIndex = ancestorPaths.findIndex((path) => {
+    const ancestor = NodeApi.get(editor, path);
+
+    return (
+      NodeApi.isElement(ancestor) &&
+      (editor.read.schema.isVoid(ancestor) ||
+        editor.read.schema.getElementSlicePolicy(ancestor).preserveContext)
+    );
+  });
+  return barrierIndex === -1 ? ancestorPaths.length : barrierIndex;
+};
+
+const omitOpenBoundaryRoots = (
+  editor: Editor,
+  children: readonly Descendant[],
+  depth: number,
+  edge: 'start' | 'end'
+): readonly Descendant[] => {
+  if (depth === 0 || children.length === 0) return children;
+
+  const index = edge === 'start' ? 0 : children.length - 1;
+  const node = children[index];
+
+  if (!ElementApi.isElement(node)) return children;
+
+  const nested = omitOpenBoundaryRoots(editor, node.children, depth - 1, edge);
+  let replacement: Descendant = node;
+
+  if (editor.read.schema.isObject(node) && 'childRoots' in node) {
+    const { childRoots: _childRoots, ...withoutRoots } = node;
+
+    replacement = { ...withoutRoots, children: nested };
+  } else if (nested !== node.children) {
+    replacement = { ...node, children: nested };
+  }
+
+  if (replacement === node) return children;
+
+  const result = [...children];
+
+  result[index] = replacement;
+
+  return result;
+};
+
+/**
+ * Read one canonical slice without losing its structural edges.
+ *
+ * @internal
+ */
+export const getContentSlice = <V extends Value>(
+  editor: Editor<V>,
+  selection: NodeSelection | Range | null,
+  sourceRoots?: ContentSliceValue['roots'],
+  lifecycle: 'copy' | 'move' = 'copy'
+): ContentSliceValue<V> => {
+  if (!selection) {
+    return ContentSlice.empty;
+  }
+
+  const nodeSelection = SelectionApi.isNode(selection) ? selection : null;
+  const rangeSelection = RangeApi.isRange(selection) ? selection : null;
+  const selectedNodes = nodeSelection
+    ? nodeSelection.paths.flatMap((path) => {
+        const node = NodeApi.getIf(editor, path);
+
+        return node && NodeApi.isDescendant(node)
+          ? [[node, path] as const]
+          : [];
+      })
+    : null;
+  const fullRootContent = rangeSelection
+    ? editor.read((state) => {
+        const [start, end] = RangeApi.edges(rangeSelection);
+        const rootStart = state.points.start([]);
+        const rootEnd = state.points.end([]);
+
+        return rootStart &&
+          rootEnd &&
+          PointApi.equals(start, rootStart) &&
+          PointApi.equals(end, rootEnd)
+          ? state.children()
+          : null;
+      })
+    : null;
+  const root = getEditorRuntimeRoot(editor);
+  const schema = getEditorSchema(editor);
+  let content: readonly Descendant[];
+
+  // A move removes its source in the same update, so it keeps properties a copy drops.
+  if (selectedNodes) {
+    content = selectedNodes.map(([node, path]) =>
+      lifecycle === 'move' ? node : schema.copyNodeAt(node, path, root)
+    );
+  } else if (rangeSelection) {
+    const fragment =
+      fullRootContent ?? NodeApi.fragment(editor, rangeSelection);
+
+    content =
+      lifecycle === 'move' ? fragment : schema.copyChildren(fragment, root);
+  } else {
+    return ContentSlice.empty;
+  }
+  const [start, end] = rangeSelection
+    ? RangeApi.edges(rangeSelection)
+    : [null, null];
+  let openStart = start ? getOpenDepth(editor, start) : 0;
+  let openEnd = end ? getOpenDepth(editor, end) : 0;
+
+  if (lifecycle === 'copy' && start && end) {
+    const closeCovered = (point: Point, open: number) => {
+      for (let depth = 1; depth <= open; depth++) {
+        const path = point.path.slice(0, depth);
+        const node = NodeApi.get(editor, path);
+
+        if (
+          !ElementApi.isElement(node) ||
+          !schema.getElementSlicePolicy(node).endMatter
+        ) {
+          continue;
+        }
+        const first = editor.read.points.start(path);
+        const last = editor.read.points.end(path);
+
+        if (
+          first &&
+          last &&
+          !PointApi.isAfter(start, first) &&
+          !PointApi.isBefore(end, last)
+        ) {
+          return depth - 1;
+        }
+      }
+      return open;
+    };
+    openStart = closeCovered(start, openStart);
+    openEnd = closeCovered(end, openEnd);
+  }
+
+  content = omitOpenBoundaryRoots(editor, content, openStart, 'start');
+  content = omitOpenBoundaryRoots(editor, content, openEnd, 'end');
+
+  const roots: Record<string, readonly Descendant[]> = {};
+  const visitedRoots = new Set<string>();
+  const collect = (children: readonly Descendant[]) => {
+    children.forEach((node) => {
+      if (!ElementApi.isElement(node)) return;
+
+      for (const innerRoot of Object.values(
+        editor.read.schema.getElementContentRoots(node)
+      )) {
+        if (visitedRoots.has(innerRoot)) continue;
+        const rootContent = (sourceRoots ?? getEditorDocumentRoots(editor))[
+          innerRoot
+        ];
+
+        if (!rootContent) {
+          if (sourceRoots !== undefined) {
+            throw new Error(
+              `Missing content slice source root "${innerRoot}".`
+            );
+          }
+          continue;
+        }
+        visitedRoots.add(innerRoot);
+        roots[innerRoot] = rootContent;
+        collect(rootContent);
+      }
+
+      collect(node.children);
+    });
+  };
+  if (editor.read.schema.hasContentRoots()) {
+    collect(content);
+    if (lifecycle === 'copy') {
+      for (const [name, children] of Object.entries(roots)) {
+        roots[name] = schema.copyChildren(children, name);
+      }
+    }
+  }
+
+  if (selectedNodes) {
+    return createContentSliceFromFragment<V>(content, 0, 0, roots);
+  }
+
+  if (!rangeSelection) return ContentSlice.empty;
+
+  const slice = createContentSliceFromFragment<V>(
+    content,
+    openStart,
+    openEnd,
+    roots
+  );
+  return lifecycle === 'copy'
+    ? dissolveOpenEndMatter(slice, getCompiledEditorSchemaFromApi(schema))
+    : slice;
+};

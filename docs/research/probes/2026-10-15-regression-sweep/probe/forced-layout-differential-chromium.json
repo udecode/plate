@@ -1,0 +1,432 @@
+{
+  "engine": "chromium",
+  "ref": {
+    "url": "https://www.slatejs.org/examples/forced-layout",
+    "steps": [
+      {
+        "name": "click-first-block-start",
+        "blocks": [
+          "Enforce Your Layout!",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 0,
+        "caretMeasurable": true
+      },
+      {
+        "name": "end",
+        "blocks": [
+          "Enforce Your Layout!",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 20,
+        "caretMeasurable": true
+      },
+      {
+        "name": "type",
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 22,
+        "caretMeasurable": true
+      },
+      {
+        "name": "enter",
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "\n",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 22,
+        "caretMeasurable": true
+      },
+      {
+        "name": "type-new-line",
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "Z",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 23,
+        "caretMeasurable": true
+      },
+      {
+        "name": "shift-up",
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "Z",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "nforce Your Layout!XY\nZ",
+        "collapsed": false,
+        "focusInEditor": true,
+        "focusTextOffset": 1,
+        "caretMeasurable": true
+      },
+      {
+        "name": "shift-down",
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "Z",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 23,
+        "caretMeasurable": true
+      },
+      {
+        "name": "backspace-word",
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "\n",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 22,
+        "caretMeasurable": true
+      },
+      {
+        "name": "undo",
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "Z",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 23,
+        "caretMeasurable": true
+      },
+      {
+        "name": "dblclick-word",
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "Z",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "\n",
+        "collapsed": false,
+        "focusInEditor": true,
+        "focusTextOffset": 23,
+        "caretMeasurable": true
+      }
+    ],
+    "errors": []
+  },
+  "test": {
+    "url": "https://beta.platejs.org/examples/plite/forced-layout",
+    "steps": [
+      {
+        "name": "click-first-block-start",
+        "blocks": [
+          "Enforce Your Layout!",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 0,
+        "caretMeasurable": true
+      },
+      {
+        "name": "end",
+        "blocks": [
+          "Enforce Your Layout!",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 20,
+        "caretMeasurable": true
+      },
+      {
+        "name": "type",
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 22,
+        "caretMeasurable": true
+      },
+      {
+        "name": "enter",
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 22,
+        "caretMeasurable": true
+      },
+      {
+        "name": "type-new-line",
+        "blocks": [
+          "Enforce Your Layout!XYZ",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 23,
+        "caretMeasurable": true
+      },
+      {
+        "name": "shift-up",
+        "blocks": [
+          "Enforce Your Layout!XYZ",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "Enforce Your Layout!XYZ",
+        "collapsed": false,
+        "focusInEditor": true,
+        "focusTextOffset": 0,
+        "caretMeasurable": true
+      },
+      {
+        "name": "shift-down",
+        "blocks": [
+          "Enforce Your Layout!XYZ",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 23,
+        "caretMeasurable": true
+      },
+      {
+        "name": "backspace-word",
+        "blocks": [
+          "Enforce Your Layout!",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 20,
+        "caretMeasurable": true
+      },
+      {
+        "name": "undo",
+        "blocks": [
+          "Enforce Your Layout!XYZ",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "",
+        "collapsed": true,
+        "focusInEditor": true,
+        "focusTextOffset": 23,
+        "caretMeasurable": true
+      },
+      {
+        "name": "dblclick-word",
+        "blocks": [
+          "Enforce Your Layout!XYZ",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": " ",
+        "collapsed": false,
+        "focusInEditor": true,
+        "focusTextOffset": 28,
+        "caretMeasurable": true
+      }
+    ],
+    "errors": [
+      "Editor primary root cannot contain \"title\"."
+    ]
+  },
+  "diffs": [
+    {
+      "step": "click-first-block-start",
+      "fields": [],
+      "ref": {},
+      "test": {}
+    },
+    {
+      "step": "end",
+      "fields": [],
+      "ref": {},
+      "test": {}
+    },
+    {
+      "step": "type",
+      "fields": [],
+      "ref": {},
+      "test": {}
+    },
+    {
+      "step": "enter",
+      "fields": [
+        "blocks"
+      ],
+      "ref": {
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "\n",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ]
+      },
+      "test": {
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ]
+      }
+    },
+    {
+      "step": "type-new-line",
+      "fields": [
+        "blocks"
+      ],
+      "ref": {
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "Z",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ]
+      },
+      "test": {
+        "blocks": [
+          "Enforce Your Layout!XYZ",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ]
+      }
+    },
+    {
+      "step": "shift-up",
+      "fields": [
+        "blocks",
+        "selected",
+        "focusTextOffset"
+      ],
+      "ref": {
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "Z",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "nforce Your Layout!XY\nZ",
+        "focusTextOffset": 1
+      },
+      "test": {
+        "blocks": [
+          "Enforce Your Layout!XYZ",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "Enforce Your Layout!XYZ",
+        "focusTextOffset": 0
+      }
+    },
+    {
+      "step": "shift-down",
+      "fields": [
+        "blocks"
+      ],
+      "ref": {
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "Z",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ]
+      },
+      "test": {
+        "blocks": [
+          "Enforce Your Layout!XYZ",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ]
+      }
+    },
+    {
+      "step": "backspace-word",
+      "fields": [
+        "blocks",
+        "focusTextOffset"
+      ],
+      "ref": {
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "\n",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "focusTextOffset": 22
+      },
+      "test": {
+        "blocks": [
+          "Enforce Your Layout!",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "focusTextOffset": 20
+      }
+    },
+    {
+      "step": "undo",
+      "fields": [
+        "blocks"
+      ],
+      "ref": {
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "Z",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ]
+      },
+      "test": {
+        "blocks": [
+          "Enforce Your Layout!XYZ",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ]
+      }
+    },
+    {
+      "step": "dblclick-word",
+      "fields": [
+        "blocks",
+        "selected",
+        "focusTextOffset"
+      ],
+      "ref": {
+        "blocks": [
+          "Enforce Your Layout!XY",
+          "Z",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": "\n",
+        "focusTextOffset": 23
+      },
+      "test": {
+        "blocks": [
+          "Enforce Your Layout!XYZ",
+          "This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!"
+        ],
+        "selected": " ",
+        "focusTextOffset": 28
+      }
+    }
+  ]
+}

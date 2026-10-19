@@ -1,0 +1,79 @@
+[
+  {
+    "cell": "ai-cjk-50000",
+    "baseline": {
+      "perCommitMs": 16.8,
+      "totalMs": 3510.7,
+      "byEvent": {
+        "UpdateLayoutTree": 2824.51,
+        "Layout": 209.03,
+        "PrePaint": 119.14,
+        "Paint": 262.04,
+        "Layerize": 95.99
+      },
+      "streams": [
+        {
+          "commits": 210,
+          "perCommitMs": 18.05,
+          "sums": {
+            "UpdateLayoutTree": 3100.35,
+            "Layout": 208.72,
+            "PrePaint": 120.52,
+            "Paint": 263.75,
+            "Layerize": 96.5
+          },
+          "totalMs": 3789.84
+        },
+        {
+          "commits": 208,
+          "perCommitMs": 15.54,
+          "sums": {
+            "UpdateLayoutTree": 2548.67,
+            "Layout": 209.33,
+            "PrePaint": 117.76,
+            "Paint": 260.34,
+            "Layerize": 95.47
+          },
+          "totalMs": 3231.56
+        }
+      ]
+    },
+    "candidate": {
+      "perCommitMs": 16.61,
+      "totalMs": 3497.81,
+      "byEvent": {
+        "UpdateLayoutTree": 2833.45,
+        "Layout": 208.61,
+        "PrePaint": 118.77,
+        "Paint": 242.18,
+        "Layerize": 94.82
+      },
+      "streams": [
+        {
+          "commits": 212,
+          "perCommitMs": 17.43,
+          "sums": {
+            "UpdateLayoutTree": 3040.03,
+            "Layout": 205.89,
+            "PrePaint": 116.01,
+            "Paint": 239.44,
+            "Layerize": 94.57
+          },
+          "totalMs": 3695.94
+        },
+        {
+          "commits": 209,
+          "perCommitMs": 15.79,
+          "sums": {
+            "UpdateLayoutTree": 2626.86,
+            "Layout": 211.32,
+            "PrePaint": 121.53,
+            "Paint": 244.91,
+            "Layerize": 95.06
+          },
+          "totalMs": 3299.68
+        }
+      ]
+    }
+  }
+]

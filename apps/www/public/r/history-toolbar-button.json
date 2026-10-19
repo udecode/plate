@@ -1,0 +1,34 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "history-toolbar-button",
+  "title": "History Toolbar Button",
+  "description": "Toolbar buttons for undo and redo operations.",
+  "dependencies": [
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react",
+    "platejs"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/history-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { Redo2Icon, Undo2Icon } from 'lucide-react';\nimport { useEditor, useEditorHistory } from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function RedoToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { canRedo, pending, redo } = useEditorHistory({ editor: useEditor() });\n\n  return (\n    <ToolbarButton\n      {...props}\n      aria-busy={pending !== null}\n      disabled={!canRedo}\n      onClick={redo}\n      tooltip=\"Redo\"\n    >\n      <Redo2Icon />\n    </ToolbarButton>\n  );\n}\n\nexport function UndoToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { canUndo, pending, undo } = useEditorHistory({ editor: useEditor() });\n\n  return (\n    <ToolbarButton\n      {...props}\n      aria-busy={pending !== null}\n      disabled={!canUndo}\n      onClick={undo}\n      tooltip=\"Undo\"\n    >\n      <Undo2Icon />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/history-toolbar-button.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/history",
+        "title": "History"
+      }
+    ],
+    "examples": [
+      "basic-nodes-demo"
+    ]
+  },
+  "type": "registry:component"
+}

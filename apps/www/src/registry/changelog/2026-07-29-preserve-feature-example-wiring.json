@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-29-preserve-feature-example-wiring",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-29-preserve-feature-example-wiring.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-29",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep feature wiring explicit and package-owned",
+  "targets": [
+    {
+      "name": "code-drawing-demo",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-drawing-demo."
+        }
+      ]
+    },
+    {
+      "name": "excalidraw-demo",
+      "files": [
+        "apps/www/src/registry/examples/excalidraw-demo.tsx",
+        "apps/www/src/registry/examples/values/excalidraw-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "cursor-overlay",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for cursor-overlay."
+        }
+      ]
+    },
+    {
+      "name": "ghost-text",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for ghost-text."
+        }
+      ]
+    },
+    {
+      "name": "media-image-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-image-node."
+        }
+      ]
+    },
+    {
+      "name": "media-video-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-video-node."
+        }
+      ]
+    },
+    {
+      "name": "table-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for table-node."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-29-code-drawing-keep-feature-setup-explicit-b2ece858",
+      "kind": "fix",
+      "summary": "Configure feature renderers explicitly while installing each plugin name once.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-drawing-demo", "excalidraw-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-29",
+          "entry": "2026-07-29-preserve-feature-example-wiring",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-07-29-cursor-ghost-use-package-owners-8c8b91f2",
+      "kind": "fix",
+      "summary": "Read cursor geometry and schema-configured node ids from their package owners.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["cursor-overlay", "ghost-text"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-07-29",
+          "entry": "2026-07-29-preserve-feature-example-wiring",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-07-29-media-derive-readonly-state-8daf995d",
+      "kind": "fix",
+      "summary": "Let resize handles derive read-only state from the editor.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media-image-node", "media-video-node"],
+      "source": {
+        "line": 18,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-07-29",
+          "entry": "2026-07-29-preserve-feature-example-wiring",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-07-29-table-use-dnd-selection-owner-2098257c",
+      "kind": "fix",
+      "summary": "Use the DnD block selection-and-focus controller after row drops.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table-node"],
+      "source": {
+        "line": 20,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-07-29",
+          "entry": "2026-07-29-preserve-feature-example-wiring",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,0 +1,123 @@
+renderRootConcurrent: 1962.1 ms per profile over 3 profiles
+by inclusive (ms per profile):
+    1962.1  renderRootConcurrent@5319583e-150745cd7583489c.js:298295
+    1961.1  workLoopConcurrentByScheduler@5319583e-150745cd7583489c.js:301027
+    1939.7  performUnitOfWork@5319583e-150745cd7583489c.js:301134
+    1621.3  beginWork@5319583e-150745cd7583489c.js:187718
+    1529.9  updateFunctionComponent@5319583e-150745cd7583489c.js:162671
+    1515.6  renderWithHooks@5319583e-150745cd7583489c.js:109327
+    1096.1  withDocumentViewRead@1233-4d37154d85cba0b9.js:33373
+     686.2  Children@1656-507afe1003872559.js:20471
+     680.2  (anon)@1656-507afe1003872559.js:21046 «(child,i)=>{let decorations1,contentRoots,readsDocument,visitContentRoots,visit;»
+     540.1  read@1233-4d37154d85cba0b9.js:1496002 «param=>{let{editor:view=editor,entry}=param,context=Object.create(readContextFor»
+     528.9  read@1233-4d37154d85cba0b9.js:718071 «fn=>runRead(fn),createGroup=groupName=>new Proxy({},{get(target,key,receiver){if»
+     525.5  readEditor@1233-4d37154d85cba0b9.js:1648673
+     523.8  withEditorDocumentProjection@1233-4d37154d85cba0b9.js:1521883
+     523.2  (anon)@1233-4d37154d85cba0b9.js:1649539 «()=>(0,authored_runtime.mL)(editor,editor,()=>fn(getStateView(editor))))}finally»
+     523.2  withAuthoredViewRead@1233-4d37154d85cba0b9.js:512202
+     523.2  (anon)@1233-4d37154d85cba0b9.js:1649581 «()=>fn(getStateView(editor))))}finally{restoreDraft(),exitRead()}},updateEditor=»
+     502.7  (anon)@1233-4d37154d85cba0b9.js:1496175 «()=>Reflect.apply(decorate.read,void 0,[context]));return attributes&&0!==decora»
+     484.9  read@7460-bbe9e3fbcf49770c.js:279022 «param=>{var _view_key,_ref,_ref1,_ref2;let highlighted,warning,{editor:view,entr»
+     460.5  (anon)@1233-4d37154d85cba0b9.js:649804 «fn=>viewRuntime.read(state=>fn(state)));viewRead.schema=sourceEditor.read.schema»
+     460.5  read@1233-4d37154d85cba0b9.js:644800 «fn=>{var _getViewEditor;return(0,_core_document_view_read__WEBPACK_IMPORTED_MODU»
+     459.3  (anon)@1233-4d37154d85cba0b9.js:644959 «()=>baseRuntime.read(state=>fn((state=>{if(state!==cachedBaseState){var _getView»
+     458.8  read@1233-4d37154d85cba0b9.js:1117214 «fn=>(0,public_state.O4)(editor1,fn),runCommand:(0,command_registry.my)(()=>edito»
+     457.1  (anon)@1233-4d37154d85cba0b9.js:644980 «state=>fn((state=>{if(state!==cachedBaseState){var _getViewEditor;cachedBaseStat»
+     441.4  withEditorRootChildren@1233-4d37154d85cba0b9.js:1651008
+     416.4  (anon)@1656-507afe1003872559.js:21285 «source=>source.read({editor,entry})),own=0===read.length?EMPTY_DECORATIONS:read,»
+     398.0  (anon)@1233-4d37154d85cba0b9.js:649825 «state=>fn(state)));viewRead.schema=sourceEditor.read.schema;let viewUpdate=(0,_c»
+     393.2  profileCoreDuration@1233-4d37154d85cba0b9.js:1373969
+     374.9  withRootRead@1233-4d37154d85cba0b9.js:617290
+     373.6  (anon)@1233-4d37154d85cba0b9.js:618191 «(){for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++)args[_»
+     373.0  read@1233-4d37154d85cba0b9.js:617345 «()=>(0,_core_public_state__WEBPACK_IMPORTED_MODULE_1__.bq)(editor,viewState.root»
+     369.8  (anon)@1233-4d37154d85cba0b9.js:618329 «()=>method(...args))},rootGeneratorMethod=(editor,viewState,method)=>function(){»
+     348.8  BaseElementStatic@1656-507afe1003872559.js:12970
+     342.2  (anon)@1656-507afe1003872559.js:15484 «()=>null==renderElement?void 0:renderElement({attributes,children,element,path,s»
+     342.0  render@1656-507afe1003872559.js:2841
+     341.0  render@1656-507afe1003872559.js:3055
+     340.4  withLocationRootRead@1233-4d37154d85cba0b9.js:1534210
+     339.0  getStateNodeKey@1233-4d37154d85cba0b9.js:1581508
+     337.3  (anon)@1233-4d37154d85cba0b9.js:1582456 «()=>{let path=readNodePath(editor,target);return path?getNodeKey(editor,path):nu»
+     334.3  key@1233-4d37154d85cba0b9.js:651305
+     334.3  (anon)@1233-4d37154d85cba0b9.js:651322 «state=>state.key(target)),read:viewRead,root:(0,_core_public_root__WEBPACK_IMPOR»
+     334.2  getNodeKey@1233-4d37154d85cba0b9.js:1550464
+     333.6  materialize@1233-4d37154d85cba0b9.js:1463237
+     332.9  (anon)@1233-4d37154d85cba0b9.js:1463335 «()=>{ensureElementPaths();let entries=[],visit=(nodes,pathPrefix)=>{nodes.forEac»
+     331.3  keyAt@1233-4d37154d85cba0b9.js:1463885
+     329.5  _object_spread@3370-ab6f5e713678b725.js:72578
+     319.4  completeUnitOfWork@5319583e-150745cd7583489c.js:303391
+     315.6  completeWork@5319583e-150745cd7583489c.js:200744
+     282.0  getRenderNodeStaticProps@1656-507afe1003872559.js:1920
+     269.2  visit@1233-4d37154d85cba0b9.js:1463382
+     263.6  (anon)@1233-4d37154d85cba0b9.js:1463417 «(node,index)=>{let path=[...pathPrefix,index],nodeKey=(0,_utils_node_keys__WEBPA»
+     260.7  appendChild@:-1
+     198.9  (anon)@1656-507afe1003872559.js:22714 «(child,index)=>visit(child,[...p,index])),0!==contentRoots.length||0!==decoratio»
+     193.9  visit@1656-507afe1003872559.js:22412
+     185.3  cache@1233-4d37154d85cba0b9.js:1462703
+     139.5  getPlugin@1233-4d37154d85cba0b9.js:519118
+     126.4  _object_spread_props@3370-ab6f5e713678b725.js:174957
+     126.1  pipeInjectNodeProps@1233-4d37154d85cba0b9.js:1375046
+     124.6  (anon)@1656-507afe1003872559.js:22614 «(child,index)=>visit(child,[...nodePath,index])))},(visitContentRoots(child),chi»
+     117.9  BaseLeafStatic@1656-507afe1003872559.js:17807
+     114.6  getOwnPropertyDescriptor@1233-4d37154d85cba0b9.js:531836
+by self (ms per profile):
+     260.7  appendChild@:-1
+     154.5  cache@1233-4d37154d85cba0b9.js:1462703
+     126.4  _object_spread_props@3370-ab6f5e713678b725.js:174957
+     119.8  _object_spread@3370-ab6f5e713678b725.js:72578
+      75.6  (anon)@3486-23af68fa9eb35a58.js:38310 «c=>{let space=c.text.replaceAll("\n","⤶").replaceAll(" ","␣");return(0,react_jsx»
+      56.5  getEditorRuntimeOwner@1233-4d37154d85cba0b9.js:2109651
+      41.6  _define_property@3370-ab6f5e713678b725.js:72415
+      34.2  visit@1656-507afe1003872559.js:22412
+      33.7  read@7460-bbe9e3fbcf49770c.js:279022 «param=>{var _view_key,_ref,_ref1,_ref2;let highlighted,warning,{editor:view,entr»
+      33.1  (anon)@1656-507afe1003872559.js:21046 «(child,i)=>{let decorations1,contentRoots,readsDocument,visitContentRoots,visit;»
+      32.6  (anon)@1233-4d37154d85cba0b9.js:1462044 «(node,index)=>{let path=Object.freeze([...pathPrefix,index]);if("children"in nod»
+      31.8  collectElementPaths@1233-4d37154d85cba0b9.js:1462009
+      31.4  (anon)@1233-4d37154d85cba0b9.js:1463417 «(node,index)=>{let path=[...pathPrefix,index],nodeKey=(0,_utils_node_keys__WEBPA»
+      30.8  pathKey@1233-4d37154d85cba0b9.js:1461621
+      30.2  visit@1233-4d37154d85cba0b9.js:1463382
+      30.0  propagateParentContextChanges@5319583e-150745cd7583489c.js:76288
+      27.2  getOwnPropertyDescriptor@1233-4d37154d85cba0b9.js:531836
+      24.5  withDocumentViewRead@1233-4d37154d85cba0b9.js:33373
+      24.0  _object_without_properties@8255-fdc7096923fb725f.js:52329
+      23.8  getPlugin@1233-4d37154d85cba0b9.js:519118
+      21.2  getElementContentRoots@1233-4d37154d85cba0b9.js:107575
+      20.4  ownKeys@1233-4d37154d85cba0b9.js:532367
+      19.2  (anon)@3370-ab6f5e713678b725.js:72918 «(key){_define_property(target,key,source[key])})}return target}__webpack_require»
+      19.2  getCompiledElement@1233-4d37154d85cba0b9.js:106585
+      18.6  (anon)@1233-4d37154d85cba0b9.js:1496175 «()=>Reflect.apply(decorate.read,void 0,[context]));return attributes&&0!==decora»
+      18.4  getCompiledPlatePlugin@1233-4d37154d85cba0b9.js:1014552
+      17.7  now@:-1
+      15.0  (anon)@1656-507afe1003872559.js:16508 «(prev,next)=>prev.path.join(",")===next.path.join(",")&&prev.rootStack.at(-1)===»
+      13.2  getPlateModelPublication@1233-4d37154d85cba0b9.js:1013155
+      12.9  getNodeKeys@1233-4d37154d85cba0b9.js:23394
+      12.2  (anon)@1656-507afe1003872559.js:16841 «(previous,next)=>{let counts=unchangedBlockCounts.get(previous);counts||(counts=»
+      11.0  setAttribute@:-1
+      10.6  createPluginAccess@1233-4d37154d85cba0b9.js:517321
+      10.4  hasCompiledPlateModelCandidate@1233-4d37154d85cba0b9.js:1014434
+       9.7  getPluginSchemaFamily@1233-4d37154d85cba0b9.js:970402
+       9.2  getRenderNodeStaticProps@1656-507afe1003872559.js:1920
+       9.1  updateSlot@5319583e-150745cd7583489c.js:89696
+       8.8  (anon)@1233-4d37154d85cba0b9.js:1375370 «name=>{let plugin=(0,compilePlateModel.zI)(editor,name);if((0,isEditOnlyDisabled»
+       8.5  (anon)@1233-4d37154d85cba0b9.js:1375506 «(editor,plugin,nodeProps,getElementPath)=>{var _ref,_Reflect_apply,_getCompiledP»
+       8.4  hasCompiledPlatePluginCandidate@1233-4d37154d85cba0b9.js:1014312
+       8.3  isElement@1233-4d37154d85cba0b9.js:1814528
+       8.2  getOrCreateNodeKey@1233-4d37154d85cba0b9.js:24458
+       7.9  getEditorJsonArrayItems@1233-4d37154d85cba0b9.js:1612
+       7.7  getCandidate@1233-4d37154d85cba0b9.js:518603
+       7.1  (anon)@1233-4d37154d85cba0b9.js:888640 «(node,path)=>{var _plugin_inject;let{excludeBelowPlugins,excludePlugins,isBlock:»
+       6.9  setInitialProperties@5319583e-150745cd7583489c.js:350862
+       5.9  completeWork@5319583e-150745cd7583489c.js:200744
+       5.9  mergeCapabilityValue@1233-4d37154d85cba0b9.js:1189136
+       5.8  (anon)@1656-507afe1003872559.js:8430 «renderLeaf=>{let newChildren=renderLeaf((0,_object_spread_props._)((0,_object_sp»
+       5.4  getPluginRenderAttributes@1233-4d37154d85cba0b9.js:757096
+       5.0  canonicalizeDeclarativePropertyRecord@1233-4d37154d85cba0b9.js:207716
+       5.0  splitChunksByLinebreak@3486-23af68fa9eb35a58.js:37295
+       5.0  contentAllows@1233-4d37154d85cba0b9.js:110687
+       4.9  (anon)@1656-507afe1003872559.js:22714 «(child,index)=>visit(child,[...p,index])),0!==contentRoots.length||0!==decoratio»
+       4.7  bubbleProperties@5319583e-150745cd7583489c.js:199974
+       4.7  read@1233-4d37154d85cba0b9.js:1496002 «param=>{let{editor:view=editor,entry}=param,context=Object.create(readContextFor»
+       4.7  exec@2698-c2ee67ec4838aa66.js:11910
+       4.7  render@1656-507afe1003872559.js:8261
+       4.7  setValueForStyle@5319583e-150745cd7583489c.js:32448
+       4.6  Children@1656-507afe1003872559.js:20471

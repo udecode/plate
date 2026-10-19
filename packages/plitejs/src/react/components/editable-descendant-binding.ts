@@ -1,0 +1,151 @@
+import {
+  type Descendant,
+  type EditorSchemaElement,
+  type NodeKey,
+  NodeApi,
+  type Path,
+  type Text as TextNode,
+} from '../..';
+import { canSkipRendererForRetainedTextFlow } from '../dom-text-sync';
+import type { AnyEditor as EditorType } from '../editable/runtime-editor-api';
+import {
+  getNodeKey as editorGetNodeKey,
+  getSnapshot as editorGetSnapshot,
+  isEditor as editorIsEditor,
+  isInline as editorIsInline,
+  isVoid as editorIsVoid,
+} from '../editable/runtime-editor-api';
+import { readRuntimeNode } from '../editable/runtime-live-state';
+import { getDOMTextRenderRevision } from '../hooks/use-plite-node-ref';
+
+const EMPTY_RUNTIME_IDS = Object.freeze([]) as readonly NodeKey[];
+const EMPTY_DIRECT_TEXT_CHILD_NODES = Object.freeze(
+  []
+) as ReadonlyArray<TextNode | null>;
+
+export type EditableDescendantBinding = {
+  childNodeKeys: readonly NodeKey[];
+  directTextChildNodes: ReadonlyArray<TextNode | null>;
+  emptyTextParentRenderKey: string | null;
+  isInline: boolean;
+  isVoid: boolean;
+  node: Descendant | null;
+  ownRenderRevision: number;
+  path: Path | null;
+  renderRevision: number;
+  schemaElement: EditorSchemaElement | null;
+};
+
+export const isEditableTextNode = (value: Descendant): value is TextNode =>
+  typeof (value as TextNode).text === 'string';
+
+const readEmptyTextParentRenderKey = (
+  editor: EditorType,
+  node: Descendant,
+  path: Path
+) => {
+  if (!isEditableTextNode(node) || node.text !== '') {
+    return null;
+  }
+
+  const parent = readRuntimeNode(editor, path.slice(0, -1));
+
+  if (!parent || editorIsEditor(parent) || !NodeApi.isElement(parent)) {
+    return null;
+  }
+
+  return [
+    parent.children.length,
+    path.at(-1),
+    NodeApi.string(parent),
+    editorIsInline(editor, parent),
+    editorIsVoid(editor, parent),
+  ].join(':');
+};
+
+export const readEditableDescendantBinding = ({
+  editor,
+  node,
+  path,
+  renderLeaf,
+  renderText,
+}: {
+  editor: EditorType;
+  node: unknown;
+  path: Path | null;
+  renderLeaf?: unknown;
+  renderText?: unknown;
+}): EditableDescendantBinding => {
+  if (!path || !node || editorIsEditor(node)) {
+    return {
+      childNodeKeys: EMPTY_RUNTIME_IDS,
+      directTextChildNodes: EMPTY_DIRECT_TEXT_CHILD_NODES,
+      emptyTextParentRenderKey: null,
+      isInline: false,
+      isVoid: false,
+      node: null,
+      ownRenderRevision: 0,
+      path: null,
+      renderRevision: 0,
+      schemaElement: null,
+    };
+  }
+
+  const descendant = node as Descendant;
+  const snapshot = editorGetSnapshot(editor);
+  const usesDirectTextChildren =
+    !isEditableTextNode(descendant) &&
+    descendant.children.every((child) => {
+      if (!isEditableTextNode(child)) return true;
+
+      const { text: _text, ...marks } = child;
+
+      return (
+        canSkipRendererForRetainedTextFlow(renderLeaf, { marks }) &&
+        canSkipRendererForRetainedTextFlow(renderText, { marks })
+      );
+    });
+
+  const childNodeKeys = isEditableTextNode(descendant)
+    ? EMPTY_RUNTIME_IDS
+    : (descendant.children
+        .map((_, index) => {
+          const childPath = [...path, index] as Path;
+
+          return (
+            snapshot.index.keyAt(childPath) ??
+            editorGetNodeKey(editor, childPath) ??
+            ''
+          );
+        })
+        .filter(Boolean) as NodeKey[]);
+  const ownNodeKey = editorGetNodeKey(editor, path);
+  const isElement = !isEditableTextNode(descendant);
+  const ownRenderRevision = ownNodeKey
+    ? getDOMTextRenderRevision(editor, [ownNodeKey])
+    : 0;
+
+  return {
+    childNodeKeys,
+    directTextChildNodes: usesDirectTextChildren
+      ? descendant.children.map((child) =>
+          isEditableTextNode(child) ? child : null
+        )
+      : EMPTY_DIRECT_TEXT_CHILD_NODES,
+    emptyTextParentRenderKey: readEmptyTextParentRenderKey(
+      editor,
+      descendant,
+      path
+    ),
+    isInline: isElement && editorIsInline(editor, descendant),
+    isVoid: isElement && editorIsVoid(editor, descendant),
+    node: descendant,
+    ownRenderRevision,
+    path,
+    renderRevision:
+      ownRenderRevision + getDOMTextRenderRevision(editor, childNodeKeys),
+    schemaElement: isEditableTextNode(descendant)
+      ? null
+      : editor.read((state) => state.schema.element(descendant.type)),
+  };
+};

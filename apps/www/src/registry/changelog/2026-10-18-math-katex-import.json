@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-18-math-katex-import",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-18-math-katex-import.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Import KaTeX in the copied equation components",
+  "targets": [
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math-static",
+      "files": ["apps/www/src/registry/components/editor/math-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "equation-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/equation-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "html-export",
+      "files": [
+        "apps/www/src/registry/blocks/html-export/page.tsx",
+        "apps/www/src/registry/components/editor/html-export-kit.ts",
+        "apps/www/src/registry/components/editor/html-export-schema-kit.ts",
+        "apps/www/src/registry/components/editor/html-export.tsx",
+        "apps/www/src/registry/examples/values/align-value.tsx",
+        "apps/www/src/registry/examples/values/basic-blocks-value.tsx",
+        "apps/www/src/registry/examples/values/basic-marks-value.tsx",
+        "apps/www/src/registry/examples/values/column-value.tsx",
+        "apps/www/src/registry/examples/values/date-value.tsx",
+        "apps/www/src/registry/examples/values/equation-value.tsx",
+        "apps/www/src/registry/examples/values/font-value.tsx",
+        "apps/www/src/registry/examples/values/indent-value.tsx",
+        "apps/www/src/registry/examples/values/line-height-value.tsx",
+        "apps/www/src/registry/examples/values/link-value.tsx",
+        "apps/www/src/registry/examples/values/list-value.tsx",
+        "apps/www/src/registry/examples/values/media-value.tsx",
+        "apps/www/src/registry/examples/values/mention-value.tsx",
+        "apps/www/src/registry/examples/values/suggestion-value.tsx",
+        "apps/www/src/registry/examples/values/table-value.tsx",
+        "apps/www/src/registry/examples/values/toc-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-18-math-draw-equations-katex-imported-83e30547",
+      "kind": "behavior",
+      "summary": "Import `katex` and `katex/dist/katex.min.css` directly.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["math", "math-static"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-math-katex-import",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-18-math-katex-install-scope-4c27a9e1",
+      "kind": "behavior",
+      "summary": "Stop installing `katex`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["equation-toolbar-button", "insert-toolbar-button", "slash"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-math-katex-import",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-18-math-static-docx-elements-5d1e8b42",
+      "kind": "remove",
+      "summary": "Remove `EquationElementDocx` and `InlineEquationElementDocx`, which `exportDocx` does not use.",
+      "details": [],
+      "migrationNotes": [
+        "Delete imports of EquationElementDocx and InlineEquationElementDocx; exportDocx draws equations as Word math itself."
+      ],
+      "targets": ["math-static"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-math-katex-import",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-19-html-export-katex-css-9f2b6d14",
+      "kind": "fix",
+      "summary": "Load the KaTeX 0.16.22 stylesheet, which matches the equations the copied math components draw.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["html-export"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-math-katex-import",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "link-static",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/link-static.tsx",
+      "content": "import { BaseLinkPlugin } from 'platejs';\nimport { type EditorElementProps, EditorElement } from 'platejs/static';\nimport * as React from 'react';\n\nexport function LinkElementStatic(\n  props: EditorElementProps<typeof BaseLinkPlugin>\n) {\n  return (\n    <EditorElement\n      {...props}\n      as=\"a\"\n      className=\"font-medium text-primary underline decoration-primary underline-offset-4\"\n      attributes={{\n        ...props.attributes,\n        ...props.editor.plugin(BaseLinkPlugin).api.getAttributes(props.element),\n      }}\n    >\n      {props.children}\n    </EditorElement>\n  );\n}\n\nexport const BaseLinkKit = [\n  BaseLinkPlugin.configure({ component: LinkElementStatic }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/link-static.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

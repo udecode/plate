@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-27-document-conversion-contracts",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-27-document-conversion-contracts.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "rename",
+  "summary": "Use direct conversion contracts and preserve imported review data",
+  "targets": [
+    {
+      "name": "import-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/import-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "export-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-27-import-toolbar-direct-conversion-contracts",
+      "kind": "wiring",
+      "summary": "Parse HTML and Markdown through their installed format APIs, show successful conversion warnings, and prepare a replacement editor with imported Word comments through `CommentsPlugin` when available.",
+      "details": [],
+      "migrationNotes": [
+        "Pass the editor plugin list and an `onImport` editor-owner callback to `ImportToolbarButton`; the button prepares a complete detached replacement before the application swaps editors."
+      ],
+      "targets": ["import-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-27",
+          "entry": "2026-09-27-document-conversion-contracts",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-27-export-toolbar-direct-conversion-contracts",
+      "kind": "rename",
+      "summary": "Use diagnosed HTML and Markdown serializers plus `exportDocx`, preserve one chosen accepted, proposed, or review projection, and export attached comment threads as Word comments.",
+      "details": [],
+      "migrationNotes": [
+        "Use `exportDocx` from `platejs/docx/export`; the `exportToDocx` alias does not exist on `next`."
+      ],
+      "targets": ["export-toolbar-button"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-27",
+          "entry": "2026-09-27-document-conversion-contracts",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

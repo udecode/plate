@@ -1,0 +1,143 @@
+// Plugin
+
+export type {
+  DOMCoverageBoundary,
+  DOMCoverageBoundaryAnchor,
+  DOMCoverageBoundaryEdge,
+  DOMCoverageBoundaryState,
+  DOMCoverageCopyPolicy,
+  DOMCoverageDOMPointResult,
+  DOMCoverageDOMRangeResult,
+  DOMCoverageMaterializeHandler,
+  DOMCoverageMaterializeRangeRole,
+  DOMCoverageMaterializeReason,
+  DOMCoverageMaterializeResult,
+  DOMCoveragePathRange,
+  DOMCoverageReason,
+  DOMCoverageRuntimeRange,
+  DOMCoverageSelectionPolicy,
+  DOMCoverageSession,
+  DOMCoveragePointResult,
+} from './plugin/dom-coverage';
+export { DOMCoverage } from './plugin/dom-coverage';
+export type {
+  DOMDragStart,
+  DOMDropEdge,
+  DOMDropTarget,
+  DOMDropTargetInput,
+  DOMDropTargetOptions,
+} from './plugin/dom-drag';
+export type { DropIndicator } from './utils/drop-indicator';
+export type { DOMGeometryRect } from './plugin/dom-geometry';
+export type {
+  DOMApi,
+  DOMDragApi,
+  DOMVisualPoint,
+  DOMVisualPointOptions,
+  DOMEditorClipboardCapability,
+  DOMClipboardApi,
+  DOMClipboardInsertDataHandler,
+  ScrollIntoViewOptions,
+  ScrollIntoViewTarget,
+} from './plugin/dom-editor';
+export type { DOMPlugin, DOMPluginTypes } from './plugin/with-dom';
+export {
+  DOMEditor,
+  isTrackedMutation,
+  DOMResolutionError,
+} from './plugin/dom-editor';
+export type { DOMEditorOptions } from './plugin/with-dom';
+export { dom } from './plugin/with-dom';
+export type {
+  ClipboardSliceRead,
+  ClipboardSliceWrite,
+  DOMFragmentDataHtml,
+  DOMFragmentDataPayload,
+} from './plugin/dom-clipboard-runtime';
+export {
+  domCommands,
+  getDOMClipboardFormatKey,
+  writeDOMFragmentData,
+  writeDOMRangeData,
+} from './plugin/dom-clipboard-runtime';
+export {
+  dataTransferFormats,
+  writeDataTransferFragment,
+} from './plugin/data-transfer-format';
+export { getEditorDOMRoot } from './plugin/dom-root-runtime';
+export type {
+  DataTransferSnapshot,
+  DataTransferFormat,
+  DataTransferDecodeContext,
+  DataTransferDiagnostic,
+  DataTransferFormatPhase,
+  DataTransferSchemaClaim,
+  DataTransferEncodeContext,
+} from './plugin/data-transfer-format';
+
+// Utils
+export { TRIPLE_CLICK } from './utils/constants';
+export type { StringDiff, TextDiff } from './utils/diff-text';
+export {
+  applyStringDiff,
+  mergeStringDiffs,
+  normalizePoint,
+  normalizeRange,
+  normalizeStringDiff,
+  targetRange,
+  verifyDiffState,
+} from './utils/diff-text';
+export type {
+  DOMElement,
+  DOMNode,
+  DOMPoint,
+  DOMRange,
+  DOMSelection,
+  DOMStaticRange,
+  DOMText,
+} from './utils/dom';
+export {
+  closestShadowAware,
+  containsShadowAware,
+  getActiveElement,
+  getDefaultView,
+  getSelection,
+  hasShadowRoot,
+  isAfter,
+  isBefore,
+  isDOMElement,
+  isDOMNode,
+  isDOMSelection,
+  isDOMText,
+  isPlainTextOnlyPaste,
+  normalizeDOMPoint,
+} from './utils/dom';
+
+export {
+  CAN_USE_DOM,
+  isGeckoDOMHost,
+  usesAppleDOMHotkeys,
+} from './utils/environment';
+export type {
+  HotkeyMatchOptions,
+  HotkeyPlatform,
+  HotkeySpec,
+  KeyboardEventLike,
+} from './utils/hotkeys';
+export { Hotkeys, isHotkey } from './utils/hotkeys';
+export { createCompiledHotkeyMatcher } from './utils/hotkey-match';
+
+export { Key } from './utils/key';
+
+export {
+  getElements,
+  getNodeDataAttributeKeys,
+  isEditor,
+  isElement,
+  isLeaf,
+  isNode,
+  isString,
+  isText,
+  isVoid,
+  keyToDataAttribute,
+} from './utils/plite-dom-markers';

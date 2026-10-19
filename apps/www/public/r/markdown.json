@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "markdown",
+  "dependencies": [
+    "platejs",
+    "remark-emoji",
+    "remark-gfm",
+    "remark-math",
+    "diff-match-patch-ts@^0.6.0",
+    "remark-parse@^11.0.0",
+    "remark-stringify@^11.0.0",
+    "unified@^11.0.5"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/markdown.tsx",
+      "content": "import { MarkdownPlugin } from 'platejs/markdown';\nimport remarkEmoji from 'remark-emoji';\nimport remarkGfm from 'remark-gfm';\nimport remarkMath from 'remark-math';\n\nexport const MarkdownKit = [\n  MarkdownPlugin.configure({\n    initialState: {\n      remarkPlugins: [remarkMath, remarkGfm, remarkEmoji],\n    },\n  }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/markdown.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

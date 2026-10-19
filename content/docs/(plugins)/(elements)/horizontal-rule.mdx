@@ -1,0 +1,189 @@
+---
+title: Horizontal Rule
+description: Void divider blocks rendered as horizontal rules.
+docs:
+  - route: /docs/components/horizontal-rule
+    title: Horizontal Rule Element
+  - route: /docs/basic-blocks
+    title: Basic Blocks
+  - route: https://pro.platejs.org/docs/components/horizontal-rule
+    title: Plus
+---
+
+Horizontal Rule adds a void `horizontalRule` block for separating sections. The package owns the element type, HTML parser, default `<hr>` render tag, and Markdown-style input rules. The registry kit adds the Plate UI divider component, static renderer, and insert toolbar item.
+
+<ComponentPreview name="basic-blocks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Void block `horizontalRule` element.
+- HTML deserialization from `<hr>`.
+- Default render tag of `<hr>`.
+- `---` and `___ ` input rules through `HorizontalRuleRules.markdown()`, on a line of their own.
+- Editable and static registry divider components.
+- Insert toolbar item labeled `Divider`.
+
+</PackageInfo>
+
+## Fast path
+
+<Steps>
+
+### Add basic blocks
+
+`BasicBlocksKit` installs `HorizontalRulePlugin` with the registry `HrElement` and both default input rules.
+
+<ComponentSource name="basic-blocks" />
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
+
+export const editor = createEditor({
+  plugins: BasicBlocksKit,
+});
+```
+
+### Render the divider
+
+`horizontal-rule` renders the editable divider with selected/focused ring styles and a static companion component.
+
+<ComponentSource name="horizontal-rule" />
+
+### Add static rendering
+
+Use `BaseBasicBlocksKit` when rendering read-only content with `platejs/static`.
+
+<ComponentSource name="basic-blocks-static" />
+
+</Steps>
+
+## Ownership
+
+| Layer | Owner | What It Does |
+|-------|-------|--------------|
+| `platejs` | Package | Exports `BaseHorizontalRulePlugin` and `HorizontalRuleRules`. |
+| `platejs/react` | Package | Exports `HorizontalRulePlugin`. |
+| `basic-blocks` | Registry | Adds `HorizontalRulePlugin` with dash and underscore input rules plus `HrElement`. |
+| `basic-blocks-static` | Registry | Adds `BaseHorizontalRulePlugin.configure({ component: HrElementStatic })`. |
+| `horizontal-rule` | Registry UI | Renders editable and static divider components. |
+| Insert toolbar | Registry UI | Uses `PLUGINS.horizontalRule` to select the horizontal-rule capability, then inserts its resolved schema type through the generic `insertBlock` path. |
+
+There is no package-specific `insertHorizontalRule` helper. App UI usually passes `PLUGINS.horizontalRule` to the same descriptor-aware block insertion helper used by other registry blocks.
+
+## Manual setup
+
+<Steps>
+
+### Install package
+
+```bash
+npm install platejs
+```
+
+### Add the plugin
+
+Use the React plugin when the editor renders the divider UI.
+
+```tsx
+import { HorizontalRuleRules } from 'platejs';
+import { HorizontalRulePlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
+
+import { HrElement } from '@/components/editor/horizontal-rule';
+
+export const editor = createEditor({
+  plugins: [
+    HorizontalRulePlugin.configure({
+      component: HrElement,
+      inputRules: [
+        HorizontalRuleRules.markdown({ variant: '-' }),
+        HorizontalRuleRules.markdown({ variant: '_' }),
+      ],
+    }),
+  ],
+});
+```
+
+### Add static rendering
+
+Use the base plugin with the static component in static rendering paths.
+
+```tsx
+import { BaseHorizontalRulePlugin, createEditor } from 'platejs';
+
+import { HrElementStatic } from '@/components/editor/horizontal-rule-static';
+
+export const editor = createEditor({
+  plugins: [
+    BaseHorizontalRulePlugin.configure({
+      component: HrElementStatic,
+    }),
+  ],
+});
+```
+
+</Steps>
+
+## Value shape
+
+Horizontal rules are void block elements. Keep the empty text child so the node remains a valid Plate element.
+
+```tsx
+const value = [
+  {
+    children: [{ text: 'Before the divider' }],
+    type: 'paragraph',
+  },
+  {
+    children: [{ text: '' }],
+    type: 'horizontalRule',
+  },
+  {
+    children: [{ text: 'After the divider' }],
+    type: 'paragraph',
+  },
+];
+```
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `type` | `'horizontalRule'` | Default persisted element type. Read the resolved type from `editor.plugin(BaseHorizontalRulePlugin).schema.type` in reusable code. |
+| `children` | `[{ text: '' }]` | Required child for the void element. |
+
+## Input rules
+
+`HorizontalRuleRules.markdown()` turns a block that holds only its marker into a `horizontalRule` block, then puts the caret in a new block after it.
+
+| Rule | Trigger | Behavior |
+|------|---------|----------|
+| `HorizontalRuleRules.markdown({ variant: '-' })` | type the third `-` after `--` | Converts `---` to `horizontalRule`, then adds the block after it. |
+| `HorizontalRuleRules.markdown({ variant: '_' })` | type a space after `___` | Converts `___ ` to `horizontalRule`, then adds the block after it. |
+
+The marker must be the block's only content. Typed beside existing text, as in `---abc`, or beside an inline element such as a mention, it stays as typed. The block after the divider is the one its container declares as default, the same block Enter adds with the caret on a divider: a paragraph in most editors, a `title` in an app whose root defaults to `title`, the quote's default block inside a blockquote. Where the schema refuses a divider, or no block can follow it, the marker stays as typed.
+
+The rule resolves `BaseHorizontalRulePlugin` through the editor and passes its `schema.type` to `tx.blocks.set`, so configured element types keep working.
+
+## Registry UI
+
+| Surface | Behavior |
+|---------|----------|
+| Editable element | Renders a non-editable padded wrapper with an `<hr>` inside it. |
+| Selected + focused | Adds a focus ring around the divider. |
+| Read-only | Removes the pointer cursor from the editable component. |
+| Static element | Renders the same divider inside `EditorElement`. |
+| Insert toolbar | Adds a `Divider` item with `MinusIcon`; `PLUGINS.horizontalRule` selects the capability. |
+
+The divider component renders `{props.children}` after the non-editable wrapper so Plate can still keep the void child mounted.
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseHorizontalRulePlugin` | `platejs` | Headless void `horizontalRule` block with HTML deserialization and default render tag. |
+| `HorizontalRulePlugin` | `platejs/react` | React horizontal rule plugin. |
+| `HorizontalRuleRules.markdown({ variant: '-' })` | `platejs` | Creates the dash input rule for `---`. |
+| `HorizontalRuleRules.markdown({ variant: '_' })` | `platejs` | Creates the underscore input rule for `___ `. |

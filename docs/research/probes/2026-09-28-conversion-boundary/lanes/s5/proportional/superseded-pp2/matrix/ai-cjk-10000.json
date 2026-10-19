@@ -1,0 +1,796 @@
+{
+  "aiArrival": "chained",
+  "cell": "ai-cjk-10000",
+  "chunkCharacters": 64,
+  "chunks": 156,
+  "composition": "ai",
+  "environment": {
+    "browser": "149.0.7827.55",
+    "cpu": "Apple M5 Max",
+    "cpus": 18,
+    "profileIntervalUs": 1000
+  },
+  "fixture": "cjk",
+  "packet": "acceptance",
+  "size": 10000,
+  "sourceHash": "573588a01d1f8ce00cf951acf2d352ca95194335f98fe725307762bdf62e14d2",
+  "sourceUtf8Bytes": 13000,
+  "startedAt": "2026-09-30T01:47:55.164Z",
+  "status": "complete",
+  "streams": [
+    {
+      "arm": "baseline",
+      "errors": [],
+      "finalTextSha256": "d9a5734485a19d3bdc6c7a25b743f83e1a649e2e07c1bea8f3f5714cad6d623d",
+      "loadavg": [
+        3.46044921875,
+        3.10302734375,
+        2.9404296875
+      ],
+      "page": {
+        "arrivals": 156,
+        "finalBlocks": 300,
+        "finalMs": null,
+        "latencyP50Ms": 71.1,
+        "latencyP95Ms": 138,
+        "outputBatches": 40,
+        "previews": 40,
+        "survival": {
+          "eligible": 5482,
+          "kept": 5482,
+          "ratio": 1
+        },
+        "heapAtArmMB": 85.42,
+        "heapBeforeFinalMB": 134.92,
+        "previewTimers": 40,
+        "wallMs": 3850.7
+      },
+      "profile": {
+        "aligned": true,
+        "final": {
+          "gc": 3.77,
+          "other": 1.27,
+          "parse": 17.22,
+          "program": 4.4,
+          "react": 41.02,
+          "transaction": 51.18
+        },
+        "functions": {
+          "assertDocument": 100.66,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 254.77,
+          "parseSlice": 350.11,
+          "staticBlockDecorations": 18.4,
+          "updateEditor": 1425.98,
+          "withDocumentViewRead": 187.13,
+          "withEditorDocumentProjection": 417.64
+        },
+        "publish": {
+          "gc": 89.43,
+          "other": 78.64,
+          "parse": 365.17,
+          "program": 82.73,
+          "react": 473.67,
+          "transaction": 1373.52
+        },
+        "stream": {
+          "gc": 153.32,
+          "other": 151.35,
+          "parse": 382.4,
+          "program": 297.94,
+          "react": 519.17,
+          "transaction": 1424.7
+        }
+      },
+      "timedOut": false,
+      "trace": {
+        "finalGc": {
+          "majorCount": 0,
+          "majorMs": 0,
+          "minorCount": 4,
+          "minorMs": 3.77
+        },
+        "finalTaskMs": 121.56,
+        "finalWorkMs": 117.55,
+        "finalSpanMs": 117.55,
+        "heapAfterLastMajorGcMB": 80.26,
+        "lastArrivalTaskMs": 117.55,
+        "streamGc": {
+          "majorCount": 2,
+          "majorMs": 36.72,
+          "minorCount": 107,
+          "minorMs": 106.3
+        },
+        "longestTaskMs": 125.75,
+        "previewTasks": 39,
+        "previewTasksWithOutput": 39,
+        "publishMs": 2458.2,
+        "publishTasks": 40,
+        "taskName": "RunTask",
+        "tasks": 1509,
+        "totalMs": 2846.38,
+        "windowMs": 4004.27
+      },
+      "order": 0,
+      "role": "warmup"
+    },
+    {
+      "arm": "candidate",
+      "errors": [],
+      "finalTextSha256": "d9a5734485a19d3bdc6c7a25b743f83e1a649e2e07c1bea8f3f5714cad6d623d",
+      "loadavg": [
+        3.66357421875,
+        3.15087890625,
+        2.9580078125
+      ],
+      "page": {
+        "arrivals": 156,
+        "finalBlocks": 300,
+        "finalMs": 52.6,
+        "latencyP50Ms": 23.7,
+        "latencyP95Ms": 44.2,
+        "outputBatches": 41,
+        "previews": 41,
+        "survival": {
+          "eligible": 5774,
+          "kept": 5774,
+          "ratio": 1
+        },
+        "heapAtArmMB": 73.37,
+        "heapBeforeFinalMB": 116.32,
+        "previewTimers": 40,
+        "wallMs": 1972.3
+      },
+      "profile": {
+        "aligned": true,
+        "final": {
+          "gc": 0,
+          "other": 1.26,
+          "parse": 0.5,
+          "program": 7.71,
+          "react": 43.55,
+          "transaction": 1.25
+        },
+        "functions": {
+          "assertDocument": 18.74,
+          "getStaticDocumentView": 19.99,
+          "isEditorJsonValue": 1.24,
+          "parseSlice": 47.87,
+          "staticBlockDecorations": 42.72,
+          "updateEditor": 1.87,
+          "withDocumentViewRead": 172,
+          "withEditorDocumentProjection": 137.83
+        },
+        "publish": {
+          "gc": 0,
+          "other": 32.14,
+          "parse": 51.14,
+          "program": 62.34,
+          "react": 90.13,
+          "transaction": 1.25
+        },
+        "stream": {
+          "gc": 23.42,
+          "other": 153.81,
+          "parse": 51.65,
+          "program": 351.7,
+          "react": 431.5,
+          "transaction": 19.99
+        }
+      },
+      "timedOut": false,
+      "trace": {
+        "finalGc": {
+          "majorCount": 0,
+          "majorMs": 0,
+          "minorCount": 1,
+          "minorMs": 1.01
+        },
+        "finalTaskMs": 0.52,
+        "finalWorkMs": 52.71,
+        "finalSpanMs": 52.73,
+        "heapAfterLastMajorGcMB": 44.97,
+        "lastArrivalTaskMs": 37.55,
+        "streamGc": {
+          "majorCount": 1,
+          "majorMs": 3.51,
+          "minorCount": 14,
+          "minorMs": 14.29
+        },
+        "longestTaskMs": 55.26,
+        "previewTasks": 40,
+        "previewTasksWithOutput": 0,
+        "publishMs": 238.75,
+        "publishTasks": 81,
+        "taskName": "RunTask",
+        "tasks": 1289,
+        "totalMs": 936.06,
+        "windowMs": 2013.09
+      },
+      "order": 1,
+      "role": "warmup"
+    },
+    {
+      "arm": "baseline",
+      "errors": [],
+      "finalTextSha256": "d9a5734485a19d3bdc6c7a25b743f83e1a649e2e07c1bea8f3f5714cad6d623d",
+      "loadavg": [
+        3.78857421875,
+        3.1943359375,
+        2.9755859375
+      ],
+      "page": {
+        "arrivals": 156,
+        "finalBlocks": 300,
+        "finalMs": null,
+        "latencyP50Ms": 70.7,
+        "latencyP95Ms": 134.8,
+        "outputBatches": 40,
+        "previews": 40,
+        "survival": {
+          "eligible": 5482,
+          "kept": 5482,
+          "ratio": 1
+        },
+        "heapAtArmMB": 73.34,
+        "heapBeforeFinalMB": 134.8,
+        "previewTimers": 40,
+        "wallMs": 3822
+      },
+      "profile": {
+        "aligned": true,
+        "final": {
+          "gc": 2.52,
+          "other": 3.62,
+          "parse": 16.27,
+          "program": 4.61,
+          "react": 38.2,
+          "transaction": 49.58
+        },
+        "functions": {
+          "assertDocument": 102.34,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 279.95,
+          "parseSlice": 348.24,
+          "staticBlockDecorations": 20.45,
+          "updateEditor": 1412.24,
+          "withDocumentViewRead": 186.79,
+          "withEditorDocumentProjection": 409.16
+        },
+        "publish": {
+          "gc": 95.1,
+          "other": 81.5,
+          "parse": 361.21,
+          "program": 80.82,
+          "react": 484.86,
+          "transaction": 1361.4
+        },
+        "stream": {
+          "gc": 161.13,
+          "other": 133.48,
+          "parse": 377.48,
+          "program": 317.34,
+          "react": 526.86,
+          "transaction": 1410.98
+        }
+      },
+      "timedOut": false,
+      "trace": {
+        "finalGc": {
+          "majorCount": 0,
+          "majorMs": 0,
+          "minorCount": 4,
+          "minorMs": 3.66
+        },
+        "finalTaskMs": 118.21,
+        "finalWorkMs": 114.29,
+        "finalSpanMs": 114.29,
+        "heapAfterLastMajorGcMB": 80.23,
+        "lastArrivalTaskMs": 114.29,
+        "streamGc": {
+          "majorCount": 2,
+          "majorMs": 34.89,
+          "minorCount": 107,
+          "minorMs": 103.63
+        },
+        "longestTaskMs": 122.84,
+        "previewTasks": 39,
+        "previewTasksWithOutput": 39,
+        "publishMs": 2450.07,
+        "publishTasks": 40,
+        "taskName": "RunTask",
+        "tasks": 1817,
+        "totalMs": 2837.08,
+        "windowMs": 3982.04
+      },
+      "order": 2,
+      "role": "pair-0"
+    },
+    {
+      "arm": "candidate",
+      "errors": [],
+      "finalTextSha256": "d9a5734485a19d3bdc6c7a25b743f83e1a649e2e07c1bea8f3f5714cad6d623d",
+      "loadavg": [
+        3.78857421875,
+        3.1943359375,
+        2.9755859375
+      ],
+      "page": {
+        "arrivals": 156,
+        "finalBlocks": 300,
+        "finalMs": 53.4,
+        "latencyP50Ms": 28.9,
+        "latencyP95Ms": 44.1,
+        "outputBatches": 40,
+        "previews": 39,
+        "survival": {
+          "eligible": 5502,
+          "kept": 5502,
+          "ratio": 1
+        },
+        "heapAtArmMB": 62.47,
+        "heapBeforeFinalMB": 108.9,
+        "previewTimers": 39,
+        "wallMs": 1910
+      },
+      "profile": {
+        "aligned": true,
+        "final": {
+          "gc": 0,
+          "other": 4.22,
+          "parse": 0.54,
+          "program": 5.22,
+          "react": 43.23,
+          "transaction": 1.25
+        },
+        "functions": {
+          "assertDocument": 21.79,
+          "getStaticDocumentView": 21.96,
+          "isEditorJsonValue": 12.36,
+          "parseSlice": 47.34,
+          "staticBlockDecorations": 53.31,
+          "updateEditor": 1.91,
+          "withDocumentViewRead": 189.39,
+          "withEditorDocumentProjection": 149.08
+        },
+        "publish": {
+          "gc": 4.58,
+          "other": 27.73,
+          "parse": 49.39,
+          "program": 47.11,
+          "react": 99.86,
+          "transaction": 1.2
+        },
+        "stream": {
+          "gc": 17.87,
+          "other": 130.3,
+          "parse": 49.93,
+          "program": 319.19,
+          "react": 332.53,
+          "transaction": 21.96
+        }
+      },
+      "timedOut": false,
+      "trace": {
+        "finalGc": {
+          "majorCount": 0,
+          "majorMs": 0,
+          "minorCount": 0,
+          "minorMs": 0
+        },
+        "finalTaskMs": 4.55,
+        "finalWorkMs": 53.56,
+        "finalSpanMs": 53.57,
+        "heapAfterLastMajorGcMB": null,
+        "lastArrivalTaskMs": 37.65,
+        "streamGc": {
+          "majorCount": 0,
+          "majorMs": 0,
+          "minorCount": 13,
+          "minorMs": 13.66
+        },
+        "longestTaskMs": 54.34,
+        "previewTasks": 38,
+        "previewTasksWithOutput": 0,
+        "publishMs": 235.14,
+        "publishTasks": 78,
+        "taskName": "RunTask",
+        "tasks": 951,
+        "totalMs": 776.8,
+        "windowMs": 1941.29
+      },
+      "order": 3,
+      "role": "pair-0"
+    },
+    {
+      "arm": "candidate",
+      "errors": [],
+      "finalTextSha256": "d9a5734485a19d3bdc6c7a25b743f83e1a649e2e07c1bea8f3f5714cad6d623d",
+      "loadavg": [
+        3.80517578125,
+        3.20751953125,
+        2.9814453125
+      ],
+      "page": {
+        "arrivals": 156,
+        "finalBlocks": 300,
+        "finalMs": 44.3,
+        "latencyP50Ms": 23.3,
+        "latencyP95Ms": 43.9,
+        "outputBatches": 41,
+        "previews": 40,
+        "survival": {
+          "eligible": 5771,
+          "kept": 5771,
+          "ratio": 1
+        },
+        "heapAtArmMB": 73.24,
+        "heapBeforeFinalMB": 118.36,
+        "previewTimers": 40,
+        "wallMs": 1980.8
+      },
+      "profile": {
+        "aligned": true,
+        "final": {
+          "gc": 0,
+          "other": 1.85,
+          "parse": 0.07,
+          "program": 4.75,
+          "react": 36.94,
+          "transaction": 0
+        },
+        "functions": {
+          "assertDocument": 22.35,
+          "getStaticDocumentView": 25.05,
+          "isEditorJsonValue": 3.57,
+          "parseSlice": 50.04,
+          "staticBlockDecorations": 41.39,
+          "updateEditor": 1.87,
+          "withDocumentViewRead": 179.18,
+          "withEditorDocumentProjection": 140.31
+        },
+        "publish": {
+          "gc": 1.04,
+          "other": 27.21,
+          "parse": 50.09,
+          "program": 50.98,
+          "react": 93.53,
+          "transaction": 3.67
+        },
+        "stream": {
+          "gc": 22.37,
+          "other": 149.57,
+          "parse": 50.16,
+          "program": 327.15,
+          "react": 409.79,
+          "transaction": 25.05
+        }
+      },
+      "timedOut": false,
+      "trace": {
+        "finalGc": {
+          "majorCount": 0,
+          "majorMs": 0,
+          "minorCount": 0,
+          "minorMs": 0
+        },
+        "finalTaskMs": 4.2,
+        "finalWorkMs": 44.3,
+        "finalSpanMs": 44.31,
+        "heapAfterLastMajorGcMB": 45.05,
+        "lastArrivalTaskMs": 35.95,
+        "streamGc": {
+          "majorCount": 1,
+          "majorMs": 3.36,
+          "minorCount": 13,
+          "minorMs": 13.94
+        },
+        "longestTaskMs": 54.14,
+        "previewTasks": 39,
+        "previewTasksWithOutput": 0,
+        "publishMs": 239.26,
+        "publishTasks": 80,
+        "taskName": "RunTask",
+        "tasks": 1182,
+        "totalMs": 892.99,
+        "windowMs": 2009.42
+      },
+      "order": 4,
+      "role": "pair-1"
+    },
+    {
+      "arm": "baseline",
+      "errors": [],
+      "finalTextSha256": "d9a5734485a19d3bdc6c7a25b743f83e1a649e2e07c1bea8f3f5714cad6d623d",
+      "loadavg": [
+        3.740234375,
+        3.20361328125,
+        2.9814453125
+      ],
+      "page": {
+        "arrivals": 156,
+        "finalBlocks": 300,
+        "finalMs": null,
+        "latencyP50Ms": 69.5,
+        "latencyP95Ms": 130.8,
+        "outputBatches": 40,
+        "previews": 40,
+        "survival": {
+          "eligible": 5480,
+          "kept": 5480,
+          "ratio": 1
+        },
+        "heapAtArmMB": 61.27,
+        "heapBeforeFinalMB": 118.38,
+        "previewTimers": 40,
+        "wallMs": 3737.2
+      },
+      "profile": {
+        "aligned": true,
+        "final": {
+          "gc": 4.48,
+          "other": 0.54,
+          "parse": 15.06,
+          "program": 7.02,
+          "react": 38.5,
+          "transaction": 46.23
+        },
+        "functions": {
+          "assertDocument": 101.9,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 241.12,
+          "parseSlice": 347.28,
+          "staticBlockDecorations": 22.59,
+          "updateEditor": 1364.46,
+          "withDocumentViewRead": 167.49,
+          "withEditorDocumentProjection": 401.01
+        },
+        "publish": {
+          "gc": 93.01,
+          "other": 80.86,
+          "parse": 361.47,
+          "program": 82.75,
+          "react": 435.11,
+          "transaction": 1316.63
+        },
+        "stream": {
+          "gc": 152.67,
+          "other": 141.01,
+          "parse": 376.53,
+          "program": 302.61,
+          "react": 480.26,
+          "transaction": 1362.86
+        }
+      },
+      "timedOut": false,
+      "trace": {
+        "finalGc": {
+          "majorCount": 0,
+          "majorMs": 0,
+          "minorCount": 4,
+          "minorMs": 3.46
+        },
+        "finalTaskMs": 118.13,
+        "finalWorkMs": 111.91,
+        "finalSpanMs": 111.91,
+        "heapAfterLastMajorGcMB": 79.94,
+        "lastArrivalTaskMs": 111.91,
+        "streamGc": {
+          "majorCount": 1,
+          "majorMs": 36.43,
+          "minorCount": 107,
+          "minorMs": 105.35
+        },
+        "longestTaskMs": 119.87,
+        "previewTasks": 39,
+        "previewTasksWithOutput": 39,
+        "publishMs": 2359.07,
+        "publishTasks": 40,
+        "taskName": "RunTask",
+        "tasks": 1388,
+        "totalMs": 2721.84,
+        "windowMs": 3896.74
+      },
+      "order": 5,
+      "role": "pair-1"
+    },
+    {
+      "arm": "baseline",
+      "errors": [],
+      "finalTextSha256": "d9a5734485a19d3bdc6c7a25b743f83e1a649e2e07c1bea8f3f5714cad6d623d",
+      "loadavg": [
+        4.37548828125,
+        3.3603515625,
+        3.03955078125
+      ],
+      "page": {
+        "arrivals": 156,
+        "finalBlocks": 300,
+        "finalMs": 120.7,
+        "latencyP50Ms": 69.4,
+        "latencyP95Ms": 128.5,
+        "outputBatches": 41,
+        "previews": 40,
+        "survival": {
+          "eligible": 5766,
+          "kept": 5766,
+          "ratio": 1
+        },
+        "heapAtArmMB": 73.51,
+        "heapBeforeFinalMB": 117.42,
+        "previewTimers": 40,
+        "wallMs": 3908.9
+      },
+      "profile": {
+        "aligned": true,
+        "final": {
+          "gc": 3.77,
+          "other": 1.42,
+          "parse": 16.95,
+          "program": 7.74,
+          "react": 39.21,
+          "transaction": 53.85
+        },
+        "functions": {
+          "assertDocument": 89.67,
+          "getStaticDocumentView": 0,
+          "isEditorJsonValue": 275.89,
+          "parseSlice": 366.16,
+          "staticBlockDecorations": 22.45,
+          "updateEditor": 1436.32,
+          "withDocumentViewRead": 161.95,
+          "withEditorDocumentProjection": 421.49
+        },
+        "publish": {
+          "gc": 102.25,
+          "other": 88.16,
+          "parse": 394.85,
+          "program": 89.96,
+          "react": 414.09,
+          "transaction": 1435.06
+        },
+        "stream": {
+          "gc": 156.41,
+          "other": 153.77,
+          "parse": 394.85,
+          "program": 316.84,
+          "react": 417.96,
+          "transaction": 1435.06
+        }
+      },
+      "timedOut": false,
+      "trace": {
+        "finalGc": {
+          "majorCount": 0,
+          "majorMs": 0,
+          "minorCount": 4,
+          "minorMs": 3.39
+        },
+        "finalTaskMs": 121.71,
+        "finalWorkMs": 121.71,
+        "finalSpanMs": 121.71,
+        "heapAfterLastMajorGcMB": 79.63,
+        "lastArrivalTaskMs": 121.71,
+        "streamGc": {
+          "majorCount": 2,
+          "majorMs": 45.99,
+          "minorCount": 108,
+          "minorMs": 107.58
+        },
+        "longestTaskMs": 121.71,
+        "previewTasks": 39,
+        "previewTasksWithOutput": 39,
+        "publishMs": 2514.78,
+        "publishTasks": 41,
+        "taskName": "RunTask",
+        "tasks": 1159,
+        "totalMs": 2784.86,
+        "windowMs": 3955.51
+      },
+      "order": 6,
+      "role": "pair-2"
+    },
+    {
+      "arm": "candidate",
+      "errors": [],
+      "finalTextSha256": "d9a5734485a19d3bdc6c7a25b743f83e1a649e2e07c1bea8f3f5714cad6d623d",
+      "loadavg": [
+        4.74560546875,
+        3.45361328125,
+        3.07421875
+      ],
+      "page": {
+        "arrivals": 156,
+        "finalBlocks": 300,
+        "finalMs": 56.4,
+        "latencyP50Ms": 23.7,
+        "latencyP95Ms": 44.4,
+        "outputBatches": 41,
+        "previews": 41,
+        "survival": {
+          "eligible": 5774,
+          "kept": 5774,
+          "ratio": 1
+        },
+        "heapAtArmMB": 73.36,
+        "heapBeforeFinalMB": 116.61,
+        "previewTimers": 40,
+        "wallMs": 2003.1
+      },
+      "profile": {
+        "aligned": true,
+        "final": {
+          "gc": 1.28,
+          "other": 2.52,
+          "parse": 0.35,
+          "program": 7.41,
+          "react": 45.97,
+          "transaction": 0
+        },
+        "functions": {
+          "assertDocument": 20.87,
+          "getStaticDocumentView": 25.87,
+          "isEditorJsonValue": 2.88,
+          "parseSlice": 49.16,
+          "staticBlockDecorations": 40.08,
+          "updateEditor": 2.1,
+          "withDocumentViewRead": 183.32,
+          "withEditorDocumentProjection": 139.94
+        },
+        "publish": {
+          "gc": 1.26,
+          "other": 36.52,
+          "parse": 53.78,
+          "program": 53.67,
+          "react": 96.98,
+          "transaction": 2.49
+        },
+        "stream": {
+          "gc": 22.61,
+          "other": 144.43,
+          "parse": 54.13,
+          "program": 376.96,
+          "react": 409.49,
+          "transaction": 25.87
+        }
+      },
+      "timedOut": false,
+      "trace": {
+        "finalGc": {
+          "majorCount": 0,
+          "majorMs": 0,
+          "minorCount": 1,
+          "minorMs": 1.1
+        },
+        "finalTaskMs": 4.49,
+        "finalWorkMs": 56.53,
+        "finalSpanMs": 56.56,
+        "heapAfterLastMajorGcMB": 44.97,
+        "lastArrivalTaskMs": 37.62,
+        "streamGc": {
+          "majorCount": 1,
+          "majorMs": 3.32,
+          "minorCount": 14,
+          "minorMs": 14.3
+        },
+        "longestTaskMs": 54.17,
+        "previewTasks": 40,
+        "previewTasksWithOutput": 0,
+        "publishMs": 242.12,
+        "publishTasks": 81,
+        "taskName": "RunTask",
+        "tasks": 1235,
+        "totalMs": 929.91,
+        "windowMs": 2048.14
+      },
+      "order": 7,
+      "role": "pair-2"
+    }
+  ],
+  "urls": {
+    "baseline": "http://localhost:3622",
+    "candidate": "http://localhost:3621"
+  },
+  "finishedAt": "2026-09-30T01:48:36.625Z",
+  "spentMs": 144341
+}

@@ -1,0 +1,30 @@
+{
+  "droppedImage": {
+    "results": [
+      {
+        "diagnostics": [
+          {
+            "impact": "lossy",
+            "message": "Plate HTML decode has no mapping for <img>."
+          }
+        ],
+        "inserted": true
+      }
+    ],
+    "text": "Keep"
+  },
+  "unsafeHref": {
+    "results": [
+      {
+        "diagnostics": [
+          {
+            "impact": "lossless",
+            "message": "Removed unsafe HTML attribute \"href\" from <a>."
+          }
+        ],
+        "inserted": true
+      }
+    ],
+    "text": "Before LABEL After"
+  }
+}

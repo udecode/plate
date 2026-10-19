@@ -1,0 +1,536 @@
+---
+title: Footnote
+docs:
+  - route: /docs/markdown
+    title: Markdown
+  - route: /docs/navigation-feedback
+    title: Navigation Feedback
+---
+
+<ComponentPreview name="footnote-demo" />
+
+Footnote turns GFM footnote markup (`[^1]` references and `[^1]: text` definitions) into dedicated Plate nodes you can insert, repair, and jump between. The reference is an inline void `<sup>`; the definition is a block at the end of the document. Paired with `MarkdownPlugin` and `remark-gfm`, references and definitions round-trip as real footnote markdown instead of fallback text.
+
+<PackageInfo>
+
+## Features
+
+- GFM-compatible footnote references and definitions as dedicated Plate nodes.
+- One-transform insertion with automatic numeric ref allocation.
+- Typing `[^` opens a reference picker from the default UI kit.
+- Recreate a missing definition from an unresolved reference without duplicating.
+- Keep the first duplicate definition canonical; renumber later duplicates on demand.
+- Navigation helpers that jump between reference and definition with a landed-target flash.
+- HTML export and static pages link each reference to its note, and footnotes copied from GitHub paste as footnotes.
+- Pasted notes land at the end of the document, wherever the caret is.
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Installation
+
+Use `FootnoteKit` for the reference and definition components and the `[^` picker. Add `MarkdownKit` for Markdown parsing and serialization.
+
+<ComponentSource name="footnote" />
+
+<ComponentSource name="markdown" />
+
+### Add kit
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { FootnoteKit } from '@/components/editor/footnote';
+import { MarkdownKit } from '@/components/editor/markdown';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...FootnoteKit,
+    ...MarkdownKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs marked remark-gfm remark-parse remark-stringify unified
+```
+
+### Add plugins
+
+Add the inline reference and block definition. Pair the footnote plugins with `MarkdownPlugin` and `remark-gfm` so `[^1]` round-trips correctly.
+
+```tsx
+import { FootnoteDefinitionPlugin, FootnotePlugin } from 'platejs/footnote/react';
+import { MarkdownPlugin } from 'platejs/markdown';
+import { createEditor } from 'platejs/react';
+import remarkGfm from 'remark-gfm';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    FootnotePlugin,
+    FootnoteDefinitionPlugin,
+    MarkdownPlugin.configure({
+      initialState: {
+        remarkPlugins: [remarkGfm],
+      },
+    }),
+  ],
+});
+```
+
+Mount `FootnoteCombobox` in the plugin's `afterEditable` slot to open the picker when the reader types `[^`:
+
+```tsx
+FootnotePlugin.configure({ slots: { afterEditable: FootnoteCombobox } });
+```
+
+### Insert a footnote
+
+Call `tx.footnote.insert` at the current selection. It inserts the reference, creates a matching definition at the end of the document, and moves the caret into the definition body so the reader can start writing:
+
+```tsx
+editor.update((tx) => tx.footnote.insert());
+```
+
+When the selection is expanded, the expanded fragment seeds the definition body so you can select text and "footnote-ify" it in one shot.
+
+Pass `focusDefinition: false` when the reference should stay inline (for example, inside a larger template):
+
+```tsx
+editor.update((tx) => tx.footnote.insert({ focusDefinition: false }));
+```
+
+Pass `ref` to reuse an existing ref; the transform skips creating a duplicate definition when one already exists.
+
+### Repair an unresolved reference
+
+When a reference points at a ref with no definition (e.g. pasted from elsewhere), use `tx.footnote.createDefinition` to create just the definition — without inserting another reference:
+
+```tsx
+editor.update((tx) => tx.footnote.createDefinition({ ref: '3' }));
+```
+
+Pass `focus: false` when you want to leave the caret where it was:
+
+```tsx
+editor.update((tx) =>
+  tx.footnote.createDefinition({ focus: false, ref: '3' })
+);
+```
+
+### Navigate between reference and definition
+
+`editor.api.footnote.focusDefinition` and `editor.api.footnote.focusReference`
+scroll the target into view and flash it through
+[Navigation Feedback](/docs/navigation-feedback). In an editable view they also
+move the selection to the target and focus the view. In a read-only view the
+selection and focus stay where they are. Call them from the mounted editor
+returned by `useEditor()`:
+
+```tsx
+editor.api.footnote.focusDefinition({ ref: '3' });
+editor.api.footnote.focusReference({ ref: '3' });
+```
+
+When several references share a definition, pass `index` to choose a reference
+in document order:
+
+```tsx
+editor.api.footnote.focusReference({ ref: '3', index: 1 });
+```
+
+Both commands return `true` after navigating, and `false` for an unresolved
+target or an unmounted editor. For selection-only changes inside a transaction,
+use `tx.footnote.selectDefinition` or `tx.footnote.selectReference`; each
+returns the resolved `{ targetPath, point }` target or `null`.
+
+With `navigationFeedback: false`, footnote navigation still scrolls to the
+target, and selects and focuses it in an editable view, without a highlight.
+
+In a read-only view, the `FootnoteKit` components jump on a plain click or
+Enter. A reference jumps to its note. A note's back link jumps to its reference,
+or opens a picker of its citations when several references share the note; the
+arrow keys move through the picker and Enter jumps. After a jump, focus moves to
+the target's own jump control, so Enter jumps back.
+
+### Handle duplicate definitions
+
+When definitions share a ref, the first definition in document order stays canonical; later ones are flagged as duplicates. Renumber a later duplicate with:
+
+```tsx
+editor.update((tx) =>
+  tx.footnote.normalizeDuplicateDefinition({
+    path: duplicatePath,
+  })
+);
+```
+
+The transform returns the newly assigned ref string on success, or `false` when the path isn't a duplicate definition or the requested ref is already taken. Pass `ref` to target a specific free ref instead of the next available one.
+
+### Paste notes
+
+A pasted definition lands at the end of the document, after every block already
+there and before the empty paragraph `TrailingBlockPlugin` keeps. Its references
+and the rest of the paste land at the caret, in a table cell, a quote or a list
+item as in a paragraph, and the caret ends after the pasted text. One undo
+removes the whole paste. A definition saved inside another block stays there.
+
+Words copied from inside a note paste as words, without the note. A copy that
+covers a whole note keeps it, and a dragged note lands where it is dropped.
+
+### Round-trip Markdown
+
+With `remark-gfm` configured, references serialize as `[^1]` and definitions as
+`[^1]: text`. Refs that Markdown would read as one label, such as `A` and `a`,
+are written as distinct labels. A reference whose definition is missing from the
+output reads back as text and reports a `markdown-unsupported-node` warning.
+
+### Export and paste HTML
+
+`serializeHtml` writes each reference as a link to its note, and each note with
+a back link to its first reference:
+
+```html
+<sup><a data-editor-footnote-ref="1" href="#fn-1" id="fnref-1">1</a></sup>
+<div data-editor-footnote-definition="1" id="fn-1">
+  <p>Source text</p>
+  <a data-editor-footnote-chrome="" href="#fnref-1">↩</a>
+</div>
+```
+
+The first reference to a ref gets the id `fnref-<ref>`, and the nth gets
+`fnref-<ref>:<n>`. The note gets `fn-<ref>`, and a later duplicate gets
+`fn-<ref>:<n>` with no back link. Each id percent-encodes the ref. Pasting the
+HTML back gives the same references and definitions without the back link.
+
+Footnotes copied from a page GitHub rendered, such as a README or a comment,
+paste as references and root definitions with the numbers GitHub shows. A
+citation pasted without its note becomes an unresolved reference.
+
+### Static and Word output
+
+The `BaseFootnoteKit` static components draw each reference as a link to its
+note and give each canonical note a back link to its first reference, with the
+ids `editor.read.footnote.anchor` returns. A reference without a note links to
+the id its note would have. Word export writes the label and the note text
+without links.
+
+### Customize rendering
+
+Swap in your own React components with `component`:
+
+```tsx
+import { FootnoteDefinitionPlugin, FootnotePlugin } from 'platejs/footnote/react';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [
+    FootnotePlugin.configure({ component: MyFootnoteReference }),
+    FootnoteDefinitionPlugin.configure({ component: MyFootnoteDefinition }),
+  ],
+});
+```
+
+The package owns node semantics, ref allocation, and navigation helpers. App-level surfaces — hover previews, the `[^` combobox, slash-command entries, toolbar buttons — are built on top of the transforms and API methods below.
+
+</Steps>
+
+## Plugins
+
+### `FootnotePlugin`
+
+Inline void node rendered as `<sup>`. Owns the `[^` trigger policy, ref registry, navigation transforms, and query API. Its state is a [ComboboxState](/docs/combobox#comboboxstate).
+
+<API name="FootnotePlugin">
+<APIOptions>
+  <APIItem name="trigger" type="RegExp | readonly string[] | string" optional>
+    Text that opens the footnote picker. Completion replaces the whole `[^` and query, so `claim[^1` works after a word.
+    - **Default:** `'[^'`
+  </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp | null" optional>
+    Only trigger when the previous character matches. `null` allows any character.
+    - **Default:** `null`
+  </APIItem>
+  <APIItem name="triggerQuery" type="((editor: ComboboxEditor) => boolean) | null" optional>
+    Extra predicate gating the picker. Return `false` to keep a typed `[^` as text.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `FootnoteDefinitionPlugin`
+
+Block node for footnote definitions. Lives at the bottom of the document and carries the ref + body content.
+
+<API name="FootnoteDefinitionPlugin" />
+
+## Reads
+
+All read methods hang off `editor.read.footnote` and evaluate the active
+snapshot directly.
+
+### `editor.read.footnote.definition`
+
+Get the first definition entry in document order for a ref.
+
+<API name="definition">
+<APIParameters>
+  <APIItem name="ref" type="string">
+    Footnote ref.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="NodeEntry<Element> | undefined">
+    Canonical definition entry, or `undefined` when nothing matches.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.read.footnote.definitions`
+
+Get every definition entry that shares a ref, in document order. When duplicates exist, the first entry is canonical; later entries are duplicates.
+
+<API name="definitions">
+<APIParameters>
+  <APIItem name="ref" type="string">
+    Footnote ref.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="NodeEntry<Element>[]">
+    Definition entries in document order.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.read.footnote.definitionText`
+
+Get the plain-text content of the canonical definition. Ideal for hover previews — reads straight from live definition nodes, no copied state.
+
+<API name="definitionText">
+<APIParameters>
+  <APIItem name="ref" type="string">
+    Footnote ref.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="string | undefined">
+    Definition text, or `undefined` when no definition exists.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.read.footnote.references`
+
+Get every reference entry that points at a ref, in document order.
+
+<API name="references">
+<APIParameters>
+  <APIItem name="ref" type="string">
+    Footnote ref.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="NodeEntry<Element>[]">
+    Reference entries in document order.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.read.footnote.refs`
+
+List every ref that has at least one definition, in document order.
+
+<API name="refs">
+<APIReturns>
+  <APIItem name="return" type="string[]">
+    Defined refs.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.read.footnote.nextRef`
+
+Compute the next free numeric ref. Used by `tx.footnote.insert` when the caller doesn't supply one.
+
+<API name="nextRef">
+<APIReturns>
+  <APIItem name="return" type="string">
+    Next free ref (e.g. `'1'`, `'2'`).
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.read.footnote.isResolved`
+
+Check whether a ref has at least one definition.
+
+<API name="isResolved">
+<APIParameters>
+  <APIItem name="ref" type="string">
+    Footnote ref.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    `true` when at least one definition exists for the ref.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.read.footnote.anchor`
+
+Get the fragment id of the footnote reference or definition at a path, and the
+id it links to. Static components and the HTML encoders use the same ids.
+
+<API name="anchor">
+<APIParameters>
+  <APIItem name="path" type="number[]">
+    Path of a footnote reference or definition.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="FootnoteAnchor | undefined">
+    `{ id, target? }`, or `undefined` when no footnote is at `path`. A reference targets its note's id, even when the note is missing. A canonical definition targets its first reference, and a later duplicate has no `target`.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.read.footnote.isDuplicateDefinition`
+
+Check whether a given definition path is a later duplicate (not the canonical one).
+
+<API name="isDuplicateDefinition">
+<APIParameters>
+  <APIItem name="path" type="number[]">
+    Path of the definition to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    `true` when the node at `path` is a footnote definition past the canonical one.
+  </APIItem>
+</APIReturns>
+</API>
+
+## Updates
+
+### `editor.update.footnote.insert`
+
+Insert a footnote reference at the current selection, create a matching definition if one doesn't already exist, and focus the definition body.
+
+When the selection is expanded, the expanded fragment seeds the new definition body so you can convert selected prose into a footnote in one call.
+
+<API name="insert">
+<APIParameters>
+  <APIItem name="input" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="input" name="ref" type="string" optional>
+        Reuse an existing ref. Defaults to `editor.read.footnote.nextRef()`.
+      </APISubListItem>
+      <APISubListItem parent="input" name="focusDefinition" type="boolean" optional>
+        Focus the definition body after insertion. Pass `false` to keep the caret inline after the reference.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="options" type="NodeInsertNodesOptions" optional>
+    Standard reference insertion options such as `at` and `select`.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.update.footnote.createDefinition`
+
+Create the missing definition for an existing ref without inserting another reference. Returns the path of the definition — the newly created one, or the existing one when the ref already resolves.
+
+<API name="createDefinition">
+<APIParameters>
+  <APIItem name="ref" type="string">
+    Ref to create a definition for.
+  </APIItem>
+  <APIItem name="focus" type="boolean" optional>
+    Focus the definition body after creation.
+    - **Default:** `true`
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="number[]">
+    Path of the resolved definition.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.api.footnote.focusDefinition`
+
+Scroll the canonical definition into view and flash it through Navigation Feedback. In an editable view, also move the selection into the definition body and focus the view.
+
+<API name="focusDefinition">
+<APIParameters>
+  <APIItem name="ref" type="string">
+    Footnote ref.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    `false` when the definition is missing or the calling view is unmounted; `true` after navigation, in an editable or a read-only view.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.api.footnote.focusReference`
+
+Scroll the matching reference into view and flash it through Navigation Feedback. In an editable view, also move the selection beside the reference and focus the view.
+
+<API name="focusReference">
+<APIParameters>
+  <APIItem name="ref" type="string">
+    Footnote ref.
+  </APIItem>
+  <APIItem name="index" type="number" optional>
+    Pick a specific reference when the definition is pointed at by several. Indexed by document order.
+    - **Default:** `0`
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    `false` when the reference is missing or the calling view is unmounted; `true` after navigation, in an editable or a read-only view.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.update.footnote.normalizeDuplicateDefinition`
+
+Renumber a later duplicate definition so the canonical definition stays intact. Pass the path of the duplicate; optionally pass a specific `ref` to target, otherwise the transform picks `editor.read.footnote.nextRef()`.
+
+<API name="normalizeDuplicateDefinition">
+<APIParameters>
+  <APIItem name="path" type="number[]">
+    Path of the duplicate definition to renumber.
+  </APIItem>
+  <APIItem name="ref" type="string" optional>
+    Target ref. Must be free. Defaults to `editor.read.footnote.nextRef()`.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="false | string">
+    The assigned ref on success, or `false` when the path isn't a duplicate definition or the target ref is already taken.
+  </APIItem>
+</APIReturns>
+</API>
+
+## Related docs
+
+- [Markdown](/docs/markdown)
+- [Navigation Feedback](/docs/navigation-feedback)
+- [Editor Methods](/docs/editor-methods)

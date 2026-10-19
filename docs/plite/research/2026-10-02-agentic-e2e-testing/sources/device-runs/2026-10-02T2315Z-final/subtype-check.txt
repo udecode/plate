@@ -1,0 +1,2 @@
+selected_input_method_subtype after `settings put ... 1891618174` and 4 s: 1594443099
+1891618174 is the implicit no-locale subtype a cold boot reports; it is not in enabled_input_methods, so Android replaces it with the enabled en_US subtype.

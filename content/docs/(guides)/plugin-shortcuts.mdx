@@ -1,0 +1,290 @@
+---
+title: Plugin Shortcuts
+description: Configure keyboard shortcuts on Plate plugins.
+---
+
+Plugin shortcuts map key combinations to plugin methods or explicit handlers.
+Plate compiles one immutable, ordered table during plugin setup. Each editable
+root installs one dispatcher for that table. This guide covers linked methods,
+custom handlers, overrides, priorities, and default shortcut ownership.
+
+## How shortcuts resolve
+
+Each plugin owns a `shortcuts` object. At resolution time Plate namespaces every shortcut as `${plugin.name}.${shortcutName}`.
+
+Plate runs no shortcut for a key event that reports `isComposing` or carries keyCode `229`, the code WebKit sends for the Enter that confirms an IME composition. Plugin `onKeyDown` handlers still receive the event.
+
+When a shortcut has no `handler`, Plate looks for a same-named plugin method:
+
+1. One update method exists: Plate infers `update`.
+2. One API method exists: Plate infers `api`.
+3. Both exist: set `target: 'update' | 'api'` to disambiguate.
+4. Neither exists: plugin compilation reports the invalid shortcut.
+
+An explicit target must name an existing route. A custom `handler` owns dispatch
+itself, so it cannot also set `target`.
+
+Declare handlerless shortcuts after the method they link to. TypeScript validates
+the capabilities already carried by that plugin descriptor, so the constructor
+contribution with `update` or `api` comes before the
+`.extend({ shortcuts })` call. This real type dependency is why the example
+uses a later stage. Custom handlers do not need a linked method.
+
+| Field | Meaning |
+| --- | --- |
+| `keys` | Key combination compiled by Plate's realm-aware matcher. Use a string like `'mod+b'` or arrays like `['mod+b', 'ctrl+b']`. |
+| `handler` | Explicit callback receiving `{ editor, event, eventDetails }`. |
+| `target` | Optional `'update'` or `'api'` disambiguation when both same-named routes exist. |
+| `priority` | Shortcut-local priority. Defaults to `0`. |
+| `preventDefault` | Browser-default policy for a handled shortcut. When omitted, Plate calls `event.preventDefault()` and `event.stopPropagation()`. |
+| `null` | Removes that named shortcut from the plugin. |
+
+## Linked update shortcuts
+
+Use a linked update method when the shortcut and plugin update method share a
+name.
+
+```tsx title="plugins/signature-plugin.tsx" showLineNumbers
+import { definePlugin } from 'platejs/react';
+
+export const SignaturePlugin = definePlugin('signature', {
+  update: ({ tx }) => ({
+    insertSignature: () => {
+      tx.text.insert(' - EditorRoot');
+    },
+  }),
+})
+  .extend({
+    shortcuts: {
+      insertSignature: {
+        keys: 'mod+shift+s',
+      },
+    },
+  });
+```
+
+Pressing `Mod+Shift+S` runs `editor.update((tx) => tx.signature.insertSignature())`.
+
+## Linked API shortcuts
+
+When only the matching API method exists, Plate infers the API route.
+
+```tsx title="plugins/inspect-plugin.tsx" showLineNumbers
+import { DebugPlugin } from 'platejs';
+import { definePlugin } from 'platejs/react';
+
+export const InspectPlugin = definePlugin('inspect', {
+  api: ({ editor }) => ({
+    logText: () => {
+      editor
+        .plugin(DebugPlugin)
+        .api.info('Editor text', undefined, editor.read.text.string([]));
+    },
+  }),
+})
+  .extend({
+    shortcuts: {
+      logText: {
+        keys: 'mod+alt+l',
+      },
+    },
+  });
+```
+
+Pressing `Mod+Alt+L` calls
+`editor.plugin(InspectPlugin).api.logText()`.
+
+<Callout type="info" title="Disambiguate collisions">
+  If an update method and API method share a name, set `target: 'update'` or
+  `target: 'api'`. Plate never changes route silently when a second method is
+  added. Call plugin-owned APIs through `editor.plugin(Plugin).api`.
+</Callout>
+
+## Custom handlers
+
+Use a `handler` when the shortcut needs the keyboard event, custom branching,
+or work that should not live as a plugin API or update method. Do not set
+`target` on a handler shortcut.
+
+```tsx title="plugins/draft-plugin.tsx" showLineNumbers
+import { DebugPlugin } from 'platejs';
+import { definePlugin } from 'platejs/react';
+
+export const DraftPlugin = definePlugin('draft', {
+  shortcuts: {
+    saveDraft: {
+      keys: 'mod+s',
+      handler: ({ editor }) => {
+        const text = editor.read.text.string([]);
+
+        if (text.trim().length === 0) return false;
+
+        editor.plugin(DebugPlugin).api.info('Draft text', undefined, text);
+
+        return true;
+      },
+    },
+  },
+});
+```
+
+Returning `false` means "not handled"; Plate will not call `preventDefault()` for that key press. Returning `true` or `undefined` means handled when `preventDefault` is omitted.
+
+## Prevent default
+
+| Configuration | Behavior |
+| --- | --- |
+| `preventDefault` omitted and handler returns anything except `false` | Plate calls `event.preventDefault()` and `event.stopPropagation()`. |
+| Handler returns `false` | Plate leaves the event alone and tries the next matching shortcut. |
+| `preventDefault: false` and handler handles the event | Plate stops shortcut dispatch and leaves the browser default enabled. |
+| `preventDefault: true`, or a predicate returning `true` | Plate calls `event.preventDefault()`. |
+
+Use the default omission for normal editor commands.
+
+## Configure existing shortcuts
+
+Configure a named shortcut to change its keys.
+
+```tsx title="plugins/basic-marks.tsx" showLineNumbers
+import { BoldPlugin } from 'platejs/react';
+
+export const AppBoldPlugin = BoldPlugin.configure({
+  shortcuts: {
+    toggle: {
+      keys: 'mod+shift+b',
+    },
+  },
+});
+```
+
+Set a shortcut to `null` to remove it.
+
+```tsx title="plugins/basic-marks.tsx" showLineNumbers
+import { ItalicPlugin } from 'platejs/react';
+
+export const AppItalicPlugin = ItalicPlugin.configure({
+  shortcuts: {
+    toggle: null,
+  },
+});
+```
+
+The `null` value removes `italic.toggle` from the compiled shortcut set.
+
+## Multiple shortcuts
+
+A plugin can declare multiple shortcut names. Keep each name aligned with the method it should call.
+
+```tsx title="plugins/review-plugin.tsx" showLineNumbers
+import { definePlugin } from 'platejs/react';
+
+export const ReviewPlugin = definePlugin('review', {
+  update: ({ tx }) => ({
+    accept: () => tx.text.insert('Accepted'),
+    reject: () => tx.text.insert('Rejected'),
+  }),
+})
+  .extend({
+    shortcuts: {
+      accept: {
+        keys: 'mod+alt+a',
+      },
+      reject: {
+        keys: 'mod+alt+r',
+      },
+    },
+  });
+```
+
+This creates the compiled shortcut IDs `review.accept` and `review.reject`.
+
+## Priority
+
+Shortcut priority defaults to `0`. Set it on a shortcut when two handlers use
+the same key combination and one should win.
+
+```tsx title="plugins/priority-plugin.tsx" showLineNumbers
+import { definePlugin } from 'platejs/react';
+
+export const PriorityPlugin = definePlugin('commandMenu', {
+  shortcuts: {
+    openCommandMenu: {
+      keys: 'mod+k',
+      priority: 200,
+      handler: ({ editor }) => {
+        editor.api.debug.info('Open command menu');
+
+        return true;
+      },
+    },
+  },
+});
+```
+
+Plate orders the compiled table by shortcut priority, plugin application order, then
+declaration order. The first handled route wins.
+
+## Editor-level shortcuts
+
+`createEditor({ shortcuts })` attaches shortcuts to the root plugin. Use it for editor-wide commands that do not belong to one feature plugin.
+
+```tsx title="editor.ts" showLineNumbers
+import { DebugPlugin } from 'platejs';
+import { createEditor } from 'platejs/react';
+
+export const editor = createEditor({
+  shortcuts: {
+    reportWordCount: {
+      keys: 'mod+shift+w',
+      handler: ({ editor }) => {
+        const words = editor.read.text
+          .string([])
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+
+        editor
+          .plugin(DebugPlugin)
+          .api.info('Word count', undefined, words.length);
+
+        return true;
+      },
+    },
+  },
+});
+```
+
+Internally this becomes a root shortcut, so plugin-owned shortcuts are still the better fit for feature-owned behavior.
+
+## Default shortcuts
+
+| Plugin | Shortcut name | Keys |
+| --- | --- | --- |
+| `BoldPlugin` | `toggle` | `Mod+B` |
+| `ItalicPlugin` | `toggle` | `Mod+I` |
+| `UnderlinePlugin` | `toggle` | `Mod+U` |
+| `ParagraphPlugin` | `toggle` | `Mod+Alt+0`, `Mod+Shift+0` |
+| `CopilotPlugin` | `accept` | `Tab` |
+| `CopilotPlugin` | `reject` | `Escape` |
+
+Other plugins often expose `toggle`, `insert`, or feature-specific transforms without default keys. Add shortcuts in your app when those commands should be keyboard-accessible.
+
+## API Reference
+
+```ts title="Shortcut type"
+type Shortcut = Omit<EditorShortcut, 'handler' | 'target'> & (
+  | {
+      handler: (context: {
+        editor: Editor;
+        event: KeyboardEvent;
+        eventDetails: HotkeysEvent;
+      }) => boolean | void;
+      target?: never;
+    }
+  | { handler?: never; target?: 'api' | 'update' }
+);
+```
+
+`target` and `handler` are mutually exclusive.
+
+Name shortcuts after plugin-specific transforms or API methods by default, and use handlers only when the keyboard event is part of the behavior.

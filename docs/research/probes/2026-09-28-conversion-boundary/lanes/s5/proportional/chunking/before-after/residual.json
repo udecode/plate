@@ -1,0 +1,262 @@
+{
+  "per-block pass (deferred)": {
+    "static-rich": {
+      "pp 10K": 0.91,
+      "pp 50K": 2.22,
+      "pp3 10K": 0.71,
+      "pp3 50K": 1.71
+    },
+    "static-cjk": {
+      "pp 10K": 1.27,
+      "pp 50K": 4.04,
+      "pp3 10K": 0.9,
+      "pp3 50K": 2.54
+    },
+    "ai-rich": {
+      "pp 10K": 1.37,
+      "pp 50K": 3.89,
+      "pp3 10K": 0.85,
+      "pp3 50K": 2.64
+    },
+    "ai-cjk": {
+      "pp 10K": 2.28,
+      "pp 50K": 6.86,
+      "pp3 10K": 1.26,
+      "pp3 50K": 3.77
+    }
+  },
+  "  source reads (deferred)": {
+    "static-rich": {
+      "pp 10K": 0.59,
+      "pp 50K": 1.38,
+      "pp3 10K": 0.46,
+      "pp3 50K": 0.65
+    },
+    "static-cjk": {
+      "pp 10K": 0.98,
+      "pp 50K": 2.74,
+      "pp3 10K": 0.54,
+      "pp3 50K": 1.16
+    },
+    "ai-rich": {
+      "pp 10K": 1.01,
+      "pp 50K": 2.43,
+      "pp3 10K": 0.54,
+      "pp3 50K": 1.11
+    },
+    "ai-cjk": {
+      "pp 10K": 1.81,
+      "pp 50K": 4.75,
+      "pp3 10K": 0.79,
+      "pp3 50K": 1.78
+    }
+  },
+  "  readBlockInputs visit (deferred)": {
+    "static-rich": {
+      "pp 10K": 0.02,
+      "pp 50K": 0.24,
+      "pp3 10K": 0.11,
+      "pp3 50K": 0.3
+    },
+    "static-cjk": {
+      "pp 10K": 0.22,
+      "pp 50K": 1.03,
+      "pp3 10K": 0.23,
+      "pp3 50K": 1.12
+    },
+    "ai-rich": {
+      "pp 10K": 0.18,
+      "pp 50K": 0.96,
+      "pp3 10K": 0.08,
+      "pp3 50K": 0.4
+    },
+    "ai-cjk": {
+      "pp 10K": 0.76,
+      "pp 50K": 2.71,
+      "pp3 10K": 0.3,
+      "pp3 50K": 1.3
+    }
+  },
+  "  memo compares and bailouts (deferred)": {
+    "static-rich": {
+      "pp 10K": 0.09,
+      "pp 50K": 0.44,
+      "pp3 10K": 0.14,
+      "pp3 50K": 0.51
+    },
+    "static-cjk": {
+      "pp 10K": 0.11,
+      "pp 50K": 0.51,
+      "pp3 10K": 0.12,
+      "pp3 50K": 0.52
+    },
+    "ai-rich": {
+      "pp 10K": 0.18,
+      "pp 50K": 0.85,
+      "pp3 10K": 0.17,
+      "pp3 50K": 0.92
+    },
+    "ai-cjk": {
+      "pp 10K": 0.22,
+      "pp 50K": 1.09,
+      "pp3 10K": 0.24,
+      "pp3 50K": 1.02
+    }
+  },
+  "static pass on urgent renders (Children under renderRootSync)": {
+    "static-rich": {
+      "pp 10K": 0.18,
+      "pp 50K": 3.43,
+      "pp3 10K": 0,
+      "pp3 50K": 0
+    },
+    "static-cjk": {
+      "pp 10K": 0.62,
+      "pp 50K": 7.53,
+      "pp3 10K": 0,
+      "pp3 50K": 0
+    },
+    "ai-rich": {
+      "pp 10K": 0,
+      "pp 50K": 0,
+      "pp3 10K": 0,
+      "pp3 50K": 0
+    },
+    "ai-cjk": {
+      "pp 10K": 0,
+      "pp 50K": 0,
+      "pp3 10K": 0,
+      "pp3 50K": 0
+    }
+  },
+  "all urgent renders (renderRootSync)": {
+    "static-rich": {
+      "pp 10K": 0.84,
+      "pp 50K": 5.85,
+      "pp3 10K": 0.34,
+      "pp3 50K": 1.11
+    },
+    "static-cjk": {
+      "pp 10K": 1.42,
+      "pp 50K": 10.94,
+      "pp3 10K": 0.48,
+      "pp3 50K": 1.38
+    },
+    "ai-rich": {
+      "pp 10K": 0.76,
+      "pp 50K": 0.25,
+      "pp3 10K": 0.79,
+      "pp3 50K": 0.25
+    },
+    "ai-cjk": {
+      "pp 10K": 0.86,
+      "pp 50K": 0.27,
+      "pp3 10K": 0.85,
+      "pp3 50K": 0.26
+    }
+  },
+  "snapshot-index materialization": {
+    "static-rich": {
+      "pp 10K": 0.16,
+      "pp 50K": 0.67,
+      "pp3 10K": 0,
+      "pp3 50K": 0
+    },
+    "static-cjk": {
+      "pp 10K": 0.42,
+      "pp 50K": 1.36,
+      "pp3 10K": 0.37,
+      "pp3 50K": 1.29
+    },
+    "ai-rich": {
+      "pp 10K": 0.3,
+      "pp 50K": 0.65,
+      "pp3 10K": 0,
+      "pp3 50K": 0
+    },
+    "ai-cjk": {
+      "pp 10K": 0.49,
+      "pp 50K": 1.28,
+      "pp3 10K": 0.38,
+      "pp3 50K": 1.35
+    }
+  },
+  "AI forced layout (passive effects)": {
+    "static-rich": {
+      "pp 10K": 0,
+      "pp 50K": 0.02,
+      "pp3 10K": 0,
+      "pp3 50K": 0.03
+    },
+    "static-cjk": {
+      "pp 10K": 0,
+      "pp 50K": 0.04,
+      "pp3 10K": 0,
+      "pp3 50K": 0.02
+    },
+    "ai-rich": {
+      "pp 10K": 1.22,
+      "pp 50K": 4.77,
+      "pp3 10K": 0,
+      "pp3 50K": 0.02
+    },
+    "ai-cjk": {
+      "pp 10K": 2.85,
+      "pp 50K": 9.17,
+      "pp3 10K": 0.03,
+      "pp3 50K": 0.04
+    }
+  },
+  "deferred render (renderRootConcurrent)": {
+    "static-rich": {
+      "pp 10K": 3.96,
+      "pp 50K": 6.79,
+      "pp3 10K": 4.37,
+      "pp3 50K": 6.73
+    },
+    "static-cjk": {
+      "pp 10K": 6.13,
+      "pp 50K": 9.94,
+      "pp3 10K": 6.96,
+      "pp3 50K": 10.19
+    },
+    "ai-rich": {
+      "pp 10K": 3.97,
+      "pp 50K": 6.69,
+      "pp3 10K": 3.73,
+      "pp3 50K": 5.39
+    },
+    "ai-cjk": {
+      "pp 10K": 6.63,
+      "pp 50K": 11.18,
+      "pp3 10K": 6.07,
+      "pp3 50K": 9.81
+    }
+  },
+  "style, layout and paint (trace)": {
+    "static-rich": {
+      "pp 10K": 3.05,
+      "pp 50K": 5.25,
+      "pp3 10K": 3.11,
+      "pp3 50K": 5.12
+    },
+    "static-cjk": {
+      "pp 10K": 4.77,
+      "pp 50K": 9.35,
+      "pp3 10K": 4.78,
+      "pp3 50K": 8.27
+    },
+    "ai-rich": {
+      "pp 10K": 3.98,
+      "pp 50K": 7.88,
+      "pp3 10K": 4.01,
+      "pp3 50K": 8.62
+    },
+    "ai-cjk": {
+      "pp 10K": 9.07,
+      "pp 50K": 14.53,
+      "pp3 10K": 7.44,
+      "pp3 50K": 14.87
+    }
+  }
+}

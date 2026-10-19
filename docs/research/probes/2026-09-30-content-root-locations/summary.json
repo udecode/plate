@@ -1,0 +1,155 @@
+{
+  "result": "pass",
+  "purpose": "Design falsification only; no production or browser proof",
+  "sourceFreshness": "matching",
+  "sampling": "Six packets after two warmups; paired control/cold order within each process; no p95 or speedup claim",
+  "composition": {
+    "projectedMain": {
+      "text": "PROJECTED"
+    },
+    "derivedNamed": {
+      "text": "PROJECTED"
+    },
+    "explicitNamed": {
+      "text": "PROJECTED NOTES"
+    },
+    "derivedReadOnly": false,
+    "derivedPlugin": {
+      "text": "PROJECTED"
+    },
+    "explicitPlugin": {
+      "text": "PROJECTED NOTES"
+    },
+    "derivedLiveNamed": {
+      "text": "SOURCE"
+    },
+    "derivedLiveReadOnly": false,
+    "derivedUpdate": "Error: Cannot update a read-only editor view.",
+    "sourceUnchanged": true
+  },
+  "scopedRows": [
+    {
+      "roots": 2,
+      "payloadBytes": 10000,
+      "jsonBytes": 10184,
+      "current": {
+        "control": 0.012000000000000455,
+        "capture": 0.06575000000000841,
+        "cold": 0.1670830000000052,
+        "totalCold": 0.23454199999999048,
+        "warm": 0.01320799999999167
+      },
+      "prototype": {
+        "control": 0.017082999999999515,
+        "capture": 0.08537499999999909,
+        "cold": 0.09354100000000187,
+        "totalCold": 0.18070799999999565,
+        "warm": 0.012457999999995195
+      },
+      "validations": {
+        "current": 3,
+        "prototype": 1
+      },
+      "indexBuilds": 0,
+      "result": "pass"
+    },
+    {
+      "roots": 10,
+      "payloadBytes": 50000,
+      "jsonBytes": 50640,
+      "current": {
+        "control": 0.018124999999997726,
+        "capture": 0.06100000000000705,
+        "cold": 0.7261249999999961,
+        "totalCold": 0.7897909999999939,
+        "warm": 0.01979199999999537
+      },
+      "prototype": {
+        "control": 0.014625000000009436,
+        "capture": 0.08887500000000159,
+        "cold": 0.17274999999999352,
+        "totalCold": 0.27583299999999156,
+        "warm": 0.02533300000000338
+      },
+      "validations": {
+        "current": 11,
+        "prototype": 1
+      },
+      "indexBuilds": 0,
+      "result": "pass"
+    },
+    {
+      "roots": 100,
+      "payloadBytes": 50000,
+      "jsonBytes": 55950,
+      "current": {
+        "control": 0.07241600000000403,
+        "capture": 0.26095900000001393,
+        "cold": 25.480209000000002,
+        "totalCold": 25.758542000000006,
+        "warm": 0.12641600000000608
+      },
+      "prototype": {
+        "control": 0.06370800000000543,
+        "capture": 0.4167500000000075,
+        "cold": 0.9942499999999939,
+        "totalCold": 1.4750419999999878,
+        "warm": 0.12204099999999585
+      },
+      "validations": {
+        "current": 101,
+        "prototype": 1
+      },
+      "indexBuilds": 0,
+      "result": "pass"
+    },
+    {
+      "roots": 1000,
+      "payloadBytes": 50000,
+      "jsonBytes": 110850,
+      "current": {
+        "control": 0.607332999999926,
+        "capture": 2.5713749999995343,
+        "cold": 2383.211292,
+        "totalCold": 2387.340625,
+        "warm": 1.8713329999991402
+      },
+      "prototype": {
+        "control": 0.49745800000002305,
+        "capture": 2.8967500000000257,
+        "cold": 12.248583999999994,
+        "totalCold": 15.862750000000034,
+        "warm": 1.5392909999999915
+      },
+      "validations": {
+        "current": 1001,
+        "prototype": 1
+      },
+      "indexBuilds": 0,
+      "result": "pass"
+    }
+  ],
+  "featureRows": [
+    {
+      "unrelatedParagraphs": 20,
+      "currentMs": 0.5380410000000211,
+      "prototypeMs": 0.30791599999997743,
+      "indexBuilds": {
+        "current": 2,
+        "prototype": 0
+      },
+      "result": "pass"
+    },
+    {
+      "unrelatedParagraphs": 500,
+      "currentMs": 1.5284169999999904,
+      "prototypeMs": 0.31912499999998545,
+      "indexBuilds": {
+        "current": 2,
+        "prototype": 0
+      },
+      "result": "pass"
+    }
+  ],
+  "limits": "Disposable Bun source transforms; raw root fixture uses open Plite grammar, owned-root feature fixture uses real Plate schema. Root probe uses one API/read plugin, not the full registry kit. Feature probes use List/Table and one figure plugin, a two-item list and a 1×1 table. Authored inheritance, schema reconfiguration, range admission, static/live callback delivery, spans, structural reuse and native/browser behavior remain production adoption gates. Pathological input has 50 KB text payload plus root structure; it is not a 50 KB serialized document. Candidate and baseline ran in separate processes, with local controls; large deterministic work deltas support owner acceptance, not precise cross-process percentiles."
+}

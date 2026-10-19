@@ -1,0 +1,24 @@
+flushPassiveEffects: 51.4 ms per profile over 3 profiles
+by inclusive (ms per profile):
+      51.4  flushPassiveEffects@5319583e-150745cd7583489c.js:313573
+      50.9  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+      50.9  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+      50.1  commitHookEffectListMount@5319583e-150745cd7583489c.js:216333
+      49.5  t4@885-0f38e168d8e57a26.js:6351
+      49.5  scrollAIPreviewEnd@885-0f38e168d8e57a26.js:5337
+      47.5  getBoundingClientRect@:-1
+       1.5  querySelector@:-1
+       0.6  (anon)@8255-fdc7096923fb725f.js:48172 «()=>{let currentAnimationName=getAnimationName(stylesRef.current);prevAnimationN»
+       0.6  getAnimationName@8255-fdc7096923fb725f.js:50306
+       0.4  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482
+       0.4  recursivelyTraversePassiveUnmountEffects@5319583e-150745cd7583489c.js:279976
+       0.4  commitPassiveUnmountEffectsInsideOfDeletedTree_begin@5319583e-150745cd7583489c.js:281961
+       0.4  detachDeletedInstance@5319583e-150745cd7583489c.js:22034
+by self (ms per profile):
+      47.5  getBoundingClientRect@:-1
+       1.5  querySelector@:-1
+       0.9  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+       0.6  getAnimationName@8255-fdc7096923fb725f.js:50306
+       0.4  scrollAIPreviewEnd@885-0f38e168d8e57a26.js:5337
+       0.4  detachDeletedInstance@5319583e-150745cd7583489c.js:22034
+       0.0  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482

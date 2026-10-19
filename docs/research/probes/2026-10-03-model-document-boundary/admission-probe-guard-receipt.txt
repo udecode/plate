@@ -1,0 +1,10 @@
+Guard receipt for admission-probe.ts, run 2026-10-03 after the guard checked the replaced and constructed text.
+Each line is one process: bun --expose-gc --preload ./config/plite-source-aliases.ts <copied probe> <blocks>, in a checkout at fe0e9599a6 (base) or the same plus admission-probe-candidate.patch (cand).
+
+base 100: {"blocks":100,"construct":0.6192079999999862,"replace":8.927291999999966}
+base 10000: {"blocks":10000,"construct":47.452125000000706,"replace":1254.4071670000003}
+cand 100: {"blocks":100,"construct":0.6734160000000031,"replace":9.418667000000028}
+cand 10000: {"blocks":10000,"construct":42.59141600000294,"replace":1238.6964579999985}
+cand 100 --skip-replace: exit 1 (Error: replace did not load round 0)
+
+The five-round paired timings in the plan's decision log predate this guard; they ran with the earlier guard, which checked only the paragraph count.

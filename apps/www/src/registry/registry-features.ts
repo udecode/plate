@@ -1,0 +1,1124 @@
+import type { Registry } from 'shadcn/schema';
+
+export const registryStaticFeatures: Registry['items'] = [
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/basic-blocks-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'basic-blocks-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/basic-marks-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'basic-marks-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/callout-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'callout-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'lowlight'],
+    files: [
+      {
+        path: 'components/editor/code-block-static.tsx',
+        type: 'registry:component',
+      },
+      {
+        path: 'components/editor/code-block-lowlight.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/column-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'column-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/date-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'date-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/footnote-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'footnote-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/excalidraw.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'excalidraw',
+    type: 'registry:component',
+    description: 'A drawing component powered by Excalidraw.',
+    title: 'Excalidraw',
+    meta: {
+      docs: [{ route: '/docs/excalidraw' }],
+      examples: ['excalidraw-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/font-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'font-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/indent-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'indent-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/link-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'link-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/list-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'list-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'katex@0.16.22'],
+    files: [
+      {
+        path: 'components/editor/math-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'math-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/media-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'media-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/mention-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'mention-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/table-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'table-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/toc-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'toc-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/details-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'details-static',
+    type: 'registry:component',
+  },
+  {
+    files: [
+      {
+        path: 'components/editor/plugins-static.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'editor-plugins-static',
+    registryDependencies: ['@plate/editor-static'],
+    type: 'registry:component',
+  },
+];
+
+export const registryFeatures: Registry['items'] = [
+  ...registryStaticFeatures,
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/ai.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'ai',
+    registryDependencies: ['@plate/ai-toolbar-button', '@plate/ai-api'],
+    type: 'registry:component',
+    description: 'Streaming edits, command menu, and text highlighting.',
+    title: 'AI',
+    meta: {
+      docs: [
+        { route: '/docs/ai', title: 'AI' },
+        {
+          route: 'https://pro.platejs.org/docs/components/ai',
+          title: 'AI Leaf',
+        },
+      ],
+      examples: ['ai-demo', 'ai-pro'],
+      label: 'New',
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/align.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'align',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/autoformat.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'autoformat',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/basic-blocks.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'basic-blocks',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/basic-marks.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'basic-marks',
+    registryDependencies: ['@plate/mark-toolbar-button'],
+    type: 'registry:component',
+  },
+  {
+    files: [
+      {
+        path: 'components/editor/basic-nodes.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'basic-nodes',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/block-menu.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'block-menu',
+    type: 'registry:component',
+    description: 'A context menu for block-level operations.',
+    title: 'Block Menu',
+    meta: {
+      docs: [
+        { route: '/docs/block-menu' },
+        { route: 'https://pro.platejs.org/docs/components/block-menu' },
+      ],
+      examples: ['block-menu-demo', 'block-menu-pro'],
+    },
+  },
+  {
+    dependencies: [],
+    files: [
+      {
+        path: 'components/editor/block-placeholder.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'block-placeholder',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/callout.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'callout',
+    type: 'registry:component',
+    description:
+      'A callout component for highlighting important information with customizable icons and styles.',
+    title: 'Callout',
+    meta: {
+      docs: [
+        { route: '/docs/callout' },
+        { route: 'https://pro.platejs.org/docs/components/callout' },
+      ],
+      examples: ['callout-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs', 'lowlight'],
+    files: [
+      {
+        path: 'components/editor/code-block.tsx',
+        type: 'registry:component',
+      },
+      {
+        path: 'components/editor/code-block-lowlight.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block',
+    type: 'registry:component',
+    description:
+      'A code block with syntax highlighting and language selection.',
+    title: 'Code Block',
+    meta: {
+      docs: [
+        { route: '/docs/code-block' },
+        { route: 'https://pro.platejs.org/docs/components/code-block' },
+      ],
+      examples: [
+        'code-block-demo',
+        'code-block-huge-demo',
+        'code-block-codemirror-demo',
+      ],
+    },
+  },
+  {
+    dependencies: [
+      '@codemirror/language-data',
+      '@codemirror/commands',
+      '@lezer/highlight',
+      '@codemirror/search',
+      'platejs',
+    ],
+    files: [
+      {
+        path: 'components/editor/code-block-codemirror.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-codemirror',
+    type: 'registry:component',
+    description:
+      'A CodeMirror projection for explicitly high-scale code block editors.',
+    title: 'Code Block CodeMirror',
+    meta: {
+      docs: [{ route: '/docs/code-block' }],
+      examples: ['code-block-codemirror-demo', 'code-block-views-demo'],
+    },
+  },
+  {
+    files: [
+      {
+        path: 'components/editor/code-block-diagram.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-diagram',
+    type: 'registry:component',
+    description:
+      'Draw code blocks in diagram languages, with Code and Both views.',
+    title: 'Code Block Diagram',
+    meta: {
+      docs: [{ route: '/docs/code-block#diagrams' }],
+      examples: ['code-block-diagram-demo'],
+    },
+  },
+  {
+    files: [
+      {
+        path: 'components/editor/code-block-diagram-mermaid.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-diagram-mermaid',
+    type: 'registry:component',
+    description: 'Draw Mermaid code blocks.',
+    title: 'Code Block Diagram Mermaid',
+    meta: {
+      docs: [{ route: '/docs/code-block#diagrams' }],
+      examples: ['code-block-diagram-demo'],
+    },
+  },
+  {
+    devDependencies: ['@types/viz.js'],
+    files: [
+      {
+        path: 'components/editor/code-block-diagram-graphviz.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-diagram-graphviz',
+    type: 'registry:component',
+    description: 'Draw Graphviz DOT code blocks.',
+    title: 'Code Block Diagram Graphviz',
+    meta: {
+      docs: [{ route: '/docs/code-block#diagrams' }],
+      examples: ['code-block-diagram-demo'],
+    },
+  },
+  {
+    files: [
+      {
+        path: 'components/editor/code-block-diagram-flowchart.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-diagram-flowchart',
+    type: 'registry:component',
+    description: 'Draw flowchart.js code blocks.',
+    title: 'Code Block Diagram Flowchart',
+    meta: {
+      docs: [{ route: '/docs/code-block#diagrams' }],
+      examples: ['code-block-diagram-demo'],
+    },
+  },
+  {
+    devDependencies: ['@types/plantuml-encoder'],
+    files: [
+      {
+        path: 'components/editor/code-block-diagram-plantuml.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-diagram-plantuml',
+    type: 'registry:component',
+    description: 'Draw PlantUML code blocks through your own PlantUML server.',
+    title: 'Code Block Diagram PlantUML',
+    meta: {
+      docs: [{ route: '/docs/code-block#diagrams' }],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/column.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'column',
+    type: 'registry:component',
+    description: 'Resizable column components for layout.',
+    title: 'Column',
+    meta: {
+      docs: [
+        { route: '/docs/column' },
+        {
+          route: 'https://pro.platejs.org/docs/components/column',
+        },
+      ],
+      examples: ['column-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs', 'date-fns', 'lucide-react'],
+    files: [
+      {
+        path: 'components/editor/comment.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'comment',
+    description:
+      'Rich comment cards, forms, and styling for package-owned thread records and mapped editor ranges.',
+    meta: {
+      docs: [
+        { route: '/docs/comment' },
+        { route: 'https://pro.platejs.org/docs/components/comment-node' },
+      ],
+      examples: [
+        'comment-demo',
+        'comment-overlap-demo',
+        'comment-persistence-demo',
+        'comment-review-demo',
+      ],
+    },
+    registryDependencies: ['@plate/highlight-style'],
+    title: 'Comment Threads',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/comment-static.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'comment-static',
+    meta: {
+      docs: [{ route: '/docs/comment' }],
+      examples: ['comment-review-demo'],
+    },
+    description:
+      'Decoration attributes for static comment ranges and overlaps.',
+    registryDependencies: ['@plate/highlight-style'],
+    title: 'Static Comment Styling',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'lucide-react'],
+    files: [
+      {
+        path: 'components/editor/discussion.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'discussion',
+    description:
+      "A Floating Discussion surface that combines each block's comment threads and authored-change reviews.",
+    meta: {
+      docs: [{ route: '/docs/discussion' }],
+      examples: ['discussion-demo'],
+    },
+    registryDependencies: ['@plate/suggestion'],
+    title: 'Discussion',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@ai-sdk/react@3', 'ai@6', 'platejs'],
+    files: [
+      {
+        path: 'components/editor/copilot.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'copilot',
+    type: 'registry:component',
+    description:
+      'A text suggestion system that displays AI-generated content after the cursor.',
+    title: 'Copilot',
+    meta: {
+      docs: [
+        {
+          route: '/docs/copilot',
+        },
+        { route: 'https://pro.platejs.org/docs/components/copilot' },
+      ],
+      examples: ['copilot-demo', 'copilot-pro'],
+      //       1. Hover card: a new style of hover card that is more user-friendly. You can **hover** over the ghost text to see the hover card.
+      // 2. Marks: support for marks like bold, italic, underline, etc.This means you can see bold text and **links** in the ghost text
+      // 3. Backend: complete backend setup.
+    },
+  },
+  {
+    dependencies: ['platejs', 'lucide-react'],
+    files: [
+      {
+        path: 'components/editor/find.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'find',
+    registryDependencies: ['@plate/editor'],
+    type: 'registry:component',
+    description: 'A search bar over the editor’s current text matches.',
+    title: 'Find',
+    meta: {
+      docs: [{ route: '/docs/find' }],
+      examples: ['find-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/lint.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'lint',
+    type: 'registry:component',
+    description:
+      'Lint rules with severity underlines, a caret popover with fixes, and F8 to move between findings.',
+    title: 'Lint',
+    meta: {
+      docs: [{ route: '/docs/lint' }],
+      examples: ['lint-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/date.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'date',
+    type: 'registry:component',
+    description: 'A date field component with calendar picker.',
+    title: 'Date',
+    meta: {
+      docs: [
+        { route: '/docs/date' },
+        { route: 'https://pro.platejs.org/docs/components/date' },
+      ],
+      examples: ['date-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/dnd.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'dnd',
+    type: 'registry:component',
+    description: 'Block drag handles and drop indicators.',
+    title: 'Drag and Drop',
+    meta: {
+      docs: [
+        { route: '/docs/dnd', title: 'Drag & Drop' },
+        { route: 'https://pro.platejs.org/docs/components/dnd' },
+      ],
+      examples: [
+        'dnd-demo',
+        'dnd-multi-editor-demo',
+        'dnd-table-demo',
+        'dnd-pro',
+      ],
+      usage: [`createEditor({ plugins: DndKit })`],
+      // Click the plus button next to the drag button to insert blocks
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/docx.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'docx',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/docx-source.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'docx-source',
+    type: 'registry:component',
+  },
+  {
+    files: [
+      {
+        path: 'components/editor/docx-export.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'docx-export',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/plugins.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'editor-plugins',
+    registryDependencies: ['@plate/editor', '@plate/comment'],
+    title: 'Editor Plugins',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/emoji.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'emoji',
+    type: 'registry:component',
+    description: 'A popup for emoji search and insertion.',
+    title: 'Emoji',
+    meta: {
+      docs: [
+        { route: '/docs/emoji' },
+        {
+          route: 'https://pro.platejs.org/docs/components/emoji',
+        },
+      ],
+      examples: ['emoji-demo'],
+    },
+  },
+  {
+    dependencies: [],
+    files: [
+      {
+        path: 'components/editor/exit-break.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'exit-break',
+    type: 'registry:component',
+  },
+  {
+    dependencies: [],
+    files: [
+      {
+        path: 'components/editor/fixed-toolbar.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'fixed-toolbar',
+    registryDependencies: ['@plate/tailwind-scrollbar-hide'],
+    meta: {
+      examples: ['basic-nodes-demo'],
+    },
+    title: 'Fixed Toolbar',
+    type: 'registry:component',
+    description: 'A set of commonly used formatting buttons.',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/floating-toolbar.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'floating-toolbar',
+    registryDependencies: ['@plate/tailwind-scrollbar-hide'],
+    meta: {
+      docs: [
+        {
+          route: 'https://pro.platejs.org/docs/components/floating-toolbar',
+        },
+      ],
+      examples: ['floating-toolbar-demo', 'floating-toolbar-pro'],
+    },
+    title: 'Floating Toolbar',
+    type: 'registry:component',
+    description: 'A set of formatting buttons for the floating toolbar.',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/footnote.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'footnote',
+    registryDependencies: ['@plate/highlight-style'],
+    type: 'registry:component',
+    description:
+      'Inline footnote references, definitions, and a reference picker.',
+    title: 'Footnote',
+    meta: {
+      docs: [{ route: '/docs/footnote' }],
+      examples: ['footnote-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/font.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'font',
+    registryDependencies: [
+      '@plate/font-size-toolbar-button',
+      '@plate/font-color-toolbar-button',
+    ],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/indent.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'indent',
+    registryDependencies: ['@plate/indent-toolbar-button'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/line-height.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'line-height',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/link.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'link',
+    meta: {
+      docs: [
+        { route: '/docs/link' },
+        { route: 'https://pro.platejs.org/docs/components/link-toolbar' },
+      ],
+      examples: ['link-demo', 'link-pro'],
+    },
+    registryDependencies: ['@plate/link-toolbar-button'],
+    title: 'Link',
+    type: 'registry:component',
+    description: 'A component for rendering hyperlinks with hover states.',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/list.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'list',
+    registryDependencies: ['@plate/list-toolbar-button'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'remark-emoji', 'remark-gfm', 'remark-math'],
+    files: [
+      {
+        path: 'components/editor/markdown.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'markdown',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'katex@0.16.22', 'react-textarea-autosize'],
+    files: [
+      {
+        path: 'components/editor/math.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'math',
+    registryDependencies: ['@plate/equation-toolbar-button'],
+    type: 'registry:component',
+    description:
+      'Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.',
+    title: 'Math',
+    meta: {
+      docs: [
+        {
+          route: 'http://localhost:3000/docs/equation',
+          title: 'Equation',
+        },
+      ],
+      examples: ['equation-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'Completed image, video, audio, file and embed nodes.',
+    files: [
+      {
+        path: 'components/editor/media.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'media',
+    registryDependencies: ['@plate/media-toolbar'],
+    type: 'registry:component',
+    title: 'Media',
+    meta: {
+      docs: [{ route: '/docs/media' }],
+      examples: ['media-demo', 'media-pro'],
+    },
+  },
+  {
+    dependencies: [
+      'platejs',
+      'files-sdk@2.6.0',
+      'sonner',
+      'use-file-picker@2.1.2',
+    ],
+    description:
+      'Files SDK upload client, draft slots, progress and cancellation.',
+    files: [
+      {
+        path: 'components/editor/upload.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'upload',
+    type: 'registry:component',
+    title: 'Upload',
+    meta: { docs: [{ route: '/docs/upload' }], examples: ['media-demo'] },
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'Browser-local uploads for demos and disposable editors.',
+    files: [
+      {
+        path: 'components/editor/upload/browser.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'upload-browser',
+    registryDependencies: ['@plate/upload'],
+    type: 'registry:component',
+    title: 'Browser Upload',
+    meta: { docs: [{ route: '/docs/upload' }], examples: ['playground-demo'] },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/mention.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'mention',
+    type: 'registry:component',
+    description:
+      'A mention element with customizable prefix and label, powered by a combobox.',
+    title: 'Mention',
+    meta: {
+      docs: [
+        { route: '/docs/mention' },
+        { route: 'https://pro.platejs.org/docs/components/mention' },
+      ],
+      examples: ['mention-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/slash.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'slash',
+    type: 'registry:component',
+    description: 'A command input component for inserting various elements.',
+    title: 'Slash Command',
+    meta: {
+      docs: [
+        { route: '/docs/slash-command', title: 'Slash' },
+        {
+          route: 'https://pro.platejs.org/docs/components/slash',
+        },
+      ],
+      examples: ['slash-command-demo', 'slash-command-pro'],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/suggestion.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'suggestion',
+    type: 'registry:component',
+    description:
+      'Suggestion mode, semantic authored-change attributes, and view-local review state.',
+    title: 'Suggestions',
+    meta: {
+      docs: [{ route: '/docs/suggestion' }],
+      examples: ['discussion-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/tabbable.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'tabbable',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/table.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'table',
+    registryDependencies: ['@plate/tailwind-scrollbar-hide'],
+    type: 'registry:component',
+    description:
+      'A table component with floating toolbar and border customization.',
+    title: 'Table',
+    meta: {
+      docs: [
+        { route: '/docs/table' },
+        { route: 'https://pro.platejs.org/docs/components/table' },
+      ],
+      examples: ['table-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/toc.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'toc',
+    registryDependencies: ['@plate/highlight-style'],
+    type: 'registry:component',
+    description:
+      'A table of contents component with links to document headings.',
+    title: 'Table of Contents',
+    meta: {
+      docs: [
+        { route: '/docs/toc' },
+        { route: 'https://pro.platejs.org/docs/components/toc' },
+      ],
+      examples: ['toc-demo', 'toc-pro'],
+      // - Responsive design that adapts to different screen sizes
+      // - Dynamic highlighting of the corresponding thumbnail on the right side based on the current section
+      // - Hover thumbnail to see the preview of the section with smooth animation
+      // - Elegant transition effects when navigating between sections
+      // - Animated highlighting of the current section in the sidebar
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/details.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'details',
+    registryDependencies: ['@plate/details-toolbar-button'],
+    type: 'registry:component',
+    description: 'A semantic disclosure block with an editable summary.',
+    title: 'Details',
+    meta: {
+      docs: [{ route: '/docs/details' }],
+      examples: ['details-demo'],
+    },
+  },
+];

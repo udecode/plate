@@ -1,0 +1,2314 @@
+/** @jsxRuntime classic */
+/** @jsx jsxt */
+
+import { createLowlight } from 'lowlight';
+
+import {
+  createDataTransfer,
+  jsxt,
+  projectTestSelectionRange,
+  type TestEditor,
+} from '#platejs-test-internal';
+
+import {
+  BaseParagraphPlugin,
+  type BasePluginInput,
+  ContentSlice,
+  createEditor,
+  createEditorView,
+  type CreateEditorOptions,
+  DebugPlugin,
+  definePlugin,
+  type Descendant,
+  type InitialValue,
+  type NodeEntry,
+  PLUGINS,
+  schema,
+  SelectionApi,
+  type TextInsertFragmentOptions,
+  type Value,
+} from '../../../core';
+import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
+import { getPlateDecorationSources } from '../../../internal/plugin/getPlateDecorationSources';
+import { createTextSubstitutionInputRule } from '../../../lib/plugins/input-rules';
+import { MarkdownPlugin } from '../../../markdown';
+import { BaseEquationPlugin, MathRules } from '../../../math';
+import { insertBreak, insertText } from '../../../testing';
+import {
+  BaseBlockquotePlugin,
+  BaseHorizontalRulePlugin,
+  BlockquoteRules,
+  HorizontalRuleRules,
+} from '../../basic-nodes/lib/BaseBlockPlugins';
+import {
+  BaseHeadingPlugin,
+  HeadingRules,
+} from '../../basic-nodes/lib/BaseHeadingPlugins';
+import {
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseItalicPlugin,
+  BoldRules,
+  CodeRules,
+} from '../../basic-nodes/lib/BaseMarkPlugins';
+import { BaseDetailsPlugin } from '../../details';
+import { BaseLinkPlugin, LinkRules } from '../../link';
+import { BaseListPlugin, BulletedListRules } from '../../list';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeHighlightPlugin,
+  type CodeBlockElement,
+} from './BaseCodeBlockPlugin';
+import { CodeBlockRules } from './CodeBlockRules';
+
+const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
+  options: Omit<CreateEditorOptions, 'plugins'> & {
+    initialValue?: InitialValue<Value>;
+    plugins: P;
+  }
+) =>
+  createEditor({
+    ...options,
+  });
+
+describe('BaseCodeBlockPlugin', () => {
+  it('converts a nested Details title to code and preserves its body and parent [EDIT-DETAILS-TITLE-CODE-001]', () => {
+    const initialValue = [
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Outer' }] },
+          {
+            type: 'details',
+            children: [
+              { type: 'summary', children: [{ text: 'Title' }] },
+              { type: 'paragraph', children: [{ text: 'Body' }] },
+            ],
+          },
+        ],
+      },
+    ];
+    const editor = createEditor({
+      plugins: [BaseDetailsPlugin, BaseCodeBlockPlugin],
+      initialValue,
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 1, 0, 0], offset: 0 },
+        focus: { path: [0, 1, 0, 0], offset: 2 },
+      },
+    });
+    const outerKey = editor.key([0]);
+    const innerKey = editor.key([0, 1]);
+    const bodyKey = editor.key([0, 1, 1]);
+    editor.plugin(BaseDetailsPlugin).api.setOpen(innerKey!, true);
+
+    editor.plugin(BaseCodeBlockPlugin).update.toggle();
+
+    expect(editor.read.children()).toEqual([
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Outer' }] },
+          { type: 'codeBlock', children: [{ text: 'Title' }] },
+          { type: 'paragraph', children: [{ text: 'Body' }] },
+        ],
+      },
+    ]);
+    expect(editor.key([0])).toBe(outerKey);
+    expect(editor.key([0, 2])).toBe(bodyKey);
+    expect(editor.read.selection()).toEqual({
+      anchor: { path: [0, 1, 0], offset: 0 },
+      focus: { path: [0, 1, 0], offset: 2 },
+    });
+    editor.api.history.undo();
+    expect(editor.read.children()).toEqual(initialValue);
+    expect(editor.key([0, 1])).toBe(innerKey);
+    expect(
+      editor.plugin(BaseDetailsPlugin).store.get('isOpen', innerKey!)
+    ).toBe(true);
+  });
+
+  it('reports a toggle false when paragraphs cannot replace the code block', () => {
+    const CodeOnly = definePlugin('codeOnly', {
+      dependencies: [BaseCodeBlockPlugin],
+      schema: {
+        element: {
+          blockContent: true,
+          content: schema.content.any([
+            schema.content.type('codeBlock').allowed,
+          ]),
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [BaseCodeBlockPlugin, CodeOnly],
+      initialValue: [
+        {
+          type: 'codeOnly',
+          children: [{ type: 'codeBlock', children: [{ text: 'x' }] }],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0, 0], offset: 0 },
+        focus: { path: [0, 0, 0], offset: 0 },
+      },
+    });
+
+    expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(false);
+  });
+
+  it('codes each run of a sparse block selection and leaves the blocks between them', () => {
+    const editor = createEditor({
+      plugins: [BaseCodeBlockPlugin],
+      initialValue: ['A', 'B', 'C', 'D'].map((text) => ({
+        type: 'paragraph',
+        children: [{ text }],
+      })),
+      selection: SelectionApi.nodes([[0], [1], [3]], { mode: 'block' }),
+    });
+
+    expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { type: 'codeBlock', children: [{ text: 'A\nB' }] },
+      { type: 'paragraph', children: [{ text: 'C' }] },
+      { type: 'codeBlock', children: [{ text: 'D' }] },
+    ]);
+    expect(editor.read.selection.nodes().map(([, path]) => path)).toEqual([
+      [0],
+      [2],
+    ]);
+  });
+
+  it('codes a sparse block selection around a code block it does not hold', () => {
+    const editor = createEditor({
+      plugins: [BaseCodeBlockPlugin],
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'A' }] },
+        { type: 'codeBlock', children: [{ text: 'B' }] },
+        { type: 'paragraph', children: [{ text: 'C' }] },
+      ],
+      selection: SelectionApi.nodes([[0], [2]], { mode: 'block' }),
+    });
+
+    expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { type: 'codeBlock', children: [{ text: 'A' }] },
+      { type: 'codeBlock', children: [{ text: 'B' }] },
+      { type: 'codeBlock', children: [{ text: 'C' }] },
+    ]);
+  });
+
+  it('codes no run of a block selection when one run cannot become code', () => {
+    const ProseOnly = definePlugin('proseOnly', {
+      schema: {
+        element: {
+          blockContent: true,
+          content: schema.content.any([
+            schema.content.type('paragraph').allowed,
+          ]),
+        },
+      },
+    });
+    const initialValue = [
+      { type: 'paragraph', children: [{ text: 'A' }] },
+      {
+        type: 'proseOnly',
+        children: [{ type: 'paragraph', children: [{ text: 'B' }] }],
+      },
+    ];
+    const editor = createEditor({
+      plugins: [BaseCodeBlockPlugin, ProseOnly],
+      initialValue,
+      selection: SelectionApi.nodes([[0], [1, 0]], { mode: 'block' }),
+    });
+
+    expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(false);
+    expect(editor.read.children()).toEqual(initialValue);
+  });
+
+  it('indents the first empty line at offset zero', () => {
+    const editor = createFixtureEditor({
+      plugins: [BaseCodeBlockPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+      initialValue: [{ type: 'codeBlock', children: [{ text: '\nalpha' }] }],
+    });
+
+    expect(editor.update.codeBlock.tab()).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { type: 'codeBlock', children: [{ text: '  \nalpha' }] },
+    ]);
+    expect(editor.read.selection()).toMatchObject({
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 2 },
+    });
+  });
+
+  it('pastes HTML as plain text in code blocks and binds the tx group', () => {
+    const editorWithCodeBlock = createFixtureEditor({
+      plugins: [BaseCodeBlockPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [
+        {
+          children: [{ text: '' }],
+          type: 'codeBlock',
+        },
+      ],
+    });
+    const editorWithoutCodeBlock = createFixtureEditor({
+      plugins: [BaseCodeBlockPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+    const html = new Map([['text/html', '<p>pasted</p>']]);
+
+    expect(BaseCodeBlockPlugin.name).toBe('codeBlock');
+    expect(BaseCodeBlockPlugin.name).toBe(PLUGINS.codeBlock);
+    expect(BaseCodeHighlightPlugin.name).toBe('codeSyntax');
+    expect(BaseCodeHighlightPlugin.name).toBe(PLUGINS.codeSyntax);
+    expect(BaseCodeBlockPlugin.dependencies).toEqual([]);
+    expect(BaseCodeHighlightPlugin.dependencies).toEqual([BaseCodeBlockPlugin]);
+    expect(editorWithCodeBlock.read.schema.create(BaseCodeBlockPlugin)).toEqual(
+      {
+        children: [{ text: '' }],
+        type: 'codeBlock',
+      }
+    );
+    expect(
+      editorWithCodeBlock.read.schema.getElementSlicePolicy({
+        children: [{ text: '' }],
+        type: 'codeBlock',
+      })
+    ).toEqual({
+      endMatter: false,
+      preserveContext: true,
+      replaceWhenCovered: false,
+    });
+    expect(
+      editorWithCodeBlock.read.schema.element(BaseCodeBlockPlugin)?.groups
+    ).toContain('block');
+    expect(() =>
+      editorWithCodeBlock.read.schema.assertDocument({
+        children: [
+          {
+            children: [{ text: 'a' }, { text: 'b' }],
+            type: 'codeBlock',
+          },
+        ],
+      })
+    ).toThrow(/at most 1|maximum.*1|cannot contain/i);
+
+    expect(
+      editorWithCodeBlock.api.dom.clipboard.insertData(createDataTransfer(html))
+    ).toBe(true);
+    expect(editorWithCodeBlock.read.children()).toEqual([
+      { children: [{ text: 'pasted' }], type: 'codeBlock' },
+    ]);
+    expect(
+      editorWithoutCodeBlock.api.dom.clipboard.insertData(
+        createDataTransfer(html)
+      )
+    ).toBe(true);
+
+    expect(editorWithCodeBlock.update.codeBlock.toggle).toEqual(
+      expect.any(Function)
+    );
+
+    editorWithoutCodeBlock.plugin(BaseCodeBlockPlugin).update.insert();
+
+    expect(editorWithoutCodeBlock.read.children().at(-1)).toEqual({
+      children: [{ text: '' }],
+      type: 'codeBlock',
+    });
+  });
+
+  it('decodes and encodes one newline-bearing text through HTML', () => {
+    const editor = createFixtureEditor({
+      plugins: [BaseCodeBlockPlugin],
+      selection: SelectionApi.nodes([[0]], { mode: 'block' }),
+      initialValue: [
+        {
+          children: [{ text: 'const a = 1;\n\nconst b = 2;\n' }],
+          language: 'typescript',
+          type: 'codeBlock',
+        },
+      ],
+    });
+    const data = new DataTransfer();
+    const parse = (source: string) => {
+      const result = editor.api.html.parseSlice(source);
+
+      if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+      return result.slice.content;
+    };
+
+    expect(
+      parse(
+        '<pre><select>TypeScript</select>const a = 1;\n\nconst b = 2;</pre>'
+      )
+    ).toEqual([
+      {
+        children: [{ text: 'const a = 1;\n\nconst b = 2;' }],
+        type: 'codeBlock',
+      },
+    ]);
+
+    editor.api.dom.clipboard.writeSelection(data);
+
+    const { body } = new DOMParser().parseFromString(
+      data.getData('text/html'),
+      'text/html'
+    );
+    const pre = body.querySelector('pre[data-language="typescript"]');
+
+    if (!(pre instanceof HTMLElement)) {
+      throw new TypeError('Expected an encoded code block.');
+    }
+
+    expect(pre.querySelector('code')?.textContent).toBe(
+      'const a = 1;\n\nconst b = 2;\n'
+    );
+    expect(pre.dataset.codeTrailingNewlines).toBe('1');
+    expect(parse(pre.outerHTML)).toEqual([...editor.read.children()]);
+
+    expect(parse('<pre>const a = 1;<br>const b = 2;</pre>')).toEqual([
+      {
+        children: [{ text: 'const a = 1;\nconst b = 2;' }],
+        type: 'codeBlock',
+      },
+    ]);
+  });
+
+  it('keeps syntax highlighting absent when only code blocks are installed', () => {
+    const editor = createFixtureEditor({
+      plugins: [BaseCodeBlockPlugin],
+    });
+
+    expect(getPlateDecorationSources(editor)).toEqual([]);
+
+    expect(() => editor.plugin(BaseCodeHighlightPlugin).name).toThrow(
+      /not installed/i
+    );
+  });
+});
+
+jsxt;
+
+describe('isCodeBlockEmpty', () => {
+  const run = (input: TestEditor) =>
+    createFixtureEditor({
+      plugins: [BaseCodeBlockPlugin],
+      selection: input.selection,
+      initialValue: input.children,
+    }).read.codeBlock.isEmpty();
+
+  it.each([
+    {
+      expected: false,
+      input: (
+        <editor>
+          <hp>
+            <htext />
+            <cursor />
+          </hp>
+          <hcodeblock>
+            <htext />
+          </hcodeblock>
+        </editor>
+      ),
+      title: 'returns false outside a code block',
+    },
+    {
+      expected: false,
+      input: (
+        <editor>
+          <hcodeblock>
+            <cursor />
+            {'\n'}
+          </hcodeblock>
+        </editor>
+      ),
+      title: 'returns false for a multi-line code block',
+    },
+    {
+      expected: false,
+      input: (
+        <editor>
+          <hcodeblock>
+            test
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ),
+      title: 'returns false for a non-empty code line',
+    },
+    {
+      expected: true,
+      input: (
+        <editor>
+          <hcodeblock>
+            <htext />
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ),
+      title: 'returns true for a single empty code line',
+    },
+  ])('$title', ({ input, expected }) => {
+    expect(run(input)).toBe(expected);
+  });
+});
+
+{
+  jsxt;
+
+  const createTestEditor = ({ input }: { input: TestEditor }) =>
+    createFixtureEditor({
+      plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+  describe('insert break', () => {
+    describe('when cursor is inside code line', () => {
+      it('insert a new code line with same indentation', () => {
+        const input = (
+          <editor>
+            <hcodeblock>
+              {'    '}before
+              <cursor />
+              after
+            </hcodeblock>
+          </editor>
+        ) as TestEditor;
+
+        const output = (
+          <editor>
+            <hcodeblock>
+              {'    '}before{'\n'}
+              {'    '}
+              <cursor />
+              after
+            </hcodeblock>
+          </editor>
+        ) as TestEditor;
+
+        const editor = createTestEditor({ input });
+
+        editor.update.break.insert();
+
+        expect(editor.read.children()).toEqual(output.children);
+      });
+
+      it('replaces an expanded selection with a code-local line split', () => {
+        const input = (
+          <editor>
+            <hcodeblock>
+              ab
+              <anchor />
+              cd
+              <focus />
+              ef
+            </hcodeblock>
+          </editor>
+        ) as TestEditor;
+
+        const output = (
+          <editor>
+            <hcodeblock>
+              ab{'\n'}
+              <cursor />
+              ef
+            </hcodeblock>
+          </editor>
+        ) as TestEditor;
+
+        const editor = createTestEditor({ input });
+
+        editor.update.break.insert();
+
+        expect(editor.read.children()).toEqual(output.children);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
+      });
+
+      it('preserves the indentation level when splitting inside whitespace', () => {
+        const input = (
+          <editor>
+            <hcodeblock>
+              {'  '}
+              <cursor />
+              {'  '}before
+            </hcodeblock>
+          </editor>
+        ) as TestEditor;
+
+        const output = (
+          <editor>
+            <hcodeblock>
+              {'  '}
+              {'\n'}
+              {'  '}
+              <cursor />
+              {'  '}before
+            </hcodeblock>
+          </editor>
+        ) as TestEditor;
+
+        const editor = createTestEditor({ input });
+
+        editor.update.break.insert();
+
+        expect(editor.read.children()).toEqual(output.children);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
+      });
+    });
+  });
+
+  describe('resetBlock', () => {
+    it('unwraps a code block into paragraphs', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <cursor />
+            aa
+            {'\n'}bb
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+            aa
+          </hp>
+          <hp>bb</hp>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createTestEditor({ input });
+
+      editor.update.codeBlock.resetBlock();
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+  });
+
+  describe('deleteBackward', () => {
+    it('keeps deleteBackward local at the start of a non-empty first code line [EDIT-CB-BS-START-001]', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <cursor />
+            aa
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createTestEditor({ input });
+
+      editor.update.text.deleteBackward();
+
+      expect(editor.read.children()).toEqual(input.children);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(input.selection)
+      );
+    });
+
+    it('merges an empty non-first code line into the previous line', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            aa{'\n'}
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const output = (
+        <editor>
+          <hcodeblock>
+            aa
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createTestEditor({ input });
+
+      editor.update.text.deleteBackward();
+
+      expect(editor.read.children()).toEqual(output.children);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(output.selection)
+      );
+    });
+
+    it('unwraps an empty code block to a plain paragraph [EDIT-CB-BS-START-EMPTY-001]', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createTestEditor({ input });
+
+      editor.update.text.deleteBackward();
+
+      expect(editor.read.children()).toEqual(output.children);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(output.selection)
+      );
+    });
+  });
+
+  describe('selectAll', () => {
+    it('expands the selection to the whole code block', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            be
+            <anchor />
+            fo
+            <focus />
+            re
+            {'\n'}after
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createTestEditor({ input });
+
+      editor.update.codeBlock.selectAll();
+
+      expect(editor.read.selection()).toEqual({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 12, path: [0, 0] },
+      });
+    });
+
+    it('falls through after the whole code block is selected', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <anchor />
+            before
+            {'\n'}
+            after
+            <focus />
+          </hcodeblock>
+          <hp>outside</hp>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createTestEditor({ input });
+
+      expect(
+        getPlateRuntime(editor).shortcuts['codeBlock.selectAll']?.keys
+      ).toBe('mod+a');
+      expect(editor.update.codeBlock.selectAll()).toBe(false);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(input.selection)
+      );
+    });
+  });
+
+  describe('tab', () => {
+    it('leaves the next line untouched when the selection ends at its start', () => {
+      for (const [text, reverse, expected, end] of [
+        ['aa\nbb', false, '  aa\nbb', 3],
+        ['  aa\n  bb', true, 'aa\n  bb', 5],
+      ] as const) {
+        for (const [anchor, focus] of [
+          [0, end],
+          [end, 0],
+        ]) {
+          const editor = createFixtureEditor({
+            plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+            initialValue: [{ type: 'codeBlock', children: [{ text }] }],
+            selection: {
+              kind: 'text',
+              anchor: { path: [0, 0], offset: anchor },
+              focus: { path: [0, 0], offset: focus },
+            },
+          });
+
+          expect(editor.update.codeBlock.tab({ reverse })).toBe(true);
+          expect(editor.read.children()[0].children[0].text).toBe(expected);
+          expect(editor.read.history().undos).toHaveLength(1);
+        }
+      }
+    });
+
+    it('indents every selected code line', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <anchor />
+            aa
+            {'\n'}
+            bb
+            <focus />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const output = (
+        <editor>
+          <hcodeblock>
+            {'  '}
+            aa
+            {'\n'}
+            {'  '}
+            bb
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createTestEditor({ input });
+
+      expect(editor.update.codeBlock.tab({ reverse: false })).toBe(true);
+      expect(editor.read.children()).toEqual(output.children);
+    });
+
+    it('outdents every selected code line when reversed', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <anchor />
+            {'  '}aa
+            {'\n'}
+            {'  '}bb
+            <focus />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const output = (
+        <editor>
+          <hcodeblock>aa{'\n'}bb</hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createTestEditor({ input });
+
+      expect(editor.update.codeBlock.tab({ reverse: true })).toBe(true);
+      expect(editor.read.children()).toEqual(output.children);
+    });
+
+    it('inserts spaces at a collapsed cursor after code text', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            aa
+            <cursor />
+            bb
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const output = (
+        <editor>
+          <hcodeblock>
+            aa{'  '}
+            <cursor />
+            bb
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createTestEditor({ input });
+
+      expect(editor.update.codeBlock.tab()).toBe(true);
+      expect(editor.read.children()).toEqual(output.children);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(output.selection)
+      );
+    });
+  });
+
+  describe('insert', () => {
+    it('constructs a code block with its language at an exact target', () => {
+      const editor = createFixtureEditor({
+        plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+        initialValue: [{ type: 'paragraph', children: [{ text: 'after' }] }],
+        selection: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 2 },
+          focus: { path: [0, 0], offset: 2 },
+        },
+      });
+
+      editor
+        .plugin(BaseCodeBlockPlugin)
+        .update.insert({ language: 'typescript' }, { at: [0] });
+
+      expect(editor.read.children()).toEqual([
+        {
+          type: 'codeBlock',
+          language: 'typescript',
+          children: [{ text: '' }],
+        },
+        { type: 'paragraph', children: [{ text: 'after' }] },
+      ]);
+      expect(editor.read.selection()).toEqual({
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      });
+      expect(editor.read.history().undos).toHaveLength(1);
+    });
+
+    it('inserts an empty code block on a selected empty line', () => {
+      const input = (
+        <editor>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as TestEditor;
+      const output = (
+        <editor>
+          <hcodeblock>
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+      const editor = createTestEditor({ input });
+
+      editor.update.codeBlock.insert();
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+
+    it('inserts an empty code block below a selected non-empty line', () => {
+      const input = (
+        <editor>
+          <hp>
+            test
+            <cursor />
+          </hp>
+        </editor>
+      ) as TestEditor;
+      const output = (
+        <editor>
+          <hp>test</hp>
+          <hcodeblock>
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+      const editor = createTestEditor({ input });
+
+      editor.update.codeBlock.insert();
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+
+    it('keeps an explicit at as the exact insertion path', () => {
+      const input = (
+        <editor>
+          <hp>
+            test
+            <cursor />
+          </hp>
+        </editor>
+      ) as TestEditor;
+      const output = (
+        <editor>
+          <hcodeblock>
+            <htext />
+          </hcodeblock>
+          <hp>
+            test
+            <cursor />
+          </hp>
+        </editor>
+      ) as TestEditor;
+      const editor = createTestEditor({ input });
+
+      editor.update.codeBlock.insert({}, { at: [0], select: false });
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+
+    it('creates a sibling for insert and reuses a matching empty block for upsert', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+      const insertEditor = createTestEditor({ input });
+
+      insertEditor.update.codeBlock.insert();
+      expect(insertEditor.read.children()).toHaveLength(2);
+
+      const upsertEditor = createTestEditor({ input });
+      const key = upsertEditor.key(upsertEditor.read.children()[0]);
+
+      upsertEditor.update.codeBlock.upsert({}, { select: true });
+      expect(upsertEditor.read.children()).toHaveLength(1);
+      expect(upsertEditor.key(upsertEditor.read.children()[0])).toBe(key);
+    });
+
+    it('updates the language of a reused empty code block without replacing it', () => {
+      const editor = createFixtureEditor({
+        plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+        initialValue: [
+          {
+            type: 'codeBlock',
+            language: 'javascript',
+            children: [{ text: '' }],
+          },
+        ],
+        selection: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 0 },
+        },
+      });
+      const key = editor.key(editor.read.children()[0]);
+
+      editor
+        .plugin(BaseCodeBlockPlugin)
+        .update.upsert({ language: 'typescript' }, { select: true });
+
+      expect(editor.read.children()).toEqual([
+        {
+          type: 'codeBlock',
+          language: 'typescript',
+          children: [{ text: '' }],
+        },
+      ]);
+      expect(editor.key(editor.read.children()[0])).toBe(key);
+      expect(editor.read.selection()).toEqual({
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      });
+      expect(editor.read.history().undos).toHaveLength(1);
+    });
+
+    it('inserts an empty code block below an expanded selection', () => {
+      const input = (
+        <editor>
+          <hp>line 1</hp>
+          <hp>
+            line <anchor />2
+          </hp>
+          <hp>line 3</hp>
+          <hp>
+            line 4<focus />
+          </hp>
+          <hp>line 5</hp>
+        </editor>
+      ) as TestEditor;
+      const output = (
+        <editor>
+          <hp>line 1</hp>
+          <hp>line 2</hp>
+          <hp>line 3</hp>
+          <hp>line 4</hp>
+          <hcodeblock>
+            <cursor />
+          </hcodeblock>
+          <hp>line 5</hp>
+        </editor>
+      ) as TestEditor;
+      const editor = createTestEditor({ input });
+
+      editor.update.codeBlock.insert();
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+  });
+}
+
+jsxt;
+
+describe('BaseCodeBlockPlugin input rules', () => {
+  it('runs no input rule inside a code block', () => {
+    const type = (keys: readonly string[], block = 'codeBlock') => {
+      const editor = createEditor({
+        plugins: [
+          BaseCodeBlockPlugin,
+          BaseHeadingPlugin.configure({
+            inputRules: [HeadingRules.markdown()],
+          }),
+          BaseBlockquotePlugin.configure({
+            inputRules: [BlockquoteRules.markdown()],
+          }),
+          BaseHorizontalRulePlugin.configure({
+            inputRules: [HorizontalRuleRules.markdown()],
+          }),
+          BaseListPlugin.configure({
+            inputRules: [BulletedListRules.markdown()],
+          }),
+          BaseBoldPlugin.configure({ inputRules: [BoldRules.markdown()] }),
+          BaseCodePlugin.configure({ inputRules: [CodeRules.markdown()] }),
+          BaseEquationPlugin.configure({
+            inputRules: [MathRules.markdown({ on: 'break', variant: '$$' })],
+          }),
+          BaseLinkPlugin.configure({
+            inputRules: [LinkRules.autolink({ variant: 'space' })],
+          }),
+          definePlugin('arrows', {
+            inputRules: [
+              createTextSubstitutionInputRule({
+                patterns: [{ format: '→', match: '->' }],
+              }),
+            ],
+          }),
+        ],
+        initialValue: [{ children: [{ text: '' }], type: block }],
+        selection: {
+          kind: 'text',
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
+        },
+      });
+
+      for (const key of keys) {
+        if (key === '\n') insertBreak(editor);
+        else insertText(editor, key);
+      }
+
+      return editor.read.children();
+    };
+    const literal = (text: string) => [
+      { children: [{ text }], type: 'codeBlock' },
+    ];
+
+    for (const text of [
+      '# ',
+      '> ',
+      '- ',
+      '---',
+      '**x**',
+      '`x`',
+      '->',
+      'https://x.dev ',
+    ]) {
+      expect(type([...text])).toEqual(literal(text));
+    }
+    expect(type(['$', '$', '\n'])).toEqual(literal('$$\n'));
+    expect(type([...'# '], 'paragraph')).toMatchObject([{ type: 'heading' }]);
+    expect(type([...'**x**'], 'paragraph')).toMatchObject([
+      { children: [{ bold: true, text: 'x' }], type: 'paragraph' },
+    ]);
+  });
+
+  it('keeps a code fence in a required title', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseHeadingPlugin,
+        BaseCodeBlockPlugin.configure({
+          inputRules: [CodeBlockRules.markdown({ on: 'match' })],
+        }),
+      ],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          })
+        ),
+      },
+      initialValue: [
+        { children: [{ text: '``' }], level: 1, type: 'heading' },
+        { children: [{ text: 'Body' }], type: 'paragraph' },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      },
+    });
+
+    editor.update.text.insert('`');
+
+    expect(editor.read.children()[0]).toEqual({
+      children: [{ text: '```' }],
+      level: 1,
+      type: 'heading',
+    });
+  });
+
+  it('promotes triple backticks when the markdown group is enabled', () => {
+    const input = (
+      <editor>
+        <hp>
+          ``
+          <cursor />
+        </hp>
+      </editor>
+    ) as TestEditor;
+
+    const editor = createFixtureEditor({
+      plugins: [
+        BaseCodeBlockPlugin.configure({
+          inputRules: [CodeBlockRules.markdown({ on: 'match' })],
+        }),
+      ],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+    editor.update.text.insert('`');
+    editor.update.text.insert('code');
+
+    expect(editor.read.children()).toEqual(
+      (
+        <editor>
+          <hcodeblock>code</hcodeblock>
+        </editor>
+      ).children
+    );
+  });
+
+  it('replaces the fence paragraph instead of leaving the first two backticks behind', () => {
+    const editor = createFixtureEditor({
+      plugins: [
+        BaseCodeBlockPlugin.configure({
+          inputRules: [CodeBlockRules.markdown({ on: 'match' })],
+        }),
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: '``' }], type: 'paragraph' }],
+    });
+
+    editor.update.text.insert('`');
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [{ text: '' }],
+        type: 'codeBlock',
+      },
+    ]);
+  });
+
+  it('promotes a ``` paragraph on Enter when configured with on: break', () => {
+    const input = (
+      <editor>
+        <hp>
+          ```
+          <cursor />
+        </hp>
+      </editor>
+    ) as TestEditor;
+
+    const editor = createFixtureEditor({
+      plugins: [
+        BaseCodeBlockPlugin.configure({
+          inputRules: [CodeBlockRules.markdown({ on: 'break' })],
+        }),
+      ],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+    editor.update.selection.set({
+      kind: 'text',
+      anchor: { offset: 3, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+    });
+    editor.update.break.insert();
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [{ text: '' }],
+        type: 'codeBlock',
+      },
+    ]);
+  });
+});
+
+{
+  jsxt;
+
+  const BaseCommentMappingPlugin = definePlugin('commentParser', {
+    formats: ({ defineFormats }) =>
+      defineFormats({
+        plainText: {
+          scope: 'document',
+          decode: () => ContentSlice.closed([{ text: 'comment parser' }]),
+        },
+      }),
+  });
+
+  const createTestEditor = (input: TestEditor) =>
+    createFixtureEditor({
+      plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+  const createEditorWithParser = (input: TestEditor) =>
+    createFixtureEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseCodeBlockPlugin,
+        BaseCommentMappingPlugin,
+      ],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+  describe('when pasting text into a code block', () => {
+    it('paste only the fragment', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <htext />
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const fragment = createDataTransfer(
+        new Map([
+          [
+            'text/html',
+            '<html><head><meta http-equiv="content-type" content="text/html; charset=UTF-8"></head><body><pre style="background-color:#212121;color:#eeffff;font-family:\'MonoLisa 600 normal\',monospace;font-size:9.8pt;"><span style="color:#c792ea;font-style:italic;">const&#32;</span><span style="color:#a9b7c6;">a&#32;</span><span style="color:#89ddff;">=&#32;</span><span style="color:#c3e88d;">\'b\'</span><span style="color:#89ddff;">;<br></span><span style="color:#c792ea;font-style:italic;">const&#32;</span><span style="color:#a9b7c6;">c&#32;</span><span style="color:#89ddff;">=&#32;</span><span style="color:#c3e88d;">\'d\'</span><span style="color:#89ddff;">;</span></pre></body></html>',
+          ],
+          ['text/plain', 'const a = "b";\nconst c = "d";'],
+        ])
+      );
+
+      const expected = (
+        <editor>
+          <hcodeblock>const a = "b";{'\n'}const c = "d";</hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createTestEditor(input);
+
+      editor.api.dom.clipboard.insertData(fragment);
+
+      expect(editor.read.children()).toEqual(expected.children);
+    });
+
+    it('creates a new code block from vscode metadata outside an existing code block', () => {
+      const input = (
+        <editor>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as TestEditor;
+
+      const data = createDataTransfer(
+        new Map([
+          ['text/plain', 'const a = "b";\nconst c = "d";'],
+          ['vscode-editor-data', JSON.stringify({ mode: 'typescript' })],
+        ])
+      );
+
+      const expected = (
+        <editor>
+          <hp>
+            <htext />
+          </hp>
+          <hcodeblock language="typescript">
+            const a = "b";{'\n'}
+            const c = "d";
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createTestEditor(input);
+      let commits = 0;
+      const unsubscribe = editor.subscribeCommit(() => (commits += 1) - 1);
+
+      editor.api.dom.clipboard.insertData(data);
+      unsubscribe();
+
+      expect(editor.read.children()).toEqual(expected.children);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(expected.selection)
+      );
+      expect(commits).toBe(1);
+      expect(editor.read.history().undos).toHaveLength(1);
+    });
+
+    it('inserts vscode lines into the current code block instead of nesting one', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const data = createDataTransfer(
+        new Map([
+          ['text/plain', 'const a = "b";\nconst c = "d";'],
+          ['vscode-editor-data', JSON.stringify({ mode: 'typescript' })],
+        ])
+      );
+
+      const expected = (
+        <editor>
+          <hcodeblock>
+            const a = "b";{'\n'}
+            const c = "d";
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createTestEditor(input);
+
+      editor.api.dom.clipboard.insertData(data);
+
+      expect(editor.read.children()).toEqual(expected.children);
+    });
+
+    it('keeps multiline comments as code when another text parser is present', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const data = createDataTransfer(
+        new Map([
+          ['text/plain', '// this is a comment\nconsole.log("hello world");'],
+        ])
+      );
+
+      const expected = (
+        <editor>
+          <hcodeblock>
+            {'// this is a comment'}
+            {'\n'}
+            console.log("hello world");
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createEditorWithParser(input);
+
+      editor.api.dom.clipboard.insertData(data);
+
+      expect(editor.read.children()).toEqual(expected.children);
+    });
+
+    it('lands pasted plain text as typed before Markdown or a paste rule reads it', () => {
+      const plugins = [
+        BaseParagraphPlugin,
+        BaseCodeBlockPlugin,
+        BaseBoldPlugin,
+        BaseItalicPlugin,
+        MarkdownPlugin,
+        BaseLinkPlugin.configure({
+          inputRules: [LinkRules.autolink({ variant: 'paste' })],
+        }),
+      ] as const;
+      const caret = (path: number[], offset: number) => ({
+        kind: 'text' as const,
+        anchor: { offset, path },
+        focus: { offset, path },
+      });
+      const paste = (data: Map<string, string>) => {
+        const editor = createFixtureEditor({
+          plugins,
+          initialValue: [{ children: [{ text: '' }], type: 'codeBlock' }],
+          selection: caret([0, 0], 0),
+        });
+
+        editor.api.dom.clipboard.insertData(createDataTransfer(data));
+
+        return editor.read.children();
+      };
+      const pasteCopiedBold = (text: string) => {
+        const editor = createFixtureEditor({
+          plugins,
+          initialValue: [
+            { children: [{ bold: true, text }], type: 'paragraph' },
+            { children: [{ text: 'x' }], type: 'codeBlock' },
+          ],
+          selection: {
+            kind: 'text',
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: text.length, path: [0, 0] },
+          },
+        });
+        const data = new DataTransfer();
+
+        editor.api.dom.clipboard.writeSelection(data);
+        editor.update.selection.set(caret([1, 0], 1));
+        editor.api.dom.clipboard.insertData(data);
+
+        return editor.read.children()[1];
+      };
+      const code = (text: string) => [
+        { children: [{ text }], type: 'codeBlock' },
+      ];
+
+      expect(paste(new Map([['text/plain', 'a **b** c']]))).toEqual(
+        code('a **b** c')
+      );
+      expect(paste(new Map([['text/plain', '*foo*']]))).toEqual(code('*foo*'));
+      expect(paste(new Map([['text/plain', 'tel:*123*']]))).toEqual(
+        code('tel:*123*')
+      );
+      expect(paste(new Map([['text/html', '<strong>hello</strong>']]))).toEqual(
+        code('hello')
+      );
+      expect(pasteCopiedBold('word')).toEqual(code('xword')[0]);
+      expect(pasteCopiedBold('https://x.dev')).toEqual(
+        code('xhttps://x.dev')[0]
+      );
+    });
+
+    it('delegates mixed expanded selections instead of treating any code match as the active block', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            code
+            <anchor />
+          </hcodeblock>
+          <hp>
+            <focus />
+            outside
+          </hp>
+        </editor>
+      ) as TestEditor;
+      const deserialize = mock(() => [{ text: 'mixed parser' }]);
+      const MixedSelectionFormatPlugin = definePlugin('mixedSelectionParser', {
+        dataTransferFormats: [
+          {
+            decode: () => ContentSlice.closed(deserialize()),
+            mimeType: 'text/plain',
+            priority: 100,
+            scope: 'document',
+          },
+        ],
+      });
+      const editor = createFixtureEditor({
+        plugins: [
+          BaseParagraphPlugin,
+          BaseCodeBlockPlugin,
+          MixedSelectionFormatPlugin,
+        ],
+        selection: input.selection,
+        initialValue: input.children,
+      });
+      const data = createDataTransfer(
+        new Map([['text/plain', 'const a = 1;\nconst b = 2;']])
+      );
+
+      editor.api.dom.clipboard.insertData(data);
+
+      expect(deserialize).toHaveBeenCalledTimes(1);
+    });
+  });
+}
+
+{
+  jsxt;
+
+  const editorTest = (
+    input: TestEditor,
+    fragment: Descendant[],
+    expected: TestEditor,
+    options?: TextInsertFragmentOptions
+  ) => {
+    const editor = createFixtureEditor({
+      plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+    editor.update.fragment.replace(fragment, options);
+
+    expect(editor.read.children()).toEqual(expected.children);
+  };
+
+  describe('pasting a code block', () => {
+    describe('when selection outside of code block', () => {
+      it('paste the code block', () => {
+        const input = (
+          <editor>
+            <hcodeblock>
+              <htext />
+            </hcodeblock>
+            <hp>
+              <cursor />
+            </hp>
+          </editor>
+        ) as TestEditor;
+
+        const fragment = (
+          <fragment>
+            <hcodeblock>
+              <htext />
+            </hcodeblock>
+          </fragment>
+        ) as Descendant[];
+
+        const expected = (
+          <editor>
+            <hcodeblock>
+              <htext />
+            </hcodeblock>
+            <hcodeblock>
+              <htext />
+            </hcodeblock>
+          </editor>
+        ) as TestEditor;
+
+        editorTest(input, fragment, expected);
+      });
+    });
+
+    describe('when selection inside of code block', () => {
+      it('insert code lines as a fragment', () => {
+        const input = (
+          <editor>
+            <hcodeblock>
+              {'\n'}
+              hello
+              <cursor />
+            </hcodeblock>
+          </editor>
+        ) as TestEditor;
+
+        const fragment = (
+          <fragment>
+            <hcodeblock>world{'\n'}!</hcodeblock>
+          </fragment>
+        ) as Descendant[];
+
+        const expected = (
+          <editor>
+            <hcodeblock>
+              {'\n'}helloworld{'\n'}!
+            </hcodeblock>
+          </editor>
+        ) as TestEditor;
+
+        editorTest(input, fragment, expected);
+      });
+
+      it('selects the fitted insertion end and records one undo step', () => {
+        const input = (
+          <editor>
+            <hcodeblock>
+              hello
+              <cursor />
+            </hcodeblock>
+          </editor>
+        ) as TestEditor;
+        const editor = createFixtureEditor({
+          plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+          selection: input.selection,
+          initialValue: input.children,
+        });
+        const fragment = (
+          <fragment>
+            <hp>world</hp>
+            <hp>!</hp>
+          </fragment>
+        ) as Descendant[];
+
+        editor.update.fragment.replace(fragment);
+
+        expect(editor.read.children()).toEqual(
+          (
+            <editor>
+              <hcodeblock>helloworld{'\n'}!</hcodeblock>
+            </editor>
+          ).children
+        );
+        expect(editor.read.selection()).toEqual({
+          anchor: { offset: 12, path: [0, 0] },
+          focus: { offset: 12, path: [0, 0] },
+        });
+        expect(editor.read.history().undos).toHaveLength(1);
+
+        editor.api.history.undo();
+
+        expect(editor.read.children()).toEqual(input.children);
+      });
+    });
+
+    it('uses an explicit code-block target when the selection is outside', () => {
+      const input = (
+        <editor>
+          <hcodeblock>hello</hcodeblock>
+          <hp>
+            outside
+            <cursor />
+          </hp>
+        </editor>
+      ) as TestEditor;
+
+      const fragment = (
+        <fragment>
+          <hp>world</hp>
+          <hp>!</hp>
+        </fragment>
+      ) as Descendant[];
+
+      const expected = (
+        <editor>
+          <hcodeblock>helloworld{'\n'}!</hcodeblock>
+          <hp>outside</hp>
+        </editor>
+      ) as TestEditor;
+
+      editorTest(input, fragment, expected, {
+        at: { offset: 5, path: [0, 0] },
+      });
+    });
+
+    it('uses an explicit non-code target when the selection is in code', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            hello
+            <cursor />
+          </hcodeblock>
+          <hp>outside</hp>
+        </editor>
+      ) as TestEditor;
+
+      const fragment = (
+        <fragment>
+          <hp>world</hp>
+        </fragment>
+      ) as Descendant[];
+
+      const expected = (
+        <editor>
+          <hcodeblock>hello</hcodeblock>
+          <hp>outworldside</hp>
+        </editor>
+      ) as TestEditor;
+
+      editorTest(input, fragment, expected, {
+        at: { offset: 3, path: [1, 0] },
+      });
+    });
+  });
+
+  describe('pasting non-code block elements', () => {
+    it('extract text and insert as code lines', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            {'\n'}
+            hello
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      const fragment = (
+        <fragment>
+          <hp>world</hp>
+          <hp>!</hp>
+        </fragment>
+      ) as Descendant[];
+
+      const expected = (
+        <editor>
+          <hcodeblock>
+            {'\n'}helloworld{'\n'}!
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+
+      editorTest(input, fragment, expected);
+    });
+  });
+}
+
+const mockLowlight = createLowlight();
+const mockHighlight = spyOn(mockLowlight, 'highlight');
+const mockHighlightAuto = spyOn(mockLowlight, 'highlightAuto');
+const mockListLanguages = spyOn(mockLowlight, 'listLanguages');
+const mockRegister = spyOn(mockLowlight, 'register');
+const mockRegisterAlias = spyOn(mockLowlight, 'registerAlias');
+
+type HighlightResult = ReturnType<typeof mockLowlight.highlight>;
+
+const highlightText = (value: string, className?: string[]) =>
+  className
+    ? {
+        children: [{ type: 'text' as const, value }],
+        properties: { className },
+        tagName: 'span',
+        type: 'element' as const,
+      }
+    : { type: 'text' as const, value };
+
+const highlightResult = (
+  ...children: HighlightResult['children']
+): HighlightResult => ({ children, type: 'root' });
+
+const createHighlightEditor = () =>
+  createFixtureEditor({
+    plugins: [
+      BaseCodeHighlightPlugin.configure({
+        initialState: {
+          defaultLanguage: 'javascript',
+          lowlight: mockLowlight,
+        },
+      }),
+    ],
+  });
+
+let editor: ReturnType<typeof createHighlightEditor>;
+
+const getDecorations = (
+  innerEditor: ReturnType<typeof createHighlightEditor>,
+  [codeBlock]: NodeEntry<CodeBlockElement>
+) => {
+  innerEditor.update.value.replace({
+    children: [codeBlock],
+    selection: null,
+  });
+  const sources = getPlateDecorationSources(innerEditor);
+  const decorate = (entry: NodeEntry) =>
+    sources.flatMap((source) => source.read({ editor: innerEditor, entry }));
+  const text = innerEditor.read.nodes.get([0]);
+
+  if (!text) throw new Error('Expected code block text');
+
+  return decorate(text);
+};
+
+beforeEach(() => {
+  // Reset mocks
+  mockHighlight.mockReset();
+  mockHighlightAuto.mockReset();
+  mockListLanguages.mockReset();
+  mockRegister.mockReset();
+  mockRegisterAlias.mockReset();
+  mockListLanguages.mockReturnValue(['javascript', 'typescript']);
+
+  editor = createHighlightEditor();
+  spyOn(editor.plugin(DebugPlugin).api, 'error');
+  spyOn(editor.plugin(DebugPlugin).api, 'warn');
+});
+
+describe('codeBlockToDecorations', () => {
+  it('highlights the code block of the document a view renders', () => {
+    mockHighlight.mockReturnValue(
+      highlightResult(highlightText('const', ['token', 'keyword']))
+    );
+    editor.update.value.replace({
+      children: [{ type: 'paragraph', children: [{ text: 'own content' }] }],
+      selection: null,
+    });
+    const view = createEditorView(editor, {
+      document: {
+        children: [
+          {
+            type: 'codeBlock',
+            language: 'javascript',
+            children: [{ text: 'const value = 1;' }],
+          },
+        ],
+      },
+    });
+    const [source] = getPlateDecorationSources(editor);
+    const decorations = source.read({
+      editor: view,
+      entry: view.read.nodes.get([0])!,
+    });
+
+    expect(decorations[0]).toMatchObject({
+      attributes: { className: 'token keyword' },
+    });
+  });
+
+  it.each([
+    { operation: 'insert', nextIndex: 2 },
+    { operation: 'remove', nextIndex: 0 },
+    { operation: 'move', nextIndex: 0 },
+  ])(
+    'keeps cached syntax on its block after $operation',
+    ({ operation, nextIndex }) => {
+      mockHighlight.mockReturnValue(
+        highlightResult(highlightText('const', ['token', 'keyword']))
+      );
+      editor.update.value.replace({
+        children: [
+          { type: 'paragraph', children: [{ text: 'plain before' }] },
+          {
+            type: 'codeBlock',
+            language: 'javascript',
+            children: [{ text: 'const value = 1;' }],
+          },
+          { type: 'paragraph', children: [{ text: 'plain after' }] },
+        ],
+        selection: null,
+      });
+      const [source] = getPlateDecorationSources(editor);
+      const before = source.read({
+        editor,
+        entry: editor.read.nodes.get([1])!,
+      });
+
+      if (operation === 'insert') {
+        editor.update.nodes.insert(
+          { type: 'paragraph', children: [{ text: 'inserted' }] },
+          { at: [0] }
+        );
+      } else if (operation === 'remove') {
+        editor.update.nodes.remove({ at: [0] });
+      } else {
+        editor.update.nodes.move({ at: [1], to: [0] });
+      }
+
+      const after = source.read({
+        editor,
+        entry: editor.read.nodes.get([nextIndex])!,
+      });
+
+      expect(after).toHaveLength(1);
+      expect(after[0]).toMatchObject({
+        attributes: { className: 'token keyword' },
+        range: {
+          anchor: { offset: 0, path: [nextIndex, 0] },
+          focus: { offset: 5, path: [nextIndex, 0] },
+        },
+      });
+      expect(before[0]).toMatchObject({
+        range: { anchor: { path: [1, 0] }, focus: { path: [1, 0] } },
+      });
+      expect(mockHighlight).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it('reads current language for every changed block while retaining sibling syntax', () => {
+    mockHighlight.mockReturnValue(
+      highlightResult(highlightText('const', ['token', 'keyword']))
+    );
+    const fixtureEditor = createFixtureEditor({
+      plugins: [
+        BaseCodeHighlightPlugin.configure({
+          initialState: {
+            defaultLanguage: 'javascript',
+            lowlight: mockLowlight,
+          },
+        }),
+      ],
+      initialValue: ['first', 'second', 'third'].map((name) => ({
+        children: [{ text: `const ${name} = 1;` }],
+        language: 'javascript',
+        type: 'codeBlock',
+      })),
+    });
+    const [source] = getPlateDecorationSources(fixtureEditor);
+    const read = (index: number) =>
+      source.read({
+        editor: fixtureEditor,
+        entry: fixtureEditor.read.nodes.get([index])!,
+      });
+    read(0);
+    read(1);
+    const sibling = read(2);
+
+    fixtureEditor.update((tx) => {
+      tx.nodes.set(
+        { language: 'plaintext' },
+        {
+          at: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 17, path: [1, 0] },
+          },
+          type: 'codeBlock',
+        }
+      );
+    });
+    expect(read(0)).toEqual([]);
+    expect(read(1)).toEqual([]);
+    expect(read(2)).toBe(sibling);
+    expect(mockHighlight).toHaveBeenCalledTimes(3);
+    fixtureEditor.update.nodes.set({ language: 'typescript' }, { at: [0] });
+    expect(read(0)).toHaveLength(1);
+    expect(mockHighlight).toHaveBeenLastCalledWith(
+      'typescript',
+      'const first = 1;'
+    );
+    expect(read(2)).toBe(sibling);
+    expect(mockHighlight).toHaveBeenCalledTimes(4);
+  });
+
+  it('releases parser output after the last observer leaves', () => {
+    mockHighlight.mockReturnValue(
+      highlightResult(highlightText('const', ['token', 'keyword']))
+    );
+    editor.update.value.replace({
+      children: [
+        {
+          children: [{ text: 'const value = 1;' }],
+          language: 'javascript',
+          type: 'codeBlock',
+        },
+      ],
+      selection: null,
+    });
+    const [source] = getPlateDecorationSources(editor);
+    const read = () =>
+      source.read({ editor, entry: editor.read.nodes.get([0])! });
+    const unmountFirst = source.observe?.({ refresh: () => {} });
+    const unmountSecond = source.observe?.({ refresh: () => {} });
+    const before = read();
+
+    unmountFirst?.();
+    expect(read()).toBe(before);
+    expect(mockHighlight).toHaveBeenCalledTimes(1);
+    unmountSecond?.();
+    const unmountAgain = source.observe?.({ refresh: () => {} });
+    expect(read()).not.toBe(before);
+    expect(mockHighlight).toHaveBeenCalledTimes(2);
+    unmountAgain?.();
+  });
+
+  it('retains current token identities and immutable ranges through a text edit', () => {
+    mockHighlight
+      .mockReturnValueOnce(
+        highlightResult(
+          highlightText('const', ['keyword']),
+          highlightText(' x = '),
+          highlightText('1', ['number']),
+          highlightText('; '),
+          highlightText('true', ['literal'])
+        )
+      )
+      .mockReturnValueOnce(
+        highlightResult(
+          highlightText('const', ['keyword']),
+          highlightText(' x = '),
+          highlightText('12', ['number']),
+          highlightText('; '),
+          highlightText('true', ['literal'])
+        )
+      );
+    editor.update.value.replace({
+      children: [
+        {
+          children: [{ text: 'const x = 1; true' }],
+          language: 'javascript',
+          type: 'codeBlock',
+        },
+      ],
+      selection: null,
+    });
+    const [source] = getPlateDecorationSources(editor);
+    const before = source.read({
+      editor,
+      entry: editor.read.nodes.get([0])!,
+    });
+    editor.update.text.insert('2', { at: { path: [0, 0], offset: 11 } });
+    const after = source.read({
+      editor,
+      entry: editor.read.nodes.get([0])!,
+    });
+
+    expect(mockHighlight).toHaveBeenCalledTimes(2);
+    expect(after[0]).toBe(before[0]);
+    expect(after[1].range.focus.offset).toBe(12);
+    expect(after[2].key).toBe(before[2].key);
+    expect(after[2].range.anchor.offset).toBe(14);
+    expect(before[2].range.anchor.offset).toBe(13);
+    expect(
+      after.every(
+        (decoration) =>
+          Object.isFrozen(decoration) &&
+          Object.isFrozen(decoration.range) &&
+          Object.isFrozen(decoration.range.anchor) &&
+          Object.isFrozen(decoration.range.anchor.path) &&
+          Object.isFrozen(decoration.attributes)
+      )
+    ).toBe(true);
+    expect(source.read({ editor, entry: editor.read.nodes.get([0])! })).toBe(
+      after
+    );
+    expect(mockHighlight).toHaveBeenCalledTimes(2);
+  });
+
+  it('reuses a restored block and reads a replacement highlighter without an observer', () => {
+    mockHighlight.mockReturnValue(
+      highlightResult(highlightText('const', ['keyword']))
+    );
+    editor.update.value.replace({
+      children: [
+        {
+          children: [{ text: 'const x = 1;' }],
+          language: 'javascript',
+          type: 'codeBlock',
+        },
+        { children: [{ text: 'tail' }], type: 'paragraph' },
+      ],
+      selection: null,
+    });
+    const [source] = getPlateDecorationSources(editor);
+    const read = () =>
+      source.read({ editor, entry: editor.read.nodes.get([0])! });
+    const before = read();
+    editor.update.nodes.remove({ at: [0] });
+    editor.api.history.undo();
+    // Undo restores the same block object, so its highlighting is reused.
+    expect(read()).toBe(before);
+    expect(mockHighlight).toHaveBeenCalledTimes(1);
+    const highlight = mock(() =>
+      highlightResult(highlightText('const', ['replacement']))
+    );
+
+    editor
+      .plugin(BaseCodeHighlightPlugin)
+      .store.set({ lowlight: { ...mockLowlight, highlight } });
+    expect(read()[0].attributes.className).toBe('replacement');
+    expect(highlight).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns empty decorations for plaintext language', () => {
+    // Create a code block with plaintext
+    const codeBlock: CodeBlockElement = {
+      children: [{ text: 'const x = 1;' }],
+      language: 'plaintext',
+      type: 'codeBlock',
+    };
+
+    const blockPath = [0];
+    const result = getDecorations(editor, [codeBlock, blockPath]);
+
+    expect(result).toEqual([]);
+
+    // Lowlight highlight should not be called
+    expect(mockHighlight).not.toHaveBeenCalled();
+    expect(mockHighlightAuto).not.toHaveBeenCalled();
+  });
+
+  it('returns decorations for specified language', () => {
+    // Mock highlight result
+    mockHighlight.mockReturnValue(
+      highlightResult(
+        highlightText('const', ['token', 'keyword']),
+        highlightText(' x = '),
+        highlightText('1', ['token', 'number']),
+        highlightText(';')
+      )
+    );
+
+    // Create a code block with JavaScript
+    const codeBlock: CodeBlockElement = {
+      children: [{ text: 'const x = 1;' }],
+      language: 'javascript',
+      type: 'codeBlock',
+    };
+
+    const blockPath = [0];
+    const result = getDecorations(editor, [codeBlock, blockPath]);
+
+    expect(result).toHaveLength(2);
+
+    // Check first decoration (const)
+    expect(result[0]).toMatchObject({
+      attributes: { className: 'token keyword' },
+      range: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 5, path: [0, 0] },
+      },
+    });
+
+    // Check second decoration (number)
+    expect(result[1]).toMatchObject({
+      attributes: { className: 'token number' },
+      range: {
+        anchor: { offset: 10, path: [0, 0] },
+        focus: { offset: 11, path: [0, 0] },
+      },
+    });
+
+    // Lowlight highlight should be called with correct params
+    expect(mockHighlight).toHaveBeenCalledWith('javascript', 'const x = 1;');
+    expect(mockHighlightAuto).not.toHaveBeenCalled();
+  });
+
+  it('reads the supplied Python grammar without mutating its registry', () => {
+    mockHighlight.mockReturnValue(
+      highlightResult(
+        highlightText('# Python class with type hints', ['hljs-comment'])
+      )
+    );
+
+    const codeBlock: CodeBlockElement = {
+      children: [{ text: '# Python class with type hints' }],
+      language: 'python',
+      type: 'codeBlock',
+    };
+
+    const result = getDecorations(editor, [codeBlock, [0]]);
+
+    expect(result[0]).toMatchObject({
+      attributes: { className: 'hljs-comment', 'data-code-block-syntax': '' },
+    });
+    expect(mockRegister).not.toHaveBeenCalled();
+    expect(mockRegisterAlias).not.toHaveBeenCalled();
+    expect(mockHighlight).toHaveBeenCalledWith(
+      'python',
+      '# Python class with type hints'
+    );
+  });
+
+  it('use auto detection when language is "auto"', () => {
+    // Mock highlight auto result
+    mockHighlightAuto.mockReturnValue(
+      highlightResult(highlightText('const x = 1;'))
+    );
+
+    // Create a code block with auto language
+    const codeBlock: CodeBlockElement = {
+      children: [{ text: 'const x = 1;' }],
+      language: 'auto',
+      type: 'codeBlock',
+    };
+
+    const blockPath = [0];
+    getDecorations(editor, [codeBlock, blockPath]);
+
+    // Lowlight highlightAuto should be called with correct params
+    expect(mockHighlightAuto).toHaveBeenCalledWith('const x = 1;');
+    expect(mockHighlight).not.toHaveBeenCalled();
+  });
+
+  it('use default language when no language is specified', () => {
+    // Mock highlight result
+    mockHighlight.mockReturnValue(
+      highlightResult(highlightText('const x = 1;'))
+    );
+
+    // Create a code block with no language
+    const codeBlock: CodeBlockElement = {
+      children: [{ text: 'const x = 1;' }],
+      type: 'codeBlock',
+    };
+
+    const blockPath = [0];
+    getDecorations(editor, [codeBlock, blockPath]);
+
+    // Lowlight highlight should be called with default language
+    expect(mockHighlight).toHaveBeenCalledWith('javascript', 'const x = 1;');
+    expect(mockHighlightAuto).not.toHaveBeenCalled();
+  });
+
+  it('handle multiline code blocks', () => {
+    // Mock highlight result for multiline code
+    mockHighlight.mockReturnValue(
+      highlightResult(
+        highlightText('function', ['token', 'keyword']),
+        highlightText(' test() {\n  '),
+        highlightText('return', ['token', 'keyword']),
+        highlightText(' true;\n}')
+      )
+    );
+
+    // Create a multiline code block
+    const codeBlock: CodeBlockElement = {
+      children: [{ text: 'function test() {\n  return true;\n}' }],
+      language: 'javascript',
+      type: 'codeBlock',
+    };
+
+    const blockPath = [0];
+    const result = getDecorations(editor, [codeBlock, blockPath]);
+
+    expect(result).toHaveLength(2);
+    expect(result[1]).toMatchObject({
+      attributes: { className: 'token keyword' },
+      range: {
+        anchor: { offset: 20, path: [0, 0] },
+        focus: { offset: 26, path: [0, 0] },
+      },
+    });
+  });
+
+  it('warns and falls back to plaintext when a registered language fails to highlight', () => {
+    const error = new Error('boom');
+    mockHighlight.mockImplementation(() => {
+      throw error;
+    });
+
+    const codeBlock: CodeBlockElement = {
+      children: [{ text: 'const x = 1;' }],
+      language: 'javascript',
+      type: 'codeBlock',
+    };
+
+    const result = getDecorations(editor, [codeBlock, [0]]);
+
+    expect(result).toEqual([]);
+    expect(editor.plugin(DebugPlugin).api.error).not.toHaveBeenCalled();
+    expect(editor.plugin(DebugPlugin).api.warn).toHaveBeenCalledWith(
+      'Could not highlight with Highlight.js for language "javascript". Falling back to plaintext',
+      'CODE_HIGHLIGHT',
+      error
+    );
+  });
+
+  it('warns and falls back to plaintext for unregistered languages', () => {
+    const error = new Error('missing');
+    mockListLanguages.mockReturnValue(['javascript']);
+    mockHighlight.mockImplementation(() => {
+      throw error;
+    });
+
+    const codeBlock: CodeBlockElement = {
+      children: [{ text: 'SELECT 1' }],
+      language: 'sql',
+      type: 'codeBlock',
+    };
+
+    const result = getDecorations(editor, [codeBlock, [0]]);
+
+    expect(result).toEqual([]);
+    expect(editor.plugin(DebugPlugin).api.error).not.toHaveBeenCalled();
+    expect(editor.plugin(DebugPlugin).api.warn).toHaveBeenCalledWith(
+      'Language "sql" is not registered. Falling back to plaintext'
+    );
+  });
+});

@@ -1,0 +1,224 @@
+---
+title: Indent
+docs:
+  - route: /docs/components/indent-toolbar-button
+    title: Indent Toolbar Buttons
+---
+
+<ComponentPreview name="indent-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Add indentation to block elements using Tab/Shift+Tab keyboard shortcuts.
+- Apply consistent indentation with customizable offset and units.
+- Injects an `indent` prop into targeted block elements.
+- Support for maximum indentation depth control.
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add indent functionality is with the `IndentKit`, which includes a pre-configured `IndentPlugin` for text, Details, media and other common blocks. Tables are not among them, because a table keeps its own left margin.
+
+<ComponentSource name="indent" />
+
+- Configures paragraph, heading, blockquote, code block, Details, image, audio, video, file, media embed, upload, callout, column group, equation, Excalidraw, horizontal rule and table of contents elements to support the `indent` property, so a Details body that holds them can become a list.
+- Sets a custom offset of `24px` for indentation spacing.
+- Provides Tab/Shift+Tab keyboard shortcuts for indenting and outdenting.
+
+### Add kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createEditor } from "platejs/react";
+import { IndentKit } from "@/components/editor/indent";
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...IndentKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs
+```
+
+### Add plugin
+
+Include `IndentPlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { IndentPlugin } from "platejs/react";
+import { createEditor } from "platejs/react";
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    IndentPlugin,
+  ],
+});
+```
+
+### Configure plugin
+
+You can configure the `IndentPlugin` to target specific elements and customize indentation behavior.
+
+```tsx
+import { IndentPlugin } from "platejs/react";
+import { PLUGINS } from "platejs";
+import { createEditor } from "platejs/react";
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    IndentPlugin.configure({
+      targetPlugins: [
+        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
+        PLUGINS.paragraph,
+        PLUGINS.blockquote,
+      ],
+      inject: {
+        nodeProps: {
+          styleKey: "marginLeft",
+        },
+      },
+      initialState: {
+        offset: 24,
+        unit: "px",
+        indentMax: 10,
+      },
+    }),
+  ],
+});
+```
+
+- `inject.nodeProps.styleKey`: Maps the injected prop to the CSS `marginLeft` property.
+- `targetPlugins`: Element plugin descriptors or dynamic names whose nodes can store indentation.
+- `initialState.offset`: Indentation offset in pixels (default: `24`).
+- `initialState.unit`: Unit for indentation values (default: `'px'`).
+- `initialState.indentMax`: Maximum number of indentations allowed.
+
+### Add toolbar button
+
+You can add [`IndentToolbarButton`](/docs/components/indent-toolbar-button) to your [Toolbar](/docs/toolbar) to control indentation.
+
+</Steps>
+
+## Plugins
+
+### `IndentPlugin`
+
+Plugin for indenting block elements. It injects an `indent` prop into the elements specified by `targetPlugins` and applies `marginLeft` styling.
+
+<API name="IndentPlugin">
+  <APIOptions type="object">
+    <APIItem name="inject.nodeProps.styleKey" type="string" optional>
+      CSS property name for styling. - **Default:** `'marginLeft'`
+    </APIItem>
+    <APIItem name="targetPlugins" type="readonly (PluginReference | string)[]" optional>
+      Element plugin descriptors or dynamic names targeted for indent storage and injection. -
+      **Default:** `[BaseParagraphPlugin]`
+    </APIItem>
+    <APIItem name="initialState.offset" type="number" optional>
+      Indentation offset used in `(offset * element.indent) + unit`. -
+      **Default:** `24`
+    </APIItem>
+    <APIItem name="initialState.unit" type="string" optional>
+      Indentation unit used in `(offset * element.indent) + unit`. -
+      **Default:** `'px'`
+    </APIItem>
+    <APIItem name="initialState.indentMax" type="number" optional>
+      Maximum number of indentations allowed.
+    </APIItem>
+  </APIOptions>
+</API>
+
+## API
+
+### `editor.plugin(IndentPlugin).update.increase`
+
+Indents the selected block(s) in the editor.
+
+<API name="increase">
+  <APIOptions type="IndentChangeOptions" optional>
+    Options for indenting blocks.
+  </APIOptions>
+</API>
+
+### `editor.plugin(IndentPlugin).update.decrease`
+
+Decreases the indentation of the selected blocks.
+
+<API name="decrease">
+  <APIOptions type="IndentChangeOptions" optional>
+    Options for outdenting blocks.
+  </APIOptions>
+</API>
+
+## Types
+
+### `IndentChangeOptions`
+
+Used to provide options for setting the indentation of a block of text.
+
+<API name="IndentChangeOptions">
+  <APIOptions>
+    <APIItem name="nodes" type="EditorNodesOptions<Element>" optional>
+      Node query and update options. `match` may further restrict target blocks.
+    </APIItem>
+  </APIOptions>
+</API>
+
+## Toolbar buttons
+
+Toolbar components call the descriptor-scoped updates directly:
+
+```tsx
+import { IndentPlugin, useEditor } from 'platejs/react';
+
+const editor = useEditor();
+const { update } = editor.plugin(IndentPlugin);
+
+<>
+  <ToolbarButton onClick={() => update.increase()}>Indent</ToolbarButton>
+  <ToolbarButton onClick={() => update.decrease()}>Outdent</ToolbarButton>
+</>
+```
+
+## First-line indent
+
+`TextIndentPlugin` indents only a block's first line. It stores a step count in `textIndent` and draws CSS `text-indent` as `offset * textIndent + unit`, so a negative count is a hanging indent. No kit installs it, so add it yourself:
+
+```tsx
+import { TextIndentPlugin } from "platejs/react";
+import { createEditor } from "platejs/react";
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    TextIndentPlugin,
+  ],
+});
+
+editor.update.textIndent.set(1);
+editor.update.textIndent.clear({ at: [] });
+```
+
+`set(value, options?)` saves the count on matching target blocks, and `clear(options?)` removes it. Both take Plate node update options for the target range and matcher. The plugin targets paragraphs unless you pass `targetPlugins`. `initialState.offset` and `initialState.unit` set the step size, `24` and `'px'` by default. Word export writes the count as a first-line indent, or a hanging indent when negative, and skips it on list paragraphs.

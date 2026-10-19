@@ -1,0 +1,522 @@
+---
+description: Sync Plate registry UI into downstream apps with fork-aware comparison, scoped apply and changelog tracking.
+argument-hint: '[status | plan | review | dashboard | apply] <target> [scope]'
+name: sync-plate-ui
+metadata:
+  skiller:
+    source: .agents/rules/sync-plate-ui.mdc
+---
+
+# Sync Plate UI
+
+Handle $ARGUMENTS.
+
+Goal: sync Plate UI registry components from this repo into a downstream app
+without flattening that app's product forks. The workflow reads Plate registry
+source, generated changelog JSON, and downstream local files; classifies
+upstream-owned versus target-owned hunks; writes reviewable artifacts; then
+applies only accepted sync rows.
+
+This is not `sync-shadcn`. `sync-shadcn` compares upstream shadcn docs with
+Plate docs. `sync-plate-ui` compares Plate UI registry source with a target app
+that copied and customized Plate UI, such as `../potion`.
+
+This skill is consumer-side only. It reads generated Plate UI changelog JSON;
+it does not create upstream Plate changelog entries. Upstream Plate devs author
+those through `changeset` and
+`apps/www/src/registry/changelog/entries/*.mdx`.
+
+## Core Take
+
+Downstream Plate UI files are usually mixed ownership. One hunk can be a local
+product fork, the next hunk can be a Plate bugfix the target should receive.
+Never treat an entire file as forked or safe to overwrite unless the source
+evidence proves it.
+
+The right model is a three-way sync:
+
+- `base`: the last Plate UI source known to be applied to the target
+- `upstream`: current Plate UI source in this repo
+- `local`: current target repo file
+
+If the base is unknown, run bootstrap planning and stop. Do not pretend an LLM
+can safely reconstruct fork ownership from vibes.
+
+## File-plan contract
+
+Each run keeps its plan at `<target>/.plate-ui-sync/runs/<date>-<scope>/plan.md`;
+read it and the mode before mutation. The plan lists every scoped row as a
+checkbox that closes with its decision or apply evidence. This skill runs in
+downstream apps, so it depends on no Plate-repo workflow file.
+
+## Flow Modes
+
+Planning mode is the default. It may read the target repo and write artifacts
+under the target's `.plate-ui-sync/**`, but it must not mutate target source.
+
+Apply mode needs current user authorization for the named plan, dashboard
+payload, component or rows. Existing authorization is sufficient; do not
+require a later message or reinvocation. Apply only the accepted rows.
+
+Collaborative planning is for policy decisions, such as whether a downstream
+app should keep a local UX fork or follow Plate.
+
+No direct micro-merge exception by default. For downstream product repos,
+"small" is not enough. Exact-match upstream-only files can be applied in apply
+mode without user-by-hunk review, but planning still records the row first.
+
+## Command Parsing
+
+Supported commands:
+
+- `status`: read-only summary of target sync state and likely next step
+- `plan`: write a component or range sync plan
+- `review`: re-audit an existing plan against current Plate and target source
+- `dashboard`: write a review board from open plan rows
+- `apply`: apply accepted rows from a copied dashboard payload or named plan
+
+If the first token is a command, dispatch to that command. Otherwise treat the
+argument as planning scope. Examples:
+
+```txt
+sync-plate-ui ../potion code-block
+sync-plate-ui plan ../potion code-block
+sync-plate-ui status ../potion
+sync-plate-ui apply ../potion
+```
+
+If the target repo is omitted and cannot be inferred from the current working
+directory, ask one focused question. Do not silently choose `../potion` unless
+the user named Potion or the active plan already names it.
+
+## Target State
+
+The target repo owns its sync state:
+
+```txt
+<target>/.plate-ui-sync/status.json
+<target>/.plate-ui-sync/forks/<component>.json
+<target>/.plate-ui-sync/runs/<date>-<scope>/
+<target>/.plate-ui-sync/dashboard.json
+<target>/.plate-ui-sync/dashboard.md
+```
+
+`status.json` tracks what has actually landed:
+
+```json
+{
+  "sourceRepo": "/Users/zbeyens/git/plate",
+  "targetRepo": "/Users/zbeyens/git/potion",
+  "lastReviewedAt": "YYYY-MM-DD",
+  "components": {
+    "code-block": {
+      "lastAppliedPr": 4989,
+      "lastAppliedSourceRef": "<plate-git-sha>",
+      "lastAppliedSourceHash": "<sha256-of-transformed-source>",
+      "targetFiles": ["src/registry/ui/code-block-node.tsx"],
+      "forks": ["toolbar-style"]
+    }
+  }
+}
+```
+
+If `status.json` is missing, bootstrap from direct source evidence:
+
+- target `components.json`
+- target `package.json`
+- target copied registry paths
+- Plate registry item definitions
+- target imports from copied registry files
+- optional user-provided base ref or prior run artifact
+
+Bootstrap mode may write a plan and fork ledger. It must not apply changes until
+the user accepts the baseline.
+
+## Plate Source Inputs
+
+Prefer generated changelog JSON:
+
+```txt
+/registry/changelog/index.json
+/registry/changelog/components.json
+/registry/changelog/<event-id>.json
+```
+
+When working from the local Plate repo, read the same files at
+`apps/www/src/registry/changelog`. `components.json` maps registry item ids to
+event JSON. Each event should expose id, change source, release, affected
+registry items, source files, migration notes, and diagnostics.
+
+If generated JSON is missing or incomplete, treat that as weak evidence. Prove
+the sync from Plate registry source and PR-level or merge-base diffs before
+recommending apply. Prose alone is not enough.
+
+Plate registry sources to inspect first:
+
+- `apps/www/src/registry/registry-editor.ts`
+- `apps/www/src/registry/registry-features.ts`
+- `apps/www/src/registry/registry-examples.ts`
+- `apps/www/src/registry/components/editor/**`
+- `apps/www/src/registry/hooks/**`
+- `apps/www/src/registry/lib/**`
+- `apps/www/src/registry/app/**`
+
+Do not run `build:registry`. Do not edit generated registry output.
+
+Sync list UI through the standard list registry graph. Reject rows that would
+create another persisted list model or copied list UI family.
+
+## Target Mapping
+
+Read target config before path assumptions:
+
+- `components.json`
+- `package.json`
+- lockfile and package manager
+- aliases in `tsconfig.json`
+- copied registry folders, commonly `src/registry/**`
+- app-owned wrappers that import from copied registry files
+
+For Potion-like targets, expect:
+
+- copied Plate UI under `src/registry/**`
+- app-level wrappers under `src/components/**`
+- pinned `platejs` and any `@platejs/cli` or `@platejs/test` tool versions
+- local import aliases that differ from Plate docs
+- existing sync scripts that may be stale
+
+Existing target scripts are evidence, not authority. Audit them before relying
+on them.
+
+## Three-Way Classification
+
+For every component/file row, compute:
+
+```txt
+base -> upstream
+base -> local
+upstream -> local
+```
+
+Apply target transforms before comparing when the target uses different import
+aliases. Record every transform in the plan.
+
+Classify at hunk or symbol level:
+
+- `upstream-only`: Plate changed, local still matches base
+- `local-only`: target fork changed, Plate did not
+- `same-change`: both changed to equivalent result
+- `conflict`: both changed the same area differently
+- `local-delete`: target removed the Plate file or symbol
+- `rename-map`: target renamed the file or export
+- `unknown-base`: no trustworthy base
+
+Never collapse these into a single file-level decision unless every hunk has
+the same classification.
+
+## Decisions
+
+Use these decision labels:
+
+- `pull-upstream`: apply the Plate change to the target
+- `keep-fork`: preserve target-owned behavior
+- `smart-merge`: apply part of Plate while preserving named target behavior
+- `reject-upstream`: do not apply this Plate change to this target
+- `delete-target-residue`: remove obsolete target fork code
+- `package-only`: update package versions without copying UI source
+- `needs-question`: user decision required
+- `no-op`: no target-owned change needed
+
+Every `smart-merge` row must state:
+
+- what comes from Plate
+- what stays target-owned
+- what local tests or source audits prove it
+- what would break if the whole file were overwritten
+
+## Planning Mode
+
+Planning mode may:
+
+- read Plate source
+- read target source
+- create or update target `.plate-ui-sync/**` artifacts
+- write and update the run plan under `.plate-ui-sync/runs/**`
+- write dashboard JSON/Markdown
+
+Planning mode must not:
+
+- patch target source files
+- update target packages or lockfiles
+- run broad generated registry builds
+- mark a component as applied
+- treat a recommendation as user acceptance
+
+Planning artifacts:
+
+```txt
+<run>/plan.md
+<run>/inventory.json
+<run>/inventory.md
+<run>/component-diffs.md
+<run>/target-files.txt
+<run>/decision-counts.json
+```
+
+Do not persist `.patch` files. Inspect focused diffs and summarize the relevant
+hunks.
+
+## Plan Shape
+
+Every plan must include:
+
+```md
+# Sync Plate UI <target> <scope>
+
+## Range
+- Plate source ref
+- target repo
+- component scope
+- changelog entries or fallback evidence
+
+## Target Config
+- package manager
+- registry paths
+- aliases
+- existing sync scripts and whether they are trusted
+
+## Inventory
+| Component | Plate file | Target file | Base | Class | Decision | Evidence |
+
+## Fork Ledger
+| Component | File | Hunk/symbol | Keep/Pull/Ask | Reason |
+
+## Apply Rows
+| Row | Action | Files | Why | Verification |
+
+## Questions
+
+## Verification Plan
+
+## Status Update Rule
+```
+
+## Dashboard Mode
+
+Dashboard mode renders unresolved rows for user review. It writes:
+
+```txt
+<target>/.plate-ui-sync/dashboard.json
+<target>/.plate-ui-sync/dashboard.md
+```
+
+If a target later adds an HTML dashboard script, use it. Do not invent a local
+browser dependency for the first version.
+
+Dashboard rows support these actions:
+
+- `Pull`: apply Plate row
+- `Keep Fork`: preserve target row
+- `Smart Merge`: apply with named fork preservation
+- `Reject`: mark upstream row rejected for this target
+- `Ask`: copy a question-only payload
+
+Copied apply payload:
+
+```md
+$sync-plate-ui apply ../potion
+
+Rows:
+- code-block/4989/language-label: Pull note: safe upstream-only render hunk
+- code-block/4989/toolbar-style: Keep Fork note: Potion toolbar owns layout
+
+Questions:
+- ai-menu/streaming: Should Potion keep its custom stream controls?
+```
+
+Rows mutate state only under `Rows`. Question rows are answered in chat and do
+not mutate structured state.
+
+## Apply Mode
+
+Apply mode may mutate target source only for accepted rows.
+
+Before applying:
+
+1. Re-read the plan and target files.
+2. Recompute the row classification.
+3. Confirm the row is still valid against current Plate and target source.
+4. Record target package manager and verification commands.
+
+Apply rules:
+
+- `pull-upstream`: copy or patch the upstream hunk after target transforms.
+- `keep-fork`: update fork ledger only; do not change target source unless the
+  accepted row asks to harden the fork.
+- `smart-merge`: patch only the named Plate-owned hunks and preserve named
+  target-owned hunks.
+- `reject-upstream`: record the rejection with reason.
+- `delete-target-residue`: delete only named obsolete target code.
+- `package-only`: update target package versions with the target package
+  manager and lockfile.
+
+Never overwrite a whole target file unless all of these are true:
+
+- every local hunk still matches base after transforms
+- the target file has no local-only hunks
+- the plan marks the row `pull-upstream`
+- the accepted payload names that file or component
+
+After applying:
+
+- update `.plate-ui-sync/status.json`
+- update fork ledgers
+- run focused target verification
+- record verification in the run plan
+- leave unrelated target files alone
+
+## Status Mode
+
+Status mode is read-only. It summarizes:
+
+- target repo and detected registry paths
+- current Plate source ref if available
+- known component sync state
+- open fork decisions
+- stale or missing baseline rows
+- recommended next command
+
+Output shape:
+
+```md
+Status: <fresh | needs-plan | stale-source | stale-target | bootstrap-needed | blocked>
+Target: <path>
+Components tracked: <count>
+Open decisions: <count>
+Next: <command>
+```
+
+## Review Mode
+
+Review mode checks whether an existing plan is still true.
+
+It may:
+
+- re-read Plate source
+- re-read target source
+- recompute classifications
+- write `<run>/review.md`
+
+It must not apply changes.
+
+Verdicts:
+
+- `fresh`: plan rows still match current Plate and target source
+- `stale-plate`: Plate source changed since the plan
+- `stale-target`: target files changed since the plan
+- `stale-state`: `.plate-ui-sync/status.json` contradicts the plan
+- `blocked`: a ref/file/base cannot be proven
+
+## Potion Example
+
+Potion is a good stress target because it contains copied registry files under
+`src/registry/**`, app wrappers under `src/components/**`, and pinned Plate
+packages. Its existing `sync:plate` and `sync:potion-ui` scripts must be read
+before use; do not assume they sync Plate UI into Potion.
+
+For `../potion code-block`, inspect at minimum:
+
+- `../potion/components.json`
+- `../potion/package.json`
+- `../potion/src/registry/ui/code-block-node.tsx`
+- `../potion/src/registry/ui/code-block-node-static.tsx`
+- related Potion editor imports
+- Plate `apps/www/src/registry/components/editor/code-block.tsx`
+- Plate `apps/www/src/registry/components/editor/code-block-static.tsx`
+- component changelog entries for `code-block` and related components
+
+Expected result is a plan that says which hunks to pull, which Potion hunks to
+keep, and what verification Potion owns.
+
+## Agent-Native Requirements
+
+The workflow must be agent-actionable:
+
+- commands are discoverable from this skill frontmatter and body
+- component ids, PR ids, file paths, and decision rows are structured
+- apply payloads are copyable from dashboard output
+- target state lives in the target repo, not in chat
+- all mutation rows can be resumed after context loss
+- questions do not mutate state
+- final handoff names exact artifacts and commands
+
+If the component changelog is prose-only, record that as a blocker for perfect
+agent-native sync and fall back to source diffs plus explicit user acceptance.
+
+## Start Gates
+
+Resolve these before broad planning:
+
+- Scope and plan read.
+- Target repo path resolved.
+- Plate source ref recorded, or current checkout recorded as uncommitted source.
+- Target `components.json` and package manager read.
+- Target `.plate-ui-sync/status.json` read or bootstrap mode recorded.
+- Component changelog entry read or fallback evidence recorded.
+- Plate registry item and source files mapped.
+- Target local files mapped.
+- Output budget strategy recorded.
+- Planning versus apply mode decided.
+
+## Completion Gates
+
+Planning completion requires:
+
+- run artifacts written under target `.plate-ui-sync/runs/**`
+- inventory covers every scoped component/file row
+- every row has hunk-level classification or an explicit unknown-base blocker
+- every row has a decision
+- real questions are isolated
+- dashboard artifacts written when requested
+- final handoff identifies pending row decisions; existing apply authority carries through readiness
+- the run plan has no unchecked row without a recorded blocker
+
+Apply completion requires:
+
+- accepted rows revalidated before mutation
+- target source/status/fork ledgers updated only for accepted rows
+- target-owned typecheck, lint and test run, or blocked with evidence
+- browser proof captured whenever an accepted row changes a visible target route
+- package manager and cwd named for every command
+- remaining open decisions recorded
+- the run plan has no unchecked accepted row
+
+## Final Output
+
+Planning output:
+
+```md
+Target: <path>
+Scope: <component/range>
+Plan: <target>/.plate-ui-sync/runs/.../plan.md
+Dashboard: <path or N/A>
+
+| Decision | Count |
+| --- | ---: |
+| pull-upstream | ... |
+| keep-fork | ... |
+| smart-merge | ... |
+| needs-question | ... |
+
+Next: review the plan; accepted rows apply under the existing apply authority without a second invocation.
+```
+
+Apply output:
+
+```md
+Applied: <rows>
+Kept forks: <rows>
+Target verification: <commands/results>
+Open decisions: <count or none>
+Status: <target>/.plate-ui-sync/status.json updated
+```

@@ -1,0 +1,258 @@
+---
+title: Collaboration
+description: Real-time collaboration with Yjs
+toc: true
+---
+
+<ComponentPreview name="collaboration-demo" />
+
+The preview runs two independent editors through a credential-free local room.
+The room owns transport state and seeds its central `Y.Doc` before either editor
+connects. Each editor binds its own `Y.Doc` and awareness instance to Plate.
+
+<PackageInfo>
+
+## Features
+
+- **App-owned transport:** Your app owns Hocuspocus, WebSocket, WebRTC, IndexedDB, authentication, persistence, room names, and provider lifetime.
+- **Explicit readiness:** The binding admits edits only after the app's local or remote document source is ready.
+- **Awareness and cursors:** Yjs Awareness carries cursor locations and validated metadata. The copied cursor component renders selections, carets, and labels.
+- **Multi-root documents:** One Yjs transaction can synchronize primary children, named roots, and root-qualified selections.
+- **Canonical history:** Local and remote changes use the same Plate change path. Plate History records local commits without treating remote imports as local undo entries.
+
+</PackageInfo>
+
+## Manual usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs yjs
+```
+
+Install the provider package that your app uses. For example:
+
+```bash
+npm install @hocuspocus/provider
+```
+
+### Create the provider and readiness adapter
+
+Provider packages stay at the app boundary. The binding receives the provider's
+exact `Y.Doc`, an optional awareness instance for presence, and an explicit
+readiness source. It does not connect, disconnect, or destroy the provider.
+
+This Hocuspocus adapter is local to the app because provider event contracts vary
+by package and version:
+
+```tsx
+import type { HocuspocusProvider } from "@hocuspocus/provider";
+import type { YjsInitialReadiness } from "platejs/yjs";
+
+const createHocuspocusInitialReadiness = (
+  provider: HocuspocusProvider
+): YjsInitialReadiness => ({
+  doc: provider.document,
+  getSnapshot: () => provider.synced,
+  subscribe(listener) {
+    const onSynced = () => listener();
+    provider.on("synced", onSynced);
+
+    let active = true;
+    return () => {
+      if (!active) return;
+      active = false;
+      provider.off("synced", onSynced);
+    };
+  },
+});
+```
+
+`initialReady: true` asserts that local or persistent loading for this document
+generation is already complete. It does not grant permission to initialize an
+empty shared room.
+
+### Add the Plate plugin
+
+Every peer in a room must use the same compiled schema identity. Use a stable
+schema `id` and `version` for persistent rooms. A nonempty room without schema metadata fails closed. A claimed, populated room keeps its schema identity for its lifetime, so run an explicit versioned document migration before any peer joins with a new schema, and bump the schema `version` whenever its semantics change.
+
+```tsx
+import { createEditor } from "platejs/react";
+import { YjsPlugin } from "platejs/yjs/react";
+
+const Collaboration = YjsPlugin.create({
+  doc: provider.document,
+  initialReady: createHocuspocusInitialReadiness(provider),
+  awareness: provider.awareness,
+  rootName: roomId,
+  cursorData: { validate: isCollaborator },
+});
+
+const editor = createEditor({
+  schema: { id: "yjs-example", version: 1 },
+  plugins: [Collaboration],
+  initialValue,
+});
+```
+
+`doc` and `initialReady` are required. If `awareness` is present, its `doc`
+must be the same object as `doc`. Presence methods and cursor hooks are available
+only for bindings that include awareness.
+
+When the editor also records suggestions or comments, pass each collaborator's
+`createEditor({ userId })`. Without one, every collaborator writes as the local
+user, `'local'`, and the editor warns once in development at its first write or
+comment. A solo editor that uses Yjs only for persistence can pass any stable ID.
+A `userId` stays fixed for the editor's life. One live editor binds each
+`rootName` in a `Y.Doc`. An editor from `useCreateEditor` lets go of it when
+its component unmounts or replaces it, so a remount or a new `id` binds the
+same `rootName` again. An editor from `createEditor` holds it until
+`editor.destroy()`.
+
+`rootName` names the whole collaboration document: primary children live at `rootName` and named roots in `${rootName}:roots`, one commit that changes several roots becomes one Yjs transaction and one history batch, and awareness rejects a selection whose anchor and focus sit in different roots.
+
+For a normal server-backed room, persist a canonical Yjs update on the server and
+omit `seed`. Use `seed: true` only when the app has already selected one
+exclusive owner for a new empty room. A synchronized empty replica is not proof
+of seed ownership; multiple seeders can create duplicate content.
+
+### Add the copied cursor UI
+
+```bash
+npx shadcn@latest add @plate/remote-cursor-overlay
+```
+
+The copied component exports a factory so each editor supplies its own binding
+resources and cursor-data validator:
+
+```tsx
+import { CollaborationPlugin } from "@/components/editor/remote-cursor-overlay";
+
+const Collaboration = CollaborationPlugin.create({
+  doc: provider.document,
+  initialReady: createHocuspocusInitialReadiness(provider),
+  awareness: provider.awareness,
+  rootName: roomId,
+  cursorData: { validate: isCollaborator },
+});
+```
+
+`CollaborationPlugin` maps selection styles and an `afterEditable` caret overlay
+onto each Yjs descriptor that it creates. Edit the copied file to customize
+colors, opacity, and labels.
+
+For custom cursor UI, `platejs/yjs/react` exports the hooks the copied component uses: `useYjsRemoteCursorIds(editor)` reads stable membership, `useYjsRemoteCursor(editor, clientId)` reads one cursor, and `useYjsRemoteCursorGeometry(editor, clientId, { editableRef })` reads its geometry in that exact view.
+
+To paint remote selections yourself, read the current snapshot with `editor.api.yjs.remoteCursors()` and invalidate that paint with `editor.api.yjs.subscribeRemoteCursors(listener)`, which fires only when resolved remote cursors change. Its cleanup is idempotent; retire it with the owning view.
+
+### Gate the editable on admission
+
+Read provider connection state from the provider itself. Use the Yjs admission
+hook for the document binding state:
+
+```tsx
+import { useYjsAdmissionStatus } from "platejs/yjs/react";
+
+const status = useYjsAdmissionStatus(editor);
+
+return (
+  <Editor
+    readOnly={status.state !== "ready"}
+    aria-busy={status.state === "waiting"}
+  />
+);
+```
+
+Render the `error` status in your application UI and offer a retry after its
+underlying cause is fixed:
+
+```tsx
+if (status.state === "error") {
+  return <button onClick={() => editor.api.yjs.retryImport()}>Retry</button>;
+}
+```
+
+The UI gate prevents confusing input. The binding also rejects document commits
+before publication while admission is waiting or failed.
+
+### Publish presence and control the provider
+
+```tsx
+editor.api.yjs.setCursorData({ name: "Ada", color: "#7c3aed" });
+
+const disconnect = () => {
+  editor.api.yjs.clearSelection();
+  provider.disconnect();
+};
+
+const reconnect = async () => {
+  await provider.connect();
+  if (editor.api.yjs.admissionStatus().state === "ready") {
+    editor.api.yjs.syncSelection();
+  }
+};
+```
+
+Selection publication reads the current mounted editor view. `clearSelection()`
+withdraws that view's selection before a shared provider detaches. Provider
+status, errors, and cleanup remain app-owned. Initial admission publishes the
+current selection automatically; the explicit reconnect call applies to an
+already admitted binding.
+
+</Steps>
+
+## Shared effects and compaction
+
+Every standalone shared effect declares `collabReplay`: `"live"` for an event delivered once to active peers, or `"latest"` only for an absolute, idempotent value that defines `collabSnapshot(state)`. A `"live"` effect is never the only source of durable shared state. For long sessions, give one stable `sharedEffectCompaction.authorityId` per collaboration document; it checkpoints once every live recipient acknowledges, late joiners restore `"latest"` values and never replay expired `"live"` events, and `editor.api.yjs.retireSharedEffectPeer(clientId)` releases a peer the host knows is permanently gone. A different `sharedEffectCompaction.authorityId` for the same collaboration document is rejected; transfer compaction authority only through an explicit host-fenced document migration.
+
+## Ownership
+
+| Concern                                                       | Owner                                    |
+| ------------------------------------------------------------- | ---------------------------------------- |
+| `Y.Doc`, readiness, and seed authority                        | App                                      |
+| Provider connection, authentication, persistence, and cleanup | App                                      |
+| Document admission and Yjs translation                        | `platejs/yjs`                            |
+| Cursor metadata and remote cursor snapshots                   | `platejs/yjs` when awareness is supplied |
+| Selection, editing, and undo/redo                             | `platejs` and `platejs/history`          |
+| Cursor presentation                                           | Copied `remote-cursor-overlay` component |
+
+## Backends
+
+### Hocuspocus
+
+Create `HocuspocusProvider` in app code, pass `provider.document` and
+`provider.awareness` to the plugin, and keep its server URL, token, room name,
+connection state, and destruction beside the provider.
+
+### WebRTC
+
+Create the `y-webrtc` provider in app code and pass its exact document and
+awareness objects to the binding. Production signaling and TURN infrastructure
+remain app concerns.
+
+### IndexedDB
+
+Use `y-indexeddb` to restore the `Y.Doc` before declaring initial readiness.
+IndexedDB does not provide remote awareness or cursor transport by itself.
+
+## Troubleshooting
+
+- Verify that `awareness.doc === doc`.
+- Verify every collaborator uses the same Yjs root name and Plate schema identity.
+- Keep provider connection and authentication errors visible in app UI or logs.
+- Give `seed: true` to one app-selected owner only.
+- Clear selection before detaching a view from a shared provider.
+- Render admission errors and call `retryImport()` only after fixing their cause.
+
+## Related
+
+- [History](/docs/history)
+- [Yjs](https://github.com/yjs/yjs)
+- [Hocuspocus](https://tiptap.dev/hocuspocus)
+- [y-webrtc](https://github.com/yjs/y-webrtc)
+- [y-indexeddb](https://github.com/yjs/y-indexeddb)
+- [Collaboration example](/docs/examples/collaboration-example)
+- [Editor](/docs/editor)

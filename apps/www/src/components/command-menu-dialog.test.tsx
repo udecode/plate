@@ -1,0 +1,300 @@
+import {
+  afterAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+  spyOn,
+} from 'bun:test';
+
+import { fireEvent, render, waitFor } from '@testing-library/react';
+import * as React from 'react';
+
+const pushMock = mock(() => {});
+const setDocsSearchMock = mock(() => {});
+let docsSearchMockState: {
+  data:
+    | 'empty'
+    | Array<{
+        content: string;
+        id: string;
+        type: string;
+        url: string;
+      }>;
+  isLoading: boolean;
+  search: string;
+} = {
+  data: 'empty',
+  isLoading: false,
+  search: '',
+};
+
+mock.module('next/navigation', () => ({
+  useRouter: () => ({
+    push: pushMock,
+  }),
+}));
+
+mock.module('next-themes', () => ({
+  useTheme: () => ({
+    setTheme: mock(() => {}),
+  }),
+}));
+
+mock.module('@/hooks/useLocale', () => ({
+  useLocale: () => 'en',
+}));
+
+mock.module('@/hooks/use-mutation-observer', () => ({
+  useMutationObserver: () => {},
+}));
+
+mock.module('fumadocs-core/search/client', () => ({
+  useDocsSearch: () => ({
+    query: {
+      data: docsSearchMockState.data,
+      isLoading: docsSearchMockState.isLoading,
+    },
+    search: docsSearchMockState.search,
+    setSearch: setDocsSearchMock,
+  }),
+}));
+
+describe('CommandMenuDialog search ordering', () => {
+  afterAll(() => {
+    mock.restore();
+  });
+
+  beforeEach(() => {
+    docsSearchMockState = {
+      data: 'empty',
+      isLoading: false,
+      search: '',
+    };
+    pushMock.mockClear();
+    setDocsSearchMock.mockClear();
+  });
+
+  it('keeps distinct command entries that share a documentation route', async () => {
+    const consoleError = spyOn(console, 'error').mockImplementation(() => {});
+    const { CommandMenuDialog } = await import('./command-menu-dialog');
+
+    try {
+      const view = render(
+        <CommandMenuDialog
+          isPlateDocsHref={() => true}
+          navItems={[]}
+          open
+          sidebarNav={[
+            {
+              items: [
+                {
+                  href: '/docs/components/fixed-toolbar',
+                  title: 'Fixed Toolbar Buttons',
+                },
+                {
+                  href: '/docs/components/fixed-toolbar',
+                  title: 'Fixed Toolbar',
+                },
+              ],
+              title: 'Components',
+            },
+          ]}
+          onOpenChange={mock(() => {})}
+        />
+      );
+
+      await waitFor(() => {
+        expect(view.getByText('Fixed Toolbar Buttons')).toBeTruthy();
+        expect(view.getByText('Fixed Toolbar')).toBeTruthy();
+      });
+
+      const duplicateKeyErrors = consoleError.mock.calls.filter((args) =>
+        args.some((argument) => String(argument).includes('same key'))
+      );
+
+      expect(duplicateKeyErrors).toEqual([]);
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
+  it('renders static command results before dynamic API reference results', async () => {
+    const { CommandMenuDialog } = await import('./command-menu-dialog');
+    docsSearchMockState = {
+      data: [
+        {
+          content: 'Static API Reference Result',
+          id: 'editor-api',
+          type: 'heading',
+          url: '/docs/api/editor-transforms#insertnode',
+        },
+      ],
+      isLoading: false,
+      search: 'static',
+    };
+
+    const view = render(
+      <CommandMenuDialog
+        isPlateDocsHref={() => true}
+        navItems={[
+          {
+            href: '/docs/static',
+            title: 'Static Rendering',
+          },
+        ]}
+        open
+        sidebarNav={[]}
+        onOpenChange={mock(() => {})}
+      />
+    );
+
+    const staticResult = view.getByText('Static Rendering');
+
+    await waitFor(() => {
+      expect(view.getByText('API Reference')).toBeTruthy();
+    });
+
+    const dynamicApiGroup = view.getByText('API Reference');
+
+    expect(
+      staticResult.compareDocumentPosition(dynamicApiGroup) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('renders highlighted Markdown as inline content and selects its result', async () => {
+    const { CommandMenuDialog } = await import('./command-menu-dialog');
+    docsSearchMockState = {
+      data: [
+        {
+          content:
+            'Handle <mark>Duplicate</mark> **Definitions** with `editor.read` and [references](/docs/footnote)',
+          id: 'footnote-duplicates',
+          type: 'heading',
+          url: '/docs/footnote#handle-duplicate-definitions',
+        },
+      ],
+      isLoading: false,
+      search: 'duplicate',
+    };
+    const onOpenChange = mock(() => {});
+    const view = render(
+      <CommandMenuDialog
+        isPlateDocsHref={() => true}
+        navItems={[]}
+        open
+        sidebarNav={[]}
+        onOpenChange={onOpenChange}
+      />
+    );
+
+    const result = await view.findByRole('option', {
+      name: 'Handle Duplicate Definitions with editor.read and references',
+    });
+    expect(result.querySelector('mark')?.textContent).toBe('Duplicate');
+    expect(result.querySelector('strong')?.textContent).toBe('Definitions');
+    expect(result.querySelector('code')?.textContent).toBe('editor.read');
+    expect(result.querySelector('a')).toBeNull();
+    fireEvent.click(result);
+    expect(pushMock).toHaveBeenCalledWith(
+      '/docs/footnote#handle-duplicate-definitions'
+    );
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('keeps the first static match selected when docs search results appear', async () => {
+    const { CommandMenuDialog } = await import('./command-menu-dialog');
+
+    const view = render(
+      <CommandMenuDialog
+        isPlateDocsHref={() => true}
+        navItems={[
+          {
+            href: '/docs/list',
+            title: 'List',
+          },
+        ]}
+        open
+        sidebarNav={[
+          {
+            items: [
+              {
+                href: '/docs/components/list-toolbar-button',
+                title: 'List Toolbar Button',
+              },
+            ],
+            title: 'Components',
+          },
+        ]}
+        onOpenChange={mock(() => {})}
+      />
+    );
+
+    const list = document.querySelector<HTMLElement>('[cmdk-list]');
+
+    expect(list).toBeTruthy();
+
+    if (list) {
+      list.scrollTop = 160;
+    }
+
+    docsSearchMockState = {
+      data: [
+        {
+          content: 'A Path is a list of indexes.',
+          id: 'path-list',
+          type: 'text',
+          url: '/docs/api/path',
+        },
+        {
+          content: 'Static API Reference Result',
+          id: 'editor-api',
+          type: 'heading',
+          url: '/docs/api/editor-transforms#insertnode',
+        },
+      ],
+      isLoading: false,
+      search: 'list',
+    };
+
+    view.rerender(
+      <CommandMenuDialog
+        isPlateDocsHref={() => true}
+        navItems={[
+          {
+            href: '/docs/list',
+            title: 'List',
+          },
+        ]}
+        open
+        sidebarNav={[
+          {
+            items: [
+              {
+                href: '/docs/components/list-toolbar-button',
+                title: 'List Toolbar Button',
+              },
+            ],
+            title: 'Components',
+          },
+        ]}
+        onOpenChange={mock(() => {})}
+      />
+    );
+
+    await waitFor(() => {
+      expect(view.getByText('A Path is a list of indexes.')).toBeTruthy();
+    });
+
+    await waitFor(() => {
+      const selectedItem = document.querySelector(
+        '[cmdk-item][aria-selected="true"]'
+      );
+
+      expect(selectedItem?.textContent).toContain('List');
+      expect(list?.scrollTop).toBe(0);
+    });
+  });
+});

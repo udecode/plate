@@ -1,0 +1,24 @@
+{
+  "name": "prosekit",
+  "capturedAt": "2026-09-09T18:01:11.202Z",
+  "head": "3fbfe7906c3448328e80c1c1333647d08e50907e",
+  "clean": true,
+  "source": "/Users/zbeyens/git/prosekit",
+  "mode": "fresh full inventory with classifications retained only after exact source-pin and full file-set agreement",
+  "fileCount": 179,
+  "classifiedCount": 179,
+  "unknownCount": 0,
+  "parseErrors": [],
+  "testCallSites": 538,
+  "suiteCallSites": 121,
+  "categories": {
+    "plate-owned": 110,
+    "portable-mixed": 23,
+    "harness": 27,
+    "skip": 15,
+    "product-shell": 4
+  },
+  "sourceFingerprint": "0194b32135ea89d3acb68483be652ffc83ccc6c9cd4e97e1f1fb17e2597398fc",
+  "behaviorExtraction": "docs/editor-test-harvester/prosekit/report.md",
+  "executionStatus": "inventory only; no new upstream runtime test execution claimed"
+}

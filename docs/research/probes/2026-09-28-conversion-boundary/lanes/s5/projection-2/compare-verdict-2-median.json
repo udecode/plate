@@ -1,0 +1,466 @@
+[
+  {
+    "cell": "ai-cjk-10000",
+    "a": {
+      "splice": 58.7,
+      "projection": 59,
+      "rawDeltaPercent": 0.5,
+      "baselineDriftPercent": -0.2,
+      "ratioToBaseline": {
+        "splice": 0.157,
+        "projection": 0.157
+      },
+      "normalizedDeltaPercent": 0
+    },
+    "b": {
+      "splice": 199.5,
+      "projection": 40.9,
+      "rawDeltaPercent": -79.5,
+      "baselineDriftPercent": 4.3,
+      "ratioToBaseline": {
+        "splice": 0.154,
+        "projection": 0.03
+      },
+      "normalizedDeltaPercent": -80.5
+    },
+    "c": {
+      "splice": 2352.2,
+      "projection": 2033.1,
+      "rawDeltaPercent": -13.6,
+      "baselineDriftPercent": 4.1,
+      "ratioToBaseline": {
+        "splice": 1.005,
+        "projection": 0.833
+      },
+      "normalizedDeltaPercent": -17.1
+    },
+    "busy": {
+      "splice": 3095.7,
+      "projection": 2609.3,
+      "rawDeltaPercent": -15.7,
+      "baselineDriftPercent": 4.8,
+      "ratioToBaseline": {
+        "splice": 0.676,
+        "projection": 0.543
+      },
+      "normalizedDeltaPercent": -19.7
+    },
+    "final": {
+      "splice": 154.9,
+      "projection": 129.3,
+      "rawDeltaPercent": -16.5,
+      "baselineDriftPercent": 5.6,
+      "ratioToBaseline": {
+        "splice": 0.702,
+        "projection": 0.557
+      },
+      "normalizedDeltaPercent": -20.7
+    }
+  },
+  {
+    "cell": "ai-cjk-50000",
+    "a": {
+      "splice": 331,
+      "projection": 304.5,
+      "rawDeltaPercent": -8,
+      "baselineDriftPercent": 4.1,
+      "ratioToBaseline": {
+        "splice": 0.044,
+        "projection": 0.038
+      },
+      "normalizedDeltaPercent": -13.6
+    },
+    "b": {
+      "splice": 1034.7,
+      "projection": 228.9,
+      "rawDeltaPercent": -77.9,
+      "baselineDriftPercent": 4,
+      "ratioToBaseline": {
+        "splice": 0.037,
+        "projection": 0.008
+      },
+      "normalizedDeltaPercent": -78.4
+    },
+    "c": {
+      "splice": 50109.9,
+      "projection": 43941.5,
+      "rawDeltaPercent": -12.3,
+      "baselineDriftPercent": 0.1,
+      "ratioToBaseline": {
+        "splice": 0.994,
+        "projection": 0.868
+      },
+      "normalizedDeltaPercent": -12.7
+    },
+    "busy": {
+      "splice": 57130.2,
+      "projection": 49353.1,
+      "rawDeltaPercent": -13.6,
+      "baselineDriftPercent": 3,
+      "ratioToBaseline": {
+        "splice": 0.601,
+        "projection": 0.507
+      },
+      "normalizedDeltaPercent": -15.6
+    },
+    "final": {
+      "splice": 684.4,
+      "projection": 581.2,
+      "rawDeltaPercent": -15.1,
+      "baselineDriftPercent": 11.2,
+      "ratioToBaseline": {
+        "splice": 0.663,
+        "projection": 0.523
+      },
+      "normalizedDeltaPercent": -21.1
+    }
+  },
+  {
+    "cell": "ai-rich-10000",
+    "a": {
+      "splice": 48.1,
+      "projection": 45.6,
+      "rawDeltaPercent": -5.2,
+      "baselineDriftPercent": -4.3,
+      "ratioToBaseline": {
+        "splice": 0.196,
+        "projection": 0.195
+      },
+      "normalizedDeltaPercent": -0.5
+    },
+    "b": {
+      "splice": 132,
+      "projection": 23.7,
+      "rawDeltaPercent": -82,
+      "baselineDriftPercent": 5.6,
+      "ratioToBaseline": {
+        "splice": 0.176,
+        "projection": 0.03
+      },
+      "normalizedDeltaPercent": -83
+    },
+    "c": {
+      "splice": 1273.1,
+      "projection": 1102.5,
+      "rawDeltaPercent": -13.4,
+      "baselineDriftPercent": 3.9,
+      "ratioToBaseline": {
+        "splice": 1.033,
+        "projection": 0.855
+      },
+      "normalizedDeltaPercent": -17.2
+    },
+    "busy": {
+      "splice": 1757.6,
+      "projection": 1509,
+      "rawDeltaPercent": -14.1,
+      "baselineDriftPercent": 6.1,
+      "ratioToBaseline": {
+        "splice": 0.679,
+        "projection": 0.551
+      },
+      "normalizedDeltaPercent": -18.9
+    },
+    "final": {
+      "splice": 84.1,
+      "projection": 71.9,
+      "rawDeltaPercent": -14.5,
+      "baselineDriftPercent": 6.7,
+      "ratioToBaseline": {
+        "splice": 0.658,
+        "projection": 0.528
+      },
+      "normalizedDeltaPercent": -19.8
+    }
+  },
+  {
+    "cell": "ai-rich-50000",
+    "a": {
+      "splice": 282.9,
+      "projection": 234.1,
+      "rawDeltaPercent": -17.2,
+      "baselineDriftPercent": 4.2,
+      "ratioToBaseline": {
+        "splice": 0.059,
+        "projection": 0.047
+      },
+      "normalizedDeltaPercent": -20.3
+    },
+    "b": {
+      "splice": 585.6,
+      "projection": 193.9,
+      "rawDeltaPercent": -66.9,
+      "baselineDriftPercent": 4,
+      "ratioToBaseline": {
+        "splice": 0.04,
+        "projection": 0.013
+      },
+      "normalizedDeltaPercent": -67.5
+    },
+    "c": {
+      "splice": 25728,
+      "projection": 22457.8,
+      "rawDeltaPercent": -12.7,
+      "baselineDriftPercent": 3.7,
+      "ratioToBaseline": {
+        "splice": 1.021,
+        "projection": 0.863
+      },
+      "normalizedDeltaPercent": -15.5
+    },
+    "busy": {
+      "splice": 29810.5,
+      "projection": 25976.4,
+      "rawDeltaPercent": -12.9,
+      "baselineDriftPercent": 5.5,
+      "ratioToBaseline": {
+        "splice": 0.6,
+        "projection": 0.496
+      },
+      "normalizedDeltaPercent": -17.3
+    },
+    "final": {
+      "splice": 385.4,
+      "projection": 314.8,
+      "rawDeltaPercent": -18.3,
+      "baselineDriftPercent": 1.5,
+      "ratioToBaseline": {
+        "splice": 0.657,
+        "projection": 0.529
+      },
+      "normalizedDeltaPercent": -19.5
+    }
+  },
+  {
+    "cell": "static-cjk-10000",
+    "a": {
+      "splice": 67.2,
+      "projection": 54.1,
+      "rawDeltaPercent": -19.5,
+      "baselineDriftPercent": 12.1,
+      "ratioToBaseline": {
+        "splice": 0.212,
+        "projection": 0.148
+      },
+      "normalizedDeltaPercent": -30.2
+    },
+    "b": {
+      "splice": 139.3,
+      "projection": 22.6,
+      "rawDeltaPercent": -83.8,
+      "baselineDriftPercent": 2.3,
+      "ratioToBaseline": {
+        "splice": 0.116,
+        "projection": 0.018
+      },
+      "normalizedDeltaPercent": -84.5
+    },
+    "c": {
+      "splice": 2136.2,
+      "projection": 1868.7,
+      "rawDeltaPercent": -12.5,
+      "baselineDriftPercent": 3.7,
+      "ratioToBaseline": {
+        "splice": 1.015,
+        "projection": 0.864
+      },
+      "normalizedDeltaPercent": -14.9
+    },
+    "busy": {
+      "splice": 2808.1,
+      "projection": 2530,
+      "rawDeltaPercent": -9.9,
+      "baselineDriftPercent": 6.1,
+      "ratioToBaseline": {
+        "splice": 0.663,
+        "projection": 0.562
+      },
+      "normalizedDeltaPercent": -15.2
+    },
+    "final": {
+      "splice": 110,
+      "projection": 94.3,
+      "rawDeltaPercent": -14.3,
+      "baselineDriftPercent": 6.2,
+      "ratioToBaseline": {
+        "splice": 0.632,
+        "projection": 0.513
+      },
+      "normalizedDeltaPercent": -18.8
+    }
+  },
+  {
+    "cell": "static-cjk-50000",
+    "a": {
+      "splice": 350.5,
+      "projection": 258.7,
+      "rawDeltaPercent": -26.2,
+      "baselineDriftPercent": 3.6,
+      "ratioToBaseline": {
+        "splice": 0.05,
+        "projection": 0.036
+      },
+      "normalizedDeltaPercent": -28
+    },
+    "b": {
+      "splice": 743.4,
+      "projection": 124.6,
+      "rawDeltaPercent": -83.2,
+      "baselineDriftPercent": 2.4,
+      "ratioToBaseline": {
+        "splice": 0.029,
+        "projection": 0.005
+      },
+      "normalizedDeltaPercent": -82.8
+    },
+    "c": {
+      "splice": 46649.7,
+      "projection": 43099.3,
+      "rawDeltaPercent": -7.6,
+      "baselineDriftPercent": 3.7,
+      "ratioToBaseline": {
+        "splice": 0.987,
+        "projection": 0.874
+      },
+      "normalizedDeltaPercent": -11.4
+    },
+    "busy": {
+      "splice": 54837.1,
+      "projection": 49912,
+      "rawDeltaPercent": -9,
+      "baselineDriftPercent": 4.1,
+      "ratioToBaseline": {
+        "splice": 0.611,
+        "projection": 0.527
+      },
+      "normalizedDeltaPercent": -13.7
+    },
+    "final": {
+      "splice": 502.7,
+      "projection": 450.5,
+      "rawDeltaPercent": -10.4,
+      "baselineDriftPercent": 0.9,
+      "ratioToBaseline": {
+        "splice": 0.608,
+        "projection": 0.541
+      },
+      "normalizedDeltaPercent": -11
+    }
+  },
+  {
+    "cell": "static-rich-10000",
+    "a": {
+      "splice": 42.5,
+      "projection": 42.7,
+      "rawDeltaPercent": 0.5,
+      "baselineDriftPercent": 5.4,
+      "ratioToBaseline": {
+        "splice": 0.202,
+        "projection": 0.2
+      },
+      "normalizedDeltaPercent": -1
+    },
+    "b": {
+      "splice": 93.8,
+      "projection": 24.3,
+      "rawDeltaPercent": -74.1,
+      "baselineDriftPercent": 1.9,
+      "ratioToBaseline": {
+        "splice": 0.148,
+        "projection": 0.037
+      },
+      "normalizedDeltaPercent": -75
+    },
+    "c": {
+      "splice": 1121.8,
+      "projection": 998.8,
+      "rawDeltaPercent": -11,
+      "baselineDriftPercent": 0.5,
+      "ratioToBaseline": {
+        "splice": 1.003,
+        "projection": 0.898
+      },
+      "normalizedDeltaPercent": -10.5
+    },
+    "busy": {
+      "splice": 1569.4,
+      "projection": 1489.6,
+      "rawDeltaPercent": -5.1,
+      "baselineDriftPercent": 6.4,
+      "ratioToBaseline": {
+        "splice": 0.678,
+        "projection": 0.602
+      },
+      "normalizedDeltaPercent": -11.2
+    },
+    "final": {
+      "splice": 54.3,
+      "projection": 48.5,
+      "rawDeltaPercent": -10.7,
+      "baselineDriftPercent": 2.1,
+      "ratioToBaseline": {
+        "splice": 0.566,
+        "projection": 0.5
+      },
+      "normalizedDeltaPercent": -11.7
+    }
+  },
+  {
+    "cell": "static-rich-50000",
+    "a": {
+      "splice": 273.8,
+      "projection": 193.1,
+      "rawDeltaPercent": -29.5,
+      "baselineDriftPercent": 6.1,
+      "ratioToBaseline": {
+        "splice": 0.063,
+        "projection": 0.043
+      },
+      "normalizedDeltaPercent": -31.7
+    },
+    "b": {
+      "splice": 439.9,
+      "projection": 131.4,
+      "rawDeltaPercent": -70.1,
+      "baselineDriftPercent": 5.2,
+      "ratioToBaseline": {
+        "splice": 0.033,
+        "projection": 0.01
+      },
+      "normalizedDeltaPercent": -69.7
+    },
+    "c": {
+      "splice": 24218.2,
+      "projection": 22627.7,
+      "rawDeltaPercent": -6.6,
+      "baselineDriftPercent": 7.1,
+      "ratioToBaseline": {
+        "splice": 0.996,
+        "projection": 0.869
+      },
+      "normalizedDeltaPercent": -12.8
+    },
+    "busy": {
+      "splice": 28783.5,
+      "projection": 27431.5,
+      "rawDeltaPercent": -4.7,
+      "baselineDriftPercent": 9.4,
+      "ratioToBaseline": {
+        "splice": 0.614,
+        "projection": 0.535
+      },
+      "normalizedDeltaPercent": -12.9
+    },
+    "final": {
+      "splice": 247.4,
+      "projection": 226.5,
+      "rawDeltaPercent": -8.4,
+      "baselineDriftPercent": 6.9,
+      "ratioToBaseline": {
+        "splice": 0.591,
+        "projection": 0.505
+      },
+      "normalizedDeltaPercent": -14.6
+    }
+  }
+]

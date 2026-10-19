@@ -1,0 +1,5 @@
+chromium: Total: 386 tests in 10 files
+firefox: Total: 386 tests in 10 files
+mobile: Total: 386 tests in 10 files
+webkit: Total: 386 tests in 10 files
+mobile-webkit (matcher widened for this proof): Total: 386 tests in 10 files

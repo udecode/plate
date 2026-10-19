@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-06-dnd-move-beside",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-06-dnd-move-beside.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-06",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Move a block beside another one from its handle menu",
+  "targets": [
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-06-dnd-move-block-beside-another-b794fc2d",
+      "kind": "new",
+      "summary": "Add Move beside previous and Move beside next to the handle menu, shown when the editor admits a side drop, such as with columns installed. A drop on a block's right edge paints a vertical indicator.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-06",
+          "entry": "2026-10-06-dnd-move-beside",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

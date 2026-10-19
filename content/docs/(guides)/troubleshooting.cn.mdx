@@ -1,0 +1,110 @@
+---
+title: 故障排除
+description: 排查 Plate 配置和运行时问题。
+---
+
+先检查已安装的包和运行时，再检查导入入口、插件配置及组件绑定。
+
+## 从症状开始
+
+| 症状 | 首先检查 |
+| --- | --- |
+| Invalid hook call、空 dispatcher 或 React hook 崩溃。 | 重复的 `react` / `react-dom`，或混用包管理器的安装结果。 |
+| 节点显示为普通文本，或组件没有生效。 | 缺少插件、React 与 base 入口混用，或组件绑定错误。 |
+| Server Component 在导入时崩溃。 | 服务端组件导入了 `platejs/react` 或功能的 React 入口。 |
+| `requires disabled plugin`。 | 已启用插件所需的依赖被应用禁用了。 |
+| `Pass a plugin descriptor, not its name.` | 依赖项使用了字符串，而不是插件描述符。 |
+| Markdown、HTML 或静态渲染缺少节点。 | base kit 缺少对应节点插件或 codec。 |
+
+## 更新并检查依赖
+
+编辑器功能由 `platejs` 包提供。使用 Plate CLI 更新：
+
+```bash
+npx @platejs/cli@latest deps platejs --latest --install --yes
+```
+
+pnpm 项目也可以使用：
+
+```bash
+pnpm dlx @platejs/cli@latest deps platejs --latest --install --yes
+```
+
+随后检查实际解析的版本：
+
+```bash
+npm ls platejs react react-dom
+```
+
+```bash
+pnpm why platejs
+pnpm why react react-dom
+```
+
+如果存在多个 Plate 主版本，先统一版本。如果存在多份 React，修复引入额外
+副本的依赖。`platejs/react` 等名称是包入口，不是可单独设置版本的包。
+
+## 检查运行时入口
+
+| 运行环境 | 导入入口 |
+| --- | --- |
+| 可编辑 React 编辑器 | `platejs/react`，或功能的 React 入口。 |
+| Server Component 静态输出 | `platejs/static`、`platejs`，或功能的 base 入口。 |
+| 不含 React UI 的 Node.js 脚本或路由 | `platejs`，或功能的 base 入口。 |
+
+服务端代码使用 `BaseHeadingPlugin` 等 base 插件。
+参阅 [Node.js](/docs/installation/node)、
+[RSC](/docs/installation/rsc) 和[静态渲染](/docs/static)。
+
+## 检查组件绑定
+
+```tsx title="components/editor/plugins.tsx"
+import { HeadingPlugin } from 'platejs/react';
+
+import { HeadingElement } from '@/components/editor/heading';
+
+export const plugins = [
+  HeadingPlugin.configure({ component: HeadingElement }),
+];
+```
+
+使用复制的 Plate UI 时，先检查对应[功能套件](/docs/feature-kits)。
+手动绑定方式见[插件组件](/docs/plugin-components)。
+
+## 检查插件配置
+
+在开发环境中配置 `DebugPlugin` 的日志等级：
+
+```tsx
+import { DebugPlugin } from 'platejs';
+
+export const plugins = [
+  DebugPlugin.configure({
+    initialState: { logLevel: 'warn' },
+  }),
+];
+```
+
+依赖通过描述符安装。检查 `dependencies` 中是否存在循环，以及应用是否禁用了
+必需依赖。更多诊断信息见[调试指南](/docs/debugging)和[插件指南](/docs/plugin)。
+
+## 重新安装
+
+依赖关系正确但运行时仍像加载了多份 React 或 Plate 时，从现有锁文件重新安装：
+
+```bash
+rm -rf node_modules
+npm install
+```
+
+```bash
+rm -rf node_modules
+pnpm install
+```
+
+只有在明确需要重新解析依赖版本时才删除锁文件。
+
+## 提供复现 [#report-a-reproduction]
+
+提交问题时附上最小编辑器、包管理器与锁文件类型、实际依赖版本、插件列表、
+触发问题的文档值，以及完整错误信息。保留复现所需的插件和组件即可。

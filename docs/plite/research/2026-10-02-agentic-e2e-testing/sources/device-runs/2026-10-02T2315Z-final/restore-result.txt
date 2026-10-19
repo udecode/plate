@@ -1,0 +1,22 @@
+  "restored": true,
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+{
+  "restored": true,
+  "state": {
+    "changedSettings": [],
+    "createdAt": "2026-10-02T23:15:39.372Z",
+    "forwards": [
+      "tcp:53094"
+    ],
+    "koreanLayoutsBefore": [],
+    "ownedTargets": [
+      "B683024D69BE337C59CAE035EDFDC2F6"
+    ],
+    "reverses": [
+      "tcp:3410"
+    ],
+    "selectedSubtype": "1594443099",
+    "setupCompletedAt": "2026-10-02T23:16:41.647Z",
+    "zenMode": null
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "id": "2026-09-24-document-first-export-contracts-design",
+  "kind": "execution",
+  "date": "2026-09-24",
+  "scopes": [
+    "exports"
+  ],
+  "reviewBasis": [
+    "2026-09-24-exports-final-reassessment"
+  ],
+  "workKind": "design",
+  "plan": {
+    "path": "docs/plans/2026-09-24-document-first-export-contracts.md",
+    "sha256": "9d31c5406d7c634d5fb61cc0680eed60d3462edd01c03804e90f4c801939625b"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Completed the document-first export contract and executable adoption plan. Plite owns pure authored projection and neutral structural text traversal; Plate format owners expose projection-aware document serializers with one data-and-diagnostics result shape; static rendering uses a private read-only projected view without editing lifecycle activation; and DOCX retains its hybrid backend while required Word semantics move out of the copied UI kit. The plan rejects a universal ExportPlugin, public compiler object and all-format Plite package. No product implementation is claimed.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-24-document-first-export-contracts.md",
+        "sha256": "9d31c5406d7c634d5fb61cc0680eed60d3462edd01c03804e90f4c801939625b",
+        "claim": "Records the final public API, ownership laws, hard cuts, ten adoption slices, migrations, deletions, proof matrix and closure gates; the Autogoal completion validator passed."
+      },
+      {
+        "path": "docs/plans/artifacts/2026-09-24-document-first-export-contracts/export-runtime-probe.tsx",
+        "sha256": "be432d3574e47bdc7a1cca8abf140cd71e6fd07395f86f1201f0890e3500e50a",
+        "claim": "Disposable matched-source harness comparing repeated full editor construction with one frozen conversion runtime and one read-only projected view per document across normal, fanout, stress and pathological cohorts."
+      },
+      {
+        "path": "docs/plans/artifacts/2026-09-24-document-first-export-contracts/export-runtime-probe.json",
+        "sha256": "5cb0ace71b146574553a47d99727d3fd0768476b92fe6f3cfbf8c52dfbd18fd3",
+        "claim": "Fresh receipt with exact output digest equality and passing frozen p95 budgets for authored Markdown and static HTML in all four cohorts."
+      }
+    ],
+    "limits": "Design and disposable matched-source runtime proof only. No public export API, format codec, migration, deletion, docs, changeset or registry update has been implemented. The probe covers authored projection plus Markdown and static HTML construction/output equivalence; it does not cover DOCX ZIP generation, comments XML, assets, native viewers, browser delivery, peak memory or production-source post-adoption performance."
+  },
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "fbd13343e1216a55f4c178095b5a929748ef110db76a0937fc72a2b3cb3082fd",
+      "apps/www/src/registry/examples/docx-demo.tsx": "b149d67140f4199c71ce377b28e70860db6ceace532dab270eeafd9bbd894b82",
+      "apps/www/src/registry/blocks/html-export/page.tsx": "378bf330f000d9d942290ee2387649ceffd257450d94c35e576a2be97cabae25",
+      "apps/www/src/registry/components/editor/plugins-static.ts": "b254eac88e255be5478018c5c15d123506718df7b5e96d1a184f3219c08dae18",
+      "packages/platejs/src/static/authoredHtml.ts": "28f878672a2a7d3f797b11ac1458fcd697e33b0ce6b7490ccea06ee32f83c48d",
+      "packages/platejs/src/static/renderStaticHtml.tsx": "d598a7e01d0feb6f344e4ecfba0eba085c53d95828a809cb925bcbc6d7f4aa46",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": "dea940b45e0d3ec9fdd6a3ae4d156723deba50a58e360a55e1549525a60f2997",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "db8ad5e16b2df9f6b12abf8d092deaab5761dc870c7a06c89f4dbb4187f5b542",
+      "packages/platejs/src/docx/export/lib/exportToDocx.tsx": "0e2247ec87fefcf449595b278a16f5fa2080fdf33e506a47af09577c1f76ba1a",
+      "packages/platejs/type-tests/authored-format-contracts.ts": "b81e84f728db5b6906293927c37bb2a5383d0d83dbdf33b2026ae57c1b2e9682",
+      "packages/plitejs/src/authored/format.ts": "2b10df8e8e2490e51dd346b34741ec834c7e8f02f600980342f3f3e98a34b690",
+      "apps/www/src/registry/components/editor/html-export.tsx": "230b16a28da9ef34101bb768a14e3cca2627fa19b341241a6a3a62d016dab23c",
+      "apps/www/src/registry/registry-editor.ts": "95491326193b354802a076551bb117fc05f2f1431bd29f4635dac7e4a6b80cf4",
+      "content/docs/examples/export.mdx": "aa2cd91c01e1f93c4c9dbc9a62318336ec43a96fd2b0f733bc96a6f4ab779e01",
+      "content/docs/(guides)/authored-changes.mdx": "d3bace0690977500b9126dd05b0b8b5a3ce228d4fbe26e790c0b6a41f76a2a9a",
+      "docs/vision/plate.md": "09692ba7572b42c94797c124a156a20c550e9e4b02626216908e5647793f8e72",
+      "docs/vision/plite.md": "88b094f95aa0231a645eec7aee346a6a714e4cf1075eb2c611d0b0da56fb1812",
+      "docs/plans/artifacts/2026-09-24-exports-review/projection.probe.test.tsx": "b5b339dbfc850d6d14cf8474ac019ffd03fd9a919a5423c3428dc969b45935c8",
+      "apps/www/src/registry/components/editor/docx-export.tsx": "7b1a5dac141e08d3d4357026db7ef36f6c9db0e09ee0114929d7ef2161be0c5d",
+      "apps/www/src/app/(app)/docs/examples/server-side/page.tsx": "6f4d2fde8c659bc4a3f94ad65d265fac556d061c65e79aa0f12a16f501c232d9",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "128279a813755dfcc68204c7ed46635db092ddfa81de35f829f51caf12225acc",
+      "packages/platejs/src/static/editor/withStatic.tsx": "a7049ff7b1f5a91235238bb502a9c39c05220eebcb6d74c85afaff9467e70d33",
+      "packages/platejs/src/static/components/PlateStatic.tsx": "f78b148302b2ad83d21a4d4649048900f9c2656257bc8b779911c0069e5384d3",
+      "packages/platejs/src/lib/editor/withPlite.ts": "ff180fe794f1f67050d340807bdb30dc1e4b494071ffa493f24428a6b56546ce",
+      "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": "7f54efe008ba66070193c7152de69824aaf281e340a8b789dd731f2e8b5806f0",
+      "packages/platejs/src/internal/plugin/compilePlateModel.ts": "326cd9dae47df6c70342e74032a02807caa947cf1007b25c730af0fa12f61793",
+      "packages/platejs/src/internal/plugin/compilePlateCodecs.ts": "efbd38042ea499f3426a1d423e5f17d1419ff8c76e86757722ec4e359691c22f",
+      "packages/platejs/src/markdown/lib/internal/markdownConversion.ts": "fdd4c6d79b132f2023c8f7b0f05083a70fb75e9c8d39d431c8e2264c60ce056b",
+      "packages/platejs/src/markdown/lib/types.ts": "eb5716e2804e79d6cd5c574eae3ae36bc73cf625bfbd5b44f8e828ded247117c",
+      "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts": "8cf475bc202a58416e8aafb2f6e1ddcb4747ff6b3da8f754637b0834ac4b6ffb",
+      "packages/platejs/src/csv/lib/CsvPlugin.ts": "ef1e23f3436263470e57fbddfd820db22b38090e0760cc2ede3346484a334526",
+      "packages/plitejs/src/authored/checkpoint.ts": "adadcfedbd7a0c75d4cec96af91f7665091155ee3613148832c7bdf023925b2a",
+      "packages/plitejs/src/dom/plugin/host-codec.ts": "eee0e986bc5162ecec43652e58ec8597b98d96abf94e040fe91bbb9271cff841",
+      "packages/plitejs/src/core/persisted-document.ts": "efc8e669b9cb6cd77cb42e265dc8ce53ccb397ea2e21254b0a31e0117d831a6a",
+      "content/docs/(guides)/serializing.mdx": "deaf93bd2e8e6dcdc5b0ed3cf749d41ae40cdc59bb0ce7080db609e487d55ec2",
+      "content/docs/api/node.mdx": "6cf96d7dfb56d46a82ec64d540ec7ee3355a2756dca5b3b7444bc729592f5008",
+      "packages/plitejs/src/interfaces/node.ts": "e75fafa20ae004deb7db029c784bd30323408bea5fd244905a2018c626b96166",
+      "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts": "bbec6491102ab1c4e8db00171e5065613f02c394082cb5003e7f2e93b51e236f",
+      "packages/platejs/src/react/features/table/TablePlugin.tsx": "b1ab39fbb540828b32839c1123a5b6fec45d622f55032c73f00db6e36984a26a",
+      "packages/platejs/src/static/utils/stripHtmlClassNames.internal.ts": "59ce48023a2bb348d262f66e06a293a2603e8d090f0a6c8d730671a5a7eb2d9f",
+      "packages/platejs/src/static/utils/stripPliteDataAttributes.internal.ts": "062993c7f9410793d2ddcd4d39ee8adb9e9eb7c485003e376f4889856b069bf5",
+      "packages/platejs/src/static/renderStaticHtml.node-props.spec.ts": "b3a3b47805c5f4a9545041be440509ee80c155ea5a17a434ad42d5a74df02b3d",
+      "docs/plite/research/2026-09-24-export-architecture/shards/002-final-reassessment.md": "612865507a714a57495d19399a63fc79c4329c68381c0837b989209b9b79e0b4",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "271bdf6da40799f15a72c7237e96434f431f949b7d72ec2a6b541f952da7eb4b"
+    },
+    "directories": {},
+    "features": {
+      "ui/export-toolbar-button": "40958426b4039bc6cf4011a6677ab575e4d0a34cce54ee234128d477490fec84"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-24-document-first-export-contracts.md",
+    "docs/plans/artifacts/2026-09-24-document-first-export-contracts/export-runtime-probe.tsx",
+    "docs/plans/artifacts/2026-09-24-document-first-export-contracts/export-runtime-probe.json",
+    "docs/research/review-records/2026-09-24-exports-final-reassessment.json",
+    "docs/research/decisions/export-fidelity.md"
+  ]
+}

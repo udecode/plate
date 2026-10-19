@@ -1,0 +1,506 @@
+import type { PackageInfoType } from '@/hooks/use-package-info';
+import type { RegistryItem } from 'shadcn/schema';
+
+import type { Metadata } from 'next';
+import { Suspense, type ComponentType } from 'react';
+
+import { frontmatter } from 'fumadocs-core/content/md/frontmatter';
+import { notFound } from 'next/navigation';
+
+import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
+import { ComponentInstallation } from '@/components/component-installation';
+import { ComponentPreview } from '@/components/component-preview';
+import { mdxComponents } from '@/components/mdx-components';
+import { MdxProvider } from '@/components/mdx-provider';
+import { siteConfig } from '@/config/site';
+import { absoluteUrl } from '@/lib/absoluteUrl';
+import { getDocsSidebar, getPagerForDoc } from '@/lib/docs-page-tree';
+import { selectDocsSidebar } from '@/lib/docs-sidebar';
+import { registryExampleSlug } from '@/lib/docs-routes';
+import { getDocsNavMeta, slugToCategory } from '@/lib/docs-nav-metadata';
+import { getPlateLLMPageMarkdownFromPage } from '@/lib/llm';
+import {
+  getCachedDependencies,
+  getCachedFileTree,
+  getCachedHighlightedFiles,
+  getCachedRegistryItem,
+} from '@/lib/registry-cache';
+import { getRegistryMetadata } from '@/lib/registry-metadata';
+import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
+import { getAllDependencies, getAllFiles } from '@/lib/rehype-utils';
+import { source } from '@/lib/source';
+import { getTableOfContents } from '@/lib/toc';
+import { hrefWithLocale } from '@/lib/withLocale';
+import { registryExamples } from '@/registry/registry-examples';
+import { proExamples } from '@/registry/registry-pro';
+
+export type DocsLocale = 'cn' | 'en';
+
+type PlateDocFrontmatter = {
+  docs?: Array<{ route?: string; title?: string }>;
+  links?: {
+    api?: string;
+    doc?: string;
+  };
+  toc?: boolean;
+};
+
+type LoadableDocData = {
+  body?: ComponentType<any>;
+  load?: () => Promise<{ body: ComponentType<any> }>;
+};
+
+export type DocPageProps = {
+  params: Promise<{
+    slug?: string[];
+  }>;
+};
+
+const registry = getRegistryMetadata();
+const registryNames = new Set(registry.items.map((item) => item.name));
+const componentDocs = registry.items.filter(
+  (item) => item.type === 'registry:component'
+);
+const packageInfo: PackageInfoType = {
+  gzip: '',
+  name: '',
+  npm: '',
+  source: '',
+};
+
+async function getDocFromParams({ params }: DocPageProps, locale: DocsLocale) {
+  const resolvedParams = await params;
+  const slugParam = resolvedParams.slug;
+
+  return (
+    source.getPage(slugParam ?? [], locale) ??
+    (locale === 'cn' ? source.getPage(slugParam ?? [], 'en') : null) ??
+    null
+  );
+}
+
+function getDocsPath(slug: string[] | undefined, locale: DocsLocale) {
+  const path = slug?.join('/') || '';
+  const base = locale === 'cn' ? '/cn/docs' : '/docs';
+
+  return `${base}${path ? `/${path}` : ''}`;
+}
+
+function localizeDocsUrl(url: string, locale: DocsLocale) {
+  return locale === 'cn' ? hrefWithLocale(url, locale) : url;
+}
+
+function getRegistryStaticParams() {
+  return [
+    ...componentDocs.map((item) => ({
+      slug: ['components', item.name],
+    })),
+    ...registryExamples.map((item) => ({
+      slug: ['examples', registryExampleSlug(item.name)],
+    })),
+  ];
+}
+
+function getRegistryFile({
+  category,
+  slug,
+}: {
+  category: ReturnType<typeof slugToCategory>;
+  slug?: string[];
+}) {
+  const name = slug?.at(-1);
+
+  if (category === 'component') {
+    return {
+      docName: name,
+      file: componentDocs.find((item) => item.name === name),
+    };
+  }
+
+  if (category === 'example' && name) {
+    const file = registryExamples.find(
+      (item) => registryExampleSlug(item.name) === name
+    );
+
+    return {
+      docName: file?.name,
+      file,
+    };
+  }
+
+  return {
+    docName: name,
+    file: undefined,
+  };
+}
+
+export async function generateDocMetadata(
+  props: DocPageProps,
+  locale: DocsLocale
+): Promise<Metadata> {
+  const doc = await getDocFromParams(props, locale);
+  let title: string;
+  let description: string | undefined;
+  let slug: string;
+  let nestedRootTitle: string | undefined;
+
+  if (doc) {
+    slug = localizeDocsUrl(doc.url, locale);
+    ({ title } = doc.data);
+    description = doc.data.description ?? getDocsNavMeta(slug)?.description;
+    nestedRootTitle = selectDocsSidebar(getDocsSidebar(locale), doc.url).nested
+      ?.title;
+  } else {
+    const resolvedParams = await props.params;
+    const slugParam = resolvedParams.slug;
+    const category = slugToCategory(slugParam);
+    const { docName, file } = getRegistryFile({ category, slug: slugParam });
+
+    if (!docName || !file) {
+      return {};
+    }
+
+    slug = getDocsPath(slugParam, locale);
+    title = file.title || docName;
+    ({ description } = file);
+  }
+
+  return {
+    description,
+    openGraph: {
+      description,
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(
+            description ?? ''
+          )}`,
+        },
+      ],
+      title,
+      type: 'article',
+      url: absoluteUrl(slug),
+    },
+    title: nestedRootTitle
+      ? { absolute: `${title} - ${nestedRootTitle}` }
+      : title,
+    twitter: {
+      card: 'summary_large_image',
+      creator: '@udecode',
+      description,
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(
+            description ?? ''
+          )}`,
+        },
+      ],
+      title,
+    },
+  };
+}
+
+export function generateDocStaticParams(locale: DocsLocale) {
+  const pages =
+    locale === 'cn'
+      ? [...source.getPages('cn'), ...source.getPages('en')]
+      : source.getPages(locale);
+
+  return [
+    ...pages.map((doc) => ({
+      slug: doc.slugs,
+    })),
+    ...getRegistryStaticParams(),
+  ].filter(
+    (value, index, array) =>
+      index ===
+      array.findIndex(
+        (candidate) => candidate.slug.join('/') === value.slug.join('/')
+      )
+  );
+}
+
+export function renderDocPage(props: DocPageProps, locale: DocsLocale) {
+  return (
+    <Suspense fallback={null}>
+      <DocPageContent locale={locale} {...props} />
+    </Suspense>
+  );
+}
+
+async function DocPageContent({
+  locale,
+  params: paramsPromise,
+}: DocPageProps & { locale: DocsLocale }) {
+  const props = { params: paramsPromise };
+  const params = await props.params;
+  const category = slugToCategory(params.slug);
+
+  const doc = await getDocFromParams(props, locale);
+
+  if (!doc) {
+    const { docName, file } = getRegistryFile({
+      category,
+      slug: params.slug,
+    });
+
+    if (!docName || !file) {
+      notFound();
+    }
+
+    const dependencies = getAllDependencies(docName);
+    const files = getAllFiles(docName);
+    const slug = getDocsPath(params.slug, locale);
+    const neighbours = getPagerForDoc({ slug }, locale);
+    const docs = getRegistryDocs({
+      docName,
+      file,
+      files,
+      locale,
+      registryNames,
+    });
+    const item = await getCachedRegistryItem(docName, true);
+
+    if (!item?.files) {
+      notFound();
+    }
+
+    const tree = getCachedFileTree(item.files);
+    const [highlightedFiles, componentExamples] = await Promise.all([
+      getCachedHighlightedFiles(item.files as any),
+      file.meta?.examples
+        ? Promise.all(
+            file.meta.examples.map(
+              async (ex: string) => await getExampleCode(ex)
+            )
+          )
+        : undefined,
+    ]);
+
+    return (
+      <DocContent
+        category={category}
+        {...file}
+        doc={{
+          ...file.meta,
+          docs,
+          experimental: getDocsNavMeta(slug)?.experimental,
+          slug,
+        }}
+        neighbours={neighbours}
+      >
+        {category === 'component' ? (
+          <ComponentInstallation
+            name={file.name}
+            dependencies={dependencies}
+            examples={componentExamples?.filter(Boolean) as any}
+            highlightedFiles={highlightedFiles}
+            item={item}
+            tree={tree}
+            usage={file.meta?.usage}
+          />
+        ) : (
+          <ComponentPreview
+            name={file.name}
+            dependencies={dependencies}
+            highlightedFiles={highlightedFiles}
+            item={item}
+            tree={tree}
+          />
+        )}
+      </DocContent>
+    );
+  }
+
+  const raw = await doc.data.getText('raw');
+  const { data: frontmatterData } = frontmatter(raw) as {
+    data: PlateDocFrontmatter;
+  };
+  const localizedDocUrl = localizeDocsUrl(doc.url, locale);
+  const description =
+    doc.data.description ?? getDocsNavMeta(localizedDocUrl)?.description;
+  const loadableDocData = doc.data as LoadableDocData;
+  const docData =
+    typeof loadableDocData.load === 'function'
+      ? await loadableDocData.load()
+      : loadableDocData;
+  const MDX = docData.body;
+
+  if (!MDX) {
+    notFound();
+  }
+
+  const toc = await getTableOfContents(raw);
+  const neighbours = getPagerForDoc({ slug: doc.url }, locale);
+  const docUrl = `https://platejs.org${localizedDocUrl}`;
+  const sidebar = getDocsSidebar(locale);
+
+  return (
+    <DocContent
+      category={category}
+      doc={{
+        description,
+        copyPage: {
+          markdown: await getPlateLLMPageMarkdownFromPage({
+            docUrl,
+            page: doc,
+            textKind: 'raw',
+          }),
+          product:
+            selectDocsSidebar(sidebar, doc.url).nested?.title ??
+            sidebar.main.title,
+        },
+        docs: frontmatterData.docs,
+        experimental: getDocsNavMeta(localizedDocUrl)?.experimental,
+        links: frontmatterData.links,
+        slug: localizedDocUrl,
+        sourcePath: doc.path,
+        title: doc.data.title,
+        toc: frontmatterData.toc ?? true,
+      }}
+      neighbours={neighbours}
+      toc={toc}
+    >
+      <MdxProvider packageInfo={packageInfo}>
+        <MDX components={mdxComponents as any} />
+      </MdxProvider>
+    </DocContent>
+  );
+}
+
+function getRegistryDocs({
+  docName,
+  file,
+  files,
+  locale,
+  registryNames: innerRegistryNames,
+}: {
+  docName: string;
+  file: RegistryItem;
+  files: Array<{ name: string }>;
+  locale: DocsLocale;
+  registryNames: Set<string>;
+}) {
+  const usedBy = componentDocs.filter(
+    (item) =>
+      item.meta &&
+      Array.isArray(item.meta.examples) &&
+      item.meta.examples.includes(docName)
+  );
+
+  const relatedDocs = [
+    ...files
+      .map((f) => f.name.split('/').pop()?.replace('.tsx', ''))
+      .filter(
+        (fileName): fileName is string =>
+          !!fileName && innerRegistryNames.has(fileName) && fileName !== docName
+      )
+      .map((fileName) => {
+        const uiItem = componentDocs.find((item) => item.name === fileName);
+
+        if (!uiItem) return null;
+
+        return {
+          route: getDocsPath(
+            [
+              uiItem.type.includes('example') ? 'examples' : 'components',
+              fileName,
+            ],
+            locale
+          ),
+          title: getRegistryTitle(uiItem),
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null),
+    ...usedBy.map((item) => ({
+      route: getDocsPath(
+        [item.type.includes('example') ? 'examples' : 'components', item.name],
+        locale
+      ),
+      title: getRegistryTitle(item),
+    })),
+  ]
+    .filter(Boolean)
+    .filter(
+      (doc, index, self) =>
+        index === self.findIndex((d) => d.route === doc.route)
+    );
+
+  const groups = [...(file.meta?.docs || []), ...relatedDocs].reduce<
+    Record<string, typeof relatedDocs>
+  >(
+    (acc, doc) => {
+      if (!doc.route) return acc;
+
+      const titledDoc = {
+        ...doc,
+        route: localizeDocsUrl(doc.route, locale),
+        title: getDocTitle(doc),
+      };
+
+      if (doc.route.startsWith(siteConfig.links.platePro)) {
+        acc.external.push(titledDoc);
+      } else if (
+        titledDoc.route.startsWith(getDocsPath(['components'], locale))
+      ) {
+        acc.components.push(titledDoc);
+      } else if (titledDoc.route.startsWith(getDocsPath(['api'], locale))) {
+        acc.docs.push({
+          ...titledDoc,
+          title: `${titledDoc.title} API`,
+        });
+      } else if (titledDoc.route.startsWith(getDocsPath([], locale))) {
+        acc.docs.push({
+          ...titledDoc,
+          title: `${titledDoc.title} Plugin`,
+        });
+      } else {
+        acc.docs.push(titledDoc);
+      }
+
+      return acc;
+    },
+    { components: [], docs: [], external: [] }
+  );
+
+  const sortDocs = (docs: typeof relatedDocs) =>
+    docs.sort((a: any, b: any) => getDocTitle(a).localeCompare(getDocTitle(b)));
+
+  return [
+    ...sortDocs(groups.docs),
+    ...sortDocs(groups.components),
+    ...sortDocs(groups.external),
+  ];
+}
+
+async function getExampleCode(name?: string) {
+  if (!name) return null;
+  if (name.endsWith('-pro')) {
+    return proExamples.find((ex) => ex.name === name);
+  }
+
+  const example = registryExamples.find((ex) => ex.name === name);
+
+  if (!example) {
+    throw new Error(`Component ${name} not found`);
+  }
+
+  const item = await getCachedRegistryItem(name, true);
+  let highlightedFiles: any = [];
+  let tree: any = null;
+  let dependencies: string[] = [];
+
+  if (item?.files) {
+    tree = getCachedFileTree(item.files);
+    dependencies = getCachedDependencies(name);
+    highlightedFiles = await getCachedHighlightedFiles(item.files);
+  }
+
+  return {
+    dependencies,
+    doc: { title: example.title },
+    highlightedFiles,
+    item,
+    name: example.name,
+    tree,
+  };
+}

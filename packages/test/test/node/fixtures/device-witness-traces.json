@@ -1,0 +1,4437 @@
+[
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!"
+          },
+          "anchorOffset": 52,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!"
+          },
+          "focusOffset": 52,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 2,
+        "targetRanges": [],
+        "timestamp": 1790977454735,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!"
+          },
+          "anchorOffset": 52,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!"
+          },
+          "focusOffset": 52,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 3,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "This is editable plain text, just like a <textarea>!"
+            },
+            "endOffset": 52,
+            "rects": [
+              {
+                "height": 18.666664123535156,
+                "width": 0,
+                "x": 357.1845397949219,
+                "y": 93.52381134033203
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "This is editable plain text, just like a <textarea>!"
+            },
+            "startOffset": 52
+          }
+        ],
+        "timestamp": 1790977454739,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-1",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "This is editable plain text, just like a <textarea>!h"
+              },
+              "before": {
+                "id": "text-1",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "This is editable plain text, just like a <textarea>!"
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!h"
+          },
+          "anchorOffset": 53,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!h"
+          },
+          "focusOffset": 53,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 4,
+        "targetRanges": [],
+        "timestamp": 1790977454746,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!h"
+          },
+          "anchorOffset": 53,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!h"
+          },
+          "focusOffset": 53,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 5,
+        "targetRanges": [],
+        "timestamp": 1790977455360,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "i",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!h"
+          },
+          "anchorOffset": 53,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!h"
+          },
+          "focusOffset": 53,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 6,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "This is editable plain text, just like a <textarea>!h"
+            },
+            "endOffset": 53,
+            "rects": [
+              {
+                "height": 18.666664123535156,
+                "width": 0,
+                "x": 366,
+                "y": 93.52381134033203
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "This is editable plain text, just like a <textarea>!h"
+            },
+            "startOffset": 53
+          }
+        ],
+        "timestamp": 1790977455361,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "i",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-1",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "This is editable plain text, just like a <textarea>!hi"
+              },
+              "before": {
+                "id": "text-1",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "This is editable plain text, just like a <textarea>!h"
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi"
+          },
+          "anchorOffset": 54,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi"
+          },
+          "focusOffset": 54,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 7,
+        "targetRanges": [],
+        "timestamp": 1790977455364,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi"
+          },
+          "anchorOffset": 54,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi"
+          },
+          "focusOffset": 54,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 8,
+        "targetRanges": [],
+        "timestamp": 1790977455968,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": " ",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi"
+          },
+          "anchorOffset": 54,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi"
+          },
+          "focusOffset": 54,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 9,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "This is editable plain text, just like a <textarea>!hi"
+            },
+            "endOffset": 54,
+            "rects": [
+              {
+                "height": 18.666664123535156,
+                "width": 0,
+                "x": 369.88690185546875,
+                "y": 93.52381134033203
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "This is editable plain text, just like a <textarea>!hi"
+            },
+            "startOffset": 54
+          }
+        ],
+        "timestamp": 1790977455970,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": " ",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-1",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "This is editable plain text, just like a <textarea>!hi "
+              },
+              "before": {
+                "id": "text-1",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "This is editable plain text, just like a <textarea>!hi"
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi "
+          },
+          "anchorOffset": 55,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi "
+          },
+          "focusOffset": 55,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 10,
+        "targetRanges": [],
+        "timestamp": 1790977455973,
+        "type": "input"
+      }
+    ],
+    "expected": "accept",
+    "name": "real-typing",
+    "steps": [
+      {
+        "kind": "key",
+        "label": "h",
+        "seqEnd": 5,
+        "seqStart": 2,
+        "key": "Unidentified"
+      },
+      {
+        "kind": "key",
+        "label": "i",
+        "seqEnd": 8,
+        "seqStart": 5,
+        "key": "Unidentified"
+      },
+      {
+        "kind": "key",
+        "label": "Space",
+        "seqEnd": 11,
+        "seqStart": 8,
+        "key": "Unidentified"
+      }
+    ]
+  },
+  {
+    "events": [
+      {
+        "clientX": 356.1905212402344,
+        "clientY": 102.85714721679688,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi "
+          },
+          "anchorOffset": 55,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi "
+          },
+          "focusOffset": 55,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 11,
+        "targetRanges": [],
+        "timestamp": 1790977457757,
+        "type": "pointerdown"
+      }
+    ],
+    "expected": "reject",
+    "name": "content-tap-miss",
+    "steps": [
+      {
+        "kind": "content",
+        "label": "tap off target",
+        "seqEnd": 12,
+        "seqStart": 11,
+        "target": {
+          "x": 316.19049072265625,
+          "y": 102.85714340209961
+        }
+      }
+    ]
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "a",
+        "keyCode": 65,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi "
+          },
+          "anchorOffset": 52,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi "
+          },
+          "focusOffset": 52,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 12,
+        "targetRanges": [],
+        "timestamp": 1790977459531,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "a",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi "
+          },
+          "anchorOffset": 52,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!hi "
+          },
+          "focusOffset": 52,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 13,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "This is editable plain text, just like a <textarea>!hi "
+            },
+            "endOffset": 52,
+            "rects": [
+              {
+                "height": 18.666664123535156,
+                "width": 0,
+                "x": 357.1845397949219,
+                "y": 93.52381134033203
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "This is editable plain text, just like a <textarea>!hi "
+            },
+            "startOffset": 52
+          }
+        ],
+        "timestamp": 1790977459532,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "a",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-1",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "This is editable plain text, just like a <textarea>!ahi "
+              },
+              "before": {
+                "id": "text-1",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "This is editable plain text, just like a <textarea>!hi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!ahi "
+          },
+          "anchorOffset": 53,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!ahi "
+          },
+          "focusOffset": 53,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 14,
+        "targetRanges": [],
+        "timestamp": 1790977459535,
+        "type": "input"
+      }
+    ],
+    "expected": "reject",
+    "name": "adb-input-keyevent-outside",
+    "steps": []
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!ahi "
+          },
+          "anchorOffset": 53,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!ahi "
+          },
+          "focusOffset": 53,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 15,
+        "targetRanges": [],
+        "timestamp": 1790977460766,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "c",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!ahi "
+          },
+          "anchorOffset": 53,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!ahi "
+          },
+          "focusOffset": 53,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 16,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "This is editable plain text, just like a <textarea>!ahi "
+            },
+            "endOffset": 53,
+            "rects": [
+              {
+                "height": 18.666664123535156,
+                "width": 0,
+                "x": 365.88690185546875,
+                "y": 93.52381134033203
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "This is editable plain text, just like a <textarea>!ahi "
+            },
+            "startOffset": 53
+          }
+        ],
+        "timestamp": 1790977460767,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "c",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-1",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "This is editable plain text, just like a <textarea>!achi "
+              },
+              "before": {
+                "id": "text-1",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "This is editable plain text, just like a <textarea>!ahi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!achi "
+          },
+          "anchorOffset": 54,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!achi "
+          },
+          "focusOffset": 54,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 17,
+        "targetRanges": [],
+        "timestamp": 1790977460773,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "a",
+        "keyCode": 65,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!achi "
+          },
+          "anchorOffset": 54,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!achi "
+          },
+          "focusOffset": 54,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 18,
+        "targetRanges": [],
+        "timestamp": 1790977460795,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "a",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!achi "
+          },
+          "anchorOffset": 54,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!achi "
+          },
+          "focusOffset": 54,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 19,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "This is editable plain text, just like a <textarea>!achi "
+            },
+            "endOffset": 54,
+            "rects": [
+              {
+                "height": 18.666664123535156,
+                "width": 0,
+                "x": 374.26190185546875,
+                "y": 93.52381134033203
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "0,0",
+              "parentSignature": "span[0][path=0,0][text=0,0]",
+              "path": "0,0",
+              "text": "This is editable plain text, just like a <textarea>!achi "
+            },
+            "startOffset": 54
+          }
+        ],
+        "timestamp": 1790977460795,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "a",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-1",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "This is editable plain text, just like a <textarea>!acahi "
+              },
+              "before": {
+                "id": "text-1",
+                "parentPath": "0,0",
+                "parentSignature": "span[0][path=0,0][text=0,0]",
+                "text": "This is editable plain text, just like a <textarea>!achi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!acahi "
+          },
+          "anchorOffset": 55,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!acahi "
+          },
+          "focusOffset": 55,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 20,
+        "targetRanges": [],
+        "timestamp": 1790977460797,
+        "type": "input"
+      }
+    ],
+    "expected": "ime-state",
+    "name": "adb-input-keyevent-inside",
+    "steps": [
+      {
+        "kind": "key",
+        "label": "h",
+        "seqEnd": 21,
+        "seqStart": 15,
+        "key": "Unidentified"
+      }
+    ]
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Enter",
+        "keyCode": 13,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!acahi "
+          },
+          "anchorOffset": 55,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "0,0",
+            "parentSignature": "span[0][path=0,0][text=0,0]",
+            "path": "0,0",
+            "text": "This is editable plain text, just like a <textarea>!acahi "
+          },
+          "focusOffset": 55,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 21,
+        "targetRanges": [],
+        "timestamp": 1790977462577,
+        "type": "keydown"
+      }
+    ],
+    "expected": "reject",
+    "name": "adb-input-enter-outside",
+    "steps": []
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "1,0",
+            "parentSignature": "span[0][path=1,0][text=1,0]",
+            "path": "1,0",
+            "text": "hi "
+          },
+          "anchorOffset": 0,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "1,0",
+            "parentSignature": "span[0][path=1,0][text=1,0]",
+            "path": "1,0",
+            "text": "hi "
+          },
+          "focusOffset": 0,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 22,
+        "targetRanges": [],
+        "timestamp": 1790977463773,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "1,0",
+            "parentSignature": "span[0][path=1,0][text=1,0]",
+            "path": "1,0",
+            "text": "hi "
+          },
+          "anchorOffset": 0,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "1,0",
+            "parentSignature": "span[0][path=1,0][text=1,0]",
+            "path": "1,0",
+            "text": "hi "
+          },
+          "focusOffset": 0,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 23,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "1,0",
+              "parentSignature": "span[0][path=1,0][text=1,0]",
+              "path": "1,0",
+              "text": "hi "
+            },
+            "endOffset": 0,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 24,
+                "y": 131.92262268066406
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "1,0",
+              "parentSignature": "span[0][path=1,0][text=1,0]",
+              "path": "1,0",
+              "text": "hi "
+            },
+            "startOffset": 0
+          }
+        ],
+        "timestamp": 1790977463774,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-2",
+                "parentPath": "1,0",
+                "parentSignature": "span[0][path=1,0][text=1,0]",
+                "text": "hhi "
+              },
+              "before": {
+                "id": "text-2",
+                "parentPath": "1,0",
+                "parentSignature": "span[0][path=1,0][text=1,0]",
+                "text": "hi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "1,0",
+            "parentSignature": "span[0][path=1,0][text=1,0]",
+            "path": "1,0",
+            "text": "hhi "
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "1,0",
+            "parentSignature": "span[0][path=1,0][text=1,0]",
+            "path": "1,0",
+            "text": "hhi "
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 24,
+        "targetRanges": [],
+        "timestamp": 1790977463775,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Enter",
+        "keyCode": 13,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "1,0",
+            "parentSignature": "span[0][path=1,0][text=1,0]",
+            "path": "1,0",
+            "text": "hhi "
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "1,0",
+            "parentSignature": "span[0][path=1,0][text=1,0]",
+            "path": "1,0",
+            "text": "hhi "
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 25,
+        "targetRanges": [],
+        "timestamp": 1790977463837,
+        "type": "keydown"
+      }
+    ],
+    "expected": "reject",
+    "name": "adb-input-enter-inside",
+    "steps": [
+      {
+        "kind": "key",
+        "label": "h",
+        "seqEnd": 26,
+        "seqStart": 22,
+        "key": "Unidentified"
+      }
+    ]
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "a",
+        "keyCode": 65,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "hi "
+          },
+          "anchorOffset": 0,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "hi "
+          },
+          "focusOffset": 0,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 26,
+        "targetRanges": [],
+        "timestamp": 1790977465604,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "a",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "hi "
+          },
+          "anchorOffset": 0,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "hi "
+          },
+          "focusOffset": 0,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 27,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "hi "
+            },
+            "endOffset": 0,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 24,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "hi "
+            },
+            "startOffset": 0
+          }
+        ],
+        "timestamp": 1790977465604,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "a",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahi "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "hi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahi "
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahi "
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 28,
+        "targetRanges": [],
+        "timestamp": 1790977465606,
+        "type": "input"
+      }
+    ],
+    "expected": "reject",
+    "name": "cdp-dispatch-key-a-outside",
+    "steps": []
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahi "
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahi "
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 29,
+        "targetRanges": [],
+        "timestamp": 1790977466799,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahi "
+          },
+          "anchorOffset": 1,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahi "
+          },
+          "focusOffset": 1,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 30,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahi "
+            },
+            "endOffset": 1,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 32.7023811340332,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahi "
+            },
+            "startOffset": 1
+          }
+        ],
+        "timestamp": 1790977466800,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahhi "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahhi "
+          },
+          "anchorOffset": 2,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahhi "
+          },
+          "focusOffset": 2,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 31,
+        "targetRanges": [],
+        "timestamp": 1790977466805,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "a",
+        "keyCode": 65,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahhi "
+          },
+          "anchorOffset": 2,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahhi "
+          },
+          "focusOffset": 2,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 32,
+        "targetRanges": [],
+        "timestamp": 1790977466806,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "a",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahhi "
+          },
+          "anchorOffset": 2,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahhi "
+          },
+          "focusOffset": 2,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 33,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahhi "
+            },
+            "endOffset": 2,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 41.511905670166016,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahhi "
+            },
+            "startOffset": 2
+          }
+        ],
+        "timestamp": 1790977466806,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "a",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahahi "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahhi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahahi "
+          },
+          "anchorOffset": 3,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahahi "
+          },
+          "focusOffset": 3,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 34,
+        "targetRanges": [],
+        "timestamp": 1790977466808,
+        "type": "input"
+      }
+    ],
+    "expected": "reject",
+    "name": "cdp-dispatch-key-a-inside",
+    "steps": [
+      {
+        "kind": "key",
+        "label": "h",
+        "seqEnd": 35,
+        "seqStart": 29,
+        "key": "Unidentified"
+      }
+    ]
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "x",
+        "keyCode": 88,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahahi "
+          },
+          "anchorOffset": 3,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahahi "
+          },
+          "focusOffset": 3,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 35,
+        "targetRanges": [],
+        "timestamp": 1790977468602,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "x",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahahi "
+          },
+          "anchorOffset": 3,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahahi "
+          },
+          "focusOffset": 3,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 36,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahahi "
+            },
+            "endOffset": 3,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 50.21428680419922,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahahi "
+            },
+            "startOffset": 3
+          }
+        ],
+        "timestamp": 1790977468603,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "x",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhi "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahahi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhi "
+          },
+          "anchorOffset": 4,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhi "
+          },
+          "focusOffset": 4,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 37,
+        "targetRanges": [],
+        "timestamp": 1790977468605,
+        "type": "input"
+      }
+    ],
+    "expected": "reject",
+    "name": "adb-input-text-outside",
+    "steps": []
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhi "
+          },
+          "anchorOffset": 4,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhi "
+          },
+          "focusOffset": 4,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 38,
+        "targetRanges": [],
+        "timestamp": 1790977469823,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhi "
+          },
+          "anchorOffset": 4,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhi "
+          },
+          "focusOffset": 4,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 39,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhi "
+            },
+            "endOffset": 4,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 58.154762268066406,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhi "
+            },
+            "startOffset": 4
+          }
+        ],
+        "timestamp": 1790977469823,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhhi "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhhi "
+          },
+          "anchorOffset": 5,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhhi "
+          },
+          "focusOffset": 5,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 40,
+        "targetRanges": [],
+        "timestamp": 1790977469825,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "x",
+        "keyCode": 88,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhhi "
+          },
+          "anchorOffset": 5,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhhi "
+          },
+          "focusOffset": 5,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 41,
+        "targetRanges": [],
+        "timestamp": 1790977469845,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "x",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhhi "
+          },
+          "anchorOffset": 5,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhhi "
+          },
+          "focusOffset": 5,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 42,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhhi "
+            },
+            "endOffset": 5,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 66.96428680419922,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhhi "
+            },
+            "startOffset": 5
+          }
+        ],
+        "timestamp": 1790977469845,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "x",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxhi "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhhi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxhi "
+          },
+          "anchorOffset": 6,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxhi "
+          },
+          "focusOffset": 6,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 43,
+        "targetRanges": [],
+        "timestamp": 1790977469847,
+        "type": "input"
+      }
+    ],
+    "expected": "ime-state",
+    "name": "adb-input-text-inside",
+    "steps": [
+      {
+        "kind": "key",
+        "label": "h",
+        "seqEnd": 44,
+        "seqStart": 38,
+        "key": "Unidentified"
+      }
+    ]
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxhi "
+          },
+          "anchorOffset": 6,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxhi "
+          },
+          "focusOffset": 6,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 44,
+        "targetRanges": [],
+        "timestamp": 1790977471621,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxhi "
+          },
+          "anchorOffset": 6,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxhi "
+          },
+          "focusOffset": 6,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 45,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxhi "
+            },
+            "endOffset": 6,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 74.9047622680664,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxhi "
+            },
+            "startOffset": 6
+          }
+        ],
+        "timestamp": 1790977471621,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhi "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxhi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhi "
+          },
+          "anchorOffset": 7,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhi "
+          },
+          "focusOffset": 7,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 46,
+        "targetRanges": [],
+        "timestamp": 1790977471623,
+        "type": "input"
+      }
+    ],
+    "expected": "reject",
+    "name": "cdp-dispatch-unidentified-outside",
+    "steps": []
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhi "
+          },
+          "anchorOffset": 7,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhi "
+          },
+          "focusOffset": 7,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 47,
+        "targetRanges": [],
+        "timestamp": 1790977472839,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhi "
+          },
+          "anchorOffset": 7,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhi "
+          },
+          "focusOffset": 7,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 48,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhi "
+            },
+            "endOffset": 7,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 82.83928680419922,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhi "
+            },
+            "startOffset": 7
+          }
+        ],
+        "timestamp": 1790977472840,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhhi "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhhi "
+          },
+          "anchorOffset": 8,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhhi "
+          },
+          "focusOffset": 8,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 49,
+        "targetRanges": [],
+        "timestamp": 1790977472842,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhhi "
+          },
+          "anchorOffset": 8,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhhi "
+          },
+          "focusOffset": 8,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 50,
+        "targetRanges": [],
+        "timestamp": 1790977472843,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhhi "
+          },
+          "anchorOffset": 8,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhhi "
+          },
+          "focusOffset": 8,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 51,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhhi "
+            },
+            "endOffset": 8,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 91.6547622680664,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhhi "
+            },
+            "startOffset": 8
+          }
+        ],
+        "timestamp": 1790977472843,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhi "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhhi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhi "
+          },
+          "anchorOffset": 9,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhi "
+          },
+          "focusOffset": 9,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 52,
+        "targetRanges": [],
+        "timestamp": 1790977472844,
+        "type": "input"
+      }
+    ],
+    "expected": "equivalent",
+    "name": "cdp-dispatch-unidentified-inside",
+    "steps": [
+      {
+        "kind": "key",
+        "label": "h",
+        "seqEnd": 53,
+        "seqStart": 47,
+        "key": "Unidentified"
+      }
+    ]
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhi "
+          },
+          "anchorOffset": 9,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhi "
+          },
+          "focusOffset": 9,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 53,
+        "targetRanges": [],
+        "timestamp": 1790977474594,
+        "type": "compositionstart"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhi "
+          },
+          "anchorOffset": 9,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhi "
+          },
+          "focusOffset": 9,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 54,
+        "targetRanges": [],
+        "timestamp": 1790977474595,
+        "type": "compositionupdate"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": null,
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhi "
+          },
+          "anchorOffset": 9,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhi "
+          },
+          "focusOffset": 9,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 55,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhi "
+            },
+            "endOffset": 9,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 99.58928680419922,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhi "
+            },
+            "startOffset": 9
+          }
+        ],
+        "timestamp": 1790977474595,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzzhi "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzzhi "
+          },
+          "anchorOffset": 10,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzzhi "
+          },
+          "focusOffset": 10,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 56,
+        "targetRanges": [],
+        "timestamp": 1790977474597,
+        "type": "input"
+      }
+    ],
+    "expected": "reject",
+    "name": "cdp-ime-set-composition-outside",
+    "steps": []
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzi "
+          },
+          "anchorOffset": 11,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzi "
+          },
+          "focusOffset": 11,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 57,
+        "targetRanges": [],
+        "timestamp": 1790977475814,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzi "
+          },
+          "anchorOffset": 11,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzi "
+          },
+          "focusOffset": 11,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 58,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzi "
+            },
+            "endOffset": 11,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 116.33928680419922,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzi "
+            },
+            "startOffset": 11
+          }
+        ],
+        "timestamp": 1790977475815,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhi "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhi "
+          },
+          "anchorOffset": 12,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhi "
+          },
+          "focusOffset": 12,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 59,
+        "targetRanges": [],
+        "timestamp": 1790977475818,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhi "
+          },
+          "anchorOffset": 12,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhi "
+          },
+          "focusOffset": 12,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 60,
+        "targetRanges": [],
+        "timestamp": 1790977475819,
+        "type": "compositionstart"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": null,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhi "
+          },
+          "anchorOffset": 12,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhi "
+          },
+          "focusOffset": 12,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 61,
+        "targetRanges": [],
+        "timestamp": 1790977475819,
+        "type": "compositionupdate"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": null,
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhi "
+          },
+          "anchorOffset": 12,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhi "
+          },
+          "focusOffset": 12,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 62,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzhi "
+            },
+            "endOffset": 12,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 125.1547622680664,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzhi "
+            },
+            "startOffset": 12
+          }
+        ],
+        "timestamp": 1790977475819,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhzi "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhi "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhzi "
+          },
+          "anchorOffset": 13,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhzi "
+          },
+          "focusOffset": 13,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 63,
+        "targetRanges": [],
+        "timestamp": 1790977475820,
+        "type": "input"
+      }
+    ],
+    "expected": "reject",
+    "name": "cdp-ime-set-composition-inside",
+    "steps": [
+      {
+        "kind": "key",
+        "label": "h",
+        "seqEnd": 64,
+        "seqStart": 57,
+        "key": "Unidentified"
+      }
+    ]
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhiz "
+          },
+          "anchorOffset": 14,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhiz "
+          },
+          "focusOffset": 14,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 64,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzhiz "
+            },
+            "endOffset": 14,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 136.98214721679688,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzhiz "
+            },
+            "startOffset": 14
+          }
+        ],
+        "timestamp": 1790977477590,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizz "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhiz "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizz "
+          },
+          "anchorOffset": 15,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizz "
+          },
+          "focusOffset": 15,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 65,
+        "targetRanges": [],
+        "timestamp": 1790977477592,
+        "type": "input"
+      }
+    ],
+    "expected": "reject",
+    "name": "cdp-insert-text-outside",
+    "steps": []
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizz "
+          },
+          "anchorOffset": 15,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizz "
+          },
+          "focusOffset": 15,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 66,
+        "targetRanges": [],
+        "timestamp": 1790977478809,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizz "
+          },
+          "anchorOffset": 15,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizz "
+          },
+          "focusOffset": 15,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 67,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzhizz "
+            },
+            "endOffset": 15,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 144.9166717529297,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzhizz "
+            },
+            "startOffset": 15
+          }
+        ],
+        "timestamp": 1790977478810,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizzh "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizz "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzh "
+          },
+          "anchorOffset": 16,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzh "
+          },
+          "focusOffset": 16,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 68,
+        "targetRanges": [],
+        "timestamp": 1790977478812,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzh "
+          },
+          "anchorOffset": 16,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzh "
+          },
+          "focusOffset": 16,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 69,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzhizzh "
+            },
+            "endOffset": 16,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 153.73214721679688,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzhizzh "
+            },
+            "startOffset": 16
+          }
+        ],
+        "timestamp": 1790977478813,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizzhz "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizzh "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhz "
+          },
+          "anchorOffset": 17,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhz "
+          },
+          "focusOffset": 17,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 70,
+        "targetRanges": [],
+        "timestamp": 1790977478814,
+        "type": "input"
+      }
+    ],
+    "expected": "reject",
+    "name": "cdp-insert-text-inside",
+    "steps": [
+      {
+        "kind": "key",
+        "label": "h",
+        "seqEnd": 71,
+        "seqStart": 66,
+        "key": "Unidentified"
+      }
+    ]
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizzhzz "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizzh "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzz "
+          },
+          "anchorOffset": 18,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzz "
+          },
+          "focusOffset": 18,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 71,
+        "targetRanges": [],
+        "timestamp": 1790977480572,
+        "type": "input"
+      }
+    ],
+    "expected": "reject",
+    "name": "script-exec-command-outside",
+    "steps": []
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzz "
+          },
+          "anchorOffset": 18,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzz "
+          },
+          "focusOffset": 18,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 72,
+        "targetRanges": [],
+        "timestamp": 1790977481784,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzz "
+          },
+          "anchorOffset": 18,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzz "
+          },
+          "focusOffset": 18,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 73,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzhizzhzz "
+            },
+            "endOffset": 18,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 169.60714721679688,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzhizzhzz "
+            },
+            "startOffset": 18
+          }
+        ],
+        "timestamp": 1790977481785,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizzhzzh "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizzhzz "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzh "
+          },
+          "anchorOffset": 19,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzh "
+          },
+          "focusOffset": 19,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 74,
+        "targetRanges": [],
+        "timestamp": 1790977481788,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizzhzzhz "
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizzhzz "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzhz "
+          },
+          "anchorOffset": 20,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzhz "
+          },
+          "focusOffset": 20,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 75,
+        "targetRanges": [],
+        "timestamp": 1790977481789,
+        "type": "input"
+      }
+    ],
+    "expected": "reject",
+    "name": "script-exec-command-inside",
+    "steps": [
+      {
+        "kind": "key",
+        "label": "h",
+        "seqEnd": 76,
+        "seqStart": 72,
+        "key": "Unidentified"
+      }
+    ]
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": false,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzhz "
+          },
+          "anchorOffset": 20,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzhz "
+          },
+          "focusOffset": 20,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 76,
+        "targetRanges": [],
+        "timestamp": 1790977483548,
+        "type": "beforeinput"
+      }
+    ],
+    "expected": "reject",
+    "name": "script-beforeinput-outside",
+    "steps": []
+  },
+  {
+    "events": [
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": null,
+        "domDelta": null,
+        "inputType": null,
+        "isComposing": false,
+        "isTrusted": true,
+        "key": "Unidentified",
+        "keyCode": 229,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzhzz "
+          },
+          "anchorOffset": 22,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzhzz "
+          },
+          "focusOffset": 22,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 77,
+        "targetRanges": [],
+        "timestamp": 1790977484773,
+        "type": "keydown"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzhzz "
+          },
+          "anchorOffset": 22,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzhzz "
+          },
+          "focusOffset": 22,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 78,
+        "targetRanges": [
+          {
+            "collapsed": true,
+            "end": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzhizzhzzhzz "
+            },
+            "endOffset": 22,
+            "rects": [
+              {
+                "height": 18.666671752929688,
+                "width": 0,
+                "x": 198.26190185546875,
+                "y": 170.32142639160156
+              }
+            ],
+            "start": {
+              "nodeName": "#text",
+              "parentNodeName": "SPAN",
+              "parentPath": "2,0",
+              "parentSignature": "span[0][path=2,0][text=2,0]",
+              "path": "2,0",
+              "text": "ahaxhxzhzhzhizzhzzhzz "
+            },
+            "startOffset": 22
+          }
+        ],
+        "timestamp": 1790977484773,
+        "type": "beforeinput"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "h",
+        "domDelta": {
+          "textNodes": [
+            {
+              "after": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizzhzzhzz h"
+              },
+              "before": {
+                "id": "text-3",
+                "parentPath": "2,0",
+                "parentSignature": "span[0][path=2,0][text=2,0]",
+                "text": "ahaxhxzhzhzhizzhzzhzz "
+              },
+              "type": "modified"
+            }
+          ]
+        },
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": true,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzhzz h"
+          },
+          "anchorOffset": 23,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzhzz h"
+          },
+          "focusOffset": 23,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 79,
+        "targetRanges": [],
+        "timestamp": 1790977484775,
+        "type": "input"
+      },
+      {
+        "clientX": null,
+        "clientY": null,
+        "data": "z",
+        "domDelta": null,
+        "inputType": "insertText",
+        "isComposing": false,
+        "isTrusted": false,
+        "key": null,
+        "keyCode": null,
+        "selection": {
+          "anchor": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzhzz h"
+          },
+          "anchorOffset": 23,
+          "collapsed": true,
+          "focus": {
+            "nodeName": "#text",
+            "parentNodeName": "SPAN",
+            "parentPath": "2,0",
+            "parentSignature": "span[0][path=2,0][text=2,0]",
+            "path": "2,0",
+            "text": "ahaxhxzhzhzhizzhzzhzz h"
+          },
+          "focusOffset": 23,
+          "rangeCount": 1,
+          "selectedText": ""
+        },
+        "seq": 80,
+        "targetRanges": [],
+        "timestamp": 1790977484776,
+        "type": "beforeinput"
+      }
+    ],
+    "expected": "reject",
+    "name": "script-beforeinput-inside",
+    "steps": [
+      {
+        "kind": "key",
+        "label": "h",
+        "seqEnd": 81,
+        "seqStart": 77,
+        "key": "Unidentified"
+      }
+    ]
+  }
+]

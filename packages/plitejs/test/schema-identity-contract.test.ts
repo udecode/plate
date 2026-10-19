@@ -1,0 +1,498 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import {
+  createEditor,
+  createEditorView,
+  defineEditorSchema,
+  definePlugin,
+  EditorSchemaValidationError,
+  schema,
+  type EditorSchemaIdentity,
+} from 'plitejs';
+
+import {
+  compileEditorSchemaContributions,
+  EditorSchemaCompileError,
+  setEditorSnapshotInputTransform,
+  type EditorSchemaContributionRecord,
+} from '../src/internal';
+
+const record = (
+  pluginName: string,
+  contribution: EditorSchemaContributionRecord['contribution']
+): EditorSchemaContributionRecord => ({ contribution, pluginName });
+
+describe('schema identity contract', () => {
+  it('derives complete schema identity when lineage is omitted', () => {
+    const DerivedSchema = defineEditorSchema('schema:derived', {
+      elements: {
+        paragraph: { content: schema.content.text() },
+      },
+      root: schema.content.type('paragraph'),
+      unknown: 'reject',
+    });
+    const NamedSchema = defineEditorSchema('schema:article', {
+      elements: {
+        paragraph: { content: schema.content.text() },
+      },
+      id: 'article',
+      root: schema.content.type('paragraph'),
+      unknown: 'reject',
+      version: 1,
+    });
+    const derived = compileEditorSchemaContributions([
+      record(DerivedSchema.name, DerivedSchema.schema),
+    ]);
+    const named = compileEditorSchemaContributions([
+      record(NamedSchema.name, NamedSchema.schema),
+    ]);
+    const editor = createEditor({
+      plugins: [DerivedSchema],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+    const name: 'schema:derived' = DerivedSchema.name;
+
+    assert.equal(name, 'schema:derived');
+    assert.equal(Object.hasOwn(DerivedSchema.schema, 'identity'), false);
+    assert.deepEqual(derived.identity, {
+      fingerprint: derived.identity.fingerprint,
+      kind: 'derived',
+    });
+    assert.equal(named.identity.kind, 'named');
+    assert.equal(named.identity.fingerprint, derived.identity.fingerprint);
+    assert.deepEqual(editor.read.schema.identity(), derived.identity);
+  });
+
+  it('always publishes one non-null raw editor identity', () => {
+    const editor = createEditor();
+    const identity: EditorSchemaIdentity = editor.read.schema.identity();
+
+    assert.equal(identity.kind, 'derived');
+    assert.equal(identity.fingerprint.length > 0, true);
+  });
+
+  it('treats the primary root as complete-schema ownership with closed defaults', () => {
+    const compiled = compileEditorSchemaContributions([
+      record('closed-defaults', {
+        elements: { paragraph: schema.element.textBlock() },
+        root: schema.content.type('paragraph'),
+      }),
+    ]);
+
+    assert.equal(compiled.identity.kind, 'derived');
+    assert.equal(compiled.unknown, 'reject');
+  });
+
+  it('requires named lineage fields together', () => {
+    assert.throws(
+      () =>
+        compileEditorSchemaContributions([
+          record('missing-id', {
+            elements: {},
+            root: schema.content.open(),
+            unknown: 'preserve',
+            version: 1,
+          } as unknown as EditorSchemaContributionRecord['contribution']),
+        ]),
+      (error: unknown) => {
+        assert.ok(error instanceof EditorSchemaCompileError);
+        assert.deepEqual(error.diagnostics, [
+          {
+            code: 'missing-complete-schema-field',
+            plugins: ['missing-id'],
+            message:
+              'Named schema definition "missing-id" must own schema field "id".',
+            path: 'schema.id',
+          },
+        ]);
+
+        return true;
+      }
+    );
+  });
+
+  it('accepts an exact persisted envelope and rejects stale lineage before fitting', () => {
+    const ArticleSchema = defineEditorSchema('schema:article-envelope', {
+      elements: { paragraph: schema.element.textBlock() },
+      id: 'article-envelope',
+      root: schema.content.type('paragraph'),
+      version: 2,
+    });
+    const editor = createEditor({
+      plugins: [ArticleSchema],
+      initialValue: [{ children: [{ text: 'before' }], type: 'paragraph' }],
+    });
+    const document = {
+      children: [{ children: [{ text: 'after' }], type: 'paragraph' }],
+    } as const;
+
+    editor.update.value.replace({
+      document,
+      schema: editor.read.schema.identity(),
+    });
+    assert.equal(editor.read.children()[0]?.children[0]?.text, 'after');
+    assert.throws(() => {
+      editor.update.value.replace({
+        document: { ...document, selection: 'end' } as never,
+        schema: editor.read.schema.identity(),
+      });
+    }, /Persisted document field "selection" is not supported/);
+    assert.throws(() => {
+      editor.update.value.replace({
+        document,
+        schema: editor.read.schema.identity(),
+        sourceVersion: 2,
+      } as never);
+    }, /Persisted document envelope field "sourceVersion" is not supported/);
+    assert.throws(() => {
+      editor.update.value.replace({
+        document,
+        schema: {
+          ...editor.read.schema.identity(),
+          sourceVersion: 2,
+        },
+      } as never);
+    }, /Persisted document schema field "sourceVersion" is not supported/);
+    assert.throws(() => {
+      editor.update.value.replace({
+        document,
+        schema: {
+          ...editor.read.schema.identity(),
+          fingerprint: 'stale',
+        },
+      });
+    }, /does not match current schema/);
+  });
+
+  it('loads an envelope saved before a plugin declared record sets', () => {
+    const ArticleSchema = defineEditorSchema('schema:article-records', {
+      elements: { paragraph: schema.element.textBlock() },
+      id: 'article-records',
+      root: schema.content.type('paragraph'),
+      version: 1,
+    });
+    const saved = createEditor({ plugins: [ArticleSchema] }).read.schema;
+    const editor = createEditor({
+      plugins: [
+        ArticleSchema,
+        definePlugin('records', { schema: { records: { notes: {} } } }),
+      ],
+    });
+    const document = {
+      children: [{ children: [{ text: 'saved' }], type: 'paragraph' }],
+    } as const;
+
+    editor.update.value.replace({ document, schema: saved.identity() });
+
+    assert.deepEqual(editor.read.value(), document);
+  });
+
+  it('refuses records of a set no plugin declares', () => {
+    assert.throws(
+      () =>
+        createEditor({
+          initialValue: {
+            children: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+            records: { notes: { n: { at: 1 } } },
+          },
+        }),
+      /Undeclared record set "notes" in editor schema\./
+    );
+  });
+
+  it('refuses a document field in a direct snapshot', () => {
+    const editor = createEditor();
+    const children = [{ children: [{ text: 'after' }], type: 'paragraph' }];
+    const before = editor.read.value();
+
+    assert.throws(() => {
+      editor.update.value.replace({
+        children,
+        document: { application: true },
+      } as never);
+    }, /field "children" is not supported/);
+    assert.deepEqual(editor.read.value(), before);
+  });
+
+  it('refuses an unknown field before reading its JSON value', () => {
+    const editor = createEditor();
+    const children = [{ children: [{ text: 'a' }], type: 'paragraph' }];
+
+    assert.throws(
+      () => editor.read.schema.assertDocument({ children, extra: () => null }),
+      (error: unknown) =>
+        error instanceof EditorSchemaValidationError &&
+        error.diagnostics[0]?.code === 'invalid-document' &&
+        error.message.includes('field "extra"')
+    );
+  });
+
+  it('treats a field holding undefined as absent', () => {
+    const editor = createEditor();
+    const children = [{ children: [{ text: 'a' }], type: 'paragraph' }];
+    const document = { children, meta: undefined };
+
+    assert.doesNotThrow(() => editor.read.schema.assertDocument(document));
+    assert.deepEqual(
+      editor.read.schema.fitDocument(document).children,
+      children
+    );
+    assert.doesNotThrow(() =>
+      createEditorView(editor).update.value.replace({
+        children,
+        meta: undefined,
+      })
+    );
+  });
+
+  it("admits the caller's snapshot before a host transform rewrites it", () => {
+    const editor = createEditor();
+    const children = [{ children: [{ text: 'after' }], type: 'paragraph' }];
+    const restore = setEditorSnapshotInputTransform(editor, (input) =>
+      'children' in input ? { children: input.children } : input
+    );
+    const before = editor.read.value();
+
+    assert.throws(
+      () => editor.update.value.replace({ children, extra: 1 } as never),
+      /field "extra" is not supported/
+    );
+    assert.deepEqual(editor.read.value(), before);
+
+    editor.update.value.replace({ children });
+    assert.equal(editor.read.text.string([]), 'after');
+    restore();
+  });
+
+  it('refuses an unknown root-view snapshot field before host transforms run', () => {
+    const editor = createEditor();
+    const view = createEditorView(editor);
+    const children = [{ children: [{ text: 'after' }], type: 'paragraph' }];
+    let transforms = 0;
+    const restore = setEditorSnapshotInputTransform(editor, (input) => {
+      transforms += 1;
+
+      return input;
+    });
+    const before = editor.read.value();
+
+    assert.throws(
+      () => view.update.value.replace({ children, extra: 1 } as never),
+      /field "extra" is not supported/
+    );
+    assert.equal(transforms, 0);
+    assert.deepEqual(editor.read.value(), before);
+
+    view.update.value.replace({ children });
+    assert.equal(transforms, 1);
+    restore();
+  });
+
+  it('revalidates a mutable caller document on every document view', () => {
+    const ClosedDocumentSchema = defineEditorSchema('schema:view-document', {
+      elements: { paragraph: schema.element.textBlock() },
+      root: schema.content.type('paragraph', { min: 1 }),
+    });
+    const editor = createEditor({ plugins: [ClosedDocumentSchema] });
+    const document = {
+      children: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+    };
+
+    createEditorView(editor, { document });
+    assert.doesNotThrow(() => createEditorView(editor, { document }));
+
+    document.children[0].type = 'unknown';
+    assert.throws(
+      () => createEditorView(editor, { document }),
+      (error: unknown) =>
+        error instanceof EditorSchemaValidationError &&
+        error.diagnostics[0]?.code === 'unknown-element'
+    );
+  });
+
+  it('rejects persisted envelopes with unsupported direct snapshot fields', () => {
+    const editor = createEditor();
+
+    assert.throws(() => {
+      editor.update.value.replace({
+        children: [],
+        document: { children: [] },
+        schema: editor.read.schema.identity(),
+      });
+    }, /Persisted document envelope field "children" is not supported/);
+  });
+
+  it('rejects malformed document containers at every document ingress', () => {
+    const ClosedDocumentSchema = defineEditorSchema(
+      'schema:document-boundary',
+      {
+        elements: { paragraph: schema.element.textBlock() },
+        root: schema.content.type('paragraph', { min: 1 }),
+      }
+    );
+    const validDocument = {
+      children: [{ children: [{ text: 'before' }], type: 'paragraph' }],
+    } as const;
+    const malformedDocuments = [
+      ['numeric metadata', { ...validDocument, meta: 7 }],
+      ['array metadata', { ...validDocument, meta: [] }],
+      ['null metadata', { ...validDocument, meta: null }],
+      ['numeric roots', { ...validDocument, roots: 7 }],
+      ['array roots', { ...validDocument, roots: [] }],
+      ['null roots', { ...validDocument, roots: null }],
+      [
+        'primary root redefinition',
+        {
+          ...validDocument,
+          roots: {
+            main: [{ children: [{ text: 'wrong' }], type: 'paragraph' }],
+          },
+        },
+      ],
+      ['non-array named root', { ...validDocument, roots: { sidebar: {} } }],
+      ['unknown field', { ...validDocument, extra: 1 }],
+    ] as const;
+    const modes = [
+      {
+        create: (initialValue: unknown = validDocument) =>
+          createEditor({ initialValue: initialValue as never }),
+        name: 'raw',
+      },
+      {
+        create: (initialValue: unknown = validDocument) =>
+          createEditor({
+            plugins: [ClosedDocumentSchema],
+            initialValue: initialValue as never,
+          }),
+        name: 'closed',
+      },
+    ] as const;
+
+    for (const mode of modes) {
+      for (const [caseName, document] of malformedDocuments) {
+        const editor = mode.create();
+        const before = editor.read.value();
+
+        assert.throws(
+          () => editor.read.schema.assertDocument(document),
+          EditorSchemaValidationError,
+          `${mode.name}: ${caseName}: assertion`
+        );
+        assert.throws(
+          () => mode.create(document),
+          undefined,
+          `${mode.name}: ${caseName}: construction`
+        );
+        assert.throws(
+          () => editor.read.schema.fitDocument(document as never),
+          EditorSchemaValidationError,
+          `${mode.name}: ${caseName}: schema fitting`
+        );
+        assert.throws(
+          () => editor.update.value.replace(document as never),
+          undefined,
+          `${mode.name}: ${caseName}: direct replacement`
+        );
+        assert.deepEqual(
+          editor.read.value(),
+          before,
+          `${mode.name}: ${caseName}: direct replacement atomicity`
+        );
+        assert.throws(
+          () =>
+            editor.update.value.replace({
+              document,
+              schema: editor.read.schema.identity(),
+            } as never),
+          undefined,
+          `${mode.name}: ${caseName}: persisted replacement`
+        );
+        assert.deepEqual(
+          editor.read.value(),
+          before,
+          `${mode.name}: ${caseName}: persisted replacement atomicity`
+        );
+      }
+    }
+  });
+
+  it('rejects persisted envelopes from views before host transforms run', () => {
+    const editor = createEditor();
+    const view = createEditorView(editor);
+    const envelope = {
+      document: {
+        children: [{ children: [{ text: 'after' }], type: 'paragraph' }],
+      },
+      schema: editor.read.schema.identity(),
+    } as const;
+    const restore = setEditorSnapshotInputTransform(editor, (input) =>
+      typeof input === 'object' && input && 'document' in input
+        ? input.document
+        : input
+    );
+
+    assert.throws(
+      () => view.update.value.replace(envelope),
+      /can replace only the complete editor/
+    );
+    restore();
+
+    const restoreEnvelopeTransform = setEditorSnapshotInputTransform(
+      editor,
+      (input) =>
+        ({
+          document: {
+            children: (input as { children: unknown }).children,
+          },
+          schema: editor.read.schema.identity(),
+        }) as never
+    );
+
+    assert.throws(() => {
+      view.update.value.replace({
+        children: [{ children: [{ text: 'transformed' }], type: 'paragraph' }],
+      });
+    }, /can replace only the complete editor/);
+    restoreEnvelopeTransform();
+  });
+
+  it('rejects multiple root-owning schema definitions', () => {
+    const complete = (id?: string) => ({
+      elements: {},
+      ...(id ? { id, version: 1 } : {}),
+      root: schema.content.open(),
+      unknown: 'preserve' as const,
+    });
+
+    assert.throws(
+      () =>
+        compileEditorSchemaContributions([
+          record(
+            'derived',
+            complete() as EditorSchemaContributionRecord['contribution']
+          ),
+          record(
+            'named',
+            complete(
+              'article'
+            ) as EditorSchemaContributionRecord['contribution']
+          ),
+        ]),
+      (error: unknown) => {
+        assert.ok(error instanceof EditorSchemaCompileError);
+        assert.deepEqual(error.diagnostics, [
+          {
+            code: 'duplicate-complete-schema',
+            plugins: ['derived', 'named'],
+            message:
+              'Schema contributions contain multiple complete schemas: derived, named.',
+            path: 'schema',
+          },
+        ]);
+
+        return true;
+      }
+    );
+  });
+});

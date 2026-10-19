@@ -1,0 +1,6 @@
+repo_key	url	host	license	stars_or_signal	last_activity	topic_tags	local_path	status	score	notes
+github/prosemirror/prosemirror-history	https://github.com/ProseMirror/prosemirror-history	github	MIT	strong editor-history prior art	local	history,undo,skipped-edits,collab	/Users/zbeyens/git/prosemirror/history	source-read	9	Strongest source for skipped/non-history edit rebasing and overlap tests.
+github/facebook/lexical	https://github.com/facebook/lexical	github	MIT	strong editor-history prior art	local	history,undo,composition,merge-tags	/Users/zbeyens/git/lexical	source-read	7	Useful merge-policy and composition discard signals.
+github/ianstormtaylor/slate	https://github.com/ianstormtaylor/slate	github	MIT	legacy Slate baseline	local	history,undo,redo,adjacent-text	/Users/zbeyens/git/slate	source-read	5	Baseline adjacent-operation history model, weaker than v2 and ProseMirror for skipped edits.
+local/slate-v2	local	local	MIT	current target	local	history,undo,withoutSaving,collab	/Users/zbeyens/git/plate-2/.tmp/slate-v2	source-read	9	Target implementation and coverage map.
+

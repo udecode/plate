@@ -1,0 +1,4 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+media:void-with-children	local/plate-2	media:object-with-editable-content:selection-structure	Void/atom traversal cannot express normal editable captions	New semantics separate exposure from host identity
+media:default-nested-caption-editor	lexical	media:object-with-editable-content:selection-structure	One caption needs no independent editor state/history	Independent editor lifetime becomes a real requirement
+media:direct-children-sufficiency	wordgard	media:object-with-editable-content:selection-structure	Direct children alone do not supply body selection or safe splitting	Explicit structural and selection laws are implemented

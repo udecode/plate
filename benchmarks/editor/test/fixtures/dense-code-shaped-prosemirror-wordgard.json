@@ -1,0 +1,468 @@
+{
+  "artifactVersion": 1,
+  "config": {
+    "charsPerLine": 48,
+    "cohorts": [10000],
+    "discardedWarmups": 1,
+    "fixtures": ["dense"],
+    "headless": true,
+    "insertedText": "abcde",
+    "iterations": 5,
+    "surfaces": ["prosemirror", "wordgard"],
+    "typeOps": 4
+  },
+  "environment": {
+    "arch": "arm64",
+    "bun": "1.3.12",
+    "node": "v24.3.0",
+    "platform": "darwin",
+    "playwright": "1.61.0"
+  },
+  "results": {
+    "dense": {
+      "10000": {
+        "prosemirror": {
+          "mountToPaintMs": {
+            "max": 151.9,
+            "p50": 147.9,
+            "p75": 149.9,
+            "p95": 151.9,
+            "samples": [149.9, 151.9, 143.6, 142.5, 147.9]
+          },
+          "refreshToPaintMs": {
+            "max": 51.4,
+            "p50": 45.1,
+            "p75": 45.5,
+            "p95": 51.4,
+            "samples": [44.1, 51.4, 45.1, 44.5, 45.5]
+          },
+          "selectToPaintMs": {
+            "max": 32.8,
+            "p50": 32.8,
+            "p75": 32.8,
+            "p95": 32.8,
+            "samples": [32.7, 32.8, 32.8, 32.8, 32.7]
+          },
+          "snapshots": [
+            {
+              "mounted": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 1,
+                "domElements": 40002,
+                "domTextLength": 489999,
+                "domTextNodes": 80000,
+                "domTotalNodes": 120002,
+                "heapMB": 92.79242610931396,
+                "modelNodes": 2,
+                "modelTextLength": 489999,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              },
+              "typed": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 1,
+                "domElements": 40002,
+                "domTextLength": 490019,
+                "domTextNodes": 80000,
+                "domTotalNodes": 120002,
+                "heapMB": 87.17035579681396,
+                "modelNodes": 2,
+                "modelTextLength": 490019,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              }
+            },
+            {
+              "mounted": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 1,
+                "domElements": 40002,
+                "domTextLength": 489999,
+                "domTextNodes": 80000,
+                "domTotalNodes": 120002,
+                "heapMB": 105.77911567687988,
+                "modelNodes": 2,
+                "modelTextLength": 489999,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              },
+              "typed": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 1,
+                "domElements": 40002,
+                "domTextLength": 490019,
+                "domTextNodes": 80000,
+                "domTotalNodes": 120002,
+                "heapMB": 91.90081977844238,
+                "modelNodes": 2,
+                "modelTextLength": 490019,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              }
+            },
+            {
+              "mounted": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 1,
+                "domElements": 40002,
+                "domTextLength": 489999,
+                "domTextNodes": 80000,
+                "domTotalNodes": 120002,
+                "heapMB": 111.09631824493408,
+                "modelNodes": 2,
+                "modelTextLength": 489999,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              },
+              "typed": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 1,
+                "domElements": 40002,
+                "domTextLength": 490019,
+                "domTextNodes": 80000,
+                "domTotalNodes": 120002,
+                "heapMB": 48.91044330596924,
+                "modelNodes": 2,
+                "modelTextLength": 490019,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              }
+            },
+            {
+              "mounted": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 1,
+                "domElements": 40002,
+                "domTextLength": 489999,
+                "domTextNodes": 80000,
+                "domTotalNodes": 120002,
+                "heapMB": 73.4978895187378,
+                "modelNodes": 2,
+                "modelTextLength": 489999,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              },
+              "typed": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 1,
+                "domElements": 40002,
+                "domTextLength": 490019,
+                "domTextNodes": 80000,
+                "domTotalNodes": 120002,
+                "heapMB": 60.468770027160645,
+                "modelNodes": 2,
+                "modelTextLength": 490019,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              }
+            },
+            {
+              "mounted": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 1,
+                "domElements": 40002,
+                "domTextLength": 489999,
+                "domTextNodes": 80000,
+                "domTotalNodes": 120002,
+                "heapMB": 79.52257537841797,
+                "modelNodes": 2,
+                "modelTextLength": 489999,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              },
+              "typed": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 1,
+                "domElements": 40002,
+                "domTextLength": 490019,
+                "domTextNodes": 80000,
+                "domTotalNodes": 120002,
+                "heapMB": 44.584832191467285,
+                "modelNodes": 2,
+                "modelTextLength": 490019,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              }
+            }
+          ],
+          "typeToPaintMs": {
+            "max": 418.7,
+            "p50": 358.1,
+            "p75": 391.7,
+            "p95": 412.6,
+            "samples": [
+              407.7, 349.3, 358.1, 366, 412.6, 376.8, 349.4, 349.5, 418.7,
+              378.5, 340.5, 375.5, 357.9, 399.7, 355, 398.2, 349.5, 351.9,
+              391.7, 341.1
+            ]
+          }
+        },
+        "wordgard": {
+          "mountToPaintMs": {
+            "max": 177.2,
+            "p50": 168.8,
+            "p75": 169.7,
+            "p95": 177.2,
+            "samples": [177.2, 168.2, 168.8, 168.2, 169.7]
+          },
+          "refreshToPaintMs": {
+            "max": 62.7,
+            "p50": 57.4,
+            "p75": 59.7,
+            "p95": 62.7,
+            "samples": [62.7, 57.4, 59.7, 52.4, 57]
+          },
+          "selectToPaintMs": {
+            "max": 313.4,
+            "p50": 283.9,
+            "p75": 290.2,
+            "p95": 313.4,
+            "samples": [290.2, 313.4, 283.9, 283.2, 279.7]
+          },
+          "snapshots": [
+            {
+              "mounted": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 0.9795938359057875,
+                "domElements": 50000,
+                "domTextLength": 480000,
+                "domTextNodes": 80000,
+                "domTotalNodes": 130000,
+                "heapMB": 48.217926025390625,
+                "modelNodes": 20000,
+                "modelTextLength": 489999,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              },
+              "typed": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 0.9795946687781494,
+                "domElements": 50000,
+                "domTextLength": 480020,
+                "domTextNodes": 80000,
+                "domTotalNodes": 130000,
+                "heapMB": 101.00784587860107,
+                "modelNodes": 20000,
+                "modelTextLength": 490019,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              }
+            },
+            {
+              "mounted": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 0.9795938359057875,
+                "domElements": 50000,
+                "domTextLength": 480000,
+                "domTextNodes": 80000,
+                "domTotalNodes": 130000,
+                "heapMB": 106.8011531829834,
+                "modelNodes": 20000,
+                "modelTextLength": 489999,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              },
+              "typed": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 0.9795946687781494,
+                "domElements": 50000,
+                "domTextLength": 480020,
+                "domTextNodes": 80000,
+                "domTotalNodes": 130000,
+                "heapMB": 77.655517578125,
+                "modelNodes": 20000,
+                "modelTextLength": 490019,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              }
+            },
+            {
+              "mounted": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 0.9795938359057875,
+                "domElements": 50000,
+                "domTextLength": 480000,
+                "domTextNodes": 80000,
+                "domTotalNodes": 130000,
+                "heapMB": 119.60932731628418,
+                "modelNodes": 20000,
+                "modelTextLength": 489999,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              },
+              "typed": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 0.9795946687781494,
+                "domElements": 50000,
+                "domTextLength": 480020,
+                "domTextNodes": 80000,
+                "domTotalNodes": 130000,
+                "heapMB": 54.0763521194458,
+                "modelNodes": 20000,
+                "modelTextLength": 490019,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              }
+            },
+            {
+              "mounted": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 0.9795938359057875,
+                "domElements": 50000,
+                "domTextLength": 480000,
+                "domTextNodes": 80000,
+                "domTotalNodes": 130000,
+                "heapMB": 75.06278324127197,
+                "modelNodes": 20000,
+                "modelTextLength": 489999,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              },
+              "typed": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 0.9795946687781494,
+                "domElements": 50000,
+                "domTextLength": 480020,
+                "domTextNodes": 80000,
+                "domTotalNodes": 130000,
+                "heapMB": 71.2577657699585,
+                "modelNodes": 20000,
+                "modelTextLength": 490019,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              }
+            },
+            {
+              "mounted": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 0.9795938359057875,
+                "domElements": 50000,
+                "domTextLength": 480000,
+                "domTextNodes": 80000,
+                "domTotalNodes": 130000,
+                "heapMB": 113.5281400680542,
+                "modelNodes": 20000,
+                "modelTextLength": 489999,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              },
+              "typed": {
+                "decorationCount": 40000,
+                "domCoverageRatio": 0.9795946687781494,
+                "domElements": 50000,
+                "domTextLength": 480020,
+                "domTextNodes": 80000,
+                "domTotalNodes": 130000,
+                "heapMB": 41.07695198059082,
+                "modelNodes": 20000,
+                "modelTextLength": 490019,
+                "pliteSourceReads": 0,
+                "reactActualDurationMs": 0,
+                "reactCommitCount": 0,
+                "tokenElements": 40000,
+                "viewport": null
+              }
+            }
+          ],
+          "typeToPaintMs": {
+            "max": 393.3,
+            "p50": 338.6,
+            "p75": 374.5,
+            "p95": 383.9,
+            "samples": [
+              377.9, 332.7, 366.1, 332.7, 348.4, 353.6, 383.9, 329.5, 393.3,
+              336.2, 332.8, 366.3, 338.6, 374.5, 332.9, 382.8, 337.9, 383.3,
+              332.7, 335.8
+            ]
+          }
+        }
+      }
+    }
+  },
+  "sourceIdentities": {
+    "codemirror": {
+      "packageVersion": "6.41.0",
+      "stateVersion": "6.7.2",
+      "buildSha256": "6e394e94dbb9d119442532b92ceb4632e4f47e09db392ff87dcf2aa9c1089b9d"
+    },
+    "harness": {
+      "path": "/Users/zbeyens/git/plate-2/docs/plans/artifacts/2026-09-02-plite-text-flow-benchmark-first/text-flow-browser-matrix.mjs",
+      "sha256": "6e61442653be5c842326e602351e7fe8efdf7c0678423b926e42367f45e94e4d"
+    },
+    "platePlite": {
+      "head": "a6afd55c30e97c74fe895d1ad005ca75413110f3",
+      "buildSha256": "08d81cf39eb560f588b0d0290d8e3440b6987bef10f6180c816d783620e7d66c"
+    },
+    "prosemirror": {
+      "head": "c7f2f1d7bde70728dfedaa68ca8f5fc3dffa17cc",
+      "buildSha256": "3c185eb98c60d3758f4e8ec9d1286f84d715a19f0cc37730c0da8e5ca198740f"
+    },
+    "slate": {
+      "version": "0.124.1",
+      "reactVersion": "0.124.2",
+      "buildSha256": "af67fb4a06d1e63930a55aaf862d01b2a6fe6565133b3e9cf0e59e2b06d3f5d7"
+    },
+    "wordgard": {
+      "head": "b5ad0d057e2790c8cf971c85a9d2fb7e4a82da54",
+      "version": "0.5.1",
+      "buildSha256": "3d9be7a8c13358d5cc225b6f3596a593e8f239432e8688f0291783bb0b8d0f4d"
+    }
+  }
+}

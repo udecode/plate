@@ -1,0 +1,116 @@
+{
+  "id": "2026-10-03-markdown-table-cell-blocks-execution",
+  "kind": "execution",
+  "date": "2026-10-03",
+  "scopes": [
+    "markdown"
+  ],
+  "reviewBasis": [
+    "2026-10-03-markdown-table-cell-blocks-constraints"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-10-03-markdown-table-cell-blocks.md",
+    "sha256": "7a48055ce8ebfe3266b0c935e30b642b3c90bcbcbac070815a7ded9ea7ebab29"
+  },
+  "binding": "current",
+  "outcome": "partial",
+  "summary": "Built block content in GFM table cells in the working tree (uncommitted): encodeLine and decodeLine on the Markdown mapping contexts, implemented in markdownLine.ts, write a cell on one line (lists as main's inline <ul>/<ol start>/<li> HTML, other blocks collapsed or dropped with reports, no raw line ending or row-splitting |) and read it back, with list runs built by the installed List decoders. Table cells call them, merged cells flatten through the table grid with a 100,000-cell bound, the paragraph decoder keeps a trailing break before <br>, list items keep bare URLs, tag attributes escape |, and the reference passes filter by type. Docs, editor-behavior law, the decision page, the changeset and the API manifest updated.",
+  "proof": {
+    "state": "partial",
+    "evidence": [
+      {
+        "path": "packages/platejs/src/markdown/lib/table.spec.ts",
+        "sha256": "043ae0a391731d6778e797159b6e070bb14f049bb9a0159b401c58b45406e0bf",
+        "claim": "Cells holding blocks: list bytes, merged spans, the bound refusal, collapse and drop under each loss policy, TeX and CRLF line safety with KaTeX render comparison, the reading half (main's cell lists, restart, depth limit, no-List guard, empty and image cells) and round trips; 43 pass, each new case failing before its fix."
+      },
+      {
+        "path": "packages/platejs/src/markdown/lib/deserializer/paragraphBreaks.spec.ts",
+        "sha256": "df49652e55160e50c8f7dfa3e198af97504408a6f7d507403b9add0c1f2ed10a",
+        "claim": "A trailing line break after bold text survives parse; fails at fe0e9599a6."
+      },
+      {
+        "path": "packages/platejs/src/markdown/lib/serializer/standardList.spec.ts",
+        "sha256": "079bbe417793639c528e2702eeec0916ecc3f91c8b8a6f8436a8eb675322ca12",
+        "claim": "A bare URL inside a list item survives serialize."
+      }
+    ],
+    "limits": "Working tree only, nothing committed. Two frozen benchmark lines missed: serialize grid list ratios 3.04x and 3.08x against 3x, and parse doubling on plain and unclosed cohorts, which HEAD misses the same way; the owner decides keep or revert. The diff panel's round 2 fixes, a deslop simplification and the text-mode TeX spellings came after the last allowed round and are unreviewed. Single-cell parse lines rest on 2 or 3 parses per side. Root pnpm check was skipped (inferred unnecessary: no other package uses the changed types). github.com rendering of a raw checkbox in a cell is unchecked. Benchmark receipts live in session scratch, not the repository."
+  },
+  "source": {
+    "files": {
+      "packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts": "dd81e912742bf4b2336751d3512b660e5553cc5220d2bd2ccf39e82daf7277a8",
+      "apps/www/src/registry/components/editor/markdown.tsx": "7eb99e455171b13886effa7c10b45c875db12ecc35953fb36a934f7cbff2f503",
+      "apps/www/src/registry/components/editor/import-toolbar-button.tsx": "604419f6caf98b015758d30037a3c7a30570724145aead1b188437709fd101a3",
+      "apps/www/src/registry/components/editor/export-toolbar-button.tsx": "df62b3f645782fb26d89bf12050d130601f2852c218131d5e997a8fce500cece",
+      "apps/www/src/registry/examples/markdown-to-editor-demo.tsx": "dcdb595ab6fbee4297c5b126b59ee810610f8a3d2d18c7aac5a92c5610dcb806",
+      "apps/www/src/registry/examples/markdown-streaming-demo.tsx": "d4380cdac6642db677ef37d054240301ee0a56c661fcc5fd1cb6d110ed29165f",
+      "apps/www/src/app/(app)/docs/examples/server-side/page.tsx": "4c98d9abf30942dea6ef6f850ae8b5fc3e174effbae19009098cb38f554a3877",
+      "apps/www/src/app/(app)/examples/plite/_examples/plate-schema-descriptors.tsx": "bf27aa8a05ae0329f5b64a9697dfb9927fb8f09ccc9232cd5b502d02aa7de537",
+      "packages/platejs/src/ai/react/CopilotPlugin.tsx": "55f9ab266ab976068f22f8e11a2f68e79d9dfa6d67fe7006930c5e7f53f93f42",
+      "packages/platejs/src/ai/react/AIChatPlugin.ts": "4da8ba57236032efe6ad7e869144dd6452a9c195b05b36c2385aa55d1ae42b39",
+      "apps/www/src/registry/app/api/ai/command/prompt/getCommentPrompt.ts": "9d8cff584dc10628e20ec405fceb81cde0566d3ce501b9ddf87e477a34b0b02f",
+      "apps/www/src/registry/app/api/ai/command/utils.ts": "0dd841afd205dccc5822cae38337ea6074ec5fa97401161c1e3aad9994f93074",
+      "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts": "85dd1b215d0e62b76f241798185919e33f5c280b6cff788927983a64bb3baaea",
+      "packages/platejs/src/markdown/lib/internal/markdownMappings.spec.ts": "4e79eba5c27e802eca522d3159450bfca1f8383669584866d44a37ad75b40cd9",
+      "packages/platejs/src/markdown/lib/utils/remarkPlugins.spec.ts": "ea6baac986477f2783fb233ecf33f43b91ceff1e59bbde48ca4cc375f7b4ee1a",
+      "packages/platejs/src/markdown/lib/gfmSurface.spec.ts": "eef454dbb74fd6db599b2852211596a3b7c4dde1b17375f1cd928e9b3bc7f67b",
+      "packages/platejs/src/markdown/lib/commonmarkSurface.slow.ts": "3f488bca0e52cb50ff6755ee3790c1fd0bdc7b6c434feae7a9e699ed773b92d5",
+      "packages/platejs/type-tests/standalone-conversion-contracts.ts": "75498c525367da10e481c1dbdd12d4df7d02459dd850b146e01bb9012b0f6521",
+      "apps/www/src/__tests__/package-integration/conversion/detached-conversion-types.ts": "0ed4ed4dbdc2663131001db4c28afbd961e07dc3121b55359e3ce02630ec5862",
+      "packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts": "4b311a08a2c2bf330d095ee2dae401c1824fb26e2307f6067378dda3558d457d",
+      "packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts": "945b0f0c7b798a68b1a2ef0a3d28853ed43ac7c829e49d69b174fb3b2d7a904b",
+      "packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts": "56a1c1ebc017a5d57dea2b7f98934f34f7aabdfd8f96fade90e27c73800c192d",
+      "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts": "316232b97c07b22afcac7f47caf2dcdacc515d8563564849d633228235d145d5",
+      "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts": "fce8981a755e0b8d0b4a86e130fa9fb48cb30163e866950950d9f5a4b2e1daa3",
+      "packages/platejs/src/features/callout/lib/BaseCalloutPlugin.ts": "7d84a1e653b974f14a362f968713ec8f8e05af3c3b29d8fff090936189ff74d7",
+      "packages/platejs/src/features/date/lib/BaseDatePlugin.ts": "eb5d96ce3990f94bbf98d984780cbdb91363b9fc99273409c56562a6e53864ce",
+      "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts": "5fc2a64ae8f9d8e6186a2e427a5ea6933ae089b94da228a95a179c3609111ff8",
+      "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": "26409780d782910ba62246ef82e7f92fdac22b4c8e25204d740047f8e9a97a99",
+      "packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts": "c123ee5108681614beeb90e3b0cdf54aef53256c781aa016a4d2987f2ca33709",
+      "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts": "7d3ae606258f5921fccfb9a85aea1b730195e64113ecd050da4e709a82509541",
+      "packages/platejs/src/features/list/lib/BaseListPlugin.ts": "1678d2afde5e6baccb13daef7d19005e784c671285d9fe255611e2b233d26409",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "f262cc3b34f6d3753974c02469f2bb37d849cb0bd5c7c697c420c4c5f3bdcdfb",
+      "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "1f59adc0fa45b94a4f0451a6b7e50fe491b6e5ce922fa45295efdcdef1af5171",
+      "packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts": "d161bc5afdd386ec708e0d0acc132d61195492ecf8bb6b3d24e380affe219fbd",
+      "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts": "cbee93dafefa0d3dcebeae594d5ccdea7a442169f4d93b01cc9d2cd277a9ac98",
+      "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": "3119f481d73cdc9103e130b54ed5c423f85c6b7d3884cac510d668d537a1281a",
+      "packages/platejs/src/features/toc/lib/BaseTocPlugin.ts": "bc8198d05f9ea7af76c251362e4d7341467f2311614d248e3c12329f07436f09",
+      "packages/platejs/src/math/lib/BaseEquationPlugin.ts": "d2c08c9f6d8e2137cf3adb8232955fa07e396609b8894afc9d9d06d7862f2463",
+      "packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts": "54a593415938be2971ef5f300da816c85ce48c95958162402d92ede08911b3ac",
+      "packages/platejs/src/internal/plugin/collectPlateNodeMappings.ts": "bd7123c5c5e572f8dcf16c6a029e373eee93a87848761094f56688629bf72071",
+      "packages/platejs/src/internal/plugin/pluginFormatOperation.ts": "2facb5a6d414b8d0a2658bd6992859048940900d52a4d2422da78842e88d706c",
+      "packages/platejs/src/lib/editor/withPlite.ts": "051872d0215d8489865c57878c710c5906f011b59e7f84ce335f34f8542bc9a5",
+      "packages/plitejs/src/dom/plugin/data-transfer-format.ts": "b20d0d9de88fe46cb58920be43fafcb840ebfb4eef8af6c90a4f7b7abec0d803",
+      "packages/plitejs/src/react/external-text.ts": "12524a3302422cde61a1c646801deb8e1483bac0c136afeef779a390222970cf",
+      "content/docs/(plugins)/(serializing)/markdown.mdx": "3cc605e7a3a4dbcc137c088171e6e90aba99cee8f0e945e3e138a42cc9053a84",
+      "docs/vision/plate.md": "72b1261fa166f0e1f78e6033aeab2ee04eac74f6c2bc854dc67a0905d4055531",
+      ".agents/rules/best-api/rules/behavior-and-ownership.md": "998f2bd90605088602e501e4c162221b23bb558c61c3b7de9d2f7f7463883db7",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "VISION.md": "b453d1be7c8ea25bab19c0415c0d3743276609274c5a40eaee025c5c84e41907",
+      "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
+      "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
+      "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3"
+    },
+    "directories": {
+      "packages/platejs/src/markdown": "4b48b9cfe47ce1b4d42c43cd68bcbc84333c0bfe77a90a3f7135fc4af235c88f",
+      "packages/platejs/src/markdown/lib/serializer": "ed09cb39d288e88af0d72b2aacbd9454e28dbf74d5960366bb9443f56d17ad53"
+    },
+    "features": {
+      "capability/markdown": "e2bc825b1cbb153c39128950db1c57c2843a7f4647f32a79ab3baca8bef0977a",
+      "example/plite/markdown-preview": "b8821a4b9b500a1da24dfca08f89e0dde6648254a9fb733d332b5e647b3eb179",
+      "example/plite/markdown-shortcuts": "fb014701a93afe9ae5dbf1080e9d20ee36a4920fc3e0709d61a3d4cfb8f1c27c",
+      "example/registry/markdown-to-editor-demo": "d1b3d923a9f1b996f01fe29bdef7fa08bd5998f24968c26f824735d7c914b9b6",
+      "example/registry/preview-markdown-demo": "3767edd084c245c069ff51a46b0441e3e661be0b3d5eb5e1e4a91e6ffedf46a3",
+      "example/value/deserialize-md-value": "84334d6fc09927c814913d57c78ab627f62820b957fbd33f7bf472fee5fed8e2",
+      "example/value/preview-md-value": "dfae831fdd8d0ea925a925f04759b085eed04cf3a7580eb0841217e73645a430",
+      "export/platejs/./markdown": "7b4021146129cd09b7679fcd0d935f93e8fa3c259e8d074561eb347e9d74496f",
+      "platejs/markdown": "4b48b9cfe47ce1b4d42c43cd68bcbc84333c0bfe77a90a3f7135fc4af235c88f",
+      "ui/markdown": "008dfd633cc55281f97591966b7d4240ad081951499c4cfa38deda7dc678787b"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-10-03-markdown-table-cell-blocks.md"
+  ]
+}

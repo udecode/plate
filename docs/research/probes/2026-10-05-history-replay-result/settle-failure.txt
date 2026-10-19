@@ -1,0 +1,13 @@
+# command: cd packages/plitejs && bun run /Users/zbeyens/git/plate-2/docs/research/probes/2026-10-05-history-replay-result/settle-failure.probe.ts
+# source: HEAD 36c2f43170; dirty history files: 0
+syncOwner.pendingRightAfterCall	"undo"
+syncOwner.externalRightAfterCall	""
+syncOwner.result	{"status":"applied"}
+syncOwner.pendingAfterAwait	null
+control.result	{"status":"applied"}
+control.pendingAfter	null
+poison.rejection	"DataCloneError: The object can not be cloned."
+poison.pendingAfter	"undo"
+poison.nextUndoAfterNewEdit	{"status":"busy"}
+poison.textAfterNextUndo	"BA"
+# exit: 0

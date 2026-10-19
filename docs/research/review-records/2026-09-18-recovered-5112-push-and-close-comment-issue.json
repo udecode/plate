@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-18-recovered-5112-push-and-close-comment-issue",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "comments"
+  ],
+  "reviewBasis": [],
+  "workKind": "verification",
+  "plan": {
+    "path": "docs/plans/5112-push-and-close-comment-issue.md",
+    "sha256": "a15df42189deb3b1633d6f194b727af52d882a083455c28dcf3f1d1cef36cb30"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical verification completion from the plan. completed The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/5112-push-and-close-comment-issue.md",
+        "sha256": "a15df42189deb3b1633d6f194b727af52d882a083455c28dcf3f1d1cef36cb30",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/5112-push-and-close-comment-issue.md"
+  ]
+}

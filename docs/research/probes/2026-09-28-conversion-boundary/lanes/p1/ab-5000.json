@@ -1,0 +1,410 @@
+{
+  "bytes": 5000,
+  "pairs": 5,
+  "restoredOwnedFiles": 83,
+  "runs": [
+    {
+      "baseline": {
+        "bytes": 5000,
+        "plite": "packages/plitejs/node_modules/.cache/p1-ab-baseline",
+        "topLevelNodes": 120,
+        "splice-skip": {
+          "mean": 5.846,
+          "median": 5.369,
+          "n": 60,
+          "p90": 8.226,
+          "undoDepth": 0,
+          "valueHash": "c72343425f104bdc"
+        },
+        "splice-history": {
+          "mean": 2.314,
+          "median": 2.102,
+          "n": 60,
+          "p90": 2.826,
+          "undoDepth": 60,
+          "valueHash": "c72343425f104bdc"
+        },
+        "type-end": {
+          "mean": 0.82,
+          "median": 0.742,
+          "n": 200,
+          "p90": 0.946,
+          "restoredAfterUndo": true,
+          "typedHash": "6f364a0b589f3105",
+          "undoDepth": 1
+        },
+        "type-after-skip": {
+          "keystroke": 50.215,
+          "typedHash": "192cbb36fb35877e",
+          "undoDepth": 2,
+          "undoneHash": "e3f48dc0989d51f1"
+        }
+      },
+      "candidate": {
+        "bytes": 5000,
+        "plite": "packages/plitejs/src",
+        "topLevelNodes": 120,
+        "splice-skip": {
+          "mean": 1.054,
+          "median": 0.962,
+          "n": 60,
+          "p90": 1.302,
+          "undoDepth": 0,
+          "valueHash": "c72343425f104bdc"
+        },
+        "splice-history": {
+          "mean": 0.945,
+          "median": 0.786,
+          "n": 60,
+          "p90": 1.118,
+          "undoDepth": 60,
+          "valueHash": "c72343425f104bdc"
+        },
+        "type-end": {
+          "mean": 0.762,
+          "median": 0.654,
+          "n": 200,
+          "p90": 0.892,
+          "restoredAfterUndo": true,
+          "typedHash": "6f364a0b589f3105",
+          "undoDepth": 1
+        },
+        "type-after-skip": {
+          "keystroke": 9.026,
+          "typedHash": "192cbb36fb35877e",
+          "undoDepth": 2,
+          "undoneHash": "e3f48dc0989d51f1"
+        }
+      },
+      "pair": 0
+    },
+    {
+      "baseline": {
+        "bytes": 5000,
+        "plite": "packages/plitejs/node_modules/.cache/p1-ab-baseline",
+        "topLevelNodes": 120,
+        "splice-skip": {
+          "mean": 5.803,
+          "median": 5.249,
+          "n": 60,
+          "p90": 8.084,
+          "undoDepth": 0,
+          "valueHash": "c72343425f104bdc"
+        },
+        "splice-history": {
+          "mean": 2.156,
+          "median": 1.989,
+          "n": 60,
+          "p90": 2.568,
+          "undoDepth": 60,
+          "valueHash": "c72343425f104bdc"
+        },
+        "type-end": {
+          "mean": 0.8,
+          "median": 0.72,
+          "n": 200,
+          "p90": 0.902,
+          "restoredAfterUndo": true,
+          "typedHash": "6f364a0b589f3105",
+          "undoDepth": 1
+        },
+        "type-after-skip": {
+          "keystroke": 49.799,
+          "typedHash": "192cbb36fb35877e",
+          "undoDepth": 2,
+          "undoneHash": "e3f48dc0989d51f1"
+        }
+      },
+      "candidate": {
+        "bytes": 5000,
+        "plite": "packages/plitejs/src",
+        "topLevelNodes": 120,
+        "splice-skip": {
+          "mean": 1.013,
+          "median": 0.843,
+          "n": 60,
+          "p90": 1.246,
+          "undoDepth": 0,
+          "valueHash": "c72343425f104bdc"
+        },
+        "splice-history": {
+          "mean": 1.031,
+          "median": 0.868,
+          "n": 60,
+          "p90": 1.211,
+          "undoDepth": 60,
+          "valueHash": "c72343425f104bdc"
+        },
+        "type-end": {
+          "mean": 0.756,
+          "median": 0.659,
+          "n": 200,
+          "p90": 0.82,
+          "restoredAfterUndo": true,
+          "typedHash": "6f364a0b589f3105",
+          "undoDepth": 1
+        },
+        "type-after-skip": {
+          "keystroke": 9.046,
+          "typedHash": "192cbb36fb35877e",
+          "undoDepth": 2,
+          "undoneHash": "e3f48dc0989d51f1"
+        }
+      },
+      "pair": 1
+    },
+    {
+      "baseline": {
+        "bytes": 5000,
+        "plite": "packages/plitejs/node_modules/.cache/p1-ab-baseline",
+        "topLevelNodes": 120,
+        "splice-skip": {
+          "mean": 5.807,
+          "median": 5.274,
+          "n": 60,
+          "p90": 8.549,
+          "undoDepth": 0,
+          "valueHash": "c72343425f104bdc"
+        },
+        "splice-history": {
+          "mean": 2.213,
+          "median": 2.06,
+          "n": 60,
+          "p90": 2.405,
+          "undoDepth": 60,
+          "valueHash": "c72343425f104bdc"
+        },
+        "type-end": {
+          "mean": 0.766,
+          "median": 0.715,
+          "n": 200,
+          "p90": 0.873,
+          "restoredAfterUndo": true,
+          "typedHash": "6f364a0b589f3105",
+          "undoDepth": 1
+        },
+        "type-after-skip": {
+          "keystroke": 54.749,
+          "typedHash": "192cbb36fb35877e",
+          "undoDepth": 2,
+          "undoneHash": "e3f48dc0989d51f1"
+        }
+      },
+      "candidate": {
+        "bytes": 5000,
+        "plite": "packages/plitejs/src",
+        "topLevelNodes": 120,
+        "splice-skip": {
+          "mean": 1.126,
+          "median": 0.927,
+          "n": 60,
+          "p90": 1.546,
+          "undoDepth": 0,
+          "valueHash": "c72343425f104bdc"
+        },
+        "splice-history": {
+          "mean": 0.994,
+          "median": 0.846,
+          "n": 60,
+          "p90": 1.101,
+          "undoDepth": 60,
+          "valueHash": "c72343425f104bdc"
+        },
+        "type-end": {
+          "mean": 0.744,
+          "median": 0.656,
+          "n": 200,
+          "p90": 0.801,
+          "restoredAfterUndo": true,
+          "typedHash": "6f364a0b589f3105",
+          "undoDepth": 1
+        },
+        "type-after-skip": {
+          "keystroke": 9.31,
+          "typedHash": "192cbb36fb35877e",
+          "undoDepth": 2,
+          "undoneHash": "e3f48dc0989d51f1"
+        }
+      },
+      "pair": 2
+    },
+    {
+      "baseline": {
+        "bytes": 5000,
+        "plite": "packages/plitejs/node_modules/.cache/p1-ab-baseline",
+        "topLevelNodes": 120,
+        "splice-skip": {
+          "mean": 5.835,
+          "median": 5.412,
+          "n": 60,
+          "p90": 8.031,
+          "undoDepth": 0,
+          "valueHash": "c72343425f104bdc"
+        },
+        "splice-history": {
+          "mean": 2.115,
+          "median": 1.939,
+          "n": 60,
+          "p90": 2.495,
+          "undoDepth": 60,
+          "valueHash": "c72343425f104bdc"
+        },
+        "type-end": {
+          "mean": 0.754,
+          "median": 0.678,
+          "n": 200,
+          "p90": 0.828,
+          "restoredAfterUndo": true,
+          "typedHash": "6f364a0b589f3105",
+          "undoDepth": 1
+        },
+        "type-after-skip": {
+          "keystroke": 48.691,
+          "typedHash": "192cbb36fb35877e",
+          "undoDepth": 2,
+          "undoneHash": "e3f48dc0989d51f1"
+        }
+      },
+      "candidate": {
+        "bytes": 5000,
+        "plite": "packages/plitejs/src",
+        "topLevelNodes": 120,
+        "splice-skip": {
+          "mean": 0.989,
+          "median": 0.855,
+          "n": 60,
+          "p90": 1.289,
+          "undoDepth": 0,
+          "valueHash": "c72343425f104bdc"
+        },
+        "splice-history": {
+          "mean": 0.94,
+          "median": 0.775,
+          "n": 60,
+          "p90": 1.051,
+          "undoDepth": 60,
+          "valueHash": "c72343425f104bdc"
+        },
+        "type-end": {
+          "mean": 0.749,
+          "median": 0.662,
+          "n": 200,
+          "p90": 0.807,
+          "restoredAfterUndo": true,
+          "typedHash": "6f364a0b589f3105",
+          "undoDepth": 1
+        },
+        "type-after-skip": {
+          "keystroke": 9.21,
+          "typedHash": "192cbb36fb35877e",
+          "undoDepth": 2,
+          "undoneHash": "e3f48dc0989d51f1"
+        }
+      },
+      "pair": 3
+    },
+    {
+      "baseline": {
+        "bytes": 5000,
+        "plite": "packages/plitejs/node_modules/.cache/p1-ab-baseline",
+        "topLevelNodes": 120,
+        "splice-skip": {
+          "mean": 5.498,
+          "median": 4.997,
+          "n": 60,
+          "p90": 7.562,
+          "undoDepth": 0,
+          "valueHash": "c72343425f104bdc"
+        },
+        "splice-history": {
+          "mean": 2.079,
+          "median": 1.908,
+          "n": 60,
+          "p90": 2.34,
+          "undoDepth": 60,
+          "valueHash": "c72343425f104bdc"
+        },
+        "type-end": {
+          "mean": 0.763,
+          "median": 0.693,
+          "n": 200,
+          "p90": 0.82,
+          "restoredAfterUndo": true,
+          "typedHash": "6f364a0b589f3105",
+          "undoDepth": 1
+        },
+        "type-after-skip": {
+          "keystroke": 49.078,
+          "typedHash": "192cbb36fb35877e",
+          "undoDepth": 2,
+          "undoneHash": "e3f48dc0989d51f1"
+        }
+      },
+      "candidate": {
+        "bytes": 5000,
+        "plite": "packages/plitejs/src",
+        "topLevelNodes": 120,
+        "splice-skip": {
+          "mean": 1.102,
+          "median": 0.94,
+          "n": 60,
+          "p90": 1.332,
+          "undoDepth": 0,
+          "valueHash": "c72343425f104bdc"
+        },
+        "splice-history": {
+          "mean": 0.986,
+          "median": 0.843,
+          "n": 60,
+          "p90": 1.143,
+          "undoDepth": 60,
+          "valueHash": "c72343425f104bdc"
+        },
+        "type-end": {
+          "mean": 1.141,
+          "median": 0.902,
+          "n": 200,
+          "p90": 1.809,
+          "restoredAfterUndo": true,
+          "typedHash": "6f364a0b589f3105",
+          "undoDepth": 1
+        },
+        "type-after-skip": {
+          "keystroke": 9.59,
+          "typedHash": "192cbb36fb35877e",
+          "undoDepth": 2,
+          "undoneHash": "e3f48dc0989d51f1"
+        }
+      },
+      "pair": 4
+    }
+  ],
+  "summary": {
+    "splice-skip": {
+      "baselineMedian": 5.274,
+      "baselineP90": 8.084,
+      "candidateMedian": 0.927,
+      "candidateP90": 1.302,
+      "speedup": 5.7
+    },
+    "splice-history": {
+      "baselineMedian": 1.989,
+      "baselineP90": 2.495,
+      "candidateMedian": 0.843,
+      "candidateP90": 1.118,
+      "speedup": 2.4
+    },
+    "type-end": {
+      "baselineMedian": 0.715,
+      "baselineP90": 0.873,
+      "candidateMedian": 0.659,
+      "candidateP90": 0.82,
+      "speedup": 1.1
+    },
+    "type-after-skip": {
+      "baselineKeystroke": 49.799,
+      "candidateKeystroke": 9.21,
+      "speedup": 5.4
+    }
+  }
+}

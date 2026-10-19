@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-10-playground-comments",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-10-playground-comments.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-10",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Playground loads its complete editor kit, example comment threads, and comment actions",
+  "targets": [
+    {
+      "name": "playground-demo",
+      "files": ["apps/www/src/registry/examples/playground-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-10-playground-comments-include-starter-discussion-fa50fea4",
+      "kind": "fix",
+      "summary": "Playground loads its complete editor kit, example comment threads, and comment actions",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["playground-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-10",
+          "entry": "2026-09-10-playground-comments",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

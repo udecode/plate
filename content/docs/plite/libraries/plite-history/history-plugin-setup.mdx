@@ -1,0 +1,62 @@
+---
+title: "History Plugin Setup"
+description: "Install or disable the history plugin in core and React-owned editors."
+---
+
+Install history with the `history()` plugin.
+
+## Core editor setup
+
+```typescript
+import { createEditor } from "plitejs";
+import { history } from "plitejs/history";
+
+const editor = createEditor({
+  plugins: [history({ maxDepth: 100, newBatchDelay: 500 })],
+  initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
+});
+```
+
+`newBatchDelay` defaults to 500 milliseconds. It starts a new undo batch when
+an otherwise-compatible automatic native edit arrives after that idle window.
+`maxDepth` defaults to 100 batches per branch. Updated values apply to the next
+accepted update or replay; reading history does not trim a branch.
+Explicit `tx.history.merge()` and `tx.history.newBatch()` decisions remain
+authoritative, and no timing metadata is serialized with history.
+
+Install `history()` explicitly when a React-owned editor needs undo and redo.
+Use `history({ enabled: false })` to disable history supplied by a preset.
+
+## React editor setup
+
+```typescript
+import { history } from "plitejs/history";
+import { useEditor } from "plitejs/react";
+
+const editor = useEditor({
+  plugins: [history({ enabled: false })],
+  initialValue,
+});
+```
+
+Read history through `editor.read.history` (or `state.history` inside a grouped
+read), replay through `editor.api.history`, and use `tx.history` or an
+`editor.update({ history })` policy to control the update being built.
+
+## Runtime API
+
+These examples assume an editor with history enabled.
+
+```typescript
+const canUndo = editor.read.history.hasUndo();
+const result = editor.api.history.undo();
+
+editor.update({ history: "skip" }).text.insert("draft");
+
+editor.update((tx) => {
+  tx.history.newBatch();
+  tx.text.insert("separate undo step");
+});
+```
+
+See [History Editor API](./history-editor) for the full API surface.

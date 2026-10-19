@@ -1,0 +1,53 @@
+flushPassiveEffects: 10.5 ms per profile over 3 profiles
+by inclusive (ms per profile):
+      10.5  flushPassiveEffects@5319583e-150745cd7583489c.js:313573
+       6.9  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+       6.9  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+       3.8  commitHookEffectListMount@5319583e-150745cd7583489c.js:216333
+       3.6  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482
+       3.6  recursivelyTraversePassiveUnmountEffects@5319583e-150745cd7583489c.js:279976
+       2.7  t2@885-9cb09a45a1814598.js:9156
+       1.4  read@1233-4d37154d85cba0b9.js:718071 «fn=>runRead(fn),createGroup=groupName=>new Proxy({},{get(target,key,receiver){if»
+       1.4  (anon)@1233-4d37154d85cba0b9.js:649804 «fn=>viewRuntime.read(state=>fn(state)));viewRead.schema=sourceEditor.read.schema»
+       1.4  read@1233-4d37154d85cba0b9.js:644800 «fn=>{var _getViewEditor;return(0,_core_document_view_read__WEBPACK_IMPORTED_MODU»
+       1.4  withDocumentViewRead@1233-4d37154d85cba0b9.js:33373
+       1.4  (anon)@1233-4d37154d85cba0b9.js:644959 «()=>baseRuntime.read(state=>fn((state=>{if(state!==cachedBaseState){var _getView»
+       1.4  read@1233-4d37154d85cba0b9.js:1117214 «fn=>(0,public_state.O4)(editor1,fn),runCommand:(0,command_registry.my)(()=>edito»
+       1.4  (anon)@1233-4d37154d85cba0b9.js:527688 «(){for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++)args[_»
+       1.4  withTransactionSpecDraftRead@1233-4d37154d85cba0b9.js:1525309
+       1.4  (anon)@1233-4d37154d85cba0b9.js:527846 «()=>{let editorRead=Reflect.get(editor,"read");if("function"!=typeof editorRead)»
+       1.4  readEditor@1233-4d37154d85cba0b9.js:1648673
+       1.4  withEditorDocumentProjection@1233-4d37154d85cba0b9.js:1521883
+       1.4  (anon)@1233-4d37154d85cba0b9.js:1649539 «()=>(0,authored_runtime.mL)(editor,editor,()=>fn(getStateView(editor))))}finally»
+       1.4  withAuthoredViewRead@1233-4d37154d85cba0b9.js:512202
+       1.4  readView@4373-d151118e57d11370.js:161288
+       1.4  (anon)@1233-4d37154d85cba0b9.js:1649581 «()=>fn(getStateView(editor))))}finally{restoreDraft(),exitRead()}},updateEditor=»
+       1.4  (anon)@1233-4d37154d85cba0b9.js:644980 «state=>fn((state=>{if(state!==cachedBaseState){var _getViewEditor;cachedBaseStat»
+       1.4  (anon)@1233-4d37154d85cba0b9.js:649825 «state=>fn(state)));viewRead.schema=sourceEditor.read.schema;let viewUpdate=(0,_c»
+       1.4  (anon)@1233-4d37154d85cba0b9.js:528024 «state=>{let{owner,value}=resolveOwnCapabilityPath(state[getPlugin().name],path);»
+by self (ms per profile):
+       2.2  commitPassiveUnmountOnFiber@5319583e-150745cd7583489c.js:280482
+       1.8  recursivelyTraversePassiveMountEffects@5319583e-150745cd7583489c.js:271027
+       1.4  recursivelyTraversePassiveUnmountEffects@5319583e-150745cd7583489c.js:279976
+       1.3  commitPassiveMountOnFiber@5319583e-150745cd7583489c.js:271496
+       0.6  querySelectorAll@:-1
+       0.5  hasOnlyKeys@1233-4d37154d85cba0b9.js:605791
+       0.4  t2@885-9cb09a45a1814598.js:9156
+       0.4  getEditorRuntime@1233-4d37154d85cba0b9.js:2109498
+       0.4  _object_spread_props@3370-ab6f5e713678b725.js:174957
+       0.4  requestAnimationFrame@:-1
+       0.4  mapped@1233-4d37154d85cba0b9.js:2139241
+       0.4  updateStoreInstance@5319583e-150745cd7583489c.js:120377
+       0.1  commitHookEffectListMount@5319583e-150745cd7583489c.js:216333
+       0.0  (anon)@8261-21088216f9ffd7b3.js:3829 «(){return memoizedSelector(getSnapshot())},null===maybeGetServerSnapshot?void 0:»
+       0.0  restoreNestedViewTransitions@5319583e-150745cd7583489c.js:230457
+       0.0  structuredClone@:-1
+       0.0  cancelAnimationFrame@:-1
+       0.0  node@9797-5bbb6a2c1d7e2d77.js:165965
+       0.0  getRuntimeTargetRoot@1233-4d37154d85cba0b9.js:1537209
+       0.0  readDOMFragmentEditor@1233-4d37154d85cba0b9.js:20809
+       0.0  seek@1233-4d37154d85cba0b9.js:1911736
+       0.0  (anon)@1233-4d37154d85cba0b9.js:1260688 «input=>{let args=[...input];return args[optionIndex]=lowerPlateNodeOptions(edito»
+       0.0  lowerPlateNodeOptions@1233-4d37154d85cba0b9.js:1259490
+       0.0  withLocationRootRead@1233-4d37154d85cba0b9.js:1534210
+       0.0  read@1233-4d37154d85cba0b9.js:1117214 «fn=>(0,public_state.O4)(editor1,fn),runCommand:(0,command_registry.my)(()=>edito»

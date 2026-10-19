@@ -1,0 +1,103 @@
+{
+  "id": "2026-09-20-uploads-r2-live-verification",
+  "kind": "execution",
+  "date": "2026-09-20",
+  "scopes": [
+    "uploads"
+  ],
+  "reviewBasis": [
+    "2026-09-20-uploads-files-server-colocation"
+  ],
+  "workKind": "verification",
+  "plan": {
+    "path": "docs/plans/2026-09-20-r2-live-verification.md",
+    "sha256": "26d99e70606bfb0b81fa47ab4ffdfad48e1fb29e9fc50f204f4a89f0292afeb0"
+  },
+  "binding": "current",
+  "outcome": "completed",
+  "summary": "Verified the current createFilesStorage and Plate gateway against a live Cloudflare R2 bucket: a unique 16-byte object uploaded through the bounded proxy path, matched on direct and durable reads, returned the requested byte range and signed download, then was deleted and confirmed absent.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/plans/artifacts/r2-live-verification/result.json",
+        "sha256": "7afd97bb1a81f0b54f79316e87142c4685cdeadf978768cc24b880562a8f4d17",
+        "claim": "Records the sanitized live R2 upload, direct and gateway download, range, signed URL and cleanup results without credentials, URLs or object keys."
+      }
+    ],
+    "limits": "The current gateway ran in process rather than through a deployed Next route and real application session policy. The probe covered one small object; multipart, concurrency, browser-native progress and production deployment remain unverified."
+  },
+  "source": {
+    "files": {
+      "packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts": "b66357e954a0fff633effd9df9930e6b0b6140584e07a10f4615674b579569cf",
+      "packages/platejs/src/react/features/upload/UploadPlugin.tsx": "701807744cb22ad4ab2fcbaa063cffbc0de8599958090542ddf3481f1e46d845",
+      "apps/www/src/registry/lib/files.ts": "ac950677207b0d03c55f9f8682560bc2939de87457a0191bcb7fee7eb724acd9",
+      "apps/www/src/registry/app/api/files/route.ts": "2c35d7a0e9779e3ebcedf7c41dde4acebc97b84dd0ceee2da88ea201305b55d8",
+      "apps/www/src/registry/components/editor/upload.tsx": "49d976ba21c9eb7b4466933610a5ab31a19e0ba5e6e649609b62af2c73d99ebc",
+      "apps/www/src/registry/components/editor/media-toolbar-button.tsx": "c7130b126317cb0db0b66b1d24d8f8eb51b9a662c8a76b5f7157c6bc69f2aff2",
+      "apps/www/src/registry/components/editor/dnd.tsx": "bcd656969351bca80f51a8f7af43bf0131529d769c71c822eeb533beed498486",
+      "packages/platejs/src/features/upload/lib/BaseUploadPlugin.spec.ts": "707b8a15d29f1455a0efb962dbf030ca6ea8edff1f17cc9f58c84895c7aea4ea",
+      "packages/platejs/src/features/upload/lib/BaseUploadPlugin.sdk.spec.ts": "36a5668218495a722bfba08fa862162c5766760ceadce86282d7ba481a6c2a56",
+      "packages/platejs/src/features/upload/lib/BaseUploadPlugin.lifecycle.spec.ts": "b107f7b51fdf5a5e6ba15dade27994f4634269b47dd1625cbd875c27f9d0e39e",
+      "packages/platejs/src/features/upload/lib/BaseUploadPlugin.typed.spec.ts": "c4df3656c735177920e9a3913d9ab8d304bdc95e24731c4729b2f68d998afbe1",
+      "packages/platejs/src/react/features/upload/UploadPlugin.spec.ts": "9e7d23c69125d39e4766919d0a3cb300ac5ad6a19e5cb0a392847c4aa04935cb",
+      "apps/www/src/registry/components/editor/upload.spec.tsx": "a5e33b754179ac0b79d9d2268c80c7e0e4be314261241ebaa0136990ac5e1fd1",
+      "apps/www/src/registry/components/editor/upload.lifecycle.spec.tsx": "4bf713418545f5e13a34c327e62bc5a44de26124299a4d56c6c7bfdb10304793",
+      "apps/www/src/registry/components/editor/dnd-upload.spec.tsx": "2e4b41e18a887ecc3d2f49c9217b4d8dad364810dcf984a3c0133e3f32c1ffcb",
+      "apps/www/src/registry/lib/files.gateway.test.ts": "d726d142b90694d94a526215e5c2b6f3a2b24bfb06dda604a9c6b0d2620126de",
+      "apps/www/tests/browser/files-sdk.spec.ts": "4a810f21d322882c693ab3f4758acd5db611c6d3ed6a3e4ce836955ab3499c5a",
+      "apps/www/tests/browser/clipboard-upload.spec.ts": "8ece309f52559dd1b321db71163fe6223a62e24bcfbbd064f2076cce630d8291",
+      "docs/plans/artifacts/official-files-sdk-integration/production-run-2026-09-20T06-36-10-066Z-summary.json": "1d6af0ace59350e6b392e5603ee486fa8bd24ce32616f722090a769e3fd99609",
+      "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": "0f2a4e4ea3d3bac4b967397ae1ee83b88488bcacef2fcf36a514255bc695d3db",
+      "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": "5dd78e8b691c0e1f7d6d21dd8934ffb9d6590dca220d8174985eaa2877daa6ae",
+      "apps/www/src/registry/components/editor/media-image.tsx": "60292f4a6df792912ab2a231bbe92d3ef1cb1ca8e28107d1042982c0855c76f1",
+      "packages/platejs/src/dnd/react/useDndNode.ts": "dd4c453f72b788c17ee6b2eaa2ba707f941f4d60e7d9451f9d111a3d2c440cc3",
+      "apps/www/src/registry/registry-features.ts": "b9355e1be0570227370f5fd810929b4d44c07750ee0ac770a916ac9231280da2",
+      "content/docs/(plugins)/(elements)/media.mdx": "8ccceebdee31082969fdd174c81a139991a09acf74b023938923f3318744706a",
+      "content/docs/(guides)/document-model.mdx": "838868a2f9de6d8ccad19ebdcc396152ea2f7adf46bc3093af8606810195e15f",
+      "docs/vision/plate.md": "c53dd694bb6e4359c8fa5e1503aa689151827acae5164f37a0ff1abb30f5ca1b",
+      "docs/plans/4803-update-upload-history.md": "76deaafb3d8a0517120b31dc39551223dd9bcee3ae5e49fe091eb84b2525382d",
+      "docs/plans/2026-09-07-full-plate-ui-extraction-audit.md": "6d646330ca469daf7ae2069855d7427dafb6ff29a1ba8a23e7ab97c233d98181",
+      "docs/research/decisions/clipboard-content-fitting.md": "c0709e45e4956999841744f9d10e3292147f3dd80c12305afa743ed9bd2d2c39",
+      "docs/plans/artifacts/2026-09-18-uploads-review/observations.test.ts": "97308d1504c163e492c7ad2ea3595922ccf6c8c026169424920b55c8fc1da83d",
+      "docs/plans/artifacts/2026-09-18-uploads-review/observations.txt": "b91a7ffd66290dfaf13759f37dfb2ccd2cc0a14bb18d5b9d1390018a0626de9f",
+      "packages/plitejs/src/core/public-state.ts": "1911e5d5823dac705b86fad2f3c2d8cd208a323e5dafff682dc42221dad15140",
+      "packages/plitejs/src/core/plugin.ts": "f3845ada8e4dc1f688f904b98974adcf89cde0b82a859f22bec491acbf605b66",
+      "packages/plitejs/src/history/history-plugin.ts": "16c2ffafa63f071a87c998e65e0ccf3b993b30574f7693578cea3acf93994b99",
+      "packages/plitejs/src/history/history-state.ts": "573b6075ab8e44c5134ad45cb4ce761a6681cc40f27aeea62257feefa1018e93",
+      "packages/platejs/src/react/editor/useCreateEditor.ts": "80d2d3022d15f5179a3b038f94ebac76cf41ca8a3529c6f5cf8d40c1bd925040",
+      "packages/plitejs/test/state-tx-public-api-contract.ts": "209cec88181af5afdd9d487fb7fe54802179433514c99cc71cb1f4335e99b75e",
+      "packages/plitejs/test/plugin-configuration.test.ts": "b34e9eefa640c1cedfc8ef298bf6e54aa3b8e501e1193a3e805193b150c33c47",
+      "packages/plitejs/src/interfaces/editor.ts": "9a8f93484744d0f52b00c03d70a415540c04de1d223f52c867402ed0906f49d7",
+      "packages/plitejs/src/core/commit.ts": "1be86183d11ddcff651f3e53c8fcdac83bbb3a11f6ae9eef4bc3f3dc62eeb9c7",
+      "content/docs/(guides)/upload.mdx": "870d81ef7962de93512268b7935efce9f71a86509578cdb6556fc6910268cc0f",
+      "docs/plans/artifacts/official-files-sdk-integration/testing-methodology-evidence.md": "aa58ec944687d0378d8995d16f1fe830d0d741ba1a93d49d45f704ef594a4560",
+      "docs/plans/artifacts/official-files-sdk-integration/implementation-proof.json": "4a8a6a4c98e82a29d3b62b238e72059b921189b41c9a2774c1321880d92d7522",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
+      "pnpm-lock.yaml": "c30b05901aa8f2ecb6c6a62b6e37d963ed743eb8538c444517cd3117ae202a17"
+    },
+    "directories": {},
+    "features": {
+      "application/files": "4c3f3006c855a492cf14f1add5f17d6b2cf08e2c9281f47c670db0d416285bc0",
+      "browser/files-sdk": "f2441d7d4ae1b0488b685aaf168566a2672e0f6712c70a7d2cb4bd5f33544f06",
+      "capability/upload": "cedfea724a030c1571a7c7c82f1501ed4d44297875f306a6247950758f515115",
+      "export/platejs/./upload": "9e3103deb7c32ef3955f86fe910ec156ff6193866e86ee2bfbc3c5ab34c817c1",
+      "export/platejs/./upload/react": "9e3103deb7c32ef3955f86fe910ec156ff6193866e86ee2bfbc3c5ab34c817c1",
+      "platejs/upload": "4441b413e700dcf32ca985a53d2afd32339dfff7a71f6a95d413689370c951cc",
+      "registry/hooks/use-object-url": "fead23882e5f46ac8495bc4d002af1ecdc6d21aa031e581e3257478064d80179",
+      "registry/hooks/use-object-url.spec": "240f85dbe01f39ca071c65ad7a1f7d43aeedd3dff74555e6df52efb0ec83bd81",
+      "registry/lib/files": "f32d1b8e13100d263a9cc4e35d0c7f7ef045802fab29e8087390bcb6fe876a27",
+      "registry/lib/files.gateway.test": "5127f3f7842762f63e27dec87d12782e1d7a936ab11b80d2bf3c4ec9db8c933a",
+      "registry/lib/files.gateway.test-run": "7a1e4451d4dcf9e23b016da22ca9e4f02a3b046e5f3717efdf405f40ff5d8e53",
+      "registry/lib/files.typecheck-run": "c9a9914bce1fe0155b5d6a70bfd472c0f974d9a3a21c6624d9907ae91fe3990b",
+      "ui/dnd-upload": "6e1192fa84923cabb28e8c43e86a035dd6b95b72c7ab5f60832d71dc76d04573",
+      "ui/upload": "a7f2c04d17b520fed279060afa3e2596e6b08141160da0a63480e398842ccccd"
+    },
+    "upstreams": []
+  },
+  "references": [
+    "docs/plans/2026-09-20-r2-live-verification.md"
+  ]
+}

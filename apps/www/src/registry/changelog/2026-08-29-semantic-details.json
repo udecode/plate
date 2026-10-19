@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-29-semantic-details",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-29-semantic-details.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-29",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "rename",
+  "summary": "Use semantic Details blocks",
+  "targets": [
+    {
+      "name": "details",
+      "files": ["apps/www/src/registry/components/editor/details.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "details-static",
+      "files": ["apps/www/src/registry/components/editor/details-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "details-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/details-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "details-demo",
+      "files": ["apps/www/src/registry/examples/demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-29-details-semantic-blocks-04855b28",
+      "kind": "rename",
+      "summary": "Use nested semantic Details and Summary nodes with transient disclosure state.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "details",
+        "details-static",
+        "details-toolbar-button",
+        "details-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-29",
+          "entry": "2026-08-29-semantic-details",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,0 +1,96 @@
+{
+ "base": "http://localhost:3612",
+ "during": [
+  {
+   "coversLast": true,
+   "lastCodePoint": "e",
+   "draft": true,
+   "draftTextTail": "dicate deleted or outdated content.Write",
+   "ends": 1,
+   "endText": [
+    "e"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "y",
+   "draft": true,
+   "draftTextTail": "ets with inline code formatting for easy",
+   "ends": 1,
+   "endText": [
+    "y"
+   ]
+  },
+  {
+   "coversLast": false,
+   "lastCodePoint": "s",
+   "draft": true,
+   "draftTextTail": "rmatting for easy readability.Add links﻿",
+   "ends": 0,
+   "endText": []
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "o",
+   "draft": true,
+   "draftTextTail": "atting for easy readability.Add links to",
+   "ends": 1,
+   "endText": [
+    "o"
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": ".",
+   "draft": true,
+   "draftTextTail": "nks to external resources or references.",
+   "ends": 1,
+   "endText": [
+    "."
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "c",
+   "draft": true,
+   "draftTextTail": " like E=mc2E = mc^2E=mc2﻿ for scientific",
+   "ends": 1,
+   "endText": [
+    "c"
+   ]
+  },
+  {
+   "coversLast": false,
+   "lastCodePoint": "2",
+   "draft": true,
+   "draftTextTail": " scientific notation.Heading 1Heading 2﻿",
+   "ends": 1,
+   "endText": [
+    ""
+   ]
+  },
+  {
+   "coversLast": true,
+   "lastCodePoint": "1",
+   "draft": true,
+   "draftTextTail": "Heading 3BlockquoteUnordered list item 1",
+   "ends": 1,
+   "endText": [
+    "1"
+   ]
+  }
+ ],
+ "after": {
+  "coversLast": true,
+  "lastCodePoint": "a",
+  "draft": true,
+  "draftTextTail": " rule﻿Header 1Header 2Row 1DataRow 2Data",
+  "ends": 1,
+  "endText": [
+   "a"
+  ]
+ },
+ "errors": [
+  "Invalid 'X-Frame-Options' header encountered when loading 'https://pro.platejs.org/': 'allow-from https://next.platejs.org/' is not a recognized directive. The header will be ignored."
+ ]
+}

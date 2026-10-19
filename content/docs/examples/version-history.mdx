@@ -1,0 +1,55 @@
+---
+title: Version History
+description: Save document revisions, compare them, and restore one.
+---
+
+This example saves snapshots of the editor's document as revisions. Edit the text, save a revision to compare it with the previous one, or restore any saved revision.
+
+For application revision previews and restores with comments, see [Comments and versions](/docs/comment#document-history-and-versions).
+
+## Demo
+
+<ComponentPreview name="version-history-demo" height="1000px" />
+
+## Source
+
+<ComponentSource name="version-history-demo" />
+
+## Usage
+
+- `editor.read.value()` captures the complete document as one revision.
+- `tx.value.replace(revision)` restores a saved revision as one undoable update.
+- `compare(...)` from `platejs/diff` compares two immutable saved revisions without changing the editor.
+- The copied `Diff` component shows comparison groups, effects, filters, and navigation.
+- The copied `BasicMarksKit` provides rich-text marks for the editable document.
+
+## Compare saved revisions
+
+The demo captures an initial snapshot. Edit the document and select **Save revision** to compare the two latest snapshots. Saving another revision starts a new comparison and cancels the obsolete one. The comparison is read-only. To turn a validated comparison into a pending proposal, use [`proposeAuthoredComparison(...)`](/docs/authored-changes#import-a-compared-revision).
+
+## Restore a revision
+
+**Restore** replaces the document with that saved revision in one update:
+
+```tsx
+editor.update((tx) => tx.value.replace(revision));
+```
+
+The saved revisions stay in application state, so restoring one keeps the others.
+
+## Persist revisions
+
+Save each `editor.read.value()` snapshot as one document. To load a revision into a fresh editor, pass it as `initialValue`:
+
+```tsx
+const saved = editor.read.value();
+
+const reloaded = createEditor({
+  plugins: BasicMarksKit,
+  initialValue: saved,
+});
+```
+
+The fresh editor starts with empty local undo and redo stacks. If the document has comments, save `CommentsJSON` through `comments.toJSON()` with the same revision and load it through `initialComments`; document undo does not rewind the discussion.
+
+See [Authored Changes](/docs/authored-changes) to propose and review changes instead of replacing the document.

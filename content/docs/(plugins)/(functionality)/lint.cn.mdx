@@ -1,0 +1,390 @@
+---
+title: 文本检查
+description: 用自定义规则检查文本块，按严重程度给问题加下划线，并从弹出层或列表修复。
+docs:
+  - route: /docs/components/lint
+    title: 文本检查组件
+  - route: /docs/examples/lint
+    title: 文本检查演示
+---
+
+<ComponentPreview name="lint-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 只检查提交改动过的文本块，每条规则对每个改动块只调用一次。
+- 读取块文本时穿过行内元素，并跳过非内容文本，例如被删除的建议。
+- 用装饰显示问题，不向文档或历史记录写入任何内容。
+- 按文档顺序列出问题，只在问题改变或块移动后重建列表。
+- 每次修复是独立的撤销步骤；问题文本已改变时拒绝修复。
+- 只在块与发送时一致时保留服务端回复，包括标记和属性。
+- 套件中用 `F8` 和 `Shift+F8` 在问题之间移动。
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+```bash
+npx shadcn@latest add @plate/lint
+```
+
+### 添加套件
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { LintKit } from '@/components/editor/lint';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...LintKit,
+  ],
+});
+```
+
+</Steps>
+
+`LintKit` 为 `BaseLintPlugin` 配置两条示例规则 `fillerWords` 和 `commaSpacing`、
+按严重程度区分的下划线样式、`F8` 与 `Shift+F8` 快捷键，以及 `LintPopover`。
+同一文件还导出 `useLintFindings` 和 `useLintFindingAt`，用于构建自己的检查界面。
+
+<ComponentSource name="lint" />
+
+## 规则
+
+一条规则检查一个文本块。`check` 接收块的内容文本并返回匹配项。每项包含该文本中的
+UTF-16 偏移量、提示信息和可选的修复。它还会收到块本身和编辑器，因此规则可以跳过代码：
+
+```ts
+import { BaseCodeBlockPlugin, type Editor, type Element } from 'platejs';
+import type { LintRule } from 'platejs/lint';
+
+const isProse = (editor: Editor, block: Element) => {
+  const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+  return !codeBlock.installed || block.type !== codeBlock.schema.type;
+};
+
+export const commaSpacing: LintRule = {
+  id: 'style/comma-spacing',
+  severity: 'error',
+  check: (text, { block, editor }) =>
+    isProse(editor, block)
+      ? Array.from(text.matchAll(/ , ?/g), (match) => ({
+          start: match.index,
+          end: match.index + match[0].length,
+          message: 'Remove the space before commas.',
+          fixes: [', '],
+        }))
+      : [],
+};
+```
+
+`severity` 取值为 `'error'`、`'warning'` 或 `'info'`。偏移量不是文本范围内的整数，
+或没有选中任何字符的匹配项会被丢弃。规则抛出异常时，该块保留其他规则的问题，
+store 的 `error` 保存这次失败。
+
+通过 `initialState` 设置规则，或把新规则传给 `api.run`：
+
+```ts
+editor.plugin(BaseLintPlugin).api.run([commaSpacing, fillerWords]);
+```
+
+## 服务端规则
+
+`check` 返回 promise 的规则就是服务端规则。用 `signal` 中止请求：
+
+```ts
+const terminology: LintRule = {
+  id: 'server/terminology',
+  severity: 'info',
+  check: async (text, { signal }) => {
+    const response = await fetch('/api/lint', {
+      body: JSON.stringify({ text }),
+      method: 'POST',
+      signal,
+    });
+
+    return response.json();
+  },
+};
+```
+
+插件只在块与发送时一致时保留回复，包括块的类型、标记和行内元素。如果回复到达前块改变了，插件会丢弃
+该回复，并发送最新的块，即使旧请求失败了也会发送。在块中输入会隐藏该块的服务端问题，直到新文本的回复到达。每个块和规则最多
+有一个进行中的请求，每条规则最多四个。其余请求排队等待，自上次请求后文本改变过的块
+排在尚未检查的块之前。`clear`、`run` 和删除块会通过 `signal` 中止请求。请求被拒绝时
+会设置 store 的 `error`。
+
+## 问题列表
+
+`api.findings()` 按文档顺序返回问题，在 store 的 `version` 变化前始终返回同一个数组。
+在 React 中订阅 store 来读取它：
+
+```tsx
+import { BaseLintPlugin } from 'platejs/lint';
+import { useEditor } from 'platejs/react';
+import * as React from 'react';
+
+export function useLintFindings() {
+  const lint = useEditor().plugin(BaseLintPlugin);
+
+  return React.useSyncExternalStore(
+    lint.store.subscribe,
+    lint.api.findings,
+    lint.api.findings
+  );
+}
+```
+
+每个问题包含 `id`、`ruleId`、`severity`、`message`、匹配到的 `text` 和 `fixes`，
+不包含偏移量。把它的 `id` 传给 `select` 或 `fix`：
+
+```tsx
+function LintList() {
+  const lint = useEditor().plugin(BaseLintPlugin);
+  const findings = useLintFindings();
+
+  return (
+    <ol>
+      {findings.slice(0, 50).map((finding) => (
+        <li key={finding.id}>
+          <button onClick={() => lint.update.select(finding.id)} type="button">
+            {finding.message}
+          </button>
+          {finding.fixes.length > 0 && (
+            <button onClick={() => lint.update.fix(finding.id)} type="button">
+              Fix
+            </button>
+          )}
+        </li>
+      ))}
+    </ol>
+  );
+}
+```
+
+同一块中的编辑如果不改变该块的问题，例如在问题前面输入，id 保持不变。该块的问题因
+编辑或服务端回复而改变时，它的所有问题都会得到新 id，`fix` 和 `select` 对旧 id 返回 `false`。
+
+## 协作与建议
+
+协作者的编辑与本地编辑一样会提交，因此插件会重新检查它改动的每个块。在建议模式的
+编辑器中，修复和其他编辑一样成为建议。被替换的文本保留为删除建议，规则不会看到它，
+插入的修复文本计为内容。
+
+## 光标弹出层
+
+`useLintFindingAt` 返回选区焦点处的问题。它在 store 变化和提交后重新读取，因此
+光标不动时到达的服务端回复也会打开 `LintPopover`：
+
+```tsx
+export function useLintFindingAt() {
+  const editor = useEditor();
+  const lint = editor.plugin(BaseLintPlugin);
+  const subscribe = React.useCallback(
+    (onChange: () => void) => {
+      const offStore = lint.store.subscribe(onChange);
+      const offCommit = editor.subscribeCommit(onChange);
+
+      return () => {
+        offStore();
+        offCommit();
+      };
+    },
+    [editor, lint]
+  );
+
+  return React.useSyncExternalStore(subscribe, lint.api.at, lint.api.at);
+}
+```
+
+`LintPopover` 在编辑器获得焦点且可编辑时打开。它显示提示信息、规则 id、每个修复
+对应的按钮，以及 **Fix and next**，它会应用第一个修复并选中下一个问题。它的按钮让焦点
+留在编辑器中，因此修复后可以在修复文本之后继续输入。
+
+## 键盘行为
+
+| 按键 | 行为 |
+| --- | --- |
+| `F8` | 选中下一个问题，到末尾后回到第一个。 |
+| `Shift+F8` | 选中上一个问题，到开头后回到最后一个。 |
+
+问题重叠时，`F8` 和弹出层只会到达第一个。
+
+## 手动使用
+
+不使用复制的界面，直接使用无界面插件：
+
+```ts
+import { createEditor } from 'platejs';
+import { BaseLintPlugin } from 'platejs/lint';
+
+const editor = createEditor({
+  initialValue,
+  plugins: [
+    BaseLintPlugin.configure({ initialState: { rules: [commaSpacing] } }),
+  ],
+});
+const lint = editor.plugin(BaseLintPlugin);
+
+const [first] = lint.api.findings();
+
+if (first) lint.update.fix(first.id);
+```
+
+在 React 中用 `toReactPlugin` 提升插件，并通过 `decorate.attributes` 设置装饰样式。
+每个装饰都带有 `data-lint-id`、`data-lint-rule` 和 `data-lint-severity`：
+
+```tsx
+import { BaseLintPlugin } from 'platejs/lint';
+import { toReactPlugin } from 'platejs/react';
+
+const LintPlugin = toReactPlugin(BaseLintPlugin).configure({
+  initialState: { rules: [commaSpacing] },
+  decorate: {
+    attributes: {
+      className:
+        'underline decoration-wavy data-[lint-severity=error]:decoration-destructive',
+    },
+  },
+});
+```
+
+插件只检查主文档，不检查块内嵌套可编辑区域中的文本。
+
+## 插件
+
+### `BaseLintPlugin`
+
+<API name="BaseLintPlugin">
+<APIOptions>
+  <APIItem name="initialState.rules" type="readonly LintRule[]" optional>
+    要运行的规则。默认值：`[]`。
+  </APIItem>
+  <APIItem name="initialState.active" type="boolean" optional>
+    插件是否进行检查。`clear` 将其设为 `false`，`run` 将其设为 `true`。
+    默认值：`true`。
+  </APIItem>
+</APIOptions>
+</API>
+
+store 还包含 `version` 和 `error`。问题列表每次变化时 `version` 都会递增，`error` 保存最近一次规则失败。
+
+## API 参考
+
+### `api.findings`
+
+<API name="findings">
+<APIReturns>
+  <APIItem name="return" type="readonly LintFinding[]">
+    按文档顺序排列的问题，在 `version` 变化前是同一个数组。插件清除后为空。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.at`
+
+<API name="at">
+<APIReturns>
+  <APIItem name="return" type="LintFinding | null">
+    选区焦点处的问题，只读取其所在的块。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.run`
+
+重新检查整个文档并重绘。
+
+<API name="run">
+<APIParameters>
+  <APIItem name="rules" type="readonly LintRule[]" optional>
+    替换当前规则的新规则。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `api.clear`
+
+停止检查，丢弃所有问题并中止服务端请求，直到下一次 `run`。
+
+### `update.fix`
+
+用问题的某个修复替换其文本，作为独立的撤销步骤。
+
+<API name="fix">
+<APIParameters>
+  <APIItem name="id" type="string">
+    问题的 id。
+  </APIItem>
+  <APIItem name="index" type="number" optional>
+    要应用的修复。默认值：`0`。
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    是否应用了修复。问题或修复不存在时为 `false`。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `update.select`
+
+<API name="select">
+<APIParameters>
+  <APIItem name="id" type="string">
+    要选中的问题。
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    问题是否仍存在并已被选中。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `update.move`
+
+<API name="move">
+<APIParameters>
+  <APIItem name="delta" type="-1 | 1">
+    从选区出发选中上一个或下一个问题，首尾循环。
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    是否选中了问题。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `LintRule`
+
+<API name="LintRule">
+<APIAttributes>
+  <APIItem name="id" type="string">
+    规则 id，复制到每个问题的 `ruleId`。
+  </APIItem>
+  <APIItem name="severity" type="'error' | 'info' | 'warning'">
+    该规则问题的严重程度。
+  </APIItem>
+  <APIItem name="check" type="(text: string, context: { block: Element; editor: Editor; signal: AbortSignal }) => Iterable<LintMatch> | PromiseLike<Iterable<LintMatch>>">
+    检查一个块的内容文本。每个 `LintMatch` 为 `{ start, end, message, fixes? }`，
+    偏移量是 `text` 中的 UTF-16 索引。
+  </APIItem>
+</APIAttributes>
+</API>
+
+## 相关文档
+
+- [查找](/docs/find)
+- [插件快捷键](/docs/plugin-shortcuts)
+- [Authored Changes](/docs/authored-changes)

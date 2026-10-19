@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-24-export-menu-projection",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-24-export-menu-projection.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Export one chosen document projection as HTML, Markdown, or Word",
+  "targets": [
+    {
+      "name": "export-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-dropdown-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/dropdown-menu.tsx",
+        "apps/www/src/registry/bases/radix/dropdown-menu.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "docx-demo",
+      "files": [
+        "apps/www/src/registry/examples/docx-demo.tsx",
+        "apps/www/src/registry/examples/values/deserialize-docx-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "import-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/import-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "docx-export",
+      "files": ["apps/www/src/registry/components/editor/docx-export.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-24-export-toolbar-one-chosen-document-projection-505d5250",
+      "kind": "behavior",
+      "summary": "Export HTML, Markdown, and Word from the same captured document revision. With unresolved suggestions, choose Include suggested changes or Exclude suggested changes. Export as Word with tracked changes preserves pending suggestions as Word revisions and reports conflicts that require resolution.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["export-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-24",
+          "entry": "2026-09-24-export-menu-projection",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-24-export-toolbar-raster-exports-removed",
+      "kind": "remove",
+      "summary": "Remove Export as PDF and Export as Image, along with the `html2canvas-pro` and `pdf-lib` dependencies.",
+      "details": [],
+      "migrationNotes": [
+        "Remove `html2canvas-pro` and `pdf-lib` from your app when no other code uses them."
+      ],
+      "targets": ["export-toolbar-button"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-24",
+          "entry": "2026-09-24-export-menu-projection",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-24-export-toolbar-html-app-styles",
+      "kind": "fix",
+      "summary": "Inline the app's own stylesheets in HTML exports instead of linking the platejs.org stylesheet.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["export-toolbar-button"],
+      "source": {
+        "line": 18,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-09-24",
+          "entry": "2026-09-24-export-menu-projection",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-24-editor-dropdown-menu-immediate-reopen",
+      "kind": "fix",
+      "summary": "Complete close focus and dismissal before another trigger press so toolbar menus reopen on the first click after selecting an item.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-dropdown-menu"],
+      "source": {
+        "line": 20,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-09-24",
+          "entry": "2026-09-24-export-menu-projection",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-24-docx-demo-suggestion-author",
+      "kind": "fix",
+      "summary": "Set a current user so Suggestion mode records suggestions, and group contiguous typing into one visible suggestion and Word revision.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["docx-demo"],
+      "source": {
+        "line": 22,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-09-24",
+          "entry": "2026-09-24-export-menu-projection",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-24-import-toolbar-docs-route",
+      "kind": "fix",
+      "summary": "Link its DOCX registry metadata to the DOCX documentation page.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["import-toolbar-button"],
+      "source": {
+        "line": 24,
+        "row": 6,
+        "legacyRelease": {
+          "date": "2026-09-24",
+          "entry": "2026-09-24-export-menu-projection",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-24-export-toolbar-document-first-contracts",
+      "kind": "wiring",
+      "summary": "Use the current editor's document-first HTML, Markdown, and DOCX exporters directly, with one captured projection and shared diagnostics.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["export-toolbar-button"],
+      "source": {
+        "line": 26,
+        "row": 7,
+        "legacyRelease": {
+          "date": "2026-09-24",
+          "entry": "2026-09-24-export-menu-projection",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-24-docx-export-package-mappings",
+      "kind": "wiring",
+      "summary": "Keep the dependency-free copied presentation stylesheet while `platejs/docx/export` supplies semantic mappings for code blocks, columns, equations, callouts, headings, and tables of contents.",
+      "details": [],
+      "migrationNotes": [
+        "Keep `DOCX_EXPORT_STYLES` in copied app code; DOCX semantic mappings come from `platejs/docx/export`."
+      ],
+      "targets": ["docx-export"],
+      "source": {
+        "line": 28,
+        "row": 8,
+        "legacyRelease": {
+          "date": "2026-09-24",
+          "entry": "2026-09-24-export-menu-projection",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

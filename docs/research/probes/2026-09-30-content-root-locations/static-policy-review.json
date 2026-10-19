@@ -1,0 +1,27 @@
+{
+  "scenario": "Static root reader after its owner switches to accepted mode",
+  "initialText": "Foot draft",
+  "ownerPolicy": {
+    "intent": "edit",
+    "projection": "accepted"
+  },
+  "cachedPolicy": {
+    "intent": "propose",
+    "projection": "proposed"
+  },
+  "freshPolicy": {
+    "intent": "edit",
+    "projection": "accepted"
+  },
+  "cachedText": "Foot draft",
+  "freshText": "Foot",
+  "cachedIdentityReused": true,
+  "sameResult": false,
+  "source": {
+    "packages/platejs/src/static/internal/staticDocumentView.ts": "fe6402ba1510409f8babfd7d889ea524ff046e552442b1071c916ae5d6373b99",
+    "packages/plitejs/src/editor-runtime-view.ts": "948545b235afbeeb39ee48ff624b47f0b025f5ed53dbe065bf1a79ba52c37e7b",
+    "packages/plitejs/src/core/authored-runtime.ts": "2f71603acbbd30f84d229bc1a992d1adb226bb069104c4a310699127767d53cb",
+    "docs/research/probes/2026-09-30-content-root-locations/static-policy-review.ts": "d22668459b844b91bd5dbf24636e3f53def587a7d4c66f8b75ac138d3437d609"
+  },
+  "limits": "Source-built helper probe; no React mount or browser run."
+}

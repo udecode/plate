@@ -1,0 +1,5 @@
+# git apply docs/research/probes/2026-10-05-history-replay-result/panel-diff-r2/unreviewed.patch; pnpm --filter plitejs test:partition:history; git apply -R
+ 154 pass
+ 0 fail
+# exit: 0
+# reverted to reviewed bytes

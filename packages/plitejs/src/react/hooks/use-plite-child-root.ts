@@ -1,0 +1,74 @@
+import { useContext, useMemo } from 'react';
+
+import type { Element, NamedRootKey, RootKey } from '../..';
+import { ElementContext } from '../context';
+
+const DEFAULT_CHILD_ROOT_SLOT = 'default';
+
+const isChildRootMap = (value: unknown): value is Record<string, RootKey> =>
+  typeof value === 'object' &&
+  value !== null &&
+  Object.values(value).every((root) => typeof root === 'string');
+
+const getExplicitChildRoot = (
+  element: Element,
+  slot: string
+): RootKey | null => {
+  const childRoots = isChildRootMap(element.childRoots)
+    ? element.childRoots
+    : null;
+  const defaultChildRoot =
+    typeof element.childRoot === 'string' ? element.childRoot : undefined;
+
+  return (
+    childRoots?.[slot] ??
+    (slot === DEFAULT_CHILD_ROOT_SLOT
+      ? (childRoots?.[DEFAULT_CHILD_ROOT_SLOT] ?? defaultChildRoot)
+      : null) ??
+    null
+  );
+};
+
+/**
+ * Resolve a stable same-runtime root key owned by an element.
+ *
+ * Prefer storing `childRoots[slot]` on the element when the child root is part
+ * of persisted document data. The node-key fallback is useful for ephemeral
+ * island roots, but it is intentionally not a persistence contract.
+ */
+export function useChildRoot(
+  element?: Element | null,
+  slot: string = DEFAULT_CHILD_ROOT_SLOT
+): NamedRootKey {
+  const context = useContext(ElementContext);
+  const nodeKey = context?.nodeKey ?? null;
+  const targetElement = element ?? context?.element;
+
+  return useMemo(() => {
+    if (!targetElement) {
+      throw new Error(
+        '`useChildRoot` must receive an element or be used inside an element renderer.'
+      );
+    }
+
+    const explicitRoot = getExplicitChildRoot(targetElement, slot);
+
+    if (explicitRoot) {
+      if (explicitRoot === 'main') {
+        throw new Error(
+          'A child content root cannot target the primary document.'
+        );
+      }
+
+      return explicitRoot;
+    }
+
+    if (!nodeKey) {
+      throw new Error(
+        '`useChildRoot` needs an element node key when no explicit child root key exists.'
+      );
+    }
+
+    return `core:child:${nodeKey}:${slot}`;
+  }, [nodeKey, slot, targetElement]);
+}

@@ -1,0 +1,355 @@
+{
+  "dependencies": [
+    {
+      "name": "reference",
+      "prefix": "[read][later]\n\nOther.\n\n",
+      "append": "[later]: /target\n",
+      "before": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "[read][later]"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Other."
+            }
+          ]
+        }
+      ],
+      "after": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "link",
+              "url": "/target",
+              "children": [
+                {
+                  "text": "read"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Other."
+            }
+          ]
+        }
+      ],
+      "independentlyAssembled": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "[read][later]"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Other."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "footnote",
+      "prefix": "Note[^a].\n\nOther.\n\n",
+      "append": "[^a]: Body.\n",
+      "before": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Note[^a]."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Other."
+            }
+          ]
+        }
+      ],
+      "after": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Note"
+            },
+            {
+              "ref": "a",
+              "type": "footnoteReference",
+              "children": [
+                {
+                  "text": ""
+                }
+              ]
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Other."
+            }
+          ]
+        },
+        {
+          "ref": "a",
+          "type": "footnoteDefinition",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "Body."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "independentlyAssembled": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Note[^a]."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Other."
+            }
+          ]
+        },
+        {
+          "ref": "a",
+          "type": "footnoteDefinition",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "Body."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "list",
+      "prefix": "- one\n\n",
+      "append": "  continuation\n",
+      "before": [
+        {
+          "type": "paragraph",
+          "indent": 1,
+          "listType": "bulleted",
+          "children": [
+            {
+              "text": "one"
+            }
+          ]
+        }
+      ],
+      "after": [
+        {
+          "type": "paragraph",
+          "indent": 1,
+          "listType": "bulleted",
+          "children": [
+            {
+              "text": "one"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "indent": 2,
+          "children": [
+            {
+              "text": "continuation"
+            }
+          ]
+        }
+      ],
+      "independentlyAssembled": [
+        {
+          "type": "paragraph",
+          "indent": 1,
+          "listType": "bulleted",
+          "children": [
+            {
+              "text": "one"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "continuation"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fence",
+      "prefix": "```js\nfirst\n\n",
+      "append": "second\n```\n",
+      "before": [
+        {
+          "language": "js",
+          "type": "codeBlock",
+          "children": [
+            {
+              "text": "first\n"
+            }
+          ]
+        }
+      ],
+      "after": [
+        {
+          "language": "js",
+          "type": "codeBlock",
+          "children": [
+            {
+              "text": "first\n\nsecond"
+            }
+          ]
+        }
+      ],
+      "independentlyAssembled": [
+        {
+          "language": "js",
+          "type": "codeBlock",
+          "children": [
+            {
+              "text": "first\n"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "second"
+            }
+          ]
+        },
+        {
+          "type": "codeBlock",
+          "children": [
+            {
+              "text": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "globalTransform": {
+    "independent": {
+      "type": "paragraph",
+      "children": [
+        {
+          "text": "One. (1)"
+        }
+      ]
+    },
+    "global": {
+      "type": "paragraph",
+      "children": [
+        {
+          "text": "One. (2)"
+        }
+      ]
+    }
+  },
+  "stateChange": {
+    "before": {
+      "diagnostics": [],
+      "ok": true,
+      "slice": {
+        "content": [
+          {
+            "type": "streamProbe",
+            "children": [
+              {
+                "text": "first"
+              }
+            ]
+          }
+        ],
+        "openEnd": 0,
+        "openStart": 0
+      }
+    },
+    "after": {
+      "diagnostics": [],
+      "ok": true,
+      "slice": {
+        "content": [
+          {
+            "type": "streamProbe",
+            "children": [
+              {
+                "text": "second"
+              }
+            ]
+          }
+        ],
+        "openEnd": 0,
+        "openStart": 0
+      }
+    }
+  },
+  "schedule": [
+    {
+      "size": 10000,
+      "rawChunks": 157,
+      "emissionsBeforeFlush": 126,
+      "flushBytes": 91,
+      "requestedDelayMs": 9810,
+      "first100AtReceivedBytes": 192
+    },
+    {
+      "size": 50000,
+      "rawChunks": 782,
+      "emissionsBeforeFlush": 596,
+      "flushBytes": 0,
+      "requestedDelayMs": 56810,
+      "first100AtReceivedBytes": 192
+    }
+  ],
+  "claims": "Backward dependencies and configuration/state sensitivity, not a general invalidation algorithm."
+}

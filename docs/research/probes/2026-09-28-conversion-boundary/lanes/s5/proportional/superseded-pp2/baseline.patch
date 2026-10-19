@@ -1,0 +1,248 @@
+--- a/packages/platejs/src/ai/react/AIChatPlugin.ts
++++ b/packages/platejs/src/ai/react/AIChatPlugin.ts
+@@ -1642,7 +1642,6 @@
+           invalidatePreview();
+           return;
+         }
+-        const previous = previewParse;
+         const parsed = content
+           ? commandEditor.api.markdown.parseSlice(
+               content,
+@@ -1650,11 +1649,10 @@
+               // strict and invalidates a response it cannot represent. Both
+               // continue the latest partial result.
+               final
+-                ? { previous: previous?.result }
++                ? {}
+                 : {
+                     lossPolicy: 'allow',
+                     partial: true,
+-                    previous: previous?.result,
+                   }
+             )
+           : null;
+@@ -1674,16 +1672,10 @@
+           invalidatePreview();
+           return;
+         }
+-        const reused = previous?.result.ok ? previous.result.slice.content : [];
+-
+         previewOwner = { final, requestId: ownerRequestId };
+-        // The store keeps its own copy of each value. Handing back its copy of
+-        // every block the parser reused keeps that block's identity for readers.
+         context.store.set({
+           _blockKey: targetKey,
+-          previewValue: previewValue.map((node, index) =>
+-            node === reused[index] ? (previous?.stored[index] ?? node) : node
+-          ),
++          previewValue,
+         });
+         if (parsed && !final) {
+           previewParse = {
+--- a/apps/www/src/registry/components/editor/ai-menu.tsx
++++ b/apps/www/src/registry/components/editor/ai-menu.tsx
+@@ -18,12 +18,19 @@
+   Wand,
+   X,
+ } from 'lucide-react';
+-import { ElementApi, isHotkey, NodeApi, TextApi } from 'platejs';
++import {
++  createEditorView,
++  ElementApi,
++  isHotkey,
++  NodeApi,
++  TextApi,
++} from 'platejs';
+ import { BaseAIPlugin } from 'platejs/ai';
+ import { AIChatPlugin } from 'platejs/ai/react';
+ import { CommentsPlugin } from 'platejs/comments/react';
+ import {
+   useCreateEditor,
++  useEditorRuntimeState,
+   useEditorSelector,
+   useFocusedLast,
+   usePluginStore,
+@@ -108,20 +115,26 @@
+   });
+   const previewValue = usePluginStore(AIChatPlugin, 'previewValue');
+   const streaming = usePluginStore(AIChatPlugin, 'streaming');
+-  // Renders the latest draft when rendering falls behind the stream,
+-  // skipping drafts that were never shown.
+-  const previewDocument = React.useDeferredValue(
+-    React.useMemo(
+-      () => (previewValue.length > 0 ? { children: previewValue } : undefined),
+-      [previewValue]
++  // Baseline: publish every draft into the preview editor.
++  const preview = useEditorRuntimeState(
++    aiEditor,
++    React.useCallback(
++      () => createEditorView(aiEditor, { readOnly: true }),
++      [aiEditor]
+     )
+   );
+ 
++  React.useLayoutEffect(() => {
++    aiEditor
++      .update({ history: 'skip' })
++      .value.replace({ children: previewValue });
++  }, [aiEditor, previewValue]);
++
+   React.useEffect(() => {
+     if (!inline) return;
+ 
+     scrollAIPreviewEnd(editor, draftRef.current);
+-  }, [editor, inline, previewDocument]);
++  }, [editor, inline, preview]);
+ 
+   React.useEffect(() => {
+     const draft = draftRef.current;
+@@ -134,16 +147,16 @@
+     return () => observer.disconnect();
+   }, [editor, inline]);
+ 
+-  const last = previewDocument
+-    ? NodeApi.last({ children: previewDocument.children, type: '' }, [])[0]
+-    : null;
++  const last =
++    previewValue.length > 0
++      ? NodeApi.last({ children: previewValue, type: '' }, [])[0]
++      : null;
+ 
+   return (
+     <div ref={draftRef} data-editor-ai-draft="">
+       <EditorStatic
+         variant={inline ? 'none' : 'aiChat'}
+-        document={previewDocument}
+-        editor={aiEditor}
++        editor={preview}
+         className={cn(
+           '[&_[data-editor-string]]:border-b-2 [&_[data-editor-string]]:border-b-purple-100 [&_[data-editor-string]]:bg-purple-50 [&_[data-editor-string]]:text-purple-800',
+           streaming &&
+--- a/apps/www/src/registry/examples/markdown-streaming-demo.tsx
++++ b/apps/www/src/registry/examples/markdown-streaming-demo.tsx
+@@ -10,15 +10,18 @@
+ import {
+   type Descendant,
+   type Editor as PlateEditor,
+-  type EditorDocumentValue,
+-  type Element as PlateElement,
+-  ElementApi,
++  createEditorView,
+ } from 'platejs';
+ import type { MarkdownSliceParseResult } from 'platejs/markdown';
+-import { EditorRoot, useCreateEditor, useStaticEditor } from 'platejs/react';
++import {
++  EditorRoot,
++  useCreateEditor,
++  useEditorRuntimeState,
++  useStaticEditor,
++} from 'platejs/react';
+ import {
+   type HTMLAttributes,
+-  useDeferredValue,
++  useCallback,
+   useEffect,
+   useMemo,
+   useRef,
+@@ -404,17 +407,14 @@
+     },
+     []
+   );
+-  // The static preview renders each parse as a document; nothing is edited.
+-  const [staticDocument, setStaticDocument] = useState<EditorDocumentValue>();
+-  const latestOutput = useMemo(
+-    () => ({ document: staticDocument, error, status }),
+-    [staticDocument, error, status]
++  // Baseline: the static preview publishes into its own editor.
++  const staticPreview = useEditorRuntimeState(
++    editorStatic,
++    useCallback(
++      () => createEditorView(editorStatic, { readOnly: true }),
++      [editorStatic]
++    )
+   );
+-  // A static render that falls behind the stream skips to the latest parse.
+-  // The status and error describe the rendered parse, so they come from the
+-  // same deferred state. The editable preview edits its editor at once.
+-  const deferredOutput = useDeferredValue(latestOutput);
+-  const output = preview === 'static' ? deferredOutput : latestOutput;
+ 
+   const chunks = useMemo(() => {
+     if (chunkSize > 0) {
+@@ -444,17 +444,14 @@
+     const target = preview === 'static' ? editorStatic : editor;
+     const result = target.api.markdown.parseSlice(
+       draft,
+-      final ? { previous } : { lossPolicy: 'allow', partial: true, previous }
++      final ? {} : { lossPolicy: 'allow', partial: true }
+     );
+     const nodes: readonly Descendant[] = result.ok ? result.slice.content : [];
+ 
+     if (preview === 'static') {
+-      // Parsed slices hold top-level blocks.
+-      const blocks = nodes.filter((node): node is PlateElement =>
+-        ElementApi.isElement(node)
+-      );
+-
+-      setStaticDocument(blocks.length > 0 ? { children: blocks } : undefined);
++      editorStatic
++        .update({ history: 'skip' })
++        .value.replace({ children: nodes });
+     } else {
+       splice(editor, published.current, nodes);
+       published.current = nodes;
+@@ -482,7 +479,7 @@
+   const reset = () => {
+     cancel();
+     editor.update({ history: 'skip' }).value.replace({ children: [] });
+-    setStaticDocument(undefined);
++    editorStatic.update({ history: 'skip' }).value.replace({ children: [] });
+     published.current = [];
+     setPosition(0);
+     setStatus('idle');
+@@ -722,20 +719,19 @@
+           <h3 className="mb-2 font-semibold">Editor Output</h3>
+           <p
+             className="mb-2 text-sm text-muted-foreground"
+-            data-stream-status={output.status}
++            data-stream-status={status}
+           >
+-            {statusLabels[output.status]}
++            {statusLabels[status]}
+           </p>
+-          {output.error && (
++          {error && (
+             <p className="mb-2 text-sm text-destructive" data-stream-error="">
+-              {output.error}
++              {error}
+             </p>
+           )}
+           {preview === 'static' ? (
+             <EditorView
+               className="h-[500px] overflow-y-auto rounded border"
+-              document={output.document}
+-              editor={editorStatic}
++              editor={staticPreview}
+             />
+           ) : (
+             <EditorRoot editor={editor}>
+@@ -778,18 +774,7 @@
+   published: readonly Descendant[],
+   nodes: readonly Descendant[]
+ ) {
+-  let start = 0;
+-
+-  while (start < nodes.length && published[start] === nodes[start]) {
+-    start += 1;
+-  }
+-  if (start === 0) {
+-    editor.update({ history: 'skip' }).value.replace({ children: nodes });
+-  } else {
+-    editor.update({ history: 'skip' }, (tx) => {
+-      tx.nodes.replaceChildren(nodes.slice(start), { at: [], index: start });
+-    });
+-  }
++  editor.update({ history: 'skip' }).value.replace({ children: nodes });
+ }
+ 
+ // Cancel, replacement and unmount abort arrivals and drop the pending

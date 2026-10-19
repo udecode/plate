@@ -1,0 +1,114 @@
+block decoration read total 983.7 ms over 3 profiles; decorate.read bodies 424.4 ms; outside the bodies 559.3 ms
+outside the bodies, by frame (inclusive / self ms):
+     355.3    111.0  (anon)@1233-4d37154d85cba0b9.js:1463417 «(node,index)=>{let path=[...pathPrefix,index],nodeKey=(0,_utils_node_keys__WEBPACK_IMPORTE»
+     216.8    189.5  cache@1233-4d37154d85cba0b9.js:1462703
+     110.4      6.3  read@1233-4d37154d85cba0b9.js:1496002 «param=>{let{editor:view=editor,entry}=param,context=Object.create(readContextFor(view));co»
+      74.3     47.9  withDocumentViewRead@1233-4d37154d85cba0b9.js:33373
+      29.8     10.9  readContextFor@1233-4d37154d85cba0b9.js:1495206
+      27.5      9.7  getOrCreateNodeKey@1233-4d37154d85cba0b9.js:24458
+      27.3     27.3  pathKey@1233-4d37154d85cba0b9.js:1461621
+      22.4     22.4  getEditorRuntimeOwner@1233-4d37154d85cba0b9.js:2109651
+      18.9      1.2  getPlateRuntime@1233-4d37154d85cba0b9.js:1013267
+      17.8     17.8  (anon)@1233-4d37154d85cba0b9.js:1496175 «()=>Reflect.apply(decorate.read,void 0,[context]));return attributes&&0!==decorations.leng»
+      17.7      3.8  getPlateModelPublication@1233-4d37154d85cba0b9.js:1013155
+      15.1     15.1  getNodeKeys@1233-4d37154d85cba0b9.js:23394
+      14.9      7.4  (anon)@1656-507afe1003872559.js:22614 «(child,index)=>visit(child,[...nodePath,index])))},(visitContentRoots(child),child.childre»
+      13.9      0.0  getPlateRuntimeOwner@1233-4d37154d85cba0b9.js:887941
+      11.8      0.0  visitContentRoots@1656-507afe1003872559.js:22123
+      11.8      9.3  getElementContentRoots@1233-4d37154d85cba0b9.js:107575
+       5.8      5.8  isElement@1233-4d37154d85cba0b9.js:1814528
+       2.6      2.6  allocateNodeKey@1233-4d37154d85cba0b9.js:23008
+       2.5      0.0  getCompiledElement@1233-4d37154d85cba0b9.js:106585
+       2.5      0.0  getDeclarativeSchema@1233-4d37154d85cba0b9.js:101372
+source read@885-0f38e168d8e57a26.js:4743 «param=>{var _last_text_codePointAt;let{editor,entry:[node,path]}=param,children=editor.rea»: inclusive 363.4 ms, self 21.7 ms
+  first call under the body (-> first named call below it):
+     341.7      2.5  children@1233-4d37154d85cba0b9.js:719402 -> children@1233-4d37154d85cba0b9.js:719402
+  by inclusive:
+     341.7      2.5  children@1233-4d37154d85cba0b9.js:719402
+     339.1      4.8  read@1233-4d37154d85cba0b9.js:718071 «fn=>runRead(fn),createGroup=groupName=>new Proxy({},{get(target,key,receiver){if("string"=»
+     334.3      0.0  (anon)@1233-4d37154d85cba0b9.js:649804 «fn=>viewRuntime.read(state=>fn(state)));viewRead.schema=sourceEditor.read.schema;let viewU»
+     331.8     18.2  withDocumentViewRead@1233-4d37154d85cba0b9.js:33373
+     319.9      2.5  read@1233-4d37154d85cba0b9.js:644800 «fn=>{var _getViewEditor;return(0,_core_document_view_read__WEBPACK_IMPORTED_MODULE_11__.tO»
+     309.8      8.8  (anon)@1233-4d37154d85cba0b9.js:644959 «()=>baseRuntime.read(state=>fn((state=>{if(state!==cachedBaseState){var _getViewEditor;cac»
+     301.0      8.5  read@1233-4d37154d85cba0b9.js:1117214 «fn=>(0,public_state.O4)(editor1,fn),runCommand:(0,command_registry.my)(()=>editor1),subscr»
+     292.6      1.3  readEditor@1233-4d37154d85cba0b9.js:1648673
+     263.1     72.4  withEditorDocumentProjection@1233-4d37154d85cba0b9.js:1521883
+     249.9      0.0  (anon)@1233-4d37154d85cba0b9.js:1649539 «()=>(0,authored_runtime.mL)(editor,editor,()=>fn(getStateView(editor))))}finally{restoreDr»
+     249.9      3.8  withAuthoredViewRead@1233-4d37154d85cba0b9.js:512202
+     242.9      6.3  (anon)@1233-4d37154d85cba0b9.js:1649581 «()=>fn(getStateView(editor))))}finally{restoreDraft(),exitRead()}},updateEditor=function(e»
+     210.0      1.3  (anon)@1233-4d37154d85cba0b9.js:644980 «state=>fn((state=>{if(state!==cachedBaseState){var _getViewEditor;cachedBaseState=state,ca»
+     201.2      5.0  (anon)@1233-4d37154d85cba0b9.js:649825 «state=>fn(state)));viewRead.schema=sourceEditor.read.schema;let viewUpdate=(0,_core_editor»
+     196.2      3.8  (anon)@1233-4d37154d85cba0b9.js:719515 «state=>state.children(...args))},fragment:createCallableGroup("fragment"),getField:functio»
+     192.4      1.3  (anon)@1233-4d37154d85cba0b9.js:618191 «(){for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++)args[_key]=argum»
+     191.1      4.9  withRootRead@1233-4d37154d85cba0b9.js:617290
+     124.5      0.0  read@1233-4d37154d85cba0b9.js:617345 «()=>(0,_core_public_state__WEBPACK_IMPORTED_MODULE_1__.bq)(editor,viewState.root,fn);retur»
+     124.5      3.8  withEditorRootChildren@1233-4d37154d85cba0b9.js:1651008
+      63.0      5.0  (anon)@1233-4d37154d85cba0b9.js:618329 «()=>method(...args))},rootGeneratorMethod=(editor,viewState,method)=>function(){for(var _l»
+  by self:
+     263.1     72.4  withEditorDocumentProjection@1233-4d37154d85cba0b9.js:1521883
+      50.3     42.9  enterEditorRootChildren@1233-4d37154d85cba0b9.js:1651937
+      31.6     31.6  _object_spread@3370-ab6f5e713678b725.js:72578
+      22.1     20.8  enterEditorRead@1233-4d37154d85cba0b9.js:1530769
+      18.7     18.7  getEditorRuntimeOwner@1233-4d37154d85cba0b9.js:2109651
+     331.8     18.2  withDocumentViewRead@1233-4d37154d85cba0b9.js:33373
+      27.3     17.0  getStateView@1233-4d37154d85cba0b9.js:1576631
+      55.4     15.1  getEditorDocumentRoots@1233-4d37154d85cba0b9.js:1549004
+     309.8      8.8  (anon)@1233-4d37154d85cba0b9.js:644959 «()=>baseRuntime.read(state=>fn((state=>{if(state!==cachedBaseState){var _getViewEditor;cac»
+     301.0      8.5  read@1233-4d37154d85cba0b9.js:1117214 «fn=>(0,public_state.O4)(editor1,fn),runCommand:(0,command_registry.my)(()=>editor1),subscr»
+       8.9      6.8  getPluginRegistry@1233-4d37154d85cba0b9.js:680497
+     242.9      6.3  (anon)@1233-4d37154d85cba0b9.js:1649581 «()=>fn(getStateView(editor))))}finally{restoreDraft(),exitRead()}},updateEditor=function(e»
+       7.5      6.3  (anon)@1233-4d37154d85cba0b9.js:644991 «state=>{if(state!==cachedBaseState){var _getViewEditor;cachedBaseState=state,cachedViewSta»
+       6.3      6.3  (anon)@1233-4d37154d85cba0b9.js:1652655 «()=>{void 0===previousRoot?CURRENT_CHILDREN_ROOT.delete(editor):CURRENT_CHILDREN_ROOT.set(»
+      63.0      5.0  (anon)@1233-4d37154d85cba0b9.js:618329 «()=>method(...args))},rootGeneratorMethod=(editor,viewState,method)=>function(){for(var _l»
+     201.2      5.0  (anon)@1233-4d37154d85cba0b9.js:649825 «state=>fn(state)));viewRead.schema=sourceEditor.read.schema;let viewUpdate=(0,_core_editor»
+     191.1      4.9  withRootRead@1233-4d37154d85cba0b9.js:617290
+       4.9      4.9  (anon)@1233-4d37154d85cba0b9.js:1648921 «editor=>{let contexts=TRANSACTION_SPEC_CONTEXTS.get(editor);if(!contexts||0===contexts.len»
+     339.1      4.8  read@1233-4d37154d85cba0b9.js:718071 «fn=>runRead(fn),createGroup=groupName=>new Proxy({},{get(target,key,receiver){if("string"=»
+     124.5      3.8  withEditorRootChildren@1233-4d37154d85cba0b9.js:1651008
+source read@7460-bbe9e3fbcf49770c.js:279022 «param=>{var _view_key,_ref,_ref1,_ref2;let highlighted,warning,{editor:view,entry:[block,b»: inclusive 59.7 ms, self 28.8 ms
+  first call under the body (-> first named call below it):
+      10.6      0.0  get@1233-4d37154d85cba0b9.js:531681 -> get@1233-4d37154d85cba0b9.js:531681
+      10.3      0.0  get@1233-4d37154d85cba0b9.js:524001 -> get@1233-4d37154d85cba0b9.js:524001
+       7.5      7.5  isElement@1233-4d37154d85cba0b9.js:1814528 -> (inline)
+       1.3      1.3  getCompiledPlatePlugin@1233-4d37154d85cba0b9.js:1014552 -> (inline)
+       1.3      1.3  $@1233-4d37154d85cba0b9.js:1814354 -> (inline)
+  by inclusive:
+      19.9      1.3  getPlugin@1233-4d37154d85cba0b9.js:519118
+      10.6      0.0  get@1233-4d37154d85cba0b9.js:531681
+      10.6      0.5  get@1233-4d37154d85cba0b9.js:531479
+      10.3      0.0  get@1233-4d37154d85cba0b9.js:524001
+      10.0      3.8  getCandidate@1233-4d37154d85cba0b9.js:518603
+       9.8      0.0  getConsumerSchemaIdentity@1233-4d37154d85cba0b9.js:522414
+       7.5      7.5  isElement@1233-4d37154d85cba0b9.js:1814528
+       5.0      0.0  isDescriptorInstalled@1233-4d37154d85cba0b9.js:518138
+       4.8      4.8  getCompiledPlatePlugin@1233-4d37154d85cba0b9.js:1014552
+       3.8      3.8  hasCompiledPlateModelCandidate@1233-4d37154d85cba0b9.js:1014434
+       3.8      1.3  isPluginDescriptorSourceOf@1233-4d37154d85cba0b9.js:516609
+       2.5      0.0  getPluginSourceReferences@1233-4d37154d85cba0b9.js:969911
+       2.5      2.5  getPluginDescriptorMetadata@1233-4d37154d85cba0b9.js:969622
+       2.5      2.5  hasCompiledPlatePluginCandidate@1233-4d37154d85cba0b9.js:1014312
+       1.3      1.3  $@1233-4d37154d85cba0b9.js:1814354
+       1.3      1.3  getPluginSchemaFamily@1233-4d37154d85cba0b9.js:970402
+       0.5      0.5  getCompiledPlateModel@1233-4d37154d85cba0b9.js:1013531
+  by self:
+       7.5      7.5  isElement@1233-4d37154d85cba0b9.js:1814528
+       4.8      4.8  getCompiledPlatePlugin@1233-4d37154d85cba0b9.js:1014552
+      10.0      3.8  getCandidate@1233-4d37154d85cba0b9.js:518603
+       3.8      3.8  hasCompiledPlateModelCandidate@1233-4d37154d85cba0b9.js:1014434
+       2.5      2.5  getPluginDescriptorMetadata@1233-4d37154d85cba0b9.js:969622
+       2.5      2.5  hasCompiledPlatePluginCandidate@1233-4d37154d85cba0b9.js:1014312
+       1.3      1.3  $@1233-4d37154d85cba0b9.js:1814354
+       3.8      1.3  isPluginDescriptorSourceOf@1233-4d37154d85cba0b9.js:516609
+       1.3      1.3  getPluginSchemaFamily@1233-4d37154d85cba0b9.js:970402
+      19.9      1.3  getPlugin@1233-4d37154d85cba0b9.js:519118
+      10.6      0.5  get@1233-4d37154d85cba0b9.js:531479
+       0.5      0.5  getCompiledPlateModel@1233-4d37154d85cba0b9.js:1013531
+      10.6      0.0  get@1233-4d37154d85cba0b9.js:531681
+      10.3      0.0  get@1233-4d37154d85cba0b9.js:524001
+       9.8      0.0  getConsumerSchemaIdentity@1233-4d37154d85cba0b9.js:522414
+       5.0      0.0  isDescriptorInstalled@1233-4d37154d85cba0b9.js:518138
+       2.5      0.0  getPluginSourceReferences@1233-4d37154d85cba0b9.js:969911
+source isElement@1233-4d37154d85cba0b9.js:1814528: inclusive 1.3 ms, self 1.3 ms
+  first call under the body (-> first named call below it):
+  by inclusive:
+  by self:

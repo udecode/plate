@@ -1,0 +1,33 @@
+{
+  "id": "2026-09-18-recovered-2026-09-12-authored-loadable-state-design",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "authored",
+    "persistence"
+  ],
+  "reviewBasis": [],
+  "workKind": "design",
+  "plan": {
+    "path": "docs/plans/2026-09-12-authored-loadable-state-design.md",
+    "sha256": "b4c2b9a3e2d697648ade97fe5643ce538b849ce42de6af4ca0a4af67b8e9ea18"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical design completion from the plan. Complete — design and disposable probes; production representation gated The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-12-authored-loadable-state-design.md",
+        "sha256": "b4c2b9a3e2d697648ade97fe5643ce538b849ce42de6af4ca0a4af67b8e9ea18",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-12-authored-loadable-state-design.md"
+  ]
+}

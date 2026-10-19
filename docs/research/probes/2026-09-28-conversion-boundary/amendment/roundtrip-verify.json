@@ -1,0 +1,646 @@
+{
+  "cost": {
+    "corpusNodes": 1400,
+    "roundTripMs": 404.30387500000006,
+    "serializeMs": 85.71520800000008,
+    "validCorpus": true
+  },
+  "rows": [
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[0] heading",
+      "lost": [],
+      "markdown": "# Playground\n",
+      "preserved": [
+        "level"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[1] heading",
+      "lost": [],
+      "markdown": "## Comments and suggestions\n",
+      "preserved": [
+        "level"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[2] paragraph",
+      "lost": [],
+      "markdown": "Add comments to your content to provide additional conte1xt, insightssuggestions, or collaborate with others\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[3] heading",
+      "lost": [],
+      "markdown": "### Heading\n",
+      "preserved": [
+        "level"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[4] paragraph",
+      "lost": [],
+      "markdown": "* 1\n",
+      "preserved": [
+        "indent",
+        "listType"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [
+        "indent"
+      ],
+      "falsePositives": [],
+      "label": "testValue[5] paragraph",
+      "lost": [
+        "indent"
+      ],
+      "markdown": "* 2\n",
+      "preserved": [
+        "listType"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [
+        "indent"
+      ],
+      "falsePositives": [],
+      "label": "testValue[6] paragraph",
+      "lost": [
+        "indent"
+      ],
+      "markdown": "* 3\n",
+      "preserved": [
+        "listType"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [
+        "indent"
+      ],
+      "falsePositives": [],
+      "label": "testValue[7] paragraph",
+      "lost": [
+        "indent"
+      ],
+      "markdown": "* 4\n",
+      "preserved": [
+        "listType"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[8] paragraph",
+      "lost": [],
+      "markdown": "* parent style change\n",
+      "preserved": [
+        "indent",
+        "listType"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [
+        "indent",
+        "listStart"
+      ],
+      "falsePositives": [],
+      "label": "testValue[9] paragraph",
+      "lost": [
+        "indent",
+        "listStart"
+      ],
+      "markdown": "1. child ordered style split\n",
+      "preserved": [
+        "listType"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [
+        "indent",
+        "listStart"
+      ],
+      "falsePositives": [],
+      "label": "testValue[10] paragraph",
+      "lost": [
+        "indent",
+        "listStart"
+      ],
+      "markdown": "* child bullet style split\n",
+      "preserved": [
+        "listType"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [
+        "indent"
+      ],
+      "falsePositives": [],
+      "label": "testValue[11] paragraph",
+      "lost": [
+        "indent"
+      ],
+      "markdown": "* [x] child todo style split\n",
+      "preserved": [
+        "listType",
+        "checked"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[12] table",
+      "lost": [],
+      "markdown": "| 1-1 | 1-2 |\n| --- | --- |\n| 2-1 | 2-2 |\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "label": "testValue[12].0 tableRow",
+      "skipped": "schema-invalid in the package test editor"
+    },
+    {
+      "label": "testValue[12].1 tableRow",
+      "skipped": "schema-invalid in the package test editor"
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[13] blockquote",
+      "lost": [],
+      "markdown": "> blockQuote\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "label": "testValue[13].0 paragraph",
+      "skipped": "schema-invalid in the package test editor"
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[14] horizontalRule",
+      "lost": [],
+      "markdown": "***\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[15] paragraph",
+      "lost": [],
+      "markdown": "normal **bold**_italic_~~strikethrough~~`code`_**combine**_[link](https://example.com)$E=mc^2$\n",
+      "preserved": [],
+      "reported": [
+        "target"
+      ]
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[15].0 link",
+      "lost": [
+        "target"
+      ],
+      "markdown": "[link](https://example.com)\n",
+      "preserved": [
+        "url"
+      ],
+      "reported": [
+        "target"
+      ]
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[15].1 inlineEquation",
+      "lost": [],
+      "markdown": "$E=mc^2$\n",
+      "preserved": [
+        "latex"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[16] image",
+      "lost": [],
+      "markdown": "<figure>\n\n<img src=\"https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&amp;w=2070&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.0.3&amp;ixid=M3wxMj",
+      "preserved": [
+        "url"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[17] codeBlock",
+      "lost": [],
+      "markdown": "```javascript\n// Use code blocks to showcase code snippets\nfunction greet() {\n  console.info('Hello World!');\n}\n```\n",
+      "preserved": [
+        "language"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[18] equation",
+      "lost": [],
+      "markdown": "$$\nf(x)\n$$\n",
+      "preserved": [
+        "latex"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[19] toc",
+      "lost": [],
+      "markdown": "<toc />\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[20] paragraph",
+      "lost": [],
+      "markdown": "* [x] Todo item\n",
+      "preserved": [
+        "checked",
+        "indent",
+        "listType"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[21] paragraph",
+      "lost": [],
+      "markdown": "1. Numbered list item\n",
+      "preserved": [
+        "indent",
+        "listType"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[22] paragraph",
+      "lost": [],
+      "markdown": "Centered text\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[23] paragraph",
+      "lost": [],
+      "markdown": "Text with custom line height\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[24] file",
+      "lost": [],
+      "markdown": "<file name=\"sample.pdf\" src=\"https://example.com/sample.pdf\" />\n",
+      "preserved": [
+        "name",
+        "url"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[25] audio",
+      "lost": [],
+      "markdown": "<audio src=\"https://example.com/audio.mp3\" />\n",
+      "preserved": [
+        "url"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[26] video",
+      "lost": [],
+      "markdown": "<video src=\"https://example.com/video.mp4\" />\n",
+      "preserved": [
+        "url"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[27] mediaEmbed",
+      "lost": [],
+      "markdown": "<mediaEmbed src=\"https://www.youtube.com/watch?v=example\" />\n",
+      "preserved": [
+        "url"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[28] columnGroup",
+      "lost": [],
+      "markdown": "<columnGroup>\n\n<column width=\"50%\">Left column</column>\n\n<column width=\"50%\">Right column</column>\n\n</columnGroup>\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "label": "testValue[28].0 column",
+      "skipped": "schema-invalid in the package test editor"
+    },
+    {
+      "label": "testValue[28].1 column",
+      "skipped": "schema-invalid in the package test editor"
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[29] paragraph",
+      "lost": [],
+      "markdown": "Mention: [User](mention:User)\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[29].0 mention",
+      "lost": [],
+      "markdown": "[User](mention:User)\n",
+      "preserved": [
+        "ref"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[30] paragraph",
+      "lost": [],
+      "markdown": "Date: <date value=\"2024-01-01\" />\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[30].0 date",
+      "lost": [],
+      "markdown": "<date value=\"2024-01-01\" />\n",
+      "preserved": [
+        "value"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[31] paragraph",
+      "lost": [],
+      "markdown": "Text with <mark>highlight</mark> and <u>underline</u> and <kbd>keyboard</kbd> formatting\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[32] paragraph",
+      "lost": [],
+      "markdown": "Text with <span style=\"color: rgb(252, 109, 38);\">color</span> and <span style=\"background-color: rgb(252, 109, 38);\">background</span> color\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[33] paragraph",
+      "lost": [],
+      "markdown": "Superscript: x<sup>2</sup>Subscript: x<sub>2</sub>\n",
+      "preserved": [],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "testValue[34] callout",
+      "lost": [],
+      "markdown": "<callout icon=\"💡\">callout</callout>\n",
+      "preserved": [
+        "icon"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "heading level 3",
+      "lost": [],
+      "markdown": "### H\n",
+      "preserved": [
+        "level"
+      ],
+      "reported": []
+    },
+    {
+      "label": "codeBlock lang",
+      "skipped": "schema-invalid in the package test editor"
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "image with width/title",
+      "lost": [],
+      "markdown": "<img alt=\"A\" width=\"320\" src=\"/a.png\" title=\"T\" />\n",
+      "preserved": [
+        "alt",
+        "title",
+        "url",
+        "width"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "callout variant/background",
+      "lost": [],
+      "markdown": "<callout backgroundColor=\"red\" icon=\"🔥\" variant=\"info\">x</callout>\n",
+      "preserved": [
+        "backgroundColor",
+        "icon",
+        "variant"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "video width",
+      "lost": [],
+      "markdown": "<video width=\"50%\" src=\"/v.mp4\">cap</video>\n",
+      "preserved": [
+        "url",
+        "width"
+      ],
+      "reported": []
+    },
+    {
+      "falseNegatives": [],
+      "falsePositives": [],
+      "label": "link target",
+      "lost": [
+        "target"
+      ],
+      "markdown": "[x](https://example.com)\n",
+      "preserved": [
+        "url"
+      ],
+      "reported": [
+        "target"
+      ]
+    },
+    {
+      "label": "list numbered start 3",
+      "skipped": "schema-invalid in the package test editor"
+    },
+    {
+      "label": "todo checked",
+      "skipped": "schema-invalid in the package test editor"
+    }
+  ],
+  "summary": {
+    "checked": 44,
+    "falseNegativeFixtures": [
+      {
+        "label": "testValue[5] paragraph",
+        "keys": [
+          "indent"
+        ]
+      },
+      {
+        "label": "testValue[6] paragraph",
+        "keys": [
+          "indent"
+        ]
+      },
+      {
+        "label": "testValue[7] paragraph",
+        "keys": [
+          "indent"
+        ]
+      },
+      {
+        "label": "testValue[9] paragraph",
+        "keys": [
+          "indent",
+          "listStart"
+        ]
+      },
+      {
+        "label": "testValue[10] paragraph",
+        "keys": [
+          "indent",
+          "listStart"
+        ]
+      },
+      {
+        "label": "testValue[11] paragraph",
+        "keys": [
+          "indent"
+        ]
+      }
+    ],
+    "falsePositiveFixtures": [],
+    "lostByRoundTrip": [
+      {
+        "label": "testValue[5] paragraph",
+        "keys": [
+          "indent"
+        ]
+      },
+      {
+        "label": "testValue[6] paragraph",
+        "keys": [
+          "indent"
+        ]
+      },
+      {
+        "label": "testValue[7] paragraph",
+        "keys": [
+          "indent"
+        ]
+      },
+      {
+        "label": "testValue[9] paragraph",
+        "keys": [
+          "indent",
+          "listStart"
+        ]
+      },
+      {
+        "label": "testValue[10] paragraph",
+        "keys": [
+          "indent",
+          "listStart"
+        ]
+      },
+      {
+        "label": "testValue[11] paragraph",
+        "keys": [
+          "indent"
+        ]
+      },
+      {
+        "label": "testValue[15].0 link",
+        "keys": [
+          "target"
+        ]
+      },
+      {
+        "label": "link target",
+        "keys": [
+          "target"
+        ]
+      }
+    ],
+    "skipped": 8
+  }
+}

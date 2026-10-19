@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-07-toc-observer",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-07-toc-observer.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Keep heading tracking stable while scrolling",
+  "targets": [
+    {
+      "name": "toc",
+      "files": ["apps/www/src/registry/components/editor/toc.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-07-toc-keep-heading-tracking-stable-e3052403",
+      "kind": "behavior",
+      "summary": "Keep heading tracking stable while scrolling and update the active row when returning to an earlier heading. Configure scroll enablement and offset on `TocElement`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toc"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-07",
+          "entry": "2026-09-07-toc-observer",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

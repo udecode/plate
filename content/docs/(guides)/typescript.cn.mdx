@@ -1,0 +1,72 @@
+---
+title: TypeScript
+description: 在打包应用和 Node.js 项目中解析 Plate 的公共入口。
+---
+
+Plate 通过 `exports` 映射发布 ESM 入口。让 TypeScript 读取该映射，
+即可将 `platejs/react` 等导入解析到对应的类型声明和运行时文件。
+
+## 打包应用
+
+对于 Vite、Next.js 等打包工具，使用 `moduleResolution: "bundler"`
+并设置 ESM 模块目标：
+
+```jsonc title="tsconfig.json"
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "strict": true,
+    "noEmit": true
+  }
+}
+```
+
+保留框架提供的其他设置。`bundler` 解析模式需要 TypeScript 5.0 或更高版本。
+
+## Node.js 项目
+
+对于直接由 Node.js 执行的代码，将模块和模块解析都设置为 `NodeNext`：
+
+```jsonc title="tsconfig.json"
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true
+  }
+}
+```
+
+如果从 `.ts` 文件输出 ESM，请在应用的 `package.json` 中声明
+`"type": "module"`。服务端可用的 Plate 导入见
+[Node.js 指南](/docs/installation/node)。
+
+## 公共导入
+
+从已发布的入口导入：
+
+```ts
+import { createEditor } from 'platejs';
+```
+
+可编辑 React API 使用 `platejs/react`，静态 React 渲染使用
+`platejs/static`。仅在已安装的包导出某个功能子路径时导入该子路径。
+
+应用的 `@/*` 等别名保留在框架配置中。不要把 Plate 导入映射到
+`node_modules/platejs/dist`：公共子路径与文件之间的关系由
+`exports` 映射管理，各入口的目录布局并不相同。
+
+## 排查解析错误
+
+- **找不到包：** 确认导入它的 workspace 已安装 `platejs`，并且
+  TypeScript 使用了预期的配置。
+- **找不到子路径：** 检查已安装包的 `exports` 映射，使用
+  `bundler` 或 `NodeNext` 解析模式。
+- **没有对应导出成员：** 检查标识符、入口和已安装版本。
+  路径别名不能添加不存在的导出。
+- **只有测试失败：** 除 TypeScript 外，也要为测试运行器配置 ESM 和
+  包导出解析。避免再维护一组指向包内部文件的别名。
+
+检查安装版本与重复运行时的方法见[故障排除指南](/docs/troubleshooting)。

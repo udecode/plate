@@ -1,0 +1,337 @@
+import {
+  type ComponentPropsWithRef,
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
+
+import type {
+  EditableDOMBeforeInputHandler,
+  EditableKeyDownHandler,
+} from '../components/editable';
+import type { DOMRepairQueue } from './dom-repair-queue';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
+import type { EditableRepairRequest } from './mutation-controller';
+import { useRuntimeBeforeInputEvents } from './runtime-before-input-events';
+import { useRuntimeBrowserHandle } from './runtime-browser-handle-events';
+import { useRuntimeClipboardEvents } from './runtime-clipboard-events';
+import { useRuntimeCompositionEvents } from './runtime-composition-events';
+import { useRuntimeDragEvents } from './runtime-drag-events';
+import { useRuntimeFocusMouseEvents } from './runtime-focus-mouse-events';
+import { useRuntimeInputEvents } from './runtime-input-events';
+import type { useRuntimeKernelTraceEngine } from './runtime-kernel-trace';
+import { useRuntimeKeyboardEvents } from './runtime-keyboard-events';
+import type { RuntimeSelectionImportController } from './runtime-selection-engine';
+import { useRuntimeTargetBridge } from './runtime-target-bridge';
+import type { EditableDOMSelectionSyncOptions } from './selection-controller';
+
+type EditableRootCallbackProps = Pick<
+  ComponentPropsWithRef<'div'>,
+  | 'onBeforeInput'
+  | 'onBlur'
+  | 'onClick'
+  | 'onCompositionEnd'
+  | 'onCompositionStart'
+  | 'onCompositionUpdate'
+  | 'onCopy'
+  | 'onCut'
+  | 'onDragEnd'
+  | 'onDragOver'
+  | 'onDragStart'
+  | 'onDrop'
+  | 'onFocus'
+  | 'onInput'
+  | 'onMouseDown'
+  | 'onMouseUp'
+  | 'onPaste'
+>;
+
+type EditableRootEventHandlers = ReturnType<
+  typeof useRuntimeBeforeInputEvents
+> &
+  ReturnType<typeof useRuntimeInputEvents> &
+  ReturnType<typeof useRuntimeClipboardEvents> &
+  ReturnType<typeof useRuntimeDragEvents> &
+  ReturnType<typeof useRuntimeCompositionEvents> &
+  ReturnType<typeof useRuntimeFocusMouseEvents> &
+  ReturnType<typeof useRuntimeKeyboardEvents>;
+
+type EditableRepairRuntime = {
+  domRepairQueue: DOMRepairQueue;
+  forceRender: () => void;
+  requestEditableRepair: (
+    request: EditableRepairRequest,
+    options?: { focusEditor?: EditableDOMRuntime['editor'] }
+  ) => void;
+  requestModelSelectionExportAfterRender: () => void;
+};
+
+type EditableKernelTraceRuntime = ReturnType<
+  typeof useRuntimeKernelTraceEngine
+>;
+
+export type EditableEventRuntimeCore = {
+  android: {
+    managerRef: EditableDOMRuntime['androidInputManagerRef'];
+  };
+  composition: {
+    setComposing: (nextValue: boolean) => void;
+  };
+  repair: EditableRepairRuntime;
+  selection: RuntimeSelectionImportController;
+  trace: EditableKernelTraceRuntime;
+};
+
+export type EditableEventRuntime = EditableEventRuntimeCore & {
+  flushPendingNativeTextInput?: () => void;
+  handlers: EditableRootEventHandlers;
+};
+
+export const useEditableEventRuntime = ({
+  callbacks,
+  deferNativeTextInputRepair = false,
+  viewportRuntime,
+  onDOMBeforeInput,
+  onKeyDown,
+  viewportBackedSelection,
+  readOnly,
+  repair,
+  runtime,
+  selection,
+  syncDOMSelectionToEditor,
+  trace,
+}: {
+  callbacks: EditableRootCallbackProps;
+  deferNativeTextInputRepair?: boolean;
+  viewportRuntime: EditableDOMRuntime['viewportRuntime'];
+  onDOMBeforeInput?: EditableDOMBeforeInputHandler;
+  onKeyDown?: EditableKeyDownHandler;
+  viewportBackedSelection: boolean;
+  readOnly: boolean;
+  repair: EditableRepairRuntime;
+  runtime: EditableDOMRuntime;
+  selection: RuntimeSelectionImportController;
+  syncDOMSelectionToEditor: (options?: EditableDOMSelectionSyncOptions) => void;
+  trace: EditableKernelTraceRuntime;
+}): EditableEventRuntime => {
+  const {
+    androidInputManagerRef,
+    browserHandleNextId,
+    browserHandleRangeAnchors,
+    deferredMutations,
+    domPhaseScheduler,
+    editor,
+    handledDOMBeforeInputRef,
+    inputController,
+    processing,
+    rootRef,
+    state,
+  } = runtime;
+  const eventCore = useMemo(
+    () =>
+      ({
+        android: {
+          managerRef: androidInputManagerRef,
+        },
+        composition: {
+          setComposing: runtime.setComposing,
+        },
+        repair,
+        selection,
+        trace,
+      }) satisfies EditableEventRuntimeCore,
+    [androidInputManagerRef, repair, runtime.setComposing, selection, trace]
+  );
+  const cancelNativeSelectionImportRef = useRef<(() => void) | null>(null);
+  const cancelNativeSelectionImport = useCallback(() => {
+    cancelNativeSelectionImportRef.current?.();
+    cancelNativeSelectionImportRef.current = null;
+  }, []);
+  const scheduleNativeSelectionImport = useCallback(() => {
+    cancelNativeSelectionImport();
+    cancelNativeSelectionImportRef.current = domPhaseScheduler.schedule(
+      'selection-repair',
+      'native-selection-import',
+      () => {
+        cancelNativeSelectionImportRef.current = null;
+        selection.syncDOMSelectionFromRuntime();
+      },
+      { timing: 'timeout' }
+    );
+  }, [cancelNativeSelectionImport, domPhaseScheduler, selection]);
+
+  useEffect(
+    () => () => {
+      cancelNativeSelectionImport();
+    },
+    [cancelNativeSelectionImport]
+  );
+
+  useRuntimeTargetBridge({
+    domPhaseScheduler: runtime.domPhaseScheduler,
+    editor,
+    inputController,
+    syncDOMSelectionToEditor,
+  });
+  const inputHandlers = useRuntimeInputEvents({
+    androidInputManagerRef: eventCore.android.managerRef,
+    deferNativeTextInputRepair,
+    deferredMutations,
+    editor,
+    handledDOMBeforeInputRef,
+    inputController,
+    readOnly,
+    repair: eventCore.repair,
+    rootRef,
+    runtime,
+    syncDOMSelectionToEditor,
+    trace: eventCore.trace,
+    onInput: callbacks.onInput,
+  });
+  useRuntimeBrowserHandle({
+    browserHandleNextId,
+    browserHandleRangeAnchors,
+    domPhaseScheduler,
+    editor,
+    flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
+    forceRender: eventCore.repair.forceRender,
+    inputController,
+    isViewportBackedSelection: runtime.isViewportBackedSelection,
+    rootRef,
+    runtime,
+    scrollPathIntoView: viewportRuntime?.scrollToPath,
+    setExplicitViewportBackedSelection:
+      runtime.setExplicitViewportBackedSelection,
+  });
+  const beforeInputHandlers = useRuntimeBeforeInputEvents({
+    androidInputManagerRef: eventCore.android.managerRef,
+    deferNativeTextInputRepair,
+    deferredMutations,
+    editor,
+    flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
+    handledDOMBeforeInputRef,
+    inputController,
+    onBeforeInput: callbacks.onBeforeInput as
+      | ((event: FormEvent<HTMLDivElement>) => boolean | void)
+      | undefined,
+    onDOMBeforeInput,
+    onInput: callbacks.onInput,
+    onUserInput: runtime.onUserInput,
+    processing,
+    queuePendingNativeTextInput: inputHandlers.queuePendingNativeTextInput,
+    readOnly,
+    repair: eventCore.repair,
+    runtime,
+    selection: eventCore.selection,
+    setComposing: eventCore.composition.setComposing,
+    trace: eventCore.trace,
+  });
+  const clipboardHandlers = useRuntimeClipboardEvents({
+    editor,
+    flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
+    inputController,
+    onCopy: callbacks.onCopy,
+    onCut: callbacks.onCut,
+    onPaste: callbacks.onPaste,
+    readOnly,
+    repair: eventCore.repair,
+    rootRef,
+    runPaste: runtime.runPaste,
+    setExplicitViewportBackedSelection:
+      runtime.setExplicitViewportBackedSelection,
+    viewportBackedSelection,
+    trace: eventCore.trace,
+  });
+  const dragHandlers = useRuntimeDragEvents({
+    editor,
+    inputController,
+    onDragEnd: callbacks.onDragEnd,
+    onDragOver: callbacks.onDragOver,
+    onDragStart: callbacks.onDragStart,
+    onDrop: callbacks.onDrop,
+    readOnly,
+    repair: eventCore.repair,
+    reportDrop: runtime.reportDrop,
+    runDrop: runtime.runDrop,
+    state,
+    trace: eventCore.trace,
+  });
+  const compositionHandlers = useRuntimeCompositionEvents({
+    editor,
+    inputController,
+    onCompositionEnd: callbacks.onCompositionEnd,
+    onCompositionStart: callbacks.onCompositionStart,
+    onCompositionUpdate: callbacks.onCompositionUpdate,
+    readOnly,
+    requestModelSelectionExportAfterRender:
+      eventCore.repair.requestModelSelectionExportAfterRender,
+    runtime,
+    setComposing: eventCore.composition.setComposing,
+    trace: eventCore.trace,
+  });
+  const focusMouseHandlers = useRuntimeFocusMouseEvents({
+    cancelNativeSelectionImport,
+    clearVerticalGoal: runtime.clearVerticalGoal,
+    domPhaseScheduler,
+    editor,
+    flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
+    inputController,
+    onBlur: callbacks.onBlur,
+    onClick: callbacks.onClick,
+    onFocus: callbacks.onFocus,
+    onMouseDown: callbacks.onMouseDown,
+    onMouseUp: callbacks.onMouseUp,
+    publishFocusState: runtime.publishFocusState,
+    readOnly,
+    selection: eventCore.selection,
+    state,
+    syncDOMSelectionToEditor,
+    trace: eventCore.trace,
+  });
+  const keyboardHandlers = useRuntimeKeyboardEvents({
+    domPhaseScheduler,
+    editor,
+    inputController,
+    viewportRuntime,
+    flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
+    onKeyDown,
+    readOnly,
+    runtime: eventCore,
+    scheduleNativeSelectionImport,
+    setExplicitViewportBackedSelection:
+      runtime.setExplicitViewportBackedSelection,
+    verticalNavigation: runtime,
+    viewportBackedSelection,
+  });
+  const handlers = useMemo(
+    () => ({
+      ...beforeInputHandlers,
+      ...inputHandlers,
+      ...clipboardHandlers,
+      ...dragHandlers,
+      ...compositionHandlers,
+      ...focusMouseHandlers,
+      ...keyboardHandlers,
+    }),
+    [
+      beforeInputHandlers,
+      clipboardHandlers,
+      compositionHandlers,
+      dragHandlers,
+      focusMouseHandlers,
+      inputHandlers,
+      keyboardHandlers,
+    ]
+  );
+
+  return useMemo(
+    () => ({
+      ...eventCore,
+      flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
+      handlers,
+    }),
+    [eventCore, handlers, inputHandlers.flushPendingNativeTextInput]
+  );
+};

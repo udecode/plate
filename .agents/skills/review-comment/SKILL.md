@@ -1,0 +1,75 @@
+---
+description: Review a Slate PR or a Plate PR based on `main` with Plate v2's research, code and tests from `next`, prove each finding on the PR's head, and draft the GitHub review comment. Use for /review-comment <PR>, a request to draft a review comment on such a PR, or a request for insights from Plate v2's past work on one.
+argument-hint: <PR URL | owner/repo#number> [fast]
+name: review-comment
+metadata:
+  skiller:
+    source: .agents/rules/review-comment.mdc
+---
+
+# Review comment
+
+Handle $ARGUMENTS.
+
+Plate v2 on `next`, Plite included, is the reference. It has already worked through most jobs that Slate and Plate `main` PRs take on, and its decisions record what it picked, what it rejected and why. The review brings that evidence to the PR, proves every failure on the PR's head, and hands back a comment draft. The comment is public text, so it stays a draft until the owner says to post it.
+
+It covers a PR in `ianstormtaylor/slate` or a `udecode/plate` PR whose `baseRefName` is `main`. A PR based on `next`, and any repair of a PR, go to the Babysit playbook. Like Babysit's review-only path, the run keeps no plan, page or decision log. Its run directory, `docs/plans/artifacts/<date>-<repo>-<number>-review/`, is ignored by git and holds the diff, the probes and the draft.
+
+## Steps
+
+1. **Read the PR.** Run `gh pr view <n> --repo <repo> --json title,author,body,baseRefName,headRefOid,files,comments,reviews,closingIssuesReferences`, save `gh pr diff` to the run directory, run `gh pr checks`, and read each linked issue with `gh issue view`. Read every changed source file in full. The body's claims, its stated limits included, are claims to test. Done when you can name in one line the job the PR changes, such as "replace the document from outside the editor", and you hold the head SHA.
+
+2. **Gather the Plate v2 evidence.** Search with `git grep --untracked`, as `AGENTS.md`'s Source authority says. For each lane, record what v2 decided, what it rejected and why, with the path:
+   - Mentions: the PR and each linked issue, written as `<repo>#<n>` or `<owner>/<repo>/(issues|pull)/<n>`, anywhere in the repository; the bare number in `docs/editor-issue-harvester/slate/` for a Slate issue; and `pnpm kb slate#<n>` or `pnpm kb plate#<n>` for the tests tagged with the issue.
+   - Doctrine: `VISION.md`, then `docs/vision/plite.md` for a Slate PR or `docs/vision/plate.md` for a Plate PR.
+   - Decisions and subjects: the job's words in `docs/plans/topics/` and `docs/editor-behavior/markdown-editing-spec.md`. Read each match's verdict paragraph and its alternatives table.
+   - Code and docs: v2's owner of the same job in `packages/plitejs` or `packages/platejs`, its tests, and the page in `content/docs` that teaches it.
+
+   Done when every lane has an answer or a recorded miss, and you can say in one sentence what v2 does for this job. When v2 has nothing on the job, the comment says so instead of borrowing a nearby decision.
+
+3. **Prove each finding on the PR's head.** A finding is a failure claim with a probe: a test that asserts the right behavior and goes red on the head SHA. Run probes in a detached worktree under the run directory, never in the clone's own checkout:
+   - Slate: in `../slate`, run `git fetch -q https://github.com/ianstormtaylor/slate.git pull/<n>/head`, because its `origin` is a fork, then `git worktree add --detach <run>/slate-pr FETCH_HEAD`, `yarn install --immutable` and `yarn build:rollup`. Core probes go under `packages/slate/test/` and run with `yarn mocha --require ./config/babel/register.cjs <file>`. React probes go under `packages/slate-react/test/` and run with `yarn jest --config jest.config.js <file>`.
+   - Plate `main`: in `../plate`, fetch `pull/<n>/head` from `https://github.com/udecode/plate.git` the same way, then install and test as the Babysit playbook's main-line PR rule says.
+
+   Copy each probe and its red output into the run directory, then run `git -C <clone> worktree remove --force <path>`. When a finding says v2 handles the case, run the same scenario in this checkout, and keep that claim only when it passes there; otherwise cite the decision. Done when every finding is red on the head SHA, and every claim without a probe reads as a question marked not run.
+
+4. **Run the panel.** Unless the owner said fast, run the Babysit playbook's review-only panel (reviews: `external-pr`) after reading `.agents/pstack/rules/panel.md` in full. Brief it with the PR body, the linked issues, the step 2 evidence and the step 3 probes. A seat's finding joins the comment once a probe or a source line confirms it.
+
+5. **Draft the comment** in `<run>/comment.md`. It follows the plan-page PR body order (`.agents/skills/plan-page/references/shape.md`, PR body) with review sections:
+
+   ```md
+   `<model> @<effort>` reviewed `<head SHA, 9 characters>`. Panel: <the seats, or skipped (fast)>.
+
+   <Verdict in at most two sentences: what should land and what should change. Name the part that is right.>
+
+   > [!CAUTION]
+   > <The worst confirmed failure in one or two sentences.>
+
+   ### How Plate v2 does it
+
+   <At most three short paragraphs: what v2 does for the same job and what it rejected, and why.>
+
+   ### Findings
+
+   **1. <The failure in one sentence that ends in a period.>** <The steps that trigger it and the wrong result. Why it happens, at the line. The fix, and how v2 does it when that bears on the fix.>
+
+   ### Smaller points
+
+   - <One line each, such as scope, API shape, docs, types or the changeset.>
+
+   ### Verified
+
+   - <At most three bullets: what ran, on which SHA, and where the proof stops.>
+
+   <details><summary>Repro tests (<head SHA>)</summary>
+
+   <Each probe cut to its setup and failing assertion, with the observed value in a comment.>
+
+   </details>
+   ```
+
+   Order findings worst first. Link a v2 source only at a commit on `origin/next` that holds it (`git log -1 --format=%H origin/next -- <path>`), and describe uncommitted v2 work without a link. Leave out the run directory and any other local path. Done when every finding has its probe in the details block and every v2 claim names its source.
+
+6. **Run the writing passes.** Run `pstack:unslop` on the draft. Then load `pstack:bro` and restate every sentence through it as the last pass, so no later edit undoes it. Keep code identifiers, the SHA, every count and every qualifier that limits a claim, such as which cases ran. Then compare each restated claim with its probe output, and each summary count, such as how many findings sit in one layer, with the findings themselves. Fix any that drifted.
+
+7. **Hand back.** Reply with the verdict, one line per finding, the v2 evidence that changes the review, what was not checked, and a link to the draft. Post only on the owner's word for this PR. First reread `headRefOid`, and rerun the probes when the head moved. Then post with `gh pr comment <n> --repo <repo> --body-file <run>/comment.md`, or with `gh pr review <n> --repo <repo> --comment --body-file <run>/comment.md` when the owner asks for a review.

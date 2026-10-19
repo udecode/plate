@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-18-recovered-2026-07-30-hard-cut-markdown-codec-package",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "markdown"
+  ],
+  "reviewBasis": [],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-07-30-hard-cut-markdown-codec-package.md",
+    "sha256": "417a1e3edf1d2a9d9eb51d87f4ecefc258b80f32697821969e34e4bc07c55a84"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical implementation completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-07-30-hard-cut-markdown-codec-package.md",
+        "sha256": "417a1e3edf1d2a9d9eb51d87f4ecefc258b80f32697821969e34e4bc07c55a84",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-07-30-hard-cut-markdown-codec-package.md"
+  ]
+}

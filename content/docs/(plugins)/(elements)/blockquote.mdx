@@ -1,0 +1,167 @@
+---
+title: Blockquote
+docs:
+  - route: /docs/components/blockquote
+    title: Blockquote Element
+---
+
+<ComponentPreview name="basic-blocks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Create blockquotes to emphasize important information or highlight quotes from external sources.
+- Renders as `<blockquote>` HTML element by default.
+- Supports nested block content such as paragraphs, lists, and nested blockquotes.
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add the blockquote plugin is with the `BasicBlocksKit`, which includes pre-configured `BlockquotePlugin` along with other basic block elements and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="basic-blocks" />
+
+- [`BlockquoteElement`](/docs/components/blockquote): Renders blockquote elements.
+
+### Add kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicBlocksKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs
+```
+
+### Add plugin
+
+Include `BlockquotePlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { BlockquotePlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    BlockquotePlugin,
+  ],
+});
+```
+
+### Configure plugin
+
+Configure `BlockquotePlugin` with the component and shortcut used by your app.
+The `toggle` shortcut dispatches the plugin's structural toggle command.
+
+```tsx
+import { BlockquotePlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
+import { BlockquoteElement } from '@/components/editor/blockquote';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    BlockquotePlugin.configure({
+      component: BlockquoteElement,
+      shortcuts: { toggle: { keys: 'mod+shift+period' } },
+    }),
+  ],
+});
+```
+
+- `.configure({ component })`: Assigns [`BlockquoteElement`](/docs/components/blockquote) to render blockquote elements.
+- `shortcuts.toggle`: Dispatches `editor.plugin(BlockquotePlugin).update.toggle()`.
+
+### Turn into toolbar button
+
+Add a structural action that calls the blockquote feature directly:
+
+```tsx
+import { BaseBlockquotePlugin, PLUGINS } from 'platejs';
+
+const turnIntoItem = {
+  icon: <QuoteIcon />,
+  label: 'Quote',
+  value: PLUGINS.blockquote,
+  onSelect: () => {
+    const blockquote = editor.plugin(BaseBlockquotePlugin);
+
+    if (!blockquote.installed || editor.read.view.isReadOnly()) return;
+
+    blockquote.update.toggle();
+  },
+};
+```
+
+### Insert toolbar button
+
+Add an insert action that calls the installed blockquote feature:
+
+```tsx
+import { BaseBlockquotePlugin, PLUGINS } from 'platejs';
+
+const insertItem = {
+  icon: <QuoteIcon />,
+  label: 'Quote',
+  value: PLUGINS.blockquote,
+  onSelect: () => {
+    const blockquote = editor.plugin(BaseBlockquotePlugin);
+
+    if (!blockquote.installed || editor.read.view.isReadOnly()) return;
+
+    blockquote.update.insert({}, { select: true });
+  },
+};
+```
+
+</Steps>
+
+## Plugins
+
+### `BlockquotePlugin`
+
+Plugin for blockquote container elements. Renders as `<blockquote>` HTML element by default.
+
+## Transforms
+
+### `editor.plugin(BlockquotePlugin).update.wrap()`
+
+Wrap each selected block in a blockquote, preserving unselected blocks and
+leaving existing quotes intact. Pass `at` to target a location or node selection.
+
+```tsx
+editor.plugin(BlockquotePlugin).update.wrap();
+```
+
+### `editor.plugin(BlockquotePlugin).update.toggle()`
+
+Wraps the current block or selection in a blockquote. If the selection is already inside a blockquote, it unwraps the quoted blocks. Returns `false` and changes nothing when the schema refuses the quote, as it does on a Details title.
+
+```tsx
+editor.plugin(BlockquotePlugin).update.toggle();
+```

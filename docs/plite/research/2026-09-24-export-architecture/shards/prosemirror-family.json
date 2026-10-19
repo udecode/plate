@@ -1,0 +1,1674 @@
+{
+  "schema_version": 1,
+  "scope_id": "exports",
+  "shard": "prosemirror-family",
+  "checked_at": "2026-09-24",
+  "parent_plan": "docs/plans/2026-09-24-exports-first-principles-research.md",
+  "review_id": "unknown-parent-owned",
+  "question": "Which document-first, format-specific, schema/customization and runtime boundaries in ProseMirror, Tiptap and BlockNote justify export API candidates for Plite/Plate?",
+  "authority": "Research only. This shard is the only write; no product edits, goals, new plans, shared-ledger changes or sibling-checkout modifications.",
+  "stop_reason": "Decisive distinct patterns found: persistent-model serializers; editor convenience wrappers; document-first multi-backend static rendering; dedicated Markdown manager; editor/DOM-dependent block HTML; shared binary exporter dispatch with separate backend traversal; custom async assets and separate review data.",
+  "evidence_contract": {
+    "grade": "local-source-inspection",
+    "references": "Each refs entry names a reads.id; that row supplies absolute path, one-based inclusive line ranges, exact repository commit and full-file SHA256.",
+    "call_shapes": "Source-derived illustrative calls, except explicitly identified application examples; none executed.",
+    "upstream_tests_executed": false,
+    "upstream_runtime_executed": false,
+    "remote_freshness": "Existing sibling snapshots only; no fetch, checkout, remote freshness or installed dependency-equivalence claim.",
+    "copying": "No upstream implementation copied into product code."
+  },
+  "repos": [
+    {
+      "id": "prosemirror-model",
+      "repo_key": "github.com/prosemirror/prosemirror-model",
+      "path": "/Users/zbeyens/git/prosemirror-model",
+      "commit": "6264de069d8439131e88f8ba06973551916184e4",
+      "origin": "https://github.com/ProseMirror/prosemirror-model.git",
+      "aliases": [],
+      "packages": [
+        {
+          "name": "prosemirror-model",
+          "version": "1.25.4",
+          "license": "MIT",
+          "refs": [
+            "pm-model-meta",
+            "pm-model-license"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prosemirror-markdown",
+      "repo_key": "code.haverbeke.berlin/prosemirror/prosemirror-markdown",
+      "path": "/Users/zbeyens/git/prosemirror-markdown",
+      "commit": "221ec60e26bc72005cacdbfc4f0ee43fda143489",
+      "origin": "https://code.haverbeke.berlin/prosemirror/prosemirror-markdown.git",
+      "aliases": [],
+      "packages": [
+        {
+          "name": "prosemirror-markdown",
+          "version": "1.13.5",
+          "license": "MIT",
+          "refs": [
+            "pm-md-meta",
+            "pm-md-license"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tiptap",
+      "repo_key": "github.com/ueberdosis/tiptap",
+      "path": "/Users/zbeyens/git/tiptap",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "origin": "https://github.com/ueberdosis/tiptap.git",
+      "aliases": [],
+      "packages": [
+        {
+          "name": "@tiptap/core",
+          "version": "3.21.0",
+          "license": "MIT",
+          "refs": [
+            "tt-core-meta",
+            "tt-license"
+          ]
+        },
+        {
+          "name": "@tiptap/static-renderer",
+          "version": "3.21.0",
+          "license": "MIT",
+          "refs": [
+            "tt-static-meta",
+            "tt-license"
+          ]
+        },
+        {
+          "name": "@tiptap/markdown",
+          "version": "3.21.0",
+          "license": "MIT",
+          "refs": [
+            "tt-md-meta",
+            "tt-license"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "BlockNote",
+      "repo_key": "github.com/typecellos/blocknote",
+      "path": "/Users/zbeyens/git/BlockNote",
+      "commit": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "origin": "https://github.com/TypeCellOS/BlockNote.git",
+      "aliases": [
+        "BlockNote",
+        "blocknote"
+      ],
+      "packages": [
+        {
+          "name": "@blocknote/core",
+          "version": "0.54.0",
+          "license": "MPL-2.0",
+          "refs": [
+            "bn-core-meta",
+            "bn-license"
+          ]
+        },
+        {
+          "name": "@blocknote/server-util",
+          "version": "0.54.0",
+          "license": "MPL-2.0",
+          "refs": [
+            "bn-server-meta",
+            "bn-license"
+          ]
+        },
+        {
+          "name": "@blocknote/diagram-block",
+          "version": "0.54.0",
+          "license": "MPL-2.0",
+          "refs": [
+            "bn-diagram-meta",
+            "bn-license"
+          ]
+        },
+        {
+          "name": "@blocknote/xl-docx-exporter",
+          "version": "0.54.0",
+          "license": "GPL-3.0 OR PROPRIETARY",
+          "refs": [
+            "bn-docx-meta",
+            "bn-docx-license",
+            "bn-license"
+          ]
+        },
+        {
+          "name": "@blocknote/xl-pdf-exporter",
+          "version": "0.54.0",
+          "license": "GPL-3.0 OR PROPRIETARY",
+          "refs": [
+            "bn-pdf-meta",
+            "bn-pdf-license",
+            "bn-license"
+          ]
+        },
+        {
+          "name": "@blocknote/math-block",
+          "version": "0.54.0",
+          "license": "MPL-2.0",
+          "refs": [
+            "bn-math-meta",
+            "bn-license"
+          ]
+        }
+      ]
+    }
+  ],
+  "history": {
+    "queries": [
+      "node tooling/scripts/review-ledger.mjs lookup exports",
+      "node tooling/scripts/review-ledger.mjs research export",
+      "Focused searches for prosemirror-markdown/static-renderer/blocksToHTMLLossy and exporter class names",
+      "Full-file SHA256 match scan of existing docs/plite/research/**/read-log.tsv"
+    ],
+    "outcome": "No matching historical architecture read appeared for the selected implementation files in the scanned read logs. Reuse the exact Tiptap license fact; identical MIT bytes in prosemirror-state are different repository paths, not additional architecture evidence.",
+    "reused": [
+      {
+        "source_ref": "tt-license",
+        "path": "docs/plite/research/2026-09-17-table-substrate-ownership/read-log.tsv",
+        "lines": [
+          [
+            38,
+            38
+          ],
+          [
+            56,
+            56
+          ]
+        ],
+        "hash": "7c9de24327a749cb5a07bef8672a4e36d8bcc1b01565b5526c8e7a1f3c406a77",
+        "hash_scope": "complete-file-bytes",
+        "historical_source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+        "historical_source_fingerprint": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9",
+        "takeaway": "Existing MIT license evidence, no new architectural lead."
+      }
+    ],
+    "limit": "Focused history and read-log fingerprint dedupe, not an exhaustive semantic audit of all research artifacts. Parent reconciles shared decisions and ledgers."
+  },
+  "reads": [
+    {
+      "id": "pm-model-meta",
+      "repo": "prosemirror-model",
+      "path": "/Users/zbeyens/git/prosemirror-model/package.json",
+      "lines": [
+        [
+          1,
+          38
+        ]
+      ],
+      "hash": "c582c5c0cd6c434f47ab12c75fced824d9a62fc8b487d459bcdb32fce0e8e3a0",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "6264de069d8439131e88f8ba06973551916184e4",
+      "takeaway": "prosemirror-model 1.25.4; MIT; model package depends on orderedmap, not an editor view or React."
+    },
+    {
+      "id": "pm-model-license",
+      "repo": "prosemirror-model",
+      "path": "/Users/zbeyens/git/prosemirror-model/LICENSE",
+      "lines": [
+        [
+          1,
+          19
+        ]
+      ],
+      "hash": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "6264de069d8439131e88f8ba06973551916184e4",
+      "takeaway": "MIT text and notice condition; license bytes also occur in historical PM state reads, but those are a different repository."
+    },
+    {
+      "id": "pm-md-meta",
+      "repo": "prosemirror-markdown",
+      "path": "/Users/zbeyens/git/prosemirror-markdown/package.json",
+      "lines": [
+        [
+          1,
+          40
+        ]
+      ],
+      "hash": "2fafc8d13c26c65a56b5edbcbac5d11da18681a5184df2468a63c99279faa194",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "221ec60e26bc72005cacdbfc4f0ee43fda143489",
+      "takeaway": "prosemirror-markdown 1.13.5; MIT; depends on prosemirror-model and markdown-it."
+    },
+    {
+      "id": "pm-md-license",
+      "repo": "prosemirror-markdown",
+      "path": "/Users/zbeyens/git/prosemirror-markdown/LICENSE",
+      "lines": [
+        [
+          1,
+          19
+        ]
+      ],
+      "hash": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "221ec60e26bc72005cacdbfc4f0ee43fda143489",
+      "takeaway": "MIT license text for the inspected Markdown repository."
+    },
+    {
+      "id": "pm-dom",
+      "repo": "prosemirror-model",
+      "path": "/Users/zbeyens/git/prosemirror-model/src/to_dom.ts",
+      "lines": [
+        [
+          1,
+          170
+        ]
+      ],
+      "hash": "cc51da0630f1235af2522029eb92f6b612a20223a79e9ad08788a374e9a44e71",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "6264de069d8439131e88f8ba06973551916184e4",
+      "takeaway": "DOMSerializer takes schema-derived or caller-supplied node/mark handlers and a Fragment/Node; injected Document supports non-browser DOM creation. No editor required."
+    },
+    {
+      "id": "pm-node",
+      "repo": "prosemirror-model",
+      "path": "/Users/zbeyens/git/prosemirror-model/src/node.ts",
+      "lines": [
+        [
+          1,
+          40
+        ],
+        [
+          85,
+          110
+        ],
+        [
+          310,
+          355
+        ]
+      ],
+      "hash": "7eb4526395d7af5a8c0d596778e951471ac5008584259aa52df37dd2913d19ab",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "6264de069d8439131e88f8ba06973551916184e4",
+      "takeaway": "PM Node is a persistent document value; exposes textContent/textBetween and structural toJSON/fromJSON independently of an editor."
+    },
+    {
+      "id": "pm-md",
+      "repo": "prosemirror-markdown",
+      "path": "/Users/zbeyens/git/prosemirror-markdown/src/to_markdown.ts",
+      "lines": [
+        [
+          1,
+          145
+        ],
+        [
+          155,
+          210
+        ],
+        [
+          265,
+          310
+        ]
+      ],
+      "hash": "19337ab6dee8b7cb9eb0809efb1b82dd3935d271d2be9b92116e73362b24149a",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "221ec60e26bc72005cacdbfc4f0ee43fda143489",
+      "takeaway": "MarkdownSerializer owns format-specific state, node/mark mappings, escaping/list behavior; serialize(Node) is synchronous; unknown nodes error by default or flatten/drop with strict:false."
+    },
+    {
+      "id": "tt-license",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/LICENSE.md",
+      "lines": [
+        [
+          1,
+          21
+        ]
+      ],
+      "hash": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "MIT source license; identical path/commit/hash already recorded in table research; reuse licensing fact."
+    },
+    {
+      "id": "tt-core-meta",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/core/package.json",
+      "lines": [
+        [
+          1,
+          70
+        ]
+      ],
+      "hash": "180a69bffd0f47c22f8681c10a8504afd5cf8774d4927d89af3416cd9b858eaa",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "@tiptap/core 3.21.0, MIT; @tiptap/pm peer."
+    },
+    {
+      "id": "tt-static-meta",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/static-renderer/package.json",
+      "lines": [
+        [
+          1,
+          97
+        ]
+      ],
+      "hash": "5e4950f5a26d3b1206b820caa5ee3ef3f234b0656b6d98a665a926d396a0c887",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "@tiptap/static-renderer 3.21.0, MIT; JSON and PM subpaths for React/HTML plus PM Markdown; package declares React and react-dom peers even for consumers choosing string subpaths."
+    },
+    {
+      "id": "tt-md-meta",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/markdown/package.json",
+      "lines": [
+        [
+          1,
+          56
+        ]
+      ],
+      "hash": "0a3b6bd01e4827d9cfddfb847e596337023dd4b80479d9763ecf0fa64a2886e2",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "@tiptap/markdown 3.21.0, MIT; marked dependency, core/PM peers."
+    },
+    {
+      "id": "tt-editor",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/core/src/Editor.ts",
+      "lines": [
+        [
+          721,
+          757
+        ]
+      ],
+      "hash": "1a20ea5dab380c6f3d90a8abb765c0471d51392497fdad83b7deddfb9b9476dc",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "getJSON/getHTML/getText read current state.doc; text overrides merge over schema serializers."
+    },
+    {
+      "id": "tt-generate-html",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/core/src/helpers/generateHTML.ts",
+      "lines": [
+        [
+          1,
+          18
+        ]
+      ],
+      "hash": "1dfb2b7031dca96ef2825431ef55f17fcc9e040ec5528d1ced6b17cbecd38e08",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "generateHTML(JSON, extensions) constructs a schema and PM Node without constructing Editor."
+    },
+    {
+      "id": "tt-html-dom",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/core/src/helpers/getHTMLFromFragment.ts",
+      "lines": [
+        [
+          1,
+          13
+        ]
+      ],
+      "hash": "3f4c6f637050afe3f01dd416cb9854540f297508a539115c69638123e2898a95",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "Core HTML helper delegates to PM DOMSerializer and global document. Document-first signature alone does not make this path DOM-free."
+    },
+    {
+      "id": "tt-renderer",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/static-renderer/src/json/renderer.ts",
+      "lines": [
+        [
+          57,
+          105
+        ],
+        [
+          147,
+          241
+        ]
+      ],
+      "hash": "bb51ffc50012df8f2e09e01cc43866823bb81e5b6ab0a01eecc2c94c28b5dbb2",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "Generic recursive JSON/PM renderer dispatches node/mark mappings, computes children lazily, accepts unhandled callbacks, and otherwise throws missing-handler errors."
+    },
+    {
+      "id": "tt-extension-renderer",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/static-renderer/src/pm/extensionRenderer.ts",
+      "lines": [
+        [
+          34,
+          82
+        ],
+        [
+          141,
+          215
+        ]
+      ],
+      "hash": "cba3e96ca43da2ccbb8cebe1dcd194940ad1d9baba8e405056b9629a2210a076",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "Extension adapter resolves renderHTML and schema attributes, converts JSON to PM Node, and overlays explicit node/mark mappings. Separate from PM DOMSerializer execution."
+    },
+    {
+      "id": "tt-html-string",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/static-renderer/src/pm/html-string/html-string.ts",
+      "lines": [
+        [
+          1,
+          82
+        ]
+      ],
+      "hash": "a54f10dc00f326f4da3ef8774345b50b69042ad89e46be3ddffd9ebe4c0b1ef2",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "String backend implements DOMOutputSpec-array conversion directly; actual DOM objects are unsupported and throw."
+    },
+    {
+      "id": "tt-static-md",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/static-renderer/src/pm/markdown/markdown.ts",
+      "lines": [
+        [
+          1,
+          143
+        ]
+      ],
+      "hash": "f0e166c40429192f45bb2d6fe45da9861d48b7dedcd54bd41edc1dcf202b6725",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "renderToMarkdown reuses string renderer with format overrides; source explicitly calls it an incomplete Markdown example."
+    },
+    {
+      "id": "tt-react",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/static-renderer/src/pm/react/react.ts",
+      "lines": [
+        [
+          1,
+          65
+        ]
+      ],
+      "hash": "32f016ea990f8f2c57561d85b67e28d95e658dc2bbfdb0e8046e91af14ac8f71",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "React backend directly imports React and translates DOMOutputSpec/HTML attribute conventions."
+    },
+    {
+      "id": "tt-md-manager",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/markdown/src/MarkdownManager.ts",
+      "lines": [
+        [
+          1,
+          24
+        ],
+        [
+          55,
+          113
+        ],
+        [
+          139,
+          195
+        ],
+        [
+          250,
+          273
+        ],
+        [
+          887,
+          950
+        ],
+        [
+          1164,
+          1180
+        ]
+      ],
+      "hash": "3592f9b6fefbd8e4cc206aa6dba7ea5d863a956d573fab7621deb66abf63bebd",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "Standalone MarkdownManager reads extension Markdown handlers and serializes JSON; missing node handler and missing mark renderer return empty strings in sampled paths."
+    },
+    {
+      "id": "tt-md-extension",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/markdown/src/Extension.ts",
+      "lines": [
+        [
+          1,
+          85
+        ],
+        [
+          105,
+          175
+        ]
+      ],
+      "hash": "738ef032c79d50cfc0b1e918d5197ce2f124ded55169563f8c73449ccdde8834",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "Markdown extension installs a manager and Markdown-aware editor commands; extension attachment is an integration layer around separate logic."
+    },
+    {
+      "id": "bn-license",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/LICENSE.txt",
+      "lines": [
+        [
+          1,
+          5
+        ]
+      ],
+      "hash": "5bda1533874fa6a008b80f1c53607081d77024e2bc6498d7e7ef95394a567703",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Root identifies MPL-2.0 for non-XL packages and GPL-3.0 with commercial alternative for XL packages."
+    },
+    {
+      "id": "bn-core-meta",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/core/package.json",
+      "lines": [
+        [
+          1,
+          125
+        ]
+      ],
+      "hash": "8a5b27d172d247596fc2ea95722210427b6ba2b2d34ff23d11510e74bba2bea8",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "@blocknote/core 0.54.0 declares MPL-2.0; depends on Tiptap and ProseMirror. Declared versions differ from independently inspected sibling clones."
+    },
+    {
+      "id": "bn-docx-meta",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/xl-docx-exporter/package.json",
+      "lines": [
+        [
+          1,
+          83
+        ]
+      ],
+      "hash": "e2a3c3ea8d850a2aec82fe3486378a45951589e1fa6784d79f3f0d2716a13d54",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "@blocknote/xl-docx-exporter 0.54.0 declares GPL-3.0 OR PROPRIETARY; depends on docx and BlockNote core/multi-column; declares React/react-dom peers."
+    },
+    {
+      "id": "bn-pdf-meta",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/xl-pdf-exporter/package.json",
+      "lines": [
+        [
+          1,
+          81
+        ]
+      ],
+      "hash": "4838da99ab6d23d6a970925dd86f07a39a0e99d9bd45eefe94c04e804577782c",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "@blocknote/xl-pdf-exporter 0.54.0 declares GPL-3.0 OR PROPRIETARY; depends on @react-pdf/renderer; React/react-dom peers."
+    },
+    {
+      "id": "bn-docx-license",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/xl-docx-exporter/LICENSE",
+      "lines": [
+        [
+          1,
+          32
+        ]
+      ],
+      "hash": "8b1ba204bb69a0ade2bfcf65ef294a920f6bb361b317dba43c7ef29d96332b9b",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "DOCX package LICENSE contains GPL version 3; commercial alternative is identified by manifest/root notice."
+    },
+    {
+      "id": "bn-pdf-license",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/xl-pdf-exporter/LICENSE",
+      "lines": [
+        [
+          1,
+          32
+        ]
+      ],
+      "hash": "8b1ba204bb69a0ade2bfcf65ef294a920f6bb361b317dba43c7ef29d96332b9b",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "PDF package LICENSE contains GPL version 3; commercial alternative is identified by manifest/root notice."
+    },
+    {
+      "id": "bn-engine",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/core/src/exporter/Exporter.ts",
+      "lines": [
+        [
+          1,
+          137
+        ]
+      ],
+      "hash": "3c9b58d01942043c09b34f815ba2f366b8ac23d27c0ee7dff6a5edffb719371c",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Shared Exporter dispatches typed block/inline/style mappings, resolves file URLs, supplies colors/dictionary and throws for missing mappings; schema argument is only for type inference."
+    },
+    {
+      "id": "bn-mapping",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/core/src/exporter/mapping.ts",
+      "lines": [
+        [
+          1,
+          79
+        ]
+      ],
+      "hash": "80f8dc54d711a8a17800973cd5206470b76e2e1915e3e2b53387c36efc20d20d",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Mapping types follow schema keys and backend result types. Block mapping may return Promise; inline/style mappings are synchronous. Inference helper is an identity factory."
+    },
+    {
+      "id": "bn-docx",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/xl-docx-exporter/src/docx/docxExporter.ts",
+      "lines": [
+        [
+          1,
+          153
+        ],
+        [
+          254,
+          332
+        ]
+      ],
+      "hash": "9cb51ef4e460a5c9b441e53ae7f58f77f2fee83afc9478dfc528403a8308bdd7",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "DOCXExporter takes schema/mappings/options and block arrays; owns recursive traversal, async docx document construction, packing and options. It does not take an editor or a retained original DOCX package."
+    },
+    {
+      "id": "bn-pdf",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/xl-pdf-exporter/src/pdf/pdfExporter.tsx",
+      "lines": [
+        [
+          1,
+          77
+        ],
+        [
+          97,
+          212
+        ],
+        [
+          265,
+          349
+        ]
+      ],
+      "hash": "6015bb7d0bae96b6659b25b270d7df58e90dc06fc9cee09c189a10ddfd53db4a",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "PDFExporter takes schema/mappings/options and block arrays; owns different traversal, React-PDF styling/fonts, A4 page and optional headers/footers; returns a React-PDF document."
+    },
+    {
+      "id": "bn-editor-exports",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/core/src/editor/BlockNoteEditor.ts",
+      "lines": [
+        [
+          866,
+          874
+        ],
+        [
+          1256,
+          1313
+        ]
+      ],
+      "hash": "160ed77fb2ec11e93f5cd6bd9b671bad9ed7e38c34cc4c500085b02c12561526",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Editor document getter is documented as snapshot; editor methods accept explicit blocks or default to current document and expose separate lossy HTML/full HTML/lossy Markdown strings."
+    },
+    {
+      "id": "bn-export-manager",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/core/src/editor/managers/ExportManager.ts",
+      "lines": [
+        [
+          1,
+          137
+        ]
+      ],
+      "hash": "ec04bb393ae53d9af4958755519c6174d08e4b8b1d5a91b1780f149381bb0321",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "HTML and Markdown use an editor-backed ExportManager and PM schema, independent of the shared binary Exporter base."
+    },
+    {
+      "id": "tt-html-string-api",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/static-renderer/src/pm/html-string/html-string.ts",
+      "lines": [
+        [
+          83,
+          114
+        ]
+      ],
+      "hash": "a54f10dc00f326f4da3ef8774345b50b69042ad89e46be3ddffd9ebe4c0b1ef2",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "renderToHTMLString accepts PM Node or JSON plus extensions and optional mappings and returns string."
+    },
+    {
+      "id": "tt-md-constructor",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/markdown/src/MarkdownManager.ts",
+      "lines": [
+        [
+          29,
+          55
+        ]
+      ],
+      "hash": "3592f9b6fefbd8e4cc206aa6dba7ea5d863a956d573fab7621deb66abf63bebd",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "MarkdownManager constructor accepts extensions, indentation and marked options without an editor."
+    },
+    {
+      "id": "tt-md-get",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/markdown/src/Extension.ts",
+      "lines": [
+        [
+          175,
+          201
+        ]
+      ],
+      "hash": "738ef032c79d50cfc0b1e918d5197ce2f124ded55169563f8c73449ccdde8834",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "Installed editor.getMarkdown delegates to manager.serialize(editor.getJSON())."
+    },
+    {
+      "id": "bn-html",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/core/src/api/exporters/html/externalHTMLExporter.ts",
+      "lines": [
+        [
+          1,
+          76
+        ]
+      ],
+      "hash": "32acb3c418764cdc51b1d1e8ac2e4f356aa069ee349505a88b177e6790d7b1b4",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "External HTML exporter uses PM DOMSerializer plus BlockNote block conversion; documented nesting loss; synchronous because drag handler requires it; uses global document even with options.document."
+    },
+    {
+      "id": "bn-markdown",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/core/src/api/exporters/markdown/markdownExporter.ts",
+      "lines": [
+        [
+          1,
+          41
+        ]
+      ],
+      "hash": "5a88c102e3dda99d64db4d97034a5df1c9dbfbaa89772b490896c75d2a922b62",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "BlockNote Markdown export is external HTML conversion followed by htmlToMarkdown, synchronous for drag use."
+    },
+    {
+      "id": "bn-server",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/server-util/src/context/ServerBlockNoteEditor.ts",
+      "lines": [
+        [
+          1,
+          220
+        ]
+      ],
+      "hash": "4a9479b5dbd5ce488452926ed70453e2a028afc9e742667f8fbaeac87a78b57d",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "ServerBlockNoteEditor constructs an editor and JSDOM, imports React/ReactDOM, and temporarily sets globals around async conversion."
+    },
+    {
+      "id": "bn-block-snapshot",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/core/src/editor/managers/BlockManager.ts",
+      "lines": [
+        [
+          32,
+          53
+        ]
+      ],
+      "hash": "d5e60c5fca38003b32deb64fb245916529dc05b99ed545d87025a8507f82fc67",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "BlockManager.document converts tr.doc to blocks synchronously inside editor.transact; no immutable block-array promise is stated here."
+    },
+    {
+      "id": "bn-custom-html",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/core/src/api/exporters/html/util/serializeBlocksExternalHTML.ts",
+      "lines": [
+        [
+          79,
+          114
+        ],
+        [
+          180,
+          242
+        ]
+      ],
+      "hash": "c8759dfeed4985d28d3ecfc6c383ec66dd6d04d3effb32bb378f95f260f4af04",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Custom external HTML callbacks receive block/inline content and editor; block callback falls back to render. Default props are assigned into supplied props objects."
+    },
+    {
+      "id": "bn-docx-call",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/examples/05-interoperability/06-converting-blocks-to-docx/src/App.tsx",
+      "lines": [
+        [
+          435,
+          465
+        ]
+      ],
+      "hash": "bbaddff8a052f03cdeaeca365fee8e252cde07a0607de54112e828bcc9e5c5ef",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Real app composes default DOCX mappings with diagram/math overrides, exports editor.document to Blob, then owns download."
+    },
+    {
+      "id": "bn-pdf-call",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/examples/05-interoperability/05-converting-blocks-to-pdf/src/App.tsx",
+      "lines": [
+        [
+          441,
+          480
+        ]
+      ],
+      "hash": "8ebfd260b59c1e9a37c8daae3bbe44b7b84ea47c28efb7456cc2b51a54062abf",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Real app composes PDF mappings, exports editor.document to React-PDF Document, and separately invokes pdf(document).toBlob() for download."
+    },
+    {
+      "id": "bn-custom-docx",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/diagram-block/src/docx-exporter/index.ts",
+      "lines": [
+        [
+          1,
+          139
+        ]
+      ],
+      "hash": "b584f062ee3baab73e473fed3971f33585f27741c0d53d12fd563dd388fe6b45",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Diagram package supplies an async DOCX-specific mapping, injectable renderer for server use, visible error placeholder for invalid source, and rejection of unsupported image MIME types."
+    },
+    {
+      "id": "bn-custom-pdf",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/diagram-block/src/pdf-exporter/index.tsx",
+      "lines": [
+        [
+          1,
+          112
+        ]
+      ],
+      "hash": "e421eb98c11811e0b814a17b4a46f1ea4bd16844742a5046829138730bf08c3b",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Diagram package supplies a separate async React-PDF mapping with injectable rendering and format-specific sizing/placeholder behavior."
+    },
+    {
+      "id": "bn-server-meta",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/server-util/package.json",
+      "lines": [
+        [
+          1,
+          83
+        ]
+      ],
+      "hash": "ddcfdcbf8abfc26f9e2798b55d0929fcd129844ba62b034bcc50089a31c4f3f5",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Server utility 0.54.0 MPL-2.0; depends on core/react, JSDOM and PM, and declares React/react-dom peers."
+    },
+    {
+      "id": "bn-comment-mark",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/core/src/comments/mark.ts",
+      "lines": [
+        [
+          1,
+          64
+        ]
+      ],
+      "hash": "c2d39e694128f434d83bada2788267a14f41c1c3cb448c27233d26a008ade360",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Comment mark contains threadId/orphan and HTML representation; marks are tagged blocknoteIgnore."
+    },
+    {
+      "id": "bn-comment-store",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/core/src/comments/extension.ts",
+      "lines": [
+        [
+          59,
+          78
+        ],
+        [
+          97,
+          107
+        ],
+        [
+          293,
+          303
+        ]
+      ],
+      "hash": "7dd70b5160ad60048418b78f69e97d5e813087401306763de2a4d17bd7873c9f",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Comments extension requires separate ThreadStore and subscribes to its threads; document marks are not the complete review payload."
+    },
+    {
+      "id": "bn-diagram-meta",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/diagram-block/package.json",
+      "lines": [
+        [
+          1,
+          16
+        ]
+      ],
+      "hash": "907d4a16264966458532f462d3535ed747c3da68c9b1e12a498324056866f988",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Custom diagram package 0.54.0 declares MPL-2.0, distinct from XL exporter package licensing."
+    },
+    {
+      "id": "tt-pm-model",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/pm/model/index.ts",
+      "lines": [
+        [
+          1,
+          1
+        ]
+      ],
+      "hash": "e5786d7b503e912eaa797bfdf14ee347b9922dcc2ed3f214326e221ec61e91c7",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "@tiptap/pm/model directly re-exports prosemirror-model; do not count core model behavior as independent Tiptap invention."
+    },
+    {
+      "id": "bn-review-conversion",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/core/src/api/nodeConversions/nodeToBlock.ts",
+      "lines": [
+        [
+          192,
+          218
+        ],
+        [
+          502,
+          527
+        ]
+      ],
+      "hash": "da1d6d7e8bd45bea6d4bc9cd82e17b6f54be87e8f7065b04aeea24bcba7899c1",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "nodeToBlock omits non-style marks tagged blocknoteIgnore, including comments; docToBlocks walks PM document into BlockNote block data."
+    },
+    {
+      "id": "tt-schema-html",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/core/src/helpers/getSchemaByResolvedExtensions.ts",
+      "lines": [
+        [
+          107,
+          118
+        ],
+        [
+          164,
+          176
+        ]
+      ],
+      "hash": "d6222fa220fd2fb35bcf2541c1997caaeb7dc39c8e97c7d675c4ee543c38ce4f",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "Tiptap renderHTML node/mark declarations become PM schema.toDOM handlers."
+    },
+    {
+      "id": "tt-md-entry",
+      "repo": "tiptap",
+      "path": "/Users/zbeyens/git/tiptap/packages/markdown/src/index.ts",
+      "lines": [
+        [
+          1,
+          3
+        ]
+      ],
+      "hash": "a7dd3afe4898deee0ee328e404657278d02d1f2f500b1c6918d2278c0b2a130e",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "takeaway": "MarkdownManager is publicly re-exported from @tiptap/markdown."
+    },
+    {
+      "id": "bn-docx-direct",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/xl-docx-exporter/src/docx/defaultSchema/blocks.ts",
+      "lines": [
+        [
+          1,
+          26
+        ],
+        [
+          102,
+          125
+        ],
+        [
+          161,
+          177
+        ],
+        [
+          260,
+          297
+        ]
+      ],
+      "hash": "9ef29bdbee4469f73474ae285b509fd697337af5b8fa514a1268dc93a91fafaa",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Default DOCX handlers construct Paragraph/TextRun/ImageRun directly from block semantics; image export awaits binary data. Current image handler hardcodes type:'gif', evidence that direct mapping still needs format validation."
+    },
+    {
+      "id": "bn-docx-math",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/math-block/src/docx-exporter/index.ts",
+      "lines": [
+        [
+          1,
+          43
+        ],
+        [
+          48,
+          96
+        ],
+        [
+          114,
+          129
+        ]
+      ],
+      "hash": "27848fc39750c36e02bc3b7e1b89ccf42300084f2a05e77f9badda57516be5d7",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "Feature-owned DOCX mapping converts LaTeX through MathML to native OMML and inserts ImportedXmlComponent into docx objects; invalid formulas produce visible placeholders."
+    },
+    {
+      "id": "bn-math-meta",
+      "repo": "BlockNote",
+      "path": "/Users/zbeyens/git/BlockNote/packages/math-block/package.json",
+      "lines": [
+        [
+          1,
+          16
+        ]
+      ],
+      "hash": "1641bb3740a068d3f466563c390023a4dad319585f8f7e9314a244a5cb2e8a14",
+      "hash_algorithm": "sha256",
+      "hash_scope": "complete-file-bytes",
+      "source_revision": "1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163",
+      "takeaway": "@blocknote/math-block 0.54.0 declares MPL-2.0; distinct from XL DOCX exporter licensing."
+    }
+  ],
+  "parent_context": {
+    "origin": "User steering during this sidecar; not independently re-audited here.",
+    "facts_supplied": [
+      "Plate has a pure semantic HTML compiler in HtmlPlugin distinct from React static rendering.",
+      "Markdown already accepts detached value internally.",
+      "Current DOCX path is model -> React HTML -> OOXML; a copied kit contains format correctness mappings."
+    ],
+    "effect": "Do not propose a new detached Markdown or semantic HTML compiler as novel work. Focus promotion on the DOCX bridge and ownership of correctness mappings."
+  },
+  "facts": [
+    {
+      "id": "pm-document-and-formats",
+      "summary": "PM places persistent document JSON/text operations in the model and keeps DOM and Markdown serialization as separate format mechanisms.",
+      "normal_calls": [
+        "doc.toJSON()",
+        "doc.textBetween(0, doc.content.size, '\\n\\n')",
+        "DOMSerializer.fromSchema(schema).serializeFragment(doc.content, { document: domDocument })",
+        "defaultMarkdownSerializer.serialize(doc)"
+      ],
+      "custom_calls": [
+        "new DOMSerializer({ ...DOMSerializer.nodesFromSchema(schema), custom: node => ['aside', { 'data-kind': node.type.name }, 0] }, DOMSerializer.marksFromSchema(schema)).serializeFragment(doc.content, { document: domDocument })",
+        "new MarkdownSerializer({ ...defaultMarkdownSerializer.nodes, custom: (state, node) => { state.renderContent(node); state.closeBlock(node) } }, defaultMarkdownSerializer.marks).serialize(doc)"
+      ],
+      "input": "Immutable-by-contract PM Node/Fragment plus schema/handlers; no EditorState, EditorView or React required by these call contracts.",
+      "execution": "Synchronous; DOM output requires a browser/injected Document; Markdown/JSON/text are not DOM-rendering APIs.",
+      "diagnostics_fidelity": "Markdown defaults to throwing on missing handler; strict:false degrades to child content or omission. DOM marks without serializers may be omitted. JSON captures the model, not arbitrary external review stores.",
+      "independent_contribution": "Canonical PM document persistence, schema DOM handlers and format-specific Markdown state.",
+      "refs": [
+        "pm-node",
+        "pm-dom",
+        "pm-md",
+        "pm-model-meta",
+        "pm-md-meta"
+      ]
+    },
+    {
+      "id": "tiptap-core-adapter",
+      "summary": "Tiptap's familiar editor getters wrap the PM document; detached HTML generation exists but its core helper still uses global DOM.",
+      "normal_calls": [
+        "editor.getJSON()",
+        "editor.getHTML()",
+        "editor.getText()",
+        "generateHTML(json, extensions)"
+      ],
+      "custom_calls": [
+        "editor.getText({ blockSeparator: '\\n', textSerializers: { custom: ({ node }) => node.attrs.label } })",
+        "generateHTML(json, extensionsWithRenderHTMLOverrides)"
+      ],
+      "input": "Editor getters use current state.doc; generateHTML accepts detached JSON and extensions.",
+      "execution": "Synchronous. Core getHTML/generateHTML uses PM DOMSerializer and global document.",
+      "independent_contribution": "Convenience API and extension renderHTML-to-schema.toDOM compilation; PM model/DOMSerializer behavior is inherited, not a separate independent engine.",
+      "refs": [
+        "tt-editor",
+        "tt-generate-html",
+        "tt-html-dom",
+        "tt-schema-html",
+        "tt-pm-model"
+      ]
+    },
+    {
+      "id": "tiptap-static-renderer",
+      "summary": "A reusable recursive renderer serves HTML strings and React through backend adapters without requiring a live editor.",
+      "normal_calls": [
+        "renderToHTMLString({ content: jsonOrPmNode, extensions })",
+        "renderToMarkdown({ content: jsonOrPmNode, extensions })"
+      ],
+      "custom_calls": [
+        "renderToHTMLString({ content, extensions, options: { nodeMapping: { custom: ({ children }) => '<aside>' + serializeChildrenToHTMLString(children) + '</aside>' }, unhandledMark: ({ children }) => serializeChildrenToHTMLString(children) } })",
+        "TiptapStaticRenderer(renderComponent, { nodeMapping, markMapping, unhandledNode, unhandledMark })({ content: json })"
+      ],
+      "input": "Raw recursive renderer accepts JSON-like or PM-like values; extension adapter accepts Node|JSONContent plus extensions and converts JSON through a schema.",
+      "execution": "Synchronous; string backend converts DOMOutputSpec arrays directly and rejects actual DOM objects. React backend imports React. Package-level React/react-dom peers remain declared even when a string subpath is selected.",
+      "diagnostics_fidelity": "Missing node/mark mappings throw unless explicitly handled. Static Markdown source calls itself an incomplete example; its existence is not evidence of a complete universal serializer.",
+      "independent_contribution": "Backend-parameterized traversal and extension-to-backend adapter, reusing PM schema identity/DOMOutputSpec conventions rather than invoking the PM DOM serializer for string output.",
+      "refs": [
+        "tt-renderer",
+        "tt-extension-renderer",
+        "tt-html-string",
+        "tt-html-string-api",
+        "tt-react",
+        "tt-static-md",
+        "tt-static-meta"
+      ]
+    },
+    {
+      "id": "tiptap-dedicated-markdown",
+      "summary": "The dedicated Markdown package has an independently usable MarkdownManager and an editor extension wrapper.",
+      "normal_calls": [
+        "new MarkdownManager({ extensions }).serialize(json)",
+        "editor.getMarkdown()"
+      ],
+      "custom_calls": [
+        "new MarkdownManager({ extensions: extensionsWithRenderMarkdownHandlers, indentation: { style: 'space', size: 4 } }).serialize(json)",
+        "extension.renderMarkdown(node, { renderChildren, renderChild, indent, wrapInBlock }, context)"
+      ],
+      "input": "Manager serializes JSON directly; editor wrapper obtains editor.getJSON() then delegates.",
+      "execution": "Synchronous serialize; marked handles parsing and extension registration is separate from PM MarkdownSerializer.",
+      "diagnostics_fidelity": "Sampled missing node handler returns ''; missing mark renderer returns ''. No structured loss result in inspected serialize return contract.",
+      "independent_contribution": "Tiptap-specific extension Markdown registration and mark-boundary rendering; not a wrapper around prosemirror-markdown and not the static-renderer Markdown example.",
+      "refs": [
+        "tt-md-constructor",
+        "tt-md-manager",
+        "tt-md-get",
+        "tt-md-entry",
+        "tt-md-meta"
+      ]
+    },
+    {
+      "id": "blocknote-html-markdown",
+      "summary": "BlockNote keeps editor-bound HTML/Markdown separate from its shared binary exporter base.",
+      "normal_calls": [
+        "editor.blocksToHTMLLossy(blocks)",
+        "editor.blocksToFullHTML(blocks)",
+        "editor.blocksToMarkdownLossy(blocks)",
+        "await ServerBlockNoteEditor.create({ schema }).blocksToHTMLLossy(blocks)"
+      ],
+      "custom_calls": [
+        "blockImplementation.toExternalHTML(block, editor, { nestingLevel })",
+        "inlineContentImplementation.toExternalHTML(inlineContent, editor)"
+      ],
+      "input": "Explicit PartialBlock[] accepted, defaulting to editor.document in editor methods; callbacks still receive editor. document getter converts one tr.doc to blocks.",
+      "execution": "Browser HTML/Markdown conversion is synchronous because drag requires it. Markdown uses external HTML then htmlToMarkdown. Server wrapper constructs an editor/JSDOM and temporarily sets global window/document; imports React/ReactDOM.",
+      "diagnostics_fidelity": "Lossy names document non-list nesting flattening and style loss. No immutable input guarantee: serializer fills missing values into supplied props. FullHTML means editor-format HTML, not proof of complete review/archive fidelity.",
+      "independent_contribution": "Block semantics and external-vs-editor HTML policy layered on PM DOMSerializer; server wrapper preserves coupling rather than proving editor-free rendering.",
+      "refs": [
+        "bn-editor-exports",
+        "bn-export-manager",
+        "bn-block-snapshot",
+        "bn-html",
+        "bn-markdown",
+        "bn-custom-html",
+        "bn-server",
+        "bn-server-meta"
+      ]
+    },
+    {
+      "id": "blocknote-binary-exporters",
+      "summary": "DOCX/PDF share mapping dispatch and asset resolution but keep format-specific output objects, traversal and presentation options.",
+      "normal_calls": [
+        "await new DOCXExporter(schema, docxDefaultSchemaMappings).toBlob(blocks)",
+        "await new DOCXExporter(schema, docxDefaultSchemaMappings).toDocxJsDocument(blocks)",
+        "const pdfDocument = await new PDFExporter(schema, pdfDefaultSchemaMappings).toReactPDFDocument(blocks); await pdf(pdfDocument).toBlob()"
+      ],
+      "custom_calls": [
+        "new DOCXExporter(schema, { ...docxDefaultSchemaMappings, blockMapping: { ...docxDefaultSchemaMappings.blockMapping, diagram: createDiagramBlockMapping({ renderDiagram }), mathBlock: mathBlockMapping }, inlineContentMapping: { ...docxDefaultSchemaMappings.inlineContentMapping, math: inlineMathMapping } }, { resolveFileUrl })",
+        "exporter.toBlob(blocks, { sectionOptions, documentOptions, locale: 'en-US' })",
+        "pdfExporter.toReactPDFDocument(blocks, { header: reactPdfHeader, footer: reactPdfFooter })"
+      ],
+      "input": "Block arrays plus schema/mappings/options, no editor instance. Base schema parameter is only for inference. Arrays are mutable TypeScript values; methods do not promise to clone/freeze them before awaited work.",
+      "execution": "Block mappings may be async; inline/style mappings are synchronous. DOCX creates docx Document then Packer Blob; PDF creates React-PDF Document, with pdf(...).toBlob() performed separately by the app. Native outputs, font/asset work and download transport have separate owners.",
+      "diagnostics_fidelity": "Missing mappings throw. Diagram/formula failures may become visible placeholders instead of structured diagnostics. No review projection or retained package source input in inspected binary API signatures.",
+      "independent_contribution": "BlockNote block/inline/style mapping system and backend-specific conversion; docx and React-PDF are output engines, not PM serialization mechanisms.",
+      "refs": [
+        "bn-engine",
+        "bn-mapping",
+        "bn-docx",
+        "bn-pdf",
+        "bn-docx-call",
+        "bn-pdf-call",
+        "bn-custom-docx",
+        "bn-custom-pdf",
+        "bn-docx-meta",
+        "bn-pdf-meta"
+      ]
+    },
+    {
+      "id": "direct-docx-semantics",
+      "summary": "BlockNote has a real direct document-to-DOCX mapping boundary rather than a whole-document HTML bridge.",
+      "details": [
+        "Paragraph/heading handlers construct docx Paragraph/TextRun output using block properties and inline mappings.",
+        "Image handler fetches binary data and builds ImageRun; table dispatch is format-specific.",
+        "Math package supplies separate DOCX block/inline mappings that convert LaTeX -> MathML -> OMML and insert ImportedXmlComponent into docx output. Direct document conversion still permits feature-specific intermediate representations.",
+        "Diagram DOCX mapping embeds raster images through an async injectable renderer; PDF has a separate mapping and output types.",
+        "Application examples install correctness mappings explicitly by spreading them into exporter mappings; this proves configurability, not that mandatory correctness belongs in copied UI.",
+        "Direct mapping is not an automatic fidelity guarantee: default image handler hardcodes type:'gif', and DOCX traversal contains a nested-table limitation comment. Neither issue was runtime-tested here."
+      ],
+      "refs": [
+        "bn-docx-direct",
+        "bn-docx-math",
+        "bn-custom-docx",
+        "bn-custom-pdf",
+        "bn-docx-call",
+        "bn-docx",
+        "bn-math-meta"
+      ]
+    },
+    {
+      "id": "review-data-boundary",
+      "summary": "A content snapshot is not automatically a review-data snapshot.",
+      "details": [
+        "BlockNote CommentMark stores anchor threadId/orphan and declares blocknoteIgnore.",
+        "Block conversion deliberately omits marks with blocknoteIgnore that have no style config.",
+        "CommentsExtension requires an independent ThreadStore. Binary exporters accept blocks and configuration, not that store.",
+        "Therefore the inspected ordinary block-to-DOCX/PDF path is not evidence of complete comment-thread preservation. No accept/reject/conflict projection contract was found in these inspected signatures; this is not a claim about every package in any repository."
+      ],
+      "refs": [
+        "bn-comment-mark",
+        "bn-comment-store",
+        "bn-review-conversion",
+        "bn-docx",
+        "bn-pdf"
+      ]
+    }
+  ],
+  "compact_comparisons": [
+    {
+      "pattern": "PM format serializers",
+      "input": "Persistent Node/Fragment",
+      "shared_part": "Document/schema",
+      "customization": "DOM handlers or Markdown node/mark tables",
+      "runtime": "Sync; DOM only for DOM output",
+      "format_boundary": "JSON/text model; separate DOM and Markdown serializers",
+      "refs": [
+        "pm-node",
+        "pm-dom",
+        "pm-md"
+      ]
+    },
+    {
+      "pattern": "Tiptap static rendering",
+      "input": "JSON or PM Node + extensions/mappings",
+      "shared_part": "Recursive renderer",
+      "customization": "Node/mark mappings and unhandled callbacks",
+      "runtime": "String vs React backend; package peers include React",
+      "format_boundary": "HTML/React; static Markdown explicitly incomplete",
+      "refs": [
+        "tt-renderer",
+        "tt-html-string-api",
+        "tt-static-md",
+        "tt-static-meta"
+      ]
+    },
+    {
+      "pattern": "Tiptap MarkdownManager",
+      "input": "JSON + extension Markdown handlers",
+      "shared_part": "Format-specific registration/rendering",
+      "customization": "renderMarkdown + helpers",
+      "runtime": "Sync serialize",
+      "format_boundary": "Dedicated Markdown compiler, separate from generic static example",
+      "refs": [
+        "tt-md-manager",
+        "tt-md-entry",
+        "tt-md-get"
+      ]
+    },
+    {
+      "pattern": "BlockNote HTML/Markdown",
+      "input": "Blocks + editor/schema",
+      "shared_part": "External HTML projection",
+      "customization": "toExternalHTML fallback to render",
+      "runtime": "DOM; server JSDOM/editor/React",
+      "format_boundary": "Lossy external HTML -> Markdown",
+      "refs": [
+        "bn-html",
+        "bn-markdown",
+        "bn-server"
+      ]
+    },
+    {
+      "pattern": "BlockNote DOCX/PDF",
+      "input": "Blocks + typed mappings",
+      "shared_part": "Dispatch/assets/dictionary/colors",
+      "customization": "Backend-specific block/inline/style handlers",
+      "runtime": "Async block conversion; docx vs React-PDF",
+      "format_boundary": "Direct docx objects vs React-PDF objects; separate traversal",
+      "refs": [
+        "bn-engine",
+        "bn-mapping",
+        "bn-docx",
+        "bn-pdf"
+      ]
+    }
+  ],
+  "docx_bridge_comparison": {
+    "priority": "Primary bounded conclusion after parent steering.",
+    "direct_mapping": {
+      "observed": "BlockNote block/inline/style data -> format handlers -> docx objects -> Document/Packer. Native equations supplied by a feature-owned DOCX adapter; no whole-document HTML or React static render step in the inspected DOCX path.",
+      "value": "Makes native DOCX semantics explicit at the owning feature/format boundary and accepts detached data.",
+      "cost": "Requires DOCX-specific handlers, traversal, native output types and validation; renderer-specific feature fallbacks still need runtime capabilities.",
+      "refs": [
+        "bn-docx-direct",
+        "bn-docx-math",
+        "bn-docx",
+        "bn-custom-docx"
+      ]
+    },
+    "configured_html_bridge": {
+      "observed": "Parent reports Plate currently uses model -> React HTML -> OOXML and already has an independent semantic HTML compiler.",
+      "external_comparison": "PM schema DOM and Tiptap document-first HTML show that HTML semantics need not depend on live React presentation. BlockNote uses an HTML bridge for lossy Markdown, but intentionally uses direct mappings for DOCX/PDF.",
+      "possible_value": "A configured semantic HTML bridge can reuse an existing converter and semantic HTML mapping where that representation carries all required output data.",
+      "limit": "No source in this shard proves Plate's converter fidelity, native review handling, or whether its semantic HTML compiler carries every DOCX input. It cannot establish that direct DOCX replacement is necessary for every existing feature.",
+      "refs": [
+        "pm-dom",
+        "tt-generate-html",
+        "tt-html-string-api",
+        "bn-markdown",
+        "bn-docx"
+      ]
+    },
+    "recommendation": "Strongest immediately justified cut to assess: remove React static presentation and copied-kit ownership of mandatory DOCX correctness from the conversion boundary. Reuse the parent's existing detached value and semantic compiler where sufficient; promote format semantics to the owning package/feature. Direct DOCX mappings are the stronger target for native constructs that the HTML bridge cannot represent without hidden metadata or bespoke reinterpretation. Do not replace a proven semantic HTML bridge solely because direct mapping exists upstream.",
+    "decision_boundary": "Parent must compare required native constructs and current converter behavior. This shard establishes feasible architecture and counterexamples, not a settled Plate implementation target or viewer-fidelity result."
+  },
+  "candidate_leads": [
+    {
+      "id": "exports:docx-correctness-owned-by-format:architecture",
+      "status": "candidate-for-parent",
+      "owner": "Plate DOCX and feature codec owners",
+      "recommendation": "Cut the requirement that copied React UI carry document-format correctness. A document-first DOCX function can compile feature-owned format handlers without requiring a React editor/render tree.",
+      "support": [
+        "bn-docx-direct",
+        "bn-docx-math",
+        "bn-docx",
+        "tt-html-string-api"
+      ],
+      "against_overreach": "Existing semantic HTML compiler may already be the cheapest complete bridge. Direct mapping requires a concrete native construct/fidelity advantage; no speed or viewer fidelity is proved.",
+      "proof_gap": "Map current kit correctness declarations to format/package owners and compare direct versus semantic-HTML behavior on required Word constructs."
+    },
+    {
+      "id": "exports:document-first-format-functions:api",
+      "status": "candidate-for-parent",
+      "owner": "Existing Plite document/snapshot owner plus Plate format APIs",
+      "recommendation": "Keep conversion callable with captured document data; editor methods may delegate. Reuse existing snapshot and detached Markdown paths reported by parent. A universal export plugin is not required to make these functions discoverable.",
+      "support": [
+        "pm-node",
+        "pm-dom",
+        "pm-md",
+        "tt-md-get",
+        "tt-md-entry",
+        "bn-docx"
+      ],
+      "against_overreach": "Feature handlers/resources can still require schema configuration. Plain mutable JSON/block arrays are not equivalent to PM's persistent Node or a proven authored snapshot.",
+      "proof_gap": "Parent preserves one revision and authored projection before awaits; no new capture owner is inferred."
+    },
+    {
+      "id": "exports:format-specific-engines-with-shared-internals:architecture",
+      "status": "candidate-for-parent",
+      "owner": "Plate format compilers; Plite only for a proven reusable document primitive",
+      "recommendation": "Retain format-specific APIs/output contracts; share only demonstrated traversal/dispatch/resources privately. Delete a proposed universal export-plugin/runtime requirement unless an independent current job proves it.",
+      "support": [
+        "pm-dom",
+        "pm-md",
+        "tt-static-md",
+        "tt-md-manager",
+        "bn-engine",
+        "bn-docx",
+        "bn-pdf"
+      ],
+      "against_overreach": "BlockNote and Tiptap prove useful internal reuse. They do not prove every format should duplicate traversal, nor a single shared walker can own native layout/fidelity.",
+      "proof_gap": "Parent identifies actual repeated mechanics before choosing a shared internal helper."
+    },
+    {
+      "id": "exports:explicit-loss-and-review-payload:contract",
+      "status": "candidate-for-parent",
+      "owner": "Existing authored projection and format diagnostics owners",
+      "recommendation": "Preserve explicit review projection/capture and truthful loss accounting. Do not reduce export input to content JSON alone where external threads/authorship are required, and do not copy silent missing-handler loss as a default.",
+      "support": [
+        "bn-comment-mark",
+        "bn-comment-store",
+        "bn-review-conversion",
+        "tt-md-manager",
+        "pm-md",
+        "bn-engine",
+        "bn-custom-docx"
+      ],
+      "against_overreach": "A generic warning bus or universal review envelope is not justified by these sources; formats may throw, return diagnostics or deliberately render a placeholder.",
+      "proof_gap": "Parent's captured source must include all promised review data and each format must account for omissions."
+    },
+    {
+      "id": "exports:format-resource-boundaries:api",
+      "status": "candidate-for-parent",
+      "owner": "DOCX/PDF asset and feature adapters",
+      "recommendation": "Keep async file/font/diagram resolution explicit in formats that need it, and keep output transport outside conversion. Preserve a synchronous HTML/clipboard lane.",
+      "support": [
+        "bn-engine",
+        "bn-custom-docx",
+        "bn-docx-call",
+        "bn-pdf-call",
+        "bn-html",
+        "bn-markdown"
+      ],
+      "against_overreach": "Do not make JSON/text/Markdown asynchronous merely to match binary formats; no universal resource-service plugin is established.",
+      "proof_gap": "Async snapshot stability and asset/render failures require owned evidence if adopted."
+    }
+  ],
+  "rejections": [
+    {
+      "dedupe_key": "exports:universal-export-plugin:architecture",
+      "rejected": "Universal installed export plugin as mandatory owner for every format",
+      "reason": "PM document operations/serializers and Tiptap/BlockNote detached conversion require no live editor. Binary formats differ in native outputs and traversal; BlockNote HTML/Markdown do not use its binary Exporter base.",
+      "refs": [
+        "pm-node",
+        "pm-dom",
+        "tt-md-entry",
+        "bn-export-manager",
+        "bn-docx",
+        "bn-pdf"
+      ],
+      "reopen_condition": "A current independent runtime job needs installed exporter lifecycle/state that direct functions and existing feature compilation cannot own."
+    },
+    {
+      "dedupe_key": "exports:reuse-react-static-as-docx-semantics:architecture",
+      "rejected": "React static rendering as the mandatory semantic intermediate for DOCX",
+      "reason": "Direct DOCX mapping exists and detached semantic HTML exists externally and, per parent, locally. React presentation does not earn correctness ownership by proximity.",
+      "refs": [
+        "bn-docx-direct",
+        "bn-docx-math",
+        "tt-html-string-api"
+      ],
+      "reopen_condition": "A named required document construct can only be captured through that rendering path, with explicit runtime and fidelity contract."
+    },
+    {
+      "dedupe_key": "exports:direct-docx-automatically-more-faithful:claim",
+      "rejected": "Claim that direct mappings automatically improve all fidelity or remove every intermediate language",
+      "reason": "Direct exporter has format-specific limitations; images/math still use async conversion/intermediate representations. No upstream export/viewer tests executed.",
+      "refs": [
+        "bn-docx-direct",
+        "bn-docx-math",
+        "bn-docx"
+      ],
+      "reopen_condition": "Matched fixtures establish a concrete native-output advantage over Plate's configured semantic HTML bridge."
+    },
+    {
+      "dedupe_key": "exports:static-markdown-is-complete-universal-codec:claim",
+      "rejected": "Tiptap static Markdown as proof that one generic renderer replaces full format compilers",
+      "reason": "Source explicitly marks it incomplete; dedicated MarkdownManager independently owns Markdown handlers.",
+      "refs": [
+        "tt-static-md",
+        "tt-md-manager"
+      ],
+      "reopen_condition": "A complete proven format implementation meets the same semantics with less machinery."
+    },
+    {
+      "dedupe_key": "exports:block-json-preserves-review:claim",
+      "rejected": "BlockNote document/block JSON as proof of complete review preservation",
+      "reason": "Comments are deliberately omitted from block conversion and thread content has a separate store.",
+      "refs": [
+        "bn-comment-mark",
+        "bn-review-conversion",
+        "bn-comment-store"
+      ],
+      "reopen_condition": "An explicit export captures anchors plus thread data and proves their output projection."
+    },
+    {
+      "dedupe_key": "exports:copy-xl-exporter-under-core-license:reuse",
+      "rejected": "Treating BlockNote DOCX/PDF implementation as MPL/MIT code because core is MPL",
+      "reason": "Inspected XL package manifests declare GPL-3.0 OR PROPRIETARY. This artifact proposes independent architecture, not code transplant or license compatibility.",
+      "refs": [
+        "bn-license",
+        "bn-docx-meta",
+        "bn-pdf-meta",
+        "bn-docx-license",
+        "bn-pdf-license"
+      ],
+      "reopen_condition": "A separately authorized reuse assessment verifies applicable terms and obligations."
+    }
+  ],
+  "limitations": [
+    "Source inspection only: no upstream tests, builds, examples, browser exports, native Word/PDF viewers or performance measurements executed.",
+    "Existing sibling commits are fixed evidence snapshots, not claims of current upstream HEAD. No sibling checkout was changed.",
+    "BlockNote declares newer Tiptap/PM dependencies than the separately inspected sibling versions; common architectural patterns are not an installed dependency-equivalence claim.",
+    "No exhaustive feature/schema census, commercial Tiptap exporter audit, clipboard implementation audit or export-security audit. No claim that omitted formats are absent repository-wide.",
+    "ProseMirror/Tiptap DOCX/PDF internals were not in this sampled scope; BlockNote supplies the decisive direct-DOCX/PDF comparison.",
+    "Plain supplied JSON/block arrays are not proven immutable; asynchronous exporter entrypoints do not establish atomic review capture, resource capture or concurrency safety.",
+    "License facts are read from manifests/notices at exact commits. No legal compatibility verdict and no product code reuse.",
+    "Structured diagnostics and authored-review support are reported only for inspected contracts. Missing structured result types do not prove the entire ecosystem lacks diagnostics.",
+    "Parent's Plate implementation facts are user-supplied context; no new local Plate product-source claim is made in this sidecar.",
+    "Historical deduplication is bounded to focused search and recorded full-file fingerprints; parent owns shared-ledger reconciliation."
+  ],
+  "next_owner": "Parent export architecture review. No additional source census recommended for this family until a concrete unresolved native DOCX requirement remains.",
+  "verification": {
+    "artifact_json": "Post-write JSON parse, unique read IDs, all source-reference IDs and scoped git diff --check passed.",
+    "source_identity": "All 56 read rows passed full-file SHA256, inclusive line-range bounds, recorded-commit object identity and unchanged sibling HEAD checks. No upstream tests executed.",
+    "upstream_tests": "not-run",
+    "product_checks": "not-applicable: research-only JSON"
+  }
+}

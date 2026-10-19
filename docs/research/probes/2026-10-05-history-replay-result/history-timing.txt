@@ -1,0 +1,14 @@
+# command: cd packages/plitejs && bun run /Users/zbeyens/git/plate-2/docs/research/probes/2026-10-05-history-replay-result/history-timing.probe.ts
+# source: HEAD 36c2f43170; history-plugin.ts and editable-dom-runtime.ts have no uncommitted changes: 0 dirty files
+doc.isPromise	true
+doc.textRightAfterCall	""
+doc.result	{"status":"applied"}
+session.pendingRightAfterCall	"undo"
+session.externalRightAfterCall	"comment"
+session.secondUndoWhilePending	{"status":"busy"}
+session.textAfterSecondUndo	"A"
+session.firstResult	{"status":"applied"}
+session.externalAfterSettle	""
+throw.unhandledRejectionsFromVoidCall	1
+throw.pendingAfter	null
+# exit: 0

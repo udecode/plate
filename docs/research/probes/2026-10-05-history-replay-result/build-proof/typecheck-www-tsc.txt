@@ -1,0 +1,3 @@
+# cd apps/www && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.package-integration.json
+# exit app: 0
+# exit package-integration: 0

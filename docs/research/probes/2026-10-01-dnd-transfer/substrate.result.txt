@@ -1,0 +1,14 @@
+T1 maxLength cut is reported as success {"inserted":true,"texts":["AWX"]}
+T2 slice.replace at an existing block path merges text ["A","XB"]
+T3 a spec built in a read and never applied publishes nothing {"commits":0,"specBuilt":true,"texts":["A","B"]}
+T4 same-root tx.nodes.move keeps key and range anchor {"anchor":{"anchor":{"offset":1,"path":[2,0]},"focus":{"offset":3,"path":[2,0]}},"keyKept":true,"texts":["bravo","charlie","alpha"]}
+T5 same-root remove plus insert of the same object keeps key, collapses anchor {"anchor":{"anchor":{"offset":0,"path":[0,0]},"focus":{"offset":0,"path":[0,0]}},"keyKept":true,"texts":["bravo","charlie","alpha"]}
+T6 moving a portal into its own body commits an unreachable cycle {"children":[{"type":"paragraph","children":[{"text":"top"}]}],"roots":{"ex:1":[{"type":"paragraph","children":[{"text":"inside"}]},{"childRoots":{"body":"ex:1"},"children":[{"text":""}],"type":"portal"}]}}
+T7 an ancestor and its descendant in one remove-plus-insert payload duplicate 2
+T8 a session history effect cannot share an update with content threw A session history effect must own one effect-only history batch.
+T9 a blocked effect-only entry wedges earlier undo {"results":["blocked","blocked","blocked"],"texts":["typed","landed"]}
+T10 a throw after corrections rolls back with nothing published {"error":"post-correction refusal","texts":["A"],"undo":"empty"}
+T11 slice extraction drops a copy-drop id that a raw node keeps {"rawId":"keep-me","sliceId":null}
+T12 maxLength counts a same-update move twice {"inserted":false,"texts":["BBBBB"]}
+T13 a cross-parent tx.nodes.move collapses a range anchor {"anchor":{"anchor":{"offset":0,"path":[0,0,0]},"focus":{"offset":0,"path":[0,0,0]}},"keyKept":true,"value":{"children":[{"type":"blockquote","children":[{"type":"paragraph","children":[{"text":"quoted"}]},{"type":"paragraph","children":[{"text":"alpha"}]}]}]}}
+T14 a pre-publication guard rejection publishes nothing {"error":"guard refusal","texts":["A"],"undo":"empty"}

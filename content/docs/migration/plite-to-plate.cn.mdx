@@ -1,0 +1,241 @@
+---
+title: 从 Plite 迁移到 Plate
+description: 学习如何从 Plite 迁移到 Plate。
+---
+
+Plate 构建于 Plite 之上，因此从纯 Plite 实现迁移到 Plate 相对简单。本指南将帮助您将基于 Plite 的编辑器过渡到 Plate。
+
+## 1. 安装 Plate
+
+首先，安装必要的 Plate 包。如果您是 Plate 的新用户，可以先阅读[介绍](/docs/installation)了解库的概况。
+
+```bash
+npm install platejs
+```
+
+## 2. 替换 Plite 导入
+
+将您的 Plite 导入替换为 Plate 导入。Plate 重新导出了大多数 Plite 类型和函数：
+
+```ts
+// 之前
+import { EditorRoot, Editable, useEditor } from 'plitejs/react';
+```
+
+```ts
+// 之后
+import { EditorRoot, EditorContent, useCreateEditor } from 'platejs/react';
+```
+
+## 3. 创建 Plate 编辑器
+
+在 React 组件中，将 Plite 的 `useEditor` 替换为 Plate 的 `useCreateEditor`：
+
+```ts
+// 之前
+const editor = useEditor({ initialValue: value });
+```
+
+```ts
+// 之后
+const editor = useCreateEditor({
+  initialValue: value,
+  plugins: [
+    // 在此处添加其他插件
+  ],
+});
+```
+
+有关编辑器配置的更多详情，请查看[编辑器配置指南](/docs/editor)。
+
+## 4. 替换 Plite 和 Editable 组件
+
+将 `EditorRoot` 和 `Editable` 组件替换为 Plate 的 `EditorRoot` 组件：
+
+```tsx
+// 之前
+<EditorRoot editor={editor}>
+  <Editable className="p-4" />
+</EditorRoot>
+
+// 之后
+<EditorRoot editor={editor}>
+  <EditorContent className="p-4" />
+</EditorRoot>
+```
+
+## 5. 转换自定义元素和叶子
+
+对于自定义元素和叶子，创建 Plate 插件：
+
+```tsx
+// 之前
+const renderElement = useCallback(({ attributes, children, element }) => {
+  switch (element.type) {
+    case 'paragraph':
+      return <p {...attributes}>{children}</p>;
+    // ... 其他情况
+  }
+}, []);
+
+// 之后
+import { schema } from 'platejs';
+import { definePlugin, EditorElement, type EditorElementProps } from 'platejs/react';
+import { cn } from '@/lib/utils';
+
+export function ParagraphElement(
+  props: EditorElementProps<typeof ParagraphPlugin>
+) {
+  return (
+    <EditorElement {...props} className="m-0 px-0 py-1">
+      {props.children}
+    </EditorElement>
+  );
+}
+
+const ParagraphPlugin = definePlugin('p', {
+  type: 'paragraph',
+  schema: {
+    element: { content: schema.content.text({ default: 'text', min: 1 }) },
+  },
+}).configure({ component: ParagraphElement });
+```
+
+在[插件配置指南](/docs/plugin)和[插件组件指南](/docs/plugin-components)中了解更多关于创建插件的信息。
+
+## 6. 将 Plite 插件转换为 Plate 插件
+
+如果自定义行为需要可复用的文档命令，把它放在插件的 `update` 贡献中。命令会出现在
+`editor.update(...)` 的事务对象上：
+
+```ts
+const SignaturePlugin = definePlugin('signature', {
+  update: ({ tx }) => ({
+    insert() {
+      tx.text.insert(' - EditorRoot');
+    },
+  }),
+});
+
+editor.update((tx) => {
+  tx.signature.insert();
+});
+```
+
+插件 portal 已经拥有插件名，因此方法应保持扁平并直接描述任务：
+
+```ts
+const CalloutPlugin = definePlugin('callout', {
+  update: ({ tx }) => ({
+    insertCallout() {
+      tx.nodes.insert({
+        children: [{ text: '' }],
+        type: 'callout',
+      });
+    },
+  }),
+});
+
+editor.update((tx) => {
+  tx.callout.insertCallout();
+});
+```
+
+插件专属的不可变服务放在 `api`，快照内查询放在 `read`，command、correction、
+read middleware、lifecycle、activation、validation 等底层行为使用根级原生 Plite
+字段。互相独立的字段放进 constructor。只有 import/prebuilt declaration、constructor 无法访问的
+shared factory 或前一阶段类型需要 `.extend()`。Codec declaration 通过 constructor 的
+`formats: ({ defineFormats }) => defineFormats(map)` 构建；foreign mapping 使用
+`defineFormats(TargetPlugin, map)`。
+
+有关插件上下文的更多信息，请参阅[插件上下文指南](/docs/plugin-context)。
+
+## 7. 更新事件处理程序
+
+更新您的事件处理程序以使用 Plate 的插件系统：
+
+```ts
+// 之前
+const onKeyDown = (event) => {
+  if (event.key === 'Tab') {
+    // 处理 Tab 键
+  }
+};
+
+// 之后
+const TabPlugin = definePlugin('tab', {
+  on: {
+    keyDown: ({ editor, event }) => {
+      if (event.key === 'Tab') {
+        // 处理 Tab 键
+      }
+    },
+  },
+});
+```
+
+或者，您可以使用 Plate 强大的快捷键系统：
+
+```ts
+const TabPlugin = definePlugin('tab', {
+  shortcuts: {
+    indent: {
+      handler: ({ editor }) => {
+        // 处理 Tab 键
+      },
+      keys: ['Tab'],
+    },
+  },
+});
+```
+
+有关使用快捷键的更多详情，请查看[插件快捷键指南](/docs/plugin-shortcuts)。
+
+## 8. 适应 Plate 的 API
+
+Plate 将读取和写入分开。用 `editor.read(...)` 读取编辑器状态，用
+`editor.update(...)` 修改文档。`editor.api.*` 适合插件服务和宿主运行时
+API，不适合作为文档修改命令。
+
+```ts
+const text = editor.read((state) => state.text.string([]));
+
+editor.update((tx) => {
+  tx.marks.toggle('bold');
+  tx.text.insert('Hello');
+});
+
+editor.api.debug.log(text);
+```
+
+有关编辑器方法的完整列表，请参阅[编辑器方法指南](/docs/editor-methods)。
+
+## 9. 利用 Plate 的内置插件
+
+Plate 提供了许多内置插件，您可以在侧边栏中查看。使用它们快速添加功能：
+
+```ts
+import {
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+  useCreateEditor,
+} from 'platejs/react';
+
+const plugins = [
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+  // ... 其他插件
+];
+
+const editor = useCreateEditor({
+  plugins,
+});
+```
+
+## 10. 测试和优化
+
+迁移完成后，彻底测试您的编辑器以确保所有功能按预期工作。使用 Plate 的功能和最佳实践进行优化。
+
+有关调试技巧和策略，请查看我们的[调试指南](/docs/debugging)。

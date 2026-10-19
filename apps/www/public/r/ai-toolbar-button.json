@@ -1,0 +1,45 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "ai-toolbar-button",
+  "title": "AI Toolbar Button",
+  "description": "A toolbar button for accessing AI features.",
+  "dependencies": [
+    "platejs",
+    "@ai-sdk/react@^3.0.0",
+    "ai@^6.0.0",
+    "diff-match-patch-ts@^0.6.0",
+    "fastest-levenshtein@1.0.16",
+    "remark-parse@^11.0.0",
+    "remark-stringify@^11.0.0",
+    "unified@^11.0.5"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/ai-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { AIChatPlugin } from 'platejs/ai/react';\nimport { useEditor } from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function AIToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { api } = useEditor().plugin(AIChatPlugin);\n\n  return (\n    <ToolbarButton\n      {...props}\n      onClick={() => {\n        api.show();\n      }}\n    />\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/ai-toolbar-button.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/ai",
+        "title": "AI"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/ai-toolbar-button"
+      }
+    ],
+    "examples": [
+      "ai-demo",
+      "floating-toolbar-demo",
+      "ai-pro"
+    ],
+    "label": "New"
+  },
+  "type": "registry:component"
+}

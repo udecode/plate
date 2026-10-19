@@ -1,0 +1,59 @@
+{
+  "id": "footnote",
+  "title": "Footnotes",
+  "question": "How should footnote references and content preserve identity and navigation?",
+  "dependsOn": [
+    "selection"
+  ],
+  "prerequisiteReason": "Document identity and rebased references constrain footnote content and navigation.",
+  "last": false,
+  "opportunity": {
+    "score": 6,
+    "reason": "Reference identity and cross-document conversion need a coherent owner."
+  },
+  "owners": [
+    "packages/platejs/src/features/footnote/"
+  ],
+  "members": [
+    "apps/www/src/registry/components/editor/footnote-static.tsx",
+    "apps/www/src/registry/components/editor/footnote.combobox.spec.tsx",
+    "apps/www/src/registry/components/editor/footnote.navigation.spec.tsx",
+    "apps/www/src/registry/components/editor/footnote.slow.tsx",
+    "apps/www/src/registry/components/editor/footnote.tsx",
+    "apps/www/src/registry/components/editor/markdown.spec.ts",
+    "apps/www/src/registry/examples/values/footnote-value.tsx",
+    "packages/platejs/package.json",
+    "packages/platejs/src/features/footnote/index.ts",
+    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.spec.ts",
+    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts",
+    "packages/platejs/src/features/footnote/lib/index.ts",
+    "packages/platejs/src/utils/plate-keys.ts"
+  ],
+  "consumers": [
+    "apps/www/src/registry/components/editor/footnote.tsx"
+  ],
+  "proof": [
+    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.spec.ts"
+  ],
+  "evidenceInputs": [],
+  "relatedScopes": [
+    "persistence",
+    "markdown",
+    "documents"
+  ],
+  "historyCandidates": [
+    "docs/plans/2026-07-12-plate-next-footnote-indent-juice-package-reviews.md",
+    "docs/plans/2026-04-07-footnote-nav-hook-cleanup.md",
+    "docs/plans/2026-04-06-markdown-docs-footnote-example.md",
+    "docs/plans/2026-04-06-footnote-stale-duplicate-warning-after-delete.md",
+    "docs/plans/2026-04-06-footnote-duplicate-definition-normalization-spec.md",
+    "docs/plans/2026-04-06-footnote-duplicate-definition-normalization-runtime.md",
+    "docs/plans/2026-04-06-footnote-create-definition-repair.md",
+    "docs/plans/2026-04-05-footnote-combobox-ui.md",
+    "docs/plans/2026-04-04-footnote-sync-architecture.md",
+    "docs/plans/2026-04-04-footnote-support.md",
+    "docs/plans/2026-04-04-footnote-product-surface.md",
+    "docs/plans/2026-04-04-footnote-inline-void-fix.md",
+    "docs/plans/2026-04-04-footnote-editor-ref-research.md"
+  ]
+}

@@ -1,0 +1,5 @@
+---
+'plitejs': patch
+---
+
+Formatting in an `edit` view over a pending format suggestion, your own included, leaves the suggestion pending and stacks the direct edit on top as accepted, so rejecting the suggestion later keeps the direct edit. Each Editing writer's edits over it stack as that writer's one tag. Undoing an edit after the suggestion under it was rejected or undone gives what rejecting the edit gives now, except when a collaborator decides or undoes at the same time, and in some undos of a commit that also split a block. A few concurrent, partial-withdrawal, undo and redo cases still bring back or lose a format value. A stacked format `AuthoredMark` stores `base`, the property's value with every tag under it undone, and its `over` lists the tags under it step by step, accepted and Editing ones included, each with the value it wrote. The document's records gain an `authored-landed` set, one record per commit that wrote an accepted format change and per Editing commit over a format tag. Admission refuses a stacked format suggestion in the old shape, whose `over` lists only ids.

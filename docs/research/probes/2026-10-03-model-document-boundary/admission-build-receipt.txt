@@ -1,0 +1,156 @@
+# Build scale receipt, 2026-10-04
+# Baseline: detached worktree at fe0e9599a6. Candidate: fe0e9599a6 plus this build's eight Plite source files (core/document-shape.ts, core/initial-value.ts, core/editor-schema.ts, core/slice-fit/compiled-slice-fitter.ts, core/public-state.ts, editor-runtime-view.ts, core/plugin.ts, internal/index.ts), copied before the deslop and comment passes.
+# Probes: admission-probe.ts (construct, replace) and view-probe.ts (repeated createEditorView after the first), bun 1.3.12 with --expose-gc and config/plite-source-aliases.ts, five alternating rounds per cohort, each run's value the median of 20 samples after 3 warmups.
+# Budget frozen in the decision log before measuring: paired median delta <= max(0.5 ms, 3% of the baseline median). The mutable view cohort is recorded, not budgeted.
+# Guard controls on the candidate: view-probe.ts 1000 --wrong-guard exit 1; admission-probe.ts 100 --skip-replace exit 1.
+
+construct 100: base median 0.971 ms, cand median 0.843 ms, paired delta median -0.053 ms, budget 0.500 ms -> PASS; deltas [-0.023, -0.339, -0.117, -0.053, 0.076]
+replace 100: base median 14.674 ms, cand median 14.286 ms, paired delta median -1.220 ms, budget 0.500 ms -> PASS; deltas [-1.22, -5.531, 1.074, -0.348, -1.42]
+construct 10000: base median 46.923 ms, cand median 42.041 ms, paired delta median -4.755 ms, budget 1.408 ms -> PASS; deltas [-9.767, -6.488, -0.067, -4.755, -3.176]
+replace 10000: base median 1283.383 ms, cand median 1187.806 ms, paired delta median -87.439 ms, budget 38.501 ms -> PASS; deltas [-287.484, -95.576, -27.92, -74.859, -87.439]
+view owned 10000: base median 0.054 ms, cand median 0.048 ms, paired delta median -0.006 ms, budget 0.500 ms -> PASS; deltas [-0.006, 0.008, -0.011, -0.008, 0.0]
+view mutable 10000: base median 0.051 ms, cand median 22.315 ms, paired delta median 22.261 ms, budget 0.500 ms -> RECORDED; deltas [22.092, 22.261, 22.474, 22.24, 22.33]
+
+# Raw runs
+{"tree":"base","round":1,"blocks":100,"construct":0.7138330000000224,"replace":10.804167000000007}
+{"tree":"cand","round":1,"blocks":100,"construct":0.6905409999999961,"replace":9.584625000000017}
+{"tree":"cand","round":2,"blocks":100,"construct":0.703125,"replace":9.599375000000009}
+{"tree":"base","round":2,"blocks":100,"construct":1.0422499999999673,"replace":15.130125000000021}
+{"tree":"base","round":3,"blocks":100,"construct":0.9597499999999854,"replace":14.23908300000005}
+{"tree":"cand","round":3,"blocks":100,"construct":0.8429999999999609,"replace":15.313125000000014}
+{"tree":"cand","round":4,"blocks":100,"construct":1.0684999999999718,"replace":14.32604200000003}
+{"tree":"base","round":4,"blocks":100,"construct":1.1210829999999987,"replace":14.673667000000023}
+{"tree":"base","round":5,"blocks":100,"construct":0.9712919999999485,"replace":15.705959000000007}
+{"tree":"cand","round":5,"blocks":100,"construct":1.0468329999999924,"replace":14.285582999999974}
+{"tree":"base","round":1,"blocks":10000,"construct":51.80791600000157,"replace":1471.1169999999993}
+{"tree":"cand","round":1,"blocks":10000,"construct":42.04120900000089,"replace":1183.6327089999977}
+{"tree":"cand","round":2,"blocks":10000,"construct":41.69774999999936,"replace":1187.8064999999988}
+{"tree":"base","round":2,"blocks":10000,"construct":48.18554099999983,"replace":1283.382958000002}
+{"tree":"base","round":3,"blocks":10000,"construct":42.59858299999996,"replace":1223.4476250000007}
+{"tree":"cand","round":3,"blocks":10000,"construct":42.53150000000096,"replace":1195.5275000000001}
+{"tree":"cand","round":4,"blocks":10000,"construct":42.16875000000073,"replace":1275.8368330000003}
+{"tree":"base","round":4,"blocks":10000,"construct":46.923499999999876,"replace":1350.695749999999}
+{"tree":"base","round":5,"blocks":10000,"construct":44.84162500000093,"replace":1262.7391669999997}
+{"tree":"cand","round":5,"blocks":10000,"construct":41.6655410000003,"replace":1175.3006660000028}
+{"tree":"base","round":1,"blocks":10000,"mutable":false,"view":0.052833000000021}
+{"tree":"cand","round":1,"blocks":10000,"mutable":false,"view":0.046542000000016515}
+{"tree":"cand","round":2,"blocks":10000,"mutable":false,"view":0.059082999999986896}
+{"tree":"base","round":2,"blocks":10000,"mutable":false,"view":0.051541999999983545}
+{"tree":"base","round":3,"blocks":10000,"mutable":false,"view":0.059916999999984455}
+{"tree":"cand","round":3,"blocks":10000,"mutable":false,"view":0.04845800000001077}
+{"tree":"cand","round":4,"blocks":10000,"mutable":false,"view":0.046750000000002956}
+{"tree":"base","round":4,"blocks":10000,"mutable":false,"view":0.05433400000001143}
+{"tree":"base","round":5,"blocks":10000,"mutable":false,"view":0.06295800000000895}
+{"tree":"cand","round":5,"blocks":10000,"mutable":false,"view":0.062958999999978}
+{"tree":"base","round":1,"blocks":10000,"mutable":true,"view":0.0503750000000025}
+{"tree":"cand","round":1,"blocks":10000,"mutable":true,"view":22.142499999999984}
+{"tree":"cand","round":2,"blocks":10000,"mutable":true,"view":22.314874999999915}
+{"tree":"base","round":2,"blocks":10000,"mutable":true,"view":0.0539579999999944}
+{"tree":"base","round":3,"blocks":10000,"mutable":true,"view":0.05112500000001319}
+{"tree":"cand","round":3,"blocks":10000,"mutable":true,"view":22.524625000000015}
+{"tree":"cand","round":4,"blocks":10000,"mutable":true,"view":22.296125000000075}
+{"tree":"base","round":4,"blocks":10000,"mutable":true,"view":0.055666000000002214}
+{"tree":"base","round":5,"blocks":10000,"mutable":true,"view":0.051000000000016144}
+{"tree":"cand","round":5,"blocks":10000,"mutable":true,"view":22.38149999999996}
+
+# Final-bytes rerun, 2026-10-04: candidate is fe0e9599a6 plus this build's ten Plite source files after the code-quality fixes and the lint fix (core/document-shape.ts, core/initial-value.ts, core/editor-schema.ts, core/slice-fit/compiled-slice-fitter.ts, core/public-state.ts, editor-runtime-view.ts, core/plugin.ts, internal/index.ts, authored/checkpoint.ts, authored/format.ts). Same probes, rounds and budget.
+
+construct 100: base median 0.627 ms, cand median 0.603 ms, paired delta median -0.003 ms, budget 0.500 ms -> PASS; deltas [-0.06, 0.012, -0.003, -0.055, -0.002]
+replace 100: base median 8.892 ms, cand median 8.719 ms, paired delta median -0.093 ms, budget 0.500 ms -> PASS; deltas [-0.526, -0.041, 0.045, -0.524, -0.093]
+construct 10000: base median 43.117 ms, cand median 42.276 ms, paired delta median -0.841 ms, budget 1.294 ms -> PASS; deltas [-1.305, -1.977, -0.84, -0.841, 0.794]
+replace 10000: base median 1194.468 ms, cand median 1202.127 ms, paired delta median 7.659 ms, budget 35.834 ms -> PASS; deltas [8.249, -25.821, 7.659, 25.224, 3.717]
+view owned 10000: base median 0.050 ms, cand median 0.050 ms, paired delta median -0.001 ms, budget 0.500 ms -> PASS; deltas [-0.003, -0.001, 0.001, -0.004, 0.004]
+view mutable 10000: base median 0.059 ms, cand median 22.111 ms, paired delta median 22.055 ms, budget 0.500 ms -> RECORDED; deltas [22.055, 21.935, 22.042, 22.337, 23.617]
+
+# Raw runs, final bytes
+{"tree":"base","round":1,"blocks":100,"construct":0.6444999999999936,"replace":9.306791999999973}
+{"tree":"cand","round":1,"blocks":100,"construct":0.5844169999999735,"replace":8.781000000000006}
+{"tree":"cand","round":2,"blocks":100,"construct":0.6015840000000026,"replace":8.654875000000004}
+{"tree":"base","round":2,"blocks":100,"construct":0.5897919999999885,"replace":8.695459}
+{"tree":"base","round":3,"blocks":100,"construct":0.605542000000014,"replace":8.674208000000021}
+{"tree":"cand","round":3,"blocks":100,"construct":0.6030000000000086,"replace":8.71875}
+{"tree":"cand","round":4,"blocks":100,"construct":0.6060829999999839,"replace":8.682458999999994}
+{"tree":"base","round":4,"blocks":100,"construct":0.6609580000000221,"replace":9.20666700000001}
+{"tree":"base","round":5,"blocks":100,"construct":0.6272500000000036,"replace":8.892499999999984}
+{"tree":"cand","round":5,"blocks":100,"construct":0.6255409999999983,"replace":8.799125000000004}
+{"tree":"base","round":1,"blocks":10000,"construct":43.05199999999968,"replace":1181.2705}
+{"tree":"cand","round":1,"blocks":10000,"construct":41.7465830000001,"replace":1189.519207999998}
+{"tree":"cand","round":2,"blocks":10000,"construct":41.85329199999978,"replace":1177.439875}
+{"tree":"base","round":2,"blocks":10000,"construct":43.83008300000074,"replace":1203.261290999999}
+{"tree":"base","round":3,"blocks":10000,"construct":43.45749999999998,"replace":1194.4676250000011}
+{"tree":"cand","round":3,"blocks":10000,"construct":42.61729199999991,"replace":1202.1267499999994}
+{"tree":"cand","round":4,"blocks":10000,"construct":42.27641700000095,"replace":1216.0228750000024}
+{"tree":"base","round":4,"blocks":10000,"construct":43.117166,"replace":1190.7991249999995}
+{"tree":"base","round":5,"blocks":10000,"construct":42.442416999998386,"replace":1212.3956249999974}
+{"tree":"cand","round":5,"blocks":10000,"construct":43.236166000000594,"replace":1216.1121249999997}
+{"tree":"base","round":1,"blocks":10000,"mutable":false,"view":0.05362499999998249}
+{"tree":"cand","round":1,"blocks":10000,"mutable":false,"view":0.050667000000004236}
+{"tree":"cand","round":2,"blocks":10000,"mutable":false,"view":0.04720900000000938}
+{"tree":"base","round":2,"blocks":10000,"mutable":false,"view":0.048042000000009466}
+{"tree":"base","round":3,"blocks":10000,"mutable":false,"view":0.049374999999997726}
+{"tree":"cand","round":3,"blocks":10000,"mutable":false,"view":0.05041700000001015}
+{"tree":"cand","round":4,"blocks":10000,"mutable":false,"view":0.04591700000000287}
+{"tree":"base","round":4,"blocks":10000,"mutable":false,"view":0.04995800000000372}
+{"tree":"base","round":5,"blocks":10000,"mutable":false,"view":0.05379099999998971}
+{"tree":"cand","round":5,"blocks":10000,"mutable":false,"view":0.05779200000000628}
+{"tree":"base","round":1,"blocks":10000,"mutable":true,"view":0.05674999999999386}
+{"tree":"cand","round":1,"blocks":10000,"mutable":true,"view":22.11129200000005}
+{"tree":"cand","round":2,"blocks":10000,"mutable":true,"view":21.999292000000025}
+{"tree":"base","round":2,"blocks":10000,"mutable":true,"view":0.06429199999999469}
+{"tree":"base","round":3,"blocks":10000,"mutable":true,"view":0.060334000000011656}
+{"tree":"cand","round":3,"blocks":10000,"mutable":true,"view":22.10241700000006}
+{"tree":"cand","round":4,"blocks":10000,"mutable":true,"view":22.390957999999955}
+{"tree":"base","round":4,"blocks":10000,"mutable":true,"view":0.05412499999999909}
+{"tree":"base","round":5,"blocks":10000,"mutable":true,"view":0.058707999999995764}
+{"tree":"cand","round":5,"blocks":10000,"mutable":true,"view":23.675374999999917}
+
+# Post-panel rerun, 2026-10-04: candidate is fe0e9599a6 plus the same ten Plite source files after both panel rounds and the lint fix. Same probes, rounds and budget.
+
+construct 100: base median 0.585 ms, cand median 0.590 ms, paired delta median 0.005 ms, budget 0.500 ms -> PASS; deltas [0.019, -0.016, 0.011, 0.005, 0.001]
+replace 100: base median 8.434 ms, cand median 8.496 ms, paired delta median 0.085 ms, budget 0.500 ms -> PASS; deltas [0.158, -0.132, 0.085, 0.014, 0.165]
+construct 10000: base median 40.632 ms, cand median 40.802 ms, paired delta median 0.168 ms, budget 1.219 ms -> PASS; deltas [0.453, -0.794, -0.463, 0.168, 1.084]
+replace 10000: base median 1143.735 ms, cand median 1140.914 ms, paired delta median 2.617 ms, budget 34.312 ms -> PASS; deltas [7.855, -33.181, 2.617, -2.821, 14.81]
+view owned 10000: base median 0.048 ms, cand median 0.048 ms, paired delta median -0.001 ms, budget 0.500 ms -> PASS; deltas [0.008, -0.009, -0.001, 0.002, -0.002]
+view mutable 10000: base median 0.051 ms, cand median 21.766 ms, paired delta median 21.715 ms, budget 0.500 ms -> RECORDED; deltas [21.685, 21.763, 21.715, 21.775, 21.712]
+
+# Raw runs, post-panel
+{"tree":"base","round":1,"blocks":100,"construct":0.5790000000000077,"replace":8.383874999999989}
+{"tree":"cand","round":1,"blocks":100,"construct":0.5977499999999907,"replace":8.541832999999997}
+{"tree":"cand","round":2,"blocks":100,"construct":0.5854160000000093,"replace":8.35975000000002}
+{"tree":"base","round":2,"blocks":100,"construct":0.6011249999999961,"replace":8.491250000000036}
+{"tree":"base","round":3,"blocks":100,"construct":0.5717499999999802,"replace":8.41133400000001}
+{"tree":"cand","round":3,"blocks":100,"construct":0.5832079999999848,"replace":8.495999999999981}
+{"tree":"cand","round":4,"blocks":100,"construct":0.5897079999999733,"replace":8.485749999999996}
+{"tree":"base","round":4,"blocks":100,"construct":0.585125000000005,"replace":8.471584000000007}
+{"tree":"base","round":5,"blocks":100,"construct":0.5926249999999982,"replace":8.434332999999981}
+{"tree":"cand","round":5,"blocks":100,"construct":0.593166000000025,"replace":8.599666999999982}
+{"tree":"base","round":1,"blocks":10000,"construct":40.37470799999937,"replace":1123.8736250000002}
+{"tree":"cand","round":1,"blocks":10000,"construct":40.82787500000086,"replace":1131.7282919999998}
+{"tree":"cand","round":2,"blocks":10000,"construct":40.18399999999929,"replace":1112.1412500000006}
+{"tree":"base","round":2,"blocks":10000,"construct":40.97833300000002,"replace":1145.322458999999}
+{"tree":"base","round":3,"blocks":10000,"construct":41.26520900000105,"replace":1144.4913329999981}
+{"tree":"cand","round":3,"blocks":10000,"construct":40.80195900000035,"replace":1147.1082910000005}
+{"tree":"cand","round":4,"blocks":10000,"construct":39.240499999999884,"replace":1140.9140829999997}
+{"tree":"base","round":4,"blocks":10000,"construct":39.072541999999885,"replace":1143.7354579999992}
+{"tree":"base","round":5,"blocks":10000,"construct":40.631624999999985,"replace":1133.0319579999996}
+{"tree":"cand","round":5,"blocks":10000,"construct":41.71562500000073,"replace":1147.8417919999993}
+{"tree":"base","round":1,"blocks":10000,"mutable":false,"view":0.04658399999999574}
+{"tree":"cand","round":1,"blocks":10000,"mutable":false,"view":0.05437499999999318}
+{"tree":"cand","round":2,"blocks":10000,"mutable":false,"view":0.043250000000000455}
+{"tree":"base","round":2,"blocks":10000,"mutable":false,"view":0.05266599999998789}
+{"tree":"base","round":3,"blocks":10000,"mutable":false,"view":0.048499999999989996}
+{"tree":"cand","round":3,"blocks":10000,"mutable":false,"view":0.04795799999999417}
+{"tree":"cand","round":4,"blocks":10000,"mutable":false,"view":0.04808399999998869}
+{"tree":"base","round":4,"blocks":10000,"mutable":false,"view":0.04599999999999227}
+{"tree":"base","round":5,"blocks":10000,"mutable":false,"view":0.04895899999999642}
+{"tree":"cand","round":5,"blocks":10000,"mutable":false,"view":0.04737499999998818}
+{"tree":"base","round":1,"blocks":10000,"mutable":true,"view":0.051375000000007276}
+{"tree":"cand","round":1,"blocks":10000,"mutable":true,"view":21.73620900000003}
+{"tree":"cand","round":2,"blocks":10000,"mutable":true,"view":21.80974999999995}
+{"tree":"base","round":2,"blocks":10000,"mutable":true,"view":0.04716600000000426}
+{"tree":"base","round":3,"blocks":10000,"mutable":true,"view":0.04495799999997985}
+{"tree":"cand","round":3,"blocks":10000,"mutable":true,"view":21.75979200000006}
+{"tree":"cand","round":4,"blocks":10000,"mutable":true,"view":21.82604200000003}
+{"tree":"base","round":4,"blocks":10000,"mutable":true,"view":0.05079200000000128}
+{"tree":"base","round":5,"blocks":10000,"mutable":true,"view":0.05358300000000327}
+{"tree":"cand","round":5,"blocks":10000,"mutable":true,"view":21.76583400000004}

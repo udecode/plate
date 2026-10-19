@@ -1,0 +1,18 @@
+bun test v1.3.12 (700fc117)
+
+docs/research/probes/2026-09-28-conversion-boundary/lanes/s4/joiner-benchmark.test.ts:
+rich 10000 pair 0: work 250 -> 173 ms, previews 99 -> 39, duration 9860 -> 1611 ms, latency p95 7964 -> 36 ms, literal previews 0 -> 7
+rich 10000 pair 1: work 228 -> 149 ms, previews 99 -> 39, duration 9856 -> 1601 ms, latency p95 7964 -> 35 ms, literal previews 0 -> 7
+rich 10000 pair 2: work 236 -> 167 ms, previews 99 -> 39, duration 9858 -> 1609 ms, latency p95 7964 -> 36 ms, literal previews 0 -> 7
+rich 50000 pair 0: work 1428 -> 939 ms, previews 568 -> 195, duration 56946 -> 8061 ms, latency p95 46715 -> 36 ms, literal previews 0 -> 28
+rich 50000 pair 1: work 1518 -> 932 ms, previews 568 -> 195, duration 56975 -> 8056 ms, latency p95 46715 -> 36 ms, literal previews 0 -> 27
+cjk 10000 pair 0: work 396 -> 275 ms, previews 118 -> 39, duration 11720 -> 1655 ms, latency p95 9573 -> 37 ms, literal previews 7 -> 8
+cjk 10000 pair 1: work 366 -> 255 ms, previews 118 -> 39, duration 11720 -> 1651 ms, latency p95 9574 -> 37 ms, literal previews 7 -> 8
+cjk 10000 pair 2: work 372 -> 281 ms, previews 118 -> 39, duration 11723 -> 1664 ms, latency p95 9573 -> 37 ms, literal previews 7 -> 8
+cjk 50000 pair 0: work 2429 -> 1804 ms, previews 680 -> 195, duration 68553 -> 8526 ms, latency p95 56845 -> 41 ms, literal previews 43 -> 38
+cjk 50000 pair 1: work 2507 -> 1817 ms, previews 680 -> 195, duration 68549 -> 8515 ms, latency p95 56845 -> 41 ms, literal previews 43 -> 41
+
+ 1 pass
+ 0 fail
+ 10 expect() calls
+Ran 1 test across 1 file. [27.75s]

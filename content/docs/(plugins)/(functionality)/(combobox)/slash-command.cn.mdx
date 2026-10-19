@@ -1,0 +1,114 @@
+---
+title: 斜杠命令
+docs:
+  - route: /docs/combobox
+    title: 组合框
+  - route: components/slash
+    title: 斜杠输入元素
+  - route: https://pro.platejs.org/docs/components/slash
+    title: 斜杠输入元素
+---
+
+<ComponentPreview name="slash-command-demo" />
+
+<PackageInfo>
+
+## 特性
+
+- 快速访问各种编辑器命令
+- 通过 `/` 字符触发
+- 支持键盘导航和筛选
+- 可自定义的命令组和选项
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+添加斜杠命令功能最快的方式是使用 `SlashKit`，它包含预配置的 `SlashPlugin` 以及它的 [Plate UI](/docs/installation/plate-ui) 弹出框。
+
+<ComponentSource name="slash" />
+
+- [`SlashCombobox`](/docs/components/slash)：渲染带有预定义选项的斜杠命令弹出框
+
+### 添加套件
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { SlashKit } from '@/components/editor/slash';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    ...SlashKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install platejs
+npx shadcn@latest add @plate/slash
+```
+
+### 添加插件
+
+复制的 `slash` 文件定义了 `SlashPlugin`，它只保存触发策略。在它的 `afterEditable` 插槽中挂载弹出框：
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { SlashCombobox, SlashPlugin } from '@/components/editor/slash';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    SlashPlugin.configure({ slots: { afterEditable: SlashCombobox } }),
+  ],
+});
+```
+
+它的状态是 [`ComboboxState`](/docs/combobox#comboboxstate)。在行首或空格后输入 `/` 会打开菜单，`triggerQuery` 会让代码块中输入的 `/` 保持为普通文本。要修改这两点，请编辑复制文件中的 `SlashPlugin`。
+
+</Steps>
+
+## 使用方式
+
+如何使用斜杠命令：
+
+1. 在行首或空格后输入 `/` 打开斜杠菜单
+2. 继续输入以筛选选项，或使用方向键导航
+3. 按回车、Tab 或点击执行选项；它会替换输入的 `/` 和查询
+4. 按 Escape 关闭菜单并保留输入的文本
+
+可用选项包括：
+- 文本块（段落、标题）
+- 列表（项目符号、编号、待办事项）
+- 高级块（表格、代码块、标注）
+- 行内元素（日期、公式）
+
+<Callout type="info">
+  使用关键词快速查找选项。例如输入 '/ul' 查找项目符号列表，或 '/h1' 查找一级标题。
+</Callout>
+
+## Plate Plus
+
+<ComponentPreviewPro name="slash-command-pro" />
+
+## API 参考
+
+| API | 来源 | 用途 |
+|-----|------|------|
+| `SlashPlugin` | `slash` registry | 仅在编辑时启用的插件，其状态保存 `/` 触发策略和代码块检查。 |
+| `SlashKit` | `slash` registry | 在 `afterEditable` 插槽中挂载 `SlashCombobox` 的 `SlashPlugin`。 |
+| `SlashCombobox` | `slash` registry | 斜杠菜单，由文件中的 `groups` 列表构建。编辑该列表来添加、移除或重新排序选项。 |

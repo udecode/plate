@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "typescript-docs",
+  "title": "TypeScript",
+  "description": "Resolve Plate public entrypoints in bundled apps and Node.js projects.",
+  "files": [
+    {
+      "path": "../../content/docs/(guides)/typescript.mdx",
+      "content": "---\ntitle: TypeScript\ndescription: Resolve Plate public entrypoints in bundled apps and Node.js projects.\n---\n\nPlate publishes ESM entrypoints with an `exports` map. Configure TypeScript\nto read that map so imports such as `platejs/react` resolve to the matching\ndeclarations and runtime files.\n\n## Bundled apps\n\nFor Vite, Next.js, and other bundlers, use `moduleResolution: \"bundler\"`\nwith an ESM module target:\n\n```jsonc title=\"tsconfig.json\"\n{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"jsx\": \"preserve\",\n    \"strict\": true,\n    \"noEmit\": true\n  }\n}\n```\n\nKeep the other settings supplied by your framework. The `bundler` resolution\nmode requires TypeScript 5.0 or later.\n\n## Node.js projects\n\nFor code executed directly by Node.js, pair `NodeNext` module resolution\nwith the same module setting:\n\n```jsonc title=\"tsconfig.json\"\n{\n  \"compilerOptions\": {\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true\n  }\n}\n```\n\nDeclare `\"type\": \"module\"` in your application's `package.json` when emitting\nESM from `.ts` files. Follow the [Node.js guide](/docs/plate/installation/node)\nfor server-safe Plate imports.\n\n## Public imports\n\nImport from the published entrypoint:\n\n```ts\nimport { createEditor } from 'platejs';\n```\n\nUse `platejs/react` for editable React APIs and `platejs/static` for\nstatic React rendering. Import feature subpaths only when the installed\npackage exports them.\n\nKeep application aliases such as `@/*` in your framework configuration.\nDo not alias Plate imports to `node_modules/platejs/dist`: the export map\nowns the relationship between a public subpath and its files, and those\npaths do not all share the same directory layout.\n\n## Diagnose resolution errors\n\n- **Package not found:** confirm that `platejs` is installed in the\n  workspace that imports it and that TypeScript uses the intended config.\n- **Subpath not found:** check the installed package's `exports` map and\n  use `bundler` or `NodeNext` resolution.\n- **No exported member:** check the identifier, entrypoint, and installed\n  version. A path alias cannot add a missing export.\n- **Only tests fail:** configure the test runner for ESM and package exports\n  as well as TypeScript. Avoid a second set of aliases into package internals.\n\nUse the [troubleshooting guide](/docs/plate/troubleshooting) to inspect installed\nversions and runtime duplication.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/(guides)/typescript.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

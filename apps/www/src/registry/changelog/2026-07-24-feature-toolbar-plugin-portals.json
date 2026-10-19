@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-24-feature-toolbar-plugin-portals",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-24-feature-toolbar-plugin-portals.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Use installed feature plugins in toolbar controls",
+  "targets": [
+    {
+      "name": "mark-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mark-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-color-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-color-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/media-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "more-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/more-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar-buttons",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for fixed-toolbar-buttons."
+        }
+      ]
+    },
+    {
+      "name": "floating-toolbar-buttons",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for floating-toolbar-buttons."
+        }
+      ]
+    },
+    {
+      "name": "installation-next-02-marks-demo",
+      "files": [
+        "apps/www/src/registry/examples/installation-next-02-marks-demo.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "installation-next-03-elements-demo",
+      "files": [
+        "apps/www/src/registry/examples/installation-next-03-elements-demo.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "installation-next-demo",
+      "files": [
+        "apps/www/src/registry/examples/installation-next-04-value-demo.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-24-feature-toolbar-installed-plugin-portals-ba5b41b2",
+      "kind": "wiring",
+      "summary": "Use installed feature plugins instead of raw type dispatch in toolbar controls.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "mark-toolbar-button",
+        "font-color-toolbar-button",
+        "font-size-toolbar-button",
+        "media-toolbar-button",
+        "more-toolbar-button",
+        "fixed-toolbar-buttons",
+        "floating-toolbar-buttons",
+        "installation-next-02-marks-demo",
+        "installation-next-03-elements-demo",
+        "installation-next-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-feature-toolbar-plugin-portals",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

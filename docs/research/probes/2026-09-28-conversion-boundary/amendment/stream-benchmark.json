@@ -1,0 +1,366 @@
+{
+  "environment": {
+    "arch": "arm64",
+    "bun": "1.3.12",
+    "cpu": "Apple M5 Max",
+    "platform": "darwin"
+  },
+  "packets": [
+    {
+      "kind": "rich",
+      "pair": 0,
+      "size": 10000,
+      "sourceHash": "fab656e0bc4e40b92b1780587b26080729957634729053493d06b98f4f81f4d6",
+      "baseline": {
+        "candidate": false,
+        "chunks": 157,
+        "fallbacks": 0,
+        "outputHash": "ed9c72ee118fa11b7d24d4a235d29fc364acac3f16b6371b677934538a502cd2",
+        "parse": {
+          "last10Mean": 13.594245999999657,
+          "p50": 6.823707999999897,
+          "p95": 12.900249999998778,
+          "sum": 1023.3170020000052
+        },
+        "parsedBytes": 793744,
+        "publish": {
+          "last10Mean": 48.780066799999986,
+          "p50": 23.670458000000508,
+          "p95": 47.88708399999996,
+          "sum": 3657.599671
+        }
+      },
+      "candidate": {
+        "candidate": true,
+        "chunks": 157,
+        "fallbacks": 0,
+        "outputHash": "ed9c72ee118fa11b7d24d4a235d29fc364acac3f16b6371b677934538a502cd2",
+        "parse": {
+          "last10Mean": 0.6978499000000739,
+          "p50": 0.657708000000639,
+          "p95": 0.9949580000011338,
+          "sum": 102.9108830000132
+        },
+        "parsedBytes": 17706,
+        "publish": {
+          "last10Mean": 11.349495900000147,
+          "p50": 6.091458999999304,
+          "p95": 12.358249999999316,
+          "sum": 1009.0421320000023
+        }
+      }
+    },
+    {
+      "kind": "rich",
+      "pair": 1,
+      "size": 10000,
+      "sourceHash": "fab656e0bc4e40b92b1780587b26080729957634729053493d06b98f4f81f4d6",
+      "candidate": {
+        "candidate": true,
+        "chunks": 157,
+        "fallbacks": 0,
+        "outputHash": "ed9c72ee118fa11b7d24d4a235d29fc364acac3f16b6371b677934538a502cd2",
+        "parse": {
+          "last10Mean": 0.5624541999999565,
+          "p50": 0.562207999999373,
+          "p95": 0.8238330000003771,
+          "sum": 96.39388100001088
+        },
+        "parsedBytes": 17706,
+        "publish": {
+          "last10Mean": 10.049024799999643,
+          "p50": 5.626166000000012,
+          "p95": 10.450874999998632,
+          "sum": 951.0741659999894
+        }
+      },
+      "baseline": {
+        "candidate": false,
+        "chunks": 157,
+        "fallbacks": 0,
+        "outputHash": "ed9c72ee118fa11b7d24d4a235d29fc364acac3f16b6371b677934538a502cd2",
+        "parse": {
+          "last10Mean": 10.895083099999464,
+          "p50": 6.165499999999156,
+          "p95": 10.997083999998722,
+          "sum": 944.8353800000223
+        },
+        "parsedBytes": 793744,
+        "publish": {
+          "last10Mean": 41.40809160000026,
+          "p50": 22.36920800000007,
+          "p95": 40.738916999998764,
+          "sum": 3395.5592869999964
+        }
+      }
+    },
+    {
+      "kind": "rich",
+      "pair": 2,
+      "size": 10000,
+      "sourceHash": "fab656e0bc4e40b92b1780587b26080729957634729053493d06b98f4f81f4d6",
+      "baseline": {
+        "candidate": false,
+        "chunks": 157,
+        "fallbacks": 0,
+        "outputHash": "ed9c72ee118fa11b7d24d4a235d29fc364acac3f16b6371b677934538a502cd2",
+        "parse": {
+          "last10Mean": 12.537200099999609,
+          "p50": 6.428374999999505,
+          "p95": 11.105166999997891,
+          "sum": 992.3708809999916
+        },
+        "parsedBytes": 793744,
+        "publish": {
+          "last10Mean": 43.09635430000053,
+          "p50": 22.52625000000262,
+          "p95": 41.612583000001905,
+          "sum": 3606.857662999977
+        }
+      },
+      "candidate": {
+        "candidate": true,
+        "chunks": 157,
+        "fallbacks": 0,
+        "outputHash": "ed9c72ee118fa11b7d24d4a235d29fc364acac3f16b6371b677934538a502cd2",
+        "parse": {
+          "last10Mean": 0.6825375000000349,
+          "p50": 0.6511669999999867,
+          "p95": 1.0828750000000582,
+          "sum": 112.51379200000156
+        },
+        "parsedBytes": 17706,
+        "publish": {
+          "last10Mean": 13.276516600000104,
+          "p50": 6.343124999999418,
+          "p95": 11.960957999999664,
+          "sum": 1062.649093999993
+        }
+      }
+    },
+    {
+      "kind": "rich",
+      "pair": 0,
+      "size": 50000,
+      "sourceHash": "a7680b9c25a219953123ad360b04ab2f2ec8e3edf6248b4bd78a7279be22bb8d",
+      "baseline": {
+        "candidate": false,
+        "chunks": 782,
+        "fallbacks": 0,
+        "outputHash": "e8258749a3c0fabf6b1165dd37aef7e1d4b1efff14141f7f075361d2b8d8f173",
+        "parse": {
+          "last10Mean": 60.28497520000383,
+          "p50": 29.138917000003858,
+          "p95": 61.39962500000547,
+          "sum": 24638.951611000055
+        },
+        "parsedBytes": 19593744,
+        "publish": {
+          "last10Mean": 224.23841660000033,
+          "p50": 107.05433300000004,
+          "p95": 223.20004199999676,
+          "sum": 88314.78012899988
+        }
+      },
+      "candidate": {
+        "candidate": true,
+        "chunks": 782,
+        "fallbacks": 0,
+        "outputHash": "e8258749a3c0fabf6b1165dd37aef7e1d4b1efff14141f7f075361d2b8d8f173",
+        "parse": {
+          "last10Mean": 1.0835916000010912,
+          "p50": 0.8710830000054557,
+          "p95": 1.309084000007715,
+          "sum": 717.0421670000069
+        },
+        "parsedBytes": 88665,
+        "publish": {
+          "last10Mean": 55.62099159999925,
+          "p50": 28.487083000014536,
+          "p95": 54.026499999978114,
+          "sum": 22245.54566499975
+        }
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 0,
+      "size": 10000,
+      "sourceHash": "573588a01d1f8ce00cf951acf2d352ca95194335f98fe725307762bdf62e14d2",
+      "baseline": {
+        "candidate": false,
+        "chunks": 157,
+        "fallbacks": 0,
+        "outputHash": "dec9a18f3e4c00699d6138628be62bf4dc0f0d728878381aa1eddda0249317d5",
+        "parse": {
+          "last10Mean": 17.290508500000577,
+          "p50": 8.326874999998836,
+          "p95": 16.5264170000155,
+          "sum": 1462.4272909999418
+        },
+        "parsedBytes": 793744,
+        "publish": {
+          "last10Mean": 87.39073760000755,
+          "p50": 41.799540999985766,
+          "p95": 83.18091700001969,
+          "sum": 7058.216088000161
+        }
+      },
+      "candidate": {
+        "candidate": true,
+        "chunks": 157,
+        "fallbacks": 0,
+        "outputHash": "dec9a18f3e4c00699d6138628be62bf4dc0f0d728878381aa1eddda0249317d5",
+        "parse": {
+          "last10Mean": 0.7681959000008647,
+          "p50": 0.7149999999965075,
+          "p95": 1.0242919999873266,
+          "sum": 113.18958299985388
+        },
+        "parsedBytes": 15094,
+        "publish": {
+          "last10Mean": 19.524641600003815,
+          "p50": 11.228207999985898,
+          "p95": 20.74795799999265,
+          "sum": 1795.6157959997072
+        }
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 1,
+      "size": 10000,
+      "sourceHash": "573588a01d1f8ce00cf951acf2d352ca95194335f98fe725307762bdf62e14d2",
+      "candidate": {
+        "candidate": true,
+        "chunks": 157,
+        "fallbacks": 0,
+        "outputHash": "dec9a18f3e4c00699d6138628be62bf4dc0f0d728878381aa1eddda0249317d5",
+        "parse": {
+          "last10Mean": 0.7972166999999899,
+          "p50": 0.6909159999922849,
+          "p95": 1.0387079999782145,
+          "sum": 111.44041900004959
+        },
+        "parsedBytes": 15094,
+        "publish": {
+          "last10Mean": 21.075841799998308,
+          "p50": 10.497541999997338,
+          "p95": 23.53116700000828,
+          "sum": 1856.0678290000942
+        }
+      },
+      "baseline": {
+        "candidate": false,
+        "chunks": 157,
+        "fallbacks": 0,
+        "outputHash": "dec9a18f3e4c00699d6138628be62bf4dc0f0d728878381aa1eddda0249317d5",
+        "parse": {
+          "last10Mean": 17.312450099998387,
+          "p50": 9.625791999977082,
+          "p95": 17.560916000016732,
+          "sum": 1444.1867070001608
+        },
+        "parsedBytes": 793744,
+        "publish": {
+          "last10Mean": 87.24624600000679,
+          "p50": 46.137708999973256,
+          "p95": 85.45483299999614,
+          "sum": 6922.680462999968
+        }
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 2,
+      "size": 10000,
+      "sourceHash": "573588a01d1f8ce00cf951acf2d352ca95194335f98fe725307762bdf62e14d2",
+      "baseline": {
+        "candidate": false,
+        "chunks": 157,
+        "fallbacks": 0,
+        "outputHash": "dec9a18f3e4c00699d6138628be62bf4dc0f0d728878381aa1eddda0249317d5",
+        "parse": {
+          "last10Mean": 17.465754100002233,
+          "p50": 9.321207999979379,
+          "p95": 17.5475420000148,
+          "sum": 1368.4160400000983
+        },
+        "parsedBytes": 793744,
+        "publish": {
+          "last10Mean": 87.34828310000012,
+          "p50": 45.046208999992814,
+          "p95": 84.59479100001045,
+          "sum": 6884.03120100018
+        }
+      },
+      "candidate": {
+        "candidate": true,
+        "chunks": 157,
+        "fallbacks": 0,
+        "outputHash": "dec9a18f3e4c00699d6138628be62bf4dc0f0d728878381aa1eddda0249317d5",
+        "parse": {
+          "last10Mean": 0.7304582999990089,
+          "p50": 0.7042500000097789,
+          "p95": 0.9647910000057891,
+          "sum": 109.29608499995084
+        },
+        "parsedBytes": 15094,
+        "publish": {
+          "last10Mean": 19.457074900003498,
+          "p50": 10.598457999993116,
+          "p95": 20.99833299999591,
+          "sum": 1769.015442999953
+        }
+      }
+    },
+    {
+      "kind": "cjk",
+      "pair": 0,
+      "size": 50000,
+      "sourceHash": "e61e9f79a72ed47f8ec107a83fb2db5515e1a0750851a4c7fd1691bd56527eb4",
+      "baseline": {
+        "candidate": false,
+        "chunks": 782,
+        "fallbacks": 0,
+        "outputHash": "c81cbda26ad4a79ad042417a6c8d9f81634aacccc2cf3c551fe99f5c83d8db4b",
+        "parse": {
+          "last10Mean": 93.8557750000211,
+          "p50": 43.54212500000722,
+          "p95": 94.69874999998137,
+          "sum": 37269.66955600097
+        },
+        "parsedBytes": 19593744,
+        "publish": {
+          "last10Mean": 471.33392090000564,
+          "p50": 218.34579200000735,
+          "p95": 488.7190829999745,
+          "sum": 184804.87218400024
+        }
+      },
+      "candidate": {
+        "candidate": true,
+        "chunks": 782,
+        "fallbacks": 0,
+        "outputHash": "c81cbda26ad4a79ad042417a6c8d9f81634aacccc2cf3c551fe99f5c83d8db4b",
+        "parse": {
+          "last10Mean": 1.3061292000114917,
+          "p50": 1.0410000000265427,
+          "p95": 1.5461249999934807,
+          "sum": 817.0930799998459
+        },
+        "parsedBytes": 75732,
+        "publish": {
+          "last10Mean": 120.07850409999955,
+          "p50": 55.830291000020225,
+          "p95": 118.47983299999032,
+          "sum": 45049.513172000065
+        }
+      }
+    }
+  ],
+  "sampling": {
+    "chunkBytes": 64,
+    "note": "Headless synchronous elapsed time on a shared host; 10 KB uses one warmup and three alternating pairs, 50 KB one pair."
+  }
+}

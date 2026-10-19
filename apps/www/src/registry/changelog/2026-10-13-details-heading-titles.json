@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-13-details-heading-titles",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-13-details-heading-titles.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Preserve Details titles when applying heading formats",
+  "targets": [
+    {
+      "name": "details",
+      "files": ["apps/www/src/registry/components/editor/details.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "details-static",
+      "files": ["apps/www/src/registry/components/editor/details-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "heading",
+      "files": ["apps/www/src/registry/components/editor/heading.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "heading-static",
+      "files": ["apps/www/src/registry/components/editor/heading-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc",
+      "files": ["apps/www/src/registry/components/editor/toc.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-13-details-preserve-titles-when-applying-d1de3b79",
+      "kind": "fix",
+      "summary": "Render a Details title that has a heading level with that heading's style, and center its toggle on the title's first line at the heading's own font size",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["details", "details-static", "heading", "heading-static"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-13",
+          "entry": "2026-10-13-details-heading-titles",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-13-details-format-titles-in-place",
+      "kind": "fix",
+      "summary": "Format a Details title in place when choosing Text or a heading, instead of breaking the title or inserting into its hidden body, with or without the Heading plugin",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["turn-into-toolbar-button", "block-menu", "slash"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-13",
+          "entry": "2026-10-13-details-heading-titles",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-13-format-menus-keep-lists-on-refusal",
+      "kind": "fix",
+      "summary": "Keep list formatting when the schema refuses a block format, drop the bullet when a bulleted heading takes its own level, and show an H4 to H6 as a heading instead of Text in the block menu",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["turn-into-toolbar-button", "block-menu"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-13",
+          "entry": "2026-10-13-details-heading-titles",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-13-font-size-title-level",
+      "kind": "fix",
+      "summary": "Show the heading size of a Details title that has a heading level",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["font-size-toolbar-button"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-13",
+          "entry": "2026-10-13-details-heading-titles",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-17-toc-details-titles",
+      "kind": "fix",
+      "summary": "List each Details title that has a heading level, and open every collapsed Details around a heading or title before jumping to it",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toc"],
+      "source": {
+        "line": 30,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-10-13",
+          "entry": "2026-10-13-details-heading-titles",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

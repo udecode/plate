@@ -1,0 +1,242 @@
+[
+  {
+    "cell": "static-rich-10000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": true,
+    "textShas": {
+      "baseline": [
+        "f6f95d31f65e9478"
+      ],
+      "candidate": [
+        "f6f95d31f65e9478"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "473ec1a16deaaec2"
+      ],
+      "candidate": [
+        "473ec1a16deaaec2"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        0
+      ],
+      "candidate": [
+        0
+      ]
+    }
+  },
+  {
+    "cell": "static-cjk-10000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": true,
+    "textShas": {
+      "baseline": [
+        "d9a5734485a19d3b"
+      ],
+      "candidate": [
+        "d9a5734485a19d3b"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "9b8edda939c3f6df"
+      ],
+      "candidate": [
+        "9b8edda939c3f6df"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        0
+      ],
+      "candidate": [
+        0
+      ]
+    }
+  },
+  {
+    "cell": "ai-rich-10000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": true,
+    "textShas": {
+      "baseline": [
+        "f6f95d31f65e9478"
+      ],
+      "candidate": [
+        "f6f95d31f65e9478"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "737ac395635ca847"
+      ],
+      "candidate": [
+        "737ac395635ca847"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        1
+      ],
+      "candidate": [
+        1
+      ]
+    }
+  },
+  {
+    "cell": "ai-cjk-10000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": true,
+    "textShas": {
+      "baseline": [
+        "d9a5734485a19d3b"
+      ],
+      "candidate": [
+        "d9a5734485a19d3b"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "ba9445c3b9c356fa"
+      ],
+      "candidate": [
+        "ba9445c3b9c356fa"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        6
+      ],
+      "candidate": [
+        6
+      ]
+    }
+  },
+  {
+    "cell": "static-rich-50000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": true,
+    "textShas": {
+      "baseline": [
+        "9e9d59c16ab2d511"
+      ],
+      "candidate": [
+        "9e9d59c16ab2d511"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "c20ae9614b7147c8"
+      ],
+      "candidate": [
+        "c20ae9614b7147c8"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        0
+      ],
+      "candidate": [
+        0
+      ]
+    }
+  },
+  {
+    "cell": "ai-rich-50000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": true,
+    "textShas": {
+      "baseline": [
+        "9e9d59c16ab2d511"
+      ],
+      "candidate": [
+        "9e9d59c16ab2d511"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "14668d1dfe6d9c82"
+      ],
+      "candidate": [
+        "14668d1dfe6d9c82"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        1
+      ],
+      "candidate": [
+        1
+      ]
+    }
+  },
+  {
+    "cell": "static-cjk-50000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": true,
+    "textShas": {
+      "baseline": [
+        "aedd05ac73564d32"
+      ],
+      "candidate": [
+        "aedd05ac73564d32"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "bf6211239eed883c"
+      ],
+      "candidate": [
+        "bf6211239eed883c"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        0
+      ],
+      "candidate": [
+        0
+      ]
+    }
+  },
+  {
+    "cell": "ai-cjk-50000",
+    "streams": 8,
+    "textMatch": true,
+    "htmlMatch": true,
+    "textShas": {
+      "baseline": [
+        "aedd05ac73564d32"
+      ],
+      "candidate": [
+        "aedd05ac73564d32"
+      ]
+    },
+    "htmlShas": {
+      "baseline": [
+        "f9a270ef1ebac1fa"
+      ],
+      "candidate": [
+        "f9a270ef1ebac1fa"
+      ]
+    },
+    "aiEndMarkers": {
+      "baseline": [
+        0
+      ],
+      "candidate": [
+        0
+      ]
+    }
+  }
+]

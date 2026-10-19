@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-14-exit-break-demo-nearest-structure",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-14-exit-break-demo-nearest-structure.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-14",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Describe the nearest-structure exit in the exit break demo",
+  "targets": [
+    {
+      "name": "exit-break-demo",
+      "files": [
+        "apps/www/src/registry/examples/demo.tsx",
+        "apps/www/src/registry/examples/values/exit-break-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-14-exit-break-describe-nearest-structure-demo-6499651a",
+      "kind": "behavior",
+      "summary": "Explain in both locales that a code block, callout, image or divider stays in its container on ⌘⏎",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["exit-break-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-14",
+          "entry": "2026-10-14-exit-break-demo-nearest-structure",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

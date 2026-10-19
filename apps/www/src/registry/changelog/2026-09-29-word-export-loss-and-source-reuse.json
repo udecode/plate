@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-29-word-export-loss-and-source-reuse",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-29-word-export-loss-and-source-reuse.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-29",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Keep Word exports downloading with a warning when content such as a comment cannot be placed, and warn when an imported Word file will be regenerated on export instead of returned unchanged",
+  "targets": [
+    {
+      "name": "export-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "import-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/import-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-29-export-toolbar-keep-word-exports-downloading-6cb81d4e",
+      "kind": "behavior",
+      "summary": "Keep Word exports downloading with a warning when content such as a comment cannot be placed, and warn when an imported Word file will be regenerated on export instead of returned unchanged",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["export-toolbar-button", "import-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-29",
+          "entry": "2026-09-29-word-export-loss-and-source-reuse",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

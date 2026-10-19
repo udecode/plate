@@ -1,0 +1,22 @@
+---
+title: 路径
+description: Plate 路径类型和纯路径函数。
+---
+
+路径是索引数组，用于定位一个文档根中的节点。
+
+## 常用方法
+
+从 `platejs` 导入 `PathApi`。
+
+| 方法 | 用途 |
+| --- | --- |
+| `PathApi.parent(path)` | 读取父路径；根路径没有父级。 |
+| `PathApi.next(path)` / `previous(path)` | 获取相邻路径。 |
+| `PathApi.ancestors(path)` | 列出祖先路径。 |
+| `PathApi.common(path, another)` | 获取共同祖先路径。 |
+| `PathApi.relative(path, ancestor)` | 获取相对路径。 |
+| `PathApi.equals(path, another)` | 判断完整路径是否相等。 |
+| `PathApi.compare(path, another)` | 比较树顺序；祖先与后代可能返回 `0`。 |
+
+路径本身不包含文档根或持久身份。跨编辑追踪位置使用[锚点](/docs/api/anchor)。

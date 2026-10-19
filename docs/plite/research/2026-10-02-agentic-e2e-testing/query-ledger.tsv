@@ -1,0 +1,6 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+x:e2e-launch-and-user-report	x-posts	o_kwasniewski/status/2105675143464763540 and stringsaeed/status/2105734077085303106	api.fxtwitter.com	2	2	github.com/tester-army/e2e	none	read the site, docs and repository
+web:e2e-site-and-docs	web	tester.army/e2e and e2e.tester.army/docs	curl	2	2	none	see shards/001-e2e-framework.md	none
+github:e2e-issues	github-issues	tester-army/e2e issues	gh issue list --state all --limit 50	unknown	5	none	see lead-ledger.tsv	none
+local:mobile-agent-tools	local-source	agent-device, argent, stim, MiniSim sources	fresh clones	4	4	github.com/callstack/agent-device;github.com/software-mansion/argent;github.com/appandflow/stim;github.com/okwasniewski/minisim	see shards/002-mobile-agent-tools.md	none
+local:plate-proof-stack	local-source	@platejs/test, Bun and Playwright suites, CI workflows, plans and decision logs	git grep --untracked	unknown	164	none	see shards/003-plate-proof-stack.md	none

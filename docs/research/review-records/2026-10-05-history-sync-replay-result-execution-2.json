@@ -1,0 +1,176 @@
+{
+  "id": "2026-10-05-history-sync-replay-result-execution-2",
+  "kind": "execution",
+  "date": "2026-10-05",
+  "scopes": [
+    "history",
+    "comments"
+  ],
+  "reviewBasis": [
+    "2026-10-05-history-sync-replay-result"
+  ],
+  "workKind": "implementation",
+  "previous": [
+    "2026-10-05-history-sync-replay-result-execution"
+  ],
+  "plan": "docs/plans/2026-10-05-history-sync-replay-result.md",
+  "outcome": "completed",
+  "summary": "editor.api.history.undo() and redo() return HistoryResult synchronously; a replay that waits on an effect owner returns { status: 'pending', settled } whose settled never rejects. HistorySettlement, HistoryOutcome, HistoryResult and HistoryApi are root plitejs exports. An owner or settlement failure after the claim settles failed, keeps the entry, clears pending and reports once through lifecycleErrorSink, then reportError, then console.error. An owner result is asynchronous only when it has a callable then, so a non-object result settles failed and a then-undefined result settles in the call; an owner promise from another realm goes pending. The mounted runtime keeps its timing and focus guards and checks the claim version History records. About 370 call sites dropped void or await. This execution applies the diff panel's round-2 patch on the owner's go, without a panel review of that patch, and completes the work the partial execution record left open.",
+  "proof": {
+    "state": "verified",
+    "evidence": [
+      {
+        "path": "docs/research/probes/2026-10-05-history-replay-result/build-proof/go-history.txt",
+        "claim": "The round-2 patch applies cleanly and the plitejs history partition passes 154 tests on the patched checkout.",
+        "sha256": "4728522b338569e40244a04b4dd5058cadb8cee09c7723d1e5258a8aeb3ecd1e"
+      },
+      {
+        "path": "docs/research/probes/2026-10-05-history-replay-result/build-proof/go-checks.txt",
+        "claim": "The plitejs React partition passes 1418 tests, plitejs typecheck exits 0, and ultracite and oxlint --type-aware exit 0 on the two patched files.",
+        "sha256": "91a8097e2fd8b8f18c27600a78a61b6eff83e95868e5eebf6aeb2e22a7264a6d"
+      },
+      {
+        "path": "docs/research/probes/2026-10-05-history-replay-result/build-proof/go-acceptance.txt",
+        "claim": "Chromium Plite undo routes pass 9 of 9 and the C22 comment route 1 of 1, five forced runs each, on the patched checkout.",
+        "sha256": "551ba0ae9032257b76b90c88ed034ba1b24e7c825584aaaaf882267cc5c23fc9"
+      },
+      {
+        "path": "docs/research/probes/2026-10-05-history-replay-result/build-proof/go-suites.txt",
+        "claim": "The Comments spec passes 58 tests and pnpm --filter platejs test and pnpm --filter plitejs test exit 0 on the patched checkout.",
+        "sha256": "2494a0a65c9a8e203c2a776f324a176152bd66f97f550fd55d1d2148b8e8a113"
+      },
+      {
+        "path": "docs/research/probes/2026-10-05-history-replay-result/build-proof/red-before.txt",
+        "claim": "The settlement-throw and owner-throw tests fail on the pre-change source for their named defects.",
+        "sha256": "7a3495d52f7cbb2697834bb4956cbc5c7690e34f6a5b25ed2ce0e14c50277755"
+      },
+      {
+        "path": "docs/research/probes/2026-10-05-history-replay-result/panel-diff-r1/diff-r1-red.txt",
+        "claim": "The foreign-realm owner promise test fails before the round-1 fix, and the synchronous owner throw test fails when its try/catch is removed.",
+        "sha256": "eab87b53b9d8ab0de3649a2c0d4ad9e92644bc2f3cd2a6ea991b7b842e428f4b"
+      },
+      {
+        "path": "docs/research/probes/2026-10-05-history-replay-result/build-proof/mounted-mutations.txt",
+        "claim": "Both new mounted tests fail under their named mutations and pass on the real code.",
+        "sha256": "b3c2b984053019734d71f2746e70d10a79442c57af29303261f6e852591db4f7"
+      },
+      {
+        "path": "docs/research/probes/2026-10-05-history-replay-result/build-proof/typecheck-www-full.txt",
+        "claim": "pnpm --filter www typecheck exits 0 before the round-2 patch, including build:registry --check.",
+        "sha256": "aa2815266f89158f4c6608a6cb10954e046ba104465f2a9af18390a891f70d4e"
+      },
+      {
+        "path": "docs/research/probes/2026-10-05-history-replay-result/build-proof/grep-gate.txt",
+        "claim": "No void or await remains on a history call outside callers that wait on settled.",
+        "sha256": "0b0af0ece0c8983722c643e246c8ae5adb9f61b2b89af005141c51409069199f"
+      }
+    ],
+    "limits": "No Firefox, WebKit or device run. The history-depth benchmark ran as a smoke, not a timing comparison. The round-2 patch has no panel review; its proof is an isolated probe, a detached-worktree run and the reruns above. The www typecheck predates the patch, which touches only plitejs history code and its test. The Comments listener false-blocked defect, the Comments storage-error reporting gap and staging Comments publication in settlement are open work in docs/plans/topics/history.md."
+  },
+  "references": [
+    "docs/plans/2026-10-05-history-sync-replay-result.decisions.tsv",
+    "docs/plans/2026-10-05-history-sync-replay-result.md",
+    "docs/plans/topics/history.md"
+  ],
+  "inputs": {
+    ".agents/skills/best-api/SKILL.md": "d177659795af4b5526ff8466911cac26fcbe2f89df5cf96e3d306b95ea1e9951",
+    "VISION.md": "4d7543c6dc9993c53dd3555139cacd3adea973b26b47444dbb11153387d5851a",
+    "apps/www/package.json": "a4066713baaed072941c7b8af17985a12ec73cb3239fdf67ae5b33acac8c4952",
+    "apps/www/playwright.config.ts": "a7be60e18be785522558a1836e44de5eb384f0d954a256f021e8d37d013c8ed2",
+    "apps/www/src/app/(app)/examples/plite/_examples/comment-mode.tsx": "4c5beced59a9ec84c93f837105609f6a99387fdd6cd7328075ef1d3532d260f2",
+    "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx": "f825dffef40c231c42a5c21ee39172b27dc1bd0d074d8427db86374ca6ca8bc5",
+    "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts": "d60822d4b05739cc272304056ebc403044809f42a465c0a8dc4be669dfc5d28b",
+    "apps/www/src/registry/bases/base/toolbar.tsx": "e4f9d761a57fac0f38eaced77ef70dd9c0a2667b353751128732ec1a78ac1d52",
+    "apps/www/src/registry/components/editor/comment-static.ts": "72b72c25fe0329a28d1dc249d537fef741242c7616d2abaa6cc5eb96b6bc3f26",
+    "apps/www/src/registry/components/editor/comment-toolbar-button.spec.tsx": "b39ea4f8cd4d4f5ac609ba29152944675affd8701e229e11a69f8e20bdf56ffd",
+    "apps/www/src/registry/components/editor/comment-toolbar-button.tsx": "c604214df2ff7586b0cd3d7dcd599316fdd15b002702c910e8adc5d70392fd7b",
+    "apps/www/src/registry/components/editor/comment.spec.tsx": "54f0c7678d1ad39c5dab3de83bcaf59aca21287bf7b9071d2f05a2e238c388d0",
+    "apps/www/src/registry/components/editor/comment.tsx": "a59baa7faad1503516e4e5585f43a792a859ee7d4b6490bd07b283e64b9163da",
+    "apps/www/src/registry/components/editor/discussion.spec.tsx": "6db4544b5d292b8f252576fea033ee17f348eed39d2b8d67a5a89f80079561eb",
+    "apps/www/src/registry/components/editor/discussion.tsx": "28180e2380bc983cd2d2b270dc69ca5bc5f0f7c39eea391cef75b03c17527b18",
+    "apps/www/src/registry/components/editor/history-toolbar-button.tsx": "fbecbcc24989d28401e3ea7a24075a75d9f8166597ba08242fcca604ebe9c4b1",
+    "apps/www/src/registry/examples/collaboration-demo.tsx": "d611ee897e702d34ca4df7da9cf1a7f252e8fcbe95dd0f28fdbadb40a55ac9d7",
+    "apps/www/src/registry/examples/comment-demo.tsx": "4d7a95f83218ba5e3fceaec50228674de3a2d2f513b66fc14b36e090e81c2baf",
+    "apps/www/src/registry/examples/comment-overlap-demo.tsx": "67b0ee491620d6c537dc1cd72fff1759b5b1be7d98800bde9447a405a8450efd",
+    "apps/www/src/registry/examples/comment-persistence-demo.spec.tsx": "033cea9088482c03eb516c836371363bac65bffd33ba0fe6b316e63b45256f7b",
+    "apps/www/src/registry/examples/comment-persistence-demo.tsx": "df35f1b44e46f6703b893a7724c18ba9056bb9bbbd6088b1fb5e6c796603ee7d",
+    "apps/www/src/registry/examples/comment-review-demo.tsx": "434bd5ba5bd5fd7209dc86ee330b7f432bb3ae1778c01aef3eacfcaf55772e75",
+    "apps/www/src/registry/examples/discussion-demo.tsx": "3919247ee0bbd03f9dabb4a44e5a702c924138b0fbb8ef044d689117c9861766",
+    "apps/www/src/registry/examples/values/comment-value.tsx": "e04092d6710a7afe367db7a89d2648566d535c6f3e430d7c49d39c630932b70e",
+    "apps/www/src/registry/examples/version-history-demo.tsx": "74de705a40dd645ef563d52fe957ae1210edb43e1344fd488865de6c75aca200",
+    "apps/www/tests/browser/comment.spec.ts": "d93fa177d082679ff47359e39b007fc025ba3db06e158372697fa9abba4c2f3a",
+    "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+    "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+    "content/docs/(guides)/history.mdx": "51ea297cc694f7ceaf110963d2be25165bc697030decfd0c1da0f7f6aa066386",
+    "docs/plans/artifacts/2026-09-15-history-design/ai-timing-corrected-receipt.md": "dc6a20c123d16bd3fd74c51463e44e7b1a154ff7d847f91ba492a5ca67ba36cc",
+    "docs/plans/artifacts/2026-09-15-history-design/production-harness-receipt.md": "81ab4c14a397d13f9f910e34949019fb2092f827e1b9e32c8644b372da553226",
+    "docs/plans/artifacts/2026-09-15-history-design/proof.md": "5d36ec17edea4cc6b420db810611bbe857817bbd79721a86cb24f660ec1bddb9",
+    "docs/plans/artifacts/2026-09-15-history-design/publication-merge-receipt.md": "f61cacd4573ca005469e8d55ff34cec52615c0c0ae17ee304fd7c84518b7271d",
+    "docs/plans/artifacts/2026-09-15-history-design/publication-timing-receipt.md": "0234ae729da330668e597c82976f36344110a7425f7ba497652723f85da3ebe8",
+    "docs/plans/artifacts/2026-09-15-history-design/scale-final-receipt.md": "ba5e7080402164d51b0c98f2e12f9113273448dbbe6a0dc2436af24a2cd72322",
+    "docs/plans/artifacts/2026-09-15-history-review/availability.probe.test.ts": "fbd4d13f21d8386222afe2dda9b08a0295841a9665de6efcdc9059b5b7d81372",
+    "docs/plans/artifacts/2026-09-15-history-review/grouping.probe.test.ts": "c7397ddd36af9d2a021a31ae5e1a4f76b35f658f0428f05736c8fa2f40af42d2",
+    "docs/plans/artifacts/2026-09-15-history-review/proof.md": "b6b7c865f37200b33f844e5341eac0e4bdd2f407a8d80fda543f93aa0867218e",
+    "docs/plans/artifacts/2026-09-15-history-review/transaction.probe.test.ts": "3c01a2e6fa5e64a9833d58c38456248a6985e97608dcaf0d1cf2196b67468153",
+    "docs/vision/common.md": "8bcf2cea8ce52972356c8fd1655b5800b17ffcee2ff22483f825c8b6414a444b",
+    "docs/vision/plate.md": "acb22ec7579606c7844e3a3e028a6194e369d17f6112c65388e6d1c6cc9b8e1b",
+    "docs/vision/plite.md": "9caeabad5b1665259a0cfea7fdca9e4982a96c0a06f96544bffa2711bbe23219",
+    "packages/platejs/package.json": "9ef060d69055e74235e5fdf648bf23249fd028654271706eb4de35d72a9dbaac",
+    "packages/platejs/src/ai/lib/BaseAIPlugin.ts": "ec9a120a9a036dbf453ca5b5389625853d736e61378c481383ce2988d36b3fad",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts": "53a03632b2f8fb3b48c74f785f2ad0aac747a936a34a2c48ede7a1ea27cd490b",
+    "packages/platejs/src/features/comments/": "bd43d1634eb835034ff7467d818f02af766c47b30fdeec384e98e200b3b6ae27",
+    "packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts": "c99a7cba43304fabd4baeee30c1bc373da93d6c55062e104db97fa27cf61967b",
+    "packages/platejs/src/features/comments/BaseCommentsPlugin.ts": "decbca35d6a5305fc3c19ffff51b3960a0a58c463fa36faedfd4d00392d4634b",
+    "packages/platejs/src/history/": "096b5d81a60200e014730b4afb3e10a341b7548e3549b270af845fff44a45e11",
+    "packages/platejs/src/lib/plugins/HistoryPlugin.ts": "c81886a32e5d6eb6b463066114c0920c650291bbe7f83840f3d560d935375125",
+    "packages/platejs/src/lib/plugins/getCorePlugins.internal.ts": "64f0f2cb3071c25e4becb23c3aea3a2c3b95e552aae84b01ce42e21138a3fba8",
+    "packages/platejs/src/migrations/documentMigrations.ts": "37d0e52326f1b76f99b3c4bbbf724824d8a01ee442afced8191afad9b7b0b263",
+    "packages/platejs/src/react/features/comments/CommentsPlugin.ts": "130d085946462f34e7afd4b364ae9fde303063e2bbf0858472e37669a7432043",
+    "packages/platejs/src/utils/plate-keys.ts": "903edb678b7e057cbb7a3ed7c3f7fa2c618cc5023dcfe886d383a3f303a01e17",
+    "packages/platejs/test/public-package-import-smoke.slow.ts": "6aef9c38f853ba0d713fb1e8576d3fd5c086fcd0dd3d8780640d430d67b2dc04",
+    "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+    "packages/plitejs/src/annotations/store.ts": "c5ceb15ab340254ef42c7ecf24715800fbc1dd221c2ffe14fc1928adc1739b16",
+    "packages/plitejs/src/authored/authored.ts": "9e488a054a29f040a4a23472e1998b891eb8c8756cc0cfb9aae0dfdba372a416",
+    "packages/plitejs/src/core/anchor.ts": "fa787f059451ea8b91dbf912c794f0722fa81ea8791bc0e7c78da846f2a0206e",
+    "packages/plitejs/src/core/authored-document-capability.ts": "918273355f94fd99114f46cf1b2a4614613d477339a5c8b2c90c74af932d103c",
+    "packages/plitejs/src/core/command-registry.ts": "0ca28b54f1f36e8e10d491e1e04c2dc8a1de436e3797c48a999d4dd0c09ba181",
+    "packages/plitejs/src/core/editor-lifecycle-api.ts": "72fab9f5a995e0226c92718c6dd257d3ae7b9feec157c39a799ec7b8fc77cef4",
+    "packages/plitejs/src/core/public-state.ts": "ea0cbb7d7ca2ef4aead6f2514b6799be3a10dd4bbd7c33e89777713bb7437f7c",
+    "packages/plitejs/src/history/": "d841599f0c8aa0dc31405db0fcf47174637facee4e1a2e7138ab5af39ae724a8",
+    "packages/plitejs/src/react/editable/composition-state.ts": "31e5383b7bddbcc5d3732d0925e351ffbb36857d0188b104ac0a35ca499cf284",
+    "packages/plitejs/src/react/editable/history-focus.ts": "1997a6e2a8ca8ef427918b5fe9b519d780e13fad15cdb71edc54f565a93cf91d",
+    "packages/plitejs/src/react/editable/history-keyboard.ts": "f218428d395fe66317f2cfdacef1ffd434afa79b7009e0ffd6820b2950dabf53",
+    "packages/plitejs/src/react/editable/input-history.ts": "7b09e261bc09b694bd86f898f2ed0fb6dcc983a178a7ff76257070ceac8f342c",
+    "packages/plitejs/src/react/editable/mutation-history.ts": "35088ac54665bd85cb6574a8a6f6712ffd0483e2e7be2fa90d9fec4544373937",
+    "packages/plitejs/src/react/editable/runtime-keyboard-events.ts": "d8502b6b97ededc3e141176e621a7d330efd901b5a11a545c1ce63de7b9edb86",
+    "packages/plitejs/src/react/editable/runtime-root-engine.ts": "254f22dfef172d0f66271ebef945967b0f76a467841c21fcb2ed10006e07b4d8",
+    "packages/plitejs/src/react/hooks/use-plite-history.ts": "86012b54bd018e42265092c66b69c86d54d6908dfd6fa499d9bde8291b113bbd",
+    "packages/plitejs/src/react/view-selection.ts": "cb58b384745dc100fdb83a5cf09be2e1fe7abea848e007491d94dbd057ccb67f",
+    "packages/plitejs/src/yjs/core/controller.ts": "a9dbd17625eb1d4f22f65e7fadbcf0525a638fffbf325b0cc53e0d44532beee9",
+    "packages/plitejs/src/yjs/core/editor-adapter.ts": "13ab451f5039fb93f949905452caf54aed9199d67cc7014f326feaac3e6c6757",
+    "packages/plitejs/test/authored-history-contract.test.ts": "b07a3f377f060fcb48a54f34bea06f0bb02542da6586e3299989636da7ec10da",
+    "packages/plitejs/test/authored-ingress-contract.test.ts": "d6ada5b73d931fe3774b4b879386546157815a0ef28e75f7d7bcbeb236753e77",
+    "packages/plitejs/test/authored-retention-contract.test.ts": "36a6cd03bdb31cfd2a761a8d49342662af8d727dc7a6533a5f5690be18e45e7c",
+    "packages/plitejs/test/authored-revert-contract.test.ts": "7e011c49e4606cc4615348dfe0ba24baeb792f8af0cc6feb5d3dcb4abd25ea6a",
+    "packages/plitejs/test/authored-view-contract.test.ts": "06b708f5c6380611af623b0802e556b4d8cce77cecfed369a9a9060646546ed9",
+    "packages/plitejs/test/history/anchor-history-contract.ts": "da93d0abe68294d9c9111813fa165e0ef7aeeff1a5b9efda4ee855b73f3f607e",
+    "packages/plitejs/test/history/announcement-history-contract.test.ts": "ec175d7d999de582bc6e9a50f21832a77af63ddc4112c7c5485ca521373df189",
+    "packages/plitejs/test/history/document-state-history-contract.ts": "b3c9393f35f4c8d327ca7820d3caa769370efb61619791d5877faa926506346b",
+    "packages/plitejs/test/history/generic-history-contract.ts": "c85bd99d30ab7f84539ac86635f67ac079e7edbf5bcd8ccc8d565e60374cb195",
+    "packages/plitejs/test/history/history-branch-contract.spec.ts": "987c31ccbb355f27cd12d33fa49b115ab2f9f289bc06868ee3fe119d8c19bf84",
+    "packages/plitejs/test/history/history-contract.ts": "62977bd0ff9b7fb485e263cc633db2a9cbfecd4511a848c170e8ea4a09ff9b66",
+    "packages/plitejs/test/history/history-persistence-contract.spec.ts": "e4ca399b0331c9a950fb78288bce39507e55c5cb00a5517cdd6643b5146f175b",
+    "packages/plitejs/test/history/index.spec.ts": "58676e9cc75baea3365e351107c131a1a0c1e906f26ca43ac1f6ec3ea5af9eb7",
+    "packages/plitejs/test/react/editable-read-only-transition.test.tsx": "413a48f910d3680bca4ce5ca6d4585f1e1d51b6252e6909faa5ac4a25925c75f",
+    "packages/plitejs/test/react/input-history-contract.test.ts": "1fb8ca8014bffa173751c2cb017379d69e3cbc81d101241b42fc901f8ed3cf3b",
+    "packages/plitejs/test/react/use-plite-history.test.tsx": "d24b861365bd257f7a6d610adaf641bf3f05745eaa231a92a6c5e24877988fc0",
+    "packages/plitejs/test/yjs/authored-contract.spec.ts": "bfbbe7f00c845b0a7fc921897b513b181c7a26a8edc218066ce8045d1ff09600",
+    "packages/plitejs/test/yjs/support/collaboration.ts": "d3559b05d48c8a33ec3a0d659659d98132839235617504c3a84b27891561cf33",
+    "packages/plitejs/tsconfig.json": "4a0b4f2b6be89151687c0739424a0337e5d272737f083134ccb062a348a64ff0",
+    "tooling/config/bunTestSetup.ts": "78934332794a18076bb3c132e1240e4c7c96e52fb9071d1cdf4741cf40aa9844",
+    "tooling/config/tsconfig.test.json": "fe02ec41ff9a189e8a08bc65e1f38dfb5bf8a8acd778a5228af98f1f816376c4",
+    "tooling/scripts/run-entrypoint-task.mjs": "2a7c478035f55226129436c0cf4ce4988edc52d8317de27500ecf33a3ab7e3ec"
+  },
+  "upstreams": [],
+  "digest": "f5519444c6ca09b1e812905f1ba58fb100ae43e4e2adfce3b232d782f4f32e5e"
+}

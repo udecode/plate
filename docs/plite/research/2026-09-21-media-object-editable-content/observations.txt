@@ -1,0 +1,12 @@
+bun test v1.3.12 (700fc117)
+
+docs/plite/research/2026-09-21-media-object-editable-content/observations.test.ts:
+{"behavior":{"atom":false,"inline":false,"isolating":true,"keyboardSelectable":true,"markableVoid":false,"readOnly":false,"selectable":true,"void":false,"voidKind":null},"empty":true,"before":[{"type":"image","url":"https://example.com/existing.png","children":[{"text":""}]},{"type":"paragraph","children":[{"text":"after"}]}],"after":[{"type":"paragraph","children":[{"text":"inserted"}]},{"type":"paragraph","children":[{"text":"after"}]}]}
+[{"atom":false,"positions":[{"path":[0,0],"offset":0},{"path":[0,0],"offset":1},{"path":[0,0],"offset":2},{"path":[0,0],"offset":3}]},{"atom":true,"positions":[{"path":[0,0],"offset":0}]}]
+{"captionSlice":{"content":[{"type":"image","url":"https://example.com/existing.png","children":[{"text":"apt"}]}],"openEnd":0,"openStart":0}}
+{"captionPaste":[{"type":"image","url":"https://example.com/existing.png","children":[{"text":"apt"}]}]}
+
+ 3 pass
+ 0 fail
+ 8 expect() calls
+Ran 3 tests across 1 file. [283.00ms]

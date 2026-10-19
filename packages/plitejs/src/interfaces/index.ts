@@ -1,0 +1,12 @@
+export type * from './decoration';
+export type * from './editor';
+export * from './element';
+export * from './location';
+export * from './node';
+export * from './path';
+export * from './point';
+export * from './range';
+export * from './selection';
+export type * from './schema';
+export type * from './schema-validation';
+export * from './text';

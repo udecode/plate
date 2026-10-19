@@ -1,0 +1,19 @@
+{
+  "extends": "../tsconfig.json",
+  "files": ["./generic-react-editor-contract.tsx"],
+  "compilerOptions": {
+    "composite": false,
+    "jsx": "react-jsx",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "noEmit": true,
+    "rootDir": "../../..",
+    "skipLibCheck": true,
+    "types": [
+      "bun-types",
+      "bun-types/test-globals",
+      "node",
+      "react",
+      "react-dom"
+    ]
+  }
+}

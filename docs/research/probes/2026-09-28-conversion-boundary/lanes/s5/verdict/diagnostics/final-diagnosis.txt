@@ -1,0 +1,176 @@
+
+ai-cjk-10000
+  baseline  warmup  task 219.49 dom null | parse 0 txn 0 react 0 | gc minor 8/5.03 major 0/0 | heap before 207.94 MB, live 70.75 MB
+  candidate warmup  task 293.74 dom 292.6 | parse 25.84 txn 81.36 react 167.61 | gc minor 8/7.32 major 0/0 | heap before 92.49 MB, live 68.36 MB
+  baseline  pair-0  task 235.55 dom 234.5 | parse 15.99 txn 57.01 react 146.26 | gc minor 8/5.83 major 0/0 | heap before 177.44 MB, live 70.7 MB
+  candidate pair-0  task 269.64 dom 268.7 | parse 26.03 txn 79.85 react 151.58 | gc minor 8/6.9 major 0/0 | heap before 92.6 MB, live 68.43 MB
+  candidate pair-1  task 275.21 dom 273.9 | parse 22.46 txn 78.81 react 156.3 | gc minor 8/6.5 major 0/0 | heap before 92.64 MB, live 68.29 MB
+  baseline  pair-1  task 229.49 dom null | parse 0 txn 0 react 0 | gc minor 7/4.23 major 0/0 | heap before 178.55 MB, live 70.74 MB
+  baseline  pair-2  task 230.78 dom null | parse 0 txn 0 react 0 | gc minor 7/4.64 major 0/0 | heap before 178.63 MB, live 70.74 MB
+  candidate pair-2  task 293.72 dom 292.5 | parse 25.18 txn 77.94 react 166.44 | gc minor 8/7.44 major 0/0 | heap before 92.75 MB, live 68.55 MB
+  r(final task, GC in task) = 0.93; r(final task, heap before) = -0.96
+
+ai-cjk-50000
+  baseline  warmup  task 1092.29 dom null | parse 0 txn 0 react 0 | gc minor 41/38.88 major 0/0 | heap before 794.49 MB, live 259.86 MB
+  candidate warmup  task 1118.23 dom 1116.2 | parse 90.19 txn 284.45 react 667.06 | gc minor 42/34.84 major 0/0 | heap before 261.28 MB, live 158.75 MB
+  baseline  pair-0  task 1085.13 dom 1083.5 | parse 77.51 txn 269.92 react 656.6 | gc minor 41/39.58 major 0/0 | heap before 604.94 MB, live 263.69 MB
+  candidate pair-0  task 1143.05 dom null | parse 0 txn 0 react 0 | gc minor 42/36.47 major 0/0 | heap before 284.74 MB, live 157.22 MB
+  candidate pair-1  task 1153.12 dom 1151.5 | parse 98.87 txn 293.91 react 671.9 | gc minor 42/39.73 major 0/0 | heap before 260.89 MB, live 158.51 MB
+  baseline  pair-1  task 1282.35 dom null | parse 0 txn 0 react 0 | gc minor 40/45.07 major 0/0 | heap before 487.7 MB, live 269.58 MB
+  baseline  pair-2  task 1106.29 dom null | parse 0 txn 0 react 0 | gc minor 41/44.05 major 0/0 | heap before 503.74 MB, live 270.12 MB
+  candidate pair-2  task 1096.34 dom 1094.8 | parse 94.52 txn 288.81 react 650.12 | gc minor 42/32.98 major 0/0 | heap before 261.52 MB, live 158.75 MB
+  r(final task, GC in task) = 0.54; r(final task, heap before) = -0.14
+
+ai-live-cjk-10000
+  baseline  warmup  task 230.71 dom 229.8 | parse 17.22 txn 58.62 react 138.67 | gc minor 9/6.94 major 0/0 | heap before 160.78 MB, live 45.23 MB
+  candidate warmup  task 242.61 dom 241.6 | parse 18.97 txn 64.63 react 141.76 | gc minor 9/6.13 major 0/0 | heap before 124.8 MB, live 44.88 MB
+  baseline  pair-0  task 231.69 dom 230.7 | parse 16.23 txn 58.74 react 140.65 | gc minor 8/6.12 major 0/0 | heap before 151.16 MB, live 45.14 MB
+  candidate pair-0  task 236.66 dom 235.8 | parse 16.34 txn 60.92 react 140.74 | gc minor 9/5.91 major 0/0 | heap before 133.07 MB, live 44.96 MB
+  candidate pair-1  task 235.03 dom 233.9 | parse 17.24 txn 65.47 react 138.81 | gc minor 8/5.37 major 0/0 | heap before 121.29 MB, live 44.89 MB
+  baseline  pair-1  task 233.87 dom 232.9 | parse 16.25 txn 59.46 react 138.37 | gc minor 8/6.27 major 0/0 | heap before 139.55 MB, live 45.13 MB
+  baseline  pair-2  task 229.27 dom 228.4 | parse 14.84 txn 54.83 react 137.3 | gc minor 8/6.12 major 0/0 | heap before 157.31 MB, live 44.83 MB
+  candidate pair-2  task 237.42 dom 236.5 | parse 18.22 txn 65.97 react 132.94 | gc minor 8/5.07 major 0/0 | heap before 120.58 MB, live 45.14 MB
+  r(final task, GC in task) = -0.40; r(final task, heap before) = -0.83
+
+ai-live-cjk-50000
+  baseline  warmup  task 1110.62 dom 1109.1 | parse 79.06 txn 315.77 react 652.66 | gc minor 43/28.9 major 0/0 | heap before 205.26 MB, live 118.45 MB
+  candidate warmup  task 1132.64 dom 1131.1 | parse 88.43 txn 322.97 react 647.07 | gc minor 44/33.35 major 0/0 | heap before 300.35 MB, live 82.16 MB
+  baseline  pair-0  task 1132.79 dom 1131.2 | parse 79.91 txn 297.02 react 678.41 | gc minor 43/32.93 major 0/0 | heap before 211.81 MB, live 121.02 MB
+  candidate pair-0  task 1150.84 dom 1149.5 | parse 88.68 txn 302.29 react 665.31 | gc minor 42/34.55 major 1/10.9 | heap before 312.34 MB, live 82.18 MB
+  candidate pair-1  task 1132.75 dom 1131.1 | parse 86.9 txn 295.43 react 658.56 | gc minor 42/35.36 major 1/11.26 | heap before 329.04 MB, live 83.4 MB
+  baseline  pair-1  task 1093.89 dom 1092.3 | parse 79.24 txn 285.61 react 650.27 | gc minor 42/30.46 major 0/0 | heap before 226.3 MB, live 134.35 MB
+  baseline  pair-2  task 1097.45 dom 1095.8 | parse 78.21 txn 274.03 react 670.07 | gc minor 41/34.39 major 0/0 | heap before 252.46 MB, live 118.33 MB
+  candidate pair-2  task 1152.7 dom 1151.1 | parse 90.32 txn 297.46 react 680.06 | gc minor 42/34.35 major 1/11.11 | heap before 302.12 MB, live 80.47 MB
+  r(final task, GC in task) = 0.74; r(final task, heap before) = 0.64
+
+ai-live-rich-10000
+  baseline  warmup  task 129.67 dom 128.8 | parse 8.95 txn 31.22 react 81.07 | gc minor 5/3.35 major 0/0 | heap before 134.33 MB, live 44.88 MB
+  candidate warmup  task 136.3 dom 135.3 | parse 11.81 txn 38.64 react 77.95 | gc minor 5/3.4 major 0/0 | heap before 114.16 MB, live 45.25 MB
+  baseline  pair-0  task 130.71 dom 129.8 | parse 9.4 txn 32.48 react 79.68 | gc minor 5/3.53 major 0/0 | heap before 133.53 MB, live 45.22 MB
+  candidate pair-0  task 140.68 dom 139.7 | parse 10.06 txn 38.53 react 82.38 | gc minor 5/3.35 major 0/0 | heap before 113.65 MB, live 44.74 MB
+  candidate pair-1  task 136.04 dom 134.9 | parse 11.12 txn 36.23 react 81.12 | gc minor 4/2.93 major 0/0 | heap before 102.5 MB, live 44.84 MB
+  baseline  pair-1  task 131.31 dom 130.4 | parse 9.24 txn 31.3 react 77.9 | gc minor 4/3.11 major 0/0 | heap before 115.37 MB, live 44.86 MB
+  baseline  pair-2  task 130.41 dom 129.5 | parse 9.4 txn 30.98 react 80.83 | gc minor 4/3.22 major 0/0 | heap before 125.09 MB, live 44.87 MB
+  candidate pair-2  task 135.51 dom 134.4 | parse 10.65 txn 36.09 react 76.35 | gc minor 5/3.53 major 0/0 | heap before 126.03 MB, live null MB
+  r(final task, GC in task) = -0.00; r(final task, heap before) = -0.65
+
+ai-live-rich-50000
+  baseline  warmup  task 689.54 dom 688.4 | parse 97.78 txn 150.83 react 364.41 | gc minor 20/13.26 major 1/34.24 | heap before 337.88 MB, live 72.85 MB
+  candidate warmup  task 615.19 dom 614.1 | parse 57.19 txn 163.03 react 365.8 | gc minor 22/14.48 major 0/0 | heap before 211.14 MB, live 72.06 MB
+  baseline  pair-0  task 580.34 dom 579.2 | parse 45.33 txn 145.84 react 355.54 | gc minor 22/14.48 major 0/0 | heap before 175.78 MB, live 92.73 MB
+  candidate pair-0  task 625.53 dom 624.1 | parse 62.45 txn 155.94 react 368.01 | gc minor 22/16.05 major 0/0 | heap before 224.69 MB, live 71.96 MB
+  candidate pair-1  task 634.58 dom 633.4 | parse 60.2 txn 177.79 react 360.78 | gc minor 22/15.62 major 0/0 | heap before 222.92 MB, live 70.71 MB
+  baseline  pair-1  task 623.75 dom null | parse 0 txn 0 react 0 | gc minor 20/21 major 0/0 | heap before 146.46 MB, live 100.4 MB
+  baseline  pair-2  task 589.99 dom 588.9 | parse 46.93 txn 147.5 react 361.13 | gc minor 21/13.66 major 0/0 | heap before 145.45 MB, live 100.34 MB
+  candidate pair-2  task 626.43 dom 625.3 | parse 59.58 txn 159.84 react 368.27 | gc minor 23/17.45 major 0/0 | heap before 234.71 MB, live 71.18 MB
+  r(final task, GC in task) = 0.86; r(final task, heap before) = 0.87
+
+ai-rich-10000
+  baseline  warmup  task 133.92 dom 132.9 | parse 7.66 txn 32.53 react 80.97 | gc minor 4/3.04 major 0/0 | heap before 189.17 MB, live 44.61 MB
+  candidate warmup  task 135.41 dom 134.4 | parse 9.23 txn 34.88 react 79.11 | gc minor 5/3.79 major 0/0 | heap before 152.91 MB, live 44.9 MB
+  baseline  pair-0  task 130.37 dom 129.5 | parse 9.05 txn 31.32 react 76.67 | gc minor 4/3.05 major 0/0 | heap before 189.14 MB, live 44.83 MB
+  candidate pair-0  task 141.52 dom 140.4 | parse 12.29 txn 36.94 react 86.35 | gc minor 5/4.13 major 0/0 | heap before 153.28 MB, live 45.05 MB
+  candidate pair-1  task 140.59 dom 139.3 | parse 12.32 txn 34.48 react 80.04 | gc minor 5/4.21 major 0/0 | heap before 153.36 MB, live 45.02 MB
+  baseline  pair-1  task 137.84 dom 136.8 | parse 9.22 txn 34.83 react 81.03 | gc minor 4/3.18 major 0/0 | heap before 190.09 MB, live 45.77 MB
+  baseline  pair-2  task 130.43 dom 129.7 | parse 9.44 txn 35.79 react 79.17 | gc minor 4/2.83 major 0/0 | heap before 190.07 MB, live 45.78 MB
+  candidate pair-2  task 135.92 dom 135 | parse 11.87 txn 32.3 react 79.68 | gc minor 5/3.89 major 0/0 | heap before 154.63 MB, live 43.72 MB
+  r(final task, GC in task) = 0.82; r(final task, heap before) = -0.67
+
+ai-rich-50000
+  baseline  warmup  task 599.13 dom 597.7 | parse 43.9 txn 142.12 react 370.23 | gc minor 22/17.53 major 0/0 | heap before 249.21 MB, live 154.12 MB
+  candidate warmup  task 620.43 dom 618.9 | parse 60.74 txn 153.95 react 361.24 | gc minor 22/15.6 major 0/0 | heap before 145.34 MB, live 97.31 MB
+  baseline  pair-0  task 595.6 dom 594.3 | parse 47.72 txn 139.48 react 360.95 | gc minor 21/16.37 major 0/0 | heap before 250.47 MB, live 153.64 MB
+  candidate pair-0  task 631.42 dom 630 | parse 62.71 txn 160.62 react 368.57 | gc minor 22/17.36 major 0/0 | heap before 145.44 MB, live 97.43 MB
+  candidate pair-1  task 613.68 dom 612.3 | parse 60.73 txn 154.62 react 361.15 | gc minor 23/15.41 major 0/0 | heap before 169.24 MB, live 97.38 MB
+  baseline  pair-1  task 586.47 dom 585 | parse 43.9 txn 135.85 react 366.23 | gc minor 22/15.87 major 0/0 | heap before 249.04 MB, live 154.13 MB
+  baseline  pair-2  task 586.55 dom 585 | parse 45.96 txn 142.3 react 364.73 | gc minor 22/16.57 major 0/0 | heap before 249.04 MB, live 154 MB
+  candidate pair-2  task 612 dom 610.4 | parse 56.02 txn 155.49 react 357.32 | gc minor 22/14.22 major 0/0 | heap before 145.44 MB, live 97.41 MB
+  r(final task, GC in task) = -0.07; r(final task, heap before) = -0.91
+
+editable-cjk-10000
+  baseline  warmup  task 120.92 dom 120.9 | parse 16.36 txn 85.68 react 7.92 | gc minor 5/5.22 major 0/0 | heap before 190.53 MB, live 84.69 MB
+  candidate warmup  task 150.79 dom 150.8 | parse 23.07 txn 111.31 react 6.98 | gc minor 5/4.19 major 0/0 | heap before 151.54 MB, live 91.23 MB
+  baseline  pair-0  task 116.09 dom 116 | parse 16.3 txn 81.45 react 9.15 | gc minor 5/4.71 major 0/0 | heap before 190.15 MB, live 84.68 MB
+  candidate pair-0  task 132.24 dom 132.3 | parse 20.63 txn 99.85 react 7.53 | gc minor 5/3.38 major 0/0 | heap before 151.45 MB, live 91.14 MB
+  candidate pair-1  task 127.71 dom 127.6 | parse 20.84 txn 95.27 react 6.43 | gc minor 5/3.3 major 0/0 | heap before 151.43 MB, live 91.15 MB
+  baseline  pair-1  task 100.15 dom 100 | parse 14.89 txn 67.4 react 8.08 | gc minor 5/4.56 major 0/0 | heap before 189.82 MB, live 84.63 MB
+  baseline  pair-2  task 99.58 dom 99.5 | parse 13.79 txn 66.97 react 7.52 | gc minor 5/4.3 major 0/0 | heap before 189.74 MB, live 84.67 MB
+  candidate pair-2  task 137.76 dom 137.7 | parse 21.95 txn 98.18 react 6.24 | gc minor 5/3.95 major 0/0 | heap before 151.47 MB, live 91.15 MB
+  r(final task, GC in task) = -0.39; r(final task, heap before) = -0.83
+
+editable-cjk-50000
+  baseline  warmup  task 1321.83 dom 1321.7 | parse 152 txn 517.95 react 13.68 | gc minor 25/40.28 major 1/552.86 | heap before 2042.48 MB, live 492.4 MB
+  candidate warmup  task 454.19 dom 454.2 | parse 76.41 txn 321.74 react 11.73 | gc minor 25/33.48 major 0/0 | heap before 1715.83 MB, live 463.13 MB
+  baseline  pair-0  task 431.1 dom 431.1 | parse 64.72 txn 314.19 react 10.05 | gc minor 25/28.1 major 0/0 | heap before 1083.95 MB, live 613.28 MB
+  candidate pair-0  task 468.69 dom 468.7 | parse 82.55 txn 331.97 react 9.13 | gc minor 25/38.3 major 0/0 | heap before 1595.54 MB, live 485.47 MB
+  candidate pair-1  task 467.2 dom 467.1 | parse 79.84 txn 330.13 react 9.68 | gc minor 26/38.75 major 0/0 | heap before 1594.03 MB, live 476.99 MB
+  baseline  pair-1  task 442.44 dom 442.4 | parse 66.56 txn 320.25 react 11.4 | gc minor 25/29.67 major 0/0 | heap before 876.02 MB, live 604.38 MB
+  baseline  pair-2  task 436.1 dom 436.1 | parse 66.09 txn 313.08 react 11.52 | gc minor 25/28.49 major 0/0 | heap before 975.02 MB, live 590.73 MB
+  candidate pair-2  task 486.01 dom 485.9 | parse 91.29 txn 337.46 react 10.23 | gc minor 26/34.55 major 0/0 | heap before 777.41 MB, live 723.45 MB
+  r(final task, GC in task) = 1.00; r(final task, heap before) = 0.63
+
+editable-rich-10000
+  baseline  warmup  task 58.71 dom 58.8 | parse 8.89 txn 40 react 3.77 | gc minor 3/2.65 major 0/0 | heap before 178.16 MB, live null MB
+  candidate warmup  task 55.77 dom 55.8 | parse 11 txn 37.76 react 4.9 | gc minor 3/2.39 major 0/0 | heap before 173.79 MB, live null MB
+  baseline  pair-0  task 54.87 dom 54.8 | parse 7.06 txn 37.05 react 4.82 | gc minor 3/2.62 major 0/0 | heap before 178 MB, live null MB
+  candidate pair-0  task 53.54 dom 53.5 | parse 10.83 txn 32.27 react 4.84 | gc minor 3/2.37 major 0/0 | heap before 173.85 MB, live null MB
+  candidate pair-1  task 54.26 dom 54.3 | parse 10.94 txn 34.21 react 4.03 | gc minor 3/2.53 major 0/0 | heap before 173.94 MB, live null MB
+  baseline  pair-1  task 55.14 dom 55 | parse 8 txn 35.98 react 6.03 | gc minor 3/2.3 major 0/0 | heap before 178.25 MB, live null MB
+  baseline  pair-2  task 57.7 dom 57.6 | parse 7.39 txn 38.21 react 6.48 | gc minor 3/2.68 major 0/0 | heap before 182.73 MB, live null MB
+  candidate pair-2  task 53.91 dom 54 | parse 9.65 txn 33.69 react 3.76 | gc minor 3/2.29 major 0/0 | heap before 178.46 MB, live null MB
+  r(final task, GC in task) = 0.68; r(final task, heap before) = 0.55
+
+editable-rich-50000
+  baseline  warmup  task 225.24 dom 225.2 | parse 45.2 txn 156.08 react 4.68 | gc minor 12/12.85 major 0/0 | heap before 463.92 MB, live 346.15 MB
+  candidate warmup  task 228.93 dom 229 | parse 53.95 txn 153.52 react 3.26 | gc minor 13/11.8 major 0/0 | heap before 420.26 MB, live 379.9 MB
+  baseline  pair-0  task 226.15 dom 226.1 | parse 43.86 txn 162.46 react 5.28 | gc minor 13/12.04 major 0/0 | heap before 384.93 MB, live 355.77 MB
+  candidate pair-0  task 232.71 dom 232.7 | parse 53.14 txn 154.23 react 6.37 | gc minor 13/11.4 major 0/0 | heap before 402.94 MB, live 373.77 MB
+  candidate pair-1  task 241.46 dom 241.5 | parse 56.83 txn 161.03 react 6.98 | gc minor 13/13.69 major 0/0 | heap before 919.82 MB, live 253.12 MB
+  baseline  pair-1  task 226.27 dom 226.3 | parse 43.41 txn 154.56 react 5.1 | gc minor 13/13.42 major 0/0 | heap before 426.74 MB, live 350.95 MB
+  baseline  pair-2  task 235.3 dom 235.4 | parse 43.92 txn 164.82 react 5.85 | gc minor 14/14.62 major 0/0 | heap before 412.62 MB, live 354.97 MB
+  candidate pair-2  task 253.28 dom 253.2 | parse 57.95 txn 169.03 react 6.03 | gc minor 13/14.74 major 0/0 | heap before 424.05 MB, live 382.22 MB
+  r(final task, GC in task) = 0.64; r(final task, heap before) = 0.32
+
+static-cjk-10000
+  baseline  warmup  task 191.06 dom 190.9 | parse 15.07 txn 57.99 react 104.65 | gc minor 8/6.96 major 0/0 | heap before 219.84 MB, live 58.46 MB
+  candidate warmup  task 216.82 dom 216.6 | parse 22.43 txn 68.09 react 112.14 | gc minor 8/6.41 major 0/0 | heap before 82.48 MB, live 60.09 MB
+  baseline  pair-0  task 200.69 dom 200.7 | parse 15.06 txn 61.77 react 113.26 | gc minor 8/6.37 major 0/0 | heap before 209.07 MB, live 58.62 MB
+  candidate pair-0  task 222.68 dom 222.6 | parse 23.96 txn 75.16 react 114.99 | gc minor 8/6.29 major 0/0 | heap before 82.66 MB, live 60.1 MB
+  candidate pair-1  task 220.1 dom 220.1 | parse 22.28 txn 67.69 react 109.76 | gc minor 8/5.96 major 0/0 | heap before 82.46 MB, live 60.08 MB
+  baseline  pair-1  task 177.87 dom 177.9 | parse 15.06 txn 54.73 react 97.24 | gc minor 8/5.82 major 0/0 | heap before 209.05 MB, live 58.59 MB
+  baseline  pair-2  task 189.17 dom 189 | parse 15.04 txn 59.27 react 107.55 | gc minor 8/6.35 major 0/0 | heap before 219.68 MB, live 58.45 MB
+  candidate pair-2  task 219.4 dom 219.3 | parse 22.1 txn 73.8 react 114.68 | gc minor 8/6.19 major 0/0 | heap before 82.47 MB, live 60.1 MB
+  r(final task, GC in task) = -0.07; r(final task, heap before) = -0.93
+
+static-cjk-50000
+  baseline  warmup  task 915.11 dom 915 | parse 69.42 txn 254.33 react 520.51 | gc minor 39/37.29 major 0/0 | heap before 502.66 MB, live 214.08 MB
+  candidate warmup  task 899 dom 898.9 | parse 84.35 txn 276.74 react 487.66 | gc minor 40/35.5 major 0/0 | heap before 560.94 MB, live 149.52 MB
+  baseline  pair-0  task 859.18 dom 859.1 | parse 67.25 txn 256.06 react 484.34 | gc minor 39/35.01 major 0/0 | heap before 577.14 MB, live 246.98 MB
+  candidate pair-0  task 921.73 dom 921.7 | parse 88.93 txn 280.4 react 485.4 | gc minor 41/37.16 major 0/0 | heap before 217.52 MB, live 161.38 MB
+  candidate pair-1  task 922.57 dom 922.4 | parse 84.51 txn 274.08 react 514.08 | gc minor 41/38.35 major 0/0 | heap before 547.04 MB, live 146.86 MB
+  baseline  pair-1  task 1107.94 dom 1107.9 | parse 66.53 txn 277.79 react 486.86 | gc minor 40/40.87 major 1/202.95 | heap before 903.83 MB, live 214.72 MB
+  baseline  pair-2  task 862.88 dom 862.9 | parse 73.77 txn 250.4 react 478.05 | gc minor 39/35.83 major 0/0 | heap before 463.69 MB, live 223.31 MB
+  candidate pair-2  task 932.06 dom 932.1 | parse 85.24 txn 289.17 react 496.54 | gc minor 41/35.41 major 0/0 | heap before 185.6 MB, live 143.53 MB
+  r(final task, GC in task) = 0.94; r(final task, heap before) = 0.56
+
+static-rich-10000
+  baseline  warmup  task 96.31 dom 96.3 | parse 8.75 txn 33.27 react 48.99 | gc minor 4/2.77 major 0/0 | heap before 172.5 MB, live null MB
+  candidate warmup  task 97.52 dom 97.5 | parse 11.04 txn 30.65 react 47.73 | gc minor 4/2.58 major 0/0 | heap before 128.75 MB, live null MB
+  baseline  pair-0  task 96.42 dom 96.4 | parse 7.31 txn 31.55 react 49.97 | gc minor 4/2.96 major 0/0 | heap before 175.84 MB, live null MB
+  candidate pair-0  task 100.42 dom 100.4 | parse 10.89 txn 31.66 react 50.2 | gc minor 4/3 major 0/0 | heap before 128.42 MB, live null MB
+  candidate pair-1  task 98.35 dom 98.4 | parse 10.89 txn 29.41 react 49.78 | gc minor 4/2.75 major 0/0 | heap before 128.19 MB, live null MB
+  baseline  pair-1  task 95.76 dom 95.7 | parse 7.52 txn 33.09 react 50.8 | gc minor 4/2.88 major 0/0 | heap before 172.56 MB, live null MB
+  baseline  pair-2  task 97.27 dom 97.3 | parse 7.44 txn 31.06 react 50.2 | gc minor 4/2.95 major 0/0 | heap before 173.25 MB, live null MB
+  candidate pair-2  task 98.2 dom 98.2 | parse 11.15 txn 28.86 react 49.22 | gc minor 4/2.71 major 0/0 | heap before 127.6 MB, live null MB
+  r(final task, GC in task) = 0.10; r(final task, heap before) = -0.78
+
+static-rich-50000
+  baseline  warmup  task 435.22 dom 435.2 | parse 43.89 txn 128.03 react 242.85 | gc minor 20/16.58 major 0/0 | heap before 355.3 MB, live 141.65 MB
+  candidate warmup  task 482.35 dom 482.4 | parse 58.02 txn 146.37 react 251.5 | gc minor 21/16.03 major 0/0 | heap before 165.07 MB, live 85.61 MB
+  baseline  pair-0  task 428.06 dom 428 | parse 43.84 txn 124.61 react 239.71 | gc minor 21/14 major 0/0 | heap before 359.39 MB, live 133.84 MB
+  candidate pair-0  task 456.37 dom 456.3 | parse 59.18 txn 137.86 react 234.5 | gc minor 21/13.37 major 0/0 | heap before 181.65 MB, live 85.5 MB
+  candidate pair-1  task 466.18 dom 466.2 | parse 62.36 txn 142.18 react 239.14 | gc minor 22/15.21 major 0/0 | heap before 185.1 MB, live 86.06 MB
+  baseline  pair-1  task 421.54 dom 421.5 | parse 38.78 txn 118.19 react 236.03 | gc minor 20/12.99 major 0/0 | heap before 410.55 MB, live 132.13 MB
+  baseline  pair-2  task 431.23 dom 431.2 | parse 41.14 txn 127.2 react 242.63 | gc minor 20/13.87 major 0/0 | heap before 395.17 MB, live 131.24 MB
+  candidate pair-2  task 458.7 dom 458.6 | parse 59.39 txn 131.36 react 237.51 | gc minor 22/14.21 major 0/0 | heap before 224.18 MB, live 84.99 MB
+  r(final task, GC in task) = 0.45; r(final task, heap before) = -0.95

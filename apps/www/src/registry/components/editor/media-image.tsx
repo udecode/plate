@@ -1,0 +1,98 @@
+'use client';
+
+import { ImagePlugin } from 'platejs/media/react';
+import {
+  EditorElement,
+  useEditor,
+  useEditorFocused,
+  useElementSelected,
+  usePath,
+  usePluginStore,
+  type EditorElementProps,
+} from 'platejs/react';
+import * as React from 'react';
+
+import { cn } from '@/lib/utils';
+
+import { Caption, getMediaTextAlign } from './caption';
+import { imagePlugin } from './media-preview-dialog';
+import { MediaToolbar } from './media-toolbar';
+import {
+  mediaResizeHandleVariants,
+  Resizable,
+  ResizeHandle,
+} from './resize-handle';
+
+export function ImageElement(props: EditorElementProps<typeof imagePlugin>) {
+  const path = usePath();
+  const focused = useEditorFocused();
+  const selected = useElementSelected({ mode: 'object' });
+  const textAlign = getMediaTextAlign(props.element);
+  const editor = useEditor();
+  const previewOpen = usePluginStore(imagePlugin, 'previewOpen');
+  const openPreview = () => {
+    editor.plugin(imagePlugin).api.preview.open(path, props.element.url);
+  };
+
+  return (
+    <MediaToolbar
+      disabled={previewOpen}
+      onPreview={openPreview}
+      plugin={ImagePlugin}
+      selected={selected}
+    >
+      <EditorElement {...props} className="py-2.5">
+        <figure className="relative m-0 hover:[&_.editor-media-resize-handle]:after:opacity-100">
+          <div contentEditable={false}>
+            <Resizable
+              align={textAlign}
+              minWidth={92}
+              onResizeEnd={(width) => {
+                editor.plugin(imagePlugin).update.set({ width }, { at: path });
+              }}
+              width={props.element.width}
+            >
+              <ResizeHandle
+                className={mediaResizeHandleVariants({ direction: 'left' })}
+                direction="left"
+              />
+              <div>
+                {/* oxlint-disable-next-line nextjs/no-img-element, jsx-a11y/no-noninteractive-element-interactions -- [P1 local-invariant] The editor node owns a user URL, native draggable image that starts its block drag, composed ref, and resizable width. */}
+                <img
+                  className={cn(
+                    'block w-full max-w-full cursor-pointer object-cover px-0',
+                    'rounded-sm',
+                    focused && selected && 'ring-2 ring-ring ring-offset-2',
+                    '[[data-editor-dragging]_&]:opacity-50'
+                  )}
+                  alt={props.element.alt}
+                  draggable
+                  src={props.element.url}
+                  onDragStart={(event) => {
+                    editor.api.dom.drag.start(event.nativeEvent, {
+                      node: props.element,
+                    });
+                  }}
+                  onDoubleClickCapture={openPreview}
+                />
+              </div>
+              <ResizeHandle
+                className={mediaResizeHandleVariants({
+                  direction: 'right',
+                })}
+                direction="right"
+              />
+            </Resizable>
+          </div>
+          <Caption
+            align={textAlign}
+            element={props.element}
+            slots={props.slots}
+          >
+            {props.children}
+          </Caption>
+        </figure>
+      </EditorElement>
+    </MediaToolbar>
+  );
+}

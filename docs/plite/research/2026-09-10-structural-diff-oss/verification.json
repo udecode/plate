@@ -1,0 +1,762 @@
+{
+  "scope": "Research/specification closure only. No production, browser/native or performance certification.",
+  "verifiedAt": "2026-09-10T20:24:49.335954+00:00",
+  "pass": true,
+  "counts": {
+    "registryRows": 39,
+    "registeredRepositories": 39,
+    "sourceInspectedRepositories": 13,
+    "screenedExcludedRepositories": 26,
+    "localSourceReadSlices": 31,
+    "distinctInspectedFiles": 29,
+    "readLogRows": 35,
+    "issueDiscussions": 3,
+    "prBodies": 0,
+    "queryRows": 9,
+    "uniqueLeads": 11,
+    "promotedPackets": 11,
+    "rejectedApproaches": 9,
+    "mergedDuplicates": 6,
+    "qualityCases": 14,
+    "productionAcceptanceFamilies": 43,
+    "runtimeSourceFiles": 28,
+    "upstreamWitnesses": 7,
+    "localLinks": 59
+  },
+  "sourceIdentityChecks": [
+    {
+      "repo": "jsondiffpatch",
+      "path": "packages/jsondiffpatch/src/filters/arrays.ts",
+      "ranges": "1,105;190,290",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "jsondiffpatch",
+      "path": "packages/jsondiffpatch/src/filters/lcs.ts",
+      "ranges": "1,115",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "prosemirror-changeset",
+      "path": "src/changeset.ts",
+      "ranges": "1,90;135,165",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "prosemirror-changeset",
+      "path": "src/simplify.ts",
+      "ranges": "1,120",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "delta",
+      "path": "src/Delta.ts",
+      "ranges": "330,440",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "node-diff3",
+      "path": "src/diff3.mjs",
+      "ranges": "330,475",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "gumtree",
+      "path": "core/src/main/java/com/github/gumtreediff/matchers/MappingStore.java",
+      "ranges": "30,105",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "gumtree",
+      "path": "core/src/main/java/com/github/gumtreediff/actions/ChawatheScriptGenerator.java",
+      "ranges": "70,165",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "gumtree",
+      "path": "core/src/main/java/com/github/gumtreediff/matchers/heuristic/gt/GreedyBottomUpMatcher.java",
+      "ranges": "40,125",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "mergiraf",
+      "path": "src/matching.rs",
+      "ranges": "1,28;82,100",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "mergiraf",
+      "path": "src/structured.rs",
+      "ranges": "1,138",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "trimerge",
+      "path": "src/trimerge-array.ts",
+      "ranges": "1,60",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "trimerge",
+      "path": "src/trimerge-ordered-map.ts",
+      "ranges": "1,140",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "spork",
+      "path": "src/main/kotlin/se/kth/spork/base3dm/TdmMerge.kt",
+      "ranges": "1,104",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "difftastic",
+      "path": "src/diff/shortest_path.rs",
+      "ranges": "56,112;217,250",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "difftastic",
+      "path": "manual/src/tricky_cases.md",
+      "ranges": "1,100",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "diff-match-patch",
+      "path": "javascript/diff_match_patch_uncompressed.js",
+      "ranges": "1810,1913",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "loro",
+      "path": "crates/loro/src/lib.rs",
+      "ranges": "1470,1499;3260,3315",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "automerge",
+      "path": "javascript/src/implementation.ts",
+      "ranges": "1050,1147;1550,1603",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "gumtree",
+      "path": "core/src/test/java/com/github/gumtreediff/test/TestActionGenerator.java",
+      "ranges": "1,115",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "loro",
+      "path": "crates/loro/tests/contracts/tree_concurrent_delete_move.rs",
+      "ranges": "1,97",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "loro",
+      "path": "crates/loro/tests/contracts/movable_list_diff_apply.rs",
+      "ranges": "1,160",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "vscode",
+      "path": "src/vs/editor/common/diff/defaultLinesDiffComputer/computeMovedLines.ts",
+      "ranges": "1,160",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "delta",
+      "path": "test/delta/diff.ts",
+      "ranges": "1,160",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "node-diff3",
+      "path": "src/diff3.mjs",
+      "ranges": "190,330",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "jsondiffpatch",
+      "path": "packages/jsondiffpatch/src/filters/texts.ts",
+      "ranges": "1,172",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "jsondiffpatch",
+      "path": "packages/jsondiffpatch/src/index.ts",
+      "ranges": "1,53",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "trimerge",
+      "path": "package.json",
+      "ranges": "1,81",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "node-diff3",
+      "path": "package.json",
+      "ranges": "1,59",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "mergiraf",
+      "path": "Cargo.toml",
+      "ranges": "1,80",
+      "matchesRecordedAndCommit": true
+    },
+    {
+      "repo": "diff-match-patch",
+      "path": "javascript/diff_match_patch_uncompressed.js",
+      "ranges": "2215,2236",
+      "matchesRecordedAndCommit": true
+    }
+  ],
+  "runtimeIdentityChecks": [
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/date-reviver.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/clone.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/pipe.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/diffpatcher.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/with-text-diffs.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/types.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/processor.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/index.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/moves/delta-to-sequence.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/filters/nested.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/filters/dates.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/filters/texts.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/filters/lcs.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/filters/trivial.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/filters/arrays.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/contexts/diff.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/contexts/context.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/contexts/reverse.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/contexts/patch.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/formatters/base.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/formatters/annotated.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/formatters/jsonpatch-apply.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/formatters/html.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/formatters/jsonpatch.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/formatters/console.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/assertions/arrays.ts",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/node-diff3/src/diff3.mjs",
+      "matches": true
+    },
+    {
+      "path": "/Users/zbeyens/git/diff-match-patch/javascript/diff_match_patch_uncompressed.js",
+      "matches": true
+    }
+  ],
+  "probeScriptSha256": "d6e1025f4cba41460cdaf768d3de0873efba7cb9aa1c70b1ada17a477f4d6b94",
+  "probePasses": [
+    "identified-array-move-and-interior-edit-roundtrip",
+    "unidentified-array-comparison-does-not-establish-move",
+    "index-patch-does-not-validate-reordered-baseline",
+    "merge-output-erases-nonconflicting-branch-labels",
+    "merged-regions-omit-unilateral-deletion-review-row",
+    "conflict-retains-three-content-alternatives",
+    "fuzzy-text-patch-accepts-different-same-length-baseline"
+  ],
+  "originalModelSourceChecks": {
+    "docs/plans/artifacts/structural-document-diff/probe-contract.json": true,
+    "docs/plans/artifacts/structural-document-diff/model-probe.mjs": true,
+    "packages/plitejs/src/diff/lib/computeDiff.ts": true,
+    "packages/plitejs/src/core/change/document-change.ts": true,
+    "packages/plitejs/src/core/change/root-change.ts": true,
+    "packages/plitejs/src/core/change/mapping.ts": true,
+    "packages/plitejs/src/core/change/document-index.ts": true,
+    "packages/plitejs/src/core/change/tokens.ts": true,
+    "pnpm-lock.yaml": true
+  },
+  "originalIntervalScriptIdentity": true,
+  "acceptanceFamilies": [
+    "F01",
+    "F02",
+    "F03",
+    "F04",
+    "F05",
+    "F06",
+    "F07",
+    "F08",
+    "F09",
+    "F10",
+    "F11",
+    "F12",
+    "F13",
+    "F14",
+    "F15",
+    "F16",
+    "F17",
+    "F18",
+    "F19",
+    "F20",
+    "F21",
+    "F22",
+    "F23",
+    "F24",
+    "F25",
+    "F26",
+    "F27",
+    "F28",
+    "F29",
+    "F30",
+    "F31",
+    "F32",
+    "F33",
+    "F34",
+    "F35",
+    "F36",
+    "F37",
+    "F38",
+    "F39",
+    "F40",
+    "F41",
+    "F42",
+    "F43"
+  ],
+  "qualityCases": [
+    "L01",
+    "L02",
+    "L03",
+    "L04",
+    "S01",
+    "S02",
+    "S03",
+    "X01",
+    "X02",
+    "X03",
+    "T01",
+    "T02",
+    "T03",
+    "T04"
+  ],
+  "localLinks": [
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "2026-09-10-native-authored-changes-and-suggestions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../plite/research/2026-09-10-structural-diff-oss/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/plitejs/src/diff/lib/computeDiff.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/platejs/src/diff/index.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../apps/www/src/registry/examples/version-history-demo.tsx",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/platejs/src/ai/react/AIChatPlugin.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/platejs/src/features/suggestion/lib/BaseSuggestionPlugin.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/plitejs/src/core/change/tokens.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/plitejs/src/interfaces/editor.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/plitejs/src/core/change/document-change.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/plitejs/src/core/change/root-change.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/plitejs/src/core/change/mapping.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/plitejs/test/document-change-relocation.test.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/plitejs/src/core/editor-schema.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/plitejs/src/interfaces/schema.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/platejs/src/features/list/lib/BaseListPlugin.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../packages/platejs/src/features/table/lib/BaseTablePlugin.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "2026-09-10-native-authored-changes-and-suggestions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../apps/www/src/app/%28blocks%29/blocks/%5Bname%5D/page.tsx",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../../apps/www/src/registry/registry-examples.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "artifacts/structural-document-diff/probe-contract.json",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "artifacts/structural-document-diff/model-probe.json",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "artifacts/structural-document-diff/interval-probe.json",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "artifacts/structural-document-diff/model-probe-initial.json",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../plite/research/2026-09-10-structural-diff-oss/quality-scenarios.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../plite/research/2026-09-10-structural-diff-oss/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plans/2026-09-10-structural-document-diff.md",
+      "target": "../plite/research/2026-09-10-structural-diff-oss/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "read-log.tsv",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "../../../plans/2026-09-10-structural-document-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "read-log.tsv",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "../../../plans/2026-09-10-structural-document-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "read-log.tsv",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "../../../plans/2026-09-10-structural-document-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "read-log.tsv",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "../../../plans/2026-09-10-structural-document-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "read-log.tsv",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "../../../plans/2026-09-10-structural-document-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "read-log.tsv",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "../../../plans/2026-09-10-structural-document-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "read-log.tsv",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "../../../plans/2026-09-10-structural-document-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "read-log.tsv",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "../../../plans/2026-09-10-structural-document-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "read-log.tsv",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "../../../plans/2026-09-10-structural-document-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "read-log.tsv",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "../../../plans/2026-09-10-structural-document-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "read-log.tsv",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/packets.md",
+      "target": "../../../plans/2026-09-10-structural-document-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/README.md",
+      "target": "../../../plans/2026-09-10-structural-document-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/README.md",
+      "target": "shards/001-structural-diff.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/README.md",
+      "target": "quality-scenarios.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/README.md",
+      "target": "packets.md",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/README.md",
+      "target": "rejected-ledger.tsv",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/README.md",
+      "target": "sources/source-identities.json",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/README.md",
+      "target": "sources/runtime-identities.json",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/README.md",
+      "target": "sources/semantic-probe.json",
+      "exists": true
+    },
+    {
+      "file": "docs/plite/research/2026-09-10-structural-diff-oss/README.md",
+      "target": "verification.json",
+      "exists": true
+    }
+  ],
+  "artifactSha256": {
+    "docs/plans/2026-09-10-structural-document-diff.md": "a169ac2ff687227d28cffb9569cb290408badadf1058ae0331be5876fe59c66d",
+    "docs/plite/research/2026-09-10-structural-diff-oss/README.md": "c6020bc058419a684c69bfba462af2f81491de8360c6b89ba2bf26f8394f2660",
+    "docs/plite/research/2026-09-10-structural-diff-oss/lead-ledger.tsv": "273aa5b7f4cfb08a0778abe94ac351af1f0f3097d746bac65ba6d89ed8c9e2f2",
+    "docs/plite/research/2026-09-10-structural-diff-oss/packets.md": "6a4f9254c8c88421e29a7b86a9a508c81d7ed0312e2409b568c59a86df460a11",
+    "docs/plite/research/2026-09-10-structural-diff-oss/promoted-ledger.tsv": "37a9a10fb53cd7f0aeba03a35b693dcd849da6b1d645a2509a98a5f68bb77b8d",
+    "docs/plite/research/2026-09-10-structural-diff-oss/quality-scenarios.md": "9456709905d29aeae0768e8fb70ee2eddfe63d31db951183c51bdcc127282625",
+    "docs/plite/research/2026-09-10-structural-diff-oss/query-ledger.tsv": "c5380c486d017b3773c8aae75b45b06a99b15030609087c81c250b4661df69b8",
+    "docs/plite/research/2026-09-10-structural-diff-oss/read-log.tsv": "d262e157059ecbc4ffa6e5d51afa305fee8355bf03c8baf84e6dfadf8743985a",
+    "docs/plite/research/2026-09-10-structural-diff-oss/rejected-ledger.tsv": "0f0291dd6027fa4b0f263452be4b1abf264476c187b3ba506827ed8bd40d7f48",
+    "docs/plite/research/2026-09-10-structural-diff-oss/repo-registry.tsv": "4e10f5167ae30cb3a2ce981e6f3487826ca87a8f3f65275796f64b3b5e9de19f",
+    "docs/plite/research/2026-09-10-structural-diff-oss/shards/001-structural-diff.md": "6acd6d76c66e1c36095c7e1585bee3334e9dfba88c489be156760874052bb91b",
+    "docs/plite/research/2026-09-10-structural-diff-oss/sources/discovery-hits.json": "00818df0be7b1d438209d4ca0f44a828eb94fc8a4ff2bb54fa5660bf1caaa642",
+    "docs/plite/research/2026-09-10-structural-diff-oss/sources/issue-candidates.json": "1f1f07705f2831302d0765a5829ce947ee18a8a61a83f1f15b97cc4942557532",
+    "docs/plite/research/2026-09-10-structural-diff-oss/sources/runtime-identities.json": "8199d31be0b9f486fb11e5a93db39fb7c347f74357d622df5b157366cc17788e",
+    "docs/plite/research/2026-09-10-structural-diff-oss/sources/semantic-probe.json": "c0f5c8e3872fac2bca3724556f94137fccd575fbb9b51c537a44c9eec3566558",
+    "docs/plite/research/2026-09-10-structural-diff-oss/sources/semantic-probe.mjs": "d6e1025f4cba41460cdaf768d3de0873efba7cb9aa1c70b1ada17a477f4d6b94",
+    "docs/plite/research/2026-09-10-structural-diff-oss/sources/source-identities.json": "72e602d8bd1c9cf8999c5c905b59a339f039c6134cbc2fa8c77c347bc0bb8cf0"
+  },
+  "planChecker": {
+    "command": "node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-09-10-structural-document-diff.md",
+    "exitCode": 0,
+    "result": "complete",
+    "scope": "Final execution specification; prerequisite and production implementation remain unexecuted."
+  },
+  "semanticProbeSyntaxCheck": {
+    "command": "node --check docs/plite/research/2026-09-10-structural-diff-oss/sources/semantic-probe.mjs",
+    "exitCode": 0
+  },
+  "markdownTableWidths": "pass",
+  "executionHandoff": {
+    "status": "Final specification ready for ordered implementation after prerequisite production proof.",
+    "prerequisiteStatus": "Completed plan; product implementation not started in the inspected plan.",
+    "prerequisiteFamilies": 32,
+    "implementationSlices": 7,
+    "familiesCompleteBy": {
+      "S2": 13,
+      "S3": 9,
+      "S4": 11,
+      "S5": 10
+    },
+    "productionFamiliesPassedByThisHandoff": 0,
+    "sourceInputsSha256": {
+      "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md": "3e4ef574c0463562c47066e31cf35b60382cf2ca44b315738a412394df3afeed",
+      "package.json": "428735d5c24257f110e967222ba2f146600261e9c48f5bcb10dd8391cf1d3641",
+      "packages/plitejs/package.json": "82b450a9dea86f1101bbbab90b3b50f549e03c852313e48d1e0d0a13648b72a5",
+      "packages/platejs/package.json": "b58e11792c88f989122c5e745f2520fefeb26d2b0840c01c0876259a3108ae13",
+      "apps/plite/package.json": "b39119850f3474047edfdd882bce6697160ca472009f9bf0fe17b368809bd40a",
+      "apps/www/package.json": "a9d50a8d5719d142e95c5b8aeacca0b1de98082a50537e41ec2fa71fb1937898",
+      "apps/www/src/registry/registry-examples.ts": "b45b3f6c3cf6b78961dfa5c9d7354b6b51dc814fada3f45dadb69e490ab02a79",
+      "apps/www/src/app/(blocks)/blocks/[name]/page.tsx": "f316cf37d08290ee972b047891821026c6408ad9737babd600f200305c50e9b9"
+    },
+    "scope": "Planning only; API declarations are proposed, existing runtime/probe source identities remain unchanged."
+  }
+}

@@ -1,0 +1,166 @@
+---
+title: Text Align
+description: Align block content.
+docs:
+  - route: /docs/examples/align
+    title: Align Demo
+  - route: /docs/components/align-toolbar-button
+    title: Align Toolbar Button
+---
+
+`TextAlignPlugin` stores block alignment in a `textAlign` property and renders it as CSS `text-align`. A block without one follows its container's alignment, and `clear` removes the property.
+
+<ComponentPreview name="align-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Block-level text alignment.
+- `start`, `left`, `center`, `right`, `end`, and `justify` values.
+- HTML `text-align` style deserialization.
+- Configurable target block types.
+- Bound `editor.update.textAlign.set` and `editor.update.textAlign.clear` methods.
+- Registry dropdown toolbar for common alignments.
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Add the kit
+
+Use `AlignKit` for live and static Plate UI setups. The server-safe kit targets headings, paragraphs, images, media embeds, audio, and video.
+
+<ComponentSource name="align" />
+
+```tsx
+import { createEditor } from "platejs/react";
+
+import { AlignKit } from "@/components/editor/align";
+
+export const editor = createEditor({
+  plugins: [...AlignKit],
+});
+```
+
+### Add the toolbar control
+
+Install `AlignToolbarButton` separately when the editor needs alignment controls.
+
+```bash
+npx shadcn@latest add @plate/align-toolbar-button
+```
+
+The dropdown shows left, center, right, and justify controls.
+
+```tsx
+import { AlignToolbarButton } from "@/components/editor/align-toolbar-button";
+
+export function AlignControls() {
+  return <AlignToolbarButton />;
+}
+```
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Install package
+
+```bash
+npm install platejs
+```
+
+### Add the plugin
+
+Configure the blocks that can store alignment.
+
+```tsx
+import { BaseTextAlignPlugin, PLUGINS } from "platejs";
+import { createEditor } from "platejs/react";
+
+export const editor = createEditor({
+  plugins: [
+    BaseTextAlignPlugin.configure({
+      targetPlugins: [
+        PLUGINS.heading,
+        PLUGINS.paragraph,
+      ],
+    }),
+  ],
+});
+```
+
+### Set alignment
+
+Use the bound update methods. `set` saves every value it receives, `start` included, and `clear` removes the property.
+
+```tsx
+editor.update.textAlign.set("center");
+editor.update.textAlign.clear({ at: [] });
+```
+
+</Steps>
+
+## Ownership
+
+| Surface                         | Owner           | What It Does                                                                                   |
+| ------------------------------- | --------------- | ---------------------------------------------------------------------------------------------- |
+| `BaseTextAlignPlugin`           | `platejs`       | Headless plugin that stores alignment, injects block props, and parses HTML text-align styles. |
+| `TextAlignPlugin`               | `platejs/react` | React wrapper around `BaseTextAlignPlugin`.                                                    |
+| `editor.update.textAlign.set`   | `platejs`       | Bound update method that saves an alignment.                                                   |
+| `editor.update.textAlign.clear` | `platejs`       | Bound update method that removes an alignment.                                                 |
+| `AlignKit`                      | Registry kit    | Server-safe setup shared by live and static kits.                                              |
+| `AlignToolbarButton`            | Registry UI     | Dropdown that writes alignment through `textAlign.set`.                                        |
+
+The package owns alignment storage and parsing. The registry owns the dropdown UI.
+
+## Behavior
+
+| Behavior                | Source                                                                                   |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| Plugin name             | `PLUGINS.textAlign`                                                                      |
+| Stored property         | `textAlign`                                                                              |
+| Rendered CSS style      | `textAlign`                                                                              |
+| Default target plugins  | `[BaseParagraphPlugin]`                                                                  |
+| Registry target plugins | Headings, paragraphs, images, media embeds, audio, and video                             |
+| Valid values            | `start`, `left`, `center`, `right`, `end`, `justify`                                     |
+| HTML parser             | Reads `element.style.textAlign`.                                                         |
+| Setting a value         | Sets `{ textAlign: value }` on matching blocks.                                          |
+| Setting `start`         | Stores `start`, which aligns to the start edge even inside an aligned container.         |
+| Clearing                | Unsets `textAlign` on matching blocks.                                                   |
+| Registry media items    | Place `start`, `left`, and `justify` on the left, `end` and `right` on the right, and `center` or no alignment in the center. |
+| Non-target blocks       | Are ignored by `textAlign.set` and `textAlign.clear`.                                    |
+
+## HTML
+
+`targetPlugins` is the schema placement truth. The plugin derives
+its render and HTML-parser injection targets from the same list. Pasted HTML
+with a `text-align` style becomes a `textAlign` property on matching blocks.
+
+```html
+<p style="text-align: center">Centered text</p>
+```
+
+## API Reference
+
+| API                                            | Package         | Use                                          |
+| ---------------------------------------------- | --------------- | -------------------------------------------- |
+| `TextAlignPlugin`                              | `platejs/react` | React alignment plugin.                      |
+| `BaseTextAlignPlugin`                          | `platejs`       | Headless alignment plugin.                   |
+| `editor.update.textAlign.set(value, options?)` | `platejs`       | Sets alignment on matching blocks.           |
+| `editor.update.textAlign.clear(options?)`      | `platejs`       | Removes alignment from matching blocks.      |
+| `tx.textAlign.set(value, options?)`            | `platejs`       | Transaction form for a larger atomic update. |
+| `tx.textAlign.clear(options?)`                 | `platejs`       | Transaction form of `clear`.                 |
+
+## Options
+
+| Option                      | Surface                                                         | Use                                                                                                                  |
+| --------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `targetPlugins`             | `BaseTextAlignPlugin`                                           | Element plugin descriptors or dynamic names whose schema can keep `textAlign`; injection is derived from this list. |
+| `inject.nodeProps.styleKey` | `BaseTextAlignPlugin`                                           | CSS property used for rendering.                                                                                     |
+| `options`                   | `editor.update.textAlign.set`, `editor.update.textAlign.clear` | Plate node update options for the target range and matcher.                                                          |

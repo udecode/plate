@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-23-explicit-editor-kit-composition",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-23-explicit-editor-kit-composition.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Compose editor variants with explicit plugin arrays",
+  "targets": [
+    {
+      "name": "editor-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-kit."
+        }
+      ]
+    },
+    {
+      "name": "fixed-toolbar-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for fixed-toolbar-kit."
+        }
+      ]
+    },
+    {
+      "name": "floating-toolbar-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for floating-toolbar-kit."
+        }
+      ]
+    },
+    {
+      "name": "playground-demo",
+      "files": ["apps/www/src/registry/examples/playground-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "plate-to-html",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for plate-to-html."
+        }
+      ]
+    },
+    {
+      "name": "single-block-demo",
+      "files": ["apps/www/src/registry/examples/single-block-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-23-fixed-toolbar-compose-editor-variants-explicit-3dcfa986",
+      "kind": "wiring",
+      "summary": "Compose editor variants with explicit plugin arrays",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "editor-kit",
+        "fixed-toolbar-kit",
+        "floating-toolbar-kit",
+        "playground-demo",
+        "plate-to-html",
+        "single-block-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-23",
+          "entry": "2026-07-23-explicit-editor-kit-composition",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

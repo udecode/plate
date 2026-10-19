@@ -1,0 +1,42 @@
+{
+  "run": "S5 verdict-2 on the repaired final code",
+  "date": "2026-09-29",
+  "snapshot": {
+    "takenAt": "2026-09-29T11:59:28Z",
+    "head": "a7750ad388b2d4626c0a4eef2d3e0e23454010f4",
+    "changedOrUntracked": 463,
+    "deleted": 4,
+    "listFingerprint": "6816686b3f51c202",
+    "includes": [
+      "content-only PreviewKit with DndKit (11:58Z fix)",
+      "strict finals continue previous (demo finalize, AIChatPlugin final setPreview with handback)",
+      "renderStaticHtmlWithOverrides imports react-dom/server.browser"
+    ],
+    "note": "one file list copied into both worktrees; git-ignored apps/www/src/app/api/ai/{command,copilot}/route.ts copied from the main checkout"
+  },
+  "baseline": "baseline.patch: demo publish passes no previous to either parse and splice() always calls value.replace (PreviewKit kept); AIChatPlugin.setPreview passes no previous to previews or the final and hands nothing back; ai-menu AIChatEditor always value.replace",
+  "build": {
+    "flags": "next build --webpack --no-mangling, PLATE_WWW_PLITE=1, PLATE_WWW_WEBPACK=1, PLATE_WWW_ASYNC_DOCS=1, PLATE_WWW_DIST_DIR=.next-y",
+    "paths": "blocks/[name], clipboard proofs, (app)/page, docs/[[...slug]], view/[name], api/ai/{command,copilot}, api/files, api/plite/ready",
+    "seconds": {
+      "candidate": 113,
+      "baseline": 114,
+      "parallel": true
+    }
+  },
+  "servers": {
+    "3571": "candidate",
+    "3572": "baseline"
+  },
+  "command": "S5_BENCH=1 S5_OUT=<lanes/s5/verdict-2> S5_BASELINE_URL=http://localhost:3572 PLAYWRIGHT_BASE_URL=http://localhost:3571 pnpm --filter www test:www-browser:chromium tests/browser/markdown-streaming-contract.spec.ts -g \"S5 acceptance\"",
+  "spentMs": {
+    "acceptance": 2983275,
+    "liveQueueRecord": 239097
+  },
+  "method": "as verdict/setup.json; the stream window now ends with the strict-final task, so finals that change no DOM are counted",
+  "environment": {
+    "browser": "chromium-headless-shell 149.0.7827.55 with --enable-precise-memory-info",
+    "maxLoadAverageInPairs": 7.9,
+    "processPriority": "nice 5"
+  }
+}

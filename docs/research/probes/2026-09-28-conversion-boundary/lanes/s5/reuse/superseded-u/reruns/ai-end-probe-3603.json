@@ -1,0 +1,77 @@
+{
+ "base": "http://localhost:3603",
+ "during": [
+  {
+   "draft": true,
+   "draftTextTail": "ethrough to indicate deleted or outdated",
+   "ends": 1,
+   "endText": [
+    "o indicate deleted or outdated"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "utdated content.Write code snippets with",
+   "ends": 1,
+   "endText": [
+    "Write code snippets with"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "ets with inline code formatting for easy",
+   "ends": 1,
+   "endText": [
+    " formatting for easy"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "ets with inline code formatting for easy",
+   "ends": 1,
+   "endText": [
+    " formatting for easy"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "ormatting for easy readability.Add links",
+   "ends": 1,
+   "endText": [
+    "links"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "ility.Add links to external resources or",
+   "ends": 1,
+   "endText": [
+    " to external resources or"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "eferences.Use inline math equations like",
+   "ends": 1,
+   "endText": [
+    "Use inline math equations like"
+   ]
+  },
+  {
+   "draft": true,
+   "draftTextTail": "E = mc^2E=mc2﻿ for scientific notation.﻿",
+   "ends": 1,
+   "endText": [
+    ""
+   ]
+  }
+ ],
+ "after": {
+  "draft": true,
+  "draftTextTail": " rule﻿Header 1Header 2Row 1DataRow 2Data",
+  "ends": 1,
+  "endText": [
+   "Data"
+  ]
+ }
+}

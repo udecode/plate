@@ -1,0 +1,108 @@
+{
+  "candidate": {
+    "linkedomCommit": "fcd88e02b6dd3e616f5de512b15713b663d16ab7",
+    "parse5": "8.0.1",
+    "plate": "6a6e8f660f10ede916b90e90b2849e02d95e7d84"
+  },
+  "conformance": [
+    {
+      "canonicalSha256": "3a818185d25c4c8c40dd1c5b4394a78a7ab3d4d4dc7bf2d56691f1c419936d9a",
+      "name": "attributes"
+    },
+    {
+      "canonicalSha256": "7f451eb8d29b01ea8f5729426da6499cf2eb49507489161473bfc53af96ec2d0",
+      "name": "comment"
+    },
+    {
+      "canonicalSha256": "4ff4a6ea3296c0b3372ebf5f6586a2198d50e18bc900647ddd78faab0a322cf6",
+      "name": "foreign"
+    },
+    {
+      "canonicalSha256": "7aa908efcf0fa974300c0cfcde5b05997e0df932036e3f7ed4e1741807de2156",
+      "name": "fosterParenting"
+    },
+    {
+      "canonicalSha256": "475d18b1393bbf2cef6437a1d2cb64360a35d060f3dba4cc1f5b295ee5a7922d",
+      "name": "impliedParagraphClose"
+    },
+    {
+      "canonicalSha256": "d8dbb68213f4d25c0e839cc8ff9ee467f4296e23d33a28dca5a8ceb321b83812",
+      "name": "misnestedFormatting"
+    },
+    {
+      "canonicalSha256": "0841f7709a6a956b0f471352c5051333ef99d02531b4c3dda8cb5320590a97b8",
+      "name": "plain"
+    },
+    {
+      "canonicalSha256": "bff0aa885f703a7315666e222014fae6bd2224277b64d584075537a0588374d6",
+      "name": "rawText"
+    },
+    {
+      "canonicalSha256": "742a5bc4693444259a43b2e4276583eac267ca147a0471f820445e7d16de74a8",
+      "name": "tableRepair"
+    },
+    {
+      "canonicalSha256": "4b78812197b98fd91f842cfaa85f608cdbf67d39c8e9b8ea6269ba4f2aad60d2",
+      "name": "template"
+    }
+  ],
+  "conversion": [
+    {
+      "diagnostics": [],
+      "name": "simple",
+      "nodes": 1
+    },
+    {
+      "diagnostics": [],
+      "name": "inline-whitespace",
+      "nodes": 1
+    },
+    {
+      "diagnostics": [
+        "html-schema-repair"
+      ],
+      "name": "repaired-paragraph",
+      "nodes": 3
+    },
+    {
+      "diagnostics": [
+        "html-schema-repair"
+      ],
+      "name": "repaired-table-without-table-plugin",
+      "nodes": 2
+    },
+    {
+      "diagnostics": [
+        "html-schema-repair"
+      ],
+      "name": "misnested-formatting-without-mark-plugins",
+      "nodes": 1
+    },
+    {
+      "diagnostics": [
+        "html-unsafe-content",
+        "html-unsafe-content"
+      ],
+      "name": "unsafe-content",
+      "nodes": 1
+    }
+  ],
+  "customMapping": [
+    {
+      "align": "center",
+      "color": "red",
+      "type": "alignedParagraph",
+      "children": [
+        {
+          "text": "Mapped"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "The complete Word paste, declaration, SSR, and packed-consumer suites remain separate implementation proof.",
+    "The synthetic corpus is a focused architecture guard, not the parse5 conformance suite."
+  ],
+  "result": "pass",
+  "sourceFingerprint": "6fab1becacda739be0eac50df295611179380143e51516bfadcc2d3c10e7f40c"
+}

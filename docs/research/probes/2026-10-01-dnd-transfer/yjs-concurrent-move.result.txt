@@ -1,0 +1,2 @@
+plain "moved" a ["beta?","gamma","alpha!","delta"] b ["beta?","gamma","alpha!","delta"]
+content-roots "moved" a ["alpha!","beta?","gamma","delta",""] b ["beta","gamma","alpha","delta",""]

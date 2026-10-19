@@ -1,0 +1,185 @@
+---
+title: Local Docs
+description: Set up Plate's documentation locally for version-controlled, AI-enhanced development.
+---
+
+Copy Plate documentation into your project to review, customize, and version
+it alongside the application. Use a registry built from the matching Plate
+version when you need version-specific API documentation.
+
+Local files let developers and coding tools open the relevant guide directly.
+You can also host them alongside documentation for other libraries.
+
+## Setup guide
+
+There are two ways to set up local documentation:
+
+### Option 1: docs app
+
+This option sets up a complete documentation site using Fumadocs, providing a searchable, navigable interface.
+
+<Steps>
+
+#### Create Fumadocs app
+
+Set up a Fumadocs app which provides the Next.js-based framework for your documentation site:
+
+```bash
+pnpm create fumadocs-app
+```
+
+During setup:
+
+- **Name:** Enter `docs` when prompted
+- **Choose your preferred options** (defaults work well)
+- The wizard will create a `docs` directory with all necessary files
+
+Navigate to your newly created `docs` directory:
+
+```bash
+cd docs
+```
+
+For detailed Fumadocs setup, see the [Fumadocs UI documentation](https://fumadocs.dev/docs/ui).
+
+#### Create `components.json`
+
+Create `components.json` in your docs directory:
+
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-nova",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "app/global.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "iconLibrary": "lucide",
+  "registries": {
+    "@plate": "https://platejs.org/r/{style}/{name}.json"
+  }
+}
+```
+
+#### Add Plate documentation
+
+Fetch the Plate documentation files and necessary MDX components from the `@plate` registry.
+
+```bash
+npx shadcn@latest add @plate/fumadocs
+```
+
+<Callout type="warning" title="Version-Specific Documentation">
+  The command above installs the current Plate documentation from the live registry.
+  For older Plate versions, raw GitHub URLs are safe only for leaf registry
+  items that declare no `registryDependencies`.
+
+Do not install aggregate items such as `fumadocs.json` or `docs.json` from a
+raw GitHub tag: their transitive registry dependencies can resolve from the
+live registry. For full version-pinned docs, generate or serve the registry
+from the matching Plate checkout so every transitive item comes from the same
+version.
+
+</Callout>
+
+#### Run Fumadocs app
+
+Start the development server:
+
+```bash
+pnpm run dev
+```
+
+Your documentation site will be available at:
+
+- Plate docs: `http://localhost:3000/docs/plate`
+
+#### Customize
+
+Enhance your docs with [Fumadocs features](https://fumadocs.dev/docs/ui#writing-content).
+
+</Steps>
+
+### Option 2: MDX files only
+
+If you just want the documentation files without setting up a full site, you can add them directly to your existing project:
+
+```bash
+# Run from your project root (wherever you want the docs)
+npx shadcn@latest add @plate/docs
+```
+
+This will:
+
+- Install MDX documentation files in your project (typically in a `docs/` or similar directory)
+- Skip the Fumadocs setup entirely
+- Give you raw MDX files to use however you need
+
+Use cases:
+
+- Reference documentation directly in your codebase
+- Integrate with your existing documentation setup
+- Make docs available to AI tools for better context
+
+## Advanced integration
+
+### MCP integration
+
+Connect coding tools to the shadcn MCP server through `.cursor/mcp.json` (or your tool's equivalent configuration).
+
+```json
+{
+  "mcpServers": {
+    "shadcn": {
+      "description": "Shadcn and EditorRoot MCP",
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
+    }
+  }
+}
+```
+
+Your AI tools can then:
+
+- Access documentation context for better code assistance
+- Help manage and update documentation
+- Generate code with proper imports and configurations
+- Assist with editor setup and feature integration
+
+See the [MCP Guide](/docs/installation/mcp) for more details.
+
+<Callout>
+Once configured, try asking your AI:
+
+- "Help me understand how the Plate AI plugin works"
+- "How to create a custom plugin?"
+- "What's new in the latest Plate version?"
+</Callout>
+
+### Centralizing multiple documentations
+
+Your `content/docs/` directory can host documentation for multiple libraries. Replicate the process for Plate to add docs for other internal or external tools:
+
+```plaintext
+content/
+└── docs/
+    ├── plate/         # EditorRoot documentation
+    │   └── ...
+    ├── other-library/ # Documentation for another library
+    │   └── ...
+    └── index.mdx      # Main landing page for all docs
+```
+
+This creates a unified, version-controlled knowledge base for your project stack.

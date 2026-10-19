@@ -1,0 +1,222 @@
+import { execFile } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+
+import { build } from './esbuild';
+import { replaceArtifacts } from './generate';
+
+const CSS_FILE_PATTERN = /\.css$/;
+const ANY_FILE_PATTERN = /.*/;
+
+const JSON_EQUAL_SOURCE = `
+const jsonEqual = (left, right) => {
+  if (Object.is(left, right)) return true;
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return Array.isArray(left) && Array.isArray(right) &&
+      left.length === right.length &&
+      left.every((value, index) => jsonEqual(value, right[index]));
+  }
+  if (!left || !right || typeof left !== 'object' || typeof right !== 'object') {
+    return false;
+  }
+  const keys = Object.keys(left);
+  return keys.length === Object.keys(right).length &&
+    keys.every((key) => Object.hasOwn(right, key) && jsonEqual(left[key], right[key]));
+};
+`;
+
+export type RunEditorMigrationsOptions = Readonly<{
+  check?: boolean;
+  cwd?: string;
+  from?: number | 'current';
+  write?: boolean;
+}>;
+
+export type EditorMigrationRunResult = Readonly<{
+  changed: number;
+  files: ReadonlyArray<
+    Readonly<{
+      applied: readonly number[];
+      changed: boolean;
+      outputText: string;
+      path: string;
+    }>
+  >;
+}>;
+
+export type EditorMigrationInputResult = Readonly<{
+  applied: readonly number[];
+  changed: boolean;
+  outputText: string;
+}>;
+
+const evaluate = (
+  bundlePath: string,
+  requestPath: string,
+  resultPath: string,
+  cwd: string
+) =>
+  new Promise<void>((resolvePromise, reject) => {
+    execFile(
+      process.execPath,
+      [bundlePath, requestPath, resultPath],
+      { cwd, maxBuffer: 16 * 1024 * 1024 },
+      (error, _stdout, stderr) => {
+        if (!error) {
+          resolvePromise();
+          return;
+        }
+        reject(
+          new Error(
+            stderr.trim() ||
+              `Plate could not run the bundled migration: ${error.message}`
+          )
+        );
+      }
+    );
+  });
+
+export const runEditorMigrations = async (
+  entry: string,
+  files: readonly string[],
+  options: RunEditorMigrationsOptions = {}
+): Promise<EditorMigrationRunResult> => {
+  if (options.check && options.write) {
+    throw new Error('plate migrate run cannot combine --check and --write.');
+  }
+  if (files.length === 0) {
+    throw new Error('plate migrate run requires at least one JSON document.');
+  }
+
+  const cwd = resolve(options.cwd ?? process.cwd());
+  const entryPath = resolve(cwd, entry);
+  const paths = files.map((path) => resolve(cwd, path));
+  const outputDirectory = mkdtempSync(join(tmpdir(), 'plate-migrate-run-'));
+  const bundlePath = join(outputDirectory, 'runner.mjs');
+  const requestPath = join(outputDirectory, 'request.json');
+  const resultPath = join(outputDirectory, 'result.json');
+  try {
+    const result = await build({
+      bundle: true,
+      conditions: ['production'],
+      format: 'esm',
+      jsx: 'automatic',
+      logLevel: 'silent',
+      platform: 'node',
+      plugins: [
+        {
+          name: 'plate-empty-styles',
+          setup(context) {
+            context.onResolve({ filter: CSS_FILE_PATTERN }, ({ path }) => ({
+              namespace: 'plate-empty-style',
+              path,
+            }));
+            context.onLoad(
+              { filter: ANY_FILE_PATTERN, namespace: 'plate-empty-style' },
+              () => ({ contents: '', loader: 'js' })
+            );
+          },
+        },
+      ],
+      stdin: {
+        contents: `import * as editorModule from ${JSON.stringify(entryPath)};
+import { readFileSync, writeFileSync } from 'node:fs';
+import { migrateDocument } from 'platejs/migrations';
+${JSON_EQUAL_SOURCE}
+
+const migrations = editorModule.EditorMigrations;
+const request = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+const outputs = request.paths.map((path) => {
+  const sourceText = readFileSync(path, 'utf8');
+  const source = JSON.parse(sourceText);
+  let migration;
+
+  try {
+    migration = migrateDocument(source, {
+      migrations,
+      ...(request.source === undefined ? {} : { source: request.source }),
+    });
+  } catch (error) {
+    throw new Error(path + ': ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+  }
+  const output = migration.output;
+  const outputText = JSON.stringify(output, null, 2) + '\\n';
+
+  return { applied: migration.applied, changed: !jsonEqual(source, output), outputText, path };
+});
+
+writeFileSync(process.argv[3], JSON.stringify(outputs), 'utf8');
+`,
+        loader: 'ts',
+        resolveDir: dirname(entryPath),
+        sourcefile: 'plate-migration-runner.ts',
+      },
+      write: false,
+    });
+    const output = result.outputFiles?.[0];
+
+    if (!output) throw new Error(`Plate could not bundle "${entryPath}".`);
+
+    writeFileSync(bundlePath, output.text, 'utf-8');
+    writeFileSync(
+      requestPath,
+      JSON.stringify({ paths, source: options.from }),
+      'utf-8'
+    );
+    await evaluate(bundlePath, requestPath, resultPath, cwd);
+    const evaluated = JSON.parse(readFileSync(resultPath, 'utf-8')) as Array<{
+      applied: number[];
+      changed: boolean;
+      outputText: string;
+      path: string;
+    }>;
+
+    if (options.write) {
+      replaceArtifacts(
+        evaluated
+          .filter(({ changed }) => changed)
+          .map(({ outputText, path }) => ({ content: outputText, path }))
+      );
+    }
+
+    return Object.freeze({
+      changed: evaluated.filter(({ changed }) => changed).length,
+      files: Object.freeze(
+        evaluated.map(({ applied, changed, outputText, path }) =>
+          Object.freeze({
+            applied: Object.freeze(applied),
+            changed,
+            outputText,
+            path,
+          })
+        )
+      ),
+    });
+  } finally {
+    rmSync(outputDirectory, { force: true, recursive: true });
+  }
+};
+
+export const runEditorMigrationInput = async (
+  entry: string,
+  sourceText: string,
+  options: Omit<RunEditorMigrationsOptions, 'write'> = {}
+): Promise<EditorMigrationInputResult> => {
+  const directory = mkdtempSync(join(tmpdir(), 'plate-migrate-input-'));
+  const path = join(directory, 'document.json');
+
+  try {
+    writeFileSync(path, sourceText, 'utf-8');
+    const result = await runEditorMigrations(entry, [path], options);
+    const file = result.files[0];
+
+    return Object.freeze({
+      applied: file.applied,
+      changed: file.changed,
+      outputText: file.outputText,
+    });
+  } finally {
+    rmSync(directory, { force: true, recursive: true });
+  }
+};

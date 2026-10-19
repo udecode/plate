@@ -1,0 +1,114 @@
+[
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/date-reviver.ts",
+    "sha256": "0e01c18c0d505d18c4e539bed8cf354dcf3375c254a966afa015a9d245dc6a5d"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/clone.ts",
+    "sha256": "e51e30b89e483b1c8ebb41f5f1a757ec80b5456d77c9ee0a1a95554c9839d248"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/pipe.ts",
+    "sha256": "9d47128e60524ebaf63327f905cfb96f4bf211a2d4529a35bb0caba77da2b443"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/diffpatcher.ts",
+    "sha256": "0d10fd5b758a2d7a3ab050a81c80ce6e58ab29160ab49c653f77e40fbbdccb87"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/with-text-diffs.ts",
+    "sha256": "2ec5e4145d21ba2e735748dc4f32251e74637def56eca1a65dabc08047745c08"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/types.ts",
+    "sha256": "dfb7c23796a118662874e97b248e9b36c0fdfb1a5cc4328e3fe5a2f440bf880d"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/processor.ts",
+    "sha256": "fceb103b2fee53e21bf2e1414ecb1a0a6636616254fe3e6557b838eaaae99232"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/index.ts",
+    "sha256": "859032e062ed363470485b313d7dd089931ef6eb2a0abf359bd5ac9569c64292"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/moves/delta-to-sequence.ts",
+    "sha256": "64cb6b04c78913125f94756cd9d581c409184e65a3244566bc149082697632f1"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/filters/nested.ts",
+    "sha256": "665f28ccfdf2ba0623e4ac68555475f616aa56c31b75d2aed2812da6f89b3d51"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/filters/dates.ts",
+    "sha256": "2068c5092c2c3115267d5c928bbb41dbf052fc18372956ffd9a903939adc8191"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/filters/texts.ts",
+    "sha256": "bf160e705ea0178c30e5420a3c501c8634f069ebeebec917674243072701b612"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/filters/lcs.ts",
+    "sha256": "b7f4ccdefa9680bc38429e0dc86e5453b4bd9057ef2c6b40b1c19f688e4b020d"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/filters/trivial.ts",
+    "sha256": "bdac36aba856ead3ed9a7c38b88880549af7aff9ce70afa5a558cf4d3bc427ed"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/filters/arrays.ts",
+    "sha256": "8e2541578185b69dd5f2002605320f0d5ee49d1e1ce3994dc82ad6521bcc5450"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/contexts/diff.ts",
+    "sha256": "96231690f9153f05131843e4c619f0f0eda6297e267676842685705877e7ab7e"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/contexts/context.ts",
+    "sha256": "82d49205cef3ce26d5477e7bbcd100735b9ab277fb84154d534ec1412f24e3d5"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/contexts/reverse.ts",
+    "sha256": "93f27655603d6c296382c68141651b11859411427512da59739a4ee93f784214"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/contexts/patch.ts",
+    "sha256": "ed1e7a9eb7dec4b212bc3a847d37bbb1a7f28fedb2eb3e977be5fb8b8d207e6b"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/formatters/base.ts",
+    "sha256": "54e95a0585c51189096e85e41059b306a9c9cbdf08600a4d5fc27546d892025a"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/formatters/annotated.ts",
+    "sha256": "c9d1713be4d3ec381fbf96420a4b2e108dd346d736d25e99296f583cf0e03812"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/formatters/jsonpatch-apply.ts",
+    "sha256": "636810ef94e1daad0648e88e95afdf5b644c717c51cff1d52167643b3562d8ad"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/formatters/html.ts",
+    "sha256": "acec980c3efabb40ff14f2d7f05318e115b5ace73425a799ba1af448101c9f59"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/formatters/jsonpatch.ts",
+    "sha256": "0ea3036d5e0bfb55c1689623aa1a9eb808bd4e726bf7ed03ae63407b191263f7"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/formatters/console.ts",
+    "sha256": "1a5aa15f379bf96663278b6f43deca186e9cb3c933e9cd5520887febf9331c50"
+  },
+  {
+    "path": "/Users/zbeyens/git/jsondiffpatch/packages/jsondiffpatch/src/assertions/arrays.ts",
+    "sha256": "2758b0dc68b299ae22998d008df6eff26d2884bbd9f834c0760e210e5bee18ea"
+  },
+  {
+    "path": "/Users/zbeyens/git/node-diff3/src/diff3.mjs",
+    "sha256": "91c4048e99cb1aa7081eeab8304d765ea439151dadaf0d71daf780f4d2cdd013"
+  },
+  {
+    "path": "/Users/zbeyens/git/diff-match-patch/javascript/diff_match_patch_uncompressed.js",
+    "sha256": "9a79cf031ac7c2e366416181051acb3e6d2cacf79c5354148f4c71ea20c7e4a3"
+  }
+]
