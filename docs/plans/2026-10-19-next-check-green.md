@@ -1,6 +1,6 @@
 # Make the full check pass on next
 
-Status: building, IME audit slice, then the full check again
+Status: building, full check again after the IME bridge
 Page: https://claude.ai/artifact/2cXMFmv3whUediiY6PvE29
 Playbook: bug-fix
 
@@ -12,7 +12,7 @@ You asked to fix every failing check on next first. Lint, two audits, the bridge
 
 ### What could go wrong?
 
-Old lint rules still work, since the editor is an extra field. The IME typing audit comes in a later slice, and the older plans the docs checks flag wait on their own task. One recording law can still fail on a random seed; a waiting task owns it.
+Old lint rules still work. IME typing still skips insert-text handlers; the audit names it. The docs checks flag older plans another task owns. Two recording laws still fail on random seeds; waiting tasks own them.
 
 ## Teach
 
@@ -104,7 +104,7 @@ import type {
 | Lint rule skip for code | Give each rule the editor (look) | Leave the two lines failing the audit | no lint editor | small |
 | Projection types home | Export them from the Plite root (look) | Keep the private bridge and change the bridge check | bridge types | small |
 | AI discard pair | Fix it in its own slice after this one (look) | Change both tests to expect the leftover records | AI tests to law | big |
-| IME typing audit | Decide it in its own slice after the AI one (look) | Allow the IME text write in the kernel authority audit | allow IME write | big |
+| IME typing audit | Name the desktop composition write as a bridge in the kernel authority audit (look) | Teach the insert-text command to land a composition inside struck text | IME command | big |
 
 ## Steps
 
@@ -114,4 +114,5 @@ import type {
 - [x] Round-one fixes, then land. Round two skipped on the owner's "fast"; the fixes and the CLI commit stay unreviewed until "full". Proof: `restore-*-a1.log` in the run directory.
 - [x] Full check after batch one: 5 of 28 steps fail. `www` fails on batch one's new root types in the API reference, plite-test on the AI pair, core-audits on the IME audit, review-ledger and knowledge on older plans that task t_3ea68f2e owns. Proof: `check-after-b1-a1.log`.
 - [x] AI discard slice: `update.authored.withdraw(changes)` takes back the author's own pending change with no verdict and no held member, AIChatPlugin's Discard and each streamed chunk withdraw the previous preview, and the API reference excludes the two root projection types. Proof: `ai-specs-a1.log`, `ai-authored-tests-a1.log`, `ai-types-b-a1.log`, `ai-plite-test-b-a1.log`, `ai-www-typecheck-c-a1.log`.
-- [ ] IME audit slice, then the full check again.
+- [x] IME audit slice: routing the desktop composition through the insert-text command passes Chromium but fails "IME composition inside struck text splits the deletion" in Firefox and WebKit, because the command runs on the proposed view, where struck text does not exist. The direct write stays, and the audit lists it as a named bridge. Proof: `ime-chromium-a1.log`, `ime-firefox-a1.log`, `ime-webkit-a1.log`, `ime-audit-b-a1.log`.
+- [ ] Full check again.

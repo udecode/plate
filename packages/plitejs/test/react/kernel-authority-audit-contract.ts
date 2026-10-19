@@ -1128,12 +1128,26 @@ test('React user-action mutation owners do not bypass semantic commands', () => 
     resolve(pliteReactRoot, 'editable/mutation-full-block-editing.ts'),
   ];
 
+  const bridges: AuthorityInventory = {
+    'packages/plitejs/src/react/editable/mutation-controller.ts': {
+      count: 1,
+      next: 'explicit-bridge',
+      owner: 'desktop insertFromComposition commit',
+      rationale:
+        'Firefox and WebKit compose inside struck text, a point the insert-text command cannot reach because it runs on the proposed view; the command skips its insertText interceptors until it can.',
+    },
+  };
+
   expect(
     getMatchesByFiles(
       /\btx\.(?:break|fragment|marks|nodes|slice|text)\.(?:add|delete|insert|insertSoft|remove|replace|replaceChildren)\(/g,
       mutationOwnerFiles
     )
-  ).toEqual({});
+  ).toEqual(
+    Object.fromEntries(
+      Object.entries(bridges).map(([file, entry]) => [file, entry.count])
+    )
+  );
 
   expect(
     getMatchesByFiles(/\btx\.selection\.(?:collapse|move|set)\(/g, [
