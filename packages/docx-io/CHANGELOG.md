@@ -1,5 +1,12 @@
 # @platejs/docx-io
 
+## 53.4.0
+
+### Minor Changes
+
+- [#5193](https://github.com/udecode/plate/pull/5193) by [@vincent69001](https://github.com/vincent69001) –
+  - Add `pageNumber` to `exportToDocx`, `exportEditorToDocx`, `editor.api.docxExport.exportToBlob` and `editor.tf.docxExport.exportAndDownload` to number the pages in a footer.
+
 ## 53.3.17
 
 ### Patch Changes
