@@ -44,7 +44,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash|mcp__ccd_host__sync_with_base_branch",
+        "matcher": "Bash|Edit|MultiEdit|Write|NotebookEdit|mcp__ccd_host__sync_with_base_branch",
         "hooks": [
           {
             "type": "command",

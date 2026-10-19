@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
-// Usage: a Claude Code PreToolUse hook on Bash and on the desktop app's
-// sync_with_base_branch tool, `node .agents/pstack/guard.mjs`.
+// Usage: a Claude Code PreToolUse hook on Bash, Edit, MultiEdit, Write,
+// NotebookEdit and the desktop app's sync_with_base_branch tool,
+// `node .agents/pstack/guard.mjs`.
 // Denies an agent's `git push` that forces or deletes the branch or the
 // protected branch that .agents/pstack.json names: --force, -f, a short-flag
 // cluster holding f or d, --force-with-lease, --mirror, --delete, a `+`
@@ -11,14 +12,23 @@
 // bodies, passes every other command, and prints the command for the owner to
 // run in their own terminal. The owner's terminal never runs this hook. It
 // also denies the app's base-branch sync, which refuses the branch whenever it
-// changes .claude files, and names the rebase to run instead.
+// changes .claude files, and names the rebase to run instead. On Edit,
+// MultiEdit, Write and NotebookEdit it denies a file inside the main checkout,
+// its .git folder included, while that checkout is on the branch or the
+// protected branch, except the suggested-task ledger and the plans artifacts
+// directory; a linked worktree, even one nested in the main checkout's folder,
+// is its own checkout and passes. It refuses the edit when git or the guard
+// itself fails, because a hook that exits with an error lets the edit through.
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, lstatSync, readFileSync, readlinkSync, realpathSync, statSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const CONFIG = new URL('../pstack.json', import.meta.url);
 const BASE_SYNC = /(?:^|__)sync_with_base_branch$/u;
+const EDIT_TOOLS = new Set(['Edit', 'MultiEdit', 'Write', 'NotebookEdit']);
 const GIT_VALUE_OPTIONS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--config-env']);
 const PUSH_VALUE_OPTIONS = new Set(['-o', '--push-option', '--repo', '--receive-pack', '--exec']);
 const PREFIXES = new Set(['sudo', 'env', 'command', 'builtin', 'exec', 'nohup', 'time', 'timeout']);
@@ -155,6 +165,60 @@ function rewrites(words, cwd) {
   return refspecs.length > 0 ? targets : [current()];
 }
 
+const git = (dir, ...args) => {
+  const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', timeout: 1000, killSignal: 'SIGKILL' });
+  return run.error || run.status !== 0 ? null : run.stdout.replace(/\n$/u, '');
+};
+const sameDir = (a, b) => {
+  const [x, y] = [statSync(a), statSync(b)];
+  return x.dev === y.dev && x.ino === y.ino;
+};
+
+function resolvePhysically(path) {
+  let parts = path.split(sep).filter(Boolean);
+  let current = sep;
+  for (let index = 0, hops = 0; index < parts.length; index += 1) {
+    if (parts[index] === '.') continue;
+    if (parts[index] === '..') {
+      current = dirname(current);
+      continue;
+    }
+    const next = join(current, parts[index]);
+    let link;
+    try {
+      link = lstatSync(next).isSymbolicLink();
+    } catch {
+      current = next;
+      continue;
+    }
+    if (!link) {
+      current = realpathSync.native(next);
+      continue;
+    }
+    if ((hops += 1) > 40) throw new Error(`too many symlinks at ${next}`);
+    const target = readlinkSync(next);
+    parts = [...target.split(sep).filter(Boolean), ...parts.slice(index + 1)];
+    if (isAbsolute(target)) current = sep;
+    index = -1;
+  }
+  return current;
+}
+
+function mainCheckoutPath(file, main) {
+  let root = file;
+  while (!existsSync(root) || !sameDir(root, main)) {
+    if (dirname(root) === root) return null;
+    root = dirname(root);
+  }
+  const path = relative(root, file);
+  if (path.split(sep)[0] === '.git') return path;
+  let dir = file;
+  while (!existsSync(dir) || !statSync(dir).isDirectory()) dir = dirname(dir);
+  const top = git(dir, 'rev-parse', '--show-toplevel');
+  if (top === null) throw new Error(`git could not read ${dir}`);
+  return sameDir(top, main) ? path : null;
+}
+
 const deny = (reason) => {
   process.stdout.write(
     JSON.stringify({
@@ -164,8 +228,46 @@ const deny = (reason) => {
   process.exit(0);
 };
 
+// Claude Code trims the path, expands ~ and resolves it against cwd before the
+// hook sees it and before it writes, so the cleaned spelling is the one that
+// lands. A host that wrote the raw spelling would follow links before any ..,
+// so a raw path holding . or .. is walked too, and either walk can deny.
+function editDenial(config, file, cwd) {
+  if (typeof config.branch !== 'string' || config.branch === '') throw new Error('.agents/pstack.json names no branch');
+  const common = git(dirname(fileURLToPath(import.meta.url)), 'rev-parse', '--path-format=absolute', '--git-common-dir');
+  if (common === null) return 'git could not read this repository, so the guard cannot tell whether this edit lands in the main checkout. Fix git, then retry.';
+  const main = dirname(common);
+  const raw = file.trim().replace(/^~(?=\/|$)/u, homedir());
+  const spellings = new Set([resolve(cwd, raw), isAbsolute(raw) ? raw : `${cwd}${sep}${raw}`]);
+  const hits = [...spellings].map((spelling) => mainCheckoutPath(resolvePhysically(spelling), main)).filter((path) => path !== null);
+  if (hits.length === 0) return null;
+  const branch = git(main, 'branch', '--show-current');
+  if (branch === null) return "git could not read the main checkout's branch, so the guard refuses this edit there. Fix git, then retry.";
+  if (branch !== '' && ![config.branch, config.protected].includes(branch)) return null;
+  const ledger = config.plans && join(config.plans, 'suggested-tasks.decisions.tsv');
+  const artifacts = config.plans && join(config.plans, 'artifacts') + sep;
+  const path = hits.find((hit) => hit !== ledger && !(artifacts && hit.startsWith(artifacts)));
+  if (path === undefined) return null;
+  const here = git(cwd, 'rev-parse', '--show-toplevel');
+  const worktree =
+    path.split(sep)[0] !== '.git' && here !== null && !sameDir(here, main) && sameDir(git(here, 'rev-parse', '--path-format=absolute', '--git-common-dir') ?? here, common) ? here : null;
+  return `agents never edit the main checkout on ${branch || 'a detached HEAD'}, here ${path}. ${worktree ? `Edit ${join(worktree, path)} in your worktree instead` : 'Move to your own worktree, such as with EnterWorktree, edit there'}, and land it with land.mjs.${ledger ? ` Only ${ledger} and ${artifacts} are writable in the main checkout.` : ''}`;
+}
+
 const input = JSON.parse(readFileSync(0, 'utf8'));
 if (!existsSync(CONFIG)) process.exit(0);
+if (EDIT_TOOLS.has(input.tool_name)) {
+  const file = input.tool_input?.file_path ?? input.tool_input?.notebook_path;
+  if (typeof file !== 'string') process.exit(0);
+  let reason;
+  try {
+    reason = editDenial(JSON.parse(readFileSync(CONFIG, 'utf8')), file, input.cwd ?? process.cwd());
+  } catch (error) {
+    reason = `the guard failed (${error.message}), so it refuses this edit. Fix the path, git or .agents/pstack.json, then retry.`;
+  }
+  if (reason) deny(reason);
+  process.exit(0);
+}
 const config = JSON.parse(readFileSync(CONFIG, 'utf8'));
 if (BASE_SYNC.test(input.tool_name ?? '')) {
   deny(
