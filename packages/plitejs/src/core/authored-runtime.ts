@@ -13,7 +13,20 @@ type AuthoredView = NonNullable<EditorViewOptions['authored']>;
 
 type AuthoredLocation = Path | Point | Range;
 
+type SelectionTarget = NonNullable<
+  Parameters<Editor['update']['selection']['set']>[0]
+>;
+
 type AuthoredRuntime = {
+  /**
+   * A selection `view` shows, in `root` where a point names none, as stored,
+   * or null when it stores none of it.
+   */
+  mapFromView: (
+    view: Editor,
+    root: string,
+    target: SelectionTarget
+  ) => SelectionTarget | null;
   /** A stored location of `root` as `view` reads it, or null when it reads none of it. */
   mapToView: <T extends AuthoredLocation>(
     view: Editor,
@@ -28,6 +41,16 @@ type AuthoredRuntime = {
 
 const AUTHORED_RUNTIMES = new WeakMap<Editor, AuthoredRuntime>();
 const UPDATE_VIEWS = new WeakMap<Editor, Editor>();
+
+export const mapFromAuthoredView = (
+  view: Editor,
+  root: string,
+  target: SelectionTarget
+): SelectionTarget | null => {
+  const installed = AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view));
+
+  return installed ? installed.mapFromView(view, root, target) : target;
+};
 
 export const mapToAuthoredView = <T extends AuthoredLocation>(
   view: Editor,

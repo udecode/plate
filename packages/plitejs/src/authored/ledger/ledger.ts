@@ -9,6 +9,7 @@ import {
   rootNodesOf,
   type SparseNodes,
 } from '../../core/change/document-index';
+import { jsonEqual } from '../../core/change/json';
 import { copyRoot, setLazyRoot } from '../../core/change/lazy-root';
 import { RootChange } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
@@ -22,6 +23,7 @@ import {
   ensureElementOwnedRootIndex,
   rebaseElementOwnedRootIndex,
 } from '../../core/element-owned-root-index';
+import { toInternalRoot } from '../../core/public-root';
 import {
   getEditorProjectionSnapshotIndex,
   hasEditorProjectionSnapshotIndex,
@@ -49,6 +51,15 @@ import type {
   EditorDocumentValue,
   EditorSnapshot,
 } from '../../interfaces/editor';
+import { PathApi } from '../../interfaces/path';
+import type { Point } from '../../interfaces/point';
+import { type Range, RangeApi } from '../../interfaces/range';
+import {
+  type Selection,
+  SelectionApi,
+  type SelectionAssociation,
+  type TextSelection,
+} from '../../interfaces/selection';
 import { getDefined } from '../../internal/get-defined';
 import type { createDocumentMarksValidator } from '../facts/admission';
 import { factsOf, primeInsertions } from '../facts/facts';
@@ -520,14 +531,43 @@ const mapOf = (
   });
 };
 
+type PointMap = (point: Point, assoc: -1 | 1) => Point | null;
+
+/**
+ * `selection` mapped point by point: a range's edges inward, a caret to the
+ * side its affinity names. Null when a point maps nowhere.
+ */
+const mapTextSelection = <
+  T extends Range & { affinity?: SelectionAssociation },
+>(
+  selection: T,
+  point: PointMap
+): T | null => {
+  if (RangeApi.isCollapsed(selection)) {
+    const at = point(
+      selection.focus,
+      selection.affinity === 'forward' ? 1 : -1
+    );
+
+    return at && { ...selection, anchor: at, focus: at };
+  }
+
+  const backward = RangeApi.isBackward(selection);
+  const anchor = point(selection.anchor, backward ? -1 : 1);
+  const focus = point(selection.focus, backward ? 1 : -1);
+
+  return anchor && focus && { ...selection, anchor, focus };
+};
+
 const snapshotOf = (
   owner: Editor,
   value: JsonEditorValue,
-  version: number
+  version: number,
+  selection: Selection
 ): EditorSnapshot => {
   let index: EditorSnapshot['index'] | undefined;
   const snapshot = {
-    selection: null,
+    selection,
     version,
     get index() {
       return (index ??= getEditorProjectionSnapshotIndex(
@@ -562,6 +602,10 @@ export class ReviewLedger {
     Partial<Record<AuthoredFormatProjection, EditorCommit>>
   >();
   private readonly modes = new Map<AuthoredFormatProjection, ModeProjection>();
+  private readonly lastShown = new Map<
+    AuthoredFormatProjection,
+    Readonly<{ selection: Selection; version: number }>
+  >();
   private lastFrame: Readonly<{
     frame: CommandProjection | null;
     value: JsonEditorValue;
@@ -707,23 +751,105 @@ export class ReviewLedger {
     mode: AuthoredFormatProjection,
     root: string
   ): AuthoredLocationMap {
+    return this.locationMaps(stored, mode, root).toPreview;
+  }
+
+  previewSelection(
+    stored: JsonEditorValue,
+    mode: AuthoredFormatProjection,
+    selection: Selection,
+    root: string
+  ): Selection {
+    return SelectionApi.isText(selection)
+      ? mapTextSelection(
+          selection,
+          this.pointMap(stored, mode, root, 'toPreview')
+        )
+      : null;
+  }
+
+  storedSelection(
+    stored: JsonEditorValue,
+    mode: AuthoredFormatProjection,
+    selection: TextSelection,
+    root: string
+  ): TextSelection | null {
+    const lifted = mapTextSelection(
+      selection,
+      this.pointMap(stored, mode, root, 'toStored')
+    );
+
+    if (!lifted || !RangeApi.isCollapsed(selection)) return lifted;
+
+    // Content the preview hides or adds shows one stored place at two places,
+    // and the caret's side keeps the one it was shown at.
+    const shows = (affinity: SelectionAssociation | undefined) => {
+      const back = mapTextSelection(
+        { ...lifted, affinity },
+        this.pointMap(stored, mode, root, 'toPreview')
+      )?.focus;
+
+      return (
+        back?.offset === selection.focus.offset &&
+        PathApi.equals(back.path, selection.focus.path)
+      );
+    };
+
+    if (shows(lifted.affinity)) return lifted;
+
+    const side = lifted.affinity === 'forward' ? 'backward' : 'forward';
+
+    return shows(side) ? { ...lifted, affinity: side } : lifted;
+  }
+
+  private locationMaps(
+    stored: JsonEditorValue,
+    mode: AuthoredFormatProjection,
+    root: string
+  ) {
     const projection = this.modeOf(mode);
     const synced = projection.sync(stored, this.schemaOf());
-    const from = rootOf(stored, root);
+    const storedIndex = rootOf(stored, root);
     const state = synced.roots.get(root);
+    const previewIndex = state?.changed ? state.index : storedIndex;
+    const through =
+      (move: (live: RootProjection, from: number, assoc: -1 | 1) => number) =>
+      (from: number, assoc: -1 | 1) => {
+        if (synced.dropped.has(root)) return null;
 
-    return locationMapOver(
-      from,
-      state?.changed ? state.index : from,
-      (position, assoc) =>
-        synced.dropped.has(root)
-          ? null
-          : (projection
-              .moveTo(synced)
-              .get(root)
-              ?.toProjected(position, assoc) ?? position),
-      root
-    );
+        const live = projection.moveTo(synced).get(root);
+
+        return live ? move(live, from, assoc) : from;
+      };
+
+    return {
+      toPreview: locationMapOver(
+        storedIndex,
+        previewIndex,
+        through((live, from, assoc) => live.toProjected(from, assoc)),
+        root
+      ),
+      toStored: locationMapOver(
+        previewIndex,
+        storedIndex,
+        through((live, from, assoc) => live.toStored(from, assoc)),
+        root
+      ),
+    };
+  }
+
+  private pointMap(
+    stored: JsonEditorValue,
+    mode: AuthoredFormatProjection,
+    root: string,
+    way: 'toPreview' | 'toStored'
+  ): PointMap {
+    return (point, assoc) =>
+      this.locationMaps(
+        stored,
+        mode,
+        point.root === undefined ? root : toInternalRoot(point.root)
+      )[way].point(point, assoc);
   }
 
   previewCommit(
@@ -735,11 +861,40 @@ export class ReviewLedger {
 
     if (known) return known;
 
+    const storedBefore = getEditorCommitValue(commit, 'before');
+    const storedAfter = getEditorCommitValue(commit);
     const { after, before, changes } = this.modeOf(mode).step(
-      getEditorCommitValue(commit, 'before'),
-      getEditorCommitValue(commit),
+      storedBefore,
+      storedAfter,
       this.schemaOf()
     );
+    const afterRoot = toInternalRoot(commit.selectionAfterRoot);
+    const beforeRoot = toInternalRoot(commit.selectionBeforeRoot);
+    const selectionAfter = this.previewSelection(
+      storedAfter,
+      mode,
+      commit.selectionAfter,
+      afterRoot
+    );
+    const last = this.lastShown.get(mode);
+    // The preview before a content change is no longer synced, so the mode
+    // reads the selection it showed last.
+    const selectionBefore =
+      last?.version === commit.previousVersion
+        ? last.selection
+        : storedBefore === storedAfter
+          ? this.previewSelection(
+              storedAfter,
+              mode,
+              commit.selectionBefore,
+              beforeRoot
+            )
+          : undefined;
+
+    this.lastShown.set(mode, {
+      selection: selectionAfter,
+      version: commit.version,
+    });
 
     if (!changes.empty) {
       inheritEditorProjectionIndexes(
@@ -752,21 +907,35 @@ export class ReviewLedger {
 
     const projected = createEditorCommit(
       {
-        after: snapshotOf(this.owner, after, commit.version),
+        after: snapshotOf(
+          this.owner,
+          after,
+          commit.version,
+          afterRoot === 'main' ? selectionAfter : null
+        ),
         afterValue: after,
         annotations: commit.annotations,
-        before: snapshotOf(this.owner, before, commit.previousVersion),
+        before: snapshotOf(
+          this.owner,
+          before,
+          commit.previousVersion,
+          beforeRoot === 'main' ? (selectionBefore ?? null) : null
+        ),
         beforeValue: before,
         changes,
         dirtyStateKeys: commit.dirtyStateKeys,
         editor: this.owner,
         effects: commit.effects,
         replace: commit.changed.hasAny('replace'),
-        selectionAfter: null,
-        selectionAfterRoot: 'main',
-        selectionBefore: null,
-        selectionBeforeRoot: 'main',
-        selectionChanged: false,
+        selectionAfter,
+        selectionAfterRoot: afterRoot,
+        selectionBefore: selectionBefore ?? null,
+        selectionBeforeRoot: beforeRoot,
+        selectionChanged:
+          selectionBefore === undefined
+            ? commit.selectionChanged || selectionAfter !== null
+            : beforeRoot !== afterRoot ||
+              !jsonEqual(selectionBefore, selectionAfter),
         tags: commit.tags,
       },
       { previousVersion: commit.previousVersion, version: commit.version }

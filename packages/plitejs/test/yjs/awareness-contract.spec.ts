@@ -1,13 +1,20 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { createAuthoredPlugin } from '../../src/authored/authored';
 import { releaseEditorViewLifetime } from '../../src/core/editor-view-lifetime';
-import { createEditorView, type Descendant, type Range } from '../../src/index';
+import {
+  createEditor,
+  createEditorView,
+  type Descendant,
+  type Range,
+} from '../../src/index';
 import type { YjsCursorDataSchema } from '../../src/yjs/core';
 import { getActiveYjsController } from '../../src/yjs/core/controller-registry';
 import {
   clearYjsTrace,
   createYjsPeer,
+  createYjsPeerWithEditor,
   disconnectYjsPeer,
   FakeAwareness,
   getYjsAwarenessRevision,
@@ -251,6 +258,51 @@ describe('plitejs/yjs awareness contract', () => {
 
     releaseEditorViewLifetime(second);
     assert.equal(awareness.getLocalState()?.selection, null);
+
+    peer.cleanup();
+  });
+
+  it('publishes the stored selection from an authored preview that hides it', () => {
+    const awareness = new FakeAwareness(2);
+    const peer = createYjsPeerWithEditor(
+      createEditor({
+        initialValue: [paragraph('')],
+        plugins: [createAuthoredPlugin({ authorId: 'alice' })],
+      }),
+      {
+        awareness,
+        children: [
+          {
+            children: [
+              { text: 'This ' },
+              {
+                authored: [
+                  { at: 1, author: 'carol', change: 'carol:1', kind: 'delete' },
+                ],
+                text: 'extra ',
+              },
+              { text: 'sentence can go.' },
+            ],
+            type: 'paragraph',
+          },
+        ],
+        clientId: 'b',
+        numericClientId: 2,
+      }
+    );
+    const controller = getActiveYjsController(peer.editor);
+    const proposed = createEditorView(peer.editor, {
+      authored: { preview: 'proposed' },
+    });
+
+    assert.ok(controller);
+
+    peer.editor.update.selection.set(selection([0, 1], 3));
+    controller.presenceApi(proposed).syncSelection();
+    const fromPreview = awareness.getLocalState()?.selection;
+    controller.presenceApi(peer.editor).syncSelection();
+
+    assert.deepEqual(fromPreview, awareness.getLocalState()?.selection);
 
     peer.cleanup();
   });

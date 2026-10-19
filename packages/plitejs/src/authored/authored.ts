@@ -53,6 +53,8 @@ import {
 } from '../core/plugin-registry';
 import {
   getActiveEditorUpdateId,
+  getCurrentSelection,
+  getCurrentSelectionRoot,
   getActiveEditorUpdateTags,
   notifyEditorViewState,
   subscribeEditorViewState,
@@ -1601,6 +1603,32 @@ export const createAuthoredPlugin = (
 
       onCleanup(
         registerAuthoredRuntime(owner, {
+          mapFromView: (view, root, target) => {
+            const current = viewOf(view);
+
+            if (!('preview' in current)) return target;
+
+            const shown = PointApi.isPoint(target)
+              ? SelectionApi.text({ anchor: target, focus: target })
+              : RangeApi.isRange(target)
+                ? SelectionApi.text(target)
+                : null;
+
+            try {
+              return (
+                shown &&
+                ledger.storedSelection(
+                  storedValue(owner),
+                  current.preview,
+                  shown,
+                  root
+                )
+              );
+            } catch {
+              // A point the shown document no longer holds selects nothing.
+              return null;
+            }
+          },
           mapToView: (view, root, value) => {
             const current = viewOf(view);
 
@@ -1627,17 +1655,50 @@ export const createAuthoredPlugin = (
           readView: (view, read) => {
             const current = viewOf(view);
 
-            return 'preview' in current && !STORED_READS.has(owner)
-              ? withEditorDocumentProjection(
-                  owner,
-                  ledger.preview(
-                    storedValue(owner),
-                    current.preview
-                  ) as EditorDocumentValue,
-                  read,
-                  { root: 'main', selection: null }
-                )
-              : read();
+            if (!('preview' in current) || STORED_READS.has(owner)) {
+              return read();
+            }
+
+            const stored = storedValue(owner);
+            let shown: { root: string; selection: Selection } | undefined;
+            const selected = () => {
+              if (shown) return shown;
+
+              const { root, selection } = withEditorDocumentProjection(
+                owner,
+                undefined,
+                () => ({
+                  root: getCurrentSelectionRoot(owner),
+                  selection: getCurrentSelection(owner),
+                })
+              );
+
+              shown = {
+                root,
+                selection: ledger.previewSelection(
+                  stored,
+                  current.preview,
+                  selection,
+                  root
+                ),
+              };
+
+              return shown;
+            };
+
+            return withEditorDocumentProjection(
+              owner,
+              ledger.preview(stored, current.preview) as EditorDocumentValue,
+              read,
+              {
+                get root() {
+                  return selected().root;
+                },
+                get selection() {
+                  return selected().selection;
+                },
+              }
+            );
           },
           setView: (view, value) => {
             state.views.set(getEditorRuntime(view), value);

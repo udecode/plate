@@ -1,5 +1,9 @@
 import type { EditorMarks, EditorTargetRuntime } from '../..';
-import { withAuthoredUpdateView } from '../../core/authored-runtime';
+import {
+  mapFromAuthoredView,
+  withAuthoredUpdateView,
+} from '../../core/authored-runtime';
+import { toInternalRoot } from '../../core/public-root';
 import { getActiveEditorTransaction } from '../../core/public-state';
 import type { AnyEditor } from '../../interfaces/editor';
 import {
@@ -11,8 +15,13 @@ import {
 
 export const writeRuntimeSelection = (
   editor: AnyEditor,
-  target: Parameters<AnyEditor['update']['selection']['set']>[0]
+  shown: Parameters<AnyEditor['update']['selection']['set']>[0]
 ) => {
+  const target =
+    shown &&
+    mapFromAuthoredView(editor, toInternalRoot(editor.read.view.root()), shown);
+
+  if (shown && !target) return;
   if (editor.read.view.isReadOnly()) {
     const owner = getEditorRuntimeOwner(editor);
     withAuthoredUpdateView(owner, editor, () =>
