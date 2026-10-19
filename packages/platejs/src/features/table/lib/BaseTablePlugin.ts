@@ -112,6 +112,18 @@ const clampTableSelection = (
     return selection;
   }
 
+  const [selectionStart, selectionEnd] = RangeApi.edges(selection);
+  const rootStart = state.points.start([]);
+  const rootEnd = state.points.end([]);
+
+  const coversRoot =
+    !!rootStart &&
+    !!rootEnd &&
+    PointApi.equals(selectionStart, rootStart) &&
+    PointApi.equals(selectionEnd, rootEnd);
+
+  if (coversRoot) return selection;
+
   const anchorTable = state.nodes.block({
     at: selection.anchor,
     type: tableType,
@@ -121,11 +133,10 @@ const clampTableSelection = (
   if (anchorTable) {
     const [, path] = anchorTable;
 
-    if (RangeApi.isBackward(selection)) {
-      focus = state.points.start(path) ?? focus;
-    } else if (state.points.before(path)) {
-      focus = state.points.end(path) ?? focus;
-    }
+    focus =
+      (RangeApi.isBackward(selection)
+        ? state.points.start(path)
+        : state.points.end(path)) ?? focus;
   } else {
     const focusTable = state.nodes.block({
       at: selection.focus,
@@ -345,6 +356,12 @@ export const BaseTableCellPlugin = definePlugin(PLUGINS.tableCell, {
         }),
       },
       blockContent: false,
+      structure: {
+        columnSpan: 'colSpan',
+        kind: 'grid',
+        role: 'cell',
+        rowSpan: 'rowSpan',
+      },
     },
   }),
   formats: ({ defineFormats }) =>
@@ -406,6 +423,7 @@ export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {
         }),
       },
       blockContent: false,
+      structure: { kind: 'grid', role: 'row' },
     },
   },
   formats: ({ defineFormats }) =>
@@ -667,6 +685,7 @@ const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
         }),
         marginLeft: property.number(),
       },
+      structure: { kind: 'grid', role: 'grid' },
     },
   },
   formats: ({ defineFormats, schema: { type } }) =>

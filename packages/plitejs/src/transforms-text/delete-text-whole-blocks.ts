@@ -4,20 +4,22 @@ import {
   getEditorUpdateRoot,
   profileCoreDuration,
 } from '../core/public-state';
-import { NodeApi, PointApi, SelectionApi } from '../interfaces';
+import { canReplaceChildrenWithText } from '../core/writable-text';
+import { isStructuralEdge, readTextEdge } from '../editor/point';
+import { NodeApi, type Point, SelectionApi } from '../interfaces';
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import {
   getChildren as editorGetChildren,
   isBlock as editorIsBlock,
-  point as editorPoint,
 } from '../interfaces/editor';
+import { readSharedGridCell } from './delete-text-grid';
 import type { DeleteRangePlan } from './delete-text-plan';
 
-type WholeTopLevelBlockRange = {
-  deletesWholeDocument: boolean;
+export type WholeTopLevelBlockRange = Readonly<{
   endIndex: number;
+  landing: Point;
   startIndex: number;
-};
+}>;
 
 export const getWholeTopLevelBlockRange = (
   editor: Editor,
@@ -36,8 +38,6 @@ export const getWholeTopLevelBlockRange = (
   const startIndex = plan.start.path[0];
   const endIndex = plan.end.path[0];
   const editorChildren = editorGetChildren(editor);
-  const deletesWholeDocument =
-    startIndex === 0 && endIndex === editorChildren.length - 1;
 
   if (startIndex == null || endIndex == null) {
     return null;
@@ -46,17 +46,24 @@ export const getWholeTopLevelBlockRange = (
   const coversWholeEdgeRange = profileCoreDuration(
     'delete-whole-range-edge-check',
     () =>
-      PointApi.equals(
+      isStructuralEdge(
+        NodeApi.get(editor, [startIndex]),
+        [startIndex],
         plan.start,
-        editorPoint(editor, [startIndex], { edge: 'start' })
+        'start'
       ) &&
-      PointApi.equals(
+      isStructuralEdge(
+        NodeApi.get(editor, [endIndex]),
+        [endIndex],
         plan.end,
-        editorPoint(editor, [endIndex], { edge: 'end' })
+        'end'
       )
   );
 
-  if (!coversWholeEdgeRange) {
+  if (
+    !coversWholeEdgeRange ||
+    readSharedGridCell(editor, plan.effectiveRange)
+  ) {
     return null;
   }
 
@@ -79,81 +86,49 @@ export const getWholeTopLevelBlockRange = (
     return null;
   }
 
-  return { deletesWholeDocument, endIndex, startIndex };
+  if (startIndex === 0 && endIndex === editorChildren.length - 1) {
+    return canReplaceChildrenWithText(
+      getEditorSchema(editor),
+      editorChildren[startIndex]
+    )
+      ? { endIndex, landing: { offset: 0, path: [0, 0] }, startIndex }
+      : null;
+  }
+
+  const landing =
+    (endIndex + 1 < editorChildren.length
+      ? readTextEdge(editor, [endIndex + 1], 'start')
+      : null) ??
+    (startIndex > 0 ? readTextEdge(editor, [startIndex - 1], 'end') : null);
+
+  return landing ? { endIndex, landing, startIndex } : null;
 };
 
 export const deleteWholeTopLevelBlockRange = (
   editor: Editor,
   range: WholeTopLevelBlockRange
-) => {
+): Point => {
+  const { endIndex, landing, startIndex } = range;
   const children = editorGetChildren(editor);
-  const startBlock = children[range.startIndex];
-
-  if (range.deletesWholeDocument) {
-    if (
-      !NodeApi.isElement(startBlock) ||
-      getEditorSchema(editor).isVoid(startBlock) ||
-      !startBlock.children.every(
-        (child) =>
-          NodeApi.isText(child) ||
-          (NodeApi.isElement(child) && getEditorSchema(editor).isInline(child))
-      )
-    ) {
-      return false;
-    }
-
-    const removedChildren = profileCoreDuration(
-      'delete-whole-range-children-slice',
-      () => children.slice()
-    );
-
-    profileCoreDuration('delete-whole-range-apply', () => {
-      const root = getEditorUpdateRoot(editor);
-      const selection = SelectionApi.text({
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 0 },
-      });
-
-      applyBuiltDocumentChange(
-        editor,
-        (builder) =>
-          builder.replaceChildren(root, [], 0, removedChildren.length, [
-            {
-              ...startBlock,
-              children: [{ text: '' }],
-            },
-          ]),
-        { selection: { root, value: selection } }
-      );
-    });
-    return true;
-  }
-
-  const preferNext = range.endIndex + 1 < children.length;
-  const selectionPath = preferNext
-    ? [range.endIndex + 1]
-    : [range.startIndex - 1];
-  const selectionPoint = editorPoint(editor, selectionPath, {
-    edge: preferNext ? 'start' : 'end',
-  });
-  const newSelectionPoint = {
-    ...selectionPoint,
-    path: preferNext
-      ? [range.startIndex, ...selectionPoint.path.slice(1)]
-      : selectionPoint.path,
-  };
-
+  const startBlock = children[startIndex];
   const removedChildren = profileCoreDuration(
     'delete-whole-range-children-slice',
-    () => children.slice(range.startIndex, range.endIndex + 1)
+    () => children.slice(startIndex, endIndex + 1)
   );
+  const wholeDocument = removedChildren.length === children.length;
+  const caret =
+    landing.path[0] > endIndex
+      ? {
+          ...landing,
+          path: [
+            landing.path[0] - removedChildren.length,
+            ...landing.path.slice(1),
+          ],
+        }
+      : landing;
 
   profileCoreDuration('delete-whole-range-apply', () => {
     const root = getEditorUpdateRoot(editor);
-    const selection = SelectionApi.text({
-      anchor: newSelectionPoint,
-      focus: newSelectionPoint,
-    });
 
     applyBuiltDocumentChange(
       editor,
@@ -161,12 +136,18 @@ export const deleteWholeTopLevelBlockRange = (
         builder.replaceChildren(
           root,
           [],
-          range.startIndex,
+          startIndex,
           removedChildren.length,
-          []
+          wholeDocument ? [{ ...startBlock, children: [{ text: '' }] }] : []
         ),
-      { selection: { root, value: selection } }
+      {
+        selection: {
+          root,
+          value: SelectionApi.text({ anchor: caret, focus: caret }),
+        },
+      }
     );
   });
-  return true;
+
+  return caret;
 };

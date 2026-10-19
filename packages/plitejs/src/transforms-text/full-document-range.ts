@@ -1,17 +1,7 @@
+import { isStructuralEdge } from '../editor/point';
 import type { AnyEditor as Editor } from '../interfaces/editor';
-import {
-  getChildren as editorGetChildren,
-  point as editorPoint,
-} from '../interfaces/editor';
+import { getChildren as editorGetChildren } from '../interfaces/editor';
 import { type Range, RangeApi } from '../interfaces/range';
-
-export const samePoint = (
-  left: { offset: number; path: readonly number[] },
-  right: { offset: number; path: readonly number[] }
-) =>
-  left.offset === right.offset &&
-  left.path.length === right.path.length &&
-  left.path.every((segment, index) => segment === right.path[index]);
 
 export const isFullDocumentRange = (editor: Editor, range: Range) => {
   if (RangeApi.isCollapsed(range)) {
@@ -22,11 +12,10 @@ export const isFullDocumentRange = (editor: Editor, range: Range) => {
     return false;
   }
 
-  const start = editorPoint(editor, [], { edge: 'start' });
-  const end = editorPoint(editor, [], { edge: 'end' });
+  const [start, end] = RangeApi.edges(range);
 
   return (
-    (samePoint(range.anchor, start) && samePoint(range.focus, end)) ||
-    (samePoint(range.anchor, end) && samePoint(range.focus, start))
+    isStructuralEdge(editor, [], start, 'start') &&
+    isStructuralEdge(editor, [], end, 'end')
   );
 };

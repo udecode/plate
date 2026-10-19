@@ -193,6 +193,27 @@ const collectDeleteMatchPaths = (editor: Editor, plan: DeleteRangePlan) => {
   return matches;
 };
 
+const readAncestorsClosingAtEnd = (editor: Editor, plan: DeleteRangePlan) => {
+  const chain: Path[] = [];
+
+  if (plan.isSingleText || plan.isAcrossBlocks) return chain;
+
+  const common = PathApi.common(plan.start.path, plan.end.path);
+
+  for (let depth = plan.end.path.length - 1; depth > common.length; depth--) {
+    const path = plan.end.path.slice(0, depth);
+
+    if (
+      !PointApi.equals(editorPoint(editor, path, { edge: 'end' }), plan.end)
+    ) {
+      break;
+    }
+    chain.push(path);
+  }
+
+  return chain;
+};
+
 export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
   const deleteMatchPaths = collectDeleteMatchPaths(editor, plan);
   const skipStartText = deleteMatchPaths.some((path) =>
@@ -206,6 +227,9 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
       association: 'forward',
       deletion: 'drop',
     })
+  );
+  const endChain = readAncestorsClosingAtEnd(editor, plan).map((path) =>
+    createAnchor(editor, path, { association: 'forward', deletion: 'drop' })
   );
   const startAnchor = createAnchor(editor, plan.start, {
     association: 'backward',
@@ -269,6 +293,7 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
   return {
     startAnchor,
     endAnchor,
+    endChain,
     removedText,
   };
 };

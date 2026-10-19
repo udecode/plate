@@ -3,6 +3,7 @@ import {
   getCurrentSelection,
   getCurrentSelectionRoot,
 } from '../core/public-state';
+import { isNonEditable } from '../core/writable-text';
 import { node as getNode } from '../editor/node';
 import {
   type Location,
@@ -65,17 +66,16 @@ export const getTransactionRoot = (
   return LocationApi.isPath(at) ? undefined : getLocationRoot(at);
 };
 
-export const getHighestNonEditable = (editor: Editor, at: Path | Point) =>
-  editorAbove(editor, {
+export const getHighestNonEditable = (editor: Editor, at: Path | Point) => {
+  const schema = getEditorSchema(editor);
+
+  return editorAbove(editor, {
     at,
-    match: (node) =>
-      NodeApi.isElement(node) &&
-      (getEditorSchema(editor).isVoid(node) ||
-        getEditorSchema(editor).isAtom(node) ||
-        getEditorSchema(editor).isReadOnly(node)),
+    match: (node) => NodeApi.isElement(node) && isNonEditable(schema, node),
     mode: 'highest',
     voids: true,
   });
+};
 
 export const pathContainsPoint = (path: readonly number[], point: Point) =>
   PathApi.equals(path, point.path) || PathApi.isAncestor(path, point.path);

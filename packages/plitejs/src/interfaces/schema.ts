@@ -387,7 +387,7 @@ export type SchemaElementSlicePolicy = Readonly<{
   replaceWhenCovered?: boolean;
 }>;
 
-/** Declarative logical structure interpreted by document comparison. */
+/** Declarative logical structure read by document comparison and range removal. */
 export type SchemaElementStructure =
   | Readonly<{
       kind: 'grid';

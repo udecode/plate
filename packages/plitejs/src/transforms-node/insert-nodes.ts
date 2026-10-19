@@ -33,7 +33,7 @@ import type {
 } from '../interfaces/transforms/node';
 import { getDefined } from '../internal/get-defined';
 import { select as selectSelection } from '../transforms-selection/select';
-import { deleteText } from '../transforms-text/delete-text';
+import { removeText } from '../transforms-text/delete-text';
 import { getDefaultInsertLocation } from '../utils';
 import {
   getNodeKeyForNode,
@@ -98,8 +98,16 @@ const insertNodesRuntime = (
           association: 'forward',
           deletion: 'nearest',
         });
-        deleteText(editor, { at });
-        at = getDefined(pointAnchor.release());
+        const removal = removeText(editor, { at, writes: true });
+        const preservedEnd = pointAnchor.release();
+
+        if (!removal) return;
+
+        const landing =
+          removal.kind === 'grid' ? removal.landing : getDefined(preservedEnd);
+
+        if (!landing) return;
+        at = landing;
       }
     }
 

@@ -1,3 +1,4 @@
+import { isStructuralEdge } from '../editor/point';
 import type {
   ContentSlice,
   EditorCommand,
@@ -228,8 +229,6 @@ const getLeadingInlineVoidBoundaryDeleteSpec = (state: CommandStateView) => {
   });
 };
 
-// A path has no root, so the blocks come from the range and their edges from
-// their keys, both read in the range's root.
 const getFullySelectedSiblingBlocks = (
   state: CommandStateView,
   range: Range
@@ -250,23 +249,23 @@ const getFullySelectedSiblingBlocks = (
 
   const [startNode, startPath] = startBlock;
   const [endNode, endPath] = endBlock;
-  const startKey = state.key(startNode);
 
   if (PathApi.equals(startPath, endPath) && state.schema.isObject(startNode)) {
     return null;
   }
 
-  if (!equalsInRoot(state.points.start(startKey), start)) return null;
+  if (!isStructuralEdge(startNode, startPath, start, 'start')) return null;
 
   if (PathApi.equals(startPath, endPath)) {
-    return equalsInRoot(state.points.end(startKey), end) ? [startBlock] : null;
+    return isStructuralEdge(startNode, startPath, end, 'end')
+      ? [startBlock]
+      : null;
   }
 
-  if (equalsInRoot(state.points.end(startKey), end)) return [startBlock];
+  if (isStructuralEdge(startNode, startPath, end, 'end')) return [startBlock];
 
-  const endKey = state.key(endNode);
-  const endsAtBlockStart = equalsInRoot(state.points.start(endKey), end);
-  const endsAtBlockEnd = equalsInRoot(state.points.end(endKey), end);
+  const endsAtBlockStart = isStructuralEdge(endNode, endPath, end, 'start');
+  const endsAtBlockEnd = isStructuralEdge(endNode, endPath, end, 'end');
 
   if (
     (!endsAtBlockStart && !endsAtBlockEnd) ||

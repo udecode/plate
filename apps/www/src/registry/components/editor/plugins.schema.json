@@ -1925,6 +1925,12 @@
           "preserveContext": false,
           "replaceWhenCovered": true
         },
+        "structure": {
+          "columnSpan": null,
+          "kind": "grid",
+          "role": "grid",
+          "rowSpan": null
+        },
         "type": "table"
       },
       {
@@ -2000,6 +2006,22 @@
           "preserveContext": false,
           "replaceWhenCovered": true
         },
+        "structure": {
+          "columnSpan": {
+            "id": "element:colSpan@263bf74d05ba194a",
+            "key": "colSpan",
+            "kind": "schema-property",
+            "placement": "element"
+          },
+          "kind": "grid",
+          "role": "cell",
+          "rowSpan": {
+            "id": "element:rowSpan@2d38017411f2ba58",
+            "key": "rowSpan",
+            "kind": "schema-property",
+            "placement": "element"
+          }
+        },
         "type": "tableCell"
       },
       {
@@ -2047,6 +2069,12 @@
         "slice": {
           "preserveContext": false,
           "replaceWhenCovered": true
+        },
+        "structure": {
+          "columnSpan": null,
+          "kind": "grid",
+          "role": "row",
+          "rowSpan": null
         },
         "type": "tableRow"
       },
@@ -3830,10 +3858,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:e46b453f6efa5533",
+  "fingerprint": "fnv1a64:5aa63bdf88aac8f8",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:e46b453f6efa5533",
+    "fingerprint": "fnv1a64:5aa63bdf88aac8f8",
     "kind": "derived"
   },
   "primaryRoot": {

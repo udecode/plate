@@ -29,6 +29,8 @@ import {
   removeNodeChange,
   removeTextChange,
   replaceChildrenChange,
+  type ChildRun,
+  replaceChildRunsChange,
   setNodeChange,
   setNodesChange,
   splitNodeChange,
@@ -1170,6 +1172,14 @@ export class ChangeDraft {
       'replace',
       replaceChildrenChange(document, path, index, removeCount, children),
       document.withSplicedNodes(path, index, removeCount, children)
+    );
+  }
+
+  replaceChildRuns(root: string, runs: readonly ChildRun[]) {
+    return this.applyRoot(
+      root,
+      'replace',
+      replaceChildRunsChange(this.getIndex(root), runs)
     );
   }
 

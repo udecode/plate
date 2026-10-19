@@ -1,13 +1,15 @@
 /** @jsxRuntime classic */
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
+
 import {
   getEditorLiveSelection,
   jsxt,
   type TestEditor,
 } from '#platejs-test-internal';
 
-import { definePlugin, schema } from '../../../core';
+import { ContentSlice, definePlugin, schema } from '../../../core';
 import {
   createTestBaseTableEditor,
   createTestTableEditor,
@@ -225,6 +227,417 @@ describe('BaseTablePlugin deletion', () => {
         });
       }
     );
+  });
+
+  describe('ranges that cross a table edge', () => {
+    it('removes a document-leading table when select-all deletes everything [EDIT-TABLE-RANGE-EDGE-001]', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  <anchor />a
+                </hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>c</hp>
+              </htd>
+              <htd>
+                <hp>d</hp>
+              </htd>
+            </htr>
+          </htable>
+          <hp>
+            qr
+            <focus />
+          </hp>
+        </editor>
+      ) as TestEditor;
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as TestEditor;
+      const editor = createTestTableEditor({
+        plugins: getTestTablePlugins(),
+        initialValue: input.children,
+      });
+
+      assert.ok(input.selection);
+      editor.update.selection.set(input.selection);
+      editor.update.fragment.delete();
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+
+    it('leaves two empty paragraphs when Enter replaces a select-all over a document-leading table [EDIT-TABLE-RANGE-EDGE-001]', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  <anchor />a
+                </hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>c</hp>
+              </htd>
+              <htd>
+                <hp>d</hp>
+              </htd>
+            </htr>
+          </htable>
+          <hp>
+            qr
+            <focus />
+          </hp>
+        </editor>
+      ) as TestEditor;
+      const output = (
+        <editor>
+          <hp>
+            <htext />
+          </hp>
+          <hp>
+            <htext />
+          </hp>
+        </editor>
+      ) as TestEditor;
+      const editor = createTestTableEditor({
+        plugins: getTestTablePlugins(),
+        initialValue: input.children,
+      });
+
+      assert.ok(input.selection);
+      editor.update.selection.set(input.selection);
+      editor.update.break.insert();
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+
+    it('keeps every row and cell when an explicit range runs from a paragraph into the first cell [EDIT-TABLE-RANGE-EDGE-001]', () => {
+      const input = (
+        <editor>
+          <hp>
+            <anchor />p
+          </hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  a<focus />
+                </hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>c</hp>
+              </htd>
+              <htd>
+                <hp>d</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const output = (
+        <editor>
+          <hp>
+            <htext />
+          </hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>c</hp>
+              </htd>
+              <htd>
+                <hp>d</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const editor = createTestTableEditor({
+        plugins: getTestTablePlugins(),
+        initialValue: input.children,
+      });
+
+      assert.ok(input.selection);
+      editor.update.fragment.delete({ at: input.selection });
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+
+    it('types over a transaction range from a cell into trailing text without joining the text into the cell [EDIT-TABLE-RANGE-EDGE-001]', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>a</hp>
+              </htd>
+              <htd>
+                <hp>
+                  <anchor />b
+                </hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>c</hp>
+              </htd>
+              <htd>
+                <hp>d</hp>
+              </htd>
+            </htr>
+          </htable>
+          <hp>
+            q<focus />r
+          </hp>
+        </editor>
+      ) as TestEditor;
+      const output = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>a</hp>
+              </htd>
+              <htd>
+                <hp>x</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+          <hp>r</hp>
+        </editor>
+      ) as TestEditor;
+      const editor = createTestTableEditor({
+        plugins: getTestTablePlugins(),
+        initialValue: input.children,
+      });
+      const range = input.selection;
+
+      assert.ok(range);
+      editor.update((tx) => {
+        tx.selection.set(range);
+        tx.text.insert('x');
+      });
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+
+    it('pastes over an explicit range from a paragraph into the first cell without removing the cell [EDIT-TABLE-RANGE-EDGE-001]', () => {
+      const input = (
+        <editor>
+          <hp>
+            <anchor />p
+          </hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  a<focus />
+                </hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>c</hp>
+              </htd>
+              <htd>
+                <hp>d</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const output = (
+        <editor>
+          <hp>w</hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>c</hp>
+              </htd>
+              <htd>
+                <hp>d</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const editor = createTestTableEditor({
+        plugins: getTestTablePlugins(),
+        initialValue: input.children,
+      });
+
+      assert.ok(input.selection);
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [{ text: 'w' }],
+          openEnd: 0,
+          openStart: 0,
+        }),
+        { at: input.selection }
+      );
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+
+    describe('into a table whose last row is covered by row spans', () => {
+      const input = (
+        <editor>
+          <hp>
+            <anchor />
+            before
+          </hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  w<focus />
+                </hp>
+              </htd>
+              <htd>
+                <hp>v</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd rowSpan={2}>
+                <hp>ab</hp>
+              </htd>
+              <htd rowSpan={2}>
+                <hp>x</hp>
+              </htd>
+            </htr>
+            <htr />
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const output = (
+        <editor>
+          <hp>
+            <htext />
+          </hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>v</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd rowSpan={2}>
+                <hp>ab</hp>
+              </htd>
+              <htd rowSpan={2}>
+                <hp>x</hp>
+              </htd>
+            </htr>
+            <htr />
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const [, table] = output.children;
+      const createEditor = () =>
+        createTestTableEditor({
+          plugins: getTestTablePlugins(),
+          initialValue: input.children,
+        });
+
+      it('keeps every row and cell when an explicit range is deleted [EDIT-TABLE-RANGE-EDGE-001]', () => {
+        const editor = createEditor();
+
+        assert.ok(input.selection);
+        editor.update.fragment.delete({ at: input.selection });
+
+        expect(editor.read.children()).toEqual(output.children);
+      });
+
+      it('keeps every row and cell when a paste replaces an explicit range [EDIT-TABLE-RANGE-EDGE-001]', () => {
+        const editor = createEditor();
+
+        assert.ok(input.selection);
+        editor.update.slice.replace(
+          ContentSlice.fromJSON({
+            content: [{ text: 'w' }],
+            openEnd: 0,
+            openStart: 0,
+          }),
+          { at: input.selection }
+        );
+
+        expect(editor.read.children()).toEqual([<hp>w</hp>, table]);
+      });
+
+      it('widens a selection set over the range to the end of the table', () => {
+        const editor = createEditor();
+
+        assert.ok(input.selection);
+        editor.update.selection.set(input.selection);
+
+        expect(editor.read.selection()).toEqual({
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 1, path: [1, 1, 1, 0, 0] },
+        });
+      });
+    });
   });
 
   it('keeps normal fragment deletion outside tables', () => {

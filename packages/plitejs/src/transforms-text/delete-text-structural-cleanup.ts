@@ -1,3 +1,4 @@
+import type { Anchor } from '../core/anchor';
 import type { NodeList } from '../core/change/document-index';
 import { getEditorSchema } from '../core/editor-runtime';
 import { getChildList } from '../core/public-state';
@@ -226,6 +227,42 @@ const getRemovableElementPaths = (
   }
 
   return paths;
+};
+
+export const removeEmptyEndChain = (
+  editor: Editor,
+  endChain: ReadonlyArray<Anchor<Path>>
+) => {
+  const schema = getEditorSchema(editor);
+
+  for (const path of endChain.map((anchor) => anchor.release())) {
+    if (!path || !editorHasPath(editor, path)) continue;
+
+    const node = getCurrentNode(editor, path);
+
+    if (
+      !NodeApi.isElement(node) ||
+      schema.isVoid(node) ||
+      schema.isReadOnly(node) ||
+      schema.isInline(node)
+    ) {
+      continue;
+    }
+    if (
+      NodeApi.string(node) !== '' ||
+      !(node.children.length === 0 || hasSingleChildNest(editor, node))
+    ) {
+      break;
+    }
+
+    const parentPath = path.slice(0, -1);
+    const parent =
+      parentPath.length === 0 ? editor : getCurrentNode(editor, parentPath);
+
+    if (NodeApi.isElement(parent) && parent.children.length === 1) continue;
+
+    removeNodes(editor, { at: path });
+  }
 };
 
 export const removeEmptyStructuralArtifacts = (

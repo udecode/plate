@@ -267,7 +267,7 @@ describe('table selection', () => {
       });
 
     describe('table boundary normalization policy', () => {
-      it('keeps a range from a document-leading table into trailing text', () => {
+      it('clamps a forward range from a document-leading table into trailing text to the table end', () => {
         const input = (
           <editor>
             <htable>
@@ -299,6 +299,66 @@ describe('table selection', () => {
               <focus />
               after
             </hp>
+          </editor>
+        ) as TestEditor;
+        const expected = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <anchor />
+                    cell
+                    <focus />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+            <hp>after</hp>
+          </editor>
+        ) as TestEditor;
+        const editor = createTableEditor(input);
+
+        assert.ok(requested.selection);
+        editor.update.selection.set(requested.selection);
+
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(expected.selection)
+        );
+      });
+
+      it('keeps a backward whole-document range that starts in a document-closing table', () => {
+        const input = (
+          <editor>
+            <hp>
+              <cursor />
+              before
+            </hp>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>cell</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
+        const requested = (
+          <editor>
+            <hp>
+              <focus />
+              before
+            </hp>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    cell
+                    <anchor />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
           </editor>
         ) as TestEditor;
         const editor = createTableEditor(input);

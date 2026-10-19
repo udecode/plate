@@ -47,7 +47,7 @@ import type {
 } from '../interfaces/transforms/node';
 import { getDefined } from '../internal/get-defined';
 import { select } from '../transforms-selection/select';
-import { deleteText } from '../transforms-text/delete-text';
+import { removeText } from '../transforms-text/delete-text';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { insertNodes } from './insert-nodes';
 
@@ -70,9 +70,13 @@ const deleteRange = (editor: Editor, range: Range): Point | null => {
     deletion: 'nearest',
   });
 
-  deleteText(editor, { at: range });
-  const selection = getCurrentSelection(editor);
+  const removal = removeText(editor, { at: range, writes: true });
   const preservedEnd = endAnchor.release();
+
+  if (!removal) return null;
+  if (removal.kind === 'grid') return removal.landing;
+
+  const selection = getCurrentSelection(editor);
 
   return preserveEndPoint
     ? preservedEnd

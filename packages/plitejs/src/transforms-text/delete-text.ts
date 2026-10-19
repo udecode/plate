@@ -1,3 +1,4 @@
+import { createAnchor } from '../core/anchor';
 import { getEditorSchema } from '../core/editor-runtime';
 import {
   getActiveUpdateRoot,
@@ -8,13 +9,14 @@ import {
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from '../core/public-state';
+import { isWritablePoint } from '../core/writable-text';
 import {
+  type Element as EditorElement,
   type Location,
   LocationApi,
   NodeApi,
   type Path,
   PathApi,
-  type Element as EditorElement,
   type Point,
   PointApi,
   type Range,
@@ -47,6 +49,14 @@ import {
   getPreviousEmptyBlockPathAtBlockStart,
 } from './delete-text-collapsed-path-targets';
 import {
+  type GridRemovalPlan,
+  planGridRemoval,
+  planGridSteps,
+  readGridCell,
+  removeGridSteps,
+  shareGridCellOrNone,
+} from './delete-text-grid';
+import {
   moveExpandedInlineEdgeDeletePointOutsideInline,
   moveLeadingSpacerPointIntoFollowingInline,
   movePointToFollowingInline,
@@ -73,12 +83,14 @@ import {
   getTouchedTopLevelRange,
   maybeMergeAdjacentTextAt,
   mergeAdjacentTextRuns,
+  removeEmptyEndChain,
   removeEmptyStructuralArtifacts,
   restorePreservedEmptyStartBlock,
 } from './delete-text-structural-cleanup';
 import {
   deleteWholeTopLevelBlockRange,
   getWholeTopLevelBlockRange,
+  type WholeTopLevelBlockRange,
 } from './delete-text-whole-blocks';
 
 const isInlineVoid = (editor: Editor, node: unknown) => {
@@ -148,7 +160,6 @@ const shouldRemoveEmptyForwardStartBlock = (
     !plan.effectiveStartBlockPath ||
     !plan.effectiveEndBlockPath ||
     plan.effectiveStartBlockPath.length !== 1 ||
-    plan.effectiveEndBlockPath.length !== 1 ||
     !editorHasPath(editor, plan.effectiveStartBlockPath)
   ) {
     return false;
@@ -388,18 +399,21 @@ const resolveDeleteTarget = (
   }
 
   let [start, end] = RangeApi.edges(at);
-  const startBlock = editorAbove(editor, {
-    at: start,
-    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
-    mode: 'highest',
-    voids,
-  });
-  const endBlock = editorAbove(editor, {
-    at: end,
-    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
-    mode: 'highest',
-    voids,
-  });
+  const highestBlockInCell = (point: Point) => {
+    const cell = readGridCell(editor, point.path);
+
+    return editorAbove(editor, {
+      at: point,
+      match: (node, path) =>
+        NodeApi.isElement(node) &&
+        editorIsBlock(editor, node) &&
+        (!cell || PathApi.isAncestor(cell, path)),
+      mode: 'highest',
+      voids,
+    });
+  };
+  const startBlock = highestBlockInCell(start);
+  const endBlock = highestBlockInCell(end);
   const startMergeBlock = editorAbove(editor, {
     at: start,
     match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
@@ -438,7 +452,8 @@ const resolveDeleteTarget = (
     if (
       before &&
       startBlock &&
-      PathApi.isAncestor(startBlock[1], before.path)
+      PathApi.isAncestor(startBlock[1], before.path) &&
+      shareGridCellOrNone(editor, start.path, before.path)
     ) {
       start = before;
       editableEdges &&= isInlineVoid(editor, startNonEditable[0]);
@@ -450,7 +465,12 @@ const resolveDeleteTarget = (
   if (endNonEditable) {
     const after = editorAfter(editor, end);
 
-    if (after && endBlock && PathApi.isAncestor(endBlock[1], after.path)) {
+    if (
+      after &&
+      endBlock &&
+      PathApi.isAncestor(endBlock[1], after.path) &&
+      shareGridCellOrNone(editor, end.path, after.path)
+    ) {
       end = after;
       editableEdges &&= isInlineVoid(editor, endNonEditable[0]);
     } else {
@@ -472,12 +492,7 @@ const resolveDeleteTarget = (
     !RangeApi.isCollapsed(initialAt) &&
     (() => {
       const [, originalEnd] = RangeApi.edges(initialAt);
-      const originalEndBlock = editorAbove(editor, {
-        at: originalEnd,
-        match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
-        mode: 'highest',
-        voids,
-      });
+      const originalEndBlock = highestBlockInCell(originalEnd);
 
       return (
         !!originalEndBlock &&
@@ -632,12 +647,7 @@ const reconcileDeleteStructure = (
       }
     }
   } else if (!plan.isSingleText) {
-    removeEmptyStructuralArtifacts(
-      editor,
-      plan.startMergeBlockPath,
-      plan.effectiveStartBlockPath,
-      cleanupRange()
-    );
+    removeEmptyEndChain(editor, removal.endChain);
 
     if (!plan.removedInteriorElementSiblingStructure) {
       mergeAdjacentTextRuns(editor, touchedRange);
@@ -657,11 +667,10 @@ const reconcileDeleteStructure = (
   return keptIncompatibleBlockBoundary;
 };
 
-const resolveDeleteSelection = (
+const resolveDeletePoint = (
   editor: Editor,
   plan: DeleteRangePlan,
   removal: ReturnType<typeof removeDeleteContents>,
-  tx: TransactionWriter,
   keptIncompatibleBlockBoundary: boolean
 ) => {
   const startPoint = removal.startAnchor.release();
@@ -749,6 +758,23 @@ const resolveDeleteSelection = (
       }
     }
   }
+
+  return point;
+};
+
+const resolveDeleteSelection = (
+  editor: Editor,
+  plan: DeleteRangePlan,
+  removal: ReturnType<typeof removeDeleteContents>,
+  tx: TransactionWriter,
+  keptIncompatibleBlockBoundary: boolean
+) => {
+  const point = resolveDeletePoint(
+    editor,
+    plan,
+    removal,
+    keptIncompatibleBlockBoundary
+  );
 
   if ((!plan.initialAt || !LocationApi.isPath(plan.initialAt)) && point) {
     tx.setSelection(
@@ -1266,6 +1292,250 @@ const mergeBlocksAtPoint = (
   });
 };
 
+const removePlainRange = (editor: Editor, range: Range, voids: boolean) => {
+  const target = resolveDeleteTarget(editor, {
+    at: range,
+    hanging: true,
+    voids,
+  });
+
+  if (target?.kind !== 'range') return null;
+
+  const removal = removeDeleteContents(editor, target);
+  const keptIncompatibleBlockBoundary = reconcileDeleteStructure(
+    editor,
+    target,
+    removal
+  );
+
+  return (
+    resolveDeletePoint(
+      editor,
+      target,
+      removal,
+      keptIncompatibleBlockBoundary
+    ) ?? null
+  );
+};
+
+export type PreparedRemoval = Readonly<{ options: DeleteOptions }> &
+  (
+    | Readonly<{ kind: 'ordinary'; target: DeletePathTarget | DeleteRangePlan }>
+    | Readonly<{
+        kind: 'grid';
+        plan: GridRemovalPlan;
+        target: DeleteRangePlan;
+        wholeBlocks: WholeTopLevelBlockRange | null;
+      }>
+  );
+
+export type RemovalOutcome =
+  | Readonly<{ kind: 'ordinary' }>
+  | Readonly<{ keepsGrid: boolean; kind: 'grid'; landing: Point | null }>;
+
+type RemovalSite = Readonly<{
+  at: Location;
+  root: string | undefined;
+  writesSelection: boolean;
+}>;
+
+const inRoot = <T>(editor: Editor, root: string | undefined, run: () => T) =>
+  root
+    ? withEditorUpdateRoot(editor, root, () =>
+        withEditorUpdateRootChildren(editor, root, run)
+      )
+    : run();
+
+const inRemovalRoot = <T>(
+  editor: Editor,
+  at: DeleteOptions['at'],
+  run: (tx: TransactionWriter, site: RemovalSite) => T
+): T | null =>
+  inRoot(
+    editor,
+    getTransactionRoot(editor, at),
+    () =>
+      runEditorTransaction(editor, (tx) => {
+        const resolved = tx.resolveTarget({ at });
+
+        if (!resolved || !LocationApi.isLocation(resolved)) return null;
+
+        const selection = getCurrentSelection(editor);
+        const root = getLocationRoot(resolved);
+        const site: RemovalSite = {
+          at: root ? stripLocationRoots(resolved) : resolved,
+          root,
+          writesSelection:
+            at === undefined ||
+            (selection !== null &&
+              RangeApi.isRange(selection) &&
+              LocationApi.isRange(resolved) &&
+              RangeApi.equals(selection, resolved)),
+        };
+
+        return inRoot(editor, root, () => run(tx, site));
+      }) ?? null
+  );
+
+const spansTexts = (
+  target: DeletePathTarget | DeleteRangePlan
+): target is DeleteRangePlan =>
+  target.kind === 'range' && !target.isCollapsed && !target.isSingleText;
+
+const prepareAt = (
+  editor: Editor,
+  options: DeleteOptions,
+  at: Location,
+  writes: boolean
+): PreparedRemoval | null => {
+  const target = profileCoreDuration('delete-resolve-target', () =>
+    resolveDeleteTarget(editor, options, at)
+  );
+
+  if (!target) return null;
+  if (!spansTexts(target)) return { kind: 'ordinary', options, target };
+
+  const plan = profileCoreDuration('delete-grid-plan', () =>
+    planGridRemoval(editor, target.effectiveRange)
+  );
+
+  if (!plan) return { kind: 'ordinary', options, target };
+
+  const shortcut = plan.keepsGrid
+    ? null
+    : profileCoreDuration('delete-whole-range-plan', () =>
+        getWholeTopLevelBlockRange(editor, target)
+      );
+  const wholeBlocks =
+    writes && shortcut && !isWritablePoint(editor, shortcut.landing)
+      ? null
+      : shortcut;
+
+  if (writes && !wholeBlocks && !plan.landing) return null;
+
+  return { kind: 'grid', options, plan, target, wholeBlocks };
+};
+
+const applyAt = (
+  editor: Editor,
+  tx: TransactionWriter,
+  site: RemovalSite,
+  prepared: PreparedRemoval
+): RemovalOutcome => {
+  const { target } = prepared;
+  const writesSelection =
+    site.writesSelection || target.kind === 'path' || !target.isSingleText;
+
+  if (target.kind === 'path') {
+    deletePathTarget(editor, target, tx, writesSelection);
+
+    return { kind: 'ordinary' };
+  }
+
+  const deletedMarks = profileCoreDuration('delete-range-text-marks', () =>
+    getConsistentRangeTextMarks(editor, target.effectiveRange)
+  );
+  const setDeletedMarks = () => {
+    if (!writesSelection || !deletedMarks || !getCurrentSelection(editor)) {
+      return;
+    }
+
+    tx.setMarks(
+      shouldClearDeletedMarksAtMarkedSuffix(editor, deletedMarks)
+        ? {}
+        : deletedMarks
+    );
+  };
+  const withRoot = (point: Point) =>
+    site.root ? { ...point, root: site.root } : point;
+  const wholeBlocks =
+    prepared.kind === 'grid'
+      ? prepared.wholeBlocks
+      : profileCoreDuration('delete-whole-range-plan', () =>
+          getWholeTopLevelBlockRange(editor, target)
+        );
+
+  if (wholeBlocks) {
+    const caret = deleteWholeTopLevelBlockRange(editor, wholeBlocks);
+
+    setDeletedMarks();
+
+    return prepared.kind === 'grid'
+      ? { keepsGrid: false, kind: 'grid', landing: withRoot(caret) }
+      : { kind: 'ordinary' };
+  }
+  if (prepared.kind === 'grid') {
+    const { plan } = prepared;
+    const nearest = plan.landing
+      ? null
+      : createAnchor(editor, target.start, {
+          association: 'backward',
+          deletion: 'nearest',
+        });
+    const landing = removeGridSteps(editor, plan, (range) =>
+      removePlainRange(editor, range, target.voids)
+    );
+    const caret = landing ?? nearest?.release();
+
+    if (writesSelection && caret) {
+      tx.setSelection(SelectionApi.text({ anchor: caret, focus: caret }));
+    }
+    setDeletedMarks();
+
+    return {
+      keepsGrid: plan.keepsGrid,
+      kind: 'grid',
+      landing: landing && withRoot(landing),
+    };
+  }
+
+  const removal = removeDeleteContents(editor, target);
+  const keptIncompatibleBlockBoundary = reconcileDeleteStructure(
+    editor,
+    target,
+    removal
+  );
+
+  if (writesSelection) {
+    resolveDeleteSelection(
+      editor,
+      target,
+      removal,
+      tx,
+      keptIncompatibleBlockBoundary
+    );
+  } else {
+    removal.startAnchor.release();
+    removal.endAnchor.release();
+  }
+  setDeletedMarks();
+
+  return { kind: 'ordinary' };
+};
+
+export const prepareRemoval = (
+  editor: Editor,
+  options: DeleteOptions & Readonly<{ writes: boolean }>
+): PreparedRemoval | null =>
+  inRemovalRoot(editor, options.at, (_tx, site) =>
+    prepareAt(editor, options, site.at, options.writes)
+  );
+
+export const applyRemoval = (editor: Editor, prepared: PreparedRemoval) =>
+  inRemovalRoot(editor, prepared.options.at, (tx, site) =>
+    applyAt(editor, tx, site, prepared)
+  );
+
+export const removeText = (
+  editor: Editor,
+  options: DeleteOptions & Readonly<{ writes?: boolean }>
+): RemovalOutcome | null =>
+  inRemovalRoot(editor, options.at, (tx, site) => {
+    const prepared = prepareAt(editor, options, site.at, !!options.writes);
+
+    return prepared && applyAt(editor, tx, site, prepared);
+  });
+
 export const resolveDeletedRange = (
   editor: Editor,
   range: Range
@@ -1273,6 +1543,12 @@ export const resolveDeletedRange = (
   const target = resolveDeleteTarget(editor, {}, range);
 
   if (target?.kind !== 'range') return range;
+  if (
+    spansTexts(target) &&
+    planGridSteps(editor, target.effectiveRange)?.keepsGrid
+  ) {
+    return null;
+  }
 
   return [target.startNonEditable, target.endNonEditable].every(
     (holder) => !holder || isInlineVoid(editor, holder[0])
@@ -1285,116 +1561,5 @@ export const deleteText: TextMutationMethods['delete'] = (
   editor,
   options = {}
 ) => {
-  const transactionRoot = getTransactionRoot(editor, options.at);
-  const run = () => {
-    runEditorTransaction(editor, (tx) => {
-      const at = tx.resolveTarget({ at: options.at });
-
-      if (!at) {
-        return;
-      }
-      if (!LocationApi.isLocation(at)) return;
-
-      const selection = getCurrentSelection(editor);
-      const shouldWriteSelection =
-        options.at === undefined ||
-        (selection !== null &&
-          RangeApi.isRange(selection) &&
-          LocationApi.isRange(at) &&
-          RangeApi.equals(selection, at));
-
-      const deleteAt = (targetAt: Location) => {
-        const target = profileCoreDuration('delete-resolve-target', () =>
-          resolveDeleteTarget(editor, options, targetAt)
-        );
-
-        if (!target) {
-          return;
-        }
-
-        const shouldWriteTargetSelection =
-          shouldWriteSelection ||
-          target.kind === 'path' ||
-          !target.isSingleText;
-
-        if (target.kind === 'path') {
-          deletePathTarget(editor, target, tx, shouldWriteTargetSelection);
-          return;
-        }
-
-        const deletedMarks = profileCoreDuration(
-          'delete-range-text-marks',
-          () => getConsistentRangeTextMarks(editor, target.effectiveRange)
-        );
-        const setDeletedMarks = () => {
-          if (
-            !shouldWriteTargetSelection ||
-            !deletedMarks ||
-            !getCurrentSelection(editor)
-          ) {
-            return;
-          }
-
-          tx.setMarks(
-            shouldClearDeletedMarksAtMarkedSuffix(editor, deletedMarks)
-              ? {}
-              : deletedMarks
-          );
-        };
-        const wholeTopLevelBlockRange = profileCoreDuration(
-          'delete-whole-range-plan',
-          () => getWholeTopLevelBlockRange(editor, target)
-        );
-
-        if (
-          wholeTopLevelBlockRange &&
-          deleteWholeTopLevelBlockRange(editor, wholeTopLevelBlockRange)
-        ) {
-          setDeletedMarks();
-          return;
-        }
-
-        const removal = removeDeleteContents(editor, target);
-
-        const keptIncompatibleBlockBoundary = reconcileDeleteStructure(
-          editor,
-          target,
-          removal
-        );
-        if (shouldWriteTargetSelection) {
-          resolveDeleteSelection(
-            editor,
-            target,
-            removal,
-            tx,
-            keptIncompatibleBlockBoundary
-          );
-        } else {
-          removal.startAnchor.release();
-          removal.endAnchor.release();
-        }
-        setDeletedMarks();
-      };
-
-      const root = getLocationRoot(at);
-
-      if (root) {
-        withEditorUpdateRoot(editor, root, () => {
-          withEditorUpdateRootChildren(editor, root, () =>
-            deleteAt(stripLocationRoots(at))
-          );
-        });
-      } else {
-        deleteAt(at);
-      }
-    });
-  };
-
-  if (transactionRoot) {
-    withEditorUpdateRoot(editor, transactionRoot, () => {
-      withEditorUpdateRootChildren(editor, transactionRoot, run);
-    });
-  } else {
-    run();
-  }
+  removeText(editor, options);
 };

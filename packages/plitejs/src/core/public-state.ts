@@ -8,6 +8,7 @@ import { applyInsertSoftBreak } from '../editor/insert-soft-break';
 import { applyInsertTextCommand } from '../editor/insert-text';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
+import { readTextEdge } from '../editor/point';
 import { applyRemoveMark } from '../editor/remove-mark';
 import { applyToggleMark } from '../editor/toggle-mark';
 import type {
@@ -134,6 +135,11 @@ import {
   setPoint,
 } from '../transforms-selection';
 import { deleteText } from '../transforms-text';
+import {
+  applyRemoval,
+  type PreparedRemoval,
+  prepareRemoval,
+} from '../transforms-text/delete-text';
 import type { MaximizeMode } from '../types/types';
 import { getDefaultInsertLocation } from '../utils';
 import {
@@ -2402,16 +2408,15 @@ export const readPoint = (
   options: EditorPointOptions = {}
 ): Point | undefined => {
   if (!hasLocationPath(editor, at)) return undefined;
-  const runtime = getEditorRuntime(editor);
+  if (!PathApi.isPath(at)) return getEditorRuntime(editor).point(at, options);
 
-  if (PathApi.isPath(at)) {
-    const edgeEntry =
-      options.edge === 'end' ? runtime.last(at) : runtime.first(at);
+  const edge = readTextEdge(editor, at, options.edge ?? 'start');
 
-    if (!edgeEntry || !NodeApi.isText(edgeEntry[0])) return undefined;
-  }
+  if (!edge) return undefined;
 
-  return runtime.point(at, options);
+  const root = getEditorChildrenRoot(editor);
+
+  return root && root !== MAIN_ROOT_KEY ? { ...edge, root } : edge;
 };
 
 const readPointEdge = (
@@ -4013,6 +4018,51 @@ export const readAtSliceFitSite = <T>(
   );
 };
 
+const prepareGridSliceRemoval = (
+  editor: Editor,
+  place: Extract<SliceFitPlace, { kind: 'range' }>
+): Extract<PreparedRemoval, { kind: 'grid' }> | 'refused' | null => {
+  if (place.bounds !== undefined || RangeApi.isCollapsed(place.range)) {
+    return null;
+  }
+
+  const prepared = prepareRemoval(editor, {
+    at: place.range,
+    hanging: true,
+    writes: true,
+  });
+
+  if (!prepared) return 'refused';
+
+  return prepared.kind === 'grid' ? prepared : null;
+};
+
+const finalizeBeforeSliceFit = (editor: Editor, landing: Point) => {
+  const anchor = createAnchor(editor, landing, {
+    association: 'backward',
+    deletion: 'nearest',
+  });
+
+  finalizeTransactionRepresentation(editor);
+
+  return anchor.release();
+};
+
+const removeGridForSlice = (
+  editor: Editor,
+  place: Extract<SliceFitPlace, { kind: 'range' }>
+): Point | 'refused' | null => {
+  const removal = prepareGridSliceRemoval(editor, place);
+
+  if (removal === 'refused') return removal;
+  if (!removal) return null;
+
+  const outcome = applyRemoval(editor, removal);
+  const removed = outcome?.kind === 'grid' ? outcome.landing : null;
+
+  return (removed && finalizeBeforeSliceFit(editor, removed)) ?? 'refused';
+};
+
 const writeSliceAtRange = <V extends Value>(
   editor: Editor<V>,
   place: Extract<SliceFitPlace, { kind: 'range' }>,
@@ -4025,7 +4075,17 @@ const writeSliceAtRange = <V extends Value>(
   }>
 ) => {
   const state = getStateView(editor);
-  const { bounds, range } = place;
+  const { bounds } = place;
+  let { range } = place;
+
+  const removedTo = removeGridForSlice(editor, place);
+
+  if (removedTo === 'refused') return false;
+  if (removedTo) {
+    range = { anchor: removedTo, focus: removedTo };
+
+    if (slice.content.length === 0) return true;
+  }
 
   if (slice.content.length === 0 && RangeApi.isCollapsed(range)) {
     return false;
@@ -4296,27 +4356,36 @@ const landSlice = (
     applyTransactionSpec(editor, spec);
     return true;
   }
+  const writesSite =
+    flow.content.length > 0 ||
+    (place.kind === 'range' && !RangeApi.isCollapsed(place.range));
+  const landing =
+    place.kind === 'range' ? removeGridForSlice(editor, place) : null;
+
+  if (landing === 'refused') return false;
+
+  const site =
+    landing && place.kind === 'range'
+      ? { ...place, range: { anchor: landing, focus: landing } }
+      : place;
   const state = getStateView(editor);
-  const root = place.root ?? MAIN_ROOT_KEY;
+  const root = site.root ?? MAIN_ROOT_KEY;
   const children = root === MAIN_ROOT_KEY ? state.children() : state.root(root);
   const trailing = schema.tryCreateDefaultChild({
     at: [children.length],
     root: toPublicRoot(root),
   });
   const trailingType = NodeApi.isElement(trailing) ? trailing.type : null;
-  const writesSite =
-    flow.content.length > 0 ||
-    (place.kind === 'range' && !RangeApi.isCollapsed(place.range));
   const notesFloor = writesSite
     ? getDefined(
-        (place.kind === 'blocks'
-          ? getDefined(place.blocks.at(-1))[1]
-          : RangeApi.end(place.range).path)[0]
+        (site.kind === 'blocks'
+          ? getDefined(site.blocks.at(-1))[1]
+          : RangeApi.end(site.range).path)[0]
       ) + 1
     : 0;
   const removing =
-    place.kind === 'blocks' && !writesSite
-      ? place.blocks.flatMap(([, path]) => (path.length === 1 ? path : []))
+    site.kind === 'blocks' && !writesSite
+      ? site.blocks.flatMap(([, path]) => (path.length === 1 ? path : []))
       : [];
   let boundary = children.length;
 
@@ -4335,14 +4404,12 @@ const landSlice = (
     }
     boundary -= 1;
   }
-  const end = placeSliceFitRange(editor, state, [boundary], place.root, {
+  const end = placeSliceFitRange(editor, state, [boundary], site.root, {
     boundary: true,
   });
   if (!end) return false;
   const blocks =
-    place.kind === 'blocks'
-      ? place.blocks.map(([node]) => state.key(node))
-      : [];
+    site.kind === 'blocks' ? site.blocks.map(([node]) => state.key(node)) : [];
 
   if (
     !writeSliceAtRange(
@@ -4354,7 +4421,13 @@ const landSlice = (
   ) {
     return false;
   }
-  if (place.kind === 'range') return !writesSite || write(place, flow);
+  if (site.kind === 'range') {
+    return (
+      !writesSite ||
+      (!!landing && flow.content.length === 0) ||
+      write(site, flow)
+    );
+  }
   if (flow.content.length === 0) {
     for (const key of blocks.toReversed()) {
       transaction.nodes.remove({ at: key });
@@ -4364,7 +4437,7 @@ const landSlice = (
   const current = getStateView(editor);
   return write(
     {
-      ...place,
+      ...site,
       blocks: blocks.map((key) => {
         const entry = current.nodes.get(key);
         if (!entry || !NodeApi.isElement(entry[0])) {

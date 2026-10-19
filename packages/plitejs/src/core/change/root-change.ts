@@ -3708,6 +3708,26 @@ export const replaceChildrenChange = (
   });
 };
 
+export const replaceChildRunsChange = (
+  document: DocumentIndex,
+  runs: readonly ChildRun[]
+) =>
+  RootChange.create(
+    document,
+    runs.map(({ children, index, path, removeCount }) => ({
+      from: document.childPosition(path, index),
+      insert: PreparedTokenSlice.fromNodes(children),
+      to: document.childPosition(path, index + removeCount),
+    }))
+  );
+
+export type ChildRun = Readonly<{
+  children: readonly JsonNode[];
+  index: number;
+  path: readonly number[];
+  removeCount: number;
+}>;
+
 /**
  * Build one canonical child reconciliation without applying it.
  *

@@ -42,7 +42,7 @@ import { insertNodes } from '../transforms-node/insert-nodes';
 import { deselect } from '../transforms-selection/deselect';
 import { setSelection } from '../transforms-selection/set-selection';
 import { getDefaultInsertLocation } from '../utils';
-import { deleteText } from './delete-text';
+import { removeText } from './delete-text';
 import { isFullDocumentRange } from './full-document-range';
 
 /**
@@ -307,12 +307,11 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
             association: 'forward',
             deletion: 'nearest',
           });
-          deleteText(editor, {
+          const removal = removeText(editor, {
             at,
             preserveInlineEdge: true,
             voids,
-          } as Parameters<typeof deleteText>[1] & {
-            preserveInlineEdge: true;
+            writes: true,
           });
           const selectionAfterDelete = getPublicSelection(editor);
           const selectionPointAfterDelete =
@@ -324,10 +323,15 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
               : null;
           const startPoint = startAnchor.release();
           const endPoint = endAnchor.release();
+
+          if (!removal) return;
+
           const nextAt =
-            options.at == null
-              ? (selectionPointAfterDelete ?? startPoint ?? endPoint)
-              : (startPoint ?? endPoint);
+            removal.kind === 'grid'
+              ? removal.landing
+              : options.at == null
+                ? (selectionPointAfterDelete ?? startPoint ?? endPoint)
+                : (startPoint ?? endPoint);
 
           if (!nextAt) {
             return;

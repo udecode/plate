@@ -32,7 +32,8 @@ import type {
 } from '../interfaces/transforms/node';
 import { getDefined } from '../internal/get-defined';
 import { select } from '../transforms-selection/select';
-import { deleteText } from '../transforms-text/delete-text';
+import { removeText } from '../transforms-text/delete-text';
+import { shareGridCellOrNone } from '../transforms-text/delete-text-grid';
 import { formatDebugValue } from '../utils/format-debug-value';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { moveNodes } from './move-nodes';
@@ -126,6 +127,7 @@ export const mergeNodes = ((
     }
 
     const isPathMerge = LocationApi.isPath(at);
+    let afterRangeRemoval = false;
     const pathAt = isPathMerge ? (at as Path) : null;
     const usesDefaultSiblingMatch = match == null && isPathMerge;
 
@@ -152,9 +154,17 @@ export const mergeNodes = ((
           association: 'forward',
           deletion: 'nearest',
         });
-        deleteText(editor, { at });
-        at = getDefined(pointAnchor.release());
+        const removal = removeText(editor, { at });
+        const removalEnd = pointAnchor.release();
 
+        afterRangeRemoval = true;
+
+        if (removal?.kind === 'grid') {
+          if (removal.keepsGrid || !removal.landing) return;
+          at = removal.landing;
+        } else {
+          at = getDefined(removalEnd);
+        }
         if (options.at == null) {
           select(editor, at);
         }
@@ -181,7 +191,12 @@ export const mergeNodes = ((
       return;
     }
 
-    if (crossesIsolatingBoundary(editor, prev, current)) {
+    if (
+      crossesIsolatingBoundary(editor, prev, current) ||
+      (afterRangeRemoval &&
+        (PathApi.equals(prevPath, path) ||
+          !shareGridCellOrNone(editor, prevPath, path)))
+    ) {
       return;
     }
 

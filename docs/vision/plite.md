@@ -561,6 +561,35 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   so words copied inside a note paste as words. The contract and fingerprint
   carry `endMatter` only where an element declares it, and nodes already in the
   document never move.
+- Every reader treats an element whose schema declares
+  `structure: { kind: 'grid' }` as a grid. Comparison matches its rows and
+  cells. Removing an expanded range keeps a grid the range reaches into
+  unless the range covers it and reaches past one of its edges, in commands,
+  raw transactions, slice writes, node inserts, splits and merges alike. A
+  kept grid keeps every row and cell. A grid that is a void, an atom or
+  read-only, or sits inside one, is a non-editable block like any other. A
+  void, atom or read-only cell keeps its content when the range crosses its
+  edge. A cell the range covers whole keeps only its first block, emptied,
+  when that block is an editable text block, and otherwise takes its
+  schema's default child, or no child when its content needs none. A cell at
+  the range's edge loses only the covered text, and Plite removes the parts
+  of the range outside the grid as ranges of their own, so nothing joins
+  into or out of a cell. A removal's edges never move into or out of a cell,
+  and a merge after it stops at a cell's edge. Plite decides before writing
+  where written content lands: the range's start, the first cell the range
+  covers that can take text, the point right after or right before what it
+  removed, or the root's default child when every top-level block is a grid
+  the range removes whole, whichever comes first and can take text. A range
+  that covers whole top-level blocks removes them as blocks, as it does
+  without a grid, so content lands at the start of the block after them, or
+  at the end of the block before them when no text follows. When no spot can
+  take text, typing, slice writes, node inserts and splits refuse and change
+  nothing. Plite owns the rule, and a feature only declares the roles. The
+  table subject, `docs/plans/topics/table.md`, lists where Plite does not
+  meet this rule yet.
+- After a delete inside one block, Plite removes only the blocks the delete
+  emptied at its end. The block where the delete started, and every empty
+  block it never reached, stay.
 - Plite owns whole-block replacement of an empty target. A landing read can
   propose blocks for an `empty` target and never names another block. Plite
   honors the proposal only on its own resolution and refuses one the budget
@@ -631,7 +660,8 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   intent `move`, and carries exactly what deleting its range removes: a range
   that starts or ends inside an inline void takes the void, a range that
   still has an edge inside any other non-editable element once an end at a
-  block's start is pulled back refuses, and a range whose deletion removes
+  block's start is pulled back refuses, a range whose deletion would keep a
+  grid it reaches into refuses as lossy, and a range whose deletion removes
   nothing moves nothing. A copy carries its range as given. The
   paste landing reports the range it wrote, and the guard reads that range
   through the update's own steps, corrections and command frames included, so
