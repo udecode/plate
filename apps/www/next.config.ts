@@ -152,6 +152,7 @@ const nextConfig = (_phase: string) => {
           // tsconfig paths resolve collections/server before resolve.alias
           // applies, so the request is rewritten before resolution starts.
           webpack: (webpackConfig, { webpack }) => {
+            webpackConfig.parallelism = 4;
             webpackConfig.plugins.push(
               new webpack.NormalModuleReplacementPlugin(
                 /^collections\/server$/,

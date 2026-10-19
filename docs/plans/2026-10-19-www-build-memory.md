@@ -1,6 +1,6 @@
 # Fit the website build within the Standard machine
 
-Status: building, testing direct source reads after the heap-only build exhausted memory.
+Status: building, testing bounded webpack concurrency after the first two trials exhausted memory.
 Playbook: bug-fix
 
 ## Brief
@@ -46,7 +46,7 @@ The first trial reserves memory for those other uses. Later trials remove repeat
 
 - [x] Reproduce the reported failure. Proof: Vercel baseline reports out_of_memory and an OOM event.
 - [x] Test the smaller heap alone. Proof: dpl_EMZQ7SYF5FUwYXRukuzRWYuAPPvW failed with out_of_memory and SIGKILL before compilation completed on 4 cores and 8 GB.
-- [ ] If needed, test direct source text rewriting. Proof: source-output parity and remote build result.
+- [x] If needed, test direct source text rewriting. Proof: parity passed; dpl_9qoxJSdXNwjZH7Pezr9YW4dfPJgn still failed with out_of_memory on the unchanged machine.
 - [ ] If needed, test reduced compiler parallelism. Proof: remote build result on unchanged machine specs.
 - [ ] Review and run affected checks. Proof: final diff, writing passes and scoped successful checks.
 - [ ] Deliver and check the published result. Proof: land.mjs commit on origin/next and matching READY preview.
@@ -63,6 +63,8 @@ The first trial reserves memory for those other uses. Later trials remove repeat
 - Baseline: baseline-vercel.json.
 - Heap-only trial: heap-final-vercel.json. The smaller heap alone did not satisfy the exit condition.
 - Parser parity: parser-parity-original.json and parser-parity-candidate-a1.log cover all 433 tracked registry TypeScript inputs. They prove text parity only.
+- Broader parity: registry-text-parity-a1.log covers all 948 tracked registry text files, including MDX, JSON and CSS. The probe compares the removed parser step with raw text; source review confirms the same import rewriting receives that text.
+- Parser trial: parser-final-vercel.json. Removing the repeated parse did not satisfy the exit condition.
 
 ## Open work
 
