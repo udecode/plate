@@ -1,6 +1,6 @@
 # Build the beta website in GitHub Actions
 
-Status: building: assigning beta through the scoped API after successful upload and route checks
+Status: building: verifying the GitHub-only cutover and cached deployment
 Playbook: build
 
 ## Brief
@@ -15,9 +15,9 @@ The first Linux build can expose packaging or runtime differences. The current b
 
 ## Teach
 
-Vercel Basic now builds the website successfully with memory optimizations. Its verified cold deployment took 8 minutes 37 seconds. GitHub Actions already completes compilation, but its upload fails because the workflow uses a production-only option on a preview deployment.
+Vercel Basic builds the website successfully with memory optimizations. GitHub Actions also compiles the website with those optimizations off. The migration moves compilation to GitHub and keeps Vercel serving the finished website.
 
-GitHub Actions will build the same website and upload the finished output to Vercel. It compares changes with the last successful workflow, checks the uploaded pages and search endpoint, then updates the beta domain.
+GitHub compares changes with the last successful workflow, checks the uploaded pages and search endpoint, then updates the beta domain. A failed build leaves beta on its previous deployment. The first successful deployment and a cached follow-up establish the initial timing.
 
 ## Main changes
 
@@ -39,6 +39,7 @@ GitHub Actions will build the same website and upload the finished output to Ver
 | Deployment timing | Deploy relevant pushes | Deploy hourly | hourly | small |
 | Migration order | Prove the replacement before switching | Switch immediately | switch | small |
 | Review method | Fast with direct verification | Independent review | full | detail |
+| Local proof | Focused checks and GitHub proof | Retry the local aggregate | aggregate | detail |
 
 ## Scope
 
@@ -59,7 +60,8 @@ The workflow's state is skipped, building, uploaded, checked, or assigned. Only 
 - [x] Implement and verify the deployment workflow.
 - [x] Configure GitHub and Vercel credentials and project settings.
 - [x] Land through the repository delivery helper.
-- [ ] Run the build on GitHub Actions with `PLATE_BUILD_BASIC=0` and inspect the deployed beta website in Chrome.
+- [x] "Continue with focused checks and GitHub proof". The owner waived the timed-out local aggregate for this deployment change.
+- [x] Run the build on GitHub Actions with `PLATE_BUILD_BASIC=0` and inspect the deployed beta website in Chrome.
 - [ ] Compare complete deployment time and separate build from setup and upload.
 - [ ] "ok lets continue github lane now, without that env enabled, and compare the speed of deployment at least. see Move Vercel builds to GitHub Actions for the wip work, we will continue here"
 - [ ] Disable duplicate automatic Git deployment after the replacement passes.
@@ -73,17 +75,17 @@ The owner explicitly waived the local aggregate gate for this deployment change:
 
 | Gate | Evidence |
 | --- | --- |
-| Workflow syntax and shell checks | actionlint-a3.log; skip-baseline-a2.log covers five decision scenarios |
+| Workflow syntax and shell checks | alias-api-land-a1.log; actionlint and five skip scenarios pass on the scoped API workflow |
 | Focused existing workflow contracts | workflow-contracts-a3.log; eight tests passed |
 | Build flag modes | off-flag-modes-a1.log; default, 1 and 0 checked with real Next worker launch; compilation intercepted |
 | Local aggregate gate | Owner waived after continue-land-a1.log recorded two watcher timeouts; stopped under that approval |
 | Writing passes | deslop, unslop and bro completed; no-comments and agent reviews skip under fast |
 | Scoped lint | lint-a1.log; repository lint ignores these paths; actionlint covers the workflow |
 | GitHub environment and secret | preview-next restricts next; Plate-only token saved October 19, 2026 and expires October 19, 2027 |
-| GitHub Actions build and deployment | pending |
-| Live route and Chrome checks | pending |
+| GitHub Actions build and deployment | Run 39262418650 passed; cold-comparison-a1.log records the successful deployment and source comparison |
+| Live route and Chrome checks | github-api-headings-a1.log, beta-cold-headings-a1.log and beta-cold-chrome-manual-final.png; loaded equation preview and Manual source checked |
 | Vercel Git deployment cutover | pending |
-| Delivery | 88e2550143 landed through land.mjs; live setup continues |
+| Delivery | 88e2550143, 625dd005ce, 93696f4c5f and 904b78cf1a landed through land.mjs; live setup continues |
 
 ## Evidence
 
@@ -102,11 +104,19 @@ The owner explicitly waived the local aggregate gate for this deployment change:
 
 ## Measurement scope
 
-The requested result is an observed end-to-end deployment duration with correctness checks. Record runner hardware, Node, source SHA, build mode, cache messages, real compilation and page counts, deployment READY state and beta alias identity. A failed or skipped run is excluded. One successful run per configuration is a ballpark comparison; it does not establish a repeatable causal speedup or choose the hosting provider.
+The requested result is an observed end-to-end deployment duration with correctness checks. Record runner hardware, Node, source SHA, build mode, cache messages, real compilation and page counts, deployment READY state and beta alias identity. A failed or skipped run is excluded. Compare the website, packages, content, tooling, lockfile and build inputs across SHAs. Workflow and plan changes can differ. Vercel configuration must match after removing the Git-trigger setting.
+
+Record one cold and one cached GitHub run. Report push-to-beta time separately from job cleanup and cache saving. The Basic comparison separates queue time from build-to-ready time. These observations do not establish a repeatable causal speedup or choose the hosting provider.
 
 Benchmark lanes: source-and-host-readiness applies to the remote build and deployment. Current-vs-main-product-smoke, plate-vs-plite-decomposition, owner-microbench-and-trace, product-mount-matrix, trusted-editing-matrix, plite-vs-pinned-slate, example-breadth and large-and-stress are N/A because this compares deployment pipelines, not editor runtime performance. Interaction coverage is N/A for first and settled editing interactions; route-scope is the uploaded homepage, installation docs, search and registry, plus Chrome inspection; reporter-profile is GitHub Ubuntu and Vercel Basic builds, with Chrome for route proof.
 
 ## Verification
+
+Run `39262418650` completed successfully at `904b78cf1a`. It built with `PLATE_BUILD_BASIC=0`, uploaded the archive, passed its route checks and assigned beta through the approved token's scoped API. Vercel confirmed READY deployment `dpl_8ph2swgpyfnHcWg9d3AJTqCGCVuk` at beta. The compilation cache was absent, then saved successfully.
+
+The cold GitHub run took 7m34s from workflow creation to beta assignment. That includes 4s queue, 46s setup, 5m31s build, 49s upload and 24s checks and assignment. The job finished after 7m46s including cleanup. The matching website inputs on Vercel Basic took 7m30.102s from build start to READY, plus 6m48.832s queue behind a production build. Its total was 14m18.934s. These single observations do not establish a repeatable speedup. See cold-comparison-a1.log and deployment-comparison.json.
+
+The stronger HTTP checks passed on the final preview and beta. Chrome rendered Math and its equation demo, then opened Manual and displayed the highlighted math.tsx source. beta-cold-chrome-final.txt and beta-cold-chrome-manual-final.png retain the final interaction. The earlier Chrome connection timeout cleared in the final beta tab.
 
 Run `39260214358` completed the off-mode build in 480 seconds and archived upload in 63 seconds. Its homepage, React docs, search and registry workflow checks passed. Vercel deployment `dpl_DB4Ln5DaLMPWGV77hW6NdnDr2Ano` reached READY as a detached preview with no aliases. The final CLI alias step failed with "User not found"; beta still pointed at the Vercel-built preview. This is not a successful complete deployment timing.
 
@@ -114,8 +124,9 @@ The extra HTTP probe now requires real h1 headings and uses the canonical `/docs
 
 
 - Workflow syntax passed actionlint 1.7.7. Five local decision scenarios passed, including a failed site deployment followed by documentation changes. The API response was supplied by a fixture and still needs live proof.
-- All seven existing workflow contracts passed. Repository lint ignores the workflow and plan paths; this is not a source-lint coverage claim.
-- The first live GitHub Actions run and Chrome checks remain pending. No Mac website build is planned.
+- All eight existing workflow contracts passed. Repository lint ignores the workflow and plan paths; this is not a source-lint coverage claim.
+- Chrome loaded the archived GitHub preview's Math page and equation demo. The screenshot is github-preview-chrome.png. Two input attempts timed out in Chrome's control connection, so that capture proves rendering, not the Manual tab interaction. The final beta domain still needs its own check.
+- Run 39262418650 tests the scoped alias API and cache saving. No Mac website build is planned.
 
 ## Open work
 

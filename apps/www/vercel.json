@@ -5,7 +5,7 @@
     "deploymentEnabled": {
       "**": false,
       "main": true,
-      "next": true
+      "next": false
     }
   },
   "ignoreCommand": "node scripts/vercel-ignore-build.mjs",
