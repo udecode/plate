@@ -1,22 +1,5 @@
 import { describe, expect, it } from 'bun:test';
 
-const exportModule = new URL('./docx-export-plugin.tsx', import.meta.url)
-  .pathname;
-
-const runScript = async (script: string) => {
-  const subprocess = Bun.spawn([process.execPath, '--eval', script], {
-    stderr: 'pipe',
-    stdout: 'pipe',
-  });
-  const [stdout, stderr, exitCode] = await Promise.all([
-    new Response(subprocess.stdout).text(),
-    new Response(subprocess.stderr).text(),
-    subprocess.exited,
-  ]);
-
-  return { exitCode, stderr, stdout };
-};
-
 describe('exportToDocx', () => {
   it('exports quoted font families and preserves literal text', async () => {
     const text = '<tag> & "quotes" \'apostrophes\'';
@@ -27,7 +10,9 @@ describe('exportToDocx', () => {
         fontName: 'Apple Color Emoji',
       },
     ];
-    const { exitCode, stderr, stdout } = await runScript(`
+    const exportModule = new URL('./docx-export-plugin.tsx', import.meta.url)
+      .pathname;
+    const script = `
       import { createElement } from 'react';
       import { NodeApi } from 'platejs';
       import JSZip from ${JSON.stringify(import.meta.resolve('jszip'))};
@@ -46,7 +31,16 @@ describe('exportToDocx', () => {
         documents.push(await zip.file('word/document.xml').async('string'));
       }
       console.log(JSON.stringify(documents));
-    `);
+    `;
+    const subprocess = Bun.spawn([process.execPath, '--eval', script], {
+      stderr: 'pipe',
+      stdout: 'pipe',
+    });
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(subprocess.stdout).text(),
+      new Response(subprocess.stderr).text(),
+      subprocess.exited,
+    ]);
 
     expect(stderr).toBe('');
     expect(exitCode).toBe(0);
@@ -75,7 +69,9 @@ describe('exportToDocx', () => {
   });
 
   it('numbers the pages in a footer the section references when pageNumber is set', async () => {
-    const { exitCode, stderr, stdout } = await runScript(`
+    const exportModule = new URL('./docx-export-plugin.tsx', import.meta.url)
+      .pathname;
+    const script = `
       import JSZip from ${JSON.stringify(import.meta.resolve('jszip'))};
       import { exportToDocx } from ${JSON.stringify(exportModule)};
 
@@ -88,7 +84,16 @@ describe('exportToDocx', () => {
         if (!file.dir) parts[file.name] = await file.async('string');
       }
       console.log(JSON.stringify(parts));
-    `);
+    `;
+    const subprocess = Bun.spawn([process.execPath, '--eval', script], {
+      stderr: 'pipe',
+      stdout: 'pipe',
+    });
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(subprocess.stdout).text(),
+      new Response(subprocess.stderr).text(),
+      subprocess.exited,
+    ]);
 
     expect(stderr).toBe('');
     expect(exitCode).toBe(0);
@@ -103,7 +108,7 @@ describe('exportToDocx', () => {
       ?.getElementsByTagName('w:footerReference')[0]
       ?.getAttribute('r:id');
 
-    expect(footerId).toBeDefined();
+    expect(footerId).toBeTruthy();
 
     const footerRelationship = Array.from(
       parse('word/_rels/document.xml.rels').getElementsByTagName('Relationship')
