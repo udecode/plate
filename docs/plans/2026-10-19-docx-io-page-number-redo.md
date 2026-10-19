@@ -1,6 +1,6 @@
 # Add a page number option to DOCX export
 
-Status: in review, waiting on the maintainer's review and on your answer about replying to the maintainer
+Status: in review, waiting on the maintainer's review
 Page: https://claude.ai/artifact/6zhBpWr6zaQbsNnFnzzj7o
 Playbook: babysit
 Plans: 2026-10-19-docx-io-footer-page-number.md
@@ -73,23 +73,6 @@ Findings, on the P0 to P3 scale: no P0 or P1. P2: `htmlToDocxBlob(html, { pageNu
 | Missing model sheet | Use the review's default four models | Write a model sheet first | model sheet | detail |
 | Printed page check | Try one PDF render, and log a gap if it fails | Skip it, since the footer matches the one Word read | skip print | detail |
 
-## Open questions
-
-### Reply to the maintainer
-
-Should I post a short reply to the maintainer about the redo?
-
-Why it needs you: It is a public comment on a repository outside the team.
-
-- The maintainer asked for this redo in a fresh session.
-
-- **Post the reply** (recommended): I post a two-line note saying the redo ran and what changed. Cost: One more comment on the PR.
-- **Stay silent**: The updated PR body speaks for itself. Cost: The maintainer may not notice the redo.
-
-Why I pick it: The maintainer asked for this, so a short note closes the loop.
-
-Attention: look
-
 ## Steps
 
 - [x] Write the redo ledger. Proof: `docs/plans/artifacts/docx-io-page-number-redo/levels-a1.log` marks every lead stretch of the first run at claude-opus-5-5 @xhigh, and the Redo table lists each unit.
@@ -102,6 +85,8 @@ Attention: look
 - [x] Act on the trail review: return the PR to draft, undo the shared test helper and reopen the release bump as a question. Proof: `docs/plans/artifacts/docx-io-page-number-redo/red-base-rewrite-a2.log`, `docs/plans/artifacts/docx-io-page-number-redo/mutant-footer-a2.log`, `docs/plans/artifacts/docx-io-page-number-redo/mutant-pagenumber-a2.log`.
 
 - [x] Switch the release note to a minor bump and mark the PR ready, as you asked. Proof: `.changeset/docx-io-footer-page-number.md` names `minor`, and `gh pr ready 5193` ran after the push.
+
+- [x] Post the short reply to the maintainer, as you asked. Proof: https://github.com/udecode/plate/pull/5193#issuecomment-6266452370
 
 ## Verification
 
