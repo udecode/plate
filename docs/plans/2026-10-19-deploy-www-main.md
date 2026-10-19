@@ -1,17 +1,17 @@
 # Build production through GitHub Actions
 
-Status: building: porting the proven beta deployment workflow to main
+Status: verifying: production and beta passed; checking an ignored-only push
 Playbook: build
 
 ## Brief
 
 ### What will change?
 
-Production will build on GitHub with the same workflow used for beta. Both deployment paths will use one ignore script. GitHub uses the larger build mode; Vercel retains the Basic mode.
+Production and beta now build through the same GitHub workflow. Both use one ignore script. Main matches beta's Next and React versions. GitHub builds with Basic mode off; Vercel production keeps Basic mode on.
 
 ### What could go wrong?
 
-Production uses a different website version from beta. The staged production build must pass route checks before promotion. Deployment queues can still delay uploads.
+Production and beta keep different website code. Both real deployments passed their checks. The full local aggregate remains unpassed under the approved focused-proof waiver. Deployment queues can still delay uploads.
 
 ## Teach
 
@@ -57,13 +57,13 @@ Main uses its own topic branch and the main checkout's existing delivery rules. 
 - [x] Smallest safe decomposition: port, focused proof, real production build, checked promotion and close.
 - [x] Implement the workflow, shared ignore list and build flag. Source: .github/workflows/deploy.yml and apps/www/scripts.
 - [x] "try to apply the lcosest www config, upgrade next to same version etc." Source: apps/www/package.json and apps/www/next.config.ts; compatible build settings aligned.
-- [ ] "and rename deploy-www to deploy to both"
+- [x] "and rename deploy-www to deploy to both" Proof: main 19db88833e and next 3d14bbb09e; both Deploy workflow runs passed.
 - [x] Verify branch decisions, missing history, failed builds, ignored files, flag modes and workflow syntax. Proof: skip-a1.log, publish-a1.log, flag-a2.log and actionlint-a1.log in the run directory.
 - [x] Run writing passes and focused formatting. Direct deslop, unslop and bro passes; scoped Biome check.
-- [ ] Push main and prove the real GitHub build and staged production upload.
-- [ ] Verify production promotion, domain identity, HTTP routes and Chrome rendering.
+- [x] Push main and prove the real GitHub build and staged production upload. Proof: https://github.com/udecode/plate/actions/runs/39270020107 at 19db88833e.
+- [x] Verify production promotion, domain identity, HTTP routes and Chrome rendering. Proof: production-live-a1.log, registry-source-live-a1.log and main-react-source.png in the run directory; Vercel alias points to dpl_sLDRfNDitWr27QLxDtdao2TrGB9T.
 - [ ] Verify an ignored-only push skips both build entrypoints.
-- [ ] "apply to main now. including the ignore list (for both github actions and vercel), and including the vercel flag."
+- [x] "apply to main now. including the ignore list (for both github actions and vercel), and including the vercel flag." Proof: main 19db88833e, Vercel production PLATE_BUILD_BASIC=1, checked promotion and shared ignore script.
 - [ ] Finish the proof record, page and delivery.
 
 ## Completion Gates
@@ -75,8 +75,8 @@ Main uses its own topic branch and the main checkout's existing delivery rules. 
 | Build flag modes | flag-a2.log; real Next parent and worker heaps, compilation intercepted |
 | Scoped formatting and syntax | focused-lint-a1.log and syntax-a1.log; ESLint ignores this config |
 | Full local aggregate | Owner-approved focused checks and real GitHub proof; no aggregate-green claim |
-| GitHub production build and upload | pending |
-| Promotion and live production proof | pending |
+| GitHub production build and upload | Run 39270020107 passed; 8192 MiB heap, 52 tasks and 867 static pages |
+| Promotion and live production proof | Same production deployment promoted; HTTP and Chrome rendering checks passed |
 | Ignore-only live run | pending |
 | Reviews, no-comments, trail review and reflect | skip: carried fast instruction |
 | Package changeset and editor behavior tests | N/A; deployment tooling and private build configuration only |
@@ -87,7 +87,25 @@ Source-and-host-readiness applies to the remote production build and checked dep
 
 ## Verification
 
-The implementation and live production proof are in progress. Vercel production now has the non-secret flag set to Basic mode. GitHub's approved project environment allows only main and next.
+- Production [run 39270020107](https://github.com/udecode/plate/actions/runs/39270020107) passed at 19db88833e. The real build used Next 16.3.2 and an 8192 MiB heap. It completed 52 tasks and generated 867 pages. Build time was 8m57s; upload took 1m08s; staged route checks took 20s; publication took 6s. These are single-run observations, not a controlled speed comparison.
+- Beta [run 39270089314](https://github.com/udecode/plate/actions/runs/39270089314) passed at 3d14bbb09e after the rename. It built in 3m29s, uploaded in 50s and passed route checks and alias assignment. Chrome rendered the equation preview and Manual installation source. Production Chrome rendered the React installation page, its editor preview and its Code source viewer. HTTP checks parsed actual headings and nonempty search, registry and highlighted-source responses.
+- The shared ignore decision, both publication branches, stale-head refusal and default/1/0 flag modes passed focused probes. API responses in those local probes were fixtures, and compilation was intercepted for the heap probe. The real GitHub deployments prove the remote build and API path. The local aggregate remains unpassed under the owner's approved focused-proof waiver. Reviews and no-comments were skipped under fast mode.
+
+## Demo
+
+### Production docs
+
+Open the [React installation guide](https://platejs.org/docs/installation/react). Its editor preview and generated Code files load from the promoted deployment.
+
+![Production editor preview](./artifacts/deploy-www-main/main-react-preview.png)
+![Production generated source](./artifacts/deploy-www-main/main-react-source.png)
+
+### Beta docs
+
+Open the [Math component](https://beta.platejs.org/docs/components/math). The equation preview renders, and Manual shows the generated installation source.
+
+![Beta equation preview](./artifacts/deploy-www-main/beta-renamed-chrome.png)
+![Beta installation source](./artifacts/deploy-www-main/beta-renamed-manual.png)
 
 ## Open work
 
@@ -95,4 +113,8 @@ The implementation and live production proof are in progress. Vercel production 
 
 ## Close
 
-The production port is in progress. Production promotion is explicitly authorized. The existing live site remains available while the staged replacement is checked.
+Production and beta use Deploy in deploy.yml. Main aligns Next and third-parties at 16.3.2 and React and React DOM at 19.2.8. The compatible build configuration is ported, while v1 routing and static-rendering contracts remain intact. Generated async docs and per-port caches are ignored locally.
+
+Main commit 19db88833e, chore(www): build production with GitHub Actions, passed the real production build and checked promotion. Next commit 3d14bbb09e, chore(www): rename the deployment workflow on next, passed the beta build and alias checks. Both use the same ignore script. Vercel production has Basic mode 1, and GitHub explicitly uses 0. The paid machine configuration did not change.
+
+The production alias points to dpl_sLDRfNDitWr27QLxDtdao2TrGB9T. Beta points to dpl_AvGEzAKx7DD1nDxLB7nyES1c6WcW. The www redirect, beta branch mapping and pro branch mapping remain as inspected. The aggregate is unpassed, as the owner's waiver allows; no aggregate-green claim is made. Final ignored-only push proof remains in progress.
