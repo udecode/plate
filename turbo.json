@@ -11,7 +11,8 @@
         "NEXT_PUBLIC_GA_MEASUREMENT_ID",
         "NODE_ENV",
         "npm_config_user_agent",
-        "https_proxy"
+        "https_proxy",
+        "PLATE_BUILD_BASIC"
       ],
       "outputs": ["dist/**", ".next/**"],
       "cache": false

@@ -4,6 +4,9 @@ import { createMDX } from 'fumadocs-mdx/next';
 import type { NextConfig } from 'next';
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 
+const basicBuild = process.env.PLATE_BUILD_BASIC !== '0';
+const collectionsServer = /^collections\/server$/;
+
 const APP_ROOT = import.meta.dirname;
 const REPO_ROOT = path.resolve(APP_ROOT, '../..');
 const PACKAGES_ROOT = path.join(REPO_ROOT, 'packages');
@@ -108,27 +111,41 @@ const buildWorkspaceDevAliases = () => {
   }
 
   return {
-    ...sourceAliases,
     ...distAliases,
+    ...sourceAliases,
     ...docsSourceAlias,
   };
 };
 
-const withMDX = createMDX({});
+const docsSourceDir =
+  process.env.PLATE_WWW_DYNAMIC_DOCS === '1'
+    ? '.source-dev'
+    : process.env.PLATE_WWW_ASYNC_DOCS === '1'
+      ? '.source-async'
+      : '.source';
 
-const nextConfig = async (_phase: string) => {
+const withMDX = createMDX({ outDir: docsSourceDir });
+
+const nextConfig = (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
+  const devDistDir =
+    isDev && process.env.PORT ? `.next-${process.env.PORT}` : '.next';
   const config: NextConfig = {
+    distDir: process.env.PLATE_WWW_DIST_DIR ?? devDistDir,
     typescript: {
       ignoreBuildErrors: true,
     },
 
     experimental: {
       externalDir: isDev,
-      // The OOM came from the docs/import graph, not Turbopack's dev cache itself.
-      turbopackFileSystemCacheForDev: true,
+      ...(process.env.PLATE_WWW_WEBPACK
+        ? {}
+        : { turbopackRustReactCompiler: true }),
       webpackBuildWorker: true,
-      webpackMemoryOptimizations: true,
+      webpackMemoryOptimizations: basicBuild,
+    },
+    logging: {
+      browserToTerminal: true,
     },
     productionBrowserSourceMaps: false,
     // https://nextjs.org/docs/basic-features/image-optimization#domains
@@ -153,30 +170,50 @@ const nextConfig = async (_phase: string) => {
       ],
     },
     outputFileTracingIncludes: {
+      '/*': ['./src/registry/**/*', './public/r/**/*'],
       '/api/search': ['../../content/docs/**/*'],
-      '/api/registry-source/[name]': ['./src/registry/**/*', './public/r/**/*'],
       '/blocks/slate-to-html': ['./public/tailwind.css'],
-      '/cn/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
-      '/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
+      '/cn/docs/\\[\\[...slug\\]\\]': ['../../content/docs/**/*'],
+      '/docs/\\[\\[...slug\\]\\]': ['../../content/docs/**/*'],
       '/docs/examples/slate-to-html': ['./public/tailwind.css'],
       '/view/slate-to-html': ['./public/tailwind.css'],
     },
-    reactCompiler: !isDev,
+    reactCompiler: true,
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
 
     staticPageGenerationTimeout: 1200,
 
-    turbopack: isDev
-      ? {
-          resolveAlias: buildWorkspaceDevAliases(),
-        }
-      : undefined,
+    webpack: (webpackConfig, { webpack }) => {
+      if (basicBuild) {
+        webpackConfig.cache = false;
+        webpackConfig.parallelism = 4;
+      }
+      if (docsSourceDir === '.source-async') {
+        webpackConfig.plugins.push(
+          new webpack.NormalModuleReplacementPlugin(
+            collectionsServer,
+            path.join(APP_ROOT, '.source-async/server')
+          )
+        );
+      }
+      return webpackConfig;
+    },
 
-    ...(isDev
-      ? { transpilePackages: ['ts-morph'] }
-      : { serverExternalPackages: ['ts-morph'] }),
+    turbopack: {
+      root: REPO_ROOT,
+      ...(isDev
+        ? {
+            resolveAlias: buildWorkspaceDevAliases(),
+          }
+        : {}),
+    },
+
+    ...(process.env.PLATE_WWW_WEBPACK
+      ? { serverExternalPackages: ['ts-morph'] }
+      : { transpilePackages: ['ts-morph'] }),
+    typedRoutes: true,
 
     async redirects() {
       return [
@@ -276,34 +313,6 @@ const nextConfig = async (_phase: string) => {
         },
       ];
     },
-
-    // webpack: (config, { buildId, dev, isServer, webpack }) => {
-    //   config.externals.push({
-    //     shiki: 'shiki',
-    //     typescript: 'typescript',
-    //   });
-
-    //   if (!isServer) {
-    //     config.resolve.fallback = {
-    //       ...config.resolve.fallback,
-    //       crypto: require.resolve('crypto-browserify'),
-    //       stream: require.resolve('stream-browserify'),
-    //     };
-
-    //     config.plugins.push(
-    //       new webpack.ProvidePlugin({
-    //         process: 'process/browser',
-    //       }),
-    //       new webpack.NormalModuleReplacementPlugin(
-    //         /node:crypto/,
-    //         (resource: any) => {
-    //           resource.request = resource.request.replace(/^node:/, '');
-    //         }
-    //       )
-    //     );
-    //   }
-    //   return config;
-    // },
   };
 
   return withMDX(config);

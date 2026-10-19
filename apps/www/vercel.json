@@ -4,9 +4,10 @@
   "git": {
     "deploymentEnabled": {
       "**": false,
-      "main": true
+      "main": false,
+      "next": false
     }
   },
-  "ignoreCommand": "bash -c '[ \"$VERCEL_GIT_COMMIT_MESSAGE\" = \"Version Packages\" ]'",
-  "installCommand": "pnpm install --no-frozen-lockfile"
+  "ignoreCommand": "node scripts/vercel-ignore-build.mjs",
+  "installCommand": "pnpm install --frozen-lockfile"
 }
