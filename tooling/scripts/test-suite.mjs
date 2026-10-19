@@ -16,6 +16,7 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { globSync, isDynamicPattern } from 'tinyglobby';
 
 import {
+  BUN_TEST_TIMEOUT_MS,
   TEST_FAST_IGNORE_PATTERNS,
   TEST_FILE_PATTERNS,
   TEST_IGNORE_PATTERNS,
@@ -201,6 +202,7 @@ const processArguments = (files, args, cwd) => [
         ...(rootTestConfig?.onlyFailures ? ['--only-failures'] : []),
       ]
     : []),
+  `--timeout=${BUN_TEST_TIMEOUT_MS}`,
   ...args,
   ...files.map((file) => resolve(file)),
 ];

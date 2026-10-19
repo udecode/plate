@@ -1488,7 +1488,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1520,7 +1520,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1545,7 +1545,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1563,7 +1563,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1586,7 +1586,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1604,7 +1604,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1629,7 +1629,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1652,7 +1652,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1676,7 +1676,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1699,7 +1699,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1898,7 +1898,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1916,7 +1916,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1947,7 +1947,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -1970,7 +1970,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2006,7 +2006,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2028,7 +2028,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2052,7 +2052,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2081,7 +2081,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2104,7 +2104,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2126,7 +2126,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2149,7 +2149,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2178,7 +2178,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2201,7 +2201,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2235,7 +2235,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2256,7 +2256,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2283,7 +2283,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2308,7 +2308,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2338,7 +2338,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2363,7 +2363,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2388,7 +2388,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2410,7 +2410,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2451,7 +2451,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2528,7 +2528,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2549,7 +2549,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2572,7 +2572,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2595,7 +2595,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2618,7 +2618,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2647,7 +2647,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2670,7 +2670,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2696,7 +2696,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2721,7 +2721,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2754,7 +2754,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2782,7 +2782,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2813,7 +2813,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2835,7 +2835,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2859,7 +2859,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2882,7 +2882,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2910,7 +2910,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2935,7 +2935,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2958,7 +2958,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2985,7 +2985,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3010,7 +3010,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3036,7 +3036,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3060,7 +3060,7 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "bunfig.toml"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },

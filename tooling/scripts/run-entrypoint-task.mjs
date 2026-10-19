@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { BUN_TEST_TIMEOUT_MS } from '../config/test-suites.mjs';
 import { entrypointDags } from '../entrypoints/entrypoint-dag.mjs';
 import {
   getPackageLintFiles,
@@ -106,6 +107,7 @@ const runTests = () => {
           `--config=${path.join(repoRoot, 'bunfig.toml')}`,
           `--cwd=${repoRoot}`,
           'test',
+          `--timeout=${BUN_TEST_TIMEOUT_MS}`,
           // Without `./`, bun treats each path as a substring filter and scans the whole repository for matching test files.
           ...testFiles.map(
             (filename) => `./${path.join(definition.packageRoot, filename)}`
@@ -117,6 +119,7 @@ const runTests = () => {
 
     return runProcess('bun', [
       'test',
+      `--timeout=${BUN_TEST_TIMEOUT_MS}`,
       `--preload=${path.join(repoRoot, 'config/plite-source-test-setup.ts')}`,
       ...testFiles.map((filename) => `./${filename}`),
     ]);

@@ -799,7 +799,7 @@ export const createPackageTurboConfig = (packageName) => {
           ...sharedTestInputs,
           ...(packageName === 'plitejs' ? ['vitest.config.mjs'] : []),
         ],
-        env: ['CI'],
+        env: ['CI', 'FAST_CHECK_SEED'],
         outputLogs: 'errors-only',
         outputs: [],
       };

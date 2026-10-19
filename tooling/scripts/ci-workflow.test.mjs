@@ -112,6 +112,48 @@ test('pnpm check runs the production build only with --build or by name', async 
   );
 });
 
+test('pnpm check --affected runs the steps each change reaches', async () => {
+  const { planAffected } = await import('./check.mjs');
+  const always = new Set(
+    planAffected([])
+      .filter(({ command }) => command)
+      .map(({ step }) => step.name)
+  );
+  const added = (files) =>
+    planAffected(files)
+      .filter(({ step, command }) => command && !always.has(step.name))
+      .map(({ step, command }) =>
+        command === step.run ? step.name : `${step.name}: ${command}`
+      );
+
+  assert.deepEqual(
+    {
+      docs: added(['docs/plans/2026-10-19-landing-check.md']),
+      cli: added(['packages/cli/src/generate.ts']),
+      slow: added([
+        'packages/plitejs/test/authored-tree-recording-laws.slow.ts',
+      ]),
+      lockfile: added(['pnpm-lock.yaml']),
+      lockfileSkips: planAffected(['pnpm-lock.yaml'])
+        .filter(({ command }) => !command)
+        .map(({ step }) => step.name),
+    },
+    {
+      docs: [],
+      cli: ['test', 'cli-test', 'www'],
+      slow: [
+        'test',
+        "test-slow: pnpm test:slow 'packages/plitejs/test/authored-tree-recording-laws.slow.ts'",
+        'plite-test',
+        'cli-test',
+        'www',
+      ],
+      lockfile: ['test', 'test-slow', 'plite-test', 'cli-test', 'www'],
+      lockfileSkips: ['review-ledger', 'knowledge'],
+    }
+  );
+});
+
 test('pnpm check refuses --write with --build instead of dropping the build', () => {
   const result = spawnSync(
     process.execPath,

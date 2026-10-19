@@ -291,3 +291,21 @@ global.MessageChannel = class MessageChannel {
     start: () => {},
   };
 } as any;
+
+// Property tests replay one seed, so a red check means a regression rather
+// than an unlucky draw. FAST_CHECK_SEED=random searches new seeds, which the
+// daily full check does.
+const fastCheckSeed = process.env.FAST_CHECK_SEED ?? '20261019';
+
+if (fastCheckSeed !== 'random') {
+  const fc = await import(
+    Bun.resolveSync(
+      'fast-check',
+      resolve(import.meta.dir, '../../packages/plitejs')
+    )
+  );
+  fc.configureGlobal({
+    ...fc.readConfigureGlobal(),
+    seed: Number(fastCheckSeed),
+  });
+}

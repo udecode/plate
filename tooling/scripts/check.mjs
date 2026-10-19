@@ -1,7 +1,28 @@
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
+
+const touches =
+  (...prefixes) =>
+  (files) =>
+    files.some((file) => prefixes.some((prefix) => file.startsWith(prefix)));
+const never = () => false;
+const SLOW_FILE_RE = /\.slow\.(?:test\.mjs|tsx?)$/;
+
+// A change to one of these can reach every step, so --affected runs them all.
+const GLOBAL_PATHS = [
+  'bunfig.toml',
+  'config/',
+  'package.json',
+  'pnpm-lock.yaml',
+  'pnpm-workspace.yaml',
+  'tooling/config/',
+  'tooling/scripts/check.mjs',
+  'tsconfig.json',
+  'turbo.json',
+];
 
 const packageDiff = () =>
   spawnSync(
@@ -24,12 +45,45 @@ export const steps = [
   { name: 'typecheck', run: 'pnpm typecheck' },
   { name: 'plite-app-typecheck', run: 'pnpm --filter plite typecheck' },
   { name: 'type-tests', run: 'pnpm test:types' },
-  { name: 'test', run: 'pnpm test' },
-  { name: 'test-slow', run: 'pnpm test:slow' },
-  { name: 'plite-test', run: 'pnpm plite:test' },
+  {
+    name: 'test',
+    run: 'pnpm test',
+    affected: touches(
+      '.agents/rules/',
+      'apps/',
+      'benchmarks/',
+      'content/',
+      'packages/',
+      'tooling/'
+    ),
+  },
+  {
+    name: 'test-slow',
+    run: 'pnpm test:slow',
+    affected: (files) => files.filter((file) => SLOW_FILE_RE.test(file)),
+  },
+  {
+    name: 'plite-test',
+    run: 'pnpm plite:test',
+    affected: touches(
+      'packages/platejs/',
+      'packages/plitejs/',
+      'packages/test/',
+      'tooling/entrypoints/'
+    ),
+  },
   { name: 'bench-targets', run: 'pnpm plite:bench:targets:check' },
   { name: 'public-types', run: 'pnpm plite:public-types' },
-  { name: 'cli-test', run: 'pnpm --filter @platejs/cli test' },
+  {
+    name: 'cli-test',
+    run: 'pnpm --filter @platejs/cli test',
+    // The CLI tests compile editors against platejs source, which builds on plitejs.
+    affected: touches(
+      'packages/cli/',
+      'packages/platejs/',
+      'packages/plitejs/'
+    ),
+  },
   { name: 'core-audits', run: 'pnpm check:core' },
   { name: 'plite-bridge', run: 'node tooling/scripts/check-plite-bridge.mjs' },
   {
@@ -62,8 +116,11 @@ export const steps = [
     fix: 'pnpm install',
   },
   {
+    // Both docs checks judge every plan, so another session's open plan can
+    // turn them red; the daily full check runs them instead of each landing.
     name: 'review-ledger',
     run: 'node tooling/scripts/review-ledger.mjs check',
+    affected: never,
   },
   {
     name: 'removed-api-teaching',
@@ -73,6 +130,7 @@ export const steps = [
     name: 'knowledge',
     run: 'node tooling/scripts/knowledge/kb.mjs check',
     fix: 'node tooling/scripts/knowledge/kb.mjs check --lower',
+    affected: never,
   },
   { name: 'manifests', run: 'pnpm test:manifests' },
   {
@@ -89,6 +147,7 @@ export const steps = [
     // www typecheck and its generators run the plate CLI from packages/cli/dist.
     name: 'www',
     run: 'pnpm --filter @platejs/cli build && pnpm --filter www typecheck',
+    affected: touches('apps/www/', 'content/', 'packages/'),
     write:
       'pnpm --filter @platejs/cli build && pnpm --filter www editor:generate && pnpm --filter www api-reference && pnpm --filter www build:registry',
   },
@@ -169,6 +228,56 @@ export const selectSteps = (args) => {
   );
 };
 
+/** Each default step with the command a change to `files` needs, or null. */
+export const planAffected = (files) => {
+  const everything = files.some((file) =>
+    GLOBAL_PATHS.some((path) =>
+      path.endsWith('/') ? file.startsWith(path) : file === path
+    )
+  );
+  return steps
+    .filter((step) => !step.optIn)
+    .map((step) => {
+      if (!step.affected) return { step, command: step.run };
+      if (step.affected === never) return { step, command: null };
+      if (everything) return { step, command: step.run };
+      const hit = step.affected(files);
+      if (!Array.isArray(hit)) return { step, command: hit ? step.run : null };
+      return {
+        step,
+        command:
+          hit.length > 0
+            ? `${step.run} ${hit.map((file) => `'${file}'`).join(' ')}`
+            : null,
+      };
+    });
+};
+
+const changedFiles = () => {
+  const { branch } = JSON.parse(
+    readFileSync(new URL('../../.agents/pstack.json', import.meta.url), 'utf-8')
+  );
+  const git = (...args) =>
+    spawnSync('git', args, {
+      cwd: root,
+      encoding: 'utf-8',
+      maxBuffer: 1024 * 1024 * 64,
+    });
+  const base = git('merge-base', `origin/${branch}`, 'HEAD');
+  if (base.status !== 0) {
+    throw new Error(
+      `[check] no merge base with origin/${branch}; run git fetch origin ${branch}.`
+    );
+  }
+  const lines = (result) => result.stdout.split('\n').filter(Boolean);
+  return [
+    ...new Set([
+      ...lines(git('diff', '--name-only', base.stdout.trim())),
+      ...lines(git('ls-files', '--others', '--exclude-standard')),
+    ]),
+  ];
+};
+
 const runStep = (step, command, writing) => {
   const started = Date.now();
   const watch = !writing && step.unchangedFiles;
@@ -212,13 +321,35 @@ const main = () => {
     );
     return 1;
   }
+  const affected = args.includes('--affected');
+  if (affected && (writing || args.includes('--build') || names.length > 0)) {
+    console.error(
+      '[check] --affected picks its own steps; run it without step names, --write or --build.'
+    );
+    return 1;
+  }
 
-  const selected = selectSteps(args);
+  let selected;
+  if (affected) {
+    const files = changedFiles();
+    const plan = planAffected(files);
+    console.info(
+      `[check] --affected: ${files.length} changed files since the merge base`
+    );
+    for (const { step, command } of plan) {
+      if (!command) console.info(`  skip ${step.name}`);
+    }
+    selected = plan.filter(({ command }) => command);
+  } else {
+    selected = selectSteps(args).map((step) => ({
+      step,
+      command: writing ? step.write : step.run,
+    }));
+  }
   const group = Boolean(process.env.GITHUB_ACTIONS);
   const results = new Map();
 
-  for (const step of selected) {
-    const command = writing ? step.write : step.run;
+  for (const { step, command } of selected) {
     console.info(
       group ? `::group::${step.name}` : `\n[check] ${step.name}: ${command}`
     );
@@ -228,7 +359,7 @@ const main = () => {
 
   console.info('\n[check] summary');
   let failed = 0;
-  for (const step of selected) {
+  for (const { step } of selected) {
     const { seconds, status } = results.get(step.name);
     const fix = writing ? null : step.write ? 'pnpm generate' : step.fix;
     if (status !== 0) failed += 1;

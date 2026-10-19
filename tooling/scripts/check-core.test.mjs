@@ -13,11 +13,8 @@ import { fileURLToPath } from 'node:url';
 
 import {
   collectPackageTestFiles,
-  createPackageTestCommandArgs,
   createGenericTypecheckGates,
   discoverGenericTypeConfigs,
-  isIsolatedPackageTestFile,
-  usesEntrypointPackageTestGraph,
 } from './check-core.mjs';
 
 const temporaryRoots = [];
@@ -93,20 +90,6 @@ test('typechecks generic files from their owning config and excludes them from B
   assert.deepEqual(runtimeFiles, [runtimeContract, runtimeTest]);
 });
 
-test('loads the source-first Bun preloader before package test dispatch', () => {
-  assert.deepEqual(
-    createPackageTestCommandArgs(
-      { bunArgs: ['--preload=../../config/plite-source-test-setup.ts'] },
-      ['./src/example.spec.ts']
-    ),
-    [
-      '--preload=../../config/plite-source-test-setup.ts',
-      'test',
-      './src/example.spec.ts',
-    ]
-  );
-});
-
 test('rejects ambient value declarations from the Bun runtime inventory', () => {
   const { packageDir, root, testDir } = createPackage({
     files: ['./owned-contract.ts'],
@@ -130,27 +113,6 @@ test('rejects ambient value declarations from the Bun runtime inventory', () => 
       ),
     /Runtime test contract .*unowned-contract\.ts contains a top-level ambient value declaration/
   );
-});
-
-test('isolates direct and test-suffixed contract files', () => {
-  const { testDir } = createPackage({ files: ['./owned-contract.ts'] });
-  const directContract = join(testDir, 'owned-contract.ts');
-  const testContract = join(testDir, 'runtime-contract.test.tsx');
-  const ordinaryTest = join(testDir, 'runtime.test.ts');
-
-  writeFileSync(directContract, 'export {};');
-  writeFileSync(testContract, 'export {};');
-  writeFileSync(ordinaryTest, 'export {};');
-
-  assert.equal(isIsolatedPackageTestFile(directContract), true);
-  assert.equal(isIsolatedPackageTestFile(testContract), true);
-  assert.equal(isIsolatedPackageTestFile(ordinaryTest), false);
-});
-
-test('delegates consolidated roots to their generated entrypoint test graph', () => {
-  assert.equal(usesEntrypointPackageTestGraph({ name: 'plitejs' }), true);
-  assert.equal(usesEntrypointPackageTestGraph({ name: 'platejs' }), true);
-  assert.equal(usesEntrypointPackageTestGraph({ name: '@platejs/test' }), true);
 });
 
 test('owns every current Plite generic config outside its Bun inventory', () => {

@@ -1,6 +1,12 @@
 import { expect, it } from 'bun:test';
 
-import { act, fireEvent, render, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  waitFor,
+  waitForElementToBeRemoved,
+} from '@testing-library/react';
 import {
   createEditor,
   EditorRoot,
@@ -251,8 +257,8 @@ it('dismisses URL input when focus enters an external iframe', async () => {
     const frame = view.getByTitle('External preview');
     act(() => frame.focus());
     fireEvent.blur(window);
-    await waitFor(() =>
-      expect(view.queryByPlaceholderText('Paste link')).toBeNull()
+    await waitForElementToBeRemoved(() =>
+      view.queryByPlaceholderText('Paste link')
     );
     expect(document.activeElement).toBe(frame);
   } finally {

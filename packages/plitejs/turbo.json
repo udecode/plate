@@ -281,7 +281,7 @@
         "bunfig.toml",
         "vitest.config.mjs"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -337,7 +337,7 @@
         "bunfig.toml",
         "vitest.config.mjs"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -356,7 +356,7 @@
         "bunfig.toml",
         "vitest.config.mjs"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -379,7 +379,7 @@
         "bunfig.toml",
         "vitest.config.mjs"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -402,7 +402,7 @@
         "bunfig.toml",
         "vitest.config.mjs"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -428,7 +428,7 @@
         "bunfig.toml",
         "vitest.config.mjs"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -460,7 +460,7 @@
         "bunfig.toml",
         "vitest.config.mjs"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -485,7 +485,7 @@
         "bunfig.toml",
         "vitest.config.mjs"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -506,7 +506,7 @@
         "bunfig.toml",
         "vitest.config.mjs"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -535,7 +535,7 @@
         "bunfig.toml",
         "vitest.config.mjs"
       ],
-      "env": ["CI"],
+      "env": ["CI", "FAST_CHECK_SEED"],
       "outputLogs": "errors-only",
       "outputs": []
     },

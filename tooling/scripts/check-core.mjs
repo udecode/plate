@@ -18,54 +18,24 @@ const TOP_LEVEL_AMBIENT_VALUE_RE =
   /^declare\s+(?:const|let|var|function|class)\b/m;
 
 const packageSlugs = ['plitejs', 'platejs', 'test', 'cli'];
-const entrypointPackageNames = new Set(['@platejs/test', 'platejs', 'plitejs']);
-
-const testBatchSizeOverride = process.env.CORE_TEST_BATCH_SIZE;
-
-const getTestBatchSize = (fileCount) => {
-  if (testBatchSizeOverride === undefined) return fileCount;
-
-  const batchSize = Math.floor(Number(testBatchSizeOverride));
-
-  if (!Number.isFinite(batchSize) || batchSize <= 0) {
-    throw new Error(
-      `CORE_TEST_BATCH_SIZE must be a positive number, received "${testBatchSizeOverride}".`
-    );
-  }
-
-  return batchSize;
-};
-
-const getTestBatchLabel = (fileCount, batchSize) =>
-  batchSize >= fileCount ? 'all files' : `batches of ${batchSize}`;
 
 const packageTestTargets = packageSlugs.map((slug) => {
   const dir = join(root, 'packages', slug);
-  const { name } = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf-8'));
 
   return {
-    name,
     dir,
     roots: ['src', 'test'].filter((rootName) =>
       existsSync(join(dir, rootName))
     ),
-    bunArgs: ['--preload=../../config/plite-source-test-setup.ts'],
   };
 });
 
-export const createPackageTestCommandArgs = (target, batch) => [
-  ...target.bunArgs,
-  'test',
-  ...batch,
-];
-
-const run = (label, command, args, options = {}) => {
+const run = (label, command, args) => {
   console.info(`\n[check:core] ${label}`);
 
   const result = spawnSync(command, args, {
     cwd: root,
     stdio: 'inherit',
-    ...options,
   });
 
   if (result.status !== 0) {
@@ -188,15 +158,6 @@ export const createGenericTypecheckGates = (repoRoot, configs) =>
 const isTestFile = (fileName) =>
   TEST_FILE_RE.test(fileName) || CONTRACT_FILE_RE.test(fileName);
 
-const hasModuleMock = (file) =>
-  readFileSync(file, 'utf-8').includes('mock.module(');
-
-export const isIsolatedPackageTestFile = (file) =>
-  hasModuleMock(file) || CONTRACT_FILE_RE.test(file);
-
-export const usesEntrypointPackageTestGraph = (target) =>
-  entrypointPackageNames.has(target.name);
-
 const collectTestFiles = (dir) => {
   const entries = readdirSync(dir, { withFileTypes: true });
   const files = [];
@@ -235,70 +196,18 @@ export const collectPackageTestFiles = (target, genericTypeFiles = new Set()) =>
     })
     .sort();
 
-const collectTestInventory = (genericTypeFiles) =>
-  packageTestTargets.map((target) => ({
-    ...target,
-    files: collectPackageTestFiles(target, genericTypeFiles),
-  }));
-
-const runPackageTests = (target) => {
-  if (usesEntrypointPackageTestGraph(target)) {
-    run(`${target.name} entrypoint test graph`, 'pnpm', ['run', 'test'], {
-      cwd: target.dir,
-    });
-    return;
-  }
-
-  const toRelativeTestPath = (file) =>
-    `./${toPosixPath(relative(target.dir, file))}`;
-  const sharedFiles = target.files
-    .filter((file) => !isIsolatedPackageTestFile(file))
-    .map(toRelativeTestPath);
-  const isolatedFiles = target.files
-    .filter(isIsolatedPackageTestFile)
-    .map(toRelativeTestPath);
-  const batchSize = getTestBatchSize(sharedFiles.length || 1);
-  const batches = [];
-
-  for (let index = 0; index < sharedFiles.length; index += batchSize) {
-    batches.push(sharedFiles.slice(index, index + batchSize));
-  }
-  for (const file of isolatedFiles) {
-    batches.push([file]);
-  }
-
-  const files = target.files.map(
-    (file) => `./${toPosixPath(relative(target.dir, file))}`
-  );
-
-  if (files.length === 0) {
-    throw new Error(
-      `No ${target.name} test files found under ${target.roots.join(', ')}.`
-    );
-  }
-
-  console.info(
-    `\n[check:core] ${target.name} tests (${files.length} files, ${getTestBatchLabel(
-      sharedFiles.length,
-      batchSize
-    )}, ${isolatedFiles.length} contract or module-mock files isolated)`
-  );
-
-  for (const [index, batch] of batches.entries()) {
-    const label = `${target.name} test batch ${index + 1}/${batches.length}`;
-
-    run(label, 'bun', createPackageTestCommandArgs(target, batch), {
-      cwd: target.dir,
-    });
-  }
-};
-
 const main = () => {
   const genericTypeConfigs = discoverGenericTypeConfigs(root);
   const genericTypeFiles = new Set(
     genericTypeConfigs.flatMap((config) => config.files)
   );
-  const testInventory = collectTestInventory(genericTypeFiles);
+
+  // Collecting each package's runtime test files refuses an ambient value
+  // declaration that no generic type config owns; plite-test and cli-test run
+  // the files themselves.
+  for (const target of packageTestTargets) {
+    collectPackageTestFiles(target, genericTypeFiles);
+  }
 
   run('Core runner contracts', 'node', [
     '--test',
@@ -375,9 +284,6 @@ const main = () => {
     'lint',
     ...packageSlugs.map((slug) => `--filter=./packages/${slug}`),
   ]);
-  for (const target of testInventory) {
-    runPackageTests(target);
-  }
 };
 
 if (

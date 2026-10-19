@@ -62,3 +62,7 @@ export const FAST_TEST_SLOW_SUITE_THRESHOLD_MS = isCI ? 30_000 : 20_000;
 
 export const FAST_TEST_WARN_CASE_THRESHOLD_MS = isCI ? 300 : 200;
 export const FAST_TEST_WARN_SUITE_THRESHOLD_MS = isCI ? 25_000 : 15_000;
+
+// Bun's own per-case timeout only catches a hang; the budgets above judge speed.
+// Its 5 s default failed scale cases whenever other sessions loaded the host.
+export const BUN_TEST_TIMEOUT_MS = 30_000;

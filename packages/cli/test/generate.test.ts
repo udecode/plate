@@ -34,7 +34,9 @@ import { watchEditor, watchEditors } from '../src/watch';
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = resolve(packageRoot, '../..');
 const temporaryDirectories: string[] = [];
-const waitFor = async (condition: () => boolean, timeout = 5000) => {
+// A loaded host can take several seconds to regenerate; a passing case returns
+// as soon as the condition holds, so the limit only bounds a real failure.
+const waitFor = async (condition: () => boolean, timeout = 30_000) => {
   const started = Date.now();
 
   while (!condition()) {
