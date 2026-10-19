@@ -38,6 +38,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-19-slash-local-plugin",
+      "href": "/registry/changelog/2026-10-19-slash-local-plugin.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Define the slash plugin in the copied slash file",
+      "change": {
+        "type": "source",
+        "date": "2026-10-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["slash", "inline-combobox", "emoji", "mention", "footnote"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-18-layout-style-values",
       "href": "/registry/changelog/2026-10-18-layout-style-values.json",
       "status": "draft",

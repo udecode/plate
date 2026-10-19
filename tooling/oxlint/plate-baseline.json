@@ -282,9 +282,6 @@
       "export type FilePluginState = MediaPluginState;",
       "export type VideoPluginState = MediaPluginState;"
     ],
-    "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts": [
-      "export type SlashPluginState = ComboboxState;"
-    ],
     "packages/platejs/src/lib/editor/pluginRuntimeTypes.ts": [
       "export type BasePluginInput = PluginReference;"
     ],

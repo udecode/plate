@@ -371,7 +371,6 @@ test('platejs exposes exactly the accepted root and feature owners', () => {
     'lint',
     'media',
     'mention',
-    'slash-command',
     'suggestion',
     'table',
     'toc',
@@ -500,12 +499,12 @@ test('every public entrypoint has one canonical runtime', () => {
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin').length,
-    15
+    14
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin-client')
       .length,
-    14
+    13
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-html-server')

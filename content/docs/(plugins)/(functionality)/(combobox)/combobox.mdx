@@ -80,8 +80,8 @@ export const HashtagPlugin = definePlugin('hashtag', {
 The popup renders next to the editor and reads the query from the text after the trigger:
 
 ```tsx showLineNumbers
-import * as React from 'react';
 import {
+  type EditableSiblingProps,
   type EditorElementProps,
   EditorElement,
 } from 'platejs/react';
@@ -95,11 +95,7 @@ import { HashtagPlugin } from './hashtag-plugin';
 
 const tags = ['Frontend', 'Backend', 'Design', 'Urgent'];
 
-export function HashtagCombobox({
-  editableRef,
-}: {
-  editableRef: React.RefObject<HTMLDivElement | null>;
-}) {
+export function HashtagCombobox({ editableRef }: EditableSiblingProps) {
   return (
     <InlineCombobox editableRef={editableRef} plugin={HashtagPlugin}>
       <InlineComboboxContent>
@@ -229,8 +225,8 @@ While a typed trigger's query is open, the editor reports itself as a combobox. 
   <APIItem name="listboxId" type="string">
     Id for the popup's listbox, mirrored as the editor's `aria-controls`.
   </APIItem>
-  <APIItem name="complete" type="(match: ComboboxMatch, callback: (tx) => false | void) => boolean">
-    Replace the trigger and query through one synchronous transaction. Pass the match that offered the option. Return `false` from the callback to refuse and keep the query. A match from an earlier query, a newer query, an active composition or a refused callback changes nothing and returns `false`; a thrown callback rolls back everything.
+  <APIItem name="complete" type="(match: ComboboxMatch, callback: (tx) => boolean | void) => boolean">
+    Replace the trigger and query through one synchronous transaction. Pass the match that offered the option. The callback can return a command's `true` or `false`; only `false` refuses and keeps the query. A match from an earlier query, a newer query, an active composition or a refused callback changes nothing and returns `false`; a thrown callback rolls back everything.
   </APIItem>
   <APIItem name="dismiss" type="() => void">
     Close the popup and keep the typed text.
@@ -240,6 +236,6 @@ While a typed trigger's query is open, the editor reports itself as a combobox. 
 
 ## Registry UI
 
-The copied `inline-combobox` component wraps `useCombobox` with an Ariakit listbox. It owns filtering, the active option and the popup position at the trigger. Insert the chosen feature in `InlineComboboxItem.onSelect`, using its inferred transaction, and return `false` when the option is no longer available. Read the query inside the popup with `useInlineComboboxQuery()`. Use `onClick` for a UI action after a successful completion, such as opening another popover.
+The copied `inline-combobox` component wraps `useCombobox` with an Ariakit listbox. It owns filtering, the active option and the popup position at the trigger. Insert the chosen feature in `InlineComboboxItem.onSelect`, using its inferred transaction, and return the command's result, or `false` when the option is no longer available. Read the query inside the popup with `useInlineComboboxQuery()`. Use `onClick` for a UI action after a successful completion, such as opening another popover.
 
 <ComponentSource name="inline-combobox" />

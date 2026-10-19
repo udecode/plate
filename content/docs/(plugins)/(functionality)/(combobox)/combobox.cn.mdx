@@ -80,8 +80,8 @@ export const HashtagPlugin = definePlugin('hashtag', {
 弹出框渲染在编辑器旁边，并从触发字符之后的文本读取查询：
 
 ```tsx showLineNumbers
-import * as React from 'react';
 import {
+  type EditableSiblingProps,
   type EditorElementProps,
   EditorElement,
 } from 'platejs/react';
@@ -95,11 +95,7 @@ import { HashtagPlugin } from './hashtag-plugin';
 
 const tags = ['Frontend', 'Backend', 'Design', 'Urgent'];
 
-export function HashtagCombobox({
-  editableRef,
-}: {
-  editableRef: React.RefObject<HTMLDivElement | null>;
-}) {
+export function HashtagCombobox({ editableRef }: EditableSiblingProps) {
   return (
     <InlineCombobox editableRef={editableRef} plugin={HashtagPlugin}>
       <InlineComboboxContent>
@@ -229,8 +225,8 @@ const editor = createEditor({
   <APIItem name="listboxId" type="string">
     弹出框列表的 id，同步为编辑器的 `aria-controls`。
   </APIItem>
-  <APIItem name="complete" type="(match: ComboboxMatch, callback: (tx) => false | void) => boolean">
-    通过一个同步事务替换触发字符和查询。传入提供该选项的 match。回调返回 `false` 表示拒绝并保留查询。来自更早查询的 match、更新的查询、进行中的组字或被拒绝的回调都不会产生更改并返回 `false`；回调抛出异常时会回滚全部更改。
+  <APIItem name="complete" type="(match: ComboboxMatch, callback: (tx) => boolean | void) => boolean">
+    通过一个同步事务替换触发字符和查询。传入提供该选项的 match。回调可以返回命令的 `true` 或 `false`；只有 `false` 表示拒绝并保留查询。来自更早查询的 match、更新的查询、进行中的组字或被拒绝的回调都不会产生更改并返回 `false`；回调抛出异常时会回滚全部更改。
   </APIItem>
   <APIItem name="dismiss" type="() => void">
     关闭弹出框并保留输入的文本。
@@ -240,6 +236,6 @@ const editor = createEditor({
 
 ## Registry UI
 
-复制的 `inline-combobox` 组件用 Ariakit 列表封装 `useCombobox`。它负责过滤、当前选项以及在触发字符处定位弹出框。在 `InlineComboboxItem.onSelect` 中使用推断的事务插入所选功能，当选项不再可用时返回 `false`。在弹出框内使用 `useInlineComboboxQuery()` 读取查询。成功补全后的 UI 操作（例如打开另一个弹出框）放在 `onClick` 中。
+复制的 `inline-combobox` 组件用 Ariakit 列表封装 `useCombobox`。它负责过滤、当前选项以及在触发字符处定位弹出框。在 `InlineComboboxItem.onSelect` 中使用推断的事务插入所选功能并返回命令的结果，当选项不再可用时返回 `false`。在弹出框内使用 `useInlineComboboxQuery()` 读取查询。成功补全后的 UI 操作（例如打开另一个弹出框）放在 `onClick` 中。
 
 <ComponentSource name="inline-combobox" />

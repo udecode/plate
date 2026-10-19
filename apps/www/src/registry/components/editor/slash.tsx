@@ -32,14 +32,19 @@ import {
 } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { BaseCalloutPlugin } from 'platejs/callout';
+import type { ComboboxState } from 'platejs/combobox';
 import { BaseDatePlugin } from 'platejs/date';
 import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
 import { BaseFootnotePlugin } from 'platejs/footnote';
 import { BaseColumnGroupPlugin } from 'platejs/layout';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
-import { type Editor, useEditor, useEditorReadOnly } from 'platejs/react';
-import { SlashPlugin } from 'platejs/slash-command/react';
+import {
+  type EditableSiblingProps,
+  type Editor,
+  definePlugin,
+  useEditor,
+} from 'platejs/react';
 import { BaseTablePlugin } from 'platejs/table';
 import { BaseTocPlugin } from 'platejs/toc';
 import * as React from 'react';
@@ -59,7 +64,6 @@ type Item = {
   value: string;
   onClick?: (editor: Editor) => void;
   onSelect?: (editor: Editor, tx: PluginTransaction) => boolean | void;
-  className?: string;
   focusEditor?: boolean;
   keywords?: string[];
   label?: string;
@@ -275,17 +279,8 @@ const groups: Group[] = [
         keywords: ['time'],
         label: 'Date',
         value: PLUGINS.date,
-        onSelect: (editor, tx) => {
-          if (
-            !editor.plugin(BaseDatePlugin).installed ||
-            editor.read.view.isReadOnly()
-          ) {
-            return false;
-          }
-
-          tx.plugin(BaseDatePlugin).insert({}, { select: true });
-          return undefined;
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseDatePlugin).insert({}, { select: true }),
       },
       {
         icon: <SuperscriptIcon />,
@@ -293,17 +288,8 @@ const groups: Group[] = [
         keywords: ['citation', 'fn', 'footnote', '[^]'],
         label: 'Footnote',
         value: 'action_footnote',
-        onSelect: (editor, tx) => {
-          if (
-            !editor.plugin(BaseFootnotePlugin).installed ||
-            editor.read.view.isReadOnly()
-          ) {
-            return false;
-          }
-
-          tx.plugin(BaseFootnotePlugin).insert({}, { select: true });
-          return undefined;
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseFootnotePlugin).insert({}, { select: true }),
       },
       {
         focusEditor: false,
@@ -312,37 +298,21 @@ const groups: Group[] = [
           editor.plugin(BaseInlineEquationPlugin).installed,
         label: 'Inline Equation',
         value: PLUGINS.inlineEquation,
-        onSelect: (editor, tx) => {
-          if (
-            !editor.plugin(BaseInlineEquationPlugin).installed ||
-            editor.read.view.isReadOnly()
-          ) {
-            return false;
-          }
-
-          tx.plugin(BaseInlineEquationPlugin).insert({}, { select: true });
-          return undefined;
-        },
+        onSelect: (_editor, tx) =>
+          tx.plugin(BaseInlineEquationPlugin).insert({}, { select: true }),
       },
     ],
   },
 ];
 
-export function SlashCombobox({
-  editableRef,
-}: {
-  editableRef: React.RefObject<HTMLDivElement | null>;
-}) {
+export function SlashCombobox({ editableRef }: EditableSiblingProps) {
   const editor = useEditor();
-  const readOnly = useEditorReadOnly();
-  const availableGroups = readOnly
-    ? []
-    : groups
-        .map((group) => ({
-          ...group,
-          items: group.items.filter((item) => item.isAvailable(editor)),
-        }))
-        .filter((group) => group.items.length > 0);
+  const availableGroups = groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => item.isAvailable(editor)),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <InlineCombobox editableRef={editableRef} plugin={SlashPlugin}>
@@ -369,9 +339,7 @@ export function SlashCombobox({
                   onClick={() => {
                     onClick?.(editor);
                   }}
-                  onSelect={(tx) =>
-                    onSelect?.(editor, tx) === false ? false : undefined
-                  }
+                  onSelect={(tx) => onSelect?.(editor, tx)}
                   label={label}
                   focusEditor={focusEditor}
                   group={group}
@@ -389,20 +357,26 @@ export function SlashCombobox({
   );
 }
 
-export const SlashKit = [
-  SlashPlugin.configure({
-    initialState: {
-      triggerQuery: (editor) => {
-        const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+export const SlashPlugin = definePlugin('slashCommand', {
+  editOnly: true,
+  initialState: (): ComboboxState => ({
+    maxQueryLength: 75,
+    queryPattern: null,
+    trigger: '/',
+    triggerPreviousCharPattern: /^\s?$/,
+    triggerQuery: (editor) => {
+      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
 
-        return (
-          !codeBlock.installed ||
-          !editor.read.nodes.some({
-            type: codeBlock.schema.type,
-          })
-        );
-      },
+      return (
+        !codeBlock.installed ||
+        !editor.read.nodes.some({
+          type: codeBlock.schema.type,
+        })
+      );
     },
-    slots: { afterEditable: SlashCombobox },
   }),
+});
+
+export const SlashKit = [
+  SlashPlugin.configure({ slots: { afterEditable: SlashCombobox } }),
 ];

@@ -3,6 +3,7 @@
 import { IS_APPLE } from 'platejs';
 import { MentionPlugin } from 'platejs/mention/react';
 import {
+  type EditableSiblingProps,
   type EditorElementProps,
   EditorElement,
   useEditorFocused,
@@ -73,11 +74,7 @@ export function MentionElement(
   );
 }
 
-export function MentionCombobox({
-  editableRef,
-}: {
-  editableRef: React.RefObject<HTMLDivElement | null>;
-}) {
+export function MentionCombobox({ editableRef }: EditableSiblingProps) {
   return (
     <InlineCombobox editableRef={editableRef} plugin={MentionPlugin}>
       <InlineComboboxContent className="my-1.5">

@@ -56,7 +56,6 @@ export const PLUGINS = {
   searchHighlight: 'searchHighlight',
   singleBlock: 'singleBlock',
   singleLine: 'singleLine',
-  slashCommand: 'slashCommand',
   strikethrough: 'strikethrough',
   suggestion: 'suggestion',
   tabbable: 'tabbable',

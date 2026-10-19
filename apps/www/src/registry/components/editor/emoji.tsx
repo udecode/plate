@@ -2,8 +2,7 @@
 
 import { BaseCodeBlockPlugin } from 'platejs';
 import type { ComboboxState } from 'platejs/combobox';
-import { definePlugin } from 'platejs/react';
-import type * as React from 'react';
+import { type EditableSiblingProps, definePlugin } from 'platejs/react';
 
 import { useEmojiSearch } from '@/registry/lib/emoji-data';
 
@@ -16,11 +15,7 @@ import {
   useInlineComboboxQuery,
 } from './inline-combobox';
 
-export function EmojiCombobox({
-  editableRef,
-}: {
-  editableRef: React.RefObject<HTMLDivElement | null>;
-}) {
+export function EmojiCombobox({ editableRef }: EditableSiblingProps) {
   const { status } = useEmojiSearch(null);
 
   return (

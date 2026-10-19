@@ -29,7 +29,6 @@
     "../src/react/features/layout/**/*",
     "../src/react/features/media/**/*",
     "../src/react/features/mention/**/*",
-    "../src/react/features/slash-command/**/*",
     "../src/react/features/suggestion/**/*",
     "../src/react/features/table/**/*",
     "../src/react/features/toc/**/*",

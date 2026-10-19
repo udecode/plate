@@ -24,7 +24,6 @@
   "consumers": [
     "apps/www/src/registry/components/editor/inline-combobox.tsx",
     "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts",
-    "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts",
     "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts",
     "apps/www/src/registry/components/editor/mention.tsx",
     "apps/www/src/registry/components/editor/slash.tsx",

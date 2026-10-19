@@ -1,0 +1,22 @@
+---
+id: 2026-10-19-slash-local-plugin
+date: 2026-10-19
+status: draft
+kind: behavior
+summary: 'Define the slash plugin in the copied slash file'
+change: { 'type': 'source', 'date': '2026-10-19', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-19-slash-define-plugin-copied-file-e6c5a1cf","kind":"behavior","migrationNotes":["Import SlashPlugin from the copied slash file; Plate does not export it."]} -->
+
+- **`slash`**: Define `SlashPlugin` in the copied file with the `/` trigger policy and the code-block check, and let each item return its command's result.
+
+<!-- entry: {"id":"2026-10-19-inline-combobox-command-result-4b7d2e90","kind":"behavior","migrationNotes":[]} -->
+
+- **`inline-combobox`**: Let `InlineComboboxItem`'s `onSelect` return a command's `true` or `false`; only `false` keeps the query.
+
+<!-- entry: {"id":"2026-10-19-combobox-popup-props-8c1f5a37","kind":"behavior","migrationNotes":[]} -->
+
+- **`emoji`**, **`mention`**, **`footnote`**: Type each popup's props with Plate's `EditableSiblingProps`.

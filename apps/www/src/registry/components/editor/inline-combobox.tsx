@@ -12,7 +12,7 @@ import {
   useStoreState,
 } from '@ariakit/react';
 import { cva } from 'class-variance-authority';
-import type { PluginReference, PluginTransaction } from 'platejs';
+import type { PluginReference } from 'platejs';
 import { filterWords } from 'platejs/combobox';
 import {
   type ComboboxMatch,
@@ -89,7 +89,7 @@ const InlineCombobox = <P extends PluginReference>({
   plugin,
 }: {
   children: React.ReactNode;
-  editableRef: React.RefObject<HTMLDivElement | null>;
+  editableRef: UseComboboxOptions<P>['editableRef'];
   plugin: UseComboboxOptions<P>['plugin'];
   filter?: FilterFn | false;
   hideWhenNoValue?: boolean;
@@ -307,7 +307,7 @@ const InlineComboboxItem = ({
   label?: string;
   value: string;
   /** Insert the completion. Return false to refuse and keep the query. */
-  onSelect?: (tx: PluginTransaction) => false | void;
+  onSelect?: Parameters<UseComboboxReturn['complete']>[1];
 }) => {
   const { value } = props;
   const editor = useEditor();

@@ -21,12 +21,17 @@ export const MentionKit = [
 ];
 ```
 
-Slash vetoes its trigger inside code blocks through the `triggerQuery` state field.
+When only copied UI uses a trigger's plugin, the copied file defines it. Slash declares its policy there and vetoes its trigger inside code blocks through the `triggerQuery` state field.
 
 ```tsx
 // apps/www/src/registry/components/editor/slash.tsx
-SlashPlugin.configure({
-  initialState: {
+export const SlashPlugin = definePlugin('slashCommand', {
+  editOnly: true,
+  initialState: (): ComboboxState => ({
+    maxQueryLength: 75,
+    queryPattern: null,
+    trigger: '/',
+    triggerPreviousCharPattern: /^\s?$/,
     triggerQuery: (editor) => {
       const codeBlock = editor.plugin(BaseCodeBlockPlugin);
 
@@ -37,20 +42,19 @@ SlashPlugin.configure({
         })
       );
     },
-  },
-  slots: { afterEditable: SlashCombobox },
-}),
+  }),
+});
+
+export const SlashKit = [
+  SlashPlugin.configure({ slots: { afterEditable: SlashCombobox } }),
+];
 ```
 
-The copied popup receives its Editable's ref from the slot and names the feature whose state holds the policy.
+The copied popup receives its Editable's ref from the slot as `EditableSiblingProps` and names the feature whose state holds the policy.
 
 ```tsx
 // apps/www/src/registry/components/editor/mention.tsx
-export function MentionCombobox({
-  editableRef,
-}: {
-  editableRef: React.RefObject<HTMLDivElement | null>;
-}) {
+export function MentionCombobox({ editableRef }: EditableSiblingProps) {
   return (
     <InlineCombobox editableRef={editableRef} plugin={MentionPlugin}>
 ```

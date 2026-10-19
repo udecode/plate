@@ -32,7 +32,7 @@ export type ComboboxMatch = Readonly<{
   trigger: string;
 }>;
 
-export type ComboboxCompletion = (tx: PluginTransaction) => false | void;
+export type ComboboxCompletion = (tx: PluginTransaction) => boolean | void;
 
 export type ComboboxPopup = Readonly<{
   activeOptionId: string | null;

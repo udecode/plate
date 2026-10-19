@@ -12,7 +12,6 @@ import {
   EditorRoot,
   createEditor,
 } from 'platejs/react';
-import { SlashPlugin } from 'platejs/slash-command/react';
 import {
   Editable,
   EditorRoot as PliteEditorRoot,
@@ -30,7 +29,7 @@ import {
   MentionElement,
   MentionKit,
 } from '@/registry/components/editor/mention';
-import { SlashKit } from '@/registry/components/editor/slash';
+import { SlashKit, SlashPlugin } from '@/registry/components/editor/slash';
 
 const KitsWithoutPopups = [
   MentionPlugin.configure({ component: MentionElement }),

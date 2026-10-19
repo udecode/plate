@@ -51,10 +51,6 @@
       "platejs/react": ["./src/react/index.tsx"],
       "platejs/react/virtualized": ["./src/react/virtualized.tsx"],
       "platejs/resizable/react": ["./src/react/features/resizable/index.ts"],
-      "platejs/slash-command": ["./src/features/slash-command/index.ts"],
-      "platejs/slash-command/react": [
-        "./src/react/features/slash-command/index.ts"
-      ],
       "platejs/static": ["./src/static/index.ts"],
       "platejs/suggestion": ["./src/features/suggestion/index.ts"],
       "platejs/suggestion/react": ["./src/react/features/suggestion/index.ts"],

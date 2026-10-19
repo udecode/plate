@@ -40,6 +40,67 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
+    "slash": [
+      "2026-10-19-slash-local-plugin",
+      "2026-10-18-layout-style-values",
+      "2026-10-18-math-katex-import",
+      "2026-10-16-code-block-diagrams",
+      "2026-10-15-slash-keeps-query-on-refusal",
+      "2026-10-13-details-heading-titles",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-09-08-inline-combobox-input",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "inline-combobox": [
+      "2026-10-19-slash-local-plugin",
+      "2026-10-15-inline-combobox-hide-on-close",
+      "2026-10-08-emoji-frimousse",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-08-inline-combobox-input",
+      "2026-08-31-inline-component-props",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-28-consolidate-platejs-dependencies",
+      "2026-08-28-inline-required-value-checks",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2025-12-15-add-option-editor-collaborative-features",
+      "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
+      "2025-11-20-biome-ultracite"
+    ],
+    "emoji": [
+      "2026-10-19-slash-local-plugin",
+      "2026-10-08-emoji-frimousse",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-08-inline-combobox-input",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "mention": [
+      "2026-10-19-slash-local-plugin",
+      "2026-10-14-block-void-selection",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-08-inline-combobox-input",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "footnote": [
+      "2026-10-19-slash-local-plugin",
+      "2026-10-17-footnote-links",
+      "2026-10-14-block-void-selection",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-09-navigation-view-feedback",
+      "2026-09-08-inline-combobox-input",
+      "2026-09-07-footnote-target-attributes",
+      "2026-08-25-base-first-registry",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
     "media-image": [
       "2026-10-18-layout-style-values",
       "2026-10-14-block-void-selection",
@@ -134,18 +195,6 @@
       "2026-01-28-add-code-drawing-node",
       "2025-11-20-biome-ultracite"
     ],
-    "slash": [
-      "2026-10-18-layout-style-values",
-      "2026-10-18-math-katex-import",
-      "2026-10-16-code-block-diagrams",
-      "2026-10-15-slash-keeps-query-on-refusal",
-      "2026-10-13-details-heading-titles",
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-09-08-inline-combobox-input",
-      "2026-08-17-flat-editor-registry"
-    ],
     "turn-into-toolbar-button": [
       "2026-10-18-layout-style-values",
       "2026-10-16-code-on-sparse-block-selection",
@@ -226,17 +275,6 @@
       "2026-10-10-details-selection",
       "2026-08-29-semantic-details"
     ],
-    "footnote": [
-      "2026-10-17-footnote-links",
-      "2026-10-14-block-void-selection",
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-09-navigation-view-feedback",
-      "2026-09-08-inline-combobox-input",
-      "2026-09-07-footnote-target-attributes",
-      "2026-08-25-base-first-registry",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
     "footnote-static": [
       "2026-10-17-footnote-links",
       "2026-08-18-complete-v54-ast-contracts",
@@ -303,24 +341,6 @@
       "2026-07-24-configurable-color-controls",
       "2025-11-20-biome-ultracite"
     ],
-    "inline-combobox": [
-      "2026-10-15-inline-combobox-hide-on-close",
-      "2026-10-08-emoji-frimousse",
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-08-inline-combobox-input",
-      "2026-08-31-inline-component-props",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-28-consolidate-platejs-dependencies",
-      "2026-08-28-inline-required-value-checks",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2025-12-15-add-option-editor-collaborative-features",
-      "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
-      "2025-11-20-biome-ultracite"
-    ],
     "block-menu": [
       "2026-10-15-quote-on-details-title",
       "2026-10-14-block-void-selection",
@@ -376,14 +396,6 @@
     "media-file": [
       "2026-10-14-block-void-selection",
       "2026-10-13-media-caption-preview",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "mention": [
-      "2026-10-14-block-void-selection",
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-08-inline-combobox-input",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
     ],
     "tag": [
@@ -807,13 +819,6 @@
       "2026-09-07-docx-bookmarks",
       "2026-09-02-comments-ownership",
       "2026-09-01-plugin-render-contract",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "emoji": [
-      "2026-10-08-emoji-frimousse",
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-08-inline-combobox-input",
-      "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
     ],
     "callout": [

@@ -26,11 +26,11 @@ import {
   ParagraphPlugin,
   useEditor,
 } from 'platejs/react';
-import { SlashPlugin } from 'platejs/slash-command/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
 import React from 'react';
+import { flushSync } from 'react-dom';
 
-import { SlashKit } from './slash';
+import { SlashKit, SlashPlugin } from './slash';
 
 test('allows the slash trigger when Code Block is not installed', () => {
   const editor = createEditor({
@@ -118,6 +118,118 @@ test.each(['', 'After'])(
     });
   }
 );
+
+test('keeps AI closed when the view turns read-only while its completion commits', async () => {
+  let viewEditor: Editor | undefined;
+  let armed = false;
+  const CaptureEditor = () => {
+    viewEditor = useEditor();
+
+    return null;
+  };
+  const editor = createEditor({
+    plugins: [ParagraphPlugin, AIChatPlugin, ...SlashKit],
+    initialValue: [{ children: [{ text: 'Before ' }], type: 'paragraph' }],
+    selection: {
+      kind: 'text',
+      anchor: { offset: 7, path: [0, 0] },
+      focus: { offset: 7, path: [0, 0] },
+    },
+  });
+  const Shell = () => {
+    const [readOnly, setReadOnly] = React.useState(false);
+
+    return (
+      <EditorRoot
+        editor={editor}
+        readOnly={readOnly}
+        onValueChange={() => {
+          if (armed) flushSync(() => setReadOnly(true));
+        }}
+      >
+        <EditorContent data-testid="editor" />
+        <CaptureEditor />
+      </EditorRoot>
+    );
+  };
+  const mounted = render(<Shell />);
+  const root = mounted.getByTestId('editor');
+
+  await act(async () => {
+    root.focus();
+  });
+
+  for (const data of '/a') {
+    await act(async () => {
+      root.dispatchEvent(
+        new InputEvent('beforeinput', {
+          bubbles: true,
+          cancelable: true,
+          data,
+          inputType: 'insertText',
+        })
+      );
+    });
+  }
+
+  await screen.findByRole('option', { name: 'AI' });
+  armed = true;
+  await act(async () => {
+    fireEvent.keyDown(root, { code: 'Enter', key: 'Enter' });
+  });
+
+  expect(viewEditor!.read.view.isReadOnly()).toBe(true);
+  expect(viewEditor!.read.text.string([0])).toBe('Before ');
+  expect(viewEditor!.plugin(AIChatPlugin).store.get('open')).toBe(false);
+  mounted.unmount();
+});
+
+test('keeps a slash typed in a code block as text', async () => {
+  let viewEditor: Editor | undefined;
+  const CaptureEditor = () => {
+    viewEditor = useEditor();
+
+    return null;
+  };
+  const editor = createEditor({
+    plugins: [ParagraphPlugin, BaseCodeBlockPlugin, ...SlashKit],
+    initialValue: [{ children: [{ text: 'let ' }], type: 'codeBlock' }],
+  });
+  const mounted = render(
+    <EditorRoot editor={editor}>
+      <EditorContent data-testid="editor" />
+      <CaptureEditor />
+    </EditorRoot>
+  );
+  const root = mounted.getByTestId('editor');
+
+  await act(async () => {
+    root.focus();
+    viewEditor!.update.selection.set({ offset: 4, path: [0, 0] });
+  });
+
+  for (const data of '/p') {
+    await act(async () => {
+      root.dispatchEvent(
+        new InputEvent('beforeinput', {
+          bubbles: true,
+          cancelable: true,
+          data,
+          inputType: 'insertText',
+        })
+      );
+    });
+  }
+
+  await expect(
+    screen.findByRole('option', { name: 'Text' }, { timeout: 300 })
+  ).rejects.toThrow();
+  expect(root.getAttribute('aria-expanded')).toBeNull();
+  expect(viewEditor!.read.children()).toEqual([
+    { children: [{ text: 'let /p' }], type: 'codeBlock' },
+  ]);
+  mounted.unmount();
+});
 
 const FullParentPlugin = definePlugin('fullParent', {
   schema: {

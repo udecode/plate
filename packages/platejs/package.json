@@ -273,16 +273,6 @@
       "import": "./dist/react/features/resizable/index.js",
       "default": "./dist/react/features/resizable/index.js"
     },
-    "./slash-command": {
-      "types": "./dist/features/slash-command/index.d.ts",
-      "import": "./dist/features/slash-command/index.js",
-      "default": "./dist/features/slash-command/index.js"
-    },
-    "./slash-command/react": {
-      "types": "./dist/react/features/slash-command/index.d.ts",
-      "import": "./dist/react/features/slash-command/index.js",
-      "default": "./dist/react/features/slash-command/index.js"
-    },
     "./static": {
       "types": "./dist/static/index.d.ts",
       "import": "./dist/static/index.js",
@@ -400,8 +390,6 @@
     "lint:partition:react-virtualized": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs react-virtualized",
     "lint:partition:resizable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs resizable-react",
     "lint:partition:root": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs root",
-    "lint:partition:slash-command": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs slash-command",
-    "lint:partition:slash-command-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs slash-command-react",
     "lint:partition:standard-basic-nodes": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-basic-nodes",
     "lint:partition:standard-basic-nodes-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-basic-nodes-react",
     "lint:partition:standard-basic-styles": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-basic-styles",
@@ -532,8 +520,6 @@
     "typecheck:partition:react-virtualized": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs react-virtualized",
     "typecheck:partition:resizable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs resizable-react",
     "typecheck:partition:root": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs root",
-    "typecheck:partition:slash-command": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs slash-command",
-    "typecheck:partition:slash-command-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs slash-command-react",
     "typecheck:partition:standard-basic-nodes": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-basic-nodes",
     "typecheck:partition:standard-basic-nodes-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-basic-nodes-react",
     "typecheck:partition:standard-basic-styles": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-basic-styles",

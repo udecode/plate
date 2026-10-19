@@ -58,44 +58,27 @@ const editor = createEditor({
 
 ```bash
 npm install platejs
+npx shadcn@latest add @plate/slash
 ```
 
 ### Add plugins
 
-Mount the popup in the plugin's `afterEditable` slot:
+The copied `slash` file defines `SlashPlugin`, which holds only the trigger policy. Mount the popup in its `afterEditable` slot:
 
 ```tsx
-import { SlashPlugin } from 'platejs/slash-command/react';
-import { BaseCodeBlockPlugin } from 'platejs';
 import { createEditor } from 'platejs/react';
-import { SlashCombobox } from '@/components/editor/slash';
+
+import { SlashCombobox, SlashPlugin } from '@/components/editor/slash';
 
 const editor = createEditor({
   plugins: [
     // ...otherPlugins,
-    SlashPlugin.configure({
-      initialState: {
-        trigger: '/',
-        triggerPreviousCharPattern: /^\s?$/,
-        triggerQuery: (editor) => {
-          const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-
-          return (
-            !codeBlock.installed ||
-            !editor.read.nodes.some({ type: codeBlock.schema.type })
-          );
-        },
-      },
-      slots: { afterEditable: SlashCombobox },
-    }),
+    SlashPlugin.configure({ slots: { afterEditable: SlashCombobox } }),
   ],
 });
 ```
 
-- `initialState.trigger`: Text that opens the slash command popup (default: `/`)
-- `initialState.triggerPreviousCharPattern`: RegExp pattern for the character before the trigger
-- `initialState.triggerQuery`: Function to determine when slash commands should be enabled
-- `slots.afterEditable`: The popup component for the slash command menu
+Its state is a [`ComboboxState`](/docs/combobox#comboboxstate). A `/` opens the menu at the start of a line or after a space, and `triggerQuery` keeps a `/` typed in a code block as plain text. Edit `SlashPlugin` in the copied file to change either.
 
 </Steps>
 
@@ -122,24 +105,10 @@ Available options include:
 
 <ComponentPreviewPro name="slash-command-pro" />
 
-## Plugins
+## API Reference
 
-### SlashPlugin
-
-Plugin for slash command functionality. Its state is a [ComboboxState](/docs/combobox#comboboxstate).
-
-<API name="SlashPlugin">
-<APIOptions>
-  <APIItem name="trigger" type="RegExp | readonly string[] | string" optional>
-    Text that opens the slash command popup.
-    - **Default:** `'/'`
-  </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp | null" optional>
-    RegExp to match the character before the trigger.
-    - **Default:** `/^\s?$/`
-  </APIItem>
-  <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>
-    Function to determine when slash commands should be enabled. Useful for disabling in certain contexts like code blocks.
-  </APIItem>
-</APIOptions>
-</API>
+| API | Source | Use |
+|-----|--------|-----|
+| `SlashPlugin` | `slash` registry | Edit-only plugin whose state holds the `/` trigger policy and the code-block check. |
+| `SlashKit` | `slash` registry | `SlashPlugin` with `SlashCombobox` in its `afterEditable` slot. |
+| `SlashCombobox` | `slash` registry | The slash menu, built from the file's `groups` list. Edit that list to add, remove or reorder options. |

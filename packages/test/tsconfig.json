@@ -71,12 +71,6 @@
       "platejs/resizable/react": [
         "../platejs/src/react/features/resizable/index.ts"
       ],
-      "platejs/slash-command": [
-        "../platejs/src/features/slash-command/index.ts"
-      ],
-      "platejs/slash-command/react": [
-        "../platejs/src/react/features/slash-command/index.ts"
-      ],
       "platejs/static": ["../platejs/src/static/index.ts"],
       "platejs/suggestion": ["../platejs/src/features/suggestion/index.ts"],
       "platejs/suggestion/react": [

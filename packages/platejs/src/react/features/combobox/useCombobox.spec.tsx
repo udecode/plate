@@ -3,14 +3,26 @@
 import { act, render, waitFor } from '@testing-library/react';
 import React from 'react';
 
+import type { ComboboxState } from '../../../features/combobox';
 import { EditorRoot } from '../../components/Plate';
 import { EditorContent } from '../../components/PlateContent';
 import { createEditor } from '../../editor';
+import { definePlugin } from '../../plugin/definePlugin';
 import { ParagraphPlugin } from '../../plugins/paragraph/ParagraphPlugin';
 import { BoldPlugin } from '../basic-nodes/BasicNodesPlugins';
 import { MentionPlugin } from '../mention/MentionPlugin';
-import { SlashPlugin } from '../slash-command/SlashPlugin';
 import { type UseComboboxReturn, useCombobox } from './useCombobox';
+
+const TestSlashTrigger = definePlugin('testSlashTrigger', {
+  editOnly: true,
+  initialState: (): ComboboxState => ({
+    maxQueryLength: 75,
+    queryPattern: null,
+    trigger: '/',
+    triggerPreviousCharPattern: /^\s?$/,
+    triggerQuery: null,
+  }),
+});
 
 let box: UseComboboxReturn | null = null;
 let slashBox: UseComboboxReturn | null = null;
@@ -57,7 +69,7 @@ const SlashProbe = ({
 }: {
   editableRef: React.RefObject<HTMLDivElement | null>;
 }) => {
-  slashBox = useCombobox({ editableRef, plugin: SlashPlugin });
+  slashBox = useCombobox({ editableRef, plugin: TestSlashTrigger });
 
   return null;
 };
@@ -91,7 +103,7 @@ const setup = (
         slots: { afterEditable: MentionProbe },
       }),
       ...(slash
-        ? [SlashPlugin.configure({ slots: { afterEditable: SlashProbe } })]
+        ? [TestSlashTrigger.configure({ slots: { afterEditable: SlashProbe } })]
         : []),
     ],
     selection: { anchor: caret, focus: caret, kind: 'text' },
@@ -406,6 +418,46 @@ describe('useCombobox', () => {
 
     await waitFor(() => expect(viewBoxes.get(first)?.match).toBeNull());
     expect(viewBoxes.get(second)?.match).toBeNull();
+  });
+
+  it('closes the match when the view turns read-only during a query', async () => {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'Hi ' }], type: 'paragraph' }],
+      plugins: [
+        ParagraphPlugin,
+        MentionPlugin.configure({ slots: { afterEditable: MentionProbe } }),
+      ],
+      selection: {
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+        kind: 'text',
+      },
+    });
+    const Shell = ({ readOnly }: { readOnly?: boolean }) => (
+      <EditorRoot editor={editor} readOnly={readOnly}>
+        <EditorContent />
+      </EditorRoot>
+    );
+    const rendered = render(<Shell />);
+    const editable = rendered.container.querySelector<HTMLElement>(
+      '[contenteditable="true"]'
+    )!;
+
+    await type(editable, '@jo');
+    await waitFor(() => expect(box?.match?.query).toBe('jo'));
+
+    const offered = box!.match!;
+
+    rendered.rerender(<Shell readOnly />);
+
+    await waitFor(() => expect(box!.match).toBeNull());
+    expect(editable).not.toHaveAttribute('aria-expanded');
+    expect(editable).not.toHaveAttribute('role', 'combobox');
+    expect(
+      box!.complete(offered, (tx) => {
+        tx.text.insert('!');
+      })
+    ).toBe(false);
   });
 
   it('ends when another editor takes focus', async () => {

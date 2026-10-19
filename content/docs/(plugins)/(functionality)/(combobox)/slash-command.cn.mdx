@@ -58,44 +58,27 @@ const editor = createEditor({
 
 ```bash
 npm install platejs
+npx shadcn@latest add @plate/slash
 ```
 
 ### 添加插件
 
-在插件的 `afterEditable` 插槽中挂载弹出框：
+复制的 `slash` 文件定义了 `SlashPlugin`，它只保存触发策略。在它的 `afterEditable` 插槽中挂载弹出框：
 
 ```tsx
-import { SlashPlugin } from 'platejs/slash-command/react';
-import { BaseCodeBlockPlugin } from 'platejs';
 import { createEditor } from 'platejs/react';
-import { SlashCombobox } from '@/components/editor/slash';
+
+import { SlashCombobox, SlashPlugin } from '@/components/editor/slash';
 
 const editor = createEditor({
   plugins: [
     // ...其他插件
-    SlashPlugin.configure({
-      initialState: {
-        trigger: '/',
-        triggerPreviousCharPattern: /^\s?$/,
-        triggerQuery: (editor) => {
-          const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-
-          return (
-            !codeBlock.installed ||
-            !editor.read.nodes.some({ type: codeBlock.schema.type })
-          );
-        },
-      },
-      slots: { afterEditable: SlashCombobox },
-    }),
+    SlashPlugin.configure({ slots: { afterEditable: SlashCombobox } }),
   ],
 });
 ```
 
-- `initialState.trigger`：打开斜杠命令弹出框的文本（默认：`/`）
-- `initialState.triggerPreviousCharPattern`：匹配触发字符前字符的正则表达式
-- `initialState.triggerQuery`：判断何时启用斜杠命令的函数
-- `slots.afterEditable`：斜杠命令菜单的弹出框组件
+它的状态是 [`ComboboxState`](/docs/combobox#comboboxstate)。在行首或空格后输入 `/` 会打开菜单，`triggerQuery` 会让代码块中输入的 `/` 保持为普通文本。要修改这两点，请编辑复制文件中的 `SlashPlugin`。
 
 </Steps>
 
@@ -122,24 +105,10 @@ const editor = createEditor({
 
 <ComponentPreviewPro name="slash-command-pro" />
 
-## 插件
+## API 参考
 
-### SlashPlugin
-
-实现斜杠命令功能的插件。其状态是 [ComboboxState](/docs/combobox#comboboxstate)。
-
-<API name="SlashPlugin">
-<APIOptions>
-  <APIItem name="trigger" type="RegExp | readonly string[] | string" optional>
-    打开斜杠命令弹出框的文本。
-    - **默认值:** `'/'`
-  </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp | null" optional>
-    匹配触发字符前字符的正则表达式。
-    - **默认值:** `/^\s?$/`
-  </APIItem>
-  <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>
-    判断何时启用斜杠命令的函数。可用于在代码块等特定上下文中禁用功能。
-  </APIItem>
-</APIOptions>
-</API>
+| API | 来源 | 用途 |
+|-----|------|------|
+| `SlashPlugin` | `slash` registry | 仅在编辑时启用的插件，其状态保存 `/` 触发策略和代码块检查。 |
+| `SlashKit` | `slash` registry | 在 `afterEditable` 插槽中挂载 `SlashCombobox` 的 `SlashPlugin`。 |
+| `SlashCombobox` | `slash` registry | 斜杠菜单，由文件中的 `groups` 列表构建。编辑该列表来添加、移除或重新排序选项。 |

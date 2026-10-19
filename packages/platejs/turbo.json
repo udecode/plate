@@ -71,8 +71,6 @@
         "lint:partition:react-virtualized",
         "lint:partition:resizable-react",
         "lint:partition:root",
-        "lint:partition:slash-command",
-        "lint:partition:slash-command-react",
         "lint:partition:standard-basic-nodes",
         "lint:partition:standard-basic-nodes-react",
         "lint:partition:standard-basic-styles",
@@ -335,7 +333,6 @@
         "!src/features/lint/**",
         "!src/features/media/**",
         "!src/features/mention/**",
-        "!src/features/slash-command/**",
         "!src/features/suggestion/**",
         "!src/features/table/**",
         "!src/features/toc/**",
@@ -348,7 +345,6 @@
         "!src/react/features/layout/**",
         "!src/react/features/media/**",
         "!src/react/features/mention/**",
-        "!src/react/features/slash-command/**",
         "!src/react/features/suggestion/**",
         "!src/react/features/table/**",
         "!src/react/features/toc/**",
@@ -414,7 +410,6 @@
         "!test/features/lint/**",
         "!test/features/media/**",
         "!test/features/mention/**",
-        "!test/features/slash-command/**",
         "!test/features/suggestion/**",
         "!test/features/table/**",
         "!test/features/toc/**",
@@ -427,7 +422,6 @@
         "!test/react/features/layout/**",
         "!test/react/features/media/**",
         "!test/react/features/mention/**",
-        "!test/react/features/slash-command/**",
         "!test/react/features/suggestion/**",
         "!test/react/features/table/**",
         "!test/react/features/toc/**",
@@ -934,7 +928,6 @@
         "!src/react/features/layout/**",
         "!src/react/features/media/**",
         "!src/react/features/mention/**",
-        "!src/react/features/slash-command/**",
         "!src/react/features/suggestion/**",
         "!src/react/features/table/**",
         "!src/react/features/toc/**",
@@ -958,7 +951,6 @@
         "!test/react/features/layout/**",
         "!test/react/features/media/**",
         "!test/react/features/mention/**",
-        "!test/react/features/slash-command/**",
         "!test/react/features/suggestion/**",
         "!test/react/features/table/**",
         "!test/react/features/toc/**",
@@ -1011,36 +1003,6 @@
         "src/root.*",
         "test/index*",
         "test/root*",
-        "$TURBO_ROOT$/oxlint.config.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "lint:partition:slash-command": {
-      "cache": true,
-      "dependsOn": [],
-      "inputs": [
-        "src/features/slash-command/**",
-        "test/features/slash-command/**",
-        "$TURBO_ROOT$/oxlint.config.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "lint:partition:slash-command-react": {
-      "cache": true,
-      "dependsOn": [],
-      "inputs": [
-        "src/react/features/slash-command/**",
-        "test/react/features/slash-command/**",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -1653,7 +1615,6 @@
         "typecheck:partition:core",
         "typecheck:partition:mention-react",
         "typecheck:partition:react-core",
-        "typecheck:partition:slash-command-react",
         "typecheck:partition:standard-basic-nodes-react"
       ],
       "inputs": [
@@ -1830,7 +1791,6 @@
         "!src/features/lint/**",
         "!src/features/media/**",
         "!src/features/mention/**",
-        "!src/features/slash-command/**",
         "!src/features/suggestion/**",
         "!src/features/table/**",
         "!src/features/toc/**",
@@ -1843,7 +1803,6 @@
         "!src/react/features/layout/**",
         "!src/react/features/media/**",
         "!src/react/features/mention/**",
-        "!src/react/features/slash-command/**",
         "!src/react/features/suggestion/**",
         "!src/react/features/table/**",
         "!src/react/features/toc/**",
@@ -1909,7 +1868,6 @@
         "!test/features/lint/**",
         "!test/features/media/**",
         "!test/features/mention/**",
-        "!test/features/slash-command/**",
         "!test/features/suggestion/**",
         "!test/features/table/**",
         "!test/features/toc/**",
@@ -1922,7 +1880,6 @@
         "!test/react/features/layout/**",
         "!test/react/features/media/**",
         "!test/react/features/mention/**",
-        "!test/react/features/slash-command/**",
         "!test/react/features/suggestion/**",
         "!test/react/features/table/**",
         "!test/react/features/toc/**",
@@ -2359,6 +2316,7 @@
       "dependsOn": [
         "typecheck:partition:authored",
         "typecheck:partition:core",
+        "typecheck:partition:layout",
         "typecheck:partition:markdown",
         "typecheck:partition:media",
         "typecheck:partition:proxies",
@@ -2533,7 +2491,6 @@
         "!src/react/features/layout/**",
         "!src/react/features/media/**",
         "!src/react/features/mention/**",
-        "!src/react/features/slash-command/**",
         "!src/react/features/suggestion/**",
         "!src/react/features/table/**",
         "!src/react/features/toc/**",
@@ -2557,7 +2514,6 @@
         "!test/react/features/layout/**",
         "!test/react/features/media/**",
         "!test/react/features/mention/**",
-        "!test/react/features/slash-command/**",
         "!test/react/features/suggestion/**",
         "!test/react/features/table/**",
         "!test/react/features/toc/**",
@@ -3156,8 +3112,6 @@
         "typecheck:partition:react-virtualized",
         "typecheck:partition:resizable-react",
         "typecheck:partition:root",
-        "typecheck:partition:slash-command",
-        "typecheck:partition:slash-command-react",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-basic-nodes-react",
         "typecheck:partition:standard-basic-styles",
@@ -3618,7 +3572,6 @@
         "!src/features/lint/**",
         "!src/features/media/**",
         "!src/features/mention/**",
-        "!src/features/slash-command/**",
         "!src/features/suggestion/**",
         "!src/features/table/**",
         "!src/features/toc/**",
@@ -3631,7 +3584,6 @@
         "!src/react/features/layout/**",
         "!src/react/features/media/**",
         "!src/react/features/mention/**",
-        "!src/react/features/slash-command/**",
         "!src/react/features/suggestion/**",
         "!src/react/features/table/**",
         "!src/react/features/toc/**",
@@ -4570,7 +4522,6 @@
         "!src/react/features/layout/**",
         "!src/react/features/media/**",
         "!src/react/features/mention/**",
-        "!src/react/features/slash-command/**",
         "!src/react/features/suggestion/**",
         "!src/react/features/table/**",
         "!src/react/features/toc/**",
@@ -4685,61 +4636,6 @@
       "outputs": [
         ".turbo/entrypoint-types/root/**",
         ".turbo/entrypoint-types/root.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:slash-command": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:combobox", "typecheck:partition:core"],
-      "inputs": [
-        "src/features/slash-command/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*.slow.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/slash-command.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/slash-command/**",
-        ".turbo/entrypoint-types/slash-command.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:slash-command-react": {
-      "cache": true,
-      "dependsOn": [
-        "typecheck:partition:react-core",
-        "typecheck:partition:slash-command"
-      ],
-      "inputs": [
-        "src/react/features/slash-command/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*.slow.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/slash-command-react.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/slash-command-react/**",
-        ".turbo/entrypoint-types/slash-command-react.tsbuildinfo"
       ]
     },
     "typecheck:partition:standard-basic-nodes": {

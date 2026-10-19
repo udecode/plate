@@ -1079,11 +1079,6 @@
             "PlateV54Migration": "/docs/editor#document-migrations"
           }
         },
-        "./slash-command": {
-          "exclude": ["BaseSlashPlugin", "SlashDefinition", "SlashPluginState"],
-          "excludeReason": "No curated reference page owns this symbol yet.",
-          "include": {}
-        },
         "./table": {
           "exclude": [
             "BaseTableCellPlugin",

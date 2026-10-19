@@ -6,6 +6,7 @@ import {
   FootnoteDefinitionPlugin,
 } from 'platejs/footnote/react';
 import {
+  type EditableSiblingProps,
   type Editor,
   type EditorElementProps,
   EditorElement,
@@ -407,11 +408,7 @@ export function FootnoteDefinitionElement(
   );
 }
 
-export function FootnoteCombobox({
-  editableRef,
-}: {
-  editableRef: React.RefObject<HTMLDivElement | null>;
-}) {
+export function FootnoteCombobox({ editableRef }: EditableSiblingProps) {
   return (
     <InlineCombobox
       editableRef={editableRef}
