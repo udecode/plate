@@ -120,7 +120,7 @@ function TocElement(props: EditorElementProps<typeof BaseTocPlugin>) {
   return (
     <EditorElement {...props}>
       <nav>
-        {headings.map(({ depth, title }) => `${depth}:${title}`).join('|')}
+        {headings.map(({ level, title }) => `${level}:${title}`).join('|')}
       </nav>
       {props.children}
     </EditorElement>

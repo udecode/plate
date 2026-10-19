@@ -14,6 +14,7 @@ docs:
 ## Features
 
 - Automatically generates a table of contents from document headings
+- Indents each entry by its heading level, 1 to 6
 - Smooth scrolling to headings
 - Keyboard-accessible heading navigation with `Enter` and `Space`
 
@@ -138,6 +139,53 @@ function Layout() {
 
 </Steps>
 
+## Custom heading list
+
+The copied `TocElement`, the static `TocElementStatic` and Word export all
+render the plugin's [`read.headings()`](#editorplugintocpluginreadheadings). To
+change which headings they list, extend the plugin's read and filter
+[`readTocHeadings`](#readtocheadings), the plugin's own heading finder. One app
+plugin then serves the live kit, the static kit and Word export. Keep it in a
+module that imports only `platejs/toc`, so the server-rendered static kit can
+import it.
+
+```ts title="components/editor/app-toc-plugin.ts"
+import { BaseTocPlugin, readTocHeadings } from 'platejs/toc';
+
+export const AppTocPlugin = BaseTocPlugin.extend({
+  read: ({ editor, state }) => ({
+    headings: () =>
+      readTocHeadings({ editor, state }).filter((heading) => heading.level <= 3),
+  }),
+});
+```
+
+Install it in place of `TocPlugin` in the client `toc` file:
+
+```tsx title="components/editor/toc.tsx"
+import { toReactPlugin } from 'platejs/react';
+import { AppTocPlugin } from '@/components/editor/app-toc-plugin';
+
+export const TocKit = [
+  toReactPlugin(AppTocPlugin).configure({ component: TocElement }),
+];
+```
+
+Install it in place of `BaseTocPlugin` in `toc-static`:
+
+```tsx title="components/editor/toc-static.tsx"
+import { AppTocPlugin } from '@/components/editor/app-toc-plugin';
+
+export const BaseTocKit = [
+  AppTocPlugin.configure({ component: TocElementStatic }),
+];
+```
+
+Pass the read's own `editor` and `state` to `readTocHeadings`, so a static
+render or a document view lists its own headings. The finder walks `state` but
+reads each level through `editor`'s heading plugin, so both must come from the
+same read.
+
 ## Plate Plus
 
 <ComponentPreviewPro name="toc-pro" />
@@ -146,20 +194,13 @@ function Layout() {
 
 ### `TocPlugin`
 
-Plugin for generating table of contents.
-
-<API name="TocPlugin">
-<APIOptions>
-  <APIItem name="queryHeading" type="((state: EditorStateView) => Heading[]) | null" optional>
-    Custom function to query headings. Defaults to `null`, which uses the built-in query.
-  </APIItem>
-</APIOptions>
-</API>
-
+Plugin for the table of contents element. It has no options; its
+[`read.headings()`](#editorplugintocpluginreadheadings) lists the headings, and
+a [read override](#custom-heading-list) changes them.
 
 ### `TocElement`
 
-Scroll options belong to the copied view. The heading query belongs to `TocPlugin`.
+Scroll options belong to the copied view. The heading list belongs to `TocPlugin`.
 
 <API name="TocElement">
 <APIOptions>
@@ -172,6 +213,62 @@ Scroll options belong to the copied view. The heading query belongs to `TocPlugi
     - **Default:** `80`
   </APIItem>
 </APIOptions>
+</API>
+
+## API Reference
+
+### `editor.plugin(TocPlugin).read.headings`
+
+Lists the document's headings in document order. The copied TOC renders this
+list, and the static TOC and Word export read it through `BaseTocPlugin`.
+
+<API name="editor.plugin(TocPlugin).read.headings">
+<APIReturns type="Heading[]">
+  One entry per heading with text.
+</APIReturns>
+</API>
+
+### `readTocHeadings`
+
+The plugin's own heading finder, exported so a read override can filter it. It
+returns `[]` when no heading plugin is installed and skips headings with no
+text.
+
+```ts
+import { readTocHeadings } from 'platejs/toc';
+```
+
+<API name="readTocHeadings">
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor whose heading plugin reads each level, from the same read as
+    `state`.
+  </APIItem>
+  <APIItem name="state" type="EditorStateView">
+    The document to walk, which is the `state` a plugin read receives.
+  </APIItem>
+</APIParameters>
+<APIReturns type="Heading[]">
+  One entry per heading with text, in document order.
+</APIReturns>
+</API>
+
+### `Heading`
+
+One table of contents entry.
+
+<API name="Heading">
+<APIAttributes>
+  <APIItem name="key" type="NodeKey">
+    The heading's editor-scoped key. It is never saved with the document.
+  </APIItem>
+  <APIItem name="level" type="HeadingLevel">
+    The heading level, `1` to `6`.
+  </APIItem>
+  <APIItem name="title" type="string">
+    The heading's text.
+  </APIItem>
+</APIAttributes>
 </API>
 
 ## Transforms

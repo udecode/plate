@@ -42,6 +42,20 @@ export const tocValue: Value = (
         the TOC.
       </htext>
     </hp>
+    <hheading level={4}>Nested Topic</hheading>
+    <hp>
+      <htext>
+        Each heading level gets its own indent in the TOC, down to level 6.
+      </htext>
+    </hp>
+    <hheading level={5}>Detail</hheading>
+    <hp>
+      <htext>Deeper headings sit further to the right.</htext>
+    </hp>
+    <hheading level={6}>Fine Print</hheading>
+    <hp>
+      <htext>Level 6 is the deepest heading the TOC lists.</htext>
+    </hp>
     <hheading level={2}>Benefits of Using TOC</hheading>
     <hp>
       <htext>

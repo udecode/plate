@@ -117,6 +117,21 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
+    "toc": [
+      "2026-10-19-toc-six-heading-levels",
+      "2026-10-14-block-void-selection",
+      "2026-10-14-toc-no-active-heading",
+      "2026-10-13-details-heading-titles",
+      "2026-09-09-navigation-view-feedback",
+      "2026-09-07-docx-bookmarks",
+      "2026-09-07-toc-observer",
+      "2026-08-29-fix-toc-scroll-navigation",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "toc-static": [
+      "2026-10-19-toc-six-heading-levels",
+      "2026-08-17-flat-editor-registry"
+    ],
     "media-image": [
       "2026-10-18-layout-style-values",
       "2026-10-14-block-void-selection",
@@ -393,16 +408,6 @@
       "2026-10-14-block-void-selection",
       "2026-10-08-registry-install-dependencies",
       "2026-09-08-excalidraw-sync",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "toc": [
-      "2026-10-14-block-void-selection",
-      "2026-10-14-toc-no-active-heading",
-      "2026-10-13-details-heading-titles",
-      "2026-09-09-navigation-view-feedback",
-      "2026-09-07-docx-bookmarks",
-      "2026-09-07-toc-observer",
-      "2026-08-29-fix-toc-scroll-navigation",
       "2026-08-17-flat-editor-registry"
     ],
     "horizontal-rule": [
@@ -1286,7 +1291,6 @@
     ],
     "line-height-static": ["2026-08-17-flat-editor-registry"],
     "media-static": ["2026-08-17-flat-editor-registry"],
-    "toc-static": ["2026-08-17-flat-editor-registry"],
     "toggle-static": ["2026-08-17-flat-editor-registry"],
     "autoformat": ["2026-08-17-flat-editor-registry"],
     "basic-marks": ["2026-08-17-flat-editor-registry"],

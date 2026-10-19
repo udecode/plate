@@ -105,7 +105,7 @@ Mistakes agents keep repeating in plate-2, and the checks that stop each one. Ev
 - A small single-session fix ends up writing a plan, because Plan pages publishes a page at every hand-back while Plans and trails asks for a plan only for multi-session, unattended, shared or PR work. owner: sync-pstack in dotai; tracked: here; stop: the block says which work writes a plan.
 - Refresh `tooling/entrypoints/platejs-entrypoint-sizes.json`, which lacks `platejs/combobox/react`, with `pnpm plite:entrypoint-sizes:update` before the next release. owner: release-lanes; tracked: here.
 - Pasting `<blockquote><div>First</div><div>Second</div></blockquote>` gives one paragraph, "FirstSecond", and a deliberate spec, `HtmlPlugin.mapping.spec.ts:167`, locks that in. owner: plate-plugins, HTML; tracked: here.
-- `TocElementDocx` and `HeadingElementDocx` have no importers since `3e0ab4dd7d`. owner: plate-ui; tracked: here.
+- `HeadingElementDocx` has no importers since `3e0ab4dd7d`. owner: plate-ui; tracked: here.
 - Add a contract test that pastes identical content over a range, so the slice fitter fix cannot regress unnoticed. owner: plitejs slice-fit; tracked: here.
 - A baseline's base-commit bound covers only the rules its base copy lists, so hand-added entries for a brand-new rule go unchecked until that rule reaches the base. owner: next correct pass; tracked: here.
 - The 2026-10-07 lessons run's 23 Backlog items, listed in `docs/plans/2026-10-07-pagination-reflect-lessons.md` with their owners and stops, among them the three checks its panel removed and the rule conflicts its smokes named. owner: zbeyens; stop: each item's own stop, the latest 2026-11-07; tracked: here.

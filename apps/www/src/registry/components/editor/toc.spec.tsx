@@ -25,10 +25,19 @@ let domElements: Record<string, HTMLElement> = {
   intro: introElement,
   benefits: headingElement,
 };
-const headings = [
-  { depth: 1, key: 'intro', title: 'Intro', type: 'h1' },
-  { depth: 2, key: 'benefits', title: 'Benefits', type: 'h2' },
+const twoHeadings = [
+  { key: 'intro', level: 1, title: 'Intro' },
+  { key: 'benefits', level: 2, title: 'Benefits' },
 ];
+const sixHeadings = [
+  { key: 'one', level: 1, title: 'One' },
+  { key: 'two', level: 2, title: 'Two' },
+  { key: 'three', level: 3, title: 'Three' },
+  { key: 'four', level: 4, title: 'Four' },
+  { key: 'five', level: 5, title: 'Five' },
+  { key: 'six', level: 6, title: 'Six' },
+];
+let headings = twoHeadings;
 const useEditorSelectorMock = mock(
   (
     selector: (currentEditor: typeof editor) => unknown,
@@ -89,6 +98,7 @@ const tocProps = {
 describe('toc node rendering', () => {
   beforeEach(() => {
     domElements = { intro: introElement, benefits: headingElement };
+    headings = twoHeadings;
     PlateElementMock.mockClear();
     ButtonMock.mockClear();
     flashTargetMock.mockReset();
@@ -170,5 +180,41 @@ describe('toc node rendering', () => {
     expect(scrollIntoViewMock).not.toHaveBeenCalled();
     expect(headingElement.style.scrollMarginTop).toBe('120px');
     expect(flashTargetMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('insets each of the six heading levels differently', async () => {
+    headings = sixHeadings;
+    const { TocElement } = await import('./toc');
+    const view = render(
+      <TocElement {...tocProps}>
+        <span />
+      </TocElement>
+    );
+
+    expect(
+      new Set(view.getAllByRole('button').map((button) => button.className))
+        .size
+    ).toBe(6);
+  });
+
+  it('insets each of the six heading levels differently in the static view', async () => {
+    headings = sixHeadings;
+    const { TocElementStatic } = await import('./toc-static');
+    const view = render(
+      <TocElementStatic
+        {...({
+          ...tocProps,
+          editor,
+          path: [0],
+        } as unknown as React.ComponentProps<typeof TocElementStatic>)}
+      >
+        <span />
+      </TocElementStatic>
+    );
+
+    expect(
+      new Set(view.getAllByRole('button').map((button) => button.className))
+        .size
+    ).toBe(6);
   });
 });

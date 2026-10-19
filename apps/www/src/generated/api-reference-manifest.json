@@ -12895,7 +12895,7 @@
           "name": "BaseTocPlugin",
           "route": null,
           "runtime": true,
-          "signature": "BaseTocPlugin: BasePlugin<Readonly<{\n  formats: true;\n  render: true;\n}> & Readonly<{\n  name: \"toc\";\n}> & Readonly<Record<never, never>> & Readonly<{\n  initialState: {\n    readonly queryHeading: ((state: EditorStateView) => Heading[]) | null;\n  };\n}> & Readonly<{\n  read: {\n    readonly headings: () => Heading[];\n  };\n}> & Readonly<{\n  __pluginWritableProperties: never;\n  schema: {\n    readonly element: {\n      readonly void: \"block\";\n    };\n  };\n}>>",
+          "signature": "BaseTocPlugin: BasePlugin<Readonly<{\n  formats: true;\n  render: true;\n}> & Readonly<{\n  name: \"toc\";\n}> & Readonly<Record<never, never>> & Readonly<{\n  read: {\n    readonly headings: () => Heading[];\n  };\n}> & Readonly<{\n  __pluginWritableProperties: never;\n  schema: {\n    readonly element: {\n      readonly void: \"block\";\n    };\n  };\n}>>",
           "source": null,
           "typeParameters": []
         },
@@ -12905,9 +12905,21 @@
           "entrypoint": "platejs/toc",
           "kind": "type",
           "name": "Heading",
-          "route": null,
+          "route": "/docs/toc#heading",
           "runtime": false,
-          "signature": "type Heading = {\n  depth: number;\n  key: NodeKey;\n  title: string;\n  type: string;\n};",
+          "signature": "type Heading = {\n  key: NodeKey;\n  level: HeadingLevel;\n  title: string;\n};",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/toc:readTocHeadings": {
+          "aliases": [],
+          "documentation": "Lists every titled heading in `state`, in document order, at the level the\ninstalled `BaseHeadingPlugin` reads. A read override filters this list to\nchange which headings a table of contents shows. `editor`'s heading plugin\nreads each level, so pass the `editor` and `state` of one read.",
+          "entrypoint": "platejs/toc",
+          "kind": "const",
+          "name": "readTocHeadings",
+          "route": "/docs/toc#readtocheadings",
+          "runtime": true,
+          "signature": "readTocHeadings: ({ editor, state }: Readonly<{\n  editor: Editor;\n  state: EditorStateView;\n}>) => Heading[]",
           "source": null,
           "typeParameters": []
         },
@@ -12920,18 +12932,6 @@
           "route": null,
           "runtime": false,
           "signature": "type TocDefinition = DefinitionOf<typeof BaseTocPlugin>;",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs/toc:TocPluginState": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/toc",
-          "kind": "type",
-          "name": "TocPluginState",
-          "route": null,
-          "runtime": false,
-          "signature": "type TocPluginState = {\n  queryHeading: ((state: EditorStateView) => Heading[]) | null;\n};",
           "source": null,
           "typeParameters": []
         },

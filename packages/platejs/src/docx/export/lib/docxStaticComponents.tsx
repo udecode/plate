@@ -178,7 +178,11 @@ const TocDocx = (props: EditorElementProps<typeof BaseTocPlugin>) => {
       <div>
         {headings.length > 0 ? (
           headings.map((heading) => (
-            <p key={heading.key}>
+            <p
+              key={heading.key}
+              // The converter sets the left w:ind only from margin-left and drops padding-left; 24px is 360 twips.
+              style={{ marginLeft: `${(heading.level - 1) * 24}px` }}
+            >
               <a href={`#${heading.key}`}>{heading.title}</a>
             </p>
           ))

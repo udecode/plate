@@ -31,6 +31,18 @@ export const tocValue: Value = (
     <hp>
       <htext>在文档中添加或修改标题会自动更新目录。</htext>
     </hp>
+    <hheading level={4}>嵌套主题</hheading>
+    <hp>
+      <htext>每个标题级别在目录中都有自己的缩进，直到第 6 级。</htext>
+    </hp>
+    <hheading level={5}>细节</hheading>
+    <hp>
+      <htext>越深的标题在目录中越靠右。</htext>
+    </hp>
+    <hheading level={6}>附注</hheading>
+    <hp>
+      <htext>第 6 级是目录列出的最深标题。</htext>
+    </hp>
     <hheading level={2}>使用目录的好处</hheading>
     <hp>
       <htext>目录可以改善文档导航，并提供内容结构的快速概览。</htext>

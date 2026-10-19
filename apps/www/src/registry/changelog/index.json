@@ -74,6 +74,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-19-toc-six-heading-levels",
+      "href": "/registry/changelog/2026-10-19-toc-six-heading-levels.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Indent all six heading levels in the table of contents",
+      "change": {
+        "type": "source",
+        "date": "2026-10-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["toc", "toc-static"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-18-layout-style-values",
       "href": "/registry/changelog/2026-10-18-layout-style-values.json",
       "status": "draft",
