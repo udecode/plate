@@ -1,6 +1,6 @@
 # Make the full check pass on next
 
-Status: building, full check again after the IME bridge
+Status: done, docs checks wait on t_3ea68f2e
 Page: https://claude.ai/artifact/2cXMFmv3whUediiY6PvE29
 Playbook: bug-fix
 
@@ -115,4 +115,19 @@ import type {
 - [x] Full check after batch one: 5 of 28 steps fail. `www` fails on batch one's new root types in the API reference, plite-test on the AI pair, core-audits on the IME audit, review-ledger and knowledge on older plans that task t_3ea68f2e owns. Proof: `check-after-b1-a1.log`.
 - [x] AI discard slice: `update.authored.withdraw(changes)` takes back the author's own pending change with no verdict and no held member, AIChatPlugin's Discard and each streamed chunk withdraw the previous preview, and the API reference excludes the two root projection types. Proof: `ai-specs-a1.log`, `ai-authored-tests-a1.log`, `ai-types-b-a1.log`, `ai-plite-test-b-a1.log`, `ai-www-typecheck-c-a1.log`.
 - [x] IME audit slice: routing the desktop composition through the insert-text command passes Chromium but fails "IME composition inside struck text splits the deletion" in Firefox and WebKit, because the command runs on the proposed view, where struck text does not exist. The direct write stays, and the audit lists it as a named bridge. Proof: `ime-chromium-a1.log`, `ime-firefox-a1.log`, `ime-webkit-a1.log`, `ime-audit-b-a1.log`.
-- [ ] Full check again.
+- [x] Full check again: 4 of 28 steps fail. cli-test and core-audits fail only on two `plate generate` tests that hit 60 s while the check runs suites at once, and both pass alone (90 and 83 tests). review-ledger and knowledge fail on older plans that t_3ea68f2e owns. Proof: `check-after-b3-a1.log`, `cli-alone-b3-a1.log`, `core-alone-b3-a1.log`.
+
+## Close
+
+Landed on next: 26d694cba3 (lint, audits, bridge, ledger laws, footnote spec, CLI esbuild restart, stale lists), e7c24667ee (AI discard through `update.authored.withdraw`, the www API reference) and f9016b9720 (the IME bridge named in the authority audit). All three shipped fast. Panel round one reviewed the first batch; its fixes, the CLI commit and the two later commits are unreviewed until "full".
+
+Every test step passes alone. The full check stays red on the two docs checks, and its CLI timeouts come back whenever the host is loaded.
+
+Reversals: the IME slice first routed composition through the insert-text command, which broke Firefox and WebKit, so the direct write came back as a named bridge.
+
+## Open work
+
+- review-ledger and knowledge: t_3ea68f2e, after the plans of docs/plans/2026-10-08-authored-review.md and docs/plans/2026-10-13-review-tree-pivot.md stop changing.
+- A command route for IME text: t_1d843b2a, a design choice for the owner.
+- Random-seed recording laws: t_51daafb8 (seed 198320648) and t_9fd560fb (seed 719949670), which also fail on 3b7a369248.
+- Gating landings on the check: task_e8d71ea6.
