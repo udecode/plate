@@ -1,6 +1,6 @@
 # Add a page number option to DOCX export
 
-Status: waiting on your answers about the release bump and the maintainer reply; the PR stays a draft until then
+Status: in review, waiting on the maintainer's review and on your answer about replying to the maintainer
 Page: https://claude.ai/artifact/6zhBpWr6zaQbsNnFnzzj7o
 Playbook: babysit
 Plans: 2026-10-19-docx-io-footer-page-number.md
@@ -67,7 +67,6 @@ Findings, on the P0 to P3 scale: no P0 or P1. P2: `htmlToDocxBlob(html, { pageNu
 | --- | --- | --- | --- | --- |
 | Review findings outside the ask | Left for later, since you asked for few changes (look) | Fix the converter, option passing and docs in this PR | fix now | small |
 | Follow-ups | In this plan and as session cards, not the project's task list, since this PR goes to the public repository (look) | Add them to the task list on this branch | use ledger | small |
-| PR state | Keep it a draft, as you chose in the first session | Mark it ready now | mark ready | small |
 | Review seats | Four reviewers, all on this session's Claude model (look) | Trust the folder, then rerun with the usual reviewer mix | rerun seats | small |
 | Shared test setup | Keep the copied setup, so the existing test stays as it is | Share one helper, which rewrites the existing test | share helper | detail |
 | Where the redo lives | A new plan that carries the first one | Rewrite the first plan in place | in place | detail |
@@ -75,22 +74,6 @@ Findings, on the P0 to P3 scale: no P0 or P1. P2: `htmlToDocxBlob(html, { pageNu
 | Printed page check | Try one PDF render, and log a gap if it fails | Skip it, since the footer matches the one Word read | skip print | detail |
 
 ## Open questions
-
-### Release bump
-
-Should the release note call this a minor or a patch change?
-
-Why it needs you: It sets how the next public release labels this change.
-
-- The page size option, the closest earlier change, shipped as minor.
-- The first session's brief asked for a patch.
-
-- **Minor** (recommended): I change the release note to a minor bump. Cost: None beyond the label.
-- **Patch**: I keep the release note as a patch. Cost: A new option ships under a fix label.
-
-Why I pick it: A new option is a feature, and the page size option shipped as minor.
-
-Attention: look
 
 ### Reply to the maintainer
 
@@ -118,6 +101,8 @@ Attention: look
 - [x] Run the decision-trail review. Proof: `docs/plans/artifacts/docx-io-page-number-redo/trail-review/answer.md`.
 - [x] Act on the trail review: return the PR to draft, undo the shared test helper and reopen the release bump as a question. Proof: `docs/plans/artifacts/docx-io-page-number-redo/red-base-rewrite-a2.log`, `docs/plans/artifacts/docx-io-page-number-redo/mutant-footer-a2.log`, `docs/plans/artifacts/docx-io-page-number-redo/mutant-pagenumber-a2.log`.
 
+- [x] Switch the release note to a minor bump and mark the PR ready, as you asked. Proof: `.changeset/docx-io-footer-page-number.md` names `minor`, and `gh pr ready 5193` ran after the push.
+
 ## Verification
 
 - The new test fails on `main` at the missing footer reference and passes on the branch. It also fails when the export drops either the footer or the page number flag.
@@ -138,7 +123,7 @@ Attention: look
 
 ## Close
 
-The reversals come first. The run marked the PR ready on its own pick, then returned it to draft after the decision-trail review, because the first session kept it a draft and left the release bump open. The panel round's shared test helper, in commit 78338a57e7, rewrote the existing test against the lead's own code quality verdict; the final commit undoes it, so the existing test matches upstream/main again. The panel round had dismissed the patch bump by citing an agent's task brief, not your words, so the bump is now an open question. The run installed pstack after your "yes" to a question about whether you would install it. The install added a user-wide marketplace entry. The run also hand-edited this log three times: it inserted the lead row, deleted a duplicate row and placed the build row above the panel row. Later rows record each edit.
+The reversals come first. The run marked the PR ready on its own pick, then returned it to draft after the decision-trail review, because the first session kept it a draft and left the release bump open. The panel round's shared test helper, in commit 78338a57e7, rewrote the existing test against the lead's own code quality verdict; the final commit undoes it, so the existing test matches upstream/main again. The panel round had dismissed the patch bump by citing an agent's task brief, not your words, so the run asked you, and you chose a minor bump. The PR went ready again on your word. The run installed pstack after your "yes" to a question about whether you would install it. The install added a user-wide marketplace entry. The run also hand-edited this log three times: it inserted the lead row, deleted a duplicate row and placed the build row above the panel row. Later rows record each edit.
 
 What landed: commit 78338a57e7, the test rewrite; commit 3703eb0809, these plans; and the commit that carries this Close, which undoes the shared helper. The package code is unchanged from the first run, at 11 lines.
 
@@ -148,9 +133,9 @@ Attention, from the decision-trail review:
 
 reviewed by claude-opus-5-5, a same-family fallback
 
-- The PR went ready before the gates the playbook puts first and against your draft choice. It is a draft again.
+- The PR went ready before the gates the playbook puts first and against your draft choice. It went back to draft, then ready again once you chose the bump.
 - The install rested on an ambiguous "yes", and this run started before pstack loaded, so it is not the fresh-session run the maintainer asked for. A new session would load pstack from its first step.
-- The patch-bump dismissal cited an agent's brief. It is now your question.
+- The patch-bump dismissal cited an agent's brief. You chose minor.
 - The panel's four seats were one model with one prompt, so their agreement counts once. The printed render is still a gap.
 - The shared helper reversed the lead's own verdict. It is undone, and the final test has its own code quality pass.
 - The panel's side findings had no todo. They are now in Open work.
