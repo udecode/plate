@@ -3,7 +3,7 @@
 import { ArrowDownToLineIcon } from 'lucide-react';
 import { AuthoredPlugin } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { exportDocx, type DocxComment } from 'platejs/docx/export';
+import type { DocxComment } from 'platejs/docx/export';
 import { MarkdownPlugin } from 'platejs/markdown';
 import { useEditor, useEditorSelector, useModelEditor } from 'platejs/react';
 import { renderStaticHtml } from 'platejs/static';
@@ -205,6 +205,7 @@ export function ExportToolbarButton() {
       }
       const wordProjection =
         requestedProjection ?? (unresolved ? projection : ('review' as const));
+      const { exportDocx } = await import('platejs/docx/export');
       const result = await exportDocx(model, {
         comments: docxComments,
         component: EditorStatic,

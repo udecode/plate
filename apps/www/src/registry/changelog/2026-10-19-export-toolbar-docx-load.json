@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-19-export-toolbar-docx-load",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-19-export-toolbar-docx-load.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Load Word export when the export menu exports to Word",
+  "targets": [
+    {
+      "name": "export-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-19-export-toolbar-load-word-when-menu-ebbb945a",
+      "kind": "fix",
+      "summary": "Load `platejs/docx/export` only when Export as Word runs, so an editor that shows the export menu no longer downloads Word export up front.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["export-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-19",
+          "entry": "2026-10-19-export-toolbar-docx-load",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

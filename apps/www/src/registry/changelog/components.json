@@ -1,6 +1,24 @@
 {
   "schemaVersion": 1,
   "components": {
+    "export-toolbar-button": [
+      "2026-10-19-export-toolbar-docx-load",
+      "2026-10-12-neutral-stored-names",
+      "2026-10-12-toolbar-button-names",
+      "2026-10-09-export-static-presentation",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-29-word-export-loss-and-source-reuse",
+      "2026-09-27-document-conversion-contracts",
+      "2026-09-24-export-menu-projection",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-15-compose-docx-export-kit",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
     "math": [
       "2026-10-19-math-inline-mode",
       "2026-10-18-math-katex-import",
@@ -673,23 +691,6 @@
     "emoji-data": [
       "2026-10-12-neutral-stored-names",
       "2026-10-08-emoji-frimousse"
-    ],
-    "export-toolbar-button": [
-      "2026-10-12-neutral-stored-names",
-      "2026-10-12-toolbar-button-names",
-      "2026-10-09-export-static-presentation",
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-29-word-export-loss-and-source-reuse",
-      "2026-09-27-document-conversion-contracts",
-      "2026-09-24-export-menu-projection",
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-09-02-comments-ownership",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-15-compose-docx-export-kit",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
     ],
     "collaboration-demo": [
       "2026-10-12-neutral-stored-names",

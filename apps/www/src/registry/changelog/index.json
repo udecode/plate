@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-19-export-toolbar-docx-load",
+      "href": "/registry/changelog/2026-10-19-export-toolbar-docx-load.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Load Word export when the export menu exports to Word",
+      "change": {
+        "type": "source",
+        "date": "2026-10-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["export-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-19-math-inline-mode",
       "href": "/registry/changelog/2026-10-19-math-inline-mode.json",
       "status": "draft",
