@@ -165,3 +165,10 @@ This continuation landed these changes through land.mjs:
 | This final documentation commit | docs(www): record GitHub deployment proof and timings |
 
 The original workflow commit 88e2550143 predates this continuation. The transferred implementation, off-mode request, timing comparison, full beta setup and branch-scope question are complete. Production and hourly scheduling remain outside this rollout. The cold build and both complete deployment timings are observations; the comparison does not prove a repeatable speed advantage.
+
+
+## Deploy workflow rename
+
+The owner requested deploy on both branches. Commit 3d14bbb09e renamed the workflow to .github/workflows/deploy.yml and its visible name to Deploy. The same file supports trusted main and next branches, with separate caches and branch-specific Vercel settings and publication. The shared ignore script now skips Version Packages only when it is the sole undeployed commit.
+
+[Run 39270089314](https://github.com/udecode/plate/actions/runs/39270089314) passed the actual beta build and publication after the rename. Its deployment is dpl_AvGEzAKx7DD1nDxLB7nyES1c6WcW. HTTP checks passed, and Chrome rendered the equation preview and Manual installation source. The main migration's record is docs/plans/2026-10-19-deploy-www-main.md on main. The earlier aggregate waiver and fast review limits still apply.
