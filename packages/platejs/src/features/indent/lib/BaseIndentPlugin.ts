@@ -195,9 +195,12 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
   shortcuts: {
     tab: {
       handler: ({ editor }) => {
-        const entry = editor.read.nodes.block();
+        const targets = editor.read.nodes.blocks({
+          match: getInjectMatch(editor, plugin),
+          mode: 'lowest',
+        });
 
-        if (!entry || !getInjectMatch(editor, plugin)(...entry)) return false;
+        if (targets.length === 0) return false;
 
         editor.plugin(plugin).update.increase();
 

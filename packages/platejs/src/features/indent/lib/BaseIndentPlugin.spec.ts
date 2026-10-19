@@ -233,6 +233,89 @@ describe('BaseIndentPlugin', () => {
     expect(press(true)).toBe(true);
   });
 
+  it('indents the Details on Tab when the caret sits in its title [plate#5199]', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseDetailsPlugin,
+        BaseIndentPlugin.configure({ targetPlugins: ['paragraph', 'details'] }),
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 5, path: [0, 0, 0] },
+        focus: { offset: 5, path: [0, 0, 0] },
+      },
+      initialValue: [
+        {
+          children: [
+            { children: [{ text: 'Title' }], type: 'summary' },
+            { children: [{ text: 'Body' }], type: 'paragraph' },
+          ],
+          type: 'details',
+        },
+      ],
+    });
+    const handled = dispatchPlateShortcut(
+      editor,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        code: 'Tab',
+        key: 'Tab',
+      }),
+      'keydown',
+      getPlateRuntime(editor).shortcutTable
+    );
+
+    expect({ children: editor.read.children(), handled }).toEqual({
+      children: [
+        {
+          children: [
+            { children: [{ text: 'Title' }], type: 'summary' },
+            { children: [{ text: 'Body' }], type: 'paragraph' },
+          ],
+          indent: 1,
+          type: 'details',
+        },
+      ],
+      handled: true,
+    });
+  });
+
+  it('indents every paragraph a text range spans on Tab [plate#5200]', () => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 6, path: [1, 0] },
+      },
+      initialValue: [
+        { children: [{ text: 'First' }], type: 'paragraph' },
+        { children: [{ text: 'Second' }], type: 'paragraph' },
+      ],
+    });
+    const handled = dispatchPlateShortcut(
+      editor,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        code: 'Tab',
+        key: 'Tab',
+      }),
+      'keydown',
+      getPlateRuntime(editor).shortcutTable
+    );
+
+    expect({ children: editor.read.children(), handled }).toEqual({
+      children: [
+        { children: [{ text: 'First' }], indent: 1, type: 'paragraph' },
+        { children: [{ text: 'Second' }], indent: 1, type: 'paragraph' },
+      ],
+      handled: true,
+    });
+  });
+
   it('lets Shift+Tab leave the blockquote plugin, not a plugin that only shares its name', () => {
     const quoted = (quote: typeof BaseBlockquotePlugin) => {
       const editor = createEditor({
