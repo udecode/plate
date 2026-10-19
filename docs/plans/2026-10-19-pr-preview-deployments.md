@@ -1,6 +1,6 @@
 # Deploy previews only for pull requests
 
-Status: building: implementing Plate; confirming Ellie sync scope
+Status: building: proving Plate Preview and finishing branch delivery
 Playbook: build
 
 ## Brief
@@ -23,7 +23,7 @@ The new workflow checks whether the pull request changes the site before it ente
 
 The owner approved PR-only previews, then said "ok go then sync to ellie." This extends the existing GitHub deployment lane. Preserve GitHub `PLATE_BUILD_BASIC=0`, existing paid machine sizes, the shared ignore rules and the Production/Beta publication paths.
 
-Ellie currently builds through Vercel. Its next branch is the production target of the ellie-staging project. Its GitHub Preview environment also holds migration and cron credentials and permits next only. Do not widen that environment or enable its disabled Production release as a side effect of this sync. The owner has been asked whether the sync includes moving Ellie builds to GitHub.
+Ellie currently builds through Vercel. Its next branch is the production target of the ellie-staging project. Its GitHub Preview environment also holds migration and cron credentials and permits next only. Do not widen that environment or enable its disabled Production release as a side effect of this sync. The optional pipeline question has no answer. Sync the PR-only policy while preserving Ellie's current Vercel builder and staging release. A canceled Vercel record is still possible for ignored branch builds.
 
 ## Main changes
 
@@ -40,6 +40,7 @@ Ellie currently builds through Vercel. Its next branch is the production target 
 | Workflow owner | Keep previews separate from live publishing | Extend the live publishing workflow | combine | detail |
 | Internal pull requests | Deploy automatically on PR updates | Require approval for every update | review | small |
 | Fork pull requests | Require an exact-commit maintainer request | Skip fork previews | forks | small |
+| Ellie build service | Keep Vercel and sync the PR-only policy | Move the full build pipeline to GitHub | migrate | big |
 | Ellie staging | Preserve its release checks and credentials | Migrate staging environments first | staging | big |
 
 ## Steps
@@ -53,9 +54,9 @@ Ellie currently builds through Vercel. Its next branch is the production target 
 - [x] Configure the Preview environment with only deployment credentials and project identifiers. Proof: `docs/plans/artifacts/pr-previews/preview-environment-config.json`; migration run `39312330565`.
 - [x] Run syntax and focused behavior checks over relevant/ignored updates, plain pushes, stale heads and fork approval. Proof: `preview-actionlint-a1.log` and `preview-behavior-a1.log` in this run's artifact folder. GitHub API responses are fixtures; remote proof remains open.
 - [x] Run writing passes and applicable reviews before delivery. Proof: deslop by lead, no-comments reviewer found no required changes; unslop and bro over plan and delivery prose. No package/public API panel trigger.
-- [ ] Deliver the matching workflow on main and next with required branch checks.
+- [x] Deliver the matching workflow on main and next with required branch checks. Proof: main `32a3c8f2ee`; next `e02ad82077`; next landing passed all 20 selected steps.
 - [ ] Prove a real pull-request preview and ignored-update behavior from GitHub records.
-- [ ] "then sync to ellie" Adapt the selected scope, run its checks and deliver it.
+- [x] "then sync to ellie" Adapt the selected scope, run its checks and deliver it. Proof: Ellie next `b90b31438` and `8667c4ce2`; live Vercel no-PR skip passed.
 - [ ] Record the final proof, limits, commits and page.
 
 ## Completion Gates
@@ -65,9 +66,9 @@ Ellie currently builds through Vercel. Its next branch is the production target 
 | Workflow syntax | actionlint 1.7.12 passes on Preview |
 | PR event and ignore decisions | 23 final workflow behavior cases pass, including an exact-SHA mutation control |
 | Credential boundary and source identity | Preview credential readback; fixture-backed source guards pass; live deployment pending |
-| Local landing checks | pending |
-| Real GitHub preview and ignored records | pending |
-| Ellie sync | pending |
+| Local landing checks | next pnpm check --affected passes all 20 selected steps; main syntax/behavior/diff proof passes |
+| Real GitHub preview and ignored records | PR 5220 run 39314095981 passed at e0b3a73c2c, Preview deployment 7183387716, exact source and hosted routes verified; docs-only update pending |
+| Ellie sync | policy and proof delivered to next; local checks and live no-PR skip passed; full build pipeline remains on Vercel |
 | Product/public API/editor proof | skip: deployment tooling only |
 
 ## Verification
@@ -77,4 +78,8 @@ Use the real workflow syntax checker and event probes before delivery. The probe
 ## Open work
 
 - Finish Plate's Preview implementation and proof. owner: this chat; stop: the matching workflows are delivered and real Preview/ignore proof passes. Tracked in this plan.
-- Confirm Ellie's sync scope, preserve its staging release and complete the approved adaptation. owner: this chat; stop: the selected changes are delivered with scoped proof. Tracked in this plan.
+- Finish Ellie's PR-only policy records. owner: this chat; stop: final checks and source readback are recorded. Policy landed on next at b90b31438 with typecheck, deployment-env, plans and log gates passing. Tracked in Ellie's deployment-policy plan.
+
+## Live Preview checkpoint
+
+PR 5220 at `e0b3a73c2c68b5c5166019f9e2927753d1ef0673` passed run `39314095981`. GitHub deployment `7183387716` is Preview, transient and non-production. Its URL is https://plate-o8hz5o208-udecode.vercel.app. Vercel deployment `dpl_HTNv7mzC2VenaJ4gtJhgTSZSD4tY` is READY at the same source, with no production aliases. The next commit updates only this deployment record and exercises the ignored-PR path.
