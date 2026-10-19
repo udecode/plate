@@ -1,6 +1,6 @@
 # Number the pages of a DOCX export
 
-Status: in review, waiting on the draft PR's review
+Status: executed, carried by the redo plan 2026-10-19-docx-io-page-number-redo.md
 Playbook: bug-fix
 
 ## Brief
@@ -11,13 +11,13 @@ A document exported to Word can number its pages in a footer, with one switch. T
 
 ### What could go wrong?
 
-The number sits alone on the left, in the document font. Its alignment, a label such as "Page" and the page count cannot be set.
+The number sits alone on the left, in the document font. A caller cannot set its alignment, a label such as "Page" or the page count.
 
 ## Teach
 
-DOCX export renders the editor value to HTML, then hands that HTML and a few page settings to a converter that writes the Word package. That converter can write a footer, link it from the page settings and put a page number field in it, but only when it is asked for a footer and a page number.
+DOCX export renders the editor value to HTML, then hands that HTML and a few page settings to a converter that writes the Word package. That converter can write a footer, link it from the page settings and put a page number field in it, but only when the caller asks for a footer and a page number.
 
-The export only forwarded the font, margins, orientation and page size, so the page number was out of reach.
+The export only forwarded the font, margins, orientation and page size, so a caller could not turn the page number on.
 
 Now the export takes a page number switch and asks the converter for both the footer and the number when it is on. The converter is unchanged.
 
@@ -56,11 +56,11 @@ const blob = await exportToDocx([{ type: 'p', children: [{ text: 'Body' }] }], {
 - [x] Forward the switch. Proof: `docs/plans/artifacts/docx-io-footer-page-number/green-pagenumber-a1.log`, 55 pass in the docx-io export and converter specs.
 - [x] Check the branch writes the footer Word read. Proof: `docs/plans/artifacts/docx-io-footer-page-number/same-footer-a1.log`, the footer part is byte-identical to the Word-checked one and the section links it the same way.
 - [x] `pnpm lint:fix`, package typecheck, barrels, docs parity and `pnpm check` on the final tree. Proof: `docs/plans/artifacts/docx-io-footer-page-number/typecheck-a4.log`, `docs/plans/artifacts/docx-io-footer-page-number/brl-a2.log`, `docs/plans/artifacts/docx-io-footer-page-number/check-docs-a3.log`, `docs/plans/artifacts/docx-io-footer-page-number/pnpm-check-a3.log`.
-- [ ] Push to the fork and update the draft PR's title and body.
+- [x] Push to the fork and update the draft PR's title and body. Proof: https://github.com/udecode/plate/pull/5193 showed head 1429ab9fe2, this branch's HEAD, on 2026-10-19.
 
 ## Close
 
-Reversal first: the first version of this change also added footer HTML, trimmed it, and made the direct converter call write the footer for either option. The owner asked for the page number alone on 2026-10-19, so those parts, their tests and their docs are reverted, and the converter files match `main` again. That version's Word check of a right-aligned "Page 1" footer no longer applies.
+The first version of this change also added footer HTML, trimmed it, and made the direct converter call write the footer for either option. The owner asked for the page number alone on 2026-10-19, so the run reverted those parts, their tests and their docs, and the converter files match `main` again. That version's Word check of a right-aligned "Page 1" footer no longer applies.
 
 ## Open work
 
