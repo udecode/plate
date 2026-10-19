@@ -131,6 +131,27 @@ describe('AutoformatKit current contract', () => {
     ]);
   });
 
+  it('highlights typed ==word== even though its opening == turns into ≡ first [plate#5201]', () => {
+    const editor = createCurrentKitEditor({
+      plugins: [...BasicMarksKit],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+        kind: 'text',
+      },
+      value: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+
+    for (const char of '==yellow== x') insertText(editor, char);
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ highlight: true, text: 'yellow' }, { text: ' x' }],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
   it('keeps shorthand literal inside code blocks because the kit gates autoformat there', () => {
     const input = (
       <fragment>

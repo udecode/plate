@@ -19,6 +19,10 @@
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
     ],
+    "basic-marks": [
+      "2026-10-19-fix-highlight-after-equality-substitution",
+      "2026-08-17-flat-editor-registry"
+    ],
     "autoformat": [
       "2026-10-19-fix-negated-comparison-shortcuts",
       "2026-08-17-flat-editor-registry"
@@ -1291,7 +1295,6 @@
     "media-static": ["2026-08-17-flat-editor-registry"],
     "toc-static": ["2026-08-17-flat-editor-registry"],
     "toggle-static": ["2026-08-17-flat-editor-registry"],
-    "basic-marks": ["2026-08-17-flat-editor-registry"],
     "basic-nodes": ["2026-08-17-flat-editor-registry"],
     "exit-break": ["2026-08-17-flat-editor-registry"],
     "media-uploadthing": ["2026-08-17-flat-editor-registry"],

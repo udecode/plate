@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-19-fix-highlight-after-equality-substitution",
+      "href": "/registry/changelog/2026-10-19-fix-highlight-after-equality-substitution.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix typed ==word== next to the equality substitution",
+      "change": {
+        "type": "source",
+        "date": "2026-10-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["basic-marks"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-19-fix-negated-comparison-shortcuts",
       "href": "/registry/changelog/2026-10-19-fix-negated-comparison-shortcuts.json",
       "status": "draft",

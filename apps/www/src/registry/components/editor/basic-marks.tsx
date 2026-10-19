@@ -3,6 +3,7 @@
 import {
   BoldRules,
   CodeRules,
+  createMarkInputRule,
   HighlightRules,
   ItalicRules,
   MarkComboRules,
@@ -79,6 +80,8 @@ export const BasicMarksKit = [
     inputRules: [
       HighlightRules.markdown({ variant: '==' }),
       HighlightRules.markdown({ variant: '≡' }),
+      // AutoformatKit turns an opening == into ≡ before the word is typed.
+      createMarkInputRule({ end: '=', start: '≡', trigger: '=' }),
     ],
     shortcuts: { toggle: { keys: 'mod+shift+h' } },
   }),
