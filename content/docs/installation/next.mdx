@@ -226,7 +226,9 @@ export default function MyEditorPage() {
 
 To make the editor content persistent, let's integrate `localStorage` to save and load the editor's value client-side.
 
-```tsx showLineNumbers title="app/editor/page.tsx" {57-60,66-68,78-84}
+A `'use client'` component is still rendered on the server first, where `localStorage` does not exist. Start the editor from `initialValue`, then restore the saved value in a `useEffect`, which only runs in the browser after the component mounts.
+
+```tsx showLineNumbers title="app/editor/page.tsx" {62,65-71,76-78}
 'use client';
 
 import * as React from 'react';
@@ -288,11 +290,16 @@ export default function MyEditorPage() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: () => {
-      const savedValue = localStorage.getItem('installation-next-demo');
-      return savedValue ? JSON.parse(savedValue) : initialValue;
-    },
+    value: initialValue,
   });
+
+  React.useEffect(() => {
+    const savedValue = localStorage.getItem('installation-next-demo');
+
+    if (savedValue) {
+      editor.tf.setValue(JSON.parse(savedValue));
+    }
+  }, [editor]);
 
   return (
     <Plate
@@ -324,6 +331,8 @@ export default function MyEditorPage() {
   );
 }
 ```
+
+The effect reads the saved value once, right after the first render, and `editor.tf.setValue` swaps it in. From then on, `onChange` writes every change back to `localStorage`.
 
 <ComponentPreview name="installation-next-demo" />
 
