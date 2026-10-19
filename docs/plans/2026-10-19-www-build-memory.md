@@ -1,23 +1,23 @@
 # Fit the website build within the Standard machine
 
-Status: building, testing bounded webpack concurrency after the first two trials exhausted memory.
+Status: building, testing a 4 GB heap cap after three remote trials exhausted memory.
 Playbook: bug-fix
 
 ## Brief
 
 ### What will change?
 
-The website build should finish on the existing machine. Try a smaller heap first, then remove unnecessary parsing, then reduce compilation parallelism only if needed. Keep the smallest change that passes.
+The website build should finish on the existing machine. Three trials still exhausted memory. The next trial lowers the heap cap further and prevents inherited options from overriding it.
 
 ### What could go wrong?
 
-A smaller heap may still be too small for this build. A successful local build cannot prove the remote memory limit is respected. Each candidate needs its own remote result.
+A smaller heap may cause JavaScript to run out of memory. A local options check cannot prove the remote build fits. The next preview must finish before the fix counts as working.
 
 ## Teach
 
 The build turns the website source and documentation into deployable pages. Its JavaScript heap limit currently equals the machine's entire memory allowance, although native code and other processes need memory too.
 
-The first trial reserves memory for those other uses. Later trials remove repeated parsing or reduce simultaneous compilation only if the earlier trial fails.
+The first three trials reduced the heap cap, removed repeated parsing and limited simultaneous module compilation. They still exhausted the machine's memory. The next trial leaves more room for memory outside the heap.
 
 ## Scope
 
@@ -33,7 +33,8 @@ The first trial reserves memory for those other uses. Later trials remove repeat
 - Trial 1 changes the Next build heap limit from 8192 MiB to 6144 MiB.
 - Trial 2 is conditional on trial 1 failing. Replace the unchanged ts-morph parse round trip with direct import rewriting after proving output parity.
 - Trial 3 is conditional on earlier trials failing. Lower webpack module parallelism to 4.
-- Discard a trial when evidence disproves its benefit. Keep no speculative flags.
+- Trial 4 follows the third failure. Set the heap cap to 4096 MiB and place it after inherited Node options.
+- Trials are cumulative. A failed trial proves that the combination was insufficient, not that each change has no benefit.
 
 ## Defaults
 
@@ -47,7 +48,8 @@ The first trial reserves memory for those other uses. Later trials remove repeat
 - [x] Reproduce the reported failure. Proof: Vercel baseline reports out_of_memory and an OOM event.
 - [x] Test the smaller heap alone. Proof: dpl_EMZQ7SYF5FUwYXRukuzRWYuAPPvW failed with out_of_memory and SIGKILL before compilation completed on 4 cores and 8 GB.
 - [x] If needed, test direct source text rewriting. Proof: parity passed; dpl_9qoxJSdXNwjZH7Pezr9YW4dfPJgn still failed with out_of_memory on the unchanged machine.
-- [ ] If needed, test reduced compiler parallelism. Proof: remote build result on unchanged machine specs.
+- [x] If needed, test reduced compiler parallelism. Proof: dpl_Gdo7r7TL9zVFYpLwYn9VYy3c3UUy failed with out_of_memory and SIGKILL before compilation completed on the unchanged machine.
+- [ ] Test the 4096 MiB cap. Proof: local option ordering and a matching remote READY build on unchanged machine specs.
 - [ ] Review and run affected checks. Proof: final diff, writing passes and scoped successful checks.
 - [ ] Deliver and check the published result. Proof: land.mjs commit on origin/next and matching READY preview.
 
@@ -65,6 +67,10 @@ The first trial reserves memory for those other uses. Later trials remove repeat
 - Parser parity: parser-parity-original.json and parser-parity-candidate-a1.log cover all 433 tracked registry TypeScript inputs. They prove text parity only.
 - Broader parity: registry-text-parity-a1.log covers all 948 tracked registry text files, including MDX, JSON and CSS. The probe compares the removed parser step with raw text; source review confirms the same import rewriting receives that text.
 - Parser trial: parser-final-vercel.json. Removing the repeated parse did not satisfy the exit condition.
+- Parallelism trial: parallel-final-vercel.json. The four-module limit did not satisfy the exit condition.
+- Worker source inspection: Next's default parallelServerCompiles and parallelServerBuildTraces are false. The webpack worker loop awaits each compiler's worker exit. Overlapping compiler workers are not the source explanation under this configuration.
+- Option probe: heap4096-options-a1.log checks the actual build command prefix on local Node 24 with absent, hyphenated and underscored inherited 8192 MiB flags. All cases retain the final 4096 MiB cap. This does not observe Vercel's actual inherited options.
+- Previous successful build: dpl_B1Ne4A6WYd5cYREtsXYxoiAZdN9s at cca5fb5e62e522251c1236da212d082869d29459. Its logs report 2 cores and 8 GB, so it is a historical comparison with different CPU allocation, not a controlled baseline.
 
 ## Open work
 
