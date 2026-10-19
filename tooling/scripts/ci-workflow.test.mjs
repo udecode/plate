@@ -245,7 +245,7 @@ test('Vercel uses the repo-owned bounded www build', async () => {
   assert.match(packageJson.scripts['build:www:ci'], /--filter=www\.\.\./);
   assert.match(
     wwwPackageJson.scripts.build,
-    /PLATE_WWW_WEBPACK=1 next build --webpack$/
+    /PLATE_WWW_WEBPACK=1 node scripts\/build-next\.mjs --webpack$/
   );
   assert.match(nextConfig, /process\.env\.PLATE_WWW_WEBPACK/);
 });

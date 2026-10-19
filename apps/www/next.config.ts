@@ -20,6 +20,7 @@ const toAppImportPath = (targetPath: string) => {
 };
 
 const isPliteMode = process.env.PLATE_WWW_PLITE === '1';
+const lowMemoryBuild = process.env.PLATE_WWW_LOW_MEMORY !== '0';
 
 const buildWorkspaceAliases = (rootDirName: 'dist' | 'src') =>
   Object.fromEntries(
@@ -99,7 +100,7 @@ const nextConfig = (_phase: string) => {
         ? {}
         : { turbopackRustReactCompiler: true }),
       webpackBuildWorker: true,
-      webpackMemoryOptimizations: true,
+      webpackMemoryOptimizations: lowMemoryBuild,
     },
     logging: {
       browserToTerminal: true,
@@ -152,6 +153,10 @@ const nextConfig = (_phase: string) => {
           // tsconfig paths resolve collections/server before resolve.alias
           // applies, so the request is rewritten before resolution starts.
           webpack: (webpackConfig, { webpack }) => {
+            if (lowMemoryBuild) {
+              webpackConfig.cache = false;
+              webpackConfig.parallelism = 4;
+            }
             webpackConfig.plugins.push(
               new webpack.NormalModuleReplacementPlugin(
                 /^collections\/server$/,
