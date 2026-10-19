@@ -224,6 +224,11 @@ export type AuthoredResolveOptions = Readonly<{
    */
   stores?: boolean;
   /**
+   * The rejected changes are withdrawn by their writer, so no later edit can
+   * reopen them and their deletions leave no held member.
+   */
+  withdraws?: boolean;
+  /**
    * The part of a root the children resolve as. A part with fewer nodes than
    * its minimum completes even when no decision changed it, because blocks
    * the rest of the root dropped leave the root short.
@@ -413,6 +418,7 @@ export const resolveAuthoredChildren = (
     facts = NO_FACTS,
     dependencies = createDependencies(facts),
     stores = false,
+    withdraws = false,
     part,
   }: AuthoredResolveOptions = {}
 ): AuthoredResolution => {
@@ -422,6 +428,7 @@ export const resolveAuthoredChildren = (
     pending(node).some((mark) => mark.kind === 'insert');
   const keepsRejectedDeletion = (mark: AuthoredMark) =>
     stores &&
+    !withdraws &&
     mark.kind === 'delete' &&
     facts.insertedIncarnations().has(incarnationOf(mark));
   const keptMembers = (
@@ -1496,7 +1503,7 @@ export const resolveAuthoredValue = (
   value: JsonEditorValue,
   outcome: AuthoredOutcome,
   schema: AuthoredResolveSchema | null = null,
-  options: Readonly<{ stores?: boolean }> = {}
+  options: Readonly<{ stores?: boolean; withdraws?: boolean }> = {}
 ) => {
   const facts = factsOf(value);
   const dependencies = createDependencies(facts);

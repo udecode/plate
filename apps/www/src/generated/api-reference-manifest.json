@@ -245,6 +245,30 @@
             "N extends Descendant"
           ]
         },
+        "platejs:AuthoredDocumentProjection": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "AuthoredDocumentProjection",
+          "route": null,
+          "runtime": false,
+          "signature": "type AuthoredDocumentProjection = Readonly<{\n  diagnostics: readonly AuthoredProjectionDiagnostic[];\n  document: EditorDocumentValue;\n  ok: true;\n  /** Pending changes the projection decided. */\n  pending: number;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:AuthoredProjectionDiagnostic": {
+          "aliases": [],
+          "documentation": "`authored-lossy-projection` reports pending changes a projection decided.\n`authored-uncorrected` names a container whose children a decision\nremoved, merged, unwrapped or pulled apart: the pure resolver runs no\nplugin corrections, so values derived from those children, such as column\nwidths, are not recomputed.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "AuthoredProjectionDiagnostic",
+          "route": null,
+          "runtime": false,
+          "signature": "type AuthoredProjectionDiagnostic = Readonly<{\n  code: 'authored-lossy-projection';\n  message: string;\n  severity: 'warning';\n}> | Readonly<{\n  code: 'authored-uncorrected';\n  message: string;\n  path: readonly number[];\n  severity: 'warning';\n  type: string | null;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:authoredVeto": {
           "aliases": [],
           "documentation": "Contribute a reason Suggesting refuses a change that touches an element.",

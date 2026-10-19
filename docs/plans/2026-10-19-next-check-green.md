@@ -1,6 +1,6 @@
 # Make the full check pass on next
 
-Status: building, batch one landing fast, then the link timeout, AI discard and IME slices
+Status: building, IME audit slice, then the full check again
 Page: https://claude.ai/artifact/2cXMFmv3whUediiY6PvE29
 Playbook: bug-fix
 
@@ -8,11 +8,11 @@ Playbook: bug-fix
 
 ### What will change?
 
-You asked to fix every failing check on next first. Lint, the audits, the bridge check, two ledger laws, a footnote spec, the CLI tests and stale lists pass. Lint rules now get the editor, so they can skip code blocks.
+You asked to fix every failing check on next first. Lint, two audits, the bridge check, two ledger laws, the AI discard pair, a footnote spec and the CLI tests pass. Lint rules get the editor to skip code blocks.
 
 ### What could go wrong?
 
-Old lint rules still work, since the editor is an extra field. The AI discard pair and the IME typing audit come in later slices. One recording law can still fail on a random seed; a waiting task owns it.
+Old lint rules still work, since the editor is an extra field. The IME typing audit comes in a later slice, and the older plans the docs checks flag wait on their own task. One recording law can still fail on a random seed; a waiting task owns it.
 
 ## Teach
 
@@ -23,6 +23,22 @@ Most failures were drift. A generated file was stale, a file was unformatted, an
 Now lint rules get the editor, the two types come from the Plite root, and the ledger hides the point where two removals meet.
 
 ## Public API
+
+An author takes back their own pending change without leaving a decision behind.
+
+```ts before
+// packages/platejs/src/ai/react/AIChatPlugin.ts
+tx.plugin(AuthoredPlugin).decide({
+  action: 'reject',
+  changes: [previous],
+});
+```
+
+```ts after
+// packages/platejs/src/ai/react/AIChatPlugin.ts
+tx.plugin(AuthoredPlugin).withdraw([previous]);
+```
+
 
 A lint rule reads the editor from its context to find the code block's type.
 
@@ -96,4 +112,6 @@ import type {
 - [x] Fix each real failure at its cause. Proof: per-step logs in the decision log.
 - [x] Writing passes and panel round one on the diff. Proof: `panel-r1-*.md` in the run directory.
 - [x] Round-one fixes, then land. Round two skipped on the owner's "fast"; the fixes and the CLI commit stay unreviewed until "full". Proof: `restore-*-a1.log` in the run directory.
-- [ ] AI discard slice, IME audit slice, then the full check again.
+- [x] Full check after batch one: 5 of 28 steps fail. `www` fails on batch one's new root types in the API reference, plite-test on the AI pair, core-audits on the IME audit, review-ledger and knowledge on older plans that task t_3ea68f2e owns. Proof: `check-after-b1-a1.log`.
+- [x] AI discard slice: `update.authored.withdraw(changes)` takes back the author's own pending change with no verdict and no held member, AIChatPlugin's Discard and each streamed chunk withdraw the previous preview, and the API reference excludes the two root projection types. Proof: `ai-specs-a1.log`, `ai-authored-tests-a1.log`, `ai-types-b-a1.log`, `ai-plite-test-b-a1.log`, `ai-www-typecheck-c-a1.log`.
+- [ ] IME audit slice, then the full check again.

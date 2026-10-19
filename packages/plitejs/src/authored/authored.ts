@@ -217,6 +217,14 @@ type AuthoredUpdate = {
       decisions: AuthoredDecision | readonly AuthoredDecision[]
     ) => AuthoredResult
   >;
+  /**
+   * Take back this editor's author's own pending changes as if never
+   * proposed: rejected with no verdict record and no held member. Another
+   * author's change gives an invalid result.
+   */
+  withdraw: TxDeclaredMethod<
+    (changes: readonly AuthoredChange[]) => AuthoredResult
+  >;
   /** Record this update's writes under one change, whatever the intent. */
   propose: TxOnlyMethod<(options?: { changeId?: string }) => string>;
 };
@@ -1107,7 +1115,8 @@ export const createAuthoredPlugin = (
   const decideOn = (
     editor: Editor,
     value: JsonEditorValue,
-    decisions: AuthoredDecision | readonly AuthoredDecision[]
+    decisions: AuthoredDecision | readonly AuthoredDecision[],
+    withdraws = false
   ):
     | Readonly<{ result: AuthoredResult }>
     | Readonly<{
@@ -1161,7 +1170,7 @@ export const createAuthoredPlugin = (
         value,
         (change) => actions.get(change) ?? 'keep',
         authoredResolveSchemaOf(editor),
-        { stores: true }
+        { stores: true, withdraws }
       );
     } catch (error) {
       if (isRefusal(error)) return { result: { ids, status: 'invalid' } };
@@ -1180,15 +1189,17 @@ export const createAuthoredPlugin = (
     // One token per decision, so a peer's decision on the same incarnation
     // gets its own key and an undo drops only this one.
     const decision = createIncarnationId();
-    const verdicts = [...actions].flatMap(([id, verdict]) =>
-      [...incarnationsOf(book.occurrences(id))].map(
-        ({ at, change, inc }): VerdictRecord => ({
-          decision,
-          member: inc === undefined ? { at, change } : { at, change, inc },
-          verdict,
-        })
-      )
-    );
+    const verdicts = withdraws
+      ? []
+      : [...actions].flatMap(([id, verdict]) =>
+          [...incarnationsOf(book.occurrences(id))].map(
+            ({ at, change, inc }): VerdictRecord => ({
+              decision,
+              member: inc === undefined ? { at, change } : { at, change, inc },
+              verdict,
+            })
+          )
+        );
     const decidedValue = withVerdicts(resolution.value, verdicts);
     // A change whose inserted text the decision removes, such as text typed
     // inside a rejected insertion, goes only when it is decided too. An empty
@@ -1478,68 +1489,83 @@ export const createAuthoredPlugin = (
         });
       },
     }),
-    update: ({ editor, tx }) => ({
-      decide: txStored(
-        (
-          decisions: AuthoredDecision | readonly AuthoredDecision[]
-        ): AuthoredResult => {
-          const decided = decideOn(editor, tx.value(), decisions);
+    update: ({ editor, tx }) => {
+      const apply = (decided: ReturnType<typeof decideOn>): AuthoredResult => {
+        if (!('change' in decided)) return decided.result;
 
-          if (!('change' in decided)) return decided.result;
-
-          const update = getActiveEditorUpdateId(editor);
-
-          if (update) stateOf(editor).passThrough.add(update);
-          try {
-            tx.changes.apply(decided.change);
-          } catch (error) {
-            if (isRefusal(error)) {
-              return { ids: decided.result.ids, status: 'invalid' };
-            }
-            throw error;
-          }
-
-          return decided.result;
-        }
-      ),
-      propose: txOnly((input: { changeId?: string } = {}) => {
-        const state = stateOf(editor);
         const update = getActiveEditorUpdateId(editor);
 
-        if (!update) {
-          throw new Error('Authored proposals require an active update.');
+        if (update) stateOf(editor).passThrough.add(update);
+        try {
+          tx.changes.apply(decided.change);
+        } catch (error) {
+          if (isRefusal(error)) {
+            return { ids: decided.result.ids, status: 'invalid' };
+          }
+          throw error;
         }
 
-        if (input.changeId !== undefined && isEditingChange(input.changeId)) {
-          throw new Error(
-            `Authored change ids starting with ${editingChangeOf('')} are reserved for Editing.`
+        return decided.result;
+      };
+
+      return {
+        decide: txStored(
+          (decisions: AuthoredDecision | readonly AuthoredDecision[]) =>
+            apply(decideOn(editor, tx.value(), decisions))
+        ),
+        withdraw: txStored((changes: readonly AuthoredChange[]) => {
+          const author = authorOf(editor);
+
+          if (changes.some((change) => change.authorId !== author)) {
+            return {
+              ids: changes.map((change) => change.id),
+              status: 'invalid',
+            } satisfies AuthoredResult;
+          }
+
+          return apply(
+            decideOn(editor, tx.value(), { action: 'reject', changes }, true)
           );
-        }
+        }),
+        propose: txOnly((input: { changeId?: string } = {}) => {
+          const state = stateOf(editor);
+          const update = getActiveEditorUpdateId(editor);
 
-        const changeId = input.changeId ?? createChangeId();
-        const value = tx.value();
-        const claim = claimOf(value, changeId);
-        const decided =
-          !claim &&
-          (state.marks.authorOf(changeId) !== null ||
-            factsOf(value).decides(changeId));
+          if (!update) {
+            throw new Error('Authored proposals require an active update.');
+          }
 
-        // A pending change takes more writes; an id decided before starts a
-        // new incarnation, so its old claims and verdicts never touch it.
-        state.forced.set(
-          update,
-          claim
-            ? { at: claim.at, changeId, inc: claim.inc }
-            : {
-                at: now(),
-                changeId,
-                inc: decided ? createIncarnationId() : undefined,
-              }
-        );
+          if (input.changeId !== undefined && isEditingChange(input.changeId)) {
+            throw new Error(
+              `Authored change ids starting with ${editingChangeOf('')} are reserved for Editing.`
+            );
+          }
 
-        return changeId;
-      }),
-    }),
+          const changeId = input.changeId ?? createChangeId();
+          const value = tx.value();
+          const claim = claimOf(value, changeId);
+          const decided =
+            !claim &&
+            (state.marks.authorOf(changeId) !== null ||
+              factsOf(value).decides(changeId));
+
+          // A pending change takes more writes; an id decided before starts a
+          // new incarnation, so its old claims and verdicts never touch it.
+          state.forced.set(
+            update,
+            claim
+              ? { at: claim.at, changeId, inc: claim.inc }
+              : {
+                  at: now(),
+                  changeId,
+                  inc: decided ? createIncarnationId() : undefined,
+                }
+          );
+
+          return changeId;
+        }),
+      };
+    },
     activate: ({ afterPublish, beforePublish, editor, onCleanup }) => {
       const owner = getEditorRuntimeOwner(editor);
       const state: AuthoredState = {

@@ -23,6 +23,8 @@
             "AnchorOptions",
             "AnchorValue",
             "ApplyDeepToNodesOptions",
+            "AuthoredDocumentProjection",
+            "AuthoredProjectionDiagnostic",
             "AuthoredVeto",
             "AutoScrollApi",
             "AutoScrollChangeKind",

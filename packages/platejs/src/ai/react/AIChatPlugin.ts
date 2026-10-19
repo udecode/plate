@@ -422,7 +422,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     const authored = editor.plugin(AuthoredPlugin);
     const change = authored.read.change(changeId);
     const result: AuthoredResult = change
-      ? authored.update.decide({ action, changes: [change] })
+      ? action === 'reject'
+        ? authored.update.withdraw([change])
+        : authored.update.decide({ action, changes: [change] })
       : { ids: [changeId], status: 'unchanged' };
 
     if (reviewSucceeded(result)) {
@@ -1182,10 +1184,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     if (previous) {
       actionEditor.update((tx) => {
         tx.history.merge();
-        tx.plugin(AuthoredPlugin).decide({
-          action: 'reject',
-          changes: [previous],
-        });
+        tx.plugin(AuthoredPlugin).withdraw([previous]);
       });
     }
 

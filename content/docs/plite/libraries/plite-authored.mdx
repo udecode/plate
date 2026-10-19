@@ -140,6 +140,7 @@ Install `yjs` from `plitejs/yjs` on every peer to synchronize marked content and
 | `read.authored.groupOf(changeId)` | Read the card that holds a change. |
 | `read.authored.reviewOf(node)` | Read a stored node's pending marks. |
 | `update.authored.decide(decision)` | Accept or reject changes or cards. |
+| `update.authored.withdraw(changes)` | Remove your own pending changes and record no decision. |
 | `api.authored.setView(policy)` | Set one view's authored policy. |
 | `api.authored.subscribeChanges(listener)` | Receive one delta for each commit that changes the review. |
 | `api.authored.subscribeRefusals(listener)` | Receive each proposal write or view switch the editor refused. |

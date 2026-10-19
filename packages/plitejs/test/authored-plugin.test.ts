@@ -962,6 +962,29 @@ describe('authored plugin', () => {
     );
   });
 
+  it('withdraws its author’s own proposal without leaving a record, and refuses another author’s', () => {
+    const { authored, editor } = make();
+    const before = editor.read.value();
+
+    run(editor, (tx) => {
+      tx.authored.propose({ changeId: 'bob:9' });
+      tx.selection.set(caret([0, 0], 5));
+      tx.command(editorCommands.insertText, { text: 'Z' });
+    });
+
+    const withdraw = (id: string) =>
+      run(editor, (tx) =>
+        tx.authored.withdraw([authored.read.authored.change(id)])
+      );
+
+    assert.deepEqual(withdraw('dave:3'), {
+      ids: ['dave:3'],
+      status: 'invalid',
+    });
+    assert.equal(withdraw('bob:9').status, 'applied');
+    assert.deepEqual(editor.read.value(), before);
+  });
+
   it('proposes a slice that replaces the text and type of a block as a format change', () => {
     const editor = createEditor({
       initialValue: [{ children: [{ text: 'Old' }], type: 'paragraph' }],

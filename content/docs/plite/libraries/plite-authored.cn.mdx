@@ -140,6 +140,7 @@ if (card) {
 | `read.authored.groupOf(changeId)` | 读取包含某个 change 的卡片。 |
 | `read.authored.reviewOf(node)` | 读取存储 node 的待处理 mark。 |
 | `update.authored.decide(decision)` | 接受或拒绝 change 或卡片。 |
+| `update.authored.withdraw(changes)` | 撤回你自己的待定 change，不记录任何决定。 |
 | `api.authored.setView(policy)` | 设置一个 view 的 authored policy。 |
 | `api.authored.subscribeChanges(listener)` | 每次改变审阅的 commit 都会收到一个 delta。 |
 | `api.authored.subscribeRefusals(listener)` | 接收编辑器拒绝的每个 proposal 写入或 view 切换。 |
