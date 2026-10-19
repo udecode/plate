@@ -68,6 +68,7 @@ const oracle = ({ editor, lint }: Setup) =>
         const matches = Array.from(
           rule.check(text, {
             block: block as never,
+            editor,
             signal: new AbortController().signal,
           }) as Iterable<{ end: number; message: string; start: number }>
         );

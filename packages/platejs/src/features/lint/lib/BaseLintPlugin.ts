@@ -2,6 +2,7 @@ import {
   type Decoration,
   type DecorationRefresh,
   type Descendant,
+  type Editor,
   type EditorCanonicalUpdateTag,
   type Element,
   ElementApi,
@@ -48,10 +49,12 @@ export type LintRule = Readonly<{
    * keeps its result only while the block matches the one it checked, marks
    * and properties included, and aborts `signal` when the block leaves the
    * document or `run`, `clear` or a document replace restarts linting.
+   * `editor` is for reading plugin configuration, such as a plugin's schema
+   * type; a rule never updates it.
    */
   check: (
     text: string,
-    context: Readonly<{ block: Element; signal: AbortSignal }>
+    context: Readonly<{ block: Element; editor: Editor; signal: AbortSignal }>
   ) => Iterable<LintMatch> | PromiseLike<Iterable<LintMatch>>;
 }>;
 
@@ -413,6 +416,7 @@ export const BaseLintPlugin = definePlugin('lint', {
           try {
             const result = rule.check(content, {
               block,
+              editor,
               signal: controller.signal,
             });
 
@@ -540,7 +544,7 @@ export const BaseLintPlugin = definePlugin('lint', {
     let result: Reply;
 
     try {
-      result = rule.check(text, { block, signal: controller.signal });
+      result = rule.check(text, { block, editor, signal: controller.signal });
     } catch (error) {
       fail(error);
       return;

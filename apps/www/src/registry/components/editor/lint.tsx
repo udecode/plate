@@ -1,6 +1,6 @@
 'use client';
 
-import { type Element, PLUGINS } from 'platejs';
+import { BaseCodeBlockPlugin, type Editor, type Element } from 'platejs';
 import { BaseLintPlugin, type LintRule } from 'platejs/lint';
 import {
   type EditableSiblingProps,
@@ -18,13 +18,17 @@ import {
   FloatingPopoverContent,
 } from '@/registry/components/editor/floating-popover';
 
-const isProse = (block: Element) => block.type !== PLUGINS.codeBlock;
+export const isProse = (editor: Editor, block: Element) => {
+  const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+  return !codeBlock.installed || block.type !== codeBlock.schema.type;
+};
 
 export const fillerWords: LintRule = {
   id: 'style/filler-words',
   severity: 'warning',
-  check: (text, { block }) => {
-    if (!isProse(block)) return [];
+  check: (text, { block, editor }) => {
+    if (!isProse(editor, block)) return [];
 
     let previousEnd = 0;
 
@@ -53,8 +57,8 @@ export const fillerWords: LintRule = {
 export const commaSpacing: LintRule = {
   id: 'style/comma-spacing',
   severity: 'error',
-  check: (text, { block }) =>
-    isProse(block)
+  check: (text, { block, editor }) =>
+    isProse(editor, block)
       ? Array.from(text.matchAll(/ , ?/g), (match) => ({
           start: match.index,
           end: match.index + match[0].length,

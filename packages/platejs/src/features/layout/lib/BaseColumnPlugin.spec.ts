@@ -732,7 +732,7 @@ describe('BaseColumnGroupPlugin schema', () => {
         }).toEqual({
           after: 'C',
           first: ['blockquote'],
-          type: PLUGINS.columnGroup,
+          type: editor.plugin(BaseColumnGroupPlugin).schema.type,
         });
       });
 
@@ -753,7 +753,11 @@ describe('BaseColumnGroupPlugin schema', () => {
           columns: group.children.length,
           first: NodeApi.string(group.children[0]),
           type: group.type,
-        }).toEqual({ columns: 3, first: 'A', type: PLUGINS.columnGroup });
+        }).toEqual({
+          columns: 3,
+          first: 'A',
+          type: editor.plugin(BaseColumnGroupPlugin).schema.type,
+        });
       });
 
       it('leaves a block selection of two blocks alone', () => {

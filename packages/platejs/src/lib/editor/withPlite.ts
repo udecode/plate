@@ -1,4 +1,8 @@
-import type { EditorStateField } from 'plitejs';
+import type {
+  AuthoredDocumentProjection,
+  AuthoredProjectionDiagnostic,
+  EditorStateField,
+} from 'plitejs';
 import {
   assertEditorOptions,
   cloneEditorJsonValue,
@@ -14,8 +18,6 @@ import {
   getEditorAuthoredDocumentCapability,
   initializePluginEntries,
   type InternalPluginPublicationEntry,
-  type AuthoredDocumentProjection,
-  type AuthoredProjectionDiagnostic,
   type NativeAuthoredDocumentCapability,
   withCompiledEditorSchemaCapabilityEntries,
   withEditorDocumentProjection,

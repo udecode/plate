@@ -53,8 +53,7 @@ describe('/api/search', () => {
   it('indexes API headings inside docs pages', async () => {
     const results = await search('definition text', 'en');
     const apiHeading = results.find(
-      (item) =>
-        item.url === '/docs/footnote#editorreadfootnotedefinitiontext'
+      (item) => item.url === '/docs/footnote#editorreadfootnotedefinitiontext'
     );
 
     expect(apiHeading).toBeDefined();

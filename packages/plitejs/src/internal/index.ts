@@ -199,11 +199,7 @@ export {
   getCompiledEditorSchemaFromApi,
 } from '../core/editor-schema';
 export type { InternalEditorSchemaApi } from '../core/editor-schema';
-export type {
-  AuthoredDocumentProjection,
-  AuthoredProjectionDiagnostic,
-  NativeAuthoredDocumentCapability,
-} from '../core/authored-document-capability';
+export type { NativeAuthoredDocumentCapability } from '../core/authored-document-capability';
 export type {
   EditorSchemaSourceProvider,
   EditorSchemaPluginProvider,

@@ -140,7 +140,10 @@ it('focuses read-only jump controls in the calling view and keeps the editable c
   const target = within(root).getByRole('button', {
     name: 'Back to reference 1',
   });
-  const focus = spyOn(target, 'focus');
+  // Another spec's userEvent.setup() can leave focus as a prototype getter,
+  // which spyOn rejects.
+  const focus = mock(target.focus.bind(target));
+  Object.defineProperty(target, 'focus', { configurable: true, value: focus });
   click(within(root).getByRole('button', { name: '[1]' }));
   expect(scroll).toHaveBeenCalledTimes(1);
   expect(document.activeElement).toBe(target);

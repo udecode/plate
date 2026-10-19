@@ -1,9 +1,5 @@
 {
-  "deleted schema.element(...) wrapper": {
-    "packages/plitejs/src/diff/lib/comparison-index.ts": [
-      "const element = type === null ? null : schema.element(type);"
-    ]
-  },
+  "deleted schema.element(...) wrapper": {},
   "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [$factory:defineMediaPlugin] -> [commands]": {
     "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": [
       "export const BaseImagePlugin = definePlugin(PLUGINS.image, {"
@@ -24,11 +20,7 @@
       "export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {"
     ]
   },
-  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [api] -> [contributions, read] -> [update] -> [corrections] -> [readMiddleware] -> [commands]": {
-    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": [
-      "export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({"
-    ]
-  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [api] -> [contributions, read] -> [update] -> [corrections] -> [readMiddleware] -> [commands]": {},
   "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [commands]": {
     "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts": [
       "export const InputRulesPlugin = definePlugin('inputRules', {"
@@ -52,16 +44,8 @@
       "export const WordPastePlugin = definePlugin(PLUGINS.wordPaste, {"
     ]
   },
-  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [formats] -> [api, read] -> [override, update] -> [commands] -> [corrections] -> [readMiddleware]": {
-    "packages/platejs/src/features/list/lib/BaseListPlugin.ts": [
-      "export const BaseListPlugin = definePlugin(PLUGINS.list, {"
-    ]
-  },
-  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [update] -> [commands]": {
-    "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts": [
-      "export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {"
-    ]
-  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [formats] -> [api, read] -> [override, update] -> [commands] -> [corrections] -> [readMiddleware]": {},
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [update] -> [commands]": {},
   "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [update] -> [shortcuts] -> [contributions]": {
     "packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts": [
       "export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {"
@@ -99,7 +83,6 @@
   },
   "production extend-stage allowlist expects exact 1 audited chain but found 1; signatures did not match": {
     "packages/platejs/src/ai/react/AIChatPlugin.ts": [""],
-    "packages/platejs/src/features/list/lib/BaseListPlugin.ts": [""],
     "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": [""],
     "packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts": [""],
     "packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts": [""],
@@ -110,7 +93,6 @@
     "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": [""]
   },
   "production extend-stage allowlist expects exact 2 audited chains but found 2; signatures did not match": {
-    "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts": [""],
     "packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts": [""]
   },
   "public Core barrels cannot star-export internal compiler modules": {

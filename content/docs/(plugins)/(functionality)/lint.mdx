@@ -62,19 +62,23 @@ for your own lint UI.
 
 A rule checks one text block. `check` receives the block's content text and
 returns matches with UTF-16 offsets into that text, a message and optional
-fixes. It also receives the block, so a rule can skip code:
+fixes. It also receives the block and the editor, so a rule can skip code:
 
 ```ts
-import { type Element, PLUGINS } from 'platejs';
+import { BaseCodeBlockPlugin, type Editor, type Element } from 'platejs';
 import type { LintRule } from 'platejs/lint';
 
-const isProse = (block: Element) => block.type !== PLUGINS.codeBlock;
+const isProse = (editor: Editor, block: Element) => {
+  const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+  return !codeBlock.installed || block.type !== codeBlock.schema.type;
+};
 
 export const commaSpacing: LintRule = {
   id: 'style/comma-spacing',
   severity: 'error',
-  check: (text, { block }) =>
-    isProse(block)
+  check: (text, { block, editor }) =>
+    isProse(editor, block)
       ? Array.from(text.matchAll(/ , ?/g), (match) => ({
           start: match.index,
           end: match.index + match[0].length,
@@ -390,7 +394,7 @@ Replace a finding's text with one of its fixes, as its own undo step.
   <APIItem name="severity" type="'error' | 'info' | 'warning'">
     The severity of the rule's findings.
   </APIItem>
-  <APIItem name="check" type="(text: string, context: { block: Element; signal: AbortSignal }) => Iterable<LintMatch> | PromiseLike<Iterable<LintMatch>>">
+  <APIItem name="check" type="(text: string, context: { block: Element; editor: Editor; signal: AbortSignal }) => Iterable<LintMatch> | PromiseLike<Iterable<LintMatch>>">
     Checks one block's content text. Each `LintMatch` is
     `{ start, end, message, fixes? }`, with UTF-16 offsets into `text`.
   </APIItem>

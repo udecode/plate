@@ -9,6 +9,10 @@ export { editorReads } from './core/editor-reads';
 export { transfer, transferVeto } from './core/transfer';
 export { authoredVeto, type AuthoredVeto } from './core/authored-veto';
 export type {
+  AuthoredDocumentProjection,
+  AuthoredProjectionDiagnostic,
+} from './core/authored-document-capability';
+export type {
   TransferApi,
   TransferPlugin,
   TransferRead,

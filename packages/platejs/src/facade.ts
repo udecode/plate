@@ -199,11 +199,13 @@ export type {
   EditorSchemaPluginProvider,
 } from 'plitejs/internal';
 export type {
-  AuthoredDocumentProjection,
-  AuthoredProjectionDiagnostic,
   NativeAuthoredDocumentCapability,
   StructuralPlainTextDiagnostic,
 } from 'plitejs/internal';
+export type {
+  AuthoredDocumentProjection,
+  AuthoredProjectionDiagnostic,
+} from 'plitejs';
 export {
   canPlaceBlocksAtPath,
   placeElementAt,

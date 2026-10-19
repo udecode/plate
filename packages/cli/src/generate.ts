@@ -26,13 +26,13 @@ import {
 } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { build } from 'esbuild';
 import type {
   EditorSchemaContract,
   EditorSchemaContractContentProgram,
   SchemaPropertyKey,
 } from 'platejs';
 
+import { build } from './esbuild';
 import { failInvariant } from './internal/failInvariant';
 import {
   artifactStateRoot,

@@ -1,6 +1,5 @@
 'use client';
 
-import { PLUGINS } from 'platejs';
 import { BaseLintPlugin, type LintRule } from 'platejs/lint';
 import {
   EditorRoot,
@@ -20,6 +19,7 @@ import {
 import {
   commaSpacing,
   fillerWords,
+  isProse,
   LintKit,
   useLintFindings,
 } from '@/registry/components/editor/lint';
@@ -55,8 +55,8 @@ const reviewTerminology = (text: string, signal: AbortSignal) =>
 const terminology: LintRule = {
   id: 'server/terminology',
   severity: 'info',
-  check: async (text, { block, signal }) => {
-    if (block.type === PLUGINS.codeBlock) return [];
+  check: async (text, { block, editor, signal }) => {
+    if (!isProse(editor, block)) return [];
 
     const terms = await reviewTerminology(text, signal);
 

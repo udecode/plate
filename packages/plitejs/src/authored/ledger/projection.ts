@@ -287,6 +287,12 @@ const writtenWindow = (
   return slots;
 };
 
+const REMOVAL = 0;
+const startsWithRemoval = (change: RootChange) =>
+  change.sections[1] === REMOVAL;
+const endsWithRemoval = (change: RootChange) =>
+  change.sections.at(-1) === REMOVAL;
+
 const changesWithin = (change: RootChange, from: number, to: number) => {
   let at = 0;
 
@@ -958,13 +964,15 @@ export class RootProjection {
 
     const head = this.headRank(rank);
     const { run } = this.slots.at(head);
-    if (run?.order) {
-      return run.order.hides(
-        position - this.slots.sumBefore(head, STORED_LENGTH)
-      );
+    const start = this.slots.sumBefore(head, STORED_LENGTH);
+
+    if (run?.order) return run.order.hides(position - start);
+    if (position === start && this.joinsPreviousRemoval(head, start)) {
+      return true;
     }
+
     const change = run?.change;
-    let before = position - this.slots.sumBefore(head, STORED_LENGTH);
+    let before = position - start;
 
     if (!change) return false;
     for (let pair = 0; pair < change.sections.length; pair += 2) {
@@ -1095,6 +1103,23 @@ export class RootProjection {
 
   private headRank(rank: number) {
     return rank - this.slots.at(rank).offset;
+  }
+
+  private joinsPreviousRemoval(head: number, start: number) {
+    const change = this.slots.at(head).run?.change;
+
+    if (head === 0 || !change || !startsWithRemoval(change)) return false;
+
+    const previous = this.headRank(head - 1);
+    const before = this.slots.at(previous).run;
+
+    return (
+      !!before?.change &&
+      !before.order &&
+      endsWithRemoval(before.change) &&
+      this.slots.sumBefore(previous, STORED_LENGTH) + before.change.length ===
+        start
+    );
   }
 
   private startOf(rank: number) {

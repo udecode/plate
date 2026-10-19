@@ -599,8 +599,7 @@ const internalBridgeRuntimeExportExpectations = {
   '../../plitejs/src/dom/internal': [
     'getPliteTextHostStrings',
     'isDOMTextFlowSegmentSynchronized',
-    'isMoveLineEnd',
-    'isMoveLineStart',
+    'getLineBoundaryKeyboardMove',
     'releaseDOMTextFlowIndex',
     'releaseDOMTextFlowRecordIndex',
     'resolveDOMTextFlowEntry',

@@ -60,19 +60,23 @@ const editor = createEditor({
 ## 规则
 
 一条规则检查一个文本块。`check` 接收块的内容文本并返回匹配项。每项包含该文本中的
-UTF-16 偏移量、提示信息和可选的修复。它还会收到块本身，因此规则可以跳过代码：
+UTF-16 偏移量、提示信息和可选的修复。它还会收到块本身和编辑器，因此规则可以跳过代码：
 
 ```ts
-import { type Element, PLUGINS } from 'platejs';
+import { BaseCodeBlockPlugin, type Editor, type Element } from 'platejs';
 import type { LintRule } from 'platejs/lint';
 
-const isProse = (block: Element) => block.type !== PLUGINS.codeBlock;
+const isProse = (editor: Editor, block: Element) => {
+  const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+  return !codeBlock.installed || block.type !== codeBlock.schema.type;
+};
 
 export const commaSpacing: LintRule = {
   id: 'style/comma-spacing',
   severity: 'error',
-  check: (text, { block }) =>
-    isProse(block)
+  check: (text, { block, editor }) =>
+    isProse(editor, block)
       ? Array.from(text.matchAll(/ , ?/g), (match) => ({
           start: match.index,
           end: match.index + match[0].length,
@@ -372,7 +376,7 @@ store 还包含 `version` 和 `error`。问题列表每次变化时 `version` �
   <APIItem name="severity" type="'error' | 'info' | 'warning'">
     该规则问题的严重程度。
   </APIItem>
-  <APIItem name="check" type="(text: string, context: { block: Element; signal: AbortSignal }) => Iterable<LintMatch> | PromiseLike<Iterable<LintMatch>>">
+  <APIItem name="check" type="(text: string, context: { block: Element; editor: Editor; signal: AbortSignal }) => Iterable<LintMatch> | PromiseLike<Iterable<LintMatch>>">
     检查一个块的内容文本。每个 `LintMatch` 为 `{ start, end, message, fixes? }`，
     偏移量是 `text` 中的 UTF-16 索引。
   </APIItem>
