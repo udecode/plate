@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-19-fix-negated-comparison-shortcuts",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-19-fix-negated-comparison-shortcuts.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix negated comparison shortcuts",
+  "targets": [
+    {
+      "name": "autoformat",
+      "files": ["apps/www/src/registry/components/editor/autoformat.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-19-autoformat-fix-negated-comparison-shortcuts-3bd48d51",
+      "kind": "fix",
+      "summary": "Fix `!>=` and `!<=`, which turned into `≯=` and `≮=` instead of `≱` and `≰`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["autoformat"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-19",
+          "entry": "2026-10-19-fix-negated-comparison-shortcuts",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

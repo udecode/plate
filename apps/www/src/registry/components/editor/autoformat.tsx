@@ -17,8 +17,8 @@ const comparisonsRule = createTextSubstitutionInputRule({
     { format: '≮', match: '!<' },
     { format: '≥', match: '>=' },
     { format: '≤', match: '<=' },
-    { format: '≱', match: '!>=' },
-    { format: '≰', match: '!<=' },
+    { format: '≱', match: ['!>=', '≯='] },
+    { format: '≰', match: ['!<=', '≮='] },
   ],
 });
 

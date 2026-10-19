@@ -88,6 +88,23 @@ describe('AutoformatKit current contract', () => {
     expect(input.children).toEqual(output.children);
   });
 
+  it('turns each compound negated symbol into its single configured symbol [plate#5202]', () => {
+    const editor = createCurrentKitEditor({
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+        kind: 'text',
+      },
+      value: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+
+    for (const char of '!>= !<= !~=') insertText(editor, char);
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '≱ ≰ ≉' }], type: 'paragraph' },
+    ]);
+  });
+
   it('keeps shorthand literal inside code blocks because the kit gates autoformat there', () => {
     const input = (
       <fragment>

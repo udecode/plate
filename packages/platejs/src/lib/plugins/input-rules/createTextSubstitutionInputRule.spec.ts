@@ -79,6 +79,22 @@ describe('createTextSubstitutionInputRule', () => {
     ]);
   });
 
+  it('prefers the longest match ending at the caret over an earlier shorter one', () => {
+    const rule = createTextSubstitutionInputRule({
+      patterns: [
+        { format: '≈', match: '~=' },
+        { format: '≉', match: '!~=' },
+      ],
+    });
+    const editor = createEditor(rule);
+
+    for (const char of '!~= ~=') insertText(editor, char);
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '≉ ≈' }], type: 'paragraph' },
+    ]);
+  });
+
   it('fires on the explicit trigger when provided', () => {
     const rule = createTextSubstitutionInputRule({
       patterns: [{ format: 'FOO', match: 'foo', trigger: ' ' }],

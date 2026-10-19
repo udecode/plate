@@ -423,6 +423,7 @@ export const createTextSubstitutionInputRule = ({
     string,
     Array<{
       end: string;
+      match: string;
       pattern: TextSubstitutionPattern;
       start: string;
     }>
@@ -442,6 +443,7 @@ export const createTextSubstitutionInputRule = ({
         : [match.slice(-1)];
       const compiled = {
         end: isPaired ? '' : pattern.trigger ? match : match.slice(0, -1),
+        match,
         pattern,
         start: isPaired ? match : '',
       };
@@ -456,6 +458,10 @@ export const createTextSubstitutionInputRule = ({
         }
       }
     }
+  }
+
+  for (const candidates of patternsByTrigger.values()) {
+    candidates.sort((a, b) => b.match.length - a.match.length);
   }
 
   const triggers = Array.from(patternsByTrigger.keys());

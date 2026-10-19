@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-19-fix-negated-comparison-shortcuts",
+      "href": "/registry/changelog/2026-10-19-fix-negated-comparison-shortcuts.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix negated comparison shortcuts",
+      "change": {
+        "type": "source",
+        "date": "2026-10-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["autoformat"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-19-math-inline-mode",
       "href": "/registry/changelog/2026-10-19-math-inline-mode.json",
       "status": "draft",
