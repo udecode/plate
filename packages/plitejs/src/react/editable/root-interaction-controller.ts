@@ -753,6 +753,40 @@ const resolvePliteStringPlacementRange = ({
   };
 };
 
+const resolveCoordinatePlacementTarget = ({
+  editor,
+  event,
+  placement,
+}: {
+  editor: RootInteractionEditor;
+  event: MouseEvent<HTMLElement>;
+  placement: NonNullable<PliteStringCoordinatePlacement>;
+}): {
+  placementDOMPoint: PliteStringPlacementDOMPoint | null;
+  range: Range | null;
+} => {
+  const placed = {
+    placementDOMPoint: getPliteStringPlacementDOMPoint(placement),
+    range: resolvePliteStringPlacementRange({ editor, placement }),
+  };
+
+  if (
+    !placed.range ||
+    placement.offset != null ||
+    !placement.string.closest('[data-editor-text-flow-host="true"]')
+  ) {
+    return placed;
+  }
+
+  const native = editor.api.dom.resolveEventRange(event.nativeEvent);
+
+  return native &&
+    RangeApi.isCollapsed(native) &&
+    PathApi.equals(native.anchor.path, placed.range.anchor.path)
+    ? { placementDOMPoint: null, range: native }
+    : placed;
+};
+
 const hasPointerMoved = (
   pending: PendingRootInteraction,
   event: MouseEvent<HTMLElement>
@@ -1567,24 +1601,28 @@ export const useRootInteractionController = ({
           ignoreBlankNativeEditableChromeClick;
 
         const focusEditor = getMountedViewEditor(root) ?? editor;
-        const startRange = rootChromeCoordinatePlacement
+        const coordinatePlacementTarget = rootChromeCoordinatePlacement
           ? profilePliteReactDuration(
               'root-mousedown.resolve-start-range',
               () =>
-                resolvePliteStringPlacementRange({
+                resolveCoordinatePlacementTarget({
                   editor: focusEditor,
+                  event,
                   placement: rootChromeCoordinatePlacement,
-                }) ?? focusEditor.api.dom.resolveEventRange(event.nativeEvent)
+                })
             )
+          : null;
+        const startRange = coordinatePlacementTarget
+          ? (coordinatePlacementTarget.range ??
+            focusEditor.api.dom.resolveEventRange(event.nativeEvent))
           : action.type === 'place-native-editable'
             ? profilePliteReactDuration(
                 'root-mousedown.resolve-start-range',
                 () => focusEditor.api.dom.resolveEventRange(event.nativeEvent)
               )
             : null;
-        const placementDOMPoint = rootChromeCoordinatePlacement
-          ? getPliteStringPlacementDOMPoint(rootChromeCoordinatePlacement)
-          : null;
+        const placementDOMPoint =
+          coordinatePlacementTarget?.placementDOMPoint ?? null;
         // A content root owner hides its own children, so a click on its
         // chrome places the caret in its content root instead.
         const ownerChromeClickEndpoint =

@@ -294,3 +294,77 @@ test('native huge code keeps hover and adjacent typing bounded', async ({
   expect(await code.locator('*').count()).toBe(beforeNodes);
   await cdp.detach();
 });
+
+test('clicking right of a code line puts the caret after its last character', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1024, height: 844 });
+  await page.goto('/blocks/code-block-demo', { waitUntil: 'commit' });
+  const root = page.locator('.editor-editor');
+  const editor = createBrowserEditorHarness(
+    page,
+    'code-block:line-end-click',
+    root
+  );
+  await editor.ready({ editor: 'visible', text: 'Code Blocks' });
+  const text = root.locator('pre code [data-editor-node="text"]').first();
+  await expect(text.locator('.hljs-keyword').first()).toBeVisible();
+  const lineEnds = await text.evaluate((host) => {
+    const value = host.textContent ?? '';
+    const ends: number[] = [];
+
+    for (let index = value.indexOf('\n'); index !== -1;) {
+      ends.push(index);
+      index = value.indexOf('\n', index + 1);
+    }
+
+    return ends.slice(0, 6);
+  });
+  const clickRightOfLine = async (lineEnd: number) => {
+    const point = await text.evaluate((host, end) => {
+      const walker = host.ownerDocument.createTreeWalker(
+        host,
+        NodeFilter.SHOW_TEXT
+      );
+      const range = host.ownerDocument.createRange();
+      let start = 0;
+
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const { length } = (node as Text).data;
+
+        if (end - 1 < start + length) {
+          range.setStart(node, end - 1 - start);
+          range.setEnd(node, end - start);
+          break;
+        }
+        start += length;
+      }
+      const rect = range.getBoundingClientRect();
+
+      return { x: rect.right + 40, y: rect.top + rect.height / 2 };
+    }, lineEnd);
+
+    await page.mouse.click(point.x, point.y);
+  };
+
+  await clickRightOfLine(lineEnds[0]);
+
+  for (const lineEnd of lineEnds.slice(1)) {
+    await clickRightOfLine(lineEnd);
+    await expect
+      .poll(() => editor.selection.get())
+      .toEqual({
+        anchor: { path: [2, 0], offset: lineEnd },
+        focus: { path: [2, 0], offset: lineEnd },
+      });
+  }
+
+  await page.keyboard.type('Z');
+  await expect
+    .poll(async () => {
+      const blockText = await editor.get.modelBlockText(2);
+
+      return blockText?.[lineEnds.at(-1)!];
+    })
+    .toBe('Z');
+});
