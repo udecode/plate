@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: Reviewed pull request number
+        description: Reviewed pull request number, paired with the exact head SHA
         required: true
         type: string
       reviewed_head_sha:
