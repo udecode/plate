@@ -645,6 +645,7 @@ const internalBridgeRuntimeExportExpectations = {
     'NODE_TO_KEY',
     'NODE_TO_PARENT',
     'PLACEHOLDER_SYMBOL',
+    'auditDOMTextProofs',
     'resolveLastEditorWindow',
     'createCompiledHotkeyMatcher',
     'createDOMEditorCapability',

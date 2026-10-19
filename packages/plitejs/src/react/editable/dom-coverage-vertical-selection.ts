@@ -5,6 +5,7 @@ import {
   type DOMGeometryPoint,
   type DOMGeometryRect,
 } from '../../dom/internal';
+import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
 import {
@@ -87,13 +88,13 @@ const getPointCaretRect = (
 ) => getEditorGeometry(editor)?.pointRect(domPoint) ?? null;
 
 const resolvePointProbeRect = (editor: ReactRuntimeEditor, point: Point) => {
-  const domPoint = editor.api.dom.resolveDOMPoint(point);
+  const domPoint = resolveDOMPointInRoot(editor, point);
 
   return domPoint ? getPointProbeRect(editor, domPoint) : null;
 };
 
 const resolvePointCaretRect = (editor: ReactRuntimeEditor, point: Point) => {
-  const domPoint = editor.api.dom.resolveDOMPoint(point);
+  const domPoint = resolveDOMPointInRoot(editor, point);
 
   return domPoint ? getPointCaretRect(editor, domPoint) : null;
 };
@@ -108,7 +109,7 @@ const isLeavingRenderedLine = ({
   reverse: boolean;
 }) => {
   try {
-    const domPoint = editor.api.dom.resolveDOMPoint(point);
+    const domPoint = resolveDOMPointInRoot(editor, point);
 
     if (!domPoint) {
       return true;
@@ -303,7 +304,7 @@ const resolveVisualLineTargetPoint = ({
   reverse: boolean;
 }): Point | null => {
   try {
-    const domPoint = editor.api.dom.resolveDOMPoint(point);
+    const domPoint = resolveDOMPointInRoot(editor, point);
 
     if (!domPoint) {
       return null;
@@ -643,11 +644,11 @@ const resolveAdjacentBlockVisualLineTargetPoint = ({
   }
 
   try {
-    const sourceDOMPoint = editor.api.dom.resolveDOMPoint(sourcePoint);
+    const sourceDOMPoint = resolveDOMPointInRoot(editor, sourcePoint);
     const sourceLineHost = sourceDOMPoint
       ? getRenderedLineHostFromDOMPoint(editor, sourceDOMPoint)
       : null;
-    const adjacentDOMPoint = editor.api.dom.resolveDOMPoint(adjacentPoint);
+    const adjacentDOMPoint = resolveDOMPointInRoot(editor, adjacentPoint);
 
     if (!adjacentDOMPoint) {
       return sourceLineHost

@@ -48,7 +48,8 @@ const testView = (editor: DOMTestEditor) => {
   return view;
 };
 
-const CANNOT_RESOLVE_DOM_NODE = /Cannot resolve a DOM node from an editor node/;
+const CANNOT_RESOLVE_DOM_COORDINATES =
+  /Cannot resolve DOM coordinates that are not mounted or not painted yet/;
 
 const createNestedEditor = () => {
   const editor = createEditor({ plugins: [dom()] });
@@ -358,7 +359,7 @@ describe('DOM coverage boundaries', () => {
       const hiddenPoint = { path: [0, 1, 0], offset: 3 };
 
       expect(() => editor.api.dom.assertDOMPoint(hiddenPoint)).toThrow(
-        CANNOT_RESOLVE_DOM_NODE
+        CANNOT_RESOLVE_DOM_COORDINATES
       );
       expect(
         testView(editor).domCoverage.resolveDOMPointOrBoundary(hiddenPoint)
@@ -1206,7 +1207,7 @@ describe('DOM coverage boundaries', () => {
     });
 
     expect(() => editor.api.dom.assertDOMPoint(hiddenPoint)).toThrow(
-      CANNOT_RESOLVE_DOM_NODE
+      CANNOT_RESOLVE_DOM_COORDINATES
     );
     expect(
       testView(editor).domCoverage.resolveDOMPointOrBoundary(hiddenPoint)
@@ -1424,7 +1425,7 @@ describe('DOM coverage boundaries', () => {
       expect(editor.api.dom.resolveDOMRange(hiddenRange)).toBeNull();
       expect(editor.api.dom.resolveRangeRect(hiddenRange)).toBeNull();
       expect(() => editor.api.dom.assertDOMPoint(hiddenPoint)).toThrow(
-        CANNOT_RESOLVE_DOM_NODE
+        CANNOT_RESOLVE_DOM_COORDINATES
       );
       expect(
         testView(editor).domCoverage.resolveDOMPointOrBoundary(hiddenPoint)
