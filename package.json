@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "bench:docx": "BENCH_MEASURE=1 bun tooling/scripts/test-suite.mjs fast benchmarks/editor/benchmarks/plate-docx-retained-source-benchmark.test.ts benchmarks/editor/benchmarks/plate-docx-revision-import-benchmark.test.ts",
+    "bench:table": "BENCH_MEASURE=1 bun tooling/scripts/test-suite.mjs slow packages/platejs/src/features/table/lib/internal/mutation.benchmark.slow.ts",
     "bench:editor:bench": "cd benchmarks/editor && npm run bench:evidence",
     "bench:editor:check": "cd benchmarks/editor && npm run check",
     "bench:editor:docs": "cd benchmarks/editor && npm run docs:perf",

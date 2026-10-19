@@ -63,6 +63,9 @@ export const FAST_TEST_SLOW_SUITE_THRESHOLD_MS = isCI ? 30_000 : 20_000;
 export const FAST_TEST_WARN_CASE_THRESHOLD_MS = isCI ? 300 : 200;
 export const FAST_TEST_WARN_SUITE_THRESHOLD_MS = isCI ? 25_000 : 15_000;
 
-// Bun's own per-case timeout only catches a hang; the budgets above judge speed.
-// Its 5 s default failed scale cases whenever other sessions loaded the host.
-export const BUN_TEST_TIMEOUT_MS = 30_000;
+export const FAST_TEST_TIMEOUT_MS = 5000;
+
+// CI's dedicated runner judges each case against 5 s. On a shared local host,
+// other sessions and the check's own parallel steps stretch wall-clock time,
+// so local runs only catch a hang.
+export const BUN_TEST_TIMEOUT_MS = isCI ? FAST_TEST_TIMEOUT_MS : 30_000;

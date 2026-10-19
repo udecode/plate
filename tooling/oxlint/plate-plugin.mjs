@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { FAST_TEST_TIMEOUT_MS } from '../config/test-suites.mjs';
 import { privatePackageNamePattern } from '../scripts/finalize-plate-declarations.mjs';
 import { lineIdentity, readBaseline } from '../scripts/finding-baseline.mjs';
 
@@ -12,8 +13,6 @@ const baseline = readBaseline(baselineFile);
 
 /** The environment `plate-baseline.mjs` lints with to count every instance. */
 export const reportAllEnv = { PLATE_LINT_BASELINE: 'report-all' };
-
-const FAST_TEST_TIMEOUT_MS = 5000;
 
 const INFERRING_METHODS = new Set(['read', 'transaction', 'update']);
 

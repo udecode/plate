@@ -11,9 +11,9 @@ metadata:
 
 The driver skill for pstack's Bug fix playbook: implementation acceptance,
 proof selection, runtime readiness, driving and evidence. Its
-[testing reference](./references/testing.md) owns test shape and runners, and
-`verify testing audit` ([testing-audit.md](./references/testing-audit.md))
-searches for uncovered contracts; `test-audit` prunes existing tests.
+[testing reference](./references/testing.md) owns test shape and runners.
+`test-audit` judges and prunes existing tests, and `verify testing audit
+[scope]` runs its full mode, which also lists uncovered contracts.
 Read the [command recipes](./references/commands.md) in full before the first
 probe, base control, mutant or browser run; they list the probe, base-worktree,
 runner and stale-build mistakes this repository has hit.

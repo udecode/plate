@@ -97,7 +97,7 @@ pstack's poteto-mode picks the playbook, and the Plate owner below supplies the 
 | Removing a feature (a hard cut) | the Build playbook with the architecture reference's Hard cut |
 | Performance inventory, measurement, causal diagnosis and rerun | the Perf issue playbook with `benchmark`; Benchmark review supplies the lens |
 | Actual package, browser, native editor, CLI and artifact proof, test shape and runners | `verify` |
-| Pruning existing tests; searching for uncovered contracts | `test-audit` (from dotai); `verify testing audit` |
+| Pruning existing tests; searching for uncovered contracts | `test-audit` (from dotai), whose full mode also lists uncovered contracts |
 | Public GitHub issue, PR or security queue, or a Plate Beta issue drafted from video or text | `maintainer`; one Slate issue uses its slate-issue mode, and a Beta issue draft its issue-draft mode (`.agents/rules/maintainer/references/issue-draft.md`) |
 | A review comment on a Slate PR or a Plate `main` PR, backed by Plate v2's research, code and tests | `review-comment` |
 

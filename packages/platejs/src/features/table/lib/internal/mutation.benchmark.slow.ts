@@ -12,6 +12,8 @@ import {
 } from './grid';
 import { planTableMutation, type TableCellFactory } from './mutation';
 
+const measured = process.env.BENCH_MEASURE === '1';
+
 const TABLE_GRID_BUDGETS = {
   coldDenseP95Ms: {
     large: 25,
@@ -187,50 +189,52 @@ describe('TableMutationPlan benchmark', () => {
       context.grid.anchors.length / 8
     );
 
-    const focusedMs = measure(insert, 12);
-    const fallbackMs = measure(repair, 12);
-
-    expect(focusedMs).toBeLessThan(fallbackMs);
+    if (measured) {
+      expect(measure(insert, 12)).toBeLessThan(measure(repair, 12));
+    }
   });
 });
 
 describe('TableGrid compiler benchmark', () => {
-  it('keeps dense and sparse cold compilation inside cohort budgets', () => {
-    compileTableGrid(createDenseTable(8));
-    compileTableGrid(createSparseTable(8));
+  it.if(measured)(
+    'keeps dense and sparse cold compilation inside cohort budgets',
+    () => {
+      compileTableGrid(createDenseTable(8));
+      compileTableGrid(createSparseTable(8));
 
-    TABLE_GRID_COHORTS.forEach(({ name, samples, size }) => {
-      const denseTables = Array.from({ length: samples }, () =>
-        createDenseTable(size)
-      );
-      const sparseTables = Array.from({ length: samples }, () =>
-        createSparseTable(size)
-      );
-      const denseP95 = percentile(
-        measureSamples(
-          denseTables.map((table) => () => {
-            compileTableGrid(table);
-          })
-        ),
-        0.95
-      );
-      const sparseP95 = percentile(
-        measureSamples(
-          sparseTables.map((table) => () => {
-            compileTableGrid(table);
-          })
-        ),
-        0.95
-      );
+      TABLE_GRID_COHORTS.forEach(({ name, samples, size }) => {
+        const denseTables = Array.from({ length: samples }, () =>
+          createDenseTable(size)
+        );
+        const sparseTables = Array.from({ length: samples }, () =>
+          createSparseTable(size)
+        );
+        const denseP95 = percentile(
+          measureSamples(
+            denseTables.map((table) => () => {
+              compileTableGrid(table);
+            })
+          ),
+          0.95
+        );
+        const sparseP95 = percentile(
+          measureSamples(
+            sparseTables.map((table) => () => {
+              compileTableGrid(table);
+            })
+          ),
+          0.95
+        );
 
-      expect(denseP95).toBeLessThanOrEqual(
-        TABLE_GRID_BUDGETS.coldDenseP95Ms[name]
-      );
-      expect(sparseP95).toBeLessThanOrEqual(
-        TABLE_GRID_BUDGETS.coldSparseP95Ms[name]
-      );
-    });
-  });
+        expect(denseP95).toBeLessThanOrEqual(
+          TABLE_GRID_BUDGETS.coldDenseP95Ms[name]
+        );
+        expect(sparseP95).toBeLessThanOrEqual(
+          TABLE_GRID_BUDGETS.coldSparseP95Ms[name]
+        );
+      });
+    }
+  );
 
   it('makes hot identity hits faster than uncached compilation', () => {
     const size = 128;
@@ -260,8 +264,10 @@ describe('TableGrid compiler benchmark', () => {
 
     expect(after.compileCount - before.compileCount).toBe(coldTables.length);
     expect(after.cacheHitCount - before.cacheHitCount).toBe(1000);
-    expect(hotP95).toBeLessThanOrEqual(TABLE_GRID_BUDGETS.hotHitP95Ms);
-    expect(hotP95).toBeLessThan(coldP95 / 20);
+    if (measured) {
+      expect(hotP95).toBeLessThanOrEqual(TABLE_GRID_BUDGETS.hotHitP95Ms);
+      expect(hotP95).toBeLessThan(coldP95 / 20);
+    }
   });
 
   it('keeps ID and path lookups local as table size grows', () => {
@@ -297,11 +303,13 @@ describe('TableGrid compiler benchmark', () => {
     const normalP95 = readLookupP95(32);
     const largeP95 = readLookupP95(256);
 
-    expect(normalP95).toBeLessThanOrEqual(TABLE_GRID_BUDGETS.lookupP95Ms);
-    expect(largeP95).toBeLessThanOrEqual(TABLE_GRID_BUDGETS.lookupP95Ms);
-    expect(largeP95).toBeLessThanOrEqual(
-      normalP95 * TABLE_GRID_BUDGETS.lookupSizeRatio
-    );
+    if (measured) {
+      expect(normalP95).toBeLessThanOrEqual(TABLE_GRID_BUDGETS.lookupP95Ms);
+      expect(largeP95).toBeLessThanOrEqual(TABLE_GRID_BUDGETS.lookupP95Ms);
+      expect(largeP95).toBeLessThanOrEqual(
+        normalP95 * TABLE_GRID_BUDGETS.lookupSizeRatio
+      );
+    }
   });
 
   it('does not retain table identities or heap across churn cohorts', async () => {
@@ -336,8 +344,10 @@ describe('TableGrid compiler benchmark', () => {
     expect(
       Math.max(...retainedCounts) - Math.min(...retainedCounts)
     ).toBeLessThanOrEqual(TABLE_GRID_BUDGETS.retainedTables);
-    expect(process.memoryUsage().heapUsed - baselineHeap).toBeLessThanOrEqual(
-      TABLE_GRID_BUDGETS.retainedHeapBytes
-    );
+    if (measured) {
+      expect(process.memoryUsage().heapUsed - baselineHeap).toBeLessThanOrEqual(
+        TABLE_GRID_BUDGETS.retainedHeapBytes
+      );
+    }
   });
 });

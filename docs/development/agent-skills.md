@@ -45,7 +45,7 @@ These are optional shortcuts for a specific job, not a sequence to run.
 | Finish a PR or the current tree | "clean up PR <number>" or "finish the current tree" |
 | Simplify code ownership: delete, merge, inline or split | "clean up <surface>" |
 | Review a live Plate package against the v2 target, or repair its findings | `$plate-next <package>`, `$plate-next sync <package>` |
-| Find important behavior with no test, or prune existing tests | `$verify testing audit <scope>`, `$test-audit <scope>` |
+| Find important behavior with no test, or prune existing tests | `$test-audit <scope>`, or `$test-audit full` for the whole suite |
 | Test one editor feature by hand against its reference editor and run its specs in every engine | `$verify playtest <feature>` |
 | Measure, diagnose and improve slow behavior | `$benchmark <operation and workload>` |
 | Join a rule or issue to its tagged tests, list the locked rules no running test proves, or check the knowledge stores | `pnpm kb <rule ID or issue ref>`; `pnpm kb gaps`; `pnpm kb check`, the `knowledge` step of `pnpm check` |

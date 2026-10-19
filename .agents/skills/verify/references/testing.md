@@ -1,6 +1,6 @@
 # Testing
 
-Test value follows the Tests rule in `AGENTS.md`: add a test only for a named, plausible defect nothing else already catches, written first when the test path is cheap. This reference owns test shape, owners and runners. `testing audit [scope]` runs the [suite audit](./testing-audit.md), which ranks remaining work and never authorizes writing tests.
+Test value follows the Tests rule in `AGENTS.md`: add a test only for a named, plausible defect nothing else already catches, written first when the test path is cheap. A test asserts what users observe, as pstack's `principle-test-behavior-not-implementation` says, so it fails when that behavior breaks and still passes after a refactor of the internals. This reference owns test shape, owners and runners. `testing audit [scope]` runs `test-audit`'s full mode, which judges existing tests, lists uncovered contracts and never writes a test.
 
 ## Test mechanics
 
@@ -93,7 +93,6 @@ Hard constraints:
 - A spec that spies on a global, a prototype or a shared module export restores it in the same file (`mock.restore()` in `afterEach`, or the spy's `mockRestore()`); a spec that passes alone and fails in the full suite points at leaked spy or module-mock state before product code. A `mock.module` replacement of a `platejs` or `@platejs/*` module spreads the real module into the mock, which `plate/mock-spreads-module` enforces, so the spec keeps linking when the code under test imports a new export. A Bun process keeps every module mock until it exits, and a later mock of a module cannot add exports. So `pnpm test`, `pnpm test:slow`, the `test:partition:*` scripts and the `test` scripts of `platejs`, `plitejs` and `@platejs/test` run each file that calls `mock.module` in its own process, and the shared preload `tooling/config/bunTestSetup.ts` fails a run whose later mock adds an export that the module's exports in that process lack. A raw `bun test <directory>`, or a package `test` script given paths, runs those files in one process, so a lane-wide claim uses one of those scripts without paths, such as `pnpm --filter platejs test:partition:excalidraw`.
 - Put compile-only type contracts in `type-tests/`, not mixed into runtime specs.
 - Titles should describe behavior semantically, not echo raw option names.
-- Prefer explicit assertions over snapshots by default.
 - Delete obsolete placeholders and commented-out dead tests. Preserve explicit
   capability skips and their missing prerequisites; never turn an unavailable
   browser/device case into a passing no-op or erase its coverage gap.
@@ -198,10 +197,9 @@ imports both sides.
 - In this Bun + Testing Library setup, prefer render-returned queries over `screen`.
 - Focus and blur inside one `act` leave the editor's focus state stale; run them in separate `act` calls.
 - Inside `act`, MutationObserver records reach the callback in a microtask, so `takeRecords()` after `await act` comes back empty. Collect records in the callback.
-- Snapshots are allowed only when serialized text, AST, or similar output is the contract and inline assertions would be worse.
 - Whitespace-sensitive serializer outputs should prefer direct `toBe(...)` string assertions.
 - Avoid `toHaveStyle` here. Use direct style-property assertions instead.
-- After broad title renames on snapshot-backed suites, delete and regenerate the snapshot file. `bun test -u` updates and adds keys, but does not reliably prune dead ones.
+- The Tests rule bans snapshots in new tests. In an existing snapshot-backed suite, delete and regenerate the snapshot file after broad title renames. `bun test -u` updates and adds keys, but does not reliably prune dead ones.
 
 ## Package-specific contracts
 
@@ -219,7 +217,9 @@ both test lanes as gate steps, and `pnpm check` is the full CI gate when the
 claim needs it. Never infer coverage from
 an aggregate command without checking its discovered files.
 
-For coverage or cleanup waves, the full [suite audit](./testing-audit.md)
-owns scoring, phases, `lcov`, timing checks and stopping. Ordinary test repair
-does not start that program. Keep negative type proofs and explicit capability
+For coverage or cleanup waves, `test-audit`'s full mode owns the inventory,
+scoring and stopping. It reads coverage from
+`bun test --coverage --coverage-reporter=lcov --coverage-dir=<run directory>/coverage`
+and fast-lane timing from `pnpm test:profile` and `pnpm test:slowest`.
+Ordinary test repair does not start that program. Keep negative type proofs and explicit capability
 skips with their missing prerequisites visible.
