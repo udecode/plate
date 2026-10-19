@@ -1,6 +1,6 @@
 # Build the beta website in GitHub Actions
 
-Status: building: fixing preview upload and measuring GitHub deployment
+Status: building: archiving the prebuilt upload after a successful GitHub build
 Playbook: build
 
 ## Brief
@@ -25,6 +25,7 @@ GitHub Actions will build the same website and upload the finished output to Ver
 - Let Vercel build install the workspace once with a frozen lockfile and run the existing monorepo build command. GitHub prepares Node, pnpm, Bun and the dependency cache first.
 - Restore dependency and compilation caches without persisting pulled environment files.
 - Keep the existing ignore script and translate its reversed exit statuses into a workflow output. Compare with the last successful run, including successful skips, to retain changes from failed or cancelled deployments.
+- Archive the prebuilt output with `--archive=tgz`, because the observed 25519 upload files exceed Vercel's 15000-file limit. Archiving sacrifices individual-file upload reuse.
 - Upload a detached preview without the production-only `--skip-domain` option or a `next` Git branch association. Keep the source SHA and a descriptive branch label in metadata. Verify homepage, documentation, search and registry routes, then assign only `beta.platejs.org` if the commit is still current.
 - Rename the single build flag to `PLATE_BUILD_BASIC`. Default and `1` retain the passing Basic configuration. GitHub explicitly sets `0`, using the 8192 MiB heap and normal webpack caching and parallelism. Turbo preserves the flag.
 - Compare observed setup, build, upload and complete deployment durations with the verified Vercel Basic run. This is an initial single-run comparison, not a controlled speedup claim.
@@ -93,6 +94,9 @@ The owner explicitly waived the local aggregate gate for this deployment change:
 - The build contract is `pnpm -w build:www:ci`, with package build concurrency limited to two. Commit `40010f7279` restored the passing Basic mode. This continuation renames its flag and explicitly disables Basic mode on GitHub.
 - Baseline: Vercel Basic deployment `dpl_2n4jVxGHSpjrBvVqKJ9hbvyHnwTx`, commit `40010f7279`, 2 cores and 8 GB, 4096 MiB heap, zero Turbo cache hits, 1448 generated pages. Created-to-ready time is 516541 ms. Source and cache differences will be reported with the GitHub measurement.
 - GitHub run `39245512247` built successfully in 5m34s, then failed at `--skip-domain`. This is reproduction evidence only, not a successful deployment timing.
+- Run `39257786293` was cancelled by the newer push `964da9efab`; it is excluded from deployment timing.
+- Run `39258464222` at `964da9efab` compiled with `PLATE_BUILD_BASIC=0`, 4 CPUs, about 16 GB RAM, Node 22.23.3 and an 8192 MiB Next heap. All 1448 static pages completed. The build step took 425 seconds; Turbo took 6m41.192s, webpack 4.6m and static generation 66s with three workers. Upload then refused 25519 files against the 15000-file limit. This is a successful compilation, not a successful deployment timing.
+- Vercel Basic at `625dd005ce` reached READY in 451112 ms, including 873 ms before build. The matching `964da9efab` preview waited 408832 ms behind a production build before starting. Production was inspected only and left alone.
 - Continued in this chat from the original idle worktree `codex/deploy-www-next`. Four pending original-task files were preserved while fast-forwarding to current `origin/next`. Existing credential approval and fast mode persist. Production and hourly scheduling remain deferred.
 - The first authenticated run reached compilation, then a newer push cancelled it. Its log exposed a second dependency install. The final workflow removes the first install and makes Vercel's existing install command frozen. The replacement also pins current Node 24 action versions to remove the old actions' runtime deprecation warning.
 

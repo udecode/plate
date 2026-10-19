@@ -113,7 +113,7 @@ jobs:
         id: deploy
         run: |
           git checkout --detach "$GITHUB_SHA"
-          url="$(vercel deploy --prebuilt --meta plateCommitRef=next --meta githubCommitSha="$GITHUB_SHA")"
+          url="$(vercel deploy --prebuilt --archive=tgz --meta plateCommitRef=next --meta githubCommitSha="$GITHUB_SHA")"
           DEPLOYMENT_URL="$url" node --input-type=module -e '
             const value = process.env.DEPLOYMENT_URL;
             const url = new URL(value);
