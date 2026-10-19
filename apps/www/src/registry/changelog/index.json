@@ -74,9 +74,10 @@
         "math-static",
         "equation-toolbar-button",
         "insert-toolbar-button",
-        "slash"
+        "slash",
+        "html-export"
       ],
-      "entries": 3,
+      "entries": 4,
       "diagnostics": []
     },
     {

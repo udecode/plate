@@ -20,3 +20,7 @@ diagnostics: []
 <!-- entry: {"id":"2026-10-18-math-static-docx-elements-5d1e8b42","kind":"remove","migrationNotes":["Delete imports of EquationElementDocx and InlineEquationElementDocx; exportDocx draws equations as Word math itself."]} -->
 
 - **`math-static`**: Remove `EquationElementDocx` and `InlineEquationElementDocx`, which `exportDocx` does not use.
+
+<!-- entry: {"id":"2026-10-19-html-export-katex-css-9f2b6d14","kind":"fix","migrationNotes":[]} -->
+
+- **`html-export`**: Load the KaTeX 0.16.22 stylesheet, which matches the equations the copied math components draw.
