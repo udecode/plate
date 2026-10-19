@@ -68,7 +68,7 @@ describe('exportToDocx', () => {
     }
   });
 
-  it('writes footerHtml as the footer, with the page number at the end of its first paragraph', async () => {
+  it('numbers the pages in a footer the section references when pageNumber is set', async () => {
     const exportModule = new URL('./docx-export-plugin.tsx', import.meta.url)
       .pathname;
     const script = `
@@ -76,11 +76,15 @@ describe('exportToDocx', () => {
       import { exportToDocx } from ${JSON.stringify(exportModule)};
 
       const blob = await exportToDocx([{ type: 'p', children: [{ text: 'Body' }] }], {
-        footerHtml: '<p>Page </p>',
         pageNumber: true,
       });
       const zip = await JSZip.loadAsync(await blob.arrayBuffer());
-      console.log(await zip.file('word/footer1.xml')?.async('string') ?? '<ftr/>');
+      const read = (path) => zip.file(path)?.async('string');
+      console.log(JSON.stringify({
+        document: await read('word/document.xml'),
+        footer: await read('word/footer1.xml'),
+        relationships: await read('word/_rels/document.xml.rels'),
+      }));
     `;
     const subprocess = Bun.spawn([process.execPath, '--eval', script], {
       stderr: 'pipe',
@@ -95,20 +99,15 @@ describe('exportToDocx', () => {
     expect(stderr).toBe('');
     expect(exitCode).toBe(0);
 
-    // footer1.xml declares WordprocessingML as its default namespace.
-    const ns = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
-    const footer = new DOMParser().parseFromString(stdout, 'application/xml');
-    const paragraphs = Array.from(
-      footer.getElementsByTagNameNS(ns, 'p'),
-      (paragraph) => ({
-        lastChild: paragraph.lastElementChild?.localName,
-        text: Array.from(
-          paragraph.getElementsByTagNameNS(ns, 't'),
-          (text) => text.textContent
-        ).join(''),
-      })
-    );
+    const parts: { document: string; footer?: string; relationships: string } =
+      JSON.parse(stdout);
+    const relationshipId = parts.document.match(
+      /<w:sectPr>[\s\S]*<w:footerReference r:id="(rId\d+)" w:type="default"\/>[\s\S]*<\/w:sectPr>/
+    )?.[1];
 
-    expect(paragraphs).toEqual([{ lastChild: 'fldSimple', text: 'Page ' }]);
+    expect(parts.relationships).toContain(
+      `<Relationship Id="${relationshipId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"`
+    );
+    expect(parts.footer).toContain('instr="PAGE"');
   });
 });
