@@ -31,7 +31,7 @@
     "@platejs/date": "^53.0.0",
     "@platejs/dnd": "^53.3.8",
     "@platejs/docx": "^53.0.0",
-    "@platejs/docx-io": "^53.3.17",
+    "@platejs/docx-io": "^53.4.0",
     "@platejs/emoji": "^53.1.7",
     "@platejs/excalidraw": "^53.0.0",
     "@platejs/floating": "^53.0.0",
@@ -111,7 +111,7 @@
     "eslint": "10.2.1",
     "eslint-plugin-react-hooks": "7.1.1",
     "lefthook": "^2.2.2",
-    "postcss": "^8.5.30",
+    "postcss": "^8.5.31",
     "tailwindcss": "4.3.3",
     "typescript": "6.0.2",
     "ultracite": "7.8.3"

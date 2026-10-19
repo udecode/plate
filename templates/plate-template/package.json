@@ -42,7 +42,7 @@
     "eslint": "10.2.1",
     "eslint-plugin-react-hooks": "7.1.1",
     "lefthook": "^2.2.2",
-    "postcss": "^8.5.30",
+    "postcss": "^8.5.31",
     "tailwindcss": "4.3.3",
     "typescript": "6.0.2",
     "ultracite": "7.8.3"
