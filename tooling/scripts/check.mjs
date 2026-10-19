@@ -66,6 +66,10 @@ export const steps = [
     run: 'node tooling/scripts/review-ledger.mjs check',
   },
   {
+    name: 'removed-api-teaching',
+    run: 'node tooling/scripts/check-removed-api-teaching.mjs',
+  },
+  {
     name: 'knowledge',
     run: 'node tooling/scripts/knowledge/kb.mjs check',
     fix: 'node tooling/scripts/knowledge/kb.mjs check --lower',

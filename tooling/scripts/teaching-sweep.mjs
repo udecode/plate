@@ -6,14 +6,17 @@ import { pathToFileURL } from 'node:url';
 import { stateOf } from '../../.agents/pstack/status.mjs';
 import { planLabels } from './review-ledger.mjs';
 
-const generatedPrefixes = [
+export const generatedPrefixes = [
   '.agents/skills/',
   '.claude/skills/',
   'apps/www/public/r/',
   'apps/www/src/__registry__/',
   'apps/www/src/generated/',
 ];
-const releaseNotePrefixes = ['.changeset/', 'apps/www/src/registry/changelog/'];
+export const releaseNotePrefixes = [
+  '.changeset/',
+  'apps/www/src/registry/changelog/',
+];
 const upToOneWordBetween = '([^a-z0-9]+[a-z0-9]+)?[^a-z0-9]*';
 const wholeRepository = ':/';
 
