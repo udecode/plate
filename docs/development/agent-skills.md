@@ -61,7 +61,7 @@ These are optional shortcuts for a specific job, not a sequence to run.
 
 A planning-only request stops at a reviewable plan. Any other request runs to its close. Agents stop only for a production deploy or release, a push to `main`, a force-push to a shared branch, a message to a customer or anyone outside the team, a comment, label or close on a public issue or PR, and deleting data the run did not create. Two kinds of folder are not data and go without asking. Each session removes its own worktree once its task lands. `/cleanup` deletes the rest, and only what its scan marks safe: idle Next.js caches no server holds, other than each app's own `.next` build, and worktrees an agent made that no running session or process, and no recent session transcript, uses, after it saves their uncommitted changes as a patch. Every other call they make shows under Picked for you with the word that reverses it, and a call with no clear pick takes its most reversible option. Add "stop at plan", "stop at design" or "stop before ship" to a request to stop sooner.
 
-When an agent finds that the accepted design cannot meet a requirement, such as a frozen budget it misses or a cost only a new owner or stored shape removes, it pivots at once. It runs `architect`, writes a plan that adopts the winner and builds it, and holds every step that only finishes the old design. It never parks such a finding in Open work, a deferred benchmark cause or a session card, unless you said to keep it until a date. Session cards hold only side work, or a measurement that does not fit a run's one-hour budget. The agent offers each one as a suggested task, a card in the app whose brief names the files and what done looks like, and you start it when you want. The ledger `docs/plans/suggested-tasks.decisions.tsv` in the main checkout tracks every task, and `/chips` shows the board.
+When an agent finds that the accepted design cannot meet a requirement, such as a frozen budget it misses or a cost only a new owner or stored shape removes, it pivots at once. It runs `architect`, writes a plan that adopts the winner and builds it, and holds every step that only finishes the old design. It never parks such a finding in Open work, a deferred benchmark cause or a session card, unless you said to keep it until a date. Session cards hold only side work, or a measurement that does not fit a run's one-hour budget. The agent records each one as a suggested task in the ledger `docs/plans/suggested-tasks.decisions.tsv` in the main checkout. Cards, whose briefs name the files and what done looks like, appear when you type `/chips`, when a verdict run ends and when every card task you started has landed, and you start each one when you want.
 
 For long unattended work, state a checkable exit condition. pstack's Autonomous
 run keeps going with `/loop` in Claude Code or `/goal` in Codex, and the domain
@@ -69,7 +69,11 @@ plans stay in use. No single command, proof, review seat or wait on the machine
 runs longer than an hour. A measurement that needs longer, such as a soak or a
 multi-round timing protocol, becomes a suggested task that you start when you
 want it, and the run's close never waits on it. A run that drops part of its
-exit condition on its own stays partial and lists what it dropped. After each
+exit condition on its own stays partial and lists what it dropped. In Claude
+Code, when a plan says each of its phases lands as its own commit, each phase
+gets its own session, which lands its phase, starts the next phase's session
+and stops; the last phase's session runs the close. Codex builds every phase
+in one session. After each
 compaction the agent rereads `AGENTS.md`, the models sheet and the plugin pin
 from disk, because the copy the runtime restores can be older, and after you
 correct how it works it runs `/pstack:reflect` before its final reply.
@@ -100,9 +104,10 @@ without asking wherever a pstack step calls for them and for the rows in the
 `architect`), a push that changes a public API or Plite core or deletes
 behavior, and "review PR <number>". For anything else, say "panel", "arena" or
 "full". A change to how agents find, route or finish work gets a smoke of each
-route it changes before it lands. Each round's fixes get `deslop` and
-`no-comments` before the next round, and the comment reviewer only reports;
-the lead applies its edits. How rounds, fixes and reverts work lives in
+route it changes before it lands. Each round's code fixes get `deslop` and
+`no-comments`, and its prose fixes `unslop`, before the next round; the
+comment reviewer only reports, and the lead applies its edits. A change to agent instructions gets one round, and
+its fixes land without another. How rounds, fixes and reverts work lives in
 [the panel rules](../../.agents/pstack/rules/panel.md).
 
 Plate Docs owns public page design, examples, installation, API teaching, MDX
@@ -140,7 +145,7 @@ owns release mode details.
 
 ## Read a page and answer it
 
-Each stop that hands work back replies with a page link. The page opens with a rail of the work's stages, from Plan to Reflect, then the line that says what the work waits on, such as your answer, and two short answers labeled Changes and Risks. How it works follows, at most three short paragraphs that explain the thing the work changes, with a before and after picture when parts move. Demo comes next when there is something to try. Every sentence on the page is plain, like one person talking to another. On the rail, Plan names the playbook the agent picked, such as feature or bug-fix, and the design, review, writing and audit stages that ran name their pstack skills, such as interrogate or deslop. Under them, Needs you lists each decision as a short memo: the question, why it needs you, one or two facts, each option with what happens and what it costs, and the agent's pick with its reason. Each part runs at most 15 words, in plain words with no file paths or commands. A question's number is red when it needs your answer, amber when it is worth a look and green when the pick is safe, and red questions come first. Change a pick and the bar at the bottom gives you a reply to copy. Picked for you lists the calls the agent made for you, one line each with the word that reverses it, grouped as Big calls, Small calls and Details. Under them come the plan's changes: Public API, the review sections and Main changes. Nothing folds, and the plan file under `docs/plans` keeps the proof, steps and history.
+Work that spans sessions, and every verdict, keeps a plan, and each stop that hands it back replies with a page link. Other work keeps its decision log local and replies in chat with what landed, its proof and each call with the word that reverses it. The page opens with a rail of the work's stages, from Plan to Reflect, then the line that says what the work waits on, such as your answer, and two short answers labeled Changes and Risks. How it works follows, at most three short paragraphs that explain the thing the work changes, with a before and after picture when parts move. Demo comes next when there is something to try. Every sentence on the page is plain, like one person talking to another. On the rail, Plan names the playbook the agent picked, such as feature or bug-fix, and the design, review, writing and audit stages that ran name their pstack skills, such as interrogate or deslop. Under them, Needs you lists each decision as a short memo: the question, why it needs you, one or two facts, each option with what happens and what it costs, and the agent's pick with its reason. Each part runs at most 15 words, in plain words with no file paths or commands. A question's number is red when it needs your answer, amber when it is worth a look and green when the pick is safe, and red questions come first. Change a pick and the bar at the bottom gives you a reply to copy. Picked for you lists the calls the agent made for you, one line each with the word that reverses it, grouped as Big calls, Small calls and Details. Under them come the plan's changes: Public API, the review sections and Main changes. Nothing folds, and the plan file under `docs/plans` keeps the proof, steps and history.
 
 Answer in your own words in the chat. "go" takes the pick on every decision that has one and authorizes nothing else.
 
