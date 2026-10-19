@@ -2,6 +2,7 @@
 review_scopes: [math]
 verdict: pursue
 review_basis: [2026-10-18-math-review]
+work_kind: implementation
 review_commit: 3b7a3692482f8a7972dad2e7847ec6e7dce6b96d
 review_inputs: [apps/www/src/registry/components/editor/math.tsx, apps/www/src/registry/components/editor/math-static.tsx, apps/www/src/registry/components/editor/math.spec.tsx, packages/platejs/src/docx/export/lib/docxStaticComponents.tsx, packages/platejs/src/math/lib/BaseEquationPlugin.ts, apps/www/src/registry/examples/values/equation-value.tsx, apps/www/src/registry/blocks/html-export/page.tsx, apps/www/src/registry/components/editor/plugins-static.ts, apps/www/src/registry/components/editor/fixed-toolbar.tsx, apps/www/src/registry/components/editor/floating-toolbar.tsx, docs/vision/plate.md]
 review_upstreams: ['../tiptap@91c51be53c4655ef07e29ec489471524debfa0ca', '../BlockNote@1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163', '../milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2', '../lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988']
@@ -9,7 +10,7 @@ review_upstreams: ['../tiptap@91c51be53c4655ef07e29ec489471524debfa0ca', '../Blo
 
 # Math: draw inline equations as inline math
 
-Status: executed: inline equations draw in KaTeX inline mode, landing from the worktree
+Status: executed: inline equations draw in KaTeX inline mode, landed on next in b7d41adf59
 Topic: math
 Playbook: verdict
 
@@ -190,3 +191,5 @@ The proof used one browser, the desktop app's built-in Chromium, at one width. T
 The land, its `landed` ledger row, the session title, stopping the server, the cleanup scan and the report follow this close. Every other ask in the brief is done.
 
 This plan leaves no open work. While it landed, 8c226bbbdb on `next` fixed the equation pages' other errors and gave the Chinese page its Rendering table, so the subject drops both of those Open work items, and the Chinese table's inline and static rows get the same inline-mode note.
+
+Review inputs. The build changed `apps/www/src/registry/components/editor/math.tsx`, `apps/www/src/registry/components/editor/math-static.tsx` and `apps/www/src/registry/components/editor/math.spec.tsx`. The verdict read the law in `docs/vision/plate.md`, the stored shape and input rule in `packages/platejs/src/math/lib/BaseEquationPlugin.ts`, and Word export's inline mode in `packages/platejs/src/docx/export/lib/docxStaticComponents.tsx`. Neither package file changed. The proof measured on the demo value `apps/www/src/registry/examples/values/equation-value.tsx` and the block `apps/www/src/registry/blocks/html-export/page.tsx`, and neither changed. The dependents `apps/www/src/registry/components/editor/plugins-static.ts`, `apps/www/src/registry/components/editor/fixed-toolbar.tsx` and `apps/www/src/registry/components/editor/floating-toolbar.tsx` install the copied kit or its toolbar buttons and stay unchanged.
