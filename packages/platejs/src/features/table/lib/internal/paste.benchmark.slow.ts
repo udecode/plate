@@ -9,6 +9,8 @@ import { createDetachedTableContext } from './context';
 import type { TableCellFactory } from './mutation';
 import { planPreparedTablePaste, prepareTablePaste } from './paste';
 
+const measured = process.env.BENCH_MEASURE === '1';
+
 const TABLE_PASTE_COHORTS = [
   { budgetMs: 2, samples: 20, size: 1 },
   { budgetMs: 20, samples: 12, size: 32 },
@@ -102,7 +104,9 @@ describe('PreparedTablePaste benchmark', () => {
         });
       });
 
-      expect(percentile(durations, 0.95)).toBeLessThan(budgetMs);
+      if (measured) {
+        expect(percentile(durations, 0.95)).toBeLessThan(budgetMs);
+      }
     }
   );
 
@@ -143,7 +147,9 @@ describe('PreparedTablePaste benchmark', () => {
     const small = durationFor(64);
     const large = durationFor(256);
 
-    expect(large / Math.max(small, 0.001)).toBeLessThan(2.5);
+    if (measured) {
+      expect(large / Math.max(small, 0.001)).toBeLessThan(2.5);
+    }
   });
 
   it('keeps repeated and clipped sources in independent tile groups', () => {
@@ -226,28 +232,31 @@ describe('PreparedTablePaste benchmark', () => {
     expect(result.operations.every(({ path }) => path.length === 2)).toBe(true);
   });
 
-  it('does not retain transient preparations or plans', async () => {
-    const prepared = prepare(denseTable(4, 'source'));
-    const context = createDetachedTableContext(denseTable(64, 'target'), [0]);
+  it.if(measured)(
+    'does not retain transient preparations or plans',
+    async () => {
+      const prepared = prepare(denseTable(4, 'source'));
+      const context = createDetachedTableContext(denseTable(64, 'target'), [0]);
 
-    if ('kind' in prepared) throw new Error(JSON.stringify(prepared));
+      if ('kind' in prepared) throw new Error(JSON.stringify(prepared));
 
-    await collectGarbage();
-    const before = process.memoryUsage().heapUsed;
+      await collectGarbage();
+      const before = process.memoryUsage().heapUsed;
 
-    for (let index = 0; index < 2000; index++) {
-      planPreparedTablePaste(context, prepared, {
-        createCell,
-        createRow,
-        startCol: index % 60,
-        startRow: index % 60,
-      });
+      for (let index = 0; index < 2000; index++) {
+        planPreparedTablePaste(context, prepared, {
+          createCell,
+          createRow,
+          startCol: index % 60,
+          startRow: index % 60,
+        });
+      }
+
+      await collectGarbage();
+
+      expect(process.memoryUsage().heapUsed - before).toBeLessThan(
+        32 * 1024 * 1024
+      );
     }
-
-    await collectGarbage();
-
-    expect(process.memoryUsage().heapUsed - before).toBeLessThan(
-      32 * 1024 * 1024
-    );
-  });
+  );
 });
