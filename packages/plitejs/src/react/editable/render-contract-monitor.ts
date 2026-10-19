@@ -1,11 +1,6 @@
 import { type NodeKey, type Path, PathApi, type Point } from '../..';
 import { reportEditorLifecycleError } from '../../core/lifecycle-error';
-import { findMountedDOMNodeByPath } from '../../dom/plugin/dom-node-path';
-import {
-  EDITOR_TO_KEY_TO_ELEMENT,
-  EDITOR_TO_RUNTIME_ID_TO_KEY,
-  NODE_TO_ELEMENT,
-} from '../../dom/utils/weak-maps';
+import { findDOMPointElementInRoot } from '../../dom/plugin/dom-editor';
 import { getNodeKeyForNode } from '../../utils/node-keys';
 import {
   ELEMENT_TO_RENDER_BIND,
@@ -47,16 +42,9 @@ export const hasProbeDOM = (
 
   if (!root || !nodeKey) return false;
 
-  const inRoot = (element: HTMLElement | null | undefined) =>
-    element?.closest('[data-editor="true"]') === root;
-  const node = editor.read((state) => state.nodes.get(probe.path))?.[0];
-  const domKey = EDITOR_TO_RUNTIME_ID_TO_KEY.get(editor)?.get(nodeKey);
-
   return (
     !!getPliteNodeElementByKey(editor, nodeKey, root) ||
-    inRoot(node && NODE_TO_ELEMENT.get(node)) ||
-    inRoot(domKey && EDITOR_TO_KEY_TO_ELEMENT.get(editor)?.get(domKey)) ||
-    !!findMountedDOMNodeByPath(editor, probe.path, root, { offset: 0 })
+    !!findDOMPointElementInRoot(editor, probe, root)
   );
 };
 

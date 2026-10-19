@@ -1008,14 +1008,40 @@ const resolveDOMNodeKey = (editor: DOMEditor<any>, node: Descendant) => {
   return nodeKey ? getOrCreateDOMNodeKey(editor, nodeKey, node) : null;
 };
 
-/** Resolve native coordinates within an exact mounted DOM root. @internal */
-export const resolveDOMPointInRoot = (
+const findCachedDOMNode = (editor: DOMEditor<any>, node: Descendant) => {
+  const mappedNode = NODE_TO_ELEMENT.get(node);
+
+  if (mappedNode && isMountedEditorDOMNode(editor, mappedNode)) {
+    return mappedNode;
+  }
+
+  const nodeKey = resolveEditorNodeKeyForNode(editor, node);
+  const key = nodeKey
+    ? EDITOR_TO_RUNTIME_ID_TO_KEY.get(editor)?.get(nodeKey)
+    : undefined;
+  const domNode = key ? EDITOR_TO_KEY_TO_ELEMENT.get(editor)?.get(key) : null;
+
+  return domNode && isMountedEditorDOMNode(editor, domNode) ? domNode : null;
+};
+
+const findUncachedDOMNode = (editor: DOMEditor<any>, node: Descendant) => {
+  const domNode = toMountedDOMNodeByPath(editor, node);
+
+  return domNode && isMountedEditorDOMNode(editor, domNode) ? domNode : null;
+};
+
+/**
+ * Find the element rendering `point` within exactly `root`, connected or not,
+ * or the mounted root when `root` is omitted, without writing the node cache.
+ * @internal
+ */
+export const findDOMPointElementInRoot = (
   editor: DOMEditor<any>,
   point: Point,
   root?: HTMLElement | null,
   affinity?: 'backward' | 'forward'
-): DOMPoint | null => {
-  if (root === null || root?.isConnected === false) return null;
+) => {
+  if (root === null) return null;
   const entry = editor.read((state) => state.nodes.get(point.path));
 
   if (!entry || !NodeApi.isDescendant(entry[0])) return null;
@@ -1024,31 +1050,43 @@ export const resolveDOMPointInRoot = (
     ? { path: point.path, offset: 0 }
     : point;
   const [node] = entry;
-  const resolvedElement = DOMEditor.resolveDOMNode(editor, node);
-  const bounds = resolvedElement
-    ? getPliteTextHostBounds(resolvedElement)
-    : null;
+  const nodeElement =
+    DOMEditor.editable(editor)?.isConnected === true
+      ? (findCachedDOMNode(editor, node) ?? findUncachedDOMNode(editor, node))
+      : null;
+  const bounds = nodeElement ? getPliteTextHostBounds(nodeElement) : null;
   const partialText =
     bounds &&
     NodeApi.isText(node) &&
     (bounds.start > 0 || bounds.end < node.text.length);
-  const fallbackElement =
-    resolvedElement &&
+  const element =
+    nodeElement &&
     !partialText &&
-    (!root || resolvedElement.closest('[data-editor="true"]') === root)
-      ? resolvedElement
+    (!root || nodeElement.closest('[data-editor="true"]') === root)
+      ? nodeElement
       : findMountedDOMNodeByPath(editor, resolvedPoint.path, root, {
           offset: resolvedPoint.offset,
           affinity,
         });
-  const el = fallbackElement
-    ? cachePliteDOMNode(editor, node, fallbackElement)
-    : null;
 
-  if (!el) {
+  return element ? { element, node, point: resolvedPoint } : null;
+};
+
+export const resolveDOMPointInRoot = (
+  editor: DOMEditor<any>,
+  point: Point,
+  root?: HTMLElement | null,
+  affinity?: 'backward' | 'forward'
+): DOMPoint | null => {
+  if (root?.isConnected === false) return null;
+  const found = findDOMPointElementInRoot(editor, point, root, affinity);
+
+  if (!found) {
     return null;
   }
 
+  const el = cachePliteDOMNode(editor, found.node, found.element);
+  const resolvedPoint = found.point;
   const textFlowPoint = resolveDOMTextFlowPoint(
     el,
     resolvedPoint.offset,
@@ -1814,27 +1852,12 @@ export const DOMEditor: DOMEditorInterface = {
     }
 
     if (NodeApi.isEditor(node)) return null;
-    const mappedNode = NODE_TO_ELEMENT.get(node);
+    const cachedDOMNode = findCachedDOMNode(editor, node);
 
-    if (mappedNode && isMountedEditorDOMNode(editor, mappedNode)) {
-      return mappedNode;
-    }
-    const key = resolveDOMNodeKey(editor, node);
+    if (cachedDOMNode) return cachedDOMNode;
+    const domNode = findUncachedDOMNode(editor, node);
 
-    if (!key) return null;
-    const domNode = EDITOR_TO_KEY_TO_ELEMENT.get(editor)?.get(key);
-
-    if (domNode && isMountedEditorDOMNode(editor, domNode)) {
-      return domNode;
-    }
-
-    const fallbackDOMNode = toMountedDOMNodeByPath(editor, node);
-
-    if (fallbackDOMNode && isMountedEditorDOMNode(editor, fallbackDOMNode)) {
-      return cachePliteDOMNode(editor, node, fallbackDOMNode);
-    }
-
-    return null;
+    return domNode ? cachePliteDOMNode(editor, node, domNode) : null;
   },
 
   assertDOMNode: (editor, node) => {
