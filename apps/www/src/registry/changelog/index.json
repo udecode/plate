@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-19-math-inline-mode",
+      "href": "/registry/changelog/2026-10-19-math-inline-mode.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Draw inline equations at the size of the text around them",
+      "change": {
+        "type": "source",
+        "date": "2026-10-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["math", "math-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-18-layout-style-values",
       "href": "/registry/changelog/2026-10-18-layout-style-values.json",
       "status": "draft",

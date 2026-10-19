@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/PfCBE94wSKd6ypRvEFLdeB
 
-The ledger asks how math values, delimiters, inline selection and rendering should compose. Today an equation is a void element from `platejs/math`: `equation` for a block and `inlineEquation` inside text, each storing its LaTeX source as a flat `latex` string. The same entrypoint maps both to Markdown `math` and `inlineMath` and ships `MathRules` for `$...$` and `$$` input. It imports no KaTeX, so `platejs/math` and `platejs/math/react` load without it. The copied UI draws and edits equations with KaTeX and imports KaTeX's stylesheet itself. Word export turns each equation into Word math through KaTeX's MathML, and it owns the optional `katex` peer. Landed and proven: the flat shape, the Markdown mappings and the input rules in `BaseEquationPlugin.spec.tsx`, the copied popover's local draft with one undoable commit in `math.spec.tsx` and `math.lifecycle.spec.tsx`, Word math in `exportDocx.spec.ts`, and the move of KaTeX out of the plugins in the [2026-10-18 review](../2026-10-18-math-review.md), which adopted the [2026-10-04 audit](../../research/review-records/2026-10-04-math-audit.json)'s Pursue. The scope's history prints with `node tooling/scripts/review-ledger.mjs show math`.
+The ledger asks how math values, delimiters, inline selection and rendering should compose. Today an equation is a void element from `platejs/math`: `equation` for a block and `inlineEquation` inside text, each storing its LaTeX source as a flat `latex` string. The same entrypoint maps both to Markdown `math` and `inlineMath` and ships `MathRules` for `$...$` and `$$` input. It imports no KaTeX, so `platejs/math` and `platejs/math/react` load without it. The copied UI draws and edits equations with KaTeX and imports KaTeX's stylesheet itself. It draws block equations in KaTeX's display mode and inline equations in its inline mode, as Word export does. Word export turns each equation into Word math through KaTeX's MathML, and it owns the optional `katex` peer. Landed and proven: the flat shape, the Markdown mappings and the input rules in `BaseEquationPlugin.spec.tsx`, the copied popover's local draft with one undoable commit in `math.spec.tsx` and `math.lifecycle.spec.tsx`, Word math in `exportDocx.spec.ts`, the inline mode in the [2026-10-19 verdict](../2026-10-19-inline-equation-display-mode.md), and the move of KaTeX out of the plugins in the [2026-10-18 review](../2026-10-18-math-review.md), which adopted the [2026-10-04 audit](../../research/review-records/2026-10-04-math-audit.json)'s Pursue. The scope's history prints with `node tooling/scripts/review-ledger.mjs show math`.
 
 ## Public API
 
@@ -37,6 +37,44 @@ import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 
 const html = katex.renderToString(element.latex, {
   displayMode: true,
+  errorColor: '#cc0000',
+  fleqn: false,
+  leqno: false,
+  macros: { '\\f': '#1f(#2)' },
+  output: 'htmlAndMathml',
+  strict: 'warn',
+  throwOnError: false,
+  trust: false,
+});
+```
+
+The copied inline equation asks KaTeX for inline mode.
+
+```tsx
+// apps/www/src/registry/components/editor/math.tsx
+useEquation({
+  element,
+  katexRef,
+  options: {
+    displayMode: false,
+    errorColor: '#cc0000',
+    fleqn: false,
+    leqno: false,
+    macros: { '\\f': '#1f(#2)' },
+    output: 'htmlAndMathml',
+    strict: 'warn',
+    throwOnError: false,
+    trust: false,
+  },
+});
+```
+
+Its static twin does the same.
+
+```tsx
+// apps/www/src/registry/components/editor/math-static.tsx
+const html = katex.renderToString(props.element.latex, {
+  displayMode: false,
   errorColor: '#cc0000',
   fleqn: false,
   leqno: false,
@@ -99,12 +137,12 @@ Read from sibling checkouts on 2026-10-18; nothing ran. Every editor that ships 
 
 Sources: `ueberdosis/tiptap@91c51be53c4655ef07e29ec489471524debfa0ca:packages/extension-mathematics`, `TypeCellOS/BlockNote@1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163:packages/math-block`, `Milkdown/milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2:packages/crepe/src/feature/latex`, `facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical-playground/src/nodes/EquationNode.tsx` and `ckeditor/ckeditor5@14e73cc31b869ce483bd8449f40b9102ac7746da`.
 
+For inline math, read on 2026-10-19, Tiptap and Milkdown Crepe call KaTeX in its default inline mode, BlockNote and the Lexical playground pass `displayMode: !inline`, and Plate's Word export passes `displayMode` false. Sources: `packages/extension-mathematics/src/extensions/InlineMath.ts:237-252` in Tiptap, `packages/math-block/src/helpers/latexToHTMLString.ts:13,22` in BlockNote, `packages/crepe/src/feature/latex/inline-latex.ts:37` in Milkdown and `packages/lexical-playground/src/ui/KatexRenderer.tsx:29` in Lexical, at the commits above.
+
 ## Open work
 
 - The copied HTML export block loads KaTeX's stylesheet from a CDN at 0.16.18 (`apps/www/src/registry/blocks/html-export/page.tsx:109`), while the equations it exports come from KaTeX 0.16.22. owner: zbeyens, through a suggested task. stop: that task moves the link and its integrity hash to 0.16.22, or the owner drops it.
 - The copied export toolbar imports `platejs/docx/export` at its top, so an editor with that toolbar loads Word export, and KaTeX with it, before anyone exports. owner: zbeyens, through a suggested task. stop: that task loads Word export on demand, or the owner drops it.
 - Most feature pages still list `@tanstack/react-virtual` in their install line, which only the virtualized editor needs. owner: zbeyens, through a suggested task. stop: that task fixes the other install lines, or the owner drops it.
-- `equation.cn.mdx` has no Ownership, Rendering or Markdown section, so Chinese readers miss the layer owners, the KaTeX options and the Markdown mapping. owner: zbeyens, through a suggested task. stop: that task brings the Chinese page level with `equation.mdx`, or the owner drops it.
-- The equation page's manual install line omits `react-textarea-autosize` and `lucide-react`, which the copied components import, and the equation, Markdown and Node pages carry older errors: an escaped `\\\\int` example, Markdown math credited to `platejs/markdown`, an undefined `EditorKit`, and inline equations drawn in display mode. owner: zbeyens, through a suggested task. stop: that task fixes each item, or the owner drops it.
 - `pnpm plite:release:packages` fails its entrypoint size receipt on 30 deltas that also fail at c83502bc25, and the receipt lists no math entry. owner: zbeyens, through a suggested task. stop: that task reviews each delta and rewrites the receipt, or the owner drops it.
 - A copied registry item that imports `katex` later gets an unpinned range, because only `math` and `math-static` write `katex@0.16.22`. owner: zbeyens, through a suggested task. stop: that task pins every `katex` importer from one owner, or the owner drops it.

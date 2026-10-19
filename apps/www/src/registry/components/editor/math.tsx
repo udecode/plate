@@ -150,7 +150,7 @@ export function InlineEquationElement(
     element,
     katexRef,
     options: {
-      displayMode: true,
+      displayMode: false,
       errorColor: '#cc0000',
       fleqn: false,
       leqno: false,
@@ -165,9 +165,7 @@ export function InlineEquationElement(
   return (
     <EditorElement
       {...props}
-      className={cn(
-        'mx-1 inline-block select-none rounded-sm [&_.katex-display]:my-0!'
-      )}
+      className="mx-1 inline-block rounded-sm select-none"
     >
       <FloatingPopover open={open} onOpenChange={setOpen} modal={false}>
         <FloatingPopoverTrigger>

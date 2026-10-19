@@ -198,12 +198,12 @@ The registry components render KaTeX and keep source editing in a popover.
 | Surface | Behavior |
 |---------|----------|
 | Editable block equation | `math` calls `katex.render` with display-mode options. |
-| Editable inline equation | Opens a popover when the inline void node is selected and the selection is collapsed. |
+| Editable inline equation | `math` calls `katex.render` in inline mode, so the equation draws at the size of the surrounding text. Opens a popover when the inline void node is selected and the selection is collapsed. |
 | Popover input | Keeps a local draft. External equation changes replace that draft. |
 | `Enter` or Done | Commits the draft in one undo batch and closes the input. Composition Enter does not submit. |
 | `Escape` or outside dismissal | Discards the draft without writing to the document. |
 | Inline left/right edge arrows | Commit the draft and move selection out of the inline equation. |
-| Static rendering | `math-static` calls `katex.renderToString`. |
+| Static rendering | `math-static` calls `katex.renderToString` with the same modes as `math`. |
 
 KaTeX is configured with `throwOnError: false`, `strict: 'warn'`, and `trust: false` in the registry UI.
 

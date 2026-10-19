@@ -152,12 +152,12 @@ Registry 组件使用 KaTeX 渲染公式，并在弹出框中编辑源码。
 | 场景 | 行为 |
 |------|------|
 | 可编辑块级公式 | `math` 使用 display mode 选项调用 `katex.render`。 |
-| 可编辑行内公式 | 选中行内 void 节点且选区折叠时打开弹出框。 |
+| 可编辑行内公式 | `math` 以 inline mode 调用 `katex.render`，公式与周围文字同样大小。选中行内 void 节点且选区折叠时打开弹出框。 |
 | 弹出框输入 | 保留本地草稿。外部公式更新会替换该草稿。 |
 | `Enter` 或 Done | 以一个撤销批次提交草稿并关闭输入框。输入法组合中的 Enter 不会提交。 |
 | `Escape` 或在外部关闭 | 丢弃草稿，不写入文档。 |
 | 行内公式左右边缘的方向键 | 提交草稿，并将选区移出行内公式。 |
-| 静态渲染 | `math-static` 调用 `katex.renderToString`。 |
+| 静态渲染 | `math-static` 以与 `math` 相同的模式调用 `katex.renderToString`。 |
 
 Registry UI 中的 KaTeX 配置为 `throwOnError: false`、`strict: 'warn'` 和 `trust: false`。
 

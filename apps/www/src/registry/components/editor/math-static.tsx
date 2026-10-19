@@ -56,7 +56,7 @@ export function InlineEquationElementStatic(
   props: EditorElementProps<typeof BaseInlineEquationPlugin>
 ) {
   const html = katex.renderToString(props.element.latex, {
-    displayMode: true,
+    displayMode: false,
     errorColor: '#cc0000',
     fleqn: false,
     leqno: false,
@@ -68,10 +68,7 @@ export function InlineEquationElementStatic(
   });
 
   return (
-    <EditorElement
-      {...props}
-      className="inline-block rounded-sm select-none [&_.katex-display]:my-0"
-    >
+    <EditorElement {...props} className="inline-block rounded-sm select-none">
       <div
         className={cn(
           'after:-top-0.5 after:-left-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',

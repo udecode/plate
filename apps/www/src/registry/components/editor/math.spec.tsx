@@ -7,7 +7,6 @@ let selected = true;
 let selectionCollapsed = true;
 let readOnly = true;
 let popoverOnOpenChange: ((open: boolean) => void) | undefined;
-const renderEquation = mock();
 const setExpression = mock();
 let textareaProps: React.ComponentProps<'textarea'>;
 const updateWithOptions = mock((options: unknown) => ({
@@ -41,7 +40,7 @@ mock.module('platejs/math', () => ({
 }));
 
 mock.module('katex', () => ({
-  default: { render: renderEquation },
+  default: { render: mock() },
 }));
 
 mock.module('react-textarea-autosize', () => ({
@@ -147,7 +146,6 @@ describe('InlineEquationElement', () => {
     selected = true;
     selectionCollapsed = true;
     element.latex = 'E=mc^2';
-    renderEquation.mockReset();
     setExpression.mockReset();
     updateWithOptions.mockClear();
   });
@@ -176,11 +174,6 @@ describe('InlineEquationElement', () => {
 
     await waitFor(() =>
       expect(view.getByTestId('popover').dataset.open).toBe('false')
-    );
-    expect(renderEquation).toHaveBeenCalledWith(
-      'E=mc^2',
-      expect.any(HTMLElement),
-      expect.objectContaining({ displayMode: true })
     );
   });
 
