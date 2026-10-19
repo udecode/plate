@@ -41,6 +41,8 @@ import {
 } from './input-history';
 import { registerExternalTextHost } from './interaction-owner';
 import {
+  dispatchCommand,
+  editorCommands,
   getEditorRuntimeOwner,
   getSnapshot,
   setEditorFocused,
@@ -1062,9 +1064,9 @@ export class ExternalTextRuntime {
           entry.host.ownerDocument.activeElement
         );
         this.endComposition(entry);
-        this.runtime.editor.update((tx) => {
-          if (direction === 'backward') tx.text.deleteBackward();
-          else tx.text.deleteForward();
+        dispatchCommand(this.runtime.editor, editorCommands.delete, {
+          direction,
+          unit: 'character',
         });
         if (focused) this.focusModelSelection();
         return APPLIED;

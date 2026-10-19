@@ -35,7 +35,6 @@ import {
   contentKindOf,
   holdsContent,
   mixedContentWindow,
-  textPropertiesEqual,
 } from './content-completion';
 import {
   ContentSlice as ContentSliceValue,
@@ -46,6 +45,7 @@ import { profileCoreDuration } from './profiling';
 import type { CompiledSchemaContentProgram } from './schema-compiler';
 import { EditorSchemaValidationError } from './schema-validation';
 import type { RepresentationRepairSink } from './slice-fit/fit-report';
+import { textPropertiesEqual } from './value-codec';
 
 type RepresentationSchema = ReturnType<typeof getEditorSchema>;
 type RepresentationContext = Editor &

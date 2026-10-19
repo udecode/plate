@@ -32,49 +32,34 @@ describe('authored review tree marks', () => {
     );
   });
 
-  it('refuses a document holding an Editing insertion', () => {
-    assert.throws(
-      () =>
-        createEditor({
-          plugins: [createAuthoredPlugin({ authorId: 'alice' })],
-          initialValue: [
-            {
-              type: 'paragraph',
-              children: [
-                {
-                  text: 'typed',
-                  authored: [
-                    { ...mark('insert', 'bob', 1), change: '~edit:bob' },
-                  ],
-                },
-              ],
-            },
-          ],
-        }),
-      /An Editing mark of kind "insert" never stays stored/
-    );
-  });
-
-  it('keeps the claim of an Editing deletion that no pending join holds', () => {
-    const children = [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'gone',
-            authored: [{ ...mark('delete', 'bob', 1), change: '~edit:bob' }],
-          },
-        ],
-      },
-      { type: 'paragraph', children: [{ text: 'next' }] },
-    ];
-    const editor = createEditor({
-      plugins: [createAuthoredPlugin({ authorId: 'alice' })],
-      initialValue: children,
+  for (const [kind, name] of [
+    ['insert', 'insertion'],
+    ['delete', 'deletion'],
+  ] as const) {
+    it(`refuses a document holding an Editing ${name}`, () => {
+      assert.throws(
+        () =>
+          createEditor({
+            plugins: [createAuthoredPlugin({ authorId: 'alice' })],
+            initialValue: [
+              {
+                type: 'paragraph',
+                children: [
+                  {
+                    text: 'typed',
+                    authored: [
+                      { ...mark(kind, 'bob', 1), change: '~edit:bob' },
+                    ],
+                  },
+                ],
+              },
+              { type: 'paragraph', children: [{ text: 'next' }] },
+            ],
+          }),
+        new RegExp(`An Editing mark of kind "${kind}" never stays stored`)
+      );
     });
-
-    assert.deepEqual(editor.read.children(), children);
-  });
+  }
 
   it('keeps an Editing format tag only over other tags, with their links and its landed write', () => {
     const pending = {

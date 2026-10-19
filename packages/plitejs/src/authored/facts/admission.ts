@@ -4,6 +4,8 @@ import {
   getInternalDocumentChangeRanges,
   getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
+  valueRoot,
+  valueRootIndex,
 } from '../../core/change/document-change';
 import {
   type DocumentIndex,
@@ -28,12 +30,17 @@ import type { DocumentAdmission } from '../../core/document-admission';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { EditorMissingReferenceError } from '../../core/missing-reference';
 import { getActiveEditorUpdateTags } from '../../core/public-state';
-import { getValueRecords, recordOpsBetween } from '../../core/record-store';
+import {
+  deriveValue,
+  getValueRecords,
+  recordOpsBetween,
+} from '../../core/record-store';
 import type { EditorDocumentValue } from '../../interfaces/editor';
 import type { Path } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import { getReviewLedger } from '../ledger/ledger';
 import { rootOf } from '../ledger/roots';
+import { relinkCuts } from '../tree/cuts';
 import type { KeyReading } from '../tree/layers';
 import {
   AuthoredMarkError,
@@ -228,6 +235,7 @@ const repairOf = (
   indexOf: (root: string) => DocumentIndex
 ) => {
   const changes = new Map<string, RootChange>();
+  const indexes = new Map<string, DocumentIndex>();
   const settledRoots = contentRootsOf(settled);
 
   for (const [root, nodes] of contentRootsOf(after)) {
@@ -256,12 +264,24 @@ const repairOf = (
       index = step.apply(index);
       composed = composed ? composed.compose(step) : step;
     }
-    if (composed) changes.set(root, composed);
+    if (composed) {
+      changes.set(root, composed);
+      indexes.set(root, index);
+    }
   }
 
-  return createInternalDocumentChange(changes, {
+  const repair = createInternalDocumentChange(changes, {
     records: recordOpsBetween(getValueRecords(after), getValueRecords(settled)),
   });
+  const relink = relinkCuts(
+    repair,
+    after,
+    settled,
+    (root) => indexes.get(root) ?? indexOf(root),
+    indexOf
+  );
+
+  return relink ? repair.compose(relink.change) : repair;
 };
 
 export const createDocumentMarksValidator = () => {
@@ -456,13 +476,30 @@ export const authoredAdmission: DocumentAdmission = {
     const facts = factsOf(compacted);
     const value = settleValue(compacted, facts, 'document').value ?? compacted;
 
-    return value === document
-      ? null
-      : {
-          change: DocumentChange.between(document, value, {
-            isSetValued: isAuthoredSetValued,
-          }),
-          value,
-        };
+    if (value === document) return null;
+
+    const change = DocumentChange.between(document, value, {
+      isSetValued: isAuthoredSetValued,
+    });
+    const relink = relinkCuts(change, document, value, (root) =>
+      valueRootIndex(value, root)
+    );
+
+    if (!relink) return { change, value };
+
+    const relinked = (root: string) =>
+      relink.indexes.get(root)?.value ?? valueRoot(value, root);
+
+    return {
+      change: change.compose(relink.change),
+      value: deriveValue(value, {
+        children: relinked('main'),
+        ...(value.roots && {
+          roots: Object.fromEntries(
+            Object.keys(value.roots).map((root) => [root, relinked(root)])
+          ),
+        }),
+      } as Partial<typeof value>),
+    };
   },
 };

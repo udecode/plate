@@ -471,9 +471,8 @@ export const applyEditableCut = ({
 
         if (shouldRemoveEmptyInline && inlinePath && inlineBeforePoint) {
           editor.update((tx) => {
-            tx.nodes.remove({
-              at: inlinePath,
-              voids: true,
+            tx.command(editorCommands.removeNodes, {
+              options: { at: inlinePath, voids: true },
             });
           });
           applyEditableCommand({

@@ -879,4 +879,79 @@ describe('cuts', () => {
 
     assert.deepEqual(rejectBoth(editing.read.value()), [['ac@u'], ['pz']]);
   });
+
+  const carolAccepted = reviewRecords({
+    verdicts: [
+      {
+        decision: 'd:1',
+        member: { at: 1, change: 'carol:1' },
+        verdict: 'accept',
+      },
+    ],
+  });
+
+  it('settles a suggested removal of the middle piece of a twice-split link to what Editing’s removal leaves, on load and when the verdict arrives', () => {
+    const split = twiceSplit();
+    const carol = editorFor(split, 'carol');
+    const editing = editorFor(split, 'eve', 'edit');
+
+    carol.update((tx) => tx.nodes.remove({ at: [1, 1] }));
+    editing.update((tx) => tx.nodes.remove({ at: [1, 1] }));
+    const suggested = carol.read.value();
+    const peer = editorFor(suggested, 'dan');
+
+    peer.update((tx) =>
+      tx.changes.apply(
+        DocumentChange.between(tx.value(), {
+          ...tx.value(),
+          records: carolAccepted,
+        })
+      )
+    );
+
+    assert.deepEqual(
+      {
+        arrived: peer.read.children(),
+        loaded: editorFor(
+          { ...suggested, records: carolAccepted },
+          'dan'
+        ).read.children(),
+      },
+      { arrived: editing.read.children(), loaded: editing.read.children() }
+    );
+  });
+
+  it('settles away the suggested removal of the last piece of a once-split link while its Enter is pending, and the Enter still decides', () => {
+    const bob = editorFor([linked(link('ab'))], 'bob');
+
+    enter(bob, [0, 1, 0], 1);
+    const carol = editorFor(bob.read.value().children, 'carol');
+
+    carol.update((tx) => tx.nodes.remove({ at: [1, 1] }));
+    const suggested = carol.read.value();
+    const loaded = editorFor(
+      { ...suggested, records: carolAccepted },
+      'dan'
+    ).read.value();
+    const decided = (action: Decision['action']) =>
+      shape(decide(loaded, { action, changes: ['bob:1'] }).value);
+
+    assert.deepEqual(
+      {
+        accepted: decided('accept'),
+        alone: decide(suggested.children, {
+          action: 'accept',
+          changes: ['carol:1'],
+        }).result,
+        loaded: shape(loaded.children as readonly Node[]),
+        rejected: decided('reject'),
+      },
+      {
+        accepted: [['a@u'], []],
+        alone: { ids: ['carol:1'], status: 'blocked', with: ['bob:1'] },
+        loaded: [['a@u'], []],
+        rejected: [['a@u']],
+      }
+    );
+  });
 });

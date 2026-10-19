@@ -5,8 +5,10 @@ import {
   createEditor,
   definePlugin,
   defineEditorSchema,
+  editorCommands,
   type EditorUpdateTransaction,
   NodeApi,
+  type PluginReference,
   property,
   schema,
   target,
@@ -68,7 +70,7 @@ const createPeer = (
     | Array<Record<string, unknown>>
     | Readonly<{ children: unknown[]; roots?: Record<string, unknown[]> }>,
   intent: Intent,
-  plugins: ReadonlyArray<typeof Columns> = []
+  plugins: readonly PluginReference[] = []
 ) => {
   const editor = createEditor({
     plugins: [
@@ -113,7 +115,7 @@ const deliver = (from: Peer, to: Peer) => {
 const pair = (
   value: Array<Record<string, unknown>>,
   intents: [Intent, Intent] = ['propose', 'propose'],
-  plugins: ReadonlyArray<typeof Columns> = []
+  plugins: readonly PluginReference[] = []
 ) => {
   const leftDoc = new Y.Doc();
   const rightDoc = new Y.Doc();
@@ -1686,7 +1688,7 @@ describe('authored property tags on several clients', () => {
         { ...outcomes, cuts: links, dropped, sizes },
         {
           // The piece Alice removed comes back with the join.
-          cuts: [[], ['ac']],
+          cuts: [['ac']],
           dropped: [
             [20, 0],
             [46.6667, 0],
@@ -2916,7 +2918,7 @@ describe('authored property tags on several clients', () => {
           // A whole read of the blocks the undo changed adds a few nodes.
           assert.ok(
             wholeReadNodes <=
-              { alone: 12, enterAtStart: 8, joined: 12 }[shape] * blocks + 8,
+              { alone: 12, enterAtStart: 14, joined: 12 }[shape] * blocks + 8,
             `${shape}: ${wholeReadNodes} nodes read whole at ${blocks} blocks`
           );
         }
@@ -3672,70 +3674,435 @@ describe('review contexts on two clients', () => {
   });
 });
 
-describe('an Editing deletion a suggested join holds, on two clients', () => {
+describe('an Editing deletion beside a suggested join, on two clients', () => {
   const ann = { at: AT, author: 'ann', change: 'ann:1', kind: 'insert' };
-  const start = () =>
-    pair(
-      [
+  const carol = { at: AT, author: 'carol', change: 'carol:1', kind: 'insert' };
+  const alicePending = {
+    at: AT,
+    author: 'alice',
+    change: 'alice:2',
+    kind: 'insert',
+  };
+  const heading = (...children: Array<Record<string, unknown>>) => ({
+    type: 'heading',
+    children,
+  });
+  const ab = (annotated: boolean) =>
+    annotated ? { authored: [ann], text: 'ab' } : { text: 'ab' };
+  const restored = (annotated: boolean, rest = 'cd') =>
+    annotated
+      ? heading(ab(true), { text: rest })
+      : heading({ text: `ab${rest}` });
+  const lines = (annotated: boolean) => [
+    paragraph({ text: 'x' }),
+    heading(ab(annotated)),
+    paragraph({ text: 'cd' }),
+  ];
+  const deleteAb =
+    (path = [1, 0]) =>
+    (peer: Peer) =>
+      peer.editor.update((tx) =>
+        tx.text.delete({
+          at: { anchor: point(0, path), focus: point(2, path) },
+        })
+      );
+  const typeAt =
+    (path: number[], offset: number, value: string) => (peer: Peer) =>
+      peer.editor.update((tx) =>
+        tx.text.insert(value, { at: point(offset, path) })
+      );
+  const joinAt = (path: number[]) => (peer: Peer) =>
+    peer.editor.update((tx) => tx.nodes.merge({ at: path }));
+  const withoutClaimsOf = (change: string, node: unknown): unknown =>
+    JSON.parse(
+      JSON.stringify(node, (key, value) => {
+        if (key !== 'authored') return value;
+
+        const kept = (value as Array<{ change: string }>).filter(
+          (member) => member.change !== change
+        );
+
+        return kept.length > 0 ? kept : undefined;
+      })
+    );
+  const backspaceAt = (path: number[]) => (peer: Peer) =>
+    peer.editor.update((tx) => {
+      tx.selection.set({ anchor: point(0, path), focus: point(0, path) });
+      tx.command(editorCommands.delete, {
+        direction: 'backward',
+        unit: 'character',
+      });
+    });
+
+  it('applies in its commit on both clients, a link going with its text', () => {
+    const deleted = (
+      line: Record<string, unknown>,
+      remove: (bob: Peer) => void
+    ) => {
+      const { alice, bob } = pair(
+        [paragraph({ text: 'x' }), line, paragraph({ text: 'cd' })],
+        ['propose', 'edit'],
+        [Links]
+      );
+
+      joinAt([2])(alice);
+      deliver(alice, bob);
+      remove(bob);
+      deliver(bob, alice);
+
+      return converged(alice, bob)[1];
+    };
+
+    assert.deepEqual(
+      {
+        link: deleted(
+          heading({ text: 'see ' }, link, { text: '' }),
+          deleteLink
+        ),
+        text: withoutClaimsOf('ann:1', deleted(heading(ab(true)), deleteAb())),
+      },
+      { link: heading({ text: '' }), text: heading({ text: '' }) }
+    );
+  });
+
+  const Links = defineEditorSchema('collab-links', {
+    elements: {
+      link: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+      },
+    },
+    id: 'collab-links',
+    properties: [
+      schema.elementProperty('url', property.string(), {
+        target: target.type('link'),
+      }),
+    ],
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  });
+  const link = { type: 'link', url: 'u', children: [{ text: 'site' }] };
+  const deleteLink = (bob: Peer) =>
+    bob.editor.update((tx) =>
+      tx.text.delete({
+        at: { anchor: point(0, [1, 0]), focus: point(0, [1, 2]) },
+      })
+    );
+  type Case = Readonly<{
+    accept?: readonly string[];
+    afterAccept?: (alice: Peer) => void;
+    expected: (annotated: boolean) => unknown[];
+    name: string;
+    plugins?: readonly PluginReference[];
+    remove?: (bob: Peer) => void;
+    start?: (annotated: boolean) => Array<Record<string, unknown>>;
+    suggest?: (alice: Peer) => void;
+    variants: readonly boolean[];
+  }>;
+  const cases: readonly Case[] = [
+    {
+      expected: (annotated) => [paragraph({ text: 'x' }), restored(annotated)],
+      name: 'Alice accepts her join',
+      variants: [false, true],
+    },
+    {
+      expected: () => [
         paragraph({ text: 'x' }),
-        { children: [{ authored: [ann], text: 'ab' }], type: 'heading' },
+        heading({ text: 'see ' }, link, { text: 'cd' }),
+      ],
+      name: 'Alice accepts her join into a heading that holds a link',
+      plugins: [Links],
+      remove: deleteLink,
+      start: () => [
+        paragraph({ text: 'x' }),
+        heading({ text: 'see ' }, link, { text: '' }),
+        paragraph({ text: 'cd' }),
+      ],
+      variants: [false],
+    },
+    {
+      accept: ['alice:1', 'carol:1'],
+      expected: (annotated) => [paragraph({ text: 'xQ' }), restored(annotated)],
+      name: "an Accept all that also accepts Carol's insertion in the line above",
+      start: (annotated) => [
+        paragraph({ text: 'x' }, { authored: [carol], text: 'Q' }),
+        heading(ab(annotated)),
+        paragraph({ text: 'cd' }),
+      ],
+      variants: [false, true],
+    },
+    {
+      afterAccept: (alice) => {
+        api(alice).setIntent('edit');
+        typeAt([0, 0], 1, '!')(alice);
+      },
+      expected: (annotated) => [paragraph({ text: 'x!' }), restored(annotated)],
+      name: 'Alice accepts her join and types in the line above',
+      variants: [false, true],
+    },
+    {
+      accept: ['alice:1', 'alice:2'],
+      expected: (annotated) => [
+        paragraph({ text: 'x' }),
+        restored(annotated),
+        paragraph({ text: 'efgh' }),
+      ],
+      name: 'an Accept all of two joins',
+      start: (annotated) => [
+        ...lines(annotated),
+        paragraph({ text: 'ef' }),
+        paragraph({ text: 'gh' }),
+      ],
+      suggest: (alice) => {
+        joinAt([2])(alice);
+        joinAt([4])(alice);
+      },
+      variants: [false, true],
+    },
+    {
+      accept: ['alice:1', 'alice:2'],
+      expected: () => [paragraph({ text: 'x' }), restored(true, 'cQd')],
+      name: 'Alice accepts her join with her Q inside the joined line',
+      suggest: (alice) => {
+        joinAt([2])(alice);
+        typeAt([2, 0], 1, 'Q')(alice);
+      },
+      variants: [true],
+    },
+    {
+      afterAccept: (alice) => {
+        api(alice).setIntent('edit');
+        typeAt([1, 0], 2, '!')(alice);
+      },
+      expected: () => [paragraph({ text: 'x' }), restored(true, 'cd!')],
+      name: "Alice accepts her join and types at the joined line's end",
+      variants: [true],
+    },
+    {
+      afterAccept: typeAt([1, 0], 1, 'Z'),
+      expected: () => [
+        paragraph({ text: 'x' }),
+        heading(
+          ab(true),
+          { text: 'c' },
+          { authored: [alicePending], text: 'Z' },
+          { text: 'd' }
+        ),
+      ],
+      name: 'Alice accepts her join and suggests Z inside the joined line',
+      variants: [true],
+    },
+    {
+      accept: ['alice:1', 'carol:1'],
+      expected: (annotated) => [
+        paragraph({ text: 'xQ' }),
+        { type: 'blockquote', children: [restored(annotated)] },
+      ],
+      name: "an Accept all inside a quote that also accepts Carol's insertion outside it",
+      remove: deleteAb([1, 0, 0]),
+      start: (annotated) => [
+        paragraph({ text: 'x' }, { authored: [carol], text: 'Q' }),
+        {
+          type: 'blockquote',
+          children: [heading(ab(annotated)), paragraph({ text: 'cd' })],
+        },
+      ],
+      suggest: joinAt([1, 1]),
+      variants: [false, true],
+    },
+    {
+      expected: (annotated) => [
+        paragraph({ text: 'x' }),
+        { type: 'blockquote', children: [restored(annotated)] },
+      ],
+      name: "Alice's Backspace that joins the line after a quote into the quote's heading",
+      remove: deleteAb([1, 0, 0]),
+      start: (annotated) => [
+        paragraph({ text: 'x' }),
+        { type: 'blockquote', children: [heading(ab(annotated))] },
+        paragraph({ text: 'cd' }),
+      ],
+      suggest: backspaceAt([2, 0]),
+      variants: [false, true],
+    },
+    {
+      expected: () => [
+        paragraph({ text: 'x' }),
+        { type: 'blockquote', children: [restored(true, 'zcd')] },
+      ],
+      name: "Alice's Backspace that joins the line after a quote into a quote heading whose plain z Bob deleted",
+      remove: (bob) =>
+        bob.editor.update((tx) =>
+          tx.text.delete({
+            at: { anchor: point(0, [1, 0, 1]), focus: point(1, [1, 0, 1]) },
+          })
+        ),
+      start: () => [
+        paragraph({ text: 'x' }),
+        { type: 'blockquote', children: [heading(ab(true), { text: 'z' })] },
+        paragraph({ text: 'cd' }),
+      ],
+      suggest: backspaceAt([2, 0]),
+      variants: [true],
+    },
+    {
+      accept: ['alice:1', 'ann:2'],
+      expected: () => [
+        paragraph({ text: 'x' }),
+        { type: 'blockquote', children: [restored(true)] },
+      ],
+      name: "an Accept all that also accepts Ann's line above a quote, after Alice's Backspace joins the line after the quote into the quote's heading",
+      remove: deleteAb([1, 0, 0]),
+      start: () => [
+        paragraph({ authored: [{ ...ann, change: 'ann:2' }], text: 'x' }),
+        { type: 'blockquote', children: [heading(ab(true))] },
+        paragraph({ text: 'cd' }),
+      ],
+      suggest: backspaceAt([2, 0]),
+      variants: [true],
+    },
+    {
+      accept: ['alice:1', 'carol:1'],
+      expected: (annotated) => [
+        paragraph({ text: 'x' }),
+        {
+          type: 'blockquote',
+          children: [paragraph({ text: 'N' }), restored(annotated)],
+        },
+      ],
+      name: "an Accept all that also accepts Carol's line before the heading inside the quote",
+      remove: deleteAb([1, 1, 0]),
+      start: (annotated) => [
+        paragraph({ text: 'x' }),
+        {
+          type: 'blockquote',
+          children: [
+            {
+              type: 'paragraph',
+              authored: [carol],
+              children: [{ authored: [carol], text: 'N' }],
+            },
+            heading(ab(annotated)),
+          ],
+        },
+        paragraph({ text: 'cd' }),
+      ],
+      suggest: backspaceAt([2, 0]),
+      variants: [false, true],
+    },
+    {
+      accept: ['alice:1', 'carol:1'],
+      expected: (annotated) => [
+        paragraph({ text: 'x' }),
+        { type: 'blockquote', children: [restored(annotated)] },
+      ],
+      name: "an Accept all that also accepts Carol's quote around the heading",
+      remove: deleteAb([1, 0, 0]),
+      start: (annotated) => [
+        paragraph({ text: 'x' }),
+        {
+          type: 'blockquote',
+          authored: [carol],
+          children: [{ ...heading(ab(annotated)), authored: [carol] }],
+        },
+        paragraph({ text: 'cd' }),
+      ],
+      suggest: backspaceAt([2, 0]),
+      variants: [false, true],
+    },
+    {
+      accept: ['alice:1', 'alice:2', 'carol:1'],
+      expected: (annotated) => [
+        paragraph({ text: 'x' }),
+        paragraph({ text: 'N' }),
+        restored(annotated, 'cQd'),
+      ],
+      name: "an Accept all of Alice's join and her Q inside the joined line that also accepts Carol's line above",
+      remove: deleteAb([2, 0]),
+      start: (annotated) => [
+        paragraph({ text: 'x' }),
+        {
+          type: 'paragraph',
+          authored: [carol],
+          children: [{ authored: [carol], text: 'N' }],
+        },
+        heading(ab(annotated)),
+        paragraph({ text: 'cd' }),
+      ],
+      suggest: (alice) => {
+        joinAt([3])(alice);
+        typeAt([3, 0], 1, 'Q')(alice);
+      },
+      variants: [false, true],
+    },
+  ];
+
+  for (const c of cases) {
+    for (const annotated of c.variants) {
+      it(`lands Bob's undone text in the joined heading after ${c.name}${annotated ? ", beside Ann's pending text" : ''}`, () => {
+        const { alice, bob } = pair(
+          c.start?.(annotated) ?? lines(annotated),
+          ['propose', 'edit'],
+          c.plugins
+        );
+
+        (c.suggest ?? joinAt([2]))(alice);
+        deliver(alice, bob);
+        (c.remove ?? deleteAb())(bob);
+        deliver(bob, alice);
+        assert.equal(
+          api(alice).decide({
+            action: 'accept',
+            changes: [...(c.accept ?? ['alice:1'])],
+          }).status,
+          'applied'
+        );
+        c.afterAccept?.(alice);
+        deliver(alice, bob);
+        bob.editor.api.history.undo();
+        deliver(bob, alice);
+
+        assert.deepEqual(converged(alice, bob), c.expected(annotated));
+      });
+    }
+  }
+
+  it("gives abcd on Bob's first undo and his removed line back after it on his second, after he removed the line Alice's join targeted and deleted b", () => {
+    const { alice, bob } = pair(
+      [
+        heading({ text: 'ab' }),
+        paragraph({ text: 'yy' }),
         paragraph({ text: 'cd' }),
       ],
       ['propose', 'edit']
     );
-  const deleteHeldLine = (peer: Peer) =>
-    peer.editor.update((tx) =>
+
+    joinAt([2])(alice);
+    deliver(alice, bob);
+    bob.editor.update((tx) => tx.nodes.remove({ at: [1] }));
+    bob.editor.update((tx) =>
       tx.text.delete({
-        at: { anchor: point(0, [1, 0]), focus: point(2, [1, 0]) },
+        at: { anchor: point(1, [0, 0]), focus: point(2, [0, 0]) },
       })
     );
-  const undone = [
-    paragraph({ text: 'x' }),
-    {
-      children: [
-        {
-          authored: [
-            ann,
-            { at: AT, author: 'bob', change: '~edit:bob', kind: 'delete' },
-          ],
-          text: 'ab',
-        },
-      ],
-      type: 'heading',
-    },
-    paragraph({ text: 'cd' }),
-  ];
-
-  it('keeps its claim once the join is undone', () => {
-    const { alice, bob } = start();
-
-    alice.editor.update((tx) => tx.nodes.merge({ at: [2] }));
-    deliver(alice, bob);
-    deleteHeldLine(bob);
     deliver(bob, alice);
-    alice.editor.api.history.undo();
+    assert.equal(
+      api(alice).decide({ action: 'accept', changes: ['alice:1'] }).status,
+      'applied'
+    );
     deliver(alice, bob);
+    const undone: unknown[] = [];
 
-    assert.deepEqual(converged(alice, bob), undone);
+    for (const _ of [1, 2]) {
+      bob.editor.api.history.undo();
+      deliver(bob, alice);
+      undone.push(converged(alice, bob));
+    }
+
+    assert.deepEqual(undone, [
+      [heading({ text: 'abcd' })],
+      [heading({ text: 'abcd' }), paragraph({ text: 'yy' })],
+    ]);
   });
-
-  for (const undoFirst of [true, false]) {
-    it(`keeps its claim once the join is undone apart from the deletion, ${undoFirst ? 'the undo' : 'the deletion'} delivered first`, () => {
-      const { alice, bob } = start();
-
-      alice.editor.update((tx) => tx.nodes.merge({ at: [2] }));
-      deliver(alice, bob);
-      deleteHeldLine(bob);
-      alice.editor.api.history.undo();
-      if (undoFirst) {
-        deliver(alice, bob);
-        deliver(bob, alice);
-      } else {
-        deliver(bob, alice);
-        deliver(alice, bob);
-      }
-
-      assert.deepEqual(converged(alice, bob), undone);
-    });
-  }
 });

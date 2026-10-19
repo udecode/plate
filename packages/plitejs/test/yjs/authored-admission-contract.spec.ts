@@ -348,7 +348,7 @@ describe('plitejs/yjs authored admission', () => {
     );
   });
 
-  it('keeps the claim of a remote Editing deletion that no pending join holds', () => {
+  it('refuses a remote Editing deletion, which never stays stored', () => {
     const room = new Y.Doc();
 
     peer(room, createAuthoredPlugin({ authorId: 'ann' }), [
@@ -374,20 +374,14 @@ describe('plitejs/yjs authored admission', () => {
     const { admission, value } = erin.read();
 
     assert.deepEqual(
-      { state: admission.state, value },
       {
-        state: 'ready',
-        value: {
-          children: [
-            paragraph({ text: 'a' }),
-            paragraph({
-              authored: [
-                { at: 1, author: 'bob', change: '~edit:bob', kind: 'delete' },
-              ],
-              text: 'x',
-            }),
-          ],
-        },
+        cause: admission.state === 'error' && String(admission.cause),
+        value,
+      },
+      {
+        cause:
+          'AuthoredMarkError: An Editing mark of kind "delete" never stays stored; only a join, a split, an insertion that follows a join or a format written over other tags does.',
+        value: { children: [paragraph({ text: 'a' })] },
       }
     );
   });

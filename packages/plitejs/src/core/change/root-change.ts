@@ -7,6 +7,7 @@ import {
   decodeNodes,
   DocumentIndex,
 } from './document-index';
+import { rebaseOverJoins } from './join';
 import {
   cloneFrozen,
   cloneJson,
@@ -2050,6 +2051,9 @@ export class RootChange {
     b: RootChange,
     document: DocumentIndex
   ) {
+    const joined = rebaseOverJoins(a, b, document);
+
+    if (joined) return joined;
     // Edits separated by unchanged content commute positionally. The
     // value-based repairs below exist for edits that touch, overlap or relocate
     // each other, and each costs O(document).

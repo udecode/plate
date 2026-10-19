@@ -1,5 +1,4 @@
 import { dispatchCommand } from '../core/command-registry';
-import { textPropertiesEqual } from '../core/content-completion';
 import { landTextWrite } from '../core/content-landing';
 import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
@@ -8,6 +7,7 @@ import {
   getChildList,
   runEditorTransaction,
 } from '../core/public-state';
+import { textPropertiesEqual } from '../core/value-codec';
 import type { EditorStaticApi } from '../interfaces/editor';
 import {
   getSelection as editorGetSelection,

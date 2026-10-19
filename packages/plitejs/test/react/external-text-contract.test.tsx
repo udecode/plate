@@ -4,12 +4,13 @@ import {
   defineEditorSchema,
   definePlugin,
   definePluginSlot,
+  editorCommands,
   property,
   schema,
   setEditorReadOnly,
   TextApi,
 } from 'plitejs';
-import { authored } from 'plitejs/authored';
+import { authored, createAuthoredPlugin } from 'plitejs/authored';
 import { getEditorDOMRoot } from 'plitejs/dom';
 import { History, history } from 'plitejs/history';
 import React from 'react';
@@ -1583,6 +1584,99 @@ describe('external text views', () => {
       );
     }
   );
+
+  const deleteOutFromStart = (view: {
+    actions: ExternalTextActions;
+    host: HTMLElement;
+    state: ExternalTextState<undefined>;
+  }) => {
+    act(() => {
+      view.host.querySelector('textarea')!.focus();
+      view.actions.select({
+        baseVersion: view.state.version,
+        selection: { anchor: 0, focus: 0 },
+      });
+    });
+    act(() => {
+      view.actions.deleteOut({
+        baseVersion: view.state.version,
+        direction: 'backward',
+      });
+    });
+  };
+
+  test('Backspace at the start records the line deletion the editable records into a struck-only line', () => {
+    const carol = {
+      at: 1,
+      author: 'carol',
+      change: 'carol:1',
+      kind: 'delete' as const,
+    };
+    const dan = { ...carol, at: 1000, author: 'dan', change: 'dan:1' };
+    const editor = createEditor({
+      plugins: [
+        textSchema,
+        createAuthoredPlugin({
+          authorId: 'dan',
+          createChangeId: () => 'dan:1',
+          intent: 'propose',
+          now: () => 1000,
+        }),
+      ],
+      initialValue: [
+        { type: 'paragraph', children: [{ authored: [carol], text: 'ab' }] },
+        { type: 'code', children: [{ text: 'cd' }] },
+      ],
+    });
+
+    const { adapter, records } = createAdapter();
+    render(
+      <EditorRoot editor={editor}>
+        <Editable renderElement={externalRenderer(adapter)} />
+      </EditorRoot>
+    );
+    deleteOutFromStart(records[0]);
+
+    expect(editor.read.children()).toEqual([
+      {
+        type: 'paragraph',
+        authored: [dan],
+        children: [{ authored: [carol, dan], text: 'ab' }],
+      },
+      { type: 'code', children: [{ text: 'cd' }] },
+    ]);
+  });
+
+  test("Backspace at the start runs a plain editor's delete command", () => {
+    const seen: string[] = [];
+    const editor = createEditor({
+      plugins: [
+        textSchema,
+        definePlugin('external-delete-command', {
+          commands: ({ handle }) => [
+            handle(editorCommands.delete, ({ input }) => {
+              seen.push(`${input.direction}:${input.unit}`);
+              return false;
+            }),
+          ],
+        }),
+      ],
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'before' }] },
+        { type: 'code', children: [{ text: 'code' }] },
+      ],
+    });
+
+    const { adapter, records } = createAdapter();
+    render(
+      <EditorRoot editor={editor}>
+        <Editable renderElement={externalRenderer(adapter)} />
+      </EditorRoot>
+    );
+    deleteOutFromStart(records[0]);
+
+    expect(seen).toEqual(['backward:character']);
+  });
 
   test('restores serialized canonical history into a fresh external view', () => {
     const source = createFixture('before');

@@ -11,7 +11,7 @@ import { inheritNodeKey } from '../utils/node-keys';
 import type { NodeList } from './change/document-index';
 import type { CompiledSchemaContentProgram } from './schema-compiler';
 import type { RepresentationRepairSink } from './slice-fit/fit-report';
-import { areEditorJsonValuesEqual } from './value-codec';
+import { textPropertiesEqual } from './value-codec';
 
 type Text = Extract<Descendant, { text: string }>;
 type InlineSchema = Readonly<{ isInline: (node: Node) => boolean }>;
@@ -89,16 +89,6 @@ const mergeText = (left: Text, right: Text, editor?: Editor) => {
   inheritNodeKey(merged, left, editor);
 
   return merged;
-};
-
-export const textPropertiesEqual = (left: Text, right: Text) => {
-  const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
-
-  keys.delete('text');
-
-  return [...keys].every((key) =>
-    areEditorJsonValuesEqual(left[key], right[key])
-  );
 };
 
 const runMerger = (

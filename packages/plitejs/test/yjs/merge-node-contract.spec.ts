@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import * as Y from 'yjs';
 
+import { editorCommands } from '../../src/core/editor-commands';
 import type { Descendant } from '../../src/index';
 import { DEFAULT_YJS_ROOT_NAME } from '../../src/yjs/core/keys';
 import {
@@ -18,6 +19,7 @@ import {
   getYjsTrace,
   type Peer,
   paragraph,
+  readPeerChildren,
   redoHistoryPeerAndSync,
   syncConnectedPeers,
   undoHistoryPeerAndSync,
@@ -48,6 +50,25 @@ const createPeers = (
 
 const mergeSecondParagraph = (peer: Peer): void => {
   peer.editor.update.nodes.merge({ at: [1] });
+};
+
+const backspaceAtLineStart = (peer: Peer, line: number): void => {
+  peer.editor.update((tx) => {
+    tx.selection.set({
+      anchor: { path: [line, 0], offset: 0 },
+      focus: { path: [line, 0], offset: 0 },
+    });
+    tx.command(editorCommands.delete, {
+      direction: 'backward',
+      unit: 'character',
+    });
+  });
+};
+
+const deleteSecondLetter = (peer: Peer, path: number[]): void => {
+  peer.editor.update.text.delete({
+    at: { anchor: { path, offset: 1 }, focus: { path, offset: 2 } },
+  });
 };
 
 const mergeRightText = (peer: Peer): void => {
@@ -252,5 +273,430 @@ describe('plitejs/yjs merge_node collaboration contract', () => {
 
     redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!beta']);
+  });
+
+  it('restores an undone deletion in place inside a line a peer merged', () => {
+    const peers = createPeers(['a', 'b'], [paragraph('ab'), paragraph('cd')]);
+    const [a, b] = peers;
+
+    b.editor.update.text.delete({
+      at: {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 2 },
+      },
+    });
+    syncConnectedPeers(peers);
+    mergeSecondParagraph(a);
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['abcd']);
+  });
+
+  it('undoes a line break without merging the line a peer moved under it', () => {
+    const peers = createPeers(['a', 'b'], [paragraph('abcd'), paragraph('ef')]);
+    const [a, b] = peers;
+
+    b.editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 2 },
+      });
+      tx.break.insert();
+    });
+    syncConnectedPeers(peers);
+    a.editor.update.nodes.move({ at: [1], to: [2] });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['abcd', 'ef']);
+  });
+
+  it('undoes a line break without merging the lines a peer swapped', () => {
+    const peers = createPeers(['a', 'b'], [paragraph('abcd'), paragraph('ef')]);
+    const [a, b] = peers;
+
+    b.editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 2 },
+      });
+      tx.break.insert();
+    });
+    syncConnectedPeers(peers);
+    a.editor.update.nodes.move({ at: [1], to: [0] });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['abcd', 'ef']);
+  });
+
+  it('does not glue an undone line onto the line a peer merged into it while empty', () => {
+    const peers = createPeers(['a', 'b'], [paragraph('ab'), paragraph('cd')]);
+    const [a, b] = peers;
+
+    b.editor.update.text.delete({
+      at: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 2 },
+      },
+    });
+    syncConnectedPeers(peers);
+    mergeSecondParagraph(a);
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    const [first, ...rest] = peers.map(getPeerTopLevelTexts);
+
+    assert.notEqual(first?.[0], 'abcd');
+    assert.ok(first?.includes('cd'));
+    for (const texts of rest) assert.deepEqual(texts, first);
+  });
+
+  it('keeps a merged line whole when undoing an older removal beside it', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [paragraph('ab'), paragraph('xx'), paragraph('cd')]
+    );
+    const [a, b] = peers;
+
+    b.editor.update.nodes.remove({ at: [1] });
+    b.editor.update.text.delete({
+      at: {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 2 },
+      },
+    });
+    syncConnectedPeers(peers);
+    mergeSecondParagraph(a);
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['abcd', 'xx']);
+  });
+
+  it('restores an undone deletion in place when a peer merges and edits another line in one update', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [paragraph('ab'), paragraph('cd'), paragraph('ef')]
+    );
+    const [a, b] = peers;
+
+    b.editor.update.text.delete({
+      at: {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 2 },
+      },
+    });
+    syncConnectedPeers(peers);
+    mergeSecondParagraph(a);
+    a.editor.update.text.insert('Z', { at: { path: [1, 0], offset: 2 } });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['abcd', 'efZ']);
+  });
+
+  it('restores an undone deletion in place inside a quote whose lines a peer merged', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [{ type: 'quote', children: [paragraph('ab'), paragraph('cd')] }]
+    );
+    const [a, b] = peers;
+
+    b.editor.update.text.delete({
+      at: {
+        anchor: { path: [0, 0, 0], offset: 1 },
+        focus: { path: [0, 0, 0], offset: 2 },
+      },
+    });
+    syncConnectedPeers(peers);
+    a.editor.update.nodes.merge({ at: [0, 1] });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    for (const peer of peers) {
+      assert.deepEqual(readPeerChildren(peer), [
+        { type: 'quote', children: [paragraph('abcd')] },
+      ]);
+    }
+  });
+
+  it('restores an undone deletion in place inside a quote when a peer merges its lines and types outside it in one update', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [
+        { type: 'quote', children: [paragraph('ab'), paragraph('cd')] },
+        paragraph('zz'),
+      ]
+    );
+    const [a, b] = peers;
+
+    b.editor.update.text.delete({
+      at: {
+        anchor: { path: [0, 0, 0], offset: 1 },
+        focus: { path: [0, 0, 0], offset: 2 },
+      },
+    });
+    syncConnectedPeers(peers);
+    a.editor.update.nodes.merge({ at: [0, 1] });
+    a.editor.update.text.insert('Z', { at: { path: [1, 0], offset: 2 } });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    for (const peer of peers) {
+      assert.deepEqual(readPeerChildren(peer), [
+        { type: 'quote', children: [paragraph('abcd')] },
+        paragraph('zzZ'),
+      ]);
+    }
+  });
+
+  it('undoes typing in the second of two lines a peer merged', () => {
+    const peers = createPeers(['a', 'b'], [paragraph('ab'), paragraph('cd')]);
+    const [a, b] = peers;
+
+    b.editor.update.text.insert('Y', { at: { path: [1, 0], offset: 1 } });
+    syncConnectedPeers(peers);
+    mergeSecondParagraph(a);
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['abcd']);
+  });
+
+  it('does not glue an undone line onto the line above when a peer merged it away while empty', () => {
+    const peers = createPeers(['a', 'b'], [paragraph('ab'), paragraph('cd')]);
+    const [a, b] = peers;
+
+    b.editor.update.text.delete({
+      at: {
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 2 },
+      },
+    });
+    syncConnectedPeers(peers);
+    mergeSecondParagraph(a);
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    const [first, ...rest] = peers.map(getPeerTopLevelTexts);
+
+    assert.notEqual(first?.[0], 'abcd');
+    assert.ok(first?.includes('ab'));
+    for (const texts of rest) assert.deepEqual(texts, first);
+  });
+
+  it('does not glue an undone heading onto the paragraph a peer merged into it while empty', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [{ type: 'heading', children: [{ text: 'ab' }] }, paragraph('cd')]
+    );
+    const [a, b] = peers;
+
+    b.editor.update.text.delete({
+      at: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 2 },
+      },
+    });
+    syncConnectedPeers(peers);
+    mergeSecondParagraph(a);
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    const [first, ...rest] = peers.map(getPeerTopLevelTexts);
+
+    assert.notEqual(first?.[0], 'abcd');
+    assert.ok(first?.includes('cd'));
+    for (const texts of rest) assert.deepEqual(texts, first);
+  });
+
+  it('keeps both merged lines when undoing a Backspace in a blank line between them', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [paragraph('ab'), paragraph(''), paragraph('cd')]
+    );
+    const [a, b] = peers;
+
+    b.editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 0 },
+      });
+      tx.command(editorCommands.delete, {
+        direction: 'backward',
+        unit: 'character',
+      });
+    });
+    syncConnectedPeers(peers);
+    mergeSecondParagraph(a);
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['abcd', '']);
+  });
+
+  it('keeps both merged lines when undoing a Delete at the end of a blank line between them', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [paragraph('ab'), paragraph(''), paragraph('cd')]
+    );
+    const [a, b] = peers;
+
+    b.editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 0 },
+      });
+      tx.command(editorCommands.delete, {
+        direction: 'forward',
+        unit: 'character',
+      });
+    });
+    syncConnectedPeers(peers);
+    mergeSecondParagraph(a);
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['abcd', '']);
+  });
+
+  it("keeps a peer's join of the next line into the joined one when undoing a Backspace", () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [paragraph('a'), paragraph('bc'), paragraph('defg')]
+    );
+    const [a, b] = peers;
+
+    backspaceAtLineStart(b, 1);
+    syncConnectedPeers(peers);
+    backspaceAtLineStart(a, 1);
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['a', 'bcdefg']);
+  });
+
+  it("redoes a line break and keeps a peer's join of the next line into its line", () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [paragraph('abc'), paragraph('defg')]
+    );
+    const [a, b] = peers;
+
+    b.editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      });
+      tx.break.insert();
+    });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+    mergeSecondParagraph(a);
+    syncConnectedPeers(peers);
+    redoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['a', 'bcdefg']);
+  });
+
+  it('restores an undone deletion in place when a peer merges two pairs of lines in one update', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [paragraph('ab'), paragraph('cd'), paragraph('ef'), paragraph('gh')]
+    );
+    const [a, b] = peers;
+
+    deleteSecondLetter(b, [0, 0]);
+    syncConnectedPeers(peers);
+    a.editor.update((tx) => {
+      tx.nodes.merge({ at: [3] });
+      tx.nodes.merge({ at: [1] });
+    });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['abcd', 'efgh']);
+  });
+
+  it('restores an undone deletion in place when a peer merges and removes another line in one update', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [paragraph('ab'), paragraph('cd'), paragraph('ef'), paragraph('gh')]
+    );
+    const [a, b] = peers;
+
+    deleteSecondLetter(b, [0, 0]);
+    syncConnectedPeers(peers);
+    a.editor.update((tx) => {
+      tx.nodes.remove({ at: [3] });
+      tx.nodes.merge({ at: [1] });
+    });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['abcd', 'ef']);
+  });
+
+  it('restores an undone deletion in place when a peer also merges the lines above in one update', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [
+        paragraph('xx'),
+        paragraph('yy'),
+        paragraph('ab'),
+        paragraph('cd'),
+        paragraph('ij'),
+      ]
+    );
+    const [a, b] = peers;
+
+    deleteSecondLetter(b, [2, 0]);
+    syncConnectedPeers(peers);
+    a.editor.update((tx) => {
+      tx.nodes.merge({ at: [3] });
+      tx.nodes.merge({ at: [1] });
+    });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['xxyy', 'abcd', 'ij']);
+  });
+
+  it('restores an undone deletion in place when a peer merges and types in the merged line in one update', () => {
+    const peers = createPeers(['a', 'b'], [paragraph('ab'), paragraph('cd')]);
+    const [a, b] = peers;
+
+    deleteSecondLetter(b, [0, 0]);
+    syncConnectedPeers(peers);
+    a.editor.update((tx) => {
+      tx.text.insert('!', { at: { path: [1, 0], offset: 2 } });
+      tx.nodes.merge({ at: [1] });
+    });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['abcd!']);
+  });
+
+  it('restores an undone deletion in place when a peer merges three lines in one update', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [paragraph('aa'), paragraph('bxb'), paragraph('cc')]
+    );
+    const [a, b] = peers;
+
+    deleteSecondLetter(b, [1, 0]);
+    syncConnectedPeers(peers);
+    a.editor.update((tx) => {
+      tx.nodes.merge({ at: [2] });
+      tx.nodes.merge({ at: [1] });
+    });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['aabxbcc']);
   });
 });

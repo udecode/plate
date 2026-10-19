@@ -10,7 +10,6 @@ import {
   valueAfterLeaving,
 } from '../tree/layers';
 import {
-  type AuthoredMark,
   type AuthoredMember,
   deletionOf,
   heldOf,
@@ -19,7 +18,6 @@ import {
   readMembers,
   withMembers,
 } from '../tree/marks';
-import { heldByJoinsAt, heldByPendingJoins } from '../tree/resolve';
 import { createDependencies, type Dependencies } from './dependencies';
 import { isEditingChange } from './editing';
 import { claimsOf, isAccepted, outcomeOf, type ReviewFacts } from './facts';
@@ -41,13 +39,14 @@ type Value = Readonly<{
   roots?: Readonly<Record<string, readonly unknown[]>>;
 }>;
 
+const isText = (node: Node) => typeof node.text === 'string';
+
 export type SettleScope = 'document' | ReadonlyMap<string, ReadonlySet<number>>;
 
 type Pass = Readonly<{
   /** Writes what a node's insertions rest on once some of them are accepted. */
   dependencies: Dependencies;
   facts: ReviewFacts;
-  heldByJoin: Readonly<{ has: (node: Node) => boolean }>;
   landed: Map<string, LandedRecord>;
   reopenedRejections: Set<string>;
   returnsHeld: boolean;
@@ -113,7 +112,6 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
   if (members.length === 0) return node;
 
   const { facts } = pass;
-  const isText = typeof node.text === 'string';
   const { dropped, props } = settleFormats(
     node,
     readAuthoredMarks(node).filter(
@@ -176,11 +174,7 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
     const outcome = outcomeOf(facts, claim);
 
     if (claim.kind === 'delete') {
-      if (isEditingChange(claim.change) && pass.heldByJoin.has(node)) {
-        kept.push(claim);
-        continue;
-      }
-      if (outcome === 'accept' && isText) return null;
+      if (outcome === 'accept' && isText(node)) return null;
       if (outcome === 'reject') {
         kept.push(member.kind === 'held' ? member : heldOf(claim));
         if (member.kind !== 'held') changed = true;
@@ -206,16 +200,30 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
     : withMembers(next, kept);
 };
 
+/**
+ * As the resolver's survival rule does, an inline element whose own deletion
+ * is accepted goes once none of its settled children is content.
+ */
+const goesWhenSettled = (
+  element: Node,
+  children: readonly Node[],
+  facts: ReviewFacts
+) =>
+  readAuthoredMarks(element).some(
+    (mark) => mark.kind === 'delete' && outcomeOf(facts, mark) === 'accept'
+  ) && children.every((child) => isText(child) && child.text === '');
+
 const settleNodes = <L extends NodeList<Node>>(
   nodes: L,
-  pass: Pass
+  pass: Pass,
+  inline = false
 ): L | Node[] => {
   let changed = false;
   let holdsText = false;
   const next: Node[] = [];
 
   nodes.forEach((node) => {
-    holdsText ||= typeof node.text === 'string';
+    holdsText ||= isText(node);
 
     const settled = settleNode(node, pass);
 
@@ -225,7 +233,16 @@ const settleNodes = <L extends NodeList<Node>>(
       return;
     }
 
-    const children = settled.children && settleNodes(settled.children, pass);
+    const children =
+      settled.children &&
+      settleNodes(settled.children, pass, settled.children.some(isText));
+
+    if (inline && children && goesWhenSettled(settled, children, pass.facts)) {
+      changed = true;
+
+      return;
+    }
+
     const result =
       children && children !== settled.children
         ? { ...settled, children }
@@ -332,47 +349,19 @@ export const settleValue = <V extends Value>(
   const pass: Pass = {
     dependencies: createDependencies(facts),
     facts,
-    heldByJoin: new Set<Node>(),
     landed: new Map(),
     reopenedRejections: new Set(),
     returnsHeld,
-  };
-  const decisionOf = (mark: AuthoredMark) => {
-    const outcome = outcomeOf(facts, mark);
-
-    return outcome === 'pending' ? 'keep' : outcome;
   };
 
   if (!facts.hasVerdicts && !restoreMissingFormats) {
     return { reopenedRejections: pass.reopenedRejections, value: null };
   }
 
-  const settleIn = (root: string, nodes: NodeList<Node>) => {
-    if (scope === 'document') {
-      return settleNodes(nodes, {
-        ...pass,
-        heldByJoin: facts.hasVerdicts
-          ? heldByPendingJoins(nodes, readAuthoredMarks, decisionOf)
-          : new Set<Node>(),
-      });
-    }
-
-    const blocks = scope.get(root);
-    const held = facts.hasVerdicts
-      ? [...(blocks ?? [])].map((index) =>
-          heldByJoinsAt(nodes, index, readAuthoredMarks, decisionOf)
-        )
-      : [];
-
-    return settleBlocks(
-      nodes,
-      {
-        ...pass,
-        heldByJoin: { has: (node) => held.some((set) => set.has(node)) },
-      },
-      blocks
-    );
-  };
+  const settleIn = (root: string, nodes: NodeList<Node>) =>
+    scope === 'document'
+      ? settleNodes(nodes, pass)
+      : settleBlocks(nodes, pass, scope.get(root));
   const main = rootNodesOf(
     value as Readonly<{ children: readonly Node[] }>,
     'children'

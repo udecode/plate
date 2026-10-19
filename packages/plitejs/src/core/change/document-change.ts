@@ -785,6 +785,26 @@ export const filterDocumentChangeRecordSets = (
   );
 
 /** @internal */
+export const withInternalDocumentRootChange = (
+  change: DocumentChange,
+  root: string,
+  rootChange: RootChange
+) =>
+  createInternalDocumentChange(
+    new Map([...getInternalDocumentChangeEntries(change), [root, rootChange]]),
+    {
+      classifications: new Map(
+        [...getInternalDocumentChangeClassificationEntries(change)].filter(
+          ([key]) => key !== root
+        )
+      ),
+      createRoots: change.createRoots,
+      deleteRoots: change.deleteRoots,
+      records: getInternalDocumentChangeRecords(change),
+    }
+  );
+
+/** @internal */
 export const filterDocumentChangeRoots = (
   change: DocumentChange,
   keep: (root: string) => boolean
@@ -844,6 +864,8 @@ export type InternalRootChangeSection = Readonly<{
   after: readonly JsonNode[];
   before: readonly JsonNode[];
   from: number;
+  /** The section's change, when the caller knows more than a diff reads. */
+  local?: RootChange;
 }>;
 
 export type InternalRootNodeChangeSection = Readonly<{
@@ -896,12 +918,16 @@ export const createInternalRootChangeFromSections = (
       throw new Error('Invalid internal root change section offset.');
     }
 
-    const before = DocumentIndex.fromValue(section.before);
-    const after = DocumentIndex.fromValue(section.after);
-    const local = RootChange.between(before, after, {
-      isSetValued,
-      root: root === 'main' ? null : root,
-    });
+    const local =
+      section.local ??
+      RootChange.between(
+        DocumentIndex.fromValue(section.before),
+        DocumentIndex.fromValue(section.after),
+        {
+          isSetValued,
+          root: root === 'main' ? null : root,
+        }
+      );
 
     if (local.empty) return;
 

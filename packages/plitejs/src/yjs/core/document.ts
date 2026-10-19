@@ -1535,62 +1535,98 @@ const readPliteNodeFromYjsWithResolver = (
   return pliteElement as Descendant;
 };
 
-const rawYjsSiblingOf = (node: YjsNode, step: -1 | 1) =>
-  step < 0 ? node.prevSibling : node.nextSibling;
+const rawYjsSiblingOf = (node: YjsNode, step: -1 | 1) => {
+  countCoreWork('yjsChildrenRead', 1);
 
-/**
- * A shown child of the root walks its raw siblings outward, so finding its
- * neighbor does not read every root child.
- */
-const visibleYjsNeighborOf = (
+  return step < 0 ? node.prevSibling : node.nextSibling;
+};
+
+const shownRawYjsSiblingOf = (
   root: Y.XmlElement,
-  parent: Y.XmlElement,
   node: YjsNode,
   step: -1 | 1,
   resolveNodeById: YjsNodeIdResolver
 ): YjsNode | undefined => {
-  if (
-    parent === root &&
-    !isHiddenYjsNode(node) &&
-    typeof root.getAttribute(YJS_VIRTUAL_CHILD_ID_KEY) !== 'string'
+  for (
+    let sibling = rawYjsSiblingOf(node, step);
+    sibling !== null;
+    sibling = rawYjsSiblingOf(sibling, step)
   ) {
-    for (
-      let sibling = rawYjsSiblingOf(node, step);
-      sibling !== null;
-      sibling = rawYjsSiblingOf(sibling, step)
+    if (!isYjsContentNode(sibling) || isHiddenYjsNode(sibling)) continue;
+    if (
+      !(sibling instanceof Y.XmlElement && isVirtualYjsPlaceholder(sibling))
     ) {
-      if (!isYjsContentNode(sibling) || isHiddenYjsNode(sibling)) continue;
-      if (
-        !(sibling instanceof Y.XmlElement && isVirtualYjsPlaceholder(sibling))
-      ) {
-        return sibling;
-      }
-
-      const shown = getVirtualYjsChild(
-        root,
-        sibling,
-        undefined,
-        resolveNodeById
-      );
-
-      if (shown !== null) return shown;
+      return sibling;
     }
 
-    return undefined;
+    const shown = getVirtualYjsChild(root, sibling, undefined, resolveNodeById);
+
+    if (shown !== null) return shown;
   }
 
-  const slots = getYjsVisibleChildSlots(root, parent, resolveNodeById);
-
-  return slots[slots.findIndex((slot) => slot.node === node) + step]?.node;
+  return undefined;
 };
 
 export const removeSupersededVirtualYjsSplitSuffixes = (
   root: Y.XmlElement,
   insertedNodes: ReadonlySet<YjsNode>,
-  truncatedTextNodes: ReadonlySet<Y.XmlText>
+  truncatedTextNodes: ReadonlySet<Y.XmlText>,
+  newlyHidden: ReadonlySet<YjsNode>
 ): ReadonlySet<YjsNode> => {
   const resolveNodeById = createLazyYjsNodeIdResolver(root);
   const changed = new Set<YjsNode>();
+  const shown = new Map<
+    Y.XmlElement,
+    Readonly<{
+      at: ReadonlyMap<YjsNode, number>;
+      raw: YjsNode[];
+      slots: YjsVisibleChildSlot[];
+    }>
+  >();
+  const rights = new Map<Y.XmlElement, YjsNode | undefined>();
+  const placeholderDeleted = () => {
+    shown.clear();
+    rights.clear();
+  };
+  const shownChildren = (element: Y.XmlElement) => {
+    let entry = shown.get(element);
+
+    if (!entry) {
+      const raw = getRawYjsChildren(element);
+      const slots = getYjsVisibleChildSlots(
+        root,
+        element,
+        resolveNodeById,
+        raw
+      );
+
+      entry = {
+        at: new Map(slots.map((slot, index) => [slot.node, index])),
+        raw,
+        slots,
+      };
+      shown.set(element, entry);
+    }
+
+    return entry;
+  };
+  const neighborOf = (
+    parent: Y.XmlElement,
+    node: YjsNode,
+    step: -1 | 1
+  ): YjsNode | undefined => {
+    if (
+      parent === root &&
+      !isHiddenYjsNode(node) &&
+      typeof root.getAttribute(YJS_VIRTUAL_CHILD_ID_KEY) !== 'string'
+    ) {
+      return shownRawYjsSiblingOf(root, node, step, resolveNodeById);
+    }
+
+    const { at, slots } = shownChildren(parent);
+
+    return slots[(at.get(node) ?? -1) + step]?.node;
+  };
   const hasTruncatedTextDescendant = (parent: Y.XmlElement): boolean => {
     for (const text of truncatedTextNodes) {
       let current = text.parent;
@@ -1629,25 +1665,16 @@ export const removeSupersededVirtualYjsSplitSuffixes = (
 
       if (!(parent instanceof Y.XmlElement)) continue;
 
-      right = visibleYjsNeighborOf(
-        root,
-        parent,
-        insertedParent,
-        1,
-        resolveNodeById
-      );
+      if (!rights.has(insertedParent)) {
+        rights.set(insertedParent, neighborOf(parent, insertedParent, 1));
+      }
+      right = rights.get(insertedParent);
     } else {
       const { parent } = inserted;
 
       if (!(parent instanceof Y.XmlElement)) continue;
 
-      previous = visibleYjsNeighborOf(
-        root,
-        parent,
-        inserted,
-        -1,
-        resolveNodeById
-      );
+      previous = neighborOf(parent, inserted, -1);
       right = inserted;
     }
 
@@ -1663,16 +1690,11 @@ export const removeSupersededVirtualYjsSplitSuffixes = (
       continue;
     }
 
-    const rightChildren = getYjsVisibleChildNodes(root, right, resolveNodeById);
-    const previousRawChildren = getRawYjsChildren(previous);
-    const previousSlots = getYjsVisibleChildSlots(
-      root,
-      previous,
-      resolveNodeById,
-      previousRawChildren
-    );
+    const rightChildren = shownChildren(right).slots;
+    const { raw: previousRawChildren, slots: previousSlots } =
+      shownChildren(previous);
     const suffixSlot = previousSlots.at(-1);
-    const rightChild = rightChildren[0];
+    const rightChild = rightChildren[0]?.node;
     const suffixValue =
       suffixSlot === undefined
         ? null
@@ -1715,6 +1737,7 @@ export const removeSupersededVirtualYjsSplitSuffixes = (
       suffixSlot === undefined ||
       !hasRawYjsChildSlot(suffixSlot) ||
       !isHiddenYjsNode(suffixSlot.node) ||
+      newlyHidden.has(suffixSlot.node) ||
       (!exactSuffix && !extendedSuffix)
     ) {
       continue;
@@ -1731,6 +1754,7 @@ export const removeSupersededVirtualYjsSplitSuffixes = (
     }
 
     deleteRawYjsChildren(previous, suffixSlot.rawIndex, 1);
+    placeholderDeleted();
     changed.add(previous);
   }
 

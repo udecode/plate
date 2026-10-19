@@ -7,6 +7,7 @@ import {
   getInternalDocumentChangeRootKeys as getDocumentChangeRootKeys,
   valueRootIndex,
   valueRootNodes,
+  withInternalDocumentRootChange,
 } from '../../core/change/document-change';
 import type { NodeList } from '../../core/change/document-index';
 import {
@@ -79,6 +80,7 @@ import {
   mergeYjsEventBatches,
   YjsEventChangeBridge,
   type YjsEventImportFallback,
+  type YjsJoinRecovery,
 } from './event-change-bridge';
 import { DEFAULT_YJS_ROOT_NAME } from './keys';
 import { isRecord } from './record';
@@ -1229,10 +1231,12 @@ export class YjsController<
     if (!rootChanged && namedRoots.size === 1 && events !== null) {
       this.importYjsEvents(events, remote, [...namedRoots][0]);
     } else if (namedRoots.size > 0) {
-      this.importDocumentFromYjs('remote-reconcile', remote, {
-        main: rootChanged,
-        named: namedRoots,
-      });
+      this.importDocumentFromYjs(
+        'remote-reconcile',
+        remote,
+        { main: rootChanged, named: namedRoots },
+        events
+      );
     } else if (rootChanged) {
       if (events === null) {
         this.importFromYjs(MAIN_ROOT_KEY, 'remote-reconcile', remote);
@@ -1478,6 +1482,7 @@ export class YjsController<
     root: string,
     mode: YjsTraceEntry['mode'],
     remote: YjsRemoteInput,
+    recover: YjsJoinRecovery | null = null,
     trace: {
       fallback?: YjsEventImportFallback;
       importKind?: YjsTraceEntry['importKind'];
@@ -1501,12 +1506,10 @@ export class YjsController<
       root,
       this.readYjsRootValue(binding)
     );
-    const change = createRootDocumentChange(
-      root,
-      before,
-      children,
-      this.isSetValued
-    );
+    const joined = recover?.(before, children) ?? null;
+    const change = joined
+      ? createInternalDocumentChange(new Map([[root, joined]]))
+      : createRootDocumentChange(root, before, children, this.isSetValued);
 
     this.traceEntries.push({
       changedChildren: countChangedTopLevelChildren(before, children),
@@ -1535,7 +1538,8 @@ export class YjsController<
     changed?: Readonly<{
       main: boolean;
       named: ReadonlySet<string>;
-    }>
+    }>,
+    events: CapturedYjsEventBatch | null = null
   ): void {
     const namedRoots =
       changed?.named ??
@@ -1543,6 +1547,18 @@ export class YjsController<
         ...Object.keys(this.editorAdapter.readValue().roots ?? {}),
         ...this.roots.keys(),
       ]);
+    const recoveries = new Map<string, YjsJoinRecovery>();
+
+    if (events) {
+      for (const root of [
+        ...((changed?.main ?? true) ? [MAIN_ROOT_KEY] : []),
+        ...namedRoots,
+      ]) {
+        const recover = this.bindings.get(root)?.bridge.joinRecovery(events);
+
+        if (recover) recoveries.set(root, recover);
+      }
+    }
 
     this.doc.transact(() => {
       if (changed?.main ?? true) {
@@ -1564,7 +1580,30 @@ export class YjsController<
       main: changed?.main ?? true,
       named: namedRoots,
     });
-    const change = DocumentChange.between(before, next);
+    let change = DocumentChange.between(before, next);
+
+    for (const [root, recover] of recoveries) {
+      if (
+        Object.hasOwn(before.roots ?? {}, root) !==
+        Object.hasOwn(next.roots ?? {}, root)
+      ) {
+        continue;
+      }
+
+      const joined = recover(
+        asDescendants(
+          root === MAIN_ROOT_KEY
+            ? before.children
+            : (before.roots?.[root] ?? [])
+        ),
+        asDescendants(
+          root === MAIN_ROOT_KEY ? next.children : (next.roots?.[root] ?? [])
+        )
+      );
+
+      if (joined) change = withInternalDocumentRootChange(change, root, joined);
+    }
+
     const roots = new Set([
       ...((changed?.main ?? true) ? [MAIN_ROOT_KEY] : []),
       ...namedRoots,
@@ -1741,7 +1780,7 @@ export class YjsController<
     );
 
     if (result.kind === 'fallback') {
-      this.importFromYjs(root, 'remote-reconcile', remote, {
+      this.importFromYjs(root, 'remote-reconcile', remote, result.recover, {
         fallback: result.fallback,
         importKind: 'full-diff-fallback',
       });

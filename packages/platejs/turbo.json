@@ -1572,7 +1572,8 @@
       "dependsOn": [
         "typecheck:partition:code-block-codemirror",
         "typecheck:partition:core",
-        "typecheck:partition:react-core"
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-code-block-react"
       ],
       "inputs": [
         "src/code-block/codemirror/**",

@@ -1,3 +1,5 @@
+import type { Point, Value } from 'plitejs';
+import { createAuthoredPlugin } from 'plitejs/authored';
 import { history } from 'plitejs/history';
 import { createEditor, type Editor } from 'plitejs/react';
 import type { CompositionEvent } from 'react';
@@ -2259,5 +2261,126 @@ describe('composition state', () => {
     } finally {
       hasEditableTarget.mockRestore();
     }
+  });
+});
+
+describe('composition over an expanded selection', () => {
+  const suggestingEditor = (initialValue: Value) =>
+    createEditor({
+      plugins: [
+        createAuthoredPlugin({
+          authorId: 'dan',
+          createChangeId: () => 'dan:1',
+          intent: 'propose',
+          now: () => 1000,
+        }),
+      ],
+      initialValue,
+    });
+  const plainEditor = (initialValue: Value) => createEditor({ initialValue });
+  const select = (editor: Editor, anchor: Point, focus: Point) =>
+    editor.update((tx) => {
+      tx.selection.set({ anchor, focus });
+    });
+  const compose = (editor: Editor, text?: string) => {
+    const inputController = createInputController();
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+
+    try {
+      applyEditableCompositionStart({
+        editor,
+        event: createCompositionEvent(),
+        inputController,
+        setComposing: vi.fn(),
+      });
+      if (text === undefined) return;
+      applyModelOwnedBeforeInputMutation({
+        data: text,
+        editor,
+        inputController,
+        inputType: 'insertFromComposition',
+        mergeHistory: shouldMergeEditableCompositionHistory(inputController),
+        native: false,
+        selection: readTextSelection(editor),
+        setComposing: vi.fn(),
+      });
+    } finally {
+      hasSelectableTarget.mockRestore();
+    }
+  };
+  const carolDeletes = (text: string) => ({
+    authored: [
+      { at: 1, author: 'carol', change: 'carol:1', kind: 'delete' as const },
+    ],
+    text,
+  });
+  const danDeletes = {
+    at: 1000,
+    author: 'dan',
+    change: 'dan:1',
+    kind: 'delete' as const,
+  };
+
+  it('records what the delete command records when cancelled over a struck-only heading and the next line', () => {
+    const editor = suggestingEditor([
+      { type: 'heading', children: [carolDeletes('ab')] },
+      { type: 'paragraph', children: [{ text: 'cd' }] },
+    ]);
+
+    select(editor, { path: [0, 0], offset: 2 }, { path: [1, 0], offset: 1 });
+    compose(editor);
+
+    expect(editor.read.children()).toEqual([
+      {
+        type: 'heading',
+        authored: [danDeletes],
+        children: [
+          {
+            authored: [carolDeletes('ab').authored[0], danDeletes],
+            text: 'ab',
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        children: [{ authored: [danDeletes], text: 'c' }, { text: 'd' }],
+      },
+    ]);
+  });
+
+  it.each([
+    ['a whole selected line', { path: [1, 0], offset: 2 }],
+    ['a triple-click selection', { path: [2, 0], offset: 0 }],
+  ])('lands its text in the line over %s, as typing does', (_, focus) => {
+    const editor = plainEditor([
+      { type: 'paragraph', children: [{ text: 'ab' }] },
+      { type: 'paragraph', children: [{ text: 'cd' }] },
+      { type: 'heading', children: [{ text: 'ef' }] },
+    ]);
+
+    select(editor, { path: [1, 0], offset: 0 }, focus);
+    compose(editor, 'X');
+
+    expect(editor.read.children()).toEqual([
+      { type: 'paragraph', children: [{ text: 'ab' }] },
+      { type: 'paragraph', children: [{ text: 'X' }] },
+      { type: 'heading', children: [{ text: 'ef' }] },
+    ]);
+  });
+
+  it('lands its text in one new paragraph over a heading and a paragraph selected whole, as typing does', () => {
+    const editor = plainEditor([
+      { type: 'heading', children: [{ text: 'ab' }] },
+      { type: 'paragraph', children: [{ text: 'cd' }] },
+    ]);
+
+    select(editor, { path: [0, 0], offset: 0 }, { path: [1, 0], offset: 2 });
+    compose(editor, 'に');
+
+    expect(editor.read.children()).toEqual([
+      { type: 'paragraph', children: [{ text: 'に' }] },
+    ]);
   });
 });

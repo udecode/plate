@@ -6,6 +6,7 @@ import { schema, TextApi } from '../../core';
 import { EditorRoot } from '../../react/components/Plate';
 import { EditorContent } from '../../react/components/PlateContent';
 import { createEditor } from '../../react/editor';
+import { CodeBlockPlugin } from '../../react/features/code-block';
 import { definePlugin } from '../../react/plugin';
 import { createCodeMirrorAdapter } from './createCodeMirrorAdapter';
 
@@ -69,6 +70,63 @@ test('keeps a canonical listener mutation ahead of the local prediction', () => 
     rendered.unmount();
   }
 });
+
+test.each([
+  [
+    'leaves a non-empty code block in place',
+    'code',
+    [
+      { type: 'paragraph', children: [{ text: 'above' }] },
+      { type: 'codeBlock', children: [{ text: 'code' }] },
+    ],
+  ],
+  [
+    'turns an empty code block into a paragraph',
+    '',
+    [
+      { type: 'paragraph', children: [{ text: 'above' }] },
+      { type: 'paragraph', children: [{ text: '' }] },
+    ],
+  ],
+])(
+  'Backspace at the start of the code %s, as the code block delete rule does',
+  (_, code, expected) => {
+    const adapter = createCodeMirrorAdapter();
+    const editor = createEditor({
+      plugins: [
+        CodeBlockPlugin.configure({
+          component: ({ attributes, slots }) => (
+            <div {...attributes}>
+              {slots.externalText({ adapter, ariaLabel: 'Code', config: {} })}
+            </div>
+          ),
+        }),
+      ],
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'above' }] },
+        { type: 'codeBlock', children: [{ text: code }] },
+      ],
+    });
+    const { rendered, view } = mountEditor(editor);
+
+    try {
+      act(() => {
+        view.focus();
+        view.dispatch({ selection: { anchor: 0 } });
+        view.contentDOM.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            bubbles: true,
+            cancelable: true,
+            key: 'Backspace',
+          })
+        );
+      });
+      expect(editor.read.children()).toEqual(expected);
+    } finally {
+      rendered.unmount();
+    }
+  }
+);
 
 test('recovers a canonical listener mutation during correction feedback', () => {
   let adapter!: ReturnType<typeof createCodeMirrorAdapter>;

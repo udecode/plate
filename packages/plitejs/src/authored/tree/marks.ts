@@ -97,7 +97,6 @@ const ELEMENT_KINDS: ReadonlySet<AuthoredMarkKind> = new Set([
   'wrap',
 ]);
 const STORED_EDITING_KINDS: ReadonlySet<AuthoredMember['kind']> = new Set([
-  'delete',
   'join',
   'split',
 ]);
@@ -355,7 +354,7 @@ const visitMarks = (
           !stacked
         ) {
           throw new AuthoredMarkError(
-            `An Editing mark of kind "${member.kind}" never stays stored; only a join, a split, a deletion, an insertion that follows a join or a format written over other tags does.`,
+            `An Editing mark of kind "${member.kind}" never stays stored; only a join, a split, an insertion that follows a join or a format written over other tags does.`,
             at
           );
         }

@@ -1,9 +1,11 @@
 import {
+  getInternalDocumentRootChange,
   valueRootIndex,
   mapInternalDocumentChangePosition,
   type DocumentChange,
 } from '../core/change/document-change';
 import { DocumentIndex } from '../core/change/document-index';
+import { joinsOf } from '../core/change/join';
 import { getDocumentChangeRelocations } from '../core/change/mapping';
 import { RootChange } from '../core/change/root-change';
 import {
@@ -13,6 +15,7 @@ import {
   type JsonNode,
   type JsonPoint,
 } from '../core/change/tokens';
+import { countCoreWork } from '../core/work';
 import { getDefined } from '../internal/get-defined';
 
 export type CharacterSpan = Readonly<{
@@ -53,6 +56,7 @@ export const textHostAt = (index: DocumentIndex, path: readonly number[]) => {
   ) {
     leaves.push(parent.children[at]);
   }
+  countCoreWork('walkedSlots', getDefined(path.at(-1)) - from + leaves.length);
   return {
     path: [...path.slice(0, -1), from],
     leaves,
@@ -105,6 +109,67 @@ const actualPath = (
   return result;
 };
 
+type Projection = Readonly<{
+  path: readonly number[];
+  children: readonly JsonNode[];
+  before: DocumentIndex;
+  after: DocumentIndex;
+  change: RootChange;
+}>;
+
+type Fragment = Readonly<{ from: number; to: number; target: CharacterSpan }>;
+
+type Retained = Readonly<{ from: number; to: number; at: number }>;
+
+const retainedSections = (change: RootChange) => {
+  const sections: Retained[] = [];
+  let beforePosition = 0;
+  let afterPosition = 0;
+  countCoreWork('sectionsWalked', change.data.length);
+  change.data.forEach((_, section) => {
+    const length = change.sections[section * 2];
+    const inserted = change.sections[section * 2 + 1];
+    if (inserted < 0 && length > 0) {
+      sections.push({
+        from: beforePosition,
+        to: beforePosition + length,
+        at: afterPosition,
+      });
+    }
+    beforePosition += length;
+    afterPosition += inserted < 0 ? length : inserted;
+  });
+  return sections;
+};
+
+const retainedRanges = (
+  sections: readonly Retained[],
+  from: number,
+  to: number
+) => {
+  let low = 0;
+  let high = sections.length;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if (sections[middle].to <= from) low = middle + 1;
+    else high = middle;
+  }
+  const ranges: Retained[] = [];
+  for (let at = low; at < sections.length && sections[at].from < to; at += 1) {
+    const section = sections[at];
+    const start = Math.max(from, section.from);
+    const end = Math.min(to, section.to);
+    if (start < end) {
+      ranges.push({
+        from: start,
+        to: end,
+        at: section.at + start - section.from,
+      });
+    }
+  }
+  return ranges;
+};
+
 export const createCharacterCorrespondence = (
   before: JsonEditorValue,
   after: JsonEditorValue,
@@ -113,22 +178,37 @@ export const createCharacterCorrespondence = (
 ) => {
   const source = valueRootIndex(before, root);
   const target = valueRootIndex(after, root);
+  let joinedLines: ReadonlySet<number> | undefined;
+  let retained: readonly Retained[] | undefined;
+  const joinedChange = (line: Readonly<{ from: number }>) => {
+    const rootChange = getInternalDocumentRootChange(change, root);
+
+    joinedLines ??= new Set(
+      rootChange
+        ? joinsOf(rootChange, source).flatMap((join) => [
+            join.first.from,
+            join.second.from,
+          ])
+        : []
+    );
+
+    return rootChange && joinedLines.has(line.from) ? rootChange : undefined;
+  };
   const parents = new Map<
     string,
-    Readonly<{
-      path: readonly number[];
-      children: readonly JsonNode[];
-      before: DocumentIndex;
-      after: DocumentIndex;
-      change: RootChange;
-    }> | null
+    Projection | Readonly<{ joined: RootChange }> | null
   >();
   const parentPair = (path: readonly number[]) => {
     const parentPath = path.slice(0, -1);
     const key = parentPath.join('.');
     if (parents.has(key)) return parents.get(key) ?? null;
     const range = source.nodeRange(parentPath);
-    const position = mapInternalDocumentChangePosition(
+    const joined = joinedChange(range);
+    if (joined) {
+      parents.set(key, { joined });
+      return { joined };
+    }
+    const mapped = mapInternalDocumentChangePosition(
       change,
       root,
       range.from,
@@ -136,7 +216,7 @@ export const createCharacterCorrespondence = (
       'after'
     );
     let nextPath =
-      position === null ? undefined : target.nodeStartingAt(position)?.path;
+      mapped === null ? undefined : target.nodeStartingAt(mapped)?.path;
     if (!nextPath) {
       const relocation = getDocumentChangeRelocations(
         change,
@@ -173,10 +253,7 @@ export const createCharacterCorrespondence = (
     parents.set(key, pair);
     return pair;
   };
-  const sourcePosition = (
-    span: CharacterSpan,
-    pair: NonNullable<ReturnType<typeof parentPair>>
-  ) => {
+  const sourcePosition = (span: CharacterSpan, pair: Projection) => {
     const parent = source.node(span.path.slice(0, -1));
     if (isTextNode(parent)) throw new Error('A text host requires an element.');
     return (
@@ -185,10 +262,85 @@ export const createCharacterCorrespondence = (
       ).from + 1
     );
   };
+  const targetHosts = new Map<
+    string,
+    ReadonlyArray<Readonly<{ offset: number; path: number[] }>>
+  >();
+  const targetHostOf = (path: readonly number[]) => {
+    const parentPath = path.slice(0, -1);
+    const key = parentPath.join('.');
+    let hosts = targetHosts.get(key);
+    if (!hosts) {
+      const parent = target.node(parentPath);
+      if (isTextNode(parent)) {
+        throw new Error('A text host requires an element.');
+      }
+      const built: Array<Readonly<{ offset: number; path: number[] }>> = [];
+      let host: number[] | null = null;
+      let offset = 0;
+      countCoreWork('walkedSlots', parent.children.length);
+      parent.children.forEach((child, at) => {
+        if (!isTextNode(child)) {
+          host = null;
+          return;
+        }
+        if (!host) {
+          host = [...parentPath, at];
+          offset = 0;
+        }
+        built[at] = { offset, path: host };
+        offset += child.text?.length ?? 0;
+      });
+      hosts = built;
+      targetHosts.set(key, hosts);
+    }
+    return getDefined(hosts[getDefined(path.at(-1))]);
+  };
+  const joinedFragments = (span: CharacterSpan, joined: RootChange) => {
+    const host = textHostAt(source, span.path);
+    const fragments: Fragment[] = [];
+    retained ??= retainedSections(joined);
+    const sections = retained;
+    let base = 0;
+    host.leaves.forEach((leaf, at) => {
+      const length = leaf.text?.length ?? 0;
+      const path = [
+        ...host.path.slice(0, -1),
+        getDefined(host.path.at(-1)) + at,
+      ];
+      const start = source.positionAt({ path, offset: 0 }) - base;
+      const from = Math.max(span.from, base);
+      const to = Math.min(span.to, base + length);
+      base += length;
+      for (const range of retainedRanges(sections, start + from, start + to)) {
+        let mapped = range.at;
+        const end = range.at + range.to - range.from;
+        while (mapped < end) {
+          const entry = target.textAt(mapped);
+          if (!entry) break;
+          const stop = Math.min(end, entry.contentTo);
+          if (stop <= mapped) break;
+          const { offset, path: next } = targetHostOf(entry.path);
+          fragments.push({
+            from: range.from - start + mapped - range.at,
+            to: range.from - start + stop - range.at,
+            target: {
+              path: next,
+              from: offset + mapped - entry.contentFrom,
+              to: offset + stop - entry.contentFrom,
+            },
+          });
+          mapped = stop;
+        }
+      }
+    });
+    return fragments;
+  };
   return {
     fragments(span: CharacterSpan) {
       const pair = parentPair(span.path);
       if (!pair) return [];
+      if ('joined' in pair) return joinedFragments(span, pair.joined);
       const start = sourcePosition(span, pair);
       if (pair.change.empty) {
         const entry = pair.after.textAt(start);
@@ -209,9 +361,7 @@ export const createCharacterCorrespondence = (
             ]
           : [];
       }
-      const fragments: Array<
-        Readonly<{ from: number; to: number; target: CharacterSpan }>
-      > = [];
+      const fragments: Fragment[] = [];
       let beforePosition = 0;
       let afterPosition = 0;
       pair.change.data.forEach((_, section) => {
@@ -248,7 +398,7 @@ export const createCharacterCorrespondence = (
     },
     point(point: JsonPoint, association: -1 | 1): JsonPoint | null {
       const pair = parentPair(point.path);
-      if (!pair) return null;
+      if (!pair || 'joined' in pair) return null;
       const host = textHostAt(source, point.path);
       let { offset } = point;
       for (

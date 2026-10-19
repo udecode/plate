@@ -49,7 +49,7 @@ import {
   restoreEditableCompositionRuntimeMarks,
   shouldMergeEditableCompositionHistory,
 } from './input-state';
-import type { Editor } from './runtime-editor-api';
+import { type Editor, editorCommands } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { writeRuntimeMarks } from './runtime-mutation-state';
 import { readRuntimeSelectionRange } from './runtime-selection-state';
@@ -1087,7 +1087,9 @@ export const applyEditableCompositionStart = ({
       updateNativeTextInput(
         editor,
         (tx) => {
-          tx.text.delete({ at: selection });
+          // Deletes the selection as typing over it does. deleteFragment would
+          // drop a whole selected line and compose into a neighboring one.
+          tx.command(editorCommands.insertText, { text: '' });
         },
         inputController
           ? getEditableNativeGroupingInput(inputController, true)

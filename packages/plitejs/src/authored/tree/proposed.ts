@@ -4,12 +4,7 @@ import { survivalUnder } from '../../core/survival';
 import { type Path, PathApi } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import { type AuthoredMark, readAuthoredMarks } from './marks';
-import {
-  isTextBlock,
-  joinKeysOf,
-  joinPassage,
-  proposedKeepsContentAtJoin,
-} from './resolve';
+import { isTextBlock, joinKeysOf, joinPassage } from './resolve';
 
 type Node = JsonNode;
 
@@ -30,11 +25,8 @@ export const proposedSurvival = survivalUnder<Node>((node) =>
   hasMark(node, 'delete')
 );
 
-type JoinTarget = { blocks: Node[]; entry: number | null; keeps: boolean };
-
 type ReachableBlock = Readonly<{
   path: Path;
-  target: JoinTarget;
   container?: Readonly<{ node: Node; path: Path }>;
 }>;
 
@@ -80,20 +72,15 @@ const childrenAt = (children: NodeList, path: readonly number[]) =>
  * the host and of each block that folds into it: pending unwraps lift their
  * children, struck nodes with no live content go, and a block with a pending
  * join folds into the text block it reaches, the nearest one before it past
- * blocks written after the join that go with it, or replaces that block when
- * it keeps no content at the join. A pending join on the first surviving text
- * block after the host also drops the text block among these children that it
- * reaches when that block keeps no content at that join, unless a surviving
- * element after the host that does not unwrap encloses the joining block.
- * Reading stops once the first `limit` children are known, that is once no
- * later join can replace one of them.
+ * blocks written after the join that go with it. An accepted join always
+ * keeps that block, as the resolver's `landingOf` decides.
  */
 export const proposedChildren = (
   children: NodeList,
   hostPath: readonly number[],
   limit = Number.POSITIVE_INFINITY
 ): ProposedChild[] => {
-  const { liveContent, survives } = proposedSurvival;
+  const { survives } = proposedSurvival;
   const out: ProposedChild[] = [];
   const reachableBlocks: ReachableBlock[] = [];
   const passage = joinPassage(children, readAuthoredMarks, survives);
@@ -104,28 +91,6 @@ export const proposedChildren = (
     container: Readonly<{ node: Node; path: Path }>,
     before?: Path
   ): ReachableBlock | null => {
-    const targetOf = (node: Node, path: Path): JoinTarget => {
-      const keeps = (node.children ?? []).some(liveContent);
-      const keys = joinKeys(node);
-      let joined = keys.size > 0 ? lastTextBlockIn(container, path) : null;
-
-      while (joined && passage.passesOver(joined.path, keys)) {
-        joined = lastTextBlockIn(container, joined.path);
-      }
-      if (joined && !passage.stopsBefore(joined.path, path)) {
-        const { target } = joined;
-
-        if (target.keeps || proposedKeepsContentAtJoin(target.blocks, node)) {
-          return {
-            blocks: [...target.blocks, node],
-            entry: null,
-            keeps: target.keeps || keeps,
-          };
-        }
-      }
-
-      return { blocks: [node], entry: null, keeps };
-    };
     const search = (node: Node, path: Path): ReachableBlock | null => {
       const level = node.children ?? [];
 
@@ -138,11 +103,7 @@ export const proposedChildren = (
         if (isTextBlock(child)) {
           if (before && !PathApi.isBefore(childPath, before)) continue;
 
-          return {
-            path: childPath,
-            target: targetOf(child, childPath),
-            container,
-          };
+          return { path: childPath, container };
         }
 
         const inner = search(child, childPath);
@@ -155,7 +116,7 @@ export const proposedChildren = (
 
     return search(container.node, container.path);
   };
-  const reachedBy = (keys: ReadonlySet<string>) => {
+  const reaches = (keys: ReadonlySet<string>) => {
     for (let at = reachableBlocks.length - 1; at >= 0; at -= 1) {
       let block: ReachableBlock | null = getDefined(reachableBlocks[at]);
 
@@ -164,43 +125,16 @@ export const proposedChildren = (
           ? lastTextBlockIn(block.container, block.path)
           : null;
       }
-      if (block) return block.target;
+      if (block) return true;
     }
 
-    return null;
-  };
-  // As Editing's merge does, an empty target gives its place to the joining
-  // block, which keeps its own type.
-  const empty = (target: JoinTarget, joining: ProposedChild) => {
-    const { entry } = target;
-
-    for (let at = reachableBlocks.length - 1; at >= 0; at -= 1) {
-      if (getDefined(reachableBlocks[at]).target === target) {
-        reachableBlocks.splice(at, 1);
-      }
-    }
-    if (entry === null) return;
-    out[entry] = joining;
-  };
-  // A later join reaches past a block only when that block goes with a join.
-  const known = () => {
-    if (out.length <= limit) return false;
-    for (let at = reachableBlocks.length - 1; at >= 0; at -= 1) {
-      const { path, target } = getDefined(reachableBlocks[at]);
-
-      if (!target.keeps && target.entry !== null && target.entry < limit) {
-        return false;
-      }
-      if (!passage.goesWithJoin(path)) return true;
-    }
-
-    return true;
+    return false;
   };
   const read = (level: NodeList, base: readonly number[]) => {
     for (let index = 0; index < level.length; index += 1) {
       const child = getDefined(level.at(index));
 
-      if (known()) return;
+      if (out.length >= limit) return;
       if (!survives(child)) continue;
 
       const childPath = [...base, index];
@@ -214,22 +148,10 @@ export const proposedChildren = (
         continue;
       }
 
-      const keeps = (child.children ?? []).some(liveContent);
       const keys = joinKeys(child);
-      const target = keys.size > 0 ? reachedBy(keys) : null;
 
-      if (target) {
-        if (target.keeps || proposedKeepsContentAtJoin(target.blocks, child)) {
-          target.blocks.push(child);
-          target.keeps ||= keeps;
-          reachableBlocks.push({ path: childPath, target });
-          continue;
-        }
-        empty(target, { node: child, path: childPath });
-        reachableBlocks.push({
-          path: childPath,
-          target: { blocks: [child], entry: target.entry, keeps },
-        });
+      if (keys.size > 0 && reaches(keys)) {
+        reachableBlocks.push({ path: childPath });
         continue;
       }
 
@@ -238,10 +160,7 @@ export const proposedChildren = (
       // A join past a container with no text block left reaches the block
       // before it.
       const block = isTextBlock(child)
-        ? {
-            path: childPath,
-            target: { blocks: [child], entry: out.length - 1, keeps },
-          }
+        ? { path: childPath }
         : lastTextBlockIn({ node: child, path: childPath });
 
       if (block) reachableBlocks.push(block);
@@ -281,26 +200,7 @@ export const proposedChildren = (
 
     return null;
   };
-  const dropJoinedBack = () => {
-    if (known()) return;
-
-    const joining = blockAfter(hostPath);
-
-    if (!joining || passage.stopsBefore(hostPath, joining.path)) return;
-
-    const keys = joinKeys(joining.node);
-    const target = keys.size > 0 ? reachedBy(keys) : null;
-
-    if (
-      target &&
-      !target.keeps &&
-      !proposedKeepsContentAtJoin(target.blocks, joining.node)
-    ) {
-      empty(target, joining);
-    }
-  };
-  const readJoinedIntoHost = (host: Node) => {
-    const blocks = [host];
+  const readJoinedIntoHost = () => {
     const reachable = [{ joinedIntoHost: true, path: hostPath }];
 
     for (let next = blockAfter(hostPath); next; next = blockAfter(next.path)) {
@@ -314,9 +214,7 @@ export const proposedChildren = (
         reached?.joinedIntoHost &&
         !passage.stopsBefore(reached.path, next.path)
       ) {
-        if (!proposedKeepsContentAtJoin(blocks, next.node)) return;
         read(next.node.children ?? [], next.path);
-        blocks.push(next.node);
         reachable.push({ joinedIntoHost: true, path: next.path });
         continue;
       }
@@ -331,8 +229,7 @@ export const proposedChildren = (
       : childrenAt(children, hostPath.slice(0, -1)).at(last);
 
   read(childrenAt(children, hostPath), hostPath);
-  dropJoinedBack();
-  if (host && isTextBlock(host)) readJoinedIntoHost(host);
+  if (host && isTextBlock(host)) readJoinedIntoHost();
 
-  return out.slice(0, Math.min(out.length, limit));
+  return out;
 };

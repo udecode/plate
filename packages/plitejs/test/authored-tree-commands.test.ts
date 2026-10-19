@@ -144,6 +144,10 @@ const held = (value: string): Node => ({
   authored: [mark('held')],
   text: value,
 });
+const annStruck = (value: string): Node => ({
+  authored: [{ ...mark('delete'), author: 'ann', change: 'ann:1' }],
+  text: value,
+});
 
 const make = (
   value: Node[] | Readonly<{ children: Node[]; roots: Record<string, Node[]> }>,
@@ -507,6 +511,66 @@ describe('authored review tree commands', () => {
     ],
     run: fragment,
     start: [h('hel'), joined(p('lo world'))],
+  });
+  law({
+    accepted: [h('cd')],
+    at: [
+      [[0, 0], 0],
+      [[0, 0], 2],
+    ],
+    intents: ['edit'],
+    name: 'E1 deleting the whole heading a joined paragraph merges into',
+    plainAt: [
+      [[0, 0], 0],
+      [[0, 0], 2],
+    ],
+    run: fragment,
+    start: [h('ab'), joined(p('cd'))],
+  });
+  law({
+    accepted: [h('cd')],
+    at: [
+      [[0, 1], 0],
+      [[0, 1], 1],
+    ],
+    intents: ['edit'],
+    name: 'E3b deleting the plain rest of a heading whose other text Ann struck before Alice joined into it',
+    plainAt: [
+      [[0, 0], 0],
+      [[0, 0], 1],
+    ],
+    run: fragment,
+    start: [h(annStruck('a'), 'b'), joined(p('cd'), 'alice')],
+  });
+  law({
+    accepted: [h('cd')],
+    at: [
+      [[0, 0], 0],
+      [[0, 0], 1],
+    ],
+    intents: ['edit'],
+    name: 'E3d deleting the plain start of a heading whose rest Ann struck before Alice joined into it',
+    plainAt: [
+      [[0, 0], 0],
+      [[0, 0], 1],
+    ],
+    run: fragment,
+    start: [h('b', annStruck('a')), joined(p('cd'), 'alice')],
+  });
+  law({
+    accepted: [h('ef')],
+    at: [
+      [[0, 0], 0],
+      [[0, 0], 2],
+    ],
+    intents: ['edit'],
+    name: 'E5 deleting the heading two chained joins merge into',
+    plainAt: [
+      [[0, 0], 0],
+      [[0, 0], 2],
+    ],
+    run: fragment,
+    start: [h('ab'), joined(p(''), 'alice'), joined(p('ef'))],
   });
   law({
     accepted: [p('ab'), p('')],

@@ -134,14 +134,24 @@ const decide = (
  * Accepting the changes together, or one at a time in every order where a
  * blocked step decides with what it waits on, gives one document, and unless
  * `editing` is false, that document is the history replayed in Editing.
+ * `initialChanges` are the pending changes `initial` already holds, decided
+ * with the history's.
  */
 const assertOneResult = (
   initial: readonly Node[],
   history: readonly Edit[],
-  { editing = true, withSchema = true } = {}
+  {
+    editing = true,
+    initialChanges = [],
+    withSchema = true,
+  }: Readonly<{
+    editing?: boolean;
+    initialChanges?: readonly string[];
+    withSchema?: boolean;
+  }> = {}
 ) => {
   const recorded = record(initial, history, 'propose', withSchema);
-  const changes = history.map((edit) => edit.change);
+  const changes = [...initialChanges, ...history.map((edit) => edit.change)];
   const together = decide(recorded, changes, withSchema);
   const permutations = (items: readonly string[]): string[][] =>
     items.length <= 1
@@ -314,24 +324,53 @@ describe('authored review tree decisions on recorded structure', () => {
     );
   });
 
+  const strikeH: Edit = {
+    author: 'bob',
+    change: 'bob:1',
+    run: (editor) =>
+      editor.update((tx) =>
+        tx.text.delete({
+          at: {
+            anchor: pointBefore(editor, 'H'),
+            focus: { ...pointBefore(editor, 'H'), offset: 1 },
+          },
+        })
+      ),
+  };
+
+  it('accepts a heading’s deleted text and a raw backward deletion from the next paragraph into that heading', () => {
+    // Replayed in Editing, the raw merge drops the emptied heading and keeps
+    // the paragraph instead, so only the decision orders are compared.
+    const recorded = assertOneResult(
+      [{ type: 'heading', children: [{ text: 'H' }] }, paragraph('x')],
+      [strikeH, { author: 'bob', change: 'bob:2', run: backspaceAt('x') }],
+      { editing: false }
+    );
+
+    assert.deepEqual(decide(recorded, ['bob:1', 'bob:2'], true).value, [
+      { type: 'heading', children: [{ text: 'x' }] },
+    ]);
+  });
+
   it('accepts a heading’s deleted text and a Backspace from the next paragraph to that paragraph alone', () => {
     const recorded = assertOneResult(
       [{ type: 'heading', children: [{ text: 'H' }] }, paragraph('x')],
       [
+        strikeH,
         {
           author: 'bob',
-          change: 'bob:1',
+          change: 'bob:2',
           run: (editor) =>
-            editor.update((tx) =>
-              tx.text.delete({
-                at: {
-                  anchor: pointBefore(editor, 'H'),
-                  focus: { ...pointBefore(editor, 'H'), offset: 1 },
-                },
-              })
-            ),
+            editor.update((tx) => {
+              const caret = pointBefore(editor, 'x');
+
+              tx.selection.set({ anchor: caret, focus: caret });
+              tx.command(editorCommands.delete, {
+                direction: 'backward',
+                unit: 'character',
+              });
+            }),
         },
-        { author: 'bob', change: 'bob:2', run: backspaceAt('x') },
       ]
     );
 
@@ -954,6 +993,104 @@ describe('authored review tree decisions on recorded structure', () => {
         },
       ]
     );
+  });
+});
+
+describe('an accepted join keeps the line it merges into', () => {
+  const heading = (...children: Node[]) => ({ type: 'heading', children });
+  const ann = (kind: string) => ({
+    at: 1,
+    author: 'ann',
+    change: 'ann:1',
+    kind,
+  });
+  const joined = (block: Node) => ({
+    ...block,
+    authored: [{ at: 2, author: 'alice', change: 'alice:1', kind: 'join' }],
+  });
+  const editIn = (
+    value: readonly Node[],
+    intent: 'edit' | 'propose',
+    author: string,
+    run: Edit['run']
+  ) => record(value, [{ author, change: `${author}:1`, run }], intent, true);
+  const deleteIn =
+    (path: number[], from: number, to: number) => (editor: Editor) =>
+      editor.update((tx) =>
+        tx.text.delete({
+          at: { anchor: { offset: from, path }, focus: { offset: to, path } },
+        })
+      );
+
+  it('lands in a heading whose rest one change deletes after an older change struck its start, in every decision order', () => {
+    const recorded = assertOneResult(
+      [
+        heading({ authored: [ann('delete')], text: 'a' }, { text: 'b' }),
+        joined(paragraph('cd')),
+      ],
+      [{ author: 'carol', change: 'carol:1', run: deleteIn([0, 1], 0, 1) }],
+      { editing: false, initialChanges: ['ann:1', 'alice:1'] }
+    );
+
+    assert.deepEqual(
+      decide(recorded, ['ann:1', 'alice:1', 'carol:1'], true).value,
+      [heading({ text: 'cd' })]
+    );
+  });
+
+  it('lands in a heading Editing emptied after a pending fill there is rejected', () => {
+    const deleted = editIn(
+      [
+        paragraph('x'),
+        heading({ authored: [ann('insert')], text: 'ab' }),
+        joined(paragraph('cd')),
+      ],
+      'edit',
+      'bob',
+      deleteIn([1, 0], 0, 2)
+    );
+    const filled = editIn(deleted, 'propose', 'carol', (editor) =>
+      editor.update((tx) =>
+        tx.text.insert('z', { at: { offset: 0, path: [1, 0] } })
+      )
+    );
+    const editor = editorFor(filled, 'dana', 'edit', 'dana:1', true);
+    const review = authoredTestApi(editor);
+
+    assert.equal(
+      review.decide({ action: 'reject', changes: ['carol:1'] }).status,
+      'applied'
+    );
+    assert.equal(
+      review.decide({ action: 'accept', changes: ['alice:1'] }).status,
+      'applied'
+    );
+    assert.deepEqual(editor.read.children(), [
+      paragraph('x'),
+      heading({ text: 'cd' }),
+    ]);
+  });
+
+  it('lands an Editing Backspace into a line of only pending text at once, as that line', () => {
+    const joinedNow = editIn(
+      [heading({ authored: [ann('insert')], text: 'ab' }), paragraph('cd')],
+      'edit',
+      'bob',
+      (editor) =>
+        editor.update((tx) => {
+          const caret = pointBefore(editor, 'c');
+
+          tx.selection.set({ anchor: caret, focus: caret });
+          tx.command(editorCommands.delete, {
+            direction: 'backward',
+            unit: 'character',
+          });
+        })
+    );
+
+    assert.deepEqual(joinedNow, [
+      heading({ authored: [ann('insert')], text: 'ab' }, { text: 'cd' }),
+    ]);
   });
 });
 

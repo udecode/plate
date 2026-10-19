@@ -606,6 +606,17 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   `HistoryApi` export from the root `plitejs` entrypoint, not from
   `plitejs/history`.
 - History stores each batch as the commit's inverse `DocumentChange` with its inverted effects, selections and roots, and replays it inside one history-skipped transaction. It never keeps a mutable operation log as document truth.
+- An undo rebased over a peer's join of two sibling lines lands what it restores or removes where it stood, with its own properties, and keeps the join and the peer's other edits. A join is one section of a change that deletes from one line's text, or from a boundary between its children, through a later sibling line's text or child boundary. It may also delete whole lines between the two, and insert plain text where it starts. The Yjs binding sends a join as a move of the second line's children into the first, and the receiving peer reads that move back as the join. Whole lines the undo restores between the two lines come back after the joined line. Where the two lines' texts meet, texts with equal properties join and two texts that both hold text stay apart. These cases rebase by position:
+  - a join whose own lines move in the same update;
+  - outside Yjs, a change that replaces the two lines whole instead of deleting the boundary between them;
+  - letters that a diff of two documents deletes beside the boundary and types again, which the transform reads as typed, so the other side's typing there can land among them;
+  - a deletion that inserts anything but plain text, or that starts or ends inside an inline element;
+  - a join across a container's edge, such as Backspace at the start of the line after a quote;
+  - a line with no text that a join removes, which counts as that line's removal;
+  - an older entry that edits both a line the rebase moved after the joined line and text outside the moved lines, which drops its edit inside the moved line;
+  - through Yjs, a later commit that removes an inline element from the second line's part of the joined line, when it reaches the peer in one delivery with the join.
+
+  A peer that removes a line and retypes its text after the line above in one commit sends no join, so the undo keeps that peer's typing. The Yjs import diffs a commit that replaces both lines with their joined text by value, and that diff writes a join, so the undo of a letter the commit retyped removes the retyped copy.
 - The primary document root is implicit in public API and docs. Do not expose a
   public `main` root key, config option, or example. Explicit roots are only for
   additional roots.

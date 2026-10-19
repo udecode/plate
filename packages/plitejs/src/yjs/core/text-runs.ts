@@ -2,6 +2,7 @@ import { type Diff, DiffMatchPatch, DiffOp } from 'diff-match-patch-ts';
 import * as Y from 'yjs';
 
 import type { NodeList } from '../../core/change/document-index';
+import { textPropertiesEqual } from '../../core/value-codec';
 import { countCoreWork } from '../../core/work';
 import {
   NodeApi,
@@ -95,6 +96,166 @@ export const segmentPliteChildren = (
     }
   }
   return segments;
+};
+
+const isEmptyTextRun = (segment: PliteSegment) =>
+  segment.kind === 'text' && segment.leaves.every((leaf) => leaf.text === '');
+
+export const alignSegments = (
+  plite: readonly PliteSegment[],
+  yjs: readonly YjsSegment[]
+): Array<YjsSegment | null> | null => {
+  const aligned: Array<YjsSegment | null> = [];
+  let at = 0;
+
+  for (const segment of plite) {
+    if (yjs[at]?.kind === segment.kind) {
+      aligned.push(yjs[at]);
+      at += 1;
+    } else if (isEmptyTextRun(segment)) {
+      aligned.push(null);
+    } else {
+      return null;
+    }
+  }
+
+  return at === yjs.length ? aligned : null;
+};
+
+const textRuns = (nodes: readonly Descendant[]) => {
+  const runs: Text[] = [];
+
+  for (const node of nodes) {
+    if (!NodeApi.isText(node) || node.text === '') continue;
+
+    const last = runs.at(-1);
+
+    if (last && textPropertiesEqual(last, node)) {
+      runs[runs.length - 1] = { ...last, text: last.text + node.text };
+    } else {
+      runs.push(node);
+    }
+  }
+
+  return runs;
+};
+
+const yjsCursor = (
+  children: readonly YjsNode[],
+  skipped: ReadonlySet<number>,
+  start = { at: 0, offset: 0 }
+) => {
+  let { at, offset } = start;
+  const passes = (index: number) => {
+    const node = children[index];
+
+    return (
+      skipped.has(index) || (node instanceof Y.XmlText && node.length === 0)
+    );
+  };
+  const settle = () => {
+    while (at < children.length && passes(at)) at += 1;
+  };
+
+  return {
+    element() {
+      if (offset !== 0) return null;
+      settle();
+      if (!(children[at] instanceof Y.XmlElement)) return null;
+      at += 1;
+
+      return at - 1;
+    },
+    end() {
+      if (offset !== 0) return false;
+      settle();
+
+      return at === children.length;
+    },
+    position: () => ({ at, offset }),
+    text(length: number) {
+      for (let rest = length; rest > 0;) {
+        if (offset === 0) settle();
+
+        const node = children[at];
+
+        if (!(node instanceof Y.XmlText)) return false;
+
+        const taken = Math.min(rest, node.length - offset);
+
+        rest -= taken;
+        offset += taken;
+        if (offset === node.length) {
+          at += 1;
+          offset = 0;
+        }
+      }
+
+      return true;
+    },
+  };
+};
+
+export const elementOnlySpliceEdits = (
+  siblings: readonly Descendant[],
+  splice: Readonly<{
+    after: readonly Descendant[];
+    before: readonly Descendant[];
+    from: number;
+  }>,
+  children: readonly YjsNode[]
+) => {
+  if (
+    !areJsonLikeValuesEqual(textRuns(splice.before), textRuns(splice.after))
+  ) {
+    return null;
+  }
+
+  const read = yjsCursor(children, new Set());
+  const removed: Array<{ at: number; node: Element }> = [];
+  const walk = (nodes: readonly Descendant[], remove: boolean) =>
+    nodes.every((node) => {
+      if (NodeApi.isText(node)) return read.text(node.text.length);
+
+      const at = read.element();
+
+      if (at !== null && remove) removed.push({ at, node });
+
+      return at !== null;
+    });
+
+  if (!walk(siblings.slice(0, splice.from), false)) return null;
+
+  const start = read.position();
+
+  if (
+    !walk(splice.before, true) ||
+    !walk(siblings.slice(splice.from + splice.before.length), false) ||
+    !read.end()
+  ) {
+    return null;
+  }
+
+  const write = yjsCursor(
+    children,
+    new Set(removed.map(({ at }) => at)),
+    start
+  );
+  const inserted: Array<{ at: number; index: number; node: Element }> = [];
+
+  for (const [index, node] of splice.after.entries()) {
+    if (NodeApi.isText(node)) {
+      if (!write.text(node.text.length)) return null;
+      continue;
+    }
+
+    const { at, offset } = write.position();
+
+    if (offset !== 0) return null;
+    inserted.push({ at, index: splice.from + index, node });
+  }
+
+  return { inserted, removed };
 };
 
 export const createYjsRunEncoder =
@@ -678,12 +839,21 @@ const leafCursor = (leaves: readonly Text[]) => {
   };
 };
 
+/**
+ * Write `after` over the chain that shows `before`. Without `diff`, the
+ * letters to keep come from a diff of the two texts, which cannot tell which
+ * of two equal letters an edit removed. `encodeBefore` reads the attributes
+ * `before` shows, which default to what `encode` writes for them.
+ */
 export const writeTextRuns = (
   chain: YjsTextChain,
   before: readonly Text[],
   after: readonly Text[],
   encode: YjsRunEncoder,
-  encodeBefore: YjsRunEncoder = encode
+  {
+    diff,
+    encodeBefore = encode,
+  }: Readonly<{ diff?: readonly Diff[]; encodeBefore?: YjsRunEncoder }> = {}
 ): void => {
   const previous = before.map((leaf) => leaf.text).join('');
   const next = after.map((leaf) => leaf.text).join('');
@@ -694,7 +864,7 @@ export const writeTextRuns = (
   let fromAfter = 0;
   const targetAt = leafCursor(after);
   const sourceAt = leafCursor(before);
-  for (const [operation, value] of diffText(previous, next)) {
+  for (const [operation, value] of diff ?? diffText(previous, next)) {
     if (operation === DiffOp.Delete) {
       let remaining = value.length;
       while (remaining > 0) {
@@ -826,7 +996,7 @@ export const rewriteTextRuns = (
     runs.map((run) => ({ text: run.text })),
     after,
     encode,
-    (_leaf, index) => runs[index].attributes
+    { encodeBefore: (_leaf, index) => runs[index].attributes }
   );
 };
 

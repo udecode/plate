@@ -1,3 +1,4 @@
+import type { Descendant } from '../interfaces';
 import type {
   EditorEffect,
   EditorEffectType,
@@ -255,6 +256,18 @@ export const areEditorJsonValuesEqual = (
   if (!isEditorJsonValue(left) || !isEditorJsonValue(right)) return false;
 
   return areJsonValuesStructurallyEqual(left, right);
+};
+
+type Text = Extract<Descendant, { text: string }>;
+
+export const textPropertiesEqual = (left: Text, right: Text) => {
+  const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
+
+  keys.delete('text');
+
+  return [...keys].every((key) =>
+    areEditorJsonValuesEqual(left[key], right[key])
+  );
 };
 
 export const cloneEditorJsonValue = <T>(value: T): T => {

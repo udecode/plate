@@ -76,6 +76,27 @@ describe('three-way structural comparison', () => {
     );
   });
 
+  it('merges a branch that joins two lines with typing in the line above them', async () => {
+    const base = [paragraph('ab'), paragraph('cd'), paragraph('ef')];
+    const comparison = await compare({
+      base,
+      local: [paragraph('ab'), paragraph('cdef')],
+      remote: [paragraph('aXb'), paragraph('cd'), paragraph('ef')],
+      schema: schemaFor(base),
+    });
+
+    expect(comparison.conflicts).toEqual([]);
+
+    const result = await resolveComparison({ baseline: 'base', comparison });
+
+    expect(result.status).toBe('resolved');
+    if (result.status !== 'resolved') return;
+    expect(result.comparison.after.document.children).toEqual([
+      paragraph('aXb'),
+      paragraph('cdef'),
+    ]);
+  });
+
   it('deduplicates identical branch contributions as shared evidence', async () => {
     const base = [paragraph('base')];
     const next = [paragraph('shared')];

@@ -307,7 +307,8 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   them in the projection, and a key the projection hides skips it when the
   method's locator places that key, as it skips a direct call. A call through a
   view stays unframed and decides on the stored document, so a hidden key
-  still reaches its body. A read of a root a pending deletion drops sees it
+  still reaches its body. A core transform called directly inside `update`
+  runs on the stored tree. Input paths dispatch commands. A read of a root a pending deletion drops sees it
   empty, and the frame refuses a write or a selection there, so a call that
   writes only other roots still runs. Point
   stepping has no option that skips hidden content, because commands on the
@@ -320,6 +321,17 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   with its pending count and diagnostics.
 - Changing authored input intent creates no document or history change, and a
   composition finishes under the intent it started with.
+- An accepted join merges its line into the nearest line before it that the
+  decision keeps, and the merged line keeps that line's type and properties,
+  whatever that line still shows.
+- A rejected split rejoins its pieces into the piece before it while that
+  piece keeps content, and into the piece after it otherwise. This is current
+  behavior, not law, until the split-order task decides it.
+- A deletion Editing records applies in that commit, a pending join beside it
+  included.
+- Settling applies a claim as a decision would. Deleted text goes, and an
+  inline element whose deletion is accepted goes once none of its content
+  survives, its pending cuts moving to its other pieces.
 
 ## Main changes
 
