@@ -1,0 +1,4 @@
+ts	phase	decision	why	evidence	result
+2026-10-19T15:20:52Z	plan	Correct deployment histories	Owner approved Production/main and Beta/next	User: ok go update GitHub environments; .github/workflows/deploy.yml at 659c292560	decided, repair the rollout on both branches with the existing focused-proof waiver
+2026-10-19T15:20:52Z	build	Configure distinct environments	Keep credentials restricted to the intended branch	scope: Beta permits next; Production permits main; public project vars set through GitHub API on 2026-10-19	fixed, preserve Production API_TOKEN_GITHUB and unrelated Preview/copilot
+2026-10-19T15:20:52Z	writing	Review transfer workflow and prose	Only destination-encrypted values leave Actions	deslop, unslop and bro over migration workflow and correction plan; no-comments skip fast	decided, minimal manual-only transfer with no checkout or plaintext artifact
