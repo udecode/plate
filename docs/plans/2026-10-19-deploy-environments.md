@@ -23,7 +23,7 @@ The corrected workflow checks changed files before entering an environment. Only
 
 - Split `.github/workflows/deploy.yml` into a changes job and a deployment job on both branches. Map main to Production and next to Beta, with their public URLs.
 - Copy the existing VERCEL_TOKEN through destination-key encryption inside GitHub Actions. Only encrypted output leaves the runner. Keep Production's existing API_TOKEN_GITHUB secret.
-- Limit Production to main and Beta to next. Copy the two public Vercel project variables. Preserve the unrelated Preview and copilot environments.
+- Limit Production to main and Beta to next. Copy the two public Vercel project variables. Preserve the unrelated Preview and copilot environments. Retire preview-next after credential transfer.
 - Remove the temporary migration workflow after the two destination credentials exist. Retain historical deployment records.
 
 ## Authority and boundaries
@@ -59,7 +59,7 @@ The data shape is a branch decision followed by an environment-bound deployment 
 
 | Gate | Evidence |
 | --- | --- |
-| Workflow syntax and branch decisions | Awaiting focused proof |
+| Workflow syntax and branch decisions | deploy-actionlint-a1.log, next-actionlint-a1.log and skip-a1.log in the run directory |
 | Credential and environment mapping | Awaiting real GitHub deployment proof |
 | No deployment for ignored pushes | Awaiting GitHub deployment API proof |
 | Local aggregate | skip: owner's focused-check and GitHub-proof waiver |
@@ -69,3 +69,7 @@ The data shape is a branch decision followed by an environment-bound deployment 
 ## Verification
 
 Acceptance uses the actual GitHub environment settings, workflow runs and deployment API records. A local syntax check cannot prove credential access or deployment history. The full local aggregate remains unpassed under the owner's waiver.
+
+Production [run 39277478636](https://github.com/udecode/plate/actions/runs/39277478636) passed at 3fc58766af. GitHub records deployment 7177801511 under Production with https://platejs.org. Proof: `docs/plans/artifacts/deploy-environments/main-deployed-a1.log`. The rerun of the watch command passed in `docs/plans/artifacts/deploy-environments/main-deploy-run-a2.log`.
+
+Both environment configurations passed API readback in `docs/plans/artifacts/deploy-environments/environment-retired-a1.log`. Production permits main; Beta permits next. The existing Vercel credential and project variables are present in both. Production still holds API_TOKEN_GITHUB. The old preview-next environment is retired, and legacy deployment record 7176611625 remains readable. Preview and copilot retain their original IDs.
