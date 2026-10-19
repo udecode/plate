@@ -1,6 +1,6 @@
 # Text marks and presentation
 
-Page: https://claude.ai/artifact/1B9JEa2wYM9HLsa6ncHkxH
+Page: https://claude.ai/artifact/W4x25Pgq3m3TtTbsK1aeQ8
 
 The ledger asks which mark and style values belong to document semantics and which belong to view presentation. Semantic marks, such as bold, italic, underline, strikethrough, code, kbd, script and highlight, are flat booleans from `platejs` with semantic HTML tags and Markdown nodes. Bold is the one owner of font weight: no plugin stores a separate weight, and a pasted CSS weight decodes into bold or nothing. Author-chosen presentation values persist flat on the node they style: color, background color, font family and font size as raw CSS strings on text, line height as a validated number, text align as an enum, and text indent as a level whose pixel offset and unit stay in plugin state. The [2026-10-04 audit](../../research/review-records/2026-10-04-styles-audit.json) found the split sound except for weight and one misplaced root helper, and the [2026-10-19 plan](../2026-10-19-styles-review.md) deleted the weight plugin and moved the helper into the copied size control.
 
