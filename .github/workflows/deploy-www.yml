@@ -79,7 +79,8 @@ jobs:
 
       - name: Restore build cache
         if: steps.changes.outputs.build == 'true'
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: build-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             apps/www/.next/cache
@@ -100,6 +101,7 @@ jobs:
 
       - name: Build deployment
         if: steps.changes.outputs.build == 'true'
+        id: build
         env:
           PLATE_BUILD_BASIC: '0'
         run: |
@@ -135,6 +137,7 @@ jobs:
 
       - name: Assign the current next deployment to beta
         if: steps.changes.outputs.build == 'true'
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -145,5 +148,22 @@ jobs:
             echo 'A newer next commit exists; leaving the beta domain unchanged.'
             exit 1
           fi
-          vercel alias set "$DEPLOYMENT_URL" beta.platejs.org
+          deployment="$(curl --fail --silent --show-error --max-time 60 \
+            --header "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v13/deployments/${DEPLOYMENT_URL#https://}?teamId=$VERCEL_ORG_ID" \
+            | jq --exit-status --raw-output '.id | select(startswith("dpl_"))')"
+          curl --fail --silent --show-error --max-time 60 \
+            --header "Authorization: Bearer $VERCEL_TOKEN" \
+            --json '{"alias":"beta.platejs.org"}' \
+            "https://api.vercel.com/v2/deployments/$deployment/aliases?teamId=$VERCEL_ORG_ID" \
+            | jq --exit-status '.alias == "beta.platejs.org"' > /dev/null
           echo "Deployed $GITHUB_SHA to https://beta.platejs.org" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Save build cache
+        if: always() && steps.build.outcome == 'success' && steps.build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            apps/www/.next/cache
+            .vercel/cache
+          key: ${{ steps.build-cache.outputs.cache-primary-key }}
