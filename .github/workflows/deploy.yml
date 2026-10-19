@@ -1,8 +1,8 @@
-name: Deploy www
+name: Deploy
 
 on:
   push:
-    branches: [next]
+    branches: [main, next]
   workflow_dispatch:
 
 permissions:
@@ -10,12 +10,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: deploy-www-${{ github.ref_name }}
+  group: deploy-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
   deploy:
-    if: github.repository == 'udecode/plate' && github.ref == 'refs/heads/next'
+    if: github.repository == 'udecode/plate' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     environment: preview-next
@@ -35,11 +35,11 @@ jobs:
         run: |
           build=true
           if [[ "$GITHUB_EVENT_NAME" != workflow_dispatch ]]; then
-            base="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deploy-www.yml/runs?branch=next&status=success&per_page=1" --jq '.workflow_runs[0].head_sha // empty' || true)"
+            base="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deploy.yml/runs?branch=$GITHUB_REF_NAME&status=success&per_page=1" --jq '.workflow_runs[0].head_sha // empty' || true)"
             if [[ -n "$base" ]] && git fetch --no-tags --depth=1 origin "$base"; then
-              if git diff --quiet "$base" "$GITHUB_SHA" -- .github/workflows/deploy-www.yml; then
+              if git diff --quiet "$base" "$GITHUB_SHA" -- .github/workflows/deploy.yml; then
                 set +e
-                VERCEL_GIT_PREVIOUS_SHA="$base" VERCEL_GIT_COMMIT_SHA="$GITHUB_SHA" node apps/www/scripts/vercel-ignore-build.mjs
+                VERCEL_GIT_COMMIT_MESSAGE="$(git log -1 --format=%B "$GITHUB_SHA")" VERCEL_GIT_PREVIOUS_SHA="$base" VERCEL_GIT_COMMIT_SHA="$GITHUB_SHA" node apps/www/scripts/vercel-ignore-build.mjs
                 result=$?
                 set -e
                 case "$result" in
@@ -85,17 +85,22 @@ jobs:
           path: |
             apps/www/.next/cache
             .vercel/cache
-          key: www-next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          key: www-${{ github.ref_name }}-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: |
-            www-next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+            www-${{ github.ref_name }}-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
 
       - name: Install Vercel CLI
         if: steps.changes.outputs.build == 'true'
         run: npm install --global "vercel@$VERCEL_CLI_VERSION"
 
-      - name: Pull next preview settings
+      - name: Pull branch deployment settings
         if: steps.changes.outputs.build == 'true'
-        run: vercel pull --yes --environment=preview --git-branch=next
+        run: |
+          if [[ "$GITHUB_REF_NAME" == main ]]; then
+            vercel pull --yes --environment=production
+          else
+            vercel pull --yes --environment=preview --git-branch=next
+          fi
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
@@ -108,14 +113,22 @@ jobs:
           nproc
           free -m
           uptime
-          vercel build
+          if [[ "$GITHUB_REF_NAME" == main ]]; then
+            vercel build --prod
+          else
+            vercel build
+          fi
 
       - name: Upload deployment without assigning domains
         if: steps.changes.outputs.build == 'true'
         id: deploy
         run: |
           git checkout --detach "$GITHUB_SHA"
-          url="$(vercel deploy --prebuilt --archive=tgz --meta plateCommitRef=next --meta githubCommitSha="$GITHUB_SHA")"
+          options=()
+          if [[ "$GITHUB_REF_NAME" == main ]]; then
+            options+=(--prod --skip-domain)
+          fi
+          url="$(vercel deploy --prebuilt --archive=tgz "${options[@]}" --meta plateCommitRef="$GITHUB_REF_NAME" --meta githubCommitSha="$GITHUB_SHA")"
           DEPLOYMENT_URL="$url" node --input-type=module -e '
             const value = process.env.DEPLOYMENT_URL;
             const url = new URL(value);
@@ -135,7 +148,7 @@ jobs:
           curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/api/search?query=controlled&locale=en" | jq --exit-status 'type == "array" and length > 0' > /dev/null
           curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/r/installation-docs.json" | jq --exit-status '.files | length > 0' > /dev/null
 
-      - name: Assign the current next deployment to beta
+      - name: Publish the current branch deployment
         if: steps.changes.outputs.build == 'true'
         shell: bash
         env:
@@ -143,21 +156,42 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
         run: |
-          head="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/next" --jq .object.sha)"
+          head="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$GITHUB_REF_NAME" --jq .object.sha)"
           if [[ "$head" != "$GITHUB_SHA" ]]; then
-            echo 'A newer next commit exists; leaving the beta domain unchanged.'
+            echo 'A newer branch commit exists; leaving domains unchanged.'
             exit 1
           fi
           deployment="$(curl --fail --silent --show-error --max-time 60 \
             --header "Authorization: Bearer $VERCEL_TOKEN" \
             "https://api.vercel.com/v13/deployments/${DEPLOYMENT_URL#https://}?teamId=$VERCEL_ORG_ID" \
             | jq --exit-status --raw-output '.id | select(startswith("dpl_"))')"
-          curl --fail --silent --show-error --max-time 60 \
-            --header "Authorization: Bearer $VERCEL_TOKEN" \
-            --json '{"alias":"beta.platejs.org"}' \
-            "https://api.vercel.com/v2/deployments/$deployment/aliases?teamId=$VERCEL_ORG_ID" \
-            | jq --exit-status '.alias == "beta.platejs.org"' > /dev/null
-          echo "Deployed $GITHUB_SHA to https://beta.platejs.org" >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$GITHUB_REF_NAME" == main ]]; then
+            curl --fail --silent --show-error --max-time 60 \
+              --header "Authorization: Bearer $VERCEL_TOKEN" \
+              --request POST \
+              "https://api.vercel.com/v10/projects/$VERCEL_PROJECT_ID/promote/$deployment?teamId=$VERCEL_ORG_ID" > /dev/null
+            matched=false
+            for attempt in {1..12}; do
+              live="$(curl --fail --silent --show-error --max-time 15 \
+                --header "Authorization: Bearer $VERCEL_TOKEN" \
+                "https://api.vercel.com/v4/aliases/platejs.org?teamId=$VERCEL_ORG_ID" | jq --raw-output .deploymentId)"
+              if [[ "$live" == "$deployment" ]]; then
+                matched=true
+                break
+              fi
+              sleep 5
+            done
+            [[ "$matched" == true ]]
+            domain=platejs.org
+          else
+            curl --fail --silent --show-error --max-time 60 \
+              --header "Authorization: Bearer $VERCEL_TOKEN" \
+              --json '{"alias":"beta.platejs.org"}' \
+              "https://api.vercel.com/v2/deployments/$deployment/aliases?teamId=$VERCEL_ORG_ID" \
+              | jq --exit-status '.alias == "beta.platejs.org"' > /dev/null
+            domain=beta.platejs.org
+          fi
+          echo "Deployed $GITHUB_SHA to https://$domain" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Save build cache
         if: always() && steps.build.outcome == 'success' && steps.build-cache.outputs.cache-hit != 'true'

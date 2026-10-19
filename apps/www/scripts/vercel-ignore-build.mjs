@@ -38,10 +38,6 @@ const decide = (skip, reason) => {
   process.exit(skip ? 0 : 1);
 };
 
-if (process.env.VERCEL_GIT_COMMIT_MESSAGE === 'Version Packages') {
-  decide(true, 'Version Packages commit');
-}
-
 // A push can carry several commits, so diff against the last deployed commit.
 // Vercel clones shallowly; when that commit is missing, build to be safe.
 const base = process.env.VERCEL_GIT_PREVIOUS_SHA;
@@ -50,6 +46,13 @@ if (!base || !hasCommit(base)) {
 }
 
 const head = process.env.VERCEL_GIT_COMMIT_SHA ?? 'HEAD';
+if (
+  process.env.VERCEL_GIT_COMMIT_MESSAGE === 'Version Packages' &&
+  hasCommit(`${head}^`) &&
+  git('rev-parse', `${head}^`) === base
+) {
+  decide(true, 'Version Packages is the only undeployed commit');
+}
 const changed = git(
   '-C',
   git('rev-parse', '--show-toplevel'),
