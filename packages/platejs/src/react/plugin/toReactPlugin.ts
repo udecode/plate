@@ -199,6 +199,13 @@ const bindPlateComponent = (
     ? (brandPluginDescriptor({ ...plugin, component }, plugin) as AnyBasePlugin)
     : plugin;
 
+// Base configure() and extend() copy the descriptor they were defined on, which
+// predates the adapter's component, so the bound component is carried over.
+const keepPlateComponent = (source: AnyBasePlugin, next: AnyBasePlugin) =>
+  Object.hasOwn(source, 'component') && !Object.hasOwn(next, 'component')
+    ? bindPlateComponent(next, source.component, true)
+    : next;
+
 const wrapPlatePlugin = (
   basePlugin: AnyBasePlugin,
   dependencies?: readonly unknown[],
@@ -253,7 +260,11 @@ const wrapPlatePlugin = (
       normalizedInput
     );
 
-    return wrapPlatePlugin(nextBasePlugin, dependencies, plugin);
+    return wrapPlatePlugin(
+      keepPlateComponent(basePlugin, nextBasePlugin),
+      dependencies,
+      plugin
+    );
   });
 
   Reflect.set(plugin, 'extend', (input: unknown) => {
@@ -288,7 +299,11 @@ const wrapPlatePlugin = (
       normalizedInput
     );
 
-    return wrapPlatePlugin(nextBasePlugin, dependencies, plugin);
+    return wrapPlatePlugin(
+      keepPlateComponent(basePlugin, nextBasePlugin),
+      dependencies,
+      plugin
+    );
   });
 
   return plugin;

@@ -95,6 +95,20 @@ describe('toReactPlugin', () => {
     expect(resolved.component).toBe(Component);
   });
 
+  it('keeps the adapter component through later extension and configuration', () => {
+    const Component: NodeComponent = () => null;
+    const Replacement: NodeComponent = () => null;
+    const plugin = toReactPlugin(definePlugin('adapterComponent', {}), {
+      component: Component,
+    });
+
+    expect(resolvePluginTest(plugin.extend({})).component).toBe(Component);
+    expect(resolvePluginTest(plugin.configure({})).component).toBe(Component);
+    expect(
+      resolvePluginTest(plugin.configure({ component: Replacement })).component
+    ).toBe(Replacement);
+  });
+
   it('keeps the React descriptor resolvable after configuration', () => {
     const plugin = toReactPlugin(definePlugin('configuredPortal', {}));
     const editor = createEditor({ plugins: [plugin.configure({})] });
