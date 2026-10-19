@@ -1,6 +1,7 @@
 import {
   BaseParagraphPlugin,
   definePlugin,
+  editorCommands,
   ElementApi,
   getInjectMatch,
   PLUGINS,
@@ -191,7 +192,40 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
         ],
       },
     }),
-}).extend(({ plugin }) => ({
+}).extend(({ editor: indentEditor, plugin }) => ({
+  commands: ({ handle }) => [
+    handle(editorCommands.delete, ({ input, state }) => {
+      const selection = state.selection();
+      const entry = state.nodes.block();
+
+      if (
+        input.direction !== 'backward' ||
+        !selection ||
+        !entry ||
+        state.selection.isExpanded() ||
+        state.selection.nodes().length > 0
+      ) {
+        return false;
+      }
+
+      const [element, path] = entry;
+
+      // The list plugin owns Backspace at the start of a list item.
+      if (
+        !element.indent ||
+        element.listType ||
+        element.type !== indentEditor.plugin(BaseParagraphPlugin).schema.type ||
+        !getInjectMatch(indentEditor, plugin)(element, path) ||
+        !state.points.isStart(selection.anchor, path)
+      ) {
+        return false;
+      }
+
+      return state.transaction((tx) => {
+        tx.indent.decrease();
+      });
+    }),
+  ],
   shortcuts: {
     tab: {
       handler: ({ editor }) => {

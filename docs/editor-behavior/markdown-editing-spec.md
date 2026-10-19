@@ -2434,9 +2434,13 @@ stored shape is still local contract.
 
 ```text
 ⇥ / ⇤ on paragraph
+⌫ at the start of an indented paragraph
 ```
 
 note: paragraph indent stays editor-owned unless a stronger local owner wins
+
+note: Backspace at the start of an indented plain paragraph removes one indent
+level before any merge; at no indent it joins as before (plate#5205)
 
 - `EDIT-ALIGN-*` `locked`
 

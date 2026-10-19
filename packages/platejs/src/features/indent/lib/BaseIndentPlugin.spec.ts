@@ -316,6 +316,62 @@ describe('BaseIndentPlugin', () => {
     });
   });
 
+  it('outdents an indented paragraph one level per Backspace at its start before joining it [plate#5205]', () => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      },
+      initialValue: [
+        { children: [{ text: 'First' }], type: 'paragraph' },
+        { children: [{ text: 'Second' }], indent: 2, type: 'paragraph' },
+      ],
+    });
+    const backspace = () => {
+      editor.update.text.deleteBackward();
+
+      return editor.read.children();
+    };
+
+    expect([backspace(), backspace(), backspace()]).toEqual([
+      [
+        { children: [{ text: 'First' }], type: 'paragraph' },
+        { children: [{ text: 'Second' }], indent: 1, type: 'paragraph' },
+      ],
+      [
+        { children: [{ text: 'First' }], type: 'paragraph' },
+        { children: [{ text: 'Second' }], type: 'paragraph' },
+      ],
+      [{ children: [{ text: 'FirstSecond' }], type: 'paragraph' }],
+    ]);
+  });
+
+  it('removes the first paragraph indent on Backspace at its start but deletes text elsewhere [plate#5205]', () => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+      initialValue: [
+        { children: [{ text: 'First' }], indent: 1, type: 'paragraph' },
+      ],
+    });
+    const backspace = () => {
+      editor.update.text.deleteBackward();
+
+      return editor.read.children();
+    };
+
+    expect([backspace(), backspace()]).toEqual([
+      [{ children: [{ text: 'irst' }], indent: 1, type: 'paragraph' }],
+      [{ children: [{ text: 'irst' }], type: 'paragraph' }],
+    ]);
+  });
+
   it('lets Shift+Tab leave the blockquote plugin, not a plugin that only shares its name', () => {
     const quoted = (quote: typeof BaseBlockquotePlugin) => {
       const editor = createEditor({
