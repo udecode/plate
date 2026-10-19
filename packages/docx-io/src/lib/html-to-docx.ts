@@ -55,8 +55,22 @@ export async function htmlToDocxBlob(
 ): Promise<Blob> {
   // Handle empty HTML - the underlying library crashes on empty string
   const safeHtml = html.trim() === '' ? '<p></p>' : html;
+  // Whitespace around the footer would become empty paragraphs, and the page
+  // number goes in the first one.
+  const footerHtml = options.footerHtml?.trim();
   const zip = new JSZip();
-  const resultZip = await addFilesToContainer(zip, safeHtml, options, null);
+  const resultZip = await addFilesToContainer(
+    zip,
+    safeHtml,
+    {
+      ...options,
+      footer:
+        options.footer ??
+        (footerHtml !== undefined || options.pageNumber === true),
+    },
+    null,
+    footerHtml
+  );
   const buffer = await resultZip.generateAsync({ type: 'uint8array' });
   const blobBuffer = new Uint8Array(buffer);
 

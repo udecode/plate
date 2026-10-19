@@ -118,6 +118,19 @@ const blob = await exportToDocx(editor.children, {
 });
 ```
 
+### Page Numbers
+
+Number the pages in the footer. `footerHtml` sets the footer content with inline styles, and the number is appended to its first block:
+
+```tsx
+import { exportToDocx } from '@platejs/docx-io';
+
+const blob = await exportToDocx(editor.children, {
+  footerHtml: '<p style="text-align: right">Page </p>',
+  pageNumber: true,
+});
+```
+
 ### Using DocxExportPlugin
 
 For plugin-based API access:
@@ -252,6 +265,14 @@ Font family for the document body. Overrides default Calibri font.
 <APIItem name="customStyles" type="string" optional>
 Additional CSS styles to include. Appended after default DOCX_EXPORT_STYLES.
 </APIItem>
+<APIItem name="footerHtml" type="string" optional>
+HTML of the footer written at the bottom of every page. Style it inline: neither `DOCX_EXPORT_STYLES` nor `customStyles` applies to it.
+</APIItem>
+<APIItem name="pageNumber" type="boolean" optional>
+Number the pages. The number is appended to the first block of `footerHtml`, unless that block is a table, or written alone in the footer when `footerHtml` is omitted. It takes the document font, not the inline styles of `footerHtml`.
+
+- **Default:** `false`
+</APIItem>
 <APIItem name="title" type="string" optional>
 Document title for metadata.
 </APIItem>
@@ -318,6 +339,12 @@ Font family.
 </APIItem>
 <APIItem name="customStyles" type="string" optional>
 Additional CSS styles.
+</APIItem>
+<APIItem name="footerHtml" type="string" optional>
+Footer HTML, with inline styles.
+</APIItem>
+<APIItem name="pageNumber" type="boolean" optional>
+Number the pages in the footer.
 </APIItem>
 <APIItem name="title" type="string" optional>
 Document title.

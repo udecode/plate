@@ -67,4 +67,48 @@ describe('exportToDocx', () => {
       expect(exportedText).toBe(text);
     }
   });
+
+  it('writes footerHtml as the footer, with the page number at the end of its first paragraph', async () => {
+    const exportModule = new URL('./docx-export-plugin.tsx', import.meta.url)
+      .pathname;
+    const script = `
+      import JSZip from ${JSON.stringify(import.meta.resolve('jszip'))};
+      import { exportToDocx } from ${JSON.stringify(exportModule)};
+
+      const blob = await exportToDocx([{ type: 'p', children: [{ text: 'Body' }] }], {
+        footerHtml: '<p>Page </p>',
+        pageNumber: true,
+      });
+      const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+      console.log(await zip.file('word/footer1.xml')?.async('string') ?? '<ftr/>');
+    `;
+    const subprocess = Bun.spawn([process.execPath, '--eval', script], {
+      stderr: 'pipe',
+      stdout: 'pipe',
+    });
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(subprocess.stdout).text(),
+      new Response(subprocess.stderr).text(),
+      subprocess.exited,
+    ]);
+
+    expect(stderr).toBe('');
+    expect(exitCode).toBe(0);
+
+    // footer1.xml declares WordprocessingML as its default namespace.
+    const ns = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    const footer = new DOMParser().parseFromString(stdout, 'application/xml');
+    const paragraphs = Array.from(
+      footer.getElementsByTagNameNS(ns, 'p'),
+      (paragraph) => ({
+        lastChild: paragraph.lastElementChild?.localName,
+        text: Array.from(
+          paragraph.getElementsByTagNameNS(ns, 't'),
+          (text) => text.textContent
+        ).join(''),
+      })
+    );
+
+    expect(paragraphs).toEqual([{ lastChild: 'fldSimple', text: 'Page ' }]);
+  });
 });

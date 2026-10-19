@@ -50,7 +50,10 @@ export type DocumentOptions = {
   description?: string;
   font?: string;
   fontSize?: number | string | null;
+  /** Write the footer. Defaults to true when `footerHtml` or `pageNumber` is set. */
   footer?: boolean;
+  /** HTML of the footer. Defaults to an empty paragraph. */
+  footerHtml?: string;
   footerType?: HeaderFooterType;
   header?: boolean;
   headerType?: HeaderFooterType;
@@ -62,6 +65,7 @@ export type DocumentOptions = {
   modifiedAt?: Date;
   numbering?: NumberingOptions;
   orientation?: 'landscape' | 'portrait';
+  /** Append the page number to the footer's first block, unless it is a table. */
   pageNumber?: boolean;
   pageSize?: PageSize | null;
   revision?: number;

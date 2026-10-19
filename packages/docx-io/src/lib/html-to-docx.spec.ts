@@ -41,8 +41,9 @@ describe('htmlToDocxBlob', () => {
     expect(addFilesToContainerMock).toHaveBeenCalledWith(
       expect.any(JSZipMock),
       '<p></p>',
-      { orientation: 'landscape' },
-      null
+      { footer: false, orientation: 'landscape' },
+      null,
+      undefined
     );
     expect(generateAsyncMock).toHaveBeenCalledWith({ type: 'uint8array' });
     expect(blob.type).toBe(

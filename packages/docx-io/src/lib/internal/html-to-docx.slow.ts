@@ -29,6 +29,28 @@ function getTextRuns(docXml: string): [string, string[]][] {
   ]);
 }
 
+const WORDPROCESSING_NS =
+  'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+
+// footer1.xml uses WordprocessingML as its default namespace, without the
+// `w:` prefix document.xml uses.
+function getFooterParagraphs(footerXml: string | undefined) {
+  if (footerXml === undefined) return;
+
+  const footer = new DOMParser().parseFromString(footerXml, 'application/xml');
+
+  return Array.from(
+    footer.getElementsByTagNameNS(WORDPROCESSING_NS, 'p'),
+    (paragraph) => ({
+      lastChild: paragraph.lastElementChild?.localName,
+      text: Array.from(
+        paragraph.getElementsByTagNameNS(WORDPROCESSING_NS, 't'),
+        (text) => text.textContent
+      ).join(''),
+    })
+  );
+}
+
 describe('htmlToDocxBlob', () => {
   describe('basic functionality', () => {
     it('returns a Blob', async () => {
@@ -261,6 +283,45 @@ describe('htmlToDocxBlob', () => {
       expect(settingsXml).toMatch(
         /<w:compat>\s*<w:doNotExpandShiftReturn\/>\s*<\/w:compat>\s*<w:decimalSymbol/
       );
+    });
+  });
+
+  describe('footer', () => {
+    it('numbers the pages in a footer the section references when pageNumber is set', async () => {
+      const result = await htmlToDocxBlob('<p>Body</p>', { pageNumber: true });
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      const relsXml = await zip
+        .file('word/_rels/document.xml.rels')!
+        .async('string');
+      const footerXml = await zip.file('word/footer1.xml')?.async('string');
+      const relationshipId = docXml.match(
+        /<w:sectPr>[\s\S]*<w:footerReference r:id="(rId\d+)" w:type="default"\/>[\s\S]*<\/w:sectPr>/
+      )?.[1];
+
+      expect(relsXml).toContain(
+        `<Relationship Id="${relationshipId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"`
+      );
+      expect(footerXml).toContain('instr="PAGE"');
+      expect(getFooterParagraphs(footerXml)).toEqual([
+        { lastChild: 'fldSimple', text: '' },
+      ]);
+    });
+
+    it('writes footerHtml as the footer, without the whitespace around it', async () => {
+      const result = await htmlToDocxBlob('<p>Body</p>', {
+        footerHtml: `
+          <p>Confidential</p>
+        `,
+      });
+      const zip = await loadZipFromBlob(result);
+
+      const footerXml = await zip.file('word/footer1.xml')?.async('string');
+
+      expect(getFooterParagraphs(footerXml)).toEqual([
+        { lastChild: 'r', text: 'Confidential' },
+      ]);
     });
   });
 
