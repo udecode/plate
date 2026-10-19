@@ -1,0 +1,48 @@
+name: Migrate Preview deployment credential
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  encrypt:
+    if: github.repository == 'udecode/plate' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment:
+      name: Production
+      deployment: false
+    steps:
+      - name: Install sealed-box encryption
+        run: npm install --prefix "$RUNNER_TEMP/seal" --ignore-scripts --no-audit --no-fund libsodium-wrappers@0.7.15
+      - name: Encrypt the existing credential for Preview
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          TARGET_KEYS: '[{"name": "Preview", "key_id": "3380204578043523366", "key": "4GJWHzaP3xL/2HN2cArEKybS6ED0poAcIXqWhel6XCQ="}]'
+        run: |
+          node --input-type=module <<'JS'
+          import { createRequire } from 'node:module';
+          import { writeFileSync } from 'node:fs';
+          import { join } from 'node:path';
+          const require = createRequire(join(process.env.RUNNER_TEMP, 'seal/package.json'));
+          const sodium = require('libsodium-wrappers');
+          await sodium.ready;
+          if (!process.env.VERCEL_TOKEN) throw new Error('Missing existing deployment credential');
+          const values = JSON.parse(process.env.TARGET_KEYS).map(({ name, key, key_id }) => ({
+            name,
+            key_id,
+            encrypted_value: Buffer.from(sodium.crypto_box_seal(
+              Buffer.from(process.env.VERCEL_TOKEN, 'utf8'),
+              Buffer.from(key, 'base64')
+            )).toString('base64'),
+          }));
+          writeFileSync(join(process.env.RUNNER_TEMP, 'sealed-environment-secrets.json'), JSON.stringify(values));
+          JS
+      - name: Store destination-encrypted values
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sealed-preview-credential
+          path: ${{ runner.temp }}/sealed-environment-secrets.json
+          retention-days: 1
