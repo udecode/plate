@@ -59,7 +59,7 @@ const PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
 const CARD_LIMIT = 10;
 
 const CHIP = /^([\w-]+) (?:(?:Now|After): )?\S/u;
-const LEGACY_TITLE_TAGS = /^(?:Now|After): | \((?:high|fast)\)$/gu;
+const LEGACY_TITLE_TAGS = /^(?:Now: |After: |\[P[0-3]\] )| \((?:high|fast)\)$/gu;
 const NOT_A_PATH = /[\s*?{}`'"]|[^.][.:]$/u;
 const TOPIC = /^[a-z0-9][a-z0-9-]*$/u;
 const CHECK = /^[\w.:/-]+$/u;
@@ -410,7 +410,7 @@ export function newChipRowProblems(cells, before, where, git, here = null, shipL
     if (!takes.includes(key)) found.push(`${where}: ${article(move)} ${move} row does not take ${key}:, so it would be ignored; ${takes.length ? `it takes ${takes.map((each) => `${each}:`).join(', ')}` : 'it takes none'}`);
   }
   if (move === 'offered' && !before.has(id)) {
-    if (untaggedTitle(decision, id) !== decision.slice(id.length + 1)) found.push(`${where}: a new title is a plain imperative phrase, with (xhigh) only for a design question or a bug whose cause nobody has located; chips works out when a task can start, so no title says Now: or After:, and fast: yes adds (fast) for it`);
+    if (untaggedTitle(decision, id) !== decision.slice(id.length + 1)) found.push(`${where}: a new title is a plain imperative phrase, with (xhigh) only for a design question or a bug whose cause nobody has located; chips works out when a task can start, so no title says Now: or After:, chips brief adds its priority as [P1], and fast: yes adds (fast) for it`);
     if (!given.topic) found.push(`${where}: a new offer names its owner question as "topic: <word>"; run chips to see the open topics and reuse one when the finding answers its question`);
     if (!given.priority && !given.owns?.length) found.push(`${where}: a new offer names its priority as "priority: P0", P1, P2 or P3, as chips.md's Priority says; a task that owns a check failing on the base branch is P0 without one`);
   }
@@ -988,10 +988,11 @@ function brief(task, ledger, max, tasks, codex) {
   const artifacts = relative(root, dirname(dirname(patch)));
   const retitle = `Then title your session 👀 <name>, with no count, as ${root}/.agents/pstack/rules/title.md says, so the owner's sidebar shows which sessions hold work to review.`;
   const reviewed = task.waits.map((wait) => follow(wait.match(WAIT)?.[2] ?? '', tasks)).filter(Boolean);
+  const priority = priorityOf(task);
   return [
-    displayTitle(task),
+    `${priority ? `[${priority}] ` : ''}${displayTitle(task)}`,
     '',
-    `Topic: ${task.topic ?? 'none'}. Kind: ${task.kind}. Effort: ${effortOf(task, max)}. Priority: ${priorityOf(task) ?? 'none yet'}.`,
+    `Topic: ${task.topic ?? 'none'}. Kind: ${task.kind}. Effort: ${effortOf(task, max)}. Priority: ${priority ?? 'none yet'}.`,
     ...(task.repro ? [`Repro: ${task.repro}`] : []),
     ...(task.regressed ? [`Regressed in: ${task.regressed}`] : []),
     ...(task.ship ? [`Serves ship item: ${task.ship}`] : []),
