@@ -66,12 +66,12 @@ A subject file never holds a `before` or `after` fence.
 - While a plan is open, the subject file keeps the state before it, and the plan file holds the delta.
 - When execution ends, and before `Status:` says executed, write the plan's `## Close` and fold the delta into the subject file. Replace or join the call sites with each after fence. Add, replace or delete each marked row, dropping its Delta cell. Move the rest into its section, and move the plan's open work into the subject file's `## Open work`, each item with its owner and its stop. Then render with `--folded`, and flip `Status:` in the same edit, because a plain render refuses the folded subject while the plan is still open.
 - A plan reopened after its fold starts its `Status:` with `reopened`.
-- Once no iteration is open, the newest iteration leads. Without a brief, its page shows the subject's current state and lists the iterations as history.
-- The open iteration whose file name starts with the latest date leads the page, whichever plan renders it. A name without a date counts as the oldest, and iterations from one date order by their decision log's latest row, then by name.
+- The plan passed to `plan-page.mjs` leads its subject's page, because a hand-back is for that plan, and the header names it. Needs you still lists the open questions of every other iteration, each under its own plan's name, and on a page with a brief also each other open iteration's `Status:` sentence, which may hold an ask that is not a decision. Without a brief, a page led by an executed iteration shows the subject's current state and lists the iterations as history.
+- `--index` renders each subject led by its newest open iteration, or by its newest iteration when none is open. A name without a date counts as the oldest, and iterations from one date order by their decision log's latest row, then by name. History lists the iterations in that order.
 
 ## Page order
 
-Every page opens with a header: the title, the flow rail, the `Status:` sentence, and the model and effort of each lead session from the log's `lead` rows, each followed by the panel seats that session ran, with their efforts and `×N` for the rounds each sat. A plan whose `Plans:` line lists the plans it carries names them in the header, and its rail and seats add theirs. A stage ran when any of the plans ran it, review rounds add up and Build counts every plan's steps. On a subject page, a review round on an iteration that does not lead keeps its own tag. The rail shows the stages Plan, Design, Plan review, Build, Writing, Code review, Verify, Audit, Ship and Reflect. Hovering a stage shows the pstack step behind it, and once Plan, Design, a review stage, Writing or Audit ran, small badges name the pstack skills behind it. A stage that ran is a filled green badge, a skipped one is dashed grey and the rest are outlined blue. The next stage is an amber ring while work goes on, a filled orange badge when the `Status:` waits on the owner, and a filled red badge when it is held. A plan that ended without landing, such as a superseded one, adds its word in grey after its last stage and shows every stage it never ran as skipped. Plan names the playbook from the `Playbook:` line and, for a project playbook, the pstack playbooks it extends. Design and Writing name the tools that ran, the review stages name `interrogate` and count their rounds, Audit names `show-me-your-work`, and Build counts its checked steps. Build, Verify, Ship and Reflect carry no badge. Phases outside this table never move the rail, so log each stage's rows under its phase:
+Every page opens with a header: the title, the flow rail, the `Status:` sentence, and the model and effort of each lead session from the log's `lead` rows, each followed by the panel seats that session ran, with their efforts and `×N` for the rounds each sat. A plan whose `Plans:` line lists the plans it carries names them in the header, and its rail and seats add theirs. A stage ran when any of the plans ran it, review rounds add up and Build counts every plan's steps. On a subject page, a review round on an iteration that does not lead keeps its own tag. The rail shows the stages Plan, Design, Plan review, Build, Writing, Code review, Verify, Audit, Ship and Reflect. Hovering a stage shows the pstack step behind it, and once Plan, Design, a review stage, Writing or Audit ran, small badges name the pstack skills behind it. A stage that ran is a filled green badge, a skipped one is dashed grey and the rest are outlined blue. The current stage is the stage of the log's newest Design, Plan review, Build, Writing, Code review, Verify or Ship row; Audit and Reflect rows, stageless rows and a `writing` row before the first `build` row, which cleans the plan's prose, never move it. With no such row it is Build once a step is checked, and Plan otherwise. A stage that has not run is skipped before the current stage and outlined after it. The current stage is an amber ring while work goes on, a filled orange badge when the `Status:` waits on the owner, and a filled red badge when it is held. A plan that ended without landing, such as a superseded one, adds its word in grey after its last stage and shows every stage it never ran as skipped. Plan names the playbook from the `Playbook:` line and, for a project playbook, the pstack playbooks it extends. Design and Writing name the tools that ran, the review stages name `interrogate` and count their rounds, Audit names `show-me-your-work`, and Build counts its checked steps. Build, Verify, Ship and Reflect carry no badge. Phases outside this table never move the rail, so log each stage's rows under its phase:
 
 | Stage | Ran when |
 | --- | --- |
@@ -89,37 +89,47 @@ Every page opens with a header: the title, the flow rail, the `Status:` sentence
 When the leading plan has a brief, the page shows what a reviewer needs to judge the plan, with nothing folded, and leaves the internals in the files:
 
 1. The header.
-2. The brief in one card.
-3. How it works, from Teach.
-4. On top of the PR.
-5. Demo.
-6. Needs you.
-7. Picked for you, from Defaults, each decision with its pick and alternatives under Big calls, Small calls and Details.
-8. Public API, from the leading plan.
-9. The `page-lead` sections in their playbook order, each from the leading plan, or from the subject and marked current when the plan has none.
-10. Main changes.
-11. The leading plan's other sections, apart from Open work.
-12. Verification, once the plan is done.
-13. Open work.
-14. One line that names the plan, its subject and each plan on its `Plans:` line, whose files keep the internals: Close, Scope, Steps, Evidence, Proof, Claims, Asks, Notes, Panel gate, Verification while work runs, iterations and the review rounds.
+2. The runs strip.
+3. The brief in one card.
+4. How it works, from Teach.
+5. On top of the PR.
+6. Demo.
+7. Needs you.
+8. Picked for you, from Defaults, each decision with its pick and alternatives under Big calls, Small calls and Details.
+9. Public API, from the leading plan.
+10. The `page-lead` sections in their playbook order, each from the leading plan, or from the subject and marked current when the plan has none.
+11. Main changes.
+12. The leading plan's other sections, apart from Open work.
+13. Verification, once the plan is done.
+14. Open work.
+15. One line that names the plan, its subject and each plan on its `Plans:` line, whose files keep the internals: Close, Scope, Steps, Evidence, Proof, Claims, Asks, Notes, Panel gate, Verification while work runs, iterations and the review rounds.
 
 Write every sentence the page shows in the `pstack:bro` voice. Say it the way one person talks to another, plainly, briefly and with no jargon. Use short sentences, the active voice and common words. The brief, Teach, Needs you and Defaults also leave out code, file paths and commit hashes, apart from a Teach picture's path, and the renderer refuses an open plan whose brief, Teach, Open questions or Defaults holds code, inline or in a fenced block. Sections for engineers, such as Public API and Main changes, keep their code and tables, and the sentences around them use the same voice. After a build, the Changes and Risks answers also tell the owner what the Close holds: what landed, where the proof stops, any reversal and the warnings of a decision-trail review.
 
-Needs you collects the Open questions of every iteration, the leader's first, and an older iteration's question names its plan. Each question's number takes its attention color: red for answer, amber for look and green for safe. Red questions come first, the head counts each color, and the frame takes the most urgent one. Each option is a row with its label, what happens and its cost, under one Then and Cost header. Your pick starts checked, as a radio or, for a `Pick any.` question, a checkbox, and its reason sits under it. A bar at the bottom says go while every pick stands; when the owner changes a pick or answers a question with no pick, it shows a reply to copy, such as go, except Last fixes: Review first. In Needs you and the header, only badges, such as the question numbers and a finished rail stage, have a background; everything else uses text color and borders. An executed plan's older question renders with the parts it has.
+Needs you collects the Open questions of every iteration, and another iteration's question names its plan. Each question's number takes its attention color: red for answer, amber for look and green for safe. Questions run red first, then amber, then green, with the leading plan's first within each color; the head counts each color, and the frame takes the most urgent one. Under the questions, each other iteration's lines without a `###` heading, and on a page with a brief each other open iteration's `Status:` sentence, follow under its plan's name, with no color and no count. Each option is a row with its label, what happens and its cost, under one Then and Cost header. Your pick starts checked, as a radio or, for a `Pick any.` question, a checkbox, and its reason sits under it. A bar at the bottom says go while every pick stands; when the owner changes a pick or answers a question with no pick, it shows a reply to copy, such as go, except Last fixes: Review first. In Needs you and the header, only badges, such as the question numbers and a finished rail stage, have a background; everything else uses text color and borders. An executed plan's older question renders with the parts it has.
 
 Without a brief, the page shows the whole record, with every section open:
 
-1. Demo, from the leading plan.
-2. Needs you.
-3. Close, from the leading iteration's or the one-off plan's `## Close`.
-4. How it works, from the leading plan's Teach.
-5. The leading plan's lead paragraph.
-6. Public API, then the `page-lead` sections, then Main changes.
-7. Picked for you, from Defaults, each decision with its pick and alternatives under Big calls, Small calls and Details.
-8. The subject's lead paragraph and other sections.
-9. History, newest first.
-10. Details.
-11. Review history, from the decision log's `panel` and `review` rows.
+1. The runs strip, under the header.
+2. Demo, from the leading plan.
+3. Needs you.
+4. Close, from the leading iteration's or the one-off plan's `## Close`.
+5. How it works, from the leading plan's Teach.
+6. The leading plan's lead paragraph.
+7. Public API, then the `page-lead` sections, then Main changes.
+8. Picked for you, from Defaults, each decision with its pick and alternatives under Big calls, Small calls and Details.
+9. The subject's lead paragraph and other sections.
+10. History, newest first.
+11. Details.
+12. Review history, from the decision log's `panel` and `review` rows.
+
+## Runs
+
+A published subject page is a set of files. The page file lists the runs that published to it; each run keeps a header with its stage and a body with its render in its own files, and each picture a body shows is a file of its own. A publish sends only the page file and its own run's files, and the platform keeps the rest. The page file also lists every run with its anchor, so a view without scripts still names them. A local copy, a Codex copy and `--pr` and `--comment` output show only this checkout's plan.
+
+- The runs strip under the header shows one line per run from its header: the stage, the checked steps, whether it waits on the owner or is blocked, since when and when it last published. Waiting and blocked runs come first, and each line links its run.
+- The page leads with the plan of the newest hand-back, by the number each hand-back takes on the list, and shows that plan's bodies newest first. Two runs of one plan both show their bodies. Other plans' bodies load when their section opens or the link names them. A done run whose last publish is more than three days old shows folded.
+- `#run-<plan slug>` lands on the plan's section, and `#run~<plan slug>~<session id>` on one run. Each body's Needs you holds only its own plan's questions, and a half-typed answer stays in the viewer's browser until the owner sends it.
 
 ## PR body
 
@@ -147,11 +157,11 @@ A local frame becomes a `![label](./path)` reference from the repository root, u
 - An open plan's `## Brief`, `## Open questions` or `## Defaults` holds code in backticks, because the page shows those sections.
 - A subject iteration's `Status:` starts with no state word.
 - A `Topic:` line names a subject with no file.
-- An iteration names a playbook that `.agents/playbooks/` lacks.
+- An iteration names a playbook that neither `.agents/playbooks/` nor pstack has.
 - A playbook's `page-pr` line names a section its `page-lead` line does not.
 - `--comment` names a commit the checkout lacks, or one its HEAD does not contain, because the compare link would not open.
 - `.agents/pstack.json` still sets `pageLead`, `pagePairs` or `pageTopic.require`. sync-pstack's `apply` drops them in the write that installs the renderer once a playbook carries each title, and refuses until then.
-- A subject whose hub exists lacks a required section in both its file and its open plan. The leading plan's playbook sets the required sections, or every playbook does when that plan names none.
+- A subject whose hub exists lacks a required section in its file, and in the plan that leads its page when that plan has a brief. The leading plan's playbook sets the required sections, or every playbook does when that plan names none.
 - An open iteration's subject already shows one of its added or changed rows, or no longer has a row it removes, in any section with a Delta table. It also refuses when the subject shows a pair's after fence line for line, indentation and punctuation included, and does not show its before fence. The check skips a pair that deletes a call or changes nothing, a pair whose changed lines another iteration's fences all hold, and any row another iteration also marks. It exempts a plan whose `Status:` starts with `reopened`, and the plan a `--folded` render folds.
 - An open iteration's Defaults has no Decision, Pick, Alternative and Word table.
 - An open plan that leads its page, with a state word in its `Status:`, has no `## Brief`.

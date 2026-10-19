@@ -3,11 +3,16 @@
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync, realpathSync } from 'node:fs';
-import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { capEffort } from './lead.mjs';
 import { landed, stateOf } from './status.mjs';
 
 export const LEDGER = 'suggested-tasks.decisions.tsv';
+
+let config;
+const projectConfig = () => (config ??= existsSync('.agents/pstack.json') ? JSON.parse(readFileSync('.agents/pstack.json', 'utf8')) : {});
+const trunk = () => projectConfig().delivery === 'trunk';
+const branch = () => projectConfig().branch ?? 'main';
 
 const FROM = {
   started: ['offered', 'started'],
@@ -99,10 +104,21 @@ const contains = (outer, inner) => inner.startsWith(outer.endsWith('/') ? outer 
 export const overlaps = (a, b) => a.some((x) => b.some((y) => x === y || contains(x, y) || contains(y, x)));
 // A card session edits project paths in its own worktree, but another
 // repository's files in place, so only those still keep two tasks apart.
-const outsideCheckout = (keys) => {
+const apartKeys = (keys) => {
+  if (trunk()) return [];
   const root = writeKey(process.cwd());
   return keys.filter((key) => key !== root && !contains(root, key));
 };
+
+const planOnOrigin = (plan) => {
+  try {
+    return execFileSync('git', ['show', `origin/${branch()}:${plan}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  } catch {
+    return null;
+  }
+};
+const planInWorktree = (plan) =>
+  (execFileSync('git', ['worktree', 'list', '--porcelain'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).match(/^worktree .+$/gmu) ?? []).some((line) => existsSync(join(line.slice('worktree '.length), plan)));
 
 const parseRow = ([phase, decision = '', why = '', evidence = '', result = '']) => {
   const [, id] = phase === 'chip' ? (decision.match(CHIP) ?? []) : [];
@@ -391,9 +407,9 @@ export function newChipRowProblems(cells, before, where, git, here = null) {
   }
   if (move === 'started') {
     const known = before.get(id);
-    const added = outsideCheckout((given.writes ?? []).map(writeKey).filter((key) => !known?.keys.includes(key)));
+    const added = apartKeys((given.writes ?? []).map(writeKey).filter((key) => !known?.keys.includes(key)));
     for (const [other, peer] of before) {
-      if (other !== id && peer.status === 'started' && overlaps(added, outsideCheckout(peer.keys))) found.push(`${where}: ${id} cannot add a path outside this checkout that ${other}, also started, writes, because both sessions would edit it in place; leave that path to ${other} and tell the owner`);
+      if (other !== id && peer.status === 'started' && overlaps(added, apartKeys(peer.keys))) found.push(`${where}: ${id} cannot add a path outside this checkout that ${other}, also started, writes, because both sessions would edit it in place; leave that path to ${other} and tell the owner`);
     }
   }
   const unmigrated = (task) => `${where}: ${task.id} has no topic, so its waits may still be prose; migrate it first: log updated with topic: and the waits: it has, as waits: none when it has none`;
@@ -565,8 +581,10 @@ function waitBlocker(wait, origin, tasks, git) {
     return { text: `task:${taskId} closed as dismissed ${task.reason} without its result`, stuck: true };
   }
   if (plan) {
-    if (!existsSync(plan)) return { text: `run:${plan} dangling, no such plan`, stuck: true };
-    const status = readFileSync(plan, 'utf8').match(/^Status:\s*(.*)$/mu)?.[1] ?? '';
+    const onOrigin = trunk() && !isAbsolute(plan);
+    const text = onOrigin ? planOnOrigin(plan) : existsSync(plan) ? readFileSync(plan, 'utf8') : null;
+    if (text === null) return onOrigin && planInWorktree(plan) ? { text: `run:${plan} not landed` } : { text: `run:${plan} dangling, no such plan`, stuck: true };
+    const status = text.match(/^Status:\s*(.*)$/mu)?.[1] ?? '';
     if (landed(status)) return null;
     const state = stateOf(status);
     return state === 'done' ? { text: `run:${plan} closed without its result`, stuck: true } : { text: `run:${plan} ${state ?? 'without a Status line'}` };
@@ -577,7 +595,7 @@ function waitBlocker(wait, origin, tasks, git) {
 function blockersOf(task, tasks, git) {
   const found = task.waits.map((wait) => waitBlocker(wait, task, tasks, git)).filter(Boolean);
   for (const peer of tasks.values()) {
-    if (peer.id !== task.id && peer.status === 'started' && overlaps(outsideCheckout(task.keys), outsideCheckout(peer.keys))) found.push({ text: `started ${peer.id} writes its paths outside this checkout` });
+    if (peer.id !== task.id && peer.status === 'started' && overlaps(apartKeys(task.keys), apartKeys(peer.keys))) found.push({ text: `started ${peer.id} writes its paths outside this checkout` });
   }
   return found;
 }
@@ -634,7 +652,7 @@ export function startedOverlaps(tasks) {
   return started.flatMap((task, at) =>
     started
       .slice(at + 1)
-      .filter((peer) => overlaps(outsideCheckout(task.keys), outsideCheckout(peer.keys)))
+      .filter((peer) => overlaps(apartKeys(task.keys), apartKeys(peer.keys)))
       .map((peer) => `${task.id} and ${peer.id} are both started on an overlapping path outside this checkout; the owner runs both`),
   );
 }
@@ -657,7 +675,7 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
       continue;
     }
     const found = blockersOf(task, tasks, git);
-    const ahead = ready.find((peer) => overlaps(outsideCheckout(task.keys), outsideCheckout(peer.keys)));
+    const ahead = ready.find((peer) => overlaps(apartKeys(task.keys), apartKeys(peer.keys)));
     if (found.length === 0 && ahead) found.push({ text: `queued behind ${ahead.id}, which writes the same paths outside this checkout` });
     if (found.length > 0) waiting.push({ task, blockers: found.map((blocker) => blocker.text), stuck: found.filter((blocker) => blocker.stuck).map((blocker) => blocker.text) });
     else ready.push(task);
@@ -689,7 +707,11 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
     .map((task) => ({
       kind: 'check',
       text: task.startedIn
-        ? `check session ${task.startedIn}, which started ${task.id}: when the session tool reports it archived, log landed when a commit holds its change or its last report says it landed the change, with patch: when it names one; when that report hands back a patch it never applied, land that patch as chips brief's footer says and log landed with patch:; and log dismissed stopped when it hands back no patch and neither this checkout nor its worktree holds an uncommitted edit on its paths`
+        ? `check session ${task.startedIn}, which started ${task.id}: when the session tool reports it archived, ${
+            trunk()
+              ? `log landed with commit: once a commit on origin/${branch()} holds its change, because a session whose land.mjs opened a PR has not landed it yet; and log dismissed stopped when no such commit holds it and its worktree is gone or holds no edit on its paths`
+              : "log landed when a commit holds its change or its last report says it landed the change, with patch: when it names one; when that report hands back a patch it never applied, land that patch as chips brief's footer says and log landed with patch:; and log dismissed stopped when it hands back no patch and neither this checkout nor its worktree holds an uncommitted edit on its paths"
+          }`
         : `find the session that started ${task.id} with the session tool, archived sessions included, as the one whose transcript opens with its card prompt, and log started with session: <its id>; when the search finds none, ${task.id} stays started`,
     }));
   const me = here === null ? null : { session: here, transcript };
@@ -702,9 +724,14 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
         .filter((task) => !task.card && task.owner && live !== null && !live.has(task.owner))
         .map((task) => ({ kind: 'adopt', ids: [task.id], text: `take ${task.id}: its owner session ${task.owner} is archived or gone; log updated with session: ${here}` }))
     : [];
-  const withdrawals = waiting
-    .filter(({ task }) => task.card && !elsewhere(task))
-    .map(({ task, blockers }) => ({ kind: 'problem', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: ${blockers[0]}; ${withdrawn(task.card)} once it is withdrawn or its session has ended` }));
+  const withdrawals = [
+    ...waiting
+      .filter(({ task }) => task.card && !elsewhere(task))
+      .map(({ task, blockers }) => ({ kind: 'problem', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: ${blockers[0]}; ${withdrawn(task.card)} once it is withdrawn or its session has ended` })),
+    ...ready
+      .filter((task) => task.card && !elsewhere(task) && task.cardEffort && task.cardEffort !== levelOf(task))
+      .map((task) => ({ kind: 'effort', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: it was offered at ${task.cardEffort} and the task is at ${levelOf(task)} now; ${withdrawn(task.card)} once it is withdrawn or its session has ended, and the card pass offers it again` })),
+  ];
   const rows = [
     ...waiting.flatMap(({ task, stuck }) => stuck.map((blocker) => ({ kind: 'problem', ids: [task.id], text: `fix ${task.id}'s wait: ${blocker}; log updated with the waits it has now` }))),
     ...[...topics.values()]
@@ -823,8 +850,6 @@ const needsJudgment = (task) => levelOf(task) === 'xhigh';
 const fastOf = (task) => task.fast && task.kind === 'fix' && !needsJudgment(task);
 const displayTitle = (task) => (task.title.endsWith(XHIGH) ? task.title.slice(0, -XHIGH.length) : task.title) + (needsJudgment(task) ? XHIGH : '') + (fastOf(task) ? FAST : '');
 export const effortOf = (task, max) => capEffort(levelOf(task), max);
-// The level the task had when its card landed, which a later effort: row does not change.
-export const cardEffortOf = (task, max) => capEffort(task.cardEffort, max);
 
 // codex is the project's chips.codex setting; "always" forces the Codex handoff on every task.
 export function briefOf(tasks, id, ledger, max = null, codex = null) {
@@ -839,12 +864,16 @@ export function briefOf(tasks, id, ledger, max = null, codex = null) {
   return isOpen(task) ? { ok: true, text: brief(task, ledger, max, tasks, codex) } : { ok: false, text: `${id} is ${taskState(task)}, so there is nothing to start; tell the owner.` };
 }
 
+const shellQuoted = (text) => `"${text.replace(/["\\$`]/gu, '\\$&')}"`;
+
 function brief(task, ledger, max, tasks, codex) {
   const root = process.cwd();
   const ref = checkoutRef();
-  const run = `cd ${root} && node .agents/pstack/decisions-check.mjs`;
+  const onTrunk = trunk();
+  const run = onTrunk ? 'node .agents/pstack/decisions-check.mjs' : `cd ${root} && node .agents/pstack/decisions-check.mjs`;
   const patch = resolve(root, dirname(ledger), 'artifacts', 'chips', `${task.id}.patch`);
   const artifacts = relative(root, dirname(dirname(patch)));
+  const retitle = `Then title your session 👀 <name>, with no count, as ${root}/.agents/pstack/rules/title.md says, so the owner's sidebar shows which sessions hold work to review.`;
   const reviewed = task.waits.map((wait) => follow(wait.match(WAIT)?.[2] ?? '', tasks)).filter(Boolean);
   return [
     displayTitle(task),
@@ -857,20 +886,22 @@ function brief(task, ledger, max, tasks, codex) {
     ...(task.owns.length ? [`Owns: ${task.owns.join(', ')}`] : []),
     `Waited on: ${task.waits.length ? task.waits.join(', ') : 'nothing'}`,
     ...(task.kind === 'decide' ? ['', "This task settles a design question first. Route it through the project playbook that gives a design verdict, or pstack's Investigation playbook where the project has none, then plan any fix."] : []),
-    ...(task.codex || codex === 'always' ? ['', "This task forces the Codex handoff, as the Codex workers rule says: once you have found the cause, or settled the design of a design question, hand Codex the code and its tests whatever the size of the change, then review what it wrote."] : []),
-    ...(fastOf(task) ? ['', "This task is marked fast: the owner's start of its card is the word fast for it, as the Fast rule says, so its run spawns no review subagent or seat. A review task in the ledger reviews its change once it lands, so land it with patch: as below."] : []),
+    ...(!onTrunk && (task.codex || codex === 'always') ? ['', "This task forces the Codex handoff, as the Codex workers rule says: once you have found the cause, or settled the design of a design question, hand Codex the code and its tests whatever the size of the change, then review what it wrote."] : []),
+    ...(fastOf(task) ? ['', `This task is marked fast: the owner's start of its card, or their "start <id>", is the word fast for it, as the Fast rule says, so its run spawns no review subagent or seat. A review task in the ledger reviews its change once it lands, ${onTrunk ? 'so land it as below.' : 'so land it with patch: as below.'}`] : []),
     ...(task.kind === 'review'
       ? [
           '',
-          'This task reviews the fast work of the tasks it waits on. Run a panel on their combined change, the patch each landed row names:',
-          ...reviewed.map((each) => `- ${each.id} ${displayTitle(each)}: ${each.patch ?? (each.status === 'landed' ? 'no patch; read the commits on its paths' : `still ${each.status}`)}`),
+          'This task reviews the fast work of the tasks it waits on. Run a panel on their combined change, which each landed row names:',
+          ...reviewed.map((each) => `- ${each.id} ${displayTitle(each)}: ${each.patch ?? (each.status !== 'landed' ? `still ${each.status}` : each.commits.length ? `commits ${each.commits.join(', ')}` : 'no patch; read the commits on its paths')}`),
           `Apply the fixes the Panel review rule accepts. Then log reviewed on each task you reviewed, as ${run} append ${ledger} chip "<its id> <its title>" "<what the review found>" "proof: none" reviewed, and land your own fixes as below.`,
         ]
       : []),
     '',
-    `When you work in your own worktree and your project's rules bring your work to ${ref} as a patch rather than through your own branch, you may commit in your worktree as you go. When you finish, land it yourself: run git add -A in your worktree and save git diff --cached <base>, where <base> is what git merge-base HEAD ${ref} prints, which holds your commits, your uncommitted changes and new files, as ${patch}, run git -C ${root} apply --check --whitespace=error-all ${patch}, then git -C ${root} apply ${patch}, which changes only the checkout's working tree and leaves its index alone. When the check fails, copy the checkout's copy of each refused file into your worktree, redo your change on it, rerun your checks and save the patch again. Then deliver the patch's paths from ${root} as your project's Delivery rule says, because an applied patch ships nothing: where that rule commits, commit only those paths there; where the owner owns commits, leave them in the working tree. Then log landed with patch: ${patch}, adding commit: <hash>, <hash> for each commit you made, so the lead's report links them. Last, stop each server you started. Merge each run directory you wrote under ${artifacts} in your worktree into the same path in ${root} without overwriting, with mkdir -p <that path> && cp -Rn <your run directory>/. <that path>/, because removing the worktree deletes ignored files and your logged rows cite them. Then run node ${root}/.agents/skills/cleanup/scripts/scan.mjs --landed <your worktree's absolute path>. When it exits 0, every change and ignored file of yours is committed, recreated by an install or build, or in the checkout, so remove your worktree as your final command with git -C ${root} worktree remove --force <your worktree's absolute path> && git -C ${root} worktree list, and check that its list no longer names your worktree. Your next command may fail once because its directory is gone, so use absolute paths after it. When it exits otherwise or the script is missing, keep the worktree and tell the owner what it printed. When you work in the checkout itself, or your project's rules deliver through your own branch instead, land the change as your project's Delivery rule says and log landed, with commit: for each commit you made. In every report, write each commit you name as a link to that commit on GitHub, https://github.com/<owner>/<repo>/commit/<sha>, with the owner and repository read from ${root}'s origin remote.`,
+    onTrunk
+      ? `Work in your own worktree, and land the task yourself from it with node .agents/pstack/land.mjs, as ${root}/.agents/pstack/rules/land.md says. Write your run directory under ${root}/${artifacts} by absolute path, so removing your worktree deletes nothing your rows cite. Once land.mjs has pushed, log landed with commit: <the hash it pushed>, so the lead's report links it; when it opens a PR instead, log nothing more and name the PR in your last report, because a later sweep logs landed once origin/${branch()} holds the change. ${retitle} Last, stop each server you started. Merge each run directory that you or a tool, such as a page render, wrote under ${artifacts} in your worktree into the same path in ${root} without overwriting, with mkdir -p <that path> && cp -Rn <your run directory>/. <that path>/, because removing the worktree deletes ignored files. Then run node ${root}/.agents/skills/cleanup/scripts/scan.mjs --landed <your worktree's absolute path>. When it exits 0, every change of yours is committed where a remote reaches it or in the checkout, and every file under ${artifacts} is in the checkout; other ignored files are build output or copies, so remove your worktree as your final command with git -C ${root} worktree remove --force <your worktree's absolute path> && git -C ${root} worktree list, and check that its list no longer names your worktree. Your next command may fail once because its directory is gone, so use absolute paths after it. When it exits otherwise or the script is missing, keep the worktree and tell the owner what it printed. In every report, write each commit you name as a link to that commit on GitHub, https://github.com/<owner>/<repo>/commit/<sha>, with the owner and repository read from ${root}'s origin remote.`
+      : `When you work in your own worktree and your project's rules bring your work to ${ref} as a patch rather than through your own branch, you may commit in your worktree as you go. When you finish, land it yourself: run git add -A in your worktree and save git diff --cached <base>, where <base> is what git merge-base HEAD ${ref} prints, which holds your commits, your uncommitted changes and new files, as ${patch}, run git -C ${root} apply --check --whitespace=error-all ${patch}, then git -C ${root} apply ${patch}, which changes only the checkout's working tree and leaves its index alone. When the check fails, commit your work, copy the checkout's copy of each refused file into your worktree and commit those copies unchanged, then redo your change on them, rerun your checks and commit again. Save the patch again as git diff <base> <copies commit> -- . ':(exclude)<refused file>', with one exclude for each refused file, followed by git diff <copies commit> HEAD, because a diff from <base> would also carry the checkout's own edits to those files, which the checkout already has. Then deliver the patch's paths from ${root} as your project's Delivery rule says, because an applied patch ships nothing: where that rule commits, commit only those paths there; where the owner owns commits, leave them in the working tree. Then log landed with patch: ${patch}, adding commit: <hash>, <hash> for each commit you made, so the lead's report links them. ${retitle} Last, stop each server you started. Merge each run directory you wrote under ${artifacts} in your worktree into the same path in ${root} without overwriting, with mkdir -p <that path> && cp -Rn <your run directory>/. <that path>/, because removing the worktree deletes ignored files and your logged rows cite them. Then run node ${root}/.agents/skills/cleanup/scripts/scan.mjs --landed <your worktree's absolute path>. When it exits 0, every change and ignored file of yours is committed, recreated by an install or build, or in the checkout, so remove your worktree as your final command with git -C ${root} worktree remove --force <your worktree's absolute path> && git -C ${root} worktree list, and check that its list no longer names your worktree. Your next command may fail once because its directory is gone, so use absolute paths after it. When it exits otherwise or the script is missing, keep the worktree and tell the owner what it printed. When you work in the checkout itself, or your project's rules deliver through your own branch instead, land the change as your project's Delivery rule says and log landed, with commit: for each commit you made. ${retitle} When that branch is in your own worktree, then stop each server, merge your run directories, run scan.mjs --landed and remove the worktree, as above. In every report, write each commit you name as a link to that commit on GitHub, https://github.com/<owner>/<repo>/commit/<sha>, with the owner and repository read from ${root}'s origin remote.`,
     '',
-    `Suggested task ${task.id} in ${ledger} of the project checkout ${root}. This prompt can be older than the task, so before anything else run ${run} chips brief ${task.id} and work from what it prints. Run every ledger command from ${root} that way, even when your session opened in its own worktree, because the live ledger is there; make your edits and run your checks in your own worktree. Then run ${run} chips; when it lists this task as neither Ready nor Started, tell the owner what it waits on. Started means the lead already logged your start. Before you write any file, log a started row for it, with writes: naming any path the Writes line above lacks and session: naming this session's id where the runtime's session tool gives one, as .agents/pstack/rules/chips.md says, then run ${run} chips brief ${task.id} again and work from what it prints, because the task can gain work until your started row.`,
+    `Suggested task ${task.id} in ${ledger} of the project checkout ${root}. This prompt can be older than the task, so before anything else run ${run} chips brief ${task.id} and work from what it prints. ${onTrunk ? 'Run every ledger command as written from your own worktree, where you make your edits and run your checks; the helper writes the live ledger in the main checkout.' : `Run every ledger command from ${root} that way, even when your session opened in its own worktree, because the live ledger is there; make your edits and run your checks in your own worktree.`} This prompt holds all of the chips law your task needs, so skip .agents/pstack/rules/chips.md and the chips skill, which are the lead's, unless you offer or drop another task. Each row you log is ${run} append ${ledger} chip ${shellQuoted(task.decision)} "<why>" "<tokens>" <result>, with that decision unchanged. Then run ${run} chips; when it lists this task as neither Ready nor Started, tell the owner what it waits on and stop. Started means the lead already logged your start. Before you write any file, log a started row with the tokens writes: naming each path the Writes line above lacks and session: naming this session's id where the runtime's session tool gives one, then run ${run} chips brief ${task.id} again and work from what it prints, because the task can gain work until your started row. Before you write a path that neither the brief nor a started row lists, log another started row with it${onTrunk ? '' : '; when append refuses it because another started task writes that path outside the checkout, leave the path alone and tell the owner'}. When the session tool shows this session above the brief's Effort:, say so to the owner in your first reply, because a session cannot lower its own effort. End your last report with each piece of workflow friction you hit, such as a helper that hid a result or a file you could not reach. The lead may detach your session, and then it no longer hears when your turns end. So each time you land the task, open its PR or stop on something only the owner or the lead can settle, send the report you end that turn with to the session that started yours. Use the runtime's message tool, such as SendMessage to the parentSessionId that Claude Code desktop's get_session with self prints. Send no other message to it. When the runtime names no such session or reports it archived, send nothing, and when you stop on something only the owner can settle, title your session with the waiting state the title rule gives, so the owner's sidebar shows the stop.`,
   ].join('\n');
 }
 

@@ -13,7 +13,9 @@
 //        Both append forms open the batch with a lead row naming the session's model
 //        and effort, read by lead.mjs, when they differ from the log's last lead row.
 //        Both append forms print the stage a written batch moves the log into, so
-//        the lead renames the session as the Session title rule asks.
+//        the lead renames the session as the Session title rule asks, and in Claude
+//        Code, outside trunk delivery, print what page-stop.mjs stage prints for
+//        the plan beside the log.
 //        Both append forms, unlike the <log> and --all checks, refuse a partial, open, gap,
 //        blocked or inconclusive row without proof: <existing file under <plans>/artifacts/>
 //        or proof: none, and an accepted row unless its proof: names files an earlier row
@@ -41,10 +43,6 @@
 //        (prints a fresh id for a new task)
 //        node .agents/pstack/decisions-check.mjs chips brief <id> [<ledger>]
 //        (prints the prompt a card for that task carries)
-//        node .agents/pstack/decisions-check.mjs chips wait [--session <id>] [--timeout <minutes>] [--every <seconds>] [<ledger>]
-//        (polls the ledger and exits once a task lands, one this session may card turns
-//        ready, or with --session a task that session carded starts, or at --timeout when
-//        given; with no --timeout it waits until one of those happens)
 //        node .agents/pstack/decisions-check.mjs chips cleanup --sessions <file> [--session <id>] [<ledger>]
 //        (reads the session tool's list of every session, archived ones included, saved as a
 //        JSON array, and prints the idle card sessions of landed tasks to archive, the worktrees
@@ -55,8 +53,9 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { currentLead, leadLabel, maxEffort } from './lead.mjs';
-import { board, briefOf, cardEffortOf, CHIP_STATES, cleanupOf, effortOf, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
-import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
+import { cli as pageStop } from './page-stop.mjs';
+import { board, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
+import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
@@ -78,7 +77,7 @@ const git = gitMerges({ branch: projectConfig().branch });
 
 let ledgerTasks = null;
 const currentLedger = () => {
-  const path = join(plansDir(), LEDGER);
+  const path = trunk() ? join(mainCheckout(), plansDir(), LEDGER) : join(plansDir(), LEDGER);
   ledgerTasks ??= readTasks(existsSync(path) ? readFileSync(path, 'utf8').split('\n').slice(1) : []);
   return ledgerTasks;
 };
@@ -92,6 +91,39 @@ function plansDir() {
   return projectConfig().plans || 'docs/plans';
 }
 
+const trunk = () => projectConfig().delivery === 'trunk';
+
+let main;
+function mainCheckout() {
+  if (main === undefined) {
+    try {
+      main = execFileSync('git', ['worktree', 'list', '--porcelain'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).match(/^worktree (.+)$/mu)?.[1] ?? process.cwd();
+    } catch {
+      main = process.cwd();
+    }
+  }
+  return main;
+}
+function chipsArgs(args) {
+  const valued = new Set(['--session', '--sessions'].flatMap((name) => (args.includes(name) ? [args.indexOf(name), args.indexOf(name) + 1] : [])));
+  const at = args.flatMap((arg, index) => (index > 0 && arg !== '--fetch' && !valued.has(index) ? [index] : []));
+  const first = args[at[0]];
+  const logAt = first === 'brief' ? at[2] : ['stale', 'all', 'cleanup'].includes(first) ? at[1] : first === 'id' ? undefined : at[0];
+  return { rest: at.map((index) => args[index]), logAt };
+}
+function runLedgerCommandFromMainCheckout(args) {
+  if (!trunk() || !['append', 'chips'].includes(args[0])) return;
+  const logAt = args[0] === 'append' ? 1 : chipsArgs(args).logAt;
+  const ledgers = [resolve(join(plansDir(), LEDGER)), join(mainCheckout(), plansDir(), LEDGER)];
+  if (logAt !== undefined && !ledgers.includes(resolve(args[logAt] ?? ''))) return;
+  if (args[0] === 'append' && args[2] === '--from' && args[3]) args[3] = resolve(args[3]);
+  const sessions = args.indexOf('--sessions');
+  if (sessions !== -1 && args[sessions + 1]) args[sessions + 1] = resolve(args[sessions + 1]);
+  process.chdir(mainCheckout());
+  if (logAt !== undefined) args[logAt] = join(plansDir(), LEDGER);
+}
+const onDisk = (path) => existsSync(path) || (trunk() && !isAbsolute(path) && existsSync(join(mainCheckout(), path)));
+
 function missingPlan(path, line, where) {
   if (line.split('\t')[1] !== 'panel' || dirname(resolve(path)) !== resolve(plansDir())) return [];
   const plan = path.replace(/\.decisions\.tsv$/u, '.md');
@@ -103,7 +135,7 @@ const markedMissing = (evidence, path) =>
 
 function missingPaths(evidence, where) {
   return runPaths(evidence, plansDir())
-    .filter((path) => !existsSync(path) && !markedMissing(evidence, path))
+    .filter((path) => !onDisk(path) && !markedMissing(evidence, path))
     .map((path) => `${where}: evidence cites ${path}, which does not exist; write it first or cite the path it was saved to`);
 }
 
@@ -130,15 +162,17 @@ function rowProblems(line, where, opened, chips) {
     else if (!opened) found.push(`${where}: a panel finding needs a "seats" row before it`);
     if (!/^(applied|dismissed|deferred|open)\b\W+\w/u.test(rest[4])) found.push(`${where}: a panel finding's result starts with "applied", "dismissed", "deferred" or "open" and gives the reason`);
     else if (/^deferred\b/u.test(rest[4])) {
-      if (rest[1].startsWith('critical')) found.push(`${where}: a critical panel finding is applied or dismissed, never deferred`);
+      if (rest[1].startsWith('critical')) found.push(`${where}: a critical panel finding is never deferred: apply it or pivot the run to it, dismiss it on proof that it is no defect or is rare, or, when its own case fails the same way on the run's base, this run neither causes, worsens nor increases exposure to it, it breaks no outcome or property the typed ask states and it shows no requirement of this run's design unmet, log it open with patch: none, owner:, stop: and each line it limits in the result, and proof: none and the base run in the evidence`);
       else if (!/\bowner:\s*\S/u.test(rest[4])) found.push(`${where}: a deferred panel finding names its owner:`);
     } else if (/^open\b/u.test(rest[4]) && !(/\bpatch:\s*\S/u.test(rest[4]) && /\bowner:\s*\S/u.test(rest[4]))) {
       found.push(`${where}: an open panel finding names its patch: and owner:`);
     }
   }
-  if (rest[0] !== 'chip' && CHIP_STATES.includes(status)) found.push(`${where}: an ${status} result belongs only in a chip row`);
+  if (rest[0] !== 'chip' && CHIP_STATES.includes(status)) {
+    found.push(`${where}: ${/^[aeiou]/u.test(status) ? 'an' : 'a'} ${status} result belongs only in a chip row; a run's log records the same step as applied, decided, fixed or verified`);
+  }
   if (rest[0] === 'chip' && chips) found.push(...chipRowProblems(rest, chips, where));
-  const reviewerRow = rest[0].startsWith('review');
+  const reviewerRow = isHandOffReview(rest[0]);
   return reviewerRow ? found : [...found, ...missingPaths(rest[3], where)];
 }
 
@@ -168,10 +202,10 @@ function stampTranscript(cells, run) {
 
 function appendOnlyLabelProblems(log, row, earlier, where) {
   const [, phase, , , evidence, result] = row.split('\t');
-  if (phase.startsWith('review')) return [];
+  if (isHandOffReview(phase)) return [];
   const status = statusOf(result);
   if (!NOT_PASSED.includes(status) && status !== 'accepted') return [];
-  const labels = proofLabels(evidence, plansDir());
+  const labels = proofLabels(evidence, plansDir(), onDisk);
   const found = labels
     .filter((label) => label.path && !label.exists)
     .map((label) => `${where}: proof: ${label.path} names no file`);
@@ -255,7 +289,7 @@ function append(path, batch, run) {
       found.push(`${where}: a later round's seats row needs a writing row after the previous seats row: log the round's writing passes under phase writing, or log a writing row that says why none ran`);
     }
     if (opens(row) && rounds >= MAX_ROUNDS) {
-      found.push(`${where}: this would be panel round ${rounds + 1} since the last restart, past the cap of ${MAX_ROUNDS}. Stop reviewing: settle each open finding as applied, dismissed with its reason, deferred with its owner when it is not critical, or open with its patch: and owner:, then build. A build row whose decision starts with "built:" and names the files a plan's build changed, with a result that starts applied, fixed, partial, proven, recorded or verified, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again`);
+      found.push(`${where}: this would be panel round ${rounds + 1} since the last restart, past the cap of ${MAX_ROUNDS}. Stop reviewing: settle each open finding as applied, dismissed on its proof, deferred with its owner when it is not critical, or open with its patch:, owner: and stop: when the Panel review rule lets it stay open, pivoting the run for a critical the lead must apply, then build a plan or move a diff to its next gate. A build row whose decision starts with "built:" and names the files a plan's build changed, with a result that starts applied, fixed, partial, proven, recorded or verified, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again`);
     }
     if (restartsRoundCount(row)) rounds = 0;
     if (opens(row)) {
@@ -274,16 +308,28 @@ function append(path, batch, run) {
   return [];
 }
 
-function lastStage(path, rows) {
+function stageMoves(path) {
   const phases = existsSync(path)
     ? readFileSync(path, 'utf8').split('\n').slice(1).filter((line) => line.trim()).map((line) => line.split('\t')[1])
     : [];
-  const covered = phases.slice(0, rows ?? phases.length);
-  const index = covered.findLastIndex((_, at) => stageOfRow(covered, at));
-  return index < 0 ? null : stageOfRow(covered, index);
+  const stages = phases.map((_, index) => stageOfRow(phases, index)).filter(Boolean);
+  return stages.filter((stage, index) => stage !== stages[index - 1]);
+}
+
+function stagePage(log) {
+  const plan = log.replace(/\.decisions\.tsv$/u, '.md');
+  if (trunk() || process.env.CLAUDECODE !== '1' || plan === log || !existsSync(plan)) return;
+  try {
+    const { error, lines = [] } = pageStop(['stage', plan], process.env);
+    if (error) console.error(`No page publish: ${error}`);
+    if (lines.length) console.info(lines.join('\n'));
+  } catch (error) {
+    console.error(`No page publish: ${error.message}`);
+  }
 }
 
 const args = process.argv.slice(2);
+runLedgerCommandFromMainCheckout(args);
 if (args[0] === 'rounds') {
   if (!args[1] || !existsSync(args[1])) {
     console.error(args[1] ? `no log at ${args[1]}` : 'Usage: node .agents/pstack/decisions-check.mjs rounds <log.decisions.tsv>');
@@ -302,23 +348,13 @@ if (args[0] === 'chips') {
     console.error("--session takes this session's id, the one the runtime's session tool gives it");
     process.exit(2);
   }
-  const option = (name, fallback) => {
-    const index = args.indexOf(name);
-    const value = index === -1 ? fallback : Number(args[index + 1]);
-    if (!(value > 0)) {
-      console.error(`${name} takes a positive number`);
-      process.exit(2);
-    }
-    return value;
-  };
-  const valued = new Set(['--session', '--timeout', '--every', '--sessions'].flatMap((name) => (args.includes(name) ? [args.indexOf(name), args.indexOf(name) + 1] : [])));
-  const rest = args.filter((arg, index) => index > 0 && arg !== '--fetch' && !valued.has(index));
+  const { rest, logAt } = chipsArgs(args);
   if (rest[0] === 'id') {
     console.info(newId());
     process.exit(0);
   }
   const id = rest[0] === 'brief' ? rest[1] : null;
-  const named = rest[0] === 'brief' ? rest[2] : ['stale', 'wait', 'all', 'cleanup'].includes(rest[0]) ? rest[1] : rest[0];
+  const named = args[logAt];
   const ledger = named ?? join(plansDir(), LEDGER);
   if (!existsSync(ledger)) {
     console.error(named ? `no log at ${ledger}` : `No ledger at ${ledger} yet; run this from the project root.`);
@@ -401,45 +437,6 @@ if (args[0] === 'chips') {
     console.info(rows.length ? `${rows.length} open suggested tasks in ${ledger}, the likeliest stale first:\n${rows.join('\n')}` : `No open suggested tasks in ${ledger}.`);
     process.exit(0);
   }
-  if (rest[0] === 'wait') {
-    const branch = projectConfig().branch;
-    const state = () => {
-      const rows = readFileSync(ledger, 'utf8').split('\n').slice(1);
-      const now = readTasks(rows);
-      const view = board(now, gitMerges({ branch }), here, owning);
-      const started = [...now.values()].filter((task) => task.status === 'started' && here !== null && task.session === here);
-      return {
-        ready: view.cardable.map((task) => task.id),
-        landed: [...now.values()].filter((task) => task.status === 'landed').map((task) => task.id),
-        started: new Map(started.map((task) => [task.id, `${task.id} in ${task.startedIn ? `session ${task.startedIn}` : 'a session its started row does not name'}, carded at ${cardEffortOf(task, maxEffort())}, brief at ${effortOf(task, maxEffort())}`])),
-      };
-    };
-    const minutes = option('--timeout', Infinity);
-    const start = state();
-    const deadline = Date.now() + minutes * 60_000;
-    while (Date.now() < deadline) {
-      await new Promise((done) => setTimeout(done, option('--every', 30) * 1000));
-      const now = state();
-      const turned = now.ready.filter((each) => !start.ready.includes(each));
-      const landedNow = now.landed.filter((each) => !start.landed.includes(each));
-      const startedNow = [...now.started].filter(([each]) => !start.started.has(each)).map(([, text]) => text);
-      if (turned.length || landedNow.length || startedNow.length) {
-        console.info(
-          [
-            landedNow.length ? `Landed: ${landedNow.join(', ')}.` : '',
-            turned.length ? `Ready with no card: ${turned.join(', ')}.` : '',
-            startedNow.length ? `Started: ${startedNow.join('; ')}.` : '',
-            startedNow.length ? "Lower to its brief's effort, with the session tool, each started session above it that still runs at its card's effort, or at yours when the suggest tool took no effort; a session at any other effort is the owner's choice. Then run the chips sweep." : 'Run the chips sweep.',
-          ]
-            .filter(Boolean)
-            .join(' ')
-        );
-        process.exit(0);
-      }
-    }
-    console.info('No task landed, started or turned ready before the timeout; run the sweep, then chips wait again while any task is started or carded.');
-    process.exit(0);
-  }
   if (rest[0] === 'brief') {
     const task = tasks.get(id ?? '');
     if (!task) {
@@ -463,8 +460,7 @@ if (args[0] === 'append') {
           .filter((line) => line.trim())
           .map((line) => line.split('\t'))
       : [args.slice(2)];
-  const rowsBefore = existsSync(args[1] ?? '') ? readFileSync(args[1], 'utf8').split('\n').slice(1).filter((line) => line.trim()).length : 0;
-  const stageBefore = lastStage(args[1] ?? '', rowsBefore);
+  const before = stageMoves(args[1] ?? '').length;
   const run = currentLead(basename(args[1] ?? ''));
   if (!run) console.error(`No single session transcript holds this command, so ${args[1]} gets no lead row naming the model and effort.`);
   const found = batch.length === 0 ? [`${args[3]} holds no rows`] : append(args[1] ?? '', batch, run);
@@ -474,8 +470,9 @@ if (args[0] === 'append') {
   }
   console.info(batch.length > 1 ? `Appended ${batch.length} rows to ${args[1]}.` : `Appended a row to ${args[1]}.`);
   if (run) console.info(`Lead: ${leadLabel(run)}.`);
-  const stage = lastStage(args[1]);
-  if (stage && stage !== stageBefore) console.info(`Stage: ${stage}. Rename the session now, as .agents/pstack/rules/title.md says.`);
+  const entered = stageMoves(args[1]).slice(before);
+  if (entered.length) console.info(`Stage: ${entered.join(', then ')}.${existsSync(new URL('rules/title.md', import.meta.url)) ? ' Rename the session now, as .agents/pstack/rules/title.md says.' : ''}`);
+  stagePage(args[1]);
   process.exit(0);
 }
 const paths =

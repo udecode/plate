@@ -25,8 +25,9 @@ mirrors, local links, locks and plugin pin. The root check and CI run it too.
 Run the plugin's `skills/poteto-mode/scripts/check-playbooks.mjs` after a
 playbook edit. pstack helpers under `.agents/pstack` are shared copies.
 
-Plans live under `docs/plans`; decision logs sit beside them. `plan-page`
-renders local HTML under ignored `docs/plans/artifacts`. Codex links the local
+Work that spans sessions or goes into a PR keeps its plan under `docs/plans`,
+with its decision log beside it; other work keeps its log local and replies in
+chat. `plan-page` renders local HTML under ignored `docs/plans/artifacts`. Codex links the local
 page. Native behavior needs matching browser proof; a workflow routing smoke
 does not prove editor behavior.
 
@@ -38,7 +39,8 @@ the run's close never waits on it.
 Ordinary completed work uses a topic branch and PR into main. Beta-only work
 targets next. Main and next are never direct push defaults. The lead edits and
 verifies; subagents research and review. API plans get architect and plan
-review, API builds get diff review, and every new PR gets a diff panel.
+review, API builds get diff review, and every new PR gets a diff panel. A
+change to agent instructions gets one round, and its fixes land without another.
 Public comments, reviews, merges and releases require explicit authority.
 
 The template preset is a smaller consumer-app setup. CI regenerates template
