@@ -17,7 +17,7 @@ Paths in these instructions are relative to the repository root.
   - `.agents/playbooks/perf-issue.md`, on top of pstack's `perf-issue` and `hillclimb`. Use it to benchmark, profile or compare Plate, Plite or Slate speed, to find, explain or repair a performance regression or a lying benchmark, or for `benchmark [scope]` and `benchmark only <lane-or-target>`.
   - `.agents/playbooks/plan.md`, on top of pstack's `multi-phase-plan`. Use it for a Pursue verdict, which continues into it, for "plan", `plan <goal>`, "design plan", or an architecture or API adoption plan.
   - `.agents/playbooks/refactoring.md`, on top of pstack's `refactoring`. Use it to audit or simplify Plate or Plite code ownership, such as "clean up <code surface>", "simplify <package>" or a structural audit that deletes, merges, inlines or splits code; retiring docs goes to `research` instead.
-  - `.agents/playbooks/verdict.md`, on top of pstack's `investigation`. Use it for "next", "what's next", "review <scope>" when the scope is not a PR, "again" after a verdict, or `verdict`.
+  - `.agents/playbooks/verdict.md`, on top of pstack's `investigation`. Use it for `verdict` on any input, "what would you do from <material>", "review <scope id>" when the scope is not a PR, `audit <scope or group id>`, a design-question chip in a `review-<id>` topic, or "again" after a verdict.
 - If no `pstack:*` skills are available, stop and ask the user to install the plugin before engineering work. In Claude Code they trust the folder and run `claude plugin install pstack@pstack-claude --scope project`. In Codex they run `codex plugin marketplace add michael-denyer/pstack-claude --ref v0.9.88` and `codex plugin add pstack@pstack-claude` from their home directory, then trust the session hook in `/hooks`. Codex loads only the first 32 KiB of `AGENTS.md` by default, and this file is longer, so they also put `project_doc_max_bytes = 131072` above the first table in `~/.codex/config.toml`.
 - The latest user correction wins over every rule. This file's rules outside this block win over the overrides inside it, and those win over pstack. pstack's hook itself says project instructions take precedence.
 - Two model families, Claude and Codex. Plans, designs and first drafts start in Claude Code. Claude Code runs every pstack role on `opus`, per `~/.claude/pstack-models.md`, and never dispatches fable, sonnet or haiku. Codex runs `gpt-6.1-sol`, and every role there inherits it, per `~/.codex/pstack-models.md`. The exception in both is a panel seat or an `architect` or arena runner, which runs on its named model for model diversity; in Claude Code, an extraction role the sheet sends to Codex is another, as the Extraction rule says. So is a read-only fan-out reader the lead starts over files on disk, as the same rule says.
@@ -58,7 +58,7 @@ Paths in these instructions are relative to the repository root.
 ## Plate overrides of pstack
 
 - **Astra effort.** Panel seats and `architect` and arena runners seat `codex:gpt-6-astra @xhigh` instead of the models sheets' `@high`, because at `high` most of Astra's findings repeated another seat's. The Opus and Sol seats keep the sheets' values. This wins over the models sheets (owner's word, 2026-10-06).
-- **Chips priority.** A new product design question goes to its scope's review page, or to a new scope file when no scope owns it, never to a chips `decide` task, so the review ledger holds every question a release waits on. `chips` offers the ledger's open items as P1 tasks through `chips.ship` in `.agents/pstack.json`, which runs `node tooling/scripts/review-ledger.mjs ship` (owner's word, 2026-10-19).
+- **Chips priority.** A new product design question goes to a chips `decide` task in topic `review-<scope>`, as the Verdict playbook's Topics says. It is P1 with `ship:` when its scope has an open ship item and P2 otherwise, because chips hold questions and the review ledger keeps answers. A hard cut's question is the exception and still goes to the review ledger, as Hard cuts says. `chips` offers the ledger's open items as P1 tasks through `chips.ship` in `.agents/pstack.json`, which runs `node tooling/scripts/review-ledger.mjs ship` (owner's word, 2026-10-19).
 
 ## Source authority
 
@@ -85,8 +85,9 @@ pstack's poteto-mode picks the playbook, and the Plate owner below supplies the 
 | --- | --- |
 | Durable architecture and product law | `VISION.md` and scoped `docs/vision/`, per Source authority |
 | Editor behavior law and coverage evidence | `docs/editor-behavior/**`, reconciled per Source authority |
-| Picking the next item, a plan, its execution, a bug fix and PR closure | the project playbooks listed in the pstack block (`.agents/playbooks/`) |
-| Whether an API or architecture proposal earns further work | `verdict` |
+| A plan, its execution, a bug fix and PR closure | the project playbooks listed in the pstack block (`.agents/playbooks/`) |
+| "next" and "what's next" | the `chips` skill's answer to a question about open chips, which writes no page or plan, whatever the Plan pages rule or the `plan-page` skill says of a "next" answer |
+| What to do from any input, and whether an API or architecture proposal earns further work | `verdict` |
 | Public call shape and reusable API debt | `best-api` |
 | Architecture and API adoption plans, and read-only architecture audits, Plate or Plite | the Plan playbook with `.agents/playbooks/references/architecture.md` (its Audit section for a read-only audit) |
 | Complete Plate feature across packages, UI, docs and release | `plate-plugins` feature delivery, through the Plan and Build playbooks |

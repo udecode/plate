@@ -74,8 +74,6 @@ Under the new reflect rule, one Backlog item is built here: the checks now take 
 - `plan-open.mjs` accepts a `stop:` that closes nothing. owner: zbeyens; stop: 2026-11-06; tracked: here.
 - A check script reads a `*-baseline.json` without `finding-baseline.mjs`. owner: zbeyens; stop: the next `/pstack:correct` run here; tracked: here.
 - The `any` ban in `AGENTS.md` conflicts with the lint config. owner: zbeyens, who picks which side wins; stop: 2026-11-06; tracked: here.
-- `review-ledger.mjs next` cannot be replayed. owner: zbeyens; stop: the next owner correction of a ledger recommendation; tracked: here.
-- `next` sees only this checkout. owner: zbeyens, who confirms whether sessions work outside it; stop: 2026-11-06; tracked: here.
 - `git grep` options after the pattern. owner: zbeyens, through a user-scope hook; stop: 2026-11-06; tracked: here.
 - zsh `=word` expansion. owner: zbeyens, through `~/.zshenv` or a hook; stop: 2026-11-06; tracked: here.
 - HEAD moves under a proof unnoticed. The checks' half is built as `PSTACK_BASE`; a warning from the proof helper is not. owner: zbeyens; stop: the next run whose proof crosses an owner commit; tracked: here.

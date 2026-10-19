@@ -9,18 +9,19 @@ playbook, and the Plate skills below supply each domain's method and proof. You
 do not need to coordinate the specialist handoffs yourself.
 [AGENTS.md](../../AGENTS.md) has the install steps and the routing table.
 
-Plate adds playbooks on top of pstack's in [`.agents/playbooks/`](../../.agents/playbooks/), and the pstack block in `AGENTS.md` lists them, so a plain request reaches them. The v2 release loop stops at four points:
+Plate adds playbooks on top of pstack's in [`.agents/playbooks/`](../../.agents/playbooks/), and the pstack block in `AGENTS.md` lists them, so a plain request reaches them. The v2 release loop stops at these points:
 
 | Stop | You say | What runs | It stops with |
 | --- | --- | --- | --- |
-| Next item | "next" | [Verdict](../../.agents/playbooks/verdict.md): `review-ledger.mjs next` and `status` | The open ledger unit, why it is open, its prior work and the release counts |
-| Review | "review <scope>", then "again" or "panel" to iterate | `verdict` | A Stop, Pursue or Defer verdict with the current and proposed call site, and how it reaches each scope that imports the reviewed one |
+| Next | "next" | [chips](../../.agents/skills/chips/SKILL.md)'s answer to a question about open chips, which writes nothing | The board, release work first and the rest as counts |
+| Intake | "verdict <doc, draft, issue or idea>" or "what would you do from this?" | [Verdict](../../.agents/playbooks/verdict.md)'s intake | One page with pushback, an outcome per item and an order, and a chip offered for each open item |
+| Review | "review <scope id>", then "again" or "panel" to iterate | `verdict`'s deep path | A Stop, Pursue or Defer verdict with the current and proposed call site, and how it reaches each scope that imports the reviewed one |
 | Plan | "plan" | [Plan](../../.agents/playbooks/plan.md), with its architecture reference for API or architecture work | The ready plan and its open questions |
-| Execute | "go" | [Build](../../.agents/playbooks/build.md): every slice without pausing, then `verify`, with the specs of each editor feature that has a scenario catalog run in every engine, and the plan's landed `Status:` | The page link, then the next ledger item offered as a one-click task |
+| Execute | "go" | [Build](../../.agents/playbooks/build.md): every slice without pausing, then `verify`, with the specs of each editor feature that has a scenario catalog run in every engine, and the plan's landed `Status:` | The page link, then a line naming each card the chips sweep offered |
 
 Bugs go through [Bug fix](../../.agents/playbooks/bug-fix.md) and finishing a PR or the current tree through [Babysit](../../.agents/playbooks/babysit.md). "review PR <number>" on someone else's PR runs a review-only panel through Babysit and returns findings without editing anything. A structural cleanup runs [Refactoring](../../.agents/playbooks/refactoring.md), and a slowness report runs [Perf issue](../../.agents/playbooks/perf-issue.md) with `benchmark`.
 
-Verdict assesses whether a direction earns more work, Best API designs
+Verdict says what to do from an input and assesses whether a direction earns more work, Best API designs
 its public contract, and the Plan playbook owns adoption and proof for the Plate or
 Plite layer. A review alone does not start implementation.
 
@@ -61,7 +62,7 @@ These are optional shortcuts for a specific job, not a sequence to run.
 
 A planning-only request stops at a reviewable plan. Any other request runs to its close. Agents stop only for a production deploy or release, a push to `main`, a force-push to a shared branch, a message to a customer or anyone outside the team, a comment, label or close on a public issue or PR, and deleting data the run did not create. Two kinds of folder are not data and go without asking. Each session removes its own worktree once its task lands. `/cleanup` deletes the rest, and only what its scan marks safe: idle Next.js caches no server holds, other than each app's own `.next` build, and worktrees an agent made that no running session or process, and no recent session transcript, uses, after it saves their uncommitted changes as a patch. Every other call they make shows under Picked for you with the word that reverses it, and a call with no clear pick takes its most reversible option. Add "stop at plan", "stop at design" or "stop before ship" to a request to stop sooner.
 
-When an agent finds that the accepted design cannot meet a requirement, such as a frozen budget it misses or a cost only a new owner or stored shape removes, it pivots at once. It runs `architect`, writes a plan that adopts the winner and builds it, and holds every step that only finishes the old design. It never parks such a finding in Open work, a deferred benchmark cause or a session card, unless you said to keep it until a date. Session cards hold only side work, or a measurement that does not fit a run's one-hour budget. The agent records each one as a suggested task in the ledger `docs/plans/suggested-tasks.decisions.tsv` in the main checkout. Cards, whose briefs name the files and what done looks like, appear when you type `/chips`, when a verdict run ends and when every card task you started has landed, and you start each one when you want.
+When an agent finds that the accepted design cannot meet a requirement, such as a frozen budget it misses or a cost only a new owner or stored shape removes, it pivots at once. It runs `architect`, writes a plan that adopts the winner and builds it, and holds every step that only finishes the old design. It never parks such a finding in Open work, a deferred benchmark cause or a session card, unless you said to keep it until a date. Session cards hold only side work, or a measurement that does not fit a run's one-hour budget. The agent records each one as a suggested task in the ledger `docs/plans/suggested-tasks.decisions.tsv` in the main checkout. Cards, whose briefs name the files and what done looks like, appear when you type `/chips`, when a deep verdict run ends and when every card task you started has landed, and you start each one when you want.
 
 For long unattended work, state a checkable exit condition. pstack's Autonomous
 run keeps going with `/loop` in Claude Code or `/goal` in Codex, and the domain
@@ -170,7 +171,7 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 | --- | --- |
 | [benchmark](../../.agents/skills/benchmark/SKILL.md) | Measure and repair Plate/Plite performance, or review a performance design before running its applicable benchmark lanes. |
 | [best-api](../../.agents/skills/best-api/SKILL.md) | Design, review or repair a Plate or Plite public call shape with the Plate API lens. |
-| [verdict](../../.agents/skills/verdict/SKILL.md) | Reconcile earlier reviews, then judge whether a Plate or Plite API or architecture direction earns further work before detailed design or implementation, and write the verdict into the review page's front matter. |
+| [verdict](../../.agents/skills/verdict/SKILL.md) | Say what to do from any input, such as a doc, draft, issue, PR or idea, with pushback, an outcome per item and a chip for each open question, or judge one Plate or Plite review scope by its exact id with a Stop, Pursue or Defer written into its review page's front matter. |
 | [changeset](../../.agents/skills/changeset/SKILL.md) | Write and verify package release changesets, registry changelog entries, and the PR’s managed auto-release choice. |
 | [issue-harvester](../../.agents/skills/issue-harvester/SKILL.md) | Maintain exhaustive Slate/Plate issue-closure ledgers from current issue, PR, test and local proof evidence. |
 | [maintainer](../../.agents/skills/maintainer/SKILL.md) | Triage public Plate/Slate issues, PRs and security queues, then route authorized work and exact public proof. |

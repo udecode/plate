@@ -21,7 +21,7 @@ updated: YYYY-MM-DD
 
 ### Open questions
 
-An open question has no page of its own: it sits in the subject file or area page it blocks, naming its owner and the evidence that would close it.
+An open design question has no page of its own. It is a chips `decide` task, as the Verdict playbook's Topics says, naming its owner and the evidence that would close it. A hard cut's question is the exception and gets a scope file.
 
 ## Field Meanings
 
@@ -85,7 +85,7 @@ Stable scope ids identify the user question across package and symbol renames. P
 - `opportunity.score` uses `review-payoff-v1`: 0 means no expected value from review, 5 a bounded feature question, 10 a large shared-owner opportunity or a material unresolved design. Dependencies decide eligible work, payoff breaks ties, and `last: true` keeps AI after everything else.
 - `historyCandidates` are filename-discovered plan links for intake, not inspected verdicts.
 
-For a new proposal with no matching scope, add a scope file with the semantic question and its current comparison owners and inputs. A proposed scope can have no members; its `owners` and `evidenceInputs` name the real comparator files, which its reviews' freshness reads.
+A scope's deep review creates its scope file when a design-question chip whose `writes:` names that file starts it, and a deep verdict that another playbook runs on a target no scope owns adds one for that target. A hard cut's question gets one too, and that is the only scope file a verdict intake creates. A scope file holds the semantic question and its current comparison owners and inputs. A proposed scope can have no members; its `owners` and `evidenceInputs` name the real comparator files, which its reviews' freshness reads.
 
 ### Review and plan front matter
 
@@ -141,7 +141,6 @@ Nothing below is stored.
 
 | Command | Use |
 | --- | --- |
-| `next` | The first queue unit with a `fork`, `unreviewed` or `pursue-not-adopted` scope, with its compact lookup |
 | `status` | Open-state counts, the unowned-source count and the ordered queue |
 | `ship` | Each open scope except a deferred one, in queue order, as the JSON items `chips` offers as P1 tasks, each marked busy while a plan touched in the last 14 days works on it |
 | `lookup <scope\|group\|path\|term> [--detail]` | Compact summaries; a term matches scope ids, titles, questions, scope paths and retired feature-group names; `--detail` adds full records, plans and documents |

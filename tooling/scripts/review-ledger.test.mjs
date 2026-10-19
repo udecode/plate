@@ -20,7 +20,6 @@ import {
   freshness,
   loadLedger,
   lookup,
-  next,
   observe,
   orderUnits,
   recordsDir,
@@ -299,7 +298,7 @@ test("readers tolerate another session's half-written ledger files", (t) => {
 
   assert.equal(coverage(root).unowned.total, 1);
   assert.equal(status(root).scopes, 3);
-  assert.ok(next(root).unit);
+  assert.notDeepEqual(ship(root), []);
 });
 
 test('a broken scope file fails check and leaves lookup of another scope working', (t) => {
@@ -588,29 +587,6 @@ test('a later open plan on the same Pursue reopens it', (t) => {
   assert.equal(openOf(root, 'comments'), 'pursue-not-adopted');
 });
 
-test('next skips a scope whose open plan is in flight and names that plan', (t) => {
-  const { root, put, git } = fixture(t);
-  const review = (id, state) =>
-    plan(put, `docs/plans/2026-09-01-${id}-review.md`, {
-      scopes: [id],
-      basis: [],
-      verdict: 'pursue',
-      state,
-      commit: headOf(git),
-    });
-  review('comments', 'reviewed');
-  review('link', 'reviewed');
-  const first = next(root).unit;
-  const other = first === 'comments' ? 'link' : 'comments';
-
-  review(first, 'building: phase 2');
-
-  assert.equal(next(root).unit, other);
-  assert.deepEqual(next(root).inFlight, [
-    { plans: [`docs/plans/2026-09-01-${first}-review.md`], scope: first },
-  ]);
-});
-
 test('ship lists each open scope in queue order and marks one an open plan works on', (t) => {
   const { root, put, git } = fixture(t, [
     scope('comments', { opportunity: { score: 9, reason: 'First.' } }),
@@ -641,48 +617,19 @@ test('ship lists each open scope in queue order and marks one an open plan works
   assert.equal(ship(root)[0].busy, true);
 });
 
-test('next still offers a scope whose open plan has not changed for weeks', (t) => {
+test('ship stops marking a scope busy once its open plan has not changed for weeks', (t) => {
   const { root, put, git } = fixture(t);
-  const review = (id, state) =>
-    plan(put, `docs/plans/2026-09-01-${id}-review.md`, {
-      scopes: [id],
-      basis: [],
-      verdict: 'pursue',
-      state,
-      commit: headOf(git),
-    });
-  review('comments', 'reviewed');
-  review('link', 'reviewed');
-  const first = next(root).unit;
-
-  review(first, 'building: phase 2');
+  plan(put, 'docs/plans/2026-09-01-comments-review.md', {
+    scopes: ['comments'],
+    basis: [],
+    verdict: 'pursue',
+    state: 'building: phase 2',
+    commit: headOf(git),
+  });
   git('add', '-A');
   git('commit', '-qm', 'stale plan', '--date', '2026-01-01T00:00:00Z');
 
-  assert.equal(next(root).unit, first);
-  assert.equal(next(root).inFlight, undefined);
-});
-
-test('next lists uncommitted member files of the scope it offers', (t) => {
-  const { root, put, git } = fixture(t);
-  for (const id of ['comments', 'link']) {
-    plan(put, `docs/plans/2026-09-01-${id}-review.md`, {
-      scopes: [id],
-      basis: [],
-      verdict: 'pursue',
-      state: 'reviewed',
-      commit: headOf(git),
-    });
-  }
-  git('add', '-A');
-  git('commit', '-qm', 'reviews');
-  const [offered] = next(root).scopes;
-
-  put(`packages/core/src/${offered.id}/index.ts`, 'export const edited = 2;');
-
-  assert.deepEqual(next(root).scopes[0].uncommitted, [
-    `packages/core/src/${offered.id}/index.ts`,
-  ]);
+  assert.equal(ship(root).find((item) => item.id === 'comments').busy, false);
 });
 
 test('a historical import beside a review does not fork the scope', (t) => {

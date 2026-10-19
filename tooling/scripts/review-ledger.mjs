@@ -1418,17 +1418,6 @@ const changedWithin = (root, path, now) =>
   now - Number(git(root, ['log', '-1', '--format=%at', '--', path])) * 1000 <
     IN_FLIGHT_DAYS * 86_400_000;
 
-const uncommittedMembers = (root, scope) =>
-  (scope.members?.length
-    ? (git(root, ['status', '--porcelain', '--', ...scope.members]) ?? '')
-    : ''
-  )
-    .split('\n')
-    .filter(Boolean)
-    .map((line) => line.slice(3))
-    .sort(byCodeUnit);
-
-/** Months-old plans still carry an open Status, so only a plan touched within IN_FLIGHT_DAYS claims its scope. */
 const inFlightPlans = (root, plans, scopeId, now) =>
   plans
     .filter(
@@ -1439,50 +1428,6 @@ const inFlightPlans = (root, plans, scopeId, now) =>
     )
     .map((plan) => plan.path)
     .sort(byCodeUnit);
-
-export function next(root) {
-  const ledger = loadLedger(root);
-  const tree = observe(root);
-  const plans = plansOf(root, ledger);
-  const open = (id) =>
-    ['fork', 'unreviewed', 'pursue-not-adopted'].includes(
-      openState(ledger, id, plans).open
-    );
-  const inFlight = [...ledger.scopes.keys()]
-    .filter(open)
-    .map((scope) => ({
-      plans: inFlightPlans(root, plans, scope, Date.now()),
-      scope,
-    }))
-    .filter((item) => item.plans.length > 0);
-  const busy = new Set(inFlight.map((item) => item.scope));
-  const actionable = (id) => open(id) && !busy.has(id);
-  const unit = orderUnits(ledger).find((item) => item.scopes.some(actionable));
-  const wip = inFlight.length > 0 ? { inFlight } : {};
-  if (!unit) {
-    return {
-      unit: null,
-      reason:
-        'No scope is open except those deferred on outside evidence or in flight.',
-      ...wip,
-      ...report(ledger),
-    };
-  }
-  return {
-    unit: unit.id,
-    title: unit.title,
-    scopes: unit.scopes.filter(actionable).map((id) => {
-      const scope = ledger.scopes.get(id);
-      const uncommitted = uncommittedMembers(root, scope);
-      return {
-        ...compact(ledger, tree, plans, scope),
-        ...(uncommitted.length > 0 ? { uncommitted } : {}),
-      };
-    }),
-    ...wip,
-    ...report(ledger),
-  };
-}
 
 const shipSteps = {
   unreviewed: (scope) => ({
@@ -2413,11 +2358,10 @@ export function researchRows(root) {
 }
 
 const usage =
-  'Usage: node tooling/scripts/review-ledger.mjs next|status|ship|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check [plan...]|research <term>';
+  'Usage: node tooling/scripts/review-ledger.mjs status|ship|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check [plan...]|research <term>';
 
 export function main(root, args) {
   const [command, argument] = args;
-  if (command === 'next') return next(root);
   if (command === 'status') return status(root);
   if (command === 'ship') return ship(root);
   if (command === 'lookup') {
