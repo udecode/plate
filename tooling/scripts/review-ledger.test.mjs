@@ -26,6 +26,7 @@ import {
   recordsDir,
   scopesDir,
   searchResearch,
+  ship,
   show,
   status,
 } from './review-ledger.mjs';
@@ -608,6 +609,36 @@ test('next skips a scope whose open plan is in flight and names that plan', (t) 
   assert.deepEqual(next(root).inFlight, [
     { plans: [`docs/plans/2026-09-01-${first}-review.md`], scope: first },
   ]);
+});
+
+test('ship lists each open scope in queue order and marks one an open plan works on', (t) => {
+  const { root, put, git } = fixture(t, [
+    scope('comments', { opportunity: { score: 9, reason: 'First.' } }),
+    scope('link'),
+    scope('table', { opportunity: { score: 1, reason: 'Last.' } }),
+  ]);
+  const review = (id, verdict, state) =>
+    plan(put, `docs/plans/2026-09-01-${id}-review.md`, {
+      scopes: [id],
+      basis: [],
+      verdict,
+      state,
+      commit: headOf(git),
+    });
+  review('comments', 'pursue', 'reviewed');
+  review('link', 'stop', 'reviewed');
+
+  assert.deepEqual(
+    ship(root).map(({ id, kind, busy }) => ({ id, kind, busy })),
+    [
+      { id: 'comments', kind: 'fix', busy: false },
+      { id: 'table', kind: 'decide', busy: false },
+    ]
+  );
+
+  review('comments', 'pursue', 'building: phase 2');
+
+  assert.equal(ship(root)[0].busy, true);
 });
 
 test('next still offers a scope whose open plan has not changed for weeks', (t) => {

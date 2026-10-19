@@ -1484,6 +1484,50 @@ export function next(root) {
   };
 }
 
+const shipSteps = {
+  unreviewed: (scope) => ({
+    title: `Review ${scope.title} (xhigh)`,
+    kind: 'decide',
+    finding: `Nobody has reviewed the ${scope.id} scope yet. Start it with verdict ${scope.id}.`,
+  }),
+  fork: (scope) => ({
+    title: `Settle the open fork in ${scope.title} (xhigh)`,
+    kind: 'decide',
+    finding: `The ${scope.id} scope has more than one current review. Start it with verdict ${scope.id}, which settles them into one.`,
+  }),
+  'pursue-not-adopted': (scope) => ({
+    title: `Build the pursued ${scope.title} design`,
+    kind: 'fix',
+    finding: `The ${scope.id} review's verdict is pursue, and no landed plan adopts it. Plan and build it from that review page through the Plan playbook.`,
+  }),
+};
+
+/** The open scopes in queue order, which chips offers as P1 tasks through `chips.ship` in `.agents/pstack.json`. A deferred scope waits on outside evidence, so it is left out. */
+export function ship(root) {
+  const ledger = loadLedger(root);
+  const plans = plansOf(root, ledger);
+  const now = Date.now();
+  return orderUnits(ledger).flatMap((unit) =>
+    unit.scopes.flatMap((id) => {
+      const scope = ledger.scopes.get(id);
+      const step = shipSteps[openState(ledger, id, plans).open];
+      if (!step) return [];
+      return [
+        {
+          id,
+          ...step({ id, title: scope.title ?? id }),
+          writes: [
+            'docs/plans',
+            ...(scope.owners ?? []).map((path) => path.replace(/\/$/, '')),
+          ],
+          topic: `review-${id}`,
+          busy: inFlightPlans(root, plans, id, now).length > 0,
+        },
+      ];
+    })
+  );
+}
+
 /** Markdown for people, printed instead of committed. */
 export function show(root, scopeId) {
   const ledger = loadLedger(root);
@@ -2369,12 +2413,13 @@ export function researchRows(root) {
 }
 
 const usage =
-  'Usage: node tooling/scripts/review-ledger.mjs next|status|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check [plan...]|research <term>';
+  'Usage: node tooling/scripts/review-ledger.mjs next|status|ship|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check [plan...]|research <term>';
 
 export function main(root, args) {
   const [command, argument] = args;
   if (command === 'next') return next(root);
   if (command === 'status') return status(root);
+  if (command === 'ship') return ship(root);
   if (command === 'lookup') {
     return lookup(root, argument, { detail: args.includes('--detail') });
   }

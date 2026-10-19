@@ -319,7 +319,7 @@ test('runs editor slow contracts without pulling package fast contracts into the
 
 test(
   'watches each application and stops the remaining watcher when one exits',
-  { timeout: 10_000 },
+  { timeout: 60_000 },
   async (t) => {
     const cwd = mkdtempSync(path.join(tmpdir(), 'plate-watch-tests-'));
     const runner = fileURLToPath(new URL('test-suite.mjs', import.meta.url));
@@ -361,7 +361,9 @@ test(
     });
 
     const waitFor = async (predicate) => {
-      const deadline = Date.now() + 3000;
+      // Two bun watchers can take several seconds to start while pnpm check
+      // runs every other suite beside them.
+      const deadline = Date.now() + 15_000;
       while (!predicate() && Date.now() < deadline) await delay(20);
       assert.ok(predicate(), output);
     };

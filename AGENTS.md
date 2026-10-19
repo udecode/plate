@@ -58,6 +58,7 @@ Paths in these instructions are relative to the repository root.
 ## Plate overrides of pstack
 
 - **Astra effort.** Panel seats and `architect` and arena runners seat `codex:gpt-6-astra @xhigh` instead of the models sheets' `@high`, because at `high` most of Astra's findings repeated another seat's. The Opus and Sol seats keep the sheets' values. This wins over the models sheets (owner's word, 2026-10-06).
+- **Chips priority.** A new product design question goes to its scope's review page, or to a new scope file when no scope owns it, never to a chips `decide` task, so the review ledger holds every question a release waits on. `chips` offers the ledger's open items as P1 tasks through `chips.ship` in `.agents/pstack.json`, which runs `node tooling/scripts/review-ledger.mjs ship` (owner's word, 2026-10-19).
 
 ## Source authority
 

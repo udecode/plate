@@ -25,6 +25,8 @@
 //        (exits 1 when the log is at the cap of panel rounds before a build)
 //        node .agents/pstack/decisions-check.mjs chips [--fetch] [--session <id>] [<ledger>]
 //        (prints every open suggested task as ready, started, waiting or unmigrated,
+//        by priority, listing P0 and P1 in full and counting the rest unless chips all,
+//        with the items of the chips.ship command as P1 offers when the config names one,
 //        its topic and a Do list of one pass, withdrawals, then ledger rows, then cards,
 //        and exits 1 when any pass holds a problem: a card on a task that cannot start,
 //        a wait that can never clear or two open design questions in one topic;
@@ -33,12 +35,13 @@
 //        this session, so it cards only the tasks it owns and each card it does not hold
 //        gets a check item instead of a withdraw problem)
 //        node .agents/pstack/decisions-check.mjs chips all --session <id> [--sessions <file>] [<ledger>]
-//        (also cards the tasks no session owns, and with the session tool's list saved as
-//        a JSON array, takes over each task whose owner session is archived or gone)
+//        (lists every priority, also cards the tasks no session owns, and with the session
+//        tool's list saved as a JSON array, takes over each task whose owner session is
+//        archived or gone)
 //        node .agents/pstack/decisions-check.mjs chips stale [<ledger>]
-//        (prints each open task's age, the paths it writes that were deleted since its offer
-//        or are missing, the commits on its paths since its offer, its closed PR waits and
-//        its card, likeliest stale first)
+//        (prints each open task's age, its priority, a ship item that closed, the paths it
+//        writes that were deleted since its offer or are missing, the commits on its paths
+//        since its offer, its closed PR waits and its card, likeliest stale first)
 //        node .agents/pstack/decisions-check.mjs chips id
 //        (prints a fresh id for a new task)
 //        node .agents/pstack/decisions-check.mjs chips brief <id> [<ledger>]
@@ -54,7 +57,7 @@ import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeF
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { currentLead, leadLabel, maxEffort } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
-import { board, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
+import { board, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -74,6 +77,8 @@ const restartsRoundCount = (line) => {
 const roundsSince = (lines) => lines.slice(lines.findLastIndex(restartsRoundCount) + 1).filter(opens).length;
 
 const git = gitMerges({ branch: projectConfig().branch });
+let shipped;
+const shipList = () => (shipped ??= readShip(projectConfig().chips?.ship));
 
 let ledgerTasks = null;
 const currentLedger = () => {
@@ -187,7 +192,7 @@ function missingFindingPaths(cells, where) {
 function newRowProblems(cells, where, chips, writer) {
   const found = [];
   if (cells[0] === 'chip' && chips) found.push(...missingFindingPaths(cells, where));
-  return [...found, ...(cells[0] === 'chip' && chips ? newChipRowProblems(cells, chips, where, git, writer) : []), ...baseRedProblems(cells[3], chips ?? currentLedger(), where)];
+  return [...found, ...(cells[0] === 'chip' && chips ? newChipRowProblems(cells, chips, where, git, writer, shipList) : []), ...baseRedProblems(cells[3], chips ?? currentLedger(), where)];
 }
 
 const transcriptOf = (run) => (run ? basename(run.transcript, '.jsonl') : null);
@@ -433,7 +438,7 @@ if (args[0] === 'chips') {
       }
       return [...seen.values()].sort((a, b) => b.time - a.time).map((commit) => commit.subject);
     };
-    const rows = staleReport(tasks, offeredAt(lines), { exists: existsSync, deletedSince, commitsSince, prState, now: Date.now() });
+    const rows = staleReport(tasks, offeredAt(lines), { exists: existsSync, deletedSince, commitsSince, prState, now: Date.now(), ship: shipList().items });
     console.info(rows.length ? `${rows.length} open suggested tasks in ${ledger}, the likeliest stale first:\n${rows.join('\n')}` : `No open suggested tasks in ${ledger}.`);
     process.exit(0);
   }
@@ -447,7 +452,7 @@ if (args[0] === 'chips') {
     (ok ? console.info : console.error)(text);
     process.exit(ok ? 0 : 1);
   }
-  const view = board(tasks, gitMerges({ fetch, branch: projectConfig().branch }), here, owning);
+  const view = board(tasks, gitMerges({ fetch, branch: projectConfig().branch }), here, { ...owning, ship: shipList() });
   console.info(renderBoard(view, ledger, maxEffort()));
   for (const note of startedOverlaps(tasks)) console.error(note);
   process.exit(view.problem ? 1 : 0);

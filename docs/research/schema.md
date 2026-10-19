@@ -143,6 +143,7 @@ Nothing below is stored.
 | --- | --- |
 | `next` | The first queue unit with a `fork`, `unreviewed` or `pursue-not-adopted` scope, with its compact lookup |
 | `status` | Open-state counts, the unowned-source count and the ordered queue |
+| `ship` | Each open scope except a deferred one, in queue order, as the JSON items `chips` offers as P1 tasks, each marked busy while a plan touched in the last 14 days works on it |
 | `lookup <scope\|group\|path\|term> [--detail]` | Compact summaries; a term matches scope ids, titles, questions, scope paths and retired feature-group names; `--detail` adds full records, plans and documents |
 | `show [scope]` | Markdown history of a scope, or the queue, on stdout |
 | `coverage [prefix]` | Unowned source and scope entries that match no file |
