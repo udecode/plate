@@ -39,7 +39,7 @@
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/test-audit/SKILL.md",
-      "computedHash": "7365534a1aa26dca40b6b622cc220be7505003d25b20dc9ee0fa736a25264ec6"
+      "computedHash": "62f080c26a8d871c4f11732868d9eaec7d340dae21255c64863c2224d31b104d"
     },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
