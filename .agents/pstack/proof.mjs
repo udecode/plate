@@ -63,7 +63,7 @@ export function prove({ dir, name, command, cwd = process.cwd(), timeout, stress
   const exit = report.timedOut ? 'ETIMEDOUT' : (report.code ?? report.signal ?? report.error ?? 'error');
   const { size } = statSync(path);
   const stopped = report.timedOut ? `timed out after ${timeout} seconds\n` : '';
-  appendFileSync(path, `${size > Buffer.byteLength(header) && tail(path, size, 1) !== '\n' ? '\n' : ''}${stopped}exit=${exit}\n`);
+  if (!report.logged) appendFileSync(path, `${size > Buffer.byteLength(header) && tail(path, size, 1) !== '\n' ? '\n' : ''}${stopped}exit=${exit}\n`);
   const shown = Math.min(size - Buffer.byteLength(header), OUTPUT_TAIL_BYTES);
   return { exit, path, output: tail(path, size, shown) };
 }
@@ -79,8 +79,22 @@ function superviseGroup([seconds, file, ...args]) {
       if (error.code !== 'ESRCH' && error.code !== 'EPERM') throw error;
     }
   };
+  // A stop signal sent to the whole group ends the parent proof.mjs too, and
+  // its pipe can still take the report, so the log gets the exit line here.
+  let stopped = null;
+  let logged = false;
+  const logExit = (cause, exit) => {
+    if (logged) return;
+    logged = true;
+    writeSync(1, `\n${cause}\nexit=${exit}\n`);
+  };
   const report = (value) => {
-    writeSync(3, JSON.stringify(value));
+    try {
+      writeSync(3, JSON.stringify({ ...value, logged }));
+    } catch (error) {
+      if (error.code !== 'EPIPE') throw error;
+      logExit('proof.mjs ended before its command', value.code ?? value.signal ?? value.error);
+    }
     process.exit(0);
   };
   let timedOut = false;
@@ -93,9 +107,11 @@ function superviseGroup([seconds, file, ...args]) {
   }
   for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
     process.on(signal, () => {
+      stopped ??= signal;
       killGroup('SIGTERM');
       setTimeout(() => {
         killGroup('SIGKILL');
+        logExit(`proof.mjs stopped by ${stopped}`, stopped);
         process.exit(128 + constants.signals[signal]);
       }, KILL_GRACE_MS);
     });
@@ -103,6 +119,7 @@ function superviseGroup([seconds, file, ...args]) {
   child.on('error', (error) => report({ error: error.code }));
   child.on('exit', (code, signal) => {
     if (timedOut) killGroup('SIGKILL');
+    if (stopped) logExit(`proof.mjs stopped by ${stopped}`, code ?? signal);
     report({ code, signal, timedOut });
   });
 }

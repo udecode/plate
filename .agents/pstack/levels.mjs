@@ -74,7 +74,7 @@ function targets(sheet, agents, defaultEffort, override, max) {
 }
 
 function leadGap(label, lead) {
-  if (!label) return 'no lead row names its level';
+  if (!label || label === 'unknown') return 'no verified lead names its level';
   const { model, effort } = parseLead(label);
   if (family(model) !== family(lead.model)) return family(lead.model) === 'claude' ? 'led in Codex, and plans start in Claude Code' : null;
   if (model !== lead.model) return `${model}, not ${lead.model}`;
@@ -140,8 +140,8 @@ function main(argv) {
   if (!logs.length) return [usage, 1];
   const missing = logs.find((log) => !existsSync(log));
   if (missing) return [`${missing} does not exist`, 1];
-  const found = flags.lead ? parseLead(flags.lead) : currentLead('levels.mjs');
-  if (!found?.effort) return ['No single recent Claude Code or Codex transcript holds this command, so the current level is unknown; pass --lead.', 1];
+  const found = flags.lead ? parseLead(flags.lead) : currentLead();
+  if (!found?.effort) return ['Runtime identity could not be verified against one transcript, so the current level is unknown; pass --lead.', 1];
   let max;
   try {
     max = maxEffort();
