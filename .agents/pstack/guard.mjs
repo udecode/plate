@@ -6,8 +6,12 @@
 // Denies an agent's `git push` that forces or deletes the branch or the
 // protected branch that .agents/pstack.json names: --force, -f, a short-flag
 // cluster holding f or d, --force-with-lease, --mirror, --delete, a `+`
-// refspec or a `:<branch>` refspec. A push with no refspec, or one whose
-// destination is HEAD, targets the current branch. It reads every command in
+// refspec or a `:<branch>` refspec. It also denies any other push to the
+// branch, because land.mjs squashes, checks and signs each landing there,
+// except a dry run and a push prefixed with PSTACK_RELEASE=1, which only a
+// project's release skill writes. A push with no refspec, or one whose
+// destination is HEAD, targets the current branch, and one with --tags and no
+// refspec targets no branch. It reads every command in
 // the line, including `bash -c` payloads and `$(...)` bodies, skips heredoc
 // bodies, passes every other command, and prints the command for the owner to
 // run in their own terminal. The owner's terminal never runs this hook. It
@@ -110,7 +114,7 @@ function eachCommand(command, visit, depth = 0) {
       if (PREFIXES.has(words[start])) wrapped = true;
       else if (!(wrapped && /^[-\d]/u.test(words[start])) && !/^[A-Za-z_]\w*=/u.test(words[start])) break;
     }
-    visit(words.slice(start));
+    visit(words.slice(start), words.slice(0, start));
     if (depth >= 4) continue;
     for (const [index, word] of words.entries()) {
       if (SHELLS.has(word.split('/').at(-1)) && /^-[A-Za-z]*c[A-Za-z]*$/u.test(words[index + 1] ?? '') && words[index + 2]) {
@@ -123,8 +127,9 @@ function eachCommand(command, visit, depth = 0) {
   }
 }
 
-// Returns the branches a forcing or deleting `git push` would rewrite, or null.
-function rewrites(words, cwd) {
+// Returns the branches a `git push` updates, whether it forces or deletes them
+// and whether it is a dry run, or null for any other command.
+function pushes(words, cwd) {
   if (words[0]?.split('/').at(-1) !== 'git') return null;
   let index = 1;
   let dir = cwd;
@@ -136,6 +141,8 @@ function rewrites(words, cwd) {
   let forced = false;
   let every = false;
   let deleting = false;
+  let dry = false;
+  let tags = false;
   const positional = [];
   for (let at = index + 1; at < words.length; at += 1) {
     const word = words[at];
@@ -148,9 +155,12 @@ function rewrites(words, cwd) {
     else if (word === '--mirror') forced = every = true;
     else if (word === '--all' || word === '--branches') every = true;
     else if (word === '--delete') deleting = true;
+    else if (word === '--dry-run') dry = true;
+    else if (word === '--tags') tags = true;
     else if (/^-[A-Za-z]+$/u.test(word)) {
       forced ||= word.includes('f');
       deleting ||= word.includes('d');
+      dry ||= word.includes('n');
     } else if (!word.startsWith('-')) positional.push(word);
   }
   const current = () => spawnSync('git', ['-C', dir, 'branch', '--show-current'], { encoding: 'utf8' }).stdout.trim();
@@ -163,9 +173,10 @@ function rewrites(words, cwd) {
     const dst = plain.includes(':') ? plain.slice(plain.lastIndexOf(':') + 1) : plain;
     targets.push(dst === 'HEAD' || dst === '@' ? current() : dst.replace(/^refs\/heads\//u, ''));
   }
-  if (!forced && !deleting) return null;
-  if (every) return ['*'];
-  return refspecs.length > 0 ? targets : [current()];
+  const rewriting = forced || deleting;
+  if (every) return { targets: ['*'], rewriting, dry };
+  if (refspecs.length > 0) return { targets, rewriting, dry };
+  return { targets: tags ? [] : [current()], rewriting, dry };
 }
 
 // Whether a command is `gh pr create` into the branch or with no base, which defaults to the repository's default branch.
@@ -294,16 +305,26 @@ const command = input.tool_input?.command;
 if (typeof command !== 'string') process.exit(0);
 const kept = new Set([config.branch, config.protected].filter(Boolean));
 const hits = new Set();
+let direct = false;
 let pr = false;
-eachCommand(command, (words) => {
-  for (const target of rewrites(words, input.cwd ?? process.cwd()) ?? []) {
-    if (target === '*') for (const name of kept) hits.add(name);
-    else if (kept.has(target)) hits.add(target);
+eachCommand(command, (words, prefix) => {
+  const push = pushes(words, input.cwd ?? process.cwd());
+  for (const target of push?.targets ?? []) {
+    for (const name of target === '*' ? kept : [target]) {
+      if (push.rewriting) {
+        if (kept.has(name)) hits.add(name);
+      } else if (name === config.branch && !push.dry && !prefix.includes('PSTACK_RELEASE=1')) direct = true;
+    }
   }
   pr ||= opensPr(words, config.branch);
 });
 const reasons = [];
 if (hits.size > 0) reasons.push(`agents never force-push or delete ${[...hits].join(' and ')}. Tell the owner, who can run it in their own terminal if they want it:\n  ${command}`);
+if (direct) {
+  reasons.push(
+    `agents push ${config.branch} only through \`node .agents/pstack/land.mjs\` from their worktree, which squashes the task, runs its checks and adds the Session: line review.mjs reads. Tell the owner, who can run it in their own terminal if they want it:\n  ${command}`
+  );
+}
 if (pr) {
   reasons.push(
     `agents open a PR into ${config.branch} only through \`node .agents/pstack/land.mjs\`, which renders the plan page as its body. A PR stacked on another branch names that branch with --base.`

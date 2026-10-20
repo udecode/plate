@@ -129,7 +129,9 @@ The script must:
   Version Packages PR
 - use a `[skip release]` sync commit only when no beta changesets were generated
 - verify the merge commit with `verify-main-to-next-sync`
-- push directly to `origin/next`
+- push directly to `origin/next`; a push you type yourself starts with
+  `PSTACK_RELEASE=1`, because `guard.mjs` denies every other agent push to
+  `next` outside `land.mjs`
 
 If the script stops on files outside known release metadata, do not guess.
 Resolve only when source ownership is obvious; otherwise stop with exact files.
@@ -161,7 +163,7 @@ git pull --ff-only origin next
 pnpm changeset pre enter beta
 git add .changeset/pre.json
 git commit -m "chore: enter beta pre-release mode [skip release]"
-git push origin next
+PSTACK_RELEASE=1 git push origin next
 ```
 
 If `.changeset/pre.json` already exists with `{ "mode": "pre", "tag": "beta" }`,
