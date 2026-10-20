@@ -8,7 +8,7 @@ review_inputs: [docs/plans/topics/proof.md, .agents/rules/verify.mdc, .agents/ru
 
 # Sweep: aim the team's hands-on beta pass at what tests missed
 
-Status: building: steps 1.1 to 1.5 landed; round 1's plan is written, and round 1 runs on live beta without the trial
+Status: building: round 1 is ready to run on live beta, without the planted-bug trial
 Topic: proof
 Playbook: plan
 
@@ -16,17 +16,17 @@ Playbook: plan
 
 ### What will change?
 
-Everything natamox needs before round 1 is built: the 129-page test list, a script that checks every page loads, the tester guide and the issue and fix rules. That script already found HTML Export broken on beta.
+Round 1 is ready: 117 beta pages split between natamox and Sin, each with a browser and a time limit, and 25 rechecks that cover every open beta bug. Twelve pages wait for their plugin's refactor.
 
 ### What could go wrong?
 
-Round 1 runs on live beta without the planted-bug trial, so the six moves stay untested until a later round. The page script always fails in WebKit, which warns about a header on the 45 pages with Plate Plus frames.
+Round 1 skips the planted-bug trial, so we still do not know whether the six set moves beat free clicking. The page script always fails in WebKit, which warns about a header on the 45 pages with Plate Plus frames.
 
 ## Teach
 
-A sweep is one round of hands-on testing. For each page, natamox opens beta next to the page it should match, such as the Slate example, records the screen and tests for a few minutes. Anything that differs from the reference is a possible bug, unless it is a feature only beta has.
+A sweep is one round of hands-on testing. For each page, a tester opens beta next to the page it should match, such as the Slate example, records the screen and tests for a few minutes. Anything that differs from the reference is a possible bug, unless it is a feature only beta has.
 
-We first tried writing checks ahead. In two trials, those lists held a past bug's exact steps in 1 of 60 tries; each bug needed a specific sequence nobody wrote down. So the tester picks each next action live. Round 1 compares six set moves, such as repeating an action at a second spot, with free clicking, on a copy of beta with old bugs put back.
+We first tried writing checks ahead. In two trials, those lists held a past bug's exact steps in 1 of 60 tries; each bug needed a specific sequence nobody wrote down. So the tester picks each next action live. Six set moves, such as repeating an action at a second spot, wait for a later round's trial against free clicking; round 1 uses free clicking on every page.
 
 Each find becomes an issue, then a fix with a test tagged by the issue. The issue stays on a recheck list until CI runs its test, so hand rechecks shrink as tests land.
 
@@ -35,15 +35,17 @@ Each find becomes an issue, then a fix with a test tagged by the issue. The issu
 | Decision | Pick | Alternative | Word | Impact |
 | --- | --- | --- | --- | --- |
 | What a tester does on a page | A timed, recorded session beside the reference page; the tester picks each next action live. The page list and time per page start untested; they are the least we can add to today's clicking around (look) | Checklists written ahead | checklists | big |
-| Six set moves | Tried in round 1; they stay only if they catch more of the old bugs we put back | Adopt them now; drop them now | moves now; no moves | big |
-| Round 1's trial | Runs during round 1, after this review, because only a person can test this way. That departs from the plan rule that trials run before review; your go approves it (look) | Hold the plan until a human pilot runs | pilot first | big |
-| What round 1's trial compares | Six set moves against free clicking, today's way of testing, with the same time per page | Add a third group of pages tested with written checklists, which leaves 4 old bugs per group | checklist arm | small |
+| Six set moves | Untested for now; a later round's planted-bug trial decides whether they stay | Adopt them now; drop them now | moves now; no moves | big |
+| When the trial runs | A later round, because no seeded preview came for round 1, so round 1 runs on live beta with free clicking on every page | Hold round 1 until a seeded preview exists | wait for preview | big |
+| What the trial compares | Six set moves against free clicking, today's way of testing, with the same time per page | Add a third group of pages tested with written checklists, which leaves 4 old bugs per group | checklist arm | small |
 | Who puts the old bugs back | You start that session, so natamox never sees which pages have them (look) | natamox's own session | natamox seeds | big |
 | A sweep skill | None. The verify skill prepares each round from a short guide for the tester, because in trials the skill's own rules did no better on the tasks tried (look) | Build the thin sweep rule and playbook anyway | skill anyway | big |
 | What aims the session | The six moves, each covering a kind of bug past fixes missed; no page gets its own list | Aim each page at its own past bugs | per-page aim | big |
 | Plate pages in P2 | Every docs page with a live demo, the example pages no docs page shows, and the playground, next to the same page on platejs.org; about 83 pages | Only the docs example pages; every generated docs route | examples only; every route | big |
 | Time per page | 8 minutes for a P1 or P2 page and 6 for P3 or P4, every round. This plan does not shrink it; a later plan decides from rounds 1 and 2 (look) | Halve the time on pages that stay clean | halve clean pages | big |
-| Round size | One session for every page, about three tester days in round 1; P6 starts only after the whole pass | Two tester days, with leftover pages waiting a round | two days | big |
+| Round size | One session for every page whose plugin's refactor has landed; about two and a half days with two testers in round 1; P6 starts only after the whole pass | Two tester days, with leftover pages waiting a round | two days | big |
+| Pages of plugins still being refactored | Wait for a later round; 12 Plate pages in round 1 (look) | Test every page | every page | big |
+| Open beta issues | Every open beta bug is a round 1 recheck, even on a held page; feature requests go to a verdict | Recheck only the issues this plan named | named issues | small |
 | Browsers per page | One per round, staggered by page so each round covers Chrome, Safari, Firefox and the iPhone; each page sees all four in four rounds | Every browser every round | every browser | big |
 | Order of work | Your order: test P1 to P5, then fix in that order, then test again | Fix P1 bugs before testing P2 | fix as found | big |
 | Agent-run testing | A step further, after the hand rounds work, in a later plan | Agents run sessions from round one | agents first | big |
@@ -58,12 +60,12 @@ Each find becomes an issue, then a fix with a test tagged by the issue. The issu
 | Gaps against other editors | Proposals that go through a verdict, not bug fixes | Treat each gap as a bug | gaps as bugs | small |
 | Public issues | Drafts; natamox publishes each confirmed one before its fix, so its test can carry the issue number | Fix from the local draft | fix from draft | small |
 | What beta is compared with | The live Slate and stable Plate sites | A pinned local Slate build | pinned slate | small |
-| Who tests | natamox, on a Mac and a real iPhone; Android waits for a real Android phone | Someone else you name; the Android emulator | another tester; emulator | small |
+| Who tests | natamox and Sin, each on a Mac and a real iPhone, splitting the pages by who fixed what recently; Android waits for a real Android phone | One tester; the Android emulator | one tester; emulator | small |
 | Running Plate browser tests in CI | Added with the first fix whose test is a Plate browser test, inside the check every pull request runs, for the tests in one regressions folder | Add it now for the whole suite | gate now | small |
 | The hidden Android page | Left to the Android device lane, not the hand rounds | Test it in P1 | android in P1 | detail |
 | Fix sessions | One session per find, one at a time per set of files | Suggested-task cards | cards | detail |
 | Videos | Session recordings stay on natamox's machine or on the issue, never in the repo | Store clips in the repo | store clips | detail |
-| Page link | A new proof page, Y6QsX8Ny4kbj1XG5XC3Pd1, because the old one, E6bAkaDFgx3iSEVtRV2oSH, now reads as another account's and refuses updates | Keep trying the old page | old page | detail |
+| Page link | A new proof page, Evweke9u3BjCdc42mnonEk, because the earlier ones, Y6QsX8Ny4kbj1XG5XC3Pd1 and E6bAkaDFgx3iSEVtRV2oSH, now read as another account's and refuse updates | Keep trying the old pages | old page | detail |
 | Plan review | Three models designed it twice, trials tested each part an agent can run, then three review rounds read it | Skip review | skip review | detail |
 | Hand-built example pages | HTML Export and Server-Side join P2, because the plan pairs HTML Export with its stable page | Leave them out of P2 | registry examples only | small |
 | Chinese pages in the page check | Check only Chinese pages that have their own text; the rest just show the English page, which is already checked. This is less than step 1.4 asked (look) | Open every Chinese address too | every chinese page | small |
@@ -77,9 +79,13 @@ Each find becomes an issue, then a fix with a test tagged by the issue. The issu
 
 ## Changed since the last page
 
-Round 5's panel asked for trials of the round bookkeeping and the card-picking section before this review, and both ran. The bookkeeping trial tied, so the sweep rule, its playbook and the card status script are gone. The picking trial caught 0 of 12 bugs either way. Across both picking trials, the checklists held a past bug's exact steps in 1 of 60 tries.
+Steps 1.1 to 1.5 landed on `next`. You skipped the planted-bug trial, so round 1 runs on live beta with free clicking on every page, and the six moves wait for a later round.
 
-So the plan pivoted. A second design round replaced checklists with timed sessions where the tester picks each action live, and round 1 tests six set moves against free clicking on a copy of beta with old bugs put back. The last review round then removed what nobody had tested: halving the time on clean pages and dropping pages from the hand pass. It also fixed P2's page count, made round 1 cover every page before any fix, and made the trial blind and fair.
+Round 1's plan, `docs/plans/2026-10-19-sweep-r1.md`, gives 117 pages a tester, a browser and a time limit; the Sessions page, https://claude.ai/artifact/SuEuEtP6c7fyirnCGKSwh5, shows its table with filters. It tests only plugins whose refactor has landed, so 12 Plate pages wait: AI, Copilot, Combobox, Date, Discussion, Find, Suggestion, Version History and four Markdown pages. The styles and toc refactors landed on 2026-10-19, so the mark pages and the table of contents run. Sin now tests beside natamox, and the round takes about two and a half days.
+
+Its 25 rechecks cover every open beta bug, 14 of them filed on 2026-10-19, even when the bug sits on a held page, plus the open issues this plan named and the probe finds. The four open beta feature requests go to a verdict instead.
+
+Before that, round 5's panel asked for trials of the round bookkeeping and the card-picking section, and both ran. The bookkeeping trial tied, so the sweep rule, its playbook and the card status script are gone. The picking trial caught 0 of 12 bugs either way, and across both picking trials the checklists held a past bug's exact steps in 1 of 60 tries. So a second design round replaced checklists with timed sessions where the tester picks each action live.
 
 ## What other editors do
 
@@ -139,14 +145,14 @@ On test layers, the owner said unit and integration tests catch most bugs and br
 
 When this plan is done:
 
-- Round 1 gives every P1 to P5 page one session, in about three tester days, then P6 fixes its finds in that order. Its planted-bug trial decides whether the six moves stay.
+- Round 1 gives every P1 to P5 page whose plugin's refactor has landed one session, in about two and a half days with two testers, then P6 fixes its finds in that order. A later round's planted-bug trial decides whether the six moves stay.
 - Later rounds repeat until one gives every page its session and finds nothing new in P1 to P4, or until 2026-12-15, when the open work hands off.
 - Every find a test can see gets a fix and a test tagged with its issue, which failed before the fix. CI runs it where a gate covers its browser. A test for a Safari-only find runs only when someone starts it, so its recheck stays human.
 - A find only a person can see is fixed and keeps its recheck.
 - Hand rechecks shrink as tests land. Session time per page stays the same in this plan.
 - natamox owns the build. Agent-run sessions are a later plan.
 
-Two of your asks stay partly unmet, and the plan says so on its page. There is no verdict-style skill, because its rules did no better than `verify` on the two tasks the trials tried; neither trial showed they add nothing elsewhere. The round loop lives in `tester-pass.md` instead. And nothing yet shows that sessions find more than today's clicking around or that discovery time can shrink safely; round 1 tests the moves, and a later plan decides on shrinking from rounds 1 and 2.
+Two of your asks stay partly unmet, and the plan says so on its page. There is no verdict-style skill, because its rules did no better than `verify` on the two tasks the trials tried; neither trial showed they add nothing elsewhere. The round loop lives in `tester-pass.md` instead. And nothing yet shows that sessions find more than today's clicking around or that discovery time can shrink safely; a later round tests the moves, and a later plan decides on shrinking from rounds 1 and 2.
 
 Out of scope: a sweep skill, checklists written ahead, shrinking session time, agent-run testing, the comparison script, the test-helper focus change, a check for untested rules, interaction rule files, natamox's generated book, YAML case files, an edit-time reminder hook, and splitting the behavior spec.
 
@@ -205,7 +211,7 @@ By each trial's keep rule, frozen before its arms ran, `verify` alone stayed eve
 
 ### Round 1's planted-bug trial
 
-Only a person can run a session, so this trial runs inside round 1, after this review, as the Round 1's trial default says. Both arms get the same time boxes, browser rotation and recording; the six moves are the only difference.
+Round 1 skipped this trial, as step 1.6 records; it runs as written in the first round that has a seeded preview. Only a person can run a session, so this trial runs inside a round, after this review, as the When the trial runs default says. Both arms get the same time boxes, browser rotation and recording; the six moves are the only difference.
 
 - **Seeding.** zbeyens starts a seeder session, so natamox never sees its branch or diff. The seeder draws past behavioral fixes for pages in the round: Plate fixes before 2026-08-15 for P2 to P4 pages, and for P1 pages, upstream Slate fixes or `packages/slate*` fixes on `next` before 2026-08-15. It leaves out every commit in the census, `trial/key.md` and `aim/key.md`. It plants each bug in one preview build of the round's beta commit, by reverting the fix when the revert applies and otherwise by putting the bug back by hand from the fix's diff, in one commit with a neutral message that stays off the shared remote. It keeps a plant only when the bug shows on the preview and not on the reference page or on the same beta commit without plants, and records the browsers where it shows. It stops at 12 such plants, in 6 pairs of the same kind of miss.
 - **Arms.** Once it has chosen the plants, the seeder assigns one page of each pair to the moves and the other to free clicking at random, then splits every other page at random, balanced across P1 to P4. The round plan shows each page's arm, so natamox knows the method but not which pages hold a plant. The seeder seals the plant list and replies with only its path, the preview's address and the assignment.
