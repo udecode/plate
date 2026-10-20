@@ -226,7 +226,9 @@ export default function MyEditorPage() {
 
 为了使编辑器内容持久化，让我们集成 `localStorage` 来在客户端保存和加载编辑器的值。
 
-```tsx showLineNumbers title="app/editor/page.tsx" {57-60,66-68,78-84}
+带有 `'use client'` 的组件仍会先在服务端渲染，而服务端没有 `localStorage`。请先用 `initialValue` 初始化编辑器，再在 `useEffect` 中读取并恢复已保存的值，`useEffect` 只会在组件挂载后于浏览器中运行。
+
+```tsx showLineNumbers title="app/editor/page.tsx" {62,65-71,76-78}
 'use client';
 
 import * as React from 'react';
@@ -288,11 +290,16 @@ export default function MyEditorPage() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: () => {
-      const savedValue = localStorage.getItem('installation-next-demo');
-      return savedValue ? JSON.parse(savedValue) : initialValue;
-    },
+    value: initialValue,
   });
+
+  React.useEffect(() => {
+    const savedValue = localStorage.getItem('installation-next-demo');
+
+    if (savedValue) {
+      editor.tf.setValue(JSON.parse(savedValue));
+    }
+  }, [editor]);
 
   return (
     <Plate
@@ -324,6 +331,8 @@ export default function MyEditorPage() {
   );
 }
 ```
+
+该 effect 会在首次渲染后读取一次已保存的值，并通过 `editor.tf.setValue` 替换编辑器内容。此后，`onChange` 会把每次变更写回 `localStorage`。
 
 <ComponentPreview name="installation-next-demo" />
 
