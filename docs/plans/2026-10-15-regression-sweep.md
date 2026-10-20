@@ -280,17 +280,17 @@ Each step names the proof that closes it. A phase's keep row cites those proofs,
 Tracked here until phase 1 closes, then in the proof subject's Open work.
 
 - Shrinking session time: a later plan decides, from rounds 1 and 2's finds per minute, whether clean pages get less time or leave the hand pass, with a planted-bug trial of its own. owner: zbeyens. stop: round 2's tally, or 2027-01-15.
-- A private preview for the seeded build, so the plants never reach the shared remote. owner: zbeyens. stop: step 1.6.
+- A private preview for the seeded build, so the plants never reach the shared remote. owner: zbeyens. stop: the first round that runs the planted-bug trial.
 - Agent-run sessions: an agent applies the moves to the pages a browser can observe before people start. owner: zbeyens. stop: a plan that adds it after round 2, or 2027-01-15.
 - A real OS drag-image capture, so the drag image recheck can leave the hand list. owner: natamox. stop: a plan that adds it or drops it, or 2027-01-15.
 - Real Safari for Mac through `safaridriver`, so Safari rechecks can leave the hand list; it needs `safaridriver --enable` once with an admin password on the machine that runs it (inferred from Apple's setup, not run). owner: natamox. stop: a plan that adds it or drops it, or 2027-01-15.
 - A real Android phone, for Android rechecks and the device lane, which the proof subject's Android review is waiting on. owner: zbeyens. stop: that review's plan closes.
 - A test weakened through a shared helper keeps its hash, because the hash covers the test's own source only. owner: natamox. stop: round 2's tally shows whether a retired recheck's bug came back, or 2027-01-15.
-- The HTML Export page shows a server error on beta, while its platejs.org twin renders, as the first page check found. It joins round 1's rechecks. owner: natamox. stop: step 1.7 writes it into round 1's plan.
+- The HTML Export page no longer shows a server error on beta. On 2026-10-19 it renders and logs React error 418, a text mismatch between the server and browser renders. Round 1's step 1 page check sends that error to the find list, and session 55 tests the page. owner: natamox. stop: round 1's step 1.
 - WebKit logs on 45 docs pages that the Plate Plus frames send an X-Frame-Options allow-from directive naming next.platejs.org, which it does not recognize and ignores. Whether any frame fails to load is unchecked. owner: zbeyens. stop: zbeyens checks those frames on beta, or drops it.
-- The Demo example page has no settled twin. The source on `main` routes it, but platejs.org answers 404, so the page list prints it unresolved. owner: natamox. stop: step 1.7 names its twin or lists it as beta-only.
-- natamox proposes splitting round 1 between two testers, natamox and Sin, with 64 pages each, matched to the areas each fixed lately. natamox takes every P1 and P3 page and 21 P2 pages; Sin takes the other 59 P2 pages and every P4 page. The page list, the minutes and who runs each recheck are on the split page, https://claude.ai/artifact/5jB9HGL3ujyo9Zx99T5smK. The planted trial then needs both pages of each pair in one tester's pages and a tester name on each session row. owner: natamox, who asks zbeyens. stop: zbeyens answers before step 1.6 seeds the trial.
-- Three small `page-health.mjs` changes the diff review deferred: find routes in one place with `docs-sources.mjs`, keep known third-party frame noise from turning the exit code red, and warn about a `STABLE_TWINS` or `BETA_ONLY` entry that matches no page. owner: natamox. stop: step 1.7, or the next change to how the script finds routes.
+- The Demo example page has no settled twin. The source on `main` routes it, but platejs.org answers 404, so the page list prints it unresolved. Round 1 runs it with no reference. owner: natamox. stop: round 1's step 2 names its twin or lists it as beta-only.
+- With two testers, the planted-bug trial needs both pages of each pair in one tester's pages. owner: natamox. stop: the first round that runs the trial.
+- Three small `page-health.mjs` changes the diff review deferred: find routes in one place with `docs-sources.mjs`, keep known third-party frame noise from turning the exit code red, and warn about a `STABLE_TWINS` or `BETA_ONLY` entry that matches no page. owner: natamox. stop: round 1's step 2, which edits those tables, or the next change to how the script finds routes.
 
 ## Close
 
