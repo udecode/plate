@@ -8,6 +8,7 @@ import {
   schema,
   type PluginInput,
   type Point,
+  RangeApi,
   type RootKey,
   getEditorRuntimeOwner,
 } from 'plitejs';
@@ -256,8 +257,82 @@ const createRepeatedRootFixture = () => {
   return { editor, graph };
 };
 
+// Mimics a table's delete over several cells, which leaves a node selection.
+const nodeSelectingDeletePlugin = definePlugin(
+  'projected-command-node-selecting-delete',
+  {
+    commands: ({ handle }) => [
+      handle(editorCommands.deleteFragment, ({ input, state }) => {
+        if (
+          !RangeApi.isRange(input.at) ||
+          input.at.anchor.root ||
+          input.at.anchor.path[0] !== 0
+        ) {
+          return false;
+        }
+
+        return state.transaction((tx) => {
+          tx.nodes.replaceChildren([{ text: '' }], { at: [0] });
+          tx.selection.setNodes([[0]], { anchor: [0], focus: [0] });
+        });
+      }),
+    ],
+  }
+);
+
 const getCanonicalRuntimeEditor = (editor: ReactRuntimeEditor) =>
   getEditorRuntimeOwner(editor) as ReactRuntimeEditor;
+
+const applyProjectedInput = (
+  editor: ReactRuntimeEditor,
+  input: 'delete' | 'paste' | 'type'
+) => {
+  if (input === 'delete') {
+    return applyEditableCommand({
+      command: { kind: 'delete-fragment' },
+      editor,
+    });
+  }
+  if (input === 'type') {
+    return applyEditableCommand({
+      command: { inputType: 'insertText', kind: 'insert-text', text: 'X' },
+      editor,
+    });
+  }
+
+  const data = new FakeDataTransfer();
+
+  data.setData('text/plain', 'X');
+
+  return applyEditableCommand({
+    command: { data: data as unknown as DataTransfer, kind: 'insert-data' },
+    editor,
+  });
+};
+
+// Mimics a table's delete, which clears every selected cell, even outside
+// the deleted range.
+const clearsOuterBlocksPlugin = definePlugin(
+  'projected-command-clears-outer-blocks',
+  {
+    commands: ({ handle }) => [
+      handle(editorCommands.deleteFragment, ({ input, state }) => {
+        if (
+          !RangeApi.isRange(input.at) ||
+          input.at.anchor.root ||
+          input.at.anchor.path[0] !== 2
+        ) {
+          return false;
+        }
+
+        return state.transaction((tx) => {
+          tx.nodes.replaceChildren([{ text: '' }], { at: [0] });
+          tx.nodes.replaceChildren([{ text: '' }], { at: [2] });
+        });
+      }),
+    ],
+  }
+);
 
 const writeForwardProjectedSelection = (
   editor: ReactRuntimeEditor,
@@ -594,6 +669,156 @@ describe('projected editable commands', () => {
     });
     expect(readPliteViewSelection(editor)).toBe(null);
   });
+
+  for (const input of ['type', 'paste', 'delete'] as const) {
+    const typed = input === 'delete' ? '' : 'X';
+
+    it(`${input} over a projected selection from the end of the block before a content root edits from that block's end`, () => {
+      const { editor, graph } = createFixture();
+
+      writePliteViewSelection(
+        editor,
+        createPliteViewSelection(graph, {
+          anchor: { point: point(undefined, [0, 0], 'Before'.length) },
+          focus: {
+            owner: sharedOwner,
+            point: point(SHARED_ROOT, [0, 0], 'In'.length),
+          },
+        })
+      );
+
+      expect(applyProjectedInput(editor, input)).toBe(true);
+
+      expect(editor.read((state) => state.value())).toEqual({
+        children: [
+          paragraph(`Before${typed}`),
+          contentCard(),
+          paragraph('After'),
+        ],
+        roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
+      });
+      expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+        kind: 'text',
+        anchor: point(undefined, [0, 0], `Before${typed}`.length),
+        focus: point(undefined, [0, 0], `Before${typed}`.length),
+      });
+    });
+  }
+
+  for (const input of ['type', 'paste', 'delete'] as const) {
+    const typed = input === 'delete' ? '' : 'X';
+
+    it(`${input} over a projected selection from the end of the block before a content root into the block after it edits from that block's end`, () => {
+      const { editor, graph } = createFixture();
+
+      writePliteViewSelection(
+        editor,
+        createPliteViewSelection(graph, {
+          anchor: { point: point(undefined, [0, 0], 'Before'.length) },
+          focus: { point: point(undefined, [2, 0], 'Af'.length) },
+        })
+      );
+
+      expect(applyProjectedInput(editor, input)).toBe(true);
+
+      expect(editor.read((state) => state.value())).toEqual({
+        children: [
+          paragraph(`Before${typed}`),
+          contentCard(),
+          paragraph('ter'),
+        ],
+        roots: { [SHARED_ROOT]: [paragraph('')] },
+      });
+      expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+        kind: 'text',
+        anchor: point(undefined, [0, 0], `Before${typed}`.length),
+        focus: point(undefined, [0, 0], `Before${typed}`.length),
+      });
+    });
+  }
+
+  for (const input of ['type', 'paste'] as const) {
+    it(`${input} through a content root's view over a backward selection into the block before it edits from that block's end`, () => {
+      const { editor, graph } = createFixture();
+      const shared = createEditorView(getEditorRuntimeOwner(editor), {
+        root: SHARED_ROOT,
+      }) as unknown as ReactRuntimeEditor;
+
+      writePliteViewSelection(
+        shared,
+        createPliteViewSelection(graph, {
+          anchor: {
+            owner: sharedOwner,
+            point: point(SHARED_ROOT, [0, 0], 'In'.length),
+          },
+          focus: { point: point(undefined, [0, 0], 'Before'.length) },
+        })
+      );
+
+      expect(applyProjectedInput(shared, input)).toBe(true);
+
+      expect(editor.read((state) => state.value())).toEqual({
+        children: [paragraph('BeforeX'), contentCard(), paragraph('After')],
+        roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
+      });
+      expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+        kind: 'text',
+        anchor: point(undefined, [0, 0], 'BeforeX'.length),
+        focus: point(undefined, [0, 0], 'BeforeX'.length),
+      });
+    });
+
+    it(`${input} over a projected selection from the end of a content root into the owner document lands in the content root`, () => {
+      const { editor, graph } = createFixture();
+
+      writePliteViewSelection(
+        editor,
+        createPliteViewSelection(graph, {
+          anchor: {
+            owner: sharedOwner,
+            point: point(SHARED_ROOT, [1, 0], 'More'.length),
+          },
+          focus: { point: point(undefined, [2, 0], 'Af'.length) },
+        })
+      );
+
+      expect(applyProjectedInput(editor, input)).toBe(true);
+
+      expect(editor.read((state) => state.value())).toEqual({
+        children: [paragraph('Before'), contentCard(), paragraph('ter')],
+        roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('MoreX')] },
+      });
+      expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+        kind: 'text',
+        anchor: point(SHARED_ROOT, [1, 0], 'MoreX'.length),
+        focus: point(SHARED_ROOT, [1, 0], 'MoreX'.length),
+      });
+    });
+
+    it(`${input} over a projected selection keeps a valid caret when a later delete rewrites the start's block`, () => {
+      const { editor, graph } = createFixture([clearsOuterBlocksPlugin]);
+
+      writePliteViewSelection(
+        editor,
+        createPliteViewSelection(graph, {
+          anchor: { point: point(undefined, [0, 0], 'Before'.length) },
+          focus: { point: point(undefined, [2, 0], 'Af'.length) },
+        })
+      );
+
+      expect(applyProjectedInput(editor, input)).toBe(true);
+
+      expect(editor.read((state) => state.value())).toEqual({
+        children: [paragraph('X'), contentCard(), paragraph('')],
+        roots: { [SHARED_ROOT]: [paragraph('')] },
+      });
+      expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+        kind: 'text',
+        anchor: point(undefined, [0, 0], 'X'.length),
+        focus: point(undefined, [0, 0], 'X'.length),
+      });
+    });
+  }
 
   it('unsupported projected paste payloads preserve the projected selection', () => {
     const { editor, graph } = createFixture();
@@ -1060,6 +1285,68 @@ describe('projected editable commands', () => {
       focus: { path: [1, 0], offset: 0 },
     });
     expect(readPliteViewSelection(editor)).toBe(null);
+  });
+
+  it('a soft break over a projected selection that holds a whole block breaks where that block was', () => {
+    const runtime = createEditor({
+      plugins: [history(), dom(), contentRootPlugin],
+      initialValue: [paragraph('A'), paragraph('B'), paragraph('C')],
+    });
+    const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
+    const graph = createPliteViewBoundaryGraph([
+      { path: [0], root: 'main' },
+      { path: [1], root: 'main' },
+      { path: [2], root: 'main' },
+    ]);
+
+    writePliteViewSelection(
+      editor,
+      createPliteViewSelection(graph, {
+        anchor: { point: point(undefined, [1, 0], 0) },
+        focus: { point: point(undefined, [1, 0], 'B'.length) },
+      })
+    );
+
+    expect(
+      applyEditableCommand({
+        command: { kind: 'insert-break', variant: 'soft' },
+        editor,
+      })
+    ).toBe(true);
+
+    expect(editor.read.children()).toEqual([paragraph('A'), paragraph('\nC')]);
+  });
+
+  it('insert-break over a projected selection breaks at the start when a delete leaves a node selection', () => {
+    const { editor, graph } = createFixture([nodeSelectingDeletePlugin]);
+
+    writePliteViewSelection(
+      editor,
+      createPliteViewSelection(graph, {
+        anchor: { point: point(undefined, [0, 0], 0) },
+        focus: {
+          owner: sharedOwner,
+          point: point(SHARED_ROOT, [0, 0], 'In'.length),
+        },
+      })
+    );
+
+    expect(
+      applyEditableCommand({
+        command: { kind: 'insert-break', variant: 'paragraph' },
+        editor,
+      })
+    ).toBe(true);
+
+    expect(editor.read((state) => state.value())).toEqual({
+      children: [
+        paragraph(''),
+        paragraph(''),
+        contentCard(),
+        paragraph('After'),
+      ],
+      roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
+    });
   });
 
   it('insert-break from a content root into the owner document deletes each rooted segment', () => {
