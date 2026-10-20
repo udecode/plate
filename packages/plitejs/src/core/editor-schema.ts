@@ -254,6 +254,16 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       root?: RootKey,
       preferredKey?: string
     ) => Readonly<Record<string, unknown>>;
+    /**
+     * `canonicalizeTextPropertiesAt` for a text whose parent and ancestors
+     * are given by type, nearest first, for a tree that is not the document.
+     */
+    canonicalizeTextPropertiesIn: (
+      properties: Readonly<Record<string, unknown>>,
+      types: readonly string[],
+      root?: RootKey,
+      preferredKey?: string
+    ) => Readonly<Record<string, unknown>>;
     canonicalizeChildren: (
       children: readonly Descendant[],
       root: RootKey,
@@ -2978,26 +2988,43 @@ export const createEditorSchema = <V extends Value = Value>(
       : null;
   };
 
+  const canonicalizeTextPropertiesIn = (
+    properties: Readonly<Record<string, unknown>>,
+    [parentType, ...ancestors]: readonly string[],
+    root: RootKey = 'main',
+    preferredKey?: string
+  ) => {
+    const schema = getDeclarativeSchema();
+
+    return schema && parentType
+      ? canonicalizeCompiledExclusiveTextProperties(
+          schema,
+          properties,
+          { ...toCompiledTargetContext(parentType, { root }), ancestors },
+          preferredKey
+        )
+      : properties;
+  };
+
   const canonicalizeTextPropertiesAt = (
     properties: Readonly<Record<string, unknown>>,
     path: Path,
     root: RootKey = 'main',
     preferredKey?: string
   ) => {
-    const schema = getDeclarativeSchema();
-    const options = getTextTargetOptionsAt(path, root);
-    const parentType = options.parent
-      ? (getElementType(options.parent) ?? '')
-      : '';
+    const { ancestors = [], parent } = getTextTargetOptionsAt(path, root);
 
-    return schema && parentType
-      ? canonicalizeCompiledExclusiveTextProperties(
-          schema,
-          properties,
-          toCompiledTargetContext(parentType, options),
-          preferredKey
-        )
-      : properties;
+    return canonicalizeTextPropertiesIn(
+      properties,
+      parent
+        ? [
+            getElementType(parent) ?? '',
+            ...ancestors.flatMap((element) => getElementType(element) ?? []),
+          ]
+        : [],
+      root,
+      preferredKey
+    );
   };
 
   const isSetValuedProperty = (
@@ -4883,6 +4910,7 @@ export const createEditorSchema = <V extends Value = Value>(
     canPlaceAtPath,
     canWrap,
     canonicalizeTextPropertiesAt,
+    canonicalizeTextPropertiesIn,
     canonicalizeChildren,
     copyChildren,
     copyNodeAt,

@@ -1999,6 +1999,47 @@ export class RootChange {
     return new RootChange(sections, data);
   }
 
+  /**
+   * This change's part inside `from` to `to` of its document, as a change to
+   * that window, the inverse of `embed`. Null when a section that changes
+   * content does not lie inside the window; an insertion at either end lies
+   * inside.
+   *
+   * @internal
+   */
+  within(from: number, to: number): RootChange | null {
+    const sections: number[] = [];
+    const data: SectionData[] = [];
+    let at = 0;
+
+    for (
+      let index = 0, dataIndex = 0;
+      index < this.sections.length;
+      index += 2, dataIndex++
+    ) {
+      const length = this.sections[index];
+      const inserted = this.sections[index + 1];
+      const end = at + length;
+
+      if (inserted === -1) {
+        addSection(
+          sections,
+          data,
+          Math.max(0, Math.min(end, to) - Math.max(at, from)),
+          -1,
+          null
+        );
+      } else if (at < from || end > to) {
+        return null;
+      } else {
+        addSection(sections, data, length, inserted, this.data[dataIndex]);
+      }
+      at = end;
+    }
+
+    return new RootChange(sections, data);
+  }
+
   static fromJSON(json: RootChangeJson) {
     assertEditorJsonValue(json, 'RootChange JSON');
 

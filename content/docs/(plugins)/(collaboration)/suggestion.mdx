@@ -152,6 +152,8 @@ authored.api.setView({ preview: 'proposed' });
 
 A preview throws on a plain edit, but some other writes still change the document, such as an update that makes a decision, undo and redo, and remote collaboration changes. `read.mode()` reports it as `'editing'`. Switching to a preview does not accept or reject changes. Coordinates can differ between views, so read selections and apply edits through the view that produced them. Call `setMode` to leave the preview.
 
+Under a preview, each block reads the cards and changes of the stored content it shows, with what the preview hides inside it, and those of an element around it that the preview takes away, such as a quote whose pending unwrap the preview applies. A preview reads them by a node's key or path only, as the hooks below do; a point or a range throws `AuthoredPlaceError`, which `platejs/authored` exports. The cards of a top-level block the preview hides show on no block, so switch to Editing to see and decide them. The exception is a joined line, which shows the cards of a hidden block between its two halves. A top-level block the preview adds to complete the document, such as the empty paragraph it shows when a suggestion deletes the only block, shows no cards. One it adds inside a container, as when a suggestion deletes the only paragraph of a quote, can show the cards of the hidden paragraph it replaces. Under a preview, the copied discussion anchors the popover of a suggestion or a change thread on the paragraph whose trigger was pressed last, and opens it only when that paragraph shows the thread.
+
 ## Read view state
 
 The React entrypoint exposes focused hooks for custom controls and review UI:
@@ -170,9 +172,9 @@ const cards = useSuggestionGroups(blockKey);
 const { activeId, setActiveId } = useActiveSuggestion();
 ```
 
-`useSuggestionChanges(path)` returns the native `AuthoredChange` records touching that block. It keeps its result stable while those records are unchanged.
+`useSuggestionChanges(path)` returns the native `AuthoredChange` records of the block at that path of the mounted view. A nested block's path returns its own changes and those of a container around it that the preview takes away. It never returns the pending wrap or unwrap of a container the view still shows, which that container's own path returns. It rereads on each commit that changes the document or its state and when the review delta names the path's top-level block, and keeps its result stable while those records are unchanged. A change's `ranges` stay places of the stored document on every view.
 
-`useSuggestionGroups(blockKey)` returns the review cards touching the top-level block with that key, as `read.groups` summaries. It rereads when the block redraws and when a change in the block moves to another card. An edit to the same card in another block does neither, so a summary's `changeCount` or `revision` can trail; read `editor.plugin(AuthoredPlugin).read.groupOf(card.id)` when a control needs the current one. Read a card's changes a page at a time with `read.changes({ group: card.id })`.
+`useSuggestionGroups(blockKey)` returns the review cards of the block with that key, as `read.groups` summaries. A nested block's key reads that block's own cards. It rereads when the component that calls it renders and when the review delta names the block, which happens when a change reaches or leaves that block or one of its changes moves to another card. A delta names top-level blocks only, so for a nested block's key it rereads only when that component renders. An edit to the same card in another block does neither, so a summary's `changeCount` or `revision` can trail; read `editor.plugin(AuthoredPlugin).read.groupOf(card.id)` when a control needs the current one. Read a card's changes a page at a time with `read.changes({ group: card.id })`.
 
 In the current view, clicking a marked element activates the first card its `data-editor-authored-groups` attribute names. Clicking unmarked editor content clears it. Unmounting the view, switching it to another intent or preview, or deciding the card also clears stale active state. Use `setActiveId` when a custom card or control needs to activate a card directly.
 
@@ -184,7 +186,7 @@ The first proposal makes a sentence bold; the second inserts a paragraph. Open e
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-Add [Basic Marks](/docs/basic-marks) for supported text formatting. Editor commands record text, mark, and node operations as proposals while the view is in suggesting mode. A `propose` view refuses a write it cannot record as a proposal and rolls it back; see [Authored Changes](/docs/authored-changes#configure-a-view). Formatting in Editing mode over a pending format suggestion applies directly and leaves the suggestion pending, so rejecting it later keeps the direct edit. If a collaborator decides or withdraws that suggestion while the edit syncs, the direct edit can be lost.
+Add [Basic Marks](/docs/basic-marks) for supported text formatting. Editor commands record text, mark, and node operations as proposals while the view is in suggesting mode. A `propose` view refuses a write it cannot record as a proposal and rolls it back, and both modes refuse some edits beside a paragraph a pending join shows away from where it is saved; see [Authored Changes](/docs/authored-changes#configure-a-view). Formatting in Editing mode over a pending format suggestion applies directly and leaves the suggestion pending, so rejecting it later keeps the direct edit. If a collaborator decides or withdraws that suggestion while the edit syncs, the direct edit can be lost.
 
 ### Accepted, proposed, and markup
 
@@ -346,8 +348,8 @@ Read `'suggesting'` for a `propose` view, and `'editing'` for an `edit` view or 
 | Hook | Result |
 | --- | --- |
 | `useSuggestionMode()` | The exact mounted view's `'suggesting' \| 'editing'` mode. |
-| `useSuggestionChanges(path)` | Native `AuthoredChange` records touching the block at `path`. |
-| `useSuggestionGroups(blockKey)` | Summaries of the review cards touching the top-level block with that key. |
+| `useSuggestionChanges(path)` | Native `AuthoredChange` records of the block at `path`. |
+| `useSuggestionGroups(blockKey)` | Summaries of the review cards of the block with that key. |
 | `useActiveSuggestion()` | The view-local active card's `activeId` and the `setActiveId` function. |
 
 ### `SuggestionKit`

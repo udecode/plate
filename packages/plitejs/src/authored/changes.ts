@@ -193,20 +193,50 @@ const subtreeHash = (node: Node): number => {
   return value;
 };
 
-// Paths count from each occurrence's top-level block, so a block moving
-// above the change keeps its revision, and content changing under its nodes
-// changes it.
+const SHAPES = new WeakMap<object, number>();
+
+// An element's own fields and the shapes of its element children, never
+// text or leaves, so typing inside it keeps its shape.
+const shapeHash = (node: Node): number => {
+  let value = SHAPES.get(node);
+
+  if (value === undefined) {
+    const { children, ...own } = node;
+
+    value = hash(JSON.stringify(own));
+    for (const child of children ?? []) {
+      if (!isText(child)) value = mix(value, shapeHash(child));
+    }
+    SHAPES.set(node, value);
+  }
+
+  return value;
+};
+
+/** @internal */
+export const sameShape = (left: Node, right: Node) =>
+  shapeHash(left) === shapeHash(right);
+
+/** @internal */
+export const isStructureMark = (mark: AuthoredMark) =>
+  KINDS[mark.kind] === 'structure';
+
 const revisionOf = (list: readonly Occurrence[]) => {
   let value = FNV_OFFSET;
 
   for (const { mark, node, path, root } of list) {
     value = mix(value, hash(root));
-    value = mix(value, path.length - 1);
-    for (let depth = 1; depth < path.length; depth++) {
-      value = mix(value, path[depth]);
+    if (isLineBreak(mark)) {
+      value = mix(value, path.length - 1);
+      for (let depth = 1; depth < path.length; depth++) {
+        value = mix(value, path[depth]);
+      }
     }
     value = mix(value, markHash(mark));
-    value = mix(value, subtreeHash(node));
+    value = mix(
+      value,
+      KINDS[mark.kind] === 'structure' ? shapeHash(node) : subtreeHash(node)
+    );
   }
 
   return value;
@@ -261,8 +291,13 @@ export const orderChanges = (changes: Iterable<AuthoredChange>) =>
       (left.id < right.id ? -1 : left.id > right.id ? 1 : 0)
   );
 
-/** @internal */
-export type BlockOccurrence = Omit<Occurrence, 'root'>;
+/**
+ * An occurrence in its top-level block, `from` the token its node opens at
+ * there.
+ *
+ * @internal
+ */
+export type BlockOccurrence = Omit<Occurrence, 'root'> & { from: number };
 
 /** @internal */
 export const blockOccurrencesOf = (
@@ -271,25 +306,45 @@ export const blockOccurrencesOf = (
 ) => {
   const ends = new Map<string, BlockOccurrence>();
   const occurrences = new Map<string, BlockOccurrence[]>();
+  const ordered: Array<Readonly<{ from: number; id: string; path: Path }>> = [];
+  const joinsAndSplits: Array<Readonly<{ from: number; id: string }>> = [];
+  let tokens = 0;
   let units = 0;
   const walk = (node: Node, path: Path) => {
+    const from = tokens;
     const placed = read(node).map((mark) => {
-      const occurrence = { first: units, last: units - 1, mark, node, path };
+      const occurrence = {
+        first: units,
+        from,
+        last: units - 1,
+        mark,
+        node,
+        path,
+      };
       const list = occurrences.get(mark.change) ?? [];
 
       list.push(occurrence);
       occurrences.set(mark.change, list);
       ends.set(mark.change, occurrence);
+      ordered.push({ from, id: mark.change, path });
+      if (path.length > 0 && isLineBreak(mark)) {
+        joinsAndSplits.push({ from, id: mark.change });
+      }
 
       return occurrence;
     });
     const start = units;
 
-    if (node.children) {
-      node.children.forEach((child, index) => walk(child, [...path, index]));
-      if (units === start) units += 1;
-    } else if (node.text) {
-      units += 1;
+    if (isText(node)) {
+      tokens += (node.text?.length ?? 0) + 2;
+      if (node.text) units += 1;
+    } else {
+      tokens += 1;
+      if (node.children) {
+        node.children.forEach((child, index) => walk(child, [...path, index]));
+        if (units === start) units += 1;
+      }
+      tokens += 1;
     }
     for (const occurrence of placed) {
       if (!isLineBreak(occurrence.mark)) occurrence.last = units - 1;
@@ -301,7 +356,7 @@ export const blockOccurrencesOf = (
 
   walk(block, []);
 
-  return { ends, occurrences, units };
+  return { ends, joinsAndSplits, occurrences, ordered, units };
 };
 
 /** @internal */

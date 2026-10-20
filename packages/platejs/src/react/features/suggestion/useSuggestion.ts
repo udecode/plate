@@ -8,13 +8,12 @@ import {
 } from '../../../authored';
 import {
   RangeApi,
-  TextApi,
   type EditorCommit,
   type NodeKey,
   type Path,
 } from '../../../core';
 import { useEditorViewState } from '../../plite-react';
-import { useEditor, useEditorSelector } from '../../stores';
+import { useEditor } from '../../stores';
 import { useSuggestionViewStore, viewKey } from './suggestion-view.internal';
 import { SuggestionPlugin } from './SuggestionPlugin';
 
@@ -63,59 +62,14 @@ const sameGroups = (
       group.id === right[index]?.id && group.revision === right[index]?.revision
   );
 
-/** Read pending authored changes intersecting one node path. */
-export const useSuggestionChanges = (path: Path) => {
-  const editor = useEditor();
-  const view = useEditorViewState(editor, () =>
-    viewKey(editor.plugin(AuthoredPlugin).read.view())
-  );
-
-  return useEditorSelector(
-    (current) => {
-      void view;
-      const entries = [
-        ...current.read.nodes.entries({ at: path, match: TextApi.isText }),
-      ];
-      const first = entries[0];
-      const last = entries.at(-1);
-      if (!first || !last) return [];
-      const root = current.read.view.root();
-      const at = {
-        anchor: {
-          offset: 0,
-          path: first[1],
-          ...(root ? { root } : {}),
-        },
-        focus: {
-          offset: last[0].text.length,
-          path: last[1],
-          ...(root ? { root } : {}),
-        },
-      };
-      const changes: AuthoredChange[] = [];
-
-      for (let cursor: string | undefined; ;) {
-        const page = current
-          .plugin(AuthoredPlugin)
-          .read.changes({ at, cursor, limit: 200 });
-
-        changes.push(...page.items);
-        if (!page.cursor) return changes;
-        ({ cursor } = page);
-      }
-    },
-    { equalityFn: sameChanges, shouldUpdate: authoredChanged }
-  );
-};
-
-const NO_GROUPS: readonly AuthoredChangeGroup[] = Object.freeze([]);
-
 const useAuthoredRead = <T>(
   read: () => T,
   {
+    commit,
     equal,
     when,
   }: {
+    commit?: (commit: EditorCommit) => boolean;
     equal: (last: T, next: T) => boolean;
     when: (delta: AuthoredChangesDelta) => boolean;
   }
@@ -123,11 +77,24 @@ const useAuthoredRead = <T>(
   const editor = useEditor();
   const last = React.useRef<{ value: T } | null>(null);
   const subscribe = React.useCallback(
-    (wake: () => void) =>
-      editor.plugin(AuthoredPlugin).api.subscribeChanges((delta) => {
-        if (when(delta)) wake();
-      }),
-    [editor, when]
+    (wake: () => void) => {
+      const unsubscribeChanges = editor
+        .plugin(AuthoredPlugin)
+        .api.subscribeChanges((delta) => {
+          if (when(delta)) wake();
+        });
+      const unsubscribeCommits = commit
+        ? editor.subscribeCommit((next) => {
+            if (commit(next)) wake();
+          })
+        : null;
+
+      return () => {
+        unsubscribeChanges();
+        unsubscribeCommits?.();
+      };
+    },
+    [commit, editor, when]
   );
   const snapshot = () => {
     const next = read();
@@ -142,7 +109,56 @@ const useAuthoredRead = <T>(
   return React.useSyncExternalStore(subscribe, snapshot, snapshot);
 };
 
-/** Read the review cards touching one top-level block. */
+/**
+ * Read the pending authored changes of the node at a path of the mounted view.
+ * A commit that changes the document or its state rereads them, and so does a
+ * review delta that names the path's top-level block, which covers a change a
+ * preview hides.
+ */
+export const useSuggestionChanges = (path: Path) => {
+  const editor = useEditor();
+  const top = path[0];
+  const when = React.useCallback(
+    (delta: AuthoredChangesDelta) => {
+      if (top === undefined) return delta.blocks.length > 0;
+
+      // A review delta names top-level blocks only, so a nested place wakes
+      // on the top-level block that holds it.
+      const key = editor.key([top]);
+
+      return key !== null && delta.blocks.includes(key);
+    },
+    [editor, top]
+  );
+
+  // A view switch changes what the path shows without a commit.
+  useEditorViewState(editor, () =>
+    viewKey(editor.plugin(AuthoredPlugin).read.view())
+  );
+
+  return useAuthoredRead(
+    () => {
+      const changes: AuthoredChange[] = [];
+
+      for (let cursor: string | undefined; ;) {
+        const page = editor
+          .plugin(AuthoredPlugin)
+          .read.changes({ at: path, cursor, limit: 200 });
+
+        changes.push(...page.items);
+        if (!page.cursor) return changes;
+        ({ cursor } = page);
+      }
+    },
+    { commit: authoredChanged, equal: sameChanges, when }
+  );
+};
+
+/**
+ * Read the review cards of the block with this key. A review delta that names
+ * the block rereads them. A delta names top-level blocks only, so a nested
+ * block's cards reread only when the component that calls this hook renders.
+ */
 export const useSuggestionGroups = (blockKey: NodeKey) => {
   const editor = useEditor();
   const when = React.useCallback(
@@ -151,13 +167,7 @@ export const useSuggestionGroups = (blockKey: NodeKey) => {
   );
 
   return useAuthoredRead(
-    () => {
-      const index = editor.read.nodes.path(blockKey)?.[0];
-
-      return index === undefined
-        ? NO_GROUPS
-        : editor.plugin(AuthoredPlugin).read.groups({ at: [index] });
-    },
+    () => editor.plugin(AuthoredPlugin).read.groups({ at: blockKey }),
     { equal: sameGroups, when }
   );
 };

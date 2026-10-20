@@ -640,6 +640,18 @@ export class DocumentIndex {
     return this.tree.at(index)?.node;
   }
 
+  /**
+   * The children of the element at `index` as an index of their own, over
+   * the sequence this index already holds, or null when it holds text.
+   *
+   * @internal
+   */
+  childrenAt(index: number) {
+    const children = this.tree.at(index)?.children;
+
+    return children ? DocumentIndex.fromTree(children) : null;
+  }
+
   get nodes(): NodeList {
     const { tree } = this;
 

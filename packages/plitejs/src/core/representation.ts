@@ -153,14 +153,15 @@ const completeAt = (
   });
 
 /**
- * A run of a root's children completed apart from the rest. The head starts
- * the root and fills its prefix slots. `min` is the share of the root's
- * minimum the run fills: the minimum appends at the root's end, so only the
- * run that ends the root fills any, the count the other runs leave.
+ * A run of the children of a root or an element completed apart from the
+ * rest. The head starts the list and fills its prefix slots. `min` is the
+ * share of the list's minimum the run fills: the minimum appends at the
+ * list's end, so only the run that ends the list fills any, the count the
+ * other runs leave.
  *
  * @internal
  */
-export type RootPart = Readonly<{ head: boolean; min: number }>;
+export type ListPart = Readonly<{ head: boolean; min: number }>;
 
 /**
  * Canonical children at their element's site, as the canonical pass would
@@ -178,7 +179,7 @@ export const completeChildrenAt = (
   children: readonly Descendant[],
   root: string,
   vacated?: (slot: number, candidate: Descendant) => boolean,
-  part?: RootPart
+  part?: ListPart
 ): ContentCompletion & Readonly<{ sources: readonly Descendant[] }> => {
   const completion = completeDirectChildren(
     editor,
@@ -188,7 +189,7 @@ export const completeChildrenAt = (
     {},
     site.slice(1),
     vacated,
-    site.length === 0 ? part : undefined
+    part
   );
   // As the canonical pass does after completion, so an empty text it builds
   // takes the properties its site declares. The pass maps child for child.
@@ -211,7 +212,7 @@ export const completeChildrenAt = (
 
 const partOf = (
   content: CompiledSchemaContentProgram | null | undefined,
-  part: RootPart | undefined
+  part: ListPart | undefined
 ) => {
   if (!content || !part) return content;
 
@@ -239,13 +240,16 @@ const completeDirectChildren = (
   options: CanonicalizeOptions,
   ancestors: readonly Element[],
   vacated?: (slot: number, candidate: Descendant) => boolean,
-  part?: RootPart
+  part?: ListPart
 ): ContentCompletion => {
   const schema = options.schema ?? resolveRepresentationSchema(editor);
   const element = ElementApi.isElement(parent);
-  const contentSpec = element
-    ? schema.getElementContent(parent.type)
-    : partOf(schema.getRootContent(root, options.document), part);
+  const contentSpec = partOf(
+    element
+      ? schema.getElementContent(parent.type)
+      : schema.getRootContent(root, options.document),
+    part
+  );
   const { report } = options;
   const children =
     element || contentSpec?.allowsText

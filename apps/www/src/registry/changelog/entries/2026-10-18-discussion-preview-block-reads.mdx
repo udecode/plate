@@ -1,0 +1,26 @@
+---
+id: 2026-10-18-discussion-preview-block-reads
+date: 2026-10-18
+status: draft
+kind: behavior
+summary: 'Read discussion cards and threads by block key, under a preview too'
+change: { 'type': 'source', 'date': '2026-10-18', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-18-discussion-cards-threads-by-block-10f000a8","kind":"behavior","migrationNotes":["Remove the `blockIndex` prop from `SuggestionDiscussionBlock` and pass a block key to `blockThreadCount`, or re-copy `discussion.tsx`."]} -->
+
+- **`discussion`**: Read the target panel's cards and each block's thread count by the block's key, so under an accepted or proposed preview each paragraph shows only the cards of the content it shows. `SuggestionDiscussionBlock` takes `blockKey` and no `blockIndex` prop.
+
+<!-- entry: {"id":"2026-10-18-discussion-preview-popover-anchor-4b7e21c9","kind":"behavior","migrationNotes":[]} -->
+
+- **`discussion`**: Under a preview, anchor the popover of a suggestion or a change thread on the paragraph whose trigger you pressed last, and open it only while that paragraph shows the thread.
+
+<!-- entry: {"id":"2026-10-18-discussion-list-thread-change-card","kind":"behavior","migrationNotes":[]} -->
+
+- **`discussion`**: Show a change's card in the popover when its thread opens on its own, such as from a list.
+
+<!-- entry: {"id":"2026-10-18-suggestion-moved-refusal-message-7c3d90e2","kind":"fix","migrationNotes":[]} -->
+
+- **`suggestion`**: In Suggesting, say why the editor refused an edit beside content a pending join moves, instead of suggesting a switch to Editing.

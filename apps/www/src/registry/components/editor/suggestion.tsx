@@ -175,15 +175,21 @@ function SuggestionRefusals() {
 
     return authored.api.subscribeRefusals((refusal) => {
       const view = authored.read.view();
+      // A reason names content a pending join moves, which Editing refuses
+      // too, so a Suggesting writer reads why instead of a hint to switch.
+      const unrecorded =
+        'intent' in view && view.intent === 'edit'
+          ? 'Editing cannot record this change next to a pending suggestion yet. Accept or reject that suggestion first.'
+          : refusal.reasons.length > 0
+            ? refusal.message
+            : 'Suggesting cannot record this change yet. Switch to Editing to make it.';
 
       toast.error(
         refusal.code === 'veto'
           ? vetoMessage(refusal.reasons)
           : refusal.code === 'generated-values'
             ? 'Suggesting is off in this editor.'
-            : 'intent' in view && view.intent === 'edit'
-              ? 'Editing cannot record this change next to a pending suggestion yet. Accept or reject that suggestion first.'
-              : 'Suggesting cannot record this change yet. Switch to Editing to make it.',
+            : unrecorded,
         { id: 'suggestion-refusal' }
       );
     });

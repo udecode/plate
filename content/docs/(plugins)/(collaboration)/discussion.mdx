@@ -102,7 +102,7 @@ Discussion groups unresolved records by block and sorts each block chronological
 - document undo reverses an accept or reject decision without changing messages or thread resolution;
 - resolving or reopening a thread stays outside document undo.
 
-`useSuggestionGroups(blockKey)` supplies the review cards touching each block. A card's body reads its changes a page at a time with `read.changes({ group: card.id })`. Discussion derives dates, labels, ranges, and card text in copied registry code, then joins change-targeted threads from Comments.
+`useSuggestionGroups(blockKey)` supplies each block's review cards. Under a preview they are the cards of the content the block shows, as [Suggestions](/docs/suggestion) describes. A card's body reads its changes a page at a time with `read.changes({ group: card.id })`. Discussion derives dates, labels, ranges, and card text in copied registry code, then joins change-targeted threads from Comments.
 
 Review cards decide the card they show:
 

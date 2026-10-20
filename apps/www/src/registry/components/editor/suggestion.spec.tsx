@@ -112,6 +112,35 @@ describe('SuggestionKit', () => {
     );
   });
 
+  it('tells a Suggesting writer why an edit over moved content refuses instead of sending them to Editing', () => {
+    toastErrorMock.mockClear();
+    const editor = createEditor({
+      initialValue: joinAroundMovedLine,
+      plugins: SuggestionKit,
+      userId: 'alice',
+    });
+
+    render(
+      <EditorRoot authored={{ intent: 'propose' }} editor={editor}>
+        <EditorContent />
+      </EditorRoot>
+    );
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 0, path: [2, 0] },
+      });
+      tx.command(editorCommands.insertText, { text: 'Z' });
+    });
+
+    expect(editor.read.children()).toEqual(joinAroundMovedLine);
+    expect(toastErrorMock).toHaveBeenCalledTimes(1);
+    expect(toastErrorMock).toHaveBeenCalledWith(
+      'This edit would cover content a pending join shows elsewhere; decide the join first.',
+      { id: 'suggestion-refusal' }
+    );
+  });
+
   it('keeps presentation optional', () => {
     const plain = createEditor({ initialValue: value });
 

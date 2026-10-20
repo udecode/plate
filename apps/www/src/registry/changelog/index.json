@@ -92,6 +92,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-18-discussion-preview-block-reads",
+      "href": "/registry/changelog/2026-10-18-discussion-preview-block-reads.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Read discussion cards and threads by block key, under a preview too",
+      "change": {
+        "type": "source",
+        "date": "2026-10-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["discussion", "suggestion"],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-18-layout-style-values",
       "href": "/registry/changelog/2026-10-18-layout-style-values.json",
       "status": "draft",

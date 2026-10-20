@@ -8,6 +8,7 @@ import {
 import { hashSchemaIdentityString } from '../../core/schema-compiler';
 import type { EditorDocumentRecords } from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
+import { countLedgerWork } from '../ledger/work';
 import {
   isContextInsertion,
   type MarkBase,
@@ -125,8 +126,14 @@ const holdsStacked = (node: unknown): boolean => {
   let stacked = STACKED.get(node);
 
   if (stacked === undefined) {
-    stacked =
-      isStacked(node) || (childrenOf(node)?.some(holdsStacked) ?? false);
+    if (isStacked(node)) stacked = true;
+    else {
+      const children = childrenOf(node) ?? [];
+      const at = children.findIndex(holdsStacked);
+
+      countLedgerWork('summaryChildren', at === -1 ? children.length : at + 1);
+      stacked = at !== -1;
+    }
     STACKED.set(node, stacked);
   }
 

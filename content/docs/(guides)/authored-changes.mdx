@@ -138,6 +138,16 @@ Typing inside struck text splits the pending deletion around the new text. An `e
 
 Deleting a block that owns a [content root](/docs/roots#content-roots) in a `propose` view strikes the block and leaves the root's content unchanged and unmarked, so style the root as deleted in the block's component. Typing or pasting inside that root writes nothing until someone decides the deletion. Accepting it removes the block and its root, and returns `blocked` while the root holds text another pending change inserted. Rejecting it keeps both. Rejecting a proposed block that owns a content root removes the root too. A `propose` view still refuses deleting a named root that no element owns.
 
+A pending join can show a paragraph away from where it is saved. The `proposed` preview shows a paragraph split off the joined line, or inserted between the join's halves, after the joined line. An `edit` view and a `propose` view record Backspace or Delete across a moved paragraph's edge, and a deletion over moved paragraphs, as the merges they make. A `propose` view refuses that Backspace when the moved line holds the owner of a content root, because the proposed merge would give the root two owners; an `edit` view records it. Select-all covers every paragraph the preview shows, a moved last paragraph included. Both views refuse these edits, each with the reason shown:
+
+- Enter or a new paragraph where a moved paragraph meets its neighbours, with `crosses`.
+- Enter after an earlier break in its line, such as at the end of a joined line that a moved paragraph follows, with `reordered`.
+- An edit where the preview shows none of the selected letters between the selection's ends, but shows some of them elsewhere, with `crosses`. When the preview hides the selected letters, such as struck text, the selection becomes a caret instead.
+- A format that starts or ends inside a text where a moved paragraph meets its neighbours, and a letter typed there with a mark toggled on, with `crosses`, because each splits that text at the break. Where the break falls between two texts, such as beside a link, the marked letter applies.
+- Select-all Delete, typing or paste beside a joined line and its follower, at the top level or in a quote, with `crosses`.
+
+A format beside a moved paragraph formats what the `proposed` preview shows between the selection's ends, so it can format saved text outside the selection or leave a moved paragraph inside it plain. The editor does not refuse a command that names a place of its own, such as a link inserted at a given point, for the selection it started with. When that command also edits at the selection, it can change text outside it. Its edits at the places it names still refuse as above. Typing at a caret inside the joined line still applies. A refused edit applies nothing, and `subscribeRefusals` reports it with code `unrepresentable` and the reason above. The content-root Backspace carries no reason.
+
 A view's policy belongs to that exact view. Selection, clipboard input, commands, and anchors use that view's coordinates. Two mounted views over one document can use different policies.
 
 ## Review changes
@@ -153,9 +163,13 @@ const result = authored.update.decide({
 });
 ```
 
-Use `action: 'reject'` to reject changes. `changes(query)` reads pending changes in document order, 50 at a time by default and at most 200. Pass a non-null page `cursor` to read the next page; a cursor whose changes have all left throws as stale. Narrow a page to a place of the stored document with `at`, to one author with `authorId`, or to one card with `group`.
+Use `action: 'reject'` to reject changes. `changes(query)` reads pending changes in document order, 50 at a time by default and at most 200. Pass a non-null page `cursor` to read the next page; a cursor whose changes have all left throws as stale. Narrow a page to a place with `at`, to one author with `authorId`, or to one card with `group`.
 
-Each `AuthoredChange` has its `id`, `authorId`, `createdAt`, `kind`, current `ranges`, and a `revision` that differs whenever its marks or the content they mark differ. Use `change(id)` to read one change.
+`at` names a place of the document the view shows. With no preview, that is the stored document, and `at` takes a node key, a path, a point or a range. On a preview, `at` takes the key or path of a node the preview shows, a block or one of its texts. The read returns the changes of the stored content that node shows, with what the preview hides inside it and the changes of each element around it that the preview takes away, such as a quote whose pending unwrap the preview applies. A block's read includes what the preview hides between two of its texts, and neither text's read does. On a preview, a point or a range throws `AuthoredPlaceError` from `platejs/authored`, and a key the preview lacks reads nothing. On a view of a content root the preview leaves out, every key and path reads nothing. A joined line reads a hidden block between its two halves. Otherwise no block reads the changes of a top-level block the preview hides; switch to an `edit` or `propose` view to see and decide those changes. A top-level block the preview adds to complete the document, as when its only block is deleted, reads nothing. A block it adds inside a container, as when a quote's only paragraph is deleted, can read the hidden paragraph it replaces. A block never reads the change of an element around it that the view still shows, such as the pending unwrap of a quote the view shows. A page `cursor` from a read with `at` works only on a view with the same root and preview.
+
+Each `AuthoredChange` has its `id`, `authorId`, `createdAt`, `kind`, current `ranges`, and a `revision`, which changes with its marks and with the content each kind of mark covers, described below. `ranges` and the locations in `details` are always places of the stored document, on every view. Use `change(id)` to read one change.
+
+Except for a split or join inside a top-level block, no revision covers where a change sits, so an edit before it keeps the revision. Its `ranges` can move while its revision stays the same, so read them again after each document change. A join, split, wrap or unwrap's revision ignores the text and leaves inside the element, so typing inside keeps it. It changes when the element's own fields change, or the order or shapes of the elements inside it. The revision of a split or join inside a top-level block, such as a quote, also covers its index inside that block, because a decision merges its line into the block before it. The index counts blocks, so it does not say which block comes before the line. After the blocks before it change order, or one of them is replaced or changes type, a decision read before still applies and merges the line into the block now before it. A block that lands between the halves of a top-level split or join also keeps the revision, and a decision read before merges the line into that block.
 
 A decision names the changes as they were read, and a change whose revision moved since returns `stale`. Accepting a change can need other changes accepted with it, and rejecting one can need its dependants rejected. The result is then `blocked`, `with` names the changes it needs, and nothing applies. The editor never decides a change you did not name. Several decisions in one call decide together:
 
@@ -195,7 +209,7 @@ if (card) {
 }
 ```
 
-`groups({ at })` returns summaries of the cards touching a place of the stored document, in document order: `id`, `authorId`, `createdAt`, `changeCount`, and `revision`. A card's ID is its oldest change, so every peer and reload names it alike. The ID moves when the card splits or merges, or when that change leaves it. `groupOf(changeId)` returns the card that holds a change.
+`groups({ at })` returns summaries of the cards touching a place of the document the view shows, in document order: `id`, `authorId`, `createdAt`, `changeCount`, and `revision`. A card's ID is its oldest change, so every peer and reload names it alike. The ID moves when the card splits or merges, or when that change leaves it. `groupOf(changeId)` returns the card that holds a change.
 
 Deciding a card decides every change it holds at that moment. The decision reads as `stale` once the card's ID or revision moved, so read the card again with `groupOf` before retrying.
 
@@ -344,7 +358,7 @@ After `const authored = editor.plugin(AuthoredPlugin)`, use these methods:
 | `authored.read.change(id)`                 | Read one pending change, or `null`.                                                    |
 | `authored.read.details(id)`                | Read one change with its semantic parts, or `null`.                                    |
 | `authored.read.changes(query?)`            | Read a page of pending changes in document order.                                      |
-| `authored.read.groups({ at })`             | Read summaries of the cards touching a place of the stored document.                   |
+| `authored.read.groups({ at })`             | Read summaries of the cards touching a place of the document the view shows.           |
 | `authored.read.groupOf(changeId)`          | Read the card that holds a change, or `null`.                                          |
 | `authored.read.reviewOf(node)`             | Read a stored node's pending marks and the accepted values of the properties they format. |
 | `authored.update.decide(decision)`         | Accept or reject changes or cards; an array of decisions decides together.             |
@@ -352,13 +366,13 @@ After `const authored = editor.plugin(AuthoredPlugin)`, use these methods:
 | `authored.api.subscribeChanges(listener)`  | Receive one shared delta for each commit that changes the review.                      |
 | `authored.api.subscribeRefusals(listener)` | Receive each proposal write or view switch the editor refused.                         |
 
-`subscribeChanges` passes `{ blocks, changed, groups, removed }`: the blocks holding a change whose card ID changed, the changes that began or whose revision changed, the cards whose summary changed, began, or ended, and the changes no longer pending. It is a low-level integration hook; suggestion UI uses `useSuggestionChanges(path)` and `useSuggestionGroups(blockKey)` instead.
+`subscribeChanges` passes `{ blocks, changed, groups, removed }`: the top-level blocks of the view whose cards or changes may read differently, the changes that began or whose revision changed, the cards whose summary changed, began, or ended, and the changes no longer pending. `blocks` names each block a change reached or left and each block holding a change whose card ID changed; under a preview, they are the blocks it shows. A change to a card's summary alone names no block, so a block's copy of a card's `changeCount` or `revision` can trail until it reads again. It is a low-level integration hook; suggestion UI uses `useSuggestionChanges(path)` and `useSuggestionGroups(blockKey)` instead.
 
 ### Types and format helpers
 
-`platejs/authored` exports the authored plugin descriptor, the change, card,
-query, page, delta, decision, and result types, `proposeAuthoredComparison`,
-and the format helpers below.
+`platejs/authored` exports the authored plugin descriptor, `AuthoredPlaceError`,
+the change, card, query, page, delta, decision, and result types,
+`proposeAuthoredComparison`, and the format helpers below.
 
 `projectAuthoredDocument(document, { projection })` returns
 `{ ok, document, diagnostics, pending }` for an `accepted` or `proposed`

@@ -24,8 +24,26 @@ export type AuthoredChange = Readonly<{
   createdAt: number;
   id: string;
   kind: AuthoredChangeKind;
+  /**
+   * Where the change's marks sit in the stored document, read on any view:
+   * a preview shows the document another way, so they can name other
+   * content there.
+   */
   ranges: readonly Range[];
-  /** Differs whenever the change's marks or the content they mark differ. */
+  /**
+   * Differs whenever the change's marks differ, and with them what each kind
+   * covers. An insertion, deletion or format change covers the content it
+   * marks. A join, split, wrap or unwrap covers its element's own fields and
+   * the order and shapes of the elements inside it, never their text, so
+   * typing inside it keeps the revision. A join or a block split also covers
+   * its index at each level inside its top-level block, so a block landing
+   * among or leaving from the blocks before it, or before one of its
+   * ancestors there, changes the revision. The index counts blocks, so
+   * reordering, replacing or retyping the blocks before it keeps the
+   * revision, although the block a decision merges its line into can change.
+   * No other revision covers where the change sits, so an edit before it
+   * keeps it.
+   */
   revision: number;
 }>;
 
@@ -53,6 +71,7 @@ export type AuthoredChangePart =
       path: Path;
     }>;
 
+/** A change's parts, with ranges, points and paths in the stored document. */
 export type AuthoredChangeDetails = Readonly<{
   change: AuthoredChange;
   parts: readonly AuthoredChangePart[];
@@ -75,7 +94,16 @@ export type AuthoredChangeGroup = Readonly<{
 }>;
 
 export type AuthoredQuery = Readonly<{
-  /** Only changes touching this place of the stored document. */
+  /**
+   * Only changes touching this place of the document the view shows. With
+   * no preview that is the stored document. On a preview it is a node's key
+   * or path of the shown document, such as a block or one of its texts,
+   * which reads the changes on the stored content the node shows, with what
+   * the preview hides inside it and the changes on each element around it
+   * that the preview takes away. Content the preview hides between two texts
+   * of a block reads on the block, never on either text. A key the preview
+   * lacks reads nothing, and a point or a range throws `AuthoredPlaceError`.
+   */
   at?: Location | NodeKey;
   authorId?: string;
   cursor?: string;
@@ -94,8 +122,11 @@ export type AuthoredPage = Readonly<{
  */
 export type AuthoredChangesDelta = Readonly<{
   /**
-   * Blocks of the view holding a change whose card id changed, which the
-   * commit may not have written.
+   * Top-level blocks of the view whose read of changes or cards may differ:
+   * each one a change reached or left, including one the commit did not
+   * write and one a change was moved wholly out of, and each one holding a
+   * change whose card id changed. Under a preview they are the blocks it
+   * shows.
    */
   blocks: readonly NodeKey[];
   /** Pending changes that began or whose revision changed. */

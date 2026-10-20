@@ -8,7 +8,8 @@ export const UNITS = 0;
 export const ENTRIES = 1;
 const STARTS = 2;
 const SHARES = 3;
-export const MEASURES = 4;
+export const TOKENS = 4;
+export const MEASURES = 5;
 
 const SHARE_MASK = 0x1f_ff_ff;
 
@@ -22,6 +23,8 @@ export type CardEntry = {
   authorId: string;
   createdAt: number;
   readonly id: string;
+  /** Its place among its slot's entries, set each time the slot is measured. */
+  index: number;
   last: Readonly<{ book: RootBook; slot: BookSlot }>;
   /**
    * The card id last published for this change, carried over when a sync
@@ -81,10 +84,34 @@ const startsAfter = (book: RootBook, previous: CardEntry, entry: CardEntry) => {
   );
 };
 
+/**
+ * What a slot's measure keeps of its entries, so a card's run, shares and
+ * oldest change read a cell per slot instead of walking its entries.
+ *
+ * @internal
+ */
+export type SlotCards = Readonly<{
+  /** For each entry, the oldest entry since its card's start or the slot's. */
+  oldest: readonly CardEntry[];
+  /** The shares of the entries before each index. */
+  shares: readonly number[];
+  /** The starts among the entries before each index. */
+  startCounts: readonly number[];
+  /** The index of each entry a card starts at. */
+  starts: readonly number[];
+}>;
+
+/** @internal */
+export const NO_SLOT_CARDS: SlotCards = Object.freeze({
+  oldest: [],
+  shares: [0],
+  startCounts: [0],
+  starts: [],
+});
+
 /** @internal */
 export const entryIndex = (book: RootBook, entry: CardEntry) =>
-  book.slots.sumBefore(book.slots.rankOf(entry.slot), ENTRIES) +
-  entry.slot.entries.indexOf(entry);
+  book.slots.sumBefore(book.slots.rankOf(entry.slot), ENTRIES) + entry.index;
 
 const entryAt = (book: RootBook, index: number) => {
   const rank = book.slots.search(ENTRIES, index, false);
@@ -95,19 +122,27 @@ const entryAt = (book: RootBook, index: number) => {
 };
 
 const measure = (book: RootBook, slot: BookSlot) => {
-  let starts = 0;
-  let shares = 0;
-  let oldest: CardEntry | null = null;
+  const oldest: CardEntry[] = [];
+  const shares = [0];
+  const startCounts = [0];
+  const starts: number[] = [];
+  let since: CardEntry | null = null;
+  let least: CardEntry | null = null;
 
-  for (const entry of slot.entries) {
-    if (entry.starts) starts += 1;
-    shares += entry.share;
-    if (!oldest || olderEntry(entry, oldest)) oldest = entry;
+  for (const [index, entry] of slot.entries.entries()) {
+    entry.index = index;
+    if (entry.starts) starts.push(index);
+    since = entry.starts || !since || olderEntry(entry, since) ? entry : since;
+    if (!least || olderEntry(entry, least)) least = entry;
+    oldest.push(since);
+    shares.push(getDefined(shares.at(-1)) + entry.share);
+    startCounts.push(starts.length);
   }
   slot.measures[ENTRIES] = slot.entries.length;
-  slot.measures[STARTS] = starts;
-  slot.measures[SHARES] = shares;
-  slot.oldest = oldest;
+  slot.measures[STARTS] = starts.length;
+  slot.measures[SHARES] = getDefined(shares.at(-1));
+  slot.cards = { oldest, shares, startCounts, starts };
+  slot.oldest = least;
   if (slot.leaf) book.slots.update(slot);
 };
 
@@ -123,9 +158,11 @@ export type ChangePlaces = Readonly<{ first: Place; last: Place }>;
  * Move the entries of `touched` changes, then set the start bit again on the
  * entries whose previous change or own place may have moved: every entry of
  * a block whose entries changed, the entry after such a block, and the entry
- * at each block a sync spliced in or out. Returns those entries as `checked`,
- * the entry just before each such block, whose card may have lost a member,
- * as `near`, and the entries of changes that left as `removed`.
+ * at each block a sync spliced in or out. A `rechecked` block, one a sync
+ * replaced in place, counts as one whose entries changed. Returns those
+ * entries as `checked`, the entry just before each such block, whose card may
+ * have lost a member, as `near`, and the entries of changes that left as
+ * `removed`.
  *
  * @internal
  */
@@ -133,10 +170,15 @@ export const syncCards = (
   entries: Map<string, CardEntry>,
   touched: Iterable<string>,
   spliced: Iterable<Readonly<{ book: RootBook; rank: number }>>,
+  rechecked: ReadonlyMap<BookSlot, RootBook>,
   changeOf: (id: string) => AuthoredChange | null,
   placesOf: (id: string) => ChangePlaces
 ) => {
   const dirty = new Map<BookSlot, RootBook>();
+
+  for (const [slot, book] of rechecked) {
+    if (slot.leaf) dirty.set(slot, book);
+  }
   const removed: CardEntry[] = [];
 
   for (const id of touched) {
@@ -160,6 +202,7 @@ export const syncCards = (
       authorId: change.authorId,
       createdAt: change.createdAt,
       id,
+      index: 0,
       last,
       published: old?.published,
       revision: change.revision,
@@ -231,31 +274,27 @@ const startAt = (book: RootBook, nth: number) => {
   if (nth >= book.slots.total(STARTS)) return book.slots.total(ENTRIES);
 
   const rank = book.slots.search(STARTS, nth, false);
-  let left = nth - book.slots.sumBefore(rank, STARTS);
-  const list = book.slots.at(rank).entries;
 
-  for (const [local, entry] of list.entries()) {
-    if (entry.starts) {
-      if (left === 0) return book.slots.sumBefore(rank, ENTRIES) + local;
-      left -= 1;
-    }
-  }
-
-  throw new Error('A start count misses its slot.');
+  return (
+    book.slots.sumBefore(rank, ENTRIES) +
+    getDefined(
+      book.slots.at(rank).cards.starts[nth - book.slots.sumBefore(rank, STARTS)]
+    )
+  );
 };
 
 const sharesBefore = (book: RootBook, index: number) => {
   if (index >= book.slots.total(ENTRIES)) return book.slots.total(SHARES);
 
   const rank = book.slots.search(ENTRIES, index, false);
-  const local = index - book.slots.sumBefore(rank, ENTRIES);
 
   return (
     book.slots.sumBefore(rank, SHARES) +
-    book.slots
-      .at(rank)
-      .entries.slice(0, local)
-      .reduce((sum, entry) => sum + entry.share, 0)
+    getDefined(
+      book.slots.at(rank).cards.shares[
+        index - book.slots.sumBefore(rank, ENTRIES)
+      ]
+    )
   );
 };
 
@@ -266,11 +305,9 @@ const sharesBefore = (book: RootBook, index: number) => {
  * @internal
  */
 export const cardRun = (book: RootBook, entry: CardEntry) => {
-  const rank = book.slots.rankOf(entry.slot);
-  const local = entry.slot.entries.indexOf(entry);
   const nth =
-    book.slots.sumBefore(rank, STARTS) +
-    entry.slot.entries.slice(0, local + 1).filter((item) => item.starts).length;
+    book.slots.sumBefore(book.slots.rankOf(entry.slot), STARTS) +
+    getDefined(entry.slot.cards.startCounts[entry.index + 1]);
 
   return [startAt(book, nth - 1), startAt(book, nth)] as const;
 };
@@ -290,35 +327,66 @@ export function* walkEntries(book: RootBook, from: number, to: number) {
       local < entries.length && index < to;
       local += 1
     ) {
+      countLedgerWork('entriesScanned');
       yield getDefined(entries[local]);
       index += 1;
     }
   }
 }
 
+// A card starts at `from`, so the last slot's cell holds its oldest entry
+// there, and the first slot's last cell its oldest in that slot.
 const oldestIn = (book: RootBook, from: number, to: number) => {
   const first = book.slots.search(ENTRIES, from, false);
   const last = book.slots.search(ENTRIES, to - 1, false);
-  const candidates = [
-    ...walkEntries(
-      book,
-      from,
-      Math.min(to, book.slots.sumBefore(first + 1, ENTRIES))
-    ),
-  ];
+  const cell = (rank: number, index: number) =>
+    getDefined(
+      book.slots.at(rank).cards.oldest[
+        index - book.slots.sumBefore(rank, ENTRIES)
+      ]
+    );
+  let oldest = cell(last, to - 1);
 
   if (last > first) {
     const middle = book.slots.leastIn(first + 1, last)?.oldest;
 
-    if (middle) candidates.push(middle);
-    candidates.push(
-      ...walkEntries(book, book.slots.sumBefore(last, ENTRIES), to)
-    );
+    for (const entry of [
+      cell(first, book.slots.sumBefore(first + 1, ENTRIES) - 1),
+      middle,
+    ]) {
+      if (entry && olderEntry(entry, oldest)) oldest = entry;
+    }
   }
 
-  return candidates.reduce((oldest, entry) =>
-    olderEntry(entry, oldest) ? entry : oldest
-  );
+  return oldest;
+};
+
+/**
+ * The summary of the card that holds the entries from `from` to `to` of
+ * `book`, a run `cardRun` gave.
+ *
+ * @internal
+ */
+export const cardIn = (
+  book: RootBook,
+  authorId: string,
+  from: number,
+  to: number
+): AuthoredChangeGroup => {
+  countLedgerWork('cardSummaries');
+
+  const oldest = oldestIn(book, from, to);
+  const shares = sharesBefore(book, to) - sharesBefore(book, from);
+  const changeCount = to - from;
+
+  return Object.freeze({
+    authorId,
+    changeCount,
+    createdAt: oldest.createdAt,
+    id: oldest.id,
+    revision:
+      Math.imul((shares % 0x1_00_00_00_00) ^ changeCount, 0x01_00_01_93) >>> 0,
+  });
 };
 
 /**
@@ -328,23 +396,5 @@ const oldestIn = (book: RootBook, from: number, to: number) => {
  *
  * @internal
  */
-export const cardOf = (
-  book: RootBook,
-  entry: CardEntry
-): AuthoredChangeGroup => {
-  countLedgerWork('groups');
-
-  const [from, to] = cardRun(book, entry);
-  const oldest = oldestIn(book, from, to);
-  const shares = sharesBefore(book, to) - sharesBefore(book, from);
-  const changeCount = to - from;
-
-  return Object.freeze({
-    authorId: entry.authorId,
-    changeCount,
-    createdAt: oldest.createdAt,
-    id: oldest.id,
-    revision:
-      Math.imul((shares % 0x1_00_00_00_00) ^ changeCount, 0x01_00_01_93) >>> 0,
-  });
-};
+export const cardOf = (book: RootBook, entry: CardEntry) =>
+  cardIn(book, entry.authorId, ...cardRun(book, entry));

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { after, before as beforeAll, describe, it } from 'node:test';
+import { isDeepStrictEqual } from 'node:util';
 
 import * as ledgerModule from '../src/authored/ledger/ledger';
 import { readLedgerWork } from '../src/authored/ledger/work';
@@ -139,6 +140,7 @@ mock.module(join(import.meta.dir, '../src/core/change/tokens.ts'), () => ({
 const {
   authoredVeto,
   createEditor,
+  createEditorView,
   defineEditorSchema,
   definePlugin,
   editorCommands,
@@ -1039,6 +1041,585 @@ describe('authored review tree work per edit', () => {
     };
 
     assert.equal(reads(2000), reads(100));
+  });
+
+  it('resolves and compares as many nodes for a key inside a follower window in a quote of 2,000 children as of 100', () => {
+    const by = (author: string, kind: string, extra = {}) => ({
+      at: 1,
+      author,
+      change: `${author}:1`,
+      kind,
+      ...extra,
+    });
+    // Bob's `uv` follows Alice's join of `c` into `ab`, at the quote's start.
+    const work = (size: number) => {
+      const editor = editorFor(
+        [
+          {
+            children: [
+              paragraph({ text: 'ab' }),
+              { ...paragraph({ text: 'c' }), authored: [by('alice', 'join')] },
+              paragraph({ text: 'xy' }),
+              {
+                ...paragraph({ text: 'uv' }),
+                authored: [
+                  by('bob', 'split', {
+                    follows: JSON.stringify(['alice:1', 1]),
+                  }),
+                ],
+              },
+              ...blocks(size - 4, []),
+            ],
+            type: 'quote',
+          },
+        ],
+        'edit',
+        'dave',
+        Blocks
+      );
+      const key = () =>
+        editor.update((tx) => {
+          const caret = { offset: 1, path: [0, 3, 0] };
+
+          tx.selection.set({ anchor: caret, focus: caret });
+          tx.command(editorCommands.insertText, { text: 'k' });
+        });
+
+      key();
+
+      const kernel = resolvedNodes;
+      const before = readLedgerWork();
+
+      key();
+
+      const measured = readLedgerWork();
+
+      return {
+        compared: measured.comparedBlocks - before.comparedBlocks,
+        kernel: resolvedNodes - kernel,
+        ledger: measured.resolvedNodes - before.resolvedNodes,
+      };
+    };
+    const small = work(100);
+
+    assert.ok(small.ledger > 0 && small.compared > 0, JSON.stringify(small));
+    assert.deepEqual(work(2000), small);
+  });
+
+  describe('a level for each container that shows as one block', () => {
+    const by = (author: string, kind: string, extra = {}) => ({
+      at: 1,
+      author,
+      change: `${author}:1`,
+      kind,
+      ...extra,
+    });
+    const line = (text: string, ...authored: object[]): Node => ({
+      ...(authored.length > 0 && { authored }),
+      children: [{ text }],
+      type: 'paragraph',
+    });
+    const quoted = (...children: Node[]): Node => ({ children, type: 'quote' });
+    const follows = () => ({ follows: JSON.stringify(['alice:1', 1]) });
+    const sol = () => [
+      line('aa'),
+      struckParagraph('bb', 'bob:1'),
+      line('ff', by('carol', 'split', follows())),
+      line('cc', by('alice', 'join')),
+    ];
+    const tails = (length: number, far?: Node) =>
+      Array.from({ length }, (_, index) =>
+        far && index === length - 6 ? far : line('tail')
+      );
+    const erin = () =>
+      paragraph(
+        { text: 'ta' },
+        { authored: [by('erin', 'insert')], text: 'zz' },
+        { text: 'il' }
+      );
+    const kinds = [
+      'resolvedNodes',
+      'writtenNodes',
+      'comparedNodes',
+      'levelSlots',
+      'factNodes',
+      'levelBuilds',
+    ] as const;
+    type Kind = keyof ReturnType<typeof readLedgerWork>;
+    const since = <K extends Kind>(
+      start: ReturnType<typeof readLedgerWork>,
+      counted: readonly K[]
+    ) => {
+      const end = readLedgerWork();
+
+      return Object.fromEntries(
+        counted.map((kind) => [kind, end[kind] - start[kind]])
+      ) as Record<K, number>;
+    };
+    const at = (path: readonly number[], offset: number) => ({
+      offset,
+      path: [...path],
+    });
+    const type = (
+      editor: Editor,
+      path: readonly number[],
+      { propose = false, text = 'k' } = {}
+    ) =>
+      editor.update((tx) => {
+        if (propose) tx.authored.propose();
+        tx.selection.set({ anchor: at(path, 1), focus: at(path, 1) });
+        tx.command(editorCommands.insertText, { text });
+      });
+    const viewOf = (editor: Editor, preview: 'accepted' | 'proposed') =>
+      createEditorView(editor, { authored: { preview } } as never);
+    const withoutMarks = (nodes: readonly Node[]): unknown[] =>
+      nodes.map(({ authored: _authored, children, ...own }) =>
+        children ? { ...own, children: withoutMarks(children) } : own
+      );
+    const assertFresh = (
+      editor: Editor,
+      intent: 'edit' | 'propose',
+      label: string
+    ) => {
+      const loaded = editorFor(
+        structuredClone(editor.read.value()) as never,
+        intent,
+        'dave',
+        Blocks
+      );
+
+      for (const preview of ['accepted', 'proposed'] as const) {
+        assert.deepEqual(
+          withoutMarks(viewOf(editor, preview).read.children() as Node[]),
+          withoutMarks(viewOf(loaded, preview).read.children() as Node[]),
+          `${label}: the ${preview} preview is a fresh load's`
+        );
+      }
+    };
+    const texts = (nodes: readonly Node[]): unknown[] =>
+      nodes.map((node) =>
+        node.type === 'quote'
+          ? texts(node.children ?? [])
+          : (node.children ?? []).map(({ text }) => text).join('')
+      );
+
+    it('reads, resolves and compares as much for a key beside a merge at a quote’s start at 4,992 children as at 96, beside far marks, a far key and an Accepted view, in both intents', () => {
+      const cases: ReadonlyArray<
+        Readonly<{
+          accepted?: boolean;
+          before?: (editor: Editor, size: number) => void;
+          name: string;
+          value: (size: number) => Node[];
+        }>
+      > = [
+        {
+          name: 'no other mark',
+          value: (size) => [quoted(...sol(), ...tails(size - 4))],
+        },
+        {
+          name: "Erin's far insertion",
+          value: (size) => [quoted(...sol(), ...tails(size - 4, erin()))],
+        },
+        {
+          before: (editor, size) =>
+            type(editor, [0, size - 3, 0], { propose: true, text: 'Q' }),
+          name: 'a far Suggesting key first',
+          value: (size) => [quoted(...sol(), ...tails(size - 4))],
+        },
+        {
+          name: "Erin's far pending join",
+          value: (size) => [
+            quoted(
+              ...sol(),
+              ...tails(size - 4, line('jj', by('erin', 'join')))
+            ),
+          ],
+        },
+        {
+          accepted: true,
+          name: "Erin's far insertion under an Accepted view",
+          value: (size) => [quoted(...sol(), ...tails(size - 4, erin()))],
+        },
+      ];
+
+      for (const intent of ['edit', 'propose'] as const) {
+        for (const { accepted, before, name, value } of cases) {
+          const [small, large] = [96, 4992].map((size) => {
+            const editor = editorFor(value(size), intent, 'dave', Blocks);
+            const view = accepted ? viewOf(editor, 'accepted') : null;
+
+            before?.(editor, size);
+            view?.read.children();
+            type(editor, [0, 2, 0]);
+            view?.read.children();
+
+            const start = readLedgerWork();
+
+            type(editor, [0, 2, 0]);
+            view?.read.children();
+
+            return since(start, kinds);
+          });
+          const label = `${name} in ${intent}: ${JSON.stringify(small)}`;
+
+          assert.deepEqual(large, small, label);
+          for (const kind of [
+            'resolvedNodes',
+            'comparedNodes',
+            'levelSlots',
+            'factNodes',
+          ] as const) {
+            assert.ok((small?.[kind] ?? 0) > 0, `${label}: ${kind}`);
+          }
+          assert.equal(small?.levelBuilds, 0, label);
+        }
+      }
+    });
+
+    it('reads as many facts for a key in a far child of an unmarked quote of 4,992 children as of 96, in both intents', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const [small, large] = [96, 4992].map((size) => {
+          const editor = editorFor(
+            [quoted(...tails(size))],
+            intent,
+            'dave',
+            Blocks
+          );
+
+          type(editor, [0, size - 20, 0]);
+
+          const start = readLedgerWork();
+
+          type(editor, [0, size - 20, 0]);
+
+          return since(start, kinds);
+        });
+
+        assert.deepEqual(large, small, intent);
+        assert.ok((small?.factNodes ?? 0) > 0, JSON.stringify(small));
+      }
+    });
+
+    it('resolves a key inside a quote with pending marks through the quote’s level, never the whole quote, in both intents', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const editor = editorFor(
+          [paragraph({ text: 'pp' }), quoted(...sol(), ...tails(20))],
+          intent,
+          'dave',
+          Blocks
+        );
+
+        type(editor, [1, 2, 0]);
+
+        const start = readLedgerWork();
+
+        type(editor, [1, 2, 0]);
+
+        const work = since(start, ['wholeContainers', 'levelSlots']);
+
+        assert.equal(work.wholeContainers, 0, intent);
+        assert.ok(work.levelSlots > 0, intent);
+        assertFresh(editor, intent, intent);
+      }
+    });
+
+    it('resolves a quote whole and builds no level for it while a join inside links it to the paragraph before', () => {
+      const editor = editorFor(
+        [paragraph({ text: 'pp' }), quoted(...sol())],
+        'propose',
+        'dave',
+        Blocks
+      );
+
+      for (const path of [
+        [1, 0, 0],
+        [1, 3, 0],
+      ]) {
+        const start = readLedgerWork();
+
+        type(editor, path);
+        assert.deepEqual(
+          since(start, ['wholeContainers', 'levelBuilds']),
+          { levelBuilds: 0, wholeContainers: 1 },
+          `a key at ${path}`
+        );
+      }
+      assertFresh(editor, 'propose', 'after both keys');
+    });
+
+    it('resolves a later line whose join reaches back into the edited line with it, as much at 4,992 children as at 96', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const [small, large] = [96, 4992].map((size) => {
+          const editor = editorFor(
+            [
+              quoted(
+                line('aa'),
+                line('bb'),
+                line('cc', by('alice', 'join')),
+                ...tails(size - 3)
+              ),
+            ],
+            intent,
+            'dave',
+            Blocks
+          );
+
+          type(editor, [0, 1, 0]);
+
+          const start = readLedgerWork();
+
+          type(editor, [0, 1, 0]);
+
+          const work = since(start, [...kinds, 'windowSlots']);
+
+          assert.deepEqual(
+            texts(viewOf(editor, 'proposed').read.children() as Node[])[0]
+              ?.toString()
+              .split(',')
+              .slice(0, 2),
+            ['aa', 'bkkbcc']
+          );
+          assertFresh(editor, intent, `${intent} at ${size}`);
+
+          return work;
+        });
+
+        assert.deepEqual(large, small, intent);
+        // The window holds `bb` and `cc`, which resolve as one run.
+        assert.equal(small?.levelSlots, 2, JSON.stringify(small));
+      }
+    });
+
+    it('resolves the window from a join to its far follower, as large at 4,992 children as at 96', () => {
+      const windowAt = (gap: number, size: number) => {
+        const editor = editorFor(
+          [
+            quoted(
+              line('aa'),
+              line('cc', by('alice', 'join')),
+              ...tails(gap),
+              line('ff', by('carol', 'split', follows())),
+              ...tails(size - gap - 3)
+            ),
+          ],
+          'propose',
+          'dave',
+          Blocks
+        );
+
+        type(editor, [0, gap + 2, 0]);
+
+        const start = readLedgerWork();
+
+        type(editor, [0, gap + 2, 0]);
+
+        const work = since(start, [...kinds, 'windowSlots']);
+
+        assertFresh(editor, 'propose', `${gap} lines apart at ${size}`);
+
+        return work;
+      };
+
+      for (const gap of [10, 40]) {
+        const small = windowAt(gap, 96);
+
+        assert.deepEqual(windowAt(gap, 4992), small, `${gap} lines apart`);
+        // `aa` to `ff`: the join's line, the join, the lines between and the
+        // follower.
+        assert.equal(small.levelSlots, gap + 3, JSON.stringify(small));
+      }
+    });
+
+    it('resolves a window beside an unchanged move source once its copy is inserted elsewhere, and adopts the write before, in both intents', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        for (const copy of [false, true]) {
+          const counts = [8, 96].map((size) => {
+            const editor = editorFor(
+              [
+                quoted(
+                  line('aa'),
+                  struckParagraph('mm', 'bob:1'),
+                  ...tails(size)
+                ),
+                paragraph({ text: 'zz' }),
+              ],
+              intent,
+              'dave',
+              Blocks
+            );
+
+            if (copy) {
+              editor.update((tx) =>
+                tx.nodes.insert(line('mm', by('bob', 'insert')) as never, {
+                  at: [1],
+                })
+              );
+            }
+
+            const start = readLedgerWork();
+
+            editor.update((tx) => {
+              tx.selection.set({
+                anchor: at([0, 2, 0], 0),
+                focus: at([0, 2, 0], 0),
+              });
+              tx.command(editorCommands.delete, {
+                direction: 'backward',
+                unit: 'character',
+              });
+            });
+
+            const work = since(start, [...kinds, 'writtenRuns']);
+
+            assertFresh(editor, intent, `${intent}, copy ${copy}, at ${size}`);
+
+            return work;
+          });
+          const [small, large] = counts;
+
+          assert.deepEqual(large, small, `${intent}, copy ${copy}`);
+          assert.equal(
+            small?.writtenRuns,
+            copy ? 0 : 1,
+            `${intent}, copy ${copy}: ${JSON.stringify(small)}`
+          );
+        }
+      }
+    });
+
+    it('shows a quote whose lines are all removed as the kernel does under each mode, and keeps it on the next key, in both intents', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const editor = editorFor(
+          [
+            paragraph({ text: 'pp' }),
+            quoted(line('aa'), line('bb')),
+            paragraph({ text: 'qq' }),
+          ],
+          intent,
+          'dave',
+          Blocks
+        );
+
+        viewOf(editor, 'accepted').read.children();
+        editor.update((tx) => {
+          tx.selection.set({
+            anchor: at([1, 0, 0], 0),
+            focus: at([1, 1, 0], 2),
+          });
+          tx.command(editorCommands.deleteFragment, { direction: 'backward' });
+        });
+        assert.deepEqual(
+          [
+            texts(viewOf(editor, 'proposed').read.children() as Node[]),
+            texts(viewOf(editor, 'accepted').read.children() as Node[]),
+          ],
+          intent === 'edit'
+            ? [
+                ['pp', 'qq'],
+                ['pp', 'qq'],
+              ]
+            : [
+                ['pp', 'qq'],
+                ['pp', ['aa', 'bb'], 'qq'],
+              ]
+        );
+        assertFresh(editor, intent, `${intent} after the removal`);
+        type(editor, [0, 0]);
+        assertFresh(editor, intent, `${intent} after the next key`);
+      }
+    });
+
+    it('does as much map and level work on each of five keys in a row at 4,992 children as at 96, in both intents', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const [small, large] = [96, 4992].map((size) => {
+          const editor = editorFor(
+            [quoted(...sol(), ...tails(size - 4))],
+            intent,
+            'dave',
+            Blocks
+          );
+
+          return Array.from({ length: 5 }, () => {
+            const start = readLedgerWork();
+
+            type(editor, [0, 2, 0]);
+
+            return since(start, [
+              ...kinds,
+              'composedChanges',
+              'visitedNodes',
+              'windowSlots',
+            ]);
+          });
+        });
+
+        assert.ok(
+          small?.slice(1).every((work) => isDeepStrictEqual(work, small[1])),
+          JSON.stringify(small)
+        );
+        assert.deepEqual(large, small, intent);
+      }
+    });
+
+    it('refuses Enter at the end of the joined line twice without a rebuild, then does as much for the safe keys after at 96 children as at 8, in both intents', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const [small, large] = [8, 96].map((size) => {
+          const editor = editorFor(
+            [quoted(...sol(), ...tails(size - 4))],
+            intent,
+            'dave',
+            Blocks
+          );
+          const refusals: unknown[] = [];
+
+          editor.api.authored.subscribeRefusals((refusal) =>
+            refusals.push(refusal.reasons)
+          );
+
+          const steps = ['enter', 'enter', 'key', 'key'].map((step) => {
+            const start = readLedgerWork();
+
+            if (step === 'enter') {
+              editor.update((tx) => {
+                tx.selection.set({
+                  anchor: at([0, 3, 0], 1),
+                  focus: at([0, 3, 0], 1),
+                });
+                tx.command(editorCommands.insertBreak);
+              });
+            } else {
+              type(editor, [0, 2, 0]);
+            }
+
+            return [
+              step,
+              refusals.length,
+              since(start, ['rebuilds', 'resolvedNodes', 'levelSlots']),
+            ] as const;
+          });
+
+          assertFresh(editor, intent, `${intent} at ${size}`);
+
+          return steps;
+        });
+
+        assert.deepEqual(
+          small?.map(([step, refused, { rebuilds }]) => [
+            step,
+            refused,
+            rebuilds,
+          ]),
+          [
+            ['enter', 1, 0],
+            ['enter', 2, 0],
+            ['key', 2, 0],
+            ['key', 2, 0],
+          ],
+          intent
+        );
+        assert.deepEqual(large?.at(-1), small?.at(-1), intent);
+      }
+    });
   });
 
   describe('with content roots', () => {

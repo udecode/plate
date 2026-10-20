@@ -14,6 +14,7 @@ import { type Point, PointApi } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
 import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
+import { bindNodeKeyOnce } from '../utils/node-keys';
 import { enterAnchorScope } from './anchor-state';
 import {
   DocumentChange,
@@ -30,6 +31,7 @@ import {
   type CommandProjection,
   type EditorDocumentState,
   getEditorCommandDocument,
+  refusedIn,
   unplacedIn,
 } from './command-document';
 import { isInRemovedContent, landTextWrite, nodeAt } from './content-landing';
@@ -81,7 +83,7 @@ export const COMMAND_FRAMES = new WeakSet<Editor>();
 
 export const FRAMED_SPECS = new WeakMap<
   TransactionSpec,
-  readonly Descendant[]
+  Readonly<{ framedOn: readonly Descendant[]; ignoresSelection: boolean }>
 >();
 
 /**
@@ -104,7 +106,10 @@ export const evaluateInEditorCommandFrame = <
 
   if (!probed) return null;
   if (probed.value.result !== false) {
-    FRAMED_SPECS.set(probed.value.result, probed.stored.children);
+    FRAMED_SPECS.set(probed.value.result, {
+      framedOn: probed.stored.children,
+      ignoresSelection: probed.located,
+    });
   }
 
   return probed.value;
@@ -115,6 +120,7 @@ export const probeInEditorCommandFrame = <T>(
   editor: Editor,
   body: EditorFrameBody<T>
 ): Readonly<{
+  located: boolean;
   moved: boolean;
   stored: EditorDocumentValue;
   value: T;
@@ -139,11 +145,21 @@ export const probeInEditorCommandFrame = <T>(
   // the frame, so a write there lands elsewhere.
   const insideRemoved = (point: Point) =>
     projected.map.hides(root, index.positionAt(point));
-  const moved =
+  let moved =
     storedSelection?.kind === 'text' &&
     (insideRemoved(storedSelection.anchor) ||
       insideRemoved(storedSelection.focus));
-  const placed = createFramePlace(editor, projected, stored, selectionRoot);
+  // A probe throws nothing, so a selection its apply would refuse only
+  // leaves the native path.
+  const placed = createFramePlace(
+    editor,
+    projected,
+    stored,
+    selectionRoot,
+    () => {
+      moved = true;
+    }
+  );
   const selection = placed.selection(storedSelection);
   const evaluate = body(placed.place);
   const parent = getTransactionSnapshot(editor);
@@ -183,11 +199,9 @@ export const probeInEditorCommandFrame = <T>(
       toFrame: placed.selection,
     };
 
-    return {
-      moved,
-      stored,
-      value: withTransactionSpecDraftRead(editor, evaluate),
-    };
+    const value = withTransactionSpecDraftRead(editor, evaluate);
+
+    return { located: placed.located(), moved, stored, value };
   } finally {
     COMMAND_FRAMES.delete(editor);
     disposeTransactionSpecContext(editor, frame);
@@ -242,6 +256,19 @@ const frameIndexOf = (
   const indexes = LAST_FRAME_INDEXES.get(editor) ?? new Map();
   const last = indexes.get(rootName);
   const root = valueRootIndex(projected.value, rootName);
+  // A block the projection shows away from its stored place is deleted and
+  // inserted by the change, so its stored key goes on its projected node,
+  // which the mapping then keeps as that node's own identity.
+  const bindMoved = (index: SnapshotIndex) => {
+    for (const path of projected.map.moved(rootName)) {
+      const key = index.keyAt(path);
+      const placed = projected.map.nodePath(rootName, path);
+
+      if (key && placed) bindNodeKeyOnce(root.node(placed), editor, key);
+    }
+
+    return index;
+  };
   const index =
     last?.root === root
       ? last.index
@@ -260,7 +287,7 @@ const frameIndexOf = (
             getDefined(
               getInternalDocumentRootChange(projected.map.change(), rootName)
             ),
-            storedIndex(),
+            bindMoved(storedIndex()),
             editor,
             new Set(),
             undefined,
@@ -351,6 +378,8 @@ const enterFrameDraft = (
   countCoreWork('anchorScopes');
 };
 
+type Refuse = (reason: 'crosses' | 'unaligned') => void;
+
 /**
  * Where stored locations land in a frame. A point first lands where a text
  * write lands, then maps. A range places its start forward and its end
@@ -363,9 +392,39 @@ const createFramePlace = (
   editor: Editor,
   projected: CommandProjection,
   stored: EditorDocumentValue,
-  selectionRoot: string
+  selectionRoot: string,
+  refuse: Refuse
 ) => {
+  let heldRefusal: 'crosses' | 'unaligned' | null = null;
+  let located = false;
+  // A node the projection shows away from its stored place maps by its open
+  // token, which the change deletes there and inserts where it lands.
+  const nodes = (selection: NodeSelection, fallbackRoot: string) => {
+    const root = SelectionApi.root(selection) ?? fallbackRoot;
+
+    if (!projected.map.reorders(root)) return null;
+
+    const document = valueRoot(stored, root);
+    const place = (at: Path) =>
+      nodeAt(document, at) ? projected.map.nodePath(root, at) : null;
+    const paths = selection.paths.map(place);
+    const anchorPath = place(selection.anchorPath);
+    const focusPath = place(selection.focusPath);
+    const [first, ...rest] = paths;
+
+    if (!first || !anchorPath || !focusPath || rest.some((at) => !at)) {
+      return null;
+    }
+
+    return SelectionApi.nodes([first, ...(rest as Path[])], {
+      anchorPath,
+      focusPath,
+      mode: selection.mode,
+      ...(selection.root === undefined ? {} : { root: selection.root }),
+    });
+  };
   const map = (selection: Selection, fallbackRoot: string) =>
+    (SelectionApi.isNode(selection) && nodes(selection, fallbackRoot)) ||
     mapSelectionThroughChange(
       editor,
       selection,
@@ -389,8 +448,14 @@ const createFramePlace = (
       mapAssoc < 0 ? 'backward' : 'forward'
     );
 
-    if (position === null) return null;
-
+    return position === null ? null : pointIn(point, root, position, assoc);
+  };
+  const pointIn = (
+    point: Point,
+    root: string,
+    position: number,
+    assoc: -1 | 1
+  ) => {
     const after = projectedIndex(projected, root);
     const [next] =
       position < after.length ? after.slice(position, position + 1).tokens : [];
@@ -453,10 +518,17 @@ const createFramePlace = (
   // A caret no surviving line can take, as in a container whose every line
   // is gone, stays in what replaces its line, such as the line completion
   // gives that container.
-  const caret = (point: Point, fallbackRoot: string) => {
+  const caret = (point: Point, fallbackRoot: string, onRefuse: Refuse) => {
     const root = point.root ?? fallbackRoot;
     const document = valueRoot(stored, root);
     const landed = landTextWrite(editor, point, document);
+
+    if (projected.map.reorders(root)) {
+      const at = DocumentIndex.fromValue(document).positionAt(landed);
+      const placement = projected.map.projectRange(root, at, at);
+
+      if (placement?.kind === 'refused') onRefuse(placement.reason);
+    }
 
     return toFrame(
       landed,
@@ -465,9 +537,32 @@ const createFramePlace = (
       isInRemovedContent(editor, landed, document) ? -1 : 1
     );
   };
-  const span = (range: Range, fallbackRoot: string) => {
+  // On a root the projection shows in another order, a range places through
+  // the map, which refuses one whose image would not hold its content.
+  const rangePlacement = (
+    start: Point,
+    end: Point,
+    root: string,
+    onRefuse: Refuse
+  ) => {
+    const index = DocumentIndex.fromValue(valueRoot(stored, root));
+    const placement = projected.map.projectRange(
+      root,
+      index.positionAt(start),
+      index.positionAt(end)
+    );
+
+    if (placement?.kind === 'refused') {
+      onRefuse(placement.reason);
+
+      return null;
+    }
+
+    return placement;
+  };
+  const span = (range: Range, fallbackRoot: string, onRefuse: Refuse) => {
     const collapsed = (point: Point) => {
-      const placed = caret(point, fallbackRoot);
+      const placed = caret(point, fallbackRoot, onRefuse);
 
       return placed && { anchor: placed, focus: placed };
     };
@@ -481,9 +576,21 @@ const createFramePlace = (
     const [start, end] = backward
       ? [range.focus, range.anchor]
       : [range.anchor, range.focus];
-    const from = pastAdded(toFrame(start, root, 1), root, 1);
-    const to = pastAdded(toFrame(end, root, -1), root, -1);
-
+    const placement = projected.map.reorders(root)
+      ? rangePlacement(start, end, root, onRefuse)
+      : null;
+    const from = pastAdded(
+      placement
+        ? pointIn(start, root, placement.from, 1)
+        : toFrame(start, root, 1),
+      root,
+      1
+    );
+    const to = pastAdded(
+      placement ? pointIn(end, root, placement.to, -1) : toFrame(end, root, -1),
+      root,
+      -1
+    );
     if (!from || !to || PointApi.compare(from, to) >= 0) {
       return collapsed(start);
     }
@@ -535,12 +642,15 @@ const createFramePlace = (
   function location(
     at: NodeTarget | NodeSelection | Span
   ): NodeTarget | NodeSelection | Span | null {
+    located = true;
     if (SelectionApi.isNode(at)) {
       const mapped = map(at, getEditorUpdateRoot(editor));
 
       return mapped?.kind === 'node' ? mapped : null;
     }
-    if (PointApi.isPoint(at)) return caret(at, getEditorUpdateRoot(editor));
+    if (PointApi.isPoint(at)) {
+      return caret(at, getEditorUpdateRoot(editor), refuse);
+    }
     if (LocationApi.isSpan(at)) {
       const from = path(at[0]);
       const to = path(at[1]);
@@ -548,7 +658,7 @@ const createFramePlace = (
       return from && to && [from, to];
     }
     if (RangeApi.isRange(at)) {
-      const placed = span(at, getEditorUpdateRoot(editor));
+      const placed = span(at, getEditorUpdateRoot(editor), refuse);
 
       return placed && { ...at, ...placed };
     }
@@ -562,16 +672,34 @@ const createFramePlace = (
   }
 
   const place: EditorCommandPlace = Object.freeze({ location });
+  const placeSelection = (selection: Selection, onRefuse: Refuse) => {
+    if (selection?.kind !== 'text') return map(selection, selectionRoot);
+
+    const placed = span(selection, selectionRoot, onRefuse);
+
+    return placed && { ...selection, ...placed };
+  };
 
   return Object.freeze({
+    /**
+     * Places the selection a frame starts with. One the frame cannot place
+     * keeps where it would hold it, and refuses only a body that acts at it.
+     */
+    held: (selection: Selection): Selection =>
+      placeSelection(selection, (reason) => {
+        heldRefusal ??= reason;
+      }),
+    located: () => located,
     place,
-    selection: (selection: Selection): Selection => {
-      if (selection?.kind !== 'text') return map(selection, selectionRoot);
-
-      const placed = span(selection, selectionRoot);
-
-      return placed && { ...selection, ...placed };
+    /**
+     * Refuses a body that placed no location, which acts at the selection,
+     * when the frame could not place the selection it started with.
+     */
+    refuseAtHeldSelection: () => {
+      if (!located && heldRefusal) refuse(heldRefusal);
     },
+    selection: (selection: Selection): Selection =>
+      placeSelection(selection, refuse),
   });
 };
 
@@ -611,7 +739,13 @@ const effectChange = (
   const mapPosition: DocumentChange['mapPosition'] = (position, options) => {
     const root = options?.root ?? MAIN_ROOT_KEY;
 
-    if (options?.track !== undefined || wrote.createRoots.has(root)) {
+    // Where the projection moves content, the composed change deletes and
+    // inserts it, so a tracked position inside it maps through the map's
+    // places instead.
+    if (
+      (options?.track !== undefined && !projected.map.reorders(root)) ||
+      wrote.createRoots.has(root)
+    ) {
       return composed().mapPosition(position, options);
     }
     countCoreWork('adapterMappings');
@@ -619,8 +753,11 @@ const effectChange = (
     const assoc = options?.association === 'forward' ? 1 : -1;
     const written = getInternalDocumentRootChange(wrote, root);
     const before = written
-      ? getDefined(mapRootChangePositionBackward(written, position, assoc))
+      ? mapRootChangePositionBackward(written, position, assoc, options?.track)
       : position;
+
+    if (before === null) return null;
+
     const at = projected.map.toStored(root, before, assoc);
 
     if (at === null) return null;
@@ -644,8 +781,19 @@ const effectChange = (
 export const runInEditorCommandFrame = (
   editor: Editor,
   body: EditorFrameBody<boolean>,
-  framedOn?: readonly Descendant[],
-  targetRoot?: () => string
+  {
+    framedOn,
+    ignoresSelection = false,
+    targetRoot,
+  }: Readonly<{
+    framedOn?: readonly Descendant[];
+    /**
+     * The body never acts at the selection, so one the frame cannot place
+     * leaves it be, even though it places its locations as it runs.
+     */
+    ignoresSelection?: boolean;
+    targetRoot?: () => string;
+  }> = {}
 ): boolean | null => {
   const document = getEditorCommandDocument(editor);
   const recorder = getEditorDocumentRecorder(editor);
@@ -674,13 +822,19 @@ export const runInEditorCommandFrame = (
     editor,
     projected,
     stored,
-    outer.selectionRoot
+    outer.selectionRoot,
+    (reason) => {
+      throw refusedIn(editor, reason);
+    }
   );
-  const selection = placed.selection(outer.selection);
+  const selection = placed.held(outer.selection);
   const target = outer.snapshot.implicitTarget
-    ? placed.selection(outer.snapshot.implicitTarget)
+    ? placed.held(outer.snapshot.implicitTarget)
     : null;
   const run = body(placed.place);
+
+  if (!ignoresSelection) placed.refuseAtHeldSelection();
+
   const runFramed = () => {
     const frame = createTransactionSpecContext(editor);
     const { snapshot } = frame;

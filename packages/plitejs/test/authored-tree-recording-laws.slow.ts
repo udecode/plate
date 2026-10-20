@@ -22,6 +22,7 @@ import {
   transfer,
 } from 'plitejs';
 import { history as historyPlugin } from 'plitejs/history';
+import * as Y from 'yjs';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
 import {
@@ -37,10 +38,19 @@ import {
 import { factsOf } from '../src/authored/facts/facts';
 import { authoredLocationMap } from '../src/authored/format';
 import { getReviewLedger } from '../src/authored/ledger/ledger';
-import { readLedgerWork } from '../src/authored/ledger/work';
+import { type BlockFacts, blockFactsOf } from '../src/authored/ledger/runs';
+import {
+  readLedgerWork,
+  takeGateWindows,
+  takeLevelFacts,
+  watchGateWindows,
+  watchLevelFacts,
+} from '../src/authored/ledger/work';
+import type { AuthoredRefusal } from '../src/authored/refusal';
 import { authoredResolveSchemaOf } from '../src/authored/resolve-schema';
 import { decidedAlignment } from '../src/authored/tree/alignment';
 import {
+  AuthoredMarkError,
   type AuthoredMarkKind,
   authoredMarksSchema,
   readAuthoredMarks,
@@ -53,7 +63,7 @@ import {
   valueRoot,
 } from '../src/core/change/document-change';
 import { DocumentIndex } from '../src/core/change/document-index';
-import type { JsonEditorValue } from '../src/core/change/tokens';
+import type { JsonEditorValue, JsonNode } from '../src/core/change/tokens';
 import {
   type CommandProjectionMap,
   projectionMapOf,
@@ -63,6 +73,7 @@ import {
   subscribeEditorRefusals,
 } from '../src/core/refusal';
 import { getDefined } from '../src/internal/get-defined';
+import { yjs } from '../src/yjs/core/plugin';
 import {
   authoredTestApi,
   expandedChildren,
@@ -799,8 +810,10 @@ const RECORDED_SEED = process.env.PLITE_RECORDED_SEED;
 const recordedCommands = (
   law: RecordedLaw,
   numRuns: number,
-  prepare?: Prepare
+  prepare?: Prepare,
+  seed?: number
 ) => {
+  const runSeed = RECORDED_SEED === undefined ? seed : Number(RECORDED_SEED);
   let compared = 0;
   const recorded = recordedCase(law, prepare);
 
@@ -1034,7 +1047,7 @@ const recordedCommands = (
         joinIntoJoiningLine,
       ],
       numRuns,
-      ...(RECORDED_SEED === undefined ? {} : { seed: Number(RECORDED_SEED) }),
+      ...(runSeed === undefined ? {} : { seed: runSeed }),
     }
   );
 
@@ -1838,6 +1851,397 @@ const MAIN_ROOT: LedgerRoot = {
           },
         ],
       ],
+    // Alice's pending join pulls `cd` up into the quote's `ab`, and Bob's
+    // Enter leaves `d` following it.
+    'a line moved between a join target and its joined line, undone, redone and decided':
+      [
+        [
+          {
+            children: [{ children: [{ text: 'ab' }], type: 'paragraph' }],
+            type: 'quote',
+          },
+          { children: [{ text: 'cd' }], type: 'paragraph' },
+          { children: [{ text: 'ef' }], type: 'paragraph' },
+        ],
+        [
+          {
+            author: 'alice',
+            command: { at: 'c', direction: 'backward', kind: 'delete' },
+            intent: 'propose',
+          },
+          {
+            author: 'bob',
+            command: { at: 'd', kind: 'break', side: 0 },
+            intent: 'propose',
+          },
+        ],
+        0,
+        [
+          {
+            command: { at: 'e', edge: 'before', kind: 'moveNode', to: 'c' },
+            intent: 'edit',
+            kind: 'command',
+          },
+          { kind: 'undo' },
+          { kind: 'redo' },
+          { action: 'accept', kind: 'decide' },
+        ],
+      ],
+    'keys typed in a paragraph pasted above a joined line and in its follower':
+      [
+        [
+          {
+            children: [{ children: [{ text: 'ab' }], type: 'paragraph' }],
+            type: 'quote',
+          },
+          { children: [{ text: 'cd' }], type: 'paragraph' },
+          { children: [{ text: 'ef' }], type: 'paragraph' },
+        ],
+        [
+          {
+            author: 'alice',
+            command: { at: 'c', direction: 'backward', kind: 'delete' },
+            intent: 'propose',
+          },
+          {
+            author: 'bob',
+            command: { at: 'd', kind: 'break', side: 0 },
+            intent: 'propose',
+          },
+          {
+            author: 'alice',
+            command: { at: 'b', kind: 'paste', side: 1 },
+            intent: 'propose',
+          },
+        ],
+        0,
+        [
+          {
+            intent: 'propose',
+            kind: 'framed',
+            step: { at: { letter: 'o', side: 1 }, kind: 'type' },
+          },
+          {
+            intent: 'edit',
+            kind: 'framed',
+            step: { at: { letter: 'd', side: 0 }, kind: 'type' },
+          },
+          { kind: 'undo' },
+          { action: 'reject', kind: 'decide' },
+        ],
+      ],
+    // Bob's Editing join of `gh` waits on Alice's deletion of `cd`, and his
+    // Editing split left `ij` following it past a paragraph that goes with no
+    // join, so Accepted shows `ij` above `kl` too.
+    'a key typed between an Editing join and its Editing follower': [
+      [
+        { children: [{ text: 'ab' }], type: 'paragraph' },
+        {
+          authored: [
+            { at: 1, author: 'alice', change: 'alice:0', kind: 'delete' },
+          ],
+          children: [
+            {
+              authored: [
+                { at: 1, author: 'alice', change: 'alice:0', kind: 'delete' },
+              ],
+              text: 'cd',
+            },
+          ],
+          type: 'paragraph',
+        },
+        {
+          authored: [
+            { at: 1, author: 'bob', change: '~edit:bob', kind: 'join' },
+          ],
+          children: [{ text: 'gh' }],
+          type: 'paragraph',
+        },
+        { children: [{ text: 'kl' }], type: 'paragraph' },
+        {
+          authored: [
+            {
+              at: 1,
+              author: 'bob',
+              change: '~edit:bob',
+              follows: JSON.stringify(['~edit:bob', 1]),
+              kind: 'split',
+            },
+          ],
+          children: [{ text: 'ij' }],
+          type: 'paragraph',
+        },
+      ],
+      [],
+      0,
+      [
+        {
+          intent: 'propose',
+          kind: 'framed',
+          step: { at: { letter: 'k', side: 1 }, kind: 'type' },
+        },
+        { kind: 'undo' },
+        { action: 'accept', kind: 'decide' },
+      ],
+    ],
+    // Rejecting Bob's deletion of every line leaves each held, so the quote
+    // shows its line as stored after an Editing deletion inside it.
+    'an Editing deletion inside a quote whose line a rejected deletion holds': [
+      [
+        {
+          children: [{ children: [{ text: 'ab' }], type: 'paragraph' }],
+          type: 'quote',
+        },
+        { children: [{ text: 'cd' }], type: 'paragraph' },
+        { children: [{ text: 'ef' }], type: 'paragraph' },
+      ],
+      [
+        {
+          author: 'alice',
+          command: { at: 'd', kind: 'nest', side: 0 },
+          intent: 'propose',
+        },
+        {
+          author: 'alice',
+          command: { at: 'M', kind: 'nest', side: 0 },
+          intent: 'propose',
+        },
+        {
+          author: 'alice',
+          command: { at: 'O', kind: 'nest', side: 0 },
+          intent: 'propose',
+        },
+      ],
+      0,
+      [
+        {
+          intent: 'propose',
+          kind: 'framed',
+          step: {
+            direction: 'backward',
+            from: { letter: 'f', side: 0 },
+            kind: 'fragment',
+            to: { letter: 'a', side: 0 },
+          },
+        },
+        { action: 'reject', kind: 'decide' },
+        {
+          intent: 'edit',
+          kind: 'framed',
+          step: {
+            direction: 'backward',
+            from: { letter: 'a', side: 0 },
+            kind: 'fragment',
+            to: { letter: 'a', side: 1 },
+          },
+        },
+      ],
+    ],
+    // The quote Bob wraps around his moved line shows after that line, which
+    // follows Alice's join, so the struck joined line shows in the line it
+    // joins and the deletion's end lies there, before the moved line.
+    'a deletion into a struck joined line whose follower was wrapped in a quote':
+      [
+        [
+          { children: [{ text: 'ab' }], type: 'paragraph' },
+          { children: [{ text: 'cd' }], type: 'paragraph' },
+          { children: [{ text: 'ef' }], type: 'paragraph' },
+          { children: [{ text: 'gh' }], type: 'paragraph' },
+        ],
+        [],
+        0,
+        [
+          {
+            command: { from: 'f', kind: 'deleteRange', to: 'h' },
+            intent: 'propose',
+            kind: 'command',
+          },
+          {
+            command: { at: 'c', edge: 'before', kind: 'transferNode', to: 'g' },
+            intent: 'edit',
+            kind: 'command',
+          },
+          {
+            command: { at: 'd', kind: 'wrap' },
+            intent: 'edit',
+            kind: 'command',
+          },
+          {
+            intent: 'edit',
+            kind: 'framed',
+            step: {
+              direction: 'backward',
+              from: { letter: 'a', side: 1 },
+              kind: 'fragment',
+              to: { letter: 'h', side: 0 },
+            },
+          },
+        ],
+      ],
+    // Rejecting the paste merges the line it split off back into the pasted
+    // line before the quote, and rejecting the wrap removes that quote, so
+    // nothing shows out of its stored order.
+    'a proposed quote around a pasted line that rejecting merges back': [
+      [
+        { children: [{ text: 'ab' }], type: 'paragraph' },
+        { children: [{ text: 'cd' }], type: 'paragraph' },
+      ],
+      [],
+      0,
+      [
+        {
+          command: { at: 'a', kind: 'paste', side: 0 },
+          intent: 'propose',
+          kind: 'command',
+        },
+        {
+          command: { at: 'a', kind: 'wrap' },
+          intent: 'propose',
+          kind: 'command',
+        },
+      ],
+    ],
+    // The same join and follower: a deletion from the struck `e` back to the
+    // struck `d` starts inside `ef`, which the deletion strikes whole.
+    'a deletion between struck letters of the line a join passes over and its follower':
+      [
+        [
+          {
+            children: [{ children: [{ text: 'ab' }], type: 'paragraph' }],
+            type: 'quote',
+          },
+          { children: [{ text: 'cd' }], type: 'paragraph' },
+          { children: [{ text: 'ef' }], type: 'paragraph' },
+          { children: [{ text: 'gh' }], type: 'paragraph' },
+        ],
+        [],
+        0,
+        [
+          {
+            intent: 'propose',
+            kind: 'framed',
+            step: {
+              direction: 'backward',
+              from: { letter: 'd', side: 0 },
+              kind: 'fragment',
+              to: { letter: 'h', side: 0 },
+            },
+          },
+          {
+            command: { at: 'a', edge: 'before', kind: 'moveNode', to: 'g' },
+            intent: 'edit',
+            kind: 'command',
+          },
+          {
+            intent: 'edit',
+            kind: 'framed',
+            step: {
+              direction: 'backward',
+              from: { letter: 'e', side: 0 },
+              kind: 'fragment',
+              to: { letter: 'd', side: 0 },
+            },
+          },
+        ],
+      ],
+    // Bob's proposed deletion joins `h` up to `c`, and `ab`, moved between
+    // them, follows the join, so a deletion from `a` back to the struck `d`
+    // also takes `h` and the boundary before `ab`, which refuses.
+    'a deletion from a moved follower back to the struck letters after its join target':
+      [
+        [
+          {
+            children: [{ children: [{ text: 'ab' }], type: 'paragraph' }],
+            type: 'quote',
+          },
+          { children: [{ text: 'cd' }], type: 'paragraph' },
+          { children: [{ text: 'ef' }], type: 'paragraph' },
+          { children: [{ text: 'gh' }], type: 'paragraph' },
+        ],
+        [],
+        0,
+        [
+          {
+            intent: 'propose',
+            kind: 'framed',
+            step: {
+              direction: 'backward',
+              from: { letter: 'd', side: 0 },
+              kind: 'fragment',
+              to: { letter: 'h', side: 0 },
+            },
+          },
+          {
+            command: { at: 'a', edge: 'before', kind: 'moveNode', to: 'g' },
+            intent: 'edit',
+            kind: 'command',
+          },
+          {
+            intent: 'edit',
+            kind: 'framed',
+            step: {
+              direction: 'backward',
+              from: { letter: 'a', side: 1 },
+              kind: 'fragment',
+              to: { letter: 'd', side: 0 },
+            },
+          },
+        ],
+      ],
+    // Alice's join pulls `cd` up into the quote's `ab`, Bob's Enter leaves
+    // `d` following it, and `ef`, moved between them, shows below the joined
+    // line, so b|c is the point it was cut from.
+    'Enter, a key and Backspace at the point a moved line was cut from inside a joined line':
+      [
+        [
+          {
+            children: [{ children: [{ text: 'ab' }], type: 'paragraph' }],
+            type: 'quote',
+          },
+          { children: [{ text: 'cd' }], type: 'paragraph' },
+          { children: [{ text: 'ef' }], type: 'paragraph' },
+        ],
+        [
+          {
+            author: 'alice',
+            command: { at: 'c', direction: 'backward', kind: 'delete' },
+            intent: 'propose',
+          },
+          {
+            author: 'bob',
+            command: { at: 'd', kind: 'break', side: 0 },
+            intent: 'propose',
+          },
+        ],
+        0,
+        [
+          {
+            command: { at: 'e', edge: 'before', kind: 'moveNode', to: 'c' },
+            intent: 'edit',
+            kind: 'command',
+          },
+          {
+            intent: 'propose',
+            kind: 'framed',
+            step: { at: { letter: 'b', side: 1 }, kind: 'break' },
+          },
+          {
+            intent: 'propose',
+            kind: 'framed',
+            step: { at: { letter: 'b', side: 1 }, kind: 'type' },
+          },
+          {
+            intent: 'edit',
+            kind: 'framed',
+            step: {
+              at: { letter: 'c', side: 0 },
+              direction: 'backward',
+              kind: 'delete',
+              unit: 'character',
+            },
+          },
+        ],
+      ],
   },
   padding: 40,
   plugin: Quotes,
@@ -1999,6 +2403,30 @@ const OTHER_ROOTS: Readonly<Record<string, LedgerRoot>> = {
       roots: { notes: [...blocks, ...filler(padding, '1')] },
     }),
   },
+  // Every block sits in one quote, so a quote among them sits in another and
+  // its lines show through two levels.
+  nested: {
+    padding: 2,
+    plugin: defineEditorSchema('recording-laws-nested', {
+      elements: {
+        ...quoteElements,
+        quote: {
+          content: schema.content.types(['paragraph', 'quote'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        },
+      },
+      id: 'recording-laws-nested',
+      root: quoteRoot(1),
+      unknown: 'reject',
+      version: 1,
+    }) as never,
+    start: (blocks, padding) => [
+      ...filler(1, '0'),
+      { children: [...blocks, ...filler(padding, '1')], type: 'quote' },
+    ],
+  },
 };
 
 // Runs the other roots' law must resolve as a head and to fill a minimum.
@@ -2039,7 +2467,14 @@ const locationsOf = (nodes: readonly Node[]) => {
   return { letters, paths };
 };
 
-const COMPARED = { deltas: 0, diffed: 0, letters: 0, moved: 0, renames: 0 };
+const COMPARED = {
+  deltas: 0,
+  diffed: 0,
+  letters: 0,
+  moved: 0,
+  ordered: { accepted: 0, proposed: 0 },
+  renames: 0,
+};
 
 const LAST_FRAMES = new WeakMap<
   Editor,
@@ -2072,6 +2507,183 @@ const keptBy = (change: ReturnType<typeof getInternalDocumentRootChange>) => {
   return (position: number) => kept.has(position);
 };
 
+/** `value` with each character replaced by one no other character holds. */
+const relabeled = (value: JsonEditorValue): JsonEditorValue => {
+  let next = 0x4e_00;
+  const relabel = (nodes: readonly JsonNode[]): JsonNode[] =>
+    nodes.map((node) => {
+      if (typeof node.text === 'string') {
+        const from = next;
+
+        next += node.text.length;
+
+        return {
+          ...node,
+          text: Array.from(node.text, (_, at) =>
+            String.fromCharCode(from + at)
+          ).join(''),
+        };
+      }
+
+      return node.children
+        ? { ...node, children: relabel(node.children) }
+        : node;
+    });
+
+  return {
+    ...value,
+    children: relabel(value.children),
+    ...(value.roots && {
+      roots: Object.fromEntries(
+        Object.entries(value.roots).map(([name, nodes]) => [
+          name,
+          relabel(nodes),
+        ])
+      ),
+    }),
+  };
+};
+
+// Each character of one root and where it sits.
+const charactersOf = (nodes: readonly JsonNode[]) => {
+  const index = DocumentIndex.fromValue(nodes);
+  const characters = new Map<string, number>();
+  const walk = (children: readonly JsonNode[], at: readonly number[]) => {
+    children.forEach((child, rank) => {
+      const path = [...at, rank];
+
+      if (typeof child.text === 'string') {
+        const from = index.positionAt({ offset: 0, path });
+
+        for (let offset = 0; offset < child.text.length; offset += 1) {
+          characters.set(getDefined(child.text[offset]), from + offset);
+        }
+      } else {
+        walk(child.children ?? [], path);
+      }
+    });
+  };
+
+  walk(nodes, []);
+
+  return { characters, index };
+};
+
+type Projection = ReturnType<typeof projectAuthoredValue>;
+
+/**
+ * What a root's maps answer inside the runs a mode shows in another order
+ * than the stored one, read from where each character and element lands in
+ * the projection of the relabeled document. Each answer is undefined where
+ * no character or element start on its side tells.
+ */
+const orderTruth = (
+  spans: ReadonlyArray<
+    Readonly<{
+      output: readonly [number, number];
+      stored: readonly [number, number];
+    }>
+  >,
+  labeled: JsonEditorValue,
+  resolution: Projection,
+  root: string,
+  joins: boolean
+) => {
+  const before = charactersOf(valueRoot(labeled, root));
+  const after = charactersOf(valueRoot(resolution.value, root));
+  const storedAt = new Map(
+    [...before.characters].map(([character, at]) => [at, character])
+  );
+  const outputAt = new Map(
+    [...after.characters].map(([character, at]) => [at, character])
+  );
+  const outputPaths = new Map<unknown, number[]>();
+  const paths = new Map<string, number[]>();
+  const starts = new Map<number, number>();
+  const walk = (
+    children: readonly JsonNode[],
+    at: readonly number[],
+    visit: (node: JsonNode, path: number[]) => void
+  ) =>
+    children.forEach((child, rank) => {
+      if (!child.children) return;
+
+      const path = [...at, rank];
+
+      visit(child, path);
+      walk(child.children, path, visit);
+    });
+
+  walk(valueRoot(resolution.value, root), [], (node, path) =>
+    outputPaths.set(node, path)
+  );
+  walk(valueRoot(labeled, root), [], (node, path) => {
+    const placed = outputPaths.get(resolution.resolvedOf(node));
+
+    // A join the mode takes hides the block's open, so neither its start nor
+    // its path tells where the block lands, even where the merged block keeps
+    // it as its origin, as it does after an empty line.
+    if (
+      !placed ||
+      (joins && readAuthoredMarks(node).some((mark) => mark.kind === 'join'))
+    ) {
+      return;
+    }
+    paths.set(String(path), placed);
+    starts.set(
+      before.index.nodeRange(path).from,
+      after.index.nodeRange(placed).from
+    );
+  });
+
+  const live = (character: string | undefined) =>
+    character !== undefined && after.characters.has(character);
+  const within = (side: 'output' | 'stored') => (position: number) =>
+    spans.some(
+      (span) => span[side][0] <= position && position <= span[side][1]
+    );
+
+  return {
+    /** Whether a projected position holds output characters on both sides. */
+    between: (position: number) =>
+      outputAt.has(position - 1) && outputAt.has(position),
+    hides: (position: number) => {
+      const sides = [storedAt.get(position - 1), storedAt.get(position)];
+
+      if (sides.some(live)) return false;
+
+      return sides.every((side) => side !== undefined) ? true : undefined;
+    },
+    inOutput: within('output'),
+    inStored: within('stored'),
+    path: (path: readonly number[]) => paths.get(String(path)),
+    toProjected: (position: number, association: 'backward' | 'forward') => {
+      if (association === 'backward') {
+        const character = storedAt.get(position - 1);
+
+        return live(character)
+          ? getDefined(after.characters.get(getDefined(character))) + 1
+          : undefined;
+      }
+
+      const character = storedAt.get(position);
+
+      return live(character)
+        ? after.characters.get(getDefined(character))
+        : starts.get(position);
+    },
+    toStored: (position: number, assoc: -1 | 1) => {
+      const character = outputAt.get(assoc < 0 ? position - 1 : position);
+
+      if (character === undefined) return undefined;
+
+      const at = getDefined(before.characters.get(character));
+
+      return assoc < 0 ? at + 1 : at;
+    },
+  };
+};
+
 /**
  * The ledger shows each mode's preview as the kernel does, its maps follow
  * the change it composes, and every letter a decision keeps lands where that
@@ -2085,6 +2697,33 @@ const assertLedger = (editor: Editor, label: string) => {
   const resolveSchema = authoredResolveSchemaOf(editor as never);
   const frame = ledger.frame(stored);
   const last = LAST_FRAMES.get(editor);
+  let labeled: JsonEditorValue | undefined;
+  const truths = new Map<string, ReturnType<typeof orderTruth> | null>();
+  // The reference inside a run with an order, where the composed change
+  // moves content by deleting and inserting it.
+  const truthOf = (mode: 'accepted' | 'proposed', root: string) => {
+    const key = `${mode} ${root}`;
+
+    if (!truths.has(key)) {
+      const spans = ledger.orderedSpans(stored, mode, root);
+
+      labeled ??= spans.length > 0 ? relabeled(stored) : undefined;
+      truths.set(
+        key,
+        labeled && spans.length > 0
+          ? orderTruth(
+              spans,
+              labeled,
+              projectAuthoredValue(labeled, mode, resolveSchema),
+              root,
+              mode === 'proposed'
+            )
+          : null
+      );
+    }
+
+    return truths.get(key) ?? null;
+  };
 
   for (let position = 0; position <= (last?.length ?? -1); position += 1) {
     if (!last?.keeps(position)) continue;
@@ -2194,9 +2833,34 @@ const assertLedger = (editor: Editor, label: string) => {
       const kept = ordered ? keptBy(rootChange) : () => true;
       const projectedKept =
         ordered && rootChange ? keptBy(rootChange.invert(before)) : () => true;
+      const truth = truthOf(mode, root);
 
+      COMPARED.ordered[mode] += ledger.orderedSpans(stored, mode, root).length;
       for (let position = 0; position <= before.length; position += 1) {
-        if (!kept(position)) continue;
+        if (!kept(position)) {
+          if (!truth?.inStored(position)) continue;
+          for (const association of ['backward', 'forward'] as const) {
+            const want = truth.toProjected(position, association);
+
+            if (want === undefined) continue;
+            assert.equal(
+              map.toProjected(root, position, association),
+              want,
+              `${label}: ${mode} ${root} maps stored ${position} ${association} inside a run with an order`
+            );
+          }
+
+          const hidden = truth.hides(position);
+
+          if (hidden !== undefined) {
+            assert.equal(
+              map.hides(root, position),
+              hidden,
+              `${label}: ${mode} ${root} hides stored ${position} inside a run with an order`
+            );
+          }
+          continue;
+        }
         for (const association of ['backward', 'forward'] as const) {
           assert.equal(
             map.toProjected(root, position, association),
@@ -2211,7 +2875,27 @@ const assertLedger = (editor: Editor, label: string) => {
         );
       }
       for (let position = 0; position <= after.length; position += 1) {
-        if (!projectedKept(position)) continue;
+        if (!projectedKept(position)) {
+          if (!truth?.inOutput(position)) continue;
+          for (const assoc of [-1, 1] as const) {
+            const want = truth.toStored(position, assoc);
+
+            if (want === undefined) continue;
+            assert.equal(
+              map.toStored(root, position, assoc),
+              want,
+              `${label}: ${mode} ${root} maps projected ${position} ${assoc} inside a run with an order`
+            );
+          }
+          if (truth.between(position)) {
+            assert.equal(
+              map.added(root, position),
+              null,
+              `${label}: ${mode} ${root} adds nothing between moved characters at projected ${position}`
+            );
+          }
+          continue;
+        }
         for (const assoc of [-1, 1] as const) {
           assert.equal(
             map.toStored(root, position, assoc),
@@ -2226,7 +2910,9 @@ const assertLedger = (editor: Editor, label: string) => {
         );
       }
 
-      if (ordered) {
+      // `acceptedSpot` places a letter as accepting everything does, so it
+      // answers only for Proposed; the order oracle checks Accepted.
+      if (ordered && mode === 'proposed') {
         const expanded = valueRoot(expandContexts(stored), root);
         const lines = textBlocks(after.value);
 
@@ -2276,7 +2962,20 @@ const assertLedger = (editor: Editor, label: string) => {
       const { letters, paths } = locationsOf(valueRoot(stored, root));
 
       for (const path of paths) {
-        if (!kept(before.nodeRange(path).from)) continue;
+        if (!kept(before.nodeRange(path).from)) {
+          const want = truth?.inStored(before.nodeRange(path).from)
+            ? truth.path(path)
+            : undefined;
+
+          if (want !== undefined) {
+            assert.deepEqual(
+              actual.path(path),
+              want,
+              `${label}: the ${mode} preview maps ${root} path ${path} inside a run with an order`
+            );
+          }
+          continue;
+        }
         assert.deepEqual(
           actual.path(path),
           own.path(path),
@@ -2289,7 +2988,26 @@ const assertLedger = (editor: Editor, label: string) => {
       const keeps = keptBy(getInternalDocumentRootChange(alignment, root));
 
       for (const letter of letters) {
-        if (!kept(before.positionAt(letter))) continue;
+        const at = before.positionAt(letter);
+
+        if (!kept(at)) {
+          if (!truth?.inStored(at)) continue;
+          for (const assoc of [-1, 1] as const) {
+            const want = truth.toProjected(
+              at,
+              assoc < 0 ? 'backward' : 'forward'
+            );
+            const point = actual.point(letter, assoc);
+
+            if (want === undefined) continue;
+            assert.equal(
+              point && after.positionAt(point),
+              want,
+              `${label}: the ${mode} preview maps ${root} point ${JSON.stringify(letter)} ${assoc} inside a run with an order`
+            );
+          }
+          continue;
+        }
         for (const assoc of [-1, 1] as const) {
           assert.deepEqual(
             actual.point(letter, assoc),
@@ -2369,24 +3087,30 @@ const countReview = (editor: Editor): ReviewCount => {
  */
 const watchDeltas = (editor: Editor) => {
   const delivered: unknown[] = [];
-  const expected: Array<Readonly<{ blocks: readonly string[] }>> = [];
+  const expected: unknown[] = [];
+  // The deltas name at least each block holding a member of a card that
+  // changed; which other blocks they name is the delta law's.
+  const required = new Set<string>();
+  const named = new Set<string>();
+  let renames = 0;
   let last = countReview(editor);
 
   editor.subscribeCommit(() => {
     const next = countReview(editor);
-    const blocks = new Set<string>();
+    let regrouped = false;
 
     for (const [id, card] of next.cards) {
       const was = last.cards.get(id);
 
       if (was === undefined || was === card) continue;
       for (const rank of next.ranks.get(id) ?? []) {
-        blocks.add(getDefined(editor.key([rank])));
+        required.add(getDefined(editor.key([rank])));
+        regrouped = true;
       }
     }
+    if (regrouped) renames += 1;
 
     const delta = {
-      blocks: [...blocks].sort(),
       changed: [...next.revisions]
         .filter(([id, revision]) => last.revisions.get(id) !== revision)
         .map(([id]) => id)
@@ -2407,25 +3131,34 @@ const watchDeltas = (editor: Editor) => {
       expected.push(delta);
     }
   });
-  editor.api.authored.subscribeChanges((delta) =>
-    delivered.push({
-      blocks: [...delta.blocks].sort(),
+  editor.api.authored.subscribeChanges((delta) => {
+    for (const key of delta.blocks) named.add(key);
+
+    const ids = {
       changed: [...delta.changed].sort(),
       groups: [...delta.groups].sort(),
       removed: [...delta.removed].sort(),
-    })
-  );
+    };
+
+    if (Object.values(ids).some((list) => list.length > 0)) {
+      delivered.push(ids);
+    }
+  });
 
   return (label: string) => {
     COMPARED.deltas += expected.length;
-    COMPARED.renames += expected.filter(
-      (delta) => delta.blocks.length > 0
-    ).length;
+    COMPARED.renames += renames;
+    renames = 0;
     assert.deepEqual(
       delivered.splice(0),
       expected.splice(0),
       `${label}: the review deltas match the kernel's recount of each commit`
     );
+    for (const key of required) {
+      assert.ok(named.has(key), `${label}: the deltas name ${key}`);
+    }
+    required.clear();
+    named.clear();
   };
 };
 
@@ -2439,146 +3172,326 @@ const LEDGER_SEED = Number(
 );
 
 /**
+ * What the ledger laws saw on framed steps and refusals, per law: framed
+ * steps run, those on a run with an order, those whose window the gate must
+ * resolve, written runs adopted, and refusals by reason.
+ */
+const FRAMED = () => ({
+  adopted: 0,
+  framed: 0,
+  gated: 0,
+  ordered: 0,
+  refusals: {} as Record<string, number>,
+  reordered: [] as string[],
+  /** Framed steps that folded a level's facts, by the level's depth. */
+  levels: {} as Record<number, number>,
+  /** Framed steps that resolved or adopted a container whole. */
+  whole: 0,
+});
+
+type FramedCounts = ReturnType<typeof FRAMED>;
+
+// Facts hold their keys in the order their children give them.
+const sortedFacts = (facts: BlockFacts) => ({
+  ...facts,
+  deletes: facts.deletes.toSorted(),
+  follows: facts.follows.toSorted(),
+  joins: facts.joins.toSorted(),
+});
+
+const membersOf = (node: Node | JsonNode) =>
+  ((node as { authored?: unknown }).authored ?? []) as ReadonlyArray<
+    Readonly<{
+      at: number;
+      change: string;
+      follows?: string;
+      inc?: number;
+      kind: string;
+    }>
+  >;
+
+const incarnation = ({
+  at,
+  change,
+  inc,
+}: Readonly<{ at: number; change: string; inc?: number }>) =>
+  JSON.stringify(inc === undefined ? [change, at] : [change, inc]);
+
+const everyNode = function* (
+  nodes: ReadonlyArray<Node | JsonNode>
+): Generator<Node | JsonNode> {
+  for (const node of nodes) {
+    yield node;
+    yield* everyNode(node.children ?? []);
+  }
+};
+
+/**
+ * Whether the stored marks of `blocks` hold what the gate resolves a window
+ * for: a follower claim, or the source copy of a pending move, which is a
+ * deletion whose incarnation an insertion in the document holds.
+ */
+const gatesWindow = (
+  blocks: ReadonlyArray<Node | JsonNode>,
+  value: JsonEditorValue
+) => {
+  const inserted = new Set<string>();
+
+  for (const nodes of [value.children, ...Object.values(value.roots ?? {})]) {
+    for (const node of everyNode(nodes)) {
+      // An empty leaf inserts nothing, so its mark lands no moved content.
+      if (node.text === '') continue;
+      for (const member of membersOf(node)) {
+        if (member.kind === 'insert') inserted.add(incarnation(member));
+      }
+    }
+  }
+
+  return [...everyNode(blocks)].some((node) =>
+    membersOf(node).some(
+      (member) =>
+        member.follows !== undefined ||
+        (member.kind === 'delete' && inserted.has(incarnation(member)))
+    )
+  );
+};
+
+/**
  * Run the ledger law on one root shape; returns the steps it compared and
  * how many of them changed the root its commands edit.
  */
-const ledgerSteps = (shape: LedgerRoot, numRuns: number) => {
+const ledgerSteps = (
+  shape: LedgerRoot,
+  numRuns: number,
+  counts: FramedCounts
+) => {
   let edited = 0;
   let steps = 0;
 
-  fc.assert(
-    fc.property(
-      documentArbitrary,
-      historyArbitrary,
-      fc.integer({ max: shape.padding, min: 0 }),
-      fc.array(ledgerStepArbitrary, { maxLength: 6, minLength: 1 }),
-      (initial, recorded, padding, plan) => {
-        const value = shape.start(replay(initial, recorded), padding);
-        let minted = 0;
-        const leader = editorFor(
-          value,
-          'bob',
-          'propose',
-          () => `bob:${(minted += 1)}`,
-          shape.plugin,
-          true
-        );
-        // A root view edits a named root as the editor edits main.
-        const actor = shape.root
-          ? createEditorView(leader, { root: shape.root })
-          : leader;
-        const follower = editorFor(
-          value,
-          'carol',
-          'edit',
-          'carol:1',
-          shape.plugin
-        );
-        const delivered: Array<
-          Parameters<Parameters<typeof leader.subscribeCommit>[0]>[0]
-        > = [];
+  watchGateWindows(true);
+  watchLevelFacts(true);
+  try {
+    fc.assert(
+      fc.property(
+        documentArbitrary,
+        historyArbitrary,
+        fc.integer({ max: shape.padding, min: 0 }),
+        fc.array(ledgerStepArbitrary, { maxLength: 6, minLength: 1 }),
+        (initial, recorded, padding, plan) => {
+          const value = shape.start(replay(initial, recorded), padding);
+          // Past the replayed history's ids, so a new suggestion never joins a
+          // recorded change, such as one a step's decision rejected.
+          let minted = recorded.length;
+          const leader = editorFor(
+            value,
+            'bob',
+            'propose',
+            () => `bob:${(minted += 1)}`,
+            shape.plugin,
+            true
+          );
+          // A root view edits a named root as the editor edits main.
+          const actor = shape.root
+            ? createEditorView(leader, { root: shape.root })
+            : leader;
+          const follower = editorFor(
+            value,
+            'carol',
+            'edit',
+            'carol:1',
+            shape.plugin
+          );
+          const delivered: Array<
+            Parameters<Parameters<typeof leader.subscribeCommit>[0]>[0]
+          > = [];
 
-        leader.subscribeCommit((commit) => {
-          delivered.push(commit);
-        });
+          leader.subscribeCommit((commit) => {
+            delivered.push(commit);
+          });
 
-        const label = `after ${JSON.stringify(plan)}`;
-        const leaderDeltas = watchDeltas(leader);
-        const followerDeltas = watchDeltas(follower);
+          const label = `after ${JSON.stringify(plan)}`;
+          const leaderDeltas = watchDeltas(leader);
+          const followerDeltas = watchDeltas(follower);
 
-        assertLedger(leader, `load ${label}`);
-        for (const [index, step] of plan.entries()) {
-          const before = rootChildren(actor);
+          assertLedger(leader, `load ${label}`);
+          for (const [index, step] of plan.entries()) {
+            const before = rootChildren(actor);
+            const ordered =
+              getDefined(getReviewLedger(leader as never))
+                .projectionMap(leader.read.value(), 'proposed')
+                .breaks(shape.root ?? 'main', 0, Infinity).length > 0;
+            let framed = false;
+            const { wholeContainers, writtenRuns: written } = readLedgerWork();
 
-          try {
-            if (step.kind === 'command') {
-              actor.api.authored.setView({ intent: step.intent });
-              run(actor, step.command, 'XYZWV'[index % 5]);
-            } else if (step.kind === 'framed') {
-              const point = ({ letter, side }: Caret) => {
-                const found = locate(actor, letter);
-
-                return found && { ...found, offset: found.offset + side };
-              };
-              const [anchor, focus] =
-                step.step.kind === 'fragment'
-                  ? [point(step.step.from), point(step.step.to)]
-                  : [point(step.step.at), point(step.step.at)];
-
-              if (step.mustApply) {
-                assert.ok(
-                  anchor && focus,
-                  `required frame has no selection: ${label}`
-                );
-              }
-              if (anchor && focus) {
-                const refusals: string[] = [];
-                const unsubscribe = actor.api.authored.subscribeRefusals(
-                  ({ code }) => refusals.push(code)
-                );
-
+            takeGateWindows();
+            takeLevelFacts();
+            try {
+              if (step.kind === 'command') {
                 actor.api.authored.setView({ intent: step.intent });
-                try {
-                  runStep(actor, { anchor, focus }, step.step);
-                } finally {
-                  unsubscribe();
-                }
+                run(actor, step.command, 'XYZWV'[index % 5]);
+              } else if (step.kind === 'framed') {
+                const point = ({ letter, side }: Caret) => {
+                  const found = locate(actor, letter);
+
+                  return found && { ...found, offset: found.offset + side };
+                };
+                const [anchor, focus] =
+                  step.step.kind === 'fragment'
+                    ? [point(step.step.from), point(step.step.to)]
+                    : [point(step.step.at), point(step.step.at)];
+
                 if (step.mustApply) {
-                  assert.deepEqual(
-                    refusals,
-                    [],
-                    `required frame refused: ${label}`
+                  assert.ok(
+                    anchor && focus,
+                    `required frame has no selection: ${label}`
                   );
                 }
-              }
-            } else if (step.kind === 'decide') {
-              const ids = changesIn(rootChildren(actor));
+                if (anchor && focus) {
+                  const refusals: string[] = [];
+                  const unsubscribe = actor.api.authored.subscribeRefusals(
+                    ({ code }) => refusals.push(code)
+                  );
 
-              if (ids.length > 0) {
-                authoredTestApi(leader).decide({
-                  action: step.action,
-                  changes: ids.slice(0, 1),
-                });
+                  actor.api.authored.setView({ intent: step.intent });
+                  framed = true;
+                  try {
+                    runStep(actor, { anchor, focus }, step.step);
+                  } finally {
+                    unsubscribe();
+                  }
+                  if (step.mustApply) {
+                    assert.deepEqual(
+                      refusals,
+                      [],
+                      `required frame refused: ${label}`
+                    );
+                  }
+                }
+              } else if (step.kind === 'decide') {
+                const ids = changesIn(rootChildren(actor));
+
+                if (ids.length > 0) {
+                  authoredTestApi(leader).decide({
+                    action: step.action,
+                    changes: ids.slice(0, 1),
+                  });
+                }
+              } else {
+                leader.api.history[step.kind]();
               }
-            } else {
-              leader.api.history[step.kind]();
-            }
-          } catch (error) {
-            if (
-              isRefusal(error) &&
-              !(step.kind === 'framed' && step.mustApply)
-            ) {
+            } catch (error) {
+              if (
+                !isRefusal(error) ||
+                (step.kind === 'framed' && step.mustApply)
+              ) {
+                throw error;
+              }
+
+              const refusal =
+                error instanceof EditorRefusalError
+                  ? (error.refusal as AuthoredRefusal)
+                  : null;
+              const reasons = refusal
+                ? refusal.reasons.length > 0
+                  ? refusal.reasons
+                  : [refusal.code]
+                : ['schema'];
+              const at = `seed ${LEDGER_SEED} step ${index} ${label}`;
+
+              for (const reason of reasons) {
+                counts.refusals[reason] = (counts.refusals[reason] ?? 0) + 1;
+              }
+              assert.ok(
+                !reasons.includes('diverged'),
+                `${at}: a framed write would save other content than it wrote`
+              );
+              assert.ok(
+                !reasons.includes('crosses') || ordered,
+                `${at}: refused crosses on a run with no order`
+              );
+              // The frame refuses crosses only for a range, and the recorder
+              // lowers characters typed at a caret before it reads any break.
+              assert.ok(
+                !reasons.includes('crosses') ||
+                  !(
+                    framed &&
+                    step.kind === 'framed' &&
+                    step.step.kind === 'type'
+                  ),
+                `${at}: refused crosses on letters typed at a caret`
+              );
+              if (reasons.includes('reordered')) counts.reordered.push(at);
               continue;
             }
-            throw error;
-          }
-          assertLedger(leader, `step ${index} ${label}`);
-          leaderDeltas(`step ${index} ${label}`);
-          for (const commit of delivered.splice(0)) {
-            follower.update(
-              { tags: ['collaboration', 'history-skip'] },
-              // A peer receives the change as data, never the sender's nodes.
-              (tx) =>
-                tx.changes.apply(
-                  DocumentChange.fromJSON(
-                    JSON.parse(JSON.stringify(commit.changes.toJSON()))
+            assertLedger(leader, `step ${index} ${label}`);
+            leaderDeltas(`step ${index} ${label}`);
+            const windows = takeGateWindows();
+            const levels = takeLevelFacts();
+
+            if (framed) {
+              for (const { depth, facts, node } of levels) {
+                assert.deepEqual(
+                  sortedFacts(facts as BlockFacts),
+                  sortedFacts(blockFactsOf(structuredClone(node))),
+                  `seed ${LEDGER_SEED} step ${index} ${label}: the facts a level folds at depth ${depth} are those its container reads cold`
+                );
+              }
+              for (const depth of new Set(levels.map((level) => level.depth))) {
+                counts.levels[depth] = (counts.levels[depth] ?? 0) + 1;
+              }
+              const work = readLedgerWork();
+
+              if (work.wholeContainers > wholeContainers) counts.whole += 1;
+              const after = expandContexts(
+                leader.read.value() as unknown as JsonEditorValue
+              );
+
+              counts.framed += 1;
+              if (ordered) counts.ordered += 1;
+              if (work.writtenRuns > written) counts.adopted += 1;
+              // Every block of each window the gate weighed, as the gate reads
+              // them, not only the blocks the step changed.
+              const gated = windows.filter(({ blocks }) =>
+                gatesWindow(blocks, after)
+              );
+
+              if (gated.length > 0) {
+                counts.gated += 1;
+                assert.ok(
+                  !gated.some((window) => window.adopted),
+                  `seed ${LEDGER_SEED} step ${index} ${label}: the gate adopted a written run beside a follower claim or a move source`
+                );
+              }
+            }
+            for (const commit of delivered.splice(0)) {
+              follower.update(
+                { tags: ['collaboration', 'history-skip'] },
+                // A peer receives the change as data, never the sender's nodes.
+                (tx) =>
+                  tx.changes.apply(
+                    DocumentChange.fromJSON(
+                      JSON.parse(JSON.stringify(commit.changes.toJSON()))
+                    )
                   )
-                )
-            );
+              );
+            }
+            assertLedger(follower, `remote step ${index} ${label}`);
+            followerDeltas(`remote step ${index} ${label}`);
+            if (!isDeepStrictEqual(rootChildren(actor), before)) edited += 1;
+            steps += 1;
           }
-          assertLedger(follower, `remote step ${index} ${label}`);
-          followerDeltas(`remote step ${index} ${label}`);
-          if (!isDeepStrictEqual(rootChildren(actor), before)) edited += 1;
-          steps += 1;
         }
+      ),
+      {
+        examples: Object.values(shape.examples ?? {}) as never,
+        numRuns,
+        seed: LEDGER_SEED,
       }
-    ),
-    {
-      examples: Object.values(shape.examples ?? {}) as never,
-      numRuns,
-      seed: LEDGER_SEED,
-    }
-  );
+    );
+  } finally {
+    watchGateWindows(false);
+    watchLevelFacts(false);
+  }
 
   return { edited, steps };
 };
@@ -2648,7 +3561,655 @@ const assertProposedChildren = (suggested: readonly Node[]) => {
   );
 };
 
+/**
+ * Each preview of `value`, relabeled so every character is unique, with its
+ * map and where each character sits in the stored root and in the preview.
+ */
+const relabeledPreviews = (
+  value: readonly Node[] | Readonly<{ children: readonly Node[] }>,
+  plugin: typeof Quotes
+) => {
+  const loaded = editorFor(value, 'carol', 'edit', 'carol:1', plugin);
+  const editor = editorFor(
+    relabeled(loaded.read.value()),
+    'carol',
+    'edit',
+    'carol:1',
+    plugin
+  );
+  const ledger = getDefined(getReviewLedger(editor as never));
+  const stored: JsonEditorValue = editor.read.value();
+  const resolveSchema = authoredResolveSchemaOf(editor as never);
+
+  return (['accepted', 'proposed'] as const).map((mode) => {
+    const { value: output } = projectAuthoredValue(stored, mode, resolveSchema);
+
+    return {
+      after: charactersOf(valueRoot(output, 'main')).characters,
+      before: charactersOf(valueRoot(stored, 'main')).characters,
+      map: ledger.projectionMap(stored, mode),
+      mode,
+      output,
+      stored,
+    };
+  });
+};
+
+/**
+ * Under each preview, the ledger maps each live character of `value` onto
+ * that character, and each preview character back onto its stored one, on
+ * either side of it. Returns the previews that show a character away from
+ * its stored order.
+ */
+const assertIdentity = (
+  value: readonly Node[] | Readonly<{ children: readonly Node[] }>,
+  label: string,
+  plugin: typeof Quotes = Quotes
+) => {
+  const reordered = { accepted: 0, proposed: 0 };
+
+  for (const { after, before, map, mode, stored } of relabeledPreviews(
+    value,
+    plugin
+  )) {
+    const shown: number[] = [];
+
+    for (const [character, at] of before) {
+      const place = after.get(character);
+
+      if (place === undefined) continue;
+      shown.push(place);
+      assert.deepEqual(
+        [
+          map.toProjected('main', at, 'forward'),
+          map.toProjected('main', at + 1, 'backward'),
+        ],
+        [place, place + 1],
+        `${label}: ${mode} maps stored ${JSON.stringify(
+          character
+        )} onto itself in ${JSON.stringify(stored.children)}`
+      );
+    }
+    for (const [character, place] of after) {
+      const at = getDefined(before.get(character));
+
+      assert.deepEqual(
+        [map.toStored('main', place, 1), map.toStored('main', place + 1, -1)],
+        [at, at + 1],
+        `${label}: ${mode} maps shown ${JSON.stringify(
+          character
+        )} back onto itself in ${JSON.stringify(stored.children)}`
+      );
+    }
+    if (shown.some((place, index) => place < (shown[index - 1] ?? place))) {
+      reordered[mode] += 1;
+    }
+  }
+
+  return reordered;
+};
+
+const assertCrosses = (
+  value: readonly Node[] | Readonly<{ children: readonly Node[] }>,
+  label: string,
+  plugin: typeof Quotes = Quotes
+) => {
+  let crossed = 0;
+
+  for (const { after, before, map, mode, output, stored } of relabeledPreviews(
+    value,
+    plugin
+  )) {
+    const document = JSON.stringify(stored.children);
+    const shownOutside = (
+      low: number,
+      high: number,
+      from: number,
+      to: number
+    ) =>
+      [...after].some(([character, place]) => {
+        const at = getDefined(before.get(character));
+
+        return (at < low || at >= high) && place >= from && place < to;
+      });
+    const edges = [
+      ...new Set([...before.values()].flatMap((at) => [at, at + 1])),
+    ].sort((left, right) => left - right);
+
+    assert.deepEqual(
+      map.projectRange(
+        'main',
+        0,
+        DocumentIndex.fromValue(valueRoot(stored, 'main')).length
+      ),
+      {
+        from: 0,
+        kind: 'placed',
+        to: DocumentIndex.fromValue(valueRoot(output, 'main')).length,
+      },
+      `${label}: ${mode} places the whole root over the whole preview`
+    );
+    for (const [rank, low] of edges.entries()) {
+      const caret = map.projectRange('main', low, low);
+
+      assert.ok(
+        caret?.kind !== 'refused' || caret.reason !== 'crosses',
+        `${label}: ${mode} refuses crosses at the caret ${low} in ${document}`
+      );
+      for (const high of edges.slice(rank + 1)) {
+        const placed = map.projectRange('main', low, high);
+        const empty =
+          getDefined(map.toProjected('main', low, 'forward')) >=
+            getDefined(map.toProjected('main', high, 'backward')) &&
+          [...after.keys()].some((character) => {
+            const at = getDefined(before.get(character));
+
+            return at >= low && at < high;
+          });
+
+        if (placed?.kind !== 'placed') {
+          assert.ok(
+            placed?.reason !== 'crosses' || empty,
+            `${label}: ${mode} refuses ${low} to ${high}, whose image holds its shown letters, in ${document}`
+          );
+          continue;
+        }
+        assert.ok(
+          !empty || placed.from < placed.to,
+          `${label}: ${mode} places ${low} to ${high}, whose shown letters lie outside its image, in ${document}`
+        );
+
+        if (shownOutside(low, high, placed.from, placed.to)) crossed += 1;
+      }
+    }
+  }
+
+  return crossed;
+};
+
+const Followers = defineEditorSchema('recording-laws-followers', {
+  elements: {
+    ...quoteElements,
+    divider: { void: 'block' },
+    quote: {
+      content: schema.content.types(['divider', 'paragraph'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+    },
+  },
+  id: 'recording-laws-followers',
+  root: schema.content.types(['divider', 'paragraph', 'quote'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+}) as never;
+
+type FollowerAct = Readonly<{
+  act: (editor: Editor) => void;
+  author: 'alice' | 'bob' | 'carol' | 'dan' | 'erin';
+  intent: 'edit' | 'plain' | 'propose';
+}>;
+
+const paragraph = (text: string): Node => ({
+  children: [{ text }],
+  type: 'paragraph',
+});
+
+// The path of the block holding `letter`.
+const blockOf = (editor: Editor, letter: string) =>
+  getDefined(locate(editor, letter)).path.slice(0, -1);
+const pointOf = (editor: Editor, letter: string, side: 0 | 1) => {
+  const at = getDefined(locate(editor, letter));
+
+  return { ...at, offset: at.offset + side };
+};
+
+// A framed command at a point, or at one side of a letter.
+const framed =
+  (
+    command:
+      | typeof editorCommands.delete
+      | typeof editorCommands.insertBreak
+      | typeof editorCommands.insertText,
+    options: object | undefined,
+    at: Point | readonly [string, 0 | 1]
+  ) =>
+  (editor: Editor) => {
+    const point = 'path' in at ? at : pointOf(editor, at[0], at[1]);
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point, focus: point });
+      tx.command(command as never, options as never);
+    });
+  };
+const backspaceAt = (letter: string) =>
+  framed(editorCommands.delete, { direction: 'backward', unit: 'character' }, [
+    letter,
+    0,
+  ]);
+const enterAt = (letter: string, side: 0 | 1 = 0) =>
+  framed(editorCommands.insertBreak, undefined, [letter, side]);
+const typeAt = (at: Point | readonly [string, 0 | 1], text: string) =>
+  framed(editorCommands.insertText, { text }, at);
+// Core node writes, which no frame checks, by the block holding a letter.
+const moveBlock =
+  (letter: string, to: (editor: Editor) => number[]) => (editor: Editor) => {
+    const at = blockOf(editor, letter);
+    const path = to(editor);
+
+    editor.update((tx) => tx.nodes.move({ at, to: path }));
+  };
+const insertBlock =
+  (node: Node, at: (editor: Editor) => number[]) => (editor: Editor) => {
+    const path = at(editor);
+
+    editor.update((tx) => tx.nodes.insert(node as never, { at: path }));
+  };
+const aboveBlock = (letter: string) => (editor: Editor) =>
+  blockOf(editor, letter);
+const belowBlock = (letter: string) => (editor: Editor) => {
+  const path = blockOf(editor, letter);
+
+  return [...path.slice(0, -1), getDefined(path.at(-1)) + 1];
+};
+
+/** Each document `acts` build from `start`, one editor per act. */
+const builtByCommands = (
+  start: readonly Node[],
+  acts: readonly FollowerAct[]
+) => {
+  const values = [start];
+
+  acts.forEach(({ act, author, intent }, index) => {
+    const editor = editorFor(
+      getDefined(values.at(-1)),
+      author,
+      intent,
+      `${author}:${index}`,
+      Followers
+    );
+
+    act(editor);
+    values.push(expandedChildren(editor));
+  });
+
+  return values;
+};
+
+const DIVIDER: Node = { children: [{ text: '' }], type: 'divider' };
+const struckBy = (author: string, node: Node): Node => {
+  const mark = { at: 1, author, change: `${author}:0`, kind: 'delete' };
+
+  return {
+    ...node,
+    authored: [mark],
+    children: (node.children ?? []).map((child) => ({
+      ...child,
+      authored: [mark],
+    })),
+  };
+};
+
+// Alice's pending join pulls `cd` up into the quote's `ab`, and Bob's Enter
+// after its `c` leaves `d` as a piece that follows the join.
+const JOINED: readonly [readonly Node[], readonly FollowerAct[]] = [
+  [
+    { children: [paragraph('ab')], type: 'quote' },
+    paragraph('cd'),
+    paragraph('xy'),
+  ],
+  [
+    { act: backspaceAt('c'), author: 'alice', intent: 'propose' },
+    { act: enterAt('d'), author: 'bob', intent: 'propose' },
+  ],
+];
+// Sol's case: a piece stored before the joined line it follows, across a
+// line Bob deleted whole, which no one editor's commands build.
+const sol = (wrap: (nodes: Node[]) => Node[]) =>
+  wrap([
+    paragraph('aa'),
+    struckBy('bob', paragraph('bb')),
+    {
+      ...paragraph('ff'),
+      authored: [
+        {
+          at: 1,
+          author: 'carol',
+          change: 'carol:0',
+          follows: JSON.stringify(['alice:0', 1]),
+          kind: 'split',
+        },
+      ],
+    },
+    {
+      ...paragraph('cc'),
+      authored: [{ at: 1, author: 'alice', change: 'alice:0', kind: 'join' }],
+    },
+  ]);
+
+// Bob's Editing join of `gh` waits on Alice's pending deletion of `cd`, so
+// Accepted keeps it, and his Editing split left `ij` following it, with Erin's
+// paragraph saved between them that goes with no join.
+const EDITING_FOLLOWER: readonly Node[] = [
+  paragraph('ab'),
+  struckBy('alice', paragraph('cd')),
+  {
+    ...paragraph('gh'),
+    authored: [{ at: 1, author: 'bob', change: '~edit:bob', kind: 'join' }],
+  },
+  paragraph('kl'),
+  {
+    ...paragraph('ij'),
+    authored: [
+      {
+        at: 1,
+        author: 'bob',
+        change: '~edit:bob',
+        follows: JSON.stringify(['~edit:bob', 1]),
+        kind: 'split',
+      },
+    ],
+  },
+];
+
+// The previews of the documents built around followers that must show a
+// character away from its stored order.
+const REORDERED = { accepted: 4, proposed: 41 };
+
+/**
+ * Carol's paragraph saved between Alice's joined line and Bob's piece that
+ * follows it, by Yjs peers: Bob saw Alice's join and pressed Enter at the end
+ * of its line, and Carol, who never saw it, inserted a paragraph after that
+ * line. Her client id runs lower and higher than Bob's, so Yjs puts her
+ * paragraph on each side of his. Each merged document, then Dave's key typed
+ * into her paragraph.
+ */
+const concurrentFollowers = () =>
+  [300, 600].flatMap((carolId) => {
+    let minted = 0;
+    const peer = (
+      doc: Y.Doc,
+      author: string,
+      intent: 'edit' | 'propose',
+      seed?: readonly Node[]
+    ) => {
+      const editor = editorFor(
+        seed ?? [paragraph('')],
+        author,
+        intent,
+        () => `${author}:${(minted += 1)}`,
+        Followers
+      );
+
+      return {
+        cleanup: editor.install(
+          yjs({ doc, initialReady: true, ...(seed ? { seed: true } : {}) })
+        ),
+        editor,
+      };
+    };
+    const send = (from: Y.Doc, to: Y.Doc) =>
+      Y.applyUpdate(to, Y.encodeStateAsUpdate(from, Y.encodeStateVector(to)));
+    const docOf = (clientID: number) => {
+      const doc = new Y.Doc();
+
+      doc.clientID = clientID;
+
+      return doc;
+    };
+    const aliceDoc = docOf(500);
+    const bobDoc = docOf(400);
+    const carolDoc = docOf(carolId);
+    const alice = peer(aliceDoc, 'alice', 'propose', [
+      { children: [paragraph('ab'), paragraph('cd')], type: 'quote' },
+    ]);
+
+    send(aliceDoc, bobDoc);
+    send(aliceDoc, carolDoc);
+
+    const bob = peer(bobDoc, 'bob', 'propose');
+    const carol = peer(carolDoc, 'carol', 'edit');
+
+    backspaceAt('c')(alice.editor);
+    send(aliceDoc, bobDoc);
+    enterAt('d', 1)(bob.editor);
+    bob.editor.update((tx) =>
+      tx.command(editorCommands.insertText, { text: 'yz' })
+    );
+    insertBlock(paragraph('xw'), () => [0, 2])(carol.editor);
+    for (const [from, to] of [
+      [aliceDoc, carolDoc],
+      [bobDoc, carolDoc],
+      [carolDoc, aliceDoc],
+      [carolDoc, bobDoc],
+      [bobDoc, aliceDoc],
+      [aliceDoc, bobDoc],
+    ] as const) {
+      send(from, to);
+    }
+
+    const merged: Readonly<{ children: readonly Node[] }> =
+      alice.editor.read.value();
+
+    for (const { cleanup } of [alice, bob, carol]) cleanup();
+
+    const dave = editorFor(merged, 'dave', 'propose', 'dave:1', Followers);
+
+    typeAt(['x', 1], '!')(dave);
+
+    const typed: Readonly<{ children: readonly Node[] }> = dave.read.value();
+
+    return [
+      [`merged with Carol's client at ${carolId}`, merged],
+      [`Dave's key in Carol's paragraph with her client at ${carolId}`, typed],
+    ] as const;
+  });
+
+/** The follower corpus's documents, each one its commands build, and the concurrent ones. */
+const followerDocuments = () => ({
+  built: followerCorpus().flatMap(([name, start, acts]) =>
+    builtByCommands(start, acts).map((value) => [name, value] as const)
+  ),
+  concurrent: concurrentFollowers(),
+});
+
+/** Documents built by commands where a piece follows a pending join. */
+const followerCorpus = (): Array<
+  readonly [string, readonly Node[], readonly FollowerAct[]]
+> =>
+  (['edit', 'propose'] as const).flatMap((intent) => {
+    const by = (act: FollowerAct['act']): FollowerAct => ({
+      act,
+      author: 'dan',
+      intent,
+    });
+    const plain = (act: FollowerAct['act']): FollowerAct => ({
+      act,
+      author: 'erin',
+      intent: 'plain',
+    });
+    const [joined, joining] = JOINED;
+    const cases: Array<
+      readonly [string, readonly Node[], readonly FollowerAct[]]
+    > = [
+      [
+        'a paragraph inserted between the join target and its joined line',
+        joined,
+        [...joining, by(insertBlock(paragraph('gh'), aboveBlock('c')))],
+      ],
+      [
+        'Enter at the end of the join target, and a key typed on the new line',
+        joined,
+        [
+          ...joining,
+          by(enterAt('b', 1)),
+          by(typeAt({ offset: 0, path: [0, 1, 0] }, 'G')),
+        ],
+      ],
+      [
+        'a block moved between the join target and its joined line',
+        joined,
+        [...joining, by(moveBlock('x', aboveBlock('c')))],
+      ],
+      [
+        'the follower moved before the quote',
+        joined,
+        [...joining, by(moveBlock('d', () => [0]))],
+      ],
+      [
+        'the follower moved to the end',
+        joined,
+        [
+          ...joining,
+          by(moveBlock('d', (editor) => [rootChildren(editor).length])),
+        ],
+      ],
+      [
+        'the joined line moved past its follower',
+        joined,
+        [...joining, by(moveBlock('c', belowBlock('d')))],
+      ],
+      [
+        'a chain of followers, and a paragraph inserted above the joined line',
+        [
+          { children: [paragraph('ab')], type: 'quote' },
+          paragraph('cdgh'),
+          paragraph('xy'),
+        ],
+        [
+          ...joining,
+          by(enterAt('g')),
+          by(insertBlock(paragraph('ij'), aboveBlock('c'))),
+          by(typeAt(['i', 1], 'H')),
+        ],
+      ],
+      [
+        'an empty paragraph saved between the joined line and its follower, and a key typed into it',
+        joined,
+        [
+          ...joining,
+          plain(insertBlock(paragraph(''), aboveBlock('d'))),
+          by(typeAt({ offset: 0, path: [0, 2, 0] }, 'K')),
+        ],
+      ],
+      [
+        'a void saved between the joined line and its follower, and a key typed beside it',
+        joined,
+        [
+          ...joining,
+          plain(insertBlock(DIVIDER, aboveBlock('d'))),
+          by(typeAt(['d', 0], 'V')),
+        ],
+      ],
+      [
+        'a paragraph saved between an Editing join and its Editing follower, and a key typed into it',
+        EDITING_FOLLOWER,
+        [by(typeAt(['k', 1], 'T'))],
+      ],
+      [
+        'a key typed in each line of Sol’s case',
+        sol((nodes) => nodes),
+        ['a', 'b', 'f', 'c'].map((letter, index) =>
+          by(typeAt([letter, 1], 'PQRS'[index] ?? 'P'))
+        ),
+      ],
+      [
+        'a key typed in each line of Sol’s case in a quote',
+        sol((nodes) => [{ children: nodes, type: 'quote' }, paragraph('zq')]),
+        ['a', 'b', 'f', 'c'].map((letter, index) =>
+          by(typeAt([letter, 1], 'PQRS'[index] ?? 'P'))
+        ),
+      ],
+    ];
+
+    return cases.map(
+      ([name, start, acts]) => [`${name} (${intent})`, start, acts] as const
+    );
+  });
+
 describe('authored review tree recording laws', () => {
+  it(
+    'maps each live character onto itself and each shown character back onto its stored one under each preview, where pieces follow a join',
+    { timeout: 300_000 },
+    () => {
+      const unaligned = readLedgerWork().unalignedRuns;
+      const { built, concurrent } = followerDocuments();
+      const reordered = { accepted: 0, proposed: 0 };
+      let concurrentReordered = 0;
+
+      for (const [name, value] of [...built, ...concurrent]) {
+        const counts = assertIdentity(value, name, Followers);
+
+        reordered.accepted += counts.accepted;
+        reordered.proposed += counts.proposed;
+      }
+      for (const [name, value] of concurrent) {
+        concurrentReordered += assertIdentity(value, name, Followers).proposed;
+      }
+
+      const compared = recordedCommands(
+        ({ before, edited, suggested }) => {
+          for (const value of [before, edited, suggested]) {
+            assertIdentity(value, 'recorded');
+          }
+        },
+        250,
+        undefined,
+        LEDGER_SEED
+      );
+
+      console.info(
+        JSON.stringify({ compared, concurrentReordered, reordered })
+      );
+      assert.ok(compared > 150, `only ${compared} commands compared`);
+      assert.equal(
+        readLedgerWork().unalignedRuns - unaligned,
+        0,
+        'a run fell back to a diff'
+      );
+      assert.ok(
+        reordered.proposed >= REORDERED.proposed &&
+          reordered.accepted >= REORDERED.accepted,
+        `only ${JSON.stringify(reordered)} previews shown in another order`
+      );
+      assert.ok(
+        concurrentReordered >= 2,
+        `only ${concurrentReordered} concurrent previews shown in another order`
+      );
+    }
+  );
+
+  it(
+    'reports a stored range whose preview image shows content stored outside it, never refuses a caret with crosses, and places the whole root over the whole preview',
+    { timeout: 300_000 },
+    () => {
+      const { built, concurrent } = followerDocuments();
+      let crossed = 0;
+
+      for (const [name, value] of [...built, ...concurrent]) {
+        crossed += assertCrosses(value, name, Followers);
+      }
+
+      const compared = recordedCommands(
+        ({ before, edited, suggested }) => {
+          for (const value of [before, edited, suggested]) {
+            crossed += assertCrosses(value, 'recorded');
+          }
+        },
+        250,
+        undefined,
+        LEDGER_SEED
+      );
+
+      console.info(JSON.stringify({ compared, crossed }));
+      assert.ok(compared > 150, `only ${compared} commands compared`);
+      assert.ok(crossed > 500, `only ${crossed} ranges crossed a move`);
+    }
+  );
+
   it(
     'gives typed text no deletion and every letter one owner, and rejecting everything undoes a suggestion',
     { timeout: 300_000 },
@@ -2812,17 +4373,135 @@ describe('authored review tree recording laws', () => {
     }
   );
 
+  it('refuses crosses for a letter typed with Bold toggled inside a text beside a break, and records one at a text boundary beside a link', () => {
+    const Bold = defineEditorSchema('recording-laws-caret', {
+      elements: quoteElements,
+      id: 'recording-laws-caret',
+      properties: [schema.textProperty('bold', property.boolean())],
+      root: quoteRoot(1),
+      unknown: 'reject',
+      version: 1,
+    }) as never;
+    const line = (...children: Node[]): Node => ({
+      children,
+      type: 'paragraph',
+    });
+    // `ab` follows Carol's join of `ef`, so Proposed shows `cdef` then `ab`.
+    const around = (first: Node, joined: Node): Node[] => [
+      first,
+      {
+        ...line({ text: 'ab' }),
+        authored: [
+          {
+            at: 1,
+            author: 'erin',
+            change: '~edit:erin',
+            follows: JSON.stringify(['carol:1', 1]),
+            kind: 'insert',
+          },
+        ],
+      },
+      {
+        ...joined,
+        authored: [{ at: 1, author: 'carol', change: 'carol:1', kind: 'join' }],
+      },
+    ];
+    const typeBold = (
+      value: readonly Node[],
+      intent: 'edit' | 'propose',
+      point: Point
+    ) => {
+      const editor = editorFor(value, 'bob', intent, 'bob:1', Bold);
+      const stored = structuredClone(rootChildren(editor));
+
+      editor.update((tx) => {
+        tx.selection.set({ anchor: point, focus: point });
+        tx.command(editorCommands.addMark, { key: 'bold', value: true });
+      });
+      try {
+        editor.update((tx) =>
+          tx.command(editorCommands.insertText, { text: 'Z' })
+        );
+      } catch (error) {
+        assert.ok(error instanceof EditorRefusalError, String(error));
+
+        return {
+          editor,
+          reasons: (error.refusal as AuthoredRefusal).reasons,
+          stored,
+        };
+      }
+
+      return { editor, reasons: null, stored };
+    };
+    const shown = (editor: Editor) =>
+      [
+        ...NodeApi.texts({
+          children: createEditorView(editor, {
+            authored: { preview: 'proposed' },
+          }).read.children(),
+        } as never),
+      ].flatMap(([leaf]) =>
+        (leaf as { text: string }).text
+          ? [
+              `${(leaf as { bold?: true }).bold ? '*' : ''}${(leaf as { text: string }).text}`,
+            ]
+          : []
+      );
+
+    for (const intent of ['edit', 'propose'] as const) {
+      const flat = typeBold(
+        around(line({ text: 'cd' }), line({ text: 'ef' })),
+        intent,
+        { offset: 2, path: [0, 0] }
+      );
+
+      assert.deepEqual(flat.reasons, ['crosses'], `${intent}: end of cd`);
+      assert.deepEqual(rootChildren(flat.editor), flat.stored, intent);
+
+      const linked = typeBold(
+        around(
+          line({ children: [{ text: 'cd' }], type: 'link' }),
+          line({ text: 'ef' })
+        ),
+        intent,
+        { offset: 2, path: [0, 1, 0] }
+      );
+
+      assert.equal(linked.reasons, null, `${intent}: end of the link`);
+      assert.deepEqual(shown(linked.editor), ['cd', '*Z', 'ef', 'ab'], intent);
+    }
+  });
+
   it(
     'keeps the review ledger equal to the kernel after every step, undo, redo, decision and remote commit',
     { timeout: 300_000 },
     () => {
       console.info(JSON.stringify({ ledgerSeed: LEDGER_SEED }));
 
-      const { steps } = ledgerSteps(MAIN_ROOT, 200);
+      const counts = FRAMED();
+      const { steps } = ledgerSteps(MAIN_ROOT, 200, counts);
 
       assert.ok(steps > 400, `only ${steps} steps compared`);
       console.info(`ledger seed ${LEDGER_SEED}: compared`, COMPARED);
+      console.info(`ledger seed ${LEDGER_SEED}: framed`, counts);
       assert.ok(COMPARED.moved > 0, 'no points inside moved content compared');
+      // The examples alone show these runs in another order, so the relabel
+      // reference checks them on every seed.
+      assert.ok(
+        COMPARED.ordered.proposed >= 13 && COMPARED.ordered.accepted >= 5,
+        `only ${JSON.stringify(COMPARED.ordered)} runs shown in another order`
+      );
+      // The examples type on runs with an order, so every seed frames one.
+      assert.ok(
+        counts.framed >= 80 && counts.ordered > 0,
+        `only ${counts.framed} framed steps, ${counts.ordered} on a run with an order`
+      );
+      assert.ok(counts.gated >= 10, `only ${counts.gated} gated steps`);
+      assert.ok(
+        (counts.levels[1] ?? 0) >= 30,
+        `only ${counts.levels[1]} framed steps folded a quote's facts`
+      );
       assert.ok(
         COMPARED.letters > 4000,
         `only ${COMPARED.letters} kept letters compared`
@@ -2841,8 +4520,14 @@ describe('authored review tree recording laws', () => {
       const before = readLedgerWork();
 
       for (const [name, shape] of Object.entries(OTHER_ROOTS)) {
-        const { edited, steps } = ledgerSteps(shape, 80);
+        const counts = FRAMED();
+        const { edited, steps } = ledgerSteps(shape, 80, counts);
 
+        console.info(`ledger seed ${LEDGER_SEED}: ${name} framed`, counts);
+        assert.ok(
+          counts.framed >= 20 && counts.gated > 0,
+          `only ${counts.framed} framed steps, ${counts.gated} gated, in the ${name} root`
+        );
         assert.ok(
           steps > 150,
           `only ${steps} steps compared in the ${name} root`
@@ -2851,6 +4536,12 @@ describe('authored review tree recording laws', () => {
           edited > steps / 3,
           `only ${edited} of ${steps} steps changed the ${name} root`
         );
+        if (name === 'nested') {
+          assert.ok(
+            (counts.levels[2] ?? 0) >= 10,
+            `only ${counts.levels[2]} framed steps folded the facts of a quote in a quote`
+          );
+        }
       }
 
       const after = readLedgerWork();
@@ -5579,4 +7270,217 @@ describe('authored review tree folded defects', () => {
     );
     assert.equal(counts.compared, 1);
   });
+});
+
+describe('authored review delta law', () => {
+  type DeltaStep =
+    | Readonly<{
+        command: Command;
+        intent: 'edit' | 'propose';
+        kind: 'command';
+      }>
+    | Readonly<{ at: string; kind: 'forced'; side: number }>
+    | Readonly<{ action: 'accept' | 'reject'; kind: 'decide' }>;
+  type Watched = Readonly<{
+    mode: 'accepted' | 'proposed' | null;
+    view: Editor;
+  }>;
+  type Shown = ReadonlyMap<
+    string,
+    Readonly<{ block: unknown; cards: string; ids: readonly string[] }>
+  >;
+  type Reads = Readonly<{
+    read: Readonly<{
+      authored: Record<string, (query: object) => any>;
+      children: () => readonly unknown[];
+    }>;
+  }>;
+
+  const deltaStepArbitrary: fc.Arbitrary<DeltaStep> = fc.oneof(
+    {
+      arbitrary: fc.record({
+        command: commandArbitrary(LETTERS.slice(0, 8)),
+        intent: fc.constantFrom('edit' as const, 'propose' as const),
+        kind: fc.constant('command' as const),
+      }),
+      weight: 5,
+    },
+    {
+      arbitrary: fc.record({
+        at: letterArbitrary(LETTERS.slice(0, 8)),
+        kind: fc.constant('forced' as const),
+        side: fc.constantFrom(0, 1),
+      }),
+      weight: 2,
+    },
+    {
+      arbitrary: fc.record({
+        action: fc.constantFrom('accept' as const, 'reject' as const),
+        kind: fc.constant('decide' as const),
+      }),
+      weight: 2,
+    }
+  );
+
+  // Each top-level block a view shows, by its key, with its read's card ids.
+  const shownOf = ({ view }: Watched): Shown =>
+    new Map(
+      (view as unknown as Reads).read.children().map((shown, rank) => {
+        const key = getDefined(view.key([rank]));
+        const { authored } = (view as unknown as Reads).read;
+        const idsOf = (items: ReadonlyArray<{ id: string }>) =>
+          items.map(({ id }) => id).sort();
+
+        return [
+          key,
+          {
+            block: shown,
+            cards: idsOf(authored.groups({ at: key })).join(' '),
+            ids: idsOf(authored.changes({ at: key, limit: 200 }).items),
+          },
+        ];
+      })
+    );
+  it(
+    'names each top-level view block whose read of cards changed since its publisher last published, under each preview and with none',
+    { timeout: 600_000 },
+    () => {
+      const counts = {
+        batches: 0,
+        named: 0,
+        publications: 0,
+        rewritten: 0,
+      };
+
+      fc.assert(
+        fc.property(
+          documentArbitrary,
+          historyArbitrary,
+          fc.array(
+            fc.array(deltaStepArbitrary, { maxLength: 3, minLength: 1 }),
+            { maxLength: 4, minLength: 1 }
+          ),
+          (initial, recorded, batches) => {
+            const value = replay(initial, recorded);
+            let minted = recorded.length;
+            const leader = editorFor(
+              value,
+              'bob',
+              'propose',
+              () => `bob:${(minted += 1)}`,
+              Quotes
+            );
+            const ledger = getDefined(getReviewLedger(leader as never));
+            const stored = () =>
+              leader.read.value() as unknown as JsonEditorValue;
+            const watched: Watched[] = [
+              { mode: null, view: leader },
+              ...(['accepted', 'proposed'] as const).map((mode) => ({
+                mode,
+                view: createEditorView(leader, {
+                  authored: { preview: mode },
+                }) as unknown as Editor,
+              })),
+            ];
+            const publishers = watched.map((each) => {
+              const sink = ledger.subscribe(stored(), each.mode);
+              const delivered = new Set<string>();
+
+              each.view.api.authored.subscribeChanges((delta) => {
+                for (const key of delta.blocks) delivered.add(key);
+              });
+
+              return {
+                delivered,
+                shown: shownOf(each),
+                sink,
+              };
+            });
+            const label = `after ${JSON.stringify(batches)}`;
+
+            for (const [batch, steps] of batches.entries()) {
+              for (const step of steps) {
+                try {
+                  if (step.kind === 'command') {
+                    leader.api.authored.setView({ intent: step.intent });
+                    run(leader, step.command, 'XYZWV'[batch % 5]);
+                  } else if (step.kind === 'forced') {
+                    const at = locate(leader, step.at);
+
+                    if (!at) continue;
+
+                    const caret = { ...at, offset: at.offset + step.side };
+
+                    leader.api.authored.setView({ intent: 'edit' });
+                    leader.update((tx) => {
+                      tx.authored.propose({ changeId: 'bob:ai' });
+                      tx.selection.set({ anchor: caret, focus: caret });
+                      tx.text.insert('Q');
+                    });
+                  } else {
+                    const ids = changesIn(rootChildren(leader));
+
+                    if (ids.length > 0) {
+                      authoredTestApi(leader).decide({
+                        action: step.action,
+                        changes: ids.slice(0, 1),
+                      });
+                    }
+                  }
+                } catch (error) {
+                  // A command can still write marks the admission check refuses,
+                  // which is not what this law judges.
+                  if (
+                    !isRefusal(error) &&
+                    !(error instanceof AuthoredMarkError)
+                  ) {
+                    throw error;
+                  }
+                }
+              }
+              counts.batches += 1;
+              for (const [at, each] of watched.entries()) {
+                const publisher = getDefined(publishers[at]);
+                const { ranks } = ledger.publish(
+                  stored(),
+                  publisher.sink,
+                  each.mode,
+                  'main'
+                );
+                const named = new Set<string>(
+                  ranks.map((rank) => getDefined(each.view.key([rank])))
+                );
+                const shown = shownOf(each);
+                const where = `${each.mode ?? 'stored'} batch ${batch} ${label}`;
+
+                counts.publications += 1;
+                counts.named += named.size;
+                for (const [key, now] of shown) {
+                  const was = publisher.shown.get(key);
+
+                  if (!was || was.cards === now.cards) continue;
+                  if (was.block !== now.block) {
+                    counts.rewritten += 1;
+                    continue;
+                  }
+                  assert.ok(
+                    named.has(key) && publisher.delivered.has(key),
+                    `${where}: the publication names ${key}, whose cards went from [${was.cards}] to [${now.cards}]`
+                  );
+                }
+                publisher.delivered.clear();
+                publisher.shown = shown;
+              }
+            }
+          }
+        ),
+        { numRuns: 200, seed: LEDGER_SEED }
+      );
+      console.info(`delta law seed ${LEDGER_SEED}:`, counts);
+      assert.ok(
+        counts.named > 200 && counts.publications > 1000,
+        `only ${JSON.stringify(counts)}`
+      );
+    }
+  );
 });

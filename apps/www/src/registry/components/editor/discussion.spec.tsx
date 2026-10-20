@@ -1,12 +1,15 @@
-import { afterAll, describe, expect, it, mock } from 'bun:test';
+import { afterAll, describe, expect, it, mock, spyOn } from 'bun:test';
 
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
+  BaseBlockquotePlugin,
+  BaseItalicPlugin,
   BaseLinkPlugin,
   ElementApi,
   type EditorDocumentValue,
   type Range,
+  editorCommands,
 } from 'platejs';
 import { type AuthoredChange, AuthoredPlugin } from 'platejs/authored';
 import type { CommentMutationResult, CommentsJSON } from 'platejs/comments';
@@ -16,16 +19,23 @@ import {
   EditorContent,
   EditorRoot,
   createEditor,
+  definePlugin,
   useCreateEditor,
   useEditor,
 } from 'platejs/react';
 import {
   SuggestionPlugin,
+  useActiveSuggestion,
   useSuggestionChanges,
+  useSuggestionGroups,
 } from 'platejs/suggestion/react';
 import * as React from 'react';
 
-import { commentDecorationAttributes, createCommentValue } from './comment';
+import {
+  CommentKit,
+  commentDecorationAttributes,
+  createCommentValue,
+} from './comment';
 import { SuggestionKit } from './suggestion';
 
 const applied = <T,>(result: CommentMutationResult<T>): T => {
@@ -426,6 +436,646 @@ describe('DiscussionSlots', () => {
     ).toBeTruthy();
     expect(
       restored.plugin(AuthoredPlugin).read.change(changeId)
+    ).not.toBeNull();
+    view.unmount();
+  });
+
+  const reviewBelowProposal = async (
+    afterEditable: () => React.ReactElement | null = () => null
+  ) => {
+    const { DiscussionSlots } = await import(
+      `./discussion?test=${Math.random().toString(36).slice(2)}`
+    );
+    const editor = createEditor({
+      initialValue: ['alpha', 'beta'].map((text) => ({
+        type: 'paragraph',
+        children: [{ text }],
+      })),
+      plugins: [
+        ...SuggestionKit,
+        ...CommentKit,
+        CommentsPlugin.configure({ slots: DiscussionSlots }),
+        definePlugin('reviewHost', { slots: { afterEditable } }),
+      ],
+      userId: 'alice',
+    });
+    editor.update((tx) => {
+      tx.authored.propose();
+      tx.nodes.insert(
+        { type: 'paragraph', children: [{ text: 'proposed' }] },
+        { at: [0] }
+      );
+    });
+    let alpha = '';
+    editor.update((tx) => {
+      alpha = tx.authored.propose();
+      tx.text.insert(' noted', { at: { offset: 5, path: [1, 0] } });
+    });
+    const thread = applied(
+      await editor.plugin(CommentsPlugin).api.createThread({
+        body: createCommentValue('Alpha note'),
+        target: { id: alpha, type: 'change' },
+      })
+    );
+
+    return { alpha, editor, thread };
+  };
+
+  it('shows each block its own card and threads under a preview that hides a proposed paragraph above it', async () => {
+    const { alpha, editor } = await reviewBelowProposal();
+    const view = render(
+      <EditorRoot authored={{ preview: 'accepted' }} editor={editor}>
+        <EditorContainer>
+          <EditorContent aria-label="Accepted review" />
+        </EditorContainer>
+      </EditorRoot>
+    );
+
+    await waitFor(() =>
+      expect(
+        view
+          .getAllByRole('button', { name: /discussion items? for this block/ })
+          .map((button) => [
+            button.parentElement?.parentElement?.textContent,
+            button.getAttribute('aria-label'),
+          ])
+      ).toEqual([['alpha', 'Open 2 discussion items for this block']])
+    );
+    fireEvent.click(
+      view.getByRole('button', {
+        name: 'Open 2 discussion items for this block',
+      })
+    );
+    expect(
+      [...view.container.querySelectorAll('[data-suggestion-review]')].map(
+        (card) => card.getAttribute('data-suggestion-review')
+      )
+    ).toEqual([alpha]);
+    view.unmount();
+  });
+
+  it('wakes a mounted change read when the preview hides a new proposal in its block', async () => {
+    const editor = createEditor({
+      initialValue: ['alpha', 'beta'].map((text) => ({
+        type: 'paragraph',
+        children: [{ text }],
+      })),
+      plugins: SuggestionKit,
+      userId: 'alice',
+    });
+    let changes: readonly AuthoredChange[] = [];
+    function ReadChanges() {
+      changes = useSuggestionChanges([0]);
+      return null;
+    }
+    const view = render(
+      <EditorRoot authored={{ preview: 'accepted' }} editor={editor}>
+        <EditorContent />
+        <ReadChanges />
+      </EditorRoot>
+    );
+    let proposal = '';
+
+    act(() =>
+      editor.update((tx) => {
+        proposal = tx.authored.propose();
+        tx.text.insert(' noted', { at: { offset: 5, path: [0, 0] } });
+      })
+    );
+    await waitFor(() =>
+      expect(changes.map(({ id }) => id)).toEqual([proposal])
+    );
+    view.unmount();
+  });
+
+  it('reads a quoted paragraph’s own changes and cards, leaving the pending unwrap to the quote', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          authored: [
+            { at: 1, author: 'alice', change: 'alice:1', kind: 'unwrap' },
+          ],
+          children: [{ type: 'paragraph', children: [{ text: 'inner' }] }],
+          type: 'blockquote',
+        },
+      ],
+      plugins: [BaseBlockquotePlugin, ...SuggestionKit],
+      userId: 'alice',
+    });
+    let read = {};
+    function ReadReview() {
+      const mounted = useEditor();
+      const ids = (items: ReadonlyArray<{ id: string }>) =>
+        items.map(({ id }) => id);
+
+      read = {
+        innerCards: ids(useSuggestionGroups(mounted.key([0, 0])!)),
+        innerChanges: ids(useSuggestionChanges([0, 0])),
+        quoteCards: ids(useSuggestionGroups(mounted.key([0])!)),
+        quoteChanges: ids(useSuggestionChanges([0])),
+      };
+      return null;
+    }
+    const view = render(
+      <EditorRoot authored={{ intent: 'edit' }} editor={editor}>
+        <EditorContent />
+        <ReadReview />
+      </EditorRoot>
+    );
+
+    expect(read).toEqual({
+      innerCards: [],
+      innerChanges: [],
+      quoteCards: ['alice:1'],
+      quoteChanges: ['alice:1'],
+    });
+    view.unmount();
+  });
+
+  it('rereads a mounted change path after a paragraph is prepended above it', async () => {
+    const editor = createEditor({
+      initialValue: ['alice', 'bob'].map((author) => ({
+        type: 'paragraph',
+        children: [
+          {
+            authored: [
+              { at: 1, author, change: `${author}:1`, kind: 'insert' },
+            ],
+            text: author,
+          },
+        ],
+      })),
+      plugins: SuggestionKit,
+      userId: 'alice',
+    });
+    let changes: readonly AuthoredChange[] = [];
+    function ReadChanges() {
+      changes = useSuggestionChanges([1]);
+      return null;
+    }
+    const view = render(
+      <EditorRoot authored={{ intent: 'edit' }} editor={editor}>
+        <EditorContent />
+        <ReadChanges />
+      </EditorRoot>
+    );
+
+    expect(changes.map(({ id }) => id)).toEqual(['bob:1']);
+    act(() =>
+      editor.update.nodes.insert(
+        { type: 'paragraph', children: [{ text: 'new' }] },
+        { at: [0] }
+      )
+    );
+    await waitFor(() =>
+      expect(changes.map(({ id }) => id)).toEqual(['alice:1'])
+    );
+    view.unmount();
+  });
+
+  it.each(['suggestion', 'change'] as const)(
+    'anchors a %s on alpha’s block under a preview after alpha’s trigger opens it',
+    async (route) => {
+      let card = '';
+      // A preview paints no suggestion to click, so a host list opens the card.
+      function OpenCard() {
+        const { setActiveId } = useActiveSuggestion();
+
+        return (
+          <button onClick={() => setActiveId(card)} type="button">
+            Open alpha’s card
+          </button>
+        );
+      }
+      const { alpha, editor, thread } = await reviewBelowProposal(OpenCard);
+
+      card = alpha;
+      const view = render(
+        <EditorRoot authored={{ preview: 'accepted' }} editor={editor}>
+          <EditorContainer>
+            <EditorContent aria-label="Accepted review" />
+          </EditorContainer>
+        </EditorRoot>
+      );
+
+      fireEvent.click(
+        await view.findByRole('button', {
+          name: 'Open 2 discussion items for this block',
+        })
+      );
+      fireEvent.click(view.getByRole('button', { name: 'Open alpha’s card' }));
+      if (route === 'change') {
+        act(() => editor.plugin(CommentsPlugin).api.setActive([thread]));
+      }
+      await waitFor(() => expect(floatingAnchor).not.toBeInstanceOf(Element));
+      const alphaBlock = [
+        ...view.container.querySelectorAll('[data-editor-node="element"]'),
+      ].find((element) => element.textContent === 'alpha')!;
+      const measure = spyOn(alphaBlock, 'getBoundingClientRect');
+
+      (
+        floatingAnchor as { getBoundingClientRect: () => DOMRect }
+      ).getBoundingClientRect();
+      expect(measure).toHaveBeenCalled();
+      measure.mockRestore();
+      view.unmount();
+    }
+  );
+
+  it.each(['change thread', 'suggestion card'] as const)(
+    'keeps an open %s anchored on its text after formatting splits the text before it',
+    async (route) => {
+      floatingAnchor = null;
+      const { DiscussionSlots } = await import(
+        `./discussion?test=${Math.random().toString(36).slice(2)}`
+      );
+      function OpenCard() {
+        const { setActiveId } = useActiveSuggestion();
+
+        return (
+          <button onClick={() => setActiveId('alice:1')} type="button">
+            Open Alice’s card
+          </button>
+        );
+      }
+      const editor = createEditor({
+        initialValue: [
+          { type: 'paragraph', children: [{ text: 'alpha' }] },
+          {
+            type: 'paragraph',
+            children: [
+              { text: 'beta' },
+              {
+                authored: [
+                  { at: 1, author: 'alice', change: 'alice:1', kind: 'insert' },
+                ],
+                text: '!',
+              },
+            ],
+          },
+        ],
+        plugins: [
+          BaseItalicPlugin,
+          ...SuggestionKit,
+          CommentsPlugin.configure({ slots: DiscussionSlots }),
+          definePlugin('reviewHost', { slots: { afterEditable: OpenCard } }),
+        ],
+        userId: 'bob',
+      });
+      const thread = applied(
+        await editor.plugin(CommentsPlugin).api.createThread({
+          body: createCommentValue('Exclamation note'),
+          target: { id: 'alice:1', type: 'change' },
+        })
+      );
+      const view = render(
+        <EditorRoot authored={{ intent: 'edit' }} editor={editor}>
+          <EditorContainer>
+            <EditorContent />
+          </EditorContainer>
+        </EditorRoot>
+      );
+
+      if (route === 'suggestion card') {
+        fireEvent.click(
+          view.getByRole('button', { name: 'Open Alice’s card' })
+        );
+      } else {
+        act(() => editor.plugin(CommentsPlugin).api.setActive([thread]));
+      }
+      await waitFor(() => expect(floatingAnchor).not.toBeNull());
+      act(() =>
+        editor.update((tx) => {
+          tx.selection.set({
+            anchor: { offset: 0, path: [1, 0] },
+            focus: { offset: 2, path: [1, 0] },
+          });
+          tx.command(editorCommands.addMark, { key: 'italic', value: true });
+        })
+      );
+      const anchoredText = () => {
+        const measured: string[] = [];
+        const { getClientRects } = globalThis.Range.prototype;
+        const measure = spyOn(
+          globalThis.Range.prototype,
+          'getClientRects'
+        ).mockImplementation(function recordText(this: globalThis.Range) {
+          measured.push(this.toString());
+          return getClientRects.call(this);
+        });
+
+        (
+          floatingAnchor as { getBoundingClientRect: () => DOMRect }
+        ).getBoundingClientRect();
+        measure.mockRestore();
+        return measured;
+      };
+
+      expect(anchoredText()).toEqual(['!']);
+      view.unmount();
+    }
+  );
+
+  const triggerOf = (view: ReturnType<typeof render>, text: string) =>
+    view
+      .queryAllByRole('button', { name: /discussion items? for this block/ })
+      .find(
+        (button) => button.parentElement?.parentElement?.textContent === text
+      );
+
+  // A preview paints no suggestion to click, so a host list opens a thread
+  // with its card.
+  const reviewList = (
+    open: () => Readonly<{ card: string; thread: string }>,
+    preview: 'accepted' | 'proposed'
+  ) =>
+    function ReviewList() {
+      const mounted = useEditor();
+      const { setActiveId } = useActiveSuggestion();
+
+      return (
+        <>
+          <button
+            onClick={() => {
+              const { card, thread } = open();
+
+              setActiveId(card);
+              mounted.plugin(CommentsPlugin).api.setActive([thread]);
+            }}
+            type="button"
+          >
+            Open alpha’s thread
+          </button>
+          <button
+            onClick={() =>
+              mounted.plugin(AuthoredPlugin).api.setView({ preview })
+            }
+            type="button"
+          >
+            Switch preview
+          </button>
+        </>
+      );
+    };
+
+  it('anchors a thread on the block whose trigger was pressed when its card spans that block and the next', async () => {
+    const { DiscussionSlots } = await import(
+      `./discussion?test=${Math.random().toString(36).slice(2)}`
+    );
+    const editor = createEditor({
+      initialValue: ['alpha', 'beta'].map((text) => ({
+        type: 'paragraph',
+        children: [{ text }],
+      })),
+      plugins: [
+        ...SuggestionKit,
+        ...CommentKit,
+        CommentsPlugin.configure({ slots: DiscussionSlots }),
+      ],
+      userId: 'alice',
+    });
+    editor.update((tx) => {
+      tx.authored.propose();
+      tx.text.delete({
+        at: {
+          anchor: { offset: 3, path: [0, 0] },
+          focus: { offset: 2, path: [1, 0] },
+          kind: 'text',
+        },
+      });
+    });
+    let insertion = '';
+    editor.update((tx) => {
+      insertion = tx.authored.propose();
+      tx.text.insert('Z', { at: { offset: 0, path: [1, 1] } });
+    });
+    const thread = applied(
+      await editor.plugin(CommentsPlugin).api.createThread({
+        body: createCommentValue('Beta note'),
+        target: { id: insertion, type: 'change' },
+      })
+    );
+    const view = render(
+      <EditorRoot authored={{ preview: 'accepted' }} editor={editor}>
+        <EditorContainer>
+          <EditorContent aria-label="Accepted review" />
+        </EditorContainer>
+      </EditorRoot>
+    );
+
+    await waitFor(() => expect(triggerOf(view, 'alpha')).toBeDefined());
+    fireEvent.click(triggerOf(view, 'alpha')!);
+    act(() => editor.plugin(CommentsPlugin).api.setActive([thread]));
+    await waitFor(() => expect(floatingAnchor instanceof Element).toBe(false));
+    const alphaBlock = [
+      ...view.container.querySelectorAll('[data-editor-node="element"]'),
+    ].find((element) => element.textContent === 'alpha')!;
+    const measure = spyOn(alphaBlock, 'getBoundingClientRect');
+
+    (
+      floatingAnchor as { getBoundingClientRect: () => DOMRect }
+    ).getBoundingClientRect();
+    expect(measure).toHaveBeenCalled();
+    measure.mockRestore();
+    view.unmount();
+  });
+
+  it('forgets the pressed block when the view changes, so a thread opened from a list after the switch opens no popover', async () => {
+    let opened = { card: '', thread: '' };
+    const { alpha, editor, thread } = await reviewBelowProposal(
+      reviewList(() => opened, 'proposed')
+    );
+
+    opened = { card: alpha, thread };
+    // Editing and Proposed give alpha one key, so only forgetting keeps the
+    // popover off it.
+    const view = render(
+      <EditorRoot authored={{ intent: 'edit' }} editor={editor}>
+        <EditorContainer>
+          <EditorContent aria-label="Editing review" />
+        </EditorContainer>
+      </EditorRoot>
+    );
+
+    await waitFor(() => expect(triggerOf(view, 'alpha noted')).toBeDefined());
+    fireEvent.click(triggerOf(view, 'alpha noted')!);
+    fireEvent.click(view.getByRole('button', { name: 'Switch preview' }));
+    await waitFor(() =>
+      expect(
+        view.container.querySelectorAll('[data-editor-authored-change]').length
+      ).toBe(0)
+    );
+    fireEvent.click(view.getByRole('button', { name: 'Open alpha’s thread' }));
+    expect(
+      [...view.container.querySelectorAll('[data-suggestion-review]')].map(
+        (card) => card.getAttribute('data-suggestion-review')
+      )
+    ).toEqual([]);
+    view.unmount();
+  });
+
+  it('opens no popover for a thread opened from a list after the preview hides the block whose trigger was pressed', async () => {
+    let opened = { card: '', thread: '' };
+    const { alpha, editor, thread } = await reviewBelowProposal(
+      reviewList(() => opened, 'accepted')
+    );
+
+    opened = { card: alpha, thread };
+    const view = render(
+      <EditorRoot authored={{ preview: 'proposed' }} editor={editor}>
+        <EditorContainer>
+          <EditorContent aria-label="Proposed review" />
+        </EditorContainer>
+      </EditorRoot>
+    );
+
+    await waitFor(() => expect(triggerOf(view, 'proposed')).toBeDefined());
+    fireEvent.click(triggerOf(view, 'proposed')!);
+    fireEvent.click(view.getByRole('button', { name: 'Switch preview' }));
+    await waitFor(() => expect(view.queryByText('proposed')).toBeNull());
+    fireEvent.click(view.getByRole('button', { name: 'Open alpha’s thread' }));
+    expect(
+      [...view.container.querySelectorAll('[data-suggestion-review]')].map(
+        (card) => card.getAttribute('data-suggestion-review')
+      )
+    ).toEqual([]);
+    view.unmount();
+  });
+
+  it('opens no popover on a pressed block that a hidden block above shifts onto the thread’s stored index', async () => {
+    let opened = { card: '', thread: '' };
+    const { alpha, editor, thread } = await reviewBelowProposal(
+      reviewList(() => opened, 'accepted')
+    );
+
+    editor.update((tx) => {
+      tx.authored.propose();
+      tx.text.insert(' too', { at: { offset: 4, path: [2, 0] } });
+    });
+    opened = { card: alpha, thread };
+    const view = render(
+      <EditorRoot authored={{ preview: 'accepted' }} editor={editor}>
+        <EditorContainer>
+          <EditorContent aria-label="Accepted review" />
+        </EditorContainer>
+      </EditorRoot>
+    );
+
+    await waitFor(() => expect(triggerOf(view, 'beta')).toBeDefined());
+    fireEvent.click(triggerOf(view, 'beta')!);
+    fireEvent.click(view.getByRole('button', { name: 'Open alpha’s thread' }));
+    expect(
+      [...view.container.querySelectorAll('[data-suggestion-review]')].map(
+        (card) => card.getAttribute('data-suggestion-review')
+      )
+    ).toEqual([]);
+    view.unmount();
+  });
+
+  it('redraws the block a proposal the preview hides lands in', async () => {
+    const rendered = new Set<number>();
+    const RenderCount = definePlugin('renderCount', {
+      inject: {
+        nodeProps: {
+          transformProps: ({ path }) => {
+            if (path) rendered.add(path[0]);
+            return {};
+          },
+        },
+      },
+    });
+    const editor = createEditor({
+      initialValue: ['alpha', 'beta'].map((text) => ({
+        type: 'paragraph',
+        children: [{ text }],
+      })),
+      plugins: [...SuggestionKit, RenderCount],
+      userId: 'alice',
+    });
+    const view = render(
+      <EditorRoot authored={{ preview: 'accepted' }} editor={editor}>
+        <EditorContainer>
+          <EditorContent aria-label="Accepted redraw" />
+        </EditorContainer>
+      </EditorRoot>
+    );
+
+    await waitFor(() => expect(rendered.has(1)).toBe(true));
+    rendered.clear();
+    await act(async () => {
+      editor.update((tx) => {
+        tx.authored.propose();
+        tx.text.insert(' noted', { at: { offset: 5, path: [0, 0] } });
+      });
+    });
+    expect([...rendered]).toEqual([0]);
+    view.unmount();
+  });
+
+  it('keeps a restored whole-block suggestion off every block under the preview and reachable in Editing', async () => {
+    const { DiscussionSlots } = await import(
+      `./discussion?test=${Math.random().toString(36).slice(2)}`
+    );
+    const original = createEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'alpha' }] }],
+      plugins: SuggestionKit,
+      userId: 'alice',
+    });
+    let changeId = '';
+    original.update((tx) => {
+      changeId = tx.authored.propose();
+      tx.nodes.insert(
+        { type: 'paragraph', children: [{ text: 'proposed' }] },
+        { at: [0] }
+      );
+    });
+    const restored = createEditor({
+      initialValue: structuredClone(original.read.value()),
+      plugins: [
+        ...SuggestionKit,
+        ...CommentKit,
+        CommentsPlugin.configure({ slots: DiscussionSlots }),
+      ],
+      userId: 'alice',
+    });
+    function ProjectionControls() {
+      const editor = useEditor();
+
+      return (
+        <button
+          onClick={() =>
+            editor.plugin(AuthoredPlugin).api.setView({ intent: 'edit' })
+          }
+          type="button"
+        >
+          Editing
+        </button>
+      );
+    }
+    const view = render(
+      <EditorRoot authored={{ preview: 'accepted' }} editor={restored}>
+        <ProjectionControls />
+        <EditorContainer>
+          <EditorContent aria-label="Restored whole block" />
+        </EditorContainer>
+      </EditorRoot>
+    );
+    const triggers = () =>
+      view
+        .queryAllByRole('button', { name: /discussion items? for this block/ })
+        .map((button) => button.parentElement?.parentElement?.textContent);
+
+    await waitFor(() => expect(view.getByText('alpha')).toBeTruthy());
+    expect(triggers()).toEqual([]);
+    fireEvent.click(view.getByRole('button', { name: 'Editing' }));
+    await waitFor(() => expect(triggers()).toEqual(['proposed']));
+    fireEvent.click(
+      view.getByRole('button', {
+        name: 'Open 1 discussion item for this block',
+      })
+    );
+    expect(
+      view.container.querySelector(`[data-suggestion-review="${changeId}"]`)
     ).not.toBeNull();
     view.unmount();
   });

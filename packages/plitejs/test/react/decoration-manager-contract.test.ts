@@ -49,11 +49,20 @@ test('refreshes proposal decorations when the authored projection changes withou
   const view = createEditorView(source, {
     authored: { preview: 'accepted' },
   });
+  const [proposal] = source.read.authored.changes().items;
+  const previewed: string[][] = [];
   const manager = createPliteDecorationManager(view, [
     {
       id: 'proposals',
       read: ({ entry: [node, path] }) => {
         if (!TextApi.isText(node)) return [];
+        // A preview reads a block by its path and paints no stored range.
+        if ('preview' in view.read.authored.view()) {
+          previewed.push(
+            view.read.authored.changes({ at: path }).items.map(({ id }) => id)
+          );
+          return [];
+        }
         const entryRange = view.read.ranges.get(path);
         if (!entryRange) return [];
         return view.read.authored
@@ -72,6 +81,7 @@ test('refreshes proposal decorations when the authored projection changes withou
   const at = (path: number[]) => manager.getNodeSnapshot(view.key(path)!);
   const inserted = [expect.objectContaining({ start: 0, end: 10 })];
   expect(at([0, 0])).toHaveLength(0);
+  expect(previewed).toEqual([[proposal?.id]]);
 
   view.api.authored.setView({ intent: 'propose' });
   await Promise.resolve();

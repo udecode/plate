@@ -102,7 +102,7 @@ Discussion 按区块组合未解决的记录，并在每个区块内按时间排
 - 文档 undo 撤销接受或拒绝决定，保留消息和 thread 的解决状态；
 - 解决或重新打开 thread 不进入文档 undo。
 
-`useSuggestionGroups(blockKey)` 为每个区块提供与之相交的审阅卡片。卡片正文用 `read.changes({ group: card.id })` 逐页读取其 change。Discussion 在复制的 registry 代码中派生日期、标签、range 和卡片文本，再关联来自 Comments 的 change-targeted thread。
+`useSuggestionGroups(blockKey)` 为每个区块提供它的审阅卡片。在 preview 下，这些是该区块所显示内容上的卡片，详见[建议](/docs/suggestion)。卡片正文用 `read.changes({ group: card.id })` 逐页读取其 change。Discussion 在复制的 registry 代码中派生日期、标签、range 和卡片文本，再关联来自 Comments 的 change-targeted thread。
 
 审阅卡片决定它所显示的卡片：
 
