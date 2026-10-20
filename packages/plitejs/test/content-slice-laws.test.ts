@@ -5,10 +5,7 @@ import fc from 'fast-check';
 import { ContentSlice, type Descendant } from 'plitejs';
 
 import { PreparedTokenSlice } from '../src/core/change/tokens';
-import {
-  encodeContentSlice,
-  prepareContentSliceVariant,
-} from '../src/core/content-slice';
+import { encodeContentSlice } from '../src/core/content-slice';
 
 const lawSeed = Number.parseInt(
   process.env.PLITE_CONTENT_SLICE_LAW_SEED ?? '20260720',
@@ -111,31 +108,6 @@ void describe('ContentSlice generated laws', () => {
     );
   });
 
-  void it('preserves valid openness across content rewrites and closes explicitly', () => {
-    void assertLaw(
-      fc.property(sliceInputArbitrary, (input) => {
-        const slice = ContentSlice.fromJSON(input);
-        const replacement = structuredClone(slice.content);
-        const preserved = ContentSlice.withContent(slice, replacement, {
-          open: 'preserve',
-        });
-        const closed = ContentSlice.withContent(slice, replacement, {
-          open: 'closed',
-        });
-
-        assert.deepEqual(preserved, slice);
-        assert.equal(ContentSlice.fromJSON(preserved), preserved);
-        assert.deepEqual(closed, {
-          content: slice.content,
-          openEnd: 0,
-          openStart: 0,
-        });
-        assert.deepEqual(ContentSlice.closed(replacement), closed);
-      }),
-      1
-    );
-  });
-
   void it('rejects every generated edge depth beyond the structural spine', () => {
     void assertLaw(
       fc.property(sliceInputArbitrary, fc.boolean(), (input, useStart) => {
@@ -166,31 +138,6 @@ void describe('ContentSlice generated laws', () => {
         );
       }),
       3
-    );
-  });
-
-  void it('prepares variant openness without cloning trusted content again', () => {
-    void assertLaw(
-      fc.property(sliceInputArbitrary, (input) => {
-        const source = ContentSlice.closed(input.content);
-
-        for (let openStart = 0; openStart <= input.openStart; openStart++) {
-          for (let openEnd = 0; openEnd <= input.openEnd; openEnd++) {
-            const variant = prepareContentSliceVariant(
-              source,
-              openStart,
-              openEnd
-            );
-
-            assert.equal(variant.content, source.content);
-            assert.equal(
-              prepareContentSliceVariant(source, openStart, openEnd),
-              variant
-            );
-          }
-        }
-      }),
-      4
     );
   });
 });

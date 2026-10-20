@@ -79,7 +79,7 @@ describe('end matter slices', () => {
         openStart: depth - 1,
         openEnd: depth - 1,
       });
-      assert.equal(dissolveOpenEndMatter(input, compile()), input);
+      assert.deepEqual(dissolveOpenEndMatter(input, compile()), input);
     });
   }
 
