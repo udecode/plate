@@ -4,7 +4,6 @@ import {
   closeSync,
   existsSync,
   fsyncSync,
-  linkSync,
   mkdtempSync,
   mkdirSync,
   openSync,
@@ -42,12 +41,8 @@ import {
   pathFingerprint,
 } from './state';
 import {
-  discoverEditorConfigFiles,
-  editorSourceImportCandidates,
   findEditorConfig,
   NativeTypeScriptSession,
-  resolveEditorSourceImport,
-  type EditorTsconfigCache,
   type NativeTypeProperties,
 } from './typescript';
 
@@ -60,7 +55,6 @@ type EditorArtifacts = Readonly<{
   entryPath: string;
   schema: EditorSchemaContract;
   schemaPath: string;
-  sourceFiles: readonly string[];
   typesPath: string;
 }>;
 
@@ -108,7 +102,6 @@ type MaterializedProperties = Readonly<{
   byPropertyId: Readonly<
     Record<string, Readonly<{ optional: boolean; type: string }>>
   >;
-  sourceFiles: readonly string[];
 }>;
 
 const ANY_PATH_PATTERN = /.*/;
@@ -117,42 +110,15 @@ const CSS_PATH_PATTERN = /\.css$/;
 const EDITOR_ENTRY_PATTERN = /^plate:editor$/;
 const LEADING_DIGIT_PATTERN = /^\d/;
 const NON_IDENTIFIER_PATTERN = /[^A-Z_a-z\d]+/;
-const NODE_MODULES_PATH_PATTERN = /(^|[\\/])node_modules([\\/]|$)/;
 const PROPERTY_NAME_PATTERN = /^[$A-Z_a-z][$\w]*$/;
 const PORTABLE_SHELL_PATH_PATTERN = /^[./A-Z_a-z\d-]+$/;
 const SHELL_EXPANSION_PATTERN = /["$`%!\r\n]/;
 const REACT_LITE_YOUTUBE_EMBED_PATTERN = /^react-lite-youtube-embed$/;
-const UNRESOLVED_IMPORT_PATTERN = /Could not resolve "([^"]+)"/;
 const SOURCE_EXTENSION_PATTERN = /\.[cm]?[jt]sx?$/;
-const TYPE_ONLY_IMPORT_PATTERNS = [
-  /\b(?:export|import)\s+type\b[^;]*?\bfrom\s*['"]([^'"]+)['"]/gu,
-  /\b(?:export|import)\s*\{[^}]*\btype\b[^}]*\}\s*from\s*['"]([^'"]+)['"]/gu,
-  /\bimport\s+(?!type\b)(?:[^'";]*?\s+from\s*)?['"]([^'"]+)['"]/gu,
-  /\bimport\s+(?:type\s+)?[$\w]+\s*=\s*require\s*\(\s*['"]([^'"]+)['"]\s*\)/gu,
-  /\bexport\s*(?:\*|\{[^}]*\})\s*from\s*['"]([^'"]+)['"]/gu,
-  /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/gu,
-  /<reference\s+path\s*=\s*['"]([^'"]+)['"]/gu,
-] as const;
-const SOURCE_RESOLUTION_EXTENSIONS = [
-  '.ts',
-  '.tsx',
-  '.mts',
-  '.cts',
-  '.js',
-  '.jsx',
-  '.mjs',
-  '.cjs',
-] as const;
-
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const bundleEditor = (
-  entryPath: string,
-  dependencies: Set<string>,
-  silent = false,
-  attemptedDependencies = dependencies
-) => {
+const bundleEditor = (entryPath: string) => {
   const configPath = findEditorConfig(entryPath);
 
   return build({
@@ -169,7 +135,7 @@ const bundleEditor = (
     },
     format: 'esm',
     jsx: 'automatic',
-    logLevel: silent ? 'silent' : 'info',
+    logLevel: 'info',
     logOverride: { 'ignored-bare-import': 'silent' },
     platform: 'node',
     plugins: [
@@ -179,35 +145,6 @@ const bundleEditor = (
           context.onResolve({ filter: EDITOR_ENTRY_PATTERN }, () => ({
             path: entryPath,
           }));
-        },
-      },
-      {
-        name: 'plate-codegen-dependencies',
-        setup(context) {
-          context.onResolve({ filter: ANY_PATH_PATTERN }, (args) => {
-            if (
-              args.resolveDir &&
-              (args.path.startsWith('.') || args.path.startsWith('/'))
-            ) {
-              const candidate = resolve(args.resolveDir, args.path);
-
-              attemptedDependencies.add(candidate);
-              if (!extname(candidate)) {
-                SOURCE_RESOLUTION_EXTENSIONS.forEach((extension) => {
-                  attemptedDependencies.add(`${candidate}${extension}`);
-                  attemptedDependencies.add(
-                    join(candidate, `index${extension}`)
-                  );
-                });
-              }
-            }
-          });
-          context.onLoad(
-            { filter: ANY_PATH_PATTERN, namespace: 'file' },
-            (args) => {
-              dependencies.add(args.path);
-            }
-          );
         },
       },
       {
@@ -375,16 +312,8 @@ const evaluateEditor = (bundlePath: string, resultPath: string, cwd: string) =>
 const readEditor = async (
   entryPath: string,
   cwd: string
-): Promise<
-  Readonly<{ editor: CompiledEditor; sourceFiles: readonly string[] }>
-> => {
-  const dependencies = new Set<string>();
-  const result = await bundleEditor(
-    entryPath,
-    dependencies,
-    false,
-    new Set<string>()
-  );
+): Promise<CompiledEditor> => {
+  const result = await bundleEditor(entryPath);
   const output = result.outputFiles?.[0];
 
   if (!output) throw new Error(`Plate could not bundle "${entryPath}".`);
@@ -416,169 +345,7 @@ const readEditor = async (
     );
   }
 
-  return Object.freeze({
-    editor: imported as CompiledEditor,
-    sourceFiles: Object.freeze(
-      [...dependencies].filter((path) => !NODE_MODULES_PATH_PATTERN.test(path))
-    ),
-  });
-};
-
-const discoverTypeOnlySourceFiles = (
-  roots: readonly string[],
-  missingDependencies?: Set<string>,
-  projectConfigPath?: string,
-  configCache: EditorTsconfigCache = new Map(),
-  dependencyCache = new Map<
-    string,
-    Readonly<{
-      dependencies: readonly string[];
-      missingCandidates: readonly string[];
-    }>
-  >()
-) => {
-  const sources = new Set(
-    roots
-      .map((path) => resolve(path))
-      .filter(
-        (path) =>
-          !NODE_MODULES_PATH_PATTERN.test(path) &&
-          existsSync(path) &&
-          statSync(path).isFile()
-      )
-  );
-  const pending = [...sources];
-
-  while (pending.length > 0) {
-    const path = pending.pop() ?? failInvariant('Expected value to be defined');
-
-    if (!SOURCE_EXTENSION_PATTERN.test(path) || !existsSync(path)) continue;
-    const dependencyKey = `${projectConfigPath ?? ''}\0${path}`;
-    let discovered = dependencyCache.get(dependencyKey);
-
-    if (!discovered) {
-      const source = readFileSync(path, 'utf-8');
-      const specifiers = new Set<string>();
-
-      TYPE_ONLY_IMPORT_PATTERNS.forEach((pattern) => {
-        for (const match of source.matchAll(pattern)) {
-          specifiers.add(match[1]);
-        }
-      });
-      const dependencies: string[] = [];
-      const missingCandidates: string[] = [];
-
-      specifiers.forEach((specifier) => {
-        const dependency = resolveEditorSourceImport(
-          path,
-          specifier,
-          configCache,
-          projectConfigPath
-        );
-
-        if (dependency) dependencies.push(dependency);
-        else {
-          missingCandidates.push(
-            ...editorSourceImportCandidates(
-              path,
-              specifier,
-              configCache,
-              projectConfigPath
-            )
-          );
-        }
-      });
-      discovered = Object.freeze({
-        dependencies: Object.freeze(dependencies),
-        missingCandidates: Object.freeze(missingCandidates),
-      });
-      dependencyCache.set(dependencyKey, discovered);
-    }
-    discovered.missingCandidates.forEach((candidate) => {
-      sources.add(candidate);
-      missingDependencies?.add(candidate);
-    });
-    discovered.dependencies.forEach((dependency) => {
-      if (sources.has(dependency)) return;
-      sources.add(dependency);
-      pending.push(dependency);
-    });
-  }
-
-  return [...sources];
-};
-
-/**
- * Discover attempted source dependencies even when generation fails.
- *
- * @internal
- */
-export const discoverEditorSourceFiles = (
-  entry: string,
-  options: Pick<GenerateEditorOptions, 'cwd'> = {}
-) => {
-  const cwd = resolve(options.cwd ?? process.cwd());
-  const entryPath = resolve(cwd, entry);
-
-  return Object.freeze(
-    [entryPath, ...discoverEditorConfigFiles(entryPath)].filter(
-      (fileName, index, files) => files.indexOf(fileName) === index
-    )
-  );
-};
-
-/**
- * Include esbuild-only and unresolved local dependencies for watch mode.
- *
- * @internal
- */
-export const discoverEditorWatchFiles = async (
-  entry: string,
-  options: Pick<GenerateEditorOptions, 'cwd'> = {}
-) => {
-  const cwd = resolve(options.cwd ?? process.cwd());
-  const entryPath = resolve(cwd, entry);
-  const dependencies = new Set(discoverEditorSourceFiles(entry, options));
-  const missingDependencies = new Set<string>();
-
-  try {
-    await bundleEditor(entryPath, dependencies, true);
-  } catch (error) {
-    if (isRecord(error) && Array.isArray(error.errors)) {
-      error.errors.forEach((item) => {
-        if (!isRecord(item) || typeof item.text !== 'string') return;
-        const specifier = item.text.match(UNRESOLVED_IMPORT_PATTERN)?.[1];
-        const location = isRecord(item.location) ? item.location : undefined;
-        const importer =
-          location && typeof location.file === 'string'
-            ? resolve(cwd, location.file)
-            : entryPath;
-
-        if (specifier?.startsWith('.')) {
-          // Keep the unresolved extensionless candidate. Watch mode targets
-          // its parent directory, then an unmatched add retries every entry.
-          missingDependencies.add(resolve(dirname(importer), specifier));
-        }
-      });
-    }
-  }
-  discoverTypeOnlySourceFiles(
-    [...dependencies],
-    missingDependencies,
-    findEditorConfig(entryPath)
-  ).forEach((path) => {
-    dependencies.add(path);
-  });
-  const generatedPaths = new Set(Object.values(outputPaths(entryPath)));
-
-  return Object.freeze(
-    [...dependencies].filter(
-      (path) =>
-        !NODE_MODULES_PATH_PATTERN.test(path) &&
-        !generatedPaths.has(path) &&
-        (existsSync(path) || missingDependencies.has(path))
-    )
-  );
+  return imported as CompiledEditor;
 };
 
 const propertyName = (name: string) =>
@@ -587,7 +354,6 @@ type MaterializationRequest = Readonly<{
   entryPath: string;
   bindings: readonly ElementBinding[];
   owners: readonly string[];
-  generatedPaths: ReadonlySet<string>;
   pluginExportName: string;
   schema: EditorSchemaContract;
 }>;
@@ -613,7 +379,6 @@ const materializePropertyGroups = async (
   const helperPaths: string[] = [];
   let prepared: ReadonlyArray<
     Readonly<{
-      generatedPaths: ReadonlySet<string>;
       groups: readonly MaterializationGroup[];
       helper: string;
       helperPath: string;
@@ -629,14 +394,7 @@ const materializePropertyGroups = async (
 
   try {
     prepared = requests.map(
-      ({
-        bindings,
-        entryPath,
-        generatedPaths,
-        owners,
-        pluginExportName,
-        schema,
-      }) => {
+      ({ bindings, entryPath, owners, pluginExportName, schema }) => {
         const helperPath = session.helperPath(entryPath);
 
         helperPaths.push(helperPath);
@@ -720,7 +478,6 @@ const materializePropertyGroups = async (
         }));
 
         return {
-          generatedPaths,
           groups,
           helper,
           helperPath,
@@ -736,15 +493,14 @@ const materializePropertyGroups = async (
 
   try {
     const materialized = await session.materialize(
-      prepared.map(({ generatedPaths, helper, helperPath, nativeAliases }) => ({
+      prepared.map(({ helper, helperPath, nativeAliases }) => ({
         aliases: nativeAliases,
-        generatedPaths,
         path: helperPath,
         source: helper,
       }))
     );
 
-    return materialized.map(({ properties, sourceFiles }, index) => {
+    return materialized.map(({ properties }, index) => {
       const request = prepared[index];
 
       return Object.freeze({
@@ -758,7 +514,6 @@ const materializePropertyGroups = async (
             )
           )
         ),
-        sourceFiles,
       });
     });
   } finally {
@@ -1234,14 +989,6 @@ type ArtifactLockOwner = Readonly<{
   version: 1;
 }>;
 
-type WatchArtifactOwner = Readonly<{
-  entryPath: string;
-  pid: number;
-  processToken: string;
-  token: string;
-  version: 1;
-}>;
-
 const ARTIFACT_PROCESS_TOKEN = randomUUID();
 
 class SimulatedArtifactProcessInterruptionError extends Error {
@@ -1300,166 +1047,6 @@ const isProcessAlive = (pid: number) => {
   } catch (error) {
     return (error as NodeJS.ErrnoException).code !== 'ESRCH';
   }
-};
-
-const watchArtifactOwnerPath = (artifactPath: string) =>
-  join(
-    artifactStateRoot(artifactPath),
-    'watch',
-    `${pathFingerprint(artifactPath)}.json`
-  );
-
-/**
- * Private ownership records for one watched editor.
- *
- * @internal
- */
-export const editorWatchOwnershipPaths = (entryPath: string) =>
-  Object.freeze(editorArtifactPaths(entryPath).map(watchArtifactOwnerPath));
-
-/**
- * Private state roots excluded from editor source watches.
- *
- * @internal
- */
-export const editorPrivateStateRoots = (entryPaths: readonly string[]) =>
-  Object.freeze([
-    ...new Set(
-      entryPaths.flatMap((entryPath) =>
-        editorArtifactPaths(entryPath).map(artifactStateRoot)
-      )
-    ),
-  ]);
-
-const readActiveWatchArtifactOwner = (
-  path: string
-): WatchArtifactOwner | undefined => {
-  if (!existsSync(path)) return undefined;
-  const owner = JSON.parse(readFileSync(path, 'utf-8')) as WatchArtifactOwner;
-
-  if (
-    owner.version !== 1 ||
-    typeof owner.entryPath !== 'string' ||
-    typeof owner.pid !== 'number' ||
-    typeof owner.processToken !== 'string' ||
-    typeof owner.token !== 'string'
-  ) {
-    throw new Error(`Invalid Plate watch artifact owner: ${path}`);
-  }
-  if (
-    (owner.pid === process.pid &&
-      owner.processToken !== ARTIFACT_PROCESS_TOKEN) ||
-    !isProcessAlive(owner.pid)
-  ) {
-    rmSync(path, { force: true });
-
-    return undefined;
-  }
-
-  return owner;
-};
-
-const assertNoForeignWatchArtifactOwner = (
-  artifactPaths: readonly string[]
-) => {
-  artifactPaths.forEach((artifactPath) => {
-    const owner = readActiveWatchArtifactOwner(
-      watchArtifactOwnerPath(artifactPath)
-    );
-
-    if (owner && owner.processToken !== ARTIFACT_PROCESS_TOKEN) {
-      throw new Error(
-        `Another Plate watcher owns generated artifact ${artifactPath} from ${owner.entryPath}.`
-      );
-    }
-  });
-};
-
-/**
- * Hold exclusive generated-artifact ownership for a watch lifetime.
- *
- * @internal
- */
-export const acquireEditorWatchOwnership = (entryPaths: readonly string[]) => {
-  const owned: Array<{ path: string; token: string }> = [];
-  const entryByArtifactPath = new Map(
-    entryPaths.flatMap((entryPath) =>
-      editorArtifactPaths(entryPath).map((artifactPath) => [
-        artifactPath,
-        entryPath,
-      ])
-    )
-  );
-  const artifactPaths = [...new Set(entryByArtifactPath.keys())].sort();
-  const gates = acquireArtifactPublicationGates(artifactPaths);
-
-  try {
-    artifactPaths.forEach((artifactPath) => {
-      const entryPath =
-        entryByArtifactPath.get(artifactPath) ??
-        failInvariant('Expected value to be defined');
-      const path = watchArtifactOwnerPath(artifactPath);
-      const token = randomUUID();
-      const owner = `${JSON.stringify({
-        entryPath,
-        pid: process.pid,
-        processToken: ARTIFACT_PROCESS_TOKEN,
-        token,
-        version: 1,
-      } satisfies WatchArtifactOwner)}\n`;
-
-      mkdirSync(dirname(path), { recursive: true });
-      while (true) {
-        const temporary = `${path}.${token}.tmp`;
-
-        try {
-          writeFileSync(temporary, owner);
-          linkSync(temporary, path);
-          owned.push({ path, token });
-          break;
-        } catch (error) {
-          if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
-            throw error;
-          }
-          const active = readActiveWatchArtifactOwner(path);
-
-          if (active) {
-            throw new Error(
-              `Another Plate watcher owns generated artifact ${artifactPath} from ${active.entryPath}.`,
-              { cause: error }
-            );
-          }
-        } finally {
-          rmSync(temporary, { force: true });
-        }
-      }
-    });
-  } catch (error) {
-    owned.forEach(({ path }) => {
-      rmSync(path, { force: true });
-    });
-    throw error;
-  } finally {
-    releaseArtifactPublicationGates(gates);
-  }
-  let released = false;
-
-  return Object.freeze({
-    release: () => {
-      if (released) return;
-      released = true;
-      owned.forEach(({ path, token }) => {
-        const owner = readActiveWatchArtifactOwner(path);
-
-        if (
-          owner?.processToken === ARTIFACT_PROCESS_TOKEN &&
-          owner.token === token
-        ) {
-          rmSync(path, { force: true });
-        }
-      });
-    },
-  });
 };
 
 const acquireArtifactLock = (lockPath: string): ArtifactLock => {
@@ -1752,8 +1339,7 @@ const replaceArtifactsWithResult = (
       recoverArtifactJournal(journalPath, paths);
     }
     // Decide a no-op only while holding every artifact gate. This keeps an
-    // unchanged generation serialized with concurrent publishers without
-    // applying foreign-watcher rejection to a read-only result.
+    // unchanged generation serialized with concurrent publishers.
     if (
       artifacts.every(({ content }, index) => isCurrent(paths[index], content))
     ) {
@@ -1783,7 +1369,6 @@ const replaceArtifactsWithResult = (
     });
 
     if (prepared.length === 0) return Object.freeze([] as string[]);
-    assertNoForeignWatchArtifactOwner(prepared.map(({ path }) => path));
 
     const journal = {
       artifacts: prepared.map(({ backup, existed, path, temporary }) => ({
@@ -1933,60 +1518,35 @@ export const compileEditors = async (
   const editors = await Promise.all(
     entryPaths.map((entryPath) => readEditor(entryPath, cwd))
   );
-  const prepared = editors.map(
-    ({ editor, sourceFiles: bundleSourceFiles }, index) => {
-      const entryPath = entryPaths[index];
-      const { schema } = editor;
-      const bindings = createBindings(editor.bindings, schema);
-      const owners = [
-        ...new Set(schema.properties.byId.map(({ owner }) => owner)),
-      ].sort();
-      const { schemaPath, typesPath } = outputPaths(entryPath);
+  const prepared = editors.map((editor, index) => {
+    const entryPath = entryPaths[index];
+    const { schema } = editor;
+    const bindings = createBindings(editor.bindings, schema);
+    const owners = [
+      ...new Set(schema.properties.byId.map(({ owner }) => owner)),
+    ].sort();
+    const { schemaPath, typesPath } = outputPaths(entryPath);
 
-      return {
-        bindings,
-        bundleSourceFiles,
-        editor,
-        entryPath,
-        owners,
-        schema,
-        schemaPath,
-        typesPath,
-      };
-    }
-  );
+    return {
+      bindings,
+      editor,
+      entryPath,
+      owners,
+      schema,
+      schemaPath,
+      typesPath,
+    };
+  });
   const materialized = await materializePropertyGroups(
-    prepared.map(
-      ({
-        bindings,
-        editor,
-        entryPath,
-        owners,
-        schema,
-        schemaPath,
-        typesPath,
-      }) => ({
-        bindings,
-        entryPath,
-        generatedPaths: new Set([schemaPath, typesPath]),
-        owners,
-        pluginExportName: editor.pluginExportName,
-        schema,
-      })
-    ),
+    prepared.map(({ bindings, editor, entryPath, owners, schema }) => ({
+      bindings,
+      entryPath,
+      owners,
+      pluginExportName: editor.pluginExportName,
+      schema,
+    })),
     cwd,
     session
-  );
-  const configCache: EditorTsconfigCache = new Map();
-  const dependencyCache = new Map();
-  const sourceFileClosures = prepared.map(({ bundleSourceFiles, entryPath }) =>
-    discoverTypeOnlySourceFiles(
-      bundleSourceFiles,
-      undefined,
-      findEditorConfig(entryPath),
-      configCache,
-      dependencyCache
-    )
   );
 
   return Object.freeze(
@@ -2010,14 +1570,6 @@ export const compileEditors = async (
         schema: current.schema,
         schemaPath: current.schemaPath,
         schemaSource,
-        sourceFiles: Object.freeze(
-          [...properties.sourceFiles, ...sourceFileClosures[index]].filter(
-            (path, pathIndex, paths) =>
-              path !== current.schemaPath &&
-              path !== current.typesPath &&
-              paths.indexOf(path) === pathIndex
-          )
-        ),
         typesPath: current.typesPath,
         typesSource,
       });

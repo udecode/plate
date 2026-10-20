@@ -10,7 +10,6 @@ import { registerDepsCommand } from './deps';
 import { generateEditors } from './generate';
 import { createEditorMigration } from './migrate';
 import { runEditorMigrationInput, runEditorMigrations } from './run-migration';
-import { type EditorWatcher, watchEditors } from './watch';
 
 const DEFAULT_ENTRY = 'src/editor.ts';
 const packageJson = createRequire(import.meta.url)('../package.json') as {
@@ -40,81 +39,28 @@ program
   .description('Generate one or more exact editor contracts.')
   .argument('[entries...]', 'editor module files', [DEFAULT_ENTRY])
   .option('--check', 'fail when committed artifacts are stale')
-  .option('--watch', 'regenerate when an entry dependency changes')
-  .action(
-    async (
-      entries: string[],
-      options: Readonly<{ check?: boolean; watch?: boolean }>
-    ) => {
-      if (options.check && options.watch) {
-        throw new Error('plate generate cannot combine --check and --watch.');
-      }
-      if (options.watch) {
-        let exitCode: number | undefined;
-        let resolveSignal!: () => void;
-        const signal = new Promise<void>((resolve) => {
-          resolveSignal = resolve;
-        });
-        const stop = (code: number) => {
-          if (exitCode !== undefined) return;
-          exitCode = code;
-          resolveSignal();
-        };
-        const onInterrupt = () => {
-          stop(130);
-        };
-        const onTerminate = () => {
-          stop(143);
-        };
-        const controller = new AbortController();
+  .action(async (entries: string[], options: Readonly<{ check?: boolean }>) => {
+    const startedAt = performance.now();
+    const results = await generateEditors(entries, { check: options.check });
+    const elapsed = ((performance.now() - startedAt) / 1000).toFixed(2);
+    const generated = results.filter(
+      ({ status }) => status === 'generated'
+    ).length;
+    const verb = options.check
+      ? 'Checked'
+      : generated === 0
+        ? 'Up to date'
+        : 'Generated';
 
-        process.on('SIGINT', onInterrupt);
-        process.on('SIGTERM', onTerminate);
-        void signal.then(() => {
-          controller.abort(new Error('Plate watch stopped during startup.'));
-        });
-        let watcher: EditorWatcher | undefined;
-
-        try {
-          watcher = await watchEditors(
-            entries,
-            process.cwd(),
-            controller.signal
-          );
-          await signal;
-        } catch (error) {
-          if (!controller.signal.aborted) throw error;
-        } finally {
-          process.off('SIGINT', onInterrupt);
-          process.off('SIGTERM', onTerminate);
-          await watcher?.close();
-        }
-        process.exitCode = exitCode;
-
-        return;
-      }
-      const startedAt = performance.now();
-      const results = await generateEditors(entries, { check: options.check });
-      const elapsed = ((performance.now() - startedAt) / 1000).toFixed(2);
-      const generated = results.filter(
-        ({ status }) => status === 'generated'
-      ).length;
-      const verb = options.check
-        ? 'Checked'
-        : generated === 0
-          ? 'Up to date'
-          : 'Generated';
-
+    process.stdout.write(
+      `${verb} ${results.length} editor${results.length === 1 ? '' : 's'} in ${elapsed}s\n`
+    );
+    results.forEach(({ schemaPath, typesPath }) => {
       process.stdout.write(
-        `${verb} ${results.length} editor${results.length === 1 ? '' : 's'} in ${elapsed}s\n`
+        `  ${displayPath(typesPath)}\n  ${displayPath(schemaPath)}\n`
       );
-      results.forEach(({ schemaPath, typesPath }) => {
-        process.stdout.write(
-          `  ${displayPath(typesPath)}\n  ${displayPath(schemaPath)}\n`
-        );
-      });
-    }
-  );
+    });
+  });
 
 const migrateCommand = program
   .command('migrate')
