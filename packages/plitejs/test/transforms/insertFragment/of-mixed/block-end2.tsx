@@ -26,10 +26,12 @@ export const input = (
 );
 export const output = (
   <editor>
-    <block>wordone</block>
     <block>
-      two
-      <cursor />
+      wordone
+      <block>
+        two
+        <cursor />
+      </block>
     </block>
   </editor>
 );

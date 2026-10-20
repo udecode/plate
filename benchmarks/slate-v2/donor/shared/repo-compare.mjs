@@ -1,6 +1,13 @@
 import { execFileSync, spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import {
+  copyFile,
+  mkdir,
+  readFile,
+  rm,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 
 const nodeExecutable = process.versions.bun
@@ -134,6 +141,10 @@ export const benchmarkRepo = async ({
 
   await mkdir(runDirectory, { recursive: true });
   await linkWorkspacePackages(repo, runDirectory);
+  await copyFile(
+    new URL('./stats.mjs', import.meta.url),
+    resolve(runDirectory, 'stats.mjs')
+  );
   await writeFile(filePath, benchmarkSource);
 
   let failed = false;

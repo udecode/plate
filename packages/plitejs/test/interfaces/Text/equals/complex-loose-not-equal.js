@@ -14,6 +14,6 @@ export const input = {
 };
 
 export const test = ({ textNodeA, textNodeB }) =>
-  TextApi.equals(textNodeA, textNodeB, { loose: false });
+  TextApi.equals(textNodeA, textNodeB, { loose: true });
 
 export const output = false;

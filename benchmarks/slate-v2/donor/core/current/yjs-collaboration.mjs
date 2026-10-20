@@ -23,6 +23,9 @@ const Y = await import(
 );
 
 const benchmarkPath = fileURLToPath(import.meta.url);
+const sourceAliasesPath = fileURLToPath(
+  new URL('../../../../../config/plite-source-aliases.ts', import.meta.url)
+);
 const quick = process.env.PLITE_YJS_COLLAB_QUICK === '1';
 const rounds = Number.parseInt(
   process.env.PLITE_YJS_COLLAB_ROUNDS ?? (quick ? '2' : '4'),
@@ -181,7 +184,7 @@ const getApi = (editor, binding) => editor.plugin(binding).api;
 const createRetryContract = (id) => {
   const state = { cause: null };
   const effect = defineEffect({
-    codec: valueCodecs.string,
+    persist: { ...valueCodecs.string, version: 1 },
     collab: 'shared',
     collabReplay: 'live',
     collabTransport: {
@@ -665,7 +668,7 @@ if (process.env.PLITE_YJS_COLLAB_CELL) {
           cmd: [
             process.execPath,
             '--preload',
-            './config/plite-source-aliases.ts',
+            sourceAliasesPath,
             benchmarkPath,
           ],
           env: {

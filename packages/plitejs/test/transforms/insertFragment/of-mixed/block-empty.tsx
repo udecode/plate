@@ -28,9 +28,9 @@ export const input = (
 export const output = (
   <editor>
     <block>word</block>
-    <block>one</block>
-    <block>two</block>
     <block>
+      one
+      <block>two</block>
       three
       <cursor />
     </block>

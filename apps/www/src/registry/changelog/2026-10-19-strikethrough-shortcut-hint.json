@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-19-strikethrough-shortcut-hint",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-19-strikethrough-shortcut-hint.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Show the strikethrough shortcut the editor binds",
+  "targets": [
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-19-fixed-toolbar-strikethrough-shortcut-editor-binds-9946fca4",
+      "kind": "fix",
+      "summary": "Show `⌘+⇧+X` in the Strikethrough tooltip so it matches the `mod+shift+x` binding in `basic-marks`, instead of `⌘+⇧+M`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["fixed-toolbar", "floating-toolbar"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-19",
+          "entry": "2026-10-19-strikethrough-shortcut-hint",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

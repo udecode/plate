@@ -1,7 +1,7 @@
 import './index.js';
 import assert from 'node:assert/strict';
 import { readdirSync, statSync } from 'node:fs';
-import { basename, dirname, relative, resolve } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { createEditor, type Editor, type Element } from 'plitejs';
@@ -18,7 +18,6 @@ import {
   isEditor as editorIsEditor,
   replace as editorReplace,
 } from '../src/testing';
-import { isUntriagedFailingFixture } from './fixture-claim-overrides.js';
 import { createFixtureTransactionApi, withTest } from './support/with-test.js';
 
 const runEditorTransaction = (
@@ -69,15 +68,8 @@ const runFixtureTree = (
       if (fixtureFilter && !fixturePath.includes(fixtureFilter)) continue;
 
       const name = getFixtureName(file);
-      const fixturePathFromTestRoot = relative(
-        testsDir,
-        fixturePath
-      ).replaceAll('\\', '/');
-      const testFn = isUntriagedFailingFixture(fixturePathFromTestRoot)
-        ? it.failing
-        : it;
 
-      testFn(name, async () => {
+      it(name, async () => {
         const module = (await import(
           pathToFileURL(fixturePath).href
         )) as FixtureModule;

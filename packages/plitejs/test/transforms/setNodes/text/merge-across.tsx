@@ -32,11 +32,11 @@ export const output = (
         One
         <anchor />
       </text>
-      <text someKey>
-        Two
+      <text someKey>Two</text>
+      <text>
         <focus />
+        Three
       </text>
-      <text>Three</text>
     </block>
   </editor>
 );

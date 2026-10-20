@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 type PackageManifest = {
   dependencies?: Record<string, string>;
@@ -26,10 +30,15 @@ const platePackagePath = '../../../platejs/package.json';
 const plitePackagePath = '../../package.json';
 const publicYjsDocsPath =
   '../../../../content/docs/(plugins)/(collaboration)/yjs.mdx';
-const yjsCollaborationBenchmarkPath =
-  '../../../../benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs';
-const benchmarkStatsPath =
-  '../../../../benchmarks/slate-v2/donor/core/shared/stats.mjs';
+const sourceAliasesPath = fileURLToPath(
+  new URL('../../../../config/plite-source-aliases.ts', import.meta.url)
+);
+const yjsCollaborationBenchmarkPath = fileURLToPath(
+  new URL(
+    '../../../../benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs',
+    import.meta.url
+  )
+);
 const manualYjsSoakRunnerSignals = [
   'scripts/proof/yjs-collaboration-soak.mjs',
   'scripts/proof/yjs-hocuspocus-persistent-room-soak.mjs',
@@ -203,69 +212,71 @@ describe('plitejs/yjs package config contract', () => {
     }
   });
 
-  it('keeps Yjs collaboration benchmark phase metrics explicit', () => {
-    const scripts = readJson<PackageManifest>(rootPackagePath).scripts ?? {};
-    const benchmarkUrl = new URL(
-      yjsCollaborationBenchmarkPath,
-      import.meta.url
-    );
+  it('emits every Yjs collaboration metric as a finite duration in its artifact', () => {
+    const cwd = mkdtempSync(join(tmpdir(), 'plite-yjs-collaboration-'));
 
-    if (!existsSync(benchmarkUrl)) {
-      assert.equal(typeof scripts['plite:bench:targets:check'], 'string');
-      assert.equal(typeof scripts['plite:bench:targets:run'], 'string');
-      return;
+    try {
+      const run = spawnSync(
+        process.execPath,
+        ['--preload', sourceAliasesPath, yjsCollaborationBenchmarkPath],
+        {
+          cwd,
+          encoding: 'utf-8',
+          env: {
+            ...process.env,
+            PLITE_YJS_COLLAB_COHORTS: 'normal',
+            PLITE_YJS_COLLAB_ROUNDS: '1',
+            PLITE_YJS_COLLAB_SAMPLES: '2',
+            PLITE_YJS_COLLAB_WARMUPS: '0',
+          },
+        }
+      );
+      const printed = Object.fromEntries(
+        [...run.stdout.matchAll(/^METRIC (\w+)=(.+)$/gm)].map(
+          ([, name, value]) => [name, Number(value)]
+        )
+      );
+
+      assert.deepEqual(
+        Object.keys(printed).sort(),
+        [
+          'yjs_collaboration_aa_worst_pair_excess_ms',
+          'yjs_collaboration_construction_p95_ms',
+          'yjs_collaboration_worst_p95_ms',
+          'yjs_collaboration_worst_p99_ms',
+          'yjs_collaboration_worst_pair_excess_ms',
+          'yjs_correctness_failures',
+          'yjs_edit_cursor_remap_p95_ms',
+          'yjs_edit_import_p95_ms',
+          'yjs_presence_changed_p95_ms',
+          'yjs_presence_unchanged_p95_ms',
+          'yjs_retry_admission_p95_ms',
+        ],
+        run.stderr
+      );
+      const signedPairExcessMetrics = new Set([
+        'yjs_collaboration_aa_worst_pair_excess_ms',
+        'yjs_collaboration_worst_pair_excess_ms',
+      ]);
+
+      for (const [name, value] of Object.entries(printed)) {
+        assert.ok(
+          Number.isFinite(value) &&
+            (signedPairExcessMetrics.has(name) || value >= 0),
+          `${name}=${value}`
+        );
+      }
+      assert.deepEqual(
+        JSON.parse(
+          readFileSync(
+            join(cwd, 'tmp/slate-yjs-collaboration-benchmark.json'),
+            'utf-8'
+          )
+        ).metrics,
+        printed
+      );
+    } finally {
+      rmSync(cwd, { force: true, recursive: true });
     }
-
-    const source = readFileSync(benchmarkUrl, 'utf-8');
-    const metrics = [
-      'yjs_collaboration_construction_p95_ms',
-      'yjs_collaboration_worst_p95_ms',
-      'yjs_collaboration_worst_p99_ms',
-      'yjs_collaboration_worst_pair_excess_ms',
-      'yjs_collaboration_aa_worst_pair_excess_ms',
-      'yjs_presence_changed_p95_ms',
-      'yjs_presence_unchanged_p95_ms',
-      'yjs_edit_import_p95_ms',
-      'yjs_edit_cursor_remap_p95_ms',
-      'yjs_retry_admission_p95_ms',
-      'yjs_correctness_failures',
-    ];
-
-    for (const metric of metrics) {
-      assert.match(source, new RegExp(`\\b${metric}:`));
-    }
-    assert.match(source, /const operations = \[/);
-    assert.match(source, /kind === 'A\/A'/);
-    assert.match(source, /kind === 'A\/B'/);
-    assert.match(source, /METRIC \$\{name\}=\$\{value\}/);
-  });
-
-  it('keeps Yjs benchmark artifacts diagnostic enough for decisions', () => {
-    const benchmarkUrl = new URL(
-      yjsCollaborationBenchmarkPath,
-      import.meta.url
-    );
-    const statsUrl = new URL(benchmarkStatsPath, import.meta.url);
-
-    if (!existsSync(benchmarkUrl) || !existsSync(statsUrl)) return;
-
-    const benchmark = readFileSync(benchmarkUrl, 'utf-8');
-    const stats = readFileSync(statsUrl, 'utf-8');
-
-    for (const field of [
-      'samples',
-      'mean',
-      'median',
-      'p75',
-      'p95',
-      'p99',
-      'min',
-      'max',
-    ]) {
-      assert.match(stats, new RegExp(`\\b${field}:`));
-    }
-    assert.match(benchmark, /artifactVersion:\s*1/);
-    assert.match(benchmark, /releaseGate:\s*false/);
-    assert.match(benchmark, /repeatRunsRequiredBeforeEnforcement:\s*3/);
   });
 });

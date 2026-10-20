@@ -1,6 +1,6 @@
 ---
 extends: babysit
-when: Use it to finish, perfect or clean up an existing PR or the current tree, or for "review PR <number>" on someone else's PR.
+when: Use it to finish, perfect or clean up an existing PR or the current tree, for "babysit merge", which merges the PR once it is green, or for "review PR <number>" on someone else's PR.
 ---
 
 # Babysit
@@ -13,6 +13,10 @@ It finishes started work and never starts the next feature.
 - **Plan page.** A PR babysit that repairs the PR, unlike the review-only one above, keeps its plan and decision log in this repository's `docs/plans`, including a `main` PR worked in `../plate`. It publishes the plan page before the first review round.
 - When PR feedback states an objective, low-ambiguity rule, treat it as a confirmed rule violation and run the Bug fix playbook's Pokayoke audit of its whole governed area, decide the ambiguous instances once, and report those extra fixes apart from the comment you answered. A taste or architecture comment gets one decision or a pushback draft; one that changes a reusable public API goes to Best API.
 - **Before** "Stop at the human's line": before calling a PR ready, run `pstack:thermo-nuclear-code-quality-review` on its diff, with the split law in `.agents/playbooks/refactoring.md` overriding its size-based split advice, and fix or answer every finding.
+- **Before** "Stop at the human's line": "babysit merge", with or without a PR number, runs `drive` and then merges. It is the owner's word to merge that the second bullet asks for, and it replaces Shipping for that PR. First read the signed-in user with `gh api user --jq .login`. The method is `--merge` into `next`, the only one its rules allow, and `--squash` into `main`, as its merges do.
+  - For `zbeyens`, a missing approval never blocks. Drive until no check is pending or failed and the watcher names no blocker other than `review-required`, then run `gh pr merge <number> --admin --match-head-commit <headRefOid>` with the method. Read back `gh pr view <number> --json state,mergedAt,baseRefName` and confirm the merge commit is on the base. A failed check goes back through `drive` to be fixed and is never merged over.
+  - For any other user, once the watcher's only blocker is `review-required`, run `gh pr merge <number> --auto` with the method and stop. The PR merges when a reviewer approves its latest push.
+  - "merge it" alone still merges at once, as `AGENTS.md` says.
 
 ## Current-tree closure
 
