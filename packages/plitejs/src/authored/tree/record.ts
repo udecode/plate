@@ -2498,10 +2498,11 @@ class RootRecorder {
 
     const { isOwn, markOf, source, standing, commitWriteId } = this.options;
     const { at, author, change, inc } = markOf('insert');
+    const innermost = innermostInsert(marks);
     const tags = recordFormats({
       keys,
       next,
-      ownInsertion: marks.some((mark) => mark.kind === 'insert' && isOwn(mark)),
+      ownInsertion: innermost !== undefined && isOwn(innermost),
       previous,
       source,
       standing,
@@ -3130,29 +3131,31 @@ class RootRecorder {
         // A block an Editing edit placed after a pending join carries an
         // Editing insertion that only says which join it goes with, so
         // nothing inside it is pending.
-        const own = this.marks(context.props).find(
-          (mark) =>
-            mark.kind === 'insert' &&
-            !isEditingChange(mark.change) &&
-            this.options.isOwn(mark)
+        const insertion = innermostInsert(
+          this.marks(context.props).filter(
+            (mark) => !isEditingChange(mark.change)
+          )
         );
 
-        if (own) {
-          const { type } = context.props;
+        if (!insertion) continue;
+        // An element another author inserted inside one's own is theirs, so
+        // what is written in it is a new suggestion, not one's outer insertion.
+        if (!this.options.isOwn(insertion)) return null;
 
-          return {
-            // What is written inside the block claims its insertion, never
-            // its place after a pending join.
-            mark: {
-              at: own.at,
-              author: own.author,
-              change: own.change,
-              ...(own.inc === undefined ? {} : { inc: own.inc }),
-              kind: 'insert' as const,
-            },
-            oneText: typeof type === 'string' && this.options.oneText(type),
-          };
-        }
+        const { type } = context.props;
+
+        return {
+          // What is written inside the block claims its insertion, never
+          // its place after a pending join.
+          mark: {
+            at: insertion.at,
+            author: insertion.author,
+            change: insertion.change,
+            ...(insertion.inc === undefined ? {} : { inc: insertion.inc }),
+            kind: 'insert' as const,
+          },
+          oneText: typeof type === 'string' && this.options.oneText(type),
+        };
       }
 
       return null;
