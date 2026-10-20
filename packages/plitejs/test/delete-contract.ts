@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
 import {
@@ -334,20 +333,6 @@ describe('plite delete contract', () => {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
-  });
-
-  it('profiles whole-block range delete phases for huge-document attribution', () => {
-    const wholeBlockSource = readFileSync(
-      new URL(
-        '../src/transforms-text/delete-text-whole-blocks.ts',
-        import.meta.url
-      ),
-      'utf-8'
-    );
-    assert.match(wholeBlockSource, /delete-whole-range-edge-check/);
-    assert.match(wholeBlockSource, /delete-whole-range-block-scan/);
-    assert.match(wholeBlockSource, /delete-whole-range-children-slice/);
-    assert.match(wholeBlockSource, /delete-whole-range-apply/);
   });
 
   it('keeps replacement payloads isolated by default', () => {

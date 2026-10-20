@@ -373,6 +373,11 @@ export const getPliteNodePathFromDOMElement = (
       parseDOMPath(element.getAttribute('data-editor-path')))
     : null;
 
+const isRendererOnlyStringShape = (stringElement: Element, text: string) =>
+  stringElement.hasAttribute('data-editor-length') ||
+  text.endsWith('\n') ||
+  stringElement.childNodes.length > 1;
+
 const syncChangedTextToElement = ({
   element,
   nextText,
@@ -398,6 +403,7 @@ const syncChangedTextToElement = ({
   if (
     canUseDOMTextSync &&
     strings.length === 1 &&
+    !isRendererOnlyStringShape(strings[0], nextText) &&
     element.textContent?.replace(/\uFEFF/g, '') === nextText
   ) {
     claimCanonicalStringDOM(strings[0]);
@@ -411,6 +417,11 @@ const syncChangedTextToElement = ({
   }
 
   const stringElement = strings[0];
+
+  if (isRendererOnlyStringShape(stringElement, nextText)) {
+    recordDOMTextSyncProfile('skip-renderer-shape');
+    return false;
+  }
 
   if (nextText.length === 0) {
     markDOMSyncMutationTarget(stringElement, 'childList');

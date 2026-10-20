@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Basic blocks must preserve the canonical document validity and identity laws.",
-  "last": false,
-  "opportunity": {
-    "score": 6,
-    "reason": "Foundational visible features constrain serialization and kits but already have compact owner families."
-  },
   "owners": [
     "packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts"
   ],

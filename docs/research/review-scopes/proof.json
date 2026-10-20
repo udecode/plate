@@ -4,11 +4,6 @@
   "question": "Which reusable proof APIs establish package, browser and raw-device behavior without duplicate inventories?",
   "dependsOn": [],
   "prerequisiteReason": "Proof ownership and claim boundaries can be assessed independently of feature verdicts.",
-  "last": false,
-  "opportunity": {
-    "score": 7,
-    "reason": "Existing proof contracts and runner identity own evidence; queue construction must not certify tests."
-  },
   "owners": [
     "packages/test/src/proof/feature-contracts.ts"
   ],

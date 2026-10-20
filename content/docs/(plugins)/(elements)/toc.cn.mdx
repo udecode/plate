@@ -14,6 +14,7 @@ docs:
 ## 功能特性
 
 - 自动从文档标题生成目录
+- 按标题级别 1 到 6 缩进每个条目
 - 平滑滚动至标题位置
 
 TOC 使用 editor 作用域内的 `NodeKey` 跟踪标题。它不需要持久化元素 ID，
@@ -137,6 +138,48 @@ function Layout() {
 
 </Steps>
 
+## 自定义标题列表
+
+复制的 `TocElement`、静态的 `TocElementStatic` 和 Word 导出都渲染插件的
+[`read.headings()`](#editorplugintocpluginreadheadings)。要改变它们列出的标题，扩展插件的
+read，并过滤插件自身的标题查找函数 [`readTocHeadings`](#readtocheadings)。这样一个应用插件就能同时用于实时套件、静态套件和 Word 导出。把它放在只导入
+`platejs/toc` 的模块里，这样服务端渲染的静态套件也能导入它。
+
+```ts title="components/editor/app-toc-plugin.ts"
+import { BaseTocPlugin, readTocHeadings } from 'platejs/toc';
+
+export const AppTocPlugin = BaseTocPlugin.extend({
+  read: ({ editor, state }) => ({
+    headings: () =>
+      readTocHeadings({ editor, state }).filter((heading) => heading.level <= 3),
+  }),
+});
+```
+
+在客户端 `toc` 文件中用它替换 `TocPlugin`：
+
+```tsx title="components/editor/toc.tsx"
+import { toReactPlugin } from 'platejs/react';
+import { AppTocPlugin } from '@/components/editor/app-toc-plugin';
+
+export const TocKit = [
+  toReactPlugin(AppTocPlugin).configure({ component: TocElement }),
+];
+```
+
+在 `toc-static` 中用它替换 `BaseTocPlugin`：
+
+```tsx title="components/editor/toc-static.tsx"
+import { AppTocPlugin } from '@/components/editor/app-toc-plugin';
+
+export const BaseTocKit = [
+  AppTocPlugin.configure({ component: TocElementStatic }),
+];
+```
+
+把 read 收到的 `editor` 和 `state` 传给 `readTocHeadings`，这样静态渲染或文档视图会列出它自己的标题。查找函数遍历
+`state`，但通过 `editor` 的标题插件读取每个级别，所以两者必须来自同一次 read。
+
 ## Plate Plus
 
 <ComponentPreviewPro name="toc-pro" />
@@ -145,20 +188,13 @@ function Layout() {
 
 ### `TocPlugin`
 
-目录生成插件。
-
-<API name="TocPlugin">
-<APIOptions>
-  <APIItem name="queryHeading" type="((state: EditorStateView) => Heading[]) | null" optional>
-    自定义标题查询函数。默认值为 `null`，表示使用内置查询。
-  </APIItem>
-</APIOptions>
-</API>
-
+目录元素插件。它没有选项；它的
+[`read.headings()`](#editorplugintocpluginreadheadings) 列出标题，
+[read 覆盖](#自定义标题列表)可以改变它们。
 
 ### `TocElement`
 
-滚动选项由复制的视图配置；标题查询由 `TocPlugin` 提供。
+滚动选项由复制的视图配置；标题列表由 `TocPlugin` 提供。
 
 <API name="TocElement">
 <APIOptions>
@@ -171,6 +207,59 @@ function Layout() {
     - **默认值:** `80`
   </APIItem>
 </APIOptions>
+</API>
+
+## API 参考
+
+### `editor.plugin(TocPlugin).read.headings`
+
+按文档顺序列出文档中的标题。复制的 TOC 渲染这个列表，静态 TOC 和 Word 导出通过 `BaseTocPlugin` 读取它。
+
+<API name="editor.plugin(TocPlugin).read.headings">
+<APIReturns type="Heading[]">
+  每个有文本的标题对应一个条目。
+</APIReturns>
+</API>
+
+### `readTocHeadings`
+
+插件自身的标题查找函数，导出后 read 覆盖可以过滤它。未安装标题插件时返回
+`[]`，并跳过没有文本的标题。
+
+```ts
+import { readTocHeadings } from 'platejs/toc';
+```
+
+<API name="readTocHeadings">
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    用其标题插件读取每个级别的编辑器，与 `state` 来自同一次 read。
+  </APIItem>
+  <APIItem name="state" type="EditorStateView">
+    要遍历的文档，即插件 read 收到的 `state`。
+  </APIItem>
+</APIParameters>
+<APIReturns type="Heading[]">
+  每个有文本的标题对应一个条目，按文档顺序排列。
+</APIReturns>
+</API>
+
+### `Heading`
+
+一个目录条目。
+
+<API name="Heading">
+<APIAttributes>
+  <APIItem name="key" type="NodeKey">
+    标题在 editor 作用域内的 key，从不随文档保存。
+  </APIItem>
+  <APIItem name="level" type="HeadingLevel">
+    标题级别，`1` 到 `6`。
+  </APIItem>
+  <APIItem name="title" type="string">
+    标题的文本。
+  </APIItem>
+</APIAttributes>
 </API>
 
 ## 转换器

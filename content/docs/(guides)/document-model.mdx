@@ -50,9 +50,161 @@ The minimum is required and must be a positive integer. The descriptor must matc
 
 `defineDocumentMigrations` binds an ascending chain to the application schema. Runtime loading and the CLI call the same `migrateDocument` runner before schema fitting. Increment a named schema's version and migrate stored documents when its root grammar changes. A step's document holds only `children`, `roots`, `meta` and `records`. Any other stored top-level field arrives in the step's `legacy` record, the step lifts it into `meta`, and `migrateDocument` refuses a field no step lifted.
 
-`migrateV54` converts the frozen v53.3.6 profile to v54, including the final AST contracts and one newline-bearing text child per code block. Links and media whose stored URL the current schema rejects keep their label, caption, alt text or file name as ordinary content. Stored mention, emoji, slash and footnote inputs become their trigger and typed query as ordinary text. A line height stored as text becomes a number, so `"107%"` becomes `1.07` and `"150%"` or `"1.5em"` becomes `1.5`. The step drops a stored `"normal"`, a length such as `"12pt"`, zero, a negative number and unreadable text without a report, so those blocks follow the theme. The step does not yet convert v53 suggestions that change formatting or block properties, such as a bold or alignment change, so v54 can't open or resolve them. Accept or reject those suggestions in Plate v53 before you upgrade.
+`migrateV54` converts the frozen v53.3.6 profile to v54, including the final AST contracts and one newline-bearing text child per code block. Links and media whose stored URL the current schema rejects keep their label, caption, alt text or file name as ordinary content. Stored mention, emoji, slash and footnote inputs become their trigger and typed query as ordinary text. A line height stored as text becomes a number, so `"107%"` becomes `1.07` and `"150%"` or `"1.5em"` becomes `1.5`. The step drops a stored `"normal"`, a length such as `"12pt"`, zero, a negative number and unreadable text without a report, so those blocks follow the theme. Pending v53 suggestions become review changes. The step refuses a document when the target schema reshapes a suggested node, or when the document with every pending change rejected would not fit the target, such as a suggestion that removed a property the target does not declare. Accept or reject those suggestions in Plate v53 before you upgrade.
 
 `migrateListIdentity` gives each list item a stored `listId`, one per run of adjacent items, so documents saved without list ids keep their numbers. Register it under the first schema version that includes the list plugin's `listId` and `listLevels`.
+
+### Saved font weights
+
+Bold owns font weight, and Plate has no weight mark. `migrateV54` converts no
+saved `fontWeight`, because v53 drew a saved weight on top of bold. A target
+schema without a `fontWeight` text property refuses each saved weight with
+`Unknown text property "fontWeight" in closed editor schema.`, on a text leaf,
+in a saved selection's marks and in a pending suggestion that sets or removes a
+weight.
+
+An app with saved weights takes one of two ways out:
+
+- Declare its own `fontWeight` text property. Every value loads unchanged, and
+  the app owns that second record of weight beside `bold`.
+- Strip the weights before `migrateDocument`. The pre-pass below keeps whether
+  v53 drew the text bold. `bold`, `bolder` and 600 to 1000 become `bold`, in any
+  letter case, and `normal`, `lighter` and 1 to 599 drop both. It refuses a
+  weight it cannot read, such as `inherit`, a CSS variable or `0x2bc`. In a raw
+  v53 value it refuses a light weight inside `h1` to `h6` or `th`, because v53
+  drew that text lighter than the block's bold. It also refuses a
+  weighted leaf with a pending format change, and any pending change to the
+  weight itself, because either one, once converted, would erase the drawn bold
+  when someone rejects it.
+
+~~~ts
+type Json = Record<string, unknown>;
+
+const readWeight = (weight: unknown) => {
+  const value = String(weight).trim().toLowerCase();
+
+  if (value === 'bold' || value === 'bolder') return 'heavy';
+  if (value === 'normal' || value === 'lighter') return 'light';
+  if (!/^\+?(\d+|\d*\.\d+)(e[+-]?\d+)?$/.test(value)) return null;
+
+  const number = Number(value);
+
+  if (number >= 1 && number <= 1000) return number >= 600 ? 'heavy' : 'light';
+
+  return null;
+};
+
+const boldBlocks = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'th']);
+
+const touchesWeight = (change: Json) =>
+  change.key === 'fontWeight' ||
+  ['properties', 'newProperties'].some((key) =>
+    Object.hasOwn(change[key] ?? {}, 'fontWeight')
+  );
+
+const stripLeaf = (node: Json, mayDrawBold: boolean): Json => {
+  const pending = [
+    ...Object.entries(node)
+      .filter(([key]) => key.startsWith('suggestion_'))
+      .map(([, value]) => value as Json)
+      .filter((value) => value?.type === 'update'),
+    ...((Array.isArray(node.authored) ? node.authored : []) as Json[]).filter(
+      (mark) => mark?.kind === 'format'
+    ),
+  ];
+
+  if (
+    pending.length > 0 &&
+    (Object.hasOwn(node, 'fontWeight') || pending.some(touchesWeight))
+  ) {
+    throw new Error(
+      'Settle format changes on weighted text before the upgrade.'
+    );
+  }
+  if (!Object.hasOwn(node, 'fontWeight')) return node;
+
+  const { bold: _bold, fontWeight, ...rest } = node;
+  const weight = readWeight(fontWeight);
+
+  if (!weight || (weight === 'light' && mayDrawBold)) {
+    throw new Error('Bold cannot keep how v53 drew this font weight.');
+  }
+
+  return weight === 'heavy' ? { ...rest, bold: true } : rest;
+};
+
+const stripTree = (node: Json, mayDrawBold: boolean): Json => {
+  if (typeof node.text === 'string') return stripLeaf(node, mayDrawBold);
+
+  const inside = mayDrawBold || boldBlocks.has(node.type as string);
+  const next = { ...node };
+
+  for (const key of ['children', 'caption']) {
+    if (Array.isArray(node[key])) {
+      next[key] = (node[key] as Json[]).map((child) =>
+        stripTree(child, inside)
+      );
+    }
+  }
+
+  return next;
+};
+
+const stripNode = (node: Json) => stripTree(node, false);
+
+migrateDocument(value.map(stripNode), { migrations, source: 53 });
+~~~
+
+A raw v53 value takes `source: 53`. A persisted envelope maps
+`document.children`, each array in `document.roots` and the saved selection's
+`marks`, keeps `document.meta` and every other field as stored, and omits
+`source`. The envelope form refuses every light weight, the saved selection's
+included, because an app built from v2 source names its own block types and the
+pre-pass cannot tell which of them draw bold:
+
+~~~ts
+const stripEnvelope = (stored: Json): Json => {
+  const document = { ...(stored.document as Json) };
+  const selection = stored.selection as Json | null | undefined;
+
+  const strip = (node: Json) => stripTree(node, true);
+
+  document.children = (document.children as Json[]).map(strip);
+  if (document.roots) {
+    document.roots = Object.fromEntries(
+      Object.entries(document.roots as Record<string, Json[]>).map(
+        ([name, children]) => [name, children.map(strip)]
+      )
+    );
+  }
+
+  return {
+    ...stored,
+    document,
+    ...(selection?.marks
+      ? {
+          selection: {
+            ...selection,
+            marks: stripLeaf(selection.marks as Json, true),
+          },
+        }
+      : {}),
+  };
+};
+
+migrateDocument(stripEnvelope(stored) as PersistedDocumentInput, {
+  migrations,
+});
+~~~
+
+A weighted leaf inside a pending insertion or removal converts, because
+accepting or rejecting it keeps whether v53 drew it bold.
+
+Markdown can hold weights too, as `<span style="font-weight: bold;">` spans.
+No plugin claims a weight span. In an editor with a style plugin, a span that
+holds only a weight refuses the parse, and a weight beside another style drops
+without a report. Rewrite those spans before parsing, or keep an app plugin that
+declares `fontWeight` with its Markdown mapping.
 
 ## Representative feature shapes
 

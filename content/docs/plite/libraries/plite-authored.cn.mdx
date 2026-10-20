@@ -40,6 +40,14 @@ const reviewView = createEditorView(editor, {
 
 调用 `view.api.authored.setView(policy)` 修改一个视图。Source editor 和 sibling view 保留各自的 policy 与 selection。Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改文档，例如带决定的 update、撤销和重做，以及远程协作变更。切换 view 不会决定建议。Composition 期间请求的切换会在 composition 结束后应用。
 
+待处理的合并可能让一个 block 显示在其存储位置之外。`proposed` preview 会把从被合并行拆出的 block，或插入到合并两半之间的 block，显示在被合并行之后。`edit` view 和 `propose` view 会把跨越被移动 block 边缘的 Backspace 或 Delete 记录为它造成的合并，但被移动的行包含某个 content root 的 owner 时，`propose` view 会拒绝它。两种 view 都会拒绝以下编辑：
+
+- 在被移动 block 与相邻内容的交界处按 Enter 或插入新 block。
+- 保存结果会以另一种顺序显示的编辑。
+- Preview 在选区两端之间没有显示任何被选中的字母、却在别处显示了其中一些字母的编辑。
+
+移动段落旁的格式命令会格式化 `proposed` preview 在选区两端之间显示的内容，因此它可能格式化选区之外的已保存文本，或让选区内被移动的段落保持原样。编辑器不会因自带位置的命令（例如在给定位置插入链接的命令）开始时的选区而拒绝它。当该命令同时在选区处编辑时，它可能修改选区之外的文本。它在所指定位置上的编辑仍会像上面那样被拒绝。在被合并行内部的光标处输入仍会应用。被拒绝的编辑不会应用任何内容，并以 code `unrepresentable` 传给 `subscribeRefusals`，上面这些编辑带有 `crosses` 或 `reordered` 等原因。[Authored changes](/cn/docs/authored-changes#配置-view) 列出了每种情况及其原因。
+
 ## 创建和决定 proposal
 
 ```tsx
@@ -96,6 +104,17 @@ const change = editor.read.authored.change(id);
 
 `changes(query)` 按文档顺序读取待处理 change，默认每页 50 条，最多 200 条。可用 `at`、`authorId` 或 `group` 缩小范围，并传入该页的 `cursor` 读取下一页。`AuthoredChange` 提供稳定 identity、作者、`createdAt`、revision、kind 和当前 range。Keyed reader 使用 `change(id)`。
 
+```tsx
+const preview = createEditorView(editor, {
+  authored: { preview: 'proposed' },
+});
+const inBlock = preview.read.authored.changes({ at: blockKey });
+```
+
+`at` 指的是 view 所显示文档中的位置。没有 preview 时就是存储文档，`at` 接受 node key、path、point 或 range。在 preview 上，`at` 接受 preview 所显示的 node（block 或其中某个文本）的 key 或 path。读取结果是该 node 所显示的存储内容上的 change，包括 preview 隐藏在其中的内容，以及 preview 去掉的每个外层元素上的 change，例如 preview 应用了待处理解除包裹的 quote。Preview 隐藏在 block 中两个文本之间的内容只出现在该 block 的读取结果中，不出现在任一文本的读取结果中。在 preview 上传入 point 或 range 会抛出 `plitejs/authored` 导出的 `AuthoredPlaceError`，preview 中不存在的 key 什么也读不到。在 preview 省略的 content root 的 view 上，任何 key 和 path 都读不到内容。被合并的行会读取其两半之间的隐藏 block。除此之外，被 preview 隐藏的顶层 block，其 change 不会被任何 block 读到；`edit` 或 `propose` view 可以读到它们。Preview 为补全文档而添加的顶层 block（例如唯一的 block 被删除时）什么也读不到。它在容器内添加的 block（例如 quote 中唯一的段落被删除时）可能读取它所替代的隐藏段落。一个 block 绝不会读取 view 仍然显示的外层元素的 change。带 `at` 的读取返回的页 `cursor` 只在 root 和 preview 相同的 view 上有效。Change 的 `ranges` 和 `details` 中的位置始终是存储文档中的位置。
+
+除了顶层 block 内部的拆分或合并，revision 都不包含 change 所在的位置，因此在它之前的编辑会移动它的 `ranges`，但不会改变它。合并、拆分、包裹或解除包裹的 revision 不包含其内部的文本和 leaf，随元素自身字段以及其内部元素的顺序和形状而变化。在顶层 block（例如 quote）内部，拆分或合并的 revision 还包含它在该 block 中的索引，因为决定会把它所在的行合并到前一个 block 中。索引只计算 block 的数量，不记录该行之前是哪一个 block。当它之前的 block 改变顺序，或其中一个被替换或改变类型后，之前读取的决定仍然有效，并会把该行合并进现在位于它之前的 block。落入顶层拆分或合并两半之间的 block 也不会改变 revision，之前读取的决定会把该行合并进这个 block。
+
 ## 审阅卡片
 
 审阅卡片把同一作者的相邻待处理 change 归为一组：
@@ -111,7 +130,7 @@ if (card) {
 }
 ```
 
-`groups({ at })` 按文档顺序返回卡片摘要：`id`、`authorId`、`createdAt`、`changeCount` 和 `revision`。卡片 ID 是其中最早的 change。`groupOf(changeId)` 返回包含某个 change 的卡片，`changes({ group: card.id })` 分页读取其 change。卡片的 ID 或 revision 变化后，卡片决定会返回 `stale`。`view.api.authored.subscribeChanges(listener)` 为每个改变审阅的 commit 传入 `{ blocks, changed, groups, removed }`。
+`groups({ at })` 按文档顺序返回卡片摘要：`id`、`authorId`、`createdAt`、`changeCount` 和 `revision`。卡片 ID 是其中最早的 change。`groupOf(changeId)` 返回包含某个 change 的卡片，`changes({ group: card.id })` 分页读取其 change。卡片的 ID 或 revision 变化后，卡片决定会返回 `stale`。`view.api.authored.subscribeChanges(listener)` 为每个改变审阅的 commit 传入 `{ blocks, changed, groups, removed }`。`blocks` 指名读取结果可能不同的 view 顶层 block：change 进入或离开的每个 block，以及其中有 change 的卡片 ID 发生变化的每个 block。仅卡片摘要变化不会指名任何 block，因此按 block 保存的 `changeCount` 或 `revision` 副本可能落后，直到再次读取。
 
 ## 本地历史
 
@@ -136,7 +155,7 @@ if (card) {
 | `read.authored.change(id)` | 读取一个待处理 change。 |
 | `read.authored.changes(query?)` | 按文档顺序分页读取待处理 change。 |
 | `read.authored.details(id)` | 读取一个 change 及其语义 part。 |
-| `read.authored.groups({ at })` | 读取与某个位置相交的卡片摘要。 |
+| `read.authored.groups({ at })` | 读取与 view 所显示文档某个位置相交的卡片摘要。 |
 | `read.authored.groupOf(changeId)` | 读取包含某个 change 的卡片。 |
 | `read.authored.reviewOf(node)` | 读取存储 node 的待处理 mark。 |
 | `update.authored.decide(decision)` | 接受或拒绝 change 或卡片。 |

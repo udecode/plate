@@ -3,11 +3,6 @@
   "title": "Fixed toolbar and editor scroll ownership",
   "question": "Should FixedToolbar measure itself and mutate an editor scroll container, or should copied editor layout eliminate the overlap?",
   "dependsOn": [],
-  "last": false,
-  "opportunity": {
-    "score": 5,
-    "reason": "Bounded copied-layout question with existing shared and external toolbar consumers that contradict the new effect."
-  },
   "owners": [
     "apps/www/src/registry/components/editor/fixed-toolbar.tsx",
     "apps/www/src/registry/components/editor/editor.tsx"

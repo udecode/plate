@@ -42,7 +42,6 @@
             "BaseFontColorPlugin",
             "BaseFontFamilyPlugin",
             "BaseFontSizePlugin",
-            "BaseFontWeightPlugin",
             "BaseHeadingPlugin",
             "BaseHighlightPlugin",
             "BaseHorizontalRulePlugin",
@@ -836,7 +835,6 @@
             "serializePlainText",
             "setEditorReadOnly",
             "target",
-            "toUnitLess",
             "transfer",
             "valueCodecs"
           ],
@@ -930,8 +928,6 @@
             "BaseDatePlugin",
             "DateElement",
             "formatDateValue",
-            "getDateDisplayLabel",
-            "normalizeDateValue",
             "parseCanonicalDateValue"
           ],
           "excludeReason": "No curated reference page owns this symbol yet.",
@@ -1118,14 +1114,12 @@
           "include": {}
         },
         "./toc": {
-          "exclude": [
-            "BaseTocPlugin",
-            "Heading",
-            "TocDefinition",
-            "TocPluginState"
-          ],
+          "exclude": ["BaseTocPlugin", "TocDefinition"],
           "excludeReason": "No curated reference page owns this symbol yet.",
-          "include": {}
+          "include": {
+            "Heading": "/docs/toc#heading",
+            "readTocHeadings": "/docs/toc#readtocheadings"
+          }
         }
       },
       "name": "platejs"

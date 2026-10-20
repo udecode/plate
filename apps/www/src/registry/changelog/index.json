@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-20-date-copied-labels",
+      "href": "/registry/changelog/2026-10-20-date-copied-labels.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Build Date labels in the copied items",
+      "change": {
+        "type": "source",
+        "date": "2026-10-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["date", "date-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-19-export-toolbar-docx-load",
       "href": "/registry/changelog/2026-10-19-export-toolbar-docx-load.json",
       "status": "draft",
@@ -16,6 +34,24 @@
         "status": "unresolved"
       },
       "targets": ["export-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-19-font-size-saved-units",
+      "href": "/registry/changelog/2026-10-19-font-size-saved-units.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show saved point sizes in pixels in the font size control",
+      "change": {
+        "type": "source",
+        "date": "2026-10-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["font-size-toolbar-button"],
       "entries": 1,
       "diagnostics": []
     },
@@ -53,6 +89,42 @@
       },
       "targets": ["slash", "inline-combobox", "emoji", "mention", "footnote"],
       "entries": 3,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-19-toc-six-heading-levels",
+      "href": "/registry/changelog/2026-10-19-toc-six-heading-levels.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Indent all six heading levels in the table of contents",
+      "change": {
+        "type": "source",
+        "date": "2026-10-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["toc", "toc-static"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-18-discussion-preview-block-reads",
+      "href": "/registry/changelog/2026-10-18-discussion-preview-block-reads.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Read discussion cards and threads by block key, under a preview too",
+      "change": {
+        "type": "source",
+        "date": "2026-10-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["discussion", "suggestion"],
+      "entries": 4,
       "diagnostics": []
     },
     {

@@ -5,14 +5,14 @@ import {
   getInternalDocumentRootChange,
 } from '../../core/change/document-change';
 import {
-  type DocumentIndex,
+  DocumentIndex,
   rootNodesOf,
   type SparseNodes,
 } from '../../core/change/document-index';
 import { jsonEqual } from '../../core/change/json';
 import { copyRoot, setLazyRoot } from '../../core/change/lazy-root';
 import { RootChange } from '../../core/change/root-change';
-import type { JsonEditorValue } from '../../core/change/tokens';
+import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
 import type {
   CommandProjection,
   CommandProjectionMap,
@@ -61,6 +61,7 @@ import {
   type TextSelection,
 } from '../../interfaces/selection';
 import { getDefined } from '../../internal/get-defined';
+import { getNodeKeyForNode } from '../../utils/node-keys';
 import type { createDocumentMarksValidator } from '../facts/admission';
 import { factsOf, primeInsertions } from '../facts/facts';
 import { VERDICTS, verdictIncarnationsOf } from '../facts/records';
@@ -69,10 +70,13 @@ import {
   type AuthoredLocationMap,
   locationMapOver,
 } from '../format';
+import { tokenLength } from '../tree/alignment';
 import { isAuthoredSetValued } from '../tree/marks';
-import type { AuthoredResolveSchema } from '../tree/resolve';
-import { ChangeBook } from './book';
-import { RootProjection, type WrittenRoot } from './projection';
+import { type AuthoredResolveSchema, isTextBlock } from '../tree/resolve';
+import { type BookSink, ChangeBook } from './book';
+import type { WrittenList } from './level';
+import { mapSpans, type Pairing, rankAt, type Span, startOf } from './pairs';
+import { RootProjection } from './projection';
 import { contentRootsOf, type Roots, rootOf, sameRoots } from './roots';
 import type { RunContext } from './runs';
 import { countLedgerWork } from './work';
@@ -228,6 +232,236 @@ const droppedRoots = (
   });
 };
 
+/** One root of a mode about to move from `before` to `after`. */
+type Moving = Readonly<{
+  after: DocumentIndex;
+  before: DocumentIndex;
+  /** The projection still at `before`, or null where it shows it unchanged. */
+  shown: RootProjection | null;
+  /** The ranks of `after` whose runs a verdict changed. */
+  touched: readonly number[];
+  /** What the mode showed at `before`. */
+  view: DocumentIndex;
+}>;
+
+/**
+ * How a sync moved one root's view of a mode, from `from` to `to`, and
+ * whether each is the stored root, whose node keys a view of it reads.
+ */
+type ViewMove = Readonly<{
+  change: RootChange;
+  from: DocumentIndex;
+  fromStored: boolean;
+  to: DocumentIndex;
+  toStored: boolean;
+}>;
+
+/**
+ * What a mode tells the ledger as it syncs: what a root showed before it
+ * moved, then how its view moved, or null when it went back to an earlier
+ * view no change describes.
+ */
+type Holder = Readonly<{
+  hold: (mode: AuthoredFormatProjection, root: string, moving: Moving) => void;
+  move: (
+    mode: AuthoredFormatProjection,
+    root: string,
+    move: ViewMove | null
+  ) => void;
+}>;
+
+/**
+ * What a view of one mode showed before a sync moved it, around the content
+ * the sync changed: for each view block touching it, where it opened, where
+ * the first stored block it showed opened in `stored`, and the changes it
+ * read.
+ */
+type HeldRun = Readonly<{
+  blocks: ReadonlyArray<
+    Readonly<{ at: number; ids: ReadonlySet<string>; shows: number | null }>
+  >;
+  stored: DocumentIndex;
+}>;
+
+/**
+ * A publisher's runs since it last published, oldest first, with how its view
+ * moved after each run that moved it.
+ */
+type Held = ReadonlyArray<HeldRun | ViewMove>;
+
+/**
+ * Each block `held`, a preview's earlier runs, kept, oldest first, with the
+ * changes it read then and its rank in `view`, what the preview shows now.
+ * A preview's block goes where a node holding its node key shows, as the
+ * snapshot index gives a node it shows again its own key first, and else
+ * where the preview's own change keeps its open token; a view of the stored
+ * root reads the stored blocks' keys, so their identity does.
+ *
+ * @yields {{ ids: ReadonlySet<string>; rank: number }} The changes a kept
+ * block read and its rank in `view`.
+ */
+function* heldBlocks(
+  view: DocumentIndex,
+  held: Held,
+  identity: Pairing['identity']
+) {
+  const blocks: Array<{
+    at: number | null;
+    ids: ReadonlySet<string>;
+    shows: number | null;
+    stored: DocumentIndex;
+  }> = [];
+
+  const openingIn = (
+    from: DocumentIndex,
+    to: DocumentIndex,
+    at: number | null
+  ) => {
+    if (at === null) return null;
+
+    const [head, tail] = getDefined(
+      mapSpans(from, to, [[at, at + 1]], identity)[0]
+    );
+
+    return head < tail ? head : null;
+  };
+  const keyedIn = (from: DocumentIndex, to: DocumentIndex, at: number) => {
+    const head = openingIn(from, to, at);
+
+    return head !== null &&
+      identity(getDefined(from.nodes.at(rankAt(from, at)))) ===
+        identity(getDefined(to.nodes.at(rankAt(to, head))))
+      ? head
+      : null;
+  };
+
+  for (const step of held) {
+    if ('change' in step && step.toStored) {
+      // A view of the stored root reads its node keys, so each block goes on
+      // as the stored block it is or first showed.
+      for (const block of blocks) {
+        block.at = step.fromStored
+          ? openingIn(step.from, step.to, block.at)
+          : block.at === null
+            ? null
+            : openingIn(block.stored, step.to, block.shows);
+      }
+    } else if ('change' in step) {
+      const { change, from, to } = step;
+      // A moved block keeps its key where the move put it.
+      const moved = change.movedNode(from);
+      const source =
+        moved?.path.length === 1
+          ? startOf(from, getDefined(moved.path[0]))
+          : null;
+
+      for (const block of blocks) {
+        if (block.at === null) continue;
+        block.at =
+          keyedIn(from, to, block.at) ??
+          (block.at === source && moved
+            ? moved.targetPath.length === 1
+              ? startOf(to, getDefined(moved.targetPath[0]))
+              : null
+            : change.mapPos(block.at, 1, 'after'));
+      }
+    } else {
+      for (const block of step.blocks) {
+        blocks.push({ ...block, stored: step.stored });
+      }
+    }
+  }
+  for (const { at, ids } of blocks) {
+    if (at === null) continue;
+    countLedgerWork('previewSites');
+    for (const entry of view.nodeRangesTouching(at, at + 1)) {
+      if (entry.path.length === 1 && entry.from === at) {
+        yield { ids, rank: getDefined(entry.path[0]) };
+      }
+    }
+  }
+}
+
+/**
+ * The ranges of `before` that `after` changed, descending into a node both
+ * keep by `identity`, so a key inside one child of a long quote changes only
+ * that child's range.
+ */
+const changedRanges = (
+  before: DocumentIndex,
+  after: DocumentIndex,
+  identity: (node: JsonNode) => unknown
+) => {
+  const ranges: Array<readonly [number, number]> = [];
+  const inside = (old: JsonNode, next: JsonNode, at: number) => {
+    const left = old.children ?? [];
+    const right = next.children ?? [];
+
+    if (isTextBlock(old) || isTextBlock(next) || left.length === 0) {
+      ranges.push([at, at + tokenLength(old)]);
+      return;
+    }
+
+    let head = 0;
+    let position = at + 1;
+    let leftEnd = left.length;
+    let rightEnd = right.length;
+
+    // The element's own fields sit on its open token.
+    ranges.push([at, at + 1]);
+    while (head < leftEnd && head < rightEnd && left[head] === right[head]) {
+      position += tokenLength(getDefined(left[head]));
+      head += 1;
+    }
+    while (
+      leftEnd > head &&
+      rightEnd > head &&
+      left[leftEnd - 1] === right[rightEnd - 1]
+    ) {
+      leftEnd -= 1;
+      rightEnd -= 1;
+    }
+    countLedgerWork('narrowedChildren', head + left.length - leftEnd);
+
+    if (leftEnd - head === 1 && rightEnd - head === 1) {
+      const from = getDefined(left[head]);
+      const to = getDefined(right[head]);
+
+      if (identity(from) === identity(to)) {
+        inside(from, to, position);
+        return;
+      }
+    }
+
+    let end = position;
+
+    for (let index = head; index < leftEnd; index += 1) {
+      end += tokenLength(getDefined(left[index]));
+    }
+    ranges.push([position, end]);
+  };
+
+  for (const [fromA, toA, fromB, toB] of before.changedChildren(after)) {
+    const old = before.nodes.at(fromA);
+    const next = after.nodes.at(fromB);
+    const at = startOf(before, fromA);
+
+    if (
+      toA - fromA === 1 &&
+      toB - fromB === 1 &&
+      old &&
+      next &&
+      identity(old) === identity(next)
+    ) {
+      inside(old, next, at);
+    } else {
+      ranges.push([at, startOf(before, toA)]);
+    }
+  }
+
+  return ranges;
+};
+
 const matches = (
   synced: Synced | null | undefined,
   value: JsonEditorValue,
@@ -246,10 +480,16 @@ class ModeProjection {
   private verdicts: RecordSetVersion | undefined;
   readonly mode: AuthoredFormatProjection;
   private readonly book: ChangeBook;
+  private readonly holder: Holder | null;
 
-  constructor(mode: AuthoredFormatProjection, book: ChangeBook) {
+  constructor(
+    mode: AuthoredFormatProjection,
+    book: ChangeBook,
+    holder: Holder | null = null
+  ) {
     this.mode = mode;
     this.book = book;
+    this.holder = holder;
   }
 
   /**
@@ -278,7 +518,7 @@ class ModeProjection {
       verdicts === this.verdicts
         ? write
         : null;
-    const writtenRoot = (root: string): WrittenRoot | null => {
+    const writtenRoot = (root: string): WrittenList | null => {
       if (!written) return null;
       const droppedByFrame =
         root !== 'main' && !Object.hasOwn(written.value.roots ?? {}, root);
@@ -315,6 +555,23 @@ class ModeProjection {
 
     for (const root of this.roots.keys()) {
       if (!content.has(root)) this.roots.delete(root);
+    }
+    if (last && this.holder) {
+      for (const [root, index] of content) {
+        const projection = this.roots.get(root);
+        const before = last.stored.get(root);
+        const shown = last.roots.get(root);
+
+        if (projection && before && shown) {
+          this.holder.hold(this.mode, root, {
+            after: index,
+            before,
+            shown: shown.changed ? projection : null,
+            touched: touched.get(root) ?? [],
+            view: shown.index,
+          });
+        }
+      }
     }
     this.syncing = true;
     try {
@@ -358,6 +615,22 @@ class ModeProjection {
     if (back) {
       for (const [root, projection] of this.roots) {
         projection.adopt(getDefined(back.roots.get(root)).index);
+        this.holder?.move(this.mode, root, null);
+      }
+    } else if (this.holder) {
+      for (const [root, change] of changes) {
+        const from = last?.roots.get(root)?.index;
+        const to = getDefined(this.roots.get(root)).previewRoot;
+
+        if (from) {
+          this.holder.move(this.mode, root, {
+            change,
+            from,
+            fromStored: from === last?.stored.get(root),
+            to,
+            toStored: to === content.get(root),
+          });
+        }
       }
     }
 
@@ -516,6 +789,32 @@ const mapOf = (
     },
     hides: (root: string, position: number) =>
       synced.dropped.has(root) || (live(root)?.hides(position) ?? false),
+    moved: (root: string) => live(root)?.moved() ?? [],
+    // A node shows whole as one node when its open token keeps its place and
+    // a projected node starts there.
+    nodePath: (root: string, path: readonly number[]) => {
+      const shown = live(root);
+
+      if (!shown) return [...path];
+
+      const { from } = rootOf(synced.value, root).nodeRange(path);
+      const at = shown.toProjected(from, 1);
+
+      if (shown.toProjected(from + 1, -1) !== at + 1) return null;
+
+      const entry = getDefined(synced.roots.get(root)).index.nodeStartingAt(at);
+
+      return entry?.from === at ? [...entry.path] : null;
+    },
+    projectRange: (root: string, low: number, high: number) =>
+      synced.dropped.has(root)
+        ? null
+        : (live(root)?.projectRange(low, high) ?? {
+            from: low,
+            kind: 'placed',
+            to: high,
+          }),
+    reorders: (root: string) => live(root)?.reorders ?? false,
     roots: Object.freeze(changed),
     toProjected: (root: string, position: number, association) =>
       synced.dropped.has(root)
@@ -587,6 +886,42 @@ const snapshotOf = (
   return Object.freeze(snapshot) as unknown as EditorSnapshot;
 };
 
+// A view block holds a site its stored spans overlap, and a collapsed site,
+// where a block left, inside one of its spans or where two of them meet.
+const holdsSite = (
+  spans: ReadonlyArray<readonly [number, number]>,
+  from: number,
+  to: number
+) =>
+  from < to
+    ? spans.some(([head, tail]) => head < to && from < tail)
+    : spans.some(([head, tail]) => head < from && from < tail) ||
+      (spans.some(([, tail]) => tail === from) &&
+        spans.some(([head]) => head === from));
+
+/**
+ * What a view of a mode reads at its own places of a root: the root it
+ * shows, the stored ranges each of its ranges shows and whether it takes
+ * away a stored token.
+ *
+ * @internal
+ */
+export type ViewPlaces = Readonly<{
+  dissolves: (position: number) => boolean;
+  index: DocumentIndex;
+  readers: (from: number, to: number) => readonly [number, number];
+  spans: (from: number, to: number) => ReadonlyArray<readonly [number, number]>;
+}>;
+
+// A preview that drops a root shows no block of it, so its places read
+// nothing rather than the stored root.
+const DROPPED_PLACES: ViewPlaces = Object.freeze({
+  dissolves: () => false,
+  index: DocumentIndex.fromValue([]),
+  readers: (from: number, to: number) => [from, to] as const,
+  spans: () => [],
+});
+
 /**
  * Everything review derives from one owner editor's stored document: the
  * projections commands and previews read, kept in step with the stored value
@@ -595,7 +930,13 @@ const snapshotOf = (
  * @internal
  */
 export class ReviewLedger {
-  private readonly book = new ChangeBook();
+  private readonly book = new ChangeBook((node) => this.identity(node));
+  private readonly identity = (node: JsonNode): unknown =>
+    getNodeKeyForNode(node, this.owner) ?? node;
+  // By publisher and root, what its preview showed around each change since
+  // it last published, so that run still names the view blocks that showed a
+  // change.
+  private readonly held = new WeakMap<BookSink, Map<string, Held>>();
   private checked: Roots = new Map();
   private readonly commits = new WeakMap<
     EditorCommit,
@@ -629,7 +970,7 @@ export class ReviewLedger {
     let projection = this.modes.get(mode);
 
     if (!projection) {
-      projection = new ModeProjection(mode, this.book);
+      projection = new ModeProjection(mode, this.book, this.holder);
       this.modes.set(mode, projection);
     }
 
@@ -657,19 +998,191 @@ export class ReviewLedger {
     return this.book.sync(stored);
   }
 
-  subscribe(stored: JsonEditorValue) {
+  subscribe(stored: JsonEditorValue, mode: AuthoredFormatProjection | null) {
     this.book.sync(stored);
-    this.book.subscribe();
+    // The publisher's runs start from what its preview shows now.
+    if (mode) this.modeOf(mode).sync(stored, this.schemaOf());
+
+    const sink = this.book.subscribe(mode);
+
+    this.held.set(sink, new Map());
+
+    return sink;
   }
 
-  unsubscribe() {
-    this.book.unsubscribe();
+  unsubscribe(sink: BookSink) {
+    this.book.unsubscribe(sink);
   }
 
-  publish(stored: JsonEditorValue) {
-    this.book.sync(stored);
+  /**
+   * Keep, for each publisher under a mode, what its view showed around each
+   * sync's changes and how the sync moved it.
+   */
+  private readonly holder: Holder = {
+    hold: (mode, root, moving) => {
+      const sinks = [...this.book.sinksUnder(mode)];
 
-    return this.book.publish();
+      if (sinks.length === 0) return;
+
+      const { after, before, shown, touched, view } = moving;
+      const blocksAt = (index: DocumentIndex) =>
+        touched.map(
+          (rank) => [startOf(index, rank), startOf(index, rank + 1)] as const
+        );
+      const ranges =
+        before === after
+          ? blocksAt(before)
+          : [
+              ...changedRanges(before, after, this.identity),
+              ...mapSpans(after, before, blocksAt(after), this.identity),
+            ];
+
+      if (ranges.length === 0) return;
+
+      const blocks = new Map<number, HeldRun['blocks'][number]>();
+
+      for (const [from, to] of ranges) {
+        const [low, high] = shown ? shown.readers(from, to) : [from, to];
+
+        for (const entry of view.nodeRangesTouching(
+          Math.min(low, high),
+          Math.max(low, high)
+        )) {
+          const rank = getDefined(entry.path[0]);
+
+          if (entry.path.length !== 1 || blocks.has(rank)) continue;
+          const spans = shown
+            ? shown.spans(entry.from, entry.to)
+            : [[entry.from, entry.to] as const];
+          const first = spans[0];
+
+          blocks.set(rank, {
+            at: entry.from,
+            ids: this.book.idsShownIn(
+              before,
+              spans,
+              (position) => shown?.dissolves(position) ?? false
+            ),
+            shows: first ? startOf(before, rankAt(before, first[0])) : null,
+          });
+        }
+      }
+
+      const run: HeldRun = { blocks: [...blocks.values()], stored: before };
+
+      for (const sink of sinks) {
+        const held = getDefined(this.held.get(sink));
+
+        held.set(root, [...(held.get(root) ?? []), run]);
+      }
+    },
+    move: (mode, root, move) => {
+      for (const sink of this.book.sinksUnder(mode)) {
+        const held = getDefined(this.held.get(sink));
+        const runs = held.get(root);
+
+        if (!runs) continue;
+        if (move) held.set(root, [...runs, move]);
+        else held.delete(root);
+      }
+    },
+  };
+
+  /**
+   * What the syncs since `sink` last published changed: the shared delta,
+   * and the ranks of the top-level blocks of a view of `mode`, or of the
+   * stored document with none, whose read holds a stored site `sink`
+   * gathered. Under the preview it last published, each block that showed
+   * other changes in that run than it shows now is named too, since a block
+   * a commit rewrites keeping its pairs can move them to another.
+   */
+  publish(
+    stored: JsonEditorValue,
+    sink: BookSink,
+    mode: AuthoredFormatProjection | null,
+    root: string
+  ) {
+    const book = this.book.sync(stored);
+    const last = sink.mode;
+    const places = mode ? this.viewPlaces(stored, mode, root) : null;
+    const { delta, sites } = this.book.publish(sink, mode);
+    const held = getDefined(this.held.get(sink));
+    const runs = last === mode ? (held.get(root) ?? []) : [];
+    const ranks = this.ranksShowing(stored, sites.get(root) ?? [], mode, root);
+
+    held.clear();
+    if (places && runs.length > 0) {
+      // The pending changes a block reads, counting those decided since.
+      const removed = new Set(delta.removed);
+      const idsOf = (ids: Iterable<string>) =>
+        [...ids]
+          .filter((id) => book.has(id) || removed.has(id))
+          .sort()
+          .join(',');
+      const compared = new Set<number>();
+
+      for (const { ids, rank } of heldBlocks(
+        places.index,
+        runs,
+        this.identity
+      )) {
+        if (compared.has(rank)) continue;
+        compared.add(rank);
+
+        const shows = book.idsShown(
+          root,
+          places.spans(
+            startOf(places.index, rank),
+            startOf(places.index, rank + 1)
+          ),
+          places.dissolves
+        );
+
+        if (idsOf(ids) !== idsOf(shows)) ranks.add(rank);
+      }
+    }
+
+    return {
+      delta,
+      ranks: [...ranks].sort((left, right) => left - right),
+    };
+  }
+
+  private ranksShowing(
+    stored: JsonEditorValue,
+    sites: readonly Span[],
+    mode: AuthoredFormatProjection | null,
+    root: string
+  ) {
+    const ranks = new Set<number>();
+
+    if (sites.length === 0) return ranks;
+
+    const places = mode ? this.viewPlaces(stored, mode, root) : null;
+    const index = places?.index ?? rootOf(stored, root);
+
+    for (const [from, to, only] of sites) {
+      if (only && only !== mode) continue;
+
+      const [low, high] = places ? places.readers(from, to) : [from, to];
+
+      if (places) countLedgerWork('previewSites');
+      for (const entry of index.nodeRangesTouching(
+        Math.min(low, high),
+        Math.max(low, high)
+      )) {
+        const rank = getDefined(entry.path[0]);
+
+        if (entry.path.length !== 1 || ranks.has(rank)) continue;
+
+        const spans = places
+          ? places.spans(entry.from, entry.to)
+          : [[entry.from, entry.to] as const];
+        if (holdsSite(spans, from, to)) ranks.add(rank);
+      }
+    }
+
+    return ranks;
   }
 
   ranksNaming(stored: JsonEditorValue, incarnations: readonly string[]) {
@@ -744,6 +1257,51 @@ export class ReviewLedger {
     const projection = this.modeOf(mode);
 
     return mapOf(projection, projection.sync(stored, this.schemaOf()));
+  }
+
+  /**
+   * The stored and projected spans of each run `mode` shows in another
+   * order than the stored one. Only the recording laws read it, to tell
+   * its places apart.
+   *
+   * @internal
+   */
+  orderedSpans(
+    stored: JsonEditorValue,
+    mode: AuthoredFormatProjection,
+    root: string
+  ) {
+    const projection = this.modeOf(mode);
+    const synced = projection.sync(stored, this.schemaOf());
+
+    return synced.roots.get(root)?.changed
+      ? (projection.moveTo(synced).get(root)?.orderedSpans() ?? [])
+      : [];
+  }
+
+  viewPlaces(
+    stored: JsonEditorValue,
+    mode: AuthoredFormatProjection,
+    root: string
+  ): ViewPlaces {
+    const projection = this.modeOf(mode);
+    const synced = projection.sync(stored, this.schemaOf());
+
+    if (synced.dropped.has(root)) return DROPPED_PLACES;
+
+    const state = synced.roots.get(root);
+    const shown = state?.changed
+      ? projection.moveTo(synced).get(root)
+      : undefined;
+
+    return {
+      dissolves: (position: number) => shown?.dissolves(position) ?? false,
+      index: state?.index ?? rootOf(stored, root),
+      readers: (from: number, to: number) =>
+        shown?.readers(from, to) ?? [from, to],
+      spans: (from: number, to: number) =>
+        shown ? shown.spans(from, to) : [[from, to] as const],
+    };
   }
 
   locationMap(

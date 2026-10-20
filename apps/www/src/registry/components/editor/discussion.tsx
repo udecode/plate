@@ -25,6 +25,7 @@ import {
   useEditor,
   useEditorRootElement,
   useEditorSelector,
+  useEditorViewState,
   usePath,
   usePluginStore,
 } from 'platejs/react';
@@ -67,13 +68,14 @@ type DiscussionItem =
       group: AuthoredChangeGroup;
       id: string;
       kind: 'suggestion';
-      range: Range | null;
       threadIds: readonly string[];
     }>;
 
 type CommentItem = Extract<DiscussionItem, { kind: 'comment' }>;
 
 type SuggestionItem = Extract<DiscussionItem, { kind: 'suggestion' }>;
+
+type CommentAnchor = Readonly<{ changeId: string | null; range: Range }>;
 
 type DiscussionBlockSnapshot = Readonly<{
   active: boolean;
@@ -86,6 +88,7 @@ type DiscussionTarget = Readonly<{
 }>;
 
 type DiscussionSnapshot = Readonly<{
+  lastTrigger: NodeKey | null;
   revision: number;
   target: DiscussionTarget | null;
 }>;
@@ -95,6 +98,7 @@ const EMPTY_BLOCK_SNAPSHOT: DiscussionBlockSnapshot = Object.freeze({
   comments: 0,
 });
 const EMPTY_DISCUSSION_SNAPSHOT: DiscussionSnapshot = Object.freeze({
+  lastTrigger: null,
   revision: 0,
   target: null,
 });
@@ -118,6 +122,13 @@ const sameGroups = (
       group.id === right[index]?.id && group.revision === right[index].revision
   );
 
+const sameCommentAnchor = (
+  left: CommentAnchor | null,
+  right: CommentAnchor | null
+) =>
+  left?.changeId === right?.changeId &&
+  RangeApi.equals(left?.range ?? null, right?.range ?? null);
+
 const suggestionItemOf = (
   editor: RuntimeEditor,
   threads: ReadonlyMap<string, readonly string[]>,
@@ -130,8 +141,6 @@ const suggestionItemOf = (
     group,
     id: group.id,
     kind: 'suggestion',
-    range:
-      read.changes({ group: group.id, limit: 1 }).items[0]?.ranges[0] ?? null,
     threadIds: [...threads].flatMap(([changeId, ids]) =>
       read.groupOf(changeId)?.id === group.id ? ids : []
     ),
@@ -141,13 +150,13 @@ const suggestionItemOf = (
 const blockThreadCount = (
   editor: RuntimeEditor,
   threads: ReadonlyMap<string, readonly string[]>,
-  blockIndex: number
+  blockKey: NodeKey
 ) => {
   const { read } = editor.plugin(AuthoredPlugin);
   let count = 0;
 
   for (let cursor: string | undefined; threads.size > 0;) {
-    const page = read.changes({ at: [blockIndex], cursor, limit: 200 });
+    const page = read.changes({ at: blockKey, cursor, limit: 200 });
 
     for (const change of page.items) {
       count += threads.get(change.id)?.length ?? 0;
@@ -246,6 +255,14 @@ const createDiscussionStore = () => {
     clearTarget() {
       publishTarget(null);
     },
+    forgetTrigger() {
+      if (!snapshot.lastTrigger) return;
+
+      snapshot = { ...snapshot, lastTrigger: null };
+      listeners.forEach((listener) => {
+        listener();
+      });
+    },
     getBlockSnapshot(key: NodeKey) {
       return blockSnapshots.get(key) ?? EMPTY_BLOCK_SNAPSHOT;
     },
@@ -265,6 +282,7 @@ const createDiscussionStore = () => {
 
       prepareSelection();
 
+      snapshot = { ...snapshot, lastTrigger: blockKey };
       publishTarget(
         snapshot.target?.blockKey === blockKey ? null : { anchor, blockKey }
       );
@@ -841,7 +859,7 @@ function DiscussionBlock({
   if (!blockKey) return children;
 
   return suggestions ? (
-    <SuggestionDiscussionBlock blockIndex={path[0] ?? 0} blockKey={blockKey}>
+    <SuggestionDiscussionBlock blockKey={blockKey}>
       {children}
     </SuggestionDiscussionBlock>
   ) : (
@@ -852,10 +870,9 @@ function DiscussionBlock({
 }
 
 function SuggestionDiscussionBlock({
-  blockIndex,
   blockKey,
   children,
-}: React.PropsWithChildren<{ blockIndex: number; blockKey: NodeKey }>) {
+}: React.PropsWithChildren<{ blockKey: NodeKey }>) {
   const editor = useEditor();
   const store = useDiscussionStore();
   const cards = useSuggestionGroups(blockKey);
@@ -870,7 +887,7 @@ function SuggestionDiscussionBlock({
       blockKey={blockKey}
       cards={cards.length}
       threads={
-        cards.length > 0 ? blockThreadCount(editor, threads, blockIndex) : 0
+        cards.length > 0 ? blockThreadCount(editor, threads, blockKey) : 0
       }
     >
       {children}
@@ -987,31 +1004,59 @@ function DiscussionPopover({
     store.getThreads,
     store.getThreads
   );
+  // An edit before a change can move its range and keep its revision, so the
+  // anchor reads each range through its own selector.
+  const commentAnchor = useEditorSelector(
+    (current) => {
+      const authored = current.plugin(AuthoredPlugin);
+
+      for (const id of activeCommentIds) {
+        const attachment = comments.attachment(id);
+        if (attachment?.type === 'range' && attachment.status === 'attached') {
+          return { changeId: null, range: attachment.range };
+        }
+        if (attachment?.type === 'change' && authored.installed) {
+          const range = authored.read.change(attachment.id)?.ranges[0];
+
+          if (range) return { changeId: attachment.id, range };
+        }
+      }
+      return null;
+    },
+    { equalityFn: sameCommentAnchor }
+  );
+  const changeId = commentAnchor?.changeId ?? null;
   // Open cards read their summaries after each commit, so the revision a
-  // decision sends stays current when another block changes the card.
+  // decision sends stays current when another block changes the card. A
+  // thread opened alone, such as from a list, opens its change's card.
   const activeGroups = useEditorSelector(
     (current) => {
+      const id = activeSuggestionId ?? changeId;
       const group =
-        suggestions && activeSuggestionId
-          ? current.plugin(AuthoredPlugin).read.groupOf(activeSuggestionId)
+        suggestions && id
+          ? current.plugin(AuthoredPlugin).read.groupOf(id)
           : null;
 
       return group ? [group] : NO_GROUPS;
     },
     { equalityFn: sameGroups }
   );
+  const activeGroupId = activeGroups[0]?.id;
+  const activeSuggestionRange = useEditorSelector(
+    (current) =>
+      activeGroupId
+        ? (current.plugin(AuthoredPlugin).read.changes({
+            group: activeGroupId,
+            limit: 1,
+          }).items[0]?.ranges[0] ?? null)
+        : null,
+    { equalityFn: RangeApi.equals }
+  );
   const targetGroups = useEditorSelector(
-    (current) => {
-      // Under a preview, the stored block at the same index holds the cards.
-      const index =
-        suggestions && targetKey
-          ? current.read.nodes.path(targetKey)?.[0]
-          : undefined;
-
-      return index === undefined
-        ? NO_GROUPS
-        : current.plugin(AuthoredPlugin).read.groups({ at: [index] });
-    },
+    (current) =>
+      suggestions && targetKey
+        ? current.plugin(AuthoredPlugin).read.groups({ at: targetKey })
+        : NO_GROUPS,
     { equalityFn: sameGroups }
   );
   const activeItems: DiscussionItem[] = [
@@ -1045,26 +1090,15 @@ function DiscussionPopover({
       : DISCUSSION_PAGE_SIZE;
   const shownItems =
     activeItems.length > 0 ? activeItems : targetItems.slice(0, visibleCount);
-  const activeSuggestionRange = activeItems.find(
-    (item): item is SuggestionItem => item.kind === 'suggestion'
-  )?.range;
-  const { api } = editor.plugin(CommentsPlugin);
-  const commentRange = (() => {
+  const view = useEditorViewState(editor, () => {
     const authored = editor.plugin(AuthoredPlugin);
+    const current = authored.installed ? authored.read.view() : null;
 
-    for (const id of activeCommentIds) {
-      const attachment = api.attachment(id);
-      if (attachment?.type === 'range' && attachment.status === 'attached') {
-        return attachment.range;
-      }
-      if (attachment?.type === 'change' && authored.installed) {
-        const range = authored.read.change(attachment.id)?.ranges[0];
+    if (!current) return null;
 
-        if (range) return range;
-      }
-    }
-    return null;
-  })();
+    return 'intent' in current ? current.intent : `preview:${current.preview}`;
+  });
+  const preview = view?.startsWith('preview:') ?? false;
   const pendingRange = useEditorSelector(
     () => (pending ? comments.pendingRange() : null),
     {
@@ -1072,12 +1106,43 @@ function DiscussionPopover({
       shouldUpdate: (change) => !change || change.changed.hasAny('document'),
     }
   );
-  const anchorRange =
-    pendingRange ?? commentRange ?? activeSuggestionRange ?? null;
+  // A suggestion's ranges are places of the stored document, so a preview
+  // anchors on the block whose trigger was pressed last, and only while that
+  // block shows the open card.
+  const previewHidesRange =
+    preview &&
+    !pendingRange &&
+    (commentAnchor
+      ? commentAnchor.changeId !== null
+      : Boolean(activeSuggestionRange));
+  const shownTrigger = useEditorSelector((current) => {
+    const key = snapshot.lastTrigger;
+
+    if (!previewHidesRange || !key) return null;
+
+    const { read } = current.plugin(AuthoredPlugin);
+    const openId = changeId ? read.groupOf(changeId)?.id : activeGroupId;
+
+    return read.groups({ at: key }).some(({ id }) => id === openId)
+      ? key
+      : null;
+  });
+
+  // Editing and Proposed can give a block one key, and a pressed block
+  // belongs to the view it was pressed in.
+  React.useLayoutEffect(() => {
+    store.forgetTrigger();
+  }, [store, view]);
+
+  const anchorRange = previewHidesRange
+    ? null
+    : (pendingRange ?? commentAnchor?.range ?? activeSuggestionRange ?? null);
   const anchorRangeJson = anchorRange ? JSON.stringify(anchorRange) : null;
-  const anchorBlockKey = anchorRange
-    ? editor.key([RangeApi.start(anchorRange).path[0] ?? 0])
-    : null;
+  const anchorBlockKey = previewHidesRange
+    ? shownTrigger
+    : anchorRange
+      ? editor.key([RangeApi.start(anchorRange).path[0] ?? 0])
+      : null;
   const virtualAnchor = React.useMemo(() => {
     const currentAnchorRange = anchorRangeJson
       ? (JSON.parse(anchorRangeJson) as Range)
@@ -1086,12 +1151,20 @@ function DiscussionPopover({
     return {
       contextElement: rootElement ?? undefined,
       getBoundingClientRect: () => {
+        if (!currentAnchorRange) {
+          return (
+            (anchorBlockKey &&
+              editor.api.dom
+                .resolveDOMNode(anchorBlockKey)
+                ?.getBoundingClientRect()) ||
+            new DOMRect()
+          );
+        }
+
         const blockRect = anchorBlockKey
           ? store.getBlockTrigger(anchorBlockKey)?.getBoundingClientRect()
           : null;
-        const domRange = currentAnchorRange
-          ? editor.api.dom.resolveDOMRange(currentAnchorRange)
-          : null;
+        const domRange = editor.api.dom.resolveDOMRange(currentAnchorRange);
 
         if (!domRange) return blockRect ?? new DOMRect();
 
@@ -1109,7 +1182,8 @@ function DiscussionPopover({
       },
     };
   }, [anchorBlockKey, anchorRangeJson, editor, rootElement, store]);
-  const anchorElement = target?.anchor ?? (anchorRange ? virtualAnchor : null);
+  const anchorElement =
+    target?.anchor ?? (anchorRange || anchorBlockKey ? virtualAnchor : null);
   const open = Boolean(
     anchorElement &&
     (pending || activeItems.length > 0 || targetItems.length > 0)

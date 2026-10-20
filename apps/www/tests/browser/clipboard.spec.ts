@@ -101,6 +101,24 @@ for (const mode of ['native', 'event'] as const) {
   });
 }
 
+test('HTML clipboard turns a light span inside bold plain', async ({
+  page,
+}) => {
+  await page.goto('/blocks/html-demo');
+  const root = page.locator('[contenteditable="true"]');
+  const editor = createBrowserEditorHarness(page, 'html-clipboard', root);
+  await editor.ready({ editor: 'visible', text: 'HTML' });
+  await root.getByRole('heading', { name: 'HTML', exact: true }).click();
+  await root.press('ControlOrMeta+A');
+
+  await editor.clipboard.pasteHtml(
+    '<p><b>Left<span style="font-weight: 400">Middle</span>Right</b></p>',
+    'LeftMiddleRight'
+  );
+
+  await expect(root.locator('strong')).toHaveText(['Left', 'Right']);
+});
+
 for (const mode of ['native', 'event'] as const) {
   test(`HTML clipboard keeps safe text around unsafe markup via ${mode}`, async ({
     browserName,

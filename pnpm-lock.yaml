@@ -732,18 +732,12 @@ importers:
       '@antfu/ni':
         specifier: 24.3.0
         version: 24.3.0
-      chokidar:
-        specifier: 4.0.3
-        version: 4.0.3
       commander:
         specifier: 14.0.1
         version: 14.0.1
       esbuild:
         specifier: 0.25.12
         version: 0.25.12
-      get-tsconfig:
-        specifier: 5.0.0-beta.5
-        version: 5.0.0-beta.5
       kleur:
         specifier: 4.1.5
         version: 4.1.5

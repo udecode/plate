@@ -3,11 +3,6 @@
   "title": "Neutral editor exports and DOM vocabulary",
   "question": "Should editor exports and DOM contracts use neutral names across the Plate facade and its runtime, and which public nouns should disappear instead of being renamed?",
   "dependsOn": [],
-  "last": false,
-  "opportunity": {
-    "score": 8,
-    "reason": "Public names appear in ordinary imports, inferred types, copied UI and functional DOM contracts; current brand prefixes contradict the user teaching boundary."
-  },
   "owners": [
     "packages/platejs/src/core.tsx",
     "packages/platejs/src/react/core.tsx",

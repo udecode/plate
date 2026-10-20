@@ -16,6 +16,87 @@ const findHtmlParentElement = (
   return findHtmlParentElement(element.parentElement, nodeName);
 };
 
+const HEAVY_WEIGHT = 600;
+
+const BOLD_WEIGHT = 700;
+
+const BOLD_TAGS = new Set(['B', 'STRONG']);
+
+const BOLD_BLOCK_TAGS = new Set(['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'TH']);
+
+const bolderWeight = (parent: number) =>
+  parent < 350 ? 400 : parent < 550 ? 700 : Math.max(parent, 900);
+
+const lighterWeight = (parent: number) =>
+  parent < 100 ? parent : parent < 550 ? 100 : parent < 750 ? 400 : 700;
+
+const CSS_NUMBER = /^\+?(\d+|\d*\.\d+)(e[+-]?\d+)?$/;
+
+// linkedom keeps `!important` in the value.
+const statedWeight = (element: Element) =>
+  (element as HTMLElement).style?.fontWeight
+    ?.replace(/\s*!\s*important\s*$/i, '')
+    .trim()
+    .toLowerCase() ?? '';
+
+const absoluteWeight = (value: string) => {
+  if (value === 'normal' || value === 'initial') return 400;
+  if (value === 'bold') return BOLD_WEIGHT;
+  if (!CSS_NUMBER.test(value)) return undefined;
+
+  const weight = Number(value);
+
+  return weight >= 1 && weight <= 1000 ? weight : undefined;
+};
+
+const statedOrRelativeWeight = (value: string, parent: () => number) => {
+  if (value === 'inherit' || value === 'unset') return parent();
+  if (value === 'bolder') return bolderWeight(parent());
+  if (value === 'lighter') return lighterWeight(parent());
+
+  return absoluteWeight(value);
+};
+
+const drawnWeights = new WeakMap<Element, number>();
+
+const drawnWeight = (element: Element | null): number => {
+  if (!element) return 400;
+
+  let weight = drawnWeights.get(element);
+
+  if (weight === undefined) {
+    weight = resolveDrawnWeight(element);
+    drawnWeights.set(element, weight);
+  }
+
+  return weight;
+};
+
+const resolveDrawnWeight = (element: Element): number => {
+  const parent = () => drawnWeight(element.parentElement);
+  const weight = statedOrRelativeWeight(statedWeight(element), parent);
+
+  if (weight !== undefined) return weight;
+  if (BOLD_TAGS.has(element.nodeName)) {
+    return Math.max(BOLD_WEIGHT, bolderWeight(parent()));
+  }
+  if (BOLD_BLOCK_TAGS.has(element.nodeName)) return BOLD_WEIGHT;
+
+  return parent();
+};
+
+const decodeBold = (element: HTMLElement) => {
+  const parent = () => drawnWeight(element.parentElement);
+  const weight = statedOrRelativeWeight(statedWeight(element), parent);
+
+  if (weight === undefined) return BOLD_TAGS.has(element.nodeName) || undefined;
+  if (weight >= HEAVY_WEIGHT) return true;
+
+  const insideDrawnBold = parent() >= HEAVY_WEIGHT;
+
+  return insideDrawnBold ? false : undefined;
+};
+
 const scriptValues = ['sub', 'sup'] as const;
 
 export type ScriptValue = (typeof scriptValues)[number];
@@ -153,15 +234,9 @@ export const BaseBoldPlugin = definePlugin(PLUGINS.bold, {
   formats: ({ defineFormats }) =>
     defineFormats({
       html: {
-        decode: ({ element }) =>
-          someHtmlElement(element, (node) => node.style.fontWeight === 'normal')
-            ? undefined
-            : true,
+        decode: ({ element }) => decodeBold(element),
         encode: ({ value }) => (value ? { tag: 'strong' } : null),
-        match: [
-          { tag: ['strong', 'b'] },
-          { style: { fontWeight: ['600', '700', 'bold'] } },
-        ],
+        match: [{ tag: ['strong', 'b'] }, { style: { fontWeight: '*' } }],
       },
 
       markdown: { node: 'strong' },

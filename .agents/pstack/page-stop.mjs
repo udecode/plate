@@ -100,7 +100,7 @@ function publish(command, planPath, { session, base: baseFile, fresh }) {
     `Artifact ${JSON.stringify(call)}`,
     url ? null : `This publish makes the page: write its URL as \`Page: <url>\` under the title of ${target}`,
     `If the tool refuses the publish because the page changed, run this command again with --base <the source path the refusal saved> and send what it prints`,
-    command === 'stop' ? `Once the publish goes through, reply with ${url ?? '<url>'}#run-${header.slug}` : null,
+    command === 'stop' ? `Once the publish goes through, reply with 📄 ${url ?? '<url>'}#run-${header.slug}` : null,
   ].filter(Boolean);
 }
 

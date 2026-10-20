@@ -1,5 +1,6 @@
 import { ElementApi } from 'plitejs';
 
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { above as editorAbove } from '../../../../src/internal';
 import { isBlock as editorIsBlock } from '../../../../src/testing';

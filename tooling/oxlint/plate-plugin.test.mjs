@@ -561,8 +561,7 @@ describe('plate oxlint rules', () => {
   tester.run('no-strict-dom-lookup', plugin.rules['no-strict-dom-lookup'], {
     invalid: [
       {
-        // 979c00b350, TablePlugin.tsx; 888f9ccaed, browser-handle.ts
-        ...plate('const root = editor.api.dom.findDocumentOrShadowRoot();'),
+        ...plate('const root = editor.api.dom.assertDocumentOrShadowRoot();'),
         errors: [{ messageId: 'strict' }],
       },
       {

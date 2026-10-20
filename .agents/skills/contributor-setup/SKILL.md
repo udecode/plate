@@ -1,0 +1,18 @@
+---
+description: Bring a branch that predates next's agent rules up to date once, then fix the bodies of your open PRs into next. Use when the PR body check fails or when an agent opened a PR into next by hand.
+name: contributor-setup
+metadata:
+  skiller:
+    source: .agents/rules/contributor-setup.mdc
+---
+
+# Contributor setup
+
+A PR into `next` gets its body from `node .agents/pstack/land.mjs`. An agent that writes the body itself runs on a branch older than `next`'s agent rules. This skill brings the branch up to date once and fixes the bodies that already failed. After that, each session's start checks the agent's plugins against the checkout's pins and prints any fix.
+
+1. Count the agent-rule commits your branch lacks. Use the remote for `udecode/plate`, `upstream` in a fork and `origin` otherwise: `git fetch <remote> next && git rev-list --count HEAD..<remote>/next -- AGENTS.md .agents .claude .codex`. When it prints more than 0, merge `<remote>/next` or rebase onto it, ask the human to start a new agent session with this skill, and stop here.
+2. Apply each `fix:` the session-start check printed, in order. When this session shows none because its runtime ran no hook, run `node .agents/rules/contributor-setup/scripts/doctor.mjs` and apply what it prints until it prints `ok:`.
+3. List your open PRs into `next` whose body check failed: `gh pr list --repo udecode/plate --author @me --base next --state open --json url,statusCheckRollup --jq '.[] | select(any(.statusCheckRollup[]; .name == "PR body" and .conclusion == "FAILURE")) | .url'`.
+4. Rewrite each one's body the way `land.mjs` would. Save it with `gh pr view <number> --json body --jq .body > <file>`. When the PR changes exactly one plan under `docs/plans/`, render that plan into the file as the `plan-page` skill's PR section says, with `--into <file>`. Otherwise keep the body, add a short paragraph on why the change exists, and end it with a line that starts `Beyond the ask:` and names each change the request did not ask for, or says `none`. Update the PR with `gh pr edit <number> --body-file <file>`, and the check runs again. This step is done when step 3's command prints nothing.
+
+Land later changes with `land.mjs`, as `.agents/pstack/rules/land.md` says. It opens the PR into `next` with the right body.

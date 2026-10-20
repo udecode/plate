@@ -289,7 +289,7 @@ A node's pending dependencies are its own claims plus the changes its context li
 - One recorder serves both intents. An Editing write records what Suggesting records, under a reserved change that reads as accepted, and accepts its own claims in the same commit. It keeps only a join or split whose landing waits on another pending change. Where a write's reach holds no other author's pending change, Editing writes the plain edit directly, and only the rest records and accepts.
 - A piece split off a line a pending join merges names that join, and lands right after the joined line once both are accepted, so a line split beside a pending join stays inside the container the join reaches.
 - Revisions hash a change's own incarnation-qualified content with block-relative paths, so content moving above a change no longer makes it stale; edits to covered content still do.
-- A preview mode costs nothing per commit while no view shows it.
+- A preview mode costs nothing per commit until a reader first reads it. After that, `ledger.carry` advances it on each owner commit even while no view shows it, which the Open work of [preview places on next](2026-10-19-preview-places-on-next.md) holds.
 
 ## Decision ledger
 

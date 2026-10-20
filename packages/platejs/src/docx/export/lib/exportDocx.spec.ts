@@ -24,7 +24,7 @@ import {
   BaseColumnGroupPlugin,
 } from '../../../features/layout';
 import { BaseListPlugin } from '../../../features/list';
-import { BaseTocPlugin } from '../../../features/toc';
+import { BaseTocPlugin, readTocHeadings } from '../../../features/toc';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '../../../math';
 import { EditorStatic, type EditorStaticProps } from '../../../static';
 import { importDocx } from '../../import/lib/importDocx';
@@ -509,6 +509,64 @@ describe('exportDocx', () => {
         },
       })
     );
+  });
+});
+
+describe('exportDocx table of contents', () => {
+  const exportTocRows = async (tocPlugin: typeof BaseTocPlugin) => {
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: '' }], type: 'toc' },
+        { children: [{ text: 'One' }], level: 1, type: 'heading' },
+        { children: [{ text: 'Two' }], level: 2, type: 'heading' },
+        { children: [{ text: 'Three' }], level: 3, type: 'heading' },
+        { children: [{ text: 'Four' }], level: 4, type: 'heading' },
+        { children: [{ text: 'Five' }], level: 5, type: 'heading' },
+        { children: [{ text: 'Six' }], level: 6, type: 'heading' },
+      ],
+      plugins: [BaseHeadingPlugin, tocPlugin],
+    });
+    const result = await exportDocx(editor, { projection: 'proposed' });
+
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+    const documentXml = await zip.file('word/document.xml')!.async('string');
+
+    return [...documentXml.matchAll(/<w:p\b[\s\S]*?<\/w:p>/g)]
+      .map(([paragraph]) => paragraph)
+      .filter((paragraph) => paragraph.includes('<w:hyperlink'))
+      .map((paragraph) => ({
+        left: paragraph.match(/<w:ind\b[^>]*w:left="(\d+)"/)?.[1] ?? '0',
+        text: [...paragraph.matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/g)]
+          .map(([, text]) => text)
+          .join(''),
+      }));
+  };
+
+  it('indents each row by its heading level', async () => {
+    expect(await exportTocRows(BaseTocPlugin)).toEqual([
+      { left: '0', text: 'One' },
+      { left: '360', text: 'Two' },
+      { left: '720', text: 'Three' },
+      { left: '1080', text: 'Four' },
+      { left: '1440', text: 'Five' },
+      { left: '1800', text: 'Six' },
+    ]);
+  });
+
+  it('writes the rows of an app read override', async () => {
+    const rows = await exportTocRows(
+      BaseTocPlugin.extend({
+        read: ({ editor, state }) => ({
+          headings: () =>
+            readTocHeadings({ editor, state }).filter(
+              (heading) => heading.level <= 3
+            ),
+        }),
+      })
+    );
+
+    expect(rows.map(({ text }) => text)).toEqual(['One', 'Two', 'Three']);
   });
 });
 

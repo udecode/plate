@@ -6,11 +6,6 @@
     "commands"
   ],
   "prerequisiteReason": "Command intent must be defined before deciding which editing rules are canonical.",
-  "last": false,
-  "opportunity": {
-    "score": 8,
-    "reason": "Editing and history invariants constrain higher feature designs and codec adoption."
-  },
   "owners": [
     "packages/plitejs/src/core/editor-commands.ts",
     "packages/plitejs/src/editor/insert-text.ts",

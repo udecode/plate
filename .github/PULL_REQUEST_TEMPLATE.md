@@ -1,4 +1,4 @@
-**Plan:** <!-- The plan committed with this PR, `docs/plans/<date>-<slug>.md`: what was asked, the decisions with their reasons, and how each step was proven. A small fix keeps it to a few lines. -->
+<!-- An agent opens a PR into next with node .agents/pstack/land.mjs, which writes this body. If your agent is filling in this template, run the contributor-setup skill once: .agents/skills/contributor-setup/SKILL.md -->
 
 ## Why
 
@@ -19,3 +19,7 @@
 ## Verification
 
 <!-- Each real run path and its outcome. A user-visible behavior change needs proof from a real Plate setup, docs route, package consumer or minimal repro: screenshots, recordings or command output. Tests, typechecks and CI support that proof but do not replace it. Name the focused commands you ran, smallest lane first and `pnpm check` for broad confidence, and what was not tested. For performance, give one before → after number with its unit. -->
+
+<!-- Name each change the request did not ask for, or write none. -->
+
+Beyond the ask:

@@ -5,6 +5,7 @@ import {
   createDOMGeometryKernel,
   type DOMPhaseScheduler,
 } from '../../dom/internal';
+import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
 import type { EditableKeyDownHandler } from '../components/editable';
 import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -74,7 +75,7 @@ const resolveVerticalGoalX = (
     const boundary = readPliteViewSelection(editor)?.focus;
     const point = boundary
       ? resolveViewBoundaryDOMPoint(editor, boundary)
-      : editor.api.dom.resolveDOMPoint(focus);
+      : resolveDOMPointInRoot(editor, focus);
 
     return root && point
       ? createDOMGeometryKernel({ root }).verticalNavigationX(point)

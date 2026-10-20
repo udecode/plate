@@ -1511,7 +1511,7 @@ x | y | x
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: GFM tables; primary UX ref: Google Docs for table paste; secondary ref: Notion
 Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:264
-Proof: `packages/platejs/src/features/table/lib/BaseTablePlugin.paste.spec.tsx:421` "pastes $name and replays it through history", case "a partial source tile across the selected rectangle", pastes a 1 × 2 source into a selected 2 × 3 rectangle and asserts `x y x` in both rows, one commit, no grid problems, an undo back to the exact prior value and selection and a redo back to the paste; `packages/platejs/src/features/table/lib/internal/paste.spec.ts:340` "9. clips and repeats a partial source tile" and `:386` "keeps each repeated source tile as an independent placement group" prove repeat and clip at the planner level, `packages/platejs/src/features/table/lib/BaseTablePlugin.clipboard.slow.tsx:192` "replace these cells (allowCellSpanEditing: $allowCellSpanEditing)" repeats a 1 × 2 source down a selected 2 × 2 rectangle, and `:1184` "fits closed text against every selected cell grammar" fills every selected cell with text. No test asserts the refused non-rectangular selection or the selection after a fill. Code: a multi-cell target fixes the fill bounds to the selection and starts the plan at its top-left cell (`packages/platejs/src/features/table/lib/BaseTablePlugin.ts:2427-2457`, `packages/platejs/src/features/table/lib/internal/paste.ts:346-360`), a non-table source fills each selected cell (`packages/platejs/src/features/table/lib/BaseTablePlugin.ts:2408-2425`), and several placements end as a cell selection from the top-left to the bottom-right filled cell (`:2489-2513`). Checked 2026-10-08.
+Proof: `packages/platejs/src/features/table/lib/BaseTablePlugin.paste.spec.tsx:421` "pastes $name and replays it through history", case "a partial source tile across the selected rectangle", pastes a 1 × 2 source into a selected 2 × 3 rectangle and asserts `x y x` in both rows, one commit, no grid problems, an undo back to the exact prior value and selection and a redo back to the paste; `packages/platejs/src/features/table/lib/internal/paste.spec.ts:340` "9. clips and repeats a partial source tile" and `:386` "keeps each repeated source tile as an independent placement group" prove repeat and clip at the planner level, `packages/platejs/src/features/table/lib/BaseTablePlugin.insert-fragment.spec.tsx:192` "replace these cells (allowCellSpanEditing: $allowCellSpanEditing)" repeats a 1 × 2 source down a selected 2 × 2 rectangle, and `:1184` "fits closed text against every selected cell grammar" fills every selected cell with text. No test asserts the refused non-rectangular selection or the selection after a fill. Code: a multi-cell target fixes the fill bounds to the selection and starts the plan at its top-left cell (`packages/platejs/src/features/table/lib/BaseTablePlugin.ts:2427-2457`, `packages/platejs/src/features/table/lib/internal/paste.ts:346-360`), a non-table source fills each selected cell (`packages/platejs/src/features/table/lib/BaseTablePlugin.ts:2408-2425`), and several placements end as a cell selection from the top-left to the bottom-right filled cell (`:2489-2513`). Checked 2026-10-08.
 
 ## Link And Image
 
@@ -1928,7 +1928,7 @@ the same markdown after parse and serialize
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: local mention markdown contract; primary UX ref: Notion; secondary ref: Milkdown
 Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/markdown-parity-matrix.md:116
-Proof: the mapping is `BaseMentionPlugin`'s `markdown` format (`packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts:95-135`), whose writer percent-encodes the ref, also encoding `(` and `)`, and writes `label ?? ref`. `packages/platejs/src/markdown/lib/serializer/serializeMention.spec.ts:88` "round-trips link mentions and keeps bare handles as text" asserts the scenario's markdown after parse and serialize but not that the parsed node is a mention; `packages/platejs/src/markdown/lib/deserializer/deserializeMentionLink.slow.tsx:30` "parses mentions with spaces in ID" reads `mention:jane%20smith` as ref `jane smith`, `:109` "does not convert regular links to mentions even with @ in text" keeps `[@mention](/docs/mention)` a link, and `:47` "keeps bare @handles as text beside link mentions" keeps `@bob` text. No test writes a ref that needs encoding or a mention without a label; a model probe on 2026-10-08 (Bun, package source) wrote ref `a b)c` with no label as `[a b)c](mention:a%20b%29c)` and read it back unchanged. Tag candidates for the parse clauses. Checked 2026-10-08.
+Proof: the mapping is `BaseMentionPlugin`'s `markdown` format (`packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts:95-135`), whose writer percent-encodes the ref, also encoding `(` and `)`, and writes `label ?? ref`. `packages/platejs/src/markdown/lib/serializer/serializeMention.spec.ts:88` "round-trips link mentions and keeps bare handles as text" asserts the scenario's markdown after parse and serialize but not that the parsed node is a mention; `packages/platejs/src/markdown/lib/deserializer/deserializeMentionLink.spec.tsx:30` "parses mentions with spaces in ID" reads `mention:jane%20smith` as ref `jane smith`, `:109` "does not convert regular links to mentions even with @ in text" keeps `[@mention](/docs/mention)` a link, and `:47` "keeps bare @handles as text beside link mentions" keeps `@bob` text. No test writes a ref that needs encoding or a mention without a label; a model probe on 2026-10-08 (Bun, package source) wrote ref `a b)c` with no label as `[a b)c](mention:a%20b%29c)` and read it back unchanged. Tag candidates for the parse clauses. Checked 2026-10-08.
 
 ## Date
 
@@ -1948,20 +1948,26 @@ Plugin surface:
 
 - date plugins expose `editor.update.date.insert`
 - this section defines current boundary and insertion law, not date-picker UI
-- current canonical node payload is one `YYYY-MM-DD` calendar-day string on
-  `node.date`
-- current markdown contract writes canonical dates as
-  `<date value="YYYY-MM-DD" />`
-- current markdown read path accepts both:
-  - legacy plain `<date>value</date>` child-text
-  - canonical `<date value="YYYY-MM-DD" />`
-- legacy child-text values that do not normalize safely stay on an explicit raw
-  fallback path instead of being silently reinterpreted as canonical dates
-- bundled renderers may derive relative labels or long-date display from the
-  canonical node value, but that is render-layer behavior layered on top of the
-  canonical payload
-- a bundled renderer derives relative labels from the canonical `YYYY-MM-DD`
-  value without timezone drift and renders raw fallback text literally
+- the node payload is one required `value` string that holds a `YYYY-MM-DD`
+  calendar day or authored text, such as `sometime next week`, and
+  `parseCanonicalDateValue` tells them apart
+- `insert` stores a `Date` as its local day and a string as written, trimmed
+- v1's `toDateString()` text, such as `Mon Mar 23 2026`, converts to its day
+  only in the v54 migration and the Markdown reader, and only when its weekday
+  matches; other text stays as written
+- the Markdown writer emits `<date value="YYYY-MM-DD" />` for a day and
+  `<date text="…" />` for any other text, because Markdown can change child
+  text, such as a blank line or an emoji shortcode; a day the host zone
+  skipped writes as a `text` attribute and reads back the same
+- the Markdown reader accepts `<date value>`, `<date>` child text and
+  `<date text>`, and keeps a `text` attribute as written
+- the copied live renderer computes Today, Yesterday or Tomorrow during render,
+  from the server's clock in server HTML and the viewer's clock in the browser,
+  and prints other days as the full date; the copied
+  static renderer always prints the full date, so an export never goes stale
+- both renderers print a day in UTC from the stored string, so the printed day
+  does not depend on the host zone, except a day the host zone skipped, which
+  prints as stored text; both print authored text literally
 - the contract has no locale- or timezone-aware serialized semantics and no display-vs-value payload split
 
 - `EDIT-DATE-INSERT-001` `locked`
@@ -1997,11 +2003,11 @@ note: deleting forward at the boundary removes the whole date atom
 Date: <date value="2024-01-01" />
 ```
 
-note: current canonical node value is `YYYY-MM-DD`
-note: current writer emits canonical attribute form for normalized date values
-note: current read path still accepts legacy child-text `<date>value</date>`
-note: non-normalizable legacy child text stays on an explicit raw fallback path
-instead of being treated as canonical date data
+note: a stored day writes the `value` attribute form and reads back as the same day
+note: the reader also accepts `<date>` child text and `<date text="…" />`, and
+reads `toDateString()` text in child text or a `value` attribute as its day when
+the weekday matches
+note: authored text writes as a `text` attribute and reads back as written
 
 ## TOC
 
@@ -2604,14 +2610,14 @@ Proof: Plate's HTML reader has the matching rule: `shouldBrBecomeEmptyParagraph`
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: HTML clipboard input; primary UX ref: Typora for markdown-first paste, with Google Docs where document fidelity is stronger; secondary ref: ProseMirror (#1247)
 Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1220-1259.md:19-20
-Proof: Plate does not meet it. A model probe on 2026-10-08 (Bun, package source, happy-dom) pasted ProseMirror's mixed nested-list fixture and got an item reading `xxxx human ` with a trailing space and `human` moved ahead of its nested items, plus an extra empty list item for an `<li>` that only wraps a nested `<ol>`; `apps/www/src/__tests__/package-integration/list/ListPlugin.slow.tsx:153` "handle li with nested ul correctly" asserts the trailing-space leak (`Item 1 `). `packages/platejs/src/lib/plugins/html/HtmlPlugin.dom.spec.ts:44` "removes whitespace between block elements" covers only `<p>` siblings. The only proof, `apps/plite/tests/plite-browser/donor/examples/paste-html.test.ts:1882` "imports mixed nested ordered and unordered lists from rich HTML paste", runs the paste-html example's own deserializer. Checked 2026-10-08.
+Proof: Plate does not meet it. A model probe on 2026-10-08 (Bun, package source, happy-dom) pasted ProseMirror's mixed nested-list fixture and got an item reading `xxxx human ` with a trailing space and `human` moved ahead of its nested items, plus an extra empty list item for an `<li>` that only wraps a nested `<ol>`; `apps/www/src/__tests__/package-integration/list/ListPlugin.spec.tsx:153` "handle li with nested ul correctly" asserts the trailing-space leak (`Item 1 `). `packages/platejs/src/lib/plugins/html/HtmlPlugin.dom.spec.ts:44` "removes whitespace between block elements" covers only `<p>` siblings. The only proof, `apps/plite/tests/plite-browser/donor/examples/paste-html.test.ts:1882` "imports mixed nested ordered and unordered lists from rich HTML paste", runs the paste-html example's own deserializer. Checked 2026-10-08.
 
 - `EDIT-CLIPBOARD-HTML-MARK-001` `proposed` `HTML paste of nested style resets`: when pasted HTML nests an element with an explicit normal style (`font-style: normal` or a non-bold `font-weight`) inside a bold or italic parent, such as a nested list item, that element's text takes its explicit style and does not inherit the parent's mark, while the parent's own text keeps it
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: HTML clipboard input; primary UX ref: Typora for markdown-first paste, with Google Docs where document fidelity is stronger; secondary ref: ProseMirror (#1347)
 Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1330-1370.md:28
-Proof: Plate does not meet it for inline nesting. Its bold, italic, underline and strikethrough HTML readers veto the mark for the whole matched element when any element inside it resets the style (`someHtmlElement` in `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts:156-158`, `:228-230`, `:302-308`, `:330-336`), and the bold reset matches only `font-weight: normal`; a model probe on 2026-10-08 (Bun, package source, happy-dom) pasted `<b>Parent <span style="font-weight: normal">child</span></b>` and lost bold on both words, and pasted the same with `font-weight: 400` and kept bold on both. `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.spec.tsx:143` "vetoes %s parsing when a descendant resets the style" asserts the veto on fixtures with no parent text of their own. ProseMirror's nested-list fixture passes in Plate only because each item becomes its own block. `apps/plite/tests/plite-browser/donor/examples/paste-html.test.ts:1610` "does not leak parent list item marks into nested pasted list items" runs the paste-html example's own deserializer and never checks the parent items. Checked 2026-10-08.
+Proof: Plate meets it for bold and not for the other marks. Bold reads each element's own `font-weight`, so a weight below 600 turns bold off for that element's text only, and `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.spec.tsx:165` "pastes %s with only the reset text plain" pastes `<b>a<span style="font-weight: 400">b</span>c</b>` and the same with `initial`, and keeps `a` and `c` bold. The italic, underline and strikethrough HTML readers still veto the mark for the whole matched element when any element inside it resets the style (`someHtmlElement` in `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts:311`, `:385`, `:413`); `BaseMarkPlugins.spec.tsx:143` "vetoes %s parsing when a descendant resets the style" asserts that veto on fixtures with no parent text of their own. Checked 2026-10-19. ProseMirror's nested-list fixture passes in Plate only because each item becomes its own block. `apps/plite/tests/plite-browser/donor/examples/paste-html.test.ts:1610` "does not leak parent list item marks into nested pasted list items" runs the paste-html example's own deserializer and never checks the parent items. Checked 2026-10-08.
 
 ### Interactive Preview And Navigation
 

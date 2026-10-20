@@ -7,11 +7,6 @@
     "runtime"
   ],
   "prerequisiteReason": "Canonical reads and mounted-view ownership determine which costs partial DOM coverage can remove.",
-  "last": false,
-  "opportunity": {
-    "score": 10,
-    "reason": "Large documents test rendering and read costs independently of whether the product has pages."
-  },
   "owners": [
     "packages/plitejs/src/react/virtualized.tsx",
     "packages/plitejs/src/react/virtualized/",

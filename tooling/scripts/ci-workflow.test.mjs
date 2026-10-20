@@ -129,10 +129,9 @@ test('pnpm check --affected runs the steps each change reaches', async () => {
   assert.deepEqual(
     {
       docs: added(['docs/plans/2026-10-19-landing-check.md']),
+      browserSpec: added(['apps/www/tests/browser/suggestion.spec.ts']),
       cli: added(['packages/cli/src/generate.ts']),
-      slow: added([
-        'packages/plitejs/test/authored-tree-recording-laws.slow.ts',
-      ]),
+      plite: added(['packages/plitejs/test/index.spec.ts']),
       lockfile: added(['pnpm-lock.yaml']),
       lockfileSkips: planAffected(['pnpm-lock.yaml'])
         .filter(({ command }) => !command)
@@ -140,15 +139,10 @@ test('pnpm check --affected runs the steps each change reaches', async () => {
     },
     {
       docs: [],
+      browserSpec: ['www'],
       cli: ['test', 'cli-test', 'www'],
-      slow: [
-        'test',
-        "test-slow: pnpm test:slow 'packages/plitejs/test/authored-tree-recording-laws.slow.ts'",
-        'plite-test',
-        'cli-test',
-        'www',
-      ],
-      lockfile: ['test', 'test-slow', 'plite-test', 'cli-test', 'www'],
+      plite: ['test', 'plite-test', 'cli-test', 'www'],
+      lockfile: ['test', 'plite-test', 'cli-test', 'www'],
       lockfileSkips: ['review-ledger', 'knowledge'],
     }
   );

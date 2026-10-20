@@ -6,11 +6,6 @@
     "schema"
   ],
   "prerequisiteReason": "Generated contracts must agree with extension/schema semantics before the optional CLI workflow is justified.",
-  "last": false,
-  "opportunity": {
-    "score": 8,
-    "reason": "Optional generation and checking should serve a current advanced workflow without becoming mandatory editor setup."
-  },
   "owners": [
     "packages/platejs/src/compiler/",
     "packages/plitejs/src/core/schema-compiler.ts",

@@ -6,11 +6,6 @@
     "selection"
   ],
   "prerequisiteReason": "Persistent anchors and transient ranges must use the same established location-rebasing guarantees.",
-  "last": false,
-  "opportunity": {
-    "score": 8,
-    "reason": "Comments, search and review decoration need consistent identity and range projection."
-  },
   "owners": [
     "packages/plitejs/src/annotations/",
     "packages/plitejs/src/core/anchor.ts",

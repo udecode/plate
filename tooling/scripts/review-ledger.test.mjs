@@ -20,12 +20,11 @@ import {
   freshness,
   loadLedger,
   lookup,
-  next,
   observe,
-  orderUnits,
   recordsDir,
   scopesDir,
   searchResearch,
+  ship,
   show,
   status,
 } from './review-ledger.mjs';
@@ -38,8 +37,6 @@ function scope(id, fields = {}) {
     title: id,
     question: `Who owns ${id}?`,
     dependsOn: [],
-    last: false,
-    opportunity: { score: 5, reason: 'A bounded owner question.' },
     owners: [`packages/core/src/${id}/`],
     members: [`packages/core/src/${id}/`],
     consumers: ['docs/evidence.md'],
@@ -298,7 +295,7 @@ test("readers tolerate another session's half-written ledger files", (t) => {
 
   assert.equal(coverage(root).unowned.total, 1);
   assert.equal(status(root).scopes, 3);
-  assert.ok(next(root).unit);
+  assert.notDeepEqual(ship(root), []);
 });
 
 test('a broken scope file fails check and leaves lookup of another scope working', (t) => {
@@ -496,45 +493,6 @@ test('a landed implementation plan naming the head closes its Pursue', (t) => {
   assert.equal(openOf(root, 'comments'), null);
 });
 
-test('queue order honours dependencies, groups and AI-last over payoff', (t) => {
-  const { root, put } = fixture(t, [
-    scope('model', { opportunity: { score: 3, reason: 'Base.' } }),
-    scope('table', {
-      dependsOn: ['model'],
-      prerequisiteReason: 'Tables need the model.',
-      opportunity: { score: 9, reason: 'Hot.' },
-    }),
-    scope('ai', { last: true, opportunity: { score: 10, reason: 'Last.' } }),
-    scope('runtime', {
-      group: 'core',
-      opportunity: { score: 4, reason: 'Core.' },
-    }),
-    scope('state', {
-      group: 'core',
-      opportunity: { score: 6, reason: 'Core.' },
-    }),
-  ]);
-  put('docs/research/review-groups.json', {
-    core: { title: 'Core', reason: 'Reviewed together.' },
-  });
-
-  assert.deepEqual(
-    orderUnits(loadLedger(root)).map((unit) => unit.id),
-    ['core', 'model', 'table', 'ai']
-  );
-  put(
-    `${scopesDir}/model.json`,
-    scope('model', {
-      dependsOn: ['table'],
-      prerequisiteReason: 'Cycle.',
-    })
-  );
-  assert.throws(() => orderUnits(loadLedger(root), { strict: true }), /cycle/);
-  const ledger = loadLedger(root);
-  assert.equal(orderUnits(ledger).length, 4);
-  assert.match(ledger.warnings.join('\n'), /cycle/);
-});
-
 test('research search keeps headers, exact status and malformed-row warnings', (t) => {
   const { root, put } = fixture(t);
   put(
@@ -587,71 +545,72 @@ test('a later open plan on the same Pursue reopens it', (t) => {
   assert.equal(openOf(root, 'comments'), 'pursue-not-adopted');
 });
 
-test('next skips a scope whose open plan is in flight and names that plan', (t) => {
-  const { root, put, git } = fixture(t);
-  const review = (id, state) =>
+test('ship lists each open scope by id, with the open plans that name it as waits', (t) => {
+  const { root, put, git } = fixture(t, [
+    scope('table', {
+      dependsOn: ['link'],
+      prerequisiteReason: 'Tables reuse the link owner.',
+    }),
+    scope('comments'),
+    scope('link'),
+  ]);
+  const review = (id, verdict, state) =>
     plan(put, `docs/plans/2026-09-01-${id}-review.md`, {
       scopes: [id],
       basis: [],
-      verdict: 'pursue',
+      verdict,
       state,
       commit: headOf(git),
     });
-  review('comments', 'reviewed');
-  review('link', 'reviewed');
-  const first = next(root).unit;
-  const other = first === 'comments' ? 'link' : 'comments';
+  const items = () =>
+    ship(root).map(({ id, kind, waits, writes }) => ({
+      id,
+      kind,
+      waits,
+      subject: writes[0],
+    }));
+  const findingOf = (id) => ship(root).find((item) => item.id === id).finding;
+  review('comments', 'pursue', 'reviewed');
 
-  review(first, 'building: phase 2');
-
-  assert.equal(next(root).unit, other);
-  assert.deepEqual(next(root).inFlight, [
-    { plans: [`docs/plans/2026-09-01-${first}-review.md`], scope: first },
+  assert.deepEqual(items(), [
+    {
+      id: 'comments',
+      kind: 'fix',
+      waits: [],
+      subject: 'docs/plans/topics/comments.md',
+    },
+    {
+      id: 'link',
+      kind: 'decide',
+      waits: [],
+      subject: 'docs/plans/topics/link.md',
+    },
+    {
+      id: 'table',
+      kind: 'decide',
+      waits: [],
+      subject: 'docs/plans/topics/table.md',
+    },
   ]);
-});
+  assert.match(
+    findingOf('table'),
+    /It builds on link, still open: Tables reuse the link owner\.$/
+  );
 
-test('next still offers a scope whose open plan has not changed for weeks', (t) => {
-  const { root, put, git } = fixture(t);
-  const review = (id, state) =>
-    plan(put, `docs/plans/2026-09-01-${id}-review.md`, {
-      scopes: [id],
-      basis: [],
-      verdict: 'pursue',
-      state,
-      commit: headOf(git),
-    });
-  review('comments', 'reviewed');
-  review('link', 'reviewed');
-  const first = next(root).unit;
+  review('link', 'stop', 'reviewed');
+  review('comments', 'pursue', 'building: phase 2');
 
-  review(first, 'building: phase 2');
-  git('add', '-A');
-  git('commit', '-qm', 'stale plan', '--date', '2026-01-01T00:00:00Z');
-
-  assert.equal(next(root).unit, first);
-  assert.equal(next(root).inFlight, undefined);
-});
-
-test('next lists uncommitted member files of the scope it offers', (t) => {
-  const { root, put, git } = fixture(t);
-  for (const id of ['comments', 'link']) {
-    plan(put, `docs/plans/2026-09-01-${id}-review.md`, {
-      scopes: [id],
-      basis: [],
-      verdict: 'pursue',
-      state: 'reviewed',
-      commit: headOf(git),
-    });
-  }
-  git('add', '-A');
-  git('commit', '-qm', 'reviews');
-  const [offered] = next(root).scopes;
-
-  put(`packages/core/src/${offered.id}/index.ts`, 'export const edited = 2;');
-
-  assert.deepEqual(next(root).scopes[0].uncommitted, [
-    `packages/core/src/${offered.id}/index.ts`,
-  ]);
+  assert.deepEqual(
+    items().map(({ id, waits }) => ({ id, waits })),
+    [
+      {
+        id: 'comments',
+        waits: ['run:docs/plans/2026-09-01-comments-review.md'],
+      },
+      { id: 'table', waits: [] },
+    ]
+  );
+  assert.doesNotMatch(findingOf('table'), /builds on/);
 });
 
 test('a historical import beside a review does not fork the scope', (t) => {
@@ -820,26 +779,6 @@ test('a malformed foreign record fails check and leaves another scope readable',
     () => check(root),
     /2026-09-09-foreign\.json: malformed record/
   );
-});
-
-test('strict queue order catches a dependency cycle inside a review group', (t) => {
-  const { root, put } = fixture(t, [
-    scope('runtime', {
-      group: 'core',
-      dependsOn: ['state'],
-      prerequisiteReason: 'Cycle.',
-    }),
-    scope('state', {
-      group: 'core',
-      dependsOn: ['runtime'],
-      prerequisiteReason: 'Cycle.',
-    }),
-  ]);
-  put('docs/research/review-groups.json', {
-    core: { title: 'Core', reason: 'Reviewed together.' },
-  });
-
-  assert.throws(() => orderUnits(loadLedger(root), { strict: true }), /cycle/);
 });
 
 test("check fails on a review page whose basis names another scope's review", (t) => {

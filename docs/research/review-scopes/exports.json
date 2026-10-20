@@ -4,11 +4,6 @@
   "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
   "dependsOn": [],
   "prerequisiteReason": "The user directly selected whole-export architecture; related format feature audits remain separate.",
-  "last": false,
-  "opportunity": {
-    "score": 8,
-    "reason": "Whole-document and server conversion still reconstruct editor runtimes and copied codec policy; existing semantic compilers offer a stronger reusable boundary."
-  },
   "owners": [
     "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
   ],

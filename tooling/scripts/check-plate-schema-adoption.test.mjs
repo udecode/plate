@@ -321,7 +321,7 @@ test('rejects the deleted root editor tx channel in test fixtures', () => {
     assert.match(
       auditPlateSchemaSource(
         source,
-        'apps/www/src/registry/components/editor/footnote.slow.tsx'
+        'apps/www/src/registry/components/editor/footnote.spec.tsx'
       )[0]?.reason ?? '',
       /root editor\.update channel/
     );
@@ -2717,7 +2717,7 @@ test('allows only the exact reviewed raw-query count in an owning file', () => {
 
   const htmlOwner = 'packages/platejs/src/lib/plugins/html/HtmlPlugin.ts';
   const htmlQueries = Array.from(
-    { length: 4 },
+    { length: 5 },
     () =>
       `state.schema.property({ key: property.key, placement: property.property.placement, type })`
   ).join(';');

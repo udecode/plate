@@ -20,10 +20,13 @@ const headingItemVariants = cva(
   'block h-auto w-full cursor-pointer truncate rounded-none px-0.5 py-1.5 text-left font-medium text-muted-foreground underline decoration-[0.5px] underline-offset-4 hover:bg-accent hover:text-foreground',
   {
     variants: {
-      depth: {
+      level: {
         1: 'pl-0.5',
         2: 'pl-[26px]',
         3: 'pl-[50px]',
+        4: 'pl-[74px]',
+        5: 'pl-[98px]',
+        6: 'pl-[122px]',
       },
     },
   }
@@ -75,9 +78,8 @@ export function TocElement({
 
           return (
             heading.key === nextHeading?.key &&
-            heading.depth === nextHeading.depth &&
-            heading.title === nextHeading.title &&
-            heading.type === nextHeading.type
+            heading.level === nextHeading.level &&
+            heading.title === nextHeading.title
           );
         }),
       shouldUpdate: (change) => !change || change.changed.hasAny('document'),
@@ -96,9 +98,7 @@ export function TocElement({
             <Button
               key={item.key}
               variant="ghost"
-              className={headingItemVariants({
-                depth: item.depth as 1 | 2 | 3,
-              })}
+              className={headingItemVariants({ level: item.level })}
               onClick={(event) => {
                 event.preventDefault();
 

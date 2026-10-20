@@ -145,7 +145,7 @@ A published subject page is a set of files. The page file lists the runs that pu
 
 A local frame becomes a `![label](./path)` reference from the repository root, under a `<!-- frame: ./path -->` note, and goes up through `gh --attach`. A later render with `--into` reuses the uploaded link found under that note. The sections the page leaves in the plan file, such as Close, Steps and Evidence, stay there.
 
-`plan-page.mjs <plan> --comment <sha>` writes the same body as a comment about the commits after `<sha>`, into `<name>.comment.md`. Under the lead lines it links GitHub's compare view from `<sha>` to the checkout's head. With `--against <description.md>`, it leaves out each Demo clip the description already shows, and each step whose clips all are.
+`plan-page.mjs <plan> --comment <sha>` writes the same body as a comment about the commits after `<sha>`, into `<name>.comment.md`. Under the lead lines it links DiffsHub's compare view from `<sha>` to the checkout's head. With `--against <description.md>`, it leaves out each Demo clip the description already shows, and each step whose clips all are.
 
 ## Refusals
 

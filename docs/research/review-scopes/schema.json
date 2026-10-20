@@ -7,11 +7,6 @@
     "model"
   ],
   "prerequisiteReason": "An extension must preserve the document identity and validity contract it configures.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Shared extension and inference choices multiply across all packages and kits."
-  },
   "owners": [
     "packages/plitejs/src/core/plugin.ts",
     "packages/plitejs/src/core/plugin-registry.ts",

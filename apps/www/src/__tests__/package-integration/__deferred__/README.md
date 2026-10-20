@@ -22,7 +22,7 @@ Rules:
 - keep the assertions public-interface focused
 - do not import app-registry fluff if a smaller seam exists
 
-Normal `pnpm test` and `pnpm test:slow` ignore this folder.
+Normal `pnpm test` ignores this folder.
 
 Run it explicitly with:
 

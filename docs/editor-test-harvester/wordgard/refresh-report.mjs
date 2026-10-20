@@ -127,7 +127,7 @@ const deltaRows = `| W34 | \`test-pointset.ts:24-65\`; \`test-rangeset.ts:24-79\
 | W38 | \`webtest-coords.ts:101-115\` | browser geometry | Consecutive soft breaks and a trailing break keep distinct measurable lines and map clicks back to the correct model offsets. | The Chromium regression maps the consecutive empty line to offset 6 and the physical trailing line to offset 18. Final text projection appends one rendering-only newline while \`data-plite-length\` preserves model offsets. \`apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:968-1071\`; \`packages/plitejs/src/react/components/text-string.tsx:5-35\` | test-written; runtime repaired | [Plite proof plan and green receipt](../../plans/2026-09-02-wordgard-diff-proof-closure.md) |
 | W39 | \`webtest-resolve-dom.ts:102-193\` | DOM bridge | DOM/model positions survive nested content wrappers, multiple decoration wrappers, and inline-void zero-width anchors. | The composed React-rendered regression maps the inline-void anchor both ways and maps the nested wrapper edges. \`packages/plitejs/test/react/surface-contract.tsx:2121-2184\` | test-written | \`pnpm --filter plitejs test -- test/react/surface-contract.test.tsx\` — 54/54 passed |
 | W40 | \`test-commands.ts:394-401\` | list policy | Forward join from a paragraph into the first block of a multi-block nested list item preserves the remaining list structure. | Plate uses flat list-item properties rather than a nested multi-block list-item container. \`packages/platejs/src/features/list/lib/BaseListPlugin.ts:700-790\` | representation-rejected | Keep Plate's flattened list policy; do not manufacture a nested-container job. |
-| W41 | \`test-table-correction.ts:29-45\`; \`test-table-commands.ts:83-145\` | table policy | Repair detects an uncovered interior slot under a rowspan, and row/column deletion leaves selection inside the surviving table. | Plate's grid scans every logical slot, repairs uncovered positions, and asserts surviving row/column selection. \`packages/platejs/src/features/table/lib/internal/grid.ts:236-246\`; \`packages/platejs/src/features/table/lib/BaseTablePlugin.merge.slow.tsx:238-370\` | covered | \`pnpm --filter platejs test -- src/features/table/lib/internal/mutation.spec.ts src/features/table/lib/BaseTablePlugin.merge.slow.tsx\` |`;
+| W41 | \`test-table-correction.ts:29-45\`; \`test-table-commands.ts:83-145\` | table policy | Repair detects an uncovered interior slot under a rowspan, and row/column deletion leaves selection inside the surviving table. | Plate's grid scans every logical slot, repairs uncovered positions, and asserts surviving row/column selection. \`packages/platejs/src/features/table/lib/internal/grid.ts:236-246\`; \`packages/platejs/src/features/table/lib/BaseTablePlugin.merge-split-remove.spec.tsx:238-370\` | covered | \`pnpm --filter platejs test -- src/features/table/lib/internal/mutation.spec.ts src/features/table/lib/BaseTablePlugin.merge-split-remove.spec.tsx\` |`;
 
 const coverageHeading = '\n\n## Coverage Search Evidence';
 const coverageIndex = report.indexOf(coverageHeading);
@@ -252,8 +252,8 @@ for (const [before, after] of [
     'test/history/history-contract.ts test/history/integrity-contract.ts',
   ],
   [
-    'test/history-soak-contract.slow.ts',
-    'test/history/history-soak-contract.slow.ts',
+    'test/history-soak-contract.spec.ts',
+    'test/history/history-soak-contract.spec.ts',
   ],
   [
     'test/history-persistence-contract.spec.ts',

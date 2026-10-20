@@ -6,11 +6,6 @@
     "selection"
   ],
   "prerequisiteReason": "Undo grouping and replay depend on committed changes and rebased selection intent.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Undo semantics constrain ordinary editing, async completion and review workflows independently of collaboration."
-  },
   "owners": [
     "packages/plitejs/src/history/",
     "packages/platejs/src/history/"

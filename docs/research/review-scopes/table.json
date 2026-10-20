@@ -6,11 +6,6 @@
     "selection"
   ],
   "prerequisiteReason": "Document topology and location rebasing constrain cell coordinates and table selection.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Table topology and native cell interaction combine several expensive shared paths."
-  },
   "owners": [
     "packages/platejs/src/features/table/",
     "packages/platejs/src/react/features/table/"
@@ -32,7 +27,7 @@
     "apps/www/tests/browser/table-resize.spec.ts",
     "apps/www/tests/browser/table-selection.spec.ts",
     "packages/platejs/package.json",
-    "packages/platejs/src/docx/import/lib/importDocx.slow.tsx",
+    "packages/platejs/src/docx/import/lib/importDocx.spec.tsx",
     "packages/platejs/src/docx/paste/lib/WordPastePlugin.spec.ts",
     "packages/platejs/src/docx/paste/lib/WordPastePlugin.ts",
     "packages/platejs/src/features/table/",
@@ -48,13 +43,13 @@
   ],
   "proof": [
     "packages/platejs/src/features/table/lib/BaseTablePlugin.apply.spec.tsx",
-    "packages/platejs/src/features/table/lib/BaseTablePlugin.clipboard.slow.tsx",
-    "packages/platejs/src/features/table/lib/BaseTablePlugin.grid.slow.tsx",
-    "packages/platejs/src/features/table/lib/BaseTablePlugin.insert.slow.tsx",
-    "packages/platejs/src/features/table/lib/BaseTablePlugin.merge.slow.tsx",
-    "packages/platejs/src/features/table/lib/BaseTablePlugin.presentation.slow.tsx",
-    "packages/platejs/src/features/table/lib/BaseTablePlugin.selection.slow.tsx",
-    "packages/platejs/src/features/table/lib/internal/mutation.benchmark.slow.ts",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.insert-fragment.spec.tsx",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.range-projection.spec.tsx",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.insert-table-column.spec.tsx",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.merge-split-remove.spec.tsx",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.borders-background.spec.tsx",
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.cell-selection.spec.tsx",
+    "packages/platejs/src/features/table/lib/internal/mutation.benchmark.spec.ts",
     "packages/platejs/src/react/features/table/TablePlugin.navigation.spec.tsx",
     "packages/platejs/src/react/features/table/TablePlugin.hostBinding.spec.tsx",
     "packages/platejs/src/react/features/table/useTableResize.spec.tsx",

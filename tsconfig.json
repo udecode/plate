@@ -160,7 +160,6 @@
     "**/dist",
     "./packages/**/src/**/*.spec.*",
     "./packages/**/src/**/*.test.*",
-    "./packages/**/src/**/*-contract.*",
-    "./packages/**/src/**/*.slow.*"
+    "./packages/**/src/**/*-contract.*"
   ]
 }

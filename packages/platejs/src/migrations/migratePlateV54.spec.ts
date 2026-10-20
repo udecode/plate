@@ -3,10 +3,12 @@ import {
   type BasePluginInput,
   createEditor as createProductEditor,
   definePlugin,
+  type PersistedDocumentInput,
 } from 'platejs';
 
 import { ElementApi, property, schema, target } from '../core';
 import {
+  BaseBoldPlugin,
   BaseHeadingPlugin,
   BaseHorizontalRulePlugin,
   BaseScriptPlugin,
@@ -1424,6 +1426,389 @@ describe('migratePlateV54 selection', () => {
       anchor: { offset: 4, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
       kind: 'text',
+    });
+  });
+});
+
+type Json = Record<string, unknown>;
+
+const readWeight = (weight: unknown) => {
+  const value = String(weight).trim().toLowerCase();
+
+  if (value === 'bold' || value === 'bolder') return 'heavy';
+  if (value === 'normal' || value === 'lighter') return 'light';
+  if (!/^\+?(\d+|\d*\.\d+)(e[+-]?\d+)?$/.test(value)) return null;
+
+  const number = Number(value);
+
+  if (number >= 1 && number <= 1000) return number >= 600 ? 'heavy' : 'light';
+
+  return null;
+};
+
+const boldBlocks = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'th']);
+
+const touchesWeight = (change: Json) =>
+  change.key === 'fontWeight' ||
+  ['properties', 'newProperties'].some((key) =>
+    Object.hasOwn(change[key] ?? {}, 'fontWeight')
+  );
+
+const stripLeaf = (node: Json, mayDrawBold: boolean): Json => {
+  const pending = [
+    ...Object.entries(node)
+      .filter(([key]) => key.startsWith('suggestion_'))
+      .map(([, value]) => value as Json)
+      .filter((value) => value?.type === 'update'),
+    ...((Array.isArray(node.authored) ? node.authored : []) as Json[]).filter(
+      (mark) => mark?.kind === 'format'
+    ),
+  ];
+
+  if (
+    pending.length > 0 &&
+    (Object.hasOwn(node, 'fontWeight') || pending.some(touchesWeight))
+  ) {
+    throw new Error(
+      'Settle format changes on weighted text before the upgrade.'
+    );
+  }
+  if (!Object.hasOwn(node, 'fontWeight')) return node;
+
+  const { bold: _bold, fontWeight, ...rest } = node;
+  const weight = readWeight(fontWeight);
+
+  if (!weight || (weight === 'light' && mayDrawBold)) {
+    throw new Error('Bold cannot keep how v53 drew this font weight.');
+  }
+
+  return weight === 'heavy' ? { ...rest, bold: true } : rest;
+};
+
+const stripTree = (node: Json, mayDrawBold: boolean): Json => {
+  if (typeof node.text === 'string') return stripLeaf(node, mayDrawBold);
+
+  const inside = mayDrawBold || boldBlocks.has(node.type as string);
+  const next = { ...node };
+
+  for (const key of ['children', 'caption']) {
+    if (Array.isArray(node[key])) {
+      next[key] = (node[key] as Json[]).map((child) =>
+        stripTree(child, inside)
+      );
+    }
+  }
+
+  return next;
+};
+
+const stripNode = (node: Json) => stripTree(node, false);
+
+const stripEnvelope = (stored: Json): Json => {
+  const document = { ...(stored.document as Json) };
+  const selection = stored.selection as Json | null | undefined;
+
+  const strip = (node: Json) => stripTree(node, true);
+
+  document.children = (document.children as Json[]).map(strip);
+  if (document.roots) {
+    document.roots = Object.fromEntries(
+      Object.entries(document.roots as Record<string, Json[]>).map(
+        ([name, children]) => [name, children.map(strip)]
+      )
+    );
+  }
+
+  return {
+    ...stored,
+    document,
+    ...(selection?.marks
+      ? {
+          selection: {
+            ...selection,
+            marks: stripLeaf(selection.marks as Json, true),
+          },
+        }
+      : {}),
+  };
+};
+
+describe('migratePlateV54 font weight', () => {
+  const boldOnly = defineV54Migrations([
+    BaseParagraphPlugin,
+    BaseBoldPlugin,
+    BaseImagePlugin,
+  ]);
+  const weighted = (leaf: Json) => [{ children: [leaf], type: 'p' }];
+  const settle = 'Settle format changes on weighted text before the upgrade.';
+  const v53Schema = {
+    fingerprint: 'plate-v53',
+    id: MigrationSchema.id,
+    kind: 'named',
+    version: 53,
+  };
+
+  it('refuses a saved weight in a target with only bold', () => {
+    expect(() =>
+      runDocumentMigration(weighted({ fontWeight: '700', text: 'x' }), {
+        migrations: boldOnly,
+        source: 53,
+      })
+    ).toThrow('Unknown text property "fontWeight" in closed editor schema.');
+  });
+
+  it('keeps every saved weight in a target that declares one', () => {
+    const value = [
+      {
+        children: [
+          { bold: true, fontWeight: '400', text: 'a' },
+          { fontWeight: '800', text: 'b' },
+          { fontWeight: 'bolder', text: 'c' },
+        ],
+        type: 'p',
+      },
+    ];
+    const migrated = runDocumentMigration(value, {
+      migrations: defineV54Migrations([
+        BaseParagraphPlugin,
+        BaseBoldPlugin,
+        definePlugin('fontWeight', { schema: { mark: property.string() } }),
+      ]),
+      source: 53,
+    }).output.document;
+
+    expect(migrated.children[0].children).toEqual(value[0].children);
+  });
+
+  describe("the guide's pre-pass", () => {
+    it.each([
+      {
+        leaf: { fontWeight: '800', text: 'x' },
+        stored: { bold: true },
+        title: 'turns a heavy weight into bold',
+      },
+      {
+        leaf: { bold: true, fontWeight: '400', text: 'x' },
+        stored: {},
+        title: 'drops a light weight and the bold beside it',
+      },
+      {
+        leaf: { fontWeight: ' BOLD ', text: 'x' },
+        stored: { bold: true },
+        title: 'reads a weight in any letter case',
+      },
+    ])('$title', ({ leaf, stored }) => {
+      const migrated = runDocumentMigration(weighted(leaf).map(stripNode), {
+        migrations: boldOnly,
+        source: 53,
+      }).output.document;
+
+      expect(migrated.children[0].children).toEqual([{ ...stored, text: 'x' }]);
+    });
+
+    it.each([
+      {
+        node: weighted({ fontWeight: 'var(--missing-weight, 700)', text: 'x' }),
+        title: 'a weight it cannot read',
+      },
+      {
+        node: weighted({ bold: true, fontWeight: 'not-a-weight', text: 'x' }),
+        title: 'an invalid weight beside bold',
+      },
+      {
+        node: weighted({ fontWeight: '0x2bc', text: 'x' }),
+        title: 'a JavaScript numeral that CSS rejects',
+      },
+      {
+        node: [{ children: [{ fontWeight: '400', text: 'x' }], type: 'h1' }],
+        title: 'a light weight inside a heading',
+      },
+      {
+        node: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [{ fontWeight: 'lighter', text: 'x' }],
+                    type: 'p',
+                  },
+                ],
+                type: 'th',
+              },
+            ],
+            type: 'tr',
+          },
+        ],
+        title: 'a light weight inside a table header cell',
+      },
+    ])('refuses $title', ({ node }) => {
+      expect(() => node.map(stripNode)).toThrow(
+        'Bold cannot keep how v53 drew this font weight.'
+      );
+    });
+
+    it('turns a heavy weight inside a heading into bold', () => {
+      expect(
+        stripNode({
+          children: [{ fontWeight: '700', text: 'x' }],
+          type: 'h1',
+        })
+      ).toEqual({ children: [{ bold: true, text: 'x' }], type: 'h1' });
+    });
+
+    it('converts a weighted v53 image caption', () => {
+      const value = [
+        {
+          caption: [
+            { children: [{ fontWeight: '700', text: 'cap' }], type: 'p' },
+          ],
+          children: [{ text: '' }],
+          type: 'img',
+          url: 'https://example.com/a.png',
+        },
+      ];
+      const migrated = runDocumentMigration(value.map(stripNode), {
+        migrations: boldOnly,
+        source: 53,
+      }).output.document;
+
+      expect(migrated.children[0].children).toEqual([
+        { bold: true, text: 'cap' },
+      ]);
+    });
+
+    it('refuses a weighted leaf with a pending format change', () => {
+      const value = weighted({
+        bold: true,
+        fontWeight: '700',
+        suggestion: true,
+        suggestion_b: {
+          createdAt: 1,
+          id: 'b',
+          newProperties: { bold: true },
+          properties: {},
+          type: 'update',
+          userId: 'alice',
+        },
+        text: 'x',
+      });
+
+      expect(() =>
+        runDocumentMigration(value.map(stripNode), {
+          migrations: boldOnly,
+          source: 53,
+        })
+      ).toThrow(settle);
+    });
+
+    it('refuses a pending weight change on a leaf without a weight', () => {
+      const stored = {
+        document: {
+          children: weighted({
+            authored: [
+              { id: 'w:fontWeight', key: 'fontWeight', kind: 'format' },
+            ],
+            text: 'x',
+          }),
+        },
+        schema: v53Schema,
+      };
+
+      expect(() =>
+        runDocumentMigration(stripEnvelope(stored) as PersistedDocumentInput, {
+          migrations: boldOnly,
+        })
+      ).toThrow(settle);
+    });
+
+    it.each([
+      {
+        stored: {
+          document: {
+            children: [
+              {
+                children: [{ fontWeight: '400', text: 'x' }],
+                level: 1,
+                type: 'heading',
+              },
+            ],
+          },
+          schema: v53Schema,
+        },
+        title: 'a light weight in a v2 heading',
+      },
+      {
+        stored: {
+          document: {
+            children: [
+              { children: [{ text: 'x' }], level: 1, type: 'heading' },
+            ],
+          },
+          schema: v53Schema,
+          selection: {
+            anchor: { offset: 1, path: [0, 0] },
+            focus: { offset: 1, path: [0, 0] },
+            kind: 'text',
+            marks: { fontWeight: '400' },
+          },
+        },
+        title: 'a light insertion weight in a v2 heading',
+      },
+      {
+        stored: {
+          document: { children: [{ children: [{ text: 'x' }], type: 'h1' }] },
+          schema: v53Schema,
+          selection: {
+            anchor: { offset: 1, path: [0, 0] },
+            focus: { offset: 1, path: [0, 0] },
+            kind: 'text',
+            marks: { fontWeight: '400' },
+          },
+        },
+        title: 'a light insertion weight in an h1',
+      },
+      {
+        stored: {
+          document: { children: weighted({ fontWeight: '400', text: 'x' }) },
+          schema: v53Schema,
+        },
+        title: 'a light weight in a paragraph',
+      },
+    ])('refuses $title in an envelope', ({ stored }) => {
+      expect(() => stripEnvelope(stored)).toThrow(
+        'Bold cannot keep how v53 drew this font weight.'
+      );
+    });
+
+    it('converts an envelope and keeps its metadata', () => {
+      const stored = {
+        document: {
+          children: weighted({ fontWeight: '700', text: 'x' }),
+          meta: { theme: { fontWeight: '700' } },
+        },
+        schema: v53Schema,
+        selection: {
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+          kind: 'text',
+          marks: { fontWeight: '700' },
+        },
+      };
+      const { output } = runDocumentMigration(
+        stripEnvelope(stored) as PersistedDocumentInput,
+        { migrations: boldOnly }
+      );
+
+      expect({
+        meta: output.document.meta,
+        selection: output.selection,
+        text: output.document.children[0].children,
+      }).toEqual({
+        meta: { theme: { fontWeight: '700' } },
+        selection: { ...stored.selection, marks: { bold: true } },
+        text: [{ bold: true, text: 'x' }],
+      });
     });
   });
 });

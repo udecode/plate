@@ -1,0 +1,346 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import { createEditor, type Descendant, TextApi } from 'plitejs';
+
+import { history } from '../../src/history';
+import { observeAnchorStateWork } from '../../src/internal';
+import { replace as editorReplace } from '../../src/testing';
+
+const paragraph = (text: string): Descendant => ({
+  type: 'paragraph',
+  children: [{ text }],
+});
+
+const soakSeeds = (defaults: readonly number[]) => {
+  const fastCheckSeed = process.env.FAST_CHECK_SEED;
+
+  if (fastCheckSeed === 'random') {
+    return defaults.map(() => Math.floor(Math.random() * 0x1_00_00_00_00));
+  }
+
+  if (fastCheckSeed === undefined) return defaults;
+  if (!Number.isSafeInteger(Number(fastCheckSeed))) {
+    throw new Error(
+      `FAST_CHECK_SEED must be an integer or random, got ${fastCheckSeed}`
+    );
+  }
+
+  return [Number(fastCheckSeed)];
+};
+
+const createSeededRandom = (initialSeed: number) => {
+  let seed = initialSeed >>> 0;
+
+  return () => {
+    seed = (seed * 1_664_525 + 1_013_904_223) >>> 0;
+
+    return seed / 0x1_00_00_00_00;
+  };
+};
+
+const assertEditorIntegrity = (
+  editor: ReturnType<typeof createHistoryEditor>
+) => {
+  const value = editor.read.value();
+
+  editor.read.schema.assertDocument(value);
+
+  const selection = editor.read.selection();
+
+  if (selection) {
+    for (const point of [selection.anchor, selection.focus]) {
+      const entry = editor.read.nodes.get(point.path);
+
+      assert.ok(entry, `Missing selection path [${point.path}].`);
+      assert.ok(
+        TextApi.isText(entry[0]),
+        `Selection path [${point.path}] is not text.`
+      );
+      assert.ok(point.offset >= 0 && point.offset <= entry[0].text.length);
+    }
+  }
+
+  const state = editor.read((current) => current.history());
+
+  for (const batch of [...state.undos, ...state.redos]) {
+    assert.ok(
+      !batch.change.empty || batch.effects.length > 0,
+      'History retained an empty batch.'
+    );
+  }
+};
+
+const undo = (editor: ReturnType<typeof createHistoryEditor>) => {
+  editor.api.history.undo();
+};
+
+const redo = (editor: ReturnType<typeof createHistoryEditor>) => {
+  editor.api.history.redo();
+};
+
+const createHistoryEditor = () =>
+  createEditor({ plugins: [history()] as const });
+
+const assertUndoRedoRoundTrip = (
+  editor: ReturnType<typeof createHistoryEditor>,
+  trace: string[]
+) => {
+  const before = structuredClone(editor.read.value());
+  let undoCount = 0;
+
+  while (editor.read((state) => state.history().undos).length > 0) {
+    trace.push(`round-trip:undo:${undoCount}`);
+    undo(editor);
+    assertEditorIntegrity(editor);
+    undoCount += 1;
+  }
+
+  for (let index = 0; index < undoCount; index++) {
+    trace.push(`round-trip:redo:${index}`);
+    redo(editor);
+    assertEditorIntegrity(editor);
+  }
+
+  assert.deepEqual(editor.read.value(), before);
+};
+
+describe('plite-history seeded soak contract', () => {
+  it('keeps one persistent nearest range exact across repeated edit history', () => {
+    const [seed] = soakSeeds([0x20_26_09_03]);
+    const random = createSeededRandom(seed);
+    const editor = createEditor({
+      plugins: [history({ maxDepth: 200, newBatchDelay: 0 })],
+      initialValue: [paragraph('persistent-anchor-history')],
+    });
+    const anchor = editor.anchor(
+      {
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 20 },
+      },
+      { association: 'inward', deletion: 'nearest' }
+    );
+    let text = 'persistent-anchor-history';
+    let latestCommitWork:
+      | Readonly<{
+          recoveryBytes?: number;
+          recoveryEntries?: number;
+          visitedAnchors: number;
+        }>
+      | undefined;
+    const stop = observeAnchorStateWork(editor, (work) => {
+      if (work.phase === 'commit') latestCommitWork = work;
+    });
+
+    for (let step = 0; step < 100; step++) {
+      const before = structuredClone(anchor.resolve());
+      const operation = Math.floor(random() * 3);
+      const offset = Math.floor(random() * (text.length + 1));
+
+      editor.update({ history: 'new-batch' }, (tx) => {
+        if (operation === 0 || text.length === 0) {
+          tx.text.insert('x', { at: { path: [0, 0], offset } });
+          text = `${text.slice(0, offset)}x${text.slice(offset)}`;
+          return;
+        }
+
+        const from = Math.min(offset, text.length - 1);
+
+        tx.text.delete({
+          at: {
+            kind: 'text',
+            anchor: { path: [0, 0], offset: from },
+            focus: { path: [0, 0], offset: from + 1 },
+          },
+        });
+        text = `${text.slice(0, from)}${text.slice(from + 1)}`;
+        if (operation === 2) {
+          tx.text.insert('z', { at: { path: [0, 0], offset: from } });
+          text = `${text.slice(0, from)}z${text.slice(from)}`;
+        }
+      });
+      const after = structuredClone(anchor.resolve());
+
+      assert.equal(
+        latestCommitWork?.recoveryEntries,
+        1,
+        `seed ${seed} step ${step}`
+      );
+      assert.ok(
+        (latestCommitWork?.recoveryBytes ?? Number.POSITIVE_INFINITY) <= 28,
+        `seed ${seed} step ${step}`
+      );
+      for (let cycle = 0; cycle < 10; cycle++) {
+        undo(editor);
+        assert.deepEqual(
+          anchor.resolve(),
+          before,
+          `seed ${seed} step ${step} undo ${cycle}`
+        );
+        redo(editor);
+        assert.deepEqual(
+          anchor.resolve(),
+          after,
+          `seed ${seed} step ${step} redo ${cycle}`
+        );
+      }
+    }
+
+    anchor.release();
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: text.length } });
+    });
+    assert.equal(latestCommitWork?.visitedAnchors, 0);
+    assert.equal(latestCommitWork?.recoveryEntries, 0);
+    assert.equal(latestCommitWork?.recoveryBytes, 0);
+    stop();
+  });
+
+  it('queues remote bursts without eagerly walking deep history', () => {
+    const editor = createEditor({
+      plugins: [history({ maxDepth: 1000 })],
+      initialValue: [paragraph('body')],
+    });
+
+    for (let index = 0; index < 1000; index++) {
+      editor.update((tx) => {
+        tx.history.newBatch();
+        tx.text.insert('l', { at: { offset: 4 + index, path: [0, 0] } });
+      });
+    }
+
+    for (let index = 0; index < 1000; index++) {
+      editor.update({ history: 'skip' }, (tx) => {
+        tx.text.insert('r', { at: { offset: 0, path: [0, 0] } });
+      });
+    }
+
+    editor.api.history.undo();
+
+    assert.equal(
+      editor.read.text.string([]),
+      `${'r'.repeat(1000)}body${'l'.repeat(999)}`
+    );
+  });
+
+  it('preserves tree, selection, and stack invariants across mixed events', () => {
+    const seeds = soakSeeds([
+      0x14_01_57_0a, 0x14_02_57_0a, 0x14_03_57_0a, 0x14_04_57_0a,
+    ]);
+
+    for (const seed of seeds) {
+      const random = createSeededRandom(seed);
+      const editor = createHistoryEditor();
+      const trace: string[] = [];
+
+      editorReplace(editor, {
+        children: Array.from({ length: 4 }, (_, index) =>
+          paragraph(`seed-${seed}-block-${index}`)
+        ),
+        selection: 'start',
+      });
+
+      try {
+        for (let step = 0; step < 80; step++) {
+          const value = editor.read.value();
+          const blockIndex = Math.floor(random() * value.children.length);
+          const { text } = value.children[blockIndex].children[0] as {
+            text: string;
+          };
+          const event = Math.floor(random() * 10);
+
+          if (event <= 5) {
+            const historyMode = event === 5 ? 'skip' : 'new-batch';
+            const edit = Math.floor(random() * 5);
+
+            editor.update({ history: historyMode }, (tx) => {
+              if (edit === 0 || (edit === 1 && text.length === 0)) {
+                const offset = Math.floor(random() * (text.length + 1));
+                const inserted = String.fromCharCode(
+                  97 + Math.floor(random() * 26)
+                );
+
+                tx.text.insert(inserted, {
+                  at: { offset, path: [blockIndex, 0] },
+                });
+                trace.push(
+                  `${step}:${historyMode}:insert-text:${blockIndex}:${offset}:${inserted}`
+                );
+                return;
+              }
+
+              if (edit === 1) {
+                const offset = Math.floor(random() * text.length);
+
+                tx.text.delete({
+                  at: {
+                    kind: 'text',
+                    anchor: { offset, path: [blockIndex, 0] },
+                    focus: { offset: offset + 1, path: [blockIndex, 0] },
+                  },
+                });
+                trace.push(
+                  `${step}:${historyMode}:delete-text:${blockIndex}:${offset}`
+                );
+                return;
+              }
+
+              if (edit === 2) {
+                const rank = Math.floor(random() * 1000);
+
+                tx.nodes.set({ rank }, { at: [blockIndex] });
+                trace.push(
+                  `${step}:${historyMode}:set-node:${blockIndex}:${rank}`
+                );
+                return;
+              }
+
+              if (edit === 3 || value.children.length === 1) {
+                const at = Math.floor(random() * (value.children.length + 1));
+
+                tx.nodes.insert(paragraph(`inserted-${seed}-${step}`), {
+                  at: [at],
+                });
+                trace.push(`${step}:${historyMode}:insert-node:${at}`);
+                return;
+              }
+
+              tx.nodes.remove({ at: [blockIndex] });
+              trace.push(`${step}:${historyMode}:remove-node:${blockIndex}`);
+            });
+          } else if (event === 6) {
+            trace.push(`${step}:undo`);
+            undo(editor);
+          } else if (event === 7) {
+            trace.push(`${step}:redo`);
+            redo(editor);
+          } else {
+            const offset = Math.floor(random() * (text.length + 1));
+
+            trace.push(`${step}:selection:${blockIndex}:${offset}`);
+            editor.update((tx) => {
+              tx.selection.set({
+                anchor: { offset, path: [blockIndex, 0] },
+                focus: { offset, path: [blockIndex, 0] },
+              });
+            });
+          }
+
+          assertEditorIntegrity(editor);
+
+          if ((step + 1) % 40 === 0) {
+            trace.push(`${step}:round-trip`);
+            assertUndoRedoRoundTrip(editor, trace);
+          }
+        }
+
+        assertUndoRedoRoundTrip(editor, trace);
+      } catch (error) {
+        throw new Error(
+          `History soak failed for seed ${seed}. Trace: ${trace.slice(-40).join(' | ')}`,
+          { cause: error }
+        );
+      }
+    }
+  });
+});

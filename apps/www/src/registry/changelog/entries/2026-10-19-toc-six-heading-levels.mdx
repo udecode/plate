@@ -1,0 +1,18 @@
+---
+id: 2026-10-19-toc-six-heading-levels
+date: 2026-10-19
+status: draft
+kind: behavior
+summary: 'Indent all six heading levels in the table of contents'
+change: { 'type': 'source', 'date': '2026-10-19', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-19-toc-indent-all-six-heading-48690c65","kind":"behavior","migrationNotes":["Read an entry's level instead of its depth and type in copied TOC code."]} -->
+
+- **`toc`**, **`toc-static`**: Indent all six heading levels in the table of contents
+
+<!-- entry: {"id":"2026-10-19-toc-static-remove-docx-element","kind":"remove","migrationNotes":["Delete the TocElementDocx import and its toc override from your Word export kit; exportDocx draws the table of contents."]} -->
+
+- **`toc-static`**: Remove `TocElementDocx`

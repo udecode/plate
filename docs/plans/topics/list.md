@@ -125,7 +125,7 @@ list.update.insert({ type: ListType.Numbered }, { replaceEmpty: true, select: tr
 DOCX import numbers two restarted instances of one Word definition that alternate the way Word does.
 
 ```ts
-// packages/platejs/src/docx/import/lib/numbering/importDocxNumbering.slow.ts
+// packages/platejs/src/docx/import/lib/numbering/importDocxNumbering.spec.ts
 expect(await importNumbers(source)).toEqual([
   'A1:1',
   'B1:1',
@@ -158,7 +158,7 @@ for (const [node, path] of tx.nodes.blocks({ at, mode: 'lowest' })) {
 The existing paste call retains its command behavior.
 
 ```ts
-// packages/platejs/src/features/table/lib/BaseTablePlugin.clipboard.slow.tsx
+// packages/platejs/src/features/table/lib/BaseTablePlugin.insert-fragment.spec.tsx
 assert.equal(editor.update.slice.replace(slice), true);
 ```
 

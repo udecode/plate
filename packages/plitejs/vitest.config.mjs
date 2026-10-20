@@ -3,8 +3,11 @@ import path from 'node:path';
 import { transformAsync } from '@babel/core';
 import { defineConfig } from 'vitest/config';
 
+import { loadTrace } from '../../tooling/config/vitest-load-trace.mjs';
+
 export default defineConfig({
   plugins: [
+    loadTrace(),
     {
       name: 'plite-render-react-compiler',
       enforce: 'pre',

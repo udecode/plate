@@ -54,7 +54,6 @@ mock.module('platejs', () => ({
   ...actualPlate,
   isUrl: isUrlMock,
   TextApi: { isText: () => true },
-  toUnitLess: (value: string) => value.replace('px', ''),
 }));
 
 mock.module('use-file-picker', () => ({
@@ -352,6 +351,62 @@ describe('feature toolbar plugin portals', () => {
     expect(setMock).toHaveBeenNthCalledWith(1, '15px');
     expect(setMock).toHaveBeenNthCalledWith(2, '17px');
     expect(focusMock).not.toHaveBeenCalled();
+  });
+
+  it('shows a saved point size in pixels and steps from it', async () => {
+    pluginMock.mockReturnValue({
+      installed: true,
+      read: { value: () => '12pt' },
+      update: { set: setMock },
+    });
+    const { FontSizeToolbarButton } = await import(
+      `./font-size-toolbar-button?points=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(<FontSizeToolbarButton />);
+
+    expect((view.getByRole('textbox') as HTMLInputElement).value).toBe('16');
+
+    fireEvent.click(view.getByRole('button', { name: 'Increase font size' }));
+
+    expect(setMock).toHaveBeenCalledWith('17px');
+  });
+
+  it.each(['1.5em', '0x10'])(
+    'shows the saved size %s as saved and does not step it',
+    async (saved) => {
+      pluginMock.mockReturnValue({
+        installed: true,
+        read: { value: () => saved },
+        update: { set: setMock },
+      });
+      const { FontSizeToolbarButton } = await import(
+        `./font-size-toolbar-button?unread=${Math.random().toString(36).slice(2)}`
+      );
+      const view = render(<FontSizeToolbarButton />);
+
+      expect((view.getByRole('textbox') as HTMLInputElement).value).toBe(saved);
+
+      fireEvent.click(view.getByRole('button', { name: 'Increase font size' }));
+      fireEvent.click(view.getByRole('button', { name: 'Decrease font size' }));
+
+      expect(setMock).not.toHaveBeenCalled();
+    }
+  );
+
+  it('replaces a saved size it cannot read with the chosen size', async () => {
+    pluginMock.mockReturnValue({
+      installed: true,
+      read: { value: () => '0x10' },
+      update: { set: setMock },
+    });
+    const { FontSizeToolbarButton } = await import(
+      `./font-size-toolbar-button?choose=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(<FontSizeToolbarButton />);
+
+    fireEvent.click(view.getByRole('button', { name: '16' }));
+
+    expect(setMock).toHaveBeenCalledWith('16px');
   });
 
   it('reads the default size from a heading level', async () => {

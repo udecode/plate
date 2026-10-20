@@ -299,7 +299,6 @@ const fixtures: Record<string, Descendant[]> = {
     paragraph({ backgroundColor: 'yellow', text: 'g' }),
     paragraph({ fontFamily: 'serif', text: 'f' }),
     paragraph({ fontSize: '20px', text: 'z' }),
-    paragraph({ fontWeight: '600', text: 'w' }),
   ],
   'media embed': [
     {

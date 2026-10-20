@@ -1,4 +1,5 @@
 import { string as editorString } from '../../../../src/testing';
+/** @jsxRuntime classic */
 /** @jsx jsx  */
 
 export const input = (

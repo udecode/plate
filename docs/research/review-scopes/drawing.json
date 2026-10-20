@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Persisted diagram source and node identity must be defined before renderer policy.",
-  "last": false,
-  "opportunity": {
-    "score": 6,
-    "reason": "A diagram is a code block that an app-chosen renderer draws, while Excalidraw keeps its own data format and embedding boundary."
-  },
   "owners": [
     "apps/www/src/registry/components/editor/code-block-diagram.tsx"
   ],

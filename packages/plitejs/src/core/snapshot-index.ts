@@ -1132,6 +1132,15 @@ const mapChangedNodeKeys = (
     outputPosition += outputLength;
   }
 
+  // A live target's own key outranks relocations and positional
+  // continuation: a view that shares the node object with the editor already
+  // holds that key in the editor's slot.
+  for (const targetPath of orderedTargets) {
+    const nodeKey = getNodeKeyForNode(segment.after.node(targetPath), editor);
+
+    if (nodeKey) claim(nodeKey, targetPath);
+  }
+
   // Exact subtree relocations own their source identities before positional
   // survivors compete for the same target paths.
   for (const relocation of relocations) {
@@ -1153,13 +1162,6 @@ const mapChangedNodeKeys = (
 
       if (nodeKey) claim(nodeKey, targetPath);
     }
-  }
-
-  // A live target's explicit identity outranks positional continuation.
-  for (const targetPath of orderedTargets) {
-    const nodeKey = getNodeKeyForNode(segment.after.node(targetPath), editor);
-
-    if (nodeKey) claim(nodeKey, targetPath);
   }
 
   for (const sourcePath of orderedSources) {

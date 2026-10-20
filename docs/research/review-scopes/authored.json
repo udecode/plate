@@ -6,11 +6,6 @@
     "selection"
   ],
   "prerequisiteReason": "Retained authorship and reversal require committed-change and rebasing guarantees; review UI is contextual.",
-  "last": false,
-  "opportunity": {
-    "score": 10,
-    "reason": "Native authored semantics now open from a direct current-state checkpoint without operation reduction or pending replay; the accepted production path clears the frozen Bun and Node scale gate."
-  },
   "owners": [
     "packages/plitejs/src/authored/index.ts",
     "packages/plitejs/src/core/authored-runtime.ts"
@@ -19,7 +14,7 @@
     "apps/www/src/app/(app)/examples/plite/_examples/authored-changes.tsx",
     "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
     "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
-    "apps/www/src/registry/components/editor/inline-void-suggestion.slow.tsx",
+    "apps/www/src/registry/components/editor/inline-void-suggestion.spec.tsx",
     "packages/platejs/package.json",
     "packages/platejs/src/authored/",
     "packages/plitejs/package.json",

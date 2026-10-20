@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx  */
 
 import { cloneDeep } from 'lodash';

@@ -12,7 +12,7 @@ Generate exact text-block toggle eligibility so closed editor types expose `edit
 
 Add canonical Plite schema contract serialization and structural diffs. Use `plate migrate new <name>` to create typed application-owned migration snapshots and a pure `FromValue -> ToValue` scaffold. Add each completed step to the editor module's `defineDocumentMigrations` chain and bind the generated source fingerprint for each historical envelope version. Use `plate migrate run` for dry-run and `--check` validation, or add `--write` to atomically replace JSON files through the detached converter. Supply `--from <version|current>` when a batch contains raw documents; envelopes carry their own source identity. The executable runner reads `EditorMigrations` from its entry module by exact export name.
 
-Run `plate generate` with the conventional `src/editor.ts` entry, pass multiple entries for one atomic batch, or add `--watch` to reuse one TypeScript project. The CLI is bin-only; its JavaScript implementation is not a package API.
+Run `plate generate` with the conventional `src/editor.ts` entry, or pass multiple entries for one atomic batch. The CLI is bin-only; its JavaScript implementation is not a package API.
 
 Generated modules export static `Editor`, `Value`, element/text, mutation, schema-handle, and fingerprint contracts. They never export a runtime plugin kit, wrap authored plugins, validate runtime construction, or act as a hook argument. Runtime composition always uses the authored plugin tuple and optional application schema; CI `--check` is the staleness gate.
 

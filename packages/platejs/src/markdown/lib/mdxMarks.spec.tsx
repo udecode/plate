@@ -53,9 +53,9 @@ describe('mdx mark package surfaces', () => {
     },
     {
       expected:
-        '<span style="background-color: #FE9900;"><span style="color: #FEFF00;"><span style="font-family: Inter;"><span style="font-size: 16px;"><span style="font-weight: bold;">Styled</span></span></span></span></span>\n',
+        '<span style="background-color: #FE9900;"><span style="color: #FEFF00;"><span style="font-family: Inter;"><span style="font-size: 16px;">Styled</span></span></span></span>\n',
       input:
-        '<span style="background-color: #FE9900; color: #FEFF00; font-family: Inter; font-size: 16px; font-weight: bold;">Styled</span>',
+        '<span style="background-color: #FE9900; color: #FEFF00; font-family: Inter; font-size: 16px;">Styled</span>',
       output: [
         {
           children: [
@@ -64,7 +64,6 @@ describe('mdx mark package surfaces', () => {
               color: '#FEFF00',
               fontFamily: 'Inter',
               fontSize: '16px',
-              fontWeight: 'bold',
               text: 'Styled',
             },
           ],
@@ -82,5 +81,22 @@ describe('mdx mark package surfaces', () => {
 
     expect(markdown).toBe(expected);
     expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
+  });
+
+  it('refuses a span that holds only a font weight', () => {
+    expect(() =>
+      parseTestMarkdown(editor, '<span style="font-weight: bold;">Term</span>')
+    ).toThrow('Markdown tag <span> was not accepted by an installed mapping');
+  });
+
+  it('drops a font weight beside another span style', () => {
+    expect(
+      parseTestMarkdown(
+        editor,
+        '<span style="font-size: 16px; font-weight: bold;">Term</span>'
+      ).children
+    ).toEqual([
+      { children: [{ fontSize: '16px', text: 'Term' }], type: 'paragraph' },
+    ]);
   });
 });

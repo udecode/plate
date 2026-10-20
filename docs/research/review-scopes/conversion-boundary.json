@@ -7,11 +7,6 @@
     "markdown"
   ],
   "prerequisiteReason": "Reuse canonical schema admission and the adopted Markdown dialect before assigning shared conversion policy and parser reuse.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Cross-format safety and loss-policy differences meet repeated streaming conversion work at the current format boundary."
-  },
   "owners": [
     "packages/platejs/src/lib/editor/withPlite.ts",
     "packages/platejs/src/internal/plugin/pluginFormatOperation.ts",

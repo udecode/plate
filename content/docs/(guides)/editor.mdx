@@ -358,7 +358,8 @@ pnpm exec plate generate
 several editor modules. The `@plate/editor-plugins` registry item installs the
 authored plugin module only; it does not copy generated contracts.
 
-Add `--watch` during development. Gate committed artifacts in CI:
+Rerun `plate generate` after you change the editor module. Gate committed
+artifacts in CI:
 
 ```json title="package.json"
 {

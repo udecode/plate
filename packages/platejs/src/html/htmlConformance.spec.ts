@@ -32,7 +32,6 @@ import {
   BaseFontColorPlugin,
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
-  BaseFontWeightPlugin,
   BaseLineHeightPlugin,
   BaseTextAlignPlugin,
   BaseTextIndentPlugin,
@@ -86,7 +85,6 @@ const plugins = [
   BaseFontColorPlugin,
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
-  BaseFontWeightPlugin,
   BaseFootnotePlugin,
   BaseFootnoteDefinitionPlugin,
   BaseHeadingPlugin,
@@ -349,7 +347,6 @@ const fixtures: Record<string, Value> = {
     paragraph({ backgroundColor: 'yellow', text: 'g' }),
     paragraph({ fontFamily: 'serif', text: 'f' }),
     paragraph({ fontSize: '20px', text: 'z' }),
-    paragraph({ fontWeight: '600', text: 'w' }),
   ],
   'media embed': [
     {

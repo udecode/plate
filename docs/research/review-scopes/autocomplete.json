@@ -6,11 +6,6 @@
     "selection"
   ],
   "prerequisiteReason": "Trigger and accepted-result locations must obey the selection contract; individual feature policy is contextual.",
-  "last": false,
-  "opportunity": {
-    "score": 7,
-    "reason": "Shared interaction policy can cut repeated popup and text-trigger machinery."
-  },
   "owners": [
     "packages/platejs/src/features/combobox/",
     "packages/platejs/src/react/features/combobox/"

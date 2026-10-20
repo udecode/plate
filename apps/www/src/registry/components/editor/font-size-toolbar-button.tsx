@@ -1,7 +1,6 @@
 'use client';
 
 import { Minus, Plus } from 'lucide-react';
-import { toUnitLess } from 'platejs';
 import {
   FontSizePlugin,
   HeadingPlugin,
@@ -51,6 +50,16 @@ const FONT_SIZES = [
   '96',
 ] as const;
 
+const toPixels = (value: string) => {
+  const match = /^(\d+(?:\.\d+)?)(px|pt)?$/.exec(value.trim());
+
+  if (!match) return undefined;
+
+  const size = Number(match[1]);
+
+  return Math.round((match[2] === 'pt' ? (size * 4) / 3 : size) * 10) / 10;
+};
+
 export function FontSizeToolbarButton() {
   const [inputValue, setInputValue] = React.useState(DEFAULT_FONT_SIZE);
   const [isFocused, setIsFocused] = React.useState(false);
@@ -68,7 +77,7 @@ export function FontSizeToolbarButton() {
     const fontSize = portal.installed ? portal.read.value() : undefined;
 
     if (fontSize) {
-      return toUnitLess(fontSize);
+      return String(toPixels(fontSize) ?? fontSize);
     }
 
     const [block] = innerEditor.read.nodes.block() ?? [];
@@ -93,7 +102,7 @@ export function FontSizeToolbarButton() {
       !Number.isFinite(size) ||
       size < 1 ||
       size > 100 ||
-      size === Number(cursorFontSize)
+      size === toPixels(cursorFontSize)
     ) {
       return;
     }
@@ -102,7 +111,7 @@ export function FontSizeToolbarButton() {
 
   const handleInputChange = () => {
     if (inputDirtyRef.current) {
-      setFontSize(Number(toUnitLess(inputValue)));
+      setFontSize(toPixels(inputValue) ?? Number.NaN);
     }
   };
 
@@ -112,7 +121,7 @@ export function FontSizeToolbarButton() {
         disabled={readOnly || !installed}
         aria-label="Decrease font size"
         onClick={() => {
-          setFontSize(Number(displayValue) - 1);
+          setFontSize((toPixels(displayValue) ?? Number.NaN) - 1);
         }}
       >
         <Minus />
@@ -140,7 +149,7 @@ export function FontSizeToolbarButton() {
                 beginInteraction();
                 inputDirtyRef.current = false;
                 setIsFocused(true);
-                setInputValue(toUnitLess(cursorFontSize));
+                setInputValue(cursorFontSize);
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -183,7 +192,7 @@ export function FontSizeToolbarButton() {
         disabled={readOnly || !installed}
         aria-label="Increase font size"
         onClick={() => {
-          setFontSize(Number(displayValue) + 1);
+          setFontSize((toPixels(displayValue) ?? Number.NaN) + 1);
         }}
       >
         <Plus />

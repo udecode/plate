@@ -331,7 +331,7 @@ pnpm exec plate generate
 传入各个 entry path。`@plate/editor-plugins` 注册表项只安装手写的 plugin
 module，不复制生成的 contract。
 
-开发时使用 `--watch`。在 CI 中校验已提交的生成产物：
+修改 editor module 后重新运行 `plate generate`。在 CI 中校验已提交的生成产物：
 
 ```json title="package.json"
 {

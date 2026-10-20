@@ -7,11 +7,6 @@
     "selection"
   ],
   "prerequisiteReason": "Shared-view lifetime and selection authority must be established before an external editor can own input.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "External adapters have distinct focus, IME, selection and text-ownership contracts from native syntax rendering."
-  },
   "owners": [
     "packages/plitejs/src/react/external-text.ts",
     "packages/plitejs/src/react/editable/external-text-binding.ts",

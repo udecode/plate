@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/LMYNM7X5UttawN35x7edE5
 
-Plite's native authored capability records who changed what, keeps pending suggestions reviewable, and decides them atomically. The ledger asks which native contract should retain authorship and reversible edits without requiring a particular review UI (`docs/research/review-scopes/authored.json`). Pending changes live in the editor's one stored document as review marks: inserted content carries an insert mark, and struck content stays in place under a delete mark (`packages/plitejs/src/authored/tree/record.ts`). Accepting or rejecting a change rewrites that document (`packages/plitejs/src/authored/tree/resolve.ts`), and the accepted and proposed previews are views of it that throw on a plain edit (`packages/plitejs/src/authored/tree/proposed.ts`). Some other writes still change the document through them, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses. Remote collaboration changes land whatever the view. The document's `records` hold the review facts marks cannot show (`packages/plitejs/src/authored/facts/records.ts`), and a ledger reads the marks into changes and cards, a card being one author's adjacent pending changes (`packages/plitejs/src/authored/ledger/cards.ts`). The review-tree pivot (`docs/plans/2026-10-13-review-tree-pivot.md`) replaced the earlier design, in which a second, projected document held pending changes and every write became an operation in a causal graph. Suggestions, AI review and copied review UI build on this capability; `docs/plans/topics/suggestions.md` covers the Plate side. `node tooling/scripts/review-ledger.mjs show authored` prints the scope's full history.
+Plite's native authored capability records who changed what, keeps pending suggestions reviewable, and decides them atomically. The ledger asks which native contract should retain authorship and reversible edits without requiring a particular review UI (`docs/research/review-scopes/authored.json`). Pending changes live in the editor's one stored document as review marks: inserted content carries an insert mark, and struck content stays in place under a delete mark (`packages/plitejs/src/authored/tree/record.ts`). Accepting or rejecting a change rewrites that document (`packages/plitejs/src/authored/tree/resolve.ts`), and the accepted and proposed previews are views of it that throw on a plain edit (`packages/plitejs/src/authored/tree/proposed.ts`). Some other writes still change the document through them, such as an update that makes a decision, and undo and redo; t_f485ac77 (owner zbeyens) decides which of them a preview refuses. Remote collaboration changes land whatever the view. The document's `records` hold the review facts marks cannot show (`packages/plitejs/src/authored/facts/records.ts`), and a ledger reads the marks into changes and cards, a card being one author's adjacent pending changes (`packages/plitejs/src/authored/ledger/cards.ts`). One map per preview run says which stored content each preview place shows, and the command frame, the recorder, review reads and the change delta all read it (`packages/plitejs/src/authored/ledger/places.ts`). The review-tree pivot (`docs/plans/2026-10-13-review-tree-pivot.md`) replaced the earlier design, in which a second, projected document held pending changes and every write became an operation in a causal graph. Suggestions, AI review and copied review UI build on this capability; `docs/plans/topics/suggestions.md` covers the Plate side. `node tooling/scripts/review-ledger.mjs show authored` prints the scope's full history.
 
 ## Public API
 
@@ -35,6 +35,16 @@ A preview shows every pending change accepted, or every one rejected, and throws
 authored.api.setView({ preview: "proposed" });
 ```
 
+A preview reads review changes by the key or path of a node it shows.
+
+```tsx
+// content/docs/plite/libraries/plite-authored.mdx
+const preview = createEditorView(editor, {
+  authored: { preview: 'proposed' },
+});
+const inBlock = preview.read.authored.changes({ at: blockKey });
+```
+
 An app reads a page of pending changes in document order and decides the changes it read.
 
 ```tsx
@@ -46,7 +56,7 @@ const result = authored.update.decide({
 });
 ```
 
-Copied review UI reads the cards touching a top-level block, then decides a card together with the changes a `blocked` result named.
+Copied review UI reads a block's cards by the block's key, then decides a card together with the changes a `blocked` result named.
 
 ```tsx
 // apps/www/src/registry/components/editor/discussion.tsx
@@ -182,6 +192,14 @@ Rejected, and why:
 | Reducing every saved operation on open | Made opening depend on history the saved state already held. |
 | An opaque live-state mirror | Stored 44.25 MB, was slower than replay, and either replayed to validate both or admitted inconsistent text. |
 | A second projected document with a causal operation graph | Replaced by review marks on the one stored document ([review-tree pivot](../2026-10-13-review-tree-pivot.md)). |
+| Copied hooks that map a preview block's key to its index and read the stored block there | A preview that drops or adds blocks shifts indexes, so a badge reads another block's cards ([preview places on next](../2026-10-19-preview-places-on-next.md)). |
+| Previews that keep stored keys for the blocks they do not rewrite | A stored key cannot name a block the preview builds or merges, such as a joined line or a completion filler. |
+| A second order map for commands beside the review map | Built from the resolver's raw landings, it disagrees with the filtered placements on where some merges land, so typing, cards and badges disagree, and it refuses overlapping or nested moves. |
+| An option that reads stored places on a preview | No product code reads one there, and one place contract keeps every preview read exact. |
+| Refusing Backspace or Delete across a moved block's edge while its join is pending | The recorder records it as the merge it makes. |
+| Grouping a property step's tokens in stored order | It assumes each token maps forward of the last, so a crossing or select-all Bold records wrongly. |
+| A refusal reason for a Suggesting merge that would give a content root two owners | The suggestion toast already tells the writer to switch to Editing. |
+| A resolver origin for every token | A wider rewrite than one map of placements needs. |
 
 The undo repair of [Undo finds what each node was](../2026-10-18-undo-repair-nodes.md) puts its changes in these layers:
 
@@ -191,6 +209,28 @@ The undo repair of [Undo finds what each node was](../2026-10-18-undo-repair-nod
 | Kept runs of a change | Plite | `plitejs` core change | It walks the change's private sections, beside the other mapping functions |
 | Applying an insertion beside a deletion in place | Plite | `plitejs` core change | The localized apply decides which changes apply without a token rebuild |
 | Which node a replayed node was, and its repair | Plite | `plitejs/authored` admission | Only admission sees the decisions made since the write together with the change |
+
+[One map of a preview's places](../2026-10-19-preview-places-on-next.md) puts its Plite changes in these layers, and `docs/plans/topics/suggestions.md` lists its Plate rows.
+
+| Change | Layer (Plite or Plate) | Package | Why |
+| --- | --- | --- | --- |
+| The resolver reports where it lands each piece a pending join moves, filtered to landings that pass a shown line, and which blocks it hides whole | Plite | `plitejs/authored` (`tree/resolve.ts`) | Only the resolver decides where a follower lands |
+| One map per run of which stored content each preview place shows, used by the command frame, the recorder's breaks, review reads and the delta | Plite | `plitejs/authored` (`ledger/level.ts`, `ledger/places.ts`, `ledger/runs.ts`, `ledger/projection.ts`, `ledger/ledger.ts`) | The mode projection owns its runs, and one map keeps typing, cards and badges in agreement |
+| The command frame asks the map where a caret or range goes and gets a placement or a refusal reason | Plite | `plitejs/core` (`command-document.ts`, `command-frame.ts`) | The range policy lives beside the map it reads, so core reads one placement |
+| The recorder lowers a frame step across breaks, reads breaks from the one map, and maps a property step token by token | Plite | `plitejs/authored` (`tree/record.ts`, `refusal.ts`) | A grouped property step records a crossing Bold wrongly |
+| A preview's review place reads map the view's place to the stored content it shows | Plite | `plitejs/authored` (`authored.ts`, `ledger/book.ts`, `ledger/cards.ts`) | The ledger owns the mode projection and the book |
+| `subscribeChanges` names the view blocks whose cards changed | Plite | `plitejs/authored` (`ledger/book.ts`, `authored.ts`, `changes.ts`) | The same owner as the reads, so a badge wakes for what its read shows |
+
+## Hard cuts and app migration
+
+- `at` on a preview takes a node's key or path and names a node of the preview, a block or one of its texts. A key resolves only in the view. A point or a range throws `AuthoredPlaceError`, exported from `plitejs/authored`, on a preview, because no product code reads one there; on an intent view both keep their meaning. The owner editor reads its own preview the same way, and no option reads stored places from a preview. An app that read a preview with a stored place, such as a record's `ranges`, reads through an intent view instead.
+- A page cursor from a read with `at` works only on a view with the same root and preview mode. A cursor from a read without `at` works on any view.
+- `AuthoredChange.revision` covers no position except a split or join's path inside its top-level block, so a change's `ranges` can move while its revision stays the same. An app that caches `ranges` reads them again after each document change. A decision on a structure change stays valid after someone types or formats text inside it, and still refuses after its child blocks change.
+- `AuthoredChangesDelta.blocks` names, on every view, each top-level block whose cards a change reached or left. Rejecting an insertion names the block it sat in, a merge that renames a block names both blocks, and a split that renames the blocks before the key names each of them. An app that read `blocks` as only the blocks a commit wrote also wakes the blocks a card left.
+- Records keep their shape. `AuthoredChange.ranges` and the location fields of `details` stay places of the stored document, so an app never paints them into a preview; `packages/plitejs/test/react/decoration-manager-contract.test.ts` asserts a hidden insertion's id on Accepted and paints no stored range there.
+- The edits beside a pending join that Rules lists refuse and roll back whole. An app that sends a format, a select-all Delete, typing or paste beside a joined line handles the `unrepresentable` refusal and its reason.
+- A command that names a place of its own, such as `BaseLinkPlugin.upsert` with `insertNodesOptions.at`, is not refused for a selection the preview cannot place, as on next, so when it also edits at that selection it can change text outside it. Its edits at the places it names still refuse as Rules lists. A format such as Bold over a moved piece formats what the proposed preview shows between the selection's ends, so it can format text stored outside the selection or leave moved text stored inside it plain. owner: the owner; stop: the frame's selection-consumption task lands or the owner drops it.
+- The top-level block a preview adds to complete the document reads no card, so a deleted only block's card shows only in Editing. One it adds inside a container can still read the hidden block it replaces. owner: the owner; stop: the filler card task lands or the owner drops it.
 
 ## Rules
 
@@ -206,9 +246,30 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   `read.value()` holds them in `records` beside the content. Code outside the authored
   owner reads a node's pending claims through `reviewOf` instead of parsing
   `authored`.
-  Review reads take a place. `read.groups({ at })` returns every card touching
-  it, and `read.changes({ at })` pages the changes there in document order, so
-  no read walks every pending change. A card is the adjacent pending changes of
+  Review reads take a place of the document the view shows.
+  `read.groups({ at })` returns every card touching it, and
+  `read.changes({ at })` pages the changes there in document order, so no read
+  walks every pending change. With no preview the place is stored. On a
+  preview it is a node's key or path of the shown document, and the read
+  returns the changes on the stored content that node shows, with what the
+  preview hides inside it and the changes on each element around it that the
+  preview takes away. Content the preview hides between two texts of a block
+  reads on the block, never on either text. A joined line reads a hidden
+  block between its two halves. A top-level block the preview adds to
+  complete the document, as when its only block is deleted, reads nothing,
+  and one it adds inside a container can read the hidden block it replaces.
+  Otherwise no
+  block reads the changes of a top-level block the preview hides, and an `edit` or `propose` view reads
+  them. A nested block's path returns its own changes and those of a
+  container around it that the preview takes away, never the pending wrap or
+  unwrap of a container the view still shows, which that container's own
+  read returns. A key the preview lacks reads nothing, and on a view of a
+  content root the preview leaves out every key and path reads nothing. A
+  point or a range throws `AuthoredPlaceError`, which `plitejs/authored`
+  exports. A page cursor from a read with `at` works only on a view with the
+  same root and preview, and a cursor from a read without `at` works on any
+  view. A change's `ranges` and the locations in `details` stay places of the
+  stored document on every view. A card is the adjacent pending changes of
   one author, named by its oldest pending change, so every peer and reload
   names it alike. A pending join or split stands for the line break it removes
   or adds, so changes on either side of it are adjacent. A change whose last
@@ -221,8 +282,33 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   pending insertion becomes part of it, so rejecting the typing removes the
   break too. Plite stores no color; Plate derives one from that name. A
   decision takes the changes or cards it read and refuses one that moved since.
+  Except for a split or join inside a top-level block, no revision covers
+  where a change sits, so an edit before it keeps the revision while its
+  `ranges` move. A join, split, wrap or unwrap's revision ignores the text
+  and leaves inside its element. It changes when the element's own fields
+  change, when a child block is added or removed or changes its shape, or
+  when children of different shapes swap, and swapping two children of the
+  same shape keeps it. So a decision on a structure change stays valid while
+  someone types or formats text inside it, and refuses as stale after its
+  child blocks change. The revision of a split or join inside a top-level
+  block, such as a quote, also covers its path inside that block, because a
+  decision merges its line into the block before it. That path counts
+  blocks, so it does not say which block comes before the line. Inside that
+  block, a block that lands among or leaves from the blocks before the line,
+  or before one of its ancestors, changes the revision. After the blocks
+  before it change order, or one of them is replaced or changes type, a
+  decision read before still applies and merges the line into the block now
+  before it. A block that lands between the halves of a top-level split or
+  join also keeps the revision, and a decision read before merges the line
+  into that block (Open work).
   `api.subscribeChanges` hands each view one frozen delta per commit that
-  changes the review.
+  changes the review. Its `blocks` names the view's top-level blocks whose
+  read of changes or cards may differ, which under a preview are blocks the
+  preview shows, so a block's badge wakes for what its read shows. They are
+  each block a change reached or left and each block holding a change whose
+  card ID changed. A change to a card's summary alone names no block, so a
+  block's copy of a card's `changeCount` or `revision` can trail until it
+  reads again.
   A view either writes, with intent `edit` or `propose`, or previews the
   document with every pending change accepted (`proposed`) or rejected
   (`accepted`). A preview throws on a plain edit, but some other writes still
@@ -329,19 +415,65 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   behavior, not law, until the split-order task decides it.
 - A deletion Editing records applies in that commit, a pending join beside it
   included.
+- A pending join can show a block away from where it is stored. The proposed
+  preview shows a block split off the joined line, or inserted between the
+  join's halves, after the joined line. Both intents record Backspace or
+  Delete across a moved block's edge, and a deletion over moved blocks, as
+  the merges they make. Suggesting refuses that Backspace, with no reason,
+  when the moved line holds the owner of an exclusive content root, because
+  the merge would give the root two owners; Editing records it. An Editing
+  delete that reaches a pending join's follower with no shown line between
+  records the plain merge. Select-all covers every block the preview shows,
+  a moved last block included. Both intents refuse these edits and store
+  nothing for them.
+  - Enter or a new block where a moved block meets its neighbours, with
+    `crosses`.
+  - Enter after an earlier break in its line, such as at the end of a joined
+    line that a moved block follows, with `reordered`. On the crossed-deletion
+    test document, 7 of 12 Enter positions refuse in both intents, 2 of them
+    with `reordered`.
+  - An edit where the preview shows none of the selected letters between the
+    selection's ends, but shows some of them elsewhere, with `crosses`. When
+    the preview hides the selected letters, such as struck text, the
+    selection becomes a caret instead.
+  - A format that starts or ends inside a text where a moved block meets its
+    neighbours, and a letter typed there with a mark toggled on, with
+    `crosses`, because each splits that text at the break. Where the break
+    falls between two texts, such as beside a link, the marked letter goes
+    into a new text there and records. With Bold toggled on, all 48 carets of
+    the two link test shapes record, and only the 8 flat carets that split a
+    text at the break refuse.
+  - Select-all Delete, typing or paste beside a joined line and its
+    follower, at the top level or in a quote, with `crosses`.
+  - A range whose image runs backward, a whole-root replacement across
+    breaks, an unsupported structural crossing and a backward removal, with
+    `crosses`; a final resolution that shows another block order, with
+    `reordered`; an ordered run the range meets without exact alignment, with
+    `unaligned`; and a final resolution that differs in content or
+    structure, with `diverged`.
+  A format such as Bold over a moved piece formats what the proposed preview
+  shows between the selection's ends and saves that. A range end inside a
+  block the preview hides whole places at that block's edge. A command that
+  names a place of its own, such as a link inserted at a given point, is not
+  refused for the selection it started with, so when it also edits at that
+  selection it can change text outside it. Its edits at the places it names
+  still refuse this way. Typing at a caret inside the joined line
+  still applies. A refused edit rolls back the whole update and reaches
+  `subscribeRefusals` as `unrepresentable` with its reason.
 - Settling applies a claim as a decision would. Deleted text goes, and an
   inline element whose deletion is accepted goes once none of its content
   survives, its pending cuts moving to its other pieces.
 
 ## Main changes
 
-- `packages/plitejs/src/authored/tree/` turns each write into review marks on the stored document (`record.ts`, `record-completion.ts`), decides changes by rewriting that document (`resolve.ts`) and builds the previews (`proposed.ts`). `cuts.ts` reads the cut marks of pending splits and joins the fragments of a rejected one, and `layers.ts` decides pending property writes. The resolver lands a join whose target holds no live content in the target's place, with the target's followers after it, and reports the nodes it lands out of stored order. Projections leave out the `held` member, which only the resolutions written back to storage keep. The recorder splits a frame step that crosses a break, a place where the view shows two stored pieces side by side, into sub-steps that each map in stored order. It refuses a crossing it cannot split, a block merge whose right line holds or ends at a break, a block inserted beside a moved line and a removal mapped backward, and stores nothing for them (`docs/plans/2026-10-17-command-law-moved-content.md`).
+- `packages/plitejs/src/authored/tree/` turns each write into review marks on the stored document (`record.ts`, `record-completion.ts`), decides changes by rewriting that document (`resolve.ts`) and builds the previews (`proposed.ts`). `cuts.ts` reads the cut marks of pending splits and joins the fragments of a rejected one, and `layers.ts` decides pending property writes. The resolver merges an accepted join into its target, which keeps its type and properties, and reports `placements`, the landings that pass a shown line or change a shown container, and `hidden`, the blocks a preview hides whole with the shown block each collapses into. Projections leave out the `held` member, which only the resolutions written back to storage keep. The recorder reads the breaks of the lines a step touches from the ledger's map, where a break is a place the view shows two stored pieces side by side, and splits a frame step that crosses one into sub-steps that each map in stored order. A property-only step maps each token on its own through `rebaseProperties`. The recorder refuses a crossing it cannot split, a block merge whose right line holds or ends at a break, a block inserted beside a moved line and a removal mapped backward, stores nothing for them, and names each refusal's reason (`docs/plans/2026-10-17-command-law-moved-content.md`).
 - `packages/plitejs/src/authored/facts/` owns the review records saved in the document's `records` and admits them when a document loads or a peer sends them (`records.ts`, `admission.ts`).
-- `packages/plitejs/src/authored/ledger/` reads the marks into changes and cards and keeps them per top-level block, so a read or a change delta costs work in proportion to the edit, not the document (`ledger.ts`, `cards.ts`, `work.ts`). A run whose blocks store a line moved between a join's halves before the joined line maps positions through a run order read from the resolver's landing, and the frame map reports its breaks (`order.ts`).
+- `packages/plitejs/src/authored/ledger/` reads the marks into changes and cards and keeps them per top-level block, so a read or a change delta costs work in proportion to the edit, not the document (`ledger.ts`, `cards.ts`, `work.ts`). Each preview mode has one projection, a `Level` per sibling list (`level.ts`), and each run in it keeps a map of which stored content each preview place shows, built from the resolver's placements (`places.ts`). `level.ts` and `places.ts` own each run's order, its breaks and range placement, for the command frame, the recorder, review reads and the delta. Placements and hidden blocks build in both previews, because Accepted reads use them, and the frame and the recorder read only the proposed preview's map. A written run keeps no order. A placement that names a block its run does not hold or holds twice, or lands a block inside itself, fails as an invariant and never falls back to an ordinary diff (`runs.ts`). A window holding a follower claim or a move source resolves and is checked against that resolution, and refuses with `reordered` or `diverged` on a mismatch. Review reads turn a view key or path into the stored spans its node shows. Publication names the top-level view blocks whose reads changed, and follows a block held across an edit to the view block that holds its node key. Reads and range placement binary-search a run's order, and `orderedRunsIn` is the only search for ordered runs that a key reaches, counted as `breakRuns`. `pairs.ts` keeps a block's pending joins and splits as `joinsAndSplits`, and `breaks` names only the map's breaks. The first key after a load does equal work at 96 and 4,992 blocks, because a preview's snapshot builds no whole child array (`packages/plitejs/src/core/public-state.ts`); a later key still reads the whole root (Open work).
+- `CommandProjectionMap` in `packages/plitejs/src/core/command-document.ts` has `moved`, `nodePath`, `projectRange` and `reorders`. On a root the projection reorders, the command frame binds a moved block's key when it builds its index fresh, places a node selection or a node command's `at` through `nodePath`, and places every caret and range through `projectRange`, which returns a placement or a refusal reason. A range from the root's stored start to its stored end places over the whole projected root, so select-all keeps a moved last block. The frame holds a stored selection it cannot place and refuses only a command body that places no location of its own. It refuses a property-only step with `crosses` only where the step overlaps the image of a range that shows other content than it stores.
 - `packages/plitejs/src/core/root-ownership.ts` judges which content roots lose their last owner, counting an exclusive root's owners from the roots a change touched. The recorder, resolution, decisions, load admission and the review ledger drop the roots it names.
-- `packages/plitejs/src/authored/authored.ts` is the plugin, with its views, its reads, `update.decide`, `api.subscribeChanges` and `api.subscribeRefusals`. A refusal reaches an Editing write too, as `unrepresentable`, and the suggestion kit's toast asks that writer to accept or reject the pending suggestion first.
+- `packages/plitejs/src/authored/authored.ts` is the plugin, with its views, its reads, `update.decide`, `api.subscribeChanges` and `api.subscribeRefusals`. Its reads place `at` through the view (`placeIds`), and on a preview a point or a range throws `AuthoredPlaceError`, which `packages/plitejs/src/authored/index.ts` and `packages/platejs/src/authored/index.ts` export. A refusal reaches an Editing write too, as `unrepresentable`, and the suggestion kit's toast asks that writer to accept or reject the pending suggestion first.
 - The Yjs binding carries review marks as node properties in the shared tree, and review records in one shared map per record set that peers merge by id (`packages/plitejs/src/yjs/core/controller.ts`).
-- `packages/platejs/src/authored/AuthoredPlugin.ts` stamps writes with the editor's `userId` and takes no options. `BaseSuggestionPlugin` maps Editing and Suggesting to view intents and writes the `data-editor-authored-*` attributes, and `useSuggestionGroups(blockKey)` reads the cards touching a block (`packages/platejs/src/react/features/suggestion/useSuggestion.ts`).
+- `packages/platejs/src/authored/AuthoredPlugin.ts` stamps writes with the editor's `userId` and takes no options. `BaseSuggestionPlugin` maps Editing and Suggesting to view intents and writes the `data-editor-authored-*` attributes, and `useSuggestionGroups(blockKey)` reads the cards of the block with that key (`packages/platejs/src/react/features/suggestion/useSuggestion.ts`).
 
 - `packages/plitejs/src/authored/facts/records.ts` adds the `authored-landed` record set, which maps a format write's id to the change that wrote it. Decisions, admission's repair and the recorder store one record for each commit that removes accepted format tags or writes an Editing tag over pending ones. `facts.ts` lets a stacked tag's link to a tag that left stand only while its record counts.
 - `recordFormats` in `packages/plitejs/src/authored/tree/layers.ts` records every format write. An Editing write over pending tags stacks its writer's accepted tag on top and leaves them pending.
@@ -388,6 +520,17 @@ For undo, [Undo finds what each node was](../2026-10-18-undo-repair-nodes.md) re
 | Yjs with y-prosemirror | Item ids; a redo re-creates deleted items linked to their old ids | Formatting attributes follow the characters | Refuses a redo of a map key another client wrote after (`yjs/src/structs/Item.js:236`) |
 | Plite | The kept sections of the undo's own change, since stored values carry no node ids | History's values, then admission's repair | Yes, from the decisions made since the write |
 
+For review reads on a preview, [One map of a preview's places](../2026-10-19-preview-places-on-next.md) read local checkouts on 2026-10-17 (BlockNote `1e26f1c`, prosemirror-suggest-changes `653fba7`, manuscripts track-changes `62f4d19`, CKEditor 5 `14e73cc31b`, ONLYOFFICE `72b0421`, EigenPal DOCX editor `84c4622`) and vendor docs for Google Docs, Word and CKEditor 5's commercial track changes, and ran none of them. Google Docs, Word's Original view and CKEditor 5's final-content preview hide review cards in a clean preview, and Google Docs requires inline indexes for any write. EigenPal keeps its review queue in both previews and places each card by the stored paragraph ids its layout keeps, a merged fragment indexing every paragraph it shows; content the preview drops gets no anchor. No editor documents a map from a preview position back to its stored suggestions, and none documents typing a suggestion inside a preview that reorders paragraphs.
+
+| Editor | Preview modes | Cards in a preview | A preview place to its stored suggestions | Block identity across a preview | Source |
+| --- | --- | --- | --- | --- | --- |
+| Google Docs | Suggestions accepted, suggestions rejected | Hidden; the clean previews show no comments or suggestions | None documented; writes need inline indexes | Not documented | [Suggestions API guide](https://developers.google.com/workspace/docs/api/how-tos/suggestions), [SuggestionsViewMode](https://developers.google.com/workspace/docs/api/reference/rest/v1/documents#SuggestionsViewMode) |
+| Microsoft Word | No Markup, Original | Original hides tracked changes and comments | Not documented | Not documented | [Track changes in Word](https://support.microsoft.com/en-gb/word/training/track-changes-in-word) |
+| CKEditor 5 (commercial, docs only) | Final content in a modal; accepted or discarded data | Not documented; the modal shows content only | None; a temporary editor serializes the result | No shared model objects | [Preview final content](https://ckeditor.com/docs/ckeditor5/latest/features/collaboration/track-changes/track-changes-preview.html) |
+| EigenPal DOCX editor `84c4622` | Proposed result, original | Kept; the review queue reads the stored tree in both modes | Stored paragraph ids and offsets that layout fragments keep; a merged fragment indexes every paragraph it shows | Yes, by stored paragraph id; dropped content gets no anchor | `eigenpal/docx-editor@84c4622:packages/core/src/store/store/review-reads.ts`; `packages/pro/src/review/review-model.ts` |
+| BlockNote `1e26f1c` | Viewing suggestions, base document; no accept-all preview | Suggestion marks stay in viewing mode | Mark ranges and CRDT ids | Raw block ids kept, sometimes duplicated | `TypeCellOS/BlockNote@1e26f1c:packages/core/src/y/extensions/Suggestions.ts` |
+| prosemirror-suggest-changes `653fba7` | None built in; `applySuggestionsToNode` returns the accepted document | No sidebar | None returned | No block ids | `handlewithcarecollective/prosemirror-suggest-changes@653fba7:src/commands.ts` |
+
 ## Open work
 
 - Suggesting a move of a block that owns an exclusive content root fails validation, which reports two owners of its root. owner: the owner, through session card `task_04df43cd`. stop: that session lands or is dropped.
@@ -411,7 +554,7 @@ For undo, [Undo finds what each node was](../2026-10-18-undo-repair-nodes.md) re
 - A peer's typing in the right half of a block another client splits lands in the left half, and a peer's edit in a child the split moves whole is lost. Typing is also lost when the split formats that half at offset 0, when Enter lands at a block's end, or when the commit also changes the left block, formats only part of the first text it moves or changes anything it moves after that text. A split before two inline elements copies them into both halves while a peer types, and the peers differ. A cut where two leaves meet leaves the writer's editor and the shared document different, and a replacement whose left block keeps the old letters and format reaches peers as a split. All of it happens at 01da933d63 or on next. Suggested task t_649d2131 decides how a split keeps its moved letters. owner: the owner. stop: t_649d2131 lands a fix or is dropped.
 - A type change in place that unsets a property set-valued only on the old type leaves it in the Yjs document, and the peers' editors differ. It is suggested task t_0242f13b. owner: the owner. stop: t_0242f13b lands or is dropped.
 - `writeTextRuns` finds each changed run's place in the Yjs text chain by scanning from the chain's start, so formatting many runs over a block that holds many Yjs texts, as repeated merges leave, reads the chain once per run. It is suggested task t_3c33e35c. owner: the owner. stop: t_3c33e35c lands or is dropped.
-- Where Enter, block merges and an inserted block land among a pending join's moved lines, which the recorder refuses today, and where accepting puts a moved line that the joins after it merge into, which it drops as before. owner: zbeyens; stop: t_bdec706b lands or is dropped; tracked: the suggested-task ledger.
+- Where Enter, block merges and an inserted block land among a pending join's moved lines, which the recorder refuses today, and where accepting puts a moved line that the joins after it merge into, which it drops as before. Select-all Delete beside a joined line and its follower also refuses, at the top level and in a quote, and recording it needs the recorder to replace a whole root across its breaks. owner: zbeyens; stop: t_bdec706b lands or is dropped; tracked: the suggested-task ledger.
 - A moved line's place after its join when another join on it is decided alone. owner: zbeyens; stop: t_a9d89ef3 lands or is dropped; tracked: the suggested-task ledger.
 - A mark applied across the whole of a pending join's joined line. owner: zbeyens; stop: t_9bd5d71a lands or is dropped; tracked: the suggested-task ledger.
 - Other authors' pending claims on a lowered merge's landed copy. owner: zbeyens; stop: t_e623a723 lands or is dropped; tracked: the suggested-task ledger.
@@ -424,3 +567,16 @@ For undo, [Undo finds what each node was](../2026-10-18-undo-repair-nodes.md) re
 - Which intent a refused change ran in, so the toast names the right mode for a proposal forced from Editing. owner: zbeyens; stop: t_4b729b20 lands or is dropped; tracked: the suggested-task ledger.
 - This subject's page, which the renderer refuses while it shows a fold of an open plan. owner: zbeyens; stop: t_d4caeb74 lands or is dropped; tracked: the suggested-task ledger.
 - Exact node placement, undo keys and anchors near moved lines, and own acceptance's change when it reorders, which stay coarse. owner: zbeyens; stop: a recording law fails on one, which offers its task; tracked: `docs/plans/2026-10-17-command-law-moved-content.md`.
+- A container the parent groups with a sibling resolves whole on each key while the link stands. A framed step of the ledger laws resolves or adopts one whole on 22 of 168 framed steps. Cutting it at its edge belongs with the edits beside a container and the claim keys a key inside a container copies (rows 158 and 159 of `docs/plans/2026-10-17-preview-review-origins.decisions.tsv`). owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- `ledger.carry` advances every preview mode a reader ever indexed on each owner commit, even with no view showing it (`packages/plitejs/src/authored/ledger/ledger.ts`). It limits the line "A preview mode costs nothing per commit while no view shows it" in `docs/plans/2026-10-13-review-tree-pivot.md`. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- A later key on a loaded document reads the whole root through the caret read and, in Editing, the saved baseline (row 190 of `docs/plans/2026-10-17-preview-review-origins.decisions.tsv`). owner: zbeyens; stop: t_1a6aacfb lands or is dropped; tracked: the suggested-task ledger.
+- The recording laws leave out three documents that the recorder cannot record. These are the identity law's two Editing-join documents, with `REORDERED`'s proposed floor at 41 instead of 44, and the ledger-law example of an Editing deletion that moves the only line out of a quote a pending unwrap dissolves. owner: zbeyens; stop: t_084ac465 and t_de241d0c each land or are dropped; tracked: the suggested-task ledger.
+- A split or join card's revision does not cover the block a decision merges it into (rows 191 and 206 of `docs/plans/2026-10-17-preview-review-origins.decisions.tsv`). It limits this subject's revision rule and the revision paragraphs of `content/docs/(guides)/authored-changes.mdx` and `content/docs/plite/libraries/plite-authored.mdx` with their Chinese twins. Covering the keys of the blocks before it costs work that grows with them on each key, so it needs a design of its own. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- A hand-written document with two followers of one join, one of them a join target with its own follower, shows only its first paragraph under Proposed. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- The ledger laws fail on 30 of 72 hunt seeds for reasons older than the preview map, and a nested root in the second ledger law fails six seeds the same way without it. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- A follower that an edit moves keeps its follower claim, so Proposed puts it back after the joined line wherever the edit put it. Whether a move should drop the claim is a product call. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- With Bob's pending subscript on a superscript `A`, Dave typing `Z` after `A` under Suggesting gives the live Proposed preview `AZ` in subscript, while a fresh load shows `Z` in superscript, at top level and inside a quote. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- A delete over a range whose image reaches content it does not store may strike that content; a probe strikes Alice's `c` the same way without the preview map. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- The `unaligned` refusal's message names no action, and `rebaseProperties` throws a plain `Error`. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- The planted `crosses` control for typing at a caret fails on a Backspace the case must apply before it reaches the typed-caret assertion, so it does not yet prove that assertion. owner: zbeyens, through a suggested task. stop: before the next change to the frame's caret refusal.
+- `RunPlaces.toProjected` moves a stored position inside blocks the preview hides whole to their edge, because `orderOf` in `packages/plitejs/src/authored/ledger/runs.ts` groups a hidden block with the order segment after it. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.

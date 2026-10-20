@@ -188,7 +188,7 @@ Deleted:
 Callers that break, from `git grep` over live source, docs and generated output; the build reruns `pstack:blast-radius` before the cut:
 
 - `packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.spec.ts:121-127, 245-246, 287-290, 345-346, 694-696, 726, 754, 788`.
-- `apps/www/src/registry/components/editor/footnote.slow.tsx`, eleven `hasDuplicateDefinitions` mocks (lines 25 to 803).
+- `apps/www/src/registry/components/editor/footnote.spec.tsx`, which held eleven `hasDuplicateDefinitions` mocks (lines 25 to 803) when this list was written.
 - `apps/www/src/lib/search-result-groups.test.ts:31` and `apps/www/src/app/api/search/route.test.ts:57`, which use the names as search fixtures.
 - `content/docs/(plugins)/(elements)/footnote.mdx:341-386` and the Plugin surface list in `docs/editor-behavior/markdown-editing-spec.md:3482`.
 - Generated: `apps/www/src/generated/api-reference-manifest.json`, `apps/www/public/r/footnote-docs.json`, `apps/www/public/r/registry.json` and `apps/www/public/r/registry-docs.json`.

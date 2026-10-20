@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "The document contract determines persisted math values and inline/block identity.",
-  "last": false,
-  "opportunity": {
-    "score": 6,
-    "reason": "Formula editing has independent inline/native and codec cases."
-  },
   "owners": [
     "packages/platejs/src/math/"
   ],

@@ -619,6 +619,82 @@ test('preserves the benchmark exit status as a hard failure', async (t) => {
   assert.equal(readReceipt(workspace).result.stage, 'benchmark');
 });
 
+const processIsAlive = (pid) => {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error?.code === 'ESRCH') return false;
+    throw error;
+  }
+};
+
+const waitUntil = async (predicate, timeoutMs = 1000) => {
+  const startedAt = performance.now();
+
+  while (performance.now() - startedAt < timeoutMs) {
+    if (predicate()) return true;
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
+  }
+
+  return false;
+};
+
+test(
+  'times out a benchmark with exit 124 and leaves no subprocess behind',
+  {
+    skip: process.platform === 'win32',
+  },
+  async (t) => {
+    const { script, workspace } = fixtureWorkspace(t);
+    const pidFile = path.join(workspace, 'grandchild.pid');
+    const correctness = script('correctness.mjs', 'process.exit(0);');
+    const benchmark = script(
+      'benchmark.mjs',
+      `import { spawn } from 'node:child_process'; import fs from 'node:fs'; const child = spawn(process.execPath, ['-e', "process.on('SIGTERM', () => {}); setInterval(() => {}, 1000);"], { stdio: 'ignore' }); fs.writeFileSync(${JSON.stringify(pidFile)}, String(child.pid)); setInterval(() => {}, 1000);`
+    );
+
+    await assert.rejects(
+      () =>
+        runBenchmarkTarget(
+          {
+            ...fixtureTarget({ benchmark, correctness }),
+            timeouts: { benchmarkMs: 150, correctnessMs: 5000 },
+          },
+          {
+            repoRoot: workspace,
+            writeOutput: false,
+          }
+        ),
+      (error) => {
+        assert.match(error.message, /benchmark failed: exit=124/u);
+        assert.equal(error.exitCode, 124);
+        return true;
+      }
+    );
+
+    const receipt = readReceipt(workspace);
+    assert.deepEqual(
+      receipt.processes.map(({ role, exitCode, timedOut }) => [
+        role,
+        exitCode,
+        timedOut,
+      ]),
+      [
+        ['correctness', 0, false],
+        ['benchmark', 124, true],
+      ]
+    );
+    assert.equal(receipt.result.stage, 'benchmark');
+
+    const grandchildPid = Number(fs.readFileSync(pidFile, 'utf-8'));
+
+    assert.equal(await waitUntil(() => !processIsAlive(grandchildPid)), true);
+  }
+);
+
 test('fails the run when its receipt cannot be written', async (t) => {
   const { script, workspace } = fixtureWorkspace(t);
   const correctness = script('correctness.mjs', 'process.exit(0);');

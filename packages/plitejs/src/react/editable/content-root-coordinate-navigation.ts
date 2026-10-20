@@ -1,5 +1,9 @@
 import type { Point, Range } from '../..';
 import { createDOMGeometryKernel, hasUsableDOMRect } from '../../dom/internal';
+import {
+  resolveDOMPointInRoot,
+  resolveDOMRangeInRoot,
+} from '../../dom/plugin/dom-editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 
 export const hasUsableRect = (rect: DOMRect | null): rect is DOMRect =>
@@ -19,10 +23,10 @@ export const resolveUsableRangeRect = (
   const { affinity } = range as Range & { affinity?: 'backward' | 'forward' };
 
   return createDOMGeometryKernel({ root }).rangeRect(
-    editor.api.dom.resolveDOMRange(range),
+    resolveDOMRangeInRoot(editor, range),
     {
       association: affinity === 'forward' ? 'forward' : 'backward',
-      fallbackPoint: editor.api.dom.resolveDOMPoint(range.anchor),
+      fallbackPoint: resolveDOMPointInRoot(editor, range.anchor),
     }
   );
 };

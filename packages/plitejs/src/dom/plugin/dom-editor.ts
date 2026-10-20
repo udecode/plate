@@ -111,6 +111,7 @@ import {
   createDOMGeometryKernel,
   type DOMGeometryRect,
   getPliteTextHostBounds,
+  getPliteTextHostStrings,
 } from './dom-geometry';
 import {
   findMountedDOMNodeByPath,
@@ -133,6 +134,8 @@ import {
   resolveDOMTextFlowOffset,
   resolveDOMTextFlowPoint,
 } from './dom-text-flow-index';
+import { getTextHost, getTextRoot } from './dom-text-freshness';
+import { isDOMRangePainted, isDOMTextPainted } from './dom-text-proofs';
 
 const EDITOR_TO_CANCEL_FOCUS_RETRY = new WeakMap<EditorType, () => void>();
 const EDITOR_TO_FOCUS_REQUEST_GENERATION = new WeakMap<EditorType, number>();
@@ -172,8 +175,11 @@ export interface DOMApi {
   ) => DOMDropTarget | null;
   deselect: () => void;
   editable: (root?: RootKey) => HTMLElement | null;
-  findDocumentOrShadowRoot: () => Document | ShadowRoot;
-  /** The document or shadow root holding the editable, or null when unmounted. */
+  assertDocumentOrShadowRoot: () => Document | ShadowRoot;
+  /**
+   * The document or shadow root holding the editable, or null when this editor
+   * has no mounted view, or when several are mounted and none has focus.
+   */
   resolveDocumentOrShadowRoot: () => Document | ShadowRoot | null;
   assertEventRange: (event: any) => Range;
   findKey: (node: Descendant) => Key;
@@ -421,9 +427,10 @@ export interface DOMEditorInterface {
   ) => HTMLElement | null;
 
   /**
-   * Find the DOM node that implements DocumentOrShadowRoot for the editor.
+   * Return the DocumentOrShadowRoot holding the editor's editable, or throw
+   * where `resolveDocumentOrShadowRoot` returns null.
    */
-  findDocumentOrShadowRoot: <
+  assertDocumentOrShadowRoot: <
     V extends Value,
     TPlugins extends readonly unknown[],
   >(
@@ -432,7 +439,8 @@ export interface DOMEditorInterface {
 
   /**
    * Resolve the DocumentOrShadowRoot holding the editor's editable, or null
-   * when the editor has no mounted editable.
+   * when this editor has no mounted view, or when several are mounted and none
+   * has focus.
    */
   resolveDocumentOrShadowRoot: <
     V extends Value,
@@ -1076,7 +1084,8 @@ export const resolveDOMPointInRoot = (
   editor: DOMEditor<any>,
   point: Point,
   root?: HTMLElement | null,
-  affinity?: 'backward' | 'forward'
+  affinity?: 'backward' | 'forward',
+  { checkPageText = false }: { checkPageText?: boolean } = {}
 ): DOMPoint | null => {
   if (root?.isConnected === false) return null;
   const found = findDOMPointElementInRoot(editor, point, root, affinity);
@@ -1085,12 +1094,23 @@ export const resolveDOMPointInRoot = (
     return null;
   }
 
-  const el = cachePliteDOMNode(editor, found.node, found.element);
-  const resolvedPoint = found.point;
+  const { node, point: resolvedPoint } = found;
+  const el = cachePliteDOMNode(editor, node, found.element);
+  const nodeKey = editorGetNodeKey(editor, resolvedPoint.path) ?? undefined;
+
+  if (
+    checkPageText &&
+    NodeApi.isText(node) &&
+    nodeKey !== undefined &&
+    !isDOMTextPainted(editor, el, nodeKey, node)
+  ) {
+    return null;
+  }
+
   const textFlowPoint = resolveDOMTextFlowPoint(
     el,
     resolvedPoint.offset,
-    editorGetNodeKey(editor, resolvedPoint.path) ?? undefined,
+    nodeKey,
     affinity
   );
 
@@ -1100,11 +1120,7 @@ export const resolveDOMPointInRoot = (
 
   let domPoint: DOMPoint | undefined;
 
-  // For each leaf, we need to isolate its content, which means filtering
-  // to its direct text and zero-width spans. (We have to filter out any
-  // other siblings that may have been rendered alongside them.)
-  const selector = '[data-editor-string], [data-editor-zero-width]';
-  const texts = Array.from(el.querySelectorAll(selector));
+  const texts = getPliteTextHostStrings(el);
   let { start } = getPliteTextHostBounds(el);
 
   for (let i = 0; i < texts.length; i++) {
@@ -1202,11 +1218,33 @@ const readTextToCaret = (editor: DOMEditor<any>, from: Point) => {
   return (contents.textContent ?? '').replaceAll('\uFEFF', '');
 };
 
+const getDOMPointTextHost = ([node]: DOMPoint) => {
+  const element = isDOMElement(node) ? node : node.parentElement;
+
+  return element && getTextHost(element);
+};
+
+const resolvePaintedDOMPoint = (editor: DOMEditor<any>, point: Point) =>
+  resolveDOMPointInRoot(editor, point, undefined, undefined, {
+    checkPageText: true,
+  });
+
+const resolvePaintedDOMRange = (editor: DOMEditor<any>, range: Range) =>
+  resolveDOMRangeInRoot(editor, range, undefined, { checkPageText: true });
+
+const throwUnresolved = (at: Point | Range): never => {
+  throw new DOMResolutionError(
+    `Cannot resolve DOM coordinates that are not mounted or not painted yet: ${formatDebugValue(at)}`,
+    { details: { at } }
+  );
+};
+
 /** Resolve native coordinates within an exact mounted DOM root. @internal */
 export const resolveDOMRangeInRoot = (
   editor: DOMEditor<any>,
   range: Range,
-  root?: HTMLElement | null
+  root?: HTMLElement | null,
+  { checkPageText = false }: { checkPageText?: boolean } = {}
 ): DOMRange | null => {
   const { anchor, focus } = range;
   const isBackward = RangeApi.isBackward(range);
@@ -1215,7 +1253,8 @@ export const resolveDOMRangeInRoot = (
     editor,
     anchor,
     root,
-    collapsed ? undefined : isBackward ? 'backward' : 'forward'
+    collapsed ? undefined : isBackward ? 'backward' : 'forward',
+    { checkPageText }
   );
 
   if (!domAnchor) {
@@ -1228,7 +1267,8 @@ export const resolveDOMRangeInRoot = (
         editor,
         focus,
         root,
-        isBackward ? 'forward' : 'backward'
+        isBackward ? 'forward' : 'backward',
+        { checkPageText }
       );
 
   if (!domFocus) {
@@ -1243,6 +1283,33 @@ export const resolveDOMRangeInRoot = (
 
   if (!window) {
     return null;
+  }
+
+  if (checkPageText && !collapsed) {
+    const [start, end] = isBackward
+      ? [[focus, domFocus] as const, [anchor, domAnchor] as const]
+      : [[anchor, domAnchor] as const, [focus, domFocus] as const];
+    const startHost = getDOMPointTextHost(start[1]);
+    const endHost = getDOMPointTextHost(end[1]);
+    const startKey = editorGetNodeKey(editor, start[0].path);
+    const endKey = editorGetNodeKey(editor, end[0].path);
+    const textRoot = startHost && getTextRoot(startHost);
+
+    if (
+      startHost &&
+      endHost &&
+      startKey &&
+      endKey &&
+      (!textRoot ||
+        !isDOMRangePainted(
+          editor,
+          textRoot,
+          [startHost, startKey],
+          [endHost, endKey]
+        ))
+    ) {
+      return null;
+    }
   }
 
   const domRange = window.document.createRange();
@@ -1334,7 +1401,7 @@ export const DOMEditor: DOMEditorInterface = {
     return null;
   },
 
-  findDocumentOrShadowRoot: (editor) => {
+  assertDocumentOrShadowRoot: (editor) => {
     const root = DOMEditor.resolveDocumentOrShadowRoot(editor);
 
     if (root) return root;
@@ -2810,7 +2877,8 @@ export const createDOMEditorCapability = <
       DOMEditor.deselect(editor);
     },
     editable: (root) => DOMEditor.editable(editor, root),
-    findDocumentOrShadowRoot: () => DOMEditor.findDocumentOrShadowRoot(editor),
+    assertDocumentOrShadowRoot: () =>
+      DOMEditor.assertDocumentOrShadowRoot(editor),
     resolveDocumentOrShadowRoot: () =>
       DOMEditor.resolveDocumentOrShadowRoot(editor),
     assertEventRange: (event) => DOMEditor.assertEventRange(editor, event),
@@ -2882,8 +2950,8 @@ export const createDOMEditorCapability = <
     isTargetInsideNonReadonlyVoid: (target) =>
       DOMEditor.isTargetInsideNonReadonlyVoid(editor, target),
     resolveDOMNode: (node) => DOMEditor.resolveDOMNode(editor, node),
-    resolveDOMPoint: (point) => DOMEditor.resolveDOMPoint(editor, point),
-    resolveDOMRange: (range) => DOMEditor.resolveDOMRange(editor, range),
+    resolveDOMPoint: (point) => resolvePaintedDOMPoint(editor, point),
+    resolveDOMRange: (range) => resolvePaintedDOMRange(editor, range),
     resolveEventRange: (event) => DOMEditor.resolveEventRange(editor, event),
     resolvePath: (node) => DOMEditor.resolvePath(editor, node),
     resolveRangeRect: (range) => DOMEditor.resolveRangeRect(editor, range),
@@ -2900,8 +2968,10 @@ export const createDOMEditorCapability = <
     resolveRange: (domRange, options) =>
       DOMEditor.resolveRange(editor, domRange, options),
     assertDOMNode: (node) => DOMEditor.assertDOMNode(editor, node),
-    assertDOMPoint: (point) => DOMEditor.assertDOMPoint(editor, point),
-    assertDOMRange: (range) => DOMEditor.assertDOMRange(editor, range),
+    assertDOMPoint: (point) =>
+      resolvePaintedDOMPoint(editor, point) ?? throwUnresolved(point),
+    assertDOMRange: (range) =>
+      resolvePaintedDOMRange(editor, range) ?? throwUnresolved(range),
     assertNode: (domNode) => DOMEditor.assertNode(editor, domNode),
     assertPoint: (domPoint, options) =>
       DOMEditor.assertPoint(editor, domPoint, options),

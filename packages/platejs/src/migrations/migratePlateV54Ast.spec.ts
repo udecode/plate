@@ -701,6 +701,79 @@ describe('migratePlateV54 AST contracts', () => {
     });
   });
 
+  describe('v1 dates', () => {
+    // Bun tests run in UTC when TZ is unset, and deleting TZ stops Bun from
+    // applying a later change, so restore a value instead.
+    const originalTimeZone = process.env.TZ ?? 'UTC';
+
+    afterEach(() => {
+      process.env.TZ = originalTimeZone;
+    });
+
+    const migrateDate = (properties: Readonly<Record<string, string>>) =>
+      migrateDocument(
+        {
+          children: [
+            {
+              children: [
+                { children: [{ text: '' }], type: 'date', ...properties },
+              ],
+              type: 'paragraph',
+            },
+          ],
+        },
+        { migrations: createMigrationEditor().migrations }
+      ).document.children[0]?.children;
+
+    it('converts a v1 toDateString date into a day', () => {
+      expect(migrateDate({ date: 'Mon Mar 23 2026' })).toMatchObject([
+        {},
+        { type: 'date', value: '2026-03-23' },
+        {},
+      ]);
+    });
+
+    it('keeps a v1 rawDate as written', () => {
+      expect(migrateDate({ rawDate: 'Mon Mar 23 2026' })).toMatchObject([
+        {},
+        { type: 'date', value: 'Mon Mar 23 2026' },
+        {},
+      ]);
+    });
+
+    it('keeps a v1 date naming an impossible day as written', () => {
+      expect(migrateDate({ date: 'Fri Feb 30 2026' })).toMatchObject([
+        {},
+        { type: 'date', value: 'Fri Feb 30 2026' },
+        {},
+      ]);
+    });
+
+    it('keeps a v1 date that is already a day', () => {
+      expect(migrateDate({ date: '2026-03-24' })).toMatchObject([
+        {},
+        { type: 'date', value: '2026-03-24' },
+        {},
+      ]);
+    });
+
+    it('accepts a value equal to the raw v1 date and stores the day', () => {
+      expect(
+        migrateDate({ date: 'Mon Mar 23 2026', value: 'Mon Mar 23 2026' })
+      ).toMatchObject([{}, { type: 'date', value: '2026-03-23' }, {}]);
+    });
+
+    it('converts a day the host zone skipped', () => {
+      process.env.TZ = 'Pacific/Apia';
+
+      expect(migrateDate({ date: 'Fri Dec 30 2011' })).toMatchObject([
+        {},
+        { type: 'date', value: '2011-12-30' },
+        {},
+      ]);
+    });
+  });
+
   it('sanitizes malformed legacy border descriptors', () => {
     const { editor, migrations } = createMigrationEditor();
     const result = migrateDocument(

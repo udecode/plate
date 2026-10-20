@@ -16,7 +16,6 @@ import {
 } from '../../../core';
 import type { AnyBasePlugin } from '../../../lib/plugin/BasePlugin';
 
-const digitRegex = /\d+/;
 const lineHeightRegex =
   /^([+-]?(?:\d+(?:\.\d*)?|\.\d+))(?:e([+-]?\d+))?(%|em)?$/i;
 
@@ -184,31 +183,6 @@ export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
   },
 });
 
-export const BaseFontWeightPlugin = definePlugin(PLUGINS.fontWeight, {
-  schema: { mark: property.string() },
-  formats: ({ defineFormats }) =>
-    defineFormats({
-      html: {
-        decode: ({ element }) =>
-          element.style.fontWeight === 'normal'
-            ? undefined
-            : element.style.fontWeight || undefined,
-        encode: ({ value }) => ({
-          style: { fontWeight: value },
-          tag: 'span',
-        }),
-        match: [{ style: { fontWeight: '*' } }],
-      },
-
-      markdown: { tag: 'span', style: 'font-weight' },
-    }),
-  inject: {
-    nodeProps: {
-      styleKey: 'fontWeight',
-    },
-  },
-});
-
 /** Enables configurable line spacing on targeted block elements. */
 export const BaseLineHeightPlugin = definePlugin(PLUGINS.lineHeight, {
   schema: ({ targetElementTypes }) => ({
@@ -361,14 +335,3 @@ export const BaseTextIndentPlugin = definePlugin(PLUGINS.textIndent, {
 export type LineHeightDefinition = DefinitionOf<typeof BaseLineHeightPlugin>;
 export type TextAlignDefinition = DefinitionOf<typeof BaseTextAlignPlugin>;
 export type TextIndentDefinition = DefinitionOf<typeof BaseTextIndentPlugin>;
-
-/** Converts a CSS size to a unitless pixel value. */
-export const toUnitLess = (value: string): string => {
-  const match = digitRegex.exec(value);
-
-  if (!match) return '0';
-
-  const number = Number(match[0]);
-
-  return value.endsWith('rem') ? String(number * 16) : String(number);
-};

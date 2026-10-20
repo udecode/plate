@@ -143,14 +143,6 @@ describe('DOM coverage private boundary harness', () => {
       });
       expect(left.domCoverage).not.toBe(right.domCoverage);
       for (const runtime of [left, right]) {
-        const point = runtime.domCoverage.resolveDOMPointOrBoundary({
-          path: [1, 0],
-          offset: 2,
-        });
-        expect(point?.type).toBe('dom-point');
-        if (point?.type === 'dom-point') {
-          expect(runtime.rootElement?.contains(point.domPoint[0])).toBe(true);
-        }
         const sibling = runtime === left ? right : left;
         const placeholder = sibling.rootElement!.querySelector(
           '[data-editor-dom-coverage-boundary]'

@@ -1,4 +1,5 @@
 import { above as editorAbove } from '../../../../src/internal';
+/** @jsxRuntime classic */
 /** @jsx jsx */
 
 export const input = (

@@ -8,7 +8,7 @@
 
 ## Custom selection kinds
 
-- **Custom selection kinds.** `test/test-cellselection.ts` lines 1-179 at b5ad0d0 pin that a registered non-text selection maps every range it contains and keeps its kind through edits, and that table selections cover rectangular cells and keep their direction. Plite's `packages/plitejs/test/selection-protocol.test.ts` defines and maps a custom cell selection. Plate's `packages/platejs/src/features/table/lib/BaseTablePlugin.selection.spec.tsx` and `.slow.tsx` prove the `table-cell` kind, rectangular geometry, mapping and keyboard behavior (report.md:100).
+- **Custom selection kinds.** `test/test-cellselection.ts` lines 1-179 at b5ad0d0 pin that a registered non-text selection maps every range it contains and keeps its kind through edits, and that table selections cover rectangular cells and keep their direction. Plite's `packages/plitejs/test/selection-protocol.test.ts` defines and maps a custom cell selection. Plate's `packages/platejs/src/features/table/lib/BaseTablePlugin.selection.spec.tsx` and `BaseTablePlugin.cell-selection.spec.tsx` prove the `table-cell` kind, rectangular geometry, mapping and keyboard behavior (report.md:100).
 
 ## Cursor motion
 

@@ -46,7 +46,7 @@ import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { isEditingChange } from '../facts/editing';
 import { incarnationOf } from '../facts/records';
-import { unrepresentable } from '../refusal';
+import { movedRefusal, unrepresentable } from '../refusal';
 import { isCut } from './cuts';
 import { type FormatTag, recordFormats, type Standing } from './layers';
 import {
@@ -332,6 +332,105 @@ const bothUnclaimed = (
   !Object.hasOwn(before, AUTHORED_MARKS_KEY) &&
   !Object.hasOwn(after, AUTHORED_MARKS_KEY);
 
+const changesOnlyProperties = (step: RootChange) =>
+  step.sections.every((value, index) => index % 2 === 0 || value < 0);
+
+/**
+ * Rebase a step that changes only properties onto a framed root. It moves no
+ * content, so each edited token maps on its own, in the review draft's order,
+ * wherever the frame shows it, and the step leaves every position where it
+ * was.
+ */
+const rebaseProperties = (
+  step: RootChange,
+  map: PosMap,
+  plain: DocumentIndex,
+  review: DocumentIndex
+) => {
+  const edits: Array<{
+    at: number;
+    data: readonly PropertyModification[];
+    plainAt: number;
+  }> = [];
+  // A text's properties sit on its open token, and the review draft can save
+  // its letters in several texts, such as a merged line's, so each of those
+  // takes the edit.
+  const reviewTokens = (token: number) => {
+    const entry = plain.nodeStartingAt(token);
+    const text = entry && plain.node(entry.path).text;
+
+    if (!entry || typeof text !== 'string' || text === '') {
+      return [map(token, 1, false)];
+    }
+
+    const opens = new Set<number>();
+
+    for (let letter = token + 1; letter <= token + text.length; letter += 1) {
+      const at = review.openContextAt(map(letter, 1, false)).at(-1);
+
+      if (at?.kind === 'text') opens.add(at.from);
+    }
+
+    return [...opens];
+  };
+  let before = 0;
+
+  for (let pair = 0; pair < step.sections.length / 2; pair += 1) {
+    const length = getDefined(step.sections[pair * 2]);
+
+    if (step.sections[pair * 2 + 1] === -2) {
+      const data = step.data[pair] as readonly PropertyModification[];
+
+      for (let offset = 0; offset < length; offset += 1) {
+        for (const at of reviewTokens(before + offset)) {
+          edits.push({ at, data, plainAt: before + offset });
+        }
+      }
+    }
+    before += length;
+  }
+  edits.sort((left, right) => left.at - right.at);
+
+  const groups: Group[] = [];
+  let at = 0;
+
+  for (const [index, edit] of edits.entries()) {
+    if (edit.at < at) {
+      if (jsonEqual(edit.data, edits[index - 1]?.data)) continue;
+      throw new Error('Two edits map to one review token.');
+    }
+    if (edit.at > at) {
+      groups.push({
+        after: at,
+        before: at,
+        data: null,
+        kind: 'kept',
+        length: edit.at - at,
+      });
+    }
+    groups.push({
+      after: edit.at,
+      before: edit.at,
+      data: edit.data,
+      kind: 'kept',
+      length: 1,
+      plainAt: edit.plainAt,
+    });
+    at = edit.at + 1;
+  }
+  if (review.length > at) {
+    groups.push({
+      after: at,
+      before: at,
+      data: null,
+      kind: 'kept',
+      length: review.length - at,
+    });
+  }
+
+  return { afterMap: map, groups };
+};
+
 /**
  * Rebase a plain step into review coordinates through `map`, from the plain
  * draft before the step to the review draft, and map the step's output
@@ -375,7 +474,7 @@ const rebase = (step: RootChange, map: PosMap, reviewLength: number) => {
           );
 
     if (inserted === 0 && length > 0 && mappedEnd < reviewBefore) {
-      throw unrepresentable('A removal runs backward in the stored document.');
+      throw movedRefusal('crosses');
     }
 
     const reviewEnd = Math.max(reviewBefore, mappedEnd);
@@ -865,9 +964,7 @@ const lowerAcrossBreaks = (
         line &&
         breaks.some(({ at }) => line.contentFrom <= at && at < position)
       ) {
-        throw unrepresentable(
-          'A frame step breaks a line after a stored-order break inside it.'
-        );
+        throw movedRefusal('reordered');
       }
     }
     position += length;
@@ -962,21 +1059,17 @@ const lowerAcrossBreaks = (
       to < right.contentFrom ||
       to > right.contentTo
     ) {
-      throw unrepresentable(
-        'A frame step crosses an unsupported stored-order break.'
-      );
+      throw movedRefusal('crosses');
     }
     if (edges.some(({ at }) => to < at && at <= right.contentTo)) {
-      throw unrepresentable(
-        'A block merge moves a line that holds a stored-order break.'
-      );
+      throw movedRefusal('crosses');
     }
 
     remove(right.contentFrom, to);
     remove(left.to, right.from);
     const rightAt = lineAt(left.to, 1);
 
-    if (!rightAt) throw unrepresentable('A block merge has no right line.');
+    if (!rightAt) throw movedRefusal('crosses');
     const children = index.slice(rightAt.contentFrom, rightAt.contentTo);
     const landing = emit(
       left.contentTo,
@@ -1250,13 +1343,22 @@ export const recordAuthoredSteps = (
         continue;
       }
 
-      const subSteps = (fold.frameIndex &&
-        lowerAcrossBreaks(
-          rootChange,
-          fold.breaks,
-          fold.frameIndex,
-          input.isInline
-        )) ?? [{ change: rootChange, role: step.move?.role ?? null }];
+      // A framed property step maps token by token wherever the frame shows
+      // each token, so it needs no lowering across breaks.
+      const framedProperties =
+        fold.frameIndex !== null && changesOnlyProperties(rootChange);
+      const lowered =
+        fold.frameIndex && !framedProperties
+          ? lowerAcrossBreaks(
+              rootChange,
+              fold.breaks,
+              fold.frameIndex,
+              input.isInline
+            )
+          : null;
+      const subSteps = lowered ?? [
+        { change: rootChange, role: step.move?.role ?? null },
+      ];
 
       for (const sub of subSteps) {
         if (sub.movedChildren && keepsMergedSource) {
@@ -1266,11 +1368,14 @@ export const recordAuthoredSteps = (
           }
         }
         const plainToReview = fold.map;
-        const { afterMap, groups } = rebase(
-          sub.change,
-          plainToReview,
-          fold.index.length
-        );
+        const { afterMap, groups } = framedProperties
+          ? rebaseProperties(
+              sub.change,
+              plainToReview,
+              getDefined(fold.frameIndex),
+              fold.index
+            )
+          : rebase(sub.change, plainToReview, fold.index.length);
         let recorded: RootChange;
         let mapRecorded: PosMap = identity;
 
@@ -2498,10 +2603,11 @@ class RootRecorder {
 
     const { isOwn, markOf, source, standing, commitWriteId } = this.options;
     const { at, author, change, inc } = markOf('insert');
+    const innermost = innermostInsert(marks);
     const tags = recordFormats({
       keys,
       next,
-      ownInsertion: marks.some((mark) => mark.kind === 'insert' && isOwn(mark)),
+      ownInsertion: innermost !== undefined && isOwn(innermost),
       previous,
       source,
       standing,
@@ -3130,29 +3236,31 @@ class RootRecorder {
         // A block an Editing edit placed after a pending join carries an
         // Editing insertion that only says which join it goes with, so
         // nothing inside it is pending.
-        const own = this.marks(context.props).find(
-          (mark) =>
-            mark.kind === 'insert' &&
-            !isEditingChange(mark.change) &&
-            this.options.isOwn(mark)
+        const insertion = innermostInsert(
+          this.marks(context.props).filter(
+            (mark) => !isEditingChange(mark.change)
+          )
         );
 
-        if (own) {
-          const { type } = context.props;
+        if (!insertion) continue;
+        // An element another author inserted inside one's own is theirs, so
+        // what is written in it is a new suggestion, not one's outer insertion.
+        if (!this.options.isOwn(insertion)) return null;
 
-          return {
-            // What is written inside the block claims its insertion, never
-            // its place after a pending join.
-            mark: {
-              at: own.at,
-              author: own.author,
-              change: own.change,
-              ...(own.inc === undefined ? {} : { inc: own.inc }),
-              kind: 'insert' as const,
-            },
-            oneText: typeof type === 'string' && this.options.oneText(type),
-          };
-        }
+        const { type } = context.props;
+
+        return {
+          // What is written inside the block claims its insertion, never
+          // its place after a pending join.
+          mark: {
+            at: insertion.at,
+            author: insertion.author,
+            change: insertion.change,
+            ...(insertion.inc === undefined ? {} : { inc: insertion.inc }),
+            kind: 'insert' as const,
+          },
+          oneText: typeof type === 'string' && this.options.oneText(type),
+        };
       }
 
       return null;

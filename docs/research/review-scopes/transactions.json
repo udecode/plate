@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Transaction atomicity and repair must preserve canonical document validity and identity.",
-  "last": false,
-  "opportunity": {
-    "score": 10,
-    "reason": "All editing, history and asynchronous consumers depend on one coherent commit/failure law."
-  },
   "owners": [
     "packages/plitejs/src/core/document-change.ts",
     "packages/plitejs/src/core/commit.ts",

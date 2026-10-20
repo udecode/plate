@@ -7,11 +7,6 @@
     "plate-api"
   ],
   "prerequisiteReason": "Independently useful public contracts must be established before choosing package export boundaries.",
-  "last": false,
-  "opportunity": {
-    "score": 7,
-    "reason": "Typed setup must remain usable without requiring generated application contracts."
-  },
   "owners": [
     "packages/platejs/package.json",
     "packages/plitejs/package.json"

@@ -20,7 +20,7 @@ Bold applies the `bold` leaf mark to selected text. `BoldPlugin` owns the mark k
 
 - Boolean `bold` leaf property owned by the `PLUGINS.bold` capability.
 - Default `⌘B` / `Ctrl+B` shortcut.
-- HTML deserialization from `strong`, `b`, and bold font weight.
+- HTML deserialization from `strong`, `b`, and any `font-weight` of 600 or more.
 - `<strong>` rendering by default.
 - Optional Markdown-style input rules through `BoldRules`.
 - Toolbar support through `MarkToolbarButton`.
@@ -122,9 +122,23 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 | Toggle command | `tx.bold.toggle()` toggles the resolved schema key. |
 | Shortcut | `BoldPlugin` registers `mod+b`. |
 | HTML tags | `strong`, `b` |
-| HTML styles | `font-weight: 600`, `700`, or `bold` |
-| HTML guard | Ignores descendants where `fontWeight` is `normal`. |
+| HTML styles | Any `font-weight`. `bold` and 600 or more are bold. `bolder`, `lighter`, `inherit` and `unset` count from the parent's weight, where headings and table headers draw at 700. |
+| HTML guard | A weight below 600 turns bold off only inside text drawn bold. `strong` and `b` stay bold unless they state a weight Plate can read. |
 | Render output | `strong` |
+
+Bold is Plate's only owner of font weight; no plugin stores a separate weight.
+Paste reads each element's own weight, as the source drew it.
+On the server, `platejs/html/server` ignores a weight written in a `font` shorthand, under `FONT-WEIGHT` or beside a comment.
+It also reads the last of several `font-weight` declarations, even when an earlier one is `!important`.
+
+| Pasted HTML | Stored |
+|-------------|--------|
+| `<span style="font-weight: 800">a</span>` | `a` bold |
+| `<b>a<span style="font-weight: 400">b</span>c</b>` | `a` and `c` bold, `b` plain |
+| `<strong style="font-weight: 500">a</strong>` | `a` plain |
+| `<strong style="font-weight: var(--w, 600)">a</strong>` | `a` bold, because the weight is unreadable |
+| `<span style="font-weight: bolder">a</span>` inside 300 text | `a` plain, because bolder than 300 is 400 |
+| `<h1>a<span style="font-weight: 400">b</span>c</h1>` | `abc` with no mark, so `b` draws in the heading's weight. Bold cannot store text lighter than its heading or table header. |
 
 ## API Reference
 

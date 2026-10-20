@@ -1,0 +1,14 @@
+---
+id: 2026-10-20-date-copied-labels
+date: 2026-10-20
+status: draft
+kind: behavior
+summary: 'Build Date labels in the copied items'
+change: { 'type': 'source', 'date': '2026-10-20', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-20-date-build-labels-copied-items-a02b1db5","kind":"behavior","migrationNotes":["Update copied `date` and `date-static` components, because `platejs/date` no longer exports `getDateDisplayLabel`."]} -->
+
+- **`date`**, **`date-static`**: Build the date label in each copied component. `date` shows Today, Yesterday or Tomorrow for nearby days and the full date otherwise, such as March 23, 2026. `date-static` always prints the full date, so an export never says Today. Both print US English; edit the copied `dateFormat` and words to change it.

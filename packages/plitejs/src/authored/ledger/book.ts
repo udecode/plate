@@ -20,42 +20,60 @@ import {
   VERDICTS,
   verdictIncarnationsOf,
 } from '../facts/records';
+import { tokenLength } from '../tree/alignment';
 import { readMembers } from '../tree/marks';
 import type { AuthoredChange, AuthoredChangeGroup } from '../types';
 import {
   type CardEntry,
   type ChangePlaces,
+  cardIn,
   cardOf,
   cardRun,
   ENTRIES,
   entryIndex,
   MEASURES,
+  NO_SLOT_CARDS,
   SLOT_OLDEST,
+  type SlotCards,
   syncCards,
+  TOKENS,
   UNITS,
   walkEntries,
 } from './cards';
+import {
+  firstFrom,
+  mapSpans,
+  type PairedChanges,
+  type Pairing,
+  pairStretch,
+  rankAt,
+  type Span,
+  startOf,
+} from './pairs';
 import { contentRootsOf, type Roots, sameRoots } from './roots';
 import { blockFactsOf } from './runs';
 import { type Slot, SlotTree } from './slots';
 import { countLedgerWork } from './work';
 
-type BlockChanges = Readonly<{
-  ends: ReadonlyMap<string, BlockOccurrence>;
-  /**
-   * Every incarnation the block names, decided or not: its claims, held
-   * deletions, followed joins and its contexts' members. A verdict changes
-   * what the block holds only when it names one of them.
-   */
-  incarnations: readonly string[];
-  occurrences: ReadonlyMap<string, readonly BlockOccurrence[]>;
-  units: number;
-}>;
+type BlockChanges = PairedChanges &
+  Readonly<{
+    /** The changes with an occurrence on each node, by its path in the block. */
+    byPath: ReadonlyMap<string, readonly string[]>;
+    ends: ReadonlyMap<string, BlockOccurrence>;
+    /**
+     * Every incarnation the block names, decided or not: its claims, held
+     * deletions, followed joins and its contexts' members. A verdict changes
+     * what the block holds only when it names one of them.
+     */
+    incarnations: readonly string[];
+    units: number;
+  }>;
 
 /** @internal */
 export type BookSlot = Slot & {
   block: JsonNode;
   book: RootBook;
+  cards: SlotCards;
   changes: BlockChanges;
   /** The pending changes this block shows first, in the kernel's order. */
   entries: CardEntry[];
@@ -82,14 +100,32 @@ const namedBy = (node: unknown, facts: ReviewFacts, named: Set<string>) => {
 const blockChangesOf = (block: JsonNode, facts: ReviewFacts): BlockChanges => {
   const marked = !blockFactsOf(block).unmarked;
   const named = new Set<string>();
-  const { ends, occurrences, units } = blockOccurrencesOf(block, (node) => {
-    if (!marked) return [];
-    namedBy(node, facts, named);
+  const { ends, joinsAndSplits, occurrences, ordered, units } =
+    blockOccurrencesOf(block, (node) => {
+      if (!marked) return [];
+      namedBy(node, facts, named);
 
-    return marksOf(node, facts);
-  });
+      return marksOf(node, facts);
+    });
+  const byPath = new Map<string, string[]>();
 
-  return { ends, incarnations: [...named], occurrences, units };
+  for (const { id, path } of ordered) {
+    const key = path.join(',');
+    const ids = byPath.get(key);
+
+    if (ids) ids.push(id);
+    else byPath.set(key, [id]);
+  }
+
+  return {
+    byPath,
+    ends,
+    incarnations: [...named],
+    joinsAndSplits,
+    occurrences,
+    ordered,
+    units,
+  };
 };
 
 /** @internal */
@@ -127,7 +163,7 @@ export class RootBook {
     return new SlotTree<BookSlot, CardEntry>(MEASURES, slots, SLOT_OLDEST);
   }
 
-  private hold(slot: BookSlot, add: boolean, touched: Set<string>) {
+  private hold(slot: BookSlot, add: boolean, touched: Set<string> | null) {
     for (const incarnation of slot.changes.incarnations) {
       const slots = this.naming.get(incarnation) ?? new Set<BookSlot>();
 
@@ -142,11 +178,15 @@ export class RootBook {
     this.holdChanges(slot, add, touched);
   }
 
-  private holdChanges(slot: BookSlot, add: boolean, touched: Set<string>) {
+  private holdChanges(
+    slot: BookSlot,
+    add: boolean,
+    touched: Set<string> | null
+  ) {
     for (const id of slot.changes.occurrences.keys()) {
       const holders = this.holders.get(id) ?? new Set<BookSlot>();
 
-      touched.add(id);
+      touched?.add(id);
       if (add) {
         holders.add(slot);
         this.holders.set(id, holders);
@@ -157,27 +197,92 @@ export class RootBook {
     }
   }
 
+  /**
+   * Put `block` in `slot`, the block it replaced, so the entries of the
+   * changes a pairing left untouched stay in place.
+   */
+  private replace(
+    slot: BookSlot,
+    block: JsonNode,
+    changes: BlockChanges,
+    rechecked: Map<BookSlot, RootBook>
+  ) {
+    this.hold(slot, false, null);
+    slot.block = block;
+    slot.changes = changes;
+    slot.measures[UNITS] = changes.units;
+    slot.measures[TOKENS] = tokenLength(block);
+    this.hold(slot, true, null);
+    if (slot.leaf) this.slots.update(slot);
+    rechecked.set(slot, this);
+  }
+
+  /**
+   * Move to `stored`, pairing each block the commit replaced with the block
+   * it replaced, in order between the blocks both versions keep, and add to
+   * `sites` the ranges of `stored` whose pairs differ.
+   */
   sync(
     stored: DocumentIndex,
     changesOf: (block: JsonNode) => BlockChanges,
+    identity: Pairing['identity'],
     touched: Set<string>,
-    spliced: Array<Readonly<{ book: RootBook; rank: number }>>
+    spliced: Array<Readonly<{ book: RootBook; rank: number }>>,
+    rechecked: Map<BookSlot, RootBook>,
+    sites: Span[] | null
   ) {
     if (stored === this.stored) return;
 
     const ranges = this.stored.changedChildren(stored);
+    const out: Pairing = { identity, sites, touched, verdicts: false };
 
+    // Stretches go back to front, so each one's old ranks still index the
+    // slots.
     for (let next = ranges.length - 1; next >= 0; next -= 1) {
       const [fromA, toA, fromB, toB] = getDefined(ranges[next]);
-      const inserted = stored.nodes
+      const old: BookSlot[] = [];
+
+      this.slots.forEach(fromA, toA, (slot) => {
+        old.push(slot);
+      });
+
+      const blocks = stored.nodes
         .slice(fromB, toB)
-        .map((block) => slotOf(block, changesOf, this));
+        .map((block) => ({ block, changes: changesOf(block) }));
+      const paired = Math.min(old.length, blocks.length);
 
-      spliced.push({ book: this, rank: fromB });
+      pairStretch(
+        old,
+        blocks,
+        startOf(this.stored, fromA),
+        startOf(stored, fromB),
+        out
+      );
+      for (let offset = 0; offset < paired; offset += 1) {
+        const slot = getDefined(old[offset]);
+        const { block, changes } = getDefined(blocks[offset]);
 
-      this.slots.forEach(fromA, toA, (slot) => this.hold(slot, false, touched));
+        // A slot takes the block in its place, which pairing may have
+        // paired with another block, so its changes move whole.
+        if (identity(slot.block) !== identity(block)) {
+          for (const id of slot.changes.occurrences.keys()) touched.add(id);
+          for (const id of changes.occurrences.keys()) touched.add(id);
+        }
+        this.replace(slot, block, changes, rechecked);
+      }
+
+      const removed = old.slice(paired);
+      const inserted = blocks
+        .slice(paired)
+        .map(({ block }) => slotOf(block, changesOf, this));
+
+      for (const slot of removed) this.hold(slot, false, touched);
       for (const slot of inserted) this.hold(slot, true, touched);
-      this.slots.splice(fromA, toA - fromA, inserted);
+      if (removed.length > 0) {
+        this.slots.splice(fromA + paired, removed.length, []);
+      }
+      if (inserted.length > 0) this.slots.splice(fromA + paired, 0, inserted);
+      spliced.push({ book: this, rank: fromB }, { book: this, rank: toB });
       countLedgerWork('bookEntries', toA - fromA + inserted.length);
     }
     this.stored = stored;
@@ -199,16 +304,28 @@ export class RootBook {
       .sort((left, right) => left - right);
   }
 
+  /**
+   * Read again the blocks naming `incarnations`, whose verdict changed, and
+   * add to `out` the ranges whose pairs differ.
+   */
   reread(
     incarnations: Iterable<string>,
     changesOf: (block: JsonNode) => BlockChanges,
-    touched: Set<string>
+    touched: Set<string>,
+    out: Pairing | null
   ) {
     const slots = this.slotsNaming(incarnations);
 
     for (const slot of slots) {
+      const old = { block: slot.block, changes: slot.changes };
+
       this.holdChanges(slot, false, touched);
       slot.changes = changesOf(slot.block);
+      if (out) {
+        const start = this.slots.sumBefore(this.slots.rankOf(slot), TOKENS);
+
+        pairStretch([old], [slot], start, start, out);
+      }
       this.holdChanges(slot, true, touched);
     }
     countLedgerWork('bookEntries', slots.size);
@@ -270,7 +387,89 @@ export class RootBook {
       rank,
     };
   }
+
+  /**
+   * Add to `ids` the changes with an occurrence on a node that opens in one
+   * of `spans`, stored token ranges, or on an ancestor of a span's start
+   * whose open token `dissolves` names.
+   */
+  shown(
+    spans: ReadonlyArray<readonly [number, number]>,
+    dissolves: (position: number) => boolean,
+    ids: Set<string>
+  ) {
+    const { slots } = this;
+
+    addShown(
+      {
+        changesAt: (rank) => slots.at(rank).changes,
+        index: this.stored,
+        rankAt: (position) => slots.search(TOKENS, position, false),
+        size: slots.size,
+        startOf: (rank) => slots.sumBefore(rank, TOKENS),
+      },
+      spans,
+      dissolves,
+      ids
+    );
+  }
 }
+
+/** A version of a root, read by its top-level blocks. */
+type ShownBlocks = Readonly<{
+  changesAt: (rank: number) => BlockChanges;
+  index: DocumentIndex;
+  rankAt: (position: number) => number;
+  size: number;
+  startOf: (rank: number) => number;
+}>;
+
+/**
+ * Add to `ids` the changes with an occurrence on a node that opens in one of
+ * `spans`, token ranges of `blocks.index`, or on an ancestor of a span's start
+ * whose open token `dissolves` names.
+ */
+const addShown = (
+  blocks: ShownBlocks,
+  spans: ReadonlyArray<readonly [number, number]>,
+  dissolves: (position: number) => boolean,
+  ids: Set<string>
+) => {
+  for (const [from, to] of spans) {
+    for (const entry of blocks.index.openContextAt(from)) {
+      if (entry.from >= from || entry.to <= from || !dissolves(entry.from)) {
+        continue;
+      }
+
+      const [rank, ...path] = entry.path;
+
+      for (const id of blocks
+        .changesAt(getDefined(rank))
+        .byPath.get(path.join(',')) ?? []) {
+        countLedgerWork('occurrencesVisited');
+        ids.add(id);
+      }
+    }
+
+    for (let rank = blocks.rankAt(from); rank < blocks.size; rank += 1) {
+      const start = blocks.startOf(rank);
+
+      if (start >= to) break;
+
+      const changes = blocks.changesAt(rank);
+      const { ordered } = changes;
+
+      for (
+        let at = firstFrom(changes, from - start);
+        at < ordered.length && getDefined(ordered[at]).from < to - start;
+        at += 1
+      ) {
+        countLedgerWork('occurrencesVisited');
+        ids.add(getDefined(ordered[at]).id);
+      }
+    }
+  }
+};
 
 const slotOf = (
   block: JsonNode,
@@ -282,10 +481,11 @@ const slotOf = (
   return {
     block,
     book,
+    cards: NO_SLOT_CARDS,
     changes,
     entries: [],
     leaf: null,
-    measures: [changes.units, 0, 0, 0],
+    measures: [changes.units, 0, 0, 0, tokenLength(block)],
     oldest: null,
   };
 };
@@ -306,11 +506,40 @@ const UNSET = {};
 
 /** @internal */
 export type BookDelta = Readonly<{
-  blocks: ReadonlyArray<Readonly<{ rank: number; root: string }>>;
   changed: readonly string[];
   groups: readonly string[];
   removed: readonly string[];
 }>;
+
+/**
+ * One publisher's gathered set: by root, the ranges of the blocks whose
+ * pairs a sync since its last publication changed and of the members whose
+ * card changed, mapped forward through each sync into `index`.
+ *
+ * @internal
+ */
+export type BookSink = {
+  /** The preview the publisher subscribed or last published under. */
+  mode: 'accepted' | 'proposed' | null;
+  sites: Map<string, Readonly<{ index: DocumentIndex; spans: Span[] }>>;
+};
+
+const gather = (
+  sink: BookSink,
+  root: string,
+  index: DocumentIndex,
+  spans: readonly Span[],
+  identity: Pairing['identity']
+) => {
+  const gathered = sink.sites.get(root);
+
+  sink.sites.set(root, {
+    index,
+    spans: gathered
+      ? [...mapSpans(gathered.index, index, gathered.spans, identity), ...spans]
+      : [...spans],
+  });
+};
 
 type IdsFrom = Readonly<{
   after?: boolean;
@@ -325,11 +554,20 @@ type IdsFrom = Readonly<{
  * @internal
  */
 export type BookView = Readonly<{
+  /** The cards of `ids`, given in document order, one summary per card. */
+  cardsOf: (ids: readonly string[]) => AuthoredChangeGroup[];
   change: (id: string) => AuthoredChange | null;
   groupOf: (id: string) => AuthoredChangeGroup | null;
   has: (id: string) => boolean;
+  /** Whether a change sits in the card holding `group`, without summaries. */
+  inCard: (group: string) => (id: string) => boolean;
   idsFrom: (from: IdsFrom) => Generator<string>;
   idsIn: (root: string, from: number, to: number) => Set<string>;
+  idsShown: (
+    root: string,
+    spans: ReadonlyArray<readonly [number, number]>,
+    dissolves: (position: number) => boolean
+  ) => Set<string>;
   pendingInOrder: (ids: Iterable<string>) => string[];
   members: (id: string) => readonly CardEntry[];
   occurrences: (id: string) => readonly Occurrence[];
@@ -339,7 +577,6 @@ export type BookView = Readonly<{
 }>;
 
 const EMPTY_DELTA: BookDelta = Object.freeze({
-  blocks: [],
   changed: [],
   groups: [],
   removed: [],
@@ -363,7 +600,7 @@ export class ChangeBook {
     cards: Map<string, number>;
     delta: BookDelta;
     revisions: Map<string, number>;
-    subscribers: number;
+    sinks: Set<BookSink>;
   } | null = null;
   private unpublished = {
     ended: new Set<string>(),
@@ -379,6 +616,11 @@ export class ChangeBook {
   } = { changes: new Map() };
   private records: unknown = UNSET;
   private stored: Roots = new Map();
+  private readonly identity: Pairing['identity'];
+
+  constructor(identity: Pairing['identity']) {
+    this.identity = identity;
+  }
 
   private readonly verdictOf = (incarnation: string): VerdictRead => {
     const facts = getDefined(this.facts);
@@ -434,11 +676,35 @@ export class ChangeBook {
 
     const roots = new Map<string, RootBook>();
     const spliced: Array<Readonly<{ book: RootBook; rank: number }>> = [];
+    const rechecked = new Map<BookSlot, RootBook>();
+    const sinks = this.published?.sinks;
+    const sites = new Map<string, Span[]>();
+    const sitesOf = (root: string) => {
+      if (!sinks) return null;
+
+      const list = sites.get(root) ?? [];
+
+      sites.set(root, list);
+
+      return list;
+    };
 
     for (const [root, index] of content) {
       const book = this.roots.get(root);
 
-      if (book) book.sync(index, this.changesOf, touched, spliced);
+      if (book) {
+        book.sync(
+          index,
+          this.changesOf,
+          this.identity,
+          touched,
+          spliced,
+          rechecked,
+          sitesOf(root)
+        );
+      } else {
+        sitesOf(root)?.push([0, index.length]);
+      }
       roots.set(
         root,
         book ?? new RootBook(root, index, this.changesOf, touched)
@@ -453,17 +719,53 @@ export class ChangeBook {
       );
 
       for (const book of this.roots.values()) {
-        book.reread(decided, this.changesOf, touched);
+        const list = sitesOf(book.root);
+
+        book.reread(
+          decided,
+          this.changesOf,
+          touched,
+          list && {
+            identity: this.identity,
+            sites: list,
+            touched: new Set(),
+            verdicts: true,
+          }
+        );
+      }
+    }
+    for (const sink of sinks ?? []) {
+      for (const [root, spans] of sites) {
+        if (spans.length > 0) {
+          gather(
+            sink,
+            root,
+            getDefined(content.get(root)),
+            spans,
+            this.identity
+          );
+        }
       }
     }
     this.verdicts = verdicts;
     this.records = records;
     this.stored = content;
     this.read = { changes: new Map() };
+    this.syncCards(touched, spliced, rechecked);
+
+    return this.view();
+  }
+
+  private syncCards(
+    touched: Set<string>,
+    spliced: Array<Readonly<{ book: RootBook; rank: number }>>,
+    rechecked: Map<BookSlot, RootBook>
+  ) {
     const cards = syncCards(
       this.entries,
       touched,
       spliced,
+      rechecked,
       (id) => this.change(id),
       (id) => this.placesOf(id)
     );
@@ -478,8 +780,6 @@ export class ChangeBook {
         }
       }
     }
-
-    return this.view();
   }
 
   private view(): BookView {
@@ -498,12 +798,27 @@ export class ChangeBook {
       };
 
     read.view = Object.freeze({
+      cardsOf: fresh((ids: readonly string[]) => this.cardsOf(ids)),
       change: fresh((id: string) => this.change(id)),
       groupOf: fresh((id: string) => this.groupOf(id)),
       has: fresh((id: string) => this.entries.has(id)),
+      inCard: fresh((group: string) => this.inCard(group)),
       idsFrom: fresh((from: IdsFrom) => this.idsFrom(from)),
       idsIn: fresh((root: string, from: number, to: number) =>
         this.idsIn(root, from, to)
+      ),
+      idsShown: fresh(
+        (
+          root: string,
+          spans: ReadonlyArray<readonly [number, number]>,
+          dissolves: (position: number) => boolean
+        ) => {
+          const ids = new Set<string>();
+
+          this.roots.get(root)?.shown(spans, dissolves, ids);
+
+          return ids;
+        }
       ),
       pendingInOrder: fresh((ids: Iterable<string>) =>
         this.pendingInOrder(ids)
@@ -518,10 +833,12 @@ export class ChangeBook {
     return read.view;
   }
 
-  subscribe() {
+  subscribe(mode: BookSink['mode']): BookSink {
+    const sink: BookSink = { mode, sites: new Map() };
+
     if (this.published) {
-      this.published.subscribers += 1;
-      return;
+      this.published.sinks.add(sink);
+      return sink;
     }
 
     const cards = new Map<string, number>();
@@ -539,31 +856,99 @@ export class ChangeBook {
         revisions.set(entry.id, entry.revision);
       }
     }
-    this.published = { cards, delta: EMPTY_DELTA, revisions, subscribers: 1 };
+    this.published = {
+      cards,
+      delta: EMPTY_DELTA,
+      revisions,
+      sinks: new Set([sink]),
+    };
     this.unpublished = { ended: new Set(), entries: new Set(), ids: new Set() };
+
+    return sink;
   }
 
-  unsubscribe() {
+  unsubscribe(sink: BookSink) {
     const published = getDefined(this.published);
 
-    published.subscribers -= 1;
-    if (published.subscribers === 0) this.published = null;
+    published.sinks.delete(sink);
+    if (published.sinks.size === 0) this.published = null;
+  }
+
+  *sinksUnder(mode: NonNullable<BookSink['mode']>) {
+    for (const sink of this.published?.sinks ?? []) {
+      if (sink.mode === mode) yield sink;
+    }
+  }
+
+  /**
+   * The changes `spans` of `index`, a version of a root the book may since
+   * have left, showed as the book last read each of its blocks, the way
+   * `RootBook.shown` reads them.
+   */
+  idsShownIn(
+    index: DocumentIndex,
+    spans: ReadonlyArray<readonly [number, number]>,
+    dissolves: (position: number) => boolean
+  ) {
+    const ids = new Set<string>();
+
+    addShown(
+      {
+        changesAt: (rank) => {
+          const block = getDefined(index.child(rank));
+
+          return this.blocks.get(block)?.changes ?? this.changesOf(block);
+        },
+        index,
+        rankAt: (position) => rankAt(index, position),
+        size: index.size,
+        startOf: (rank) => startOf(index, rank),
+      },
+      spans,
+      dissolves,
+      ids
+    );
+
+    return ids;
   }
 
   /**
    * What the syncs since the last publication changed, or the last delta when
-   * nothing synced since, so every view of one commit reads the same delta.
-   * A card is walked only when a member's card id differs from the one last
+   * nothing synced since, so every view of one commit reads the same delta,
+   * and by root the stored ranges `sink` gathered since it last published. A
+   * card is walked only when a member's card id differs from the one last
    * published for it, so a key that keeps a card's members together walks
    * nothing.
    */
-  publish(): BookDelta {
+  publish(
+    sink: BookSink,
+    mode: BookSink['mode']
+  ): Readonly<{
+    delta: BookDelta;
+    sites: ReadonlyMap<string, readonly Span[]>;
+  }> {
+    this.publishDelta();
+
+    const sites = new Map<string, Span[]>();
+
+    for (const [root, { index, spans }] of sink.sites) {
+      const current = this.stored.get(root);
+
+      if (current) {
+        sites.set(root, mapSpans(index, current, spans, this.identity));
+      }
+    }
+    sink.sites.clear();
+    sink.mode = mode;
+
+    return { delta: getDefined(this.published).delta, sites };
+  }
+
+  private publishDelta() {
     const published = getDefined(this.published);
     const { ended, entries, ids } = this.unpublished;
 
-    if (ids.size === 0 && entries.size === 0 && ended.size === 0) {
-      return published.delta;
-    }
+    if (ids.size === 0 && entries.size === 0 && ended.size === 0) return;
 
     const changed: string[] = [];
     const removed: string[] = [];
@@ -582,13 +967,21 @@ export class ChangeBook {
     }
 
     const groups = new Set<string>();
-    const blocks = new Map<string, Readonly<{ rank: number; root: string }>>();
+    const sites = new Map<string, Span[]>();
+    // A key inside a block rechecks every entry the block holds, so the
+    // members of one card share the summary of its run.
+    const runs = new Map<RootBook, Map<number, AuthoredChangeGroup>>();
 
     for (const entry of entries) {
       if (this.entries.get(entry.id) !== entry) continue;
 
       const { book } = entry.slot;
-      const card = cardOf(book, entry);
+      const [from, to] = cardRun(book, entry);
+      const known = runs.get(book) ?? new Map<number, AuthoredChangeGroup>();
+      const card = known.get(from) ?? cardIn(book, entry.authorId, from, to);
+
+      known.set(from, card);
+      runs.set(book, known);
 
       if (published.cards.get(card.id) !== card.revision) {
         groups.add(card.id);
@@ -602,15 +995,13 @@ export class ChangeBook {
         entry.published = card.id;
         continue;
       }
-      for (const member of walkEntries(book, ...cardRun(book, entry))) {
+      for (const member of walkEntries(book, from, to)) {
         countLedgerWork('cardWalks');
         if (member.published === card.id) continue;
         // A new member's own blocks changed, so only older members add theirs.
         if (member.published !== undefined) {
           ended.add(member.published);
-          for (const block of this.blocksOf(member.id)) {
-            blocks.set(`${block.root}:${block.rank}`, block);
-          }
+          this.sitesOf(member.id, sites);
         }
         member.published = card.id;
       }
@@ -621,21 +1012,40 @@ export class ChangeBook {
         published.cards.delete(id);
       }
     }
+    for (const sink of published.sinks) {
+      for (const [root, spans] of sites) {
+        gather(
+          sink,
+          root,
+          getDefined(this.stored.get(root)),
+          spans,
+          this.identity
+        );
+      }
+    }
     published.delta = Object.freeze({
-      blocks: Object.freeze([...blocks.values()]),
       changed: Object.freeze(changed),
       groups: Object.freeze([...groups]),
       removed: Object.freeze(removed),
     });
     this.unpublished = { ended: new Set(), entries: new Set(), ids: new Set() };
-
-    return published.delta;
   }
 
-  private *blocksOf(id: string) {
+  private sitesOf(id: string, sites: Map<string, Span[]>) {
     for (const book of this.roots.values()) {
       for (const slot of book.holders.get(id) ?? []) {
-        yield { rank: book.slots.rankOf(slot), root: book.root };
+        const start = book.slots.sumBefore(book.slots.rankOf(slot), TOKENS);
+        const list = sites.get(book.root) ?? [];
+
+        for (const { from, node } of getDefined(
+          slot.changes.occurrences.get(id)
+        )) {
+          list.push([
+            start + from,
+            start + from + tokenLength(node as JsonNode),
+          ]);
+        }
+        sites.set(book.root, list);
       }
     }
   }
@@ -675,6 +1085,49 @@ export class ChangeBook {
     const entry = this.entries.get(id);
 
     return entry ? cardOf(entry.slot.book, entry) : null;
+  }
+
+  private cardsOf(ids: readonly string[]) {
+    const cards = new Map<string, AuthoredChangeGroup>();
+    // The ids come in document order, so an id inside the last card's run
+    // needs no summary of its own.
+    let lastBook: RootBook | null = null;
+    let lastTo = 0;
+
+    for (const id of ids) {
+      const entry = getDefined(this.entries.get(id));
+      const { book } = entry.slot;
+
+      if (lastBook === book && entryIndex(book, entry) < lastTo) continue;
+
+      const [from, to] = cardRun(book, entry);
+      const card = cardIn(book, entry.authorId, from, to);
+
+      lastBook = book;
+      lastTo = to;
+      if (!cards.has(card.id)) cards.set(card.id, card);
+    }
+
+    return [...cards.values()];
+  }
+
+  private inCard(group: string) {
+    const card = this.entries.get(group);
+
+    if (!card) return () => false;
+
+    const { book } = card.slot;
+    const [from, to] = cardRun(book, card);
+
+    return (id: string) => {
+      const entry = this.entries.get(id);
+
+      if (entry?.slot.book !== book) return false;
+
+      const at = entryIndex(book, entry);
+
+      return from <= at && at < to;
+    };
   }
 
   private idsIn(root: string, from: number, to: number): Set<string> {

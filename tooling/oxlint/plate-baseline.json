@@ -1,9 +1,5 @@
 {
   "plate/mock-spreads-module": {
-    "apps/www/src/registry/components/editor/ai-menu.slow.tsx": [
-      "mock.module('platejs/ai', () => ({",
-      "mock.module('platejs/ai/react', () => ({"
-    ],
     "apps/www/src/registry/components/editor/caption.spec.tsx": [
       "mock.module('platejs/react', () => ({"
     ],
@@ -15,11 +11,7 @@
       "mock.module('platejs/react', () => ({"
     ],
     "apps/www/src/registry/components/editor/date-static.spec.tsx": [
-      "mock.module('platejs/date', () => ({",
       "mock.module('platejs/static', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/date.slow.tsx": [
-      "mock.module('platejs/date', () => ({"
     ],
     "apps/www/src/registry/components/editor/editor.spec.tsx": [
       "mock.module('platejs/react', () => ({",
@@ -31,12 +23,6 @@
     "apps/www/src/registry/components/editor/floating-toolbar.spec.tsx": [
       "mock.module('platejs/ai/react', () => ({",
       "mock.module('platejs/react', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/footnote.slow.tsx": [
-      "mock.module('platejs/static', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/inline-void-suggestion.slow.tsx": [
-      "mock.module('platejs/math/react', () => ({"
     ],
     "apps/www/src/registry/components/editor/math.spec.tsx": [
       "mock.module('platejs', () => ({",
@@ -167,31 +153,7 @@
       "}, 12_000);"
     ],
     "packages/cli/test/generate.test.ts": [
-      "}, 15_000);",
-      "}, 30_000);",
-      "}, 30_000);",
       "}, 45_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
       "}, 60_000);",
       "}, 60_000);",
       "}, 60_000);",
@@ -358,13 +320,8 @@
       "const exportKit = readFileSync(",
       "const exportToolbar = readFileSync("
     ],
-    "packages/plitejs/test/delete-contract.ts": [
-      "const wholeBlockSource = readFileSync("
-    ],
     "packages/plitejs/test/dom/public-surface-contract.ts": [
-      "const hotkeySource = readFileSync(",
       "const indexSource = readFileSync(",
-      "const rootSource = readFileSync(",
       "const source = readFileSync(sourcePath, 'utf-8');"
     ],
     "packages/plitejs/test/react/dom-repair-policy-contract.test.ts": [

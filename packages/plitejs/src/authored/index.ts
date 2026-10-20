@@ -1,4 +1,5 @@
 export {
+  AuthoredPlaceError,
   authored,
   createAuthoredPlugin,
   type AuthoredPlugin,

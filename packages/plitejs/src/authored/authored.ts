@@ -136,12 +136,18 @@ import {
   withStore,
 } from './facts/records';
 import { projectAuthoredDocumentUnder, projectionRefusal } from './format';
-import { createReviewLedger, getReviewLedger } from './ledger/ledger';
+import type { BookSink } from './ledger/book';
+import {
+  createReviewLedger,
+  getReviewLedger,
+  type ViewPlaces,
+} from './ledger/ledger';
 import { blockFactsOf } from './ledger/runs';
 import {
   type AuthoredRefusal,
   constructsValues,
   GENERATED_VALUES_REFUSAL,
+  movedRefusal,
   proposalRefusal,
   unplaced,
   unrepresentable,
@@ -197,7 +203,12 @@ type AuthoredRead = {
    */
   changes: (query?: AuthoredQuery) => AuthoredPage;
   details: (id: string) => AuthoredChangeDetails | null;
-  /** The cards touching a place of the stored document, in document order. */
+  /**
+   * The cards touching a place of the document the view shows, in document
+   * order. On a preview `at` is a node's key or path, as `AuthoredQuery.at`
+   * says, and content the preview hides between two texts of a block reads
+   * on the block only.
+   */
   groups: (
     query: Readonly<{ at: Location | NodeKey }>
   ) => readonly AuthoredChangeGroup[];
@@ -514,21 +525,25 @@ const PUBLISHERS = new WeakMap<
   {
     ledger: ReturnType<typeof ledgerOf>;
     listeners: Set<(delta: AuthoredChangesDelta) => void>;
+    sink: BookSink;
     stop: () => void;
   }
 >();
 
-const storedValue = (editor: Editor) => {
+const storedRead = <T>(editor: Editor, read: (owner: Editor) => T): T => {
   const owner = getEditorRuntimeOwner(editor);
 
-  if (STORED_READS.has(owner)) return owner.read.value() as JsonEditorValue;
+  if (STORED_READS.has(owner)) return read(owner);
   STORED_READS.add(owner);
   try {
-    return owner.read.value() as JsonEditorValue;
+    return read(owner);
   } finally {
     STORED_READS.delete(owner);
   }
 };
+
+const storedValue = (editor: Editor) =>
+  storedRead(editor, (owner) => owner.read.value() as JsonEditorValue);
 
 // A cursor is the query it pages, the next change and the last one read.
 const readCursor = (cursor: string): readonly [string, string, string] => {
@@ -550,51 +565,62 @@ const readCursor = (cursor: string): readonly [string, string, string] => {
   return parsed as [string, string, string];
 };
 
-const storedRead = <T>(editor: Editor, read: (owner: Editor) => T): T => {
-  const owner = getEditorRuntimeOwner(editor);
+/**
+ * A review read on a preview named a point or a range, which a preview does
+ * not read: it reads the changes of a node by its key or path.
+ */
+export class AuthoredPlaceError extends Error {
+  override name = 'AuthoredPlaceError';
 
-  if (STORED_READS.has(owner)) return read(owner);
-  STORED_READS.add(owner);
-  try {
-    return read(owner);
-  } finally {
-    STORED_READS.delete(owner);
+  constructor() {
+    super(
+      "A preview reads review changes by a node's key or path, not by a point or a range."
+    );
   }
-};
+}
 
-// The pending changes touching a place of the stored document, in document
-// order: a node holds the changes with an occurrence inside it, and a point or
-// a range the changes with a range that intersects it.
+const NOTHING_DISSOLVES = () => false;
+
+// The pending changes touching a place of the document the view shows, in
+// document order: a node holds the changes on the stored content it shows,
+// and a point or a range, read only off a preview, the changes with a range
+// that intersects it.
 const placeIds = (
   editor: Editor,
   book: ReturnType<typeof changesOf>,
-  at: Location | NodeKey
+  at: Location | NodeKey,
+  places: ViewPlaces | null
 ): string[] => {
   const viewRoot = getEditorRuntimeRoot(editor);
 
   if (typeof at === 'string' || PathApi.isPath(at)) {
-    const path =
-      typeof at === 'string'
-        ? storedRead(editor, () => editor.read.nodes.path(at))
-        : at;
+    const path = typeof at === 'string' ? editor.read.nodes.path(at) : at;
+    const index =
+      places?.index ?? valueRootIndex(storedValue(editor), viewRoot);
+    let from: number;
+    let to: number;
 
     if (!path) return [];
-
-    const first = getDefined(path[0]);
+    try {
+      ({ from, to } = index.nodeRange(path));
+      // A preview pairs a text's close with the close of a leaf it hides
+      // after the text, which keeps a caret beside struck letters on its
+      // side, so a text reads up to its close and the hidden leaf reads on
+      // the block alone.
+      if (typeof index.node(path).text === 'string') to -= 1;
+    } catch {
+      return [];
+    }
 
     return book.pendingInOrder(
-      [...book.idsIn(viewRoot, first, first + 1)].filter((id) =>
-        book
-          .occurrences(id)
-          .some(
-            (occurrence) =>
-              occurrence.root === viewRoot &&
-              (PathApi.equals(occurrence.path, path) ||
-                PathApi.isAncestor(path, occurrence.path))
-          )
+      book.idsShown(
+        viewRoot,
+        places ? places.spans(from, to) : [[from, to]],
+        places?.dissolves ?? NOTHING_DISSOLVES
       )
     );
   }
+  if (places) throw new AuthoredPlaceError();
 
   const inViewRoot = (point: Point) =>
     point.root === undefined ? { ...point, root: viewRoot } : point;
@@ -1114,6 +1140,24 @@ export const createAuthoredPlugin = (
       }
     );
   };
+  const previewModeOf = (editor: Editor) => {
+    const view = viewOf(editor);
+
+    return 'preview' in view && !STORED_READS.has(getEditorRuntimeOwner(editor))
+      ? view.preview
+      : null;
+  };
+  const viewPlacesOf = (editor: Editor) => {
+    const preview = previewModeOf(editor);
+
+    return preview
+      ? ledgerOf(editor).viewPlaces(
+          storedValue(editor),
+          preview,
+          getEditorRuntimeRoot(editor)
+        )
+      : null;
+  };
   const decideOn = (
     editor: Editor,
     value: JsonEditorValue,
@@ -1319,53 +1363,60 @@ export const createAuthoredPlugin = (
           const ledger = ledgerOf(editor);
           const listeners = new Set<(delta: AuthoredChangesDelta) => void>();
 
-          ledger.subscribe(storedValue(editor));
-
-          let delivered = ledger.publish(storedValue(editor));
+          const sink = ledger.subscribe(
+            storedValue(editor),
+            previewModeOf(editor)
+          );
+          const publish = () =>
+            ledger.publish(
+              storedValue(editor),
+              sink,
+              previewModeOf(editor),
+              getEditorRuntimeRoot(editor)
+            );
+          let delivered = publish().delta;
           const stop = runtime.subscribe(() => {
-            const delta = ledger.publish(storedValue(editor));
-
-            if (delta === delivered) return;
-            delivered = delta;
-
-            const root = editor.read.view.root() ?? 'main';
-            const blocks = delta.blocks.flatMap((block) => {
-              const key = block.root === root ? editor.key([block.rank]) : null;
+            const { delta, ranks } = publish();
+            const fresh = delta !== delivered;
+            const blocks = ranks.flatMap((rank) => {
+              const key = editor.key([rank]);
 
               return key ? [key] : [];
             });
 
+            delivered = delta;
             if (
               blocks.length === 0 &&
-              delta.changed.length === 0 &&
-              delta.groups.length === 0 &&
-              delta.removed.length === 0
+              (!fresh ||
+                (delta.changed.length === 0 &&
+                  delta.groups.length === 0 &&
+                  delta.removed.length === 0))
             ) {
               return;
             }
 
             const view: AuthoredChangesDelta = Object.freeze({
               blocks: Object.freeze(blocks),
-              changed: delta.changed,
-              groups: delta.groups,
-              removed: delta.removed,
+              changed: fresh ? delta.changed : [],
+              groups: fresh ? delta.groups : [],
+              removed: fresh ? delta.removed : [],
             });
 
             for (const each of [...listeners]) each(view);
           });
 
-          publisher = { ledger, listeners, stop };
+          publisher = { ledger, listeners, sink, stop };
           PUBLISHERS.set(runtime, publisher);
         }
 
-        const { ledger, listeners, stop } = publisher;
+        const { ledger, listeners, sink, stop } = publisher;
 
         listeners.add(listener);
 
         return () => {
           if (!listeners.delete(listener) || listeners.size > 0) return;
           stop();
-          ledger.unsubscribe();
+          ledger.unsubscribe(sink);
           PUBLISHERS.delete(runtime);
         };
       },
@@ -1382,14 +1433,23 @@ export const createAuthoredPlugin = (
 
         const book = changesOf(editor, storedValue(editor));
         const { cursor: _cursor, limit: _limit, ...rest } = query;
-        const fingerprint = JSON.stringify(rest);
-        const card =
-          query.group === undefined ? null : book.groupOf(query.group)?.id;
+        // A place names a node of the view's root as its preview shows it.
+        const fingerprint = JSON.stringify(
+          query.at === undefined
+            ? rest
+            : [
+                rest,
+                getEditorRuntimeRoot(editor),
+                previewModeOf(editor) ?? 'stored',
+              ]
+        );
+        const inCard =
+          query.group === undefined ? null : book.inCard(query.group);
         const at =
           query.at === undefined
             ? null
-            : placeIds(editor, book, query.at).filter(
-                (id) => card === null || book.groupOf(id)?.id === card
+            : placeIds(editor, book, query.at, viewPlacesOf(editor)).filter(
+                (id) => !inCard || inCard(id)
               );
         const matches = (id: string) => {
           const change = getDefined(book.change(id));
@@ -1459,15 +1519,10 @@ export const createAuthoredPlugin = (
         changesOf(editor, storedValue(editor)).groupOf(changeId),
       groups: ({ at }: Readonly<{ at: Location | NodeKey }>) => {
         const book = changesOf(editor, storedValue(editor));
-        const cards = new Map<string, AuthoredChangeGroup>();
 
-        for (const id of placeIds(editor, book, at)) {
-          const card = getDefined(book.groupOf(id));
-
-          if (!cards.has(card.id)) cards.set(card.id, card);
-        }
-
-        return Object.freeze([...cards.values()]);
+        return Object.freeze(
+          book.cardsOf(placeIds(editor, book, at, viewPlacesOf(editor)))
+        );
       },
       reviewOf: (node: unknown): AuthoredReview => {
         const facts = factsOf(storedValue(editor));
@@ -1653,11 +1708,9 @@ export const createAuthoredPlugin = (
             }
           },
           readView: (view, read) => {
-            const current = viewOf(view);
+            const preview = previewModeOf(view);
 
-            if (!('preview' in current) || STORED_READS.has(owner)) {
-              return read();
-            }
+            if (!preview) return read();
 
             const stored = storedValue(owner);
             let shown: { root: string; selection: Selection } | undefined;
@@ -1677,7 +1730,7 @@ export const createAuthoredPlugin = (
                 root,
                 selection: ledger.previewSelection(
                   stored,
-                  current.preview,
+                  preview,
                   selection,
                   root
                 ),
@@ -1688,7 +1741,7 @@ export const createAuthoredPlugin = (
 
             return withEditorDocumentProjection(
               owner,
-              ledger.preview(stored, current.preview) as EditorDocumentValue,
+              ledger.preview(stored, preview) as EditorDocumentValue,
               read,
               {
                 get root() {
@@ -1764,6 +1817,7 @@ export const createAuthoredPlugin = (
 
             return ledger.frame(value);
           },
+          refuse: movedRefusal,
           unplaced,
         })
       );

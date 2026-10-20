@@ -849,10 +849,10 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   lookup publishes the full owning runtime key. Resolve mounted DOM through
   `editor.api.dom.resolveDOMNode(nodeOrKey)`. Foreign, removed, and unmounted
   keys fail closed with `null`; renderer-private structures stay private. Each
-  `assert*` DOM lookup and `findDocumentOrShadowRoot` throws while DOM is
-  missing and has a `resolve*` twin that returns `null`. The strict form is for
-  a direct caller that knows the DOM is mounted. Runtime and package code call
-  the twin, and a lint rule bans the strict forms and `findKey` there.
+  `assert*` DOM lookup throws while DOM is missing and has a `resolve*` twin
+  that returns `null`. The strict form is for a direct caller that knows the
+  DOM is mounted. Runtime and package code call the twin, and a lint rule bans
+  the strict forms and `findKey` there.
 - Code that holds a live node passes it directly as the `NodeTarget` or `at`
   value, resolves a path only when the path is the result, and never rediscovers
   the node by scanning for its `type` and `id`. Package code treats an

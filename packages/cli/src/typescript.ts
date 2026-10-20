@@ -1,21 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import {
-  basename,
-  dirname,
-  extname,
-  isAbsolute,
-  join,
-  relative,
-  resolve,
-} from 'node:path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 
-import {
-  readTsconfig,
-  resolvePathAlias,
-  type TsconfigResult,
-} from 'get-tsconfig';
 import {
   isArrayTypeNode,
   isIndexSignatureDeclaration,
@@ -46,7 +32,6 @@ import {
   type Checker,
   type Diagnostic,
   type Snapshot,
-  type TimingInfo,
   type Type,
 } from 'typescript/unstable/async';
 
@@ -68,174 +53,19 @@ export type NativeTypeHelper = Readonly<{
       propertyNames?: readonly string[];
     }>
   >;
-  generatedPaths: ReadonlySet<string>;
   path: string;
   source: string;
 }>;
 
 export type NativeTypeMaterialization = Readonly<{
   properties: Readonly<Record<string, NativeTypeProperties>>;
-  sourceFiles: readonly string[];
 }>;
 
-export type EditorTsconfigCache = Map<string, TsconfigResult>;
-
 const NODE_MODULES_PATH_PATTERN = /(^|[\\/])node_modules([\\/]|$)/;
-const DECLARATION_FILE_PATTERN = /\.d\.[cm]?ts$/;
-const DECLARE_GLOBAL_PATTERN = /\bdeclare\s+(?:global|module)\b/;
-const MODULE_SYNTAX_PATTERN = /^\s*(?:export|import)\b/m;
 const PROPERTY_NAME_PATTERN = /^[$A-Z_a-z][$\w]*$/;
 
 const propertyName = (name: string) =>
   PROPERTY_NAME_PATTERN.test(name) ? name : JSON.stringify(name);
-
-const localAmbientSourceFiles = (paths: readonly string[]) =>
-  paths.filter((path) => {
-    if (
-      NODE_MODULES_PATH_PATTERN.test(path) ||
-      !existsSync(path) ||
-      !statSync(path).isFile()
-    ) {
-      return false;
-    }
-    if (DECLARATION_FILE_PATTERN.test(path)) return true;
-    const source = readFileSync(path, 'utf-8');
-
-    return (
-      DECLARE_GLOBAL_PATTERN.test(source) || !MODULE_SYNTAX_PATTERN.test(source)
-    );
-  });
-
-const stripJsonComments = (source: string) => {
-  let result = '';
-  let inBlockComment = false;
-  let inLineComment = false;
-  let inString = false;
-  let escaped = false;
-
-  for (let index = 0; index < source.length; index++) {
-    const character = source[index];
-    const next = source[index + 1];
-
-    if (inLineComment) {
-      if (character === '\n') {
-        inLineComment = false;
-        result += character;
-      } else {
-        result += ' ';
-      }
-      continue;
-    }
-    if (inBlockComment) {
-      if (character === '*' && next === '/') {
-        result += '  ';
-        index += 1;
-        inBlockComment = false;
-      } else {
-        result += character === '\n' ? '\n' : ' ';
-      }
-      continue;
-    }
-    if (inString) {
-      result += character;
-      if (escaped) escaped = false;
-      else if (character === '\\') escaped = true;
-      else if (character === '"') inString = false;
-      continue;
-    }
-    if (character === '"') {
-      inString = true;
-      result += character;
-      continue;
-    }
-    if (character === '/' && next === '/') {
-      result += '  ';
-      index += 1;
-      inLineComment = true;
-      continue;
-    }
-    if (character === '/' && next === '*') {
-      result += '  ';
-      index += 1;
-      inBlockComment = true;
-      continue;
-    }
-    result += character;
-  }
-
-  return result;
-};
-
-const readJsonConfig = (path: string) => {
-  const source = readFileSync(path, 'utf-8');
-
-  try {
-    return JSON.parse(
-      stripJsonComments(source).replace(/,\s*([}\]])/g, '$1')
-    ) as Record<string, unknown>;
-  } catch {
-    // Invalid JSON-like TypeScript config text has no parsed object value.
-  }
-
-  return undefined;
-};
-
-const resolveConfigPath = (specifier: string, fromPath: string) => {
-  let candidate: string;
-
-  if (isAbsolute(specifier)) candidate = specifier;
-  else if (specifier.startsWith('.')) {
-    candidate = resolve(dirname(fromPath), specifier);
-  } else {
-    try {
-      candidate = createRequire(fromPath).resolve(specifier);
-    } catch {
-      return resolve(dirname(fromPath), specifier);
-    }
-  }
-  if (existsSync(candidate) && statSync(candidate).isDirectory()) {
-    return join(candidate, 'tsconfig.json');
-  }
-  if (!extname(candidate) && existsSync(`${candidate}.json`)) {
-    return `${candidate}.json`;
-  }
-
-  return candidate;
-};
-
-const referencedConfigPaths = (path: string) => {
-  const source = readFileSync(path, 'utf-8');
-  const parsed = readJsonConfig(path);
-  const values = new Set<string>();
-  const add = (value: unknown) => {
-    if (typeof value === 'string' && value.length > 0) values.add(value);
-  };
-
-  if (parsed) {
-    if (Array.isArray(parsed.extends)) parsed.extends.forEach(add);
-    else add(parsed.extends);
-    if (Array.isArray(parsed.references)) {
-      parsed.references.forEach((reference) => {
-        if (reference && typeof reference === 'object') {
-          add((reference as { path?: unknown }).path);
-        }
-      });
-    }
-  } else {
-    for (const match of source.matchAll(
-      /"(?:extends|path)"\s*:\s*"((?:\\.|[^"\\])*)"/g
-    )) {
-      try {
-        add(JSON.parse(`"${match[1]}"`));
-      } catch {
-        // Keep the current invalid config in the watch set; malformed child
-        // paths cannot be resolved until the config itself is repaired.
-      }
-    }
-  }
-
-  return [...values].map((value) => resolveConfigPath(value, path));
-};
 
 export const findEditorConfig = (entryPath: string) => {
   let directory = dirname(entryPath);
@@ -250,117 +80,6 @@ export const findEditorConfig = (entryPath: string) => {
     directory = parent;
   }
 };
-
-export const discoverEditorConfigFiles = (entryPath: string) => {
-  const configPath = findEditorConfig(entryPath);
-
-  if (!configPath) return Object.freeze([] as string[]);
-  const result = new Set<string>();
-  const visit = (path: string) => {
-    const resolvedPath = resolve(path);
-
-    if (result.has(resolvedPath)) return;
-    result.add(resolvedPath);
-    if (!existsSync(resolvedPath) || !statSync(resolvedPath).isFile()) return;
-    referencedConfigPaths(resolvedPath).forEach(visit);
-  };
-
-  visit(configPath);
-
-  return Object.freeze([...result]);
-};
-
-const EDITOR_SOURCE_EXTENSIONS = [
-  '.ts',
-  '.tsx',
-  '.d.ts',
-  '.mts',
-  '.d.mts',
-  '.cts',
-  '.d.cts',
-  '.js',
-  '.jsx',
-  '.mjs',
-  '.cjs',
-] as const;
-
-const EDITOR_SOURCE_SUBSTITUTIONS: Readonly<Record<string, readonly string[]>> =
-  {
-    '.cjs': ['.cts', '.d.cts', '.cjs'],
-    '.js': ['.ts', '.tsx', '.d.ts', '.js'],
-    '.jsx': ['.tsx', '.d.ts', '.jsx'],
-    '.mjs': ['.mts', '.d.mts', '.mjs'],
-  };
-
-/**
- * Resolve one path with TypeScript's source-substitution order.
- *
- * @internal
- */
-export const resolveEditorSourceCandidate = (candidate: string) => {
-  const extension = extname(candidate);
-  const base = extension ? candidate.slice(0, -extension.length) : candidate;
-  const substitutions = EDITOR_SOURCE_SUBSTITUTIONS[extension];
-  const candidates = substitutions
-    ? substitutions.map((sourceExtension) => `${base}${sourceExtension}`)
-    : extension
-      ? [candidate]
-      : [
-          ...EDITOR_SOURCE_EXTENSIONS.map(
-            (sourceExtension) => `${candidate}${sourceExtension}`
-          ),
-          ...EDITOR_SOURCE_EXTENSIONS.map((sourceExtension) =>
-            join(candidate, `index${sourceExtension}`)
-          ),
-        ];
-
-  return candidates.find((path) => existsSync(path) && statSync(path).isFile());
-};
-
-export const editorSourceImportCandidates = (
-  importer: string,
-  specifier: string,
-  configCache: EditorTsconfigCache = new Map(),
-  projectConfigPath = findEditorConfig(importer)
-) => {
-  if (specifier.startsWith('.') || isAbsolute(specifier)) {
-    return Object.freeze([resolve(dirname(importer), specifier)]);
-  }
-  const configPath = projectConfigPath;
-
-  if (!configPath) return Object.freeze([] as string[]);
-  try {
-    let config = configCache.get(configPath);
-
-    if (!configCache.has(configPath)) {
-      config = readTsconfig(configPath, { typescriptVersion: '7.0.2' });
-      configCache.set(configPath, config);
-    }
-
-    return Object.freeze(
-      config ? resolvePathAlias(config, specifier) : ([] as string[])
-    );
-  } catch {
-    // Invalid configs stay watched through discoverEditorConfigFiles and are
-    // resolved after the user repairs the config.
-    return Object.freeze([] as string[]);
-  }
-};
-
-export const resolveEditorSourceImport = (
-  importer: string,
-  specifier: string,
-  configCache?: EditorTsconfigCache,
-  projectConfigPath?: string
-) =>
-  editorSourceImportCandidates(
-    importer,
-    specifier,
-    configCache,
-    projectConfigPath
-  )
-    .map(resolveEditorSourceCandidate)
-    .find((path): path is string => Boolean(path));
 
 const diagnosticText = (diagnostic: Diagnostic): string => {
   const chain = diagnostic.messageChain?.map(diagnosticText).filter(Boolean);
@@ -938,23 +657,14 @@ const projectForHelper = async (
 
 export class NativeTypeScriptSession {
   readonly #api: API;
-  readonly #ambientOpenFiles = new Set<string>();
-  readonly #ambientOpenProjects = new Set<string>();
   readonly #cwd: string;
   readonly #helperPathByEntry = new Map<string, string>();
-  readonly #pendingFileChanges = {
-    changed: new Set<string>(),
-    created: new Set<string>(),
-    deleted: new Set<string>(),
-  };
   #helperSources = new Map<string, string>();
-  #ambientDiscovery = Promise.resolve();
   #snapshot: Snapshot | undefined;
 
-  constructor(cwd: string, collectTiming = false) {
+  constructor(cwd: string) {
     this.#cwd = resolve(cwd);
     this.#api = new API({
-      collectTiming,
       cwd: this.#cwd,
       fs: {
         getAccessibleEntries: (directoryName) => {
@@ -987,50 +697,6 @@ export class NativeTypeScriptSession {
     });
   }
 
-  async getTimingInfo(): Promise<TimingInfo> {
-    return this.#api.getTimingInfo();
-  }
-
-  async discoverAmbientSourceFiles(entryPath: string) {
-    const resolvedEntryPath = resolve(entryPath);
-    const configPath = findEditorConfig(resolvedEntryPath);
-    const discover = this.#ambientDiscovery.then(async () => {
-      this.#ambientOpenFiles.add(resolvedEntryPath);
-      if (configPath) this.#ambientOpenProjects.add(configPath);
-      const previousSnapshot = this.#snapshot;
-      const snapshot = await this.#api.updateSnapshot({
-        openFiles: [...this.#ambientOpenFiles],
-        ...(this.#ambientOpenProjects.size > 0
-          ? { openProjects: [...this.#ambientOpenProjects] }
-          : {}),
-      });
-
-      this.#snapshot = snapshot;
-      if (previousSnapshot) await previousSnapshot.dispose();
-      const project = await projectForHelper(
-        snapshot,
-        resolvedEntryPath,
-        configPath
-      );
-
-      if (!project) {
-        return Object.freeze(discoverEditorConfigFiles(entryPath));
-      }
-
-      return Object.freeze([
-        ...discoverEditorConfigFiles(entryPath),
-        ...localAmbientSourceFiles(await project.program.getSourceFileNames()),
-      ]);
-    });
-
-    this.#ambientDiscovery = discover.then(
-      () => undefined,
-      () => undefined
-    );
-
-    return discover;
-  }
-
   discardHelpers(paths: readonly string[]) {
     paths.forEach((path) => {
       const resolvedPath = resolve(path);
@@ -1054,32 +720,6 @@ export class NativeTypeScriptSession {
     return path;
   }
 
-  recordFileChange(event: 'add' | 'change' | 'unlink', path: string) {
-    const resolvedPath = resolve(path);
-    const { changed, created, deleted } = this.#pendingFileChanges;
-
-    // Collapse each save burst to its net TS transition. In particular,
-    // create -> unlink is no change, while unlink -> add is a replacement.
-    if (event === 'add' || event === 'change') {
-      if (deleted.delete(resolvedPath)) changed.add(resolvedPath);
-      else if (event === 'add') {
-        if (!changed.has(resolvedPath)) created.add(resolvedPath);
-      } else if (!created.has(resolvedPath)) {
-        changed.add(resolvedPath);
-      }
-
-      return;
-    }
-    const wasCreated = created.delete(resolvedPath);
-
-    changed.delete(resolvedPath);
-    if (wasCreated) {
-      deleted.delete(resolvedPath);
-    } else {
-      deleted.add(resolvedPath);
-    }
-  }
-
   async materialize(
     helpers: readonly NativeTypeHelper[]
   ): Promise<readonly NativeTypeMaterialization[]> {
@@ -1098,16 +738,6 @@ export class NativeTypeScriptSession {
         ? [path]
         : []
     );
-    const pendingChanged = new Set(this.#pendingFileChanges.changed);
-    const pendingCreated = new Set(this.#pendingFileChanges.created);
-    const pendingDeleted = new Set(this.#pendingFileChanges.deleted);
-
-    this.#pendingFileChanges.changed.clear();
-    this.#pendingFileChanges.created.clear();
-    this.#pendingFileChanges.deleted.clear();
-    const changed = new Set([...pendingChanged, ...changedHelpers]);
-    const created = new Set([...pendingCreated, ...createdHelpers]);
-    const deleted = new Set([...pendingDeleted, ...deletedHelpers]);
     const previousSnapshot = this.#snapshot;
     const previousHelperSources = this.#helperSources;
     let nextSnapshot: Snapshot;
@@ -1115,12 +745,20 @@ export class NativeTypeScriptSession {
     this.#helperSources = helperSources;
     try {
       nextSnapshot = await this.#api.updateSnapshot({
-        ...(changed.size > 0 || created.size > 0 || deleted.size > 0
+        ...(changedHelpers.length > 0 ||
+        createdHelpers.length > 0 ||
+        deletedHelpers.length > 0
           ? {
               fileChanges: {
-                ...(changed.size > 0 ? { changed: [...changed] } : {}),
-                ...(created.size > 0 ? { created: [...created] } : {}),
-                ...(deleted.size > 0 ? { deleted: [...deleted] } : {}),
+                ...(changedHelpers.length > 0
+                  ? { changed: changedHelpers }
+                  : {}),
+                ...(createdHelpers.length > 0
+                  ? { created: createdHelpers }
+                  : {}),
+                ...(deletedHelpers.length > 0
+                  ? { deleted: deletedHelpers }
+                  : {}),
               },
             }
           : {}),
@@ -1130,15 +768,6 @@ export class NativeTypeScriptSession {
         ],
       });
     } catch (error) {
-      pendingChanged.forEach((path) => {
-        this.#pendingFileChanges.changed.add(path);
-      });
-      pendingCreated.forEach((path) => {
-        this.#pendingFileChanges.created.add(path);
-      });
-      pendingDeleted.forEach((path) => {
-        this.#pendingFileChanges.deleted.add(path);
-      });
       this.#helperSources = previousHelperSources;
 
       throw error;
@@ -1178,7 +807,6 @@ export class NativeTypeScriptSession {
       string,
       Promise<readonly Diagnostic[]>
     >();
-    const sourceFilesByProject = new Map<string, Promise<readonly string[]>>();
     const results = await Promise.all(
       projectEntries.map(async ({ helper, project, projectKey }) => {
         let configDiagnostics = configDiagnosticsByProject.get(projectKey);
@@ -1187,23 +815,15 @@ export class NativeTypeScriptSession {
           configDiagnostics = project.program.getConfigFileParsingDiagnostics();
           configDiagnosticsByProject.set(projectKey, configDiagnostics);
         }
-        let projectSourceFiles = sourceFilesByProject.get(projectKey);
-
-        if (!projectSourceFiles) {
-          projectSourceFiles = project.program.getSourceFileNames();
-          sourceFilesByProject.set(projectKey, projectSourceFiles);
-        }
-        const [config, syntactic, semantic, types, programSourceFiles] =
-          await Promise.all([
-            configDiagnostics,
-            project.program.getSyntacticDiagnostics(helper.path),
-            project.program.getSemanticDiagnostics(helper.path),
-            project.checker.getTypeAtPosition(
-              helper.path,
-              helper.aliases.map(({ position }) => position)
-            ),
-            projectSourceFiles,
-          ]);
+        const [config, syntactic, semantic, types] = await Promise.all([
+          configDiagnostics,
+          project.program.getSyntacticDiagnostics(helper.path),
+          project.program.getSemanticDiagnostics(helper.path),
+          project.checker.getTypeAtPosition(
+            helper.path,
+            helper.aliases.map(({ position }) => position)
+          ),
+        ]);
         const diagnostics = [...config, ...syntactic, ...semantic];
 
         if (diagnostics.length > 0) {
@@ -1245,19 +865,8 @@ export class NativeTypeScriptSession {
             }
           })
         );
-        const properties = Object.fromEntries(propertyEntries);
-        const sourceFiles = [
-          ...discoverEditorConfigFiles(helper.path),
-          ...localAmbientSourceFiles(programSourceFiles),
-        ].filter((path) => !helper.generatedPaths.has(resolve(path)));
-
         return Object.freeze({
-          properties: Object.freeze(properties),
-          sourceFiles: Object.freeze(
-            sourceFiles.filter(
-              (path, index, paths) => paths.indexOf(path) === index
-            )
-          ),
+          properties: Object.freeze(Object.fromEntries(propertyEntries)),
         });
       })
     );
@@ -1273,8 +882,6 @@ export class NativeTypeScriptSession {
       try {
         this.#helperPathByEntry.clear();
         this.#helperSources.clear();
-        this.#ambientOpenFiles.clear();
-        this.#ambientOpenProjects.clear();
       } finally {
         await this.#api.close();
       }

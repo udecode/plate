@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Selected form values must have a document contract before application selection state is compared.",
-  "last": false,
-  "opportunity": {
-    "score": 7,
-    "reason": "Form-value and multi-selection consumers have different jobs from referenced inline entities."
-  },
   "owners": [
     "apps/www/src/registry/components/editor/select-editor.tsx",
     "apps/www/src/registry/components/editor/tag.tsx"

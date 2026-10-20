@@ -4,11 +4,6 @@
   "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
   "dependsOn": [],
   "prerequisiteReason": "A measurement method can be assessed independently of any one feature verdict.",
-  "last": false,
-  "opportunity": {
-    "score": 8,
-    "reason": "Two research iterations and follow-through evidence should prevent rediscovering rejected candidates."
-  },
   "owners": [
     "benchmarks/editor/benchmarks/",
     "tooling/scripts/bench-targets.mjs",

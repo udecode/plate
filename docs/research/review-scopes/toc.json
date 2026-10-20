@@ -6,11 +6,6 @@
     "reads"
   ],
   "prerequisiteReason": "Heading reads must have a canonical owner before table-of-contents subscriptions and navigation are chosen.",
-  "last": false,
-  "opportunity": {
-    "score": 5,
-    "reason": "This can reuse canonical heading/search subscriptions instead of another index."
-  },
   "owners": [
     "packages/platejs/src/features/toc/"
   ],

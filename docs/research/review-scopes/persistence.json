@@ -6,11 +6,6 @@
     "state"
   ],
   "prerequisiteReason": "The durable-state contract determines what serialization and migrations must preserve.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Storage contracts outlive mounted views and must remain coherent without requiring collaboration or generated application schemas."
-  },
   "owners": [
     "packages/plitejs/src/core/value-codec.ts",
     "packages/plitejs/src/core/persisted-document.ts",
@@ -47,7 +42,7 @@
     "packages/platejs/src/migrations/migratePlateV54.spec.ts",
     "packages/plitejs/test/authored-format-contract.test.ts",
     "packages/plitejs/test/authored-facts.test.ts",
-    "packages/platejs/test/public-package-import-smoke.slow.ts",
+    "packages/platejs/test/public-package-import-smoke.spec.ts",
     "apps/www/tests/browser/document-migration.spec.ts",
     "apps/www/src/generated/api-reference-manifest.json",
     "apps/www/public/r/api-core-docs.json",

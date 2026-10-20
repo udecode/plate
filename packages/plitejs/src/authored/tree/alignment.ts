@@ -596,6 +596,30 @@ export const decidedContentChange = (
       DocumentChange.between(from, to, { isSetValued: isAuthoredSetValued })
   );
 
+/** The accept-all change when it aligns: structural, else by characters. */
+export const acceptedAlignment = (
+  stored: JsonEditorValue,
+  accepted: JsonEditorValue
+): DocumentChange | null =>
+  structuralAcceptedChange(stored, accepted) ??
+  characterAlignedChange(stored, accepted);
+
+/**
+ * The accept-all change as two diffs, struck nodes first, so a kept leaf
+ * stays aligned, for content no alignment pairs.
+ */
+export const diffedAcceptedChange = (
+  stored: JsonEditorValue,
+  accepted: JsonEditorValue,
+  options: AlignmentOptions
+): DocumentChange => {
+  const unstruck = deepFreeze(withoutStruck(stored));
+
+  return DocumentChange.between(stored, unstruck, options).compose(
+    DocumentChange.between(unstruck, accepted, options)
+  );
+};
+
 /**
  * The change from a stored document to its accepted form: structural when the walk
  * reproduces the resolver, else aligned by characters, else two diffs, struck
@@ -606,15 +630,9 @@ export const acceptedChange = (
   accepted: JsonEditorValue,
   options: AlignmentOptions
 ): DocumentChange =>
-  rootByRoot(stored, accepted, (from, to) => {
-    const structural =
-      structuralAcceptedChange(from, to) ?? characterAlignedChange(from, to);
-
-    if (structural) return structural;
-
-    const unstruck = deepFreeze(withoutStruck(from));
-
-    return DocumentChange.between(from, unstruck, options).compose(
-      DocumentChange.between(unstruck, to, options)
-    );
-  });
+  rootByRoot(
+    stored,
+    accepted,
+    (from, to) =>
+      acceptedAlignment(from, to) ?? diffedAcceptedChange(from, to, options)
+  );

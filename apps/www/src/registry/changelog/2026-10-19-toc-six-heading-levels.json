@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-19-toc-six-heading-levels",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-19-toc-six-heading-levels.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Indent all six heading levels in the table of contents",
+  "targets": [
+    {
+      "name": "toc",
+      "files": ["apps/www/src/registry/components/editor/toc.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-static",
+      "files": ["apps/www/src/registry/components/editor/toc-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-19-toc-indent-all-six-heading-48690c65",
+      "kind": "behavior",
+      "summary": "Indent all six heading levels in the table of contents",
+      "details": [],
+      "migrationNotes": [
+        "Read an entry's level instead of its depth and type in copied TOC code."
+      ],
+      "targets": ["toc", "toc-static"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-19",
+          "entry": "2026-10-19-toc-six-heading-levels",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-19-toc-static-remove-docx-element",
+      "kind": "remove",
+      "summary": "Remove `TocElementDocx`",
+      "details": [],
+      "migrationNotes": [
+        "Delete the TocElementDocx import and its toc override from your Word export kit; exportDocx draws the table of contents."
+      ],
+      "targets": ["toc-static"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-19",
+          "entry": "2026-10-19-toc-six-heading-levels",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

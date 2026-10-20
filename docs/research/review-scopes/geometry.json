@@ -8,11 +8,6 @@
     "selection"
   ],
   "prerequisiteReason": "Mounted-view lifetime and selection ownership determine who may measure and publish coordinates.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Floating controls and shared roots require one lifetime-aware source of coordinates."
-  },
   "owners": [
     "packages/plitejs/src/react/range-geometry.ts",
     "packages/plitejs/src/react/hooks/use-selection-geometry.tsx"

@@ -29,7 +29,6 @@ export const PLUGINS = {
   floatingToolbar: 'floatingToolbar',
   fontFamily: 'fontFamily',
   fontSize: 'fontSize',
-  fontWeight: 'fontWeight',
   footnote: 'footnote',
   footnoteDefinition: 'footnoteDefinition',
   heading: 'heading',

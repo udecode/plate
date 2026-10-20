@@ -3,11 +3,6 @@
   "title": "External editor comparison set",
   "question": "Which external editors provide current, decision-specific evidence for Plate and Plite, and does this evidence justify a universal editor ranking or runtime replacement?",
   "dependsOn": [],
-  "last": false,
-  "opportunity": {
-    "score": 5,
-    "reason": "The owner requested a broad refresh of the external editor comparison."
-  },
   "owners": [
     "docs/research/sources/editor-architecture/candidates.md"
   ],
