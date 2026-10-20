@@ -5,67 +5,52 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 
-const REPO = 'udecode/plate';
-const MARKETPLACE = 'pstack-claude';
-const PLUGIN = `pstack@${MARKETPLACE}`;
-const SOURCE = 'michael-denyer/pstack-claude';
-const AGENT_PATHS = ['AGENTS.md', '.agents', '.claude', '.codex', '.github/PULL_REQUEST_TEMPLATE.md'];
-
-const run = (command, args) => {
-  const result = spawnSync(command, args, { encoding: 'utf8' });
+const hook = process.argv.includes('--hook');
+const git = (...args) => {
+  const result = spawnSync('git', args, { encoding: 'utf8' });
   return result.status === 0 ? result.stdout.trim() : null;
 };
 const readJson = (path) => (existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null);
 
-const root = run('git', ['rev-parse', '--show-toplevel']);
+const root = git('rev-parse', '--show-toplevel');
 if (!root) {
-  console.error('Run the doctor from a checkout of udecode/plate.');
+  if (hook) process.exit(0);
+  console.error('Run the doctor from a checkout of the repository.');
   process.exit(2);
 }
-const main = dirname(run('git', ['-C', root, 'rev-parse', '--path-format=absolute', '--git-common-dir']));
-const remote =
-  run('git', ['-C', root, 'remote', '-v'])
-    ?.split('\n')
-    .find((line) => line.includes(`${REPO}.git`) || line.includes(`${REPO} `))
-    ?.split(/\s+/u)[0] ?? 'origin';
-if (run('git', ['-C', root, 'fetch', '--quiet', remote, 'next']) === null) {
-  console.error(`Could not fetch next from ${remote}; check the network and that remote, then run the doctor again.`);
-  process.exit(2);
-}
-const upstream = `${remote}/next`;
-const { tag } = JSON.parse(run('git', ['-C', root, 'show', `${upstream}:.agents/pstack.json`]));
-const version = tag.replace(/^v/u, '');
+const main = dirname(git('-C', root, 'rev-parse', '--path-format=absolute', '--git-common-dir'));
+const settings = readJson(join(root, '.claude/settings.json')) ?? {};
+const pins = Object.entries(settings.enabledPlugins ?? {}).flatMap(([plugin, enabled]) => {
+  const marketplace = plugin.split('@')[1];
+  const source = settings.extraKnownMarketplaces?.[marketplace]?.source;
+  if (!enabled || !source?.ref) return [];
+  const version = /^v?\d+\.\d+/u.test(source.ref) ? source.ref.replace(/^v/u, '') : null;
+  return [{ marketplace, name: plugin.split('@')[0], plugin, ref: source.ref, repo: source.repo, version }];
+});
 const home = homedir();
 const findings = [];
 const stale = (what, fix) => findings.push({ fix, what });
 
-const behind = Number(run('git', ['-C', root, 'rev-list', '--count', `HEAD..${upstream}`, '--', ...AGENT_PATHS]));
-if (behind > 0)
-  stale(
-    `This branch is ${behind} commits behind ${upstream} on agent instructions, so your agent reads old rules.`,
-    `git merge ${upstream}, or rebase onto it, then start a new agent session and run the doctor again`
-  );
-
 const claude = join(home, '.claude');
 if (existsSync(claude)) {
-  const installs = readJson(join(claude, 'plugins/installed_plugins.json'))?.plugins?.[PLUGIN] ?? [];
-  const mine = installs.filter((install) => install.scope === 'user' || install.projectPath === main);
-  const ref = readJson(join(claude, 'plugins/known_marketplaces.json'))?.[MARKETPLACE]?.source?.ref;
-  if (mine.length === 0)
-    stale(
-      'Claude Code has no pstack plugin for this checkout.',
-      `trust the folder ${main} in Claude Code, then from it: claude plugin install ${PLUGIN} --scope project`
-    );
-  if (ref && ref !== tag)
-    stale(
-      `Claude Code's ${MARKETPLACE} marketplace is pinned to ${ref}, not ${tag}.`,
-      `from the home directory: claude plugin marketplace add ${SOURCE}#${tag}`
-    );
-  for (const install of mine.filter((each) => each.version !== version))
-    stale(
-      `Claude Code's ${install.scope}-scope pstack is ${install.version}, not ${version}.`,
-      `from ${install.scope === 'user' ? 'the home directory' : main}: claude plugin update ${PLUGIN}${install.scope === 'user' ? '' : ` --scope ${install.scope}`}`
-    );
+  const installed = readJson(join(claude, 'plugins/installed_plugins.json'))?.plugins ?? {};
+  const marketplaces = readJson(join(claude, 'plugins/known_marketplaces.json')) ?? {};
+  for (const { marketplace, plugin, ref, repo, version } of pins) {
+    const known = marketplaces[marketplace]?.source?.ref;
+    if (known && known !== ref)
+      stale(
+        `Claude Code's ${marketplace} marketplace is pinned to ${known}, not ${ref}.`,
+        `from the home directory: claude plugin marketplace add ${repo}#${ref}`
+      );
+    const mine = (installed[plugin] ?? []).filter((install) => install.scope === 'user' || install.projectPath === main);
+    if (mine.length === 0)
+      stale(`Claude Code has no ${plugin} for this checkout.`, `from ${main}: claude plugin install ${plugin} --scope project`);
+    for (const install of mine.filter((each) => version && each.version !== version))
+      stale(
+        `Claude Code's ${install.scope}-scope ${plugin} is ${install.version}, not ${version}.`,
+        `from ${install.scope === 'user' ? 'the home directory' : main}: claude plugin update ${plugin}${install.scope === 'user' ? '' : ` --scope ${install.scope}`}`
+      );
+  }
 }
 
 const config = join(home, '.codex/config.toml');
@@ -85,26 +70,27 @@ if (existsSync(config)) {
       `Codex reads the first ${budget} bytes of AGENTS.md, which has ${size}.`,
       'put project_doc_max_bytes = 131072 above the first [table] in ~/.codex/config.toml'
     );
-  const ref = tables.get(`marketplaces.${MARKETPLACE}`)?.get('ref');
-  if (ref !== tag)
-    stale(
-      ref ? `Codex's ${MARKETPLACE} marketplace is pinned to ${ref}, not ${tag}.` : `Codex has no ${MARKETPLACE} marketplace.`,
-      `from the home directory: ${ref ? `codex plugin marketplace remove ${MARKETPLACE} && ` : ''}codex plugin marketplace add ${SOURCE} --ref ${tag} && codex plugin add ${PLUGIN}`
-    );
-  else if (tables.get(`plugins."${PLUGIN}"`)?.get('enabled') !== 'true')
-    stale('Codex has the pstack marketplace but not the plugin.', `from the home directory: codex plugin add ${PLUGIN}`);
-  if (![...tables.keys()].some((name) => name.startsWith(`hooks.state."${PLUGIN}:`)))
-    stale("Codex has not trusted pstack's session hook.", 'a human opens Codex, runs /hooks and trusts the pstack session hook');
+  for (const { marketplace, name, plugin, ref, repo, version } of pins) {
+    const known = tables.get(`marketplaces.${marketplace}`)?.get('ref');
+    if (known !== ref)
+      stale(
+        known ? `Codex's ${marketplace} marketplace is pinned to ${known}, not ${ref}.` : `Codex has no ${marketplace} marketplace.`,
+        `from the home directory: ${known ? `codex plugin marketplace remove ${marketplace} && ` : ''}codex plugin marketplace add ${repo} --ref ${ref} && codex plugin add ${plugin}`
+      );
+    else if (tables.get(`plugins."${plugin}"`)?.get('enabled') !== 'true')
+      stale(`Codex has the ${marketplace} marketplace but not ${plugin}.`, `from the home directory: codex plugin add ${plugin}`);
+    else if (
+      existsSync(join(home, '.codex/plugins/cache', marketplace, name, version ?? ref, 'hooks/codex-hooks.json')) &&
+      ![...tables.keys()].some((key) => key.startsWith(`hooks.state."${plugin}:`))
+    )
+      stale(`Codex has not trusted ${plugin}'s session hook.`, `a human opens Codex, runs /hooks and trusts the ${plugin} session hook`);
+  }
 }
 
-if (!existsSync(claude) && !existsSync(config))
-  stale('Neither Claude Code nor Codex is set up on this machine.', 'install one, then run the doctor again');
-
-const prs = run('gh', ['pr', 'list', '--repo', REPO, '--author', '@me', '--base', 'next', '--state', 'open', '--json', 'number,url,statusCheckRollup']);
-const failing = JSON.parse(prs ?? '[]').filter((pr) => pr.statusCheckRollup.some((check) => check.name === 'PR body' && check.conclusion === 'FAILURE'));
-
-for (const { fix, what } of findings) console.log(`stale: ${what}\n  fix: ${fix}`);
-if (findings.length === 0) console.log(`ok: this setup matches ${upstream} and pstack ${tag}.`);
-if (prs === null) console.log(`skip: gh could not list your open PRs into next; run gh auth login to include them.`);
-for (const pr of failing) console.log(`pr: ${pr.url} fails the PR body check.`);
-process.exit(findings.length > 0 || failing.length > 0 ? 1 : 0);
+if (findings.length > 0) {
+  console.log(
+    'Your agent setup is behind the plugins this checkout pins. Run each fix below in order; give a fix that names a human to the human as one line. A `claude plugin` command may rewrite .claude/settings.json, so restore it with git when it changes. Then ask the human to start a new session, which loads the updated plugins.'
+  );
+  for (const { fix, what } of findings) console.log(`stale: ${what}\n  fix: ${fix}`);
+} else if (!hook) console.log('ok: this agent setup matches the plugins this checkout pins.');
+process.exit(hook || findings.length === 0 ? 0 : 1);
