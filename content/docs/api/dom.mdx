@@ -227,15 +227,16 @@ range is not currently mappable.
 
 ## DOM environment
 
-#### `editor.api.dom.findDocumentOrShadowRoot(): Document | ShadowRoot`
+#### `editor.api.dom.assertDocumentOrShadowRoot(): Document | ShadowRoot`
 
-Return the document or shadow root that owns the editor. Throws when the editor
-has no mounted root.
+Return the document or shadow root that owns the editor. Throws where
+`resolveDocumentOrShadowRoot` returns `null`.
 
 #### `editor.api.dom.resolveDocumentOrShadowRoot(): Document | ShadowRoot | null`
 
 Resolve the document or shadow root that owns the editor. Returns `null` when
-the editor has no mounted root.
+this editor has no mounted view, or when several are mounted and none has
+focus.
 
 #### `editor.api.dom.getWindow(): Window`
 

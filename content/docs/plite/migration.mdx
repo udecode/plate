@@ -406,6 +406,7 @@ import { ReactEditor } from "slate-react";
 
 const path = ReactEditor.findPath(editor, element);
 const domNode = ReactEditor.toDOMNode(editor, element);
+const root = ReactEditor.findDocumentOrShadowRoot(editor);
 ReactEditor.focus(editor);
 ```
 
@@ -413,8 +414,9 @@ Plite runtime:
 
 ```tsx
 const path = editor.api.dom.resolvePath(element);
+const root = editor.api.dom.resolveDocumentOrShadowRoot();
 
-if (!path) return;
+if (!path || !root) return;
 
 editor.api.dom.focus();
 ```

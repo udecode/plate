@@ -187,9 +187,8 @@ DOM bridge types include `DOMApi`, `DOMClipboardApi`,
 and `ScrollIntoViewTarget`.
 
 DOM coverage types include `DOMCoverageSession`, `DOMCoverageBoundary`,
-`DOMCoverageSelectionPolicy`, `DOMCoveragePointResult`, and
-`DOMCoverageDOMRangeResult`. Use these when a framework layer needs to describe
-hidden or virtualized same-root content.
+`DOMCoverageSelectionPolicy`, and `DOMCoveragePointResult`. Use these when a
+framework layer needs to describe hidden or virtualized same-root content.
 
 DOM primitive type names include `DOMNode`, `DOMElement`, `DOMText`, `DOMPoint`,
 `DOMRange`, `DOMStaticRange`, and `DOMSelection`.
@@ -224,9 +223,23 @@ dispose();
 coverage.destroy();
 ```
 
-Call query, conversion, and materialization methods on that session. Do not
-share registrations between views of the same editor. A registration's disposer
-cannot remove a later replacement with the same boundary id.
+Call query, conversion, and materialization methods on that session.
+`getBoundaryForPoint(point)` returns the boundary that hides a point, or
+`null`. `getBoundariesForRange(range)` returns every boundary a range crosses,
+or an empty array. Read DOM coordinates through `editor.api.dom.resolveDOMPoint`
+and `resolveDOMRange` on the same editor. The `dom()` plugin installs them. They
+return `null` when an endpoint has no DOM or while the page's text differs from
+the editor's. A range whose endpoints are mounted still resolves when it crosses
+hidden content, so check its boundaries first:
+
+```ts
+const boundaries = coverage.getBoundariesForRange(range);
+const domRange =
+  boundaries.length > 0 ? null : editor.api.dom.resolveDOMRange(range);
+```
+
+Do not share registrations between views of the same editor. A registration's
+disposer cannot remove a later replacement with the same boundary id.
 
 ## Internal subpath
 

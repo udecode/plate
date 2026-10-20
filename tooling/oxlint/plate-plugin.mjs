@@ -1145,12 +1145,12 @@ const STRICT_DOM_LOOKUP_RESOLVERS = {
     'resolveDOMNode(node), or editable() for the editor root, and handle null',
   assertDOMPoint: 'resolveDOMPoint(point) and handle null',
   assertDOMRange: 'resolveDOMRange(range) and handle null',
+  assertDocumentOrShadowRoot: 'resolveDocumentOrShadowRoot() and handle null',
   assertEventRange: 'resolveEventRange(event) and handle null',
   assertNode: 'resolveNode(domNode) and handle null',
   assertPath: 'resolvePath(node) and handle null',
   assertPoint: 'resolvePoint(domPoint, options) and handle null',
   assertRange: 'resolveRange(domRange, options) and handle null',
-  findDocumentOrShadowRoot: 'resolveDocumentOrShadowRoot() and handle null',
   findKey:
     'resolveDOMNode(node) when it needs the DOM node, or editor.key(path) when it needs the node key, and handle null',
 };

@@ -175,8 +175,11 @@ export interface DOMApi {
   ) => DOMDropTarget | null;
   deselect: () => void;
   editable: (root?: RootKey) => HTMLElement | null;
-  findDocumentOrShadowRoot: () => Document | ShadowRoot;
-  /** The document or shadow root holding the editable, or null when unmounted. */
+  assertDocumentOrShadowRoot: () => Document | ShadowRoot;
+  /**
+   * The document or shadow root holding the editable, or null when this editor
+   * has no mounted view, or when several are mounted and none has focus.
+   */
   resolveDocumentOrShadowRoot: () => Document | ShadowRoot | null;
   assertEventRange: (event: any) => Range;
   findKey: (node: Descendant) => Key;
@@ -424,9 +427,10 @@ export interface DOMEditorInterface {
   ) => HTMLElement | null;
 
   /**
-   * Find the DOM node that implements DocumentOrShadowRoot for the editor.
+   * Return the DocumentOrShadowRoot holding the editor's editable, or throw
+   * where `resolveDocumentOrShadowRoot` returns null.
    */
-  findDocumentOrShadowRoot: <
+  assertDocumentOrShadowRoot: <
     V extends Value,
     TPlugins extends readonly unknown[],
   >(
@@ -435,7 +439,8 @@ export interface DOMEditorInterface {
 
   /**
    * Resolve the DocumentOrShadowRoot holding the editor's editable, or null
-   * when the editor has no mounted editable.
+   * when this editor has no mounted view, or when several are mounted and none
+   * has focus.
    */
   resolveDocumentOrShadowRoot: <
     V extends Value,
@@ -1396,7 +1401,7 @@ export const DOMEditor: DOMEditorInterface = {
     return null;
   },
 
-  findDocumentOrShadowRoot: (editor) => {
+  assertDocumentOrShadowRoot: (editor) => {
     const root = DOMEditor.resolveDocumentOrShadowRoot(editor);
 
     if (root) return root;
@@ -2872,7 +2877,8 @@ export const createDOMEditorCapability = <
       DOMEditor.deselect(editor);
     },
     editable: (root) => DOMEditor.editable(editor, root),
-    findDocumentOrShadowRoot: () => DOMEditor.findDocumentOrShadowRoot(editor),
+    assertDocumentOrShadowRoot: () =>
+      DOMEditor.assertDocumentOrShadowRoot(editor),
     resolveDocumentOrShadowRoot: () =>
       DOMEditor.resolveDocumentOrShadowRoot(editor),
     assertEventRange: (event) => DOMEditor.assertEventRange(editor, event),

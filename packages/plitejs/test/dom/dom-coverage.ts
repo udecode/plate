@@ -348,32 +348,6 @@ describe('DOM coverage boundaries', () => {
     expect(session.getBoundaries()).toEqual([]);
   });
 
-  test('resolves a nested hidden child point to a boundary instead of a DOM point', () => {
-    withDom((document) => {
-      const editor = createNestedEditor();
-
-      mountEditorRoot(editor, document);
-
-      registerSectionBodyBoundary(editor);
-
-      const hiddenPoint = { path: [0, 1, 0], offset: 3 };
-
-      expect(() => editor.api.dom.assertDOMPoint(hiddenPoint)).toThrow(
-        CANNOT_RESOLVE_DOM_COORDINATES
-      );
-      expect(
-        testView(editor).domCoverage.resolveDOMPointOrBoundary(hiddenPoint)
-      ).toMatchObject({
-        boundary: {
-          boundaryId: 'section-body',
-          reason: 'app-collapse',
-          state: 'intentionally-hidden',
-        },
-        type: 'boundary',
-      });
-    });
-  });
-
   test('tracks first and last root self boundaries without covering siblings', () => {
     const editor = createNestedEditor();
 
@@ -435,12 +409,8 @@ describe('DOM coverage boundaries', () => {
     registerSectionBodyBoundary(editor);
 
     expect(
-      testView(editor).domCoverage.resolveDOMRangeOrBoundary(range)
-    ).toMatchObject({
-      boundaries: [{ boundaryId: 'section-body' }],
-      range,
-      type: 'boundary-range',
-    });
+      testView(editor).domCoverage.getBoundariesForRange(range)
+    ).toMatchObject([{ boundaryId: 'section-body' }]);
   });
 
   test.each([
@@ -1210,13 +1180,10 @@ describe('DOM coverage boundaries', () => {
       CANNOT_RESOLVE_DOM_COORDINATES
     );
     expect(
-      testView(editor).domCoverage.resolveDOMPointOrBoundary(hiddenPoint)
+      testView(editor).domCoverage.getBoundaryForPoint(hiddenPoint)
     ).toMatchObject({
-      boundary: {
-        boundaryId: 'nested-paragraph',
-        selectionPolicy: 'materialize',
-      },
-      type: 'boundary',
+      boundaryId: 'nested-paragraph',
+      selectionPolicy: 'materialize',
     });
     expect(
       testView(editor).domCoverage.materializeBoundary(
@@ -1379,21 +1346,6 @@ describe('DOM coverage boundaries', () => {
     ).toEqual(['hidden-200']);
   });
 
-  test('answers null for an uncovered point and range with no DOM', () => {
-    const editor = createNestedEditor();
-    const point = { path: [1, 0], offset: 2 };
-    const { domCoverage } = testView(editor);
-
-    expect({
-      point: domCoverage.resolveDOMPointOrBoundary(point),
-      range: domCoverage.resolveDOMRangeOrBoundary({
-        kind: 'text',
-        anchor: point,
-        focus: point,
-      }),
-    }).toEqual({ point: null, range: null });
-  });
-
   test('keeps exact DOM coordinate APIs separate from virtualized boundaries', () => {
     withDom((document) => {
       const editor = createLargeEditor(500);
@@ -1428,27 +1380,21 @@ describe('DOM coverage boundaries', () => {
         CANNOT_RESOLVE_DOM_COORDINATES
       );
       expect(
-        testView(editor).domCoverage.resolveDOMPointOrBoundary(hiddenPoint)
+        testView(editor).domCoverage.getBoundaryForPoint(hiddenPoint)
       ).toMatchObject({
-        boundary: {
+        boundaryId: 'virtualized-200',
+        reason: 'viewport-virtualization',
+        state: 'virtualized',
+      });
+      expect(
+        testView(editor).domCoverage.getBoundariesForRange(hiddenRange)
+      ).toMatchObject([
+        {
           boundaryId: 'virtualized-200',
           reason: 'viewport-virtualization',
           state: 'virtualized',
         },
-        type: 'boundary',
-      });
-      expect(
-        testView(editor).domCoverage.resolveDOMRangeOrBoundary(hiddenRange)
-      ).toMatchObject({
-        boundaries: [
-          {
-            boundaryId: 'virtualized-200',
-            reason: 'viewport-virtualization',
-            state: 'virtualized',
-          },
-        ],
-        type: 'boundary-range',
-      });
+      ]);
     });
   });
 });

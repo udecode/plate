@@ -15,8 +15,6 @@ export type {
   DOMCoverageBoundaryEdge,
   DOMCoverageBoundaryState,
   DOMCoverageCopyPolicy,
-  DOMCoverageDOMPointResult,
-  DOMCoverageDOMRangeResult,
   DOMCoverageMaterializeHandler,
   DOMCoverageMaterializeRangeRole,
   DOMCoverageMaterializeReason,
