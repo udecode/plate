@@ -11,6 +11,9 @@
 // the line, including `bash -c` payloads and `$(...)` bodies, skips heredoc
 // bodies, passes every other command, and prints the command for the owner to
 // run in their own terminal. The owner's terminal never runs this hook. It
+// denies an agent's `gh pr create` or `gh pr new` into the branch or with no
+// --base, because land.mjs opens those PRs; one that names another base, such
+// as a PR stacked on someone's head branch, passes. It
 // also denies the app's base-branch sync, which refuses the branch whenever it
 // changes .claude files, and names the rebase to run instead. On Edit,
 // MultiEdit, Write and NotebookEdit it denies a file inside the main checkout,
@@ -165,6 +168,19 @@ function rewrites(words, cwd) {
   return refspecs.length > 0 ? targets : [current()];
 }
 
+// Whether a command is `gh pr create` into the branch or with no base, which defaults to the repository's default branch.
+function opensPr(words, branch) {
+  if (words[0]?.split('/').at(-1) !== 'gh' || words[1] !== 'pr' || !['create', 'new'].includes(words[2])) return false;
+  let base = null;
+  for (let at = 3; at < words.length; at += 1) {
+    const word = words[at];
+    if (word === '--base' || word === '-B') base = words[++at] ?? '';
+    else if (word.startsWith('--base=')) base = word.slice('--base='.length);
+    else if (/^-B./u.test(word)) base = word.slice(2);
+  }
+  return base === null || base.replace(/^refs\/heads\//u, '') === branch;
+}
+
 const git = (dir, ...args) => {
   const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', timeout: 1000, killSignal: 'SIGKILL' });
   return run.error || run.status !== 0 ? null : run.stdout.replace(/\n$/u, '');
@@ -278,12 +294,19 @@ const command = input.tool_input?.command;
 if (typeof command !== 'string') process.exit(0);
 const kept = new Set([config.branch, config.protected].filter(Boolean));
 const hits = new Set();
+let pr = false;
 eachCommand(command, (words) => {
   for (const target of rewrites(words, input.cwd ?? process.cwd()) ?? []) {
     if (target === '*') for (const name of kept) hits.add(name);
     else if (kept.has(target)) hits.add(target);
   }
+  pr ||= opensPr(words, config.branch);
 });
-if (hits.size > 0) {
-  deny(`agents never force-push or delete ${[...hits].join(' and ')}. Tell the owner, who can run it in their own terminal if they want it:\n  ${command}`);
+const reasons = [];
+if (hits.size > 0) reasons.push(`agents never force-push or delete ${[...hits].join(' and ')}. Tell the owner, who can run it in their own terminal if they want it:\n  ${command}`);
+if (pr) {
+  reasons.push(
+    `agents open a PR into ${config.branch} only through \`node .agents/pstack/land.mjs\`, which renders the plan page as its body. A PR stacked on another branch names that branch with --base.`
+  );
 }
+if (reasons.length > 0) deny(reasons.join('\n'));

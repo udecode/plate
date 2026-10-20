@@ -2612,7 +2612,7 @@ function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
     plans: () => titled('Plans', entries.map((entry) => `- ${link(entry)}`)),
   };
   // The compare view is exactly the commits after the author's, so the comment never pastes code a reviewer can open there.
-  const range = since && (github ? [`[My commits after yours](https://github.com/${github.repo}/compare/${since}...${github.sha})`, ''] : [`My commits after \`${since}\``, '']);
+  const range = since && (github ? [`[My commits after yours](https://diffshub.com/${github.repo}/compare/${since}...${github.sha})`, ''] : [`My commits after \`${since}\``, '']);
   const region = [PR_START, ...models, '', ...(range || []), ...brief.flat(), ...BRIEF_ORDER.flatMap((key) => parts[key]?.() ?? []), PR_END]
     .join('\n')
     .replace(/\n{3,}/g, '\n\n');
