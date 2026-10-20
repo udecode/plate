@@ -1,0 +1,109 @@
+name: PR Body Check
+
+# pull_request_target loads this file from the default branch, main. So a PR
+# from this repository runs it through pull_request, which loads it from the
+# PR's merge commit with next. A fork PR runs it through pull_request_target,
+# which needs this file on main. Neither path checks out or runs the PR's code.
+on:
+  pull_request:
+    branches: [next]
+    types: [opened, edited, synchronize, reopened]
+  pull_request_target:
+    branches: [next]
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+
+concurrency:
+  group: pr-body-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-body:
+    name: PR body
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: >-
+      github.repository == 'udecode/plate' && github.event.pull_request.user.login != 'zbeyens' && github.event.pull_request.user.type != 'Bot' && (
+        (github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository) ||
+        (github.event_name == 'pull_request_target' &&
+          github.event.pull_request.head.repo.full_name != github.repository)
+      )
+
+    steps:
+      - name: Check the PR body
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const MARKER = '<!-- pr-body-check -->';
+            const PLAN = /^docs\/plans\/\d{4}-\d\d-\d\d-[^/]+\.md$/u;
+            const { owner, repo } = context.repo;
+            const number = context.payload.pull_request.number;
+            // A rerun judges the body as it is now, not as the event that started the run saw it.
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: number });
+            const body = pr.body ?? '';
+            const passed = body.includes('<!-- plan-page:start -->') || /^Beyond the ask: \S/mu.test(body);
+
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: number, per_page: 100 });
+            const mine = comments.find((comment) => comment.user?.login === 'github-actions[bot]' && comment.body?.includes(MARKER));
+            const post = async (text) => {
+              const next = `${MARKER}\n${text}`;
+              try {
+                if (!mine) await github.rest.issues.createComment({ owner, repo, issue_number: number, body: next });
+                else if (mine.body !== next) await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body: next });
+              } catch (error) {
+                core.warning(`Could not write the PR comment: ${error.message}`);
+              }
+            };
+
+            if (passed) {
+              core.info('The PR body has its plan page or a `Beyond the ask:` line.');
+              if (mine) await post('### PR body check passes\n\nThe body now has its plan page or a `Beyond the ask:` line.');
+              return;
+            }
+
+            const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number: number, per_page: 100 });
+            const plans = files.filter((file) => file.status !== 'removed' && PLAN.test(file.filename)).map((file) => file.filename);
+            const view = `mkdir -p docs/plans/artifacts && gh pr view ${number} --repo ${owner}/${repo} --json body --jq .body > docs/plans/artifacts/pr-${number}-body.md`;
+            const render = (plan) => [
+              '```text',
+              `1. ${view}`,
+              `2. node .agents/pstack/plan-page.mjs ${plan} --pr --into docs/plans/artifacts/pr-${number}-body.md`,
+              `3. gh pr edit ${number} --repo ${owner}/${repo} --body-file <the file step 2 printed>, with each --attach line step 2 printed`,
+              '```',
+            ];
+            const fix =
+              plans.length === 1
+                ? [
+                    `This PR changes the plan \`${plans[0]}\`, so its body is that plan's page. Ask your agent to read the \`plan-page\` skill's PR section, then run these steps from a checkout at this PR's head:`,
+                    '',
+                    ...render(plans[0]),
+                  ]
+                : plans.length > 1
+                  ? [
+                      `This PR changes ${plans.length} plans: ${plans.map((plan) => `\`${plan}\``).join(', ')}. Its body is the page of the one plan that covers the whole diff, or of a PR plan whose \`Plans:\` line lists them. Ask your agent to read the \`plan-page\` skill's PR section, pick or write that plan, then run these steps from a checkout at this PR's head:`,
+                      '',
+                      ...render('<that plan>'),
+                    ]
+                  : [
+                      'This PR changes no plan under `docs/plans`. Ask your agent to add to the body a short paragraph on why the change exists and a line that starts with `Beyond the ask:`, naming each change the request did not ask for or saying `none`, with these steps from a checkout of this repository:',
+                      '',
+                      '```text',
+                      `1. ${view}`,
+                      `2. Add the paragraph and the Beyond the ask: line to docs/plans/artifacts/pr-${number}-body.md.`,
+                      `3. gh pr edit ${number} --repo ${owner}/${repo} --body-file docs/plans/artifacts/pr-${number}-body.md`,
+                      '```',
+                    ];
+            const text = [
+              '### PR body check fails',
+              '',
+              'A PR into `next` opens through `node .agents/pstack/land.mjs`, which writes its body. This body has neither a plan page nor a `Beyond the ask:` line.',
+              '',
+              ...fix,
+              '',
+              'The check runs again when the body changes.',
+            ].join('\n');
+            await post(text);
+            core.setFailed(text);
