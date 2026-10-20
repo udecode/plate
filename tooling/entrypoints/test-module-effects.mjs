@@ -5,6 +5,12 @@
 // why the module reaches no repository file. Globs are relative to the
 // repository root.
 export const testModuleEffects = {
+  'benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs': {
+    runs: [
+      'benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs',
+      'config/plite-source-aliases.ts',
+    ],
+  },
   'benchmarks/slate-v2/donor/shared/stats.mjs':
     'writes the benchmark summary to the path its caller names',
   'config/plite-source-aliases.ts':
@@ -28,11 +34,9 @@ export const testModuleEffects = {
   },
   'packages/plitejs/test/core-benchmark-scripts-contract.ts': {
     reads: [
-      'benchmarks/slate-v2/donor/core/compare/*.mjs',
       'benchmarks/slate-v2/donor/core/current/*.mjs',
       'benchmarks/targets/slate-v2.json',
     ],
-    runs: ['benchmarks/slate-v2/donor/shared/stats.mjs'],
   },
   'packages/plitejs/test/create-editor-options-message.test.ts': {
     reads: [
@@ -127,12 +131,14 @@ export const testModuleEffects = {
     reads: [
       'apps/plite/package.json',
       'apps/www/tsconfig.json',
-      'benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs',
-      'benchmarks/slate-v2/donor/core/shared/stats.mjs',
       'content/docs/**/yjs.mdx',
       'package.json',
       'packages/*/package.json',
       'packages/*/tsconfig.json',
+    ],
+    runs: [
+      'benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs',
+      'config/plite-source-aliases.ts',
     ],
   },
   'packages/plitejs/vitest.config.mjs': {

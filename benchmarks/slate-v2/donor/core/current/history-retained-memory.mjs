@@ -56,16 +56,6 @@ const forceGc = () => {
   return false;
 };
 
-const summarizeHeapDeltas = (samples) => ({
-  samples,
-  mean:
-    samples.length === 0
-      ? 0
-      : round(samples.reduce((sum, value) => sum + value, 0) / samples.length),
-  max: samples.length === 0 ? 0 : Math.max(...samples),
-  min: samples.length === 0 ? 0 : Math.min(...samples),
-});
-
 const createHistoryEditor = (children, selection) => {
   const editor = createEditor({ plugins: [history()] });
 
@@ -195,7 +185,7 @@ const measureRetainedLane = (name, setup, run) => {
 
   return {
     durationMs: summarize(durationSamples),
-    [heapDeltaMetric]: summarizeHeapDeltas(heapDeltaSamples),
+    [heapDeltaMetric]: summarize(heapDeltaSamples),
     metadata: {
       ...metadata,
       gcAvailable,

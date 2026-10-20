@@ -35,6 +35,7 @@ const skipBuild = process.env.BENCHMARK_SKIP_BUILD === '1';
 
 const benchmarkSource = `
 import assert from 'node:assert/strict';
+import { now, round, summarize } from './stats.mjs';
 
 const isPlite = process.env.BENCHMARK_ENGINE === 'current';
 let Slate;
@@ -77,37 +78,6 @@ const explicitBlocks = Number(process.env.NORMALIZATION_BENCH_EXPLICIT_BLOCKS ||
 const insertBlocks = Number(process.env.NORMALIZATION_BENCH_INSERT_BLOCKS || 500);
 const insertOps = Number(process.env.NORMALIZATION_BENCH_INSERT_OPS || 50);
 const forcedLayoutCases = Number(process.env.NORMALIZATION_BENCH_FORCED_LAYOUT_CASES || 100);
-
-const now = () => performance.now();
-const round = (value) => Number(value.toFixed(2));
-
-const summarize = (samples) => {
-  if (samples.length === 0) {
-    return {
-      samples: [],
-      mean: 0,
-      median: 0,
-      min: 0,
-      max: 0,
-    };
-  }
-
-  const sorted = [...samples].sort((left, right) => left - right);
-  const mean = samples.reduce((total, sample) => total + sample, 0) / samples.length;
-  const middle = Math.floor(sorted.length / 2);
-  const median =
-    sorted.length % 2 === 0
-      ? (sorted[middle - 1] + sorted[middle]) / 2
-      : sorted[middle];
-
-  return {
-    samples: samples.map(round),
-    mean: round(mean),
-    median: round(median),
-    min: round(sorted[0] ?? 0),
-    max: round(sorted.at(-1) ?? 0),
-  };
-};
 
 const createAdjacentTextChildren = (blocks) =>
   Array.from({ length: blocks }, () => ({
