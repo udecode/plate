@@ -187,7 +187,11 @@ const callBaseMethod = (
     throw new TypeError(`Plate plugin method "${method}" is not callable.`);
   }
 
-  return Reflect.apply(baseMethod, basePlugin, [input]) as AnyBasePlugin;
+  return bindPlateComponent(
+    Reflect.apply(baseMethod, basePlugin, [input]) as AnyBasePlugin,
+    basePlugin.component,
+    Object.hasOwn(basePlugin, 'component')
+  );
 };
 
 const bindPlateComponent = (
