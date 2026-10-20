@@ -6,6 +6,44 @@
   "lintFix": "pnpm lint:task --allow-ignored",
   "check": "pnpm check",
   "maxEffort": "xhigh",
+  "reviewPaths": {
+    "skip": [
+      "docs/**",
+      "AGENTS.md",
+      "CODING_STANDARDS.md",
+      ".agents/**",
+      ".claude/skills/**",
+      ".changeset/**",
+      "benchmarks/**",
+      "apps/www/api-reference.config.json",
+      "apps/www/public/r/**",
+      "apps/www/public/rd/**",
+      "apps/www/src/__registry__/**",
+      "apps/www/src/generated/**",
+      "apps/www/src/registry/changelog/**",
+      "apps/www/src/registry/components/editor/plugins.schema.json",
+      "**/*.cn.mdx",
+      "**/index.ts",
+      "tooling/**",
+      "pnpm-lock.yaml",
+      "skills-lock.json"
+    ],
+    "tests": [
+      "**/*.slow.*",
+      "**/*.spec.*",
+      "**/*.test.*",
+      "**/__tests__/**",
+      "packages/*/test/**",
+      "packages/*/type-tests/**",
+      "apps/*/tests/**"
+    ],
+    "public": [
+      "packages/**",
+      "apps/www/src/registry/**",
+      "content/docs/**",
+      "templates/**"
+    ]
+  },
   "chips": {
     "ship": [
       "node",
@@ -72,13 +110,13 @@
       ".agents/pstack/plan-page.mjs": "af5b2d3f213af3dbac5f2ef48684d470dc0e1714fb5789d39ea88e52302c0095",
       ".agents/pstack/status.mjs": "eb66de88cdf526ea780c01a149e383467d8a7bb1cbdb0530b428be268be54c76",
       ".agents/pstack/tasks.mjs": "43ad3e75cdd130ebf07830f3d9b281e6244f5514ad31297de889c1e03f4dde09",
-      ".agents/pstack/guard.mjs": "d9f041660b2926f5234c9f4d9fa2dcd8ff66ffbb1e52252e73c1f34421f92784",
+      ".agents/pstack/guard.mjs": "9e7dfef0aa9bf74c5c8d87308c474ccee070def34343ffd6388afd34cf65f0ed",
       ".agents/pstack/land.mjs": "70302a91bb7795adcc223cd03430cdbce51d1a553eefbe2de5b2a9e0cc998e06",
-      ".agents/pstack/review.mjs": "f5a547dd16cfba377aa9773916de4d6a5469fa58abb73115dd5a0674a1881ba3",
+      ".agents/pstack/review.mjs": "a82ef79dc43a6acadadee5f4e8b1938c897333ea46c43ef854b2d9c729168737",
       ".agents/pstack/setup.mjs": "60580894488429641eb51c552fbdf84c8f0572f3e2c442b225a55a8902ea7e82",
       ".agents/pstack/rules/browser.md": "203448f902ae52896b555894d8a5686db05b3a226e655a40df0f5bfd7766a401",
       ".agents/pstack/rules/chips.md": "5a4bedb8887c886a7147a5e19d26d732308c244bbeda20f70f9bbb948ec65e1f",
-      ".agents/pstack/rules/land.md": "8e8bcd7c8693f8b1f659062444810de7770beb3b5293a6cbbda4204665c9cbc3",
+      ".agents/pstack/rules/land.md": "a2b149dbce458eb2977fac260c6b90c4d3f11adaa23ab1f5ab70d5367c938e15",
       ".agents/pstack/rules/long-runs.md": "86bc2be5b45e56e24887e7979c9f53d831a8a367e79e918350484a92c4d7cbdf",
       ".agents/pstack/rules/pages.md": "4b056d2b2dc2903623d09ee7682f089faef1c5aef24fad1847c26e3866d11b4c",
       ".agents/pstack/rules/panel.md": "1c1c63355712cba11f32a29fbd808cce593b363ec88bb3f206aae996d9bbf868",
@@ -87,7 +125,7 @@
       ".agents/pstack/rules/time.md": "fde1edc9636d3f298a9055919b9de562039992abacffbe4b261d849b820e7fc9",
       ".agents/pstack/rules/title.md": "1d5152a96964564d66224b484e34127d1e64b1b21783a46385350751583ff821"
     },
-    "source": "2f379e6a72e8e2a6aa31db500cb9a5199123a5f4"
+    "source": "f4d3bcc99622acbce898e3a0d79768a69c11e0df"
   },
   "pageTopic": {
     "field": "review_scopes",
