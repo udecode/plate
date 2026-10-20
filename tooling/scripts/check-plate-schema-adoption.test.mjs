@@ -321,7 +321,7 @@ test('rejects the deleted root editor tx channel in test fixtures', () => {
     assert.match(
       auditPlateSchemaSource(
         source,
-        'apps/www/src/registry/components/editor/footnote.slow.tsx'
+        'apps/www/src/registry/components/editor/footnote.spec.tsx'
       )[0]?.reason ?? '',
       /root editor\.update channel/
     );

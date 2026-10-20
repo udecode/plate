@@ -1058,7 +1058,7 @@
       "metric": "plite_yjs_event_change_sync_distance_ratio",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/yjs/editor-adapter-contract.spec.ts ./packages/plitejs/test/yjs/event-change-locality.spec.ts ./packages/plitejs/test/yjs/remote-import-contract.slow.ts ./packages/plitejs/test/yjs/canonical-change-contract.spec.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/yjs/editor-adapter-contract.spec.ts ./packages/plitejs/test/yjs/event-change-locality.spec.ts ./packages/plitejs/test/yjs/remote-import-contract.spec.ts ./packages/plitejs/test/yjs/canonical-change-contract.spec.ts",
       "artifacts": [
         {
           "path": "tmp/plite-yjs-event-change-bridge-benchmark.json",

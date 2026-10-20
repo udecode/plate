@@ -13,7 +13,7 @@
     "apps/www/src/registry/components/editor/footnote-static.tsx",
     "apps/www/src/registry/components/editor/footnote.combobox.spec.tsx",
     "apps/www/src/registry/components/editor/footnote.navigation.spec.tsx",
-    "apps/www/src/registry/components/editor/footnote.slow.tsx",
+    "apps/www/src/registry/components/editor/footnote.spec.tsx",
     "apps/www/src/registry/components/editor/footnote.tsx",
     "apps/www/src/registry/components/editor/markdown.spec.ts",
     "apps/www/src/registry/examples/values/footnote-value.tsx",

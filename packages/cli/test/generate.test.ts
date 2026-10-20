@@ -31,6 +31,10 @@ import { artifactStateRoot, pathFingerprint } from '../src/state';
 import { NativeTypeScriptSession } from '../src/typescript';
 import { watchEditor, watchEditors } from '../src/watch';
 
+// On a loaded Mac, the event for a new file can come seconds late or never, so
+// these watch tests make chokidar poll instead.
+process.env.CHOKIDAR_USEPOLLING ??= '1';
+
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = resolve(packageRoot, '../..');
 const temporaryDirectories: string[] = [];

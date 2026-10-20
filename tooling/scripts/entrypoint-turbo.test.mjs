@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { pathToFileURL } from 'node:url';
 
+import { globSync } from 'tinyglobby';
+
+import { vitestSuites } from '../config/test-suites.mjs';
 import {
   entrypointDags,
   getPublicEntrypointRuntimeRows,
@@ -14,14 +17,23 @@ import {
   createSsrRuntimeProofSource,
 } from '../entrypoints/entrypoint-runtime.mjs';
 import {
+  classifyPackageFile,
   createManagedPackageScripts,
   createPackageTurboConfig,
   entrypointPackageNames,
   getPackageRuntimeTestFiles,
+  getTypecheckedExternalTestFiles,
   repoRoot,
+  testPreloadFiles,
   withManagedPackageScripts,
 } from '../entrypoints/entrypoint-turbo.mjs';
 import { assertWorkspaceSourcePathsGenerated } from '../entrypoints/workspace-source-paths.mjs';
+import {
+  importClosure,
+  isTypecheckedSource,
+  tsconfigChain,
+} from './import-graph.mjs';
+import { taskHash } from './load-trace.mjs';
 
 const generatedByPackage = new Map(
   entrypointPackageNames.map((packageName) => [
@@ -29,6 +41,72 @@ const generatedByPackage = new Map(
     createPackageTurboConfig(packageName),
   ])
 );
+
+const packageSourcePattern = new RegExp(
+  `^(?:${entrypointPackageNames
+    .map((packageName) => entrypointDags[packageName].packageRoot)
+    .join('|')})/src/`,
+  'u'
+);
+
+const isTestSideFile = (filename) => {
+  const relativePath = path.relative(repoRoot, filename);
+
+  return (
+    !packageSourcePattern.test(relativePath) ||
+    /\/__tests__\/|\.(?:spec|test)\.|-contract\./u.test(relativePath)
+  );
+};
+
+const packageRootOf = (packageName) =>
+  path.join(repoRoot, entrypointDags[packageName].packageRoot);
+
+const runtimeTestFilesByTask = entrypointPackageNames.flatMap((packageName) =>
+  Object.keys(entrypointDags[packageName].taskPartitions).flatMap(
+    (partitionName) => {
+      const testFiles = getPackageRuntimeTestFiles(packageName, partitionName);
+
+      return testFiles.length === 0
+        ? []
+        : [{ packageName, partitionName, testFiles }];
+    }
+  )
+);
+
+const runtimeTestTasks = function* () {
+  for (const {
+    packageName,
+    partitionName,
+    testFiles,
+  } of runtimeTestFilesByTask) {
+    const packageRoot = packageRootOf(packageName);
+    const testFolderFiles = globSync('test/**', {
+      absolute: true,
+      cwd: packageRoot,
+    }).filter((filename) =>
+      entrypointDags[packageName].taskPartitions[partitionName].includes(
+        classifyPackageFile(packageName, filename)
+      )
+    );
+    const loadedFiles = importClosure(
+      [...testPreloadFiles, ...testFiles],
+      (filename) => !isTypecheckedSource(filename)
+    );
+
+    yield {
+      label: `${packageName}#test:partition:${partitionName}`,
+      packageName,
+      task: generatedByPackage.get(packageName).config.tasks[
+        `test:partition:${partitionName}`
+      ],
+      taskName: `test:partition:${partitionName}`,
+      testFolderFiles,
+      testSideFiles: [
+        ...new Set([...testFolderFiles, ...loadedFiles.filter(isTestSideFile)]),
+      ],
+    };
+  }
+};
 
 test('generated entrypoint Turbo state is current', () => {
   for (const packageName of entrypointPackageNames) {
@@ -213,6 +291,118 @@ test('runtime test tasks exist only for partitions with tests', () => {
   }
 });
 
+test('a runtime test task hashes every test/ file its partition owns', () => {
+  for (const { label, testFolderFiles } of runtimeTestTasks()) {
+    const { files } = taskHash(label);
+
+    assert.deepEqual(
+      testFolderFiles
+        .map((filename) => path.relative(repoRoot, filename))
+        .filter((filename) => !files.has(filename)),
+      [],
+      label
+    );
+  }
+});
+
+test('a runtime test task hashes the tsconfig files that compile the tests it runs', () => {
+  for (const { label, testFiles } of runtimeTestFilesByTask.map((entry) => ({
+    ...entry,
+    label: `${entry.packageName}#test:partition:${entry.partitionName}`,
+  }))) {
+    const { files } = taskHash(label);
+
+    assert.deepEqual(
+      [...new Set(testFiles.flatMap(tsconfigChain))]
+        .map((filename) => path.relative(repoRoot, filename))
+        .filter((filename) => !files.has(filename)),
+      [],
+      label
+    );
+  }
+});
+
+test('a Vitest task hashes the setup files its config loads', async () => {
+  const vitestTasks = runtimeTestFilesByTask.filter(
+    ({ packageName, partitionName, testFiles }) =>
+      testFiles.some((filename) =>
+        vitestSuites[packageName]?.includes(
+          partitionName,
+          path.relative(packageRootOf(packageName), filename)
+        )
+      )
+  );
+
+  assert.ok(vitestTasks.length > 0);
+
+  for (const { packageName, partitionName } of vitestTasks) {
+    const label = `${packageName}#test:partition:${partitionName}`;
+    const configFile = path.join(
+      packageRootOf(packageName),
+      vitestSuites[packageName].config
+    );
+    const { default: config } = await import(pathToFileURL(configFile).href);
+    const setupFiles = [
+      config.test,
+      ...(config.test?.projects ?? []).map((project) => project.test),
+    ]
+      .flatMap((options) => [options?.setupFiles ?? []].flat())
+      .map((filename) =>
+        path.relative(
+          repoRoot,
+          path.resolve(path.dirname(configFile), filename)
+        )
+      );
+    const { files } = taskHash(label);
+
+    assert.deepEqual(
+      setupFiles.filter((filename) => !files.has(filename)),
+      [],
+      label
+    );
+  }
+});
+
+test('every environment variable a runtime test reads reaches it', () => {
+  for (const { label, task, testSideFiles } of runtimeTestTasks()) {
+    const reaches = (name) =>
+      task.env.some((pattern) =>
+        pattern.endsWith('*')
+          ? name.startsWith(pattern.slice(0, -1))
+          : name === pattern
+      );
+    const filtered = new Set(
+      testSideFiles.flatMap((filename) =>
+        [
+          ...fs
+            .readFileSync(filename, 'utf-8')
+            .matchAll(/process\.env\.([A-Z][A-Z0-9_]*)/gu),
+        ]
+          .map(([, name]) => name)
+          .filter((name) => !reaches(name))
+      )
+    );
+
+    assert.deepEqual([...filtered].sort(), [], label);
+  }
+});
+
+test('the plite tests project typechecks each listed test/ file', () => {
+  const [testsConfigPath, testsConfig] = Object.entries(
+    generatedByPackage.get('plitejs').tsconfigs
+  ).find(([filename]) => path.basename(filename) === 'tests.json');
+  const checked = new Set(
+    testsConfig.files.map((filename) =>
+      path.resolve(path.dirname(testsConfigPath), filename)
+    )
+  );
+
+  for (const filename of getTypecheckedExternalTestFiles('plitejs')) {
+    assert.ok(fs.existsSync(filename), filename);
+    assert.ok(checked.has(filename), filename);
+  }
+});
+
 test('leaf task inputs exclude unrelated entrypoint source', () => {
   const { config } = generatedByPackage.get('plitejs');
   const diffTask = config.tasks['typecheck:partition:diff'];
@@ -280,27 +470,6 @@ test('package aggregates preserve the existing typecheck coverage', () => {
   assert.equal(plate.typecheck.dependsOn.includes('typecheck:tests'), false);
   assert.ok(plite.typecheck.dependsOn.includes('typecheck:contracts'));
   assert.ok(plite.typecheck.dependsOn.includes('typecheck:tests'));
-});
-
-test('the plitejs tests typecheck covers every slow suite', () => {
-  const packageRoot = path.join(repoRoot, entrypointDags.plitejs.packageRoot);
-  const { files } =
-    generatedByPackage.get('plitejs').tsconfigs[
-      path.join(packageRoot, 'tsconfig.entrypoints/tests.json')
-    ];
-  const slowSuites = execFileSync(
-    'git',
-    ['ls-files', '--cached', '--others', '--exclude-standard', '*.slow.*'],
-    { cwd: packageRoot, encoding: 'utf-8' }
-  )
-    .split('\n')
-    .filter(Boolean);
-
-  assert.notEqual(slowSuites.length, 0);
-  assert.deepEqual(
-    slowSuites.filter((suite) => !files.includes(`../${suite}`)),
-    []
-  );
 });
 
 test('distributable builds stay atomic and cache only production inputs', () => {

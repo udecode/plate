@@ -249,12 +249,11 @@ const noRaisedTestTimeout = {
   },
   meta: {
     docs: {
-      description:
-        'A test outside a slow lane keeps the 5,000 ms default deadline.',
+      description: 'A test keeps the 5,000 ms default deadline.',
     },
     messages: {
       raised:
-        'This test raises its deadline to {{ms}} ms (baselined in this file: {{baselined}}). Move the case to a `*.slow.*` file or make it cheaper; a raised deadline hides a slow case in the fast lane.',
+        'This test raises its deadline to {{ms}} ms (baselined in this file: {{baselined}}). Make the case cheaper; a raised deadline hides a slow case.',
     },
     type: 'problem',
   },

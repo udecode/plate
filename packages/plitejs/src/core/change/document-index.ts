@@ -21,13 +21,11 @@ import {
   isTextNode,
   type JsonNode,
   type JsonPoint,
-  type JsonToken,
   type NodeKind,
   nodeProps,
   openToken,
   pathKey,
   PREPARED_SOURCE_TOKEN,
-  PREPARED_TOKEN_NEXT,
   type PreparedNodeSlice,
   tokensEqual,
 } from './tokens';
@@ -144,17 +142,19 @@ export const decodeNodes = (
           ? position < from && from < sourceTo
           : position < to && from < sourceTo
       );
-      const prepared = token[PREPARED_SOURCE_TOKEN] === true;
+      const source = token[PREPARED_SOURCE_TOKEN];
+      const prepared = source !== undefined;
       const sourceTokensMatch = (() => {
         if (!token.sourceNode || token.sourceTokenCount === undefined) {
           return false;
         }
-        if (prepared) {
-          let expected: JsonToken | null = token;
-
+        if (source) {
           for (let offset = 0; offset < token.sourceTokenCount; offset++) {
-            if (!expected || tokens[index + offset] !== expected) return false;
-            expected = PREPARED_TOKEN_NEXT.get(expected) ?? null;
+            if (
+              tokens[index + offset] !== source.tokens[source.index + offset]
+            ) {
+              return false;
+            }
           }
 
           return true;

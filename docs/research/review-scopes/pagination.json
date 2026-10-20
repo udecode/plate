@@ -55,7 +55,7 @@
     "packages/plitejs/package.json",
     "packages/plitejs/tsconfig.json",
     "packages/platejs/package.json",
-    "packages/platejs/test/public-package-import-smoke.slow.ts",
+    "packages/platejs/test/public-package-import-smoke.spec.ts",
     "packages/plitejs/test/public-package-types-smoke.ts",
     "packages/plitejs/src/react/components/windowed-editable.internal.tsx",
     "packages/plitejs/src/core/commit-publication.ts",

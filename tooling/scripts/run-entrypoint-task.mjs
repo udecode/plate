@@ -4,13 +4,15 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { BUN_TEST_TIMEOUT_MS } from '../config/test-suites.mjs';
+import { BUN_TEST_TIMEOUT_MS, vitestSuites } from '../config/test-suites.mjs';
 import { entrypointDags } from '../entrypoints/entrypoint-dag.mjs';
 import {
   getPackageLintFiles,
   getPackageRuntimeTestFiles,
   repoRoot,
 } from '../entrypoints/entrypoint-turbo.mjs';
+import { usesMockModule } from './import-graph.mjs';
+import { runTraced } from './load-trace.mjs';
 
 const [command, packageName, partitionName] = process.argv.slice(2);
 const definition = entrypointDags[packageName];
@@ -26,10 +28,10 @@ const packageRoot = path.join(repoRoot, definition.packageRoot);
 const relativePackageFiles = (files) =>
   files.map((filename) => path.relative(packageRoot, filename));
 
-const runProcess = (executable, args, cwd = packageRoot) => {
+const runProcess = (executable, args, cwd = packageRoot, env = process.env) => {
   const result = spawnSync(executable, args, {
     cwd,
-    env: process.env,
+    env,
     stdio: 'inherit',
   });
 
@@ -79,29 +81,22 @@ const runLint = () => {
   return runProcess('pnpm', ['exec', 'ultracite', 'check', ...files]);
 };
 
-const runTests = () => {
-  const files = relativePackageFiles(
-    getPackageRuntimeTestFiles(packageName, partitionName)
-  );
+const runTests = (runtimeTestFiles, traceEnv) => {
+  const files = relativePackageFiles(runtimeTestFiles);
+  const runTest = (configFile, executable, args, cwd = packageRoot) =>
+    runProcess(
+      executable,
+      args,
+      cwd,
+      traceEnv([executable, ...args].join(' '), configFile)
+    );
 
   if (files.length === 0) return 0;
 
-  if (packageName === '@platejs/test' && partitionName === 'browser') {
-    return runProcess('pnpm', [
-      'exec',
-      'vitest',
-      'run',
-      '--config',
-      './vitest.config.ts',
-      '--project',
-      'browser',
-      ...files,
-    ]);
-  }
-
   const runBunTestBatch = (testFiles) => {
     if (packageName === 'platejs') {
-      return runProcess(
+      return runTest(
+        path.join(repoRoot, 'bunfig.toml'),
         'bun',
         [
           `--config=${path.join(repoRoot, 'bunfig.toml')}`,
@@ -117,7 +112,8 @@ const runTests = () => {
       );
     }
 
-    return runProcess('bun', [
+    // Bun reads bunfig.toml from its cwd.
+    return runTest(path.join(packageRoot, 'bunfig.toml'), 'bun', [
       'test',
       `--timeout=${BUN_TEST_TIMEOUT_MS}`,
       `--preload=${path.join(repoRoot, 'config/plite-source-test-setup.ts')}`,
@@ -127,9 +123,7 @@ const runTests = () => {
 
   const runBunTests = (testFiles) => {
     const isolatedFiles = testFiles.filter((filename) =>
-      fs
-        .readFileSync(path.join(packageRoot, filename), 'utf-8')
-        .includes('mock.module(')
+      usesMockModule(path.join(packageRoot, filename))
     );
     const sharedFiles = testFiles.filter(
       (filename) => !isolatedFiles.includes(filename)
@@ -151,14 +145,10 @@ const runTests = () => {
     return 0;
   };
 
-  if (packageName === 'platejs') {
-    return runBunTests(files);
-  }
-
-  const vitestFiles =
-    packageName === 'plitejs'
-      ? files.filter((filename) => filename.startsWith('test/react/'))
-      : [];
+  const suite = vitestSuites[packageName];
+  const vitestFiles = suite
+    ? files.filter((filename) => suite.includes(partitionName, filename))
+    : [];
   const bunFiles = files.filter((filename) => !vitestFiles.includes(filename));
 
   if (bunFiles.length > 0) {
@@ -168,12 +158,13 @@ const runTests = () => {
   }
 
   if (vitestFiles.length > 0) {
-    return runProcess('pnpm', [
+    return runTest(path.join(packageRoot, suite.config), 'pnpm', [
       'exec',
       'vitest',
       'run',
       '--config',
-      './vitest.config.mjs',
+      `./${suite.config}`,
+      ...suite.args,
       ...vitestFiles,
     ]);
   }
@@ -204,11 +195,20 @@ const runContracts = () => {
   ]);
 };
 
+const runTestTask = () => {
+  const testFiles = getPackageRuntimeTestFiles(packageName, partitionName);
+
+  return runTraced(
+    { taskId: `${packageName}#test:partition:${partitionName}`, testFiles },
+    (traceEnv) => runTests(testFiles, traceEnv)
+  );
+};
+
 const status =
   command === 'lint'
     ? runLint()
     : command === 'test'
-      ? runTests()
+      ? runTestTask()
       : command === 'typecheck'
         ? runTypecheck()
         : command === 'typecheck-package-tests'

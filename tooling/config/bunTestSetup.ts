@@ -34,8 +34,6 @@ Bun.plugin({
   },
 });
 
-const moduleCache = createRequire(import.meta.url).cache;
-
 const moduleExportNames = new Map<
   string,
   { fix: string; names: Set<string>; setBy: string }
@@ -68,7 +66,7 @@ const guardModuleMock =
     if (typeof factory !== 'function') return register(specifier, factory);
     const file = Bun.main;
     const path = resolveMockTarget(specifier, file);
-    const loaded = moduleCache[path]?.exports;
+    const loaded = createRequire(import.meta.url).cache[path]?.exports;
     if (loaded && !moduleExportNames.has(path)) {
       moduleExportNames.set(path, {
         fix: 'Mock the module before anything in this process imports it, or drop those names.',

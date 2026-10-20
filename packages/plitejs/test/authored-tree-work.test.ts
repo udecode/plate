@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
-import { after, before as beforeAll, describe, it } from 'node:test';
+import { describe, it } from 'node:test';
 import { isDeepStrictEqual } from 'node:util';
 
 import * as ledgerModule from '../src/authored/ledger/ledger';
@@ -13,6 +13,7 @@ import * as tokens from '../src/core/change/tokens';
 import * as representation from '../src/core/representation';
 import { readCoreWork, resetCoreWork } from '../src/core/work';
 import type { EditorDocumentRecords } from '../src/interfaces/editor';
+import { withoutLawCheck } from './support/law-check';
 
 const real = { ...marks };
 const realLedger = { ...ledgerModule };
@@ -364,15 +365,7 @@ const typeAtEnd = (editor: Editor, size: number) =>
 describe('authored review tree work per edit', () => {
   // The test build's law check projects each framed recording again, and
   // these counters would count its reads.
-  const lawCheck = process.env.PLITE_LAW_CHECK;
-
-  beforeAll(() => {
-    process.env.PLITE_LAW_CHECK = '0';
-  });
-  after(() => {
-    if (lawCheck === undefined) delete process.env.PLITE_LAW_CHECK;
-    else process.env.PLITE_LAW_CHECK = lawCheck;
-  });
+  withoutLawCheck();
 
   for (const intent of ['edit', 'propose'] as const) {
     for (const inside of [false, true]) {
@@ -1950,15 +1943,7 @@ describe('authored review tree work per edit', () => {
 });
 
 describe('authored review tree storage', () => {
-  const lawCheck = process.env.PLITE_LAW_CHECK;
-
-  beforeAll(() => {
-    process.env.PLITE_LAW_CHECK = '0';
-  });
-  after(() => {
-    if (lawCheck === undefined) delete process.env.PLITE_LAW_CHECK;
-    else process.env.PLITE_LAW_CHECK = lawCheck;
-  });
+  withoutLawCheck();
 
   const texts = function* (nodes: readonly Node[]): Generator<Node> {
     for (const node of nodes) {

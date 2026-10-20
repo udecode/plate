@@ -134,7 +134,7 @@ const overlapped = mark(overlapChangeId, 'charlie', 700_000, 'insert');
 Every constructor creates its own editor; a test that built a raw editor first now lets `createEditor` allocate it, and passing an `editor` option throws.
 
 ```tsx
-// packages/platejs/src/lib/editor/withPlite.slow.ts
+// packages/platejs/src/lib/editor/withPlite.schema-plugins.spec.ts
 const editor = createReactEditor();
 ```
 

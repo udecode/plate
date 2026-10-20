@@ -26,6 +26,9 @@ const plateOxlintIgnorePatterns = [
   'apps/plite/tests/**/donor/**',
   'benchmarks/slate-v2/donor/**',
   'tooling/plite/donor/**',
+  // The load-trace fixtures hold the CommonJS and computed load forms the
+  // trace check must catch.
+  'tooling/scripts/__fixtures__/load-trace/**',
 ];
 
 const plateJsPlugins = {
@@ -174,15 +177,12 @@ export default defineConfig({
       excludeFiles: [
         'packages/platejs/src/**/*.spec.*',
         'packages/platejs/src/**/*.test.*',
-        'packages/platejs/src/**/*.slow.*',
         'packages/platejs/src/**/__tests__/**',
         'packages/plitejs/src/**/*.spec.*',
         'packages/plitejs/src/**/*.test.*',
-        'packages/plitejs/src/**/*.slow.*',
         'packages/plitejs/src/**/__tests__/**',
         'packages/test/src/**/*.spec.*',
         'packages/test/src/**/*.test.*',
-        'packages/test/src/**/*.slow.*',
         'packages/test/src/**/__tests__/**',
       ],
       rules: {
@@ -205,6 +205,7 @@ export default defineConfig({
         ...platePliteBridgePatterns,
         // Plite contract tests consume the published entrypoints they verify.
         'packages/plitejs/test/**',
+        'packages/platejs/test/public-package-import-smoke.spec.ts',
         // Shared JSX fixtures are part of the raw Plite package test harness.
         'config/plite-test-jsx.js',
         // Shared raw examples feed the dedicated Plite proof app.
@@ -278,7 +279,6 @@ export default defineConfig({
       excludeFiles: [
         'packages/platejs/src/**/*.spec.*',
         'packages/platejs/src/**/*.test.*',
-        'packages/platejs/src/**/*.slow.*',
         'packages/platejs/src/**/__tests__/**',
       ],
       rules: {
@@ -303,7 +303,6 @@ export default defineConfig({
         ...plateReactOwnedSourcePatterns,
         'packages/platejs/src/**/*.spec.*',
         'packages/platejs/src/**/*.test.*',
-        'packages/platejs/src/**/*.slow.*',
         'packages/platejs/src/**/__tests__/**',
       ],
       rules: {
@@ -345,7 +344,6 @@ export default defineConfig({
       excludeFiles: [
         'packages/*/src/**/*.spec.*',
         'packages/*/src/**/*.test.*',
-        'packages/*/src/**/*.slow.*',
         'packages/*/src/**/__tests__/**',
       ],
       rules: {
@@ -368,7 +366,6 @@ export default defineConfig({
         'packages/platejs/src/docx/**',
         'packages/platejs/src/**/*.spec.*',
         'packages/platejs/src/**/*.test.*',
-        'packages/platejs/src/**/*.slow.*',
         'packages/platejs/src/**/__tests__/**',
       ],
       rules: {
@@ -390,7 +387,6 @@ export default defineConfig({
         'packages/platejs/src/docx/internal/domParser.ts',
         'packages/platejs/src/docx/**/*.spec.*',
         'packages/platejs/src/docx/**/*.test.*',
-        'packages/platejs/src/docx/**/*.slow.*',
         'packages/platejs/src/docx/**/__tests__/**',
       ],
       rules: {
@@ -409,7 +405,6 @@ export default defineConfig({
       excludeFiles: [
         'packages/plitejs/src/**/*.spec.*',
         'packages/plitejs/src/**/*.test.*',
-        'packages/plitejs/src/**/*.slow.*',
         'packages/plitejs/src/**/__tests__/**',
       ],
       rules: {
@@ -440,7 +435,6 @@ export default defineConfig({
         'packages/plitejs/src/yjs/react/**',
         'packages/plitejs/src/**/*.spec.*',
         'packages/plitejs/src/**/*.test.*',
-        'packages/plitejs/src/**/*.slow.*',
         'packages/plitejs/src/**/__tests__/**',
       ],
       rules: {
@@ -506,7 +500,6 @@ export default defineConfig({
         'packages/**/*.{spec,test}.{cts,mts,ts,tsx}',
         'packages/*/test/**/*.{cts,mts,ts,tsx}',
       ],
-      excludeFiles: ['**/*.slow.*'],
       rules: {
         'plate/no-raised-test-timeout': 'error',
         'plate/no-source-text-test': 'error',
@@ -514,8 +507,8 @@ export default defineConfig({
     },
     {
       files: [
-        'apps/www/src/**/*.{slow,spec,test}.{cts,mts,ts,tsx}',
-        'packages/**/*.{slow,spec,test}.{cts,mts,ts,tsx}',
+        'apps/www/src/**/*.{spec,test}.{cts,mts,ts,tsx}',
+        'packages/**/*.{spec,test}.{cts,mts,ts,tsx}',
         'packages/*/test/**/*.{cts,mts,ts,tsx}',
       ],
       rules: {
@@ -524,12 +517,7 @@ export default defineConfig({
     },
     {
       files: ['packages/*/src/**/*.{cts,mts,ts,tsx}'],
-      excludeFiles: [
-        '**/*.spec.*',
-        '**/*.test.*',
-        '**/*.slow.*',
-        '**/__tests__/**',
-      ],
+      excludeFiles: ['**/*.spec.*', '**/*.test.*', '**/__tests__/**'],
       rules: {
         'plate/no-as-never': 'error',
         'plate/no-one-off-editor-type': 'error',
@@ -542,7 +530,6 @@ export default defineConfig({
         '**/*.internal.*',
         '**/*.spec.*',
         '**/*.test.*',
-        '**/*.slow.*',
         '**/__tests__/**',
       ],
       rules: {
@@ -569,7 +556,6 @@ export default defineConfig({
         'packages/plitejs/**',
         '**/*.spec.*',
         '**/*.test.*',
-        '**/*.slow.*',
         '**/__tests__/**',
       ],
       rules: {
@@ -590,7 +576,6 @@ export default defineConfig({
         'packages/test/src/device/**',
         '**/*.spec.*',
         '**/*.test.*',
-        '**/*.slow.*',
         '**/__tests__/**',
       ],
       rules: {
@@ -673,7 +658,6 @@ export default defineConfig({
       files: [
         '**/*.test.*',
         '**/*.spec.*',
-        '**/*.slow.*',
         '**/__tests__/**',
         '**/test/**',
         '**/tests/**',

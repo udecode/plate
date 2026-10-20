@@ -2,6 +2,7 @@ import { TextApi } from 'plitejs';
 
 import { levels as editorLevels } from '../../../../src/internal';
 
+/** @jsxRuntime classic */
 /** @jsx jsx  */
 
 export const input = (

@@ -1,4 +1,5 @@
 import { jsx } from '../../..';
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { after as editorAfter } from '../../../../src/testing';
 

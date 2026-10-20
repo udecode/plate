@@ -11,7 +11,6 @@ const touches =
   (files) =>
     files.some((file) => prefixes.some((prefix) => file.startsWith(prefix)));
 const never = () => false;
-const SLOW_FILE_RE = /\.slow\.(?:test\.mjs|tsx?)$/;
 
 // A change to one of these can reach every step, so --affected runs them all.
 const GLOBAL_PATHS = [
@@ -60,11 +59,6 @@ export const steps = [
         'packages/',
         'tooling/'
       )(files.filter((file) => !file.startsWith('apps/www/tests/browser/'))),
-  },
-  {
-    name: 'test-slow',
-    run: 'pnpm test:slow',
-    affected: (files) => files.filter((file) => SLOW_FILE_RE.test(file)),
   },
   {
     name: 'plite-test',
@@ -173,7 +167,7 @@ export const manualOnly = {
   'check:plite:browser-matrix':
     'Runs the full browser matrix, which plite-ci.yml runs on workflow_dispatch.',
   'check:plite:contracts':
-    'Runs tooling contract tests that the test and test-slow steps already run.',
+    'Runs tooling contract tests that the test step already runs.',
   'check:plite:dev': 'Plans Plite proof from changed paths for plite-ci.yml.',
   'check:plite:packages':
     'Runs plite:typecheck, plite:test and check:plite:contracts, which other steps cover.',
@@ -194,8 +188,7 @@ export const manualOnly = {
     'templates/** is CI-generated output; ci-templates.yml builds it.',
   'templates:test':
     'Installs registry items into templates/**, which CI generates.',
-  'test:all': 'Runs the test and test-slow steps as one command.',
-  'test:coverage': 'Reports coverage for the fast suite; it gates nothing.',
+  'test:coverage': 'Reports coverage for the root suite; it gates nothing.',
   'test:deferred':
     'Runs quarantined __deferred__ specs, which are kept out of every gate.',
   'test:mobile-device-proof': 'Needs a connected phone or emulator.',

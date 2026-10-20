@@ -425,7 +425,7 @@ const intentionalRawSchemaQueryCounts = new Map([
   ],
   ['packages/platejs/src/internal/plugin/compilePlateModel.spec.ts', 6],
   ['packages/platejs/src/features/list/lib/listConversion.internal.ts', 1],
-  ['packages/platejs/src/lib/editor/withPlite.slow.ts', 2],
+  ['packages/platejs/src/lib/editor/withPlite.schema-plugins.spec.ts', 2],
   ['packages/platejs/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
   ['packages/platejs/src/lib/plugins/html/HtmlPlugin.ts', 5],
   ['packages/platejs/src/migrations/migratePlateV54Ownership.internal.ts', 1],

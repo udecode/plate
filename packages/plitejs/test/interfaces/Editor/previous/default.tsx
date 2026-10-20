@@ -1,4 +1,5 @@
 import { jsx } from '../../..';
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { previous as editorPrevious } from '../../../../src/internal';
 

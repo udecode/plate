@@ -506,7 +506,7 @@
         "upgrade": "Start, middle, and end edits must keep local and sync medians within 2x, decode one top-level node, retain one changed range, and keep runtime-ID p95 below 1ms."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/yjs/editor-adapter-contract.spec.ts ./packages/plitejs/test/yjs/event-change-locality.spec.ts ./packages/plitejs/test/yjs/remote-import-contract.slow.ts ./packages/plitejs/test/yjs/canonical-change-contract.spec.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/yjs/editor-adapter-contract.spec.ts ./packages/plitejs/test/yjs/event-change-locality.spec.ts ./packages/plitejs/test/yjs/remote-import-contract.spec.ts ./packages/plitejs/test/yjs/canonical-change-contract.spec.ts",
         "policy": "The performance claim requires exact event-native traces, narrow changed ranges, full event-shape coverage, and explicit fallback tests."
       },
       "artifacts": [

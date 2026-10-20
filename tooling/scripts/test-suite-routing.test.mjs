@@ -19,15 +19,13 @@ import { globSync } from 'tinyglobby';
 import {
   TEST_FAST_IGNORE_PATTERNS,
   TEST_FILE_PATTERNS,
-  TEST_IGNORE_PATTERNS,
-  TEST_SLOW_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
 
 // Bun hides passing test names when it detects an agent (CLAUDECODE, AGENT,
 // REPL_ID), and these cases assert on those names.
 const bunEnv = { ...process.env, AGENT: '0' };
 
-test('runner selects exact files, keeps lanes separate, and preserves JUnit and bail', (t) => {
+test('runner selects exact files and preserves JUnit and bail', (t) => {
   const cwd = mkdtempSync(path.join(tmpdir(), 'plate-runner-'));
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
   const runner = fileURLToPath(new URL('test-suite.mjs', import.meta.url));
@@ -37,8 +35,8 @@ test('runner selects exact files, keeps lanes separate, and preserves JUnit and 
     "import assert from 'node:assert/strict'; import test from 'node:test'; test('fast fixture', () => assert.equal(1, 1));"
   );
   writeFileSync(
-    path.join(cwd, 'tooling/scripts/slow.slow.test.mjs'),
-    "import test from 'node:test'; test('slow fixture', () => {});"
+    path.join(cwd, 'tooling/scripts/other.test.mjs'),
+    "import test from 'node:test'; test('other fixture', () => {});"
   );
   const run = (...args) =>
     spawnSync('bun', [runner, ...args], {
@@ -46,15 +44,12 @@ test('runner selects exact files, keeps lanes separate, and preserves JUnit and 
       encoding: 'utf-8',
       env: bunEnv,
     });
-  const fast = run('fast', path.join(cwd, 'tooling/scripts/fast.test.mjs'));
+  const fast = run(path.join(cwd, 'tooling/scripts/fast.test.mjs'));
   assert.equal(fast.status, 0, fast.stderr + fast.stdout);
   assert.match(fast.stdout, /fast fixture/);
-  assert.doesNotMatch(fast.stdout, /slow fixture/);
-  assert.equal(run('fast', 'tooling/scripts/slow.slow.test.mjs').status, 1);
-  assert.equal(run('slow', 'tooling/scripts/slow.slow.test.mjs').status, 0);
+  assert.doesNotMatch(fast.stdout, /other fixture/);
   const junit = path.join(cwd, 'junit.xml');
   const reported = run(
-    'fast',
     'tooling/scripts/fast.test.mjs',
     '--reporter=junit',
     '--reporter-outfile',
@@ -66,7 +61,7 @@ test('runner selects exact files, keeps lanes separate, and preserves JUnit and 
     path.join(cwd, 'tooling/scripts/failure.test.mjs'),
     "import { test, expect } from 'bun:test'; test('fails first', () => expect(1).toBe(2)); test('must not run', () => { throw new Error('BAIL_DID_NOT_STOP'); });"
   );
-  const bailed = run('fast', '--bail', 'tooling/scripts/failure.test.mjs');
+  const bailed = run('--bail', 'tooling/scripts/failure.test.mjs');
   assert.equal(bailed.status, 1);
   assert.doesNotMatch(bailed.stdout + bailed.stderr, /BAIL_DID_NOT_STOP/);
   writeFileSync(
@@ -79,7 +74,6 @@ test('runner selects exact files, keeps lanes separate, and preserves JUnit and 
     "import { test } from 'bun:test'; test('Bun still runs after Node failure', () => {});"
   );
   const mixed = run(
-    'fast',
     'tooling/scripts/node-failure.test.mjs',
     'apps/example/pass.spec.ts'
   );
@@ -114,7 +108,7 @@ test('module mocks stay isolated and their JUnit cases survive report merging', 
   const junit = path.join(cwd, 'junit.xml');
   const result = spawnSync(
     'bun',
-    [runner, 'fast', '--reporter=junit', '--reporter-outfile', junit],
+    [runner, '--reporter=junit', '--reporter-outfile', junit],
     { cwd, encoding: 'utf-8' }
   );
   assert.equal(result.status, 0, result.stderr + result.stdout);
@@ -137,7 +131,7 @@ test('runs performance benchmark files in separate processes', (t) => {
     );
   }
 
-  const result = spawnSync('bun', [runner, 'fast'], {
+  const result = spawnSync('bun', [runner], {
     cwd,
     encoding: 'utf-8',
   });
@@ -151,13 +145,12 @@ test('runs performance benchmark files in separate processes', (t) => {
   assert.equal(new Set(processIds).size, 2, output);
 });
 
-test('routes tooling slow contracts exclusively through the slow suite', (t) => {
+test('keeps browser specs out of the root suite', (t) => {
   const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'plate-test-suites-'));
   const toolingRoot = path.join(fixtureRoot, 'tooling/scripts');
   const browserRoot = path.join(fixtureRoot, 'apps/www/tests/browser');
   const browserFixture = 'apps/www/tests/browser/fixture.spec.ts';
-  const fastFixture = 'tooling/scripts/fixture.test.mjs';
-  const slowFixture = 'tooling/scripts/fixture.slow.test.mjs';
+  const toolingFixture = 'tooling/scripts/fixture.test.mjs';
 
   t.after(() => {
     rmSync(fixtureRoot, { force: true, recursive: true });
@@ -165,29 +158,18 @@ test('routes tooling slow contracts exclusively through the slow suite', (t) => 
   mkdirSync(toolingRoot, { recursive: true });
   mkdirSync(browserRoot, { recursive: true });
   writeFileSync(path.join(fixtureRoot, browserFixture), '');
-  writeFileSync(path.join(fixtureRoot, fastFixture), '');
-  writeFileSync(path.join(fixtureRoot, slowFixture), '');
+  writeFileSync(path.join(fixtureRoot, toolingFixture), '');
 
-  const fastFiles = new Set(
+  const files = new Set(
     globSync(TEST_FILE_PATTERNS, {
       cwd: fixtureRoot,
       ignore: TEST_FAST_IGNORE_PATTERNS,
       onlyFiles: true,
     })
   );
-  const slowFiles = new Set(
-    globSync(TEST_SLOW_FILE_PATTERNS, {
-      cwd: fixtureRoot,
-      ignore: TEST_IGNORE_PATTERNS,
-      onlyFiles: true,
-    })
-  );
 
-  assert.equal(fastFiles.has(fastFixture), true);
-  assert.equal(fastFiles.has(browserFixture), false);
-  assert.equal(fastFiles.has(slowFixture), false);
-  assert.equal(slowFiles.has(fastFixture), false);
-  assert.equal(slowFiles.has(slowFixture), true);
+  assert.equal(files.has(toolingFixture), true);
+  assert.equal(files.has(browserFixture), false);
 });
 
 test('routes consolidated editor tests only through their package tasks', (t) => {
@@ -242,7 +224,7 @@ test('discovers website and lint contracts across their authored extensions', (t
       `import { test } from 'bun:test'; test(${JSON.stringify(fixture)}, () => {});`
     );
   }
-  const result = spawnSync('bun', [runner, 'fast'], {
+  const result = spawnSync('bun', [runner], {
     cwd,
     encoding: 'utf-8',
     env: bunEnv,
@@ -278,43 +260,13 @@ test('runs application tests from their workspace with root preloads and merged 
   const runner = fileURLToPath(new URL('test-suite.mjs', import.meta.url));
   const result = spawnSync(
     'bun',
-    [runner, 'fast', '--reporter=junit', '--reporter-outfile', 'results.xml'],
+    [runner, '--reporter=junit', '--reporter-outfile', 'results.xml'],
     { cwd, encoding: 'utf-8' }
   );
   assert.equal(result.status, 0, result.stderr + result.stdout);
   const report = readFileSync(path.join(cwd, 'results.xml'), 'utf-8');
   assert.match(report, /first/);
   assert.match(report, /second/);
-});
-
-test('runs editor slow contracts without pulling package fast contracts into the root suite', (t) => {
-  const cwd = mkdtempSync(path.join(tmpdir(), 'plate-slow-routing-'));
-  t.after(() => rmSync(cwd, { recursive: true, force: true }));
-  const runner = fileURLToPath(new URL('test-suite.mjs', import.meta.url));
-
-  for (const name of ['platejs', 'plitejs']) {
-    const directory = path.join(cwd, 'packages', name, 'src');
-    mkdirSync(directory, { recursive: true });
-    writeFileSync(
-      path.join(directory, 'behavior.slow.ts'),
-      `import { test } from 'bun:test'; test('${name} slow behavior', () => {});`
-    );
-    writeFileSync(
-      path.join(directory, 'behavior.spec.ts'),
-      "throw new Error('PACKAGE_FAST_CONTRACT_MUST_STAY_IN_ITS_PARTITION');"
-    );
-  }
-
-  const result = spawnSync('bun', [runner, 'slow', 'packages'], {
-    cwd,
-    encoding: 'utf-8',
-    env: bunEnv,
-  });
-  const output = result.stdout + result.stderr;
-  assert.equal(result.status, 0, output);
-  assert.match(output, /platejs slow behavior/);
-  assert.match(output, /plitejs slow behavior/);
-  assert.doesNotMatch(output, /PACKAGE_FAST_CONTRACT_MUST_STAY/);
 });
 
 test(
@@ -338,7 +290,7 @@ test(
       );
     }
 
-    const watcher = spawn('bun', [runner, 'fast', '--watch'], {
+    const watcher = spawn('bun', [runner, '--watch'], {
       cwd,
       stdio: ['ignore', 'pipe', 'pipe'],
     });

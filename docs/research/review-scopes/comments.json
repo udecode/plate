@@ -53,7 +53,7 @@
     "packages/plitejs/test/react/editable-read-only-transition.test.tsx",
     "packages/plitejs/src/core/authored-document-capability.ts",
     "packages/platejs/src/migrations/documentMigrations.ts",
-    "packages/platejs/test/public-package-import-smoke.slow.ts"
+    "packages/platejs/test/public-package-import-smoke.spec.ts"
   ],
   "relatedScopes": [
     "react",

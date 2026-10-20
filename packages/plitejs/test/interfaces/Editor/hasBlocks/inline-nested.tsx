@@ -1,4 +1,5 @@
 import { jsx } from '../../..';
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { hasBlocks as editorHasBlocks } from '../../../../src/internal';
 import { getChildren as editorGetChildren } from '../../../../src/testing';

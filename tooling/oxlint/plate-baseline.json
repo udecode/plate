@@ -1,9 +1,5 @@
 {
   "plate/mock-spreads-module": {
-    "apps/www/src/registry/components/editor/ai-menu.slow.tsx": [
-      "mock.module('platejs/ai', () => ({",
-      "mock.module('platejs/ai/react', () => ({"
-    ],
     "apps/www/src/registry/components/editor/caption.spec.tsx": [
       "mock.module('platejs/react', () => ({"
     ],
@@ -18,9 +14,6 @@
       "mock.module('platejs/date', () => ({",
       "mock.module('platejs/static', () => ({"
     ],
-    "apps/www/src/registry/components/editor/date.slow.tsx": [
-      "mock.module('platejs/date', () => ({"
-    ],
     "apps/www/src/registry/components/editor/editor.spec.tsx": [
       "mock.module('platejs/react', () => ({",
       "mock.module('platejs/static', () => ({"
@@ -31,12 +24,6 @@
     "apps/www/src/registry/components/editor/floating-toolbar.spec.tsx": [
       "mock.module('platejs/ai/react', () => ({",
       "mock.module('platejs/react', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/footnote.slow.tsx": [
-      "mock.module('platejs/static', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/inline-void-suggestion.slow.tsx": [
-      "mock.module('platejs/math/react', () => ({"
     ],
     "apps/www/src/registry/components/editor/math.spec.tsx": [
       "mock.module('platejs', () => ({",

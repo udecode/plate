@@ -24,11 +24,20 @@ export const TEST_FILE_PATTERNS = [
   'tooling/oxlint/**/*.test.mjs',
 ];
 
-export const TEST_SLOW_FILE_PATTERNS = [
-  'apps/**/*.slow.{ts,tsx}',
-  'packages/**/*.slow.{ts,tsx}',
-  'tooling/scripts/**/*.slow.test.mjs',
-];
+// Bun runs every package runtime test file except these, which Vitest runs
+// with the package's config.
+export const vitestSuites = {
+  '@platejs/test': {
+    args: ['--project', 'browser'],
+    config: 'vitest.config.ts',
+    includes: (partitionName) => partitionName === 'browser',
+  },
+  plitejs: {
+    args: [],
+    config: 'vitest.config.mjs',
+    includes: (partitionName, filename) => filename.startsWith('test/react/'),
+  },
+};
 
 export const TEST_DEFERRED_FILE_PATTERNS = [
   'apps/**/__deferred__/**/*.deferred.spec.{ts,tsx}',
@@ -48,7 +57,6 @@ export const TEST_FAST_IGNORE_PATTERNS = [
   ...TEST_IGNORE_PATTERNS,
   'packages/platejs/**',
   'packages/plitejs/**',
-  'tooling/scripts/**/*.slow.test.mjs',
 ];
 
 const isCI = !!process.env.CI;

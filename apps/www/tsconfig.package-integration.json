@@ -16,7 +16,6 @@
     "__registry__",
     "**/blocks/fumadocs",
     "src/registry/components/editor/**/*.spec.*",
-    "src/registry/components/editor/**/*.test.*",
-    "src/registry/components/editor/**/*.slow.*"
+    "src/registry/components/editor/**/*.test.*"
   ]
 }

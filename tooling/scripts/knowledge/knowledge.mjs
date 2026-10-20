@@ -7,10 +7,7 @@ import { dirname, join, normalize } from 'node:path';
 // it.
 import { parse } from '@babel/parser';
 
-import {
-  TEST_FILE_PATTERNS,
-  TEST_SLOW_FILE_PATTERNS,
-} from '../../config/test-suites.mjs';
+import { TEST_FILE_PATTERNS } from '../../config/test-suites.mjs';
 import { entrypointDags } from '../../entrypoints/entrypoint-dag.mjs';
 import {
   classifyPackageFile,
@@ -689,7 +686,6 @@ const testPatterns = [
   DEFERRED,
   `${PLITE_BROWSER}**/*.{test,spec}.ts`,
   `${WWW_BROWSER}**/*.{test,spec}.ts`,
-  ...TEST_SLOW_FILE_PATTERNS,
   ...partitionPatterns,
   'packages/*/test/**/*.{ts,tsx}',
   ...TEST_FILE_PATTERNS,
@@ -720,9 +716,6 @@ function testFiles(tree) {
       engines: ['chromium', 'firefox', 'webkit'],
       why: 'runs only through the test:www-browser scripts',
     });
-  }
-  for (const path of files(tree, TEST_SLOW_FILE_PATTERNS)) {
-    add(path, { check: 'pnpm check', engines: [], why: 'test-slow step' });
   }
   // getPackageRuntimeTestFiles walks the disk; the same partition ownership
   // read from the tree's listing also serves a commit.
@@ -1049,7 +1042,7 @@ function keysAndWords(index, query) {
   return keys;
 }
 
-const TEST_FILE = /\.(?:test|spec|slow)\.[cm]?[jt]sx?$/;
+const TEST_FILE = /\.(?:test|spec)\.[cm]?[jt]sx?$/;
 
 function testsOfPath(index, path) {
   const dir = path.slice(0, path.lastIndexOf('/') + 1);

@@ -138,6 +138,7 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'packages/platejs/src/yjs/react/YjsPlugin.tsx',
     'packages/platejs/src/yjs/react/index.tsx',
     'packages/plitejs/test/**',
+    'packages/platejs/test/public-package-import-smoke.spec.ts',
     'config/plite-test-jsx.js',
     'apps/www/src/app/(app)/examples/plite/**',
     'apps/plite/src/app/providers.tsx',
@@ -165,7 +166,7 @@ test('keeps the Plate raw Plite allowlist equal to every source and test import'
   );
   const expectedBridgeFiles = restriction.excludeFiles
     .filter(
-      (file) => file.startsWith('packages/platejs/src/') && !file.includes('*')
+      (file) => file.startsWith('packages/platejs/') && !file.includes('*')
     )
     .toSorted();
   const actualBridgeFiles = [

@@ -12,7 +12,7 @@
   "members": [
     "apps/www/src/registry/components/editor/date-static.spec.tsx",
     "apps/www/src/registry/components/editor/date-static.tsx",
-    "apps/www/src/registry/components/editor/date.slow.tsx",
+    "apps/www/src/registry/components/editor/date.spec.tsx",
     "apps/www/src/registry/components/editor/date.tsx",
     "apps/www/src/registry/components/editor/insert-toolbar-button.tsx",
     "apps/www/src/registry/components/editor/slash.tsx",
