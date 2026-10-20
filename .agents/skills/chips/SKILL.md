@@ -60,7 +60,7 @@ pstack calls these modes too. Where a pstack step files a tracked issue, a follo
 A session a card opened, or one the lead started on the owner's "start <id>", runs this before it writes anything, as chips.md's Sweep says.
 
 1. Run `chips brief <id>` and work from what it prints, not from the card's prompt.
-2. Run `chips`. When the task is neither Ready nor Started, tell the owner what it waits on and stop.
+2. When the brief's `State:` line says neither Ready nor Started, tell the owner what it says and stop.
 3. Log `started` with `writes:` naming any path the brief lacks and `session:` naming this session's id where the runtime's session tool gives one, then run `chips brief <id>` again, because the task could change until that row. When the session tool shows this session above the brief's `Effort:`, say so to the owner in your first reply, because a session cannot lower its own effort.
 4. Before writing a path the task does not list, log another `started` row with it. When `append` refuses that row because another started task writes that path outside the checkout, which happens only outside trunk delivery, leave the path alone and tell the owner.
 5. When the work is done, land it, log `landed` and remove the worktree as the last command, as the brief's paragraph on landing and chips.md's Landing say, then send the report the brief asks for. A review task's session first logs `reviewed` on each task it reviewed.

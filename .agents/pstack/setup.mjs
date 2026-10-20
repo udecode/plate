@@ -5,13 +5,14 @@
 // In a linked worktree it copies each untracked env file (by default `.env`
 // and `.env.local`, at any depth git does not skip as an ignored directory)
 // from the main checkout to the same path when that path is free, and runs
-// --install when the worktree has no node_modules. In the main checkout on the
-// branch .agents/pstack.json names, it fetches origin/<branch> and fast-forwards
-// only when no local edit, staged, unstaged or untracked, touches a path the
-// incoming commits change. It prints one line per action for the session.
+// --install once per worktree, again after a failed run. In the main checkout
+// on the branch .agents/pstack.json names, it fetches origin/<branch> and
+// fast-forwards only when no local edit, staged, unstaged or untracked, touches
+// a path the incoming commits change. It prints one line per action for the
+// session.
 
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, readFileSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 
 const git = (...args) => spawnSync('git', args, { encoding: 'utf8', timeout: 30_000 });
@@ -36,7 +37,8 @@ if (names.length === 0) names.push('.env', '.env.local');
 const root = out('rev-parse', '--show-toplevel');
 if (!root) process.exit(0);
 process.chdir(root);
-const linked = out('rev-parse', '--path-format=absolute', '--git-dir') !== out('rev-parse', '--path-format=absolute', '--git-common-dir');
+const gitDir = out('rev-parse', '--path-format=absolute', '--git-dir');
+const linked = gitDir !== out('rev-parse', '--path-format=absolute', '--git-common-dir');
 
 if (linked) {
   const main = out('worktree', 'list', '--porcelain')?.match(/^worktree (.+)$/mu)?.[1];
@@ -48,8 +50,12 @@ if (linked) {
     copied.push(path);
   }
   if (copied.length > 0) console.log(`setup.mjs: copied ${copied.join(', ')} from ${main}`);
-  if (install && !existsSync('node_modules')) {
+  // A worktree can arrive with node_modules copied from the main checkout, which skipped every
+  // install script, so a node_modules folder does not mean an install ran here.
+  const installMarker = join(gitDir, 'pstack-installed');
+  if (install && !existsSync(installMarker)) {
     const run = spawnSync(install, { shell: true, encoding: 'utf8' });
+    if (run.status === 0) writeFileSync(installMarker, `${install}\n`);
     const tail = `${run.stdout}${run.stderr}`.trim().split('\n').at(-1);
     console.log(run.status === 0 ? `setup.mjs: ran ${install}` : `setup.mjs: ${install} failed (exit ${run.status}): ${tail}`);
   }
