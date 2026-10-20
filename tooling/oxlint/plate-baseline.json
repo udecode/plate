@@ -320,13 +320,8 @@
       "const exportKit = readFileSync(",
       "const exportToolbar = readFileSync("
     ],
-    "packages/plitejs/test/delete-contract.ts": [
-      "const wholeBlockSource = readFileSync("
-    ],
     "packages/plitejs/test/dom/public-surface-contract.ts": [
-      "const hotkeySource = readFileSync(",
       "const indexSource = readFileSync(",
-      "const rootSource = readFileSync(",
       "const source = readFileSync(sourcePath, 'utf-8');"
     ],
     "packages/plitejs/test/react/dom-repair-policy-contract.test.ts": [

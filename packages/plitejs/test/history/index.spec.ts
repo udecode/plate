@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -62,12 +62,7 @@ const runFixtureTree = (
       if (!stat.isFile() || !isFixtureFile(file)) continue;
 
       const name = getFixtureName(file);
-      const source = readFileSync(fixturePath, 'utf-8');
-      const testFn = /\bexport const skip\s*=\s*true\b/.test(source)
-        ? it.skip
-        : it;
-
-      testFn(name, async () => {
+      it(name, async () => {
         const module = (await import(
           pathToFileURL(fixturePath).href
         )) as Record<string, any>;

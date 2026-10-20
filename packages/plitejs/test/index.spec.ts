@@ -1,6 +1,6 @@
 import './index.js';
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, statSync } from 'node:fs';
 import { basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -18,7 +18,7 @@ import {
   isEditor as editorIsEditor,
   replace as editorReplace,
 } from '../src/testing';
-import { isExplicitCutFixture } from './fixture-claim-overrides.js';
+import { isUntriagedFailingFixture } from './fixture-claim-overrides.js';
 import { createFixtureTransactionApi, withTest } from './support/with-test.js';
 
 const runEditorTransaction = (
@@ -69,17 +69,13 @@ const runFixtureTree = (
       if (fixtureFilter && !fixturePath.includes(fixtureFilter)) continue;
 
       const name = getFixtureName(file);
-      const source = readFileSync(fixturePath, 'utf-8');
       const fixturePathFromTestRoot = relative(
         testsDir,
         fixturePath
       ).replaceAll('\\', '/');
-      const isExplicitCut = isExplicitCutFixture(fixturePathFromTestRoot);
-      const testFn = /\bexport const skip\s*=\s*true\b/.test(source)
-        ? it.skip
-        : isExplicitCut
-          ? it.skip
-          : it;
+      const testFn = isUntriagedFailingFixture(fixturePathFromTestRoot)
+        ? it.failing
+        : it;
 
       testFn(name, async () => {
         const module = (await import(

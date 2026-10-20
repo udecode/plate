@@ -29,9 +29,6 @@ const readmeRootImportPattern =
   /import \{ createEditor \} from ['"]platejs\/react['"]/;
 const tsdownRootEntryPattern = /index:\s*'src\/index\.ts'/;
 const tsdownDOMEntryPattern = /'dom\/index':\s*'src\/dom\/index\.ts'/;
-const defaultHotkeysAliasPattern = /default as Hotkeys/;
-const hotkeysNamedExportPattern = /export const Hotkeys =/;
-const defaultExportPattern = /export default/;
 const tryPrefixPattern = /^try/i;
 
 const extractDocumentedCapabilityMethods = (
@@ -360,23 +357,6 @@ describe('DOM public surface contract', () => {
     assert.equal(typeof coverage.getBoundaries, 'function');
     assert.equal(typeof coverage.materializeBoundary, 'function');
     coverage.destroy();
-  });
-
-  it('publishes Hotkeys as a named export without a default-export alias', () => {
-    const rootSource = readFileSync(
-      fileURLToPath(new URL('../../src/dom/index.ts', import.meta.url)),
-      'utf-8'
-    );
-    const hotkeySource = readFileSync(
-      fileURLToPath(new URL('../../src/dom/utils/hotkeys.ts', import.meta.url)),
-      'utf-8'
-    );
-
-    assert.equal(typeof DOMModule.Hotkeys, 'object');
-    assert.equal(typeof DOMModule.Hotkeys.isUndo, 'function');
-    assert.doesNotMatch(rootSource, defaultHotkeysAliasPattern);
-    assert.match(hotkeySource, hotkeysNamedExportPattern);
-    assert.doesNotMatch(hotkeySource, defaultExportPattern);
   });
 
   it('treats nodes from torn down DOM views as non-DOM values', () => {

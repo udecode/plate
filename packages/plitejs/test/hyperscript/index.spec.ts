@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -9,7 +9,6 @@ import './smoke-contract';
 type FixtureModule = {
   input: Record<string, unknown> | unknown[];
   output: Record<string, unknown> | unknown[];
-  skip?: boolean;
 };
 
 const readFixtureField = (value: Record<string, unknown>, key: string) => {
@@ -66,12 +65,7 @@ const runFixtures = (path: string) => {
       if (!stat.isFile() || !isFixtureFile(file)) continue;
 
       const name = getFixtureName(file);
-      const source = readFileSync(fixturePath, 'utf-8');
-      const testFn = /\bexport const skip\s*=\s*true\b/.test(source)
-        ? it.skip
-        : it;
-
-      testFn(name, async () => {
+      it(name, async () => {
         const { input, output } = (await import(
           pathToFileURL(fixturePath).href
         )) as FixtureModule;
