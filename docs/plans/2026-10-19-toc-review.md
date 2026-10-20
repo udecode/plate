@@ -338,7 +338,7 @@ Read from source only: Lexical `dd5c41b131`, Tiptap `91c51be53c`, ProseMirror `c
 
 Reversals and deviations come first.
 
-- The diff panel's one round found no critical finding, so no second round ran. The build applied its five warnings and four nits, except two it deferred. A finder that takes only `state` went to suggested task t_305b3dcc, and premise 6 waited for this fold.
+- The diff panel's one round found no critical finding, so no second round ran. The build applied its five warnings and four nits, except two it deferred. A finder that takes only `state` went to suggested task t_cc44dd71, and premise 6 waited for this fold.
 - Step 4's base runs fail on the renamed `depth` field before they reach an inset. A planted three-row table is the control that shows each six-inset case can fail.
 - Two cases differ from their step in setup only. The direct finder case takes the view's state out of `view.read` before it calls `readTocHeadings` with the live editor. The base runs of the six-level and Word indent cases drop `readTocHeadings` from the spec import, so they fail on the asserted values, not on the import.
 - The docs put the app plugin in a module that imports only `platejs/toc`, apart from the live and static kits, so the server-rendered static kit can import it.
@@ -389,7 +389,7 @@ Backlog, each a suggested task the owner takes or drops:
 - t_35d56208, have each cross-judge write its verdict to a file its brief names (Tooling 13).
 - t_951d9b2a, reload the worktree's own skill copy after a compaction (Tooling 14).
 - t_ade3c20a, keep a worktree that cleanup removes mid-scan from emptying the ship list (the ledger panel's Opus finding 8).
-- Tooling 1, 4, 6 and 8 joined open tasks t_3d8386a3, t_f20cd302, t_78870a77 and t_20ac8bbb. Divergent 4 is t_305b3dcc.
+- Tooling 1, 4, 6 and 8 joined open tasks t_3d8386a3, t_f20cd302, t_78870a77 and t_20ac8bbb. Divergent 4 joined t_cc44dd71, which also asks whether an override can call the read it replaces.
 - t_28a52daa (Judgment 6) was dropped, because `136dd6ac73` reversed the Chips priority rule it would have enforced.
 
 Rejected:
@@ -406,5 +406,5 @@ Rejected:
 - The full walk measured 21 ms per read at 5,000 blocks on a loaded host. A quiet-host measurement, and a contract that a heading's level depends on that heading alone, would decide whether an incremental list earns its place. owner: suggested task t_15ebb97b. stop: none.
 - Letting an override call the earlier stage's read, Lane 7, is a plugin-system change. owner: suggested task t_cc44dd71. stop: none.
 - A plugin that declares no state accepts any state object in `configure`. owner: suggested task t_d9d2239e. stop: none.
-- `readTocHeadings` walks `state` but reads each level through `editor`'s heading plugin, so a level override that reads the document sees `editor`'s document. The docs say to pass the `editor` and `state` of one read, as every renderer does. A finder that takes only `state` needs a typed plugin read on a read's state, which the plugin system lacks. owner: suggested task t_305b3dcc. stop: none.
+- `readTocHeadings` walks `state` but reads each level through `editor`'s heading plugin, so a level override that reads the document sees `editor`'s document. The docs say to pass the `editor` and `state` of one read, as every renderer does. A finder that takes only `state` needs a typed plugin read on a read's state, which the plugin system lacks. owner: suggested task t_cc44dd71. stop: none.
 - Nothing rebuilds or checks `apps/www/public/tailwind.css`, which the HTML export page loads. owner: suggested task t_20ac8bbb. stop: none.
