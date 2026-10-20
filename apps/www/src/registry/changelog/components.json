@@ -131,6 +131,33 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
+    "fixed-toolbar": [
+      "2026-10-19-strikethrough-shortcut-hint",
+      "2026-09-18-comment-discovery",
+      "2026-09-16-fixed-toolbar-caret-scroll",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-18-isolate-docx-file-io",
+      "2026-08-17-flat-editor-registry",
+      "2025-11-20-biome-ultracite"
+    ],
+    "floating-toolbar": [
+      "2026-10-19-strikethrough-shortcut-hint",
+      "2026-09-26-floating-toolbar-retained-selections",
+      "2026-09-08-editor-ui-lifetime",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-inline-component-props",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-26-fix-comment-popover-position",
+      "2026-08-24-preserve-toolbar-focus",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
     "toc": [
       "2026-10-19-toc-six-heading-levels",
       "2026-10-14-block-void-selection",
@@ -973,23 +1000,6 @@
       "2026-08-17-flat-editor-registry"
     ],
     "markdown-to-editor-demo": ["2026-09-28-markdown-registered-tags"],
-    "floating-toolbar": [
-      "2026-09-26-floating-toolbar-retained-selections",
-      "2026-09-08-editor-ui-lifetime",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-inline-component-props",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-26-fix-comment-popover-position",
-      "2026-08-24-preserve-toolbar-focus",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
-    ],
     "editor-dropdown-menu": [
       "2026-09-24-export-menu-projection",
       "2026-09-18-item-focus-block-upsert",
@@ -1015,14 +1025,6 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
-    ],
-    "fixed-toolbar": [
-      "2026-09-18-comment-discovery",
-      "2026-09-16-fixed-toolbar-caret-scroll",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-18-isolate-docx-file-io",
-      "2026-08-17-flat-editor-registry",
-      "2025-11-20-biome-ultracite"
     ],
     "floating-popover": [
       "2026-09-18-fix-comment-popover-scroll",

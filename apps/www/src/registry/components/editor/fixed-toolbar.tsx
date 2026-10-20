@@ -115,7 +115,7 @@ export function FixedToolbarButtons({
 
             <MarkToolbarButton
               plugin={StrikethroughPlugin}
-              tooltip="Strikethrough (⌘+⇧+M)"
+              tooltip="Strikethrough (⌘+⇧+X)"
             >
               <StrikethroughIcon />
             </MarkToolbarButton>

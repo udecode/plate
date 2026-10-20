@@ -74,7 +74,7 @@ export function FloatingToolbarButtons() {
 
             <MarkToolbarButton
               plugin={StrikethroughPlugin}
-              tooltip="Strikethrough (⌘+⇧+M)"
+              tooltip="Strikethrough (⌘+⇧+X)"
             >
               <StrikethroughIcon />
             </MarkToolbarButton>
