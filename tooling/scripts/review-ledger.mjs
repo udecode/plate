@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  realpathSync,
+  statSync,
+} from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -714,9 +720,11 @@ export function associationOf(root, ledger, path) {
   };
 }
 
+const literalPaths = ['-c', 'core.quotePath=false'];
+
 function gitGrep(root, args) {
   try {
-    return execFileSync('git', ['-C', root, 'grep', ...args], {
+    return execFileSync('git', ['-C', root, ...literalPaths, 'grep', ...args], {
       encoding: 'utf-8',
       maxBuffer: 1 << 28,
     });
@@ -833,6 +841,7 @@ function importEdges(ledger, commit = null) {
     [
       '-C',
       root,
+      ...literalPaths,
       ...(commit
         ? ['ls-tree', '-r', '--name-only', commit, '--', ...importRoots]
         : ['ls-files', '-co', '--exclude-standard', '--', ...importRoots]),
@@ -1413,21 +1422,88 @@ const report = (ledger) =>
 
 const IN_FLIGHT_DAYS = 14;
 
-const changedWithin = (root, path, now) =>
-  Boolean(git(root, ['status', '--porcelain', '--', path])?.trim()) ||
-  now - Number(git(root, ['log', '-1', '--format=%at', '--', path])) * 1000 <
-    IN_FLIGHT_DAYS * 86_400_000;
+const stillInFlight = (at, now) => now - at < IN_FLIGHT_DAYS * 86_400_000;
 
-const inFlightPlans = (root, plans, scopeId, now) =>
-  plans
-    .filter(
-      (plan) =>
-        plan.scopes.includes(scopeId) &&
-        ['active', 'held', 'planning'].includes(stateOf(plan.status)) &&
-        changedWithin(root, plan.path, now)
+const planEdits = (tree) =>
+  new Set(
+    (
+      git(tree, [
+        'status',
+        '--porcelain',
+        '-z',
+        '--no-renames',
+        '--untracked-files=all',
+        '--',
+        'docs/plans',
+      ]) ?? ''
     )
-    .map((plan) => plan.path)
-    .sort(byCodeUnit);
+      .split('\0')
+      .map((entry) => entry.slice(3))
+  );
+
+const committedAt = (tree, rev, path) =>
+  Number(git(tree, ['log', '-1', '--format=%ct', rev, '--', path])) * 1000;
+
+const touchedAt = (tree, edits, path) =>
+  edits.has(path)
+    ? statSync(join(tree, path)).mtimeMs
+    : committedAt(tree, 'HEAD', path);
+
+const otherCheckouts = (root) => {
+  const self = realpathSync(root);
+  return (git(root, ['worktree', 'list', '--porcelain']) ?? '')
+    .split('\n')
+    .filter((line) => line.startsWith('worktree '))
+    .map((line) => line.slice('worktree '.length))
+    .filter((tree) => existsSync(tree) && realpathSync(tree) !== self);
+};
+
+const dropped = (label) => stateOf(label) === 'done' && !landed(label);
+
+const unlandedPlans = (tree, root, head, now) => {
+  const committed = git(tree, [
+    'diff',
+    '--name-only',
+    '-z',
+    `${head}...HEAD`,
+    '--',
+    'docs/plans',
+  ]);
+  const edits = planEdits(tree);
+  const paths = [
+    ...new Set([...(committed ?? '').split('\0'), ...edits]),
+  ].filter((path) => {
+    if (
+      !/^docs\/plans\/[^/]+\.md$/.test(path) ||
+      !existsSync(join(tree, path))
+    ) {
+      return false;
+    }
+    const at = touchedAt(tree, edits, path);
+    return stillInFlight(at, now) && at >= committedAt(root, head, path);
+  });
+  if (paths.length === 0) return [];
+  const ledger = loadLedger(tree);
+  return paths
+    .map((path) => associationOf(tree, ledger, path))
+    .filter((plan) => plan && !dropped(plan.status));
+};
+
+const inFlightPlans = (root, plans) => {
+  const now = Date.now();
+  const edits = planEdits(root);
+  const head = git(root, ['rev-parse', 'HEAD'])?.trim();
+  return [
+    ...plans.filter(
+      (plan) =>
+        ['active', 'held', 'planning'].includes(stateOf(plan.status)) &&
+        stillInFlight(touchedAt(root, edits, plan.path), now)
+    ),
+    ...otherCheckouts(root).flatMap((tree) =>
+      unlandedPlans(tree, root, head, now)
+    ),
+  ];
+};
 
 const shipSteps = {
   unreviewed: (scope) => ({
@@ -1451,7 +1527,7 @@ const shipSteps = {
 export function ship(root) {
   const ledger = loadLedger(root);
   const plans = plansOf(root, ledger);
-  const now = Date.now();
+  const claimed = inFlightPlans(root, plans);
   return orderUnits(ledger).flatMap((unit) =>
     unit.scopes.flatMap((id) => {
       const scope = ledger.scopes.get(id);
@@ -1466,7 +1542,7 @@ export function ship(root) {
             ...(scope.owners ?? []).map((path) => path.replace(/\/$/, '')),
           ],
           topic: `review-${id}`,
-          busy: inFlightPlans(root, plans, id, now).length > 0,
+          busy: claimed.some((plan) => plan.scopes.includes(id)),
         },
       ];
     })
@@ -1630,8 +1706,9 @@ const workKinds = new Set([
 
 function git(root, args) {
   try {
-    return execFileSync('git', ['-C', root, ...args], {
+    return execFileSync('git', ['-C', root, ...literalPaths, ...args], {
       encoding: 'utf-8',
+      env: { ...process.env, GIT_OPTIONAL_LOCKS: '0' },
       maxBuffer: 1 << 28,
       stdio: ['ignore', 'pipe', 'ignore'],
     });

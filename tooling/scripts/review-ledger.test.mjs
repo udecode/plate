@@ -7,6 +7,7 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
+  utimesSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -627,9 +628,182 @@ test('ship stops marking a scope busy once its open plan has not changed for wee
     commit: headOf(git),
   });
   git('add', '-A');
-  git('commit', '-qm', 'stale plan', '--date', '2026-01-01T00:00:00Z');
+  execFileSync('git', ['-C', root, 'commit', '-qm', 'stale plan'], {
+    env: {
+      ...process.env,
+      GIT_AUTHOR_NAME: 'fixture',
+      GIT_AUTHOR_EMAIL: 'fixture@example.com',
+      GIT_COMMITTER_NAME: 'fixture',
+      GIT_COMMITTER_EMAIL: 'fixture@example.com',
+      GIT_AUTHOR_DATE: '2026-01-01T00:00:00Z',
+      GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z',
+    },
+  });
 
   assert.equal(ship(root).find((item) => item.id === 'comments').busy, false);
+});
+
+function linkedWorktree(t) {
+  const { root, put, git, commit } = fixture(t);
+  const review = (write, id, state, path) =>
+    plan(write, path ?? `docs/plans/2026-09-01-${id}-review.md`, {
+      scopes: [id],
+      basis: [],
+      verdict: 'pursue',
+      state,
+      commit: headOf(git),
+    });
+  review(put, 'comments', 'reviewed');
+  review(put, 'link', 'reviewed');
+  commit();
+  const tree = join(
+    mkdtempSync(join(tmpdir(), 'plate-review-ledger-')),
+    'tree'
+  );
+  t.after(() => rmSync(dirname(tree), { recursive: true, force: true }));
+  git('worktree', 'add', '-q', '--detach', tree);
+  const inTree = (path, value) =>
+    writeFileSync(
+      join(tree, path),
+      typeof value === 'string' ? value : `${JSON.stringify(value, null, 2)}\n`
+    );
+  const busy = (from = root) =>
+    ship(from).find(({ id }) => id === 'comments').busy;
+  return { root, put, git, commit, tree, review, inTree, busy };
+}
+
+test('ship marks a scope busy whose plan is in flight in another worktree', (t) => {
+  const { review, inTree, busy } = linkedWorktree(t);
+
+  review(inTree, 'comments', 'building: phase 2');
+
+  assert.equal(busy(), true);
+});
+
+test('ship marks a scope busy that another worktree committed a plan for and has not landed, whatever its Status', (t) => {
+  const { git, tree, review, inTree, busy } = linkedWorktree(t);
+
+  review(inTree, 'comments', 'executed, landed on next for your review');
+  git('-C', tree, 'commit', '-qam', 'plan');
+
+  assert.equal(busy(), true);
+});
+
+test("ship ignores another worktree's older copy of a plan this checkout has since changed", (t) => {
+  const { put, commit, tree, review, inTree, busy } = linkedWorktree(t);
+  const hourAgo = `@${Math.floor(Date.now() / 1000) - 3600} +0000`;
+
+  review(inTree, 'comments', 'building: phase 1');
+  execFileSync(
+    'git',
+    [
+      '-C',
+      tree,
+      '-c',
+      'user.email=fixture@example.com',
+      '-c',
+      'user.name=fixture',
+      'commit',
+      '-qam',
+      'plan',
+    ],
+    {
+      env: {
+        ...process.env,
+        GIT_AUTHOR_DATE: hourAgo,
+        GIT_COMMITTER_DATE: hourAgo,
+      },
+    }
+  );
+  review(put, 'comments', 'reviewed: second pass');
+  commit();
+
+  assert.equal(busy(), false);
+});
+
+test("ship ignores another worktree's plan edit left for weeks", (t) => {
+  const { tree, review, inTree, busy } = linkedWorktree(t);
+  const weeksAgo = new Date(Date.now() - 20 * 86_400_000);
+  const path = 'docs/plans/2026-09-04-comments-abandoned.md';
+
+  review(inTree, 'comments', 'building: phase 2', path);
+  utimesSync(join(tree, path), weeksAgo, weeksAgo);
+
+  assert.equal(busy(), false);
+});
+
+test('ship leaves a scope free whose plan another worktree superseded', (t) => {
+  const { git, tree, review, inTree, busy } = linkedWorktree(t);
+
+  review(inTree, 'comments', 'superseded by the next iteration');
+  git('-C', tree, 'commit', '-qam', 'plan');
+
+  assert.equal(busy(), false);
+});
+
+test('ship run from a linked worktree judges its own plans by their Status', (t) => {
+  const { tree, review, inTree, busy } = linkedWorktree(t);
+
+  review(inTree, 'comments', 'executed, landed on next for your review');
+
+  assert.equal(busy(tree), false);
+});
+
+test('ship sees a plan another worktree creates whatever its file name', (t) => {
+  const { review, inTree, busy } = linkedWorktree(t);
+
+  review(
+    inTree,
+    'comments',
+    'building: phase 1',
+    'docs/plans/2026-09-02-comments-révision.md'
+  );
+
+  assert.equal(busy(), true);
+});
+
+test("ship reads another worktree's plan through that worktree's own classification", (t) => {
+  const { inTree, busy } = linkedWorktree(t);
+  const path = 'docs/plans/2026-09-03-comments-notes.md';
+
+  inTree(path, '# Notes\n\nStatus: building\n');
+  inTree('docs/research/review-documents.json', [
+    {
+      path,
+      scopes: ['comments'],
+      kind: 'plan',
+      disposition: 'historical',
+      rationale: 'Reopened in that worktree.',
+    },
+  ]);
+
+  assert.equal(busy(), true);
+});
+
+test("ship writes nothing into another worktree's git index", (t) => {
+  const { root, git, tree, review, inTree } = linkedWorktree(t);
+  const path = 'docs/plans/2026-09-01-comments-review.md';
+  review(inTree, 'comments', 'building: phase 2');
+  git('-C', tree, 'add', path);
+  const later = new Date(Date.now() + 60_000);
+  utimesSync(join(tree, path), later, later);
+  const index = git(
+    '-C',
+    tree,
+    'rev-parse',
+    '--path-format=absolute',
+    '--git-path',
+    'index'
+  ).trim();
+  const before = digest(readFileSync(index));
+
+  ship(root);
+
+  assert.equal(
+    digest(readFileSync(index)),
+    before,
+    "ship rewrote the other worktree's index"
+  );
 });
 
 test('a historical import beside a review does not fork the scope', (t) => {
