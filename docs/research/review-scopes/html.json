@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "The document contract determines what HTML ingress and static output must represent.",
-  "last": false,
-  "opportunity": {
-    "score": 7,
-    "reason": "Static/client paths risk divergent output and duplicate feature renderers."
-  },
   "owners": [
     "packages/platejs/src/static/"
   ],

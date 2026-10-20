@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Persisted structure and style values must be distinguished using document semantics.",
-  "last": false,
-  "opportunity": {
-    "score": 6,
-    "reason": "Repeated style adapters are a plausible cut; columns still have an independent structural job."
-  },
   "owners": [
     "packages/platejs/src/features/layout/"
   ],

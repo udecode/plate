@@ -8,11 +8,6 @@
     "runtime"
   ],
   "prerequisiteReason": "Committed updates, rebased selection and mounted-view lifetime constrain which browser input can become a document change.",
-  "last": false,
-  "opportunity": {
-    "score": 10,
-    "reason": "Native input and selection affect every editor; device and browser proof remain independent."
-  },
   "owners": [
     "packages/plitejs/src/react/editable/input-router.ts",
     "packages/plitejs/src/react/editable/input-state.ts",

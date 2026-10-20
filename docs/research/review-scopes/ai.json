@@ -7,11 +7,6 @@
     "diff"
   ],
   "prerequisiteReason": "Generated changes must obey committed-update and rebased-selection laws; AI remains last by explicit queue policy.",
-  "last": true,
-  "opportunity": {
-    "score": 10,
-    "reason": "High opportunity, explicitly scheduled last by the user after non-AI ownership is understood."
-  },
   "owners": [
     "packages/platejs/src/ai/"
   ],

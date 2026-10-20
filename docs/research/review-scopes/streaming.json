@@ -7,11 +7,6 @@
     "markdown"
   ],
   "prerequisiteReason": "Incremental Markdown must preserve batch format meaning while obeying committed-update semantics.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Partial parsing and consumer stream lifetime are independent jobs. Reconcile the adopted conversion and non-AI demo evidence before proposing another streaming owner."
-  },
   "owners": [
     "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
     "packages/platejs/src/markdown/lib/internal/markdownConversion.ts",

@@ -6,11 +6,6 @@
     "selection"
   ],
   "prerequisiteReason": "Document topology and location rebasing constrain cell coordinates and table selection.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Table topology and native cell interaction combine several expensive shared paths."
-  },
   "owners": [
     "packages/platejs/src/features/table/",
     "packages/platejs/src/react/features/table/"

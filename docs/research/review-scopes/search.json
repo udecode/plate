@@ -7,11 +7,6 @@
     "selection"
   ],
   "prerequisiteReason": "Canonical read ownership and rebased locations constrain search result identity and navigation.",
-  "last": true,
-  "opportunity": {
-    "score": 8,
-    "reason": "Performance history contains costly match and decoration invalidation paths worth reconciling."
-  },
   "owners": [
     "packages/platejs/src/features/find/"
   ],

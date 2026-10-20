@@ -7,11 +7,6 @@
     "transactions"
   ],
   "prerequisiteReason": "Command intent and availability must align with the canonical transaction owner.",
-  "last": false,
-  "opportunity": {
-    "score": 8,
-    "reason": "A shared command law can remove duplicate disabled-state and keyboard policy from callers."
-  },
   "owners": [
     "packages/plitejs/src/core/command-definition.ts",
     "packages/plitejs/src/core/command-registry.ts",

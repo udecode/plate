@@ -6,11 +6,6 @@
     "plate-api"
   ],
   "prerequisiteReason": "Copied kits and controls must compose the established Plate public contracts before installation policy is reviewed.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "The copied registry owns real policy; package-only reviews miss this developer job."
-  },
   "owners": [
     "apps/www/src/registry/components/editor/plugins.ts",
     "apps/www/src/registry/components/editor/plugins-static.ts",

@@ -4,11 +4,6 @@
   "question": "Which repair and proof boundaries prevent repeated editor defects without duplicate rules, proxy completion or compulsory publication?",
   "dependsOn": [],
   "prerequisiteReason": "Workflow proof selection can be assessed without revisiting product architecture.",
-  "last": false,
-  "opportunity": {
-    "score": 8,
-    "reason": "Repeated user-reported interaction regressions expose contradictory proof selection and local completion rules."
-  },
   "owners": [
     "AGENTS.md",
     ".agents/rules/verify.mdc",

@@ -7,11 +7,6 @@
     "schema"
   ],
   "prerequisiteReason": "Plate defaults and plugin contracts must compose the established extension/schema owner.",
-  "last": false,
-  "opportunity": {
-    "score": 10,
-    "reason": "Facade, inference and plugin defaults affect every first-party feature and copied kit."
-  },
   "owners": [
     "packages/platejs/src/core.tsx",
     "packages/platejs/src/facade.ts",

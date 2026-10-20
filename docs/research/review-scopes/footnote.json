@@ -6,11 +6,6 @@
     "selection"
   ],
   "prerequisiteReason": "Document identity and rebased references constrain footnote content and navigation.",
-  "last": false,
-  "opportunity": {
-    "score": 6,
-    "reason": "Reference identity and cross-document conversion need a coherent owner."
-  },
   "owners": [
     "packages/platejs/src/features/footnote/"
   ],

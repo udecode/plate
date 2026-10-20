@@ -227,7 +227,6 @@ export function recordRow(tasks, cells, ts = null) {
       covers: [],
     };
     created.cardEffort = created.card ? levelOf(created) : null;
-    created.cardPriority = created.card ? shownOf(given, created) : null;
     tasks.set(row.id, created);
     return;
   }
@@ -262,7 +261,6 @@ export function recordRow(tasks, cells, ts = null) {
     task.codex = given.codex === 'always';
     task.session = given.session ?? null;
     task.cardEffort = levelOf(task);
-    task.cardPriority = shownOf(given, task);
     // An offer older than the session: token has no owner, so the first
     // session that cards it takes it.
     task.owner ??= task.session;
@@ -272,7 +270,6 @@ export function recordRow(tasks, cells, ts = null) {
     task.codex = false;
     task.session = null;
     task.cardEffort = null;
-    task.cardPriority = null;
   }
   if (row.move === 'reopened') {
     task.status = 'offered';
@@ -337,15 +334,6 @@ const afterRow = (before, cells) => {
   liftPriorities(after);
   return after;
 };
-
-export function stampShown(cells, before) {
-  const row = parseRow(cells);
-  const { given } = fields(row?.evidence ?? '');
-  if (!row || given.shown !== undefined || !(row.move === 'carded' || (row.move === 'offered' && given.card))) return cells;
-  const task = afterRow(before, cells).get(row.id);
-  const shown = task && priorityOf(task);
-  return shown ? [...cells.slice(0, 3), `${row.evidence}; shown: ${shown}`, cells[4]] : cells;
-}
 
 export function chipRowProblems(cells, before, where) {
   const [, decision, , evidence] = cells;
@@ -531,7 +519,7 @@ export function baseRedProblems(evidence, tasks, where) {
 export const NO_SHIP = { items: null, note: null };
 
 // The ship list is a project's path to release, such as a review ledger's open
-// items in queue order, which the chips.ship command prints as a JSON array.
+// items, which the chips.ship command prints as a JSON array.
 export function readShip(command) {
   if (!command) return NO_SHIP;
   if (!Array.isArray(command) || command.length === 0 || command.some((part) => typeof part !== 'string')) return { items: null, note: 'chips.ship in .agents/pstack.json is not a command written as an array of strings' };
@@ -547,7 +535,7 @@ export function readShip(command) {
         writes: Array.isArray(item.writes) && item.writes.length ? item.writes : [projectConfig().plans ?? 'docs/plans'],
         topic: TOPIC.test(item.topic ?? '') ? item.topic : `ship-${item.id.toLowerCase().replace(/[^a-z0-9]+/gu, '-')}`,
         kind: KINDS.includes(item.kind) ? item.kind : 'decide',
-        busy: item.busy === true,
+        waits: Array.isArray(item.waits) ? item.waits.filter((wait) => WAIT.test(wait)) : [],
       }));
     return { items, note: null };
   } catch (error) {
@@ -746,7 +734,6 @@ export function startedOverlaps(tasks) {
 // session owns and takes over each one whose owner is not in live, the ids of
 // the sessions not archived; without live, no owner counts as gone.
 export function board(tasks, git, here = null, { transcript = null, all = false, live = null, ship = NO_SHIP } = {}) {
-  const byPriority = priorityOrder(ship.items);
   const open = [...tasks.values()].filter(isOpen).sort(byOrder);
   const started = open.filter((task) => task.status === 'started');
   const offered = open.filter((task) => task.status === 'offered');
@@ -860,16 +847,9 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
 
 const failsOnBase = (task) => task.owns.length > 0;
 const ownPriority = (task) => (failsOnBase(task) ? 'P0' : task.priority);
-const shownOf = (given, task) => given.shown ?? ownPriority(task);
 export const priorityOf = (task) => higher(ownPriority(task), task.blockingPriority);
 
-const cardDrift = (task) =>
-  [
-    task.cardEffort && task.cardEffort !== levelOf(task) ? `it was offered at ${task.cardEffort} and the task is at ${levelOf(task)} now` : null,
-    task.cardPriority && task.cardPriority !== priorityOf(task) ? `its title shows ${task.cardPriority} and the task is ${priorityOf(task)} now` : null,
-  ]
-    .filter(Boolean)
-    .join(', and ');
+const cardDrift = (task) => (task.cardEffort && task.cardEffort !== levelOf(task) ? `it was offered at ${task.cardEffort} and the task is at ${levelOf(task)} now` : null);
 
 function liftPriorities(tasks) {
   for (const task of tasks.values()) {
@@ -899,23 +879,17 @@ const rank = (task) => {
   return at === -1 ? PRIORITIES.length : at;
 };
 
-// P1 tasks follow the ship list's order, then the ledger's.
-const priorityOrder = (items) => {
-  const place = (task) => {
-    const at = items?.findIndex((item) => item.id === task.ship) ?? -1;
-    return at === -1 ? Number.MAX_SAFE_INTEGER : at;
-  };
-  return (a, b) => rank(a) - rank(b) || place(a) - place(b) || byOrder(a, b);
-};
+const byPriority = (a, b) => rank(a) - rank(b) || byOrder(a, b);
 
 function shipOffers(items, tasks, open) {
   const served = new Set(open.map((task) => task.ship).filter(Boolean));
   return (items ?? [])
-    .filter((item) => !item.busy && !served.has(item.id))
+    .filter((item) => !served.has(item.id))
     .map((item) => {
       const landedFor = [...tasks.values()].filter((task) => task.status === 'landed' && task.ship === item.id).sort(byOrder).at(-1);
       const flag = landedFor ? `; ${landedFor.id} landed serving it, so first check whether only the item's own record still lists it open` : '';
-      const tokens = `writes: ${item.writes.join(', ')}; topic: ${item.topic}; kind: ${item.kind}; priority: P1; ship: ${item.id}`;
+      const waits = item.waits.length ? `; waits: ${item.waits.join(', ')}` : '';
+      const tokens = `writes: ${item.writes.join(', ')}; topic: ${item.topic}; kind: ${item.kind}; priority: P1; ship: ${item.id}${waits}`;
       return { kind: 'ship', ids: [], text: `offer ship item ${item.id}, which no open task serves${flag}: append chip "${newId()} ${item.title}" "${item.finding}" "${tokens}" offered` };
     });
 }

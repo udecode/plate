@@ -7,7 +7,6 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
-  utimesSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -22,7 +21,6 @@ import {
   loadLedger,
   lookup,
   observe,
-  orderUnits,
   recordsDir,
   scopesDir,
   searchResearch,
@@ -39,8 +37,6 @@ function scope(id, fields = {}) {
     title: id,
     question: `Who owns ${id}?`,
     dependsOn: [],
-    last: false,
-    opportunity: { score: 5, reason: 'A bounded owner question.' },
     owners: [`packages/core/src/${id}/`],
     members: [`packages/core/src/${id}/`],
     consumers: ['docs/evidence.md'],
@@ -497,45 +493,6 @@ test('a landed implementation plan naming the head closes its Pursue', (t) => {
   assert.equal(openOf(root, 'comments'), null);
 });
 
-test('queue order honours dependencies, groups and AI-last over payoff', (t) => {
-  const { root, put } = fixture(t, [
-    scope('model', { opportunity: { score: 3, reason: 'Base.' } }),
-    scope('table', {
-      dependsOn: ['model'],
-      prerequisiteReason: 'Tables need the model.',
-      opportunity: { score: 9, reason: 'Hot.' },
-    }),
-    scope('ai', { last: true, opportunity: { score: 10, reason: 'Last.' } }),
-    scope('runtime', {
-      group: 'core',
-      opportunity: { score: 4, reason: 'Core.' },
-    }),
-    scope('state', {
-      group: 'core',
-      opportunity: { score: 6, reason: 'Core.' },
-    }),
-  ]);
-  put('docs/research/review-groups.json', {
-    core: { title: 'Core', reason: 'Reviewed together.' },
-  });
-
-  assert.deepEqual(
-    orderUnits(loadLedger(root)).map((unit) => unit.id),
-    ['core', 'model', 'table', 'ai']
-  );
-  put(
-    `${scopesDir}/model.json`,
-    scope('model', {
-      dependsOn: ['table'],
-      prerequisiteReason: 'Cycle.',
-    })
-  );
-  assert.throws(() => orderUnits(loadLedger(root), { strict: true }), /cycle/);
-  const ledger = loadLedger(root);
-  assert.equal(orderUnits(ledger).length, 4);
-  assert.match(ledger.warnings.join('\n'), /cycle/);
-});
-
 test('research search keeps headers, exact status and malformed-row warnings', (t) => {
   const { root, put } = fixture(t);
   put(
@@ -588,11 +545,14 @@ test('a later open plan on the same Pursue reopens it', (t) => {
   assert.equal(openOf(root, 'comments'), 'pursue-not-adopted');
 });
 
-test('ship lists each open scope in queue order and marks one an open plan works on', (t) => {
+test('ship lists each open scope by id, with the open plans that name it as waits', (t) => {
   const { root, put, git } = fixture(t, [
-    scope('comments', { opportunity: { score: 9, reason: 'First.' } }),
+    scope('table', {
+      dependsOn: ['link'],
+      prerequisiteReason: 'Tables reuse the link owner.',
+    }),
+    scope('comments'),
     scope('link'),
-    scope('table', { opportunity: { score: 1, reason: 'Last.' } }),
   ]);
   const review = (id, verdict, state) =>
     plan(put, `docs/plans/2026-09-01-${id}-review.md`, {
@@ -602,208 +562,55 @@ test('ship lists each open scope in queue order and marks one an open plan works
       state,
       commit: headOf(git),
     });
+  const items = () =>
+    ship(root).map(({ id, kind, waits, writes }) => ({
+      id,
+      kind,
+      waits,
+      subject: writes[0],
+    }));
+  const findingOf = (id) => ship(root).find((item) => item.id === id).finding;
   review('comments', 'pursue', 'reviewed');
-  review('link', 'stop', 'reviewed');
 
-  assert.deepEqual(
-    ship(root).map(({ id, kind, busy }) => ({ id, kind, busy })),
-    [
-      { id: 'comments', kind: 'fix', busy: false },
-      { id: 'table', kind: 'decide', busy: false },
-    ]
-  );
-
-  review('comments', 'pursue', 'building: phase 2');
-
-  assert.equal(ship(root)[0].busy, true);
-});
-
-test('ship stops marking a scope busy once its open plan has not changed for weeks', (t) => {
-  const { root, put, git } = fixture(t);
-  plan(put, 'docs/plans/2026-09-01-comments-review.md', {
-    scopes: ['comments'],
-    basis: [],
-    verdict: 'pursue',
-    state: 'building: phase 2',
-    commit: headOf(git),
-  });
-  git('add', '-A');
-  execFileSync('git', ['-C', root, 'commit', '-qm', 'stale plan'], {
-    env: {
-      ...process.env,
-      GIT_AUTHOR_NAME: 'fixture',
-      GIT_AUTHOR_EMAIL: 'fixture@example.com',
-      GIT_COMMITTER_NAME: 'fixture',
-      GIT_COMMITTER_EMAIL: 'fixture@example.com',
-      GIT_AUTHOR_DATE: '2026-01-01T00:00:00Z',
-      GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z',
+  assert.deepEqual(items(), [
+    {
+      id: 'comments',
+      kind: 'fix',
+      waits: [],
+      subject: 'docs/plans/topics/comments.md',
     },
-  });
-
-  assert.equal(ship(root).find((item) => item.id === 'comments').busy, false);
-});
-
-function linkedWorktree(t) {
-  const { root, put, git, commit } = fixture(t);
-  const review = (write, id, state, path) =>
-    plan(write, path ?? `docs/plans/2026-09-01-${id}-review.md`, {
-      scopes: [id],
-      basis: [],
-      verdict: 'pursue',
-      state,
-      commit: headOf(git),
-    });
-  review(put, 'comments', 'reviewed');
-  review(put, 'link', 'reviewed');
-  commit();
-  const tree = join(
-    mkdtempSync(join(tmpdir(), 'plate-review-ledger-')),
-    'tree'
-  );
-  t.after(() => rmSync(dirname(tree), { recursive: true, force: true }));
-  git('worktree', 'add', '-q', '--detach', tree);
-  const inTree = (path, value) =>
-    writeFileSync(
-      join(tree, path),
-      typeof value === 'string' ? value : `${JSON.stringify(value, null, 2)}\n`
-    );
-  const busy = (from = root) =>
-    ship(from).find(({ id }) => id === 'comments').busy;
-  return { root, put, git, commit, tree, review, inTree, busy };
-}
-
-test('ship marks a scope busy whose plan is in flight in another worktree', (t) => {
-  const { review, inTree, busy } = linkedWorktree(t);
-
-  review(inTree, 'comments', 'building: phase 2');
-
-  assert.equal(busy(), true);
-});
-
-test('ship marks a scope busy that another worktree committed a plan for and has not landed, whatever its Status', (t) => {
-  const { git, tree, review, inTree, busy } = linkedWorktree(t);
-
-  review(inTree, 'comments', 'executed, landed on next for your review');
-  git('-C', tree, 'commit', '-qam', 'plan');
-
-  assert.equal(busy(), true);
-});
-
-test("ship ignores another worktree's older copy of a plan this checkout has since changed", (t) => {
-  const { put, commit, tree, review, inTree, busy } = linkedWorktree(t);
-  const hourAgo = `@${Math.floor(Date.now() / 1000) - 3600} +0000`;
-
-  review(inTree, 'comments', 'building: phase 1');
-  execFileSync(
-    'git',
-    [
-      '-C',
-      tree,
-      '-c',
-      'user.email=fixture@example.com',
-      '-c',
-      'user.name=fixture',
-      'commit',
-      '-qam',
-      'plan',
-    ],
     {
-      env: {
-        ...process.env,
-        GIT_AUTHOR_DATE: hourAgo,
-        GIT_COMMITTER_DATE: hourAgo,
-      },
-    }
-  );
-  review(put, 'comments', 'reviewed: second pass');
-  commit();
-
-  assert.equal(busy(), false);
-});
-
-test("ship ignores another worktree's plan edit left for weeks", (t) => {
-  const { tree, review, inTree, busy } = linkedWorktree(t);
-  const weeksAgo = new Date(Date.now() - 20 * 86_400_000);
-  const path = 'docs/plans/2026-09-04-comments-abandoned.md';
-
-  review(inTree, 'comments', 'building: phase 2', path);
-  utimesSync(join(tree, path), weeksAgo, weeksAgo);
-
-  assert.equal(busy(), false);
-});
-
-test('ship leaves a scope free whose plan another worktree superseded', (t) => {
-  const { git, tree, review, inTree, busy } = linkedWorktree(t);
-
-  review(inTree, 'comments', 'superseded by the next iteration');
-  git('-C', tree, 'commit', '-qam', 'plan');
-
-  assert.equal(busy(), false);
-});
-
-test('ship run from a linked worktree judges its own plans by their Status', (t) => {
-  const { tree, review, inTree, busy } = linkedWorktree(t);
-
-  review(inTree, 'comments', 'executed, landed on next for your review');
-
-  assert.equal(busy(tree), false);
-});
-
-test('ship sees a plan another worktree creates whatever its file name', (t) => {
-  const { review, inTree, busy } = linkedWorktree(t);
-
-  review(
-    inTree,
-    'comments',
-    'building: phase 1',
-    'docs/plans/2026-09-02-comments-révision.md'
-  );
-
-  assert.equal(busy(), true);
-});
-
-test("ship reads another worktree's plan through that worktree's own classification", (t) => {
-  const { inTree, busy } = linkedWorktree(t);
-  const path = 'docs/plans/2026-09-03-comments-notes.md';
-
-  inTree(path, '# Notes\n\nStatus: building\n');
-  inTree('docs/research/review-documents.json', [
+      id: 'link',
+      kind: 'decide',
+      waits: [],
+      subject: 'docs/plans/topics/link.md',
+    },
     {
-      path,
-      scopes: ['comments'],
-      kind: 'plan',
-      disposition: 'historical',
-      rationale: 'Reopened in that worktree.',
+      id: 'table',
+      kind: 'decide',
+      waits: [],
+      subject: 'docs/plans/topics/table.md',
     },
   ]);
-
-  assert.equal(busy(), true);
-});
-
-test("ship writes nothing into another worktree's git index", (t) => {
-  const { root, git, tree, review, inTree } = linkedWorktree(t);
-  const path = 'docs/plans/2026-09-01-comments-review.md';
-  review(inTree, 'comments', 'building: phase 2');
-  git('-C', tree, 'add', path);
-  const later = new Date(Date.now() + 60_000);
-  utimesSync(join(tree, path), later, later);
-  const index = git(
-    '-C',
-    tree,
-    'rev-parse',
-    '--path-format=absolute',
-    '--git-path',
-    'index'
-  ).trim();
-  const before = digest(readFileSync(index));
-
-  ship(root);
-
-  assert.equal(
-    digest(readFileSync(index)),
-    before,
-    "ship rewrote the other worktree's index"
+  assert.match(
+    findingOf('table'),
+    /It builds on link, still open: Tables reuse the link owner\.$/
   );
+
+  review('link', 'stop', 'reviewed');
+  review('comments', 'pursue', 'building: phase 2');
+
+  assert.deepEqual(
+    items().map(({ id, waits }) => ({ id, waits })),
+    [
+      {
+        id: 'comments',
+        waits: ['run:docs/plans/2026-09-01-comments-review.md'],
+      },
+      { id: 'table', waits: [] },
+    ]
+  );
+  assert.doesNotMatch(findingOf('table'), /builds on/);
 });
 
 test('a historical import beside a review does not fork the scope', (t) => {
@@ -972,26 +779,6 @@ test('a malformed foreign record fails check and leaves another scope readable',
     () => check(root),
     /2026-09-09-foreign\.json: malformed record/
   );
-});
-
-test('strict queue order catches a dependency cycle inside a review group', (t) => {
-  const { root, put } = fixture(t, [
-    scope('runtime', {
-      group: 'core',
-      dependsOn: ['state'],
-      prerequisiteReason: 'Cycle.',
-    }),
-    scope('state', {
-      group: 'core',
-      dependsOn: ['runtime'],
-      prerequisiteReason: 'Cycle.',
-    }),
-  ]);
-  put('docs/research/review-groups.json', {
-    core: { title: 'Core', reason: 'Reviewed together.' },
-  });
-
-  assert.throws(() => orderUnits(loadLedger(root), { strict: true }), /cycle/);
 });
 
 test("check fails on a review page whose basis names another scope's review", (t) => {

@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Document meaning and identity determine which Markdown mappings preserve information or lose it.",
-  "last": false,
-  "opportunity": {
-    "score": 8,
-    "reason": "The codec crosses every node family and a historically stale behavior matrix."
-  },
   "owners": [
     "packages/platejs/src/markdown/",
     "packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts"

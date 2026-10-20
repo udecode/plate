@@ -6,11 +6,6 @@
     "annotations"
   ],
   "prerequisiteReason": "The anchor lifetime and mapping contract must be known before dividing durable comments from discussion UI.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Several ownership iterations and product regressions make historical reconciliation especially valuable."
-  },
   "owners": [
     "packages/platejs/src/features/comments/BaseCommentsPlugin.ts"
   ],

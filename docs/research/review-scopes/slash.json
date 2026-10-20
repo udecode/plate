@@ -6,11 +6,6 @@
     "commands"
   ],
   "prerequisiteReason": "Slash discovery and insertion must use established command intent and availability.",
-  "last": false,
-  "opportunity": {
-    "score": 6,
-    "reason": "Slash input composes discovery and insertion without needing another command authority."
-  },
   "owners": [
     "apps/www/src/registry/components/editor/slash.tsx"
   ],

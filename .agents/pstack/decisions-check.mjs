@@ -57,7 +57,7 @@ import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeF
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { currentLead, leadLabel, maxEffort } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
-import { board, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, SESSION, staleReport, stampShown, startedOverlaps } from './tasks.mjs';
+import { board, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -278,7 +278,7 @@ function append(path, batch, run) {
   const rows = [];
   const found = [];
   for (let [index, cells] of batch.entries()) {
-    if (cells.length === 5) cells = stampShown(stampTranscript(cells, run), chips);
+    if (cells.length === 5) cells = stampTranscript(cells, run);
     const where = index < attribution.length ? `${path} (lead row)` : count > 1 ? `${path} (new row ${index + 1 - attribution.length})` : `${path} (new row)`;
     if (cells.length !== 5) {
       found.push(`${where}: append takes 5 cells, got ${cells.length}`);

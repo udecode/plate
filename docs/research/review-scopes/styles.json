@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Document semantics determine which marks and style values persist independently of view presentation.",
-  "last": false,
-  "opportunity": {
-    "score": 6,
-    "reason": "Shared marks and style contracts affect codecs and live/static consumers without requiring a separate owner for every toolbar control."
-  },
   "owners": [
     "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts"
   ],

@@ -4,11 +4,6 @@
   "question": "Should Plate own a content lint feature with rules, diagnostics, fixes and navigation, or do plugin decorations and app code cover the job?",
   "dependsOn": [],
   "prerequisiteReason": "Decoration sources, annotations and Find already settle the paint, range and navigation owners a linter would reuse.",
-  "last": false,
-  "opportunity": {
-    "score": 2,
-    "reason": "No issue asks for a linter. Plate ships the plugin, kit, demo and docs, so a later review weighs rule authoring and cost at scale."
-  },
   "owners": [
     "packages/platejs/src/features/lint/"
   ],

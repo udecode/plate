@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Document structure and identity determine whether lists are nested structure, block properties or a derived view.",
-  "last": false,
-  "opportunity": {
-    "score": 8,
-    "reason": "List nesting and style/structure overlap reward a shared-owner comparison."
-  },
   "owners": [
     "packages/platejs/src/features/list/"
   ],

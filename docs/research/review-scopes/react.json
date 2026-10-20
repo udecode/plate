@@ -8,11 +8,6 @@
     "reads"
   ],
   "prerequisiteReason": "The runtime owns mounted-view lifetime; canonical reads determine what React may subscribe to and render.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Shared render ownership can remove repeated subscriptions and stale view work across features."
-  },
   "owners": [
     "packages/plitejs/src/react/components/plite.tsx",
     "packages/plitejs/src/react/hooks/use-plite-runtime.tsx",

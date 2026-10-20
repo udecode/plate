@@ -65,8 +65,6 @@ Stable scope ids identify the user question across package and symbol renames. P
   "question": "What owns table topology, cell coordinates, selection, clipboard and layout?",
   "dependsOn": ["selection"],
   "prerequisiteReason": "Document topology and location rebasing constrain cell coordinates and table selection.",
-  "last": false,
-  "opportunity": { "score": 9, "reason": "Table topology and native cell interaction combine several expensive shared paths." },
   "owners": ["packages/platejs/src/features/table/"],
   "members": ["packages/platejs/src/features/table/", "apps/www/tests/browser/table-selection.spec.ts"],
   "consumers": ["apps/www/src/registry/components/editor/table.tsx"],
@@ -80,12 +78,11 @@ Stable scope ids identify the user question across package and symbol renames. P
 - A path ending in `/` is a directory and covers every file under it; any other path is one file.
 - `members` is source membership: a file belongs to every scope whose `members` name it or one of its directories. A file can belong to several scopes. Membership routes lookup and coverage; it is not a review verdict.
 - `owners`, `consumers`, `proof` and `evidenceInputs` are what a review of the scope reads. Name actual owners, materially different consumers, selected proof and decision-critical shared contracts, fixtures and runners. An empty `proof` list needs `gaps` saying why; an unrelated test cannot fill it.
-- `dependsOn` orders the queue and needs `prerequisiteReason`. `relatedScopes` supplies context only; it never blocks order or adopts a verdict.
+- `dependsOn` names the scopes whose answers this one builds on and needs `prerequisiteReason`; `ship` names each one still open in the item's finding. `relatedScopes` supplies context only; it never adopts a verdict.
 - `group` names an entry of `review-groups.json`. A group reviews its member questions together; each question keeps its own reviews.
-- `opportunity.score` uses `review-payoff-v1`: 0 means no expected value from review, 5 a bounded feature question, 10 a large shared-owner opportunity or a material unresolved design. Dependencies decide eligible work, payoff breaks ties, and `last: true` keeps AI after everything else.
 - `historyCandidates` are filename-discovered plan links for intake, not inspected verdicts.
 
-A scope's deep review creates its scope file when a design-question chip whose `writes:` names that file starts it, and a deep verdict that another playbook runs on a target no scope owns adds one for that target. A hard cut's question gets one too, and that is the only scope file a verdict intake creates. A scope file holds the semantic question and its current comparison owners and inputs. A proposed scope can have no members; its `owners` and `evidenceInputs` name the real comparator files, which its reviews' freshness reads.
+A scope's deep review creates its scope file when a design-question chip whose `writes:` names that file starts it, and a deep verdict that another playbook runs on a target no scope owns adds one for that target. A verdict intake creates none, and a hard cut's question gets a scope file only from the deep session of its `decide` chip. A scope file holds the semantic question and its current comparison owners and inputs. A proposed scope can have no members; its `owners` and `evidenceInputs` name the real comparator files, which its reviews' freshness reads.
 
 ### Review and plan front matter
 
@@ -141,19 +138,19 @@ Nothing below is stored.
 
 | Command | Use |
 | --- | --- |
-| `status` | Open-state counts, the unowned-source count and the ordered queue |
-| `ship` | Each open scope except a deferred one, in queue order, as the JSON items `chips` offers as P1 tasks, each marked busy while a plan touched in the last 14 days, in this checkout or in another worktree, works on it |
+| `status` | Open-state counts, the unowned-source count and each open scope with its verdict |
+| `ship` | Each open scope except a deferred one, by id, as the JSON items `chips` offers as P1 tasks. An item writes the scope's subject file and owners, its finding names each open scope in `dependsOn`, and its `waits` hold `run:<plan>` for each active, held or planning plan that names the scope |
 | `lookup <scope\|group\|path\|term> [--detail]` | Compact summaries; a term matches scope ids, titles, questions, scope paths and retired feature-group names; `--detail` adds full records, plans and documents |
-| `show [scope]` | Markdown history of a scope, or the queue, on stdout |
+| `show [scope]` | Markdown history of a scope, or every scope's open state, on stdout |
 | `coverage [prefix]` | Unowned source and scope entries that match no file |
-| `check` | Scope, group and document validity, dependency cycles, malformed legacy records and their broken references, and invalid review front matter: an unknown or repeated scope, a basis that is not a review of one of the page's scopes, an invalid work kind, verdict or upstream entry, a review page without `review_commit`, and a fork that includes a review page; a misspelled review key, any front-matter key under `docs/plans` that starts with `review`, `verdict` or `work_kind` and is not one of the seven review keys; in page and plan bodies, a page with `verdict` whose lead paragraph, `Playbook:` line or `## Evidence` is empty or whose `## Evidence` has no `Model:` line, a Pursue page without `## Public API`, a page without a `### Requirements` list under `## Evidence`, a page whose `### Lanes` list has fewer than two items, an absolute file link, a page link that leaves the repository or that no tree or commit holds, a page with `verdict` whose `## Evidence` links no repository file, a page whose Evidence leaves a reconciled review, plan or execution without an action and a reason, a changed verdict that retains its basis review, a `review_inputs` path that no tree or commit holds, a landed implementation or workflow plan with `review_commit` or a page basis whose `## Close` is empty, and a landed plan whose `## Close` leaves one of its `review_inputs` unnamed; warnings for legacy forks, conflicting status labels, unowned source, dangling entries and missing documents |
+| `check` | Scope, group, document and legacy-record validity, and the front matter and body of every review page and plan under `docs/plans` against the shape the Verdict and Build playbooks give. Each error names the file and what to fix; warnings name legacy forks, conflicting status labels, unowned source, dangling entries and missing documents |
 | `research <term>` | Search dated Plite research TSVs |
 
 `check` reads only ledger files, the pages and plans under `docs/plans`, and git, so another session's source edits cannot fail it, except a page link or `review_inputs` path that neither the working tree nor any commit holds.
 
 ### Documents and candidates
 
-`review-documents.json` lists inspected documents with `path`, `scopes`, `kind` (`plan`, `decision`, `lesson`, `specification`, `report`, `history`), `disposition` (`active`, `historical`, `superseded`, `candidate`, `rejected`) and `rationale`. Historical plans can add `reviewBasis` and `workKind`. Record why the content answers the scope before associating it. Uninspected matches stay `candidate` or in a scope's `historyCandidates`; inspected false matches are `rejected` with the reason, so a later lookup stops suggesting them.
+`review-documents.json` lists inspected documents with `path`, `scopes`, `kind` (`plan`, `decision`, `lesson`, `specification`, `report`, `history`), `disposition` (`active`, `historical`, `superseded`, `rejected`) and `rationale`. Historical plans can add `reviewBasis` and `workKind`. Record why the content answers the scope before associating it. Uninspected matches stay in a scope's `historyCandidates`; inspected false matches are `rejected` with the reason, so a later lookup stops suggesting them.
 
 A scope's subject file, `docs/plans/topics/<scope>.md`, holds its current conclusion in prose: its decisions with their rejected alternatives, its public calls, what other editors do and its open work. Each review page or plan on the scope is an iteration that folds into it when it closes. `lookup` names the subject file as `subject` but never reads it, so a fold never makes a review stale.
 

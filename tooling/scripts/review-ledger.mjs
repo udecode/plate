@@ -1,13 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import {
-  existsSync,
-  readdirSync,
-  readFileSync,
-  realpathSync,
-  statSync,
-} from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -704,7 +698,7 @@ export function associationOf(root, ledger, path) {
     (item) =>
       item.path === path &&
       item.kind === 'plan' &&
-      !['candidate', 'rejected'].includes(item.disposition)
+      item.disposition !== 'rejected'
   );
   if (!document) return null;
   const invalid =
@@ -912,91 +906,6 @@ function dependentsOf(ledger, scope, commit = null) {
   };
 }
 
-/**
- * Review units in queue order: dependencies first, AI-last, then payoff.
- * Read commands get a usable order despite a dangling dependency or a cycle,
- * reported in ledger.warnings; `strict` throws instead, for `check`.
- */
-export function orderUnits(ledger, { strict = false } = {}) {
-  const problem = (message) => {
-    assert.ok(!strict, message);
-    if (!ledger.warnings.includes(message)) ledger.warnings.push(message);
-  };
-  const rank = new Map();
-  const waiting = [...ledger.scopes.values()];
-  while (waiting.length) {
-    const ready = waiting.filter((scope) =>
-      (scope.dependsOn ?? []).every(
-        (id) => rank.has(id) || !ledger.scopes.has(id)
-      )
-    );
-    if (!ready.length) {
-      problem(
-        `Review dependencies contain a cycle: ${waiting.map((scope) => scope.id).join(', ')}`
-      );
-      ready.push(...waiting);
-    }
-    ready.sort(
-      (a, b) =>
-        (b.opportunity?.score ?? 0) - (a.opportunity?.score ?? 0) ||
-        a.id.localeCompare(b.id)
-    );
-    for (const scope of ready) {
-      rank.set(scope.id, rank.size);
-      waiting.splice(waiting.indexOf(scope), 1);
-    }
-  }
-  const scopes = [...ledger.scopes.values()].sort(
-    (a, b) => rank.get(a.id) - rank.get(b.id)
-  );
-  const unitOf = (scope) => scope.group ?? scope.id;
-  const units = new Map();
-  for (const scope of scopes) {
-    const id = unitOf(scope);
-    if (!units.has(id)) {
-      const group = scope.group ? ledger.groups.get(scope.group) : null;
-      units.set(id, {
-        id,
-        title: group?.title ?? scope.title,
-        scopes: [],
-        dependsOn: new Set(),
-        last: false,
-        score: 0,
-      });
-    }
-    const unit = units.get(id);
-    unit.scopes.push(scope.id);
-    unit.last ||= scope.last;
-    unit.score = Math.max(unit.score, scope.opportunity?.score ?? 0);
-    for (const dependency of scope.dependsOn ?? []) {
-      const target = ledger.scopes.get(dependency);
-      if (!target) problem(`Unknown dependency of ${scope.id}: ${dependency}`);
-      else if (unitOf(target) !== id) unit.dependsOn.add(unitOf(target));
-    }
-  }
-  const result = [];
-  const pending = [...units.values()];
-  while (pending.length) {
-    const ready = pending.filter((unit) =>
-      [...unit.dependsOn].every((id) => result.some((item) => item.id === id))
-    );
-    const byPayoff = (a, b) =>
-      Number(a.last) - Number(b.last) ||
-      b.score - a.score ||
-      a.id.localeCompare(b.id);
-    let chosen = ready.sort(byPayoff)[0];
-    if (!chosen || (chosen.last && pending.some((unit) => !unit.last))) {
-      problem(
-        'Review dependencies contain a cycle or depend on an AI-last scope'
-      );
-      chosen = pending.sort(byPayoff)[0];
-    }
-    result.push({ ...chosen, dependsOn: [...chosen.dependsOn] });
-    pending.splice(pending.indexOf(chosen), 1);
-  }
-  return result;
-}
-
 /** Source and law freshness of a review page, plan or legacy record against the live tree. Matching is not behavior proof. */
 export function freshness(tree, record) {
   if (record.commit) return commitFreshness(tree, record);
@@ -1157,25 +1066,12 @@ function briefFreshness(state) {
 function unresolvedCandidates(ledger, scope) {
   const classified = new Set(
     ledger.documents
-      .filter(
-        (document) =>
-          document.disposition !== 'candidate' &&
-          document.scopes.includes(scope.id)
-      )
+      .filter((document) => document.scopes.includes(scope.id))
       .map((document) => document.path)
   );
-  return [
-    ...new Set([
-      ...(scope.historyCandidates ?? []),
-      ...ledger.documents
-        .filter(
-          (document) =>
-            document.disposition === 'candidate' &&
-            document.scopes.includes(scope.id)
-        )
-        .map((document) => document.path),
-    ]),
-  ].filter((path) => !classified.has(path));
+  return [...new Set(scope.historyCandidates)].filter(
+    (path) => !classified.has(path)
+  );
 }
 
 function compact(ledger, tree, plans, scope) {
@@ -1186,8 +1082,7 @@ function compact(ledger, tree, plans, scope) {
   const scopePlans = plans.filter((plan) => plan.scopes.includes(scope.id));
   const documents = ledger.documents.filter(
     (document) =>
-      document.scopes.includes(scope.id) &&
-      !['candidate', 'rejected'].includes(document.disposition)
+      document.scopes.includes(scope.id) && document.disposition !== 'rejected'
   );
   return {
     id: scope.id,
@@ -1401,109 +1296,17 @@ export function status(root) {
     unowned: coverage(root, { ledger }).unowned.total,
     open: [...states]
       .filter(([, state]) => state.open)
-      .map(([id, state]) => ({ id, open: state.open })),
-    queue: orderUnits(ledger).map((unit, index) => ({
-      order: index + 1,
-      unit: unit.id,
-      title: unit.title,
-      score: unit.score,
-      scopes: unit.scopes.map((id) => ({
+      .map(([id, state]) => ({
         id,
-        open: states.get(id).open,
+        open: state.open,
         verdict: latest(headsOf(ledger, id))?.verdict ?? null,
       })),
-    })),
     ...report(ledger),
   };
 }
 
 const report = (ledger) =>
   ledger.warnings.length ? { warnings: ledger.warnings } : {};
-
-const IN_FLIGHT_DAYS = 14;
-
-const stillInFlight = (at, now) => now - at < IN_FLIGHT_DAYS * 86_400_000;
-
-const planEdits = (tree) =>
-  new Set(
-    (
-      git(tree, [
-        'status',
-        '--porcelain',
-        '-z',
-        '--no-renames',
-        '--untracked-files=all',
-        '--',
-        'docs/plans',
-      ]) ?? ''
-    )
-      .split('\0')
-      .map((entry) => entry.slice(3))
-  );
-
-const committedAt = (tree, rev, path) =>
-  Number(git(tree, ['log', '-1', '--format=%ct', rev, '--', path])) * 1000;
-
-const touchedAt = (tree, edits, path) =>
-  edits.has(path)
-    ? statSync(join(tree, path)).mtimeMs
-    : committedAt(tree, 'HEAD', path);
-
-const otherCheckouts = (root) => {
-  const self = realpathSync(root);
-  return (git(root, ['worktree', 'list', '--porcelain']) ?? '')
-    .split('\n')
-    .filter((line) => line.startsWith('worktree '))
-    .map((line) => line.slice('worktree '.length))
-    .filter((tree) => existsSync(tree) && realpathSync(tree) !== self);
-};
-
-const dropped = (label) => stateOf(label) === 'done' && !landed(label);
-
-const unlandedPlans = (tree, root, head, now) => {
-  const committed = git(tree, [
-    'diff',
-    '--name-only',
-    '-z',
-    `${head}...HEAD`,
-    '--',
-    'docs/plans',
-  ]);
-  const edits = planEdits(tree);
-  const paths = [
-    ...new Set([...(committed ?? '').split('\0'), ...edits]),
-  ].filter((path) => {
-    if (
-      !/^docs\/plans\/[^/]+\.md$/.test(path) ||
-      !existsSync(join(tree, path))
-    ) {
-      return false;
-    }
-    const at = touchedAt(tree, edits, path);
-    return stillInFlight(at, now) && at >= committedAt(root, head, path);
-  });
-  if (paths.length === 0) return [];
-  const ledger = loadLedger(tree);
-  return paths
-    .map((path) => associationOf(tree, ledger, path))
-    .filter((plan) => plan && !dropped(plan.status));
-};
-
-const inFlightPlans = (root, plans) => {
-  const now = Date.now();
-  const edits = planEdits(root);
-  const head = git(root, ['rev-parse', 'HEAD'])?.trim();
-  return [
-    ...plans.filter(
-      (plan) =>
-        ['active', 'held', 'planning'].includes(stateOf(plan.status)) &&
-        stillInFlight(touchedAt(root, edits, plan.path), now)
-    ),
-    ...otherCheckouts(root).flatMap((tree) =>
-      unlandedPlans(tree, root, head, now)
-    ),
-  ];
-};
 
 const shipSteps = {
   unreviewed: (scope) => ({
@@ -1523,30 +1326,42 @@ const shipSteps = {
   }),
 };
 
-/** The open scopes in queue order, which chips offers as P1 tasks through `chips.ship` in `.agents/pstack.json`. A deferred scope waits on outside evidence, so it is left out. */
+/**
+ * The open scopes, which chips offers as P1 tasks through `chips.ship` in
+ * `.agents/pstack.json`. A deferred scope waits on outside evidence, so it is
+ * left out. Each item waits on the open plans that name its scope.
+ */
 export function ship(root) {
   const ledger = loadLedger(root);
   const plans = plansOf(root, ledger);
-  const claimed = inFlightPlans(root, plans);
-  return orderUnits(ledger).flatMap((unit) =>
-    unit.scopes.flatMap((id) => {
-      const scope = ledger.scopes.get(id);
-      const step = shipSteps[openState(ledger, id, plans).open];
-      if (!step) return [];
-      return [
-        {
-          id,
-          ...step({ id, title: scope.title ?? id }),
-          writes: [
-            'docs/plans',
-            ...(scope.owners ?? []).map((path) => path.replace(/\/$/, '')),
-          ],
-          topic: `review-${id}`,
-          busy: claimed.some((plan) => plan.scopes.includes(id)),
-        },
-      ];
-    })
+  const running = plans.filter((plan) =>
+    ['active', 'held', 'planning'].includes(stateOf(plan.status))
   );
+  return [...ledger.scopes.values()].sort(byId).flatMap((scope) => {
+    const step = shipSteps[openState(ledger, scope.id, plans).open];
+    if (!step) return [];
+    const item = step({ id: scope.id, title: scope.title ?? scope.id });
+    const prerequisites = (scope.dependsOn ?? []).filter(
+      (id) => ledger.scopes.has(id) && openState(ledger, id, plans).open
+    );
+    return [
+      {
+        id: scope.id,
+        ...item,
+        finding: prerequisites.length
+          ? `${item.finding} It builds on ${prerequisites.join(', ')}, still open: ${scope.prerequisiteReason}`
+          : item.finding,
+        writes: [
+          subjectOf(scope.id),
+          ...(scope.owners ?? []).map((path) => path.replace(/\/$/, '')),
+        ],
+        topic: `review-${scope.id}`,
+        waits: running
+          .filter((plan) => plan.scopes.includes(scope.id))
+          .map((plan) => `run:${plan.path}`),
+      },
+    ];
+  });
 }
 
 /** Markdown for people, printed instead of committed. */
@@ -1555,17 +1370,14 @@ export function show(root, scopeId) {
   const plans = plansOf(root, ledger);
   if (!scopeId) {
     const lines = [
-      '# Review queue',
+      '# Review scopes',
       '',
-      '| Order | Review | Payoff | Questions and open state |',
-      '| ---: | --- | ---: | --- |',
+      '| Scope | Review | Open state |',
+      '| --- | --- | --- |',
     ];
-    for (const [index, unit] of orderUnits(ledger).entries()) {
-      const cells = unit.scopes.map(
-        (id) => `${id}: ${openState(ledger, id, plans).open ?? 'closed'}`
-      );
+    for (const scope of [...ledger.scopes.values()].sort(byId)) {
       lines.push(
-        `| ${index + 1} | ${unit.title} | ${unit.score} | ${cells.join('; ')} |`
+        `| ${scope.id} | ${scope.title} | ${openState(ledger, scope.id, plans).open ?? 'closed'} |`
       );
     }
     return `${lines.join('\n')}\n`;
@@ -1733,14 +1545,6 @@ export function check(root, { base = 'HEAD' } = {}) {
       for (const field of ['title', 'question']) {
         assert.ok(isText(scope[field]), `Missing ${field}`);
       }
-      assert.ok(
-        Number.isInteger(scope.opportunity?.score) &&
-          scope.opportunity.score >= 0 &&
-          scope.opportunity.score <= 10 &&
-          isText(scope.opportunity.reason),
-        'opportunity needs an integer score 0 to 10 and a reason'
-      );
-      assert.equal(typeof scope.last, 'boolean', 'last is a boolean');
       for (const path of entriesOf(scope)) {
         repoPath(path);
         assert.equal(
@@ -1812,13 +1616,9 @@ export function check(root, { base = 'HEAD' } = {}) {
           'report',
           'history',
         ].includes(document.kind) &&
-          [
-            'active',
-            'historical',
-            'superseded',
-            'candidate',
-            'rejected',
-          ].includes(document.disposition) &&
+          ['active', 'historical', 'superseded', 'rejected'].includes(
+            document.disposition
+          ) &&
           isText(document.rationale),
         'A document needs a kind, a disposition and a rationale'
       );
@@ -1874,7 +1674,6 @@ export function check(root, { base = 'HEAD' } = {}) {
       }
     });
   }
-  attempt('queue', () => orderUnits(ledger, { strict: true }));
   for (const id of ledger.scopes.keys()) {
     const heads = headsOf(ledger, id);
     if (heads.length > 1) {

@@ -6,11 +6,6 @@
     "selection"
   ],
   "prerequisiteReason": "Proposed edits and accept/reject behavior must obey committed-change and selection laws; authored integration is contextual.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "User review semantics and copied discussion UI must not create a second change-history authority."
-  },
   "owners": [
     "packages/plitejs/src/authored/authored.ts",
     "packages/plitejs/src/authored/ledger/cards.ts",

@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "DOCX conversion must first name the document information it preserves and its fidelity limits.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "DOCX spans document structure, styles, numbering, media and bidirectional fidelity; it is a different job from CSV ingress."
-  },
   "owners": [
     "packages/plitejs/src/authored/format.ts",
     "packages/platejs/src/docx/import/",

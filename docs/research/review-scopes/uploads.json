@@ -6,11 +6,6 @@
     "transactions"
   ],
   "prerequisiteReason": "Async completion, cancellation and undo must target the canonical committed-update owner.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Async completion and cancellation are application/document coordination laws independent of a media node shape."
-  },
   "owners": [
     "packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts",
     "packages/platejs/src/react/features/upload/UploadPlugin.tsx",

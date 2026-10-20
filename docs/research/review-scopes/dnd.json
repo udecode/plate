@@ -6,11 +6,6 @@
     "selection"
   ],
   "prerequisiteReason": "Drag destinations and moved content must obey rebased-selection and committed-update laws.",
-  "last": false,
-  "opportunity": {
-    "score": 7,
-    "reason": "Cross-editor drag and package-local DnD integration have distinct lifetime and input constraints."
-  },
   "owners": [
     "packages/plitejs/src/core/transfer.ts",
     "packages/plitejs/src/core/transfer-types.ts",

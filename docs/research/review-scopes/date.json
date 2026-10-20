@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "The document value contract determines persisted dates independently of locale formatting.",
-  "last": false,
-  "opportunity": {
-    "score": 4,
-    "reason": "A small inline value/presentation boundary with explicit serialization policy."
-  },
   "owners": [
     "packages/platejs/src/features/date/"
   ],

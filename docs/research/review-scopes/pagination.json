@@ -6,11 +6,6 @@
     "runtime"
   ],
   "prerequisiteReason": "Document and mounted-view ownership determine where page measurements and layout may live.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Large-document rendering has independent performance and native selection constraints."
-  },
   "owners": [
     "packages/plitejs/src/pagination/"
   ],

@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Link identity and persisted values must be known before detection, editing and navigation policy is assigned.",
-  "last": false,
-  "opportunity": {
-    "score": 7,
-    "reason": "Links cross clipboard policy, inline selection and toolbar lifetimes."
-  },
   "owners": [
     "packages/platejs/src/features/link/"
   ],

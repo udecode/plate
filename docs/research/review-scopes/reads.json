@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Snapshots and subscriptions must observe the canonical document value and identity consistently.",
-  "last": false,
-  "opportunity": {
-    "score": 10,
-    "reason": "Repeated reads and broad subscriptions multiply across large documents and many mounted consumers."
-  },
   "owners": [
     "packages/plitejs/src/core/editor-reads.ts",
     "packages/plitejs/src/core/editor-read-runtime.ts",

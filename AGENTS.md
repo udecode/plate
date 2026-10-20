@@ -58,7 +58,6 @@ Paths in these instructions are relative to the repository root.
 ## Plate overrides of pstack
 
 - **Astra effort.** Panel seats and `architect` and arena runners seat `codex:gpt-6-astra @xhigh` instead of the models sheets' `@high`, because at `high` most of Astra's findings repeated another seat's. The Opus and Sol seats keep the sheets' values. This wins over the models sheets (owner's word, 2026-10-06).
-- **Chips priority.** A new product design question goes to a chips `decide` task in topic `review-<scope>`, as the Verdict playbook's Topics says. It is P1 with `ship:` when its scope has an open ship item and P2 otherwise, because chips hold questions and the review ledger keeps answers. A hard cut's question is the exception and still goes to the review ledger, as Hard cuts says. `chips` offers the ledger's open items as P1 tasks through `chips.ship` in `.agents/pstack.json`, which runs `node tooling/scripts/review-ledger.mjs ship` (owner's word, 2026-10-19).
 
 ## Source authority
 
@@ -77,7 +76,7 @@ pstack's poteto-mode picks the playbook, and the Plate owner below supplies the 
 - Exact human assignments remain reserved. Read-only mapping and review are allowed; broader cleanup or full execution cannot absorb someone else’s work.
 - An audit remains read-only unless its request authorizes repairs.
 - **Owner phrases.** "Only uncommitted" means summarize only uncommitted work, never older branch history. "Long term most precise and performant" means choose the architecture or API owner, not another local example condition. "Make it perfect" means stabilize behavior first, then improve performance, then clean the API and DX, then prove readiness. "Go faster" or "it's getting long" means less narration and independent waits run in the background; it never drops a slice, a slice review, a skill load, a whole read of a rule or a gate. Add a phrase here only when the owner's wording, not the rule behind it, changes what to do.
-- **Hard cuts.** A hard cut runs when the owner asked to remove that feature, when its plan continues a Pursue verdict on a review the owner asked for, or when `VISION.md` or a `docs/vision/` file already rules the removal or gives the removed job to another owner. Any other hard cut becomes a verdict item, not an owner question. The run keeps the behavior and adds the cut's question to the review ledger. The Hard cut section of `.agents/playbooks/references/architecture.md` holds the rule.
+- **Hard cuts.** A hard cut runs when the owner asked to remove that feature, when its plan continues a Pursue verdict on a review the owner asked for, or when `VISION.md` or a `docs/vision/` file already rules the removal or gives the removed job to another owner. Any other hard cut becomes a verdict item, not an owner question. The run keeps the behavior and offers the cut's question as a `decide` chip. The Hard cut section of `.agents/playbooks/references/architecture.md` holds the rule.
 - **Public API.** Any change to a reusable public API runs `best-api repair` before closeout. It edits the rule's one owner, the scope's subject file or, for a rule that binds several scopes, its Vision file, fixes every artifact that still teaches the rejected shape, and regenerates and proves mirrors. A read-only task reports the required repair without implementing it.
 - **Workflow changes.** Before you change agent instructions, commands or tooling, read `.agents/playbooks/references/workflow-change.md`.
 
@@ -107,7 +106,7 @@ Older plans, ledger records and decision pages name retired commands such as `$t
 
 **Playbooks.** The project playbooks in `.agents/playbooks/` rank with this file's rules outside the pstack block, so a playbook change overrides any block rule it names. Any entry that opens a project playbook directly, a skill such as `verdict` included, first loads `pstack:poteto-mode`, runs `check-playbooks.mjs` and follows the steps of the pstack playbook its `extends` names, with the project playbook's deltas applied.
 
-**Workflow guide.** [docs/development/agent-skills.md](docs/development/agent-skills.md) restates this workflow for contributors. Update it when a panel, plan or delivery rule changes.
+**Workflow guide.** [docs/development/agent-skills.md](docs/development/agent-skills.md) indexes this workflow for contributors and restates no rule. Update it when a skill, playbook, rule file or entry point is added, renamed or removed.
 
 ## Git and publication
 
