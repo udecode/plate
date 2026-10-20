@@ -12,7 +12,9 @@
 // is a fork rebases onto upstream and opens the PR there from the fork. The PR
 // body is the page `plan-page.mjs <plan> --pr` renders, with each frame it
 // prints attached, when the task changes exactly one dated plan, and the
-// commit body otherwise; a refused render stops before the push.
+// commit body otherwise; a refused render stops before the push. A commit
+// body that becomes a PR body needs a `## Why` and a `## Verification`
+// section, each with text, as pstack's Opening a PR asks.
 // Without --message it keeps the message of the task's last commit, so a run
 // stopped by a conflict or a failed check reruns as is.
 //
@@ -34,6 +36,7 @@ const BEYOND = /^Beyond the ask: \S/mu;
 const SESSION = /^Session: \S/mu;
 const PLAN = /^Plan: \S/mu;
 const DATED = /^\d{4}-\d\d-\d\d-[^/]+\.md$/u;
+const PR_SECTIONS = ['Why', 'Verification'];
 const RETRIES = 3;
 const session = process.env.CLAUDE_CODE_HOST_SESSION_ID || process.env.CLAUDE_CODE_SESSION_ID || process.env.CODEX_SESSION_ID || '';
 
@@ -127,9 +130,19 @@ function trailers(body, plan) {
   return lines.length > 0 ? `${body}\n\n${lines.join('\n')}` : body;
 }
 
+const paged = (plan) => plan && existsSync(plan) && existsSync('.agents/pstack/plan-page.mjs');
+
+// A heading counts only when text other than an HTML comment, such as the PR template's placeholder, follows it before the next heading or the Beyond the ask line.
+function missingSections(body) {
+  return PR_SECTIONS.filter((name) => {
+    const section = body.match(new RegExp(`^## ${name}[ \\t]*\\n([\\s\\S]*?)(?=^## |^Beyond the ask:|(?![\\s\\S]))`, 'mu'));
+    return !section || section[1].replace(/<!--[\s\S]*?-->/gu, '').trim() === '';
+  });
+}
+
 // The PR body file and its --attach arguments: the plan's page when the task changes one plan, else the commit body.
 function prBody(plan, body) {
-  if (plan && existsSync(plan) && existsSync('.agents/pstack/plan-page.mjs')) {
+  if (paged(plan)) {
     const render = spawnSync(process.execPath, ['.agents/pstack/plan-page.mjs', plan, '--pr'], { encoding: 'utf8' });
     if (render.status !== 0) {
       fail(`plan-page.mjs refused ${plan}, so nothing was pushed:\n${`${render.stderr}${render.stdout}`.trim()}\nFix the plan, then run land.mjs again without --message.`);
@@ -152,6 +165,14 @@ function squash({ subject, body }) {
     fail(`nothing to land: the task changes nothing against ${target}`);
   }
   const plan = planOf(must('diff', '--cached', '--name-only').split('\n').filter(Boolean));
+  const missing = mode === 'pr' && !paged(plan) ? missingSections(body) : [];
+  if (missing.length > 0) {
+    must('reset', '--quiet', '--soft', head);
+    fail(
+      `a PR whose body is the commit body needs ${missing.map((name) => `a \`## ${name}\` section`).join(' and ')} with text, as pstack's Opening a PR asks; ` +
+        'add the missing text to the message and run land.mjs again with --message, or change exactly one dated plan so its page becomes the body'
+    );
+  }
   const file = join(mkdtempSync(join(tmpdir(), 'land-')), 'message');
   writeFileSync(file, `${subject}\n\n${trailers(body, plan)}\n`);
   const run = spawnSync('git', ['commit', '--quiet', '--file', file], { stdio: 'inherit' });

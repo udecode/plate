@@ -39,7 +39,7 @@
       "migrationNotes": [],
       "targets": ["fixed-toolbar", "floating-toolbar"],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-10-19",
